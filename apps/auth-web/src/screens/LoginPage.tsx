@@ -807,7 +807,7 @@ export const LoginPage: React.FC = () => {
       {/* 主布局：认证卡片叠压在蓝色品牌底板上（桌面端覆盖约 80%） */}
       <div className={isStorefrontEmbed ? 'flex min-h-screen items-center justify-center overflow-x-hidden bg-transparent p-0' : 'flex-1 flex items-center justify-center overflow-x-hidden p-4 sm:p-6 lg:p-12'}>
         <div
-          className={`relative w-full ${stage === 2 ? 'max-w-[680px]' : 'max-w-[520px]'} rounded-3xl bg-gradient-to-br shadow-xl transition-colors duration-300 ${isEnterpriseLogin ? 'from-[var(--sw-brand-dark)] to-slate-950' : 'from-[var(--sw-brand)] to-[var(--sw-brand-dark)]'} ${isStorefrontEmbed ? 'overflow-visible p-3' : 'overflow-hidden'}`}
+          className={`relative w-full ${isCanonicalConsoleRequest ? `${stage === 2 ? 'max-w-[680px]' : 'max-w-[520px]'} rounded-3xl bg-gradient-to-br from-[var(--sw-brand)] to-[var(--sw-brand-dark)] shadow-xl` : 'max-w-[430px]'} ${isStorefrontEmbed ? 'overflow-visible p-3' : isCanonicalConsoleRequest ? 'overflow-hidden' : ''}`}
         >
           {isStorefrontEmbed && (
             <button
@@ -820,7 +820,7 @@ export const LoginPage: React.FC = () => {
             </button>
           )}
           {/* 蓝色品牌底板 */}
-          <div className={isStorefrontEmbed ? 'hidden' : 'min-h-[420px] p-8 text-white sm:p-12 lg:min-h-[606px] lg:pr-12'}>
+          <div className={isStorefrontEmbed || !isCanonicalConsoleRequest ? 'hidden' : 'min-h-[420px] p-8 text-white sm:p-12 lg:min-h-[606px] lg:pr-12'}>
             {/* 装饰模糊背景光晕 */}
             <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -851,7 +851,7 @@ export const LoginPage: React.FC = () => {
           </div>
 
           {/* 认证卡：桌面端由右向左叠压蓝色底板的 80% 区域 */}
-          <div className={isStorefrontEmbed ? 'relative z-10 w-full p-0' : `relative z-10 p-4 sm:p-6 lg:absolute lg:inset-y-6 lg:right-6 lg:flex lg:items-center lg:p-0 ${stage === 2 ? 'lg:w-[620px]' : 'lg:w-[460px]'}`}>
+          <div className={isStorefrontEmbed || !isCanonicalConsoleRequest ? 'relative z-10 w-full p-0' : `relative z-10 p-4 sm:p-6 lg:absolute lg:inset-y-6 lg:right-6 lg:flex lg:items-center lg:p-0 ${stage === 2 ? 'lg:w-[620px]' : 'lg:w-[460px]'}`}>
             <div className="w-full overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/15 transition-all duration-300">
               {/* 卡片顶部：3003 三段式身份流程 */}
               <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-white via-slate-50 to-blue-50/70 px-6 py-4 sm:px-8">
@@ -909,12 +909,12 @@ export const LoginPage: React.FC = () => {
                 {/* 阶段标题 */}
                 <div className="mb-6">
                   <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-                    {stage === 1 && '统一账号认证'}
+                    {stage === 1 && (isCanonicalConsoleRequest ? '统一账号认证' : '手机号登录')}
                     {stage === 2 && '选择你的工作台'}
                     {stage === 3 && '管理身份二次验证 (Step-Up)'}
                   </h2>
                   <p className="mt-1 text-xs text-slate-500 sm:text-sm">
-                    {stage === 1 && (isCanonicalConsoleRequest ? '请选择适合您的登录方式与身份核验' : '使用账号密码登录或注册；首次付款时再验证手机。')}
+                    {stage === 1 && (isCanonicalConsoleRequest ? '请选择适合您的登录方式与身份核验' : '输入手机号和验证码，直接进入消费者商城。')}
                     {stage === 2 && '同一账号，可在福利消费与运营管理之间自由切换。'}
                     {stage === 3 && '该高权限身份要求正式二次验证；当前服务尚未接通。'}
                   </p>
@@ -937,7 +937,7 @@ export const LoginPage: React.FC = () => {
                 {/* 第一段：普通登录默认两入口；切换企业管理后展示企业入口 */}
                 {stage === 1 && (
                   <div className="flex h-[426px] flex-col gap-5">
-                    <div className={`grid ${isEnterpriseLogin ? 'grid-cols-4' : 'grid-cols-2'} gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium`} role="tablist" aria-label="登录方式">
+                    {isCanonicalConsoleRequest && <div className="grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium" role="tablist" aria-label="登录方式">
                       <button
                         type="button"
                         onClick={() => selectAuthMethod('otp')}
@@ -956,29 +956,25 @@ export const LoginPage: React.FC = () => {
                       >
                         密码登录
                       </button>
-                      {isEnterpriseLogin && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => selectAuthMethod('work_weixin')}
-                            className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'work_weixin' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-                            role="tab"
-                            aria-selected={activeTab === 'work_weixin'}
-                          >
-                            {qrLoginChannel === 'wechat' ? '微信扫码' : '企微扫码'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => selectAuthMethod('sso')}
-                            className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'sso' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-                            role="tab"
-                            aria-selected={activeTab === 'sso'}
-                          >
-                            企业 SSO
-                          </button>
-                        </>
-                      )}
-                    </div>
+                      <button
+                        type="button"
+                        onClick={() => selectAuthMethod('work_weixin')}
+                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'work_weixin' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                        role="tab"
+                        aria-selected={activeTab === 'work_weixin'}
+                      >
+                        {qrLoginChannel === 'wechat' ? '微信扫码' : '企微扫码'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectAuthMethod('sso')}
+                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'sso' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                        role="tab"
+                        aria-selected={activeTab === 'sso'}
+                      >
+                        企业 SSO
+                      </button>
+                    </div>}
 
                     <div id="login-method-panel" role="tabpanel" aria-live="polite">
                       {isCanonicalConsoleRequest && activeTab === 'otp' && (
@@ -1033,7 +1029,7 @@ export const LoginPage: React.FC = () => {
                             disabled={!acceptedTerms || loading}
                             className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] py-3 text-sm font-bold text-white disabled:bg-slate-300"
                           >
-                            {loading && <RefreshCw className="h-4 w-4 animate-spin" />}安全登录
+                            {loading && <RefreshCw className="h-4 w-4 animate-spin" />}{isCanonicalConsoleRequest ? '安全登录' : '登录并进入商城'}
                           </button>
                         </form>
                       )}
