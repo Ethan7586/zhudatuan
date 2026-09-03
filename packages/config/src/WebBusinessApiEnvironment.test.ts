@@ -17,7 +17,7 @@ function valid() {
     APP_ENV: 'production',
     AUTH_MODE: 'membership',
     SERVICE_VERSION: '1.0.0',
-    API_ALLOWED_ORIGINS: 'https://console.zhudatuan.com,https://zhudatuan.com',
+    API_ALLOWED_ORIGINS: 'https://console.zhudatuan.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com,https://zhudatuan.com',
     DATABASE_API_CONNECTION_REF: 'zhudatuan/web-business/database/api',
     KMS_ENDPOINT: 'https://127.0.0.1:8544',
     KMS_BEARER_TOKEN: kmsBearerToken,
@@ -33,6 +33,9 @@ describe('web business API environment', () => {
     expect(webBusinessApiPort(environment)).toBe(4322);
     expect(webBusinessApiAllowedOrigins(environment)).toEqual([
       'https://console.zhudatuan.com',
+      'https://hbbtzn.com',
+      'https://mall.hbbtzn.com',
+      'https://www.hbbtzn.com',
       'https://zhudatuan.com',
     ]);
     expect(new Set(WEB_BUSINESS_API_ENVIRONMENT_KEYS).size).toBe(WEB_BUSINESS_API_ENVIRONMENT_KEYS.length);

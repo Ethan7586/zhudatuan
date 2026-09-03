@@ -7,7 +7,9 @@ const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([
   'https://accounts.hbbtzn.com',
   'https://accounts.zhudatuan.com',
   'https://console.zhudatuan.com',
+  'https://hbbtzn.com',
   'https://mall.hbbtzn.com',
+  'https://www.hbbtzn.com',
   'https://zhudatuan.com',
 ] as const);
 

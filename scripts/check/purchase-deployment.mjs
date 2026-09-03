@@ -196,7 +196,7 @@ assertExactSet(environmentKeys, [
   'WECHAT_PAYMENT_CONFIG_REF',
   'NODE_EXTRA_CA_CERTS',
 ], 'PURCHASE_ENVIRONMENT_KEYS');
-if (!environment.includes('API_ALLOWED_ORIGINS=https://zhudatuan.com')
+if (!environment.includes('API_ALLOWED_ORIGINS=https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com,https://zhudatuan.com')
   || !environment.includes('DATABASE_API_CONNECTION_REF=zhudatuan/purchase/database/api')
   || !environment.includes('QUOTE_KEY_REF=zhudatuan/purchase/checkout/quote')
   || !environment.includes('KMS_ENDPOINT=https://127.0.0.1:8544')
