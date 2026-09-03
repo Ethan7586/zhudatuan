@@ -94,7 +94,7 @@ export const IDENTITY_CORE_OPERATION_IDS = Object.freeze([
   'identity.stepup.complete',
 ] as const satisfies readonly OperationId[]);
 
-export const IDENTITY_REGISTRATION_OPERATION_IDS = Object.freeze([
+const IDENTITY_REGISTRATION_CORE_OPERATION_IDS = Object.freeze([
   'identity.sessions.create',
   'identity.tickets.exchange',
   'identity.session.read',
@@ -107,8 +107,14 @@ export const IDENTITY_REGISTRATION_OPERATION_IDS = Object.freeze([
   'identity.password.reset',
 ] as const satisfies readonly OperationId[]);
 
+export const IDENTITY_REGISTRATION_OPERATION_IDS = Object.freeze([
+  ...IDENTITY_REGISTRATION_CORE_OPERATION_IDS,
+  'identity.wechat.session',
+  'identity.wechat.bind',
+] as const satisfies readonly OperationId[]);
+
 export function identityRegistrationOperations(context: ModuleContext): OperationUsecase {
-  return identityCoreOperations(context, IDENTITY_REGISTRATION_OPERATION_IDS, true);
+  return identityCoreOperations(context, IDENTITY_REGISTRATION_CORE_OPERATION_IDS, true);
 }
 
 export function identityOperations(context: ModuleContext): OperationUsecase {
