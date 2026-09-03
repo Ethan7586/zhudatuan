@@ -1,11 +1,22 @@
 import { array, boolean, discriminatedUnion, literal, null as nullSchema, number, optional, strictObject, string, union } from 'zod/mini';
 
 const target = literal(['console', 'storefront']);
+const membershipShape = {
+  id: string(),
+  target,
+  displayName: string(),
+  organizationName: string(),
+  scopeKind: string(),
+  scopeId: string(),
+  roleLabel: string(),
+  logoUrl: union([string(), nullSchema()]),
+} as const;
+const membership = strictObject(membershipShape);
 const authorization = strictObject({ kind: literal('session'), ticket: string(), returnTarget: string() });
 const selection = strictObject({
   kind: literal('selection'),
   transaction: string(),
-  memberships: array(strictObject({ id: string(), target })),
+  memberships: array(membership),
 });
 const proof = strictObject({
   kind: literal('proofRequired'),
@@ -76,8 +87,8 @@ export const IDENTITY_OUTPUT_SCHEMAS = {
   IdentitySessionsCreateOutput: discriminatedUnion('kind', [authorization, selection, proof, enrollment]),
   IdentitySessionsCompleteOutput: authorization,
   IdentityTicketsExchangeOutput: strictObject({ returnTarget, expiresIn: number() }),
-  IdentityChallengesCreateOutput: strictObject({ id: string(), purpose: literal(['login', 'password_reset', 'enrollment', 'enrollment_campaign']), expires_at: string() }),
-  IdentityMobileChallengesCreateOutput: strictObject({ id: string(), purpose: literal('phone_change'), expires_at: string() }),
+  IdentityChallengesCreateOutput: strictObject({ id: string(), purpose: literal(['login', 'password_reset', 'enrollment', 'enrollment_campaign']), expires_at: string(), retry_at: string() }),
+  IdentityMobileChallengesCreateOutput: strictObject({ id: string(), purpose: literal('phone_change'), expires_at: string(), retry_at: string() }),
   IdentityInvitationsResolveOutput: discriminatedUnion('kind', [authorization, invitationProof, enrollment]),
   IdentityInvitationsReadOutput: strictObject({ items: array(invitation), count: number(), nextCursor: optional(string()) }),
   IdentityInvitationsCreateOutput: createdInvitation,
@@ -105,16 +116,31 @@ export const IDENTITY_OUTPUT_SCHEMAS = {
   IdentityEnrollmentsCompleteOutput: discriminatedUnion('kind', [authorization, strictObject({ kind: literal('enrolled'), target: literal('storefront') })]),
   IdentityFederationsStartOutput: redirect,
   IdentityFederationsCallbackOutput: redirect,
-  IdentityFederationsSelectionReadOutput: strictObject({ memberships: array(strictObject({ id: string(), target })), expiresAt: string(), target }),
+  IdentityFederationsSelectionReadOutput: strictObject({ memberships: array(membership), expiresAt: string(), target }),
   IdentityFederationsCompleteOutput: redirect,
-  IdentityProvidersReadOutput: strictObject({
-    items: array(strictObject({ id: string(), type: literal(['wechat', 'wecomcorp', 'wecomsuite', 'oidc']), status: literal('enabled') })),
-    csrf: string(),
+  IdentityBootstrapReadOutput: strictObject({
     target,
     returnTarget: string(),
+    expiresAt: string(),
+    csrf: string(),
+    methods: array(literal(['password', 'otp', 'invitation', 'federation'])),
+    preferredMethod: literal(['password', 'otp', 'invitation']),
+    password: strictObject({
+      minimumLength: number(),
+      maximumLength: number(),
+      uppercase: boolean(),
+      lowercase: boolean(),
+      number: boolean(),
+      symbol: boolean(),
+    }),
+    otp: strictObject({ validSeconds: number(), resendSeconds: number() }),
+    legal: policy,
+  }),
+  IdentityProvidersReadOutput: strictObject({
+    items: array(strictObject({ id: string(), type: literal(['wechat', 'wecomcorp', 'wecomsuite', 'oidc']), status: literal('enabled') })),
   }),
   IdentityMembershipsReadOutput: strictObject({
-    items: array(strictObject({ id: string(), organizationId: string(), name: string(), current: boolean(), accessVersion: number() })),
+    items: array(strictObject({ ...membershipShape, current: boolean(), accessVersion: number() })),
     count: number(),
   }),
   IdentityMembershipsSwitchOutput: strictObject({ session: string(), membership: string(), expiresIn: number(), switchedAt: string() }),

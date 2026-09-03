@@ -1,7 +1,7 @@
 import { ArrowLeft, CircleAlert, MapPin, Pencil, Plus, Trash2 } from 'lucide-react';
+import { hasFailureCode, presentError } from '@shop/presentation';
 import { useState, type FormEvent } from 'react';
 import type { AddressDraft, AddressView } from '../../../shared/runtime/StorefrontPort';
-import { productionError } from '../../../shared/failure/Failure';
 import { StorefrontStepup } from '../../security/public';
 
 interface AddressPanelProps {
@@ -40,11 +40,10 @@ export function AddressPanel({ addresses, save, remove, notify, back }: AddressP
       setDraft(EMPTY);
       notify(editing.id ? '收货地址已安全更新' : '收货地址已新增', 'success');
     } catch (cause) {
-      const failure = productionError(cause);
-      if (failure.code === 'STEPUP_REQUIRED') {
+      if (hasFailureCode(cause, 'STEPUP_REQUIRED')) {
         setVerification(true);
         setError(null);
-      } else setError(failure.message || '地址保存失败，请刷新后重试');
+      } else setError(presentError(cause).message);
     } finally {
       setBusy(false);
     }
@@ -57,7 +56,7 @@ export function AddressPanel({ addresses, save, remove, notify, back }: AddressP
       setConfirming(null);
       notify('收货地址已删除', 'success');
     } catch (cause) {
-      setError(message(cause, '地址版本已变化，请刷新后重试'));
+      setError(presentError(cause).message);
     } finally {
       setBusy(false);
     }
@@ -168,7 +167,4 @@ function Field({ label, value, onChange, autoComplete }: { readonly label: strin
       <input required maxLength={label === '详细地址' ? 500 : 64} value={value} onChange={(event) => onChange(event.target.value)} autoComplete={autoComplete} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal" />
     </label>
   );
-}
-function message(cause: unknown, fallback: string) {
-  return cause instanceof Error && cause.message ? cause.message : fallback;
 }

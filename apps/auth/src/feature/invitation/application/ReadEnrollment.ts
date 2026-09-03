@@ -1,6 +1,6 @@
-import type { InvitationGateway } from '../infrastructure/InvitationGateway';
+import type { InvitationPort } from '../public/InvitationPort';
 
 export class ReadEnrollment {
-  constructor(private readonly gateway: InvitationGateway) {}
-  execute(id: string, signal?: AbortSignal) { return this.gateway.read(id, signal); }
+  constructor(private readonly port: InvitationPort) {}
+  execute(id: string, signal?: AbortSignal) { return this.port.read(id, signal); }
 }

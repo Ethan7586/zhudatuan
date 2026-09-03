@@ -1,0 +1,17 @@
+@layer reset {
+  html,
+  body,
+  #root {
+    min-width: 20rem;
+    min-height: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  :where(button, a, input, [role='button']):focus-visible {
+    outline: 0.1875rem solid color-mix(in srgb, var(--sw-brand) 68%, transparent);
+    outline-offset: 0.125rem;
+  }
+}

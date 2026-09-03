@@ -8,11 +8,10 @@ describe('storefront membership switching', () => {
   it('lists only active memberships returned by the owning ports', async () => {
     const action = new ReadMemberships(
       { memberForPrincipal: vi.fn(async () => 'member:one') } as never,
-      { memberships: vi.fn(async () => [{ id: 'membership:one', target: 'storefront', organization: 'mall:one', accessVersion: 4 }]) } as never,
-      { names: vi.fn(async () => [{ id: 'mall:one', name: '福利商城' }]) } as never
+      { memberships: vi.fn(async () => [membership('membership:one', 4)]) } as never
     ).action();
     await expect(action(request('identity.memberships.read'), {} as never)).resolves.toMatchObject({
-      body: { items: [{ id: 'membership:one', organizationId: 'mall:one', name: '福利商城', current: true, accessVersion: 4 }], count: 1 },
+      body: { items: [{ id: 'membership:one', organizationName: '福利商城', roleLabel: '普通成员', current: true, accessVersion: 4 }], count: 1 },
     });
   });
 
@@ -22,7 +21,7 @@ describe('storefront membership switching', () => {
     const publish = vi.fn(async () => undefined);
     const action = new SwitchMembership(
       { memberForPrincipal: vi.fn(async () => 'member:one') } as never,
-      { memberships: vi.fn(async () => [{ id: 'membership:two', target: 'storefront', organization: 'mall:two', accessVersion: 1 }]) } as never,
+      { memberships: vi.fn(async () => [membership('membership:two', 1)]) } as never,
       { issue },
       { revokeCurrent } as never,
       { publish }
@@ -66,4 +65,19 @@ function request(type: OperationRequest['type'], body?: Readonly<Record<string, 
       },
     },
   };
+}
+
+function membership(id: string, accessVersion: number) {
+  return Object.freeze({
+    id,
+    target: 'storefront' as const,
+    organization: 'mall:one',
+    accessVersion,
+    displayName: '张三',
+    organizationName: '福利商城',
+    scopeKind: 'mall',
+    scopeId: 'mall:one',
+    roleLabel: '普通成员',
+    logoUrl: null,
+  });
 }

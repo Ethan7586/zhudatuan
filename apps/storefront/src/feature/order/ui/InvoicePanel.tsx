@@ -1,4 +1,5 @@
 import { CircleAlert, Download, FileCheck2, LoaderCircle, ReceiptText } from 'lucide-react';
+import { presentError } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { useSession } from '../../../shared/runtime/SessionContext';
@@ -32,7 +33,7 @@ export function InvoicePanel() {
       link.click();
       link.remove();
     } catch (cause) {
-      setError(message(cause, '电子发票下载失败，请稍后重试'));
+      setError(presentError(cause).message);
     } finally {
       setBusy(null);
     }
@@ -109,9 +110,6 @@ function State({ text, idle = false }: { readonly text: string; readonly idle?: 
 function required<T>(value: T | null): T {
   if (!value) throw new Error('AUTHENTICATION_REQUIRED');
   return value;
-}
-function message(cause: unknown, fallback: string) {
-  return cause instanceof Error && cause.message ? cause.message : fallback;
 }
 function format(value: string) {
   return new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });

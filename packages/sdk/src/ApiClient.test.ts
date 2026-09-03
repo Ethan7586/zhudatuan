@@ -1,4 +1,5 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
+import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { parseStorefrontHandle } from '@shop/contract';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiClient } from './ApiClient';
@@ -22,7 +23,10 @@ class RecordingTransport implements Transport {
 }
 
 describe('ApiClient contract identity', () => {
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
 
   it('pins every SDK request to the generated contract version', async () => {
     const transport = new RecordingTransport();
@@ -81,8 +85,8 @@ describe('ApiClient contract identity', () => {
       send: () => Promise.resolve({ status: 200, headers: {}, body: '{' }),
     });
     await expect(createRuntimeOperations(client).healthLive({}, context())).rejects.toMatchObject({
-      code: 'CONTRACT_RESPONSE_INVALID',
-      status: 502,
+      kind: 'transport',
+      code: 'CONTRACT_INVALID',
     });
   });
 
@@ -133,6 +137,51 @@ describe('ApiClient contract identity', () => {
     await expect(pending).resolves.toEqual({ status: 'live', eventLoop: 'responsive' });
   });
 
+  it('preserves offline and timeout as distinct transport failures', async () => {
+    vi.stubGlobal('navigator', { onLine: false });
+    const offline = new ApiClient('https://shop.example', { send: () => Promise.reject(new TypeError('network unavailable')) });
+    await expect(createRuntimeOperations(offline).healthLive({}, context())).rejects.toMatchObject({ kind: 'transport', code: 'OFFLINE', operation: 'runtime.health.live' });
+
+    vi.unstubAllGlobals();
+    vi.useFakeTimers();
+    const timeout = new ApiClient('https://shop.example', {
+      send: (request) => new Promise((_resolve, reject) => request.signal?.addEventListener('abort', () => reject(request.signal?.reason), { once: true })),
+    });
+    const pending = createRuntimeOperations(timeout).healthLive({}, context());
+    const timedOut = expect(pending).rejects.toMatchObject({ kind: 'transport', code: 'TIMEOUT', requestId: 'trace:1', retryable: true, operation: 'runtime.health.live' });
+    await vi.advanceTimersByTimeAsync(RUNTIME_LIMITS.http.totalDeadlineMilliseconds);
+    await timedOut;
+  });
+
+  it('surfaces rate limits once with the server retry window instead of retrying immediately', async () => {
+    let calls = 0;
+    const client = new ApiClient('https://shop.example', {
+      send: () => {
+        calls += 1;
+        return Promise.resolve({
+          status: 429,
+          headers: {},
+          body: JSON.stringify({ code: 'RATE_LIMITED', message: 'RATE_LIMITED', requestId: 'request:rate', retryable: true, retryAfter: 60 }),
+        });
+      },
+    });
+
+    await expect(createIdentityOperations(client).sessionsCreate(
+      {
+        body: {
+          method: 'password',
+          subject: 'employee:one',
+          password: 'SecurePassword1!',
+          target: 'storefront',
+          returnTarget: 'signed-return-target',
+          authorization: { state: 'state', nonce: 'nonce', challenge: 'challenge' },
+        },
+      },
+      { ...context(), target: 'storefront', csrfToken: 'csrf', idempotencyKey: 'login:one' }
+    )).rejects.toMatchObject({ kind: 'api', code: 'RATE_LIMITED', requestId: 'request:rate', retryable: true, retryAfter: 60 });
+    expect(calls).toBe(1);
+  });
+
   it('returns a contract-validated Location for a declared 303 operation', async () => {
     const client = new ApiClient('https://shop.example', { send: () => Promise.resolve({ status: 303, headers: { location: 'https://shop.example/complete' }, body: '' }) });
     await expect(createIdentityOperations(client).federationsComplete({ body: { membershipid: 'membership:one' } }, { ...context(), target: 'storefront', csrfToken: 'csrf', idempotencyKey: 'selection:one' })).resolves.toEqual({
@@ -143,8 +192,8 @@ describe('ApiClient contract identity', () => {
   it('fails closed when a declared redirect omits Location', async () => {
     const client = new ApiClient('https://shop.example', { send: () => Promise.resolve({ status: 303, headers: {}, body: '' }) });
     await expect(createIdentityOperations(client).federationsComplete({ body: { membershipid: 'membership:one' } }, { ...context(), target: 'storefront', csrfToken: 'csrf', idempotencyKey: 'selection:one' })).rejects.toMatchObject({
-      code: 'CONTRACT_RESPONSE_INVALID',
-      status: 502,
+      kind: 'transport',
+      code: 'CONTRACT_INVALID',
     });
   });
 
@@ -152,7 +201,7 @@ describe('ApiClient contract identity', () => {
     const client = new ApiClient('https://shop.example', { send: () => Promise.resolve({ status: 304, headers: { etag: '"health"' }, body: '' }) });
     const cached = { status: 'live', eventLoop: 'responsive' } as const;
     await expect(createRuntimeOperations(client).healthLive({}, { ...context(), ifNoneMatch: '"health"', cachedResponse: cached })).resolves.toEqual(cached);
-    await expect(createRuntimeOperations(client).healthLive({}, { ...context(), ifNoneMatch: '"health"' })).rejects.toMatchObject({ code: 'CONTRACT_RESPONSE_INVALID', status: 502 });
+    await expect(createRuntimeOperations(client).healthLive({}, { ...context(), ifNoneMatch: '"health"' })).rejects.toMatchObject({ kind: 'transport', code: 'CONTRACT_INVALID' });
   });
 
   it('opens stream operations with every authentication header and Last-Event-ID', async () => {

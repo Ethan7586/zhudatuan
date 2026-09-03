@@ -10,7 +10,7 @@ if (!version || !/^[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.]+)?$/i.test(version)) thro
 const environment = Object.freeze({
   ...process.env,
   NODE_ENV: 'production',
-  VITE_ADMIN_ORIGIN: NETWORK_CATALOG.origins.console,
+  VITE_CONSOLE_ORIGIN: NETWORK_CATALOG.origins.console,
   VITE_API_BASE_URL: NETWORK_CATALOG.origins.api,
   VITE_AUTH_BASE_URL: NETWORK_CATALOG.origins.auth,
   VITE_CLIENT_VERSION: version,

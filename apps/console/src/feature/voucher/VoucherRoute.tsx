@@ -1,9 +1,10 @@
+import { queryCondition, presentError, safeQueryError } from '@shop/presentation';
 import { Button, ResourcePanel } from '@shop/design';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { queryCondition, safeQueryError } from '../../shared/presentation/QueryState';
+
 import { pageCursor } from '../../shared/url/PageCursor';
 import { VoucherCreatorPreview, VoucherRecordDrawer } from './VoucherDialogs';
 import { voucherLifecycle, voucherStateLabel, voucherSummary, voucherViewMeta } from './VoucherPresentation';
@@ -235,7 +236,7 @@ export function Component() {
         </div>
       </ResourcePanel>
       <VoucherRecordDrawer record={selected} view={view} onClose={closeRecord} />
-      <VoucherCreatorPreview open={creatorOpen} busy={creator.isPending} {...(creator.error === null ? {} : { error: creator.error.message })} onCreate={(prefix) => creator.mutate(prefix)} onClose={() => setCreatorOpen(false)} />
+      <VoucherCreatorPreview open={creatorOpen} busy={creator.isPending} {...(creator.error === null ? {} : { error: presentError(creator.error).message })} onCreate={(prefix) => creator.mutate(prefix)} onClose={() => setCreatorOpen(false)} />
     </div>
   );
 }

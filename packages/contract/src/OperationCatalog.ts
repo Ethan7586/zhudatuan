@@ -2,6 +2,7 @@ import { COMMERCE_OPERATIONS } from './operations/CommerceCatalog';
 
 export type OperationDefinition = (typeof COMMERCE_OPERATIONS)[number];
 export type OperationId = OperationDefinition['id'];
+export type OperationErrorFor<TKey extends OperationId> = Extract<OperationDefinition, Readonly<{ id: TKey }>>['errorUnion'][number];
 
 const byId = new Map<string, OperationDefinition>(COMMERCE_OPERATIONS.map((definition) => [definition.id, definition]));
 const byRoute = new Map(COMMERCE_OPERATIONS.map((definition) => [`${definition.method} ${definition.path}`, definition]));

@@ -10,7 +10,7 @@ select (substr(md5('migration:'||identity.application_hash),1,8)||'-'||substr(md
   substr(md5('migration:'||identity.application_hash),14,3)||'-8'||substr(md5('migration:'||identity.application_hash),18,3)||'-'||
   substr(md5('migration:'||identity.application_hash),21,12))::uuid,
   '00000000-0000-0000-0000-000000000000'::uuid,'wechat',public.digest(identity.application_hash,'sha256'),null,
-  public.digest(identity.application_hash,'sha256'),'identity/migration/wechat','https://auth.zhuda.example/api/v1/identity/federations/callback',
+  public.digest(identity.application_hash,'sha256'),'identity/migration/wechat','https://passport.fufu.wang/api/v1/identity/federations/callback',
   array['snsapi_base'], 'disabled',0
 from identity.federatedidentity identity group by identity.application_hash
 on conflict(id) do nothing;

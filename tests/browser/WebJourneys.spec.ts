@@ -2,18 +2,15 @@ import { expect, test } from '@playwright/test';
 import { LOCAL_API_ORIGIN, LOCAL_AUTH_ORIGIN } from '@shop/config/client';
 import { expectWcagAA } from './Accessibility';
 import { createConsoleMock } from './ConsoleMock';
-import { cockpit, consoleSession, storefrontBootstrap, storefrontCatalog } from './Fixtures';
+import { cockpit, consoleSession, identityBootstrap, storefrontBootstrap, storefrontCatalog } from './Fixtures';
 import { OperationMock } from './OperationMock';
 import jsQR from 'jsqr';
 
 test('Auth 登录深链保留 PKCE 边界并满足 WCAG A/AA', async ({ page }) => {
+  const signedTarget = `proof.${'a'.repeat(64)}`;
   const api = new OperationMock(page)
-    .get('/api/v1/identity/providers', {
-      items: [],
-      csrf: 'csrf:e2e',
-      target: 'console',
-      returnTarget: 'http://127.0.0.1:4173/',
-    })
+    .get('/api/v1/identity/bootstrap', identityBootstrap('console', signedTarget))
+    .get('/api/v1/identity/providers', { items: [] })
     .post('/api/v1/identity/sessions', (call) => {
       expect(call.headers['idempotency-key']).toBeTruthy();
       expect(call.headers['x-client-version']).toBe('1.0.0-e2e');
@@ -28,12 +25,12 @@ test('Auth 登录深链保留 PKCE 边界并满足 WCAG A/AA', async ({ page }) 
       return {
         kind: 'selection',
         transaction: 'transaction:e2e',
-        memberships: [{ id: 'membership:e2e', target: 'console' }],
+        memberships: [{ id: 'membership:e2e', target: 'console', displayName: '验收管理员', organizationName: '测试集团', scopeKind: 'enterprise', scopeId: 'enterprise:e2e', roleLabel: '运营会员', logoUrl: null }],
       };
     });
   await api.install();
 
-  await page.goto(`${LOCAL_AUTH_ORIGIN}/login?target=console`);
+  await page.goto(`${LOCAL_AUTH_ORIGIN}/?target=console`);
   await expect(page.getByRole('heading', { level: 1, name: '企业福利 全新定义' })).toBeVisible();
   await expect(page.getByRole('heading', { level: 2, name: '统一账号认证' })).toBeVisible();
   await expect(page).toHaveTitle('统一登录｜智慧翼企业福利商城');
@@ -44,8 +41,8 @@ test('Auth 登录深链保留 PKCE 边界并满足 WCAG A/AA', async ({ page }) 
   await page.getByLabel('密码', { exact: true }).fill('correct-horse');
   await page.getByRole('checkbox', { name: /我已阅读并同意/ }).check();
   await page.getByRole('button', { name: '登录', exact: true }).click();
-  await expect(page.getByRole('heading', { level: 2, name: '选择你的工作台' })).toBeVisible();
-  await expect(page.getByRole('button', { name: /筑大团运营后台/ })).toContainText('已授权企业 · 运营会员');
+  await expect(page.getByRole('heading', { level: 2, name: '完成身份验证' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /测试集团/ })).toContainText('运营会员 · 运营后台');
   await expectWcagAA(page);
 
   const status = await page.evaluate(async (origin) => (await fetch(`${origin}/api/v1/not-registered`)).status, LOCAL_API_ORIGIN);
@@ -188,7 +185,8 @@ test('Storefront 受保护深链登录保留原商城路径', async ({ page }) =
         identity: { ...storefrontBootstrap.identity, version: '1', data: { state: 'member', member: { id: 'member:e2e', displayName: '测试员工' }, membership: 'membership:e2e' } },
       };
     })
-    .get('/api/v1/identity/providers', { items: [], csrf: 'c'.repeat(43), target: 'storefront', returnTarget: signedTarget })
+    .get('/api/v1/identity/bootstrap', identityBootstrap('storefront', signedTarget))
+    .get('/api/v1/identity/providers', { items: [] })
     .get('/api/v1/identity/memberships', { items: [], count: 0 })
     .get('/api/v1/benefits/accounts', { items: [], count: 0 })
     .get('/api/v1/members/me/addresses', { items: [], count: 0 })
@@ -222,7 +220,7 @@ test('Storefront 受保护深链登录保留原商城路径', async ({ page }) =
   expect(destination.searchParams.get('target')).toBe('storefront');
   expect(destination.searchParams.get('returnpath')).toBe('/s/mall-e2e/orders?state=paid');
   await expect(page.getByRole('heading', { level: 2, name: '统一账号认证' })).toBeVisible();
-  await expect.poll(() => api.calls.some((call) => call.path === '/api/v1/identity/providers' && new URLSearchParams(call.query).get('returnpath') === '/s/mall-e2e/orders?state=paid')).toBe(true);
+  await expect.poll(() => api.calls.some((call) => call.path === '/api/v1/identity/bootstrap' && new URLSearchParams(call.query).get('returnpath') === '/s/mall-e2e/orders?state=paid')).toBe(true);
   await page.getByLabel('登录账号或已绑定手机号').fill('e2e-user');
   await page.getByLabel('密码', { exact: true }).fill('correct-horse');
   await page.getByRole('checkbox', { name: /我已阅读并同意/ }).check();
@@ -238,6 +236,7 @@ test('管理员创建员工邀请后只获得一次性安全回执', async ({ pa
   await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://127.0.0.1:4173' });
   const session = {
     ...consoleSession,
+    scopes: [...consoleSession.scopes, { kind: 'mall', id: 'mall:e2e', name: '验收商城', path: [{ kind: 'enterprise', id: 'enterprise:e2e' }, { kind: 'mall', id: 'mall:e2e' }] }],
     csrf: 'csrf-token-for-e2e',
     permissions: [...consoleSession.permissions, 'access.center.read', 'identity.invitation.issue', 'identity.invitation.read', 'identity.invitation.revoke'],
     capabilities: [...consoleSession.capabilities, 'access.center.read', 'identity.invitations.create', 'identity.invitations.read', 'identity.invitations.revoke'],
@@ -254,13 +253,13 @@ test('管理员创建员工邀请后只获得一次性安全回执', async ({ pa
       expect(call.body).toMatchObject({
         kind: 'enrollment',
         target: 'storefront',
-        organizationId: 'enterprise:e2e',
+        organizationId: 'mall:e2e',
         employee: { displayName: '验收员工', mobile: '+8613800138000', employeeNo: 'E2E002' },
         reason: '福利商城入职邀请',
       });
       expect(call.body).not.toHaveProperty('roleId');
       expect(call.body).not.toHaveProperty('permission');
-      return { id: 'invitation:e2e', kind: 'enrollment', target: 'storefront', organizationId: 'enterprise:e2e', maxUses: 1, useCount: 0, expiresAt: '2099-01-01T00:00:00.000Z', status: 'active', version: 1, code, recipientMasked: '+86138****8000', employee: { displayName: '验收员工', employeeNo: 'E2E002' } };
+      return { id: 'invitation:e2e', kind: 'enrollment', target: 'storefront', organizationId: 'mall:e2e', maxUses: 1, useCount: 0, expiresAt: '2099-01-01T00:00:00.000Z', status: 'active', version: 1, code, recipientMasked: '+86138****8000', employee: { displayName: '验收员工', employeeNo: 'E2E002' } };
     }, 201);
   await api.install();
 
@@ -292,7 +291,8 @@ test('受邀员工以绑定手机号完成 OTP 与密码注册且不能改写身
   const signedTarget = `proof.${'b'.repeat(64)}`;
   const termsHash = 'c'.repeat(64);
   const api = new OperationMock(page)
-    .get('/api/v1/identity/providers', { items: [], csrf: 'csrf-token-for-auth-e2e', target: 'storefront', returnTarget: signedTarget })
+    .get('/api/v1/identity/bootstrap', identityBootstrap('storefront', signedTarget, termsHash))
+    .get('/api/v1/identity/providers', { items: [] })
     .post('/api/v1/identity/invitations/resolve', (call) => {
       expect(call.body).toMatchObject({ code: 'ABCD EFGH JKMN PQRS TVWX YZ12 3456 7890', target: 'storefront', returnTarget: signedTarget, authorization: { state: expect.any(String), nonce: expect.any(String), challenge: expect.any(String) } });
       return { kind: 'enrollment', enrollment: { id: 'claim:e2e', expiresAt: '2099-01-01T00:00:00.000Z', target: 'storefront' } };
@@ -300,7 +300,7 @@ test('受邀员工以绑定手机号完成 OTP 与密码注册且不能改写身
     .get('/api/v1/identity/enrollments/claim%3Ae2e', { id: 'claim:e2e', kind: 'enrollment', target: 'storefront', expiresAt: '2099-01-01T00:00:00.000Z', subjectMode: 'bound', organization: { id: 'enterprise:e2e', name: '测试集团' }, recipientMasked: '+86138****8000', employee: { displayName: '验收员工', employeeNo: 'E2E002' }, policy: { terms_title: '员工商城服务协议', terms_body: '服务协议正文', privacy_title: '隐私保护政策', privacy_body: '隐私政策正文', terms_hash: termsHash } })
     .post('/api/v1/identity/challenges', (call) => {
       expect(call.body).toEqual({ purpose: 'enrollment', enrollmentId: 'claim:e2e' });
-      return { id: 'challenge:e2e', purpose: 'enrollment', expires_at: '2099-01-01T00:00:00.000Z' };
+      return { id: 'challenge:e2e', purpose: 'enrollment', expires_at: '2099-01-01T00:00:00.000Z', retry_at: '2098-01-01T00:00:00.000Z' };
     }, 201)
     .post('/api/v1/identity/enrollments/claim%3Ae2e/complete', (call) => {
       expect(call.body).toMatchObject({ mode: 'bound', challenge: 'challenge:e2e', code: '123456', password: 'SecurePassword1!', displayName: '验收员工', termsAccepted: true, termsHash, authorization: { state: expect.any(String), nonce: expect.any(String), challenge: expect.any(String) } });
@@ -309,8 +309,7 @@ test('受邀员工以绑定手机号完成 OTP 与密码注册且不能改写身
     }, 201);
   await api.install();
 
-  await page.goto(`${LOCAL_AUTH_ORIGIN}/login?target=storefront`);
-  await page.getByRole('tab', { name: '邀请码登录' }).click();
+  await page.goto(`${LOCAL_AUTH_ORIGIN}/invitation?target=storefront`);
   await page.getByLabel('企业邀请码').fill('ABCD EFGH JKMN PQRS TVWX YZ12 3456 7890');
   await page.getByRole('checkbox', { name: /我已阅读并同意/ }).check();
   await page.getByRole('button', { name: '使用邀请码登录' }).click();

@@ -1,6 +1,6 @@
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
-import type { Schema } from '@shop/contract';
-import { ApiError } from './error';
+import type { ApiErrorCode, OperationId, Schema } from '@shop/contract';
+import { ApiError, TransportError } from './error';
 import { errorCause } from './ErrorCause';
 import type { StreamTransportResponse } from './Transport';
 
@@ -35,6 +35,8 @@ export class JsonEventStream<T> implements EventStream<T> {
   constructor(
     private readonly connect: EventConnector,
     private readonly schema: Schema<T>,
+    private readonly operation: OperationId,
+    private readonly errorUnion: readonly ApiErrorCode[],
     initialLastEventId?: string,
     signal?: AbortSignal
   ) {
@@ -59,7 +61,7 @@ export class JsonEventStream<T> implements EventStream<T> {
       try {
         const response = await this.open();
         if (response.status < 200 || response.status >= 300 || response.stream === undefined) {
-          const error = ApiError.from(response.status, response.body ?? '', response.headers['x-request-id'] ?? 'stream');
+          const error = ApiError.from(response.status, response.body ?? '', response.headers['x-request-id'] ?? 'stream', this.operation, this.errorUnion);
           if (error.code === 'SUPPORT_EVENT_CURSOR_EXPIRED') throw new EventStreamResyncError(this.lastEventId, { cause: error });
           if (!error.retryable && response.status < 500) throw error;
           throw error;
@@ -73,19 +75,19 @@ export class JsonEventStream<T> implements EventStream<T> {
           try {
             decoded = JSON.parse(frame.data);
           } catch (cause) {
-            throw ApiError.contractResponse(response.headers['x-request-id'] ?? 'stream', cause);
+            throw ApiError.contractResponse(response.headers['x-request-id'] ?? 'stream', cause, this.operation);
           }
           try {
             yield this.schema.parse(decoded);
           } catch (cause) {
-            throw ApiError.contractResponse(response.headers['x-request-id'] ?? 'stream', cause);
+            throw ApiError.contractResponse(response.headers['x-request-id'] ?? 'stream', cause, this.operation);
           }
         }
       } catch (cause) {
         if (this.lifetime.signal.aborted) return;
         if (cause instanceof EventStreamResyncError) throw cause;
         if (cause instanceof ApiError && !cause.retryable) throw cause;
-        if (cause instanceof Error && ['SDK_STREAM_EVENT_TOO_LARGE', 'SDK_STREAM_CONTENT_TYPE_INVALID', 'SDK_STREAM_BODY_MISSING'].includes(cause.message)) throw cause;
+        if (cause instanceof TransportError && !cause.retryable) throw cause;
         attempt += 1;
       }
       await delay(reconnectDelay(this.retryMilliseconds, attempt), this.lifetime.signal);
@@ -166,7 +168,9 @@ function parseFrame(raw: string): EventFrame {
 }
 
 function assertFrameSize(value: string): void {
-  if (new TextEncoder().encode(value).byteLength > RUNTIME_LIMITS.stream.maximumEventBytes) throw new Error('SDK_STREAM_EVENT_TOO_LARGE');
+  if (new TextEncoder().encode(value).byteLength > RUNTIME_LIMITS.stream.maximumEventBytes) {
+    throw new TransportError('CONTRACT_INVALID', undefined, false);
+  }
 }
 
 function clampRetry(value: number): number {

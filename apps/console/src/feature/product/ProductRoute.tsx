@@ -1,9 +1,10 @@
+import { queryCondition, presentError, safeQueryError } from '@shop/presentation';
 import { ResourceState } from '@shop/design';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { queryCondition, safeQueryError } from '../../shared/presentation/QueryState';
+
 import { ProductCatalogHeader } from './ProductCatalogHeader';
 import { ProductActionDialog, PoolDialog, type ProductAction } from './ProductActions';
 import { setListingsPublication } from './ProductCommand';
@@ -169,7 +170,7 @@ export function Component() {
             )}
             {batch.error === null ? null : (
               <p role="alert" className="productflowerror">
-                {batch.error.message}
+                {presentError(batch.error).message}
               </p>
             )}
             <ProductTable

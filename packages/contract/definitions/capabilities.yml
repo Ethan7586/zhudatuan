@@ -23,6 +23,11 @@ capabilities:
     owner: navigation
     permission: runtime.health.read
     audience: system
+  - code: identity.bootstrap.read
+    kind: operation
+    owner: identity
+    permission: null
+    audience: public
   - code: identity.providers.read
     kind: operation
     owner: identity

@@ -1,4 +1,5 @@
 import { CheckSquare, Minus, Plus, ShoppingCart, Square, Trash2 } from 'lucide-react';
+import { hasFailureCode, presentError } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useCheckoutRuntime } from '../application/CheckoutRuntime';
 import { ProductMedia } from '../../../shared/ui/ProductMedia';
@@ -11,7 +12,6 @@ import { STOREFRONT_WEB_SURFACE_COPY, type StorefrontWebSurface } from '../../..
 import { AddressPanel } from './AddressPanel';
 import { OrderSummary } from './OrderSummary';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
-import { productionError } from '../../../shared/failure/Failure';
 import { useState } from 'react';
 import { StorefrontStepup } from '../../security/public';
 
@@ -34,9 +34,8 @@ export function CheckoutPage({ onSelectTab, surface = 'standard' }: { readonly o
     try {
       await storefront.checkoutSelectedCart(selectedAddress?.id);
     } catch (cause) {
-      const failure = productionError(cause);
-      if (failure.code === 'STEPUP_REQUIRED') setVerification(true);
-      else storefront.showToast(failure.message || '结算失败，请刷新后重试', 'error');
+      if (hasFailureCode(cause, 'STEPUP_REQUIRED')) setVerification(true);
+      else storefront.showToast(presentError(cause).message, 'error');
     }
   };
   return (

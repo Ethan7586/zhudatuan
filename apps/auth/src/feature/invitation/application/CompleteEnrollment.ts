@@ -1,7 +1,14 @@
-import type { EnrollmentCompletion } from '../../../entity/authentication/AuthClient';
-import type { InvitationGateway } from '../infrastructure/InvitationGateway';
+import type { EnrollmentCompletion } from '../model/Enrollment';
+import type { InvitationPort } from '../public/InvitationPort';
 
 export class CompleteEnrollment {
-  constructor(private readonly gateway: InvitationGateway) {}
-  execute(input: EnrollmentCompletion, signal?: AbortSignal) { return this.gateway.complete(input, signal); }
+  private readonly active = new Map<string, Promise<Awaited<ReturnType<InvitationPort['complete']>>>>();
+  constructor(private readonly port: InvitationPort) {}
+  execute(input: EnrollmentCompletion, signal?: AbortSignal) {
+    const current = this.active.get(input.id);
+    if (current) return current;
+    const operation = this.port.complete(input, signal).finally(() => this.active.delete(input.id));
+    this.active.set(input.id, operation);
+    return operation;
+  }
 }

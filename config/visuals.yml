@@ -75,12 +75,13 @@ navigationTitles:
     utility: [我的订单, 客服中心, 登录 / 注册, 购物车]
 surfaces:
   auth:
-    source: apps/auth-web/src/screens/LoginPage.tsx
+    source: apps/auth/src/route/Router.tsx
     routes:
-      - { route: /, baseline: authlogin, states: [loading, error, expired, success] }
+      - { route: /, baseline: authlogin, states: [loading, empty, error, denied, expired, partial, success] }
       - { route: /invitation, baseline: authinvitation, states: [loading, error, expired, success] }
-      - { route: /membership, baseline: authmembership, states: [loading, error, success] }
+      - { route: /membership, baseline: authmembership, states: [loading, empty, error, expired, success] }
       - { route: /callback, baseline: authcallback, states: [loading, error, success] }
+      - { route: /link, baseline: authlink, states: [error, success] }
   console:
     source: apps/console/src
     routes:

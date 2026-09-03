@@ -1,9 +1,10 @@
+import { queryCondition, safeQueryError } from '@shop/presentation';
 import { Button, ResourcePanel } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { queryCondition, safeQueryError } from '../../shared/presentation/QueryState';
+
 import { pageCursor } from '../../shared/url/PageCursor';
 import { ExperienceRecordDrawer } from './ExperienceDialogs';
 import { ExperienceActionDialog, type ExperienceAction } from './ExperienceActions';

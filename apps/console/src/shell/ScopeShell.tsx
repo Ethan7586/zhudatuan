@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ConsoleScopeKind } from '@shop/authz';
+import { presentError } from '@shop/presentation';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Outlet, useLoaderData, useLocation, useNavigate, useNavigation } from 'react-router';
 import { ConsoleContextProvider } from '../entity/session/ConsoleContext';
 import { StepupProvider } from '../entity/session/StepupContext';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
-import { appConfig } from '../shared/config/AppConfig';
+import { consoleAuthUrl } from '../shared/url/AuthUrl';
 import type { RouteRegistryContract } from '../shared/manifest/ComponentManifest';
 import { clearConsoleNavigation } from '../shared/navigation/NavigationQuery';
 import { scopePath } from '../shared/url/ScopePath';
@@ -51,7 +52,7 @@ export function ScopeShell({ registry }: Readonly<{ registry: RouteRegistryContr
     onSettled: () => {
       clearConsoleNavigation();
       queryClient.clear();
-      window.location.assign(`${appConfig.authBaseUrl}/login?target=console`);
+      window.location.assign(consoleAuthUrl());
     },
   });
   const disableStepup = useMutation({
@@ -218,5 +219,5 @@ function scopeSuffix(pathname: string): string {
 }
 
 function safeStepupError(cause: Error): string {
-  return cause.message === 'STEPUP_DISABLE_INVALID' ? '二次验证状态未能关闭，请重试。' : '关闭二次验证失败，请重试。';
+  return presentError(cause).message;
 }

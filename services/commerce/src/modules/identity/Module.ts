@@ -37,6 +37,7 @@ import { TestIdentityProvider } from './application/service/TestIdentityProvider
 import { ReadEnrollment } from './application/service/ReadEnrollment';
 import { ReadInvitations } from './application/service/ReadInvitations';
 import { ReadIdentityLinks } from './application/service/ReadIdentityLinks';
+import { ReadIdentityBootstrap } from './application/service/ReadIdentityBootstrap';
 import { ReadIdentityProviders } from './application/service/ReadIdentityProviders';
 import { ReadMembershipSelection } from './application/service/ReadMembershipSelection';
 import { ReadSession } from './application/service/ReadSession';
@@ -122,6 +123,7 @@ import { MobileManageHandler } from './application/handler/MobileManageHandler';
 import { StepUpStartHandler } from './application/handler/StepUpStartHandler';
 import { StepUpCompleteHandler } from './application/handler/StepUpCompleteHandler';
 import { StepUpDisableHandler } from './application/handler/StepUpDisableHandler';
+import { BootstrapReadHandler } from './application/handler/BootstrapReadHandler';
 import { ProvidersReadHandler } from './application/handler/ProvidersReadHandler';
 import { FederationStartHandler } from './application/handler/FederationStartHandler';
 import { FederationCallbackHandler } from './application/handler/FederationCallbackHandler';
@@ -221,7 +223,7 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
     new SessionDeleteHandler(revocation.current()),
     new SessionsReadHandler(new ReadSessions(sessionRepository).action()),
     new SessionsRevokeHandler(revocation.selected()),
-    new MembershipsReadHandler(new ReadMemberships(members, identityAccess, context.ports.get(IDENTITY_ORGANIZATION_PORT)).action()),
+    new MembershipsReadHandler(new ReadMemberships(members, identityAccess).action()),
     new MembershipsSwitchHandler(new SwitchMembership(members, identityAccess, sessions, sessionRepository, events).action()),
     new ChallengesCreateHandler(challengeCommands.lifecycle()),
     new MobileChallengesCreateHandler(challengeCommands.mobile()),
@@ -275,6 +277,7 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
     new StepUpStartHandler(stepup.start()),
     new StepUpCompleteHandler(stepup.complete()),
     new StepUpDisableHandler(stepup.disable()),
+    new BootstrapReadHandler(new ReadIdentityBootstrap(returns, registrations).action()),
     new ProvidersReadHandler(new ReadIdentityProviders(providers, returns).action()),
     new FederationStartHandler(new StartFederation(federation).lifecycle()),
     new FederationCallbackHandler(new CompleteFederation(federation).lifecycle()),

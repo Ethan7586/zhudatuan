@@ -16,6 +16,7 @@
     "packages/contract",
     "packages/design",
     "packages/kernel",
+    "packages/presentation",
     "packages/sdk",
     "packages/telemetry",
     "packages/testing",

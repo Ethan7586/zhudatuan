@@ -32,7 +32,7 @@ describe('HttpApp contract handshake', () => {
     );
     expect(response.status).toBe(426);
     expect(response.headers.get('x-contract-version')).toBe(CONTRACT_VERSION);
-    expect(await response.json()).toMatchObject({ code: 'CONTRACT_VERSION_UNSUPPORTED', required: CONTRACT_VERSION });
+    expect(await response.json()).toMatchObject({ code: 'CONTRACT_VERSION_UNSUPPORTED', retryable: false });
   });
 
   it('allows the exact generated contract version', async () => {
@@ -251,7 +251,7 @@ describe('HttpApp contract handshake', () => {
       })
     );
     expect(response.status).toBe(401);
-    expect(await response.json()).toMatchObject({ code: 'CREDENTIAL_INVALID', message: 'CREDENTIAL_INVALID', requestId: expect.any(String) });
+    expect(await response.json()).toMatchObject({ code: 'CREDENTIAL_INVALID', message: 'REQUEST_FAILED', requestId: expect.any(String) });
   });
 
   it('fails closed when a handler returns an undeclared status and code pair', async () => {

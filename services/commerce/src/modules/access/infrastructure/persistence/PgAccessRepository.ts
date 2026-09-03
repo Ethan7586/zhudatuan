@@ -62,18 +62,8 @@ export class PgAccessRepository extends PgAccessGovernanceRepository implements 
           and override.revoked_at is null and override.effective_at<=clock_timestamp()
           and (override.expires_at is null or override.expires_at>clock_timestamp())
       ) overrideitems on true
-      where (
-        exists(select 1 from organization.unitclosure governed
-          where governed.ancestor_id=$1 and governed.descendant_id=membership.organization_id)
-        or exists(select 1 from access.scopegrant allowed
-          join organization.unitclosure granted on granted.ancestor_id=allowed.scope_id and granted.descendant_id=$1
-          where allowed.membership_id=membership.id and allowed.effect='allow'
-            and allowed.effective_at<=clock_timestamp() and (allowed.expires_at is null or allowed.expires_at>clock_timestamp())
-            and not exists(select 1 from access.scopegrant denied
-              join organization.unitclosure blocked on blocked.ancestor_id=denied.scope_id and blocked.descendant_id=$1
-              where denied.membership_id=membership.id and denied.effect='deny'
-                and denied.effective_at<=clock_timestamp() and (denied.expires_at is null or denied.expires_at>clock_timestamp())))
-      ) and ($2::text is null or membership.id>$2)
+      where access.membership_visible_to($1,membership.id)
+        and ($2::text is null or membership.id>$2)
       order by membership.id limit $3`,
       [input.organization, input.after, input.limit]
     );

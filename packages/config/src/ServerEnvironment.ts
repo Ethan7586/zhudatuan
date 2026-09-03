@@ -7,7 +7,6 @@ export * from './MigrationEnvironment';
 export * from './Network';
 export * from './Navigation';
 export * from './IdentityProvider';
-export * from './OidcProvider';
 export * from './ProviderEnvironment';
 export * from './ProviderWorkerEnvironment';
 export * from './Release';

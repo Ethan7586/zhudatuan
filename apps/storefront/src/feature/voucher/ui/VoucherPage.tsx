@@ -1,7 +1,7 @@
 import { CircleAlert, History, LoaderCircle, TicketCheck } from 'lucide-react';
+import { hasFailureCode, presentError } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { productionError } from '../../../shared/failure/Failure';
 import { useSession } from '../../../shared/runtime/SessionContext';
 import { StorefrontStepup } from '../../security/public';
 import { readVouchers } from '../application/ReadVouchers';
@@ -22,10 +22,11 @@ export function VoucherPage() {
     enabled: session.status === 'authenticated',
     retry: false,
   });
-  const failure = query.error ? productionError(query.error) : null;
+  const stepup = hasFailureCode(query.error, 'STEPUP_REQUIRED');
+  const failureView = query.error ? presentError(query.error) : null;
   useEffect(() => {
-    if (failure?.code === 'STEPUP_REQUIRED') setVerification(true);
-  }, [failure?.code]);
+    if (stepup) setVerification(true);
+  }, [stepup]);
   return (
     <section className="sw-web-container mx-auto max-w-[1200px] px-3 py-5 text-xs">
       <StorefrontStepup
@@ -41,13 +42,13 @@ export function VoucherPage() {
         <h1 className="mt-1 text-xl font-black">卡券中心</h1>
         <p className="mt-1 text-gray-500">展示服务端绑定卡券、剩余金额、有效期及真实核销记录。</p>
       </header>
-      {failure && failure.code !== 'STEPUP_REQUIRED' ? (
+      {query.error && !stepup ? (
         <div role="alert" className="mb-3 flex items-center gap-2 rounded-lg bg-red-50 p-3 font-bold text-red-700">
           <CircleAlert size={16} />
-          {failure.message}
+          {failureView?.message}
         </div>
       ) : null}
-      {failure?.code === 'STEPUP_REQUIRED' ? (
+      {stepup ? (
         <div role="status" className="mb-3 rounded-lg bg-blue-50 p-3 font-bold text-blue-800">
           完成二次验证后即可查看敏感的卡券核销记录。
         </div>

@@ -11,3 +11,14 @@ export interface EnrollmentState {
   readonly employee?: Readonly<{ displayName: string; employeeNo?: string; departmentName?: string }>;
   readonly policy: RegistrationPolicy;
 }
+
+export interface EnrollmentCompletion {
+  readonly id: string;
+  readonly subjectMode: EnrollmentState['subjectMode'];
+  readonly subject?: string;
+  readonly challenge: string;
+  readonly code: string;
+  readonly termsHash: string;
+  readonly password: string;
+  readonly displayName?: string;
+}

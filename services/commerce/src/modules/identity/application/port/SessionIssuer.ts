@@ -9,6 +9,7 @@ export interface SessionIssue {
   readonly peer: string;
   readonly agent: string;
   readonly trace: string;
+  readonly expectedAccessVersion?: number;
 }
 export interface IssuedSession {
   readonly session: string;

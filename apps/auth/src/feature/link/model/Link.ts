@@ -1,0 +1,9 @@
+export interface LinkGuidance {
+  readonly title: string;
+  readonly detail: string;
+}
+
+export const LINK_GUIDANCE: LinkGuidance = Object.freeze({
+  title: '需要确认身份关联',
+  detail: '检测到已有身份或绑定冲突。系统不会自动合并账号，请联系企业管理员完成强验证与人工确认。',
+});

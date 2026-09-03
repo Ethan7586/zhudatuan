@@ -12,7 +12,7 @@ if (!manifest.eligibility?.derived || typeof manifest.eligibility.source !== 'st
 assertExact('APPLICATION', [...manifest.applications].sort(), workspaceDirectories('apps'));
 assertExact('SERVICE', [manifest.service], workspaceDirectories('services'));
 
-const selected = [...manifest.applications, manifest.service, manifest.database, ...manifest.extensions, manifest.eligibility.source];
+const selected = [...manifest.applications, manifest.service, manifest.database, ...(manifest.shared ?? []), ...manifest.extensions, manifest.eligibility.source];
 for (const path of selected) {
   if (!existsSync(join(repositoryRoot, path))) throw new Error(`SELECTED_ARTIFACT_MISSING:${path}`);
 }

@@ -4,6 +4,7 @@ export * from './IdentityInput';
 export * from './HttpContract';
 export * from './DeepLinkContract';
 export * from './ErrorContract';
+export * from './ErrorSchema';
 export * from './EventContract';
 export * from './EventSerializer';
 export * from './ExperienceContract';

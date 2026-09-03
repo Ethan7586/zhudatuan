@@ -21,6 +21,8 @@ describe('SDK client artifacts', () => {
       expect(source).not.toContain('OPERATION_SCHEMAS');
       expect(source).not.toContain('call<T');
     }
+    expect(artifacts.join('\n')).toContain('exactOperationInput');
+    expect(artifacts.join('\n')).toContain('errorUnion');
   });
 });
 

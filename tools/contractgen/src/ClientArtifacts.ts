@@ -158,6 +158,14 @@ export function sdkDomainSources(values: readonly OperationDefinition[]): Readon
   return new Map([...groupOperations(values)].map(([domain, operations]) => [domain, sdkDomainSource(domain, operations)]));
 }
 
+export function identityClientSchemaSource(values: readonly OperationDefinition[]): string {
+  const rows = values
+    .filter(({ id }) => id.startsWith('identity.'))
+    .map((operation) => `  ${JSON.stringify(operation.id)}: Object.freeze({ input: identityInputSchema(${JSON.stringify(operation.requestSchema)}, ${JSON.stringify(pathKeys(operation.path))}, ${operation.method !== 'GET'}), output: identityOutputSchema(${JSON.stringify(operation.responseSchema)}) }),`)
+    .join('\n');
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId, OperationInputFor, OperationOutputFor, Schema } from '..';\nimport { identityInputSchema } from '../schema/IdentityInputSchema';\nimport { SECURITY_OUTPUT_SCHEMAS } from '../schema/AccessSchema';\nimport { IDENTITY_OUTPUT_SCHEMAS } from '../schema/IdentitySchema';\n\nconst outputs = Object.freeze({ ...SECURITY_OUTPUT_SCHEMAS, ...IDENTITY_OUTPUT_SCHEMAS });\nconst schemas = Object.freeze({\n${rows}\n});\nexport type IdentityOperationId = Extract<OperationId, \`identity.\${string}\`>;\nexport function identityClientSchema<TKey extends IdentityOperationId>(id: TKey): Readonly<{ input: Schema<OperationInputFor<TKey>>; output: Schema<OperationOutputFor<TKey>> }> {\n  const pair = schemas[id];\n  if (pair === undefined) throw new Error('IDENTITY_OPERATION_SCHEMA_MISSING');\n  return pair as unknown as Readonly<{ input: Schema<OperationInputFor<TKey>>; output: Schema<OperationOutputFor<TKey>> }>;\n}\nfunction identityOutputSchema(name: string): Schema<unknown> {\n  const schema = Reflect.get(outputs, name) as Schema<unknown> | undefined;\n  if (schema === undefined) throw new Error(\`IDENTITY_OUTPUT_SCHEMA_MISSING:\${name}\`);\n  return schema;\n}\n`;
+}
+
 function sdkDomainSource(domain: string, operations: readonly OperationDefinition[]): string {
   const name = typeName(domain);
   const ids = operations.map(({ id }) => `  ${JSON.stringify(id)},`).join('\n');
@@ -177,13 +185,22 @@ function sdkDomainSource(domain: string, operations: readonly OperationDefinitio
         responseMode: operation.responseMode,
         idempotent: operation.idempotent,
         timeout: operation.timeout,
+        errorUnion: operation.errorUnion,
       });
       const operationMethod = operation.responseMode === 'stream' ? 'EventOperationMethod' : 'OperationMethod';
       const binder = operation.responseMode === 'stream' ? 'bindEventOperation' : 'bindOperation';
-      return `export function createFetch${name}${method}(baseUrl: string): ${operationMethod}<${JSON.stringify(operation.id)}> { return bind${method}(new ApiClient(baseUrl, new FetchTransport())); }\n\nfunction bind${method}(client: OperationExecutor): ${operationMethod}<${JSON.stringify(operation.id)}> { return ${binder}(client, defineOperation(${descriptor})); }`;
+      const schema =
+        domain === 'identity'
+          ? `, ...identityClientSchema(${JSON.stringify(operation.id)})`
+          : `, input: exactOperationInput(${JSON.stringify(operation.requestSchema)}, ${JSON.stringify(pathKeys(operation.path))} as const, ${operation.method !== 'GET'}), output: exactOperationOutput(${JSON.stringify(operation.responseSchema)})`;
+      return `export function createFetch${name}${method}(baseUrl: string): ${operationMethod}<${JSON.stringify(operation.id)}> { return bind${method}(new ApiClient(baseUrl, new FetchTransport())); }\n\nfunction bind${method}(client: OperationExecutor): ${operationMethod}<${JSON.stringify(operation.id)}> { return ${binder}(client, ${domain === 'identity' ? 'defineScopedOperation' : 'defineOperation'}({ ...${descriptor}${schema} })); }`;
     })
     .join('\n\n');
-  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport { ApiClient } from '../ApiClient';\nimport { FetchTransport } from '../FetchTransport';\nimport { bindEventOperation, bindOperation, defineOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';\n\nexport const ${domain.toUpperCase()}_OPERATION_IDS = Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface ${name}Operations {\n${methods}\n}\n\nexport function createFetch${name}(baseUrl: string): ${name}Operations { return create${name}Operations(new ApiClient(baseUrl, new FetchTransport())); }\n\nexport function create${name}Operations(client: OperationExecutor): ${name}Operations { return Object.freeze({\n${bindings}\n  }); }\n\n${factories}\n`;
+  const schemaImport =
+    domain === 'identity'
+      ? `import { identityClientSchema } from '@shop/contract/identityschema';\nimport { defineScopedOperation } from '../ScopedOperationDescriptor';`
+      : `import { exactOperationInput, exactOperationOutput } from '@shop/contract/schema';\nimport { defineOperation } from '../CatalogOperationDescriptor';`;
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport { ApiClient } from '../ApiClient';\nimport { FetchTransport } from '../FetchTransport';\nimport { bindEventOperation, bindOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';\n${schemaImport}\n\nexport const ${domain.toUpperCase()}_OPERATION_IDS = Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface ${name}Operations {\n${methods}\n}\n\nexport function createFetch${name}(baseUrl: string): ${name}Operations { return create${name}Operations(new ApiClient(baseUrl, new FetchTransport())); }\n\nexport function create${name}Operations(client: OperationExecutor): ${name}Operations { return Object.freeze({\n${bindings}\n  }); }\n\n${factories}\n`;
 }
 
 function requestSchema(operation: OperationDefinition): unknown {

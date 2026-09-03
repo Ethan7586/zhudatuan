@@ -1,10 +1,9 @@
-import { Button, Form } from '@shop/design';
 import { useEffect, useMemo, useRef } from 'react';
-import { clearSecretInput, SecretState } from '../../../shared/security/SecretState';
+import { clearSecretInput, Secret } from '../../../shared/security/Secret';
 
 export function InvitationProof({ busy, method, onSubmit }: Readonly<{ busy: boolean; method: 'otp' | 'sso'; onSubmit: (code: string) => Promise<void> }>) {
   const input = useRef<HTMLInputElement>(null);
-  const secret = useMemo(() => new SecretState(), []);
+  const secret = useMemo(() => new Secret(), []);
   useEffect(() => {
     input.current?.focus();
     return () => clearSecretInput(input.current, secret);
@@ -20,10 +19,10 @@ export function InvitationProof({ busy, method, onSubmit }: Readonly<{ busy: boo
     }
   };
   return (
-    <Form label="邀请码安全验证" className="invitationproofform" onSubmit={(event) => void submit(event)}>
+    <form aria-label="邀请码安全验证" className="invitationproofform" onSubmit={(event) => void submit(event)}>
       <label htmlFor="invitationProof">短信验证码</label>
       <input ref={input} id="invitationProof" onChange={(event) => secret.set(event.currentTarget.value.replace(/\D/g, '').slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="输入 6 位验证码" disabled={busy} />
-      <Button type="submit" tone="primary" isDisabled={busy}>{busy ? '验证中…' : '完成安全验证'}</Button>
-    </Form>
+      <button className="authprimary" type="submit" disabled={busy}>{busy ? '验证中…' : '完成安全验证'}</button>
+    </form>
   );
 }

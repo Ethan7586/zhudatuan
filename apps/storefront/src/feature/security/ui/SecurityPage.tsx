@@ -1,7 +1,7 @@
 import { CircleAlert, KeyRound, LoaderCircle, LogOut, ShieldCheck, Smartphone } from 'lucide-react';
+import { hasFailureCode, presentError } from '@shop/presentation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState, type FormEvent } from 'react';
-import { productionError } from '../../../shared/failure/Failure';
 import { useSession } from '../../../shared/runtime/SessionContext';
 import { ChangeMobile } from '../application/ChangeMobile';
 import { ChangePassword } from '../application/ChangePassword';
@@ -35,11 +35,10 @@ export function SecurityPage() {
       success?.();
       await refresh();
     } catch (cause) {
-      const failure = productionError(cause);
-      if (failure.code === 'STEPUP_REQUIRED') {
+      if (hasFailureCode(cause, 'STEPUP_REQUIRED')) {
         retryAction.current = () => run(key, action, success);
         setVerification(true);
-      } else setError(failure.message);
+      } else setError(presentError(cause).message);
     } finally {
       setBusy(null);
     }

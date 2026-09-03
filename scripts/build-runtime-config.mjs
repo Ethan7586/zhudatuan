@@ -11,7 +11,8 @@ const cache = parse(await readFile(resolve(root, 'config/cache.yml'), 'utf8'));
 const capacity = parse(await readFile(resolve(root, 'config/capacity.yml'), 'utf8'));
 const telemetry = parse(await readFile(resolve(root, 'config/telemetry.yml'), 'utf8'));
 const network = parse(await readFile(resolve(root, 'infrastructure/network/Edge.yml'), 'utf8'));
-validate(cache, capacity, telemetry, network);
+const identity = parse(await readFile(resolve(root, 'config/identityproviders.yml'), 'utf8'));
+validate(cache, capacity, telemetry, network, identity);
 
 const source =
   `// Generated from config/cache.yml and config/capacity.yml. Do not edit.\n` +
@@ -40,7 +41,46 @@ const networkSource =
   `export const NETWORK_CATALOG = Object.freeze(${JSON.stringify({ origins, storefront: { entryPath: network.routes.storefront.entryPath, fallback: network.routes.storefront.fallback } }, null, 2)} as const);\n`;
 await emit(resolve(root, 'packages/config/src/NetworkCatalog.ts'), networkSource);
 
-function validate(cacheDocument, capacityDocument, telemetryDocument, networkDocument) {
+const providerTypes = Object.keys(identity.types).sort();
+const providerSource =
+  `// Generated from config/identityproviders.yml and infrastructure/network/Edge.yml. Do not edit.\n` +
+  `export const IDENTITY_PROVIDER_CHECKSUM = '${createHash('sha256').update(JSON.stringify({ identity, auth: origins.auth })).digest('hex')}' as const;\n\n` +
+  `export const IDENTITY_PROVIDER_TYPES = Object.freeze(${JSON.stringify(providerTypes)} as const);\n` +
+  `export type IdentityProviderType = (typeof IDENTITY_PROVIDER_TYPES)[number];\n\n` +
+  `export const IDENTITY_PROVIDER_CONFIGURATION = Object.freeze({\n` +
+  `  schemaVersion: ${identity.version},\n` +
+  `  callbackOrigin: '${origins.auth}',\n` +
+  `  discoveryPath: '${identity.security.discoveryPath}',\n` +
+  `  discoveryTtlSeconds: ${identity.security.discoveryTtlSeconds},\n` +
+  `  jwksTtlSeconds: ${identity.security.jwksTtlSeconds},\n` +
+  `  clockSkewSeconds: ${identity.security.clockSkewSeconds},\n` +
+  `  transactionTtlSeconds: ${identity.security.transactionTtlSeconds},\n` +
+  `  ticketTtlSeconds: ${identity.security.ticketTtlSeconds},\n` +
+  `  preauthTtlSeconds: ${identity.security.preauthTtlSeconds},\n` +
+  `  pkce: '${identity.security.pkce}',\n` +
+  `  stateBytes: ${identity.security.stateBytes},\n` +
+  `  nonceBytes: ${identity.security.nonceBytes},\n` +
+  `  maximumProviders: ${identity.security.maximumProviders},\n` +
+  `  maximumScopes: ${identity.security.maximumScopes},\n` +
+  `  maximumResponseBytes: ${identity.security.maximumResponseBytes},\n` +
+  `  retryAttempts: ${identity.security.retryAttempts},\n` +
+  `  allowedAlgorithms: Object.freeze(${JSON.stringify(identity.security.allowedAlgorithms)} as const),\n` +
+  `  typePolicies: Object.freeze(${JSON.stringify(identity.types, null, 2)} as const),\n` +
+  `  secretReference: new RegExp(${JSON.stringify(identity.security.secretReference)}),\n` +
+  `});\n\n` +
+  `export function identityCallback(provider: string): string {\n` +
+  `  if (!/^[0-9a-f-]{36}$/.test(provider)) throw new Error('IDENTITY_PROVIDER_ID_INVALID');\n` +
+  `  return \`${'${IDENTITY_PROVIDER_CONFIGURATION.callbackOrigin}'}/api/v1/identity/federations/${'${provider}'}/callback\`;\n` +
+  `}\n\n` +
+  `export function oidcIssuer(value: string): string {\n` +
+  `  let issuer: URL;\n` +
+  `  try { issuer = new URL(value); } catch { throw new Error('OIDC_ISSUER_INVALID'); }\n` +
+  `  if (issuer.protocol !== 'https:' || issuer.username || issuer.password || issuer.search || issuer.hash || (issuer.port && issuer.port !== '443')) throw new Error('OIDC_ISSUER_INVALID');\n` +
+  `  return issuer.toString().replace(/\\\/$/, '');\n` +
+  `}\n`;
+await emit(resolve(root, 'packages/config/src/IdentityProvider.ts'), providerSource);
+
+function validate(cacheDocument, capacityDocument, telemetryDocument, networkDocument, identityDocument) {
   if (cacheDocument?.version !== 1 || cacheDocument.owner !== 'platform' || typeof cacheDocument.caches !== 'object') throw new Error('CACHE_CATALOG_INVALID');
   for (const [name, value] of Object.entries(cacheDocument.caches)) {
     if (
@@ -93,8 +133,79 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
   ) {
     throw new Error('NETWORK_CATALOG_INVALID');
   }
+  const headers = networkDocument.headers;
+  const authCsp = headers?.auth?.contentSecurityPolicy;
+  const apiCsp = headers?.api?.contentSecurityPolicy;
+  if (
+    headers?.hsts !== 'max-age=63072000; includeSubDomains' ||
+    headers?.contentTypeOptions !== 'nosniff' ||
+    headers?.crossOriginOpenerPolicy !== 'same-origin' ||
+    headers?.permissions !== 'camera=(), microphone=(), geolocation=()' ||
+    headers?.referrer !== 'no-referrer' ||
+    JSON.stringify(apiCsp?.default) !== JSON.stringify(['none']) ||
+    JSON.stringify(apiCsp?.frameAncestors) !== JSON.stringify(['none']) ||
+    JSON.stringify(authCsp?.default) !== JSON.stringify(['none']) ||
+    JSON.stringify(authCsp?.script) !== JSON.stringify(['self']) ||
+    JSON.stringify(authCsp?.style) !== JSON.stringify(['self']) ||
+    JSON.stringify(authCsp?.image) !== JSON.stringify(['self', 'data']) ||
+    JSON.stringify(authCsp?.font) !== JSON.stringify(['self']) ||
+    JSON.stringify(authCsp?.connectRoutes) !== JSON.stringify(['api']) ||
+    JSON.stringify(authCsp?.formAction) !== JSON.stringify(['self']) ||
+    JSON.stringify(authCsp?.base) !== JSON.stringify(['none']) ||
+    JSON.stringify(authCsp?.object) !== JSON.stringify(['none']) ||
+    JSON.stringify(authCsp?.frameAncestors) !== JSON.stringify(['none']) ||
+    authCsp?.upgradeInsecureRequests !== true
+  ) {
+    throw new Error('NETWORK_SECURITY_HEADERS_INVALID');
+  }
+  const identityTypes = identityDocument?.types;
+  const identitySecurity = identityDocument?.security;
+  const expectedTypes = ['oidc', 'wechat', 'wecomcorp', 'wecomsuite'];
+  if (
+    identityDocument?.version !== 2 ||
+    identityDocument.owner !== 'identity' ||
+    typeof identityTypes !== 'object' ||
+    Object.keys(identityTypes).sort().join(',') !== expectedTypes.join(',') ||
+    typeof identitySecurity !== 'object' ||
+    identitySecurity.discoveryPath !== '/.well-known/openid-configuration' ||
+    identitySecurity.pkce !== 'S256' ||
+    identitySecurity.secretReference !== '^[a-z][a-z0-9./]{2,127}$' ||
+    !Array.isArray(identitySecurity.allowedAlgorithms) ||
+    identitySecurity.allowedAlgorithms.join(',') !== 'RS256,ES256'
+  ) {
+    throw new Error('IDENTITY_PROVIDER_CATALOG_INVALID');
+  }
+  for (const [name, policy] of Object.entries(identityTypes)) {
+    if (!expectedTypes.includes(name) || !Number.isSafeInteger(policy.timeoutMilliseconds) || policy.timeoutMilliseconds < 1 || !Number.isSafeInteger(policy.circuitFailureThreshold) || policy.circuitFailureThreshold < 1 || !Number.isSafeInteger(policy.circuitRecoveryMilliseconds) || policy.circuitRecoveryMilliseconds < 1) {
+      throw new Error(`IDENTITY_PROVIDER_TYPE_INVALID:${name}`);
+    }
+  }
+  for (const name of ['discoveryTtlSeconds', 'jwksTtlSeconds', 'clockSkewSeconds', 'transactionTtlSeconds', 'ticketTtlSeconds', 'preauthTtlSeconds', 'stateBytes', 'nonceBytes', 'maximumProviders', 'maximumScopes', 'maximumResponseBytes', 'retryAttempts']) {
+    if (!Number.isSafeInteger(identitySecurity[name]) || identitySecurity[name] < 1) throw new Error(`IDENTITY_PROVIDER_SECURITY_INVALID:${name}`);
+  }
   const otp = capacityDocument.runtime.authentication.otp;
   if (otp.validMinutes !== 10 || otp.resendSeconds !== 30) throw new Error('OTP_POLICY_INVALID');
+  const authentication = capacityDocument.runtime.authentication;
+  const password = authentication.password;
+  if (
+    !Number.isSafeInteger(authentication.bootstrap?.ttlSeconds) ||
+    authentication.bootstrap.ttlSeconds < 60 ||
+    authentication.bootstrap.ttlSeconds > 900 ||
+    !Number.isSafeInteger(password?.minimumLength) ||
+    !Number.isSafeInteger(password?.maximumLength) ||
+    password.minimumLength < 12 ||
+    password.maximumLength > 128 ||
+    password.minimumLength > password.maximumLength ||
+    !['uppercase', 'lowercase', 'number', 'symbol'].every((name) => typeof password[name] === 'boolean') ||
+    !Number.isSafeInteger(password.maximumConcurrency) ||
+    password.maximumConcurrency < 1 ||
+    password.maximumConcurrency > 32 ||
+    !Number.isSafeInteger(password.maximumQueue) ||
+    password.maximumQueue < password.maximumConcurrency ||
+    password.maximumQueue > 1024
+  ) {
+    throw new Error('AUTHENTICATION_POLICY_INVALID');
+  }
   for (const [name, value] of Object.entries(capacityDocument.runtime.external)) {
     if (!Number.isSafeInteger(value) || value < 1) throw new Error(`EXTERNAL_CAPACITY_INVALID:${name}`);
   }

@@ -106,6 +106,8 @@ const mvpRequirements = requirementSource.mvp.map((definition) => {
   const sourceValues = ['A', 'B', 'C', 'D', 'E', 'F'].map((column) => mvpCells.get(column + row) ?? '');
   const label = sourceValues[1] || sourceValues[0] || definition.title;
   const operations = operationDocument.operations.filter((operation) => operation.requirements.includes(id));
+  const directOperations = [...new Set(definition.directOperations)].sort();
+  const transitiveOperations = [...new Set([...definition.transitiveOperations, ...operations.map(({ id: operation }) => operation).filter((operation) => !directOperations.includes(operation))])].sort();
   const navigation = navigationDocument.nodes.filter((node) => node.requirements.includes(id));
   const releaseBlockers = requirementSource.clarifications.filter(({ requirements, blocking }) => blocking && requirements.includes(id));
   return {
@@ -119,8 +121,11 @@ const mvpRequirements = requirementSource.mvp.map((definition) => {
     providers: definition.providers,
     clarifications: definition.clarifications,
     navigation: navigation.map(({ id: navigationId }) => navigationId),
-    routes: navigation.map(({ route }) => route),
-    operations: [...new Set([...definition.operations, ...operations.map(({ id: operation }) => operation)])].sort(),
+    applicationRoutes: [...new Set(definition.entryRoutes)].sort(),
+    routes: [...new Set([...definition.entryRoutes, ...navigation.map(({ route }) => route)])].sort(),
+    directOperations,
+    transitiveOperations,
+    operations: [...new Set([...directOperations, ...transitiveOperations])].sort(),
     modules: [...new Set([...definition.modules, ...operations.map(({ owner }) => owner)])].sort(),
     tables: definition.tables,
     moduleSources: [...new Set(operations.map(({ owner }) => 'services/commerce/src/modules/' + owner))].sort(),
@@ -272,7 +277,10 @@ const outputs = new Map<string, string>([
           workbookCell: authority.sheet + '!A' + record.row + ':F' + record.row,
           requirement: record.id,
           navigation: record.navigation,
+          applicationRoutes: record.applicationRoutes,
           routes: record.routes,
+          directOperations: record.directOperations,
+          transitiveOperations: record.transitiveOperations,
           operations: record.operations,
           schemas: record.operations.map((operation) => 'packages/contract/definitions/operations.yml#' + operation),
           modules: record.modules,

@@ -1,5 +1,5 @@
 import { DomainError } from '../../../../../foundation/domain/DomainError';
-import { OIDC_PROVIDER_CONFIGURATION } from '@shop/config/server';
+import { IDENTITY_PROVIDER_CONFIGURATION } from '@shop/config/server';
 import { Singleflight } from '../../../../../foundation/performance/Singleflight';
 import type { JsonWebKey as CryptoJsonWebKey } from 'node:crypto';
 import type { ProviderInstance } from '../../../domain/model/ProviderInstance';
@@ -30,7 +30,7 @@ export class OidcClient {
     const body = new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: instance.redirecturi, client_id: credential.clientid, client_secret: credential.secret, code_verifier: verifier });
     const response = await this.client.http.send(metadata.token, { method: 'POST', headers: { accept: 'application/json', 'content-type': 'application/x-www-form-urlencoded' }, body }, { mode: 'none', signal, deadline });
     const value = (await response.json()) as Record<string, unknown>;
-    if (!response.ok || typeof value.id_token !== 'string' || value.id_token.length > OIDC_PROVIDER_CONFIGURATION.maximumResponseBytes) {
+    if (!response.ok || typeof value.id_token !== 'string' || value.id_token.length > IDENTITY_PROVIDER_CONFIGURATION.maximumResponseBytes) {
       throw new DomainError('FEDERATION_CALLBACK_REJECTED');
     }
     return Object.freeze({ idtoken: value.id_token });
@@ -45,7 +45,7 @@ export class OidcClient {
         const body = (await response.json()) as { keys?: unknown };
         if (!response.ok || !Array.isArray(body.keys) || body.keys.length > 100) throw new Error('OIDC_JWKS_INVALID');
         const keys = Object.freeze(body.keys.filter((key): key is OidcJwk => key !== null && typeof key === 'object').map((key) => Object.freeze(key)));
-        this.keys.set(metadata.jwks, Object.freeze({ value: keys, expires: Date.now() + OIDC_PROVIDER_CONFIGURATION.jwksTtlSeconds * 1_000 }));
+        this.keys.set(metadata.jwks, Object.freeze({ value: keys, expires: Date.now() + IDENTITY_PROVIDER_CONFIGURATION.jwksTtlSeconds * 1_000 }));
         return keys;
       },
       { signal, deadline }

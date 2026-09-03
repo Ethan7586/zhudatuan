@@ -1,6 +1,6 @@
 import { CircleCheck, ShieldCheck, X } from 'lucide-react';
+import { presentError, presentFailure } from '@shop/presentation';
 import { useEffect, useState, type FormEvent } from 'react';
-import { productionError } from '../../../shared/failure/Failure';
 import { useSession } from '../../../shared/runtime/SessionContext';
 import { StepupGateway } from '../infrastructure/StepupGateway';
 
@@ -29,7 +29,7 @@ export function StorefrontStepup({ open, onClose, onVerified }: StorefrontStepup
     const controller = new AbortController();
     void StepupGateway.phoneMasked(session.session, controller.signal)
       .then(setPhoneMasked)
-      .catch((cause) => setError(productionError(cause).message));
+      .catch((cause) => setError(presentError(cause).message));
     return () => controller.abort();
   }, [open, session.session]);
   if (!open) return null;
@@ -38,12 +38,12 @@ export function StorefrontStepup({ open, onClose, onVerified }: StorefrontStepup
     setBusy(true);
     setError(null);
     try {
-      if (!session.session) throw new Error('AUTHENTICATION_REQUIRED');
-      if (phoneMasked === null) throw new Error('STEPUP_DESTINATION_MISSING');
+      if (!session.session) return setError(presentFailure({ kind: 'client', code: 'SESSION_CONTEXT_MISSING', retryable: false }).message);
+      if (phoneMasked === null) return setError('当前账号未绑定手机号，请先在安全中心完成绑定。');
       setChallenge((await StepupGateway.start(session.session)).id);
       setCode('');
     } catch (cause) {
-      setError(productionError(cause).message || '验证码发送失败，请稍后重试');
+      setError(presentError(cause).message);
     } finally {
       setBusy(false);
     }
@@ -55,12 +55,12 @@ export function StorefrontStepup({ open, onClose, onVerified }: StorefrontStepup
     setBusy(true);
     setError(null);
     try {
-      if (!session.session) throw new Error('AUTHENTICATION_REQUIRED');
+      if (!session.session) return setError(presentFailure({ kind: 'client', code: 'SESSION_CONTEXT_MISSING', retryable: false }).message);
       const result = await StepupGateway.complete(session.session, challenge, code);
-      if (result.assurance < 3) throw new Error('STEPUP_ASSURANCE_INVALID');
+      if (result.assurance < 3) return setError('身份验证未达到安全要求，请重新获取验证码。');
       onVerified();
     } catch (cause) {
-      setError(productionError(cause).message || '验证失败，请检查验证码后重试');
+      setError(presentError(cause).message);
     } finally {
       setBusy(false);
     }

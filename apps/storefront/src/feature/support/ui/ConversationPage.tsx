@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
-import { ApiError } from '@shop/sdk/error';
+import { hasFailureCode, presentError } from '@shop/presentation';
 import { ArrowLeft, CircleAlert, LoaderCircle, Paperclip, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -94,15 +94,15 @@ export function ConversationPage({ caseId }: Readonly<{ caseId: string }>) {
     },
     onError: async (cause, value) => {
       setFailed(value);
-      if (cause instanceof ApiError && cause.code === 'VERSION_CONFLICT') { setNotice('工单状态刚刚发生变化，消息和附件已保留。请确认最新状态后原样重试。'); await Promise.all([ticket.refetch(), refreshLatest()]); }
-      else setNotice(errorText(cause, '消息发送失败，内容已保留。'));
+      if (hasFailureCode(cause, 'VERSION_CONFLICT')) { setNotice('工单状态刚刚发生变化，消息和附件已保留。请确认最新状态后原样重试。'); await Promise.all([ticket.refetch(), refreshLatest()]); }
+      else setNotice(presentError(cause).message);
     },
   });
   const upload = useMutation({
     mutationFn: ({ file }: Readonly<{ file: File; localId: string }>) => uploader.execute(required(session), caseId, file),
     onMutate: ({ file, localId }) => updateDraft({ ...draft, attachments: [...draft.attachments, { id: localId, name: file.name, state: 'uploading' }] }),
     onSuccess: (value, input) => updateDraft({ ...conversationDrafts.read(caseId), attachments: conversationDrafts.read(caseId).attachments.map((item) => item.id === input.localId ? value : item) }),
-    onError: (cause, input) => updateDraft({ ...conversationDrafts.read(caseId), attachments: conversationDrafts.read(caseId).attachments.map((item) => item.id === input.localId ? { ...item, state: 'failed', error: errorText(cause, '上传失败') } : item) }),
+    onError: (cause, input) => updateDraft({ ...conversationDrafts.read(caseId), attachments: conversationDrafts.read(caseId).attachments.map((item) => item.id === input.localId ? { ...item, state: 'failed', error: presentError(cause).message } : item) }),
   });
 
   const markRead = useCallback((sequence: number) => {
@@ -150,4 +150,3 @@ function DraftBubble({ draft, state }: Readonly<{ draft: MessageDraft; state: 's
 function required(value: Session | null): Session { if (!value) throw new Error('AUTHENTICATION_REQUIRED'); return value; }
 function day(value: string): string { return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(value)); }
 function format(value: string): string { return new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false }); }
-function errorText(cause: unknown, fallback: string): string { return cause instanceof Error && cause.message ? cause.message : fallback; }

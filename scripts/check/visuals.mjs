@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import YAML from 'yaml';
 import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
@@ -44,6 +44,7 @@ const forbidden = /(?:^|\/)(?:mock|showcase|demo|desktop-1920|laptop-web|device)
 const routes = [];
 for (const [surface, contract] of Object.entries(visuals.surfaces)) {
   assert(Array.isArray(contract.routes) && contract.routes.length > 0, `VISUAL_ROUTE_SET_EMPTY:${surface}`);
+  assert(typeof contract.source === 'string' && existsSync(join(repositoryRoot, contract.source)), `VISUAL_SOURCE_MISSING:${surface}`);
   for (const entry of contract.routes) {
     assert(typeof entry.route === 'string' && entry.route.startsWith('/'), `VISUAL_ROUTE_INVALID:${surface}`);
     assert(typeof entry.baseline === 'string' && /^[a-z]+$/.test(entry.baseline), `VISUAL_BASELINE_INVALID:${surface}:${entry.route}`);
@@ -53,6 +54,13 @@ for (const [surface, contract] of Object.entries(visuals.surfaces)) {
     routes.push(identity);
   }
 }
+
+const authRoutesSource = readFileSync(join(repositoryRoot, 'apps/auth/src/route/Routes.ts'), 'utf8');
+const declaredAuthRoutes = [...authRoutesSource.matchAll(/:\s*'([^']+)'/g)].map((match) => match[1]).sort();
+const visualAuthRoutes = visuals.surfaces.auth.routes.map(({ route }) => route).sort();
+assert(JSON.stringify(visualAuthRoutes) === JSON.stringify(declaredAuthRoutes), 'AUTH_VISUAL_ROUTE_DRIFT');
+const coveredAuthStates = new Set(visuals.surfaces.auth.routes.flatMap(({ states = [] }) => states));
+assert(expectedStates.every((state) => coveredAuthStates.has(state)), 'AUTH_VISUAL_STATE_COVERAGE_MISSING');
 
 const expectedTitles = new Set(flattenStrings(visuals.navigationTitles));
 for (const title of [

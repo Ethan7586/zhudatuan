@@ -1,21 +1,19 @@
-import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { NETWORK_CATALOG } from '@shop/config/networkcatalog';
 import { networkHtml } from '@shop/config/networkhtml';
-import path from 'path';
+import tokens from '@shop/design/tokens.json';
 import { defineConfig } from 'vite';
 
 export default defineConfig(({ command }) => {
   return {
     // Relative assets keep the reviewed Auth artifact independent of its mount path.
     base: command === 'build' ? './' : '/',
-    plugins: [react(), tailwindcss(), { name: 'network-html', transformIndexHtml: networkHtml }],
+    plugins: [
+      react(),
+      { name: 'network-html', transformIndexHtml: networkHtml },
+      { name: 'design-html', transformIndexHtml: (source) => source.replaceAll('%THEME_COLOR%', tokens.color.brand.dark) },
+    ],
     build: { manifest: true },
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, '.'),
-      },
-    },
     server: {
       host: '127.0.0.1',
       port: 3002,

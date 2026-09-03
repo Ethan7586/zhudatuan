@@ -1,3 +1,4 @@
+import { queryCondition } from '@shop/presentation';
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@shop/sdk';
@@ -9,7 +10,6 @@ import { orderKey } from './order/OrderQuery';
 import { ListingPageSchema } from './product/ProductSchema';
 import { productKey } from './product/ProductQuery';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
-import { queryCondition } from '../shared/presentation/QueryState';
 
 describe('Console feature-owned response schemas', () => {
   it('normalizes database bigint strings only when safe', () => {

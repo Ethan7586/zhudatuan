@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { parse } from 'yaml';
-import { buildOpenapi, operationSource, schemaSource, sdkDomainSources, sdkSource, stable, type OperationDefinition } from './ClientArtifacts';
+import { buildOpenapi, identityClientSchemaSource, operationSource, schemaSource, sdkDomainSources, sdkSource, stable, type OperationDefinition } from './ClientArtifacts';
 
 interface EventDefinition {
   readonly id: string;
@@ -43,10 +43,36 @@ interface CapabilityDefinition {
 }
 interface ErrorDefinition {
   readonly code: string;
+  readonly owner: string;
+  readonly category: 'authentication' | 'authorization' | 'validation' | 'conflict' | 'rate' | 'dependency' | 'internal' | 'notfound';
   readonly status: number;
   readonly retryable: boolean;
+  readonly retryAfter: boolean;
   readonly audit: boolean;
-  readonly client: 'message' | 'retry' | 'hidden';
+  readonly exposure: 'message' | 'generic' | 'hidden';
+  readonly action: 'retry' | 'signin' | 'stepup' | 'refresh' | 'contact' | 'none';
+  readonly messageKey: string;
+  readonly details: readonly string[];
+  readonly reserved: boolean;
+  readonly message: string;
+  readonly english: string;
+}
+interface LocalErrorDefinition {
+  readonly code: string;
+  readonly owner: string;
+  readonly category: ErrorDefinition['category'];
+  readonly retryable: boolean;
+  readonly retryAfter: boolean;
+  readonly exposure: ErrorDefinition['exposure'];
+  readonly action: ErrorDefinition['action'];
+  readonly messageKey: string;
+  readonly message: string;
+  readonly english: string;
+}
+interface ErrorCatalogDefinition {
+  readonly api: readonly ErrorDefinition[];
+  readonly transport: readonly LocalErrorDefinition[];
+  readonly client: readonly LocalErrorDefinition[];
 }
 interface PermissionDefinition {
   readonly code: string;
@@ -64,31 +90,34 @@ const root = resolve(import.meta.dirname, '../../..');
 const definitions = resolve(root, 'packages/contract/definitions');
 const authority = parse(await readFile(resolve(root, 'config/authorities.yml'), 'utf8')) as Readonly<{ contract?: Readonly<{ version?: unknown }> }>;
 const contractVersion = authorityVersion(authority.contract?.version);
-const operations = await catalog<OperationDefinition>('operations.yml', 'operations', 3);
+const operations = (await catalog<OperationDefinition>('operations.yml', 'operations', 3)).map(withBoundaryErrors);
 const events = await catalog<EventDefinition>('events.yml', 'events', 3);
 const capabilities = await catalog<CapabilityDefinition>('capabilities.yml', 'capabilities', 3);
-const errors = await catalog<ErrorDefinition>('errors.yml', 'errors', 3);
+const errorCatalog = await readErrorCatalog();
+const errors = errorCatalog.api;
 const permissions = await catalog<PermissionDefinition>('permissions.yml', 'permissions', 3);
 validateOperations(operations);
 validateEvents(events);
 validatePermissions(operations, permissions);
 validateCapabilityAudiences(operations, capabilities);
-validateErrors(errors);
+validateErrors(errorCatalog);
 const check = process.argv.includes('--check');
 const openapi = buildOpenapi(operations, new Map(errors.map(({ code, status }) => [code, status])), contractVersion);
 const eventArtifact = stable({ version: 3, events: events.map((item) => ({ type: item.id, version: item.version, module: item.owner, schema: item.schema, payload: item.payload })) });
 const permissionArtifact = permissions;
-const errorArtifact = errors.map(({ code, status }) => ({ code, status }));
+const errorArtifact = errorCatalog;
 const contractChecksum = hash(JSON.stringify({ openapi, events: eventArtifact, permissions: permissionArtifact, errors: errorArtifact }));
 
 await emit(resolve(root, 'packages/contract/openapi.json'), `${JSON.stringify(openapi, null, 2)}\n`);
 await emit(resolve(root, 'packages/contract/events.json'), `${JSON.stringify(eventArtifact, null, 2)}\n`);
 await emit(resolve(root, 'packages/contract/src/operations/CommerceCatalog.ts'), operationSource(operations));
 await emit(resolve(root, 'packages/contract/src/operations/CommerceSchemas.ts'), schemaSource(operations));
+await emit(resolve(root, 'packages/contract/src/operations/IdentityClientSchemas.ts'), identityClientSchemaSource(operations));
 await emit(resolve(root, 'packages/contract/src/events/CommerceEvents.ts'), eventSource(events));
 await emit(resolve(root, 'packages/contract/src/EventSerializer.ts'), eventSerializerSource(events));
 await emit(resolve(root, 'packages/contract/src/ContractIdentity.ts'), contractIdentitySource(contractChecksum, contractVersion));
-await emit(resolve(root, 'packages/contract/src/ErrorContract.ts'), errorSource(errors));
+await emit(resolve(root, 'packages/contract/src/ErrorContract.ts'), errorSource(errorCatalog));
+await emit(resolve(root, 'packages/presentation/src/generated/ErrorPolicy.ts'), errorPolicySource(errorCatalog));
 await emit(resolve(root, 'packages/authz/src/PermissionCatalog.ts'), permissionSource(permissions));
 await emit(resolve(root, 'packages/sdk/src/operations/CommerceClient.ts'), sdkSource(operations));
 for (const [domain, source] of sdkDomainSources(operations)) await emit(resolve(root, `packages/sdk/src/operations/${domain}.ts`), source);
@@ -101,6 +130,42 @@ async function catalog<T>(name: string, key: string, version: number): Promise<r
   const values = payload[key];
   if (!Array.isArray(values)) throw new Error(`CONTRACT_DEFINITION_INVALID:${name}:${key}`);
   return values as readonly T[];
+}
+
+async function readErrorCatalog(): Promise<ErrorCatalogDefinition> {
+  const payload = parse(await readFile(resolve(definitions, 'errors.yml'), 'utf8'), { merge: true }) as Record<string, unknown>;
+  if (payload.version !== 4 || !Array.isArray(payload.api) || !Array.isArray(payload.transport) || !Array.isArray(payload.client)) {
+    throw new Error('CONTRACT_DEFINITION_INVALID:errors.yml');
+  }
+  return {
+    api: payload.api as readonly ErrorDefinition[],
+    transport: payload.transport as readonly LocalErrorDefinition[],
+    client: payload.client as readonly LocalErrorDefinition[],
+  };
+}
+
+function withBoundaryErrors(operation: OperationDefinition): OperationDefinition {
+  const codes = new Set(operation.errorUnion);
+  codes.add('DEADLINE_EXCEEDED');
+  codes.add('URL_SENSITIVE_DATA_FORBIDDEN');
+  if (operation.method !== 'GET') {
+    codes.add('CONTENT_TYPE_UNSUPPORTED');
+    codes.add('REQUEST_BODY_TOO_LARGE');
+    codes.add('REQUEST_JSON_INVALID');
+  }
+  codes.add('AUTHORIZATION_DENIED');
+  if (operation.originPolicy === 'sameorigin') codes.add('ORIGIN_REQUIRED');
+  if (operation.csrfPolicy === 'required') codes.add('CSRF_TOKEN_INVALID');
+  if (['optional', 'session', 'mfa', 'stepup'].includes(operation.assuranceLevel)) codes.add('PERMISSION_DENIED');
+  if (operation.idempotencyPolicy === 'required') {
+    codes.add('IDEMPOTENCY_CONFLICT');
+    codes.add('IDEMPOTENCY_KEY_REQUIRED');
+  }
+  if (operation.expectedVersion === 'required') {
+    codes.add('EXPECTED_VERSION_INVALID');
+    codes.add('EXPECTED_VERSION_REQUIRED');
+  }
+  return Object.freeze({ ...operation, errorUnion: Object.freeze([...codes].sort()) });
 }
 
 function validateOperations(values: readonly OperationDefinition[]): void {
@@ -153,6 +218,7 @@ function validateOperations(values: readonly OperationDefinition[]): void {
     if (!Number.isInteger(item.timeout) || item.timeout < 1) throw new Error(`OPERATION_TIMEOUT_INVALID:${item.id}`);
     if (item.csrfPolicy === 'required' && (item.method === 'GET' || item.originPolicy !== 'sameorigin')) throw new Error(`OPERATION_CSRF_POLICY_INVALID:${item.id}`);
     if (item.idempotencyPolicy === 'required' && item.idempotencyScope === 'none') throw new Error(`OPERATION_IDEMPOTENCY_POLICY_INVALID:${item.id}`);
+    if (['optional', 'session', 'mfa', 'stepup'].includes(item.assuranceLevel) && !item.errorUnion.includes('PERMISSION_DENIED')) throw new Error(`OPERATION_PERMISSION_ERROR_MISSING:${item.id}`);
     if (
       item.makerChecker &&
       (item.method === 'GET' ||
@@ -260,20 +326,40 @@ function validateCapabilityAudiences(values: readonly OperationDefinition[], def
     }
 }
 
-function validateErrors(values: readonly ErrorDefinition[]): void {
-  const codes = new Set<string>();
-  let previous = '';
-  for (const error of values) {
-    if (!/^[A-Z][A-Z0-9_]{2,}$/.test(error.code) || codes.has(error.code)) throw new Error(`ERROR_CODE_INVALID:${error.code}`);
-    if (!Number.isSafeInteger(error.status) || error.status < 400 || error.status > 599) throw new Error(`ERROR_STATUS_INVALID:${error.code}`);
-    if (typeof error.retryable !== 'boolean' || typeof error.audit !== 'boolean' || !['message', 'retry', 'hidden'].includes(error.client)) {
-      throw new Error(`ERROR_POLICY_INVALID:${error.code}`);
+function validateErrors(catalog: ErrorCatalogDefinition): void {
+  const allCodes = new Set<string>();
+  for (const [kind, values] of Object.entries(catalog) as readonly [keyof ErrorCatalogDefinition, readonly (ErrorDefinition | LocalErrorDefinition)[]][]) {
+    let previous = '';
+    for (const error of values) {
+      if (!/^[A-Z][A-Z0-9_]{2,}$/.test(error.code) || allCodes.has(error.code)) throw new Error(`ERROR_CODE_INVALID:${error.code}`);
+      if (kind === 'api' && (!Number.isSafeInteger((error as ErrorDefinition).status) || (error as ErrorDefinition).status < 400 || (error as ErrorDefinition).status > 599)) {
+        throw new Error(`ERROR_STATUS_INVALID:${error.code}`);
+      }
+      if (
+        typeof error.owner !== 'string' ||
+        error.owner.length === 0 ||
+        !['authentication', 'authorization', 'validation', 'conflict', 'rate', 'dependency', 'internal', 'notfound'].includes(error.category) ||
+        typeof error.retryable !== 'boolean' ||
+        typeof error.retryAfter !== 'boolean' ||
+        !['message', 'generic', 'hidden'].includes(error.exposure) ||
+        !['retry', 'signin', 'stepup', 'refresh', 'contact', 'none'].includes(error.action) ||
+        typeof error.messageKey !== 'string' ||
+        !/^error\.[a-z0-9_]+$/.test(error.messageKey) ||
+        typeof error.message !== 'string' ||
+        error.message.length === 0 ||
+        typeof error.english !== 'string' ||
+        error.english.length === 0 ||
+        (kind === 'api' && (typeof (error as ErrorDefinition).audit !== 'boolean' || !Array.isArray((error as ErrorDefinition).details) || typeof (error as ErrorDefinition).reserved !== 'boolean'))
+      )
+        throw new Error(`ERROR_POLICY_INVALID:${error.code}`);
+      if (error.retryAfter && !error.retryable) throw new Error(`ERROR_RETRY_AFTER_INVALID:${error.code}`);
+      if (error.code.localeCompare(previous) <= 0) throw new Error(`ERROR_CATALOG_NOT_SORTED:${error.code}`);
+      allCodes.add(error.code);
+      previous = error.code;
     }
-    if (error.code.localeCompare(previous) <= 0) throw new Error(`ERROR_CATALOG_NOT_SORTED:${error.code}`);
-    codes.add(error.code);
-    previous = error.code;
   }
-  for (const operation of operations) for (const code of operation.errorUnion) if (!codes.has(code)) throw new Error(`OPERATION_ERROR_UNKNOWN:${operation.id}:${code}`);
+  const apiCodes = new Set(catalog.api.map(({ code }) => code));
+  for (const operation of operations) for (const code of operation.errorUnion) if (!apiCodes.has(code)) throw new Error(`OPERATION_ERROR_UNKNOWN:${operation.id}:${code}`);
 }
 
 async function emit(path: string, content: string): Promise<void> {
@@ -315,9 +401,17 @@ function permissionSource(values: readonly PermissionDefinition[]): string {
   return `// Generated from packages/contract/definitions/permissions.yml. Do not edit.\nimport type { PermissionDefinition } from './Permission';\n\nexport const PERMISSION_CATALOG = Object.freeze(${JSON.stringify(values, null, 2)} as const satisfies readonly PermissionDefinition[]);\nconst byCode: ReadonlyMap<string, PermissionDefinition> = new Map(PERMISSION_CATALOG.map((permission) => [permission.code, permission]));\nexport function permissionDefinition(code: string): PermissionDefinition { const permission=byCode.get(code); if(!permission) throw new Error('PERMISSION_UNKNOWN'); return permission; }\n`;
 }
 
-function errorSource(values: readonly ErrorDefinition[]): string {
-  const rows = values.map((value) => `  ${JSON.stringify(value)},`).join('\n');
-  return `// Generated from definitions/errors.yml. Do not edit.\nexport { ErrorContractSchema } from './ErrorSchema';\nexport type { ErrorContract } from './ErrorSchema';\n\nexport const ERROR_CATALOG = Object.freeze([\n${rows}\n] as const);\nexport const ERROR_CODES = Object.freeze(ERROR_CATALOG.map(({ code }) => code));\nexport type ErrorCode = (typeof ERROR_CATALOG)[number]['code'];\nconst byCode: ReadonlyMap<string, (typeof ERROR_CATALOG)[number]> = new Map(ERROR_CATALOG.map((item) => [item.code, item]));\nexport function errorDefinition(code: string): (typeof ERROR_CATALOG)[number] | undefined { return byCode.get(code); }\nexport function errorStatus(code: string): number | undefined { return byCode.get(code)?.status; }\n`;
+function errorSource(catalog: ErrorCatalogDefinition): string {
+  const rows = catalog.api.map((value) => `  ${JSON.stringify(value)},`).join('\n');
+  const apiCodes = JSON.stringify(catalog.api.map(({ code }) => code));
+  const transportCodes = JSON.stringify(catalog.transport.map(({ code }) => code));
+  const clientCodes = JSON.stringify(catalog.client.map(({ code }) => code));
+  return `// Generated from definitions/errors.yml. Do not edit.\nexport const API_ERROR_CATALOG = Object.freeze([\n${rows}\n] as const);\nexport const API_ERROR_CODES = ${apiCodes} as const;\nexport const TRANSPORT_ERROR_CODES = ${transportCodes} as const;\nexport const CLIENT_ERROR_CODES = ${clientCodes} as const;\nexport type ApiErrorCode = (typeof API_ERROR_CODES)[number];\nexport type TransportErrorCode = (typeof TRANSPORT_ERROR_CODES)[number];\nexport type ClientErrorCode = (typeof CLIENT_ERROR_CODES)[number];\nexport type FailureCode = Readonly<{ kind: 'api'; code: ApiErrorCode }> | Readonly<{ kind: 'transport'; code: TransportErrorCode }> | Readonly<{ kind: 'client'; code: ClientErrorCode }>;\nconst byCode: ReadonlyMap<string, (typeof API_ERROR_CATALOG)[number]> = new Map(API_ERROR_CATALOG.map((item) => [item.code, item]));\nexport function errorDefinition(code: string): (typeof API_ERROR_CATALOG)[number] | undefined { return byCode.get(code); }\nexport function errorStatus(code: ApiErrorCode): number { return byCode.get(code)!.status; }\n`;
+}
+
+function errorPolicySource(catalog: ErrorCatalogDefinition): string {
+  const rows = (kind: keyof ErrorCatalogDefinition) => catalog[kind].map((value) => `  ${JSON.stringify(value.code)}: ${JSON.stringify({ ...value, kind })},`).join('\n');
+  return `// Generated from packages/contract/definitions/errors.yml. Do not edit.\nexport const ERROR_POLICY = Object.freeze({\n${rows('api')}\n${rows('transport')}\n${rows('client')}\n} as const);\nexport type ErrorPolicyCode = keyof typeof ERROR_POLICY;\nexport function errorPolicy(code: string): (typeof ERROR_POLICY)[ErrorPolicyCode] | undefined { return ERROR_POLICY[code as ErrorPolicyCode]; }\n`;
 }
 
 function eventSource(values: readonly EventDefinition[]): string {

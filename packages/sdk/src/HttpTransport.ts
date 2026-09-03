@@ -1,5 +1,6 @@
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import type { Transport, TransportRequest, TransportResponse } from './Transport';
+import { TransportError } from './error';
 
 export class HttpTransport implements Transport {
   constructor(private readonly fetcher: typeof fetch = globalThis.fetch) {}
@@ -14,9 +15,9 @@ export class HttpTransport implements Transport {
       ...(request.signal === undefined ? {} : { signal: request.signal }),
     });
     const declared = Number(response.headers.get('content-length') ?? 0);
-    if (Number.isFinite(declared) && declared > RUNTIME_LIMITS.sql.maximumResponseBytes) throw new Error('SDK_RESPONSE_TOO_LARGE');
+    if (Number.isFinite(declared) && declared > RUNTIME_LIMITS.sql.maximumResponseBytes) throw new TransportError('CONTRACT_INVALID', undefined, false);
     const body = await response.text();
-    if (new TextEncoder().encode(body).byteLength > RUNTIME_LIMITS.sql.maximumResponseBytes) throw new Error('SDK_RESPONSE_TOO_LARGE');
+    if (new TextEncoder().encode(body).byteLength > RUNTIME_LIMITS.sql.maximumResponseBytes) throw new TransportError('CONTRACT_INVALID', undefined, false);
     return Object.freeze({ status: response.status, headers: Object.freeze(Object.fromEntries(response.headers.entries())), body });
   }
 }

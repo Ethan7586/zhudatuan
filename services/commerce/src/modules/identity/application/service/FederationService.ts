@@ -20,6 +20,7 @@ import { AuthTransaction } from '../../domain/model/AuthTransaction';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import type { IdentityLinkRepository } from '../port/IdentityLinkRepository';
 import type { FederatedSubject } from '../../domain/model/FederatedSubject';
+import { membershipCandidate } from '../model/MembershipCandidate';
 
 export interface FederationRequestContext {
   readonly peer: string;
@@ -191,7 +192,6 @@ export class FederationService {
     }
     if (resolution.principal === null && !resolution.conflict) {
       const bindings = await this.organizations.directoryBindings(database, instance.id, subjecthash);
-      const names = new Map(bindings.map((binding) => [binding.id, binding.name]));
       const authorized = await this.access.directoryMemberships(
         database,
         bindings.map((binding) => binding.id)
@@ -199,7 +199,7 @@ export class FederationService {
       resolution = Object.freeze({
         principal: authorized.principal,
         conflict: authorized.conflict,
-        memberships: Object.freeze(authorized.memberships.map((membership) => Object.freeze({ ...membership, name: names.get(membership.id) ?? membership.id }))),
+        memberships: Object.freeze(authorized.memberships.map(membershipCandidate)),
       });
       if (resolution.principal !== null && resolution.memberships[0]) {
         await this.repository.bindDirectory(database, {
@@ -248,7 +248,7 @@ export class FederationService {
   }
 
   private authRedirect(path: string, target: 'console' | 'storefront', query: Readonly<Record<string, string>>, cookie?: string): OperationResult {
-    const location = new URL(path, `${IDENTITY_PROVIDER_CONFIGURATION.callbackBases[0]}/`);
+    const location = new URL(path, `${IDENTITY_PROVIDER_CONFIGURATION.callbackOrigin}/`);
     location.searchParams.set('target', target);
     for (const [key, value] of Object.entries(query)) location.searchParams.set(key, value);
     return Object.freeze({ status: 303, headers: Object.freeze({ location: location.toString(), ...(cookie ? { 'set-cookie': cookie } : {}), 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' }) });

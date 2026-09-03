@@ -1,11 +1,9 @@
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 
 import type { AuthTicketBinding } from './AuthTicketPort';
+import type { MembershipCandidate } from '../model/MembershipCandidate';
+export type { MembershipCandidate } from '../model/MembershipCandidate';
 
-export interface MembershipCandidate {
-  readonly id: string;
-  readonly target: 'console' | 'storefront';
-}
 export interface MembershipSelectionValue {
   readonly id: string;
   readonly principal: string;

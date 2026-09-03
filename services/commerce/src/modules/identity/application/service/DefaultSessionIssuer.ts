@@ -7,6 +7,7 @@ import { SessionPolicy } from '../../domain/policy/SessionPolicy';
 import type { IdentityAccessPort } from '../../../access/public';
 import { Session } from '../../domain/model/Session';
 import type { SessionRepository } from '../port/SessionRepository';
+import { DomainError } from '../../../../foundation/domain/DomainError';
 
 export class DefaultSessionIssuer implements SessionIssuer {
   constructor(
@@ -22,6 +23,7 @@ export class DefaultSessionIssuer implements SessionIssuer {
   async issue(context: WriteTransactionContext, value: SessionIssue): Promise<IssuedSession> {
     const assurance = this.policy.assurance(value.assurance);
     const [membership, credentialVersion] = await Promise.all([this.access.session(context, value.membership, value.target), this.repository.credentialVersion(context, value.principal)]);
+    if (value.expectedAccessVersion !== undefined && membership.accessVersion !== value.expectedAccessVersion) throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
     const now = new Date();
     const token = randomBytes(48).toString('base64url');
     const session = new Session({

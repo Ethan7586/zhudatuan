@@ -1,9 +1,9 @@
+import { queryCondition, hasFailureCode, presentError, safeQueryError } from '@shop/presentation';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
-import { ApiError } from '@shop/sdk/error';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
-import { queryCondition, safeQueryError } from '../../../shared/presentation/QueryState';
+
 import { scopePath } from '../../../shared/url/ScopePath';
 import { AssignTicket } from '../application/AssignTicket';
 import { CloseTicket } from '../application/CloseTicket';
@@ -139,7 +139,7 @@ export function SupportWorkbench() {
       else await assignmentManager.execute(context, ticket, action.agent, action.reason);
     },
     onSuccess: async () => { await queue.refetch(); },
-    onError: (cause) => { if (cause instanceof ApiError && cause.code === 'VERSION_CONFLICT') { void queue.refetch(); if (caseId) void conversation.refetch(); } },
+    onError: (cause) => { if (hasFailureCode(cause, 'VERSION_CONFLICT')) { void queue.refetch(); if (caseId) void conversation.refetch(); } },
   });
   const updateFilter = <K extends keyof TicketFilter>(key: K, value: TicketFilter[K] | undefined) => {
     if (key === 'keyword') { setKeyword(typeof value === 'string' ? value : ''); return; }
@@ -179,5 +179,5 @@ function readFilter(search: URLSearchParams, keyword: string): TicketFilter {
   return { limit: 50, ownership: ownership === 'unassigned' || ownership === 'all' ? ownership : 'mine', ...(state === 'open' || state === 'assigned' || state === 'waiting' || state === 'resolved' || state === 'closed' ? { states: [state] } : {}), ...(priority === 'low' || priority === 'normal' || priority === 'high' || priority === 'urgent' ? { priorities: [priority] } : {}), ...(search.get('skill') ? { skill: search.get('skill')! } : {}), ...(search.get('agentId') ? { agentId: search.get('agentId')! } : {}), ...(unread === 'true' ? { unread: true } : {}), ...(search.get('updatedAfter') ? { updatedAfter: search.get('updatedAfter')! } : {}), ...(search.get('updatedBefore') ? { updatedBefore: search.get('updatedBefore')! } : {}), ...(keyword.trim() ? { keyword: keyword.trim() } : {}) };
 }
 function without<T>(record: Readonly<Record<string, T>>, key: string): Readonly<Record<string, T>> { const { [key]: _removed, ...remaining } = record; return remaining; }
-function errorText(cause: unknown): string { return cause instanceof Error ? cause.message : '操作失败，请重试。'; }
-function conflictText(cause: unknown): string { return cause instanceof ApiError && cause.code === 'VERSION_CONFLICT' ? '工单已被其他客服更新，已刷新最新状态；请确认后重新操作。' : errorText(cause); }
+function errorText(cause: unknown): string { return presentError(cause).message; }
+function conflictText(cause: unknown): string { return hasFailureCode(cause, 'VERSION_CONFLICT') ? '工单已被其他客服更新，已刷新最新状态；请确认后重新操作。' : errorText(cause); }

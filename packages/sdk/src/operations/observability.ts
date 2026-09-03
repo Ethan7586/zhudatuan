@@ -2,7 +2,9 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindEventOperation, bindOperation, defineOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindEventOperation, bindOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { exactOperationInput, exactOperationOutput } from '@shop/contract/schema';
+import { defineOperation } from '../CatalogOperationDescriptor';
 
 export const OBSERVABILITY_OPERATION_IDS = Object.freeze([
   "observability.clienterrors.create",
@@ -23,8 +25,8 @@ export function createObservabilityOperations(client: OperationExecutor): Observ
 
 export function createFetchObservabilityClienterrorsCreate(baseUrl: string): OperationMethod<"observability.clienterrors.create"> { return bindClienterrorsCreate(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindClienterrorsCreate(client: OperationExecutor): OperationMethod<"observability.clienterrors.create"> { return bindOperation(client, defineOperation({"id":"observability.clienterrors.create","method":"POST","path":"/api/v1/telemetry/clienterrors","audience":"storefront","targets":["storefront"],"responseMode":"json","idempotent":false,"timeout":800})); }
+function bindClienterrorsCreate(client: OperationExecutor): OperationMethod<"observability.clienterrors.create"> { return bindOperation(client, defineOperation({ ...{"id":"observability.clienterrors.create","method":"POST","path":"/api/v1/telemetry/clienterrors","audience":"storefront","targets":["storefront"],"responseMode":"json","idempotent":false,"timeout":800,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CAPABILITY_DENIED","CONTENT_TYPE_UNSUPPORTED","CONTRACT_VERSION_UNSUPPORTED","CSRF_TOKEN_INVALID","DEADLINE_EXCEEDED","IDEMPOTENCY_CONFLICT","IDEMPOTENCY_KEY_REQUIRED","INTERNAL_ERROR","ORIGIN_REQUIRED","PERMISSION_DENIED","RATE_LIMITED","REQUEST_BODY_TOO_LARGE","REQUEST_JSON_INVALID","SCOPE_DENIED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("ObservabilityClienterrorsCreateInput", [] as const, true), output: exactOperationOutput("ObservabilityClienterrorsCreateOutput") })); }
 
 export function createFetchObservabilityClienterrorsRead(baseUrl: string): OperationMethod<"observability.clienterrors.read"> { return bindClienterrorsRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindClienterrorsRead(client: OperationExecutor): OperationMethod<"observability.clienterrors.read"> { return bindOperation(client, defineOperation({"id":"observability.clienterrors.read","method":"GET","path":"/api/v1/telemetry/clienterrors","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
+function bindClienterrorsRead(client: OperationExecutor): OperationMethod<"observability.clienterrors.read"> { return bindOperation(client, defineOperation({ ...{"id":"observability.clienterrors.read","method":"GET","path":"/api/v1/telemetry/clienterrors","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CAPABILITY_DENIED","CONTRACT_VERSION_UNSUPPORTED","DEADLINE_EXCEEDED","INTERNAL_ERROR","PERMISSION_DENIED","RATE_LIMITED","SCOPE_DENIED","STEPUP_REQUIRED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("ObservabilityClienterrorsReadInput", [] as const, false), output: exactOperationOutput("ObservabilityClienterrorsReadOutput") })); }

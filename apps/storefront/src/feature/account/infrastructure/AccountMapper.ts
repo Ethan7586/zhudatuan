@@ -41,8 +41,8 @@ export function mapMemberships(value: OperationOutputFor<'identity.memberships.r
     value.items.map((item) =>
       Object.freeze({
         id: item.id,
-        organizationId: item.organizationId,
-        name: item.name,
+        organizationId: item.scopeId,
+        name: item.organizationName,
         current: item.current,
         accessVersion: Number(item.accessVersion),
       })

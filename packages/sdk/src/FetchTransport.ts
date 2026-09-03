@@ -1,5 +1,6 @@
 import type { StreamTransportResponse, Transport, TransportRequest, TransportResponse } from './Transport';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
+import { TransportError } from './error';
 
 export class FetchTransport implements Transport {
   constructor(private readonly fetcher?: typeof fetch) {}
@@ -7,11 +8,11 @@ export class FetchTransport implements Transport {
   async send(request: TransportRequest): Promise<TransportResponse> {
     const response = await this.fetch(request);
     const length = Number(response.headers.get('content-length') ?? 0);
-    if (Number.isFinite(length) && length > RUNTIME_LIMITS.sql.maximumResponseBytes) throw new Error('SDK_RESPONSE_TOO_LARGE');
+    if (Number.isFinite(length) && length > RUNTIME_LIMITS.sql.maximumResponseBytes) throw new TransportError('CONTRACT_INVALID', undefined, false);
     const body = await response.text();
-    if (new TextEncoder().encode(body).byteLength > RUNTIME_LIMITS.sql.maximumResponseBytes) throw new Error('SDK_RESPONSE_TOO_LARGE');
+    if (new TextEncoder().encode(body).byteLength > RUNTIME_LIMITS.sql.maximumResponseBytes) throw new TransportError('CONTRACT_INVALID', undefined, false);
     const contentType = response.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase();
-    if (body.length > 0 && contentType !== 'application/json') throw new Error('SDK_RESPONSE_CONTENT_TYPE_INVALID');
+    if (body.length > 0 && contentType !== 'application/json') throw new TransportError('CONTRACT_INVALID', undefined, false);
     return {
       status: response.status,
       headers: Object.freeze(Object.fromEntries(response.headers.entries())),
@@ -27,8 +28,8 @@ export class FetchTransport implements Transport {
       return Object.freeze({ status: response.status, headers, body });
     }
     const contentType = response.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase();
-    if (contentType !== 'text/event-stream') throw new Error('SDK_STREAM_CONTENT_TYPE_INVALID');
-    if (response.body === null) throw new Error('SDK_STREAM_BODY_MISSING');
+    if (contentType !== 'text/event-stream') throw new TransportError('CONTRACT_INVALID', undefined, false);
+    if (response.body === null) throw new TransportError('CONTRACT_INVALID', undefined, false);
     return Object.freeze({ status: response.status, headers, stream: response.body });
   }
 
@@ -47,8 +48,8 @@ export class FetchTransport implements Transport {
 
 async function readLimited(response: Response, limit: number): Promise<string> {
   const declared = Number(response.headers.get('content-length') ?? 0);
-  if (Number.isFinite(declared) && declared > limit) throw new Error('SDK_STREAM_ERROR_TOO_LARGE');
+  if (Number.isFinite(declared) && declared > limit) throw new TransportError('CONTRACT_INVALID', undefined, false);
   const body = await response.text();
-  if (new TextEncoder().encode(body).byteLength > limit) throw new Error('SDK_STREAM_ERROR_TOO_LARGE');
+  if (new TextEncoder().encode(body).byteLength > limit) throw new TransportError('CONTRACT_INVALID', undefined, false);
   return body;
 }

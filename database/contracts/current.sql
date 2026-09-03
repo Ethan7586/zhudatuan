@@ -236,6 +236,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('navigation.tree.read','navigation','GET','/api/v1/navigation','4.0.0'),
   ('navigation.catalog.read','navigation','GET','/api/v1/navigation/catalog','4.0.0'),
   ('navigation.health.read','navigation','GET','/api/v1/navigation/health','4.0.0'),
+  ('identity.bootstrap.read','identity','GET','/api/v1/identity/bootstrap','4.0.0'),
   ('identity.providers.read','identity','GET','/api/v1/identity/providers','4.0.0'),
   ('identity.federations.start','identity','POST','/api/v1/identity/federations','4.0.0'),
   ('identity.federations.callback','identity','GET','/api/v1/identity/federations/{providerid}/callback','4.0.0'),
@@ -841,6 +842,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('navigation.tree.read','operation','navigation.tree.read',3,'active'),
   ('navigation.catalog.read','operation','navigation.catalog.read',3,'active'),
   ('navigation.health.read','operation','navigation.health.read',3,'active'),
+  ('identity.bootstrap.read','operation','identity.bootstrap.read',3,'active'),
   ('identity.providers.read','operation','identity.providers.read',3,'active'),
   ('identity.federations.start','operation','identity.federations.start',3,'active'),
   ('identity.federations.callback','operation','identity.federations.callback',3,'active'),
@@ -1117,6 +1119,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('navigation.tree.read','navigation.tree.read',null,'console'),
   ('navigation.catalog.read','navigation.catalog.read','navigation.catalog.read','console'),
   ('navigation.health.read','navigation.health.read','runtime.health.read','system'),
+  ('identity.bootstrap.read','identity.bootstrap.read',null,'public'),
   ('identity.providers.read','identity.providers.read',null,'public'),
   ('identity.federations.start','identity.federations.start',null,'public'),
   ('identity.federations.callback','identity.federations.callback',null,'public'),
@@ -1543,6 +1546,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='supplier' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','6a59888cfc18032dc6df9d173404c90791f80f733f46599fcde1a03952671661');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','ccf1d79041d4174d9b0fa77bfcbc925dbbd60e10965e27ee089782d986ad998c');
 
 commit;

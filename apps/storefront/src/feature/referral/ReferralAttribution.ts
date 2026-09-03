@@ -1,4 +1,4 @@
-import { ProductionApiError } from '../../shared/failure/Failure';
+import { hasFailureCode } from '@shop/presentation';
 import type { ReferralAttributionInput, ReferralAttributionResult } from './model/Referral';
 
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{8,1536}\.[A-Za-z0-9_-]{32,512}$/;
@@ -22,7 +22,7 @@ export class ReferralAttributionCoordinator {
       await this.bind(candidate.value);
       return { status: 'bound', candidateWon: true };
     } catch (cause) {
-      if (cause instanceof ProductionApiError && cause.code === 'REFERRAL_ALREADY_BOUND') return { status: 'bound', candidateWon: false };
+      if (hasFailureCode(cause, 'REFERRAL_ALREADY_BOUND')) return { status: 'bound', candidateWon: false };
       return { status: 'failed' };
     }
   }

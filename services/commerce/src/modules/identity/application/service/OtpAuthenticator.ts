@@ -18,6 +18,7 @@ import type { IdentityMemberPort } from '../../../member/public';
 import type { MembershipSelector } from '../service/MembershipSelector';
 import type { AssuranceRepository } from '../port/AssuranceRepository';
 import { returnDestination } from './ReturnDestination';
+import { membershipCandidate, membershipView } from '../model/MembershipCandidate';
 
 export class OtpAuthenticator implements AuthenticationStrategy {
   readonly method = 'otp' as const;
@@ -48,8 +49,9 @@ export class OtpAuthenticator implements AuthenticationStrategy {
     await this.assurances.record(requireWriteTransaction(database), { principal: verified.principal_id, method: 'phone_otp', level: 2, evidenceHash: this.digest(challenge), expiresIn: '15minutes' });
     const authorization = AuthTransaction.start(body.authorization);
     if (memberships.length !== 1) {
-      const selection = await this.selector.begin(database, { principal: verified.principal_id, target, memberships, assurance: 2, authorization, returnTarget: destination.proof }, this.context(request));
-      return { status: 200, headers: selection.headers, result: { kind: 'selection', transaction: selection.id, memberships } };
+      const candidates = memberships.map(membershipCandidate);
+      const selection = await this.selector.begin(database, { principal: verified.principal_id, target, memberships: candidates, assurance: 2, authorization, returnTarget: destination.proof }, this.context(request));
+      return { status: 200, headers: selection.headers, result: { kind: 'selection', transaction: selection.id, memberships: candidates.map(membershipView) } };
     }
     const membership = memberships[0]!;
     const trace = request.input.headers['x-trace-id'] ?? request.input.idempotency!;

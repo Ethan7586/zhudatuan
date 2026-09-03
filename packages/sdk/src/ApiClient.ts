@@ -1,8 +1,9 @@
-import { HttpHeader, type ContractJsonValue, type OperationId, type OperationInputFor, type OperationOutputFor, type OperationQuery, type Schema } from '@shop/contract';
+import type { ContractJsonValue, OperationId, OperationInputFor, OperationOutputFor, OperationQuery, Schema } from '@shop/contract';
+import { HttpHeader } from '@shop/contract/http';
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { Deadline } from '@shop/kernel/deadline';
-import { ApiError } from './error';
+import { ApiError, TransportError, isCancelled } from './error';
 import { errorCause } from './ErrorCause';
 import type { EventStream } from './EventStream';
 import type { OperationDescriptor, OperationExecutor } from './OperationDescriptor';
@@ -32,7 +33,7 @@ export class ApiClient implements OperationExecutor {
       throw new Error('SDK_IDEMPOTENCY_KEY_REQUIRED');
     }
     const parsed = operation.input.parse(input);
-    const value = await this.send(operation.path, operation.method, parsed, context, operation.responseMode, operation.idempotent, operation.output);
+    const value = await this.send(operation, parsed, context);
     return value;
   }
 
@@ -46,56 +47,64 @@ export class ApiClient implements OperationExecutor {
       return new JsonEventStream(
         (lastEventId, signal) => this.transport.open!(this.request(operation.path, operation.method, parsed, context, signal, 'text/event-stream', lastEventId)),
         operation.output,
+        operation.id,
+        operation.errorUnion,
         context.lastEventId,
         context.signal
       );
     });
   }
 
-  private async send<TOutput>(path: string, method: string, input: WireInput, context: RequestContext, responseMode: OperationDescriptor<OperationId>['responseMode'], idempotent: boolean, output: Schema<TOutput>): Promise<TOutput> {
+  private async send<TKey extends OperationId>(operation: OperationDescriptor<TKey>, input: WireInput, context: RequestContext): Promise<OperationOutputFor<TKey>> {
     // Operation timeouts are service SLO budgets; public network latency is governed by the configured HTTP deadline.
     const deadline = Deadline.after(RUNTIME_LIMITS.http.totalDeadlineMilliseconds, context.signal);
-    const request = this.request(path, method, input, context, deadline.signal, 'application/json');
-    const canRetry = idempotent || context.idempotencyKey !== undefined;
+    const request = this.request(operation.path, operation.method, input, context, deadline.signal, 'application/json');
+    const canRetry = operation.idempotent || context.idempotencyKey !== undefined;
     let attempt = 1;
     try {
       for (;;) {
-        deadline.throwIfExpired();
+        if (deadline.remaining() === 0) throw networkFailure(new Error('DEADLINE_EXCEEDED'), context, deadline, operation.id);
         try {
           const response = await this.transport.send(request);
-          if (responseMode === 'redirect' && response.status === 303) {
+          if (operation.responseMode === 'redirect' && response.status === 303) {
             try {
               const location = response.headers.location;
               if (!location) throw new Error('SDK_REDIRECT_LOCATION_MISSING');
-              return output.parse({ location });
+              return operation.output.parse({ location });
             } catch (cause) {
-              throw ApiError.contractResponse(context.traceId, cause);
+              throw ApiError.contractResponse(context.traceId, cause, operation.id);
             }
           }
           if (response.status === 304) {
-            if (context.ifNoneMatch === undefined || context.cachedResponse === undefined) throw ApiError.contractResponse(context.traceId, new Error('SDK_NOT_MODIFIED_CACHE_MISSING'));
+            if (context.ifNoneMatch === undefined || context.cachedResponse === undefined) throw ApiError.contractResponse(context.traceId, new Error('SDK_NOT_MODIFIED_CACHE_MISSING'), operation.id);
             try {
-              return output.parse(context.cachedResponse);
+              return operation.output.parse(context.cachedResponse);
             } catch (cause) {
-              throw ApiError.contractResponse(context.traceId, cause);
+              throw ApiError.contractResponse(context.traceId, cause, operation.id);
             }
           }
           if (response.status >= 200 && response.status < 300) {
             try {
-              return output.parse(decode(response.body));
+              return operation.output.parse(decode(response.body));
             } catch (cause) {
-              throw ApiError.contractResponse(context.traceId, cause);
+              throw ApiError.contractResponse(context.traceId, cause, operation.id);
             }
           }
           const decision = this.retry.decide(attempt, response.status);
-          if (!canRetry || !decision.retry) throw ApiError.from(response.status, response.body, context.traceId);
+          if (!canRetry || !decision.retry) throw ApiError.from(response.status, response.body, context.traceId, operation.id, operation.errorUnion);
           await delay(decision.delayMs, deadline.signal);
         } catch (cause) {
-          if (cause instanceof ApiError) throw cause;
-          deadline.throwIfExpired();
+          if (cause instanceof ApiError || cause instanceof TransportError || isCancelled(cause)) throw cause;
+          if (context.signal?.aborted) throw errorCause(context.signal.reason, 'REQUEST_ABORTED');
+          if (deadline.signal.aborted || deadline.remaining() === 0) throw networkFailure(cause, context, deadline, operation.id);
           const decision = this.retry.decide(attempt);
-          if (!canRetry || !decision.retry) throw cause;
-          await delay(decision.delayMs, deadline.signal);
+          if (!canRetry || !decision.retry) throw networkFailure(cause, context, deadline, operation.id);
+          try {
+            await delay(decision.delayMs, deadline.signal);
+          } catch (delayCause) {
+            if (context.signal?.aborted) throw errorCause(context.signal.reason, 'REQUEST_ABORTED');
+            throw networkFailure(delayCause, context, deadline, operation.id);
+          }
         }
         attempt += 1;
       }
@@ -142,6 +151,13 @@ export class ApiClient implements OperationExecutor {
       signal,
     };
   }
+}
+
+function networkFailure(cause: unknown, context: RequestContext, deadline: Deadline, operation: OperationId): TransportError {
+  if (deadline.signal.aborted || deadline.remaining() === 0) return new TransportError('TIMEOUT', context.traceId, true, undefined, { cause }, operation);
+  const online = (globalThis as { readonly navigator?: { readonly onLine?: boolean } }).navigator?.onLine;
+  if (online === false) return new TransportError('OFFLINE', context.traceId, true, undefined, { cause }, operation);
+  return new TransportError('UNAVAILABLE', context.traceId, true, undefined, { cause }, operation);
 }
 
 class DeferredEventStream<T> implements EventStream<T> {

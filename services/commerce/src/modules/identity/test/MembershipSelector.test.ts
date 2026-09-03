@@ -13,8 +13,8 @@ describe('MembershipSelector', () => {
       principal: 'principal-one',
       target: 'storefront',
       memberships: [
-        { id: 'membership-one', target: 'storefront' },
-        { id: 'membership-two', target: 'storefront' },
+        membership('membership-one'),
+        membership('membership-two'),
       ],
       expiresAt: new Date('2099-01-01T00:00:00.000Z'),
       transaction: null,
@@ -28,7 +28,7 @@ describe('MembershipSelector', () => {
       repository as never,
       { issue } as never,
       { browser: () => Buffer.alloc(32, 1), device: () => Buffer.alloc(32, 2) } as never,
-      { memberships: async () => [{ id: 'membership-two', target: 'storefront' }] } as never,
+      { memberships: async () => [{ ...membership('membership-two'), organization: 'mall-one' }] } as never,
       { memberForPrincipal: async () => 'member-one' } as never,
       { complete: vi.fn() } as never,
       { verify: vi.fn(() => ({ url: 'https://fufu.wang/s/mall-one/orders', proof: returnTarget, expiresAt: '2099-01-01T00:00:00.000Z', target: 'storefront' })) } as never,
@@ -48,8 +48,8 @@ describe('MembershipSelector', () => {
             authorization,
             returnTarget,
             memberships: [
-              { id: 'membership-one', target: 'storefront' },
-              { id: 'membership-two', target: 'storefront' },
+              membership('membership-one'),
+              membership('membership-two'),
             ],
           },
           { peer: '127.0.0.1', agent: 'browser', device: 'device-one' }
@@ -69,3 +69,17 @@ describe('MembershipSelector', () => {
     expect(issue).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ membership: 'membership-two', assurance: 1 }));
   });
 });
+
+function membership(id: string) {
+  return Object.freeze({
+    id,
+    target: 'storefront' as const,
+    accessVersion: 1,
+    displayName: '张三',
+    organizationName: '福利商城',
+    scopeKind: 'mall',
+    scopeId: 'mall-one',
+    roleLabel: '普通成员',
+    logoUrl: null,
+  });
+}

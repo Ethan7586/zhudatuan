@@ -12,7 +12,7 @@ export const LOCAL_CONSOLE_ORIGIN = 'http://127.0.0.1:4173';
 export const LOCAL_STOREFRONT_ORIGIN = 'http://127.0.0.1:3000';
 
 export const CLIENT_ENVIRONMENT_KEYS = ['MODE', 'VITE_API_BASE_URL', 'VITE_AUTH_BASE_URL', 'VITE_STOREFRONT_ORIGIN', 'VITE_CLIENT_VERSION'] as const;
-export const AUTH_ENVIRONMENT_KEYS = ['MODE', 'VITE_API_BASE_URL', 'VITE_ADMIN_ORIGIN', 'VITE_STOREFRONT_ORIGIN', 'VITE_CLIENT_VERSION'] as const;
+export const AUTH_ENVIRONMENT_KEYS = ['MODE', 'VITE_API_BASE_URL', 'VITE_CONSOLE_ORIGIN', 'VITE_STOREFRONT_ORIGIN', 'VITE_CLIENT_VERSION'] as const;
 export const STOREFRONT_ENVIRONMENT_KEYS = ['MODE', 'VITE_API_BASE_URL', 'VITE_AUTH_BASE_URL', 'VITE_CLIENT_VERSION'] as const;
 
 export type AuthTarget = 'console' | 'storefront';
@@ -53,7 +53,7 @@ export function authClientEnvironment(source: EnvironmentSource = browserEnviron
   const development = values.MODE !== 'production';
   return Object.freeze({
     apiOrigin: approvedOrigin(values.VITE_API_BASE_URL, CANONICAL_API_ORIGIN, LOCAL_API_ORIGIN, development, 'AUTH_API_ORIGIN_INVALID'),
-    consoleOrigin: approvedOrigin(values.VITE_ADMIN_ORIGIN, CANONICAL_CONSOLE_ORIGIN, LOCAL_CONSOLE_ORIGIN, development, 'AUTH_CONSOLE_ORIGIN_INVALID'),
+    consoleOrigin: approvedOrigin(values.VITE_CONSOLE_ORIGIN, CANONICAL_CONSOLE_ORIGIN, LOCAL_CONSOLE_ORIGIN, development, 'AUTH_CONSOLE_ORIGIN_INVALID'),
     storefrontOrigin: approvedOrigin(values.VITE_STOREFRONT_ORIGIN, CANONICAL_STOREFRONT_ORIGIN, LOCAL_STOREFRONT_ORIGIN, development, 'AUTH_STOREFRONT_ORIGIN_INVALID'),
     clientVersion: version(values.VITE_CLIENT_VERSION, development),
   });

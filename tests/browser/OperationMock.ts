@@ -143,7 +143,7 @@ function preflight(origin?: string) {
       'access-control-allow-origin': origin ?? 'http://127.0.0.1',
       'access-control-allow-credentials': 'true',
       'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-      'access-control-allow-headers': 'accept,content-type,idempotency-key,if-match,x-access-version,x-action-proof,x-client-version,x-contract-version,x-csrf-token,x-scope-hint,x-trace-id',
+      'access-control-allow-headers': 'accept,content-type,idempotency-key,if-match,x-access-version,x-action-proof,x-client-target,x-client-version,x-contract-version,x-csrf-token,x-device-id,x-scope-hint,x-trace-id',
       'access-control-max-age': '600',
     },
     body: '',

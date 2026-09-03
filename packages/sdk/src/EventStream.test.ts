@@ -1,10 +1,13 @@
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
+import { OperationCatalog } from '@shop/contract';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { number, strictObject } from 'zod/mini';
 import { JsonEventStream } from './EventStream';
 import type { StreamTransportResponse } from './Transport';
 
 const schema = strictObject({ value: number() });
+const streamOperation = 'support.events.read' as const;
+const streamErrors = OperationCatalog.get(streamOperation).errorUnion;
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -15,7 +18,9 @@ describe('JsonEventStream', () => {
   it('parses heartbeats, split frames and multiple frames from one chunk', async () => {
     const source = new JsonEventStream(
       async () => success(': heartbeat\n\nid: event:1\ndata: {"val', 'ue":1}\n\nid: event:2\nevent: support.message.sent\ndata: {"value":2}\n\n'),
-      schema
+      schema,
+      streamOperation,
+      streamErrors
     );
     const iterator = source[Symbol.asyncIterator]();
 
@@ -33,7 +38,7 @@ describe('JsonEventStream', () => {
       cursors.push(cursor);
       connection += 1;
       return connection === 1 ? success('id: event:1\ndata: {"value":1}\n\n') : success('id: event:2\ndata: {"value":2}\n\n');
-    }, schema);
+    }, schema, streamOperation, streamErrors);
     const iterator = source[Symbol.asyncIterator]();
 
     await expect(iterator.next()).resolves.toEqual({ done: false, value: { value: 1 } });
@@ -46,30 +51,30 @@ describe('JsonEventStream', () => {
 
   it.each([401, 403, 426])('surfaces a structured %s handshake rejection without reconnecting', async (status) => {
     const connect = vi.fn().mockResolvedValue(error(status, status === 401 ? 'AUTHENTICATION_REQUIRED' : status === 403 ? 'AUTHORIZATION_DENIED' : 'CONTRACT_VERSION_UNSUPPORTED'));
-    const iterator = new JsonEventStream(connect, schema)[Symbol.asyncIterator]();
+    const iterator = new JsonEventStream(connect, schema, streamOperation, streamErrors)[Symbol.asyncIterator]();
 
     await expect(iterator.next()).rejects.toMatchObject({ status });
     expect(connect).toHaveBeenCalledOnce();
   });
 
   it('turns an expired cursor into an explicit authoritative-resync signal', async () => {
-    const iterator = new JsonEventStream(async () => error(410, 'SUPPORT_EVENT_CURSOR_EXPIRED'), schema, 'event:old')[Symbol.asyncIterator]();
+    const iterator = new JsonEventStream(async () => error(410, 'SUPPORT_EVENT_CURSOR_EXPIRED'), schema, streamOperation, streamErrors, 'event:old')[Symbol.asyncIterator]();
     await expect(iterator.next()).rejects.toEqual(expect.objectContaining({ code: 'SUPPORT_EVENT_RESYNC_REQUIRED', cursor: 'event:old' }));
   });
 
   it('fails closed on invalid JSON and oversized frames', async () => {
-    const invalid = new JsonEventStream(async () => success('id: event:1\ndata: {\n\n'), schema)[Symbol.asyncIterator]();
-    await expect(invalid.next()).rejects.toMatchObject({ code: 'CONTRACT_RESPONSE_INVALID' });
+    const invalid = new JsonEventStream(async () => success('id: event:1\ndata: {\n\n'), schema, streamOperation, streamErrors)[Symbol.asyncIterator]();
+    await expect(invalid.next()).rejects.toMatchObject({ code: 'CONTRACT_INVALID' });
 
-    const oversized = new JsonEventStream(async () => success(`data: ${'x'.repeat(RUNTIME_LIMITS.stream.maximumEventBytes + 1)}\n\n`), schema)[Symbol.asyncIterator]();
-    await expect(oversized.next()).rejects.toThrow('SDK_STREAM_EVENT_TOO_LARGE');
+    const oversized = new JsonEventStream(async () => success(`data: ${'x'.repeat(RUNTIME_LIMITS.stream.maximumEventBytes + 1)}\n\n`), schema, streamOperation, streamErrors)[Symbol.asyncIterator]();
+    await expect(oversized.next()).rejects.toMatchObject({ kind: 'transport', code: 'CONTRACT_INVALID' });
   });
 
   it('cancels a pending reader immediately when the caller aborts', async () => {
     const controller = new AbortController();
     let cancelled = false;
     const stream = new ReadableStream<Uint8Array>({ cancel: () => { cancelled = true; } });
-    const source = new JsonEventStream(async () => ({ status: 200, headers: {}, stream }), schema, undefined, controller.signal);
+    const source = new JsonEventStream(async () => ({ status: 200, headers: {}, stream }), schema, streamOperation, streamErrors, undefined, controller.signal);
     const next = source[Symbol.asyncIterator]().next();
     await Promise.resolve();
     await Promise.resolve();

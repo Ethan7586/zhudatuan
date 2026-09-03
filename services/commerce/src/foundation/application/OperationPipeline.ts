@@ -1,4 +1,4 @@
-import { errorStatus, operationSchema, OperationCatalog, type ErrorCode, type OperationId, type OperationInputFor } from '@shop/contract';
+import { errorStatus, operationSchema, OperationCatalog, type ApiErrorCode, type OperationId, type OperationInputFor } from '@shop/contract';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { Bulkhead } from '../performance/Bulkhead';
 import { ApplicationError } from '../domain/ApplicationError';
@@ -99,8 +99,8 @@ function operationSuccess(mode: 'json' | 'empty' | 'redirect' | 'stream', status
 
 function operationError(union: readonly string[], status: number, body: unknown): ApplicationError {
   const code = body !== null && typeof body === 'object' && !Array.isArray(body) && typeof Reflect.get(body, 'code') === 'string' ? (Reflect.get(body, 'code') as string) : '';
-  if (!union.includes(code) || errorStatus(code) !== status) return new ApplicationError('INTERNAL_ERROR');
-  return new ApplicationError(code as ErrorCode);
+  if (!union.includes(code) || errorStatus(code as ApiErrorCode) !== status) return new ApplicationError('INTERNAL_ERROR');
+  return new ApplicationError(code as ApiErrorCode);
 }
 
 function expectedVersionOf(header: string | undefined): number | undefined {

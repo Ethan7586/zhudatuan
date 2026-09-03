@@ -19,9 +19,27 @@ routes:
   console: { host: console.fufu.wang, artifact: console }
 headers:
   hsts: max-age=63072000; includeSubDomains
-  csp: default-src 'none'; frame-ancestors 'none'
+  contentTypeOptions: nosniff
+  crossOriginOpenerPolicy: same-origin
   permissions: camera=(), microphone=(), geolocation=()
   referrer: no-referrer
+  api:
+    contentSecurityPolicy:
+      default: [none]
+      frameAncestors: [none]
+  auth:
+    contentSecurityPolicy:
+      default: [none]
+      script: [self]
+      style: [self]
+      image: [self, data]
+      font: [self]
+      connectRoutes: [api]
+      formAction: [self]
+      base: [none]
+      object: [none]
+      frameAncestors: [none]
+      upgradeInsecureRequests: true
 cors:
   credentials: true
   wildcard: false

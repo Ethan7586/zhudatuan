@@ -1,4 +1,5 @@
 import { ArrowLeft, Clock3, RefreshCw, ShieldAlert, type LucideIcon } from 'lucide-react';
+import { presentError } from '@shop/presentation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ApplyAfterSale } from '../application/ApplyAfterSale';
 import { readAfterSale } from '../application/ReadAfterSale';
@@ -35,7 +36,7 @@ export function AfterSalePage({ orderId, onBack }: AfterSalePageProps) {
       if (!session.session) throw new Error('AUTHENTICATION_REQUIRED');
       setPage(await readAfterSale(session.session, orderId));
     } catch (cause) {
-      setError(message(cause, '售后信息加载失败，请稍后重试'));
+      setError(presentError(cause).message);
     }
   }, [orderId, session.session]);
   useEffect(() => void load(), [load]);
@@ -67,7 +68,7 @@ export function AfterSalePage({ orderId, onBack }: AfterSalePageProps) {
       setAttachments([]);
       await load();
     } catch (cause) {
-      setError(message(cause, '售后申请提交失败，请核对可售后数量后重试'));
+      setError(presentError(cause).message);
     } finally {
       setBusy(false);
     }
@@ -290,7 +291,4 @@ function evidenceText(value: unknown): string {
         .join(' · ')
     )
     .join('；');
-}
-function message(cause: unknown, fallback: string): string {
-  return cause instanceof Error && cause.message ? cause.message : fallback;
 }

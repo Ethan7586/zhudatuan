@@ -1,3 +1,4 @@
+import { queryCondition, hasFailureCode, safeQueryError } from '@shop/presentation';
 import type { OperationOutputFor } from '@shop/contract';
 import { Button, ResourcePanel } from '@shop/design';
 import { createFetchRiskCenterRead } from '@shop/sdk/risk';
@@ -7,7 +8,7 @@ import { AssurancePrompt } from '../../../entity/session/AssurancePrompt';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
 import type { ConsoleNavigationNode, ConsoleScope } from '../../../entity/session/ConsoleSession';
 import { consoleRequest } from '../../../shared/api/Client';
-import { queryCondition, queryErrorCode, safeQueryError } from '../../../shared/presentation/QueryState';
+
 import { appConfig } from '../../../shared/config/AppConfig';
 import { useRouteTitle } from '../../../shared/ui/RouteTitle';
 import { navigationPath } from '../../../shared/url/NavigationPath';
@@ -26,7 +27,7 @@ export function Component() {
     queryFn: ({ signal }) => centerRead({ query: { limit: 100 } }, consoleRequest(context.scope, signal, context.session.accessVersion)),
     staleTime: 30_000,
   });
-  if (queryErrorCode(query.error, 'STEPUP_REQUIRED')) {
+  if (hasFailureCode(query.error, 'STEPUP_REQUIRED')) {
     return <AssurancePrompt title={title} description="系统治理台包含风险策略、命中证据与人员标识。请完成短信二次验证后查看，成功后会自动回到当前数据范围。" />;
   }
   const data: OperationOutputFor<'risk.center.read'> | undefined = query.data;

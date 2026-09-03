@@ -19,31 +19,25 @@ describe('AccessPort directory membership resolution', () => {
     ]);
     expect(query.mock.calls[0]?.[0]).toContain('access.scopegrant scopegrant');
     expect(query.mock.calls[0]?.[0]).toContain('access.membershipoverride override');
-    expect(query.mock.calls[0]?.[0]).toContain('organization.unitclosure governed');
-    expect(query.mock.calls[0]?.[0]).toContain("allowed.effect='allow'");
-    expect(query.mock.calls[0]?.[0]).toContain("denied.effect='deny'");
+    expect(query.mock.calls[0]?.[0]).toContain('access.membership_visible_to($1,membership.id)');
+    expect(query.mock.calls[0]?.[0]).not.toContain('organization.unitclosure');
     expect(query.mock.calls[0]?.[0]).not.toContain('access.scopegrant grant');
   });
 
   it('returns one principal and canonical target mappings', async () => {
     const database = {
-      query: vi.fn(async (_sql: string, _values?: readonly unknown[]) =>
-        databaseResult([
-          { id: 'membership:console', principal_id: 'principal:one', client: 'console' },
-          { id: 'membership:storefront', principal_id: 'principal:one', client: 'storefront' },
-        ])
-      ),
+      query: vi.fn(async (_sql: string, _values?: readonly unknown[]) => databaseResult([membershipRow('membership:console', 'console', '店长'), membershipRow('membership:storefront', 'storefront', null)])),
     };
     const response = await withReadTransaction(database.query, (context) => port().directoryMemberships(context, ['membership:storefront', 'membership:console', 'membership:console']));
     expect(response).toEqual({
       principal: 'principal:one',
       conflict: false,
       memberships: [
-        { id: 'membership:console', target: 'console' },
-        { id: 'membership:storefront', target: 'storefront' },
+        { id: 'membership:console', target: 'console', organization: 'mall:one', accessVersion: 3, displayName: '张三', organizationName: '福利商城', scopeKind: 'mall', scopeId: 'mall:one', roleLabel: '店长', logoUrl: null },
+        { id: 'membership:storefront', target: 'storefront', organization: 'mall:one', accessVersion: 3, displayName: '张三', organizationName: '福利商城', scopeKind: 'mall', scopeId: 'mall:one', roleLabel: '已授权成员', logoUrl: null },
       ],
     });
-    expect(database.query).toHaveBeenCalledWith(expect.stringContaining('from access.membership'), [['membership:console', 'membership:storefront']]);
+    expect(database.query).toHaveBeenCalledWith(expect.stringContaining('from access.identity_memberships(null,null,$1::text[])'), [['membership:console', 'membership:storefront']]);
   });
 
   it('fails closed when directory bindings point at more than one principal', async () => {
@@ -76,3 +70,17 @@ describe('AccessPort directory membership resolution', () => {
     expect(query.mock.calls.map(([sql]) => String(sql).trim().split(/\s+/).slice(0, 3).join(' '))).toEqual(['insert into access.role(id,scope_id,name,status,version,kind)', 'delete from access.rolepermission', 'with requested as']);
   });
 });
+
+function membershipRow(id: string, client: string, roleLabel: string | null) {
+  return Object.freeze({
+    id,
+    principal_id: 'principal:one',
+    client,
+    organization_id: 'mall:one',
+    access_version: 3,
+    display_name: '张三',
+    organization_name: '福利商城',
+    scope_kind: 'mall',
+    role_label: roleLabel,
+  });
+}

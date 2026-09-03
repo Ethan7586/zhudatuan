@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ProductionApiError } from '../../shared/failure/Failure';
+import { ApiError } from '@shop/sdk';
 import { ReferralAttributionCoordinator, referralCandidate } from './ReferralAttribution';
 
 const TOKEN = `${'a'.repeat(32)}.${'b'.repeat(43)}`;
@@ -36,7 +36,7 @@ describe('storefront referral attribution', () => {
     release?.();
     await expect(first).resolves.toEqual({ status: 'bound', candidateWon: true });
 
-    const existing = new ReferralAttributionCoordinator(vi.fn().mockRejectedValue(new ProductionApiError('已归因', 409, 'REFERRAL_ALREADY_BOUND')));
+    const existing = new ReferralAttributionCoordinator(vi.fn().mockRejectedValue(new ApiError('REFERRAL_ALREADY_BOUND', 409, 'request-one')));
     await expect(existing.capture(input)).resolves.toEqual({ status: 'bound', candidateWon: false });
   });
 

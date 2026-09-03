@@ -1,9 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { ApiError } from '@shop/sdk/error';
+import { hasFailureCode, safeQueryError } from '@shop/presentation';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
 import { AssurancePrompt } from '../../../entity/session/AssurancePrompt';
-import { safeQueryError } from '../../../shared/presentation/QueryState';
 import { ManageSupportConfig } from '../application/ManageSupportConfig';
 import type { SupportGateway } from '../infrastructure/SupportGateway';
 import type { AccountChange, AgentChange, RuleChange, SlaChange } from '../model/SupportConfig';
@@ -32,7 +31,7 @@ export function SupportSettings({ gateway }: Readonly<{ gateway: SupportGateway 
   const mutation = useMutation<void, Error, Change>({
     mutationFn: async (change) => { if (change.kind === 'agents') await manager.agent(context, change.id, change.version, change.body); else if (change.kind === 'accounts') await manager.account(context, change.id, change.version, change.body); else if (change.kind === 'rules') await manager.rule(context, change.id, change.version, change.body); else await manager.sla(context, change.id, change.version, change.body); },
     onSuccess: async (_, change) => { setNotice('配置已保存并取得新版本。'); await cache.invalidateQueries({ queryKey: supportSettingKey(context.scope.id, context.session.accessVersion, change.kind) }); },
-    onError: async (cause, change) => { const conflict = cause instanceof ApiError && cause.code === 'VERSION_CONFLICT'; setNotice(conflict ? '配置已被其他管理员修改。表单内容已保留，列表已加载服务器新版本，请核对后重新提交。' : '配置保存失败，请检查输入和连接状态后重试。'); if (conflict) await cache.invalidateQueries({ queryKey: supportSettingKey(context.scope.id, context.session.accessVersion, change.kind) }); },
+    onError: async (cause, change) => { const conflict = hasFailureCode(cause, 'VERSION_CONFLICT'); setNotice(conflict ? '配置已被其他管理员修改。表单内容已保留，列表已加载服务器新版本，请核对后重新提交。' : '配置保存失败，请检查输入和连接状态后重试。'); if (conflict) await cache.invalidateQueries({ queryKey: supportSettingKey(context.scope.id, context.session.accessVersion, change.kind) }); },
   });
   const disabled = context.session.assurance.level < 3;
   const error = safeQueryError(mutation.error);

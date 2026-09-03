@@ -17,7 +17,7 @@ test('same checkout and same idempotency identity cannot create two orders', () 
   const runtime = text('../../services/commerce/src/adapter/database/PgIdempotencyRepository.ts');
   assert.match(order, /checkout_id text not null unique/);
   assert.match(idempotency, /primary key\(scope,actor_id,operation,key\)/);
-  assert.match(runtime, /row\.request_hash !== claim\.requestHash[\s\S]+IDEMPOTENCY_KEY_REUSED/);
+  assert.match(runtime, /row\.request_hash !== claim\.requestHash[\s\S]+IDEMPOTENCY_CONFLICT/);
   assert.match(runtime, /row\.state === 'started'[\s\S]+row\.response/);
 });
 

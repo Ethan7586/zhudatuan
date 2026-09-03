@@ -1,5 +1,5 @@
 // Generated from config/cache.yml and config/capacity.yml. Do not edit.
-export const CONFIG_CHECKSUM = 'b2ca34d0f93b4bc8fc22ee077f3dafb22196da78898820e99f575bae70036c31' as const;
+export const CONFIG_CHECKSUM = 'f557147c88b631596b6d31e635484ed432b63c75f12c113702607d4a070e5809' as const;
 
 export const CACHE_CATALOG = Object.freeze({
   "experience": {
@@ -66,6 +66,19 @@ export const PROVIDER_CAPACITY = Object.freeze({
 
 export const RUNTIME_LIMITS = Object.freeze({
   "authentication": {
+    "bootstrap": {
+      "ttlSeconds": 600
+    },
+    "password": {
+      "minimumLength": 12,
+      "maximumLength": 128,
+      "uppercase": true,
+      "lowercase": true,
+      "number": true,
+      "symbol": true,
+      "maximumConcurrency": 4,
+      "maximumQueue": 64
+    },
     "otp": {
       "validMinutes": 10,
       "resendSeconds": 30

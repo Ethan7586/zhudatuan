@@ -1,7 +1,7 @@
-import type { InvitationGateway } from '../infrastructure/InvitationGateway';
+import type { InvitationPort } from '../public/InvitationPort';
 import type { InvitationResolution } from '../model/Invitation';
 
 export class ResolveInvitation {
-  constructor(private readonly gateway: InvitationGateway) {}
-  execute(input: InvitationResolution) { return this.gateway.resolve(input); }
+  constructor(private readonly port: InvitationPort) {}
+  execute(input: InvitationResolution) { return this.port.resolve(input); }
 }

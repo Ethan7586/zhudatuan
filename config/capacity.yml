@@ -16,6 +16,17 @@ provider:
   defaultRequestsPerSecond: 20
 runtime:
   authentication:
+    bootstrap:
+      ttlSeconds: 600
+    password:
+      minimumLength: 12
+      maximumLength: 128
+      uppercase: true
+      lowercase: true
+      number: true
+      symbol: true
+      maximumConcurrency: 4
+      maximumQueue: 64
     otp:
       validMinutes: 10
       resendSeconds: 30

@@ -12,6 +12,13 @@ interface SelectionRow {
   readonly candidate_memberships: readonly Readonly<{
     id: string;
     target: 'console' | 'storefront';
+    accessVersion: number;
+    displayName: string;
+    organizationName: string;
+    scopeKind: string;
+    scopeId: string;
+    roleLabel: string;
+    logoUrl: string | null;
   }>[];
   readonly expires_at: Date;
   readonly auth_state_hash: string;
@@ -37,8 +44,8 @@ export class PgMembershipSelection implements MembershipSelectionPort {
     await database.query(
       `insert into identity.preauth(id,transaction_id,principal_id,token_hash,candidate_hash,candidate_memberships,
       browser_hash,expires_at,created_at,purpose,target,reference_id,device_hash,state,version,auth_state_hash,auth_nonce_hash,
-      auth_pkce_challenge,assurance,return_target) values($1,null,$2,$3,$4,$5::jsonb,$6,clock_timestamp()+interval '5 minutes',clock_timestamp(),
-      'federationselection',$7,$1::text,$8,'active',0,$9,$10,$11,$12,$13)`,
+      auth_pkce_challenge,assurance,return_target) values($1::uuid,null,$2,$3,$4,$5::jsonb,$6,clock_timestamp()+interval '5 minutes',clock_timestamp(),
+      'federationselection',$7,$1::uuid::text,$8,'active',0,$9,$10,$11,$12,$13)`,
       [
         id,
         input.principal,

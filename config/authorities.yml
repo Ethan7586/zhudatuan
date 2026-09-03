@@ -1,4 +1,4 @@
-version: 3
+version: 4
 requirements:
   logicalSource: RepositoryAuthority docs/福利商城功能清单.xlsx
   repositoryRelativePath: docs/福利商城功能清单.xlsx
@@ -13,13 +13,22 @@ requirements:
     mvp: 22
     providers: 20
 architecture:
-  logicalSource: RepositoryAuthority docs/architecture/商城优化方案.md
-  repositoryRelativePath: docs/architecture/商城优化方案.md
-  sha256: c8bab35c0b67e59b972f99f5be80bb799265f6eb53e7a6505ae12353a695d8d7
+  - logicalSource: RepositoryAuthority docs/architecture/商城优化方案.md
+    repositoryRelativePath: docs/architecture/商城优化方案.md
+    sha256: 5f674cabfa5910be1c4c0e5c9cdc7e60c65defbbd145a019c823df5406f85108
+    version: 1
+  - logicalSource: RepositoryAuthority docs/architecture/Auth前端代码结构统一.md
+    repositoryRelativePath: docs/architecture/Auth前端代码结构统一.md
+    sha256: cc4c139f6469a249922f5208cc36118cd879ecb8c6721d528e9d33433b746ffb
+    version: 1
+  - logicalSource: RepositoryAuthority docs/architecture/Auth前端代码结构统一修改点清单.md
+    repositoryRelativePath: docs/architecture/Auth前端代码结构统一修改点清单.md
+    sha256: 3af0a2da3d833f507f458e6d7b20e3a6775263ea4fa13ae9c6074831b3fcee13
+    version: 1
 visuals:
   logicalSource: RepositoryAuthority config/visuals.yml
   repositoryRelativePath: config/visuals.yml
-  sha256: 48a0c65900ac1eb4933d5328333be9f945603eee4881e6412ff4b9d5dd43926d
+  sha256: 1f7ee94bf1fbb15c7e1729d68e34c6d8f300e96211a1c9ea66b25b1e021ef094
 navigation:
   logicalSource: RepositoryAuthority config/navigation.yml
   repositoryRelativePath: config/navigation.yml

@@ -1,8 +1,9 @@
+import { queryCondition, safeQueryError } from '@shop/presentation';
 import { Button, ResourcePanel } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
-import { queryCondition, safeQueryError } from '../../../shared/presentation/QueryState';
+
 import { DataTable, type DataColumn } from '../../../shared/ui/DataTable';
 import { formatCount, formatDate } from '../../../shared/ui/Format';
 import { MetricCards } from '../../../shared/ui/MetricCards';

@@ -1,3 +1,4 @@
+import { presentError } from '@shop/presentation';
 import type { ProductDetail } from './ProductQuery';
 import type { Listing } from './ProductSchema';
 
@@ -13,7 +14,7 @@ export function ProductDrawerPanels({ tab, listing, detail, pending, error }: Re
   if (error !== null)
     return (
       <p role="alert" className="productdetailstate iserror">
-        {error.message}
+        {presentError(error).message}
       </p>
     );
   if (detail === undefined)

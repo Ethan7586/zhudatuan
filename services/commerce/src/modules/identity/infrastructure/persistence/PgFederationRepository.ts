@@ -10,6 +10,7 @@ import { FederationTransaction } from '../../domain/model/FederationTransaction'
 import type { IdentityMemberPort } from '../../../member/public';
 import type { IdentityAccessPort } from '../../../access/public';
 import type { AuthTicketBinding } from '../../application/port/AuthTicketPort';
+import { membershipCandidate } from '../../application/model/MembershipCandidate';
 interface TransactionRow {
   readonly id: string;
   readonly provider_id: string;
@@ -130,7 +131,7 @@ export class PgFederationRepository implements FederationRepository {
     if (principals.length !== 1) return Object.freeze({ principal: null, memberships: Object.freeze([]), conflict: principals.length > 1 });
     const member = await this.members.memberForPrincipal(context, principals[0]!);
     const memberships = await this.access.memberships(context, member, value.target);
-    return Object.freeze({ principal: principals[0]!, memberships: Object.freeze(memberships.map(({ id, target }) => Object.freeze({ id, name: id, target }))), conflict: false });
+    return Object.freeze({ principal: principals[0]!, memberships: Object.freeze(memberships.map(membershipCandidate)), conflict: false });
   }
   async bindDirectory(
     context: WriteTransactionContext,
@@ -180,7 +181,7 @@ export class PgFederationRepository implements FederationRepository {
     const next = value.transition('selectionrequired', new Date());
     await transition(database, next, value.version);
     const token = randomBytes(48).toString('base64url');
-    const minimal = memberships.map(({ id, name, target }) => ({ id, name, target }));
+    const snapshot = memberships.map((membership) => ({ ...membership }));
     await database.query(
       `insert into identity.preauth(id,transaction_id,principal_id,token_hash,candidate_hash,candidate_memberships,browser_hash,
       expires_at,created_at,purpose,target,reference_id,device_hash,state,version,auth_state_hash,auth_nonce_hash,auth_pkce_challenge,assurance,return_target)
@@ -191,8 +192,8 @@ export class PgFederationRepository implements FederationRepository {
         value.id,
         principal,
         hash(token),
-        hash(JSON.stringify(minimal)),
-        JSON.stringify(minimal),
+        hash(JSON.stringify(snapshot)),
+        JSON.stringify(snapshot),
         browserhash,
         value.target,
         devicehash,

@@ -37,14 +37,14 @@ export class HttpApp {
       if (origin && !this.origins.has(origin)) return secure(403, { code: 'ORIGIN_DENIED', requestId }, requestId);
       if (request.method === 'OPTIONS') return preflight(request, requestId, origin);
       const url = new URL(request.url);
-      assertSafeUrl(url);
       const route = this.routes.match(request.method, url.pathname);
       if (!route) return secure(404, { code: 'NOT_FOUND', message: 'NOT_FOUND', requestId }, requestId, origin);
       const operation = OperationCatalog.get(operationController(route.operation));
       observedOperation = operation.id;
+      assertSafeUrl(url);
       const version = request.headers.get('x-contract-version');
       if (!route.operation.startsWith('runtime.health.') && operation.audience !== 'webhook' && version !== CONTRACT_VERSION) {
-        return secure(426, { code: 'CONTRACT_VERSION_UNSUPPORTED', message: 'CONTRACT_VERSION_UNSUPPORTED', requestId, required: CONTRACT_VERSION }, requestId, origin, { 'x-contract-version': CONTRACT_VERSION });
+        return secure(426, { code: 'CONTRACT_VERSION_UNSUPPORTED', message: 'CONTRACT_VERSION_UNSUPPORTED', requestId, retryable: false }, requestId, origin, { 'x-contract-version': CONTRACT_VERSION });
       }
       assertRequestPolicy(request, origin, operation, this.csrf);
       const payload = await parseBody(request);
@@ -74,7 +74,7 @@ export class HttpApp {
       }
       const traceId = request.headers.get('x-trace-id') ?? requestId;
       this.metrics?.failure(observedOperation ? { requestId, traceId, operation: observedOperation } : { requestId, traceId }, cause);
-      const mapped = this.errors.map(cause, requestId);
+      const mapped = this.errors.map(cause, requestId, observedOperation as import('@shop/contract').OperationId | undefined);
       observedStatus = mapped.status;
       observedError = bodyCode(mapped.body);
       return secure(mapped.status, mapped.body, requestId, origin, mapped.headers);
@@ -222,8 +222,8 @@ function operationResponse(operation: ReturnType<typeof OperationCatalog.get>, r
   const headers = result.headers ?? {};
   if (result.status < 200 || result.status >= 400) {
     const code = bodyCode(result.body);
-    if (!code || !operation.errorUnion.includes(code as never) || errorStatus(code) !== result.status) throw new ApplicationError('INTERNAL_ERROR');
-    throw new ApplicationError(code as import('@shop/contract').ErrorCode, errorDetails(result.body));
+    if (!code || !operation.errorUnion.includes(code as never) || errorStatus(code as import('@shop/contract').ApiErrorCode) !== result.status) throw new ApplicationError('INTERNAL_ERROR');
+    throw new ApplicationError(code as import('@shop/contract').ApiErrorCode, errorDetails(result.body));
   }
   if (operation.responseMode === 'redirect') {
     const location = headers.location;

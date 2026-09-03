@@ -29,8 +29,10 @@ export interface MvpDefinition {
   readonly status: 'Designed' | 'Implemented' | 'Integrated' | 'Accepted' | 'Released';
   readonly release: 'required' | 'nonblocking';
   readonly modules: readonly string[];
-  readonly operations: readonly string[];
+  readonly directOperations: readonly string[];
+  readonly transitiveOperations: readonly string[];
   readonly journeys: readonly string[];
+  readonly entryRoutes: readonly string[];
   readonly providers: readonly string[];
   readonly clarifications: readonly string[];
   readonly runbook: string;
@@ -116,6 +118,9 @@ export async function loadRequirementSource(root: string): Promise<RequirementSo
   );
   if (mvp.length !== 22) throw new Error('MVP_SOURCE_COUNT_INVALID:' + mvp.length);
   if (mvp.some(({ id }) => !/^MVP[A-Z]+$/.test(id))) throw new Error('MVP_ID_INVALID');
+  if (mvp.some(({ directOperations, transitiveOperations }) => directOperations.some((operation) => transitiveOperations.includes(operation)))) {
+    throw new Error('MVP_OPERATION_CLASSIFICATION_OVERLAP');
+  }
   assertUnique(
     mvp.map(({ source }) => String(source.row)),
     'MVP_SOURCE_ROW_DUPLICATE'
@@ -135,6 +140,7 @@ export async function loadRequirementSource(root: string): Promise<RequirementSo
   const clarificationIds = new Set(clarifications.map(({ id }) => id));
   if (
     mvp.some(({ journeys, providers: references }) => journeys.length === 0 || references.some((reference) => !providerIds.has(reference))) ||
+    mvp.some(({ entryRoutes }) => entryRoutes.some((route) => !route.startsWith('/'))) ||
     clarifications.some(({ id, requirements, status }) => id.length === 0 || requirements.length === 0 || requirements.some((requirement) => !mvpIds.has(requirement)) || (status !== 'open' && status !== 'resolved')) ||
     mvp.some(({ clarifications: references }) => references.some((reference) => !clarificationIds.has(reference)))
   ) {

@@ -1,4 +1,5 @@
 import { Bell, Check, CircleAlert, LoaderCircle, Mail, MessageCircle, RefreshCw } from 'lucide-react';
+import { presentError } from '@shop/presentation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { useSession } from '../../../shared/runtime/SessionContext';
@@ -34,7 +35,7 @@ export function NotificationPage() {
       await mark.current.execute(session.session, item.id);
       await refresh();
     } catch (cause) {
-      setError(message(cause, '标记已读失败，请稍后重试'));
+      setError(presentError(cause).message);
     } finally {
       setBusy(null);
     }
@@ -49,7 +50,7 @@ export function NotificationPage() {
       await change.current.execute(session.session, channel, eventType, enabled);
       await refresh();
     } catch (cause) {
-      setError(message(cause, '通知偏好保存失败，请稍后重试'));
+      setError(presentError(cause).message);
     } finally {
       setBusy(null);
     }
@@ -176,7 +177,4 @@ function eventLabel(value: string): string {
 }
 function format(value: string): string {
   return new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
-}
-function message(cause: unknown, fallback: string): string {
-  return cause instanceof Error && cause.message ? cause.message : fallback;
 }

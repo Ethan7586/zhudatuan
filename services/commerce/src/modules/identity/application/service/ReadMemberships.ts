@@ -3,13 +3,11 @@ import { requireAccess } from '../../../../foundation/application/OperationAcces
 
 import type { IdentityAccessPort } from '../../../access/public';
 import type { IdentityMemberPort } from '../../../member/public';
-import type { IdentityOrganizationPort } from '../../../organization/public';
 
 export class ReadMemberships {
   constructor(
     private readonly members: IdentityMemberPort,
-    private readonly access: IdentityAccessPort,
-    private readonly organizations: IdentityOrganizationPort
+    private readonly access: IdentityAccessPort
   ) {}
 
   action(): OperationAction<'read'> {
@@ -17,16 +15,16 @@ export class ReadMemberships {
       const current = requireAccess(request);
       const member = await this.members.memberForPrincipal(database, current.actor.id);
       const memberships = await this.access.memberships(database, member, 'storefront');
-      const organizations = await this.organizations.names(
-        database,
-        memberships.map(({ organization }) => organization)
-      );
-      const names = new Map(organizations.map(({ id, name }) => [id, name]));
       const items = memberships.map((membership) =>
         Object.freeze({
           id: membership.id,
-          organizationId: membership.organization,
-          name: names.get(membership.organization) ?? membership.organization,
+          target: membership.target,
+          displayName: membership.displayName,
+          organizationName: membership.organizationName,
+          scopeKind: membership.scopeKind,
+          scopeId: membership.scopeId,
+          roleLabel: membership.roleLabel,
+          logoUrl: membership.logoUrl,
           current: membership.id === current.membership.id,
           accessVersion: membership.accessVersion,
         })

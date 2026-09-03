@@ -79,8 +79,14 @@ export interface MembershipReference {
 export interface ActiveMembershipReference extends MembershipReference {
   readonly organization: string;
   readonly accessVersion: number;
+  readonly displayName: string;
+  readonly organizationName: string;
+  readonly scopeKind: string;
+  readonly scopeId: string;
+  readonly roleLabel: string;
+  readonly logoUrl: string | null;
 }
-export interface DirectoryMembershipReference extends MembershipReference {
+export interface DirectoryMembershipReference extends ActiveMembershipReference {
   readonly principal: string;
 }
 export interface MemberRecord {

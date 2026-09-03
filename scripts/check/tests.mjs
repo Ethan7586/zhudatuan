@@ -79,9 +79,10 @@ for (const provider of providers) {
 }
 
 for (const app of ['auth', 'console', 'storefront']) {
-  const manifest = JSON.parse(readFileSync(join(root, 'apps', app, 'package.json'), 'utf8'));
+  const appRoot = join(root, 'apps', app);
+  const manifest = JSON.parse(readFileSync(join(appRoot, 'package.json'), 'utf8'));
   if (typeof manifest.scripts?.['test:component'] !== 'string') failures.push(`APP_COMPONENT_SCRIPT_MISSING:${app}`);
-  if (!allFiles(join(root, 'apps', app, 'src')).some((name) => name.endsWith('.test.tsx'))) failures.push(`APP_COMPONENT_TEST_MISSING:${app}`);
+  if (!allFiles(appRoot).some((name) => name.endsWith('.test.tsx'))) failures.push(`APP_COMPONENT_TEST_MISSING:${app}`);
 }
 const matrix = join(root, 'packages/design/src/ResourceState.component.test.tsx');
 if (!existsSync(matrix)) failures.push('COMPONENT_STATE_MATRIX_MISSING');

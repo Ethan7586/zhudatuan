@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createFetchExperience } from '@shop/sdk/experience';
+import { presentError } from '@shop/presentation';
 import { useState, type FormEvent } from 'react';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { consoleCommand } from '../../shared/api/Client';
@@ -135,7 +136,7 @@ function ExperienceActionForm({ action, detail, context, onClose, onDone }: Read
           )}
           {failure === null ? null : (
             <p role="alert" className="commerceactionerror">
-              {failure.message}
+              {presentError(failure).message}
             </p>
           )}
         </div>

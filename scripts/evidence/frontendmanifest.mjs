@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const output = join(root, 'docs/evidence/frontend/files.json');
-const sourceRoots = ['apps/console', 'apps/auth', 'apps/storefront', 'packages/design', 'packages/sdk', 'packages/contract', 'packages/testing', 'packages/authz', 'packages/config', 'packages/telemetry'];
-const authorityFiles = ['config/visuals.yml', 'config/navigation.yml'];
+const sourceRoots = ['apps/console', 'apps/auth', 'apps/storefront', 'packages/design', 'packages/presentation', 'packages/sdk', 'packages/contract', 'packages/testing', 'packages/authz', 'packages/config', 'packages/telemetry'];
+const authorityFiles = ['config/visuals.yml', 'config/navigation.yml', 'docs/architecture/Auth前端代码结构统一.md', 'docs/architecture/Auth前端代码结构统一修改点清单.md'];
 const excludedDirectories = new Set(['.next', '.vinext', '.wrangler', 'coverage', 'dist', 'node_modules', 'storybook-static']);
 
 const entries = [];

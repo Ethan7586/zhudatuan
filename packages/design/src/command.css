@@ -48,6 +48,13 @@
   font-weight: 700;
 }
 
+.dialogcontent > header .dialogdescription {
+  margin-top: var(--sw-space-0-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: 400;
+}
+
 .dialogcontent > header button {
   display: grid;
   width: var(--sw-min-touch-target);

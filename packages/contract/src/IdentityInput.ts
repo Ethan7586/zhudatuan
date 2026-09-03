@@ -91,7 +91,8 @@ export type IdentityOperationInputs = Readonly<{
   'identity.invitations.revoke': Readonly<{ path: Readonly<{ id: string }>; body: IdentityInvitationsRevokeBody }>;
   'identity.enrollments.read': Readonly<{ path: Readonly<{ id: string }>; query?: EmptyInput }>;
   'identity.enrollments.complete': Readonly<{ path: Readonly<{ id: string }>; body: IdentityEnrollmentsCompleteBody }>;
-  'identity.providers.read': Readonly<{ query?: Readonly<{ returntarget?: string; returnpath?: string }> }>;
+  'identity.bootstrap.read': Readonly<{ query?: Readonly<{ returntarget?: string; returnpath?: string }> }>;
+  'identity.providers.read': Readonly<{ query?: Readonly<{ returntarget?: string }> }>;
   'identity.federations.start': Readonly<{ body: Readonly<{ providerid: string; returntarget: string; authorization: AuthorizationRequest }> }>;
   'identity.federations.callback': Readonly<{ path: Readonly<{ providerid: string }>; query?: Readonly<{ state: string; code: string }> }>;
   'identity.federations.selection.read': Readonly<{ query?: EmptyInput }>;

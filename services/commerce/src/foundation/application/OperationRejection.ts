@@ -1,4 +1,4 @@
-import { errorStatus, type ErrorCode } from '@shop/contract';
+import { errorStatus, type ApiErrorCode } from '@shop/contract';
 import type { ErrorDetail } from '../domain/ApplicationError';
 import type { OperationResult } from './OperationRequest';
 
@@ -6,7 +6,7 @@ export class OperationRejection extends Error {
   readonly result: OperationResult;
 
   constructor(
-    readonly code: ErrorCode,
+    readonly code: ApiErrorCode,
     readonly details?: Readonly<Record<string, ErrorDetail>>
   ) {
     super(code);
@@ -17,6 +17,6 @@ export class OperationRejection extends Error {
   }
 }
 
-export function reject(code: ErrorCode, details?: Readonly<Record<string, ErrorDetail>>): never {
+export function reject(code: ApiErrorCode, details?: Readonly<Record<string, ErrorDetail>>): never {
   throw new OperationRejection(code, details);
 }

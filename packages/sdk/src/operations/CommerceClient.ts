@@ -306,6 +306,7 @@ export const SDK_OPERATION_IDS = Object.freeze([
   "navigation.tree.read",
   "navigation.catalog.read",
   "navigation.health.read",
+  "identity.bootstrap.read",
   "identity.providers.read",
   "identity.federations.start",
   "identity.federations.callback",

@@ -1,12 +1,14 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { failure } from '@shop/presentation';
 
 export class ErrorBoundary extends Component<{ readonly children: ReactNode }, { readonly error: Error | null }> {
   state = { error: null } as { readonly error: Error | null };
   static getDerivedStateFromError(error: Error) {
     return { error };
   }
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    window.dispatchEvent(new CustomEvent('storefront:error', { detail: { message: error.message, stack: info.componentStack } }));
+  componentDidCatch(error: Error, _info: ErrorInfo) {
+    const reported = failure(error);
+    window.dispatchEvent(new CustomEvent('storefront:error', { detail: { kind: reported.kind, code: reported.code } }));
   }
   render() {
     if (!this.state.error) return this.props.children;

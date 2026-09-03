@@ -22,7 +22,7 @@ export class AppBoundary extends Component<AppBoundaryProps, AppBoundaryState> {
       this.props.children
     ) : (
       <main>
-        <ErrorView title="应用运行异常" message={this.state.error.message} retry={() => this.setState({ error: null })} />
+        <ErrorView title="应用运行异常" message="页面暂时无法继续运行，请重试；若问题持续，请联系管理员。" retry={() => this.setState({ error: null })} />
       </main>
     );
   }

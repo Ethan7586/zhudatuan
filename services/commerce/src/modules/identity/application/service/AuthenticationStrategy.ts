@@ -3,13 +3,10 @@ import type { WriteTransactionContext } from '../../../../foundation/persistence
 import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
 import type { OperationResult } from '../../../../foundation/application/OperationRequest';
 import type { OperationInputFor } from '@shop/contract';
+import type { MembershipView } from '../model/MembershipCandidate';
 
 export type AuthenticationBody = OperationInputFor<'identity.sessions.create'>['body'];
 
-export interface SelectableMembership {
-  readonly id: string;
-  readonly target: 'console' | 'storefront';
-}
 export interface ProofView {
   readonly reference?: string;
   readonly expiresAt: string;
@@ -23,7 +20,7 @@ export interface EnrollmentView {
 }
 export type AuthenticationResult =
   | Readonly<{ kind: 'session'; ticket: string; returnTarget: string }>
-  | Readonly<{ kind: 'selection'; transaction: string; memberships: readonly SelectableMembership[] }>
+  | Readonly<{ kind: 'selection'; transaction: string; memberships: readonly MembershipView[] }>
   | Readonly<{ kind: 'proofRequired'; proof: ProofView }>
   | Readonly<{ kind: 'enrollment'; enrollment: EnrollmentView }>;
 export interface AuthenticationReply {

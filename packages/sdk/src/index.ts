@@ -1,4 +1,4 @@
-export { ApiError } from './error';
+export { ApiError, ClientError, TransportError, isCancelled } from './error';
 export { EventStreamResyncError } from './EventStream';
 export type { EventStream } from './EventStream';
 export type { EventOperationMethod } from './OperationDescriptor';

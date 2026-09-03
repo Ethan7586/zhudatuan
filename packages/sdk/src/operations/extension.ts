@@ -2,7 +2,9 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindEventOperation, bindOperation, defineOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindEventOperation, bindOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { exactOperationInput, exactOperationOutput } from '@shop/contract/schema';
+import { defineOperation } from '../CatalogOperationDescriptor';
 
 export const EXTENSION_OPERATION_IDS = Object.freeze([
   "extension.installations.read",
@@ -20,4 +22,4 @@ export function createExtensionOperations(client: OperationExecutor): ExtensionO
 
 export function createFetchExtensionInstallationsRead(baseUrl: string): OperationMethod<"extension.installations.read"> { return bindInstallationsRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindInstallationsRead(client: OperationExecutor): OperationMethod<"extension.installations.read"> { return bindOperation(client, defineOperation({"id":"extension.installations.read","method":"GET","path":"/api/v1/extensions/installations","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
+function bindInstallationsRead(client: OperationExecutor): OperationMethod<"extension.installations.read"> { return bindOperation(client, defineOperation({ ...{"id":"extension.installations.read","method":"GET","path":"/api/v1/extensions/installations","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CAPABILITY_DENIED","CONTRACT_VERSION_UNSUPPORTED","DEADLINE_EXCEEDED","INTERNAL_ERROR","PERMISSION_DENIED","RATE_LIMITED","SCOPE_DENIED","STEPUP_REQUIRED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("ExtensionInstallationsReadInput", [] as const, false), output: exactOperationOutput("ExtensionInstallationsReadOutput") })); }

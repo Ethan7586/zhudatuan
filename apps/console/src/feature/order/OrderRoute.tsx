@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { safeQueryError } from '../../shared/presentation/QueryState';
+import { safeQueryError } from '@shop/presentation';
 import { OrderColumnSettings } from './OrderColumnSettings';
 import { orderDetailKey, readOrderDetail } from './OrderDetailQuery';
 import { OrderFilterForm } from './OrderFilter';

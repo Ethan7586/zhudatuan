@@ -28,7 +28,7 @@ export class PgIdempotencyRepository implements IdempotencyRepository {
       claim.key,
     ]);
     const row = result.rows[0];
-    if (!row || row.request_hash !== claim.requestHash) throw new DomainError('IDEMPOTENCY_KEY_REUSED');
+    if (!row || row.request_hash !== claim.requestHash) throw new DomainError('IDEMPOTENCY_CONFLICT');
     if (row.state === 'started') return Object.freeze({ state: 'started' });
     if (row.response === null) throw new Error('IDEMPOTENCY_RESPONSE_MISSING');
     return Object.freeze({ state: row.state, response: row.response });

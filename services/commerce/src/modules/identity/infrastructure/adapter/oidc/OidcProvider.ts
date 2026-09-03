@@ -1,6 +1,6 @@
 import { DomainError } from '../../../../../foundation/domain/DomainError';
 import { createHash, createPublicKey, verify } from 'node:crypto';
-import { OIDC_PROVIDER_CONFIGURATION } from '@shop/config/server';
+import { IDENTITY_PROVIDER_CONFIGURATION } from '@shop/config/server';
 import type { FederatedIdentityProvider, FederationCallback, FederationStart } from '../../../application/port/FederatedIdentityProvider';
 import { FederatedSubject } from '../../../domain/model/FederatedSubject';
 import type { ProviderHttpClient } from '../../security/ProviderHttpClient';
@@ -63,7 +63,7 @@ function decode(token: string): TokenParts {
   } catch {
     return invalid();
   }
-  if (!object(header) || !object(claims) || typeof header.kid !== 'string' || !OIDC_PROVIDER_CONFIGURATION.allowedAlgorithms.includes(header.alg as never)) invalid();
+  if (!object(header) || !object(claims) || typeof header.kid !== 'string' || !IDENTITY_PROVIDER_CONFIGURATION.allowedAlgorithms.includes(header.alg as never)) invalid();
   return Object.freeze({ signing: Buffer.from(`${parts[0]}.${parts[1]}`), signature: Buffer.from(parts[2]!, 'base64url'), header, claims });
 }
 function signature(token: TokenParts, jwk: OidcJwk): boolean {
@@ -76,7 +76,7 @@ function signature(token: TokenParts, jwk: OidcJwk): boolean {
 }
 function validate(claims: Readonly<Record<string, unknown>>, issuer: string, audience: string, noncehash: Buffer): void {
   const now = Math.floor(Date.now() / 1_000);
-  const skew = OIDC_PROVIDER_CONFIGURATION.clockSkewSeconds;
+  const skew = IDENTITY_PROVIDER_CONFIGURATION.clockSkewSeconds;
   const audiences = typeof claims.aud === 'string' ? [claims.aud] : Array.isArray(claims.aud) ? claims.aud : [];
   if (
     claims.iss !== issuer ||

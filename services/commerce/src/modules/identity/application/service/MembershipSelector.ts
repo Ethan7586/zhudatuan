@@ -49,7 +49,9 @@ export class MembershipSelector {
     const destination = returnDestination(this.returns, selected.target, selected.returnTarget);
     const member = await this.members.memberForPrincipal(database, selected.principal);
     const active = await this.access.memberships(database, member, selected.target);
-    if (!active.some((candidate) => candidate.id === membership)) throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
+    const snapshot = selected.memberships.find((candidate) => candidate.id === membership && candidate.target === selected.target);
+    const current = active.find((candidate) => candidate.id === membership && candidate.target === selected.target);
+    if (!snapshot || !current || current.accessVersion !== snapshot.accessVersion) throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
     const issued = await this.sessions.issue(requireWriteTransaction(database), {
       principal: selected.principal,
       membership,
@@ -59,6 +61,7 @@ export class MembershipSelector {
       peer: context.peer,
       agent: context.agent,
       trace: context.trace,
+      expectedAccessVersion: snapshot.accessVersion,
     });
     if (selected.transaction !== null) await this.federations.complete(requireWriteTransaction(database), selected.transaction, await this.federations.version(database, selected.transaction));
     return Object.freeze({ headers: issued.headers, destination: destination.url });

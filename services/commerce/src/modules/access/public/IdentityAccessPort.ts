@@ -2,10 +2,23 @@ import type { ReadTransactionContext, WriteTransactionContext } from '../../../f
 
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
 
+export interface IdentityMembership {
+  readonly id: string;
+  readonly target: 'console' | 'storefront';
+  readonly organization: string;
+  readonly accessVersion: number;
+  readonly displayName: string;
+  readonly organizationName: string;
+  readonly scopeKind: string;
+  readonly scopeId: string;
+  readonly roleLabel: string;
+  readonly logoUrl: string | null;
+}
+
 export interface IdentityAccessPort {
-  memberships(context: ReadTransactionContext, member: string, target: 'console' | 'storefront'): Promise<readonly Readonly<{ id: string; target: 'console' | 'storefront'; organization: string; accessVersion: number }>[]>;
+  memberships(context: ReadTransactionContext, member: string, target: 'console' | 'storefront'): Promise<readonly IdentityMembership[]>;
   session(context: WriteTransactionContext, membership: string, target: 'console' | 'storefront'): Promise<Readonly<{ accessVersion: number; client: 'console' | 'storefront' }>>;
-  directoryMemberships(context: ReadTransactionContext, memberships: readonly string[]): Promise<Readonly<{ principal: string | null; memberships: readonly Readonly<{ id: string; target: 'console' | 'storefront' }>[]; conflict: boolean }>>;
+  directoryMemberships(context: ReadTransactionContext, memberships: readonly string[]): Promise<Readonly<{ principal: string | null; memberships: readonly IdentityMembership[]; conflict: boolean }>>;
   setEmployeeNumber(context: WriteTransactionContext, membership: string, employee: string | null): Promise<void>;
   memberForManagement(context: WriteTransactionContext, membership: string): Promise<Readonly<{ member: string; accessVersion: number }>>;
   changeStatus(context: WriteTransactionContext, membership: string, status: 'active' | 'suspended' | 'left'): Promise<Readonly<{ accessVersion: number }>>;

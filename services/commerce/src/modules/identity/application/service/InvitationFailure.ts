@@ -1,5 +1,5 @@
 import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { ErrorCode } from '@shop/contract';
+import type { ApiErrorCode } from '@shop/contract';
 import { OperationRejection, reject } from '../../../../foundation/application/OperationRejection';
 
 import { ApplicationError } from '../../../../foundation/domain/ApplicationError';
@@ -15,7 +15,7 @@ export class InvitationFailure {
     await this.events.publish(database, 'identity.invitation.failed', 'invitation', invitation, scope, trace, { invitationId: invitation, operation: request.type, reason });
   }
 
-  async reject(database: ReadTransactionContext, request: OperationRequest, invitation: string, scope: string, cause: unknown, publicCode: ErrorCode): Promise<never> {
+  async reject(database: ReadTransactionContext, request: OperationRequest, invitation: string, scope: string, cause: unknown, publicCode: ApiErrorCode): Promise<never> {
     await this.record(database, request, invitation, scope, cause);
     reject(publicCode);
   }

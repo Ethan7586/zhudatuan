@@ -3,7 +3,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     execArgv: ['--no-experimental-webstorage'],
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    include: ['test/**/*.test.ts', 'test/**/*.test.tsx'],
     environment: 'node',
+    setupFiles: ['test/Setup.ts'],
   },
 });

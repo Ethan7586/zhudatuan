@@ -1,10 +1,10 @@
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { IdentityAccessPort } from '../../public/IdentityAccessPort';
+import type { IdentityAccessPort, IdentityMembership } from '../../public/IdentityAccessPort';
 import type { ImportedMembership, MemberImportAccessPort } from '../../public/MemberImportAccessPort';
 import type { AccessVersionService } from './AccessVersionService';
 import type { AccessMember, MemberAccessPort } from '../../public/MemberAccessPort';
-import type { AccessRepository } from '../port/AccessRepository';
+import type { AccessRepository, ActiveMembershipReference } from '../port/AccessRepository';
 export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberImportAccessPort {
   constructor(
     private readonly repository: AccessRepository,
@@ -14,16 +14,9 @@ export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberI
     context: ReadTransactionContext,
     member: string,
     target: 'console' | 'storefront'
-  ): Promise<
-    readonly Readonly<{
-      id: string;
-      target: 'console' | 'storefront';
-      organization: string;
-      accessVersion: number;
-    }>[]
-  > {
+  ): Promise<readonly IdentityMembership[]> {
     const result = await this.repository.activeMemberships(context, member, target);
-    return Object.freeze(result.map(({ id, client, organization, accessVersion }) => Object.freeze({ id, target: client, organization, accessVersion })));
+    return Object.freeze(result.map(toIdentityMembership));
   }
   async session(
     context: WriteTransactionContext,
@@ -45,10 +38,7 @@ export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberI
   ): Promise<
     Readonly<{
       principal: string | null;
-      memberships: readonly Readonly<{
-        id: string;
-        target: 'console' | 'storefront';
-      }>[];
+      memberships: readonly IdentityMembership[];
       conflict: boolean;
     }>
   > {
@@ -57,7 +47,7 @@ export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberI
     const result = await this.repository.directoryMemberships(context, unique);
     const principals = [...new Set(result.map((row) => row.principal))];
     if (principals.length !== 1) return Object.freeze({ principal: null, memberships: Object.freeze([]), conflict: principals.length > 1 });
-    return Object.freeze({ principal: principals[0]!, memberships: Object.freeze(result.map((row) => Object.freeze({ id: row.id, target: row.client }))), conflict: false });
+    return Object.freeze({ principal: principals[0]!, memberships: Object.freeze(result.map(toIdentityMembership)), conflict: false });
   }
   async ensureImported(context: WriteTransactionContext, input: ImportedMembership): Promise<void> {
     await this.repository.ensureImported(context, {
@@ -137,6 +127,21 @@ export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberI
     }
     return this.versions.bump(context, input.membership, input.reason, input.trace);
   }
+}
+
+function toIdentityMembership(row: ActiveMembershipReference): IdentityMembership {
+  return Object.freeze({
+    id: row.id,
+    target: row.client,
+    organization: row.organization,
+    accessVersion: row.accessVersion,
+    displayName: row.displayName,
+    organizationName: row.organizationName,
+    scopeKind: row.scopeKind,
+    scopeId: row.scopeId,
+    roleLabel: row.roleLabel,
+    logoUrl: row.logoUrl,
+  });
 }
 function mapAccessMember(
   row: Readonly<{

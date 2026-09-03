@@ -237,6 +237,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "navigation.tree.read": Object.freeze({ input: exactOperationInput("NavigationTreeReadInput", [] as const, false), output: exactOperationOutput("NavigationTreeReadOutput") }),
   "navigation.catalog.read": Object.freeze({ input: exactOperationInput("NavigationCatalogReadInput", [] as const, false), output: exactOperationOutput("NavigationCatalogReadOutput") }),
   "navigation.health.read": Object.freeze({ input: exactOperationInput("NavigationHealthReadInput", [] as const, false), output: exactOperationOutput("NavigationHealthReadOutput") }),
+  "identity.bootstrap.read": Object.freeze({ input: exactOperationInput("IdentityBootstrapReadInput", [] as const, false), output: exactOperationOutput("IdentityBootstrapReadOutput") }),
   "identity.providers.read": Object.freeze({ input: exactOperationInput("IdentityProvidersReadInput", [] as const, false), output: exactOperationOutput("IdentityProvidersReadOutput") }),
   "identity.federations.start": Object.freeze({ input: exactOperationInput("IdentityFederationsStartInput", [] as const, true), output: exactOperationOutput("IdentityFederationsStartOutput") }),
   "identity.federations.callback": Object.freeze({ input: exactOperationInput("IdentityFederationsCallbackInput", ["providerid"] as const, false), output: exactOperationOutput("IdentityFederationsCallbackOutput") }),

@@ -60,7 +60,7 @@ describe('FetchTransport', () => {
   });
 
   it('rejects a successful stream with the wrong media type or a missing body', async () => {
-    await expect(new FetchTransport(vi.fn().mockResolvedValue(new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } }))).open({ method: 'GET', url: 'https://api.example.test/events', headers: {} })).rejects.toThrow('SDK_STREAM_CONTENT_TYPE_INVALID');
-    await expect(new FetchTransport(vi.fn().mockResolvedValue(new Response(null, { status: 200, headers: { 'content-type': 'text/event-stream' } }))).open({ method: 'GET', url: 'https://api.example.test/events', headers: {} })).rejects.toThrow('SDK_STREAM_BODY_MISSING');
+    await expect(new FetchTransport(vi.fn().mockResolvedValue(new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } }))).open({ method: 'GET', url: 'https://api.example.test/events', headers: {} })).rejects.toMatchObject({ kind: 'transport', code: 'CONTRACT_INVALID' });
+    await expect(new FetchTransport(vi.fn().mockResolvedValue(new Response(null, { status: 200, headers: { 'content-type': 'text/event-stream' } }))).open({ method: 'GET', url: 'https://api.example.test/events', headers: {} })).rejects.toMatchObject({ kind: 'transport', code: 'CONTRACT_INVALID' });
   });
 });

@@ -1,10 +1,10 @@
-import { AuthProvider } from './AuthProvider';
-import { AuthRouter } from './AuthRouter';
+import { useMemo } from 'react';
+import { environment } from '../config/Environment';
+import { Router } from '../route/Router';
+import { createDependencies } from './Dependencies';
+import { ErrorBoundary } from './ErrorBoundary';
 
 export default function App() {
-  return (
-    <AuthProvider>
-      <AuthRouter />
-    </AuthProvider>
-  );
+  const dependencies = useMemo(() => createDependencies(environment), []);
+  return <ErrorBoundary><Router dependencies={dependencies} /></ErrorBoundary>;
 }

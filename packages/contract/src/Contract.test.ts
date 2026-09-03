@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COMMERCE_EVENTS, errorStatus, EVENT_PAYLOAD_SCHEMAS, EXPERIENCE_COMPONENTS, OPERATION_SCHEMAS, OperationCatalog, parseEventPayload, parseExperience, serializeEvent, serializeExperience } from './index';
+import { COMMERCE_EVENTS, errorDefinition, errorStatus, EVENT_PAYLOAD_SCHEMAS, EXPERIENCE_COMPONENTS, OPERATION_SCHEMAS, OperationCatalog, parseEventPayload, parseExperience, serializeEvent, serializeExperience } from './index';
 import { definedOperationBodySchema, definedOperationOutputSchema, definedOperationQuerySchema } from './schema';
 
 describe('contract truth', () => {
@@ -268,8 +268,8 @@ describe('contract truth', () => {
   });
 
   it('publishes explicit statuses for employee transaction errors', () => {
-    expect(['INVENTORY_INSUFFICIENT', 'CART_EMPTY', 'PRICE_QUOTE_EXPIRED', 'BENEFIT_BALANCE_INSUFFICIENT', 'LISTING_NOT_PURCHASABLE'].map(errorStatus)).toEqual([409, 409, 409, 409, 409]);
-    expect(errorStatus(['UNREGISTERED', 'INVALID'].join('_'))).toBeUndefined();
+    expect((['INVENTORY_INSUFFICIENT', 'CART_EMPTY', 'PRICE_QUOTE_EXPIRED', 'BENEFIT_BALANCE_INSUFFICIENT', 'LISTING_NOT_PURCHASABLE'] as const).map((code) => errorStatus(code))).toEqual([409, 409, 409, 409, 409]);
+    expect(errorDefinition(['UNREGISTERED', 'INVALID'].join('_'))).toBeUndefined();
   });
 
   it('accepts only the single experience schema version, components and actions', () => {

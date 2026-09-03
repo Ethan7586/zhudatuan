@@ -1,9 +1,10 @@
+import { queryCondition, safeQueryError } from '@shop/presentation';
 import { Button } from '@shop/design';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
-import { queryCondition, safeQueryError } from '../../../shared/presentation/QueryState';
+
 import type { DataColumn } from '../../../shared/ui/DataTable';
 import { formatDate } from '../../../shared/ui/Format';
 import { PagedResource } from '../../../shared/ui/PagedResource';

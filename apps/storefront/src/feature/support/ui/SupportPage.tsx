@@ -1,4 +1,5 @@
 import { CircleAlert, Headphones, LoaderCircle, MessageSquarePlus } from 'lucide-react';
+import { presentError } from '@shop/presentation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
@@ -34,7 +35,7 @@ export function SupportPage() {
       await queryClient.invalidateQueries({ queryKey: supportQuery(scope) });
       void navigate(`/support/${encodeURIComponent(id)}`);
     } catch (cause) {
-      setError(text(cause, '工单创建失败，请稍后重试'));
+      setError(presentError(cause).message);
     } finally {
       setBusy(false);
     }
@@ -134,9 +135,6 @@ function priorityLabel(value: string) {
 }
 function format(value: string) {
   return new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
-}
-function text(cause: unknown, fallback: string) {
-  return cause instanceof Error && cause.message ? cause.message : fallback;
 }
 function topicCopy(value: string | null): Readonly<{ subject: string; message: string }> {
   return (

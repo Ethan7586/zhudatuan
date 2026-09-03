@@ -83,3 +83,21 @@ export const storefrontCatalog = Object.freeze({
   version: 'catalog:1',
   asOf: storefrontAsOf,
 });
+
+export function identityBootstrap(target: 'console' | 'storefront', returnTarget: string, termsHash = 'd'.repeat(64)) {
+  return {
+    target,
+    returnTarget,
+    expiresAt: '2099-01-01T00:00:00.000Z',
+    csrf: target === 'console' ? 'csrf:e2e' : 'c'.repeat(43),
+    methods: ['password', 'otp', 'invitation', 'federation'],
+    preferredMethod: 'password',
+    password: { minimumLength: 12, maximumLength: 128, uppercase: true, lowercase: true, number: true, symbol: true },
+    otp: { validSeconds: 300, resendSeconds: 60 },
+    legal: { terms_title: '员工商城服务协议', terms_body: '服务协议正文', privacy_title: '隐私保护政策', privacy_body: '隐私政策正文', terms_hash: termsHash },
+  };
+}
+
+export function apiFailure(code: string, requestId: string, retryable = false, retryAfter?: number) {
+  return { code, message: code, requestId, retryable, ...(retryAfter === undefined ? {} : { retryAfter }) };
+}

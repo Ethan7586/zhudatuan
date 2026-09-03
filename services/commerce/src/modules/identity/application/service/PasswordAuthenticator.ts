@@ -19,6 +19,7 @@ import type { IdentityMemberPort } from '../../../member/public';
 import type { MembershipSelector } from '../service/MembershipSelector';
 import type { CredentialRepository } from '../port/CredentialRepository';
 import { returnDestination } from './ReturnDestination';
+import { membershipCandidate, membershipView } from '../model/MembershipCandidate';
 
 export class PasswordAuthenticator implements AuthenticationStrategy {
   readonly method = 'password' as const;
@@ -57,8 +58,9 @@ export class PasswordAuthenticator implements AuthenticationStrategy {
     const authorization = AuthTransaction.start(body.authorization);
     await this.guard.clear(requireWriteTransaction(database), hashes, client);
     if (memberships.length !== 1) {
-      const selection = await this.selector.begin(database, { principal: credential!.principal, target, memberships, assurance: 1, authorization, returnTarget: destination.proof }, this.context(request));
-      return { status: 200, headers: selection.headers, result: { kind: 'selection', transaction: selection.id, memberships } };
+      const candidates = memberships.map(membershipCandidate);
+      const selection = await this.selector.begin(database, { principal: credential!.principal, target, memberships: candidates, assurance: 1, authorization, returnTarget: destination.proof }, this.context(request));
+      return { status: 200, headers: selection.headers, result: { kind: 'selection', transaction: selection.id, memberships: candidates.map(membershipView) } };
     }
     const membership = memberships[0]!;
     const trace = request.input.headers['x-trace-id'] ?? request.input.idempotency!;

@@ -1,4 +1,4 @@
-import { ApiError } from '@shop/sdk/error';
+import { hasFailureCode } from '@shop/presentation';
 import { CONSOLE_SCOPE_KINDS, isConsoleScopeKind } from '@shop/authz';
 import type { LoaderFunctionArgs } from 'react-router';
 import { redirect, redirectDocument } from 'react-router';
@@ -6,9 +6,9 @@ import { z } from 'zod';
 import { ProfileSchema, ScopePageSchema, SessionSchema, uniqueScopes, type ConsoleContext, type ConsoleScope, type ConsoleSession } from '../entity/session/ConsoleSession';
 import { consoleRequest, identitySessionRead, memberProfileRead, organizationLayersRead } from '../shared/api/Client';
 import { collectPages } from '../shared/api/Pager';
-import { appConfig } from '../shared/config/AppConfig';
 import type { RouteRegistryContract } from '../shared/manifest/ComponentManifest';
 import { readConsoleNavigation } from '../shared/navigation/NavigationQuery';
+import { consoleAuthUrl } from '../shared/url/AuthUrl';
 import { guardRoute, landingPath } from './RouteGuard';
 
 const ScopeParametersSchema = z.object({
@@ -55,8 +55,8 @@ async function readSession(signal: AbortSignal): Promise<ConsoleSession> {
     if (session.target !== 'console') throw new Response('WRONG_CLIENT_ENTRANCE', { status: 403 });
     return session;
   } catch (cause) {
-    if (cause instanceof ApiError && (cause.status === 401 || cause.code === 'MEMBERSHIP_INACTIVE')) {
-      throw redirectDocument(`${appConfig.authBaseUrl}/login?target=console`);
+    if (hasFailureCode(cause, 'AUTHENTICATION_REQUIRED')) {
+      throw redirectDocument(consoleAuthUrl());
     }
     if (cause instanceof Error || cause instanceof Response) throw cause;
     throw new Error('CONSOLE_SESSION_READ_FAILED', { cause });

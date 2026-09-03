@@ -3,6 +3,7 @@ import type { AuthReturnTargets, AuthTarget } from '@shop/config/server';
 import type { ReturnTargetPort, SignedReturnTarget } from '../../application/port/ReturnTargetPort';
 import { NETWORK_CATALOG } from '@shop/config/networkcatalog';
 import { parseStorefrontHandle } from '@shop/contract';
+import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
 export type { SignedReturnTarget } from '../../application/port/ReturnTargetPort';
 
@@ -31,7 +32,7 @@ export class ReturnTargetSigner implements ReturnTargetPort {
     const tenant = options instanceof Date ? undefined : options.tenant;
     const path = options instanceof Date ? undefined : options.path;
     if (tenant !== undefined && !/^[0-9a-f-]{36}$/.test(tenant)) throw new Error('RETURN_TARGET_TENANT_INVALID');
-    const expiresAt = new Date(now.getTime() + 600_000).toISOString();
+    const expiresAt = new Date(now.getTime() + RUNTIME_LIMITS.authentication.bootstrap.ttlSeconds * 1_000).toISOString();
     const url = destination(this.targets[target], target, path);
     const value: ReturnTargetPayload = Object.freeze({ version: 2, purpose: 'returntarget', keyVersion: 'current', target, url, expiresAt, nonce: randomBytes(24).toString('base64url'), ...(tenant === undefined ? {} : { tenant }) });
     const payload = Buffer.from(JSON.stringify(value)).toString('base64url');
@@ -65,7 +66,7 @@ export class ReturnTargetSigner implements ReturnTargetPort {
     )
       invalid();
     const expires = Date.parse(payload.expiresAt);
-    if (!Number.isFinite(expires) || expires <= now.getTime() || expires > now.getTime() + 600_000) invalid();
+    if (!Number.isFinite(expires) || expires <= now.getTime() || expires > now.getTime() + RUNTIME_LIMITS.authentication.bootstrap.ttlSeconds * 1_000) invalid();
     const selected = payload.keyVersion === 'current' ? this.key : this.previous;
     if (!selected || !secureEqual(signature, this.sign(encoded, selected))) invalid();
     return Object.freeze({ url: payload.url, proof, expiresAt: payload.expiresAt, target: payload.target, ...(payload.tenant === undefined ? {} : { tenant: payload.tenant }) });

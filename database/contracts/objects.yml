@@ -1,5 +1,23 @@
 version: 1
 objects:
+  - id: access.identity_memberships
+    kind: function
+    owner: access
+    source: database/migrations/20260903100000_enrich_identity_membership.sql
+    callers:
+      - services/commerce/src/modules/access/infrastructure/persistence/PgAccessMembershipRepository.ts
+  - id: access.membership_visible_to
+    kind: function
+    owner: access
+    source: database/migrations/20260903100000_enrich_identity_membership.sql
+    callers:
+      - services/commerce/src/modules/access/infrastructure/persistence/PgAccessRepository.ts
+  - id: member.profile_summary
+    kind: function
+    owner: member
+    source: database/migrations/20260903100000_enrich_identity_membership.sql
+    callers:
+      - services/commerce/src/modules/member/infrastructure/persistence/PgMemberReadPort.ts
   - id: access.assert_owner_integrity
     kind: function
     owner: access
@@ -595,6 +613,30 @@ objects:
     owner: support
     source: database/migrations/20260902019000_complete_support_realtime.sql
     operationalOwner: support
+  - id: shopapp:function:access.identity_memberships(text,text,text[]):execute
+    kind: grant
+    owner: access
+    source: database/migrations/20260903100000_enrich_identity_membership.sql
+    role: shopapp
+    objectType: function
+    target: access.identity_memberships(text,text,text[])
+    privilege: execute
+  - id: shopapp:function:access.membership_visible_to(text,text):execute
+    kind: grant
+    owner: access
+    source: database/migrations/20260903100000_enrich_identity_membership.sql
+    role: shopapp
+    objectType: function
+    target: access.membership_visible_to(text,text)
+    privilege: execute
+  - id: shopapp:function:member.profile_summary(text,text):execute
+    kind: grant
+    owner: member
+    source: database/migrations/20260903100000_enrich_identity_membership.sql
+    role: shopapp
+    objectType: function
+    target: member.profile_summary(text,text)
+    privilege: execute
   - id: shopapp:function:access.authorization_snapshot(text,text,text,text):execute
     kind: grant
     owner: access

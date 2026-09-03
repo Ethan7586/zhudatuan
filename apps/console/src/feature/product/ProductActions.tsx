@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { presentError } from '@shop/presentation';
 import { useMemo, useState, type FormEvent } from 'react';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { allocatePool, archiveProduct, createProduct, publishPrice, setListingPublication, setPoolBinding, updateProduct } from './ProductCommand';
@@ -97,7 +98,7 @@ function ProductActionForm({ action, context, onClose, onDone }: Readonly<{ acti
           {action.kind === 'create' ? <p className="productflownote">商品先以草稿创建；SKU 与商品池投放由后续独立流程完成。</p> : null}
           {mutation.error === null ? null : (
             <p role="alert" className="productflowerror">
-              {mutation.error.message}
+              {presentError(mutation.error).message}
             </p>
           )}
         </div>
@@ -198,7 +199,7 @@ export function PoolDialog({ open, context, onClose, onDone }: Readonly<{ open: 
           <p className="productflownote">全局池、私有池作为来源；渠道池、加价池可从选中来源池复制商品项并独立绑定商城。</p>
           {query.error === null && mutation.error === null ? null : (
             <p role="alert" className="productflowerror">
-              {mutation.error?.message ?? query.error?.message}
+              {presentError(mutation.error ?? query.error).message}
             </p>
           )}
         </div>

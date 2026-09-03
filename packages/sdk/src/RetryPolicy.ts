@@ -12,7 +12,9 @@ export class RetryPolicy {
   }
 
   decide(attempt: number, status?: number): RetryDecision {
-    const retryable = status === undefined || status === 408 || status === 429 || status >= 500;
+    // A 429 carries a server-owned retry window. A local millisecond retry
+    // amplifies load and ignores the catalog retryAfter contract.
+    const retryable = status === undefined || status === 408 || status >= 500;
     if (!retryable || attempt >= this.attempts) return { retry: false, delayMs: 0 };
     return { retry: true, delayMs: Math.min(this.baseDelayMs * 2 ** (attempt - 1), 1_000) };
   }

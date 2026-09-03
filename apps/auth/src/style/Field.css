@@ -1,0 +1,198 @@
+@layer component {
+  .authsteps,
+  .authsurfacelabel,
+  .authsecondaryactions,
+  .authcodegroup,
+  .authlabel {
+    display: flex;
+    align-items: center;
+  }
+
+  .authsteps {
+    gap: var(--sw-space-0-5);
+  }
+
+  .authback {
+    display: grid;
+    width: var(--sw-min-touch-target);
+    min-width: var(--sw-min-touch-target);
+    border: 0;
+    border-radius: var(--sw-radius-md);
+    background: transparent;
+    color: var(--sw-muted);
+    place-items: center;
+  }
+
+  .authback:hover {
+    background: var(--sw-border);
+    color: var(--sw-text);
+  }
+
+  .authback svg,
+  .authstep svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .authstep {
+    display: grid;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 0.125rem solid var(--sw-border);
+    border-radius: var(--sw-radius-full);
+    background: var(--sw-surface);
+    color: var(--sw-muted);
+    font-size: var(--sw-font-size-caption);
+    font-weight: 800;
+    place-items: center;
+  }
+
+  .authstep[data-current='true'] {
+    border-color: var(--sw-brand);
+    background: var(--sw-brand);
+    color: var(--sw-surface);
+    box-shadow: 0 0.25rem 0.75rem color-mix(in srgb, var(--sw-brand) 24%, transparent);
+  }
+
+  .authstep:first-of-type:not([data-current='true']) {
+    border-color: var(--sw-brand-light);
+    background: var(--sw-brand-light);
+    color: var(--sw-brand-dark);
+  }
+
+  .authstepbar {
+    width: 1.75rem;
+    height: 0.125rem;
+    background: var(--sw-border);
+  }
+
+  .authstepbar[data-complete='true'] {
+    background: var(--sw-brand);
+  }
+
+  .authsurfacelabel {
+    min-width: 0;
+    gap: var(--sw-space-1);
+  }
+
+  .authsurfacelabel .swbrand-mark img {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .authsurfacelabel > span {
+    color: var(--sw-text-secondary);
+    font-size: var(--sw-font-size-caption);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  .authpanel {
+    display: grid;
+    gap: var(--sw-space-2);
+  }
+
+  .authpanel > header h2,
+  .authpanel > header h1 {
+    margin-bottom: var(--sw-space-0-5);
+  }
+
+  .authpanel > header p,
+  .authstatus p {
+    margin: 0;
+    color: var(--sw-text-secondary);
+    font-size: var(--sw-font-size-body-sm);
+  }
+
+  .authformstack,
+  .authform,
+  .authdialogform,
+  .authpolicy {
+    display: grid;
+    gap: var(--sw-space-1-5);
+  }
+
+  .authfield {
+    display: grid;
+    gap: var(--sw-space-0-5);
+    color: var(--sw-text-secondary);
+    font-size: var(--sw-font-size-body-sm);
+    font-weight: 700;
+  }
+
+  .authlabel {
+    gap: var(--sw-space-0-5);
+  }
+
+  .authlabel svg,
+  .authprimary svg,
+  .authregister svg,
+  .providerbutton svg {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+  }
+
+  .authlabel svg {
+    color: var(--sw-muted);
+  }
+
+  .authinput,
+  .enrollmentform :where(input, select, textarea),
+  .invitationproofform input {
+    width: 100%;
+    min-height: var(--sw-min-touch-target);
+    border: 0.0625rem solid var(--sw-border-strong);
+    border-radius: var(--sw-radius-md);
+    background: var(--sw-surface);
+    color: var(--sw-text);
+    padding: var(--sw-space-1) var(--sw-space-1-5);
+  }
+
+  .authinput:focus,
+  .enrollmentform :where(input, select, textarea):focus,
+  .invitationproofform input:focus {
+    border-color: var(--sw-brand);
+    outline: none;
+    box-shadow: 0 0 0 0.1875rem color-mix(in srgb, var(--sw-brand) 16%, transparent);
+  }
+
+  .authsecretinput {
+    font-family: var(--sw-font-mono);
+  }
+
+  .authpassword {
+    position: relative;
+    display: block;
+  }
+
+  .authpassword .authinput {
+    padding-right: 3.5rem;
+  }
+
+  .authrevealsecret {
+    position: absolute;
+    top: 50%;
+    right: var(--sw-space-0-5);
+    display: grid;
+    width: var(--sw-min-touch-target);
+    border: 0;
+    border-radius: var(--sw-radius-sm);
+    background: transparent;
+    color: var(--sw-muted);
+    transform: translateY(-50%);
+    place-items: center;
+  }
+
+  .authrevealsecret svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .authfieldissue {
+    margin: 0;
+    color: var(--sw-danger-strong);
+    font-size: var(--sw-font-size-caption);
+    font-weight: 700;
+  }
+}

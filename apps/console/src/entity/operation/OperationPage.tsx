@@ -1,8 +1,9 @@
+import { queryCondition, hasFailureCode, safeQueryError } from '@shop/presentation';
 import { ResourcePanel } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import type { OperationId } from '@shop/contract';
 import type { ReactNode } from 'react';
-import { queryCondition, queryErrorCode, safeQueryError } from '../../shared/presentation/QueryState';
+
 import { useConsoleContext } from '../session/ConsoleContext';
 import type { ConsoleContext } from '../session/ConsoleSession';
 import { AssurancePrompt } from '../session/AssurancePrompt';
@@ -24,7 +25,7 @@ export function OperationPage({
   const context = useConsoleContext();
   const routeTitle = useRouteTitle(title);
   const query = useQuery({ queryKey: ['console', context.scope.kind, context.scope.id, context.session.accessVersion, operation], queryFn: ({ signal }) => load(context, signal) });
-  if (queryErrorCode(query.error, 'STEPUP_REQUIRED')) {
+  if (hasFailureCode(query.error, 'STEPUP_REQUIRED')) {
     return <AssurancePrompt title={routeTitle} />;
   }
   const error = safeQueryError(query.error);

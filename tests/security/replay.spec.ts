@@ -40,7 +40,7 @@ test('an idempotency key replay with a different canonical request is rejected',
           requestHash: '1'.repeat(64),
         })
     ),
-    /IDEMPOTENCY_KEY_REUSED/
+    /IDEMPOTENCY_CONFLICT/
   );
 });
 

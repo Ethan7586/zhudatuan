@@ -10,21 +10,27 @@ interface MemberRow {
   readonly access_version: number;
   readonly joined_at: Date | null;
 }
+interface IdentityMembershipRow {
+  readonly id: string;
+  readonly principal_id: string;
+  readonly client: string;
+  readonly organization_id: string;
+  readonly access_version: number;
+  readonly display_name: string;
+  readonly organization_name: string;
+  readonly scope_kind: string;
+  readonly role_label: string | null;
+}
 export class PgAccessMembershipRepository {
   protected readonly transactions = new PgTransactionAccess();
   async activeMemberships(context: ReadTransactionContext, member: string, target: 'console' | 'storefront'): Promise<readonly ActiveMembershipReference[]> {
     const database = this.transactions.database(context);
-    const result = await database.query<{
-      id: string;
-      client: string;
-      organization_id: string;
-      access_version: number;
-    }>(
-      `select id,client,organization_id,access_version from access.membership where member_id=$1
-      and status='active' and (case when client='storefront' then 'storefront' else 'console' end)=$2 order by id`,
+    const result = await database.query<IdentityMembershipRow>(
+      `select id,principal_id,client,organization_id,access_version,display_name,organization_name,scope_kind,role_label
+      from access.identity_memberships($1,$2,null) order by organization_name,id`,
       [member, target]
     );
-    return Object.freeze(result.rows.map((row) => Object.freeze({ id: row.id, client: row.client === 'storefront' ? 'storefront' : 'console', organization: row.organization_id, accessVersion: Number(row.access_version) })));
+    return Object.freeze(result.rows.map(identityMembership));
   }
   async lockSession(context: WriteTransactionContext, membership: string, target: 'console' | 'storefront'): Promise<number | null> {
     const database = this.transactions.database(context);
@@ -39,16 +45,12 @@ export class PgAccessMembershipRepository {
   }
   async directoryMemberships(context: ReadTransactionContext, memberships: readonly string[]): Promise<readonly DirectoryMembershipReference[]> {
     const database = this.transactions.database(context);
-    const result = await database.query<{
-      id: string;
-      principal_id: string;
-      client: string;
-    }>(
-      `select id,principal_id,client
-      from access.membership where id=any($1::text[]) and status='active' order by id`,
+    const result = await database.query<IdentityMembershipRow>(
+      `select id,principal_id,client,organization_id,access_version,display_name,organization_name,scope_kind,role_label
+      from access.identity_memberships(null,null,$1::text[]) order by id`,
       [memberships]
     );
-    return Object.freeze(result.rows.map((row) => Object.freeze({ id: row.id, principal: row.principal_id, client: row.client === 'storefront' ? 'storefront' : 'console' })));
+    return Object.freeze(result.rows.map((row) => Object.freeze({ ...identityMembership(row), principal: row.principal_id })));
   }
   async ensureImported(
     context: WriteTransactionContext,
@@ -200,6 +202,21 @@ export class PgAccessMembershipRepository {
       [input.grant, input.membership, input.department, input.accessVersion]
     );
   }
+}
+
+function identityMembership(row: IdentityMembershipRow): ActiveMembershipReference {
+  return Object.freeze({
+    id: row.id,
+    client: row.client === 'storefront' ? 'storefront' : 'console',
+    organization: row.organization_id,
+    accessVersion: Number(row.access_version),
+    displayName: row.display_name,
+    organizationName: row.organization_name,
+    scopeKind: row.scope_kind,
+    scopeId: row.organization_id,
+    roleLabel: row.role_label ?? '已授权成员',
+    logoUrl: null,
+  });
 }
 function memberRecord(row: MemberRow): MemberRecord {
   return Object.freeze({ id: row.id, member: row.member_id, organization: row.organization_id, employee: row.employee_no, status: row.status, accessVersion: Number(row.access_version), joinedAt: row.joined_at });

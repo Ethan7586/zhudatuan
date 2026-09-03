@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx
 workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
 navigationCatalogSha256: b8343568dfbc696dca3f28be27cc8ca98e941ceee88799fc3975e2dbceb9b40d
-contractSha256: 1089869b1158bb9ae3958c13792b604abaac31cd0ec6e40d2fe270869aba1b08
+contractSha256: 2014f2b58ebfa2f3e15d047dd2b94705e9d32966979b9c3a9b8d3d6c9a624ca5
 generated: true
 chain:
   - WorkbookCell
@@ -72,12 +72,73 @@ requirements:
       - platformvoucher
       - groupcontrol
       - mallcontrol
+    applicationRoutes: []
     routes:
       - /scopes/:scopeKind/:scopeId/control
       - /scopes/:scopeKind/:scopeId/products
       - /scopes/:scopeKind/:scopeId/vouchers
-      - /scopes/:scopeKind/:scopeId/control
-      - /scopes/:scopeKind/:scopeId/control
+    directOperations:
+      - catalog.pools.read
+      - organization.layers.read
+      - voucher.cardlibraries.create
+      - voucher.cardlibraries.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - catalog.pools.attach
+      - catalog.pools.detach
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.catalog.read
+      - navigation.health.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
+      - voucher.cardlibraries.allocate
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -236,10 +297,88 @@ requirements:
       - distributioncontrol
       - groupreferral
       - mallreferral
+    applicationRoutes: []
     routes:
       - /scopes/:scopeKind/:scopeId/control
       - /scopes/:scopeKind/:scopeId/referral
-      - /scopes/:scopeKind/:scopeId/referral
+    directOperations:
+      - channel.distributors.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - capability.assignments.manage
+      - capability.assignments.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - catalog.pools.allocate
+      - channel.bindings.manage
+      - channel.distributors.create
+      - channel.distributors.disable
+      - channel.distributors.update
+      - channel.quotas.manage
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - referral.bindings.create
+      - referral.bindings.read
+      - referral.commissions.read
+      - referral.earnings.read
+      - referral.links.read
+      - referral.members.apply
+      - referral.members.approve
+      - referral.members.disqualify
+      - referral.members.read
+      - referral.products.manage
+      - referral.products.read
+      - referral.settings.manage
+      - referral.settings.read
+      - referral.withdrawals.create
+      - referral.withdrawals.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
+      - voucher.cardlibraries.allocate
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -432,8 +571,63 @@ requirements:
     requirement: MVPGROUPDASHBOARD
     navigation:
       - groupdashboard
+    applicationRoutes: []
     routes:
       - /scopes/:scopeKind/:scopeId/cockpit
+    directOperations:
+      - reporting.dashboard.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -572,8 +766,72 @@ requirements:
     requirement: MVPGROUPAPPLICATION
     navigation:
       - groupapplication
+    applicationRoutes: []
     routes:
       - /scopes/:scopeKind/:scopeId/experience
+    directOperations:
+      - experience.applications.read
+      - storefront.bootstrap.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - experience.applications.copy
+      - experience.applications.create
+      - experience.applications.detail.read
+      - experience.applications.update
+      - experience.versions.publish
+      - experience.versions.restore
+      - experience.versions.save
+      - experience.versions.validate
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -733,8 +991,77 @@ requirements:
     requirement: MVPGROUPPOOL
     navigation:
       - groupproduct
+    applicationRoutes: []
     routes:
       - /scopes/:scopeKind/:scopeId/products
+    directOperations:
+      - catalog.pools.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - catalog.imports.create
+      - catalog.imports.read
+      - catalog.listings.batch
+      - catalog.listings.publish
+      - catalog.listings.read
+      - catalog.listings.unpublish
+      - catalog.product.detail.read
+      - catalog.products.archive
+      - catalog.products.create
+      - catalog.products.update
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - inventory.imports.create
+      - inventory.imports.read
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - pricing.rules.create
+      - pricing.rules.publish
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -904,8 +1231,75 @@ requirements:
     requirement: MVPGROUPORDER
     navigation:
       - grouporder
+    applicationRoutes: []
     routes:
       - /scopes/:scopeKind/:scopeId/orders
+    directOperations:
+      - order.orders.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.returns.inspect
+      - fulfillment.returns.receive
+      - fulfillment.shipments.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.aftersales.apply
+      - order.aftersales.approve
+      - order.aftersales.read
+      - order.aftersales.reject
+      - order.orders.create
+      - order.orders.export
+      - order.orders.receive
+      - order.reminders.create
+      - payment.intents.read
+      - payment.recoveries.read
+      - payment.recoveries.resolve
+      - payment.refunds.request
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -1068,8 +1462,81 @@ requirements:
     requirement: MVPGROUPVOUCHER
     navigation:
       - groupvoucher
+    applicationRoutes: []
     routes:
       - /scopes/:scopeKind/:scopeId/vouchers
+    directOperations:
+      - voucher.cardlibraries.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
+      - voucher.batches.issue
+      - voucher.batches.read
+      - voucher.batches.retry
+      - voucher.bindings.manage
+      - voucher.bindings.read
+      - voucher.cardlibraries.allocate
+      - voucher.cardlibraries.create
+      - voucher.history.read
+      - voucher.imports.read
+      - voucher.programs.manage
+      - voucher.programs.read
+      - voucher.redemptions.read
+      - voucher.redemptions.reverse
+      - voucher.reserves.decide
+      - voucher.reserves.read
+      - voucher.reserves.request
+      - voucher.status.batch
+      - voucher.statusbatches.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -1246,8 +1713,95 @@ requirements:
     requirement: MVPGROUPFINANCE
     navigation:
       - groupfinance
+    applicationRoutes: []
     routes:
       - /scopes/:scopeKind/:scopeId/finance
+    directOperations:
+      - finance.overview.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - finance.backfills.decide
+      - finance.backfills.read
+      - finance.entries.read
+      - finance.holds.read
+      - finance.periods.manage
+      - finance.periods.read
+      - finance.policies.manage
+      - finance.policies.preview
+      - finance.policies.read
+      - finance.reconciliationrepairs.decide
+      - finance.reconciliationrepairs.preview
+      - finance.reconciliationrepairs.read
+      - finance.reconciliationrepairs.reverse
+      - finance.reconciliationrepairs.submit
+      - finance.reconciliations.manage
+      - finance.reconciliations.read
+      - finance.settlements.adjust
+      - finance.settlements.decide
+      - finance.settlements.read
+      - finance.statements.export
+      - finance.statements.read
+      - finance.withdrawals.create
+      - finance.withdrawals.decide
+      - finance.withdrawals.read
+      - finance.withdrawals.recover
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - invoice.profiles.manage
+      - invoice.profiles.read
+      - invoice.requests.cancel
+      - invoice.requests.create
+      - invoice.requests.decide
+      - invoice.requests.read
+      - invoice.requests.red
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -1451,8 +2005,71 @@ requirements:
     requirement: MVPGROUPREPORT
     navigation:
       - groupreporting
+    applicationRoutes: []
     routes:
       - /scopes/:scopeKind/:scopeId/reporting
+    directOperations:
+      - reporting.sales.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - reporting.categories.read
+      - reporting.channels.read
+      - reporting.exports.create
+      - reporting.exports.read
+      - reporting.malls.read
+      - reporting.powderclass.read
+      - reporting.products.read
+      - reporting.voucherconsumption.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -1607,8 +2224,84 @@ requirements:
     requirement: MVPGROUPSUPPORT
     navigation:
       - groupsupport
+    applicationRoutes: []
     routes:
       - /scopes/:scopeKind/:scopeId/support
+    directOperations:
+      - support.cases.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - observability.clienterrors.create
+      - observability.clienterrors.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - support.accounts.manage
+      - support.accounts.read
+      - support.agents.manage
+      - support.agents.read
+      - support.assignments.manage
+      - support.attachments.create
+      - support.cases.close
+      - support.cases.create
+      - support.cases.reopen
+      - support.cases.update
+      - support.events.read
+      - support.history.read
+      - support.messages.read
+      - support.messages.send
+      - support.readstates.manage
+      - support.rules.manage
+      - support.rules.read
+      - support.slas.manage
+      - support.slas.read
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -1799,16 +2492,121 @@ requirements:
       - grouprisk
       - groupprovider
       - groupdirectory
+    applicationRoutes: []
     routes:
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
-      - /scopes/:scopeKind/:scopeId/settings/members
-      - /scopes/:scopeKind/:scopeId/settings/invitations
-      - /scopes/:scopeKind/:scopeId/settings/partners
-      - /scopes/:scopeKind/:scopeId/settings/messages
-      - /scopes/:scopeKind/:scopeId/settings/risk
-      - /scopes/:scopeKind/:scopeId/settings/login
       - /scopes/:scopeKind/:scopeId/settings/directory
+      - /scopes/:scopeKind/:scopeId/settings/invitations
+      - /scopes/:scopeKind/:scopeId/settings/login
+      - /scopes/:scopeKind/:scopeId/settings/members
+      - /scopes/:scopeKind/:scopeId/settings/messages
+      - /scopes/:scopeKind/:scopeId/settings/partners
+      - /scopes/:scopeKind/:scopeId/settings/risk
+    directOperations:
+      - access.center.read
+    transitiveOperations:
+      - access.overrides.manage
+      - access.owners.transfer
+      - access.roles.manage
+      - access.scopes.manage
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - capability.assignments.manage
+      - capability.assignments.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.enrollments.complete
+      - identity.enrollments.read
+      - identity.federations.callback
+      - identity.federations.complete
+      - identity.federations.selection.read
+      - identity.federations.start
+      - identity.invitations.create
+      - identity.invitations.read
+      - identity.invitations.resolve
+      - identity.invitations.revoke
+      - identity.links.create
+      - identity.links.read
+      - identity.links.revoke
+      - identity.members.manage
+      - identity.memberships.read
+      - identity.memberships.switch
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.password.verify
+      - identity.providers.manage
+      - identity.providers.read
+      - identity.providers.test
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.disable
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.imports.create
+      - member.imports.read
+      - member.members.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.announcements.manage
+      - notification.announcements.read
+      - notification.endpoints.manage
+      - notification.notifications.ack
+      - notification.notifications.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - notification.templates.manage
+      - notification.templates.read
+      - order.orders.create
+      - order.reminders.create
+      - organization.directories.manage
+      - organization.directories.read
+      - organization.directories.sync
+      - organization.directories.syncruns.read
+      - organization.directoryevents.receive
+      - organization.stores.manage
+      - organization.stores.read
+      - partner.partners.manage
+      - partner.partners.read
+      - payment.intents.read
+      - qualification.center.read
+      - qualification.decisions.preview
+      - qualification.policies.manage
+      - risk.cases.review
+      - risk.center.read
+      - risk.policies.manage
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - access.center.read
       - access.overrides.manage
@@ -2057,9 +2855,64 @@ requirements:
     navigation:
       - malldashboard
       - storehome
+    applicationRoutes: []
     routes:
-      - /scopes/:scopeKind/:scopeId/cockpit
       - /
+      - /scopes/:scopeKind/:scopeId/cockpit
+    directOperations:
+      - reporting.dashboard.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -2199,9 +3052,73 @@ requirements:
     navigation:
       - malldesign
       - storehome
+    applicationRoutes: []
     routes:
-      - /scopes/:scopeKind/:scopeId/experience
       - /
+      - /scopes/:scopeKind/:scopeId/experience
+    directOperations:
+      - experience.applications.read
+      - storefront.bootstrap.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - experience.applications.copy
+      - experience.applications.create
+      - experience.applications.detail.read
+      - experience.applications.update
+      - experience.versions.publish
+      - experience.versions.restore
+      - experience.versions.save
+      - experience.versions.validate
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -2362,11 +3279,85 @@ requirements:
       - storecatalog
       - storeproduct
       - storeprofile
+    applicationRoutes: []
     routes:
-      - /scopes/:scopeKind/:scopeId/products
       - /products
       - /products/:productId
       - /profile
+      - /scopes/:scopeKind/:scopeId/products
+    directOperations:
+      - catalog.pools.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - catalog.imports.create
+      - catalog.imports.read
+      - catalog.listings.batch
+      - catalog.listings.publish
+      - catalog.listings.read
+      - catalog.listings.unpublish
+      - catalog.product.detail.read
+      - catalog.products.archive
+      - catalog.products.create
+      - catalog.products.update
+      - checkout.quote.create
+      - checkout.quotes.current.read
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - inventory.imports.create
+      - inventory.imports.read
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.favorites.put
+      - member.favorites.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - pricing.rules.create
+      - pricing.rules.publish
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - storefront.bootstrap.read
+      - storefront.catalog.read
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -2552,15 +3543,87 @@ requirements:
       - storeorder
       - storeaftersale
       - storeprofile
+    applicationRoutes: []
     routes:
-      - /scopes/:scopeKind/:scopeId/orders
       - /cart
       - /checkout
-      - /payments/:paymentId/result
       - /orders
       - /orders/:orderId
       - /orders/:orderId/aftersales
+      - /payments/:paymentId/result
       - /profile
+      - /scopes/:scopeKind/:scopeId/orders
+    directOperations:
+      - order.orders.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - checkout.quotes.current.read
+      - finance.invoices.download
+      - finance.invoices.read
+      - fulfillment.returns.inspect
+      - fulfillment.returns.receive
+      - fulfillment.shipments.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - invoice.profiles.read
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.aftersales.apply
+      - order.aftersales.approve
+      - order.aftersales.read
+      - order.aftersales.reject
+      - order.orders.create
+      - order.orders.export
+      - order.orders.receive
+      - order.reminders.create
+      - payment.intents.read
+      - payment.recoveries.read
+      - payment.recoveries.resolve
+      - payment.refunds.request
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - storefront.bootstrap.read
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -2736,10 +3799,83 @@ requirements:
       - mallvoucher
       - storevouchers
       - storeprofile
+    applicationRoutes: []
     routes:
+      - /profile
       - /scopes/:scopeKind/:scopeId/vouchers
       - /vouchers
-      - /profile
+    directOperations:
+      - voucher.cardlibraries.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
+      - voucher.batches.issue
+      - voucher.batches.read
+      - voucher.batches.retry
+      - voucher.bindings.manage
+      - voucher.bindings.read
+      - voucher.cardlibraries.allocate
+      - voucher.cardlibraries.create
+      - voucher.history.read
+      - voucher.imports.read
+      - voucher.programs.manage
+      - voucher.programs.read
+      - voucher.redemptions.read
+      - voucher.redemptions.reverse
+      - voucher.reserves.decide
+      - voucher.reserves.read
+      - voucher.reserves.request
+      - voucher.status.batch
+      - voucher.statusbatches.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -2916,9 +4052,98 @@ requirements:
     navigation:
       - mallfinance
       - storebenefits
+    applicationRoutes: []
     routes:
-      - /scopes/:scopeKind/:scopeId/finance
       - /benefits
+      - /scopes/:scopeKind/:scopeId/finance
+    directOperations:
+      - finance.overview.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - finance.backfills.decide
+      - finance.backfills.read
+      - finance.entries.read
+      - finance.holds.read
+      - finance.invoices.download
+      - finance.invoices.read
+      - finance.periods.manage
+      - finance.periods.read
+      - finance.policies.manage
+      - finance.policies.preview
+      - finance.policies.read
+      - finance.reconciliationrepairs.decide
+      - finance.reconciliationrepairs.preview
+      - finance.reconciliationrepairs.read
+      - finance.reconciliationrepairs.reverse
+      - finance.reconciliationrepairs.submit
+      - finance.reconciliations.manage
+      - finance.reconciliations.read
+      - finance.settlements.adjust
+      - finance.settlements.decide
+      - finance.settlements.read
+      - finance.statements.export
+      - finance.statements.read
+      - finance.withdrawals.create
+      - finance.withdrawals.decide
+      - finance.withdrawals.read
+      - finance.withdrawals.recover
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - invoice.profiles.manage
+      - invoice.profiles.read
+      - invoice.requests.cancel
+      - invoice.requests.create
+      - invoice.requests.decide
+      - invoice.requests.read
+      - invoice.requests.red
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -3125,8 +4350,71 @@ requirements:
     requirement: MVPMALLREPORT
     navigation:
       - mallreporting
+    applicationRoutes: []
     routes:
       - /scopes/:scopeKind/:scopeId/reporting
+    directOperations:
+      - reporting.sales.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - reporting.categories.read
+      - reporting.channels.read
+      - reporting.exports.create
+      - reporting.exports.read
+      - reporting.malls.read
+      - reporting.powderclass.read
+      - reporting.products.read
+      - reporting.voucherconsumption.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -3285,11 +4573,90 @@ requirements:
       - storesecurity
       - storesupport
       - storesupportcase
+    applicationRoutes: []
     routes:
-      - /scopes/:scopeKind/:scopeId/support
       - /profile/security
+      - /scopes/:scopeKind/:scopeId/support
       - /support
       - /support/:caseId
+    directOperations:
+      - support.cases.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.ledgers.read
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.sessions.read
+      - identity.sessions.revoke
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - observability.clienterrors.create
+      - observability.clienterrors.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - support.accounts.manage
+      - support.accounts.read
+      - support.agents.manage
+      - support.agents.read
+      - support.assignments.manage
+      - support.attachments.create
+      - support.cases.close
+      - support.cases.create
+      - support.cases.reopen
+      - support.cases.update
+      - support.events.read
+      - support.history.read
+      - support.messages.read
+      - support.messages.send
+      - support.readstates.manage
+      - support.rules.manage
+      - support.rules.read
+      - support.slas.manage
+      - support.slas.read
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -3487,17 +4854,124 @@ requirements:
       - mallprovider
       - malldirectory
       - storenotifications
+    applicationRoutes: []
     routes:
+      - /notifications
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
-      - /scopes/:scopeKind/:scopeId/settings/members
-      - /scopes/:scopeKind/:scopeId/settings/invitations
-      - /scopes/:scopeKind/:scopeId/settings/partners
-      - /scopes/:scopeKind/:scopeId/settings/messages
-      - /scopes/:scopeKind/:scopeId/settings/risk
-      - /scopes/:scopeKind/:scopeId/settings/login
       - /scopes/:scopeKind/:scopeId/settings/directory
-      - /notifications
+      - /scopes/:scopeKind/:scopeId/settings/invitations
+      - /scopes/:scopeKind/:scopeId/settings/login
+      - /scopes/:scopeKind/:scopeId/settings/members
+      - /scopes/:scopeKind/:scopeId/settings/messages
+      - /scopes/:scopeKind/:scopeId/settings/partners
+      - /scopes/:scopeKind/:scopeId/settings/risk
+    directOperations:
+      - access.center.read
+    transitiveOperations:
+      - access.overrides.manage
+      - access.owners.transfer
+      - access.roles.manage
+      - access.scopes.manage
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - capability.assignments.manage
+      - capability.assignments.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.enrollments.complete
+      - identity.enrollments.read
+      - identity.federations.callback
+      - identity.federations.complete
+      - identity.federations.selection.read
+      - identity.federations.start
+      - identity.invitations.create
+      - identity.invitations.read
+      - identity.invitations.resolve
+      - identity.invitations.revoke
+      - identity.links.create
+      - identity.links.read
+      - identity.links.revoke
+      - identity.members.manage
+      - identity.memberships.read
+      - identity.memberships.switch
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.password.verify
+      - identity.providers.manage
+      - identity.providers.read
+      - identity.providers.test
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.disable
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.imports.create
+      - member.imports.read
+      - member.members.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.announcements.manage
+      - notification.announcements.read
+      - notification.endpoints.manage
+      - notification.notifications.ack
+      - notification.notifications.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - notification.templates.manage
+      - notification.templates.read
+      - observability.clienterrors.create
+      - observability.clienterrors.read
+      - order.orders.create
+      - order.reminders.create
+      - organization.directories.manage
+      - organization.directories.read
+      - organization.directories.sync
+      - organization.directories.syncruns.read
+      - organization.directoryevents.receive
+      - organization.stores.manage
+      - organization.stores.read
+      - partner.partners.manage
+      - partner.partners.read
+      - payment.intents.read
+      - qualification.center.read
+      - qualification.decisions.preview
+      - qualification.policies.manage
+      - risk.cases.review
+      - risk.center.read
+      - risk.policies.manage
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - access.center.read
       - access.overrides.manage
@@ -3751,9 +5225,78 @@ requirements:
     navigation:
       - groupprovider
       - mallprovider
+    applicationRoutes:
+      - /
+      - /callback
+      - /invitation
+      - /link
+      - /membership
     routes:
+      - /
+      - /callback
+      - /invitation
+      - /link
+      - /membership
       - /scopes/:scopeKind/:scopeId/settings/login
-      - /scopes/:scopeKind/:scopeId/settings/login
+    directOperations:
+      - identity.bootstrap.read
+      - identity.challenges.create
+      - identity.enrollments.complete
+      - identity.enrollments.read
+      - identity.invitations.resolve
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.tickets.exchange
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.federations.complete
+      - identity.federations.selection.read
+      - identity.federations.start
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.providers.read
+      - identity.session.delete
+      - identity.session.read
+      - identity.stepup.complete
+      - identity.stepup.start
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -3772,8 +5315,13 @@ requirements:
       - cart.items.put
       - checkout.quote.create
       - fulfillment.tracking.read
+      - identity.bootstrap.read
       - identity.challenges.create
       - identity.enrollments.complete
+      - identity.enrollments.read
+      - identity.federations.complete
+      - identity.federations.selection.read
+      - identity.federations.start
       - identity.invitations.resolve
       - identity.mobile.challenges.create
       - identity.mobile.manage
@@ -3825,8 +5373,13 @@ requirements:
       - packages/contract/definitions/operations.yml#cart.items.put
       - packages/contract/definitions/operations.yml#checkout.quote.create
       - packages/contract/definitions/operations.yml#fulfillment.tracking.read
+      - packages/contract/definitions/operations.yml#identity.bootstrap.read
       - packages/contract/definitions/operations.yml#identity.challenges.create
       - packages/contract/definitions/operations.yml#identity.enrollments.complete
+      - packages/contract/definitions/operations.yml#identity.enrollments.read
+      - packages/contract/definitions/operations.yml#identity.federations.complete
+      - packages/contract/definitions/operations.yml#identity.federations.selection.read
+      - packages/contract/definitions/operations.yml#identity.federations.start
       - packages/contract/definitions/operations.yml#identity.invitations.resolve
       - packages/contract/definitions/operations.yml#identity.mobile.challenges.create
       - packages/contract/definitions/operations.yml#identity.mobile.manage
@@ -3895,10 +5448,78 @@ requirements:
       - groupchannel
       - mallchannel
       - platformchannel
+    applicationRoutes: []
     routes:
       - /scopes/:scopeKind/:scopeId/channels
-      - /scopes/:scopeKind/:scopeId/channels
-      - /scopes/:scopeKind/:scopeId/channels
+    directOperations:
+      - channel.connections.read
+    transitiveOperations:
+      - audit.records.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - channel.connections.create
+      - channel.connections.disable
+      - channel.connections.enable
+      - channel.connections.test
+      - channel.connections.update
+      - channel.operations.read
+      - channel.operations.replay
+      - channel.syncruns.cancel
+      - channel.syncruns.read
+      - channel.syncruns.start
+      - channel.webhooks.receive
+      - checkout.quote.create
+      - extension.installations.read
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.challenges.create
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - payment.recoveries.read
+      - payment.recoveries.resolve
+      - payment.webhooks.wechat
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     operations:
       - audit.records.read
       - benefit.accounts.read

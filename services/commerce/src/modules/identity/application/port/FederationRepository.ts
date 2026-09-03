@@ -3,6 +3,7 @@ import type { ReadTransactionContext, WriteTransactionContext } from '../../../.
 import type { FederatedSubject } from '../../domain/model/FederatedSubject';
 import type { FederationTransaction } from '../../domain/model/FederationTransaction';
 import type { AuthTicketBinding } from './AuthTicketPort';
+import type { MembershipCandidate } from '../model/MembershipCandidate';
 
 export interface CreateFederation {
   readonly provider: string;
@@ -23,7 +24,7 @@ export interface CreateFederation {
 }
 export interface FederationResolution {
   readonly principal: string | null;
-  readonly memberships: readonly Readonly<{ id: string; name: string; target: 'console' | 'storefront' }>[];
+  readonly memberships: readonly MembershipCandidate[];
   readonly conflict: boolean;
 }
 export interface FederationCallbackRecord {

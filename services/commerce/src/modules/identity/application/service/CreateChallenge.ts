@@ -188,7 +188,8 @@ export class CreateChallenge {
       destination: value.destinationHash,
       purpose: value.purpose,
     });
-    return { status: 202, body: { id: issued.id, purpose: issued.purpose, expires_at: issued.expiresAt.toISOString() } };
+    const retryAt = new Date(issued.expiresAt.getTime() - (RUNTIME_LIMITS.authentication.otp.validMinutes * 60 - RUNTIME_LIMITS.authentication.otp.resendSeconds) * 1_000);
+    return { status: 202, body: { id: issued.id, purpose: issued.purpose, expires_at: issued.expiresAt.toISOString(), retry_at: retryAt.toISOString() } };
   }
   private digest(value: string): string {
     return createHmac('sha256', this.identityKey).update(value.trim().toLowerCase()).digest('hex');

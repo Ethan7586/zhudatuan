@@ -2,7 +2,9 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindEventOperation, bindOperation, defineOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindEventOperation, bindOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { exactOperationInput, exactOperationOutput } from '@shop/contract/schema';
+import { defineOperation } from '../CatalogOperationDescriptor';
 
 export const STOREFRONT_OPERATION_IDS = Object.freeze([
   "storefront.bootstrap.read",
@@ -23,8 +25,8 @@ export function createStorefrontOperations(client: OperationExecutor): Storefron
 
 export function createFetchStorefrontBootstrapRead(baseUrl: string): OperationMethod<"storefront.bootstrap.read"> { return bindBootstrapRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindBootstrapRead(client: OperationExecutor): OperationMethod<"storefront.bootstrap.read"> { return bindOperation(client, defineOperation({"id":"storefront.bootstrap.read","method":"GET","path":"/api/v1/storefront/bootstrap","audience":"storefront","targets":["storefront"],"responseMode":"json","idempotent":true,"timeout":800})); }
+function bindBootstrapRead(client: OperationExecutor): OperationMethod<"storefront.bootstrap.read"> { return bindOperation(client, defineOperation({ ...{"id":"storefront.bootstrap.read","method":"GET","path":"/api/v1/storefront/bootstrap","audience":"storefront","targets":["storefront"],"responseMode":"json","idempotent":true,"timeout":800,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CONTRACT_VERSION_UNSUPPORTED","DEADLINE_EXCEEDED","INTERNAL_ERROR","MEMBERSHIP_INACTIVE","PERMISSION_DENIED","RATE_LIMITED","SCOPE_DENIED","STOREFRONT_DISABLED","STOREFRONT_HANDLE_INVALID","STOREFRONT_MEMBERSHIP_MALL_MISMATCH","STOREFRONT_NOT_FOUND","STOREFRONT_NOT_PUBLISHED","STOREFRONT_PUBLICATION_UNAVAILABLE","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("StorefrontBootstrapReadInput", [] as const, false), output: exactOperationOutput("StorefrontBootstrapReadOutput") })); }
 
 export function createFetchStorefrontCatalogRead(baseUrl: string): OperationMethod<"storefront.catalog.read"> { return bindCatalogRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindCatalogRead(client: OperationExecutor): OperationMethod<"storefront.catalog.read"> { return bindOperation(client, defineOperation({"id":"storefront.catalog.read","method":"GET","path":"/api/v1/storefront/catalog","audience":"storefront","targets":["storefront"],"responseMode":"json","idempotent":true,"timeout":800})); }
+function bindCatalogRead(client: OperationExecutor): OperationMethod<"storefront.catalog.read"> { return bindOperation(client, defineOperation({ ...{"id":"storefront.catalog.read","method":"GET","path":"/api/v1/storefront/catalog","audience":"storefront","targets":["storefront"],"responseMode":"json","idempotent":true,"timeout":800,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CONTRACT_VERSION_UNSUPPORTED","DEADLINE_EXCEEDED","INTERNAL_ERROR","MEMBERSHIP_INACTIVE","PERMISSION_DENIED","RATE_LIMITED","SCOPE_DENIED","STOREFRONT_DISABLED","STOREFRONT_HANDLE_INVALID","STOREFRONT_MEMBERSHIP_MALL_MISMATCH","STOREFRONT_NOT_FOUND","STOREFRONT_NOT_PUBLISHED","STOREFRONT_PUBLICATION_UNAVAILABLE","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("StorefrontCatalogReadInput", [] as const, false), output: exactOperationOutput("StorefrontCatalogReadOutput") })); }
