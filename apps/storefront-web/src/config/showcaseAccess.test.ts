@@ -31,6 +31,7 @@ describe('showcase host boundary', () => {
     expect(isStorefrontRuntimeConfigurationAllowed('zhudatuan.com', 'production', 'membership')).toBe(true);
     expect(isStorefrontRuntimeConfigurationAllowed('www.zhudatuan.com', 'production', 'membership')).toBe(true);
     expect(isStorefrontRuntimeConfigurationAllowed('h5.zhudatuan.com', 'production', 'membership')).toBe(true);
+    expect(isStorefrontRuntimeConfigurationAllowed('mini.zhudatuan.com', 'production', 'membership')).toBe(true);
     expect(isStorefrontRuntimeConfigurationAllowed('accounts.zhudatuan.com', 'production', 'membership')).toBe(true);
     expect(isStorefrontRuntimeConfigurationAllowed('console.zhudatuan.com', 'production', 'membership')).toBe(true);
     expect(isStorefrontRuntimeConfigurationAllowed('zhudatuan.com', 'development', 'development')).toBe(false);

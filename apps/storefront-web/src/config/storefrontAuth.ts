@@ -2,7 +2,7 @@ export const CANONICAL_STOREFRONT_AUTH_ORIGIN = 'https://accounts.zhudatuan.com'
 export const LOCAL_STOREFRONT_AUTH_ORIGIN = 'http://127.0.0.1:3002';
 
 const LOCAL_AUTH_ORIGINS = new Set([LOCAL_STOREFRONT_AUTH_ORIGIN, 'http://localhost:3002']);
-export type StorefrontSurface = 'web' | 'h5';
+export type StorefrontSurface = 'web' | 'h5' | 'mini';
 
 /**
  * Resolve the consumer sign-in origin without allowing an environment value
@@ -25,5 +25,6 @@ export function storefrontAuthHref(surface: StorefrontSurface = runtimeStorefron
 
 function runtimeStorefrontSurface(): StorefrontSurface {
   if (typeof window === 'undefined') return 'web';
+  if (window.location.hostname === 'mini.zhudatuan.com') return 'mini';
   return window.location.hostname === 'h5.zhudatuan.com' || window.location.pathname === '/h5' ? 'h5' : 'web';
 }

@@ -17,6 +17,7 @@ import {
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
   resolveH5LoginOrigin,
+  resolveMiniProgramLoginOrigin,
   resolveStorefrontLoginOrigin,
 } from '../services/auth';
 import {
@@ -58,7 +59,10 @@ export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const isStorefrontEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === 'storefront';
   const isCanonicalConsoleRequest = typeof window === 'undefined' || new URLSearchParams(window.location.search).get('target') !== 'storefront';
-  const storefrontSurface = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('surface') === 'h5' ? 'h5' : 'web';
+  const requestedStorefrontSurface = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('surface') : null;
+  const storefrontSurface = requestedStorefrontSurface === 'h5' || requestedStorefrontSurface === 'mini'
+    ? requestedStorefrontSurface
+    : 'web';
   const [registrationDeepLink] = useState(() => {
     if (typeof window === 'undefined') return '';
     return new URLSearchParams(window.location.search).get('invite')?.trim().slice(0, 255) ?? '';
@@ -168,9 +172,12 @@ export const LoginPage: React.FC = () => {
   };
 
   const storefrontDestination = (webDestination: string): string => {
-    if (storefrontSurface !== 'h5') return webDestination;
-    const configuredOrigin = import.meta.env.VITE_H5_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
-    return `${resolveH5LoginOrigin(configuredOrigin, import.meta.env.DEV)}/`;
+    if (storefrontSurface === 'web') return webDestination;
+    const localOrigin = import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined;
+    if (storefrontSurface === 'mini') {
+      return `${resolveMiniProgramLoginOrigin(import.meta.env.VITE_MINI_PROGRAM_ORIGIN || localOrigin, import.meta.env.DEV)}/`;
+    }
+    return `${resolveH5LoginOrigin(import.meta.env.VITE_H5_ORIGIN || localOrigin, import.meta.env.DEV)}/`;
   };
 
   const handleLoginModeToggle = () => {
