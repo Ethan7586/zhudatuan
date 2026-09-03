@@ -5,6 +5,7 @@ describe('storefront auth origin boundary', () => {
   it('always uses the canonical account center in production', () => {
     expect(resolveStorefrontAuthOrigin(undefined, 'production')).toBe(CANONICAL_STOREFRONT_AUTH_ORIGIN);
     expect(resolveStorefrontAuthOrigin('https://accounts.zhudatuan.com', 'production')).toBe('https://accounts.zhudatuan.com');
+    expect(resolveStorefrontAuthOrigin('https://accounts.hbbtzn.com', 'production')).toBe(CANONICAL_STOREFRONT_AUTH_ORIGIN);
     expect(resolveStorefrontAuthOrigin(LOCAL_STOREFRONT_AUTH_ORIGIN, 'production')).toBe(CANONICAL_STOREFRONT_AUTH_ORIGIN);
     expect(resolveStorefrontAuthOrigin('https://attacker.example', 'production')).toBe(CANONICAL_STOREFRONT_AUTH_ORIGIN);
   });

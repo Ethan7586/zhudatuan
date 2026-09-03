@@ -4,16 +4,15 @@ import { apiAllowedOrigins, apiReturnTargets, type AuthReturnTargets } from './A
 export const IDENTITY_REGISTRATION_API_PROFILE = 'registration-only' as const;
 
 const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([
-  'https://accounts.hbbtzn.com',
   'https://accounts.zhudatuan.com',
   'https://console.zhudatuan.com',
-  'https://mall.hbbtzn.com',
+  'https://hbbtzn.com',
   'https://zhudatuan.com',
 ] as const);
 
 const PRODUCTION_RETURN_TARGETS = Object.freeze({
   console: 'https://console.zhudatuan.com',
-  storefront: 'https://mall.hbbtzn.com',
+  storefront: 'https://hbbtzn.com',
   store: 'https://console.zhudatuan.com/entrances/store',
   supplier: 'https://console.zhudatuan.com/entrances/supplier',
 } satisfies AuthReturnTargets);

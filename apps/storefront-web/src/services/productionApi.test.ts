@@ -51,7 +51,14 @@ afterEach(() => {
 });
 
 describe('canonical storefront production API', () => {
-  it('loads identity, profile, benefits, ledgers and orders from api.hbbtzn.com with cookie credentials', async () => {
+  it('never accepts hbbtzn as the backend API origin', async () => {
+    const { resolveProductionApiOrigin } = await import('./canonicalApiClient');
+
+    expect(resolveProductionApiOrigin(undefined, 'production')).toBe('https://api.zhudatuan.com');
+    expect(() => resolveProductionApiOrigin('https://api.hbbtzn.com', 'production')).toThrow('API 地址不在允许清单');
+  });
+
+  it('loads identity, profile, benefits, ledgers and orders from api.zhudatuan.com with cookie credentials', async () => {
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);
     const { productionApi } = await import('./productionApi');
@@ -62,7 +69,7 @@ describe('canonical storefront production API', () => {
     expect(snapshot.bootstrap.actor).toMatchObject({ userId: 'member:one', displayName: 'Ethan', phoneMasked: '138****0000' });
     expect(snapshot.bootstrap.scope.mallName).toBe('宏泰甄选');
     expect(snapshot.accounts.items.map((item) => item.balanceCents)).toEqual([20_000, 5_000]);
-    expect(fetcher).toHaveBeenCalledWith('https://api.hbbtzn.com/api/v1/identity/session', expect.objectContaining({ credentials: 'include', redirect: 'error' }));
+    expect(fetcher).toHaveBeenCalledWith('https://api.zhudatuan.com/api/v1/identity/session', expect.objectContaining({ credentials: 'include', redirect: 'error' }));
     const headers = requestHeaders(fetcher, '/api/v1/identity/session');
     expect(headers).toMatchObject({ 'x-client-version': '0.0.0', 'x-contract-version': '1.0.0' });
     expect(requestPaths(fetcher)).toEqual(expect.arrayContaining([

@@ -34,7 +34,7 @@ describe('public test authentication fixtures', () => {
   });
 
   it('only permits the canonical storefront origin plus explicit local development', () => {
-    expect(resolveStorefrontLoginOrigin()).toBe('https://mall.hbbtzn.com');
+    expect(resolveStorefrontLoginOrigin()).toBe('https://hbbtzn.com');
     expect(resolveStorefrontLoginOrigin('https://zhudatuan.com')).toBe('https://zhudatuan.com');
     expect(resolveStorefrontLoginOrigin('http://127.0.0.1:3000', true)).toBe('http://127.0.0.1:3000');
     expect(resolveStorefrontLoginOrigin('https://store.staging.example', false, 'https://store.staging.example')).toBe('https://store.staging.example');
@@ -45,7 +45,7 @@ describe('public test authentication fixtures', () => {
   it('builds a credential-free login URL for top-level POST', () => {
     const action = buildCredentialLoginAction(resolveStorefrontLoginOrigin());
 
-    expect(action).toBe('https://mall.hbbtzn.com/api/v1/auth/login?redirect=%2F');
+    expect(action).toBe('https://hbbtzn.com/api/v1/auth/login?redirect=%2F');
     expect(action).not.toContain('username');
     expect(action).not.toContain('password');
   });
@@ -66,7 +66,8 @@ describe('public test authentication fixtures', () => {
     const manifest = readFileSync(new URL('../../public/brand/site.webmanifest', import.meta.url), 'utf8');
 
     expect(viteConfig).toContain("base: command === 'build' ? './' : '/'");
-    expect(html).toContain('https://accounts.hbbtzn.com/');
+    expect(html).toContain('https://accounts.zhudatuan.com/');
+    expect(html).not.toContain('accounts.hbbtzn.com');
     // The manifest lives in brand/, so ../ resolves to either the accounts
     // root or the optional /login/ mount without hard-coding either path.
     expect(JSON.parse(manifest)).toMatchObject({ start_url: '../', scope: '../' });
