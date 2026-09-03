@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CANONICAL_STOREFRONT_AUTH_ORIGIN, LOCAL_STOREFRONT_AUTH_ORIGIN, resolveStorefrontAuthOrigin } from './storefrontAuth';
+import { CANONICAL_STOREFRONT_AUTH_ORIGIN, LOCAL_STOREFRONT_AUTH_ORIGIN, resolveStorefrontAuthOrigin, storefrontAuthHref } from './storefrontAuth';
 
 describe('storefront auth origin boundary', () => {
   it('always uses the canonical account center in production', () => {
@@ -13,5 +13,9 @@ describe('storefront auth origin boundary', () => {
     expect(resolveStorefrontAuthOrigin(undefined, 'development')).toBe(LOCAL_STOREFRONT_AUTH_ORIGIN);
     expect(resolveStorefrontAuthOrigin('http://localhost:3002', 'development')).toBe('http://localhost:3002');
     expect(resolveStorefrontAuthOrigin('https://attacker.example', 'development')).toBe(LOCAL_STOREFRONT_AUTH_ORIGIN);
+  });
+
+  it('opens the account center in consumer mode', () => {
+    expect(storefrontAuthHref()).toContain('?target=storefront');
   });
 });

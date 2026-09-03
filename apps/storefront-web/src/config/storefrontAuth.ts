@@ -18,5 +18,7 @@ export function resolveStorefrontAuthOrigin(candidate: string | undefined, envir
 }
 
 export function storefrontAuthHref(): string {
-  return `${resolveStorefrontAuthOrigin(process.env.NEXT_PUBLIC_AUTH_ORIGIN, process.env.NODE_ENV)}/`;
+  const target = new URL('/', resolveStorefrontAuthOrigin(process.env.NEXT_PUBLIC_AUTH_ORIGIN, process.env.NODE_ENV));
+  target.searchParams.set('target', 'storefront');
+  return target.toString();
 }

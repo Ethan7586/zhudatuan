@@ -3,10 +3,10 @@ import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { WeChatTabBar } from '../../components/mobile/WeChatTabBar';
 import { MPProductFeed } from './MPProductFeed';
-import { CreditCard, Utensils, Search, ChevronRight, Flame, Store, Ticket, ShoppingBag, Gift, Tv, Coffee, Sparkles, Plus, ShieldCheck, Building2, Tag } from 'lucide-react';
+import { CreditCard, Utensils, Search, ChevronRight, Flame, Store, Ticket, ShoppingBag, Gift, Tv, Coffee, Sparkles, Plus, ShieldCheck, Building2, Tag, LogIn } from 'lucide-react';
 
 export const MPHomePage: React.FC = () => {
-  const { user, currentMall, setMpPage, addToCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
+  const { user, currentMall, sessionStatus, login, setMpPage, addToCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
   const [activeBanner, setActiveBanner] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState('');
 
@@ -50,6 +50,27 @@ export const MPHomePage: React.FC = () => {
     <div className="bg-[#F5F7FA] min-h-full flex flex-col font-sans text-gray-800">
       {/* 顶部胶囊 Header */}
       <WeChatCapsule />
+
+      {sessionStatus !== 'authenticated' && (
+        <div className="bg-[var(--sw-brand-dark)] px-3 pb-3">
+          <button
+            type="button"
+            onClick={() => void login({})}
+            className="flex w-full items-center justify-between rounded-xl border border-white/20 bg-white px-3.5 py-3 text-left shadow-sm active:scale-[0.99]"
+          >
+            <span className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-[var(--sw-brand)]">
+                <LogIn className="h-4 w-4" />
+              </span>
+              <span>
+                <span className="block text-sm font-black text-slate-900">手机号登录</span>
+                <span className="block text-[10px] text-slate-500">登录后查看会员身份、订单与支付</span>
+              </span>
+            </span>
+            <span className="rounded-full bg-[var(--sw-brand)] px-3 py-1.5 text-xs font-bold text-white">登录</span>
+          </button>
+        </div>
+      )}
 
       {/* 搜索框区 */}
       <div className="bg-[var(--sw-brand-dark)] px-3 pb-3 pt-1">
