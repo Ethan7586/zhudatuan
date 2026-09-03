@@ -85,7 +85,6 @@ export function validateDomainContract(contract) {
   const aliases = requiredObject(contract.redirectOnlyAliases, 'PRODUCTION_DOMAIN_REDIRECT_ALIASES_MISSING');
   const edge = requiredObject(contract.edge, 'PRODUCTION_DOMAIN_EDGE_MISSING');
   const h5Edge = requiredObject(edge.h5, 'PRODUCTION_DOMAIN_H5_EDGE_MISSING');
-  const miniProgramEdge = requiredObject(edge.miniProgram, 'PRODUCTION_DOMAIN_MINI_PROGRAM_EDGE_MISSING');
   const legacyHbbtzn = requiredObject(edge.legacyHbbtzn, 'PRODUCTION_DOMAIN_LEGACY_EDGE_MISSING');
 
   const h5Origin = exactOrigin(h5.publicOrigin, 'PRODUCTION_DOMAIN_H5_ORIGIN_INVALID');
@@ -95,7 +94,7 @@ export function validateDomainContract(contract) {
   const apiOrigin = exactOrigin(controlPlane.apiOrigin, 'PRODUCTION_DOMAIN_API_ORIGIN_INVALID');
   const storefrontOrigin = exactOrigin(canonicalOrigins.storefrontOrigin, 'PRODUCTION_DOMAIN_STOREFRONT_ORIGIN_INVALID');
 
-  if (new URL(h5Origin).hostname !== 'h5.zhudatuan.com' || miniProgram.publicDomain !== 'mini.zhudatuan.com') {
+  if (new URL(h5Origin).hostname !== 'h5.zhudatuan.com' || miniProgram.publicDomain !== 'h5.zhudatuan.com') {
     fail('PRODUCTION_DOMAIN_CONSUMER_FRONTEND_INVALID');
   }
   if (h5.apiOrigin !== apiOrigin || miniProgram.apiOrigin !== apiOrigin
@@ -130,12 +129,6 @@ export function validateDomainContract(contract) {
     || h5Edge.deploymentArtifact !== 'apps/storefront-web/dist/server/index.js'
     || h5Edge.documentRoute !== '/h5') {
     fail('PRODUCTION_DOMAIN_H5_EDGE_INVALID');
-  }
-  if (miniProgramEdge.workerName !== 'zhudatuan-mini' || miniProgramEdge.publicOrigin !== miniProgramOrigin
-    || miniProgramEdge.canonicalWebOrigin !== storefrontOrigin
-    || miniProgramEdge.deploymentArtifact !== 'apps/storefront-web/dist/server/index.js'
-    || miniProgramEdge.documentRoute !== '/h5') {
-    fail('PRODUCTION_DOMAIN_MINI_PROGRAM_EDGE_INVALID');
   }
 
   const approvedAliasTargets = new Set([accountsOrigin, apiOrigin, legacyHbbtznOrigin]);
@@ -251,7 +244,6 @@ function validateOwnerManifest(contract) {
     `VITE_ADMIN_ORIGIN=${contract.controlPlane.consoleOrigin}`,
     `VITE_STOREFRONT_ORIGIN=${contract.canonicalOrigins.storefrontOrigin}`,
     `VITE_H5_ORIGIN=${contract.frontends.h5.publicOrigin}`,
-    `VITE_MINI_PROGRAM_ORIGIN=https://${contract.frontends.miniProgram.publicDomain}`,
   ]) {
     if (!accountBuild.has(value)) fail('PRODUCTION_DOMAIN_OWNER_MANIFEST_BUILD_DRIFT', value);
   }
@@ -274,26 +266,25 @@ function validateWranglerRoutes(contract) {
   }
 }
 
-function validateMobileWorker(contract, edgeName, frontendOrigin, configDirectory) {
-  const edge = contract.edge[edgeName];
-  const config = JSON.parse(readFileSync(resolve(repositoryRoot, `infrastructure/zhudatuan/cloudflare/${configDirectory}/wrangler.jsonc`), 'utf8'));
+function validateH5Worker(contract) {
+  const config = JSON.parse(readFileSync(resolve(repositoryRoot, 'infrastructure/zhudatuan/cloudflare/h5/wrangler.jsonc'), 'utf8'));
   const routes = config.routes ?? [];
-  const expectedHost = new URL(frontendOrigin).hostname;
-  if (config.name !== edge.workerName || config.workers_dev !== false
+  const expectedHost = new URL(contract.frontends.h5.publicOrigin).hostname;
+  if (config.name !== contract.edge.h5.workerName || config.workers_dev !== false
     || config.main !== '../../../../apps/storefront-web/dist/server/index.js'
     || config.no_bundle !== true
     || config.assets?.directory !== '../../../../apps/storefront-web/dist/client'
     || config.vars?.APP_ENV !== 'production' || config.vars?.AUTH_MODE !== 'membership'
     || !config.compatibility_flags?.includes('nodejs_compat')
     || routes.length !== 1 || routes[0]?.pattern !== expectedHost || routes[0]?.custom_domain !== true) {
-    fail('PRODUCTION_DOMAIN_MOBILE_WORKER_ROUTES_DRIFT', edgeName);
+    fail('PRODUCTION_DOMAIN_H5_WORKER_ROUTES_DRIFT');
   }
   const h5RuntimeSource = readFileSync(resolve(repositoryRoot, 'apps/storefront-web/src/config/h5Runtime.ts'), 'utf8');
-  for (const token of [expectedHost, edge.documentRoute]) {
-    if (!h5RuntimeSource.includes(token)) fail('PRODUCTION_DOMAIN_MOBILE_WORKER_BINDING_DRIFT', `${edgeName}:${token}`);
+  for (const token of [expectedHost, contract.edge.h5.documentRoute]) {
+    if (!h5RuntimeSource.includes(token)) fail('PRODUCTION_DOMAIN_H5_WORKER_BINDING_DRIFT', token);
   }
   const workerSource = readFileSync(resolve(repositoryRoot, 'apps/storefront-web/worker/index.ts'), 'utf8');
-  if (!workerSource.includes('resolveH5RuntimeRequest(request)')) fail('PRODUCTION_DOMAIN_MOBILE_WORKER_ENTRY_DRIFT');
+  if (!workerSource.includes('resolveH5RuntimeRequest(request)')) fail('PRODUCTION_DOMAIN_H5_WORKER_ENTRY_DRIFT');
 }
 
 function validateRequiredBindings(contract) {
@@ -302,13 +293,13 @@ function validateRequiredBindings(contract) {
   const miniProgramOrigin = `https://${contract.frontends.miniProgram.publicDomain}`;
   requireTokens('apps/auth-web/src/services/canonicalIdentity.ts', [apiOrigin]);
   requireTokens('apps/auth-web/src/services/canonicalRegistration.ts', [apiOrigin]);
-  requireTokens('apps/auth-web/src/services/auth.ts', [consoleOrigin, contract.canonicalOrigins.storefrontOrigin, h5Origin, miniProgramOrigin]);
-  requireTokens('apps/auth-web/src/buildEnvironment.ts', [apiOrigin, consoleOrigin, contract.canonicalOrigins.storefrontOrigin, h5Origin, miniProgramOrigin]);
+  requireTokens('apps/auth-web/src/services/auth.ts', [consoleOrigin, contract.canonicalOrigins.storefrontOrigin, h5Origin]);
+  requireTokens('apps/auth-web/src/buildEnvironment.ts', [apiOrigin, consoleOrigin, contract.canonicalOrigins.storefrontOrigin, h5Origin]);
   requireTokens('apps/auth-web/index.html', [accountsOrigin]);
   requireTokens('apps/storefront-web/src/services/canonicalApiClient.ts', [apiOrigin]);
   requireTokens('apps/storefront-web/src/config/storefrontAuth.ts', [accountsOrigin]);
   requireTokens('apps/console/vite.config.ts', [apiOrigin, accountsOrigin]);
-  requireTokens('packages/config/src/IdentityRegistrationApiEnvironment.ts', [accountsOrigin, consoleOrigin, h5Origin, miniProgramOrigin, contract.canonicalOrigins.storefrontOrigin]);
+  requireTokens('packages/config/src/IdentityRegistrationApiEnvironment.ts', [accountsOrigin, consoleOrigin, h5Origin, contract.canonicalOrigins.storefrontOrigin]);
 }
 
 function validateRuntimeSources(contract) {
@@ -331,8 +322,7 @@ function validateRuntimeSources(contract) {
   const edgeSource = readFileSync(resolve(repositoryRoot, 'infrastructure/zhudatuan/cloudflare/hbbtzn-alias/src/index.ts'), 'utf8');
   validateEdgeRedirects(edgeSource, contract);
   validateWranglerRoutes(contract);
-  validateMobileWorker(contract, 'h5', contract.frontends.h5.publicOrigin, 'h5');
-  validateMobileWorker(contract, 'miniProgram', `https://${contract.frontends.miniProgram.publicDomain}`, 'mini');
+  validateH5Worker(contract);
 }
 
 function validateBuiltArtifacts(contract, production) {

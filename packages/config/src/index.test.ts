@@ -61,7 +61,7 @@ describe('runtime configuration schema', () => {
       APP_ENV: 'production',
       AUTH_MODE: 'membership',
       SERVICE_VERSION: '1.0.0',
-      API_ALLOWED_ORIGINS: 'https://accounts.zhudatuan.com,https://console.zhudatuan.com,https://h5.zhudatuan.com,https://mini.zhudatuan.com,https://zhudatuan.com',
+      API_ALLOWED_ORIGINS: 'https://accounts.zhudatuan.com,https://console.zhudatuan.com,https://h5.zhudatuan.com,https://zhudatuan.com',
       AUTH_RETURN_TARGETS: '{"console":"https://console.zhudatuan.com","storefront":"https://zhudatuan.com","store":"https://console.zhudatuan.com/entrances/store","supplier":"https://console.zhudatuan.com/entrances/supplier"}',
       DATABASE_API_CONNECTION_REF: 'zhudatuan/database/api',
       SESSION_KEY_REF: 'zhudatuan/identity/session',

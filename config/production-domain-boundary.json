@@ -1,6 +1,6 @@
 {
   "schema": "zhudatuan.production-domain-boundary.v1",
-  "decision": "2026-09-03-owner-approved-zhudatuan-surface-domains",
+  "decision": "2026-09-03-owner-approved-zhudatuan-domain-family",
   "frontends": {
     "h5": {
       "publicOrigin": "https://h5.zhudatuan.com",
@@ -8,7 +8,7 @@
       "authOrigin": "https://accounts.zhudatuan.com"
     },
     "miniProgram": {
-      "publicDomain": "mini.zhudatuan.com",
+      "publicDomain": "h5.zhudatuan.com",
       "apiOrigin": "https://api.zhudatuan.com",
       "authOrigin": "https://accounts.zhudatuan.com"
     }
@@ -31,7 +31,6 @@
       "https://accounts.zhudatuan.com",
       "https://console.zhudatuan.com",
       "https://h5.zhudatuan.com",
-      "https://mini.zhudatuan.com",
       "https://zhudatuan.com"
     ],
     "returnTargets": {
@@ -45,13 +44,6 @@
     "h5": {
       "workerName": "zhudatuan-h5",
       "publicOrigin": "https://h5.zhudatuan.com",
-      "canonicalWebOrigin": "https://zhudatuan.com",
-      "deploymentArtifact": "apps/storefront-web/dist/server/index.js",
-      "documentRoute": "/h5"
-    },
-    "miniProgram": {
-      "workerName": "zhudatuan-mini",
-      "publicOrigin": "https://mini.zhudatuan.com",
       "canonicalWebOrigin": "https://zhudatuan.com",
       "deploymentArtifact": "apps/storefront-web/dist/server/index.js",
       "documentRoute": "/h5"

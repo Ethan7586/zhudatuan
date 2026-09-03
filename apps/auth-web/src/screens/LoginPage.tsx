@@ -15,7 +15,6 @@ import {
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
   resolveH5LoginOrigin,
-  resolveMiniProgramLoginOrigin,
   resolveStorefrontLoginOrigin,
 } from '../services/auth';
 import {
@@ -62,10 +61,7 @@ export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const isStorefrontEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === 'storefront';
   const isCanonicalConsoleRequest = typeof window === 'undefined' || new URLSearchParams(window.location.search).get('target') !== 'storefront';
-  const requestedStorefrontSurface = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('surface') : null;
-  const storefrontSurface = requestedStorefrontSurface === 'h5' || requestedStorefrontSurface === 'mini'
-    ? requestedStorefrontSurface
-    : 'web';
+  const storefrontSurface = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('surface') === 'h5' ? 'h5' : 'web';
   const [registrationDeepLink] = useState(() => {
     if (typeof window === 'undefined') return '';
     return new URLSearchParams(window.location.search).get('invite')?.trim().slice(0, 255) ?? '';
@@ -216,12 +212,9 @@ export const LoginPage: React.FC = () => {
   };
 
   const storefrontDestination = (webDestination: string): string => {
-    if (storefrontSurface === 'web') return webDestination;
-    const localOrigin = import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined;
-    if (storefrontSurface === 'mini') {
-      return `${resolveMiniProgramLoginOrigin(import.meta.env.VITE_MINI_PROGRAM_ORIGIN || localOrigin, import.meta.env.DEV)}/`;
-    }
-    return `${resolveH5LoginOrigin(import.meta.env.VITE_H5_ORIGIN || localOrigin, import.meta.env.DEV)}/`;
+    if (storefrontSurface !== 'h5') return webDestination;
+    const configuredOrigin = import.meta.env.VITE_H5_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
+    return `${resolveH5LoginOrigin(configuredOrigin, import.meta.env.DEV)}/`;
   };
 
   const handleLoginModeToggle = () => {
@@ -370,6 +363,11 @@ export const LoginPage: React.FC = () => {
         termsHash: registrationContext.termsHash,
         directLogin: isConsumerRegistration,
       });
+      if (created.target === 'storefront' && isConsumerRegistration) {
+        if (!created.redirectUrl) throw new Error('消费者登录会话未能建立，请重新获取验证码');
+        window.location.replace(storefrontDestination(created.redirectUrl));
+        return;
+      }
       setIdentifier(registration.mobile.trim());
       setPassword('');
       setRegistrationOpen(false);
@@ -438,7 +436,7 @@ export const LoginPage: React.FC = () => {
 
       const result = await loginCanonicalStorefront(identifier, password);
       if (result.kind === 'authenticated') {
-        window.location.replace(result.redirectUrl);
+        window.location.replace(storefrontDestination(result.redirectUrl));
         return;
       }
       setPreAuthContext(result.context);
@@ -460,8 +458,7 @@ export const LoginPage: React.FC = () => {
       window.parent.postMessage({ type: 'smart-wing:storefront-login-complete', membershipId }, window.location.origin);
       return;
     }
-
-    window.location.replace(result.redirectUrl);
+    window.location.replace(storefrontDestination(result.redirectUrl));
   };
 
   const processPreAuthContext = async (context: PreAuthContext) => {
