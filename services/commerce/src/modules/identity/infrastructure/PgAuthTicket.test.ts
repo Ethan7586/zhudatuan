@@ -6,9 +6,8 @@ import { PgAuthTicket } from './PgAuthTicket';
 import { ReturnTargetSigner } from './ReturnTargetSigner';
 
 describe('PgAuthTicket exchange', () => {
-  it('binds the ticket to the current session and consumes it while rotating the session token atomically', async () => {
+  it('binds the ticket to the current session and consumes it once', async () => {
     const currentSessionToken = 'current-session-token';
-    const nextSessionToken = 'next-session-token';
     const sessionExpiresAt = new Date('2026-08-28T16:00:00.000Z');
     const queries: Array<Readonly<{ text: string; values: readonly unknown[] }>> = [];
     const database = {
@@ -39,8 +38,8 @@ describe('PgAuthTicket exchange', () => {
       verifier: 'v'.repeat(43),
     };
 
-    await expect(tickets.consume(database, exchange, 'wrong-session-token', nextSessionToken)).rejects.toThrow('AUTH_TICKET_EXCHANGE_REJECTED');
-    await expect(tickets.consume(database, exchange, currentSessionToken, nextSessionToken)).resolves.toMatchObject({
+    await expect(tickets.consume(database, exchange, 'wrong-session-token')).rejects.toThrow('AUTH_TICKET_EXCHANGE_REJECTED');
+    await expect(tickets.consume(database, exchange, currentSessionToken)).resolves.toMatchObject({
       returnTarget: { url: 'https://console.zhudatuan.com' },
       sessionExpiresAt,
     });
@@ -48,14 +47,11 @@ describe('PgAuthTicket exchange', () => {
     expect(queries).toHaveLength(2);
     const accepted = queries[1]!;
     expect(accepted.values[4]).toBe(hash(currentSessionToken));
-    expect(accepted.values[5]).toBe(hash(nextSessionToken));
-    expect(accepted.values[4]).not.toBe(accepted.values[5]);
+    expect(accepted.values).toHaveLength(5);
     expect(accepted.text).toContain('session.token_hash=$5');
-    expect(accepted.text).toContain('for update of ticket,session');
+    expect(accepted.text).toContain('for update of ticket');
     expect(accepted.text).toContain('update identity.authticket ticket set consumed_at=clock_timestamp()');
-    expect(accepted.text).toContain('update identity.session session set token_hash=$6');
-    expect(accepted.text).toContain('where session.id=consumed.session_id and session.token_hash=$5');
-    expect(accepted.text).toContain('select target,expires_at from rotated');
+    expect(accepted.text).not.toContain('update identity.session');
   });
 });
 

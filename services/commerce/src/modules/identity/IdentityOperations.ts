@@ -151,14 +151,11 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
       'identity.tickets.exchange': async (request, database) => {
         const currentToken = requestCookie(request.input.headers.cookie, 'shop_session');
         if (!currentToken) reject(401, 'AUTHENTICATION_REQUIRED');
-        const token = randomBytes(48).toString('base64url');
-        const csrf = randomBytes(32).toString('base64url');
-        const exchanged = await tickets.consume(database, request.input.body, currentToken, token);
+        const exchanged = await tickets.consume(database, request.input.body, currentToken);
         const expiresIn = Math.max(1, Math.min(43_200, Math.floor((exchanged.sessionExpiresAt.getTime() - Date.now()) / 1_000)));
         return {
           status: 200,
           body: { returnTarget: exchanged.returnTarget, expiresIn },
-          headers: sessionCookies(token, csrf, expiresIn),
         };
       },
       'identity.session.read': async (request, database) => {
@@ -579,7 +576,7 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           );
           await database.query(
             `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-          values($1,'notification','identity',$2,jsonb_build_object('challenge',$3),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+          values($1,'identitynotification','identity',$2,jsonb_build_object('challenge',$3::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
             [`job:notify:${id}`, access.scope.id, id]
           );
           await publishIdentityEvent(database, 'identity.challenge.started', id, access.scope.id, request.input.idempotency!, { challenge: id, purpose: 'stepup' });
