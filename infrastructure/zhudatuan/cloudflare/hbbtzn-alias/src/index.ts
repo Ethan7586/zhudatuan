@@ -1,5 +1,4 @@
 const ROOT_STOREFRONT_HOST = 'hbbtzn.com';
-const API_UPSTREAM_ORIGIN = 'https://api.zhudatuan.com';
 
 const UPSTREAM_ORIGINS = Object.freeze({
   [ROOT_STOREFRONT_HOST]: 'https://zhudatuan.com',
@@ -12,7 +11,6 @@ const CANONICAL_REDIRECT_HOSTS = Object.freeze({
 } as const);
 
 const PUBLIC_ORIGINS = Object.freeze({
-  'https://accounts.zhudatuan.com': 'https://hbbtzn.com/accounts',
   'https://zhudatuan.com': 'https://hbbtzn.com',
 } as const);
 
@@ -80,9 +78,6 @@ function publicResponse(request: Request, upstream: Response): Response {
 const worker = {
   async fetch(request: Request): Promise<Response> {
     const incoming = new URL(request.url);
-
-    const verification = wechatVerificationResponse(request, incoming);
-    if (verification) return verification;
 
     const canonicalHost = CANONICAL_REDIRECT_HOSTS[
       incoming.hostname as keyof typeof CANONICAL_REDIRECT_HOSTS

@@ -39,7 +39,7 @@ describe('hbbtzn H5 alias worker', () => {
     expect((fetchMock.mock.calls[1][0] as Request).url).toBe('https://api.zhudatuan.com/api/v1/catalog/listings');
   });
 
-  it('keeps the public H5 origin while proxying its API to the canonical API upstream', async () => {
+  it('keeps the H5 storefront proxy on the canonical zhudatuan upstream', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}'));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -48,22 +48,8 @@ describe('hbbtzn H5 alias worker', () => {
     }));
 
     const upstreamRequest = fetchMock.mock.calls[0][0] as Request;
-    expect(upstreamRequest.url).toBe('https://api.zhudatuan.com/api/v1/catalog/listings');
+    expect(upstreamRequest.url).toBe('https://zhudatuan.com/api/v1/catalog/listings');
     expect(upstreamRequest.headers.get('origin')).toBe('https://zhudatuan.com');
-  });
-
-  it('mounts consumer auth below the same H5 origin without exposing the control-plane hostname', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('<html>accounts</html>'));
-    vi.stubGlobal('fetch', fetchMock);
-
-    const slashRedirect = await worker.fetch(new Request('https://hbbtzn.com/accounts'));
-    await worker.fetch(new Request('https://hbbtzn.com/accounts/?target=storefront&surface=h5'));
-    await worker.fetch(new Request('https://hbbtzn.com/accounts/assets/app.js'));
-
-    expect(slashRedirect.status).toBe(308);
-    expect(slashRedirect.headers.get('location')).toBe('https://hbbtzn.com/accounts/');
-    expect((fetchMock.mock.calls[0][0] as Request).url).toBe('https://accounts.zhudatuan.com/?target=storefront&surface=h5');
-    expect((fetchMock.mock.calls[1][0] as Request).url).toBe('https://accounts.zhudatuan.com/assets/app.js');
   });
 
   it.each([
