@@ -50,6 +50,7 @@ describe('production storefront data boundary', () => {
 
     expect(graph.some((file) => file.endsWith('/src/StorefrontRoot.tsx'))).toBe(true);
     expect(graph.some((file) => file.endsWith('/src/components/laptop/LaptopFrame.tsx'))).toBe(true);
+    expect(graph.some((file) => file.endsWith('/src/components/mobile/ProductionMobileFrame.tsx'))).toBe(true);
     expect(graph.some((file) => file.endsWith('/src/App.tsx'))).toBe(false);
   });
 });

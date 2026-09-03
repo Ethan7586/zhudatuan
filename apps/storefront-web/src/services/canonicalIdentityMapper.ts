@@ -42,6 +42,7 @@ export function mapCanonicalSession(value: unknown): CanonicalSessionProjection 
 export function mapCanonicalBootstrap(session: CanonicalSessionProjection, profileValue: unknown): ApiBootstrap {
   const profile = record(profileValue, 'member.profile');
   const mall = session.scopes.find((scope) => scope.kind === 'mall') ?? (session.scope.kind === 'mall' ? session.scope : session.scope);
+  const mallName = optionalText(profile.organization_name) ?? '当前福利商城';
   const enterprise = session.scopes.find((scope) => scope.kind === 'enterprise');
   const tenant = session.scopes.find((scope) => scope.kind === 'tenant');
   const phoneVerified = session.assuranceLevel >= 2;

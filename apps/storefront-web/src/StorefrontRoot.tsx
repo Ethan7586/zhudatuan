@@ -1,13 +1,23 @@
 'use client';
 
 import { StorefrontWebFrame } from './components/laptop/LaptopFrame';
+import { ProductionMobileFrame } from './components/mobile/ProductionMobileFrame';
 import { MallProvider, useMall } from './context/MallContext';
 
 function ProductionStorefrontFrame() {
   const { appMode } = useMall();
   const surface = appMode === 'pc' ? 'desktop-1920' : 'laptop';
 
-  return <StorefrontWebFrame surface={surface} navigationBoundary="production" />;
+  return (
+    <>
+      <div className="md:hidden">
+        <ProductionMobileFrame />
+      </div>
+      <div className="hidden md:block">
+        <StorefrontWebFrame surface={surface} navigationBoundary="production" />
+      </div>
+    </>
+  );
 }
 
 /**
