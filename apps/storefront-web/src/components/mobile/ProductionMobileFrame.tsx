@@ -31,7 +31,7 @@ export function ProductionMobileFrame() {
   })();
 
   return (
-    <div className="min-h-[100dvh] bg-[#F5F7FA] text-gray-800">
+    <div data-storefront-surface="h5" className="min-h-[100dvh] bg-[#F5F7FA] text-gray-800">
       <div className="mx-auto min-h-[100dvh] max-w-[430px] overflow-x-hidden bg-[#F5F7FA] shadow-xl">{page}</div>
       <PendingInterfaceModal />
       <ToastContainer />

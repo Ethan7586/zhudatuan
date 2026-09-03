@@ -1,5 +1,7 @@
 const ROOT_STOREFRONT_HOST = 'hbbtzn.com';
 const API_UPSTREAM_ORIGIN = 'https://api.zhudatuan.com';
+const ACCOUNTS_UPSTREAM_ORIGIN = 'https://accounts.zhudatuan.com';
+const CONSUMER_ACCOUNT_PATH = '/accounts';
 
 const UPSTREAM_ORIGINS = Object.freeze({
   [ROOT_STOREFRONT_HOST]: 'https://zhudatuan.com',
@@ -12,6 +14,7 @@ const CANONICAL_REDIRECT_HOSTS = Object.freeze({
 } as const);
 
 const PUBLIC_ORIGINS = Object.freeze({
+  'https://accounts.zhudatuan.com': 'https://hbbtzn.com/accounts',
   'https://zhudatuan.com': 'https://hbbtzn.com',
 } as const);
 
@@ -28,6 +31,15 @@ function rewriteOrigins(value: string, origins: Readonly<Record<string, string>>
 
 function isApiPath(pathname: string): boolean {
   return pathname === '/api' || pathname.startsWith('/api/');
+}
+
+function isConsumerAccountPath(pathname: string): boolean {
+  return pathname === CONSUMER_ACCOUNT_PATH || pathname.startsWith(`${CONSUMER_ACCOUNT_PATH}/`);
+}
+
+function consumerAccountUpstreamPath(pathname: string): string {
+  const suffix = pathname.slice(CONSUMER_ACCOUNT_PATH.length);
+  return suffix || '/';
 }
 
 function storefrontPath(request: Request, incoming: URL): string {
@@ -91,6 +103,16 @@ const worker = {
 
     const upstreamOrigin = UPSTREAM_ORIGINS[incoming.hostname as keyof typeof UPSTREAM_ORIGINS];
     if (!upstreamOrigin) return new Response('Not Found', { status: 404 });
+
+    if (incoming.hostname === ROOT_STOREFRONT_HOST && incoming.pathname === CONSUMER_ACCOUNT_PATH) {
+      incoming.pathname = `${CONSUMER_ACCOUNT_PATH}/`;
+      return Response.redirect(incoming, 308);
+    }
+
+    if (incoming.hostname === ROOT_STOREFRONT_HOST && isConsumerAccountPath(incoming.pathname)) {
+      const target = new URL(`${consumerAccountUpstreamPath(incoming.pathname)}${incoming.search}`, ACCOUNTS_UPSTREAM_ORIGIN);
+      return publicResponse(request, await fetch(upstreamRequest(request, target), { redirect: 'manual' }));
+    }
 
     const path = storefrontPath(request, incoming);
     const target = new URL(`${path}${incoming.search}`, isApiPath(path) ? API_UPSTREAM_ORIGIN : upstreamOrigin);

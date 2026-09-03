@@ -40,6 +40,20 @@ describe('hbbtzn H5 alias worker', () => {
     expect(upstreamRequest.headers.get('origin')).toBe('https://zhudatuan.com');
   });
 
+  it('mounts consumer auth below the same H5 origin without exposing the control-plane hostname', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('<html>accounts</html>'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const slashRedirect = await worker.fetch(new Request('https://hbbtzn.com/accounts'));
+    await worker.fetch(new Request('https://hbbtzn.com/accounts/?target=storefront&surface=h5'));
+    await worker.fetch(new Request('https://hbbtzn.com/accounts/assets/app.js'));
+
+    expect(slashRedirect.status).toBe(308);
+    expect(slashRedirect.headers.get('location')).toBe('https://hbbtzn.com/accounts/');
+    expect((fetchMock.mock.calls[0][0] as Request).url).toBe('https://accounts.zhudatuan.com/?target=storefront&surface=h5');
+    expect((fetchMock.mock.calls[1][0] as Request).url).toBe('https://accounts.zhudatuan.com/assets/app.js');
+  });
+
   it.each([
     ['https://accounts.hbbtzn.com/login?client=console', 'https://accounts.zhudatuan.com/login?client=console'],
     ['https://api.hbbtzn.com/api/v1/identity/sessions', 'https://api.zhudatuan.com/api/v1/identity/sessions'],

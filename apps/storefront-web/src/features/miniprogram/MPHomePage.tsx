@@ -90,6 +90,8 @@ export const MPHomePage: React.FC = () => {
         </div>
       </div>
 
+      <MPProductFeed />
+
       {/* 福利与餐卡余额双 Pill 卡片 */}
       <div className="px-3 -mt-1.5 z-10">
         <div className="bg-white rounded-2xl p-3 shadow-md border border-blue-100 flex items-center justify-between divide-x divide-gray-100">
@@ -233,8 +235,6 @@ export const MPHomePage: React.FC = () => {
           </div>
         </div>
       </div>
-
-      <MPProductFeed />
 
       {/* 固定 Bottom TabBar */}
       <WeChatTabBar />

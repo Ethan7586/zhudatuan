@@ -1,5 +1,6 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { z } from 'zod';
+import { runtimeConsumerFacadeOrigin } from './consumerFacade';
 import type { Membership, PreAuthContext } from '../types';
 import { resolveAdminLoginOrigin, resolveStorefrontLoginOrigin } from './auth';
 
@@ -441,10 +442,12 @@ function approvedStorefrontDestination(value: z.infer<typeof TicketExchangeSchem
 }
 
 function apiOrigin(): string {
-  const configured = import.meta.env.VITE_API_BASE_URL?.trim() || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
+  const facadeOrigin = runtimeConsumerFacadeOrigin();
+  const configured = facadeOrigin ?? (import.meta.env.VITE_API_BASE_URL?.trim() || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN));
   const parsed = new URL(configured);
   const local = import.meta.env.DEV && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
-  if ((!local && parsed.origin !== CANONICAL_API_ORIGIN) || parsed.username || parsed.password || parsed.hash) {
+  const facade = facadeOrigin !== undefined && parsed.origin === facadeOrigin;
+  if ((!local && !facade && parsed.origin !== CANONICAL_API_ORIGIN) || parsed.username || parsed.password || parsed.hash) {
     throw new Error('统一身份 API 不在允许清单');
   }
   return parsed.origin;
