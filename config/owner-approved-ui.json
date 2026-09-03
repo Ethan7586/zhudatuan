@@ -59,9 +59,9 @@
         "apps/storefront-web/src/components/laptop/LaptopTopSwitcher.tsx": "5946950c8227bfa18eea305755e50b8b508084f6a9ced9dfcea16ddda058b4a1",
         "apps/storefront-web/src/components/laptop/StorefrontWebStandard.ts": "e2c3aa873ecc9c25b4981b65ef4d8ddf7c4e4e4c97fb526fbcac7baa6c4496af",
         "apps/storefront-web/src/config/storefrontAuth.ts": "65d437a3f560ae1d32d5a2aedf99fa7bc6c4a765b189a98c3fb9c7baf917a0a5",
-        "apps/storefront-web/src/config/showcaseAccess.ts": "fad0ce5a6a8467310fa5e764c5cdb90b3f7909805ec04d97cbdbd514d6085000",
+        "apps/storefront-web/src/config/showcaseAccess.ts": "95ea584fbcdcba24f5ede7b9bdcae4841af0bf9e5195e2b2a5516e231bdd8e30",
         "apps/storefront-web/src/config/productionDemoAuth.ts": "747e568a05c39a4eac24e3e46c272f874181875a69ffd9171bb603218593782e",
-        "apps/storefront-web/worker/index.ts": "5457479e43e47fdec080207b1eeed6611995306715c2c0e7be6679a25e42c006",
+        "apps/storefront-web/worker/index.ts": "2974593087a3215f14e93977f2f426f74db1cb19534cbd2b5b40cd46d685cdda",
         "apps/storefront-web/vite.config.ts": "db8dfa7f68a0bff39cb81ef98835e7d251e5573188ae200d8bfc87825e7bf516"
       }
     },
