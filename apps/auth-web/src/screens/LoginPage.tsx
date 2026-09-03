@@ -1,61 +1,51 @@
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
  * 主打团 - 统一登录 LoginPage screen
-=======
- * 智慧翼企业福利商城 - 统一登录 LoginPage screen
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
- * 主打团 - 统一登录 LoginPage screen
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
- * 智慧翼企业福利商城 - 统一登录 LoginPage screen
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
  * 消费者端（zhudatuan.com）与运营后台共用同一份账号密码登录组件
  * 技术服务方：雍彻科技
  */
 
 import React, { useState, useEffect } from 'react';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 import { ShieldCheck, Lock, QrCode, Globe, Building2, CheckCircle2, AlertCircle, Eye, EyeOff, ArrowRight, ArrowLeft, RefreshCw, UserCheck, ChevronRight, ShieldAlert, Info, Clock, Store, CreditCard, UserX, FileText, X } from 'lucide-react';
 import { useMallContext } from '../context/MallContext';
 import { useSmsResendCountdown } from '../hooks/useSmsResendCountdown';
 import { Membership, PreAuthContext } from '../types';
+import { defaultTermsAccepted } from '../services/termsAcceptance';
 import {
   changeInitialPassword,
+  buildAccountLoginPath,
   buildCredentialLoginAction,
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
+  resolveH5LoginOrigin,
+  resolveMiniProgramLoginOrigin,
   resolveStorefrontLoginOrigin,
 } from '../services/auth';
 import {
   createCanonicalLoginChallenge,
   createCanonicalPasswordResetChallenge,
+  currentCanonicalStorefrontOrganization,
   loginCanonicalConsole,
   loginCanonicalConsoleWithOtp,
+  loginCanonicalStorefront,
+  loginCanonicalStorefrontEntry,
+  loginCanonicalStorefrontEntryWithOtp,
+  loginCanonicalStorefrontWithOtp,
   resetCanonicalPassword,
 } from '../services/canonicalIdentity';
 import {
   createCanonicalMember,
   createCanonicalRegistrationChallenge,
-<<<<<<< HEAD
+  createCanonicalStorefrontRegistrationChallenge,
   canonicalRegistrationMobile,
   resolveCanonicalInvite,
+  resolveCanonicalStorefrontRegistration,
   type CanonicalInvitation,
+  type CanonicalStorefrontRegistration,
 } from '../services/canonicalRegistration';
 import { SMS_CODE_RESEND_SECONDS } from '../services/otpPolicy';
-<<<<<<< HEAD
-=======
-  resolveCanonicalInvite,
-  type CanonicalInvitation,
-} from '../services/canonicalRegistration';
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> 4dd41dd1 (fix(auth): cap SMS resend wait at 30 seconds)
+import { automaticL6DisplayName, automaticRegistrationPassword } from '../services/consumerRegistration';
 import { registrationPresentation } from './registrationPresentation';
+import { runtimeConsumerFacadeOrigin } from '../services/consumerFacade';
 
 type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
 
@@ -69,178 +59,66 @@ function maskMobile(value: string): string {
   if (mobile.length <= 7) return mobile;
   return `${mobile.slice(0, 3)}****${mobile.slice(-4)}`;
 }
-<<<<<<< HEAD
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-import {
-  ShieldCheck,
-  Lock,
-  Building2,
-  AlertCircle,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  ArrowLeft,
-  RefreshCw,
-  UserCheck,
-  ChevronRight,
-  ShieldAlert,
-  Info,
-  Clock,
-  Store,
-  CreditCard,
-  UserX,
-  FileText,
-  X,
-} from 'lucide-react';
-import { useMallContext } from '../context/MallContext';
-import { Membership, PreAuthContext } from '../types';
-import { loginWithPassword, getLockoutState, acceptInvitation, changeInitialPassword, registerUsernameMember } from '../services/auth';
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { ShieldCheck, Lock, QrCode, Globe, Building2, CheckCircle2, AlertCircle, Eye, EyeOff, ArrowRight, ArrowLeft, RefreshCw, UserCheck, ChevronRight, ShieldAlert, Info, Clock, Store, CreditCard, UserX, FileText, X } from 'lucide-react';
-import { useMallContext } from '../context/MallContext';
-import { Membership, PreAuthContext } from '../types';
-import {
-  loginWithPassword,
-  getLockoutState,
-  changeInitialPassword,
-  registerUsernameMember,
-  buildCredentialLoginAction,
-  requiresAuthoritativeMembershipSelection,
-  resolveAdminLoginOrigin,
-  resolveStorefrontLoginOrigin,
-} from '../services/auth';
-
-type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 
 export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const isStorefrontEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === 'storefront';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  const isCanonicalConsoleRequest = true;
+  const isCanonicalConsoleRequest = typeof window === 'undefined' || new URLSearchParams(window.location.search).get('target') !== 'storefront';
+  const requestedStorefrontSurface = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('surface') : null;
+  const storefrontSurface = requestedStorefrontSurface === 'h5' || requestedStorefrontSurface === 'mini'
+    ? requestedStorefrontSurface
+    : 'web';
+  const [registrationDeepLink] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return new URLSearchParams(window.location.search).get('invite')?.trim().slice(0, 255) ?? '';
+  });
+  const [storefrontRegistrationDeepLink] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return new URLSearchParams(window.location.search).get('application')?.trim().slice(0, 48) ?? '';
+  });
 
   // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
   const [stage, setStage] = useState<1 | 2 | 3>(1);
+  // 消费者只走账号密码；手机号验证码保留给付款前核验，不能与登录入口混在一起。
   const [activeTab, setActiveTab] = useState<AuthMethod>('password');
   const [qrLoginChannel, setQrLoginChannel] = useState<'work_weixin' | 'wechat'>('work_weixin');
   const [ssoDomain, setSsoDomain] = useState('');
   const [selectedMembership, setSelectedMembership] = useState<Membership | null>(null);
-=======
-
-<<<<<<< HEAD
-  // 当前流程阶段: 1 = 账号认证, 2 = 选择会员身份
-  const [stage, setStage] = useState<1 | 2>(1);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-
-  // 当前流程阶段: 1 = 账号认证, 2 = 选择会员身份
-  const [stage, setStage] = useState<1 | 2>(1);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
-  const [stage, setStage] = useState<1 | 2 | 3>(1);
-  const [activeTab, setActiveTab] = useState<AuthMethod>('password');
-  const [qrLoginChannel, setQrLoginChannel] = useState<'work_weixin' | 'wechat'>('work_weixin');
-  const [ssoDomain, setSsoDomain] = useState('');
-  const [selectedMembership, setSelectedMembership] = useState<Membership | null>(null);
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 
   // 表单受控字段
   const [identifier, setIdentifier] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
   const [loginOtp, setLoginOtp] = useState({ code: '', challengeId: '', challengeMobile: '' });
   const { seconds: loginOtpSeconds, start: startLoginOtpCooldown, reset: resetLoginOtpCooldown } = useSmsResendCountdown();
   const [loginOtpSending, setLoginOtpSending] = useState(false);
-  const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [registrationOpen, setRegistrationOpen] = useState(registrationDeepLink.length > 0 || storefrontRegistrationDeepLink.length > 0);
   const [registration, setRegistration] = useState({
     mobile: '',
     displayName: '',
-    inviteCode: '',
+    inviteCode: registrationDeepLink,
     code: '',
     challengeId: '',
     challengeMobile: '',
     password: '',
     confirmPassword: '',
   });
-  const [registrationInvite, setRegistrationInvite] = useState<CanonicalInvitation | null>(null);
-  const [registrationTermsAccepted, setRegistrationTermsAccepted] = useState(false);
+  const [registrationContext, setRegistrationContext] = useState<CanonicalInvitation | CanonicalStorefrontRegistration | null>(null);
+  const [registrationTermsAccepted, setRegistrationTermsAccepted] = useState(() => defaultTermsAccepted('invitation-unresolved'));
   const [registrationPolicyModal, setRegistrationPolicyModal] = useState<'terms' | 'privacy' | null>(null);
-  const [registrationBusy, setRegistrationBusy] = useState<'invite' | 'code' | 'submit' | null>(null);
+  const [registrationBusy, setRegistrationBusy] = useState<'context' | 'code' | 'submit' | null>(null);
   const { seconds: registrationCodeSeconds, start: startRegistrationCodeCooldown, reset: resetRegistrationCodeCooldown } = useSmsResendCountdown();
   const [registrationNotice, setRegistrationNotice] = useState('');
   const [formNotice, setFormNotice] = useState('');
-=======
-=======
-  const [loginOtp, setLoginOtp] = useState({ code: '', challengeId: '', challengeMobile: '' });
-  const { seconds: loginOtpSeconds, start: startLoginOtpCooldown, reset: resetLoginOtpCooldown } = useSmsResendCountdown();
-  const [loginOtpSending, setLoginOtpSending] = useState(false);
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  const [registrationOpen, setRegistrationOpen] = useState(false);
-  const [registration, setRegistration] = useState({
-    mobile: '',
-    displayName: '',
-    inviteCode: '',
-    code: '',
-    challengeId: '',
-    challengeMobile: '',
-    password: '',
-    confirmPassword: '',
-  });
-  const [registrationInvite, setRegistrationInvite] = useState<CanonicalInvitation | null>(null);
-  const [registrationTermsAccepted, setRegistrationTermsAccepted] = useState(false);
-  const [registrationPolicyModal, setRegistrationPolicyModal] = useState<'terms' | 'privacy' | null>(null);
-  const [registrationBusy, setRegistrationBusy] = useState<'invite' | 'code' | 'submit' | null>(null);
-  const { seconds: registrationCodeSeconds, start: startRegistrationCodeCooldown, reset: resetRegistrationCodeCooldown } = useSmsResendCountdown();
-  const [registrationNotice, setRegistrationNotice] = useState('');
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  const [formNotice, setFormNotice] = useState('');
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  const [registrationOpen, setRegistrationOpen] = useState(false);
-  const [registration, setRegistration] = useState({ username: '', displayName: '', inviteCode: '', password: '', confirmPassword: '' });
-  const [registrationNotice, setRegistrationNotice] = useState('');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const [resetOpen, setResetOpen] = useState(false);
   const [resetForm, setResetForm] = useState({ mobile: '', code: '', challengeId: '', password: '', confirm: '' });
 
   // UI 视觉交互状态
+  const [isEnterpriseLogin, setIsEnterpriseLogin] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [formError, setFormError] = useState<string>('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  // 倒计时状态
-  const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
-
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  // 倒计时状态
-  const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
-
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   // 认证返回的短时效 PreAuth 上下文（前端不持久化至 localStorage/sessionStorage）
   const [preAuthContext, setPreAuthContext] = useState<PreAuthContext | null>(null);
 
@@ -250,12 +128,75 @@ export const LoginPage: React.FC = () => {
   // 首次登录修改密码
   const [showForcePasswordModal, setShowForcePasswordModal] = useState<boolean>(false);
   const [newPassword, setNewPassword] = useState<string>('');
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const registrationCopy = registrationPresentation(registrationInvite?.target);
+  const registrationCopy = registrationPresentation(registrationContext?.target,
+    registrationContext && 'governanceLevel' in registrationContext ? registrationContext.governanceLevel : undefined);
+  const isConsumerRegistration = registrationContext?.target === 'storefront';
+  const isSelfConsumerRegistration = registrationContext !== null && 'applicationSlug' in registrationContext;
+  const isQrConsumerRegistration = (registrationDeepLink.length > 0 || storefrontRegistrationDeepLink.length > 0)
+    && registrationContext?.target !== 'console';
 
-<<<<<<< HEAD
+  useEffect(() => {
+    if (!registrationOpen || !isConsumerRegistration || !registrationContext?.organizationName) return;
+    const previousTitle = document.title;
+    document.title = `L6 消费者｜${registrationContext.organizationName}`;
+    return () => { document.title = previousTitle; };
+  }, [isConsumerRegistration, registrationContext?.organizationName, registrationOpen]);
+
+  useEffect(() => {
+    if (!registrationDeepLink) return;
+    let active = true;
+    setRegistrationBusy('context');
+    setFormError('');
+    void resolveCanonicalInvite(registrationDeepLink)
+      .then((invitation) => {
+        if (!active) return;
+        setRegistrationContext(invitation);
+        setRegistrationTermsAccepted(defaultTermsAccepted('invitation-resolved'));
+      setRegistrationNotice(`已进入【${invitation.organizationName}】L6 消费者通道`);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setRegistrationContext(null);
+        setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
+        setFormError(error instanceof Error ? error.message : '邀请码验证失败');
+      })
+      .finally(() => {
+        if (active) setRegistrationBusy(null);
+      });
+    return () => { active = false; };
+  }, [registrationDeepLink]);
+
+  useEffect(() => {
+    if (!storefrontRegistrationDeepLink || registrationDeepLink) return;
+    let active = true;
+    setRegistrationBusy('context');
+    setFormError('');
+    void resolveCanonicalStorefrontRegistration(storefrontRegistrationDeepLink)
+      .then(async (storefront) => {
+        if (!active) return;
+        const activeOrganization = await currentCanonicalStorefrontOrganization().catch(() => null);
+        if (!active) return;
+        if (activeOrganization === storefront.organizationId) {
+          setRegistrationOpen(false);
+          window.location.replace(storefrontDestination('https://zhudatuan.com/'));
+          return;
+        }
+        setRegistrationContext(storefront);
+        setRegistrationTermsAccepted(defaultTermsAccepted('invitation-resolved'));
+        setRegistrationNotice(`验证本人手机号后，立即进入【${storefront.organizationName}】购物`);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setRegistrationContext(null);
+        setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
+        setFormError(error instanceof Error ? error.message : '商城注册入口无效');
+      })
+      .finally(() => {
+        if (active) setRegistrationBusy(null);
+      });
+    return () => { active = false; };
+  }, [registrationDeepLink, storefrontRegistrationDeepLink]);
+
   const handleIdentifierChange = (val: string) => {
     setIdentifier(val);
     if (val.trim() !== loginOtp.challengeMobile) {
@@ -268,103 +209,31 @@ export const LoginPage: React.FC = () => {
   };
 
   const selectAuthMethod = (method: AuthMethod) => {
+    if (!isCanonicalConsoleRequest && method === 'otp') return;
     setActiveTab(method);
     setFormError('');
     setFormNotice('');
     setFieldErrors({});
   };
 
-  const fillDevelopmentAccount = (account: string) => {
-    if (!import.meta.env.DEV) return;
-    setIdentifier(account);
-    setPassword('');
-    setActiveTab('password');
-    setFormError('');
-    setFieldErrors({});
-=======
-=======
-  const registrationCopy = registrationPresentation(registrationInvite?.target);
->>>>>>> 018b2a71 (chore(release): capture current production source)
-
-  useEffect(() => {
-    if (registrationCodeSeconds <= 0) return;
-    const timer = window.setInterval(() => {
-      setRegistrationCodeSeconds((seconds) => Math.max(0, seconds - 1));
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [registrationCodeSeconds]);
-
-  useEffect(() => {
-    if (loginOtpSeconds <= 0) return;
-    const timer = window.setInterval(() => setLoginOtpSeconds((seconds) => Math.max(0, seconds - 1)), 1000);
-    return () => window.clearInterval(timer);
-  }, [loginOtpSeconds]);
-
-=======
->>>>>>> 31b27b78 (fix(auth): measure SMS cooldown by wall clock)
-  const handleIdentifierChange = (val: string) => {
-    setIdentifier(val);
-    if (val.trim() !== loginOtp.challengeMobile) {
-      setLoginOtp({ code: '', challengeId: '', challengeMobile: '' });
-      resetLoginOtpCooldown();
+  const storefrontDestination = (webDestination: string): string => {
+    if (storefrontSurface === 'web') return webDestination;
+    const consumerFacadeOrigin = runtimeConsumerFacadeOrigin();
+    if (storefrontSurface === 'h5' && consumerFacadeOrigin) return `${consumerFacadeOrigin}/`;
+    const localOrigin = import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined;
+    if (storefrontSurface === 'mini') {
+      return `${resolveMiniProgramLoginOrigin(import.meta.env.VITE_MINI_PROGRAM_ORIGIN || localOrigin, import.meta.env.DEV)}/`;
     }
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    setFormError('');
-    setFormNotice('');
-    setFieldErrors((prev) => ({ ...prev, identifier: '' }));
+    return `${resolveH5LoginOrigin(import.meta.env.VITE_H5_ORIGIN || localOrigin, import.meta.env.DEV)}/`;
   };
 
-  const selectAuthMethod = (method: AuthMethod) => {
-    setActiveTab(method);
-    setFormError('');
-    setFormNotice('');
-    setFieldErrors({});
-  };
-
-  const fillDevelopmentAccount = (account: string) => {
-    if (!import.meta.env.DEV) return;
-    setIdentifier(account);
-    setPassword('');
-    setActiveTab('password');
-    setFormError('');
-    setFieldErrors({});
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-
-  // 处理 lockout 倒计时
-  useEffect(() => {
-    let timer: any;
-    if (lockoutSeconds > 0) {
-      timer = setInterval(() => {
-        setLockoutSeconds((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+  const handleLoginModeToggle = () => {
+    if (isEnterpriseLogin) {
+      const configuredOrigin = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
+      window.location.assign(storefrontDestination(resolveStorefrontLoginOrigin(configuredOrigin, import.meta.env.DEV)));
+      return;
     }
-    return () => clearInterval(timer);
-  }, [lockoutSeconds]);
-
-  const handleIdentifierChange = (val: string) => {
-    setIdentifier(val);
-    setFormError('');
-    setFieldErrors((prev) => ({ ...prev, identifier: '' }));
-    const lock = getLockoutState(val.trim());
-    if (lock.isLocked) {
-      setLockoutSeconds(lock.remainingSeconds);
-    }
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-  };
-
-  const selectAuthMethod = (method: AuthMethod) => {
-    setActiveTab(method);
-    setFormError('');
-    setFieldErrors({});
+    setIsEnterpriseLogin(true);
   };
 
   const fillDevelopmentAccount = (account: string) => {
@@ -380,9 +249,6 @@ export const LoginPage: React.FC = () => {
   const validateStage1 = (): boolean => {
     const errors: Record<string, string> = {};
     if (!identifier.trim()) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
       errors.identifier = activeTab === 'otp' ? '请输入已绑定手机号' : '请输入登录账号或已绑定手机号';
     }
     if (activeTab === 'otp' && !/^1[3-9]\d{9}$/.test(identifier.trim())) {
@@ -392,27 +258,6 @@ export const LoginPage: React.FC = () => {
     } else if (activeTab === 'otp' && !/^\d{6}$/.test(loginOtp.code.trim())) {
       errors.otp = '请输入 6 位短信验证码';
     } else if (activeTab === 'password' && !password.trim()) {
-=======
-      errors.identifier = '请输入登录账号或已绑定手机号';
-    }
-    if (!password.trim()) {
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      errors.identifier = activeTab === 'otp' ? '请输入已绑定手机号' : '请输入登录账号或已绑定手机号';
-    }
-    if (activeTab === 'otp' && !/^1[3-9]\d{9}$/.test(identifier.trim())) {
-      errors.identifier = '请输入有效的已绑定手机号';
-    } else if (activeTab === 'otp' && (!loginOtp.challengeId || loginOtp.challengeMobile !== identifier.trim())) {
-      errors.otp = '请先为当前手机号获取验证码';
-    } else if (activeTab === 'otp' && !/^\d{6}$/.test(loginOtp.code.trim())) {
-      errors.otp = '请输入 6 位短信验证码';
-    } else if (activeTab === 'password' && !password.trim()) {
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-      errors.identifier = '请输入登录账号或已绑定手机号';
-    }
-    if (!password.trim()) {
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       errors.password = '请输入密码';
     }
 
@@ -420,32 +265,18 @@ export const LoginPage: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
   const handleSendLoginCode = async () => {
     if (!/^1[3-9]\d{9}$/.test(identifier.trim())) {
       setFieldErrors((current) => ({ ...current, identifier: '请输入有效的已绑定手机号' }));
       return;
     }
     setLoginOtpSending(true);
-<<<<<<< HEAD
     setFormError('');
     setFormNotice('');
     try {
       const challenge = await createCanonicalLoginChallenge(identifier);
       setLoginOtp({ code: '', challengeId: challenge.challengeId, challengeMobile: identifier.trim() });
-<<<<<<< HEAD
-<<<<<<< HEAD
       startLoginOtpCooldown();
-=======
-      setLoginOtpSeconds(SMS_CODE_RESEND_SECONDS);
->>>>>>> 4dd41dd1 (fix(auth): cap SMS resend wait at 30 seconds)
-=======
-      startLoginOtpCooldown();
->>>>>>> 31b27b78 (fix(auth): measure SMS cooldown by wall clock)
       setFormNotice(`如果该手机号已绑定账号，验证码将发送至 ${maskMobile(identifier)}。`);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '验证码请求失败');
@@ -465,19 +296,18 @@ export const LoginPage: React.FC = () => {
       return { ...current, [field]: value };
     });
     if (field === 'inviteCode') {
-      setRegistrationInvite(null);
-      setRegistrationTermsAccepted(false);
+      setRegistrationContext(null);
+      setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
     }
     if (field === 'mobile' || field === 'inviteCode') resetRegistrationCodeCooldown();
-<<<<<<< HEAD
     setFormError('');
     setRegistrationNotice('');
   };
 
   const closeRegistration = () => {
     setRegistrationOpen(false);
-    setRegistrationInvite(null);
-    setRegistrationTermsAccepted(false);
+    if (!isSelfConsumerRegistration) setRegistrationContext(null);
+    setRegistrationTermsAccepted(defaultTermsAccepted(isSelfConsumerRegistration ? 'invitation-resolved' : 'invitation-unresolved'));
     setRegistrationPolicyModal(null);
     resetRegistrationCodeCooldown();
     setRegistrationBusy(null);
@@ -487,17 +317,17 @@ export const LoginPage: React.FC = () => {
   };
 
   const handleResolveRegistrationInvite = async () => {
-    setRegistrationBusy('invite');
+    setRegistrationBusy('context');
     setFormError('');
     setRegistrationNotice('');
     try {
       const invitation = await resolveCanonicalInvite(registration.inviteCode);
-      setRegistrationInvite(invitation);
-      setRegistrationTermsAccepted(false);
-      setRegistrationNotice(registrationPresentation(invitation.target).resolvedNotice);
+      setRegistrationContext(invitation);
+      setRegistrationTermsAccepted(defaultTermsAccepted('invitation-resolved'));
+      setRegistrationNotice(registrationPresentation(invitation.target, invitation.governanceLevel).resolvedNotice);
     } catch (error) {
-      setRegistrationInvite(null);
-      setRegistrationTermsAccepted(false);
+      setRegistrationContext(null);
+      setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
       setFormError(error instanceof Error ? error.message : '邀请码验证失败');
     } finally {
       setRegistrationBusy(null);
@@ -505,15 +335,18 @@ export const LoginPage: React.FC = () => {
   };
 
   const handleSendRegistrationCode = async () => {
-    if (!registrationInvite) {
-      setFormError('请先验证企业邀请码');
+    if (!registrationContext) {
+      setFormError(isCanonicalConsoleRequest ? '请先验证企业邀请码' : '商城注册入口尚未就绪');
       return;
     }
     setRegistrationBusy('code');
     setFormError('');
     setRegistrationNotice('');
     try {
-      const challenge = await createCanonicalRegistrationChallenge(registration.mobile, registration.inviteCode);
+      const challenge = isSelfConsumerRegistration
+        ? await createCanonicalStorefrontRegistrationChallenge(registration.mobile,
+          (registrationContext as CanonicalStorefrontRegistration).applicationSlug)
+        : await createCanonicalRegistrationChallenge(registration.mobile, registration.inviteCode);
       const validitySeconds = Math.max(1, Math.floor((new Date(challenge.expiresAt).getTime() - Date.now()) / 1000));
       const mobile = canonicalRegistrationMobile(registration.mobile);
       setRegistration((current) => ({
@@ -523,157 +356,58 @@ export const LoginPage: React.FC = () => {
         challengeMobile: mobile,
       }));
       startRegistrationCodeCooldown(validitySeconds);
-      setRegistrationNotice(`验证码请求已提交至 ${maskMobile(registration.mobile)}。${SMS_CODE_RESEND_SECONDS} 秒后仍未收到可重新获取；多次请求请使用最后一条。`);
+      setRegistrationNotice(`验证码已发送至 ${maskMobile(registration.mobile)}。偶有运营商延迟；${SMS_CODE_RESEND_SECONDS} 秒后可重新获取，多次请求请使用最后一条。`);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '验证码发送失败');
     } finally {
       setRegistrationBusy(null);
     }
-=======
-  const updateRegistration = (field: keyof typeof registration, value: string) => {
-    setRegistration((current) => ({ ...current, [field]: value }));
-    setFormError('');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    setFormError('');
-    setFormNotice('');
-    try {
-      const challenge = await createCanonicalLoginChallenge(identifier);
-      setLoginOtp({ code: '', challengeId: challenge.challengeId, challengeMobile: identifier.trim() });
-      setLoginOtpSeconds(60);
-      setFormNotice(`如果该手机号已绑定账号，验证码将发送至 ${maskMobile(identifier)}。`);
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : '验证码请求失败');
-    } finally {
-      setLoginOtpSending(false);
-    }
-  };
-
-  const updateRegistration = (field: keyof typeof registration, value: string) => {
-    setRegistration((current) => {
-      if (field === 'mobile') {
-        return { ...current, mobile: value, code: '', challengeId: '', challengeMobile: '' };
-      }
-      return { ...current, [field]: value };
-    });
-    if (field === 'inviteCode') {
-      setRegistrationInvite(null);
-      setRegistrationTermsAccepted(false);
-    }
-    if (field === 'mobile') setRegistrationCodeSeconds(0);
-=======
->>>>>>> 31b27b78 (fix(auth): measure SMS cooldown by wall clock)
-    setFormError('');
-    setRegistrationNotice('');
-  };
-
-  const closeRegistration = () => {
-    setRegistrationOpen(false);
-    setRegistrationInvite(null);
-    setRegistrationTermsAccepted(false);
-    setRegistrationPolicyModal(null);
-    resetRegistrationCodeCooldown();
-    setRegistrationBusy(null);
-    setRegistrationNotice('');
-    setFormError('');
-    setRegistration({ mobile: '', displayName: '', inviteCode: '', code: '', challengeId: '', challengeMobile: '', password: '', confirmPassword: '' });
-  };
-
-  const handleResolveRegistrationInvite = async () => {
-    setRegistrationBusy('invite');
-    setFormError('');
-    setRegistrationNotice('');
-    try {
-      const invitation = await resolveCanonicalInvite(registration.inviteCode);
-      setRegistrationInvite(invitation);
-      setRegistrationTermsAccepted(false);
-      setRegistrationNotice(registrationPresentation(invitation.target).resolvedNotice);
-    } catch (error) {
-      setRegistrationInvite(null);
-      setRegistrationTermsAccepted(false);
-      setFormError(error instanceof Error ? error.message : '邀请码验证失败');
-    } finally {
-      setRegistrationBusy(null);
-    }
-  };
-
-  const handleSendRegistrationCode = async () => {
-    if (!registrationInvite) {
-      setFormError('请先验证企业邀请码');
-      return;
-    }
-    setRegistrationBusy('code');
-    setFormError('');
-    setRegistrationNotice('');
-    try {
-      const challenge = await createCanonicalRegistrationChallenge(registration.mobile, registration.inviteCode);
-      const seconds = Math.max(1, Math.floor((new Date(challenge.expiresAt).getTime() - Date.now()) / 1000));
-      setRegistration((current) => ({
-        ...current,
-        code: '',
-        challengeId: challenge.challengeId,
-        challengeMobile: current.mobile.trim(),
-      }));
-<<<<<<< HEAD
-<<<<<<< HEAD
-      setRegistrationCodeSeconds(seconds);
-      setRegistrationNotice(`验证码已发送至 ${maskMobile(registration.mobile)}，请在有效期内完成注册。`);
-=======
-      setRegistrationCodeSeconds(Math.min(SMS_CODE_RESEND_SECONDS, validitySeconds));
-=======
-      startRegistrationCodeCooldown(validitySeconds);
->>>>>>> 31b27b78 (fix(auth): measure SMS cooldown by wall clock)
-      setRegistrationNotice(`验证码请求已提交至 ${maskMobile(registration.mobile)}。${SMS_CODE_RESEND_SECONDS} 秒后仍未收到可重新获取；多次请求请使用最后一条。`);
->>>>>>> 4dd41dd1 (fix(auth): cap SMS resend wait at 30 seconds)
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : '验证码发送失败');
-    } finally {
-      setRegistrationBusy(null);
-    }
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  const updateRegistration = (field: keyof typeof registration, value: string) => {
-    setRegistration((current) => ({ ...current, [field]: value }));
-    setFormError('');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   };
 
   const handleRegistrationSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    if (!registrationInvite) return setFormError('请先验证企业邀请码');
+    if (!registrationContext) return setFormError(isCanonicalConsoleRequest ? '请先验证企业邀请码' : '商城注册入口尚未就绪');
     let mobile: string;
     try {
       mobile = canonicalRegistrationMobile(registration.mobile);
     } catch (error) {
       return setFormError(error instanceof Error ? error.message : '请输入有效的手机号');
     }
-    if (!registration.challengeId || registration.challengeMobile !== mobile) return setFormError('请为当前手机号重新获取验证码');
-    if (!/^\d{6}$/.test(registration.code.trim())) return setFormError('请输入 6 位短信验证码');
-    if (!registrationTermsAccepted) return setFormError('请先阅读并同意本次邀请绑定的服务协议与隐私政策');
-    if (!isStrongRegistrationPassword(registration.password)) return setFormError('密码须为 12–128 位，并同时包含大小写字母、数字和符号');
-    if (registration.password !== registration.confirmPassword) return setFormError('两次输入的密码不一致');
+    if (!isSelfConsumerRegistration && (!registration.challengeId || registration.challengeMobile !== mobile)) return setFormError('请为当前手机号重新获取验证码');
+    if (!isSelfConsumerRegistration && !/^\d{6}$/.test(registration.code.trim())) return setFormError('请输入 6 位短信验证码');
+    if (!registrationTermsAccepted) return setFormError('请先阅读并同意服务协议与隐私政策');
+    if ((!isConsumerRegistration || isSelfConsumerRegistration) && !isStrongRegistrationPassword(registration.password)) return setFormError('密码须为 12–128 位，并同时包含大小写字母、数字和符号');
+    if ((!isConsumerRegistration || isSelfConsumerRegistration) && registration.password !== registration.confirmPassword) return setFormError('两次输入的密码不一致');
     setRegistrationBusy('submit');
     setFormError('');
     try {
-      await createCanonicalMember({
+      const generatedPassword = isConsumerRegistration && !isSelfConsumerRegistration ? automaticRegistrationPassword() : registration.password;
+      const displayName = isConsumerRegistration ? automaticL6DisplayName(mobile) : registration.displayName;
+      const created = await createCanonicalMember({
         subject: registration.mobile,
-        password: registration.password,
-        displayName: registration.displayName,
-        inviteCode: registration.inviteCode,
-        challengeId: registration.challengeId,
-        code: registration.code,
+        password: generatedPassword,
+        displayName,
+        ...(isSelfConsumerRegistration
+          ? { applicationSlug: (registrationContext as CanonicalStorefrontRegistration).applicationSlug }
+          : { inviteCode: registration.inviteCode }),
+        ...(isSelfConsumerRegistration
+          ? { deferPhoneVerification: true }
+          : { challengeId: registration.challengeId, code: registration.code }),
         termsAccepted: registrationTermsAccepted,
-        termsHash: registrationInvite.termsHash,
+        termsHash: registrationContext.termsHash,
+        directLogin: isConsumerRegistration,
       });
+      if (created.target === 'storefront' && isConsumerRegistration) {
+        if (!created.redirectUrl) throw new Error('消费者登录会话未能建立，请重新获取验证码');
+        window.location.replace(storefrontDestination(created.redirectUrl));
+        return;
+      }
       setIdentifier(registration.mobile.trim());
       setPassword('');
       setRegistrationOpen(false);
       setRegistrationNotice('');
-      setRegistrationInvite(null);
-      setRegistrationTermsAccepted(false);
+      setRegistrationContext(null);
+      setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
       resetRegistrationCodeCooldown();
       setRegistration({ mobile: '', displayName: '', inviteCode: '', code: '', challengeId: '', challengeMobile: '', password: '', confirmPassword: '' });
       setFormNotice(registrationCopy.successNotice);
@@ -681,70 +415,6 @@ export const LoginPage: React.FC = () => {
       setFormError(error instanceof Error ? error.message : '注册失败');
     } finally {
       setRegistrationBusy(null);
-=======
-    if (!acceptedTerms) return setFormError('请先阅读并同意用户协议和隐私政策');
-=======
-    if (!registrationInvite) return setFormError('请先验证企业邀请码');
-    if (!registration.challengeId || registration.challengeMobile !== registration.mobile.trim()) return setFormError('请为当前手机号重新获取验证码');
-    if (!/^\d{6}$/.test(registration.code.trim())) return setFormError('请输入 6 位短信验证码');
-    if (!registrationTermsAccepted) return setFormError('请先阅读并同意本次邀请绑定的服务协议与隐私政策');
-    if (!isStrongRegistrationPassword(registration.password)) return setFormError('密码须为 12–128 位，并同时包含大小写字母、数字和符号');
->>>>>>> 018b2a71 (chore(release): capture current production source)
-    if (registration.password !== registration.confirmPassword) return setFormError('两次输入的密码不一致');
-    setRegistrationBusy('submit');
-    setFormError('');
-    try {
-      await createCanonicalMember({
-        subject: registration.mobile,
-        password: registration.password,
-        displayName: registration.displayName,
-        inviteCode: registration.inviteCode,
-        challengeId: registration.challengeId,
-        code: registration.code,
-        termsAccepted: registrationTermsAccepted,
-        termsHash: registrationInvite.termsHash,
-      });
-      setIdentifier(registration.mobile.trim());
-      setPassword('');
-      setRegistrationOpen(false);
-      setRegistrationNotice('');
-      setRegistrationInvite(null);
-      setRegistrationTermsAccepted(false);
-      setRegistrationCodeSeconds(0);
-      setRegistration({ mobile: '', displayName: '', inviteCode: '', code: '', challengeId: '', challengeMobile: '', password: '', confirmPassword: '' });
-      setFormNotice(registrationCopy.successNotice);
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : '注册失败');
-    } finally {
-<<<<<<< HEAD
-      setLoading(false);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      setRegistrationBusy(null);
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    if (!acceptedTerms) return setFormError('请先阅读并同意用户协议和隐私政策');
-    if (registration.password !== registration.confirmPassword) return setFormError('两次输入的密码不一致');
-    setLoading(true);
-    setFormError('');
-    try {
-      await registerUsernameMember({
-        username: registration.username.trim(),
-        password: registration.password,
-        displayName: registration.displayName.trim(),
-        inviteCode: registration.inviteCode.trim(),
-        acceptedTerms: true,
-      });
-      setIdentifier(registration.username.trim().toLowerCase());
-      setPassword(registration.password);
-      setRegistrationOpen(false);
-      setRegistrationNotice('');
-      setFormError('注册成功。已建立基础会员身份；手机尚未验证，可登录和浏览，短信认证完成前暂不能提交订单或付款。');
-    } catch (error: any) {
-      setFormError(error.message || '注册失败');
-    } finally {
-      setLoading(false);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     }
   };
 
@@ -752,36 +422,11 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
     setFormError('');
     try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
       const challenge = await createCanonicalPasswordResetChallenge(resetForm.mobile);
       setResetForm((current) => ({ ...current, challengeId: challenge.challengeId, code: '' }));
       setRegistrationNotice('验证码请求已提交，未收到请稍后重新获取。');
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '验证码发送失败');
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-      const response = await fetch('/api/v1/auth/security/otp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mobile: resetForm.mobile, purpose: 'password_reset' }) });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error?.message || '验证码发送失败');
-      const developmentCode = import.meta.env.DEV && typeof payload?.debugCode === 'string' ? payload.debugCode : '';
-      setResetForm((current) => ({ ...current, challengeId: payload.challengeId, code: developmentCode || current.code }));
-      setRegistrationNotice(developmentCode ? `开发环境验证码：${developmentCode}` : '验证码已发送');
-    } catch (error: any) {
-      setFormError(error.message || '验证码发送失败');
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      const challenge = await createCanonicalPasswordResetChallenge(resetForm.mobile);
-      setResetForm((current) => ({ ...current, challengeId: challenge.challengeId, code: '' }));
-      setRegistrationNotice('验证码已发送');
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : '验证码发送失败');
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     } finally {
       setLoading(false);
     }
@@ -789,64 +434,19 @@ export const LoginPage: React.FC = () => {
 
   const submitPasswordReset = async (event: React.FormEvent) => {
     event.preventDefault();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     if (!isStrongRegistrationPassword(resetForm.password)) return setFormError('密码须为 12–128 位，并同时包含大小写字母、数字和符号');
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    if (!isStrongRegistrationPassword(resetForm.password)) return setFormError('密码须为 12–128 位，并同时包含大小写字母、数字和符号');
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     if (resetForm.password !== resetForm.confirm) return setFormError('两次输入的新密码不一致');
     setLoading(true);
     setFormError('');
     try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
       await resetCanonicalPassword(resetForm.challengeId, resetForm.code, resetForm.password);
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-      const response = await fetch('/api/v1/auth/password/reset', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ mobile: resetForm.mobile, challengeId: resetForm.challengeId, code: resetForm.code, newPassword: resetForm.password }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error?.message || '密码重置失败');
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      await resetCanonicalPassword(resetForm.challengeId, resetForm.code, resetForm.password);
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       setIdentifier(resetForm.mobile);
       setPassword(resetForm.password);
       setResetOpen(false);
       setRegistrationNotice('');
       setFormError('密码已重置，所有旧设备均已下线，请重新登录。');
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '密码重置失败');
-=======
-    } catch (error: any) {
-      setFormError(error.message || '密码重置失败');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : '密码重置失败');
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    } catch (error: any) {
-      setFormError(error.message || '密码重置失败');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     } finally {
       setLoading(false);
     }
@@ -865,11 +465,6 @@ export const LoginPage: React.FC = () => {
     setFormError('');
 
     try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
       if (isCanonicalConsoleRequest) {
         const result = activeTab === 'otp'
           ? await loginCanonicalConsoleWithOtp(identifier, loginOtp.challengeId, loginOtp.code)
@@ -880,62 +475,30 @@ export const LoginPage: React.FC = () => {
         }
         setPreAuthContext(result.context);
         setStage(2);
-<<<<<<< HEAD
         return;
       }
 
-    } catch (err: any) {
-      setFormError(err.message || '认证失败');
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-      const context: PreAuthContext = await loginWithPassword(identifier, password);
-
-      // 如果需要重置密码
-      if (context.requiresPasswordReset) {
-        setPreAuthContext(context);
-        setShowForcePasswordModal(true);
-        setLoading(false);
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
+      const result = activeTab === 'otp'
+        ? await loginCanonicalStorefrontEntryWithOtp(identifier, loginOtp.challengeId, loginOtp.code)
+        : await loginCanonicalStorefrontEntry(identifier, password);
+      if (result.kind === 'authenticated') {
+        window.location.replace(storefrontDestination(result.redirectUrl));
         return;
       }
+      setPreAuthContext(result.context);
+      setStage(2);
 
     } catch (err: any) {
       setFormError(err.message || '认证失败');
-<<<<<<< HEAD
-=======
-        return;
-      }
-
-      setPreAuthContext(context);
-      await processPreAuthContext(context);
-    } catch (err: any) {
-      setFormError(err.message || '认证失败');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-      // 检查是否触发锁定
-      const lock = getLockoutState(identifier);
-      if (lock.isLocked) {
-        setLockoutSeconds(lock.remainingSeconds);
-      }
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     } finally {
       setLoading(false);
     }
   };
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
-  const submitCredentialForm = (targetOrigin: string) => {
+  const submitCredentialForm = (
+    targetOrigin: string,
+    credential: Readonly<{ username: string; password: string }> = { username: identifier, password },
+  ) => {
     // A top-level form lets the destination host create its own __Host-
     // HttpOnly cookie. Credentials remain in the POST body and never enter the
     // URL, browser history or referrer.
@@ -944,7 +507,7 @@ export const LoginPage: React.FC = () => {
     form.action = buildCredentialLoginAction(targetOrigin);
     form.target = '_top';
     form.style.display = 'none';
-    for (const [name, value] of Object.entries({ username: identifier, password })) {
+    for (const [name, value] of Object.entries(credential)) {
       const input = document.createElement('input');
       input.type = 'hidden';
       input.name = name;
@@ -955,94 +518,23 @@ export const LoginPage: React.FC = () => {
     form.submit();
   };
 
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
   // 处理 PreAuth 上下文并路由到第2段或自动跳转
   const completeStorefrontLogin = async (membershipId: string) => {
-    // Credential discovery never creates a cookie. The final login is the only
-    // place that establishes the tracked, revocable HttpOnly device session.
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
-    let storefrontOrigin: string;
-    try {
-      const configuredOrigin = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
-      storefrontOrigin = resolveStorefrontLoginOrigin(configuredOrigin, import.meta.env.DEV);
-    } catch (error: any) {
-      setFormError(error.message || '商城登录目标配置无效');
-      return;
-    }
-
-    // When accounts.zhudatuan.com is the standalone shell, a relative fetch
-    // would set a host-only cookie on the wrong host and then loop back here.
-    // Transfer the browser to the storefront host before the final login.
-    if (isStorefrontEmbed && window.location.origin !== storefrontOrigin) {
-      setFormError('商城嵌入登录必须与商城同源，已停止提交账号凭证。');
-      return;
-    }
-
-    if (window.location.origin !== storefrontOrigin) {
-      submitCredentialForm(storefrontOrigin);
-      return;
-    }
-
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
-    const response = await fetch('/api/v1/auth/login', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ username: identifier, password }),
-    });
-
-    if (!response.ok) {
-      const payload = await response.json().catch(() => null);
-      throw new Error(payload?.error?.message || '登录失败，请检查账号与密码');
-    }
+    const result = preAuthContext?.loginMethod === 'otp'
+      ? await loginCanonicalStorefrontWithOtp(identifier, loginOtp.challengeId, loginOtp.code, membershipId)
+      : await loginCanonicalStorefront(identifier, password, membershipId);
 
     if (isStorefrontEmbed) {
-      // iframe 与商城同源；只通知父窗口刷新已建立的 HttpOnly 会话，不传递密码或票据。
       window.parent.postMessage({ type: 'smart-wing:storefront-login-complete', membershipId }, window.location.origin);
       return;
     }
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    // 商城同源登录页必须离开认证壳，进入已经建立真实会话的商城首页。
-=======
-    // 独立登录页必须离开认证壳，进入已经建立真实会话的商城首页。
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    // 独立登录页必须离开认证壳，进入已经建立真实会话的商城首页。
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    // 商城同源登录页必须离开认证壳，进入已经建立真实会话的商城首页。
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
-    window.location.replace('/');
+    window.location.replace(storefrontDestination(result.redirectUrl));
   };
 
   const completeAdminLogin = () => {
     // The browser performs a top-level POST on the target host, allowing the
     // admin domain to create its own __Host- cookie before loading the app.
     // Credentials are deliberately submitted in the request body, never URL.
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     let adminOrigin: string;
     try {
       const configuredOrigin = import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined);
@@ -1050,40 +542,9 @@ export const LoginPage: React.FC = () => {
     } catch (error: any) {
       setFormError(error.message || '后台登录目标配置无效');
       return;
-<<<<<<< HEAD
     }
 
     submitCredentialForm(adminOrigin);
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-    const form = document.createElement('form');
-    form.method = 'POST';
-    const configuredOrigin = import.meta.env.VITE_ADMIN_ORIGIN?.trim();
-    const adminOrigin = configuredOrigin || (window.location.hostname === 'zhudatuan.com' || window.location.hostname.endsWith('.zhudatuan.com') ? 'https://console.zhudatuan.com' : 'https://smart.hbbtzn.com');
-    form.action = `${adminOrigin.replace(/\/$/, '')}/api/v1/auth/login?redirect=/`;
-    // When the login page is rendered in the storefront drawer, the form must
-    // escape that iframe; otherwise the whole admin app is rendered in-panel.
-    form.target = '_top';
-    form.style.display = 'none';
-    for (const [name, value] of Object.entries({ username: identifier, password })) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = name;
-      input.value = value;
-      form.appendChild(input);
-    }
-    document.body.appendChild(form);
-    form.submit();
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    }
-
-    submitCredentialForm(adminOrigin);
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
   };
 
   const processPreAuthContext = async (context: PreAuthContext) => {
@@ -1106,23 +567,8 @@ export const LoginPage: React.FC = () => {
         return;
       } else if (singleMem.target === 'admin') {
         if (singleMem.requiresStepUp) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
           setSelectedMembership(singleMem);
           setStage(3);
-=======
-          setFormError('该管理身份需要二次验证；正式二次验证尚未接通，当前不开放登录。');
-          setStage(1);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-          setFormError('该管理身份需要二次验证；正式二次验证尚未接通，当前不开放登录。');
-          setStage(1);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-          setSelectedMembership(singleMem);
-          setStage(3);
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
         } else {
           completeAdminLogin();
         }
@@ -1130,35 +576,18 @@ export const LoginPage: React.FC = () => {
       }
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     // 多条身份仍保留确认过的第2段 UI，但当前服务端尚未提供
     // 绑定会话的选择 token，所以任何点击都必须安全失败。
     if (requiresAuthoritativeMembershipSelection(activeMemberships)) {
       setFormError('检测到多个可用身份。服务端身份选择尚未接通，已停止建立会话。');
     }
 
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     // 多条身份或包含复杂状态，进入第2段选择会员关系
     setStage(2);
   };
 
   // 2. 选中并确认某条会员关系
   const handleSelectMembership = async (mem: Membership) => {
-    if (preAuthContext && requiresAuthoritativeMembershipSelection(preAuthContext.memberships)) {
-      setFormError('多身份选择尚未获得服务端授权，已停止建立会话。');
-      return;
-    }
-
     if (mem.status === 'invited') {
       setFormError(`【${mem.enterpriseName}】的邀请尚待接受，请先确认加入该企业福利计划`);
       return;
@@ -1176,11 +605,6 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
     if (isCanonicalConsoleRequest) {
       if (mem.target !== 'admin') {
         setFormError('该身份不属于运营后台');
@@ -1211,21 +635,6 @@ export const LoginPage: React.FC = () => {
     if (mem.target === 'admin' && mem.requiresStepUp) {
       setSelectedMembership(mem);
       setStage(3);
-=======
-    setFormError('');
-    if (mem.target === 'admin' && mem.requiresStepUp) {
-<<<<<<< HEAD
-      setFormError('该管理身份需要二次验证；正式二次验证尚未接通，当前不开放登录。');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    setFormError('');
-    if (mem.target === 'admin' && mem.requiresStepUp) {
-      setFormError('该管理身份需要二次验证；正式二次验证尚未接通，当前不开放登录。');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      setSelectedMembership(mem);
-      setStage(3);
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     } else {
       // 嵌入员工商城时，认证页只负责完成身份选择；不在右侧抽屉渲染另一套商城。
       if (mem.target === 'storefront') {
@@ -1241,62 +650,18 @@ export const LoginPage: React.FC = () => {
   };
 
   // 处理接受邀请按钮
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
   const handleAcceptInvite = (e: React.MouseEvent, mem: Membership) => {
     e.stopPropagation();
     setFormError(`【${mem.enterpriseName}】的邀请接受服务尚未接通，请联系企业管理员；系统不会在浏览器内模拟授权。`);
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-  const handleAcceptInvite = async (e: React.MouseEvent, mem: Membership) => {
-    e.stopPropagation();
-    setLoading(true);
-    try {
-      if (preAuthContext) {
-        await acceptInvitation(preAuthContext.preAuthToken, mem.id);
-        // 本地改写状态为 active
-        mem.status = 'active';
-        await handleSelectMembership(mem);
-      }
-    } catch (err: any) {
-      setFormError('接受邀请失败，请重试');
-    } finally {
-      setLoading(false);
-    }
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  const handleAcceptInvite = (e: React.MouseEvent, mem: Membership) => {
-    e.stopPropagation();
-    setFormError(`【${mem.enterpriseName}】的邀请接受服务尚未接通，请联系企业管理员；系统不会在浏览器内模拟授权。`);
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
   };
 
   // 返回上一步
   const handleGoBack = () => {
     setFormError('');
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     if (stage === 3) {
       setSelectedMembership(null);
       setStage(2);
     } else if (stage === 2) {
-<<<<<<< HEAD
-=======
-    if (stage === 2) {
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    if (stage === 2) {
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
       setStage(1);
     }
   };
@@ -1319,16 +684,27 @@ export const LoginPage: React.FC = () => {
           <UserX className="w-12 h-12 text-slate-400 mx-auto mb-3" />
           <h4 className="text-base font-semibold text-slate-800 mb-1">未找到关联的企业福利计划</h4>
           <p className="text-xs text-slate-5-00 text-slate-500 mb-4 max-w-sm mx-auto">该账号当前未被录入任何企业的福利发放名单或运营后台。请联系您所在企业的 HR 或福利管理员进行绑定。</p>
-          <button
-            onClick={() => {
-              setStage(1);
-              setFormError('');
-            }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-[var(--sw-brand)] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            切换其他账号登录
-          </button>
+          <div className="flex flex-wrap justify-center gap-2">
+            {!isCanonicalConsoleRequest && (
+              <a
+                href={buildAccountLoginPath('console')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-[var(--sw-brand)] hover:opacity-90 rounded-lg transition-opacity"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                进入运营后台
+              </a>
+            )}
+            <button
+              onClick={() => {
+                setStage(1);
+                setFormError('');
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-[var(--sw-brand)] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              切换其他账号登录
+            </button>
+          </div>
         </div>
       );
     }
@@ -1336,21 +712,7 @@ export const LoginPage: React.FC = () => {
     const storefrontItems = allMemberships.filter((m) => m.target === 'storefront');
     const adminItems = allMemberships.filter((m) => m.target === 'admin');
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     const isSmartDomain = currentDomain === 'console.zhudatuan.com';
-=======
-    // 运营后台域优先显示管理身份；保留旧域名兼容。
-    const isSmartDomain = currentDomain === 'console.zhudatuan.com' || currentDomain === 'smart.hbbtzn.com';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    // 运营后台域优先显示管理身份；保留旧域名兼容。
-    const isSmartDomain = currentDomain === 'console.zhudatuan.com' || currentDomain === 'smart.hbbtzn.com';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    const isSmartDomain = currentDomain === 'console.zhudatuan.com';
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 
     const renderStorefrontSection = () => (
       <div className="space-y-3 mb-6">
@@ -1359,19 +721,7 @@ export const LoginPage: React.FC = () => {
             <Store className="w-4 h-4 text-[var(--sw-brand)]" />
             <h4 className="text-xs font-bold text-slate-700 tracking-wider uppercase">我的福利商城</h4>
           </div>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
           <span className="text-[11px] text-slate-600">共 {storefrontItems.length} 个专区</span>
-=======
-          <span className="text-[11px] text-slate-400">共 {storefrontItems.length} 个专区</span>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-          <span className="text-[11px] text-slate-600">共 {storefrontItems.length} 个专区</span>
->>>>>>> 05ea98a5 (fix(release): restore selected app verification)
-=======
-          <span className="text-[11px] text-slate-400">共 {storefrontItems.length} 个专区</span>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         </div>
         <div className="grid grid-cols-1 gap-2.5">
           {storefrontItems.map((mem) => {
@@ -1448,19 +798,7 @@ export const LoginPage: React.FC = () => {
             <ShieldCheck className="w-4 h-4 text-[var(--sw-brand-dark)]" />
             <h4 className="text-xs font-bold text-slate-700 tracking-wider uppercase">我管理的运营主体</h4>
           </div>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
           <span className="text-[11px] text-slate-600">共 {adminItems.length} 项管理权限</span>
-=======
-          <span className="text-[11px] text-slate-400">共 {adminItems.length} 项管理权限</span>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-          <span className="text-[11px] text-slate-600">共 {adminItems.length} 项管理权限</span>
->>>>>>> 05ea98a5 (fix(release): restore selected app verification)
-=======
-          <span className="text-[11px] text-slate-400">共 {adminItems.length} 项管理权限</span>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         </div>
         <div className="grid grid-cols-1 gap-2.5">
           {adminItems.map((mem) => {
@@ -1542,12 +880,10 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
-    <div className={`${isStorefrontEmbed ? 'min-h-screen bg-transparent' : 'min-h-screen bg-slate-50 flex flex-col justify-between'} overflow-x-hidden selection:bg-blue-100 selection:text-[var(--sw-brand)]`}>
+    <div
+      data-login-mode={isEnterpriseLogin ? 'enterprise' : 'consumer'}
+      className={`${isStorefrontEmbed ? 'min-h-screen bg-transparent' : `min-h-screen flex flex-col justify-between transition-colors duration-300 ${isEnterpriseLogin ? 'bg-slate-950' : 'bg-slate-50'}`} overflow-x-hidden selection:bg-blue-100 selection:text-[var(--sw-brand)]`}
+    >
       {import.meta.env.DEV && !isStorefrontEmbed && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-900 px-4 py-2 text-xs text-slate-300">
           <div className="flex items-center gap-2">
@@ -1568,30 +904,11 @@ export const LoginPage: React.FC = () => {
         </div>
       )}
 
-<<<<<<< HEAD
       {/* 主布局：认证卡片叠压在蓝色品牌底板上（桌面端覆盖约 80%） */}
       <div className={isStorefrontEmbed ? 'flex min-h-screen items-center justify-center overflow-x-hidden bg-transparent p-0' : 'flex-1 flex items-center justify-center overflow-x-hidden p-4 sm:p-6 lg:p-12'}>
         <div
-          className={`relative w-full ${stage === 2 ? 'max-w-[680px]' : 'max-w-[520px]'} rounded-3xl bg-gradient-to-br from-[var(--sw-brand)] to-[var(--sw-brand-dark)] shadow-xl ${isStorefrontEmbed ? 'overflow-visible p-3' : 'overflow-hidden'}`}
+          className={`relative w-full ${stage === 2 ? 'max-w-[680px]' : 'max-w-[520px]'} rounded-3xl bg-gradient-to-br shadow-xl transition-colors duration-300 ${isEnterpriseLogin ? 'from-[var(--sw-brand-dark)] to-slate-950' : 'from-[var(--sw-brand)] to-[var(--sw-brand-dark)]'} ${isStorefrontEmbed ? 'overflow-visible p-3' : 'overflow-hidden'}`}
         >
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-    <div className={`${isStorefrontEmbed ? 'min-h-screen bg-transparent' : 'min-h-screen bg-slate-50 flex flex-col justify-between'} selection:bg-blue-100 selection:text-[var(--sw-brand)]`}>
-      {/* 主布局：认证卡片叠压在蓝色品牌底板上（桌面端覆盖约 80%） */}
-      <div className={isStorefrontEmbed ? 'flex min-h-screen items-center justify-center bg-transparent p-0' : 'flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-12'}>
-        <div className={`relative w-full max-w-[520px] rounded-3xl bg-gradient-to-br from-[var(--sw-brand)] to-[var(--sw-brand-dark)] shadow-xl ${isStorefrontEmbed ? 'overflow-visible p-3' : 'overflow-hidden'}`}>
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      {/* 主布局：认证卡片叠压在蓝色品牌底板上（桌面端覆盖约 80%） */}
-      <div className={isStorefrontEmbed ? 'flex min-h-screen items-center justify-center overflow-x-hidden bg-transparent p-0' : 'flex-1 flex items-center justify-center overflow-x-hidden p-4 sm:p-6 lg:p-12'}>
-        <div
-          className={`relative w-full ${stage === 2 ? 'max-w-[680px]' : 'max-w-[520px]'} rounded-3xl bg-gradient-to-br from-[var(--sw-brand)] to-[var(--sw-brand-dark)] shadow-xl ${isStorefrontEmbed ? 'overflow-visible p-3' : 'overflow-hidden'}`}
-        >
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
           {isStorefrontEmbed && (
             <button
               type="button"
@@ -1603,7 +920,7 @@ export const LoginPage: React.FC = () => {
             </button>
           )}
           {/* 蓝色品牌底板 */}
-          <div className={isStorefrontEmbed ? 'hidden' : 'min-h-[420px] p-8 text-white sm:p-12 lg:min-h-[606px] lg:pr-12'}>
+          <div className={isStorefrontEmbed || !isCanonicalConsoleRequest ? 'hidden' : 'min-h-[420px] p-8 text-white sm:p-12 lg:min-h-[606px] lg:pr-12'}>
             {/* 装饰模糊背景光晕 */}
             <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -1611,19 +928,7 @@ export const LoginPage: React.FC = () => {
             <div className="relative z-10 flex items-center gap-3">
               <img src={`${import.meta.env.BASE_URL}brand/brand-mark.svg`} alt="" className="h-12 w-12 shrink-0 rounded-2xl shadow-md" />
               <div>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
                 <span className="text-2xl font-bold tracking-tight text-white block">主打团</span>
-=======
-                <span className="text-2xl font-bold tracking-tight text-white block">智慧翼 Smart Wing</span>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                <span className="text-2xl font-bold tracking-tight text-white block">主打团</span>
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-                <span className="text-2xl font-bold tracking-tight text-white block">智慧翼 Smart Wing</span>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
                 <span className="text-[10px] font-semibold tracking-widest text-blue-200 uppercase">Enterprise Benefits</span>
               </div>
             </div>
@@ -1646,51 +951,21 @@ export const LoginPage: React.FC = () => {
           </div>
 
           {/* 认证卡：桌面端由右向左叠压蓝色底板的 80% 区域 */}
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
-          <div className={isStorefrontEmbed ? 'relative z-10 w-full p-0' : `relative z-10 p-4 sm:p-6 lg:absolute lg:inset-y-6 lg:right-6 lg:flex lg:items-center lg:p-0 ${stage === 2 ? 'lg:w-[620px]' : 'lg:w-[460px]'}`}>
+          <div className={isStorefrontEmbed || !isCanonicalConsoleRequest ? 'relative z-10 w-full p-0' : `relative z-10 p-4 sm:p-6 lg:absolute lg:inset-y-6 lg:right-6 lg:flex lg:items-center lg:p-0 ${stage === 2 ? 'lg:w-[620px]' : 'lg:w-[460px]'}`}>
             <div className="w-full overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/15 transition-all duration-300">
               {/* 卡片顶部：3003 三段式身份流程 */}
               <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-white via-slate-50 to-blue-50/70 px-6 py-4 sm:px-8">
                 <div className="flex items-center gap-2.5">
-<<<<<<< HEAD
                   {stage > 1 && (
                     <button onClick={handleGoBack} className="mr-0.5 rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-200/60 hover:text-slate-800" aria-label="返回上一阶段">
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-          <div className={isStorefrontEmbed ? 'relative z-10 w-full p-0' : `relative z-10 p-4 sm:p-6 lg:absolute lg:inset-y-6 lg:right-6 lg:flex lg:items-center lg:p-0 ${stage === 2 ? 'lg:w-[560px]' : 'lg:w-[460px]'}`}>
-            <div className="w-full overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-2xl transition-all duration-300">
-              {/* 卡片顶部：正式两段式登录进度 */}
-              <div className="bg-slate-50/80 px-6 sm:px-8 py-4 border-b border-slate-100 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {stage > 1 && (
-                    <button onClick={handleGoBack} className="p-1.5 mr-1 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-200/60 transition-colors" aria-label="返回上一阶段">
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                  {stage > 1 && (
-                    <button onClick={handleGoBack} className="mr-0.5 rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-200/60 hover:text-slate-800" aria-label="返回上一阶段">
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                       <ArrowLeft className="w-4 h-4" />
                     </button>
                   )}
                   {/* 步骤 1 */}
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                   <div className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${stage > 1 ? 'bg-blue-100 text-[var(--sw-brand)]' : 'bg-[var(--sw-brand)] text-white shadow-md shadow-blue-500/25'}`}>
                     {stage > 1 ? <CheckCircle2 className="h-3.5 w-3.5" /> : '1'}
                   </div>
                   <div className={`h-[2px] w-5 sm:w-7 ${stage >= 2 ? 'bg-[var(--sw-brand)]' : 'bg-slate-200'}`} />
-<<<<<<< HEAD
 
                   {/* 步骤 2 */}
                   <div
@@ -1705,63 +980,26 @@ export const LoginPage: React.FC = () => {
                     className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${stage === 3 ? 'bg-[var(--sw-brand)] text-white shadow-md shadow-blue-500/25' : 'border-2 border-slate-200 bg-white text-slate-400'}`}
                   >
                     3
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-                  <div className={`flex items-center justify-center w-6 h-6 rounded-full font-bold text-[10px] ${stage >= 1 ? 'bg-[var(--sw-brand)] text-white shadow-sm' : 'border-2 border-slate-200 text-slate-400'}`}>1</div>
-                  <div className={`w-6 sm:w-8 h-[2px] ${stage >= 2 ? 'bg-[var(--sw-brand)]' : 'bg-slate-200'}`} />
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
-
-                  {/* 步骤 2 */}
-                  <div
-                    className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${stage > 2 ? 'bg-blue-100 text-[var(--sw-brand)]' : stage === 2 ? 'bg-[var(--sw-brand)] text-white shadow-md shadow-blue-500/25' : 'border-2 border-slate-200 bg-white text-slate-400'}`}
-                  >
-<<<<<<< HEAD
-                    2
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                    {stage > 2 ? <CheckCircle2 className="h-3.5 w-3.5" /> : '2'}
-                  </div>
-                  <div className={`h-[2px] w-5 sm:w-7 ${stage >= 3 ? 'bg-[var(--sw-brand)]' : 'bg-slate-200'}`} />
-
-                  {/* 步骤 3 */}
-                  <div
-                    className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${stage === 3 ? 'bg-[var(--sw-brand)] text-white shadow-md shadow-blue-500/25' : 'border-2 border-slate-200 bg-white text-slate-400'}`}
-                  >
-                    3
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {stage === 1 && (
+                    <button
+                      type="button"
+                      onClick={handleLoginModeToggle}
+                      aria-pressed={isEnterpriseLogin}
+                      className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1.5 text-[11px] font-bold transition-colors ${isEnterpriseLogin ? 'border-[var(--sw-brand-dark)] bg-[var(--sw-brand-dark)] text-white hover:bg-slate-900' : 'border-blue-200 bg-white text-[var(--sw-brand)] hover:bg-blue-50'}`}
+                    >
+                      {isEnterpriseLogin ? <Store className="h-3.5 w-3.5" /> : <Building2 className="h-3.5 w-3.5" />}
+                      {isEnterpriseLogin ? '福利商城' : '企业管理'}
+                    </button>
+                  )}
                   <img src={`${import.meta.env.BASE_URL}brand/brand-mark.svg`} alt="" className="h-5 w-5 rounded-md" />
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
                   <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
                     {stage === 1 && '账号认证'}
                     {stage === 2 && '选择进入方式'}
                     {stage === 3 && '二次验证'}
-=======
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">
-                    {stage === 1 && '账号认证'}
-                    {stage === 2 && '选择访问身份'}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">
-                    {stage === 1 && '账号认证'}
-                    {stage === 2 && '选择访问身份'}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                  <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
-                    {stage === 1 && '账号认证'}
-                    {stage === 2 && '选择进入方式'}
-                    {stage === 3 && '二次验证'}
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                   </span>
                 </div>
               </div>
@@ -1770,73 +1008,25 @@ export const LoginPage: React.FC = () => {
               <div className="p-6 sm:p-8">
                 {/* 阶段标题 */}
                 <div className="mb-6">
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
                   <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-                    {stage === 1 && '统一账号认证'}
+                    {stage === 1 && (isCanonicalConsoleRequest ? '统一账号认证' : '手机号登录')}
                     {stage === 2 && '选择你的工作台'}
                     {stage === 3 && '管理身份二次验证 (Step-Up)'}
                   </h2>
                   <p className="mt-1 text-xs text-slate-500 sm:text-sm">
-                    {stage === 1 && '请选择适合您的登录方式与身份核验'}
+                    {stage === 1 && (isCanonicalConsoleRequest ? '请选择适合您的登录方式与身份核验' : '使用账号密码登录或注册；首次付款时再验证手机。')}
                     {stage === 2 && '同一账号，可在福利消费与运营管理之间自由切换。'}
                     {stage === 3 && '该高权限身份要求正式二次验证；当前服务尚未接通。'}
                   </p>
                 </div>
 
                 {formError && (
-<<<<<<< HEAD
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-=======
-                  <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
-                    {stage === 1 && '统一账号认证'}
-                    {stage === 2 && '选择你的工作台'}
-                    {stage === 3 && '管理身份二次验证 (Step-Up)'}
-                  </h2>
-                  <p className="mt-1 text-xs text-slate-500 sm:text-sm">
-                    {stage === 1 && '请选择适合您的登录方式与身份核验'}
-                    {stage === 2 && '同一账号，可在福利消费与运营管理之间自由切换。'}
-                    {stage === 3 && '该高权限身份要求正式二次验证；当前服务尚未接通。'}
-                  </p>
-                </div>
-
-                {/* 全局锁定/错误信息通告 Banner */}
-                {lockoutSeconds > 0 && (
-                  <div className="mb-5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
-                    <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-                    <div className="space-y-0.5">
-                      <p className="font-semibold">连续失败次数过多，账号已触发安全锁定</p>
-                      <p className="text-[11px] text-rose-600">
-                        请在 <span className="font-mono font-bold">{lockoutSeconds}</span> 秒后重试。
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {formError && lockoutSeconds === 0 && (
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
                   <div className="mb-5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
                     <p className="flex-1">{formError}</p>
                   </div>
                 )}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
                 {formNotice && (
                   <div className="mb-5 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800" role="status">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
@@ -1844,11 +1034,11 @@ export const LoginPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* 第一段：3003 四入口认证视觉；未接通入口不会模拟成功 */}
+                {/* 消费者仅密码登录；运营后台保留既有多种登录方式。 */}
                 {stage === 1 && (
                   <div className="flex h-[426px] flex-col gap-5">
-                    <div className="grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium" role="tablist" aria-label="登录方式">
-                      <button
+                    <div className={`grid ${isCanonicalConsoleRequest ? (isEnterpriseLogin ? 'grid-cols-4' : 'grid-cols-2') : 'grid-cols-1'} gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium`} role="tablist" aria-label="登录方式">
+                      {isCanonicalConsoleRequest && <button
                         type="button"
                         onClick={() => selectAuthMethod('otp')}
                         className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'otp' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
@@ -1856,7 +1046,7 @@ export const LoginPage: React.FC = () => {
                         aria-selected={activeTab === 'otp'}
                       >
                         手机验证码
-                      </button>
+                      </button>}
                       <button
                         type="button"
                         onClick={() => selectAuthMethod('password')}
@@ -1866,28 +1056,32 @@ export const LoginPage: React.FC = () => {
                       >
                         密码登录
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => selectAuthMethod('work_weixin')}
-                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'work_weixin' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-                        role="tab"
-                        aria-selected={activeTab === 'work_weixin'}
-                      >
-                        {qrLoginChannel === 'wechat' ? '微信扫码' : '企微扫码'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => selectAuthMethod('sso')}
-                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'sso' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-                        role="tab"
-                        aria-selected={activeTab === 'sso'}
-                      >
-                        企业 SSO
-                      </button>
+                      {isEnterpriseLogin && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => selectAuthMethod('work_weixin')}
+                            className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'work_weixin' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                            role="tab"
+                            aria-selected={activeTab === 'work_weixin'}
+                          >
+                            {qrLoginChannel === 'wechat' ? '微信扫码' : '企微扫码'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => selectAuthMethod('sso')}
+                            className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'sso' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                            role="tab"
+                            aria-selected={activeTab === 'sso'}
+                          >
+                            企业 SSO
+                          </button>
+                        </>
+                      )}
                     </div>
 
                     <div id="login-method-panel" role="tabpanel" aria-live="polite">
-                      {activeTab === 'otp' && (
+                      {isCanonicalConsoleRequest && activeTab === 'otp' && (
                         <form onSubmit={handleStage1Submit} className="space-y-4">
                           <div className="space-y-1.5">
                             <label className="flex items-center gap-1 text-xs font-medium text-slate-700">
@@ -1939,64 +1133,12 @@ export const LoginPage: React.FC = () => {
                             disabled={!acceptedTerms || loading}
                             className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] py-3 text-sm font-bold text-white disabled:bg-slate-300"
                           >
-                            {loading && <RefreshCw className="h-4 w-4 animate-spin" />}安全登录
+                            {loading && <RefreshCw className="h-4 w-4 animate-spin" />}{isCanonicalConsoleRequest ? '安全登录' : '登录并进入商城'}
                           </button>
                         </form>
                       )}
 
                       {activeTab === 'password' && (
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-                {/* 第一段：正式账号密码认证 */}
-=======
-                {/* 第一段：3003 四入口认证视觉；未接通入口不会模拟成功 */}
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
-                {stage === 1 && (
-                  <div className="flex h-[426px] flex-col gap-5">
-                    <div className="grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium" role="tablist" aria-label="登录方式">
-                      <button type="button" disabled className="cursor-not-allowed rounded-lg px-1 py-2 text-center text-slate-400 opacity-60" role="tab" aria-selected={false} aria-label="手机验证码登录尚未接通">
-                        验证码（待接入）
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => selectAuthMethod('password')}
-                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'password' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-                        role="tab"
-                        aria-selected={activeTab === 'password'}
-                      >
-                        密码登录
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => selectAuthMethod('work_weixin')}
-                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'work_weixin' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-                        role="tab"
-                        aria-selected={activeTab === 'work_weixin'}
-                      >
-                        {qrLoginChannel === 'wechat' ? '微信扫码' : '企微扫码'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => selectAuthMethod('sso')}
-                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'sso' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-                        role="tab"
-                        aria-selected={activeTab === 'sso'}
-                      >
-                        企业 SSO
-                      </button>
-                    </div>
-
-<<<<<<< HEAD
-                    <div id="login-method-panel" aria-live="polite">
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                    <div id="login-method-panel" role="tabpanel" aria-live="polite">
-                      {activeTab === 'password' && (
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                         <form onSubmit={handleStage1Submit} className="space-y-4">
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-slate-700 flex items-center gap-1">
@@ -2009,19 +1151,7 @@ export const LoginPage: React.FC = () => {
                               placeholder="输入登录账号或已绑定手机号"
                               className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--sw-brand)] focus:border-[var(--sw-brand)] transition-all"
                               aria-label="登录账号或已绑定手机号"
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
                               disabled={loading}
-=======
-                              disabled={lockoutSeconds > 0 || loading}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                              disabled={loading}
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-                              disabled={lockoutSeconds > 0 || loading}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
                             />
                             {fieldErrors.identifier && <p className="text-[11px] text-rose-500">{fieldErrors.identifier}</p>}
                           </div>
@@ -2041,19 +1171,7 @@ export const LoginPage: React.FC = () => {
                                 placeholder="请输入密码"
                                 className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--sw-brand)] focus:border-[var(--sw-brand)] transition-all pr-10"
                                 aria-label="密码"
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
                                 disabled={loading}
-=======
-                                disabled={lockoutSeconds > 0 || loading}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                                disabled={loading}
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-                                disabled={lockoutSeconds > 0 || loading}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
                               />
                               <button
                                 type="button"
@@ -2083,11 +1201,6 @@ export const LoginPage: React.FC = () => {
                               onClick={() => {
                                 setRegistrationOpen(true);
                                 setFormError('');
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
                                 setFormNotice('');
                                 setRegistrationNotice('');
                               }}
@@ -2097,33 +1210,11 @@ export const LoginPage: React.FC = () => {
                               新用户注册
                             </button>
                           </div>
-                          <p className="-mt-1 text-right text-[11px] leading-4 text-slate-400">持企业邀请码创建员工商城账号</p>
+                          <p className="-mt-1 text-right text-[11px] leading-4 text-slate-400">持商城邀请码创建消费者账号</p>
 
                           <button
                             type="submit"
                             disabled={!acceptedTerms || loading}
-<<<<<<< HEAD
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-                              }}
-                              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-950 bg-slate-950 px-4 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5 hover:border-slate-800 hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/25 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2"
-                            >
-                              <UserCheck className="h-4 w-4" />
-                              新用户注册
-                            </button>
-                          </div>
-                          <p className="-mt-1 text-right text-[11px] leading-4 text-slate-400">持企业邀请码创建员工商城账号</p>
-
-                          <button
-                            type="submit"
-                            disabled={!acceptedTerms || lockoutSeconds > 0 || loading}
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
                             className="w-full py-3 px-4 bg-[var(--sw-brand)] hover:bg-[var(--sw-brand-dark)] text-white font-medium text-sm rounded-xl shadow-md shadow-blue-500/10 transition-all disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                           >
                             {loading ? (
@@ -2139,11 +1230,6 @@ export const LoginPage: React.FC = () => {
                             )}
                           </button>
                         </form>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                       )}
 
                       {activeTab === 'work_weixin' && (
@@ -2190,15 +1276,6 @@ export const LoginPage: React.FC = () => {
                           </button>
                         </div>
                       )}
-<<<<<<< HEAD
-=======
-
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                     </div>
 
                     {/* 底部合规与协议勾选 */}
@@ -2206,19 +1283,7 @@ export const LoginPage: React.FC = () => {
                       <label className="flex items-start gap-2 cursor-pointer text-xs text-slate-500">
                         <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-0.5 w-4 h-4 text-[var(--sw-brand)] rounded border-slate-300 focus:ring-[var(--sw-brand)]" />
                         <span className="leading-tight">
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
                           我已阅读并同意主打团的{' '}
-=======
-                          我已阅读并同意智慧翼福利商城的{' '}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                          我已阅读并同意主打团的{' '}
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-                          我已阅读并同意智慧翼福利商城的{' '}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
                           <button
                             type="button"
                             onClick={(e) => {
@@ -2248,11 +1313,6 @@ export const LoginPage: React.FC = () => {
 
                 {/* 第二段：选择会员关系段 */}
                 {stage === 2 && (
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                   <div className="space-y-5">
                     <div className="flex items-start gap-3 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-cyan-50 px-4 py-3.5 text-xs text-slate-600">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-[var(--sw-brand)] shadow-sm ring-1 ring-blue-100">
@@ -2262,31 +1322,12 @@ export const LoginPage: React.FC = () => {
                         <p className="font-bold text-slate-800">一次登录，按需进入</p>
                         <p className="mt-0.5 leading-relaxed text-slate-500">商城用于福利消费与订单；后台用于运营管理，仅展示你已经获得授权的工作台。</p>
                       </div>
-<<<<<<< HEAD
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-                  <div className="space-y-4">
-                    <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100 text-xs text-slate-600 flex items-start gap-2">
-                      <Info className="w-4 h-4 text-[var(--sw-brand)] shrink-0 mt-0.5" />
-                      <p>该账号关联了多个企业的福利计划或管理身份。请选择您本次需要进入的商城专区或运营后台：</p>
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                     </div>
 
                     {renderMembershipsList()}
                   </div>
                 )}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                 {/* 第三段保留 3003 视觉，但正式二次验证未接通时必须关闭 */}
                 {stage === 3 && selectedMembership && (
                   <div className="space-y-5">
@@ -2319,13 +1360,6 @@ export const LoginPage: React.FC = () => {
                     </button>
                   </div>
                 )}
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
               </div>
             </div>
           </div>
@@ -2337,80 +1371,69 @@ export const LoginPage: React.FC = () => {
           <form onSubmit={handleRegistrationSubmit} className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl sm:p-8">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--sw-brand)]">Member Registration</p>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-                <h3 className="mt-1 text-2xl font-bold text-slate-950">{registrationCopy.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-500">{registrationCopy.description}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--sw-brand)]">
+                  {isQrConsumerRegistration || isConsumerRegistration ? 'L6 Consumer' : 'Member Registration'}
+                </p>
+                <h3 className="mt-1 text-2xl font-bold text-slate-950">
+                  {isConsumerRegistration ? registrationContext?.organizationName : isQrConsumerRegistration ? '正在打开商城' : registrationCopy.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  {isConsumerRegistration ? `L6 消费者 · ${registrationCopy.description}` : registrationCopy.description}
+                </p>
+                {!isConsumerRegistration && registrationContext?.organizationName && (
+                  <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-[var(--sw-brand)]">
+                    <Store className="h-3.5 w-3.5" />{registrationContext.organizationName}
+                  </p>
+                )}
               </div>
               <button type="button" onClick={closeRegistration} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="关闭注册">
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-                <h3 className="mt-1 text-2xl font-bold text-slate-950">注册员工会员</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-500">先用账号密码建立普通员工会员。手机号、微信和企业微信以后可绑定到同一个账号；管理员与 Owner 不开放自助注册。</p>
-              </div>
-              <button type="button" onClick={() => setRegistrationOpen(false)} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="关闭注册">
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                <h3 className="mt-1 text-2xl font-bold text-slate-950">{registrationCopy.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-500">{registrationCopy.description}</p>
-              </div>
-              <button type="button" onClick={closeRegistration} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="关闭注册">
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="space-y-1.5 text-xs font-medium text-slate-700">
-                姓名
-                <input
-                  value={registration.displayName}
-                  onChange={(e) => updateRegistration('displayName', e.target.value)}
-                  maxLength={60}
-                  required
-                  placeholder="请输入真实姓名"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                />
-              </label>
-              <label className="space-y-1.5 text-xs font-medium text-slate-700">
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-                <span className="flex items-center justify-between gap-2">
-                  企业邀请码
-                  {registrationInvite && <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600"><CheckCircle2 className="h-3 w-3" />已验证</span>}
-                </span>
-                <div className="flex gap-2">
-                  <input
-                    value={registration.inviteCode}
-                    onChange={(event) => updateRegistration('inviteCode', event.target.value)}
-                    maxLength={255}
-                    required
-                    autoComplete="off"
-                    placeholder="由企业福利管理员提供"
-                    className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-mono outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleResolveRegistrationInvite}
-                    disabled={registrationBusy !== null || !registration.inviteCode.trim()}
-                    className="rounded-xl border border-blue-200 bg-blue-50 px-3 text-[11px] font-bold text-[var(--sw-brand)] disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
-                  >
-                    {registrationBusy === 'invite' ? '验证中' : '验证'}
-                  </button>
-                </div>
-              </label>
+              {!isQrConsumerRegistration && !isConsumerRegistration && (
+                <>
+                  <label className="space-y-1.5 text-xs font-medium text-slate-700">
+                    姓名
+                    <input
+                      value={registration.displayName}
+                      onChange={(e) => updateRegistration('displayName', e.target.value)}
+                      maxLength={60}
+                      required
+                      placeholder="请输入真实姓名"
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                    />
+                  </label>
+                  <label className="space-y-1.5 text-xs font-medium text-slate-700">
+                    <span className="flex items-center justify-between gap-2">
+                      企业邀请码
+                      {registrationContext && <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600"><CheckCircle2 className="h-3 w-3" />已验证</span>}
+                    </span>
+                    <div className="flex gap-2">
+                      <input
+                        value={registration.inviteCode}
+                        onChange={(event) => updateRegistration('inviteCode', event.target.value)}
+                        maxLength={255}
+                        required
+                        autoComplete="off"
+                        placeholder="由商城管理员提供"
+                        className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-mono outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleResolveRegistrationInvite}
+                        disabled={registrationBusy !== null || !registration.inviteCode.trim()}
+                        className="rounded-xl border border-blue-200 bg-blue-50 px-3 text-[11px] font-bold text-[var(--sw-brand)] disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                      >
+                        {registrationBusy === 'context' ? '验证中' : '验证'}
+                      </button>
+                    </div>
+                  </label>
+                </>
+              )}
               <label className="space-y-1.5 text-xs font-medium text-slate-700 sm:col-span-2">
-                登录手机号
-<<<<<<< HEAD
+                {isSelfConsumerRegistration ? '登录手机号（付款时验证）' : '登录手机号'}
                 <input
                   value={registration.mobile}
                   onChange={(event) => updateRegistration('mobile', event.target.value)}
@@ -2418,11 +1441,11 @@ export const LoginPage: React.FC = () => {
                   required
                   inputMode="tel"
                   autoComplete="tel"
-                  placeholder="用于登录、验证与找回密码"
+                  placeholder={isSelfConsumerRegistration ? '先用于账号登录，首次付款时完成验证' : '用于登录、验证与找回密码'}
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
                 />
               </label>
-              <label className="space-y-1.5 text-xs font-medium text-slate-700 sm:col-span-2">
+              {!isSelfConsumerRegistration && <label className="space-y-1.5 text-xs font-medium text-slate-700 sm:col-span-2">
                 手机验证码
                 <div className="flex gap-2">
                   <input
@@ -2438,258 +1461,105 @@ export const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleSendRegistrationCode}
-                    disabled={registrationBusy !== null || registrationCodeSeconds > 0 || !registrationInvite || !registration.mobile.trim()}
+                    disabled={registrationBusy !== null || registrationCodeSeconds > 0 || !registrationContext || !registration.mobile.trim()}
                     className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
                   >
                     {registrationBusy === 'code' ? '发送中…' : registrationCodeSeconds > 0 ? `${registrationCodeSeconds}s` : '获取验证码'}
                   </button>
                 </div>
-=======
-                企业邀请码
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-                <input
-                  value={registration.mobile}
-                  onChange={(event) => updateRegistration('mobile', event.target.value)}
-                  maxLength={16}
-                  required
-                  inputMode="tel"
-                  autoComplete="tel"
-                  placeholder="用于登录、验证与找回密码"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                />
-              </label>
-              <label className="space-y-1.5 text-xs font-medium text-slate-700 sm:col-span-2">
-<<<<<<< HEAD
-=======
-                企业邀请码
-                <input
-                  value={registration.inviteCode}
-                  onChange={(e) => updateRegistration('inviteCode', e.target.value.toUpperCase())}
-                  maxLength={80}
-                  required
-                  placeholder="由企业福利管理员提供"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-mono uppercase outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                />
-              </label>
-              <label className="space-y-1.5 text-xs font-medium text-slate-700 sm:col-span-2">
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-                登录账号
-                <input
-                  value={registration.username}
-                  onChange={(e) => updateRegistration('username', e.target.value.toLowerCase())}
-                  minLength={4}
-                  maxLength={32}
-                  pattern="[A-Za-z][A-Za-z0-9._-]{3,31}"
-                  required
-                  autoComplete="username"
-                  placeholder="4–32位，以字母开头，可含数字、点、横线和下划线"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                />
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                手机验证码
-                <div className="flex gap-2">
-                  <input
-                    value={registration.code}
-                    onChange={(event) => updateRegistration('code', event.target.value.replace(/\D/g, '').slice(0, 6))}
-                    maxLength={6}
-                    required
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    placeholder="输入 6 位验证码"
-                    className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm tracking-[0.22em] outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleSendRegistrationCode}
-                    disabled={registrationBusy !== null || registrationCodeSeconds > 0 || !registrationInvite || !registration.mobile.trim()}
-                    className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
-                  >
-                    {registrationBusy === 'code' ? '发送中…' : registrationCodeSeconds > 0 ? `${registrationCodeSeconds}s` : '获取验证码'}
-                  </button>
-                </div>
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-              </label>
-              <label className="space-y-1.5 text-xs font-medium text-slate-700">
-                设置密码
-                <input
-                  type="password"
-                  value={registration.password}
-                  onChange={(e) => updateRegistration('password', e.target.value)}
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-                  minLength={12}
-                  maxLength={128}
-                  required
-                  autoComplete="new-password"
-                  placeholder="12位以上，含大小写、数字和符号"
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-                  minLength={10}
-                  maxLength={128}
-                  required
-                  placeholder="至少10位，含字母和数字"
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                  minLength={12}
-                  maxLength={128}
-                  required
-                  autoComplete="new-password"
-                  placeholder="12位以上，含大小写、数字和符号"
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                />
-              </label>
-              <label className="space-y-1.5 text-xs font-medium text-slate-700">
-                确认密码
-                <input
-                  type="password"
-                  value={registration.confirmPassword}
-                  onChange={(e) => updateRegistration('confirmPassword', e.target.value)}
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-                  minLength={12}
-                  maxLength={128}
-                  required
-                  autoComplete="new-password"
-=======
-                  minLength={10}
-                  maxLength={128}
-                  required
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                  minLength={12}
-                  maxLength={128}
-                  required
-                  autoComplete="new-password"
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-                  minLength={10}
-                  maxLength={128}
-                  required
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-                  placeholder="再次输入密码"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                />
-              </label>
+              </label>}
+              {(!isQrConsumerRegistration && !isConsumerRegistration || isSelfConsumerRegistration) && (
+                <>
+                  <label className="space-y-1.5 text-xs font-medium text-slate-700">
+                    设置密码
+                    <input
+                      type="password"
+                      value={registration.password}
+                      onChange={(e) => updateRegistration('password', e.target.value)}
+                      minLength={12}
+                      maxLength={128}
+                      required
+                      autoComplete="new-password"
+                      placeholder="12位以上，含大小写、数字和符号"
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                    />
+                  </label>
+                  <label className="space-y-1.5 text-xs font-medium text-slate-700">
+                    确认密码
+                    <input
+                      type="password"
+                      value={registration.confirmPassword}
+                      onChange={(e) => updateRegistration('confirmPassword', e.target.value)}
+                      minLength={12}
+                      maxLength={128}
+                      required
+                      autoComplete="new-password"
+                      placeholder="再次输入密码"
+                      aria-invalid={registration.confirmPassword.length > 0 && registration.password !== registration.confirmPassword}
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                    />
+                    {registration.confirmPassword.length > 0
+                      && registration.password !== registration.confirmPassword
+                      ? <span role="alert" className="text-xs text-rose-500">两次输入的密码不一致</span> : null}
+                  </label>
+                </>
+              )}
             </div>
 
             {registrationNotice && <p className="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-700">{registrationNotice}</p>}
             {formError && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">{formError}</p>}
             <label className="mt-5 flex cursor-pointer items-start gap-2 text-xs leading-5 text-slate-500">
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
               <input
                 type="checkbox"
                 checked={registrationTermsAccepted}
                 onChange={(event) => setRegistrationTermsAccepted(event.target.checked)}
-                disabled={!registrationInvite}
+                disabled={!registrationContext}
                 className="mt-1 h-4 w-4 rounded border-slate-300 accent-[var(--sw-brand)] disabled:cursor-not-allowed"
               />
               <span>
                 我已阅读并同意
-                <button type="button" disabled={!registrationInvite} onClick={() => setRegistrationPolicyModal('terms')} className="text-[var(--sw-brand)] hover:underline disabled:text-slate-400">《用户服务协议》</button>
+                <button type="button" disabled={!registrationContext} onClick={() => setRegistrationPolicyModal('terms')} className="text-[var(--sw-brand)] hover:underline disabled:text-slate-400">《用户服务协议》</button>
                 和
-                <button type="button" disabled={!registrationInvite} onClick={() => setRegistrationPolicyModal('privacy')} className="text-[var(--sw-brand)] hover:underline disabled:text-slate-400">《隐私保护政策》</button>
+                <button type="button" disabled={!registrationContext} onClick={() => setRegistrationPolicyModal('privacy')} className="text-[var(--sw-brand)] hover:underline disabled:text-slate-400">《隐私保护政策》</button>
                 ，并确认使用本人手机号注册。
               </span>
-<<<<<<< HEAD
             </label>
             <button
               type="submit"
-              disabled={registrationBusy !== null || !registrationInvite || !registration.challengeId || !registrationTermsAccepted}
+              disabled={registrationBusy !== null || !registrationContext || (!isSelfConsumerRegistration && !registration.challengeId) || !registrationTermsAccepted}
               className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/15 disabled:bg-slate-300"
             >
               {registrationBusy === 'submit' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />}
               {registrationCopy.submitLabel}
             </button>
             <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">{registrationCopy.footer}</p>
-=======
-              <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} className="mt-1 h-4 w-4 rounded border-slate-300 accent-[var(--sw-brand)]" />
-              <span>我已阅读并同意《用户服务协议》和《隐私保护政策》，并确认使用本人账号注册。</span>
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-            </label>
-            <button
-              type="submit"
-              disabled={registrationBusy !== null || !registrationInvite || !registration.challengeId || !registrationTermsAccepted}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/15 disabled:bg-slate-300"
-            >
-              {registrationBusy === 'submit' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />}
-              {registrationCopy.submitLabel}
-            </button>
-<<<<<<< HEAD
-            <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">企业管理员不能查看你的密码。手机号与微信绑定入口已预留；未绑定手机前无法自助找回密码。</p>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-            <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">{registrationCopy.footer}</p>
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-              <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} className="mt-1 h-4 w-4 rounded border-slate-300 accent-[var(--sw-brand)]" />
-              <span>我已阅读并同意《用户服务协议》和《隐私保护政策》，并确认使用本人账号注册。</span>
-            </label>
-            <button
-              type="submit"
-              disabled={loading || !acceptedTerms}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/15 disabled:bg-slate-300"
-            >
-              {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />}
-              创建普通员工会员账号
-            </button>
-            <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">企业管理员不能查看你的密码。手机号与微信绑定入口已预留；未绑定手机前无法自助找回密码。</p>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           </form>
         </div>
       )}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-      {registrationPolicyModal && registrationInvite && (
+      {registrationPolicyModal && registrationContext && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
           <div className="flex max-h-[80vh] w-full max-w-lg flex-col rounded-2xl bg-white p-6 shadow-2xl">
             <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2 text-base font-bold text-slate-900">
                 <FileText className="h-5 w-5 text-[var(--sw-brand)]" />
-                {registrationPolicyModal === 'terms' ? registrationInvite.termsTitle : registrationInvite.privacyTitle}
+                {registrationPolicyModal === 'terms' ? registrationContext.termsTitle : registrationContext.privacyTitle}
               </div>
               <button type="button" onClick={() => setRegistrationPolicyModal(null)} className="rounded-lg p-1 text-slate-400 hover:text-slate-600" aria-label="关闭注册条款">
                 <X className="h-5 w-5" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto whitespace-pre-wrap pr-2 text-xs leading-6 text-slate-600">
-              {registrationPolicyModal === 'terms' ? registrationInvite.termsBody : registrationInvite.privacyBody}
+              {registrationPolicyModal === 'terms' ? registrationContext.termsBody : registrationContext.privacyBody}
             </div>
             <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-[10px] text-slate-400">
-              <span>版本 {registrationInvite.termsHash.slice(0, 12)}…</span>
+              <span>版本 {registrationContext.termsHash.slice(0, 12)}…</span>
               <button type="button" onClick={() => setRegistrationPolicyModal(null)} className="rounded-xl bg-[var(--sw-brand)] px-5 py-2 text-xs font-semibold text-white">关闭</button>
             </div>
           </div>
         </div>
       )}
 
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       {resetOpen && (
         <div className="fixed inset-0 z-[75] flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm">
           <form onSubmit={submitPasswordReset} className="w-full max-w-md space-y-4 rounded-3xl border bg-white p-7 shadow-2xl">
@@ -2714,19 +1584,7 @@ export const LoginPage: React.FC = () => {
               type="password"
               value={resetForm.password}
               onChange={(e) => setResetForm({ ...resetForm, password: e.target.value })}
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
               placeholder="新密码（至少12位，含大小写字母、数字和符号）"
-=======
-              placeholder="新密码（至少10位，含字母和数字）"
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-              placeholder="新密码（至少12位，含大小写字母、数字和符号）"
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-              placeholder="新密码（至少10位，含字母和数字）"
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
               className="w-full rounded-xl border px-3.5 py-2.5 text-sm"
             />
             <input type="password" value={resetForm.confirm} onChange={(e) => setResetForm({ ...resetForm, confirm: e.target.value })} placeholder="确认新密码" className="w-full rounded-xl border px-3.5 py-2.5 text-sm" />
@@ -2808,19 +1666,7 @@ export const LoginPage: React.FC = () => {
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
               <div className="flex items-center gap-2 text-slate-900 font-bold text-base">
                 <FileText className="w-5 h-5 text-[var(--sw-brand)]" />
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
                 {activeModal === 'terms' ? '主打团 - 用户服务协议' : '主打团 - 隐私保护政策'}
-=======
-                {activeModal === 'terms' ? '智慧翼企业福利商城 - 用户服务协议' : '智慧翼企业福利商城 - 隐私保护政策'}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-                {activeModal === 'terms' ? '主打团 - 用户服务协议' : '主打团 - 隐私保护政策'}
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-                {activeModal === 'terms' ? '智慧翼企业福利商城 - 用户服务协议' : '智慧翼企业福利商城 - 隐私保护政策'}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
               </div>
               <button onClick={() => setActiveModal(null)} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg">
                 <X className="w-5 h-5" />
@@ -2829,36 +1675,11 @@ export const LoginPage: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto text-xs text-slate-600 space-y-3 pr-2 custom-scrollbar leading-relaxed">
               <p className="font-semibold text-slate-800">一、服务说明与主体定义</p>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
               <p>本《统一身份与登录服务协议》适用于主打团消费者商城（zhudatuan.com）与运营后台（console.zhudatuan.com）。技术服务由雍彻科技提供安全合规与鉴权支持；旧项目域名不属于本系统的登录或会话边界。</p>
 
               <p className="font-semibold text-slate-800">二、安全与凭证红线</p>
               <p>
                 1. 本系统由服务端建立可撤销的 Host-only HttpOnly 会话。前端不落地存储密码、永久 Token 或跨域票据。
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-              <p>本《统一身份与登录服务协议》适用于筑大团消费者商城（zhudatuan.com）与运营后台（console.zhudatuan.com）。技术服务由雍彻科技提供安全合规与鉴权支持；原智慧翼域名在迁移期保持兼容。</p>
-
-              <p className="font-semibold text-slate-800">二、安全与凭证红线</p>
-              <p>
-                1. 本系统使用短时效 Pre-Auth 上下文与一次性跨域票据 (Ticket) 进行会话传递。前端不落地存储任何永久 Token。
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-              <p>本《统一身份与登录服务协议》适用于筑大团消费者商城（zhudatuan.com）与运营后台（console.zhudatuan.com）。技术服务由雍彻科技提供安全合规与鉴权支持；旧项目域名不属于本系统的登录或会话边界。</p>
-
-              <p className="font-semibold text-slate-800">二、安全与凭证红线</p>
-              <p>
-                1. 本系统由服务端建立可撤销的 Host-only HttpOnly 会话。前端不落地存储密码、永久 Token 或跨域票据。
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                 <br />
                 2. 涉及高风险管理权限（如资金退款、角色授权、审计查询）的操作，须在正式二次验证服务接通后方可使用。
                 <br />
@@ -2886,25 +1707,8 @@ export const LoginPage: React.FC = () => {
 
       {/* 底部页脚 */}
       {!isStorefrontEmbed && (
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 05ea98a5 (fix(release): restore selected app verification)
         <footer className="py-4 text-center text-xs text-slate-600 border-t border-slate-100 bg-white">
           <p>© 2026 主打团. All Rights Reserved. 技术服务方：雍彻科技</p>
-=======
-        <footer className="py-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white">
-<<<<<<< HEAD
-          <p>© 2026 智慧翼企业福利商城. All Rights Reserved. 技术服务方：雍彻科技</p>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-          <p>© 2026 主打团. All Rights Reserved. 技术服务方：雍彻科技</p>
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-        <footer className="py-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white">
-          <p>© 2026 智慧翼企业福利商城. All Rights Reserved. 技术服务方：雍彻科技</p>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         </footer>
       )}
     </div>
