@@ -59,6 +59,10 @@ export function anonymousContext(): RequestContext {
   return createRequestContext(clientVersion());
 }
 
+export function anonymousIdempotentContext(): RequestContext {
+  return createRequestContext(clientVersion(), { idempotencyKey: crypto.randomUUID() });
+}
+
 export function sessionContext(options: ContextOptions = {}): RequestContext {
   if (!activeSession) throw new ProductionApiError('登录会话尚未建立', 401, 'AUTHENTICATION_REQUIRED');
   if (options.write && !activeSession.csrf) {

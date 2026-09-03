@@ -67,6 +67,17 @@ describe('canonical storefront production API', () => {
     })).toBe('https://merchant.example');
   });
 
+  it('resolves the public L1 storefront name before login', async () => {
+    const fetcher = apiFetch();
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+
+    await expect(productionApi.getPublicStorefront()).resolves.toEqual({
+      id: 'mall:l1-hongtai',
+      name: '宏泰甄选',
+    });
+  });
+
   it('loads identity, profile, benefits, ledgers and orders from api.zhudatuan.com with cookie credentials', async () => {
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);
@@ -247,6 +258,10 @@ function apiFetch(options: { personalMinor?: number; paymentState?: string; conf
         purchasable: false, qualification: { visible: true, purchasable: false, visibilityReason: 'PUBLIC_CATALOG', purchaseReason: 'LOGIN_REQUIRED' },
       }],
       pagination: { nextCursor: null },
+    });
+    if (path === '/api/v1/identity/storefronts/resolve') return json({
+      organization_id: 'mall:l1-hongtai',
+      organization_name: '宏泰甄选',
     });
     if (path === '/api/v1/catalog/listings') return json({ items: [{ id: 'listing:one', sku_id: 'sku:one', title: '空气炸锅', status: 'published', product_type: 'physical', cover_url: null, subtitle: '企业严选' }] });
     if (path === '/api/v1/pricing/offers') return json({ items: [{ sku_id: 'sku:one', amount_minor: 21900, compare_minor: 25900, currency: 'CNY' }] });

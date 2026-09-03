@@ -1,4 +1,4 @@
-import { canonicalCall, canonicalClient, anonymousContext, clearCanonicalSession, rememberCanonicalSession, sessionContext } from './canonicalApiClient';
+import { canonicalCall, canonicalClient, anonymousContext, anonymousIdempotentContext, clearCanonicalSession, rememberCanonicalSession, sessionContext } from './canonicalApiClient';
 import { checkoutWithCanonicalPayment } from './canonicalCheckout';
 import { mapCanonicalProductPage } from './canonicalCatalogMapper';
 import { mapCanonicalAccounts, mapCanonicalCart, mapCanonicalLedgers, mapCanonicalOrders } from './canonicalCommerceMapper';
@@ -11,6 +11,8 @@ export { ProductionApiError } from './productionApi.error';
 export type { ApiAccount, ApiAccountLedger, ApiActor, ApiAfterSale, ApiBootstrap, ApiCartItem, ApiDeliveryAddress, ApiHomeSnapshot, ApiOrder, ApiProduct, ApiSecurityCenter, CreateOrderRequest, LoginRequest } from './productionApi.types';
 
 type CatalogOptions = { category?: string; cursor?: string; limit?: number };
+
+const DEFAULT_STOREFRONT_APPLICATION = 'zdt-l1-verify';
 
 async function sessionBootstrap(): Promise<ApiBootstrap> {
   const client = canonicalClient();
@@ -88,6 +90,17 @@ async function publicCatalog(options: CatalogOptions): Promise<{ items: ApiProdu
   return { items, pagination: { nextCursor: typeof pagination.nextCursor === 'string' && pagination.nextCursor ? pagination.nextCursor : null } };
 }
 
+async function publicStorefront(): Promise<{ id: string; name: string }> {
+  const value = await canonicalCall(() => canonicalClient().identity.storefrontsRead({
+    body: { application: DEFAULT_STOREFRONT_APPLICATION },
+  }, anonymousIdempotentContext()));
+  const payload = record(value, 'identity.storefront');
+  return {
+    id: text(payload.organization_id, 'identity.storefront.organization_id'),
+    name: text(payload.organization_name, 'identity.storefront.organization_name'),
+  };
+}
+
 function publicProduct(item: Record<string, unknown>): ApiProduct {
   const qualification = record(item.qualification, 'catalog.public.qualification');
   return {
@@ -158,6 +171,10 @@ export const productionApi = {
 
   async listProducts(options: CatalogOptions = {}): Promise<{ items: ApiProduct[]; pagination: { nextCursor: string | null } }> {
     return publicCatalog(options);
+  },
+
+  async getPublicStorefront(): Promise<{ id: string; name: string }> {
+    return publicStorefront();
   },
 
   async listQualifiedProducts(options: CatalogOptions = {}) {
