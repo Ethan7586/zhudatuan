@@ -89,6 +89,8 @@ describe('Voucher governance workspace', () => {
     await waitFor(() => expect(writes[0]).toMatch(/^PUT:voucher-program:[0-9a-f-]+:{"name":"中秋关怀券","valueMinor":8800,"validityDays":180,"status":"draft","approvalRequired":true}$/));
     await waitFor(() => expect(screen.queryByRole('dialog', { name: '新建卡券' })).toBeNull());
     expect(new URLSearchParams(currentSearch).get('view')).toBe('programs');
+    expect(new URLSearchParams(currentSearch).get('q')).toBeNull();
+    await waitFor(() => expect(requests.filter((path) => path === '/api/v1/vouchers/programs')).toHaveLength(2));
 
     await user.click(screen.getByRole('button', { name: '新建卡号库' }));
     const libraryCreator = await screen.findByRole('dialog', { name: '新建卡号库' });
@@ -98,6 +100,7 @@ describe('Voucher governance workspace', () => {
     await waitFor(() => expect(writes[1]).toBe('POST:{"mode":"generated","prefix":"MVP2026","provider":null}'));
     await waitFor(() => expect(screen.queryByRole('dialog', { name: '新建卡号库' })).toBeNull());
     expect(new URLSearchParams(currentSearch).get('view')).toBe('libraries');
+    await waitFor(() => expect(requests.filter((path) => path === '/api/v1/vouchers/cardlibraries')).toHaveLength(1));
   });
 });
 

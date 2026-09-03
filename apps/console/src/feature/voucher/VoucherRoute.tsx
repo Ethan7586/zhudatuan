@@ -1,6 +1,6 @@
 import { queryCondition, presentError, safeQueryError } from '@shop/presentation';
 import { Button, ResourcePanel } from '@shop/design';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -19,6 +19,7 @@ import './Responsive.css';
 
 export function Component() {
   const context = useConsoleContext();
+  const queryClient = useQueryClient();
   const routeTitle = useRouteTitle('卡券中心');
   const [search, setSearch] = useSearchParams();
   const [creator, setCreator] = useState<'program' | 'library' | null>(null);
@@ -31,22 +32,30 @@ export function Component() {
   });
   const libraryCreator = useMutation({
     mutationFn: (prefix: string) => createCardLibrary(context, prefix),
-    onSuccess: () => {
+    onSuccess: async () => {
       setCreator(null);
       const next = new URLSearchParams(search);
       next.set('view', 'libraries');
       next.delete('cursor');
+      next.delete('q');
+      next.delete('status');
+      next.delete('selected');
       setSearch(next);
+      await queryClient.invalidateQueries({ queryKey: voucherKey(context, 'libraries'), exact: true });
     },
   });
   const programCreator = useMutation({
     mutationFn: (draft: VoucherProgramDraft) => createVoucherProgram(context, draft),
-    onSuccess: () => {
+    onSuccess: async () => {
       setCreator(null);
       const next = new URLSearchParams(search);
       next.set('view', 'programs');
       next.delete('cursor');
+      next.delete('q');
+      next.delete('status');
+      next.delete('selected');
       setSearch(next);
+      await queryClient.invalidateQueries({ queryKey: voucherKey(context, 'programs'), exact: true });
     },
   });
   const data = query.data;
