@@ -43,6 +43,10 @@ export function buildCredentialLoginAction(targetOrigin: string): string {
   return action.toString();
 }
 
+export function buildAccountLoginPath(target: 'console' | 'storefront'): string {
+  return target === 'console' ? '/login?client=console' : '/login?target=storefront';
+}
+
 /**
  * Credential discovery currently returns one authoritative authorization.
  * Multiple usable memberships require a server-bound selection token; until

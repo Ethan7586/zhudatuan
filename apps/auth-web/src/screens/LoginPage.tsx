@@ -12,6 +12,7 @@ import { Membership, PreAuthContext } from '../types';
 import { defaultTermsAccepted } from '../services/termsAcceptance';
 import {
   changeInitialPassword,
+  buildAccountLoginPath,
   buildCredentialLoginAction,
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
@@ -604,16 +605,27 @@ export const LoginPage: React.FC = () => {
           <UserX className="w-12 h-12 text-slate-400 mx-auto mb-3" />
           <h4 className="text-base font-semibold text-slate-800 mb-1">未找到关联的企业福利计划</h4>
           <p className="text-xs text-slate-5-00 text-slate-500 mb-4 max-w-sm mx-auto">该账号当前未被录入任何企业的福利发放名单或运营后台。请联系您所在企业的 HR 或福利管理员进行绑定。</p>
-          <button
-            onClick={() => {
-              setStage(1);
-              setFormError('');
-            }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-[var(--sw-brand)] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            切换其他账号登录
-          </button>
+          <div className="flex flex-wrap justify-center gap-2">
+            {!isCanonicalConsoleRequest && (
+              <a
+                href={buildAccountLoginPath('console')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-[var(--sw-brand)] hover:opacity-90 rounded-lg transition-opacity"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                进入运营后台
+              </a>
+            )}
+            <button
+              onClick={() => {
+                setStage(1);
+                setFormError('');
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-[var(--sw-brand)] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              切换其他账号登录
+            </button>
+          </div>
         </div>
       );
     }
