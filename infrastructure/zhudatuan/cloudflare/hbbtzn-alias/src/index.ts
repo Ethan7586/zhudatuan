@@ -1,4 +1,10 @@
 const ROOT_STOREFRONT_HOST = 'hbbtzn.com';
+const API_UPSTREAM_ORIGIN = 'https://api.zhudatuan.com';
+const ACCOUNTS_UPSTREAM_ORIGIN = 'https://accounts.zhudatuan.com';
+const CONSUMER_ACCOUNT_PATH = '/accounts';
+const WECHAT_VERIFICATION_FILES = Object.freeze({
+  '/MP_verify_5ebC4TM1ep4hKgu3.txt': '5ebC4TM1ep4hKgu3',
+} as const);
 
 const UPSTREAM_ORIGINS = Object.freeze({
   [ROOT_STOREFRONT_HOST]: 'https://zhudatuan.com',
@@ -11,6 +17,7 @@ const CANONICAL_REDIRECT_HOSTS = Object.freeze({
 } as const);
 
 const PUBLIC_ORIGINS = Object.freeze({
+  'https://accounts.zhudatuan.com': 'https://hbbtzn.com/accounts',
   'https://zhudatuan.com': 'https://hbbtzn.com',
 } as const);
 
@@ -27,6 +34,32 @@ function rewriteOrigins(value: string, origins: Readonly<Record<string, string>>
 
 function isApiPath(pathname: string): boolean {
   return pathname === '/api' || pathname.startsWith('/api/');
+}
+
+function isConsumerAccountPath(pathname: string): boolean {
+  return pathname === CONSUMER_ACCOUNT_PATH || pathname.startsWith(`${CONSUMER_ACCOUNT_PATH}/`);
+}
+
+function wechatVerificationResponse(request: Request, incoming: URL): Response | null {
+  if (incoming.hostname !== ROOT_STOREFRONT_HOST || (request.method !== 'GET' && request.method !== 'HEAD')) {
+    return null;
+  }
+  const content = WECHAT_VERIFICATION_FILES[
+    incoming.pathname as keyof typeof WECHAT_VERIFICATION_FILES
+  ];
+  if (!content) return null;
+  return new Response(request.method === 'HEAD' ? null : content, {
+    headers: {
+      'cache-control': 'no-store',
+      'content-type': 'text/plain; charset=utf-8',
+      'x-content-type-options': 'nosniff',
+    },
+  });
+}
+
+function consumerAccountUpstreamPath(pathname: string): string {
+  const suffix = pathname.slice(CONSUMER_ACCOUNT_PATH.length);
+  return suffix || '/';
 }
 
 function storefrontPath(request: Request, incoming: URL): string {
@@ -79,6 +112,9 @@ const worker = {
   async fetch(request: Request): Promise<Response> {
     const incoming = new URL(request.url);
 
+    const verification = wechatVerificationResponse(request, incoming);
+    if (verification) return verification;
+
     const canonicalHost = CANONICAL_REDIRECT_HOSTS[
       incoming.hostname as keyof typeof CANONICAL_REDIRECT_HOSTS
     ];
@@ -91,7 +127,18 @@ const worker = {
     const upstreamOrigin = UPSTREAM_ORIGINS[incoming.hostname as keyof typeof UPSTREAM_ORIGINS];
     if (!upstreamOrigin) return new Response('Not Found', { status: 404 });
 
-    const target = new URL(`${storefrontPath(request, incoming)}${incoming.search}`, upstreamOrigin);
+    if (incoming.hostname === ROOT_STOREFRONT_HOST && incoming.pathname === CONSUMER_ACCOUNT_PATH) {
+      incoming.pathname = `${CONSUMER_ACCOUNT_PATH}/`;
+      return Response.redirect(incoming, 308);
+    }
+
+    if (incoming.hostname === ROOT_STOREFRONT_HOST && isConsumerAccountPath(incoming.pathname)) {
+      const target = new URL(`${consumerAccountUpstreamPath(incoming.pathname)}${incoming.search}`, ACCOUNTS_UPSTREAM_ORIGIN);
+      return publicResponse(request, await fetch(upstreamRequest(request, target), { redirect: 'manual' }));
+    }
+
+    const path = storefrontPath(request, incoming);
+    const target = new URL(`${path}${incoming.search}`, isApiPath(path) ? API_UPSTREAM_ORIGIN : upstreamOrigin);
     return publicResponse(request, await fetch(upstreamRequest(request, target), { redirect: 'manual' }));
   },
 };
