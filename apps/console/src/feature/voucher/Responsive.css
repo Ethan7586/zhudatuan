@@ -60,6 +60,7 @@
     width: 100%;
   }
   .vouchercreatorbody ol,
+  .vouchercreatorgrid,
   .voucherfacts {
     grid-template-columns: 1fr;
   }

@@ -41,6 +41,13 @@
 .vouchercreatordialog {
   width: min(720px, calc(100vw - 24px));
 }
+.vouchercreatordialog form {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
 
 .voucherdrawer > header,
 .vouchercreatordialog > header {
@@ -159,6 +166,74 @@
   font-size: 12px;
   line-height: 20px;
 }
+.vouchercreatorfield {
+  display: grid;
+  gap: 7px;
+}
+.vouchercreatorfield > span {
+  color: var(--vi-ink);
+  font-size: 11px;
+  font-weight: 750;
+}
+.vouchercreatorfield > input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--vi-line);
+  border-radius: 10px;
+  outline: none;
+  background: var(--sw-surface);
+  padding: 0 12px;
+  color: var(--vi-ink);
+  font: inherit;
+  font-size: 12px;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background 120ms ease;
+}
+.vouchercreatorfield > input:hover {
+  border-color: var(--sw-border-strong);
+}
+.vouchercreatorfield > input:focus-visible {
+  border-color: var(--vi-brand);
+  box-shadow: 0 0 0 3px var(--vi-brand-soft);
+}
+.vouchercreatorfield > small,
+.vouchercreatorchoice small {
+  color: var(--sw-disabled);
+  font-size: 10px;
+  line-height: 16px;
+}
+.vouchercreatorgrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.vouchercreatorchoice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid var(--vi-line);
+  border-radius: 11px;
+  background: var(--sw-surface-subtle);
+  padding: 12px 14px;
+  cursor: pointer;
+}
+.vouchercreatorchoice > input {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  margin: 1px 0 0;
+  accent-color: var(--vi-brand);
+}
+.vouchercreatorchoice > span {
+  display: grid;
+  gap: 3px;
+}
+.vouchercreatorchoice strong {
+  color: var(--vi-ink);
+  font-size: 11px;
+}
 .vouchercreatorbody ol {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -205,7 +280,7 @@
 }
 
 .voucherdrawer > footer,
-.vouchercreatordialog > footer {
+.vouchercreatordialog form > footer {
   display: flex;
   min-height: 66px;
   align-items: center;
@@ -214,7 +289,7 @@
   padding: 12px 20px;
 }
 .voucherdrawer > footer button,
-.vouchercreatordialog > footer button {
+.vouchercreatordialog form > footer button {
   min-height: 38px;
   border: 1px solid var(--vi-brand);
   border-radius: 10px;
@@ -225,4 +300,25 @@
   font-size: 11px;
   font-weight: 750;
   cursor: pointer;
+}
+.vouchercreatordialog form > footer {
+  gap: 8px;
+}
+.vouchercreatordialog form > footer button:first-child {
+  border-color: var(--vi-line);
+  background: var(--sw-surface);
+  color: var(--sw-muted);
+}
+.vouchercreatordialog form > footer button:hover:not(:disabled) {
+  filter: brightness(0.98);
+}
+.vouchercreatordialog form > footer button:focus-visible {
+  outline: 3px solid var(--vi-brand-soft);
+  outline-offset: 1px;
+}
+.vouchercreatordialog form > footer button:disabled {
+  border-color: var(--vi-line);
+  background: var(--sw-surface-subtle);
+  color: var(--sw-disabled);
+  cursor: not-allowed;
 }
