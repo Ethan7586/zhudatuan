@@ -15,6 +15,7 @@ export * from './events/CommerceEvents';
 export * from './operations/CommerceOperations';
 export * from './operations/CommerceSchemas';
 export * from './provider/Capability';
+export * from './provider/DomainRegistrar';
 export * from './provider/Manifest';
 export * from './provider/Ports';
 export * from './provider/Provider';
