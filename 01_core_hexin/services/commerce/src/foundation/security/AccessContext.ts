@@ -1,5 +1,5 @@
 import type { MembershipAccess, Scope } from '@shop/authz';
-import type { MallContext } from '../../modules/mall/MallContext';
+import type { MallContext } from '../../modules/mall';
 
 export type GovernanceLevel = 'owner' | 'senior_administrator' | 'administrator' | 'member';
 

@@ -9,7 +9,7 @@ import { StepupPolicy } from './StepupPolicy';
 import type { DecisionSink } from './DecisionSink';
 import { assertRiskAllowed, type RiskGate } from './RiskGate';
 import type { ActionProofVerifier } from './ActionProof';
-import { ResolveMallContext } from '../../modules/mall/MallContext';
+import { ResolveMallContext } from '../../modules/mall';
 import type { GovernanceResolver } from './GovernanceResolver';
 
 export interface MembershipResolver {
