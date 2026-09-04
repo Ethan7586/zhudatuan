@@ -1,2 +1,3 @@
 export { mallManifest } from './module.manifest';
-export { MallContext, type MallContextReference, ResolveMallContext } from './02_domain_yewu/MallContext';
+export { ResolveMallContext } from './02_domain_yewu/MallContext';
+export type { MallContext, MallContextReference } from './02_domain_yewu/MallContext';
