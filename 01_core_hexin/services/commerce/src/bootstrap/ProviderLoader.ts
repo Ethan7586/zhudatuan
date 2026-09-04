@@ -1,8 +1,8 @@
 import type { JsonObject,UnsignedProviderManifest } from '@shop/contract';
 import type { ProviderInstallation } from '@shop/providercore';
 import type { VendorConnection } from '@shop/vendorcore';
-import type { ExtensionCandidate,ExtensionLoader,ExtensionLoadContext } from '../modules/extension/application/port/ExtensionLoader';
-import { Manifest } from '../modules/extension/domain/model/Manifest';
+import type { ExtensionCandidate,ExtensionLoader,ExtensionLoadContext } from '../modules/extension';
+import { Manifest } from '../modules/extension/02_domain_yewu/model/Manifest';
 import type { DatabasePool } from '../foundation/persistence/Pool';
 import type { SecretStore } from '../foundation/infrastructure/SecretStore';
 import type { ExtensionRegistry } from './ExtensionRegistry';

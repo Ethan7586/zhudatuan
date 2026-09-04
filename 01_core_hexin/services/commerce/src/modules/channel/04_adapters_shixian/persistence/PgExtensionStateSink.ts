@@ -1,5 +1,5 @@
 import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
-import type { ExtensionStateSink } from '../../../extension/ExtensionModule';
+import type { ExtensionStateSink } from '../../../extension';
 
 export class PgExtensionStateSink implements ExtensionStateSink {
   async degrade(database:OperationDatabase,id:string,scope:string):Promise<void> {

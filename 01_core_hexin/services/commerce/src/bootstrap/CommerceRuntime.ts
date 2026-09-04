@@ -44,7 +44,7 @@ import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { AUDIT_PORT } from '../modules/audit';
 import { RecordAudit } from '../modules/audit/03_application_yingyong/command/RecordAudit';
 import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persistence/PgAuditRepository';
-import { EXTENSION_LOADER } from '../modules/extension/application/port/ExtensionLoader';
+import { EXTENSION_LOADER } from '../modules/extension';
 import { commerceTelemetry, TELEMETRY } from '../foundation/telemetry/Telemetry';
 import { DependencyMetrics } from '../foundation/telemetry/DependencyMetrics';
 import type { WechatPayConfigSource } from '@shop/wechatpayment';

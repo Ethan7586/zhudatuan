@@ -10,7 +10,7 @@ import { CatalogModule } from '../modules/catalog/CatalogModule';
 import { ChannelModule } from '../modules/channel/ChannelModule';
 import { CheckoutModule } from '../modules/checkout_jiesuan/05_interface_jieru/CheckoutModule';
 import { ExperienceModule } from '../modules/experience/ExperienceModule';
-import { ExtensionModule } from '../modules/extension/ExtensionModule';
+import { ExtensionModule } from '../modules/extension/05_interface_jieru/ExtensionModule';
 import { FinanceModule } from '../modules/finance/FinanceModule';
 import { FulfillmentModule } from '../modules/fulfillment/FulfillmentModule';
 import { IdentityModule } from '../modules/identity';

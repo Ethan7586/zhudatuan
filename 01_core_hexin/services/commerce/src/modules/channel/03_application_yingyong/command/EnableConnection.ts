@@ -1,6 +1,6 @@
 import type { OperationActions,OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import { operationLifecycle,requireAccess,rowResult } from '../../../../foundation/application/ModuleOperations';
-import type { DisableExtension,EnableExtension,ExtensionCandidate } from '../../../extension/ExtensionModule';
+import type { DisableExtension,EnableExtension,ExtensionCandidate } from '../../../extension';
 import { Connection,type ConnectionState } from '../../02_domain_yewu/model/Connection';
 
 interface ConnectionRow { readonly id:string; readonly provider:string; readonly scope_id:string; readonly status:ConnectionState;

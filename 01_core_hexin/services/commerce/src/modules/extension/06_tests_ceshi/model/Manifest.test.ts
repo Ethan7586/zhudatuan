@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { describe,expect,it } from 'vitest';
 import { manifestPayload,PROVIDER_API_VERSION,type ProviderManifest } from '@shop/contract';
-import { Manifest } from './Manifest';
+import { Manifest } from '../../02_domain_yewu/model/Manifest';
 
 const value:ProviderManifest={ id:'sample',kind:'channel',priority:1,version:'1.2.3',apiVersion:PROVIDER_API_VERSION,
   contractVersion:'sample.v1',healthOperation:'health',capabilities:['Catalog'],permissions:['sample.read'],

@@ -5,7 +5,7 @@ import { operationLifecycle,requireAccess,rowResult } from '../../../../foundati
 import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
 import type { SecretStore } from '../../../../foundation/infrastructure/SecretStore';
 import { bodyRecord,textField } from '../../../../foundation/interface/Validation';
-import type { InstallExtension } from '../../../extension/ExtensionModule';
+import type { InstallExtension } from '../../../extension';
 import { Connection,type ConnectionLimits } from '../../02_domain_yewu/model/Connection';
 
 interface Preparation { readonly access:ReturnType<typeof requireAccess>; readonly body:Readonly<Record<string,unknown>>;

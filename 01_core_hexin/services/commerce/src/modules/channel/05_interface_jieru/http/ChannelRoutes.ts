@@ -16,7 +16,7 @@ import { getSyncRunsOperations } from '../../03_application_yingyong/query/GetSy
 import { PgChannelRepository } from '../../04_adapters_shixian/persistence/PgChannelRepository';
 import { channelWebhook } from './ChannelWebhook';
 import { MANIFEST_VERIFIER } from '../../../../bootstrap/SignatureVerifier';
-import { ContractPolicy,DisableExtension,EnableExtension,EXTENSION_LOADER,extensionRepository,InstallExtension } from '../../../extension/ExtensionModule';
+import { ContractPolicy,DisableExtension,EnableExtension,EXTENSION_LOADER,extensionRepository,InstallExtension } from '../../../extension';
 import { organizationPort } from '../../../organization';
 import { capabilityPort } from '../../../capability';
 

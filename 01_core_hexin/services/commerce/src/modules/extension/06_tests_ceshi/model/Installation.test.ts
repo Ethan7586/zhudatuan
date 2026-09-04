@@ -1,5 +1,5 @@
 import { describe,expect,it } from 'vitest';
-import { Installation } from './Installation';
+import { Installation } from '../../02_domain_yewu/model/Installation';
 
 describe('Installation',()=>{
   it('enforces the canary lifecycle without compatibility transitions',()=>{

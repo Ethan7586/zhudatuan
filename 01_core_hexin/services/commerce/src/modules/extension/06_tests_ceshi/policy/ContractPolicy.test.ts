@@ -1,6 +1,6 @@
 import { describe,expect,it } from 'vitest';
 import { PROVIDER_API_VERSION,type ProviderManifest } from '@shop/contract';
-import { ContractPolicy } from './ContractPolicy';
+import { ContractPolicy } from '../../02_domain_yewu/policy/ContractPolicy';
 
 const signed:ProviderManifest={ id:'sample',kind:'channel',priority:1,version:'1.0.0',apiVersion:PROVIDER_API_VERSION,
   contractVersion:'sample.v1',healthOperation:'health',capabilities:['Catalog'],permissions:['channel.sample.operate'],

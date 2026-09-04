@@ -1,7 +1,7 @@
 import { defineModule } from '../../../bootstrap/DefinedModule';
 import { channelRoutes } from './http/ChannelRoutes';
 import { PgExtensionStateSink } from '../04_adapters_shixian/persistence/PgExtensionStateSink';
-import type { ExtensionStateSink } from '../../extension/ExtensionModule';
+import type { ExtensionStateSink } from '../../extension';
 export { createPrivateProviderInstallation } from '../04_adapters_shixian/adapter/PgPrivateProvider';
 export type { CatalogSource } from '../01_public_gongkai/CatalogSource';
 export type { PriceSource } from '../01_public_gongkai/PriceSource';

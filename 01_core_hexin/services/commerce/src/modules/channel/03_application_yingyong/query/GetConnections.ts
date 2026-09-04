@@ -1,7 +1,7 @@
 import type { OperationActions } from '../../../../foundation/application/ModuleOperations';
 import { requireAccess } from '../../../../foundation/application/ModuleOperations';
 import { keysetResult, queryPage } from '../../../../foundation/interface/Validation';
-import type { ExtensionRepositoryFactory } from '../../../extension/ExtensionModule';
+import type { ExtensionRepositoryFactory } from '../../../extension';
 
 export function getConnectionsOperations(extensions:ExtensionRepositoryFactory): OperationActions {
   return { 'channel.connections.read': async (request, database) => {
