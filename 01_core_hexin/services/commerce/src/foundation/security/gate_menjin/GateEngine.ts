@@ -20,7 +20,17 @@ export class GateEngine {
     const decisions: GateDecision[] = [];
     for (const gateSlot of declaration.gate_slots) {
       const plugin = this.registry.get(gateSlot);
-      if (plugin === undefined) continue;
+      if (plugin === undefined) {
+        decisions.push({
+          decision: 'not_applicable',
+          gate_id: `${gateSlot}.unregistered`,
+          policy_version: 'none',
+          reason_code: 'gate_plugin_not_installed',
+          trace_id: context.trace_id,
+          duration_ms: 0,
+        });
+        continue;
+      }
 
       const startedAt = Date.now();
       try {

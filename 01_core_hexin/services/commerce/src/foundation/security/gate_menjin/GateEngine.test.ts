@@ -82,4 +82,41 @@ describe('GateEngine', () => {
     });
     expect(decision?.duration_ms).toBeGreaterThanOrEqual(0);
   });
+
+  it('returns an explicit result when a plugin is not installed', async () => {
+    const [decision] = await new GateEngine(new GateRegistry()).execute(
+      declaration('observe'),
+      context,
+    );
+
+    expect(decision).toEqual({
+      decision: 'not_applicable',
+      gate_id: 'risk.unregistered',
+      policy_version: 'none',
+      reason_code: 'gate_plugin_not_installed',
+      trace_id: context.trace_id,
+      duration_ms: 0,
+    });
+  });
+
+  it('registers, finds and replaces plugins by slot', () => {
+    const first: GatePlugin = {
+      gate_id: 'risk.first',
+      gate_slot: 'risk',
+      policy_version: '1',
+      evaluate: vi.fn(),
+    };
+    const second: GatePlugin = {
+      gate_id: 'risk.second',
+      gate_slot: 'risk',
+      policy_version: '2',
+      evaluate: vi.fn(),
+    };
+    const registry = new GateRegistry();
+
+    registry.register(first);
+    expect(registry.get('risk')).toBe(first);
+    expect(registry.replace(second)).toBe(first);
+    expect(registry.get('risk')).toBe(second);
+  });
 });

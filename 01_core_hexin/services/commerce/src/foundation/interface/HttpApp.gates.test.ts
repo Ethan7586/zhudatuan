@@ -47,7 +47,7 @@ describe('HttpApp observe gates', () => {
     expect(evaluate).not.toHaveBeenCalled();
   });
 
-  it('records an empty observation and continues when production has no plugins', async () => {
+  it('records an explicit observation and continues when production has no plugins', async () => {
     const observed = vi.fn();
     const engine = new GateEngine(new GateRegistry(), observed);
 
@@ -55,7 +55,14 @@ describe('HttpApp observe gates', () => {
       .handle(request('/api/v1/catalog/listings'));
 
     expect(response.status).toBe(200);
-    expect(observed).toHaveBeenCalledWith(expect.objectContaining({ decisions: [] }));
+    expect(observed).toHaveBeenCalledWith(expect.objectContaining({
+      decisions: [expect.objectContaining({
+        decision: 'not_applicable',
+        gate_id: 'permission.unregistered',
+        policy_version: 'none',
+        reason_code: 'gate_plugin_not_installed',
+      })],
+    }));
   });
 
   it('records plugin errors without changing the original handler result', async () => {
