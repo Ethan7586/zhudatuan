@@ -9,6 +9,7 @@ export * from './DomainEvent';
 export * from './Email';
 export * from './Entity';
 export * from './Hash';
+export * from './gate_menjin';
 export * from './Id';
 export * from './IdGenerator';
 export * from './Mobile';
