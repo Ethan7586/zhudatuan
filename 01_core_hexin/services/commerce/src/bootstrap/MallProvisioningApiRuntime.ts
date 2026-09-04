@@ -28,7 +28,7 @@ import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
 import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
 import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
-import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/RiskCheckAdapter';
+import { RiskCheckAdapter } from '../modules/risk';
 import type { Container } from './Container';
 import { ExtensionRegistry } from './ExtensionRegistry';
 

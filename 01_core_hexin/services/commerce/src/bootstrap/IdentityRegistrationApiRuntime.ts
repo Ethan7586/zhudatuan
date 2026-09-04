@@ -17,7 +17,7 @@ import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistenc
 import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
 import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
 import { RETURN_TARGETS } from '../modules/identity/04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
-import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/RiskCheckAdapter';
+import { RiskCheckAdapter } from '../modules/risk';
 import { WECHAT_IDENTITY } from '../modules/identity/01_public_gongkai/ports_jiekou/WechatIdentity';
 import { WechatIdentityGateway, type WechatIdentityConfiguration } from '../modules/identity/04_adapters_shixian/providers_waibu/WechatIdentityGateway';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';

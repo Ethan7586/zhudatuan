@@ -20,7 +20,7 @@ import { MANIFEST_VERIFIER, SignatureVerifier } from './SignatureVerifier';
 import { loadProviders } from './ProviderLoader';
 import type { Container } from './Container';
 import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
-import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/RiskCheckAdapter';
+import { RiskCheckAdapter } from '../modules/risk';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { PAYMENT_GATEWAY } from '../modules/payment_zhifu/01_public_gongkai/ports_jiekou/PaymentGateway';
 import { WechatGateway } from '../modules/payment_zhifu/04_adapters_shixian/providers_waibu/WechatGateway';

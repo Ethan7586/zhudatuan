@@ -2,10 +2,7 @@ import { createHash } from 'node:crypto';
 import type { DatabasePool } from '../../foundation/persistence/Pool';
 import type { RiskAssessment, RiskGate } from '../../foundation/security/RiskGate';
 import { applyApiDatabaseContext } from '../../foundation/infrastructure/DatabaseContext';
-import { OUTCOME_SEVERITY } from '../risk/domain/model/Decision';
-import { RiskPolicy, type RiskOutcome } from '../risk/domain/model/RiskPolicy';
-import { signal } from '../risk/domain/model/Signal';
-import { RiskEngine } from '../risk/domain/policy/RiskEngine';
+import { OUTCOME_SEVERITY, RiskEngine, RiskPolicy, signal, type RiskOutcome } from '../risk';
 
 interface PolicyRow {
   readonly id: string;

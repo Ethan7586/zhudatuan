@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { RiskCase } from '../model/RiskCase';
-import { RiskPolicy } from '../model/RiskPolicy';
-import { signal } from '../model/Signal';
-import { RiskEngine } from './RiskEngine';
+import { RiskCase } from '../../02_domain_yewu/model/RiskCase';
+import { RiskPolicy } from '../../02_domain_yewu/model/RiskPolicy';
+import { signal } from '../../02_domain_yewu/model/Signal';
+import { RiskEngine } from '../../02_domain_yewu/policy/RiskEngine';
 
 const evaluate = (rule: unknown, input: Partial<Parameters<RiskEngine['evaluate']>[1]> = {}) => {
   const policy = new RiskPolicy('policy', 7, rule, 100);

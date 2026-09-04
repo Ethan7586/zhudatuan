@@ -15,7 +15,7 @@ import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
 import { ExtensionRegistry } from './ExtensionRegistry';
 import type { Container } from './Container';
 import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
-import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/RiskCheckAdapter';
+import { RiskCheckAdapter } from '../modules/risk';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { RecordAudit } from '../modules/audit/application/command/RecordAudit';

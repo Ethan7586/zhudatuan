@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { RiskRepository } from '../port/RiskCheck';
-import { EvaluateRisk } from './EvaluateRisk';
+import type { RiskRepository } from '../../01_public_gongkai/RiskCheck';
+import { EvaluateRisk } from '../../03_application_yingyong/command/EvaluateRisk';
 
 const input = Object.freeze({ actor: 'actor', operation: 'payment.intents.create', resource: 'order', scope: 'mall', scopes: ['group','mall'],
   trace: 'trace', amountMinor: 101, signals: [] });
