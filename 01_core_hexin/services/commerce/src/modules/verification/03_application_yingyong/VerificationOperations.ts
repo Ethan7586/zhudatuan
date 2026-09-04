@@ -1,10 +1,11 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
-import { AUDIT_SINK } from '../../foundation/application/AuditSink';
-import { ModuleOperations, reject, requireAccess, rowResult } from '../../foundation/application/ModuleOperations';
-import { bodyRecord, keysetResult, queryPage, textField } from '../../foundation/interface/Validation';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
-import { VoucherPort } from '../voucher/VoucherModule';
+
+import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
+import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
+import { ModuleOperations, reject, requireAccess, rowResult } from '../../../foundation/application/ModuleOperations';
+import { bodyRecord, keysetResult, queryPage, textField } from '../../../foundation/interface/Validation';
+import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
+import { VoucherPort } from '../../../voucher/VoucherModule';
 
 export function verificationOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
@@ -103,7 +104,7 @@ export function verificationOperations(context: ModuleContext): ModuleOperations
   });
 }
 
-async function redeem(database: import('../../foundation/application/ModuleOperations').OperationDatabase, vouchers: VoucherPort,
+async function redeem(database: import('../../../foundation/application/ModuleOperations').OperationDatabase, vouchers: VoucherPort,
   voucher: string, challenge: string, scope: string,
   access: ReturnType<typeof requireAccess>): Promise<string> {
   const accepted = await vouchers.redeemVerification(database, { voucher, verification: challenge, scope, actor: access.actor.id });
