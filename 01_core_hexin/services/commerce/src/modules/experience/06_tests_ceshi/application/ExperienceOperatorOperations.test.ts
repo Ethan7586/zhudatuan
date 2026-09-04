@@ -1,8 +1,8 @@
 import type { QueryResult, QueryResultRow } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationRequest } from '../../foundation/application/OperationHandler';
-import type { OperationAction, OperationDatabase } from '../../foundation/application/ModuleOperations';
-import { EXPERIENCE_OPERATOR_OPERATION_IDS, experienceOperatorActions } from './ExperienceOperatorOperations';
+import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
+import type { OperationAction, OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { EXPERIENCE_OPERATOR_OPERATION_IDS, experienceOperatorActions } from '../../03_application_yingyong/ExperienceOperatorOperations';
 
 describe('identity operator experience operations', () => {
   it('contains only the four approved application operations', () => {

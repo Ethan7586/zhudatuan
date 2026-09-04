@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import { catalogProvisioningPort, type CatalogProvisioningPort } from '../../catalog';
-import { experienceProvisioningPort, type ExperienceProvisioningPort } from '../../experience/ExperienceProvisioningPort';
+import { experienceProvisioningPort, type ExperienceProvisioningPort } from '../../experience';
 import {
   mallOrganizationProvisioningPort,
   type MallOrganizationProvisioningPort,

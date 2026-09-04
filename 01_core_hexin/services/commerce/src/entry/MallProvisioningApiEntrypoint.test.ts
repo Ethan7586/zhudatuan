@@ -64,7 +64,7 @@ describe('mall provisioning API entrypoint', () => {
     const closure = sourceClosure(join(import.meta.dirname, 'MallProvisioningApiMain.ts'));
     const requiredPorts = [
       '/modules/catalog/01_public_gongkai/CatalogProvisioningPort.ts',
-      '/modules/experience/ExperienceProvisioningPort.ts',
+      '/modules/experience/01_public_gongkai/ExperienceProvisioningPort.ts',
       '/modules/organization/MallOrganizationProvisioningPort.ts',
       '/modules/provisioning/01_public_gongkai/MallOwnerProvisioningPort.ts',
     ];

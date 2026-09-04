@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { serializeExperience } from '@shop/contract';
 import type { ObjectStore, ObjectUpload, StoredObject } from '../../../../foundation/infrastructure/ObjectStore';
-import { CdnPublisher } from './CdnPublisher';
+import { CdnPublisher } from '../../04_adapters_shixian/adapter/CdnPublisher';
 
 const document = { version: 2, application: 'application:test', pages: [{ id: 'home', path: '/', blocks: [] }] };
 
