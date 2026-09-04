@@ -5,7 +5,7 @@ import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
 import { ModuleOperations, reject, requireAccess, rowResult } from '../../../foundation/application/ModuleOperations';
 import { bodyRecord, keysetResult, queryPage, textField } from '../../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
-import { VoucherPort } from '../../../voucher/VoucherModule';
+import { VoucherPort } from '../../voucher/VoucherModule';
 
 export function verificationOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
