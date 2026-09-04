@@ -1,7 +1,7 @@
 import type { OperationActions } from '../../../../foundation/application/ModuleOperations';
 import { requireAccess } from '../../../../foundation/application/ModuleOperations';
 import { bodyRecord, keysetResult, queryPage } from '../../../../foundation/interface/Validation';
-import { createReportingExport } from '../../../reporting/ReportingModule';
+import { createReportingExport } from '../../../reporting';
 
 export function getBillsOperations(): OperationActions {
   return {

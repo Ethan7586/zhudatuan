@@ -4,7 +4,7 @@ import { ModuleOperations, requireAccess } from '../../foundation/application/Mo
 import type { OperationRequest } from '../../foundation/application/OperationHandler';
 import { encodeCursor, queryPage } from '../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
-import type { CockpitSummary, MetricRow, ReportPeriod } from '../reporting/domain/model/Metric';
+import type { CockpitSummary, MetricRow, ReportPeriod } from '../reporting';
 import { WEB_REPORTING_OPERATION_IDS } from './WebBusinessOperationIds';
 
 interface MetricRecord {

@@ -12,7 +12,7 @@ import { FinancePort } from '../../../finance';
 import { VoucherPort } from '../../../voucher/application/port/VoucherPort';
 import { Order, type AftersaleState, type CommerceState, type FulfillmentState, type PaymentState } from '../../02_domain_yewu/models_moxing/Order';
 import { PlaceOrder } from '../commands_xieru/PlaceOrder';
-import { createReportingExport } from '../../../reporting/ReportingModule';
+import { createReportingExport } from '../../../reporting';
 
 interface OrderRow { readonly id: string; readonly lifecycle_state: CommerceState; readonly payment_state: PaymentState; readonly fulfillment_state: FulfillmentState; readonly aftersale_state: AftersaleState }
 

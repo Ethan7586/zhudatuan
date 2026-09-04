@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { ReportingPort } from '../port/ReportingPort';
-import type { ExportJob, ExportReport, ExportRow } from '../../domain/model/ExportJob';
-import type { CockpitSummary, Metric, MetricQuery, MetricRow } from '../../domain/model/Metric';
-import type { OrderProjection, ProjectionEvent } from '../../domain/model/Projection';
-import { ProjectEvent } from './ProjectEvent';
+import type { ReportingPort } from '../../01_public_gongkai/ReportingPort';
+import type { ExportJob, ExportReport, ExportRow } from '../../02_domain_yewu/model/ExportJob';
+import type { CockpitSummary, Metric, MetricQuery, MetricRow } from '../../02_domain_yewu/model/Metric';
+import type { OrderProjection, ProjectionEvent } from '../../02_domain_yewu/model/Projection';
+import { ProjectEvent } from '../../03_application_yingyong/command/ProjectEvent';
 
 class MemoryReporting implements ReportingPort {
   readonly projected: Metric[] = [];
