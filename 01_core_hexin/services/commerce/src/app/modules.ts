@@ -1,7 +1,7 @@
 import type { CommerceModule } from '../bootstrap/ModuleRegistry';
 import { RuntimeModule } from '../modules/RuntimeModule';
 import { ObservabilityModule } from '../modules/observability/ObservabilityModule';
-import { AccessModule } from '../modules/access/AccessModule';
+import { AccessModule } from '../modules/access/05_interface_jieru/AccessModule';
 import { AuditModule } from '../modules/audit/AuditModule';
 import { BenefitModule } from '../modules/benefit/BenefitModule';
 import { CapabilityModule } from '../modules/capability/05_interface_jieru/CapabilityModule';

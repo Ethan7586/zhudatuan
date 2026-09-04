@@ -1,6 +1,6 @@
 import { createHmac } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { OwnerActionProof } from './OwnerActionProof';
+import { OwnerActionProof } from '../03_application_yingyong/OwnerActionProof';
 
 const now = new Date('2026-08-29T08:00:00.000Z');
 const expected = Object.freeze({

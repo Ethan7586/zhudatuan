@@ -19,7 +19,7 @@ import { PgGovernanceResolver } from '../foundation/security/GovernanceResolver'
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
-import { PgDecisionSink } from '../modules/access/infrastructure/persistence/PgDecisionSink';
+import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
 import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
 import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
 import { WebRiskCheckAdapter } from '../modules/webbusiness/WebRiskCheckAdapter';

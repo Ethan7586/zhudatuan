@@ -12,8 +12,8 @@ import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interfac
 import { DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
-import { ACCESS_OPERATOR_READ_OPERATION_IDS } from '../modules/access/AccessReadOperations';
-import { IdentityOperatorAccessModule } from '../modules/access/IdentityOperatorAccessModule';
+import { ACCESS_OPERATOR_READ_OPERATION_IDS } from '../modules/access/03_application_yingyong/AccessReadOperations';
+import { IdentityOperatorAccessModule } from '../modules/access/05_interface_jieru/IdentityOperatorAccessModule';
 import { CHANNEL_OPERATOR_READ_OPERATION_IDS } from '../modules/channel/ChannelReadOperations';
 import { IdentityOperatorChannelModule } from '../modules/channel/IdentityOperatorChannelModule';
 import { CATALOG_OPERATOR_READ_OPERATION_IDS } from '../modules/catalog/CatalogReadOperations';
@@ -272,8 +272,8 @@ describe('identity registration API entrypoint', () => {
           '/modules/notification/interface/http/NotificationRoutes.ts',
           '/modules/qualification/05_interface_jieru/QualificationModule.ts',
           '/modules/qualification/03_application_yingyong/QualificationOperations.ts',
-          '/modules/access/AccessModule.ts',
-          '/modules/access/AccessOperations.ts',
+          '/modules/access/05_interface_jieru/AccessModule.ts',
+          '/modules/access/03_application_yingyong/AccessOperations.ts',
           '/foundation/infrastructure/ObjectStore.ts',
           '/foundation/cache/',
         ].some((forbidden) => file.includes(forbidden))

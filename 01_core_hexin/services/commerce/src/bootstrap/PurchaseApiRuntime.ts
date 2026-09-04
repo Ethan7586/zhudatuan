@@ -21,7 +21,7 @@ import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
 import { DECISION_SINK } from '../foundation/security/DecisionSink';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
-import { PgDecisionSink } from '../modules/access/infrastructure/persistence/PgDecisionSink';
+import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
 import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
 import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
 import { PAYMENT_GATEWAY } from '../modules/payment_zhifu/01_public_gongkai/ports_jiekou/PaymentGateway';

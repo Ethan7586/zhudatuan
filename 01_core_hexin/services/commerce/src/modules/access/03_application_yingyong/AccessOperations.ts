@@ -1,15 +1,16 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { checkScope, SCOPE_KINDS, type Scope } from '@shop/authz';
-import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
-import { AUDIT_SINK } from '../../foundation/application/AuditSink';
-import { ModuleOperations, requireAccess, rowResult, type OperationDatabase } from '../../foundation/application/ModuleOperations';
-import type { OperationRequest } from '../../foundation/application/OperationHandler';
-import { IDENTITY_SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
-import { bodyRecord, textField } from '../../foundation/interface/Validation';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
-import { accessPort, type OwnershipProofSnapshot, type OwnershipTransferInput } from './AccessPort';
+import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
+import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
+import { ModuleOperations, requireAccess, rowResult, type OperationDatabase } from '../../../foundation/application/ModuleOperations';
+import type { OperationRequest } from '../../../foundation/application/OperationHandler';
+import { IDENTITY_SECURITY_KEYS } from '../../../foundation/infrastructure/SecretStore';
+import { bodyRecord, textField } from '../../../foundation/interface/Validation';
+import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
+import { accessPort, type OwnershipProofSnapshot, type OwnershipTransferInput } from '../01_public_gongkai/AccessPort';
 import { accessOperatorReadActions } from './AccessReadOperations';
-import { OwnerActionProof, type OwnerAction, type OwnerActionProofPayload } from './OwnerActionProof';
+import type { OwnerAction, OwnerActionProofPayload } from '../02_domain_yewu/AccessOwnership';
+import { OwnerActionProof } from './OwnerActionProof';
 
 export function accessOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);

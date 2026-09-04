@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 describe('access governance role projection', () => {
   it('publishes the formal senior role as non-editable governance metadata', async () => {
-    const source = await readFile(join(process.cwd(), 'src/modules/access/AccessReadOperations.ts'), 'utf8');
+    const source = await readFile(join(process.cwd(), 'src/modules/access/03_application_yingyong/AccessReadOperations.ts'), 'utf8');
 
     expect(source).toContain("role.id='role-senior-administrator-v1:'||role.scope_id");
     expect(source).toContain("then 'senior_administrator'");

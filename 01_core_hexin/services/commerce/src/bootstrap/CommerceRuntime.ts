@@ -19,7 +19,7 @@ import { ExtensionRegistry } from './ExtensionRegistry';
 import { MANIFEST_VERIFIER, SignatureVerifier } from './SignatureVerifier';
 import { loadProviders } from './ProviderLoader';
 import type { Container } from './Container';
-import { PgDecisionSink } from '../modules/access/infrastructure/persistence/PgDecisionSink';
+import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
 import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/RiskCheckAdapter';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { PAYMENT_GATEWAY } from '../modules/payment_zhifu/01_public_gongkai/ports_jiekou/PaymentGateway';

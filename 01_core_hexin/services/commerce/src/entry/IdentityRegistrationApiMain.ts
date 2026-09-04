@@ -2,8 +2,8 @@ import { identityRegistrationApiAllowedOrigins, identityRegistrationApiEnvironme
 import { bootstrapApi } from '../bootstrap/ApiBootstrap';
 import { createIdentityRegistrationApiRuntime } from '../bootstrap/IdentityRegistrationApiRuntime';
 import { listen } from '../foundation/interface/NodeServer';
-import { ACCESS_OPERATOR_READ_OPERATION_IDS } from '../modules/access/AccessReadOperations';
-import { IdentityOperatorAccessModule } from '../modules/access/IdentityOperatorAccessModule';
+import { ACCESS_OPERATOR_READ_OPERATION_IDS } from '../modules/access/03_application_yingyong/AccessReadOperations';
+import { IdentityOperatorAccessModule } from '../modules/access/05_interface_jieru/IdentityOperatorAccessModule';
 import { CHANNEL_OPERATOR_READ_OPERATION_IDS } from '../modules/channel/ChannelReadOperations';
 import { IdentityOperatorChannelModule } from '../modules/channel/IdentityOperatorChannelModule';
 import { CATALOG_OPERATOR_READ_OPERATION_IDS } from '../modules/catalog/CatalogReadOperations';

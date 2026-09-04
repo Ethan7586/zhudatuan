@@ -5,7 +5,7 @@ import { bodyRecord, keysetResult, queryPage, textField } from '../../foundation
 import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { memberImportOperations } from './application/MemberImportOperations';
-import { accessPort } from '../access/AccessModule';
+import { accessPort } from '../access';
 import { addressPort } from '../checkout_jiesuan';
 import { memberOperatorReadActions } from './MemberReadOperations';
 

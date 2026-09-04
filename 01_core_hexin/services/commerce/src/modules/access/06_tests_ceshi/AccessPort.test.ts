@@ -1,7 +1,7 @@
 import type { QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import { AccessPort } from './AccessPort';
+import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+import { AccessPort } from '../01_public_gongkai/AccessPort';
 
 describe('AccessPort invited registration', () => {
   it('creates storefront and zero-operation console memberships in one transaction boundary', async () => {

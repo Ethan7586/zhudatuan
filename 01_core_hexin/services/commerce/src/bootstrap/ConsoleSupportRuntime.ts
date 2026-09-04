@@ -14,7 +14,7 @@ import { QUERY_METRICS, QueryMetrics } from '../foundation/persistence/QueryMetr
 import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
 import { ExtensionRegistry } from './ExtensionRegistry';
 import type { Container } from './Container';
-import { PgDecisionSink } from '../modules/access/infrastructure/persistence/PgDecisionSink';
+import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
 import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/RiskCheckAdapter';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';

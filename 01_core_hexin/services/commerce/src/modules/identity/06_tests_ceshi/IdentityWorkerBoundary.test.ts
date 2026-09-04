@@ -1,7 +1,7 @@
 import type { QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import { AccessPort } from '../../access/AccessModule';
+import { AccessPort } from '../../access';
 import { MemberPort } from '../../member/MemberModule';
 import { IdentityRetentionPort } from '../01_public_gongkai/ports_jiekou/IdentityRetentionPort';
 import { PgIdentityPrincipal } from '../04_adapters_shixian/persistence_cunchu/PgIdentityPrincipal';

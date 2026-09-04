@@ -5,7 +5,7 @@ import type { StoredObject } from '../../../../foundation/infrastructure/ObjectS
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { configureWorker, workerTransaction } from '../../../../foundation/infrastructure/WorkerDatabase';
 import type { IdentityPrincipal } from '../../../identity';
-import { accessPort } from '../../../access/AccessModule';
+import { accessPort } from '../../../access';
 import { importMember } from '../../application/MemberProfileImport';
 
 interface TargetRow { readonly id: string; readonly organization_id: string; readonly object_ref: string; readonly sha256: string; readonly state: ImportTarget['state'] }

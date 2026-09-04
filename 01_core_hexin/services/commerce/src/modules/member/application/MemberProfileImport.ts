@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import type { IdentityPrincipal } from '../../identity';
-import type { AccessPort } from '../../access/AccessModule';
+import type { AccessPort } from '../../access';
 import { memberPort } from '../MemberPort';
 
 export async function importMember(database: OperationDatabase, identities: IdentityPrincipal, access: AccessPort, organization: string,

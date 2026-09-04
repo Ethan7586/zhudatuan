@@ -1,13 +1,13 @@
 import type { PoolClient, QueryResult } from 'pg';
 import { describe, expect, it } from 'vitest';
-import { Container } from '../../bootstrap/Container';
-import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
-import { AUDIT_SINK } from '../../foundation/application/AuditSink';
-import type { OperationRequest } from '../../foundation/application/OperationHandler';
-import { IDENTITY_SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
-import { DATABASE_POOL, type DatabasePool } from '../../foundation/persistence/Pool';
-import type { AccessContext } from '../../foundation/security/AccessContext';
-import { accessOperations } from './AccessOperations';
+import { Container } from '../../../bootstrap/Container';
+import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
+import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
+import type { OperationRequest } from '../../../foundation/application/OperationHandler';
+import { IDENTITY_SECURITY_KEYS } from '../../../foundation/infrastructure/SecretStore';
+import { DATABASE_POOL, type DatabasePool } from '../../../foundation/persistence/Pool';
+import type { AccessContext } from '../../../foundation/security/AccessContext';
+import { accessOperations } from '../03_application_yingyong/AccessOperations';
 
 describe('access scope management boundary', () => {
   it('reads scoped identity assignments and authoritative effective permissions without a reserved alias', async () => {

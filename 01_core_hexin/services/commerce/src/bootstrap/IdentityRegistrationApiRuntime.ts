@@ -13,7 +13,7 @@ import { PgAccessVersionResolver, PgCapabilityResolver, PgMembershipResolver, Pg
 import { PgGovernanceResolver } from '../foundation/security/GovernanceResolver';
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
 import { RISK_GATE } from '../foundation/security/RiskGate';
-import { PgDecisionSink } from '../modules/access/infrastructure/persistence/PgDecisionSink';
+import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
 import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
 import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
 import { RETURN_TARGETS } from '../modules/identity/04_adapters_shixian/providers_waibu/ReturnTargetCatalog';

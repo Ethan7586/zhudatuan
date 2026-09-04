@@ -1,5 +1,5 @@
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import type { FormerOwnerMode, OwnerActionProofPayload } from './OwnerActionProof';
+import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+import type { FormerOwnerMode, OwnerActionProofPayload } from '../02_domain_yewu/AccessOwnership';
 
 export interface RegistrationMembership {
   readonly membership: string;
