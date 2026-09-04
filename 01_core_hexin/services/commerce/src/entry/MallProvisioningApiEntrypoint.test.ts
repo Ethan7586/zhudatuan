@@ -63,7 +63,7 @@ describe('mall provisioning API entrypoint', () => {
   it('depends only on the three mall creation ports and no full business module or provider runtime', () => {
     const closure = sourceClosure(join(import.meta.dirname, 'MallProvisioningApiMain.ts'));
     const requiredPorts = [
-      '/modules/catalog/CatalogProvisioningPort.ts',
+      '/modules/catalog/01_public_gongkai/CatalogProvisioningPort.ts',
       '/modules/experience/ExperienceProvisioningPort.ts',
       '/modules/organization/MallOrganizationProvisioningPort.ts',
       '/modules/provisioning/MallOwnerProvisioningPort.ts',

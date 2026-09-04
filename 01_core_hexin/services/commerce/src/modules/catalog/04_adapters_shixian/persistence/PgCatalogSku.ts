@@ -1,5 +1,5 @@
 import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
-import type { CatalogSku } from '../../application/port/CatalogSku';
+import type { CatalogSku } from '../../03_application_yingyong/port/CatalogSku';
 
 export class PgCatalogSku implements CatalogSku {
   async find(database: OperationDatabase, scope: string, reference: string): Promise<string | null> {
