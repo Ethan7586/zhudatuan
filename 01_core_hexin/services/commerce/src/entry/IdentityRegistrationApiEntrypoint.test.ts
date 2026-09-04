@@ -20,8 +20,8 @@ import { CATALOG_OPERATOR_READ_OPERATION_IDS } from '../modules/catalog/CatalogR
 import { IdentityOperatorCatalogModule } from '../modules/catalog/IdentityOperatorCatalogModule';
 import { EXPERIENCE_OPERATOR_OPERATION_IDS } from '../modules/experience/ExperienceOperatorOperations';
 import { IdentityOperatorExperienceModule } from '../modules/experience/IdentityOperatorExperienceModule';
-import { IDENTITY_REGISTRATION_OPERATION_IDS } from '../modules/identity/IdentityOperations';
-import { IdentityRegistrationModule } from '../modules/identity/IdentityRegistrationModule';
+import { IDENTITY_REGISTRATION_OPERATION_IDS } from '../modules/identity';
+import { IdentityRegistrationModule } from '../modules/identity';
 import { FINANCE_OPERATOR_READ_OPERATION_IDS } from '../modules/finance/FinanceReadOperations';
 import { IdentityOperatorFinanceModule } from '../modules/finance/IdentityOperatorFinanceModule';
 import { IdentityOperatorMemberModule } from '../modules/member/IdentityOperatorMemberModule';
@@ -36,12 +36,12 @@ import { IdentityOperatorReferralModule } from '../modules/referral/IdentityOper
 import { REFERRAL_OPERATOR_READ_OPERATION_IDS } from '../modules/referral/ReferralReadOperations';
 import { IdentityOperatorReportingModule } from '../modules/reporting/IdentityOperatorReportingModule';
 import { REPORTING_OPERATOR_READ_OPERATION_IDS } from '../modules/reporting/ReportingReadOperations';
-import { RETURN_TARGETS } from '../modules/identity/infrastructure/ReturnTargetCatalog';
+import { RETURN_TARGETS } from '../modules/identity';
 import { IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS } from '../modules/runtime/IdentityRegistrationRuntimeOperations';
 import { IdentityRegistrationRuntimeModule } from '../modules/runtime/IdentityRegistrationRuntimeModule';
 import { IdentityOperatorVoucherModule } from '../modules/voucher/IdentityOperatorVoucherModule';
 import { VOUCHER_OPERATOR_READ_OPERATION_IDS } from '../modules/voucher/VoucherReadOperations';
-import { WECHAT_IDENTITY } from '../modules/identity/application/port/WechatIdentity';
+import { WECHAT_IDENTITY } from '../modules/identity';
 
 describe('identity registration API entrypoint', () => {
   it('exposes only the approved identity and selected operator operations', () => {

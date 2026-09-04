@@ -31,15 +31,15 @@ import { EmailChannel } from '../modules/notification/infrastructure/adapter/Ema
 import { WechatChannel } from '../modules/notification/infrastructure/adapter/WechatChannel';
 import { parseDeliveryConfiguration } from '../modules/notification/infrastructure/adapter/DeliveryConfiguration';
 import { HttpObjectStore, OBJECT_STORE } from '../foundation/infrastructure/ObjectStore';
-import { WECHAT_IDENTITY } from '../modules/identity/application/port/WechatIdentity';
-import { WechatIdentityGateway, type WechatIdentityConfiguration } from '../modules/identity/infrastructure/adapter/WechatIdentityGateway';
+import { WECHAT_IDENTITY } from '../modules/identity';
+import { WechatIdentityGateway, type WechatIdentityConfiguration } from '../modules/identity';
 import { INVOICE_ISSUER } from '../modules/finance/application/port/InvoiceIssuer';
 import { InvoiceGateway, type InvoiceConfiguration } from '../modules/finance/infrastructure/adapter/InvoiceGateway';
 import { PAYOUT_GATEWAY } from '../modules/finance/application/port/PayoutGateway';
 import { PayoutGateway, type PayoutConfiguration } from '../modules/finance/infrastructure/adapter/PayoutGateway';
 import { CACHE } from '../foundation/cache/Cache';
 import { RedisCache } from '../foundation/cache/RedisCache';
-import { RETURN_TARGETS } from '../modules/identity/infrastructure/ReturnTargetCatalog';
+import { RETURN_TARGETS } from '../modules/identity';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
 import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';

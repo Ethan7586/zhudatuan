@@ -4,7 +4,7 @@ import { importCode, importDetail, type ImportFailure } from '../../../../founda
 import type { StoredObject } from '../../../../foundation/infrastructure/ObjectStore';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { configureWorker, workerTransaction } from '../../../../foundation/infrastructure/WorkerDatabase';
-import type { IdentityPrincipal } from '../../../identity/IdentityModule';
+import type { IdentityPrincipal } from '../../../identity';
 import { accessPort } from '../../../access/AccessModule';
 import { importMember } from '../../application/MemberProfileImport';
 

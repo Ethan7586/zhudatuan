@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import type { IdentityPrincipal } from '../../identity/IdentityModule';
+import type { IdentityPrincipal } from '../../identity';
 import type { AccessPort } from '../../access/AccessModule';
 import { memberPort } from '../MemberPort';
 

@@ -10,8 +10,8 @@ import { CATALOG_OPERATOR_READ_OPERATION_IDS } from '../modules/catalog/CatalogR
 import { IdentityOperatorCatalogModule } from '../modules/catalog/IdentityOperatorCatalogModule';
 import { EXPERIENCE_OPERATOR_OPERATION_IDS } from '../modules/experience/ExperienceOperatorOperations';
 import { IdentityOperatorExperienceModule } from '../modules/experience/IdentityOperatorExperienceModule';
-import { IDENTITY_REGISTRATION_OPERATION_IDS } from '../modules/identity/IdentityOperations';
-import { IdentityRegistrationModule } from '../modules/identity/IdentityRegistrationModule';
+import { IdentityRegistrationModule } from '../modules/identity/05_interface_jieru/IdentityRegistrationModule';
+import { IDENTITY_REGISTRATION_OPERATION_IDS } from '../modules/identity/05_interface_jieru/http/IdentityOperations';
 import { FINANCE_OPERATOR_READ_OPERATION_IDS } from '../modules/finance/FinanceReadOperations';
 import { IdentityOperatorFinanceModule } from '../modules/finance/IdentityOperatorFinanceModule';
 import { IdentityOperatorMemberModule } from '../modules/member/IdentityOperatorMemberModule';

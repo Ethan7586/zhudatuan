@@ -13,7 +13,7 @@ import { ExperienceModule } from '../modules/experience/ExperienceModule';
 import { ExtensionModule } from '../modules/extension/ExtensionModule';
 import { FinanceModule } from '../modules/finance/FinanceModule';
 import { FulfillmentModule } from '../modules/fulfillment/FulfillmentModule';
-import { IdentityModule } from '../modules/identity/IdentityModule';
+import { IdentityModule } from '../modules/identity';
 import { InventoryModule } from '../modules/inventory/InventoryModule';
 import { MarketingModule } from '../modules/marketing/MarketingModule';
 import { ReferralModule } from '../modules/referral/ReferralModule';

@@ -23,7 +23,7 @@ import { ExperienceJobProcessor } from '../modules/experience/ExperienceJobs';
 import { CACHE } from '../foundation/cache/Cache';
 import { NotificationJobProcessor } from '../modules/notification/interface/job/NotificationJob';
 import { MemberImportProcessor } from '../modules/member/interface/job/MemberImportJob';
-import { identityPrincipal } from '../modules/identity/IdentityModule';
+import { identityPrincipal } from '../modules/identity';
 import { InventoryImportProcessor } from '../modules/inventory/interface/job/InventoryImportJob';
 import { InventorySyncJobProcessor } from '../modules/inventory/interface/job/InventorySyncJob';
 import { DELIVERY_REGISTRY } from '../modules/notification/application/DeliveryRegistry';

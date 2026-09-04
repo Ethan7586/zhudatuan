@@ -4,7 +4,7 @@ import type { OperationDatabase } from '../../../../foundation/application/Modul
 import type { DeliveryReceipt } from '../../application/port/DeliveryChannel';
 import type { ChallengeRecord, DispatchRecord, EndpointRecord, MemberContext, NotificationRepository, QueuedDispatch, TemplateRecord } from '../../application/port/NotificationRepository';
 import type { DeliveryChannelId } from '../../domain/model/Template';
-import { identityNotificationPort } from '../../../identity/IdentityNotificationPort';
+import { identityNotificationPort } from '../../../identity';
 
 export class PgNotificationRepository implements NotificationRepository {
   constructor(private readonly database: OperationDatabase) {}

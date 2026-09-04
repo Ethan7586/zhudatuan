@@ -1,6 +1,6 @@
 import { Client } from 'pg';
 
-import { PasswordPolicy } from '../../../../01_core_hexin/services/commerce/src/modules/identity/domain/policy/PasswordPolicy';
+import { PasswordPolicy } from '../../../../01_core_hexin/services/commerce/src/modules/identity';
 import { OWNER_MEMBERSHIP_ID, OWNER_PRINCIPAL_ID } from './OwnerBootstrapPlan';
 import {
   stagingOwnerBootstrapEnvironment,

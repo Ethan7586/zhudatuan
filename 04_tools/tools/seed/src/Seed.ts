@@ -1,7 +1,7 @@
 import { createHmac } from 'node:crypto';
 import { Client } from 'pg';
 import { localSeedEnvironment } from '@shop/config/server';
-import { PasswordPolicy } from '../../../../01_core_hexin/services/commerce/src/modules/identity/domain/policy/PasswordPolicy';
+import { PasswordPolicy } from '../../../../01_core_hexin/services/commerce/src/modules/identity';
 import { localSecret } from './LocalSecrets';
 
 const environment = localSeedEnvironment();

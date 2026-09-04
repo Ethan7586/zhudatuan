@@ -256,7 +256,7 @@ const forbiddenSourcePaths = [
   '/modules/payment_zhifu/',
   '/modules/finance/',
   '/modules/channel/',
-  '/modules/identity/WechatOperations.ts',
+  '/modules/identity/05_interface_jieru/http/WechatOperations.ts',
   '/foundation/infrastructure/ObjectStore.ts',
   '/foundation/cache/',
 ];

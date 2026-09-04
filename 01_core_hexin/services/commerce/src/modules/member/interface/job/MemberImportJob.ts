@@ -1,7 +1,7 @@
 import { BatchImportProcessor } from '../../../../foundation/application/BatchImport';
 import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import type { IdentityPrincipal } from '../../../identity/IdentityModule';
+import type { IdentityPrincipal } from '../../../identity';
 import { PgMemberImport } from '../../infrastructure/persistence/PgMemberImport';
 
 export class MemberImportProcessor extends BatchImportProcessor {

@@ -1,6 +1,6 @@
 import type { ClaimedJob, JobProcessor } from '../../foundation/application/JobRunner';
 import type { DatabasePool } from '../../foundation/persistence/Pool';
-import { identityRetentionPort } from '../identity/IdentityModule';
+import { identityRetentionPort } from '../identity';
 import { checkoutSessionPort } from '../checkout_jiesuan';
 import { pricingPort } from '../pricing/PricingModule';
 
