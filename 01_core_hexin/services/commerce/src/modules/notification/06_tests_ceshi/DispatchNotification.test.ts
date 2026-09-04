@@ -1,9 +1,9 @@
 import type { QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
-import { DeliveryRegistry } from '../DeliveryRegistry';
-import type { NotificationRepository } from '../port/NotificationRepository';
-import { DispatchNotification } from './DispatchNotification';
+import type { KmsClient } from '../../../foundation/infrastructure/KmsClient';
+import { DeliveryRegistry } from '../03_application_yingyong/DeliveryRegistry';
+import type { NotificationRepository } from '../01_public_gongkai/NotificationRepository';
+import { DispatchNotification } from '../03_application_yingyong/command/DispatchNotification';
 
 const challenge = 'challenge:00000000-0000-4000-8000-000000000001';
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseIdentityNotificationConfiguration } from './IdentityNotificationConfiguration';
+import { parseIdentityNotificationConfiguration } from '../04_adapters_shixian/adapter/IdentityNotificationConfiguration';
 
 const roleConfiguration = JSON.stringify({ sms: {
   signName: '主打團',

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { IdentityNotificationJobProcessor } from './NotificationJob';
+import { IdentityNotificationJobProcessor } from '../05_interface_jieru/job/NotificationJob';
 
 const challenge = 'challenge:00000000-0000-4000-8000-000000000001';
 

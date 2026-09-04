@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { EmailChannel } from './EmailChannel';
-import { WechatChannel } from './WechatChannel';
+import { EmailChannel } from '../04_adapters_shixian/adapter/EmailChannel';
+import { WechatChannel } from '../04_adapters_shixian/adapter/WechatChannel';
 
 describe('notification delivery extensions', () => {
   it('uses provider idempotency for email without leaking configuration into the payload', async () => {

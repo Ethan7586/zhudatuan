@@ -1,7 +1,7 @@
 import { createTelemetry } from '@shop/telemetry';
 import { describe, expect, it, vi } from 'vitest';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { IdentityNotificationBacklogMonitor, type IdentityNotificationBacklogSnapshot } from './IdentityNotificationBacklogMonitor';
+import type { DatabasePool } from '../../../foundation/persistence/Pool';
+import { IdentityNotificationBacklogMonitor, type IdentityNotificationBacklogSnapshot } from '../05_interface_jieru/job/IdentityNotificationBacklogMonitor';
 
 describe('identity notification backlog monitor', () => {
   it('records healthy queue metrics without creating an alert', async () => {
