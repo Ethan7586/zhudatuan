@@ -894,7 +894,7 @@ smart-wing/
 │           │   └── infrastructure/adapter/
 │           │       ├── WechatIdentityGateway.ts
 │           │       └── WechatIdentityGateway.test.ts
-│           └── modules/payment/
+│           └── modules/payment_zhifu/
 │               ├── PaymentDeadletter.ts
 │               ├── PaymentJobSupport.ts
 │               ├── PaymentJobs.ts

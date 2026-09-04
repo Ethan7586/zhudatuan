@@ -78,7 +78,7 @@ describe('mall provisioning API entrypoint', () => {
       '/modules/order_dingdan/',
       '/modules/checkout_jiesuan/',
       '/modules/inventory/',
-      '/modules/payment/',
+      '/modules/payment_zhifu/',
       '/modules/finance/',
       '/modules/member/',
       '/modules/referral/',

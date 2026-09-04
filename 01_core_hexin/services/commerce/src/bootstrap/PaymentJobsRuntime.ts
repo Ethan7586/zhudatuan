@@ -13,9 +13,9 @@ import { WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 import { createPool, type DatabasePool } from '../foundation/persistence/Pool';
 import { JobMetrics } from '../foundation/telemetry/JobMetrics';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
-import { PaymentDeadletter } from '../modules/payment/PaymentDeadletter';
-import { PaymentJobProcessor } from '../modules/payment/PaymentJobs';
-import { WechatGateway } from '../modules/payment/infrastructure/adapter/WechatGateway';
+import { PaymentDeadletter } from '../modules/payment_zhifu/04_adapters_shixian/persistence_cunchu/PaymentDeadletter';
+import { PaymentJobProcessor } from '../modules/payment_zhifu/05_interface_jieru/jobs_renwu/PaymentJobs';
+import { WechatGateway } from '../modules/payment_zhifu/04_adapters_shixian/providers_waibu/WechatGateway';
 
 export const PAYMENT_JOB_KINDS = Object.freeze(['paymentquery', 'paymentrefund'] as const);
 

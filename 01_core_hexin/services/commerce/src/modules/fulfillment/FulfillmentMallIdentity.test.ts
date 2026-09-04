@@ -56,7 +56,7 @@ describe('Fulfillment mall identity', () => {
   });
 
   it('passes Payment mall identity into fulfillment creation and job scope', async () => {
-    const source = await readFile(new URL('../payment/application/PaymentSettlement.ts', import.meta.url), 'utf8');
+    const source = await readFile(new URL('../payment_zhifu/03_application_yingyong/services_fuwu/PaymentSettlement.ts', import.meta.url), 'utf8');
     expect(source).toContain('mall: target.mall, member: target.member, order: target.order, payment');
     expect(source).toContain("enqueue(database, target.mall, fulfillment)");
   });

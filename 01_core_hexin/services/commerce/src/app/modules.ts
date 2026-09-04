@@ -22,7 +22,7 @@ import { NotificationModule } from '../modules/notification/NotificationModule';
 import { OrderModule } from '../modules/order_dingdan/05_interface_jieru/OrderModule';
 import { OrganizationModule } from '../modules/organization/OrganizationModule';
 import { PartnerModule } from '../modules/partner/PartnerModule';
-import { PaymentModule } from '../modules/payment/PaymentModule';
+import { PaymentModule } from '../modules/payment_zhifu/05_interface_jieru/PaymentModule';
 import { PricingModule } from '../modules/pricing/PricingModule';
 import { ProvisioningModule } from '../modules/provisioning/ProvisioningModule';
 import { QualificationModule } from '../modules/qualification/runtime';

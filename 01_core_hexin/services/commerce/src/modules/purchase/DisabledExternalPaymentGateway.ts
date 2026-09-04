@@ -5,7 +5,7 @@ import type {
   PaymentGateway,
   PaymentNotification,
   PrepayInput,
-} from '../payment/application/port/PaymentGateway';
+} from '../payment_zhifu';
 
 export class DisabledExternalPaymentGateway implements PaymentGateway {
   application(scene: WechatScene): PaymentApplication {

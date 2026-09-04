@@ -10,7 +10,7 @@ import { KMS_CLIENT, type KmsClient } from '../../foundation/infrastructure/KmsC
 import { DATABASE_POOL, type DatabasePool } from '../../foundation/persistence/Pool';
 import { DECISION_SINK, type DecisionSink } from '../../foundation/security/DecisionSink';
 import { RISK_GATE, type RiskGate } from '../../foundation/security/RiskGate';
-import { PAYMENT_GATEWAY, type PaymentGateway } from '../payment/application/port/PaymentGateway';
+import { PAYMENT_GATEWAY, type PaymentGateway } from '../payment_zhifu';
 import { purchaseOrderResponse, purchasePaymentAction, purchasePaymentOperations } from './PurchaseOperations';
 
 describe('purchase-only payment operation', () => {

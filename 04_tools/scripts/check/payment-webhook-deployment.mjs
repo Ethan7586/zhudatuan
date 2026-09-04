@@ -124,7 +124,7 @@ if (roleProvisioner.includes('alter role zhudatuanpaymentwebhookapi login passwo
   throw new Error('PAYMENT_WEBHOOK_ROLE_PROVISIONER_PASSWORD_ROTATION_FORBIDDEN');
 }
 if (!purchaseMain.includes('PURCHASE_OPERATION_IDS') || purchaseMain.includes('PAYMENT_WEBHOOK_OPERATION_IDS')
-  || !purchaseTest.includes("'/modules/payment/PaymentWebhook.ts'")) {
+  || !purchaseTest.includes("'/modules/payment_zhifu/05_interface_jieru/http/PaymentWebhook.ts'")) {
   throw new Error('PURCHASE_API_OPERATION_BOUNDARY_DRIFT');
 }
 

@@ -14,8 +14,8 @@ import { DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
 import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
-import { PAYMENT_GATEWAY } from '../modules/payment/application/port/PaymentGateway';
-import { WechatGateway } from '../modules/payment/infrastructure/adapter/WechatGateway';
+import { PAYMENT_GATEWAY } from '../modules/payment_zhifu/01_public_gongkai/ports_jiekou/PaymentGateway';
+import { WechatGateway } from '../modules/payment_zhifu/04_adapters_shixian/providers_waibu/WechatGateway';
 
 let keys: WechatPayTestKeys;
 

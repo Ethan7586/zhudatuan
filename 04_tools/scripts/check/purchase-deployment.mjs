@@ -310,26 +310,26 @@ const forbiddenSourcePaths = [
   '/foundation/cache/',
   '/modules/finance/',
   '/modules/channel/',
-  '/modules/payment/PaymentModule.ts',
-  '/modules/payment/PaymentOperations.ts',
-  '/modules/payment/PaymentJobs.ts',
-  '/modules/payment/PaymentWebhook.ts',
-  '/modules/payment/application/RefundPlanner.ts',
-  '/modules/payment/application/RefundSettlement.ts',
-  '/modules/payment/interface/',
+  '/modules/payment_zhifu/05_interface_jieru/PaymentModule.ts',
+  '/modules/payment_zhifu/05_interface_jieru/http/PaymentOperations.ts',
+  '/modules/payment_zhifu/05_interface_jieru/jobs_renwu/PaymentJobs.ts',
+  '/modules/payment_zhifu/05_interface_jieru/http/PaymentWebhook.ts',
+  '/modules/payment_zhifu/03_application_yingyong/services_fuwu/RefundPlanner.ts',
+  '/modules/payment_zhifu/03_application_yingyong/services_fuwu/RefundSettlement.ts',
+  '/modules/payment_zhifu/05_interface_jieru/',
   '/modules/order_dingdan/03_application_yingyong/services_fuwu/OrderOperations.ts',
   '/modules/reporting/',
   '/modules/extension/',
 ];
 const forbiddenClosure = [...closure].filter((file) => forbiddenSourcePaths.some((path) => file.includes(path)));
 if (forbiddenClosure.length > 0) throw new Error(`PURCHASE_FORBIDDEN_SOURCE_CLOSURE:${JSON.stringify(forbiddenClosure)}`);
-const paymentInfrastructure = [...closure].filter((file) => file.includes('/modules/payment/infrastructure/'));
-if (paymentInfrastructure.some((file) => !file.endsWith('/modules/payment/infrastructure/adapter/WechatGateway.ts'))) {
+const paymentInfrastructure = [...closure].filter((file) => file.includes('/modules/payment_zhifu/04_adapters_shixian/'));
+if (paymentInfrastructure.some((file) => !file.endsWith('/modules/payment_zhifu/04_adapters_shixian/providers_waibu/WechatGateway.ts'))) {
   throw new Error(`PURCHASE_PAYMENT_INFRASTRUCTURE_CLOSURE_INVALID:${JSON.stringify(paymentInfrastructure)}`);
 }
 for (const file of closure) {
   const source = readFileSync(file, 'utf8');
-  const permittedWechatAdapter = file.endsWith('/modules/payment/infrastructure/adapter/WechatGateway.ts');
+  const permittedWechatAdapter = file.endsWith('/modules/payment_zhifu/04_adapters_shixian/providers_waibu/WechatGateway.ts');
   if (source.includes('commerce-api') || source.includes('hbbtzn')
     || (/@shop\/(?:provider|wechatpayment)/.test(source) && !permittedWechatAdapter)
     || /(?:^|\/)apps\//.test(file)) throw new Error(`PURCHASE_FORBIDDEN_SOURCE_TOKEN:${file}`);

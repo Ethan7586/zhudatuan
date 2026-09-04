@@ -11,8 +11,8 @@ import { DATABASE_POOL, createPool, type DatabasePool } from '../../src/foundati
 import { DECISION_SINK, type DecisionSink } from '../../src/foundation/security/DecisionSink';
 import { RISK_GATE, type RiskGate } from '../../src/foundation/security/RiskGate';
 import { cartOperations } from '../../src/modules/cart/CartOperations';
-import { PAYMENT_GATEWAY, type PaymentGateway } from '../../src/modules/payment/application/port/PaymentGateway';
-import { PaymentJobProcessor } from '../../src/modules/payment/PaymentJobs';
+import { PAYMENT_GATEWAY, type PaymentGateway } from '../../src/modules/payment_zhifu';
+import { PaymentJobProcessor } from '../../src/modules/payment_zhifu/05_interface_jieru/jobs_renwu/PaymentJobs';
 import { webCatalogOperations } from '../../src/modules/webbusiness/WebCatalogOperations';
 import { webInventoryOperations } from '../../src/modules/webbusiness/WebInventoryOperations';
 import { webPricingOperations } from '../../src/modules/webbusiness/WebPricingOperations';

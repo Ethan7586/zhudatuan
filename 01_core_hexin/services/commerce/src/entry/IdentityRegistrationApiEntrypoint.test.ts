@@ -255,7 +255,7 @@ describe('identity registration API entrypoint', () => {
           '/bootstrap/CommerceRuntime.ts',
           '/bootstrap/ProviderLoader.ts',
           '/app/modules.ts',
-          '/modules/payment/',
+          '/modules/payment_zhifu/',
           '/modules/finance/FinanceModule.ts',
           '/modules/finance/interface/http/FinanceRoutes.ts',
           '/modules/channel/ChannelModule.ts',

@@ -1,5 +1,5 @@
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import type { PaymentRecoveryInput, PaymentRecoveryQueue } from '../payment/PaymentContractModule';
+import type { PaymentRecoveryInput, PaymentRecoveryQueue } from '../payment_zhifu';
 
 export class PurchasePaymentRecoveryQueue implements PaymentRecoveryQueue {
   async enqueue(database: OperationDatabase, input: PaymentRecoveryInput): Promise<void> {

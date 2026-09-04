@@ -12,9 +12,9 @@ import { PgAuditRepository } from '../../../01_core_hexin/services/commerce/src/
 import { cartOperations } from '../../../01_core_hexin/services/commerce/src/modules/cart/CartOperations.ts';
 import { checkoutOperations } from '../../../01_core_hexin/services/commerce/src/modules/checkout_jiesuan/05_interface_jieru/http/CheckoutOperations.ts';
 import { orderOperations } from '../../../01_core_hexin/services/commerce/src/modules/order_dingdan/03_application_yingyong/services_fuwu/OrderOperations.ts';
-import { paymentOperations } from '../../../01_core_hexin/services/commerce/src/modules/payment/PaymentOperations.ts';
-import { PaymentJobProcessor } from '../../../01_core_hexin/services/commerce/src/modules/payment/PaymentJobs.ts';
-import { PAYMENT_GATEWAY } from '../../../01_core_hexin/services/commerce/src/modules/payment/application/port/PaymentGateway.ts';
+import { paymentOperations } from '../../../01_core_hexin/services/commerce/src/modules/payment_zhifu/05_interface_jieru/http/PaymentOperations.ts';
+import { PaymentJobProcessor } from '../../../01_core_hexin/services/commerce/src/modules/payment_zhifu/05_interface_jieru/jobs_renwu/PaymentJobs.ts';
+import { PAYMENT_GATEWAY } from '../../../01_core_hexin/services/commerce/src/modules/payment_zhifu/01_public_gongkai/ports_jiekou/PaymentGateway.ts';
 import { ReconciliationJobProcessor } from '../../../01_core_hexin/services/commerce/src/modules/finance/interface/job/ReconciliationJob.ts';
 
 const fixture = Object.freeze({

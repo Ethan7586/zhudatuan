@@ -181,7 +181,7 @@ objects:
     owner: payment
     source: 02_platform_pingtai/database/supabase/migrations/20260901190000_add_payment_mall_identity.sql
     callers:
-      - 01_core_hexin/services/commerce/src/modules/payment/PaymentWebhook.ts
+      - 01_core_hexin/services/commerce/src/modules/payment_zhifu/05_interface_jieru/http/PaymentWebhook.ts
   - id: reporting.cockpit
     kind: function
     owner: reporting

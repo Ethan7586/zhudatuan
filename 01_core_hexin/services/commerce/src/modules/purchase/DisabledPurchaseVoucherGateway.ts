@@ -1,7 +1,7 @@
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
 import type { QuoteVoucherGateway } from '../checkout_jiesuan';
 import type { OrderVoucherGateway } from '../order_dingdan';
-import type { SettlementVoucher } from '../payment/application/PaymentSettlementCore';
+import type { SettlementVoucher } from '../payment_zhifu';
 
 /** Purchase-only runtime never permits vouchers or loads the full voucher implementation. */
 export class DisabledPurchaseVoucherGateway implements QuoteVoucherGateway, OrderVoucherGateway, SettlementVoucher {

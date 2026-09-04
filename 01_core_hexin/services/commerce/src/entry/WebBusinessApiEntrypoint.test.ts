@@ -84,7 +84,7 @@ describe('web business API entrypoint', () => {
       '/modules/benefit/BenefitOperations.ts',
       '/modules/reporting/ReportingModule.ts',
       '/modules/checkout_jiesuan/05_interface_jieru/CheckoutModule.ts',
-      '/modules/payment/',
+      '/modules/payment_zhifu/',
       '/modules/finance/',
       '/foundation/infrastructure/ObjectStore.ts',
       '/foundation/cache/',

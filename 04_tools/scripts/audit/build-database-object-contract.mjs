@@ -80,7 +80,7 @@ const callerMap = {
   'extension.enabled_installations': ['01_core_hexin/services/commerce/src/bootstrap/ProviderLoader.ts'],
   'extension.load_installation': ['01_core_hexin/services/commerce/src/bootstrap/ProviderLoader.ts'],
   'experience.read_published': ['01_core_hexin/services/commerce/src/modules/experience/ExperienceOperations.ts'],
-  'payment.webhook_scope': ['01_core_hexin/services/commerce/src/modules/payment/PaymentWebhook.ts'],
+  'payment.webhook_scope': ['01_core_hexin/services/commerce/src/modules/payment_zhifu/05_interface_jieru/http/PaymentWebhook.ts'],
   'reporting.cockpit': ['01_core_hexin/services/commerce/src/modules/reporting/infrastructure/persistence/PgReportingRepository.ts'],
 };
 

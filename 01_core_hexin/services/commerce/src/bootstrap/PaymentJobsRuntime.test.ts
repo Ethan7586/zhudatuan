@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { PaymentGateway } from '../modules/payment/application/port/PaymentGateway';
+import type { PaymentGateway } from '../modules/payment_zhifu/01_public_gongkai/ports_jiekou/PaymentGateway';
 import type { DatabasePool } from '../foundation/persistence/Pool';
 import {
   assertPaymentJobsRuntimeCompatibility,

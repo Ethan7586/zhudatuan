@@ -253,7 +253,7 @@ const forbiddenSourcePaths = [
   '/bootstrap/CommerceRuntime.ts',
   '/bootstrap/ProviderLoader.ts',
   '/app/modules.ts',
-  '/modules/payment/',
+  '/modules/payment_zhifu/',
   '/modules/finance/',
   '/modules/channel/',
   '/modules/identity/WechatOperations.ts',

@@ -6,7 +6,7 @@ import { PostingPolicy } from './finance/domain/policy/PostingPolicy';
 import { PasswordPolicy } from './identity/domain/policy/PasswordPolicy';
 import { available, Reservation } from './inventory/domain/model/Reservation';
 import { Order } from './order_dingdan/02_domain_yewu/models_moxing/Order';
-import { AllocationPolicy } from './payment/domain/policy/AllocationPolicy';
+import { AllocationPolicy } from './payment_zhifu';
 import { RiskPolicy } from './risk/domain/model/RiskPolicy';
 import { RiskEngine } from './risk/domain/policy/RiskEngine';
 import { AssignmentPolicy } from './support/domain/policy/AssignmentPolicy';

@@ -12,7 +12,7 @@ import { DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool
 import { DECISION_SINK } from '../foundation/security/DecisionSink';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
-import { PAYMENT_GATEWAY } from '../modules/payment/application/port/PaymentGateway';
+import { PAYMENT_GATEWAY } from '../modules/payment_zhifu/01_public_gongkai/ports_jiekou/PaymentGateway';
 import { DisabledExternalPaymentGateway } from '../modules/purchase/DisabledExternalPaymentGateway';
 import { PURCHASE_MODULES } from '../modules/purchase/PurchaseModules';
 import { PURCHASE_OPERATION_IDS, PURCHASE_QUOTE_KEY } from '../modules/purchase/PurchaseOperations';
@@ -70,15 +70,15 @@ describe('purchase API entrypoint', () => {
   it('contains only the exact WeChat gateway and no full runtime, refund, webhook, finance, or payment administration', () => {
     const closure = sourceClosure(join(import.meta.dirname, 'PurchaseApiMain.ts'));
     const providerInfrastructure = [...closure]
-      .filter((file) => file.includes('/modules/payment/infrastructure/'))
-      .map((file) => file.slice(file.indexOf('/modules/payment/infrastructure/')))
+      .filter((file) => file.includes('/modules/payment_zhifu/04_adapters_shixian/'))
+      .map((file) => file.slice(file.indexOf('/modules/payment_zhifu/04_adapters_shixian/')))
       .sort();
-    expect(providerInfrastructure).toEqual(['/modules/payment/infrastructure/adapter/WechatGateway.ts']);
+    expect(providerInfrastructure).toEqual(['/modules/payment_zhifu/04_adapters_shixian/providers_waibu/WechatGateway.ts']);
     const forbidden = [...closure].filter((file) => [
       '/bootstrap/CommerceRuntime.ts', '/bootstrap/ProviderLoader.ts', '/app/modules.ts',
-      '/modules/payment/PaymentModule.ts', '/modules/payment/PaymentOperations.ts', '/modules/payment/PaymentJobs.ts',
-      '/modules/payment/PaymentWebhook.ts',
-      '/modules/payment/application/RefundPlanner.ts', '/modules/payment/application/RefundSettlement.ts',
+      '/modules/payment_zhifu/05_interface_jieru/PaymentModule.ts', '/modules/payment_zhifu/05_interface_jieru/http/PaymentOperations.ts', '/modules/payment_zhifu/05_interface_jieru/jobs_renwu/PaymentJobs.ts',
+      '/modules/payment_zhifu/05_interface_jieru/http/PaymentWebhook.ts',
+      '/modules/payment_zhifu/03_application_yingyong/services_fuwu/RefundPlanner.ts', '/modules/payment_zhifu/03_application_yingyong/services_fuwu/RefundSettlement.ts',
       '/modules/finance/',
       '/bootstrap/ProviderFactories.ts', '/foundation/infrastructure/ObjectStore.ts', '/foundation/cache/',
     ].some((candidate) => file.includes(candidate)));

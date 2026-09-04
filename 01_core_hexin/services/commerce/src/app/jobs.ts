@@ -30,9 +30,9 @@ import { DELIVERY_REGISTRY } from '../modules/notification/application/DeliveryR
 import { DispatchNotification } from '../modules/notification/application/command/DispatchNotification';
 import { PgNotificationRepository } from '../modules/notification/infrastructure/persistence/PgNotificationRepository';
 import { OrderExpiryJobProcessor } from '../modules/order_dingdan/05_interface_jieru/jobs_renwu/OrderJobs';
-import { PaymentJobProcessor } from '../modules/payment/PaymentJobs';
-import { PaymentDeadletter } from '../modules/payment/PaymentDeadletter';
-import { PAYMENT_GATEWAY } from '../modules/payment/application/port/PaymentGateway';
+import { PaymentJobProcessor } from '../modules/payment_zhifu/05_interface_jieru/jobs_renwu/PaymentJobs';
+import { PaymentDeadletter } from '../modules/payment_zhifu/04_adapters_shixian/persistence_cunchu/PaymentDeadletter';
+import { PAYMENT_GATEWAY } from '../modules/payment_zhifu/01_public_gongkai/ports_jiekou/PaymentGateway';
 import { ExportJobRunner } from '../modules/reporting/interface/job/ExportJobRunner';
 import { ProjectionJobProcessor } from '../modules/reporting/interface/job/ProjectionJob';
 import { RiskReplayJobProcessor } from '../modules/risk/interface/job/RiskReplayJob';

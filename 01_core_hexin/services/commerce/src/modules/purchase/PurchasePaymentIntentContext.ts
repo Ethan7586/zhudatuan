@@ -3,7 +3,7 @@ import type {
   PaymentIntentContextInput,
   PaymentIntentContextReader,
   PaymentIntentState,
-} from '../payment/PaymentContractModule';
+} from '../payment_zhifu';
 
 export class PurchasePaymentIntentContext implements PaymentIntentContextReader {
   async read(database: OperationDatabase, input: PaymentIntentContextInput): Promise<PaymentIntentState | undefined> {
