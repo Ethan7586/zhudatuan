@@ -24,6 +24,7 @@ const bootstrapped = await bootstrapApi({
   configure: runtime.configure,
   allowedOrigins: webBusinessApiAllowedOrigins(environment),
   telemetry: runtime.telemetry,
+  gateEngine: runtime.gateEngine,
 });
 const server = listen(bootstrapped.app, webBusinessApiPort(environment), '127.0.0.1');
 

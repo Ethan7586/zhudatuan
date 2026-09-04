@@ -97,6 +97,9 @@ function normalizeOperations(values: readonly RawOperationDefinition[]): readonl
     availability: item.availability ?? 'runtime',
     summary: item.summary ?? item.id,
     schema: item.schema,
+    ...(item.gates === undefined ? {} : {
+      gates: Object.freeze(item.gates.map((gate) => Object.freeze({ ...gate }))),
+    }),
     requirements: Object.freeze([...item.requirements]),
   }));
 }
@@ -118,6 +121,11 @@ function validateOperations(values: readonly NormalizedOperationDefinition[], so
     if (typeof item.idempotent !== 'boolean') throw new Error(`OPERATION_IDEMPOTENT_INVALID:${item.id}`);
     if (item.summary.trim().length === 0) throw new Error(`OPERATION_SUMMARY_INVALID:${item.id}`);
     if (item.schema !== 'exact' && item.schema !== 'structural') throw new Error(`OPERATION_SCHEMA_INVALID:${item.id}`);
+    for (const gate of item.gates ?? []) {
+      if (!['identity', 'permission', 'risk', 'finance'].includes(gate.slot)) throw new Error(`OPERATION_GATE_SLOT_INVALID:${item.id}`);
+      if (gate.phase !== 'before') throw new Error(`OPERATION_GATE_PHASE_INVALID:${item.id}`);
+      if (!['disabled', 'observe'].includes(gate.mode)) throw new Error(`OPERATION_GATE_MODE_INVALID:${item.id}`);
+    }
     if (item.requirements.length === 0 || item.requirements.some((id) => !/^(?:MVP(?:0[3-9]|1\d|2[0-3])|OMS-(?:00[1-9]|01[0-4]))$/.test(id))) {
       throw new Error(`OPERATION_REQUIREMENT_INVALID:${item.id}`);
     }

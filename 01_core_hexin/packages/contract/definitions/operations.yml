@@ -796,6 +796,10 @@ operations:
     permission: catalog.listing.read
     idempotent: true
     schema: structural
+    gates:
+      - slot: permission
+        phase: before
+        mode: observe
     requirements:
       - MVP07
       - MVP16

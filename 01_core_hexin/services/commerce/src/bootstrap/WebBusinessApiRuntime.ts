@@ -17,6 +17,7 @@ import {
 } from '../foundation/security/PgAccessResolvers';
 import { PgGovernanceResolver } from '../foundation/security/GovernanceResolver';
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
+import { GateEngine, GateRegistry } from '../foundation/security/gate_menjin';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
@@ -48,6 +49,7 @@ export interface WebBusinessApiRuntime {
   readonly pool: DatabasePool;
   readonly extensions: ExtensionRegistry;
   readonly telemetry: Telemetry;
+  readonly gateEngine: GateEngine;
   readonly configure: (container: Container) => void;
   close(): Promise<void>;
 }
@@ -86,10 +88,19 @@ export async function createWebBusinessApiRuntime(
   const handlers = new Map<OperationId, OperationHandler>();
   const extensions = new ExtensionRegistry({ verify: async () => false });
   const telemetry = commerceTelemetry();
+  const gateEngine = new GateEngine(new GateRegistry(), ({ declaration, context, decisions }) => telemetry.logger.write({
+    level: decisions.some((decision) => decision.decision === 'error') ? 'warn' : 'info',
+    event: 'gate.observe',
+    requestId: context.trace_id,
+    traceId: context.trace_id,
+    operation: declaration.operation_id,
+    data: { gateSlots: declaration.gate_slots, decisions },
+  }));
   return Object.freeze({
     pool,
     extensions,
     telemetry,
+    gateEngine,
     configure(container: Container) {
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));

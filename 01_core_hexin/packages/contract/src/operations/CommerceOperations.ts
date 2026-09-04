@@ -1,7 +1,16 @@
 // Generated from definitions/operations.yml. Do not edit.
-import { operation, type HttpMethod, type OperationAudience, type OperationAvailability, type OperationExecution, type OperationIdempotency, type OperationPath, type OperationRisk, type OperationSchemaFidelity, type OperationVersionPolicy } from '../Operation';
+import { operation, type HttpMethod, type OperationAudience, type OperationAvailability, type OperationExecution, type OperationGateDeclaration, type OperationIdempotency, type OperationPath, type OperationRisk, type OperationSchemaFidelity, type OperationVersionPolicy } from '../Operation';
 
 type Row = readonly [string, HttpMethod, OperationPath, string, OperationAudience, string | null, boolean, OperationIdempotency, OperationVersionPolicy, OperationExecution, OperationAvailability, string, OperationRisk, boolean, readonly string[], OperationSchemaFidelity, readonly string[]];
+
+const operationGates: Readonly<Record<string, readonly OperationGateDeclaration[] | undefined>> = Object.freeze({
+  "catalog.listings.read": Object.freeze([{"slot":"permission","phase":"before","mode":"observe"}] as const),
+});
+
+function gatesFor(operationId: string): Readonly<{ gates?: readonly OperationGateDeclaration[] }> {
+  const gates = operationGates[operationId];
+  return gates === undefined ? {} : { gates };
+}
 
 const rows = [
   ["runtime.health.live","GET","/health/live","runtime","public",null,true,"none","none","sync","runtime","runtime.health.live","low",false,[],"structural",["MVP03","MVP04","MVP05","MVP06","MVP07","MVP08","MVP09","MVP10","MVP11","MVP12","MVP13","MVP14","MVP15","MVP16","MVP17","MVP18","MVP19","MVP20","MVP21","MVP22","MVP23"]],
@@ -334,6 +343,6 @@ const rows = [
   ["voucher.exports.get","GET","/api/v1/vouchers/exports/{exportid}","voucher","operator","reporting.export.read",true,"none","none","sync","frozen","导出作业详情","high",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP09","MVP18"]],
 ] as const satisfies readonly Row[];
 
-export const COMMERCE_OPERATION_DEFINITIONS = Object.freeze(rows.map((row) => operation({ id: row[0], method: row[1], path: row[2], module: row[3], audience: row[4], ...(row[5] === null ? {} : { permission: row[5] }), idempotent: row[6], idempotency: row[7], expectedVersion: row[8], execution: row[9], availability: row[10], summary: row[11], risk: row[12], stepup: row[13], scopeKinds: row[14], schema: row[15], requirements: row[16] })));
+export const COMMERCE_OPERATION_DEFINITIONS = Object.freeze(rows.map((row) => operation({ id: row[0], method: row[1], path: row[2], module: row[3], audience: row[4], ...(row[5] === null ? {} : { permission: row[5] }), idempotent: row[6], idempotency: row[7], expectedVersion: row[8], execution: row[9], availability: row[10], summary: row[11], risk: row[12], stepup: row[13], scopeKinds: row[14], schema: row[15], requirements: row[16], ...gatesFor(row[0]) })));
 export const COMMERCE_OPERATIONS = Object.freeze(COMMERCE_OPERATION_DEFINITIONS.filter((definition) => definition.availability === 'runtime'));
 export const FROZEN_OPERATIONS = Object.freeze(COMMERCE_OPERATION_DEFINITIONS.filter((definition) => definition.availability === 'frozen'));

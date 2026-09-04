@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import { CONTRACT_VERSION, OperationCatalog } from '@shop/contract';
+import { CONTRACT_VERSION, OperationCatalog, type OperationGateDeclaration } from '@shop/contract';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { Deadline } from '../performance/Deadline';
+import type { GateEngine } from '../security/gate_menjin';
 import type { OperationMetrics } from '../telemetry/OperationMetrics';
 import { ErrorMapper } from './ErrorMapper';
 
@@ -11,13 +12,15 @@ const MAX_BODY_BYTES = 2 * 1024 * 1024;
 export class HttpApp {
   private readonly origins: ReadonlySet<string>;
   constructor(private readonly routes: RouteRegistry, origins: readonly string[], private readonly errors = new ErrorMapper(),
-    private readonly deadlineMilliseconds: number = RUNTIME_LIMITS.http.totalDeadlineMilliseconds, private readonly metrics?: OperationMetrics) {
+    private readonly deadlineMilliseconds: number = RUNTIME_LIMITS.http.totalDeadlineMilliseconds, private readonly metrics?: OperationMetrics,
+    private readonly gateEngine?: GateEngine) {
     if (!Number.isSafeInteger(deadlineMilliseconds) || deadlineMilliseconds < 1) throw new Error('HTTP_DEADLINE_INVALID');
     this.origins = new Set(origins);
   }
 
   async handle(request: Request): Promise<Response> {
     const requestId = request.headers.get('x-request-id') ?? randomUUID();
+    const traceId = request.headers.get('x-trace-id') ?? requestId;
     const origin = request.headers.get('origin');
     const deadline = Deadline.after(this.deadlineMilliseconds, request.signal);
     const started = performance.now();
@@ -41,6 +44,7 @@ export class HttpApp {
       const payload = await parseBody(request);
       deadline.throwIfExpired();
       const headers = Object.freeze(Object.fromEntries(request.headers.entries()));
+      await observeOperationGates(this.gateEngine, operation.id, operation.gates, requestId, traceId);
       const result = await deadline.run((signal) => route.handler({ method: request.method, path: url.pathname, headers, parameters: route.parameters,
         query: url.searchParams, body: payload.body, rawBody: payload.raw, deadline: deadline.expiresAt, signal }));
       observedStatus = result.status;
@@ -51,10 +55,38 @@ export class HttpApp {
       observedError = bodyCode(mapped.body);
       return secure(mapped.status, mapped.body, requestId, origin, mapped.headers);
     } finally {
-      if (observedOperation) this.metrics?.observe({ requestId, traceId: request.headers.get('x-trace-id') ?? requestId,
+      if (observedOperation) this.metrics?.observe({ requestId, traceId,
         operation: observedOperation, version: CONTRACT_VERSION }, observedStatus, performance.now()-started, observedError);
       deadline.dispose();
     }
+  }
+}
+
+async function observeOperationGates(
+  engine: GateEngine | undefined,
+  operationId: string,
+  gates: readonly OperationGateDeclaration[] | undefined,
+  requestId: string,
+  traceId: string,
+): Promise<void> {
+  if (engine === undefined || gates === undefined) return;
+  const slots = gates.filter((gate) => gate.mode === 'observe').map((gate) => gate.slot);
+  if (slots.length === 0) return;
+  try {
+    await engine.execute({
+      operation_id: operationId,
+      gate_slots: Object.freeze(slots),
+      execution_phase: 'before',
+      mode: 'observe',
+      failure_behavior: 'continue',
+    }, {
+      operation_id: operationId,
+      execution_phase: 'before',
+      trace_id: traceId,
+      attributes: Object.freeze({ request_id: requestId }),
+    });
+  } catch {
+    // Observe mode cannot alter the original HTTP operation.
   }
 }
 

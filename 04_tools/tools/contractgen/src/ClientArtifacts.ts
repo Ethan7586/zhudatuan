@@ -12,6 +12,11 @@ export interface OperationDefinition {
   readonly availability?: 'runtime' | 'frozen';
   readonly summary?: string;
   readonly schema: 'exact' | 'structural';
+  readonly gates?: readonly Readonly<{
+    slot: 'identity' | 'permission' | 'risk' | 'finance';
+    phase: 'before';
+    mode: 'disabled' | 'observe';
+  }>[];
   readonly requirements: readonly string[];
   readonly controller?: string;
   readonly handler?: string;
@@ -92,6 +97,10 @@ export function operationSource(
   values: readonly OperationDefinition[],
   permissions: ReadonlyMap<string, PermissionMetadata>,
 ): string {
+  const gates = values
+    .filter((item) => item.gates !== undefined)
+    .map((item) => `  ${JSON.stringify(item.id)}: Object.freeze(${JSON.stringify(item.gates)} as const),`)
+    .join('\n');
   const rows = values.map((item) => {
     const metadata = item.permission === undefined ? undefined : permissions.get(item.permission);
     return `  ${JSON.stringify([
@@ -103,7 +112,7 @@ export function operationSource(
     metadata?.risk ?? 'low', metadata?.stepup ?? false, metadata?.scopes ?? [], item.schema, item.requirements,
   ])},`;
   }).join('\n');
-  return `// Generated from definitions/operations.yml. Do not edit.\nimport { operation, type HttpMethod, type OperationAudience, type OperationAvailability, type OperationExecution, type OperationIdempotency, type OperationPath, type OperationRisk, type OperationSchemaFidelity, type OperationVersionPolicy } from '../Operation';\n\ntype Row = readonly [string, HttpMethod, OperationPath, string, OperationAudience, string | null, boolean, OperationIdempotency, OperationVersionPolicy, OperationExecution, OperationAvailability, string, OperationRisk, boolean, readonly string[], OperationSchemaFidelity, readonly string[]];\n\nconst rows = [\n${rows}\n] as const satisfies readonly Row[];\n\nexport const COMMERCE_OPERATION_DEFINITIONS = Object.freeze(rows.map((row) => operation({ id: row[0], method: row[1], path: row[2], module: row[3], audience: row[4], ...(row[5] === null ? {} : { permission: row[5] }), idempotent: row[6], idempotency: row[7], expectedVersion: row[8], execution: row[9], availability: row[10], summary: row[11], risk: row[12], stepup: row[13], scopeKinds: row[14], schema: row[15], requirements: row[16] })));\nexport const COMMERCE_OPERATIONS = Object.freeze(COMMERCE_OPERATION_DEFINITIONS.filter((definition) => definition.availability === 'runtime'));\nexport const FROZEN_OPERATIONS = Object.freeze(COMMERCE_OPERATION_DEFINITIONS.filter((definition) => definition.availability === 'frozen'));\n`;
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport { operation, type HttpMethod, type OperationAudience, type OperationAvailability, type OperationExecution, type OperationGateDeclaration, type OperationIdempotency, type OperationPath, type OperationRisk, type OperationSchemaFidelity, type OperationVersionPolicy } from '../Operation';\n\ntype Row = readonly [string, HttpMethod, OperationPath, string, OperationAudience, string | null, boolean, OperationIdempotency, OperationVersionPolicy, OperationExecution, OperationAvailability, string, OperationRisk, boolean, readonly string[], OperationSchemaFidelity, readonly string[]];\n\nconst operationGates: Readonly<Record<string, readonly OperationGateDeclaration[] | undefined>> = Object.freeze({\n${gates}\n});\n\nfunction gatesFor(operationId: string): Readonly<{ gates?: readonly OperationGateDeclaration[] }> {\n  const gates = operationGates[operationId];\n  return gates === undefined ? {} : { gates };\n}\n\nconst rows = [\n${rows}\n] as const satisfies readonly Row[];\n\nexport const COMMERCE_OPERATION_DEFINITIONS = Object.freeze(rows.map((row) => operation({ id: row[0], method: row[1], path: row[2], module: row[3], audience: row[4], ...(row[5] === null ? {} : { permission: row[5] }), idempotent: row[6], idempotency: row[7], expectedVersion: row[8], execution: row[9], availability: row[10], summary: row[11], risk: row[12], stepup: row[13], scopeKinds: row[14], schema: row[15], requirements: row[16], ...gatesFor(row[0]) })));\nexport const COMMERCE_OPERATIONS = Object.freeze(COMMERCE_OPERATION_DEFINITIONS.filter((definition) => definition.availability === 'runtime'));\nexport const FROZEN_OPERATIONS = Object.freeze(COMMERCE_OPERATION_DEFINITIONS.filter((definition) => definition.availability === 'frozen'));\n`;
 }
 
 export function schemaSource(values: readonly OperationDefinition[]): string {

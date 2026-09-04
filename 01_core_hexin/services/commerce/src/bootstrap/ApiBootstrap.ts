@@ -10,6 +10,7 @@ import type { CommerceModule } from './ModuleRegistry';
 import { ModuleRegistry } from './ModuleRegistry';
 import { RouteRegistry } from './RouteRegistry';
 import type { OperationId } from '@shop/contract';
+import type { GateEngine } from '../foundation/security/gate_menjin';
 
 export interface ApiBootstrapOptions {
   readonly modules: readonly CommerceModule[];
@@ -18,6 +19,7 @@ export interface ApiBootstrapOptions {
   readonly allowedOrigins: readonly string[];
   readonly telemetry: Telemetry;
   readonly operationIds?: readonly OperationId[];
+  readonly gateEngine?: GateEngine;
 }
 
 export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readonly<{ app: HttpApp; modules: readonly string[]; routes: RouteRegistry }>> {
@@ -36,6 +38,6 @@ export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readon
   jobs.freeze();
   options.extensions.freeze();
   container.freeze();
-  return Object.freeze({ app: new HttpApp(routes, options.allowedOrigins, undefined, undefined, new OperationMetrics(options.telemetry)),
+  return Object.freeze({ app: new HttpApp(routes, options.allowedOrigins, undefined, undefined, new OperationMetrics(options.telemetry), options.gateEngine),
     modules: modules.catalog(), routes });
 }

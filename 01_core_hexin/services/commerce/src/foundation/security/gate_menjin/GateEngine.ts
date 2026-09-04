@@ -2,7 +2,14 @@ import type { GateContext, GateDecision, GateDeclaration } from '@shop/kernel';
 import type { GateRegistry } from './GateRegistry';
 
 export class GateEngine {
-  constructor(private readonly registry: GateRegistry) {}
+  constructor(
+    private readonly registry: GateRegistry,
+    private readonly observe: (observation: Readonly<{
+      declaration: GateDeclaration;
+      context: GateContext;
+      decisions: readonly GateDecision[];
+    }>) => void | Promise<void> = () => undefined,
+  ) {}
 
   async execute(
     declaration: GateDeclaration,
@@ -30,6 +37,12 @@ export class GateEngine {
       }
     }
 
-    return decisions;
+    const observed = Object.freeze(decisions);
+    try {
+      await this.observe(Object.freeze({ declaration, context, decisions: observed }));
+    } catch {
+      // Observation failures never affect the operation being observed.
+    }
+    return observed;
   }
 }
