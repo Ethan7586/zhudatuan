@@ -1,4 +1,4 @@
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
+import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 
 export class OrderPort {
   async paymentState(database: OperationDatabase, order: string): Promise<string> {

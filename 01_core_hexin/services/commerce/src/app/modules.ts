@@ -19,7 +19,7 @@ import { MarketingModule } from '../modules/marketing/MarketingModule';
 import { ReferralModule } from '../modules/referral/ReferralModule';
 import { MemberModule } from '../modules/member/MemberModule';
 import { NotificationModule } from '../modules/notification/NotificationModule';
-import { OrderModule } from '../modules/order/OrderModule';
+import { OrderModule } from '../modules/order_dingdan/05_interface_jieru/OrderModule';
 import { OrganizationModule } from '../modules/organization/OrganizationModule';
 import { PartnerModule } from '../modules/partner/PartnerModule';
 import { PaymentModule } from '../modules/payment/PaymentModule';

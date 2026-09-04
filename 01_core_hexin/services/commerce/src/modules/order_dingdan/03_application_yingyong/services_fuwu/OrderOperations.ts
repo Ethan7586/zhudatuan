@@ -1,17 +1,17 @@
 import { randomUUID } from 'node:crypto';
-import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
-import { AUDIT_SINK } from '../../foundation/application/AuditSink';
-import { ModuleOperations, requireAccess, rowResult } from '../../foundation/application/ModuleOperations';
-import { bodyRecord, keysetResult, queryPage, textField } from '../../foundation/interface/Validation';
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
-import { SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
-import { fullCheckoutPort } from '../checkout/FullCheckoutPort';
-import { BenefitPort } from '../benefit/BenefitPort';
-import { VoucherPort } from '../voucher/application/port/VoucherPort';
-import { Order, type AftersaleState, type CommerceState, type FulfillmentState, type PaymentState } from './domain/model/Order';
-import { PlaceOrder } from './application/PlaceOrder';
-import { createReportingExport } from '../reporting/ReportingModule';
+import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
+import { AUDIT_SINK } from '../../../../foundation/application/AuditSink';
+import { ModuleOperations, requireAccess, rowResult } from '../../../../foundation/application/ModuleOperations';
+import { bodyRecord, keysetResult, queryPage, textField } from '../../../../foundation/interface/Validation';
+import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { SECURITY_KEYS } from '../../../../foundation/infrastructure/SecretStore';
+import { fullCheckoutPort } from '../../../checkout/FullCheckoutPort';
+import { BenefitPort } from '../../../benefit/BenefitPort';
+import { VoucherPort } from '../../../voucher/application/port/VoucherPort';
+import { Order, type AftersaleState, type CommerceState, type FulfillmentState, type PaymentState } from '../../02_domain_yewu/models_moxing/Order';
+import { PlaceOrder } from '../commands_xieru/PlaceOrder';
+import { createReportingExport } from '../../../reporting/ReportingModule';
 
 interface OrderRow { readonly id: string; readonly lifecycle_state: CommerceState; readonly payment_state: PaymentState; readonly fulfillment_state: FulfillmentState; readonly aftersale_state: AftersaleState }
 

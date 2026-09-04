@@ -5,7 +5,7 @@ import type { TicketPriority } from '../../domain/model/Ticket';
 import type { Agent } from '../../domain/policy/AssignmentPolicy';
 import { Message } from '../../domain/model/Message';
 import type { EncryptedMessage, SlaPolicy, SupportPort } from '../../application/port/SupportPort';
-import type { GetOrderSummary } from '../../../order/OrderModule';
+import type { GetOrderSummary } from '../../../order_dingdan';
 
 export class PgSupportRepository implements SupportPort {
   constructor(private readonly database: OperationDatabase, private readonly orders: GetOrderSummary) {}

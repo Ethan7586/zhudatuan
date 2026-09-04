@@ -19,6 +19,7 @@ export const EXCLUDED = new Set([
   '.codex-temp',
   'tmp',
   'supabase/.temp',
+  '06_history_lishi',
 ]);
 
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs']);

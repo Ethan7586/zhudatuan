@@ -70,7 +70,7 @@ describe('Payment mall identity', () => {
   });
 
   it('keeps global order expiry scheduling while executing Payment work one mall at a time', async () => {
-    const source = await readFile(new URL('../order/OrderJobs.ts', import.meta.url), 'utf8');
+    const source = await readFile(new URL('../order_dingdan/05_interface_jieru/jobs_renwu/OrderJobs.ts', import.meta.url), 'utf8');
     expect(source).toContain('const malls = job.scope_id ? [job.scope_id]');
     expect(source.match(/where intent\.mall_id=\$2/g)).toHaveLength(2);
     expect(source).toContain('paymentPort.expire(client, mall, order)');

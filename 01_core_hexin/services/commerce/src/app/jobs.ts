@@ -29,7 +29,7 @@ import { InventorySyncJobProcessor } from '../modules/inventory/interface/job/In
 import { DELIVERY_REGISTRY } from '../modules/notification/application/DeliveryRegistry';
 import { DispatchNotification } from '../modules/notification/application/command/DispatchNotification';
 import { PgNotificationRepository } from '../modules/notification/infrastructure/persistence/PgNotificationRepository';
-import { OrderExpiryJobProcessor } from '../modules/order/OrderJobs';
+import { OrderExpiryJobProcessor } from '../modules/order_dingdan/05_interface_jieru/jobs_renwu/OrderJobs';
 import { PaymentJobProcessor } from '../modules/payment/PaymentJobs';
 import { PaymentDeadletter } from '../modules/payment/PaymentDeadletter';
 import { PAYMENT_GATEWAY } from '../modules/payment/application/port/PaymentGateway';

@@ -1,5 +1,5 @@
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import type { OrderQuoteStore, StoredQuote } from '../order/OrderContractModule';
+import type { OrderQuoteStore, StoredQuote } from '../order_dingdan';
 
 export class PurchaseOrderQuoteStore implements OrderQuoteStore {
   constructor(private readonly session: string) {}

@@ -79,7 +79,7 @@ describe('web business API entrypoint', () => {
       '/bootstrap/CommerceRuntime.ts',
       '/bootstrap/ProviderLoader.ts',
       '/app/modules.ts',
-      '/modules/order/OrderOperations.ts',
+      '/modules/order_dingdan/03_application_yingyong/services_fuwu/OrderOperations.ts',
       '/modules/member/MemberOperations.ts',
       '/modules/benefit/BenefitOperations.ts',
       '/modules/reporting/ReportingModule.ts',

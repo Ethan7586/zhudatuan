@@ -11,7 +11,7 @@ import { RecordAudit } from '../../../01_core_hexin/services/commerce/src/module
 import { PgAuditRepository } from '../../../01_core_hexin/services/commerce/src/modules/audit/infrastructure/persistence/PgAuditRepository.ts';
 import { cartOperations } from '../../../01_core_hexin/services/commerce/src/modules/cart/CartOperations.ts';
 import { checkoutOperations } from '../../../01_core_hexin/services/commerce/src/modules/checkout/CheckoutOperations.ts';
-import { orderOperations } from '../../../01_core_hexin/services/commerce/src/modules/order/OrderOperations.ts';
+import { orderOperations } from '../../../01_core_hexin/services/commerce/src/modules/order_dingdan/03_application_yingyong/services_fuwu/OrderOperations.ts';
 import { paymentOperations } from '../../../01_core_hexin/services/commerce/src/modules/payment/PaymentOperations.ts';
 import { PaymentJobProcessor } from '../../../01_core_hexin/services/commerce/src/modules/payment/PaymentJobs.ts';
 import { PAYMENT_GATEWAY } from '../../../01_core_hexin/services/commerce/src/modules/payment/application/port/PaymentGateway.ts';

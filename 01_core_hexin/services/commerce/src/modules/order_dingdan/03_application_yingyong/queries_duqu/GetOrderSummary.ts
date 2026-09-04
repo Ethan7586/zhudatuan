@@ -1,4 +1,4 @@
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 
 export interface OrderSummary {
   readonly id: string; readonly scope: string; readonly member: string; readonly number: string; readonly state: string; readonly totalMinor: number;

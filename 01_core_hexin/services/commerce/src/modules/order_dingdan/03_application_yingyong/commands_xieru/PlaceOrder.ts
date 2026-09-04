@@ -1,17 +1,17 @@
 import { randomUUID } from 'node:crypto';
-import type { OperationRequest, OperationResult } from '../../../foundation/application/OperationHandler';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import { bodyRecord } from '../../../foundation/interface/Validation';
-import { domainEvent } from '../../../foundation/domain/DomainEvent';
-import { appendOutbox } from '../../../foundation/infrastructure/OutboxStore';
-import { CheckoutPort, type CheckoutQuote } from '../../checkout/CheckoutPort';
-import { checkoutSessionPort } from '../../checkout/CheckoutSessionPort';
-import { InventoryPort } from '../../inventory/InventoryPort';
-import { PaymentPort } from '../../payment/PaymentPort';
-import type { BenefitGateway } from '../../benefit/application/port/BenefitPort';
-import { marketingPort } from '../../marketing/MarketingPort';
-import { cartPort } from '../../cart/CartPort';
-import type { OrderQuoteStore, StoredQuote } from '../OrderContractModule';
+import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationHandler';
+import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { bodyRecord } from '../../../../foundation/interface/Validation';
+import { domainEvent } from '../../../../foundation/domain/DomainEvent';
+import { appendOutbox } from '../../../../foundation/infrastructure/OutboxStore';
+import { CheckoutPort, type CheckoutQuote } from '../../../checkout/CheckoutPort';
+import { checkoutSessionPort } from '../../../checkout/CheckoutSessionPort';
+import { InventoryPort } from '../../../inventory/InventoryPort';
+import { PaymentPort } from '../../../payment/PaymentPort';
+import type { BenefitGateway } from '../../../benefit/application/port/BenefitPort';
+import { marketingPort } from '../../../marketing/MarketingPort';
+import { cartPort } from '../../../cart/CartPort';
+import type { OrderQuoteStore, StoredQuote } from '../../01_public_gongkai/contracts_qiyue/OrderContractModule';
 
 export interface OrderVoucherGateway {
   reserve(database: OperationDatabase, order: string, member: string, scope: string,

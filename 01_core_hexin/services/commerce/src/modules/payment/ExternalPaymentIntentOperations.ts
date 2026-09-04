@@ -6,7 +6,7 @@ import type { OperationRequest, OperationResult, OperationUsecase } from '../../
 import type { KmsClient } from '../../foundation/infrastructure/KmsClient';
 import type { DatabasePool } from '../../foundation/persistence/Pool';
 import { bodyRecord, textField } from '../../foundation/interface/Validation';
-import { orderPort } from '../order/OrderPaymentModule';
+import { orderPort } from '../order_dingdan';
 import type { PaymentGateway } from './application/port/PaymentGateway';
 import { PaymentReference } from './domain/model/PaymentReference';
 import {

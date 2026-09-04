@@ -10,7 +10,7 @@ import { sendMessageOperations } from '../../application/command/SendMessage';
 import { getConversationsOperations } from '../../application/query/GetConversations';
 import { getTicketsOperations } from '../../application/query/GetTickets';
 import { PgSupportRepository } from '../../infrastructure/persistence/PgSupportRepository';
-import { GetOrderSummary } from '../../../order/OrderModule';
+import { GetOrderSummary } from '../../../order_dingdan';
 
 export function supportRoutes(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL); const kms = context.container.get(KMS_CLIENT);

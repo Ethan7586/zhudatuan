@@ -10,7 +10,7 @@ import { PAYMENT_GATEWAY, type PaymentGateway } from './application/port/Payment
 import { PaymentSettlement } from './application/PaymentSettlement';
 import { RefundPlanner } from './application/RefundPlanner';
 import { PaymentReference } from './domain/model/PaymentReference';
-import { orderPort } from '../order/OrderModule';
+import { orderPort } from '../order_dingdan';
 import { claimPaymentRequest as claimRequest, completePaymentRequest as completeRequest, enqueuePaymentRecovery as enqueueRecovery,
   isPaymentOutcomeUnknown as providerOutcomeUnknown, paymentTransaction as transaction, setPaymentContext as setContext } from './PaymentOperationSupport';
 import type { WechatScene } from '@shop/config/server';

@@ -95,7 +95,7 @@ function sourceClosure(entry: string): ReadonlySet<string> {
     const source = readFileSync(normalized, 'utf8');
     for (const match of source.matchAll(/(?:from\s+|import\s*\()(['"])(\.{1,2}\/[^'"]+)\1/g)) {
       const base = join(dirname(normalized), match[2]!);
-      const candidate = [base, `${base}.ts`, `${base}.tsx`, join(base, 'index.ts')].find(existsSync);
+      const candidate = [`${base}.ts`, `${base}.tsx`, join(base, 'index.ts'), base].find(existsSync);
       if (candidate) visit(candidate);
     }
   };

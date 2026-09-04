@@ -75,7 +75,7 @@ describe('mall provisioning API entrypoint', () => {
       '/bootstrap/ProviderFactories.ts',
       '/app/modules.ts',
       '/modules/organization/OrganizationPort.ts',
-      '/modules/order/',
+      '/modules/order_dingdan/',
       '/modules/checkout/',
       '/modules/inventory/',
       '/modules/payment/',

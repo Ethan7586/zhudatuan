@@ -5,7 +5,7 @@ import type { ClaimedJob, JobProcessor } from '../../foundation/application/JobR
 import type { DatabasePool } from '../../foundation/persistence/Pool';
 import type { SecretStore } from '../../foundation/infrastructure/SecretStore';
 import { channelOperationPort } from '../channel/ChannelModule';
-import { orderPort } from '../order/OrderModule';
+import { orderPort } from '../order_dingdan';
 
 interface FulfillmentRow {
   readonly id: string;

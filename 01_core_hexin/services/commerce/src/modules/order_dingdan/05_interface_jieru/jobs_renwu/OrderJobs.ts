@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import type { ClaimedJob, JobProcessor } from '../../foundation/application/JobRunner';
-import type { DatabasePool } from '../../foundation/persistence/Pool';
-import { paymentPort, releaseOrderHolds } from '../payment/PaymentModule';
-import { checkoutSessionPort } from '../checkout/CheckoutModule';
-import { inventoryPort } from '../inventory/InventoryModule';
-import { orderPort } from './OrderPort';
+import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { DatabasePool } from '../../../../foundation/persistence/Pool';
+import { paymentPort, releaseOrderHolds } from '../../../payment/PaymentModule';
+import { checkoutSessionPort } from '../../../checkout/CheckoutModule';
+import { inventoryPort } from '../../../inventory/InventoryModule';
+import { orderPort } from '../../01_public_gongkai/ports_jiekou/OrderPort';
 
 export class OrderExpiryJobProcessor implements JobProcessor {
   constructor(private readonly pool: DatabasePool) {}

@@ -10,7 +10,7 @@ import { RefundSettlement } from './application/RefundSettlement';
 import { PaymentLifecycle } from './domain/policy/PaymentLifecycle';
 import { assertProviderAmount, enqueuePaymentJob as enqueue, intentExpired, jobPayload as object, jobText as text, paymentDigest as digest,
   paymentApplication, providerError as error, recordProviderObservation, type IntentTarget, type ProviderObservation } from './PaymentJobSupport';
-import { orderPort } from '../order/OrderModule';
+import { orderPort } from '../order_dingdan';
 import { channelOperationPort } from '../channel/ChannelModule';
 
 export class PaymentJobProcessor implements JobProcessor {

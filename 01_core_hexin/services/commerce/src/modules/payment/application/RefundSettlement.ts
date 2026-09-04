@@ -3,7 +3,7 @@ import type { OperationDatabase } from '../../../foundation/application/ModuleOp
 import { BenefitPort } from '../../benefit/BenefitModule';
 import { FinancePort } from '../../finance/application/port/FinancePort';
 import { VoucherPort } from '../../voucher/VoucherModule';
-import { orderPort } from '../../order/OrderModule';
+import { orderPort } from '../../order_dingdan';
 
 const benefit = new BenefitPort(new FinancePort());
 const voucher = new VoucherPort(new FinancePort());

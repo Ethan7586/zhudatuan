@@ -11,9 +11,17 @@
  */
 import { sourceFiles, read, rel, imports, resolveRelativeImport } from './workspace.mjs';
 
-const BACKEND_LAYER = /services\/[^/]+\/src\/modules\/([^/]+)\/(domain|application|infrastructure|interface)\//;
+const BACKEND_LAYER = /services\/[^/]+\/src\/modules\/([^/]+)\/(domain|application|infrastructure|interface|01_public_gongkai|02_domain_yewu|03_application_yingyong|04_adapters_shixian|05_interface_jieru)\//;
 const BACKEND_MODULE = /services\/[^/]+\/src\/modules\/([^/]+)\/(.+)$/;
 const FRONTEND_LAYER = /apps\/[^/]+\/src\/(app|route|shell|feature|entity|shared)\//;
+
+const BACKEND_LAYER_NAME = {
+  '01_public_gongkai': 'public',
+  '02_domain_yewu': 'domain',
+  '03_application_yingyong': 'application',
+  '04_adapters_shixian': 'infrastructure',
+  '05_interface_jieru': 'interface',
+};
 
 const BACKEND_FORBIDDEN = {
   domain: ['application', 'infrastructure', 'interface'],
@@ -36,7 +44,7 @@ export function auditBoundaries() {
     const backendModule = path.match(BACKEND_MODULE);
     if (backendModule) {
       const moduleName = backendModule[1];
-      const layer = backend?.[2];
+      const layer = backend ? (BACKEND_LAYER_NAME[backend[2]] ?? backend[2]) : undefined;
       for (const specifier of imports(source)) {
         const target = specifier.startsWith('.') ? resolveRelativeImport(file, specifier) : null;
         const targetPath = target ? rel(target) : specifier;
@@ -44,13 +52,15 @@ export function auditBoundaries() {
         const targetBackend = targetPath.match(BACKEND_LAYER);
         const targetModuleFile = targetPath.match(BACKEND_MODULE);
         if (targetModuleFile && targetModuleFile[1] !== moduleName) {
-          const publicRoot = !targetModuleFile[2].includes('/') && targetModuleFile[2].endsWith('Module.ts');
+          const publicRoot = targetModuleFile[2] === 'index.ts'
+            || (!targetModuleFile[2].includes('/') && targetModuleFile[2].endsWith('Module.ts'));
           if (!publicRoot) findings.push({ kind: 'crossmodule', file: path,
             detail: `${moduleName} -> ${targetModuleFile[1]}/${targetModuleFile[2]} must use target Module root` });
           continue;
         }
         if (targetBackend) {
-          const [, targetModule, targetLayer] = targetBackend;
+          const [, targetModule, rawTargetLayer] = targetBackend;
+          const targetLayer = BACKEND_LAYER_NAME[rawTargetLayer] ?? rawTargetLayer;
           if (targetModule !== moduleName) {
             findings.push({ kind: 'crossmodule', file: path, detail: `${moduleName} -> ${targetModule}/${targetLayer} internal` });
           } else if (layer && BACKEND_FORBIDDEN[layer].includes(targetLayer)) {

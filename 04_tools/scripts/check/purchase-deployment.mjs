@@ -317,7 +317,7 @@ const forbiddenSourcePaths = [
   '/modules/payment/application/RefundPlanner.ts',
   '/modules/payment/application/RefundSettlement.ts',
   '/modules/payment/interface/',
-  '/modules/order/OrderOperations.ts',
+  '/modules/order_dingdan/03_application_yingyong/services_fuwu/OrderOperations.ts',
   '/modules/reporting/',
   '/modules/extension/',
 ];

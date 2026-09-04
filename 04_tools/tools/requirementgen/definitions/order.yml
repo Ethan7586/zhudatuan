@@ -48,7 +48,7 @@ requirements:
     dataObjectsAndProjections:
       - status: Existing
         target: ordering.orderrecord
-        evidence: [01_core_hexin/services/commerce/src/modules/order/OrderOperations.ts]
+        evidence: [01_core_hexin/services/commerce/src/modules/order_dingdan/03_application_yingyong/services_fuwu/OrderOperations.ts]
       - status: Designed
         target: reporting.orderworkspaceprojection.statusgroups
         evidence: []
@@ -100,7 +100,7 @@ requirements:
     dataObjectsAndProjections:
       - status: Existing
         target: ordering.orderrecord-and-line
-        evidence: [01_core_hexin/services/commerce/src/modules/order/OrderOperations.ts]
+        evidence: [01_core_hexin/services/commerce/src/modules/order_dingdan/03_application_yingyong/services_fuwu/OrderOperations.ts]
       - status: Designed
         target: reporting.orderdetailprojection
         evidence: []
@@ -196,10 +196,10 @@ requirements:
     dataObjectsAndProjections:
       - status: Existing
         target: organization.unitclosure
-        evidence: [01_core_hexin/services/commerce/src/modules/order/OrderOperations.ts]
+        evidence: [01_core_hexin/services/commerce/src/modules/order_dingdan/03_application_yingyong/services_fuwu/OrderOperations.ts]
       - status: Existing
         target: ordering.orderrecord.scope
-        evidence: [01_core_hexin/services/commerce/src/modules/order/OrderOperations.ts]
+        evidence: [01_core_hexin/services/commerce/src/modules/order_dingdan/03_application_yingyong/services_fuwu/OrderOperations.ts]
     successDefinition:
       - 同一订单在各角色下的可见结果与组织树和业务归属一致。
       - 平台、机构、子机构与商城计数由同一服务端范围口径计算。
@@ -253,7 +253,7 @@ requirements:
         evidence: []
       - status: Existing
         target: ordering.orderrecord
-        evidence: [01_core_hexin/services/commerce/src/modules/order/OrderOperations.ts]
+        evidence: [01_core_hexin/services/commerce/src/modules/order_dingdan/03_application_yingyong/services_fuwu/OrderOperations.ts]
     successDefinition:
       - 工作簿列出的条件可组合、可分页、可复现为 Filter Snapshot。
       - 姓名和手机号检索复用项目既有搜索标识，不建立第二套 PII 规则。
@@ -404,7 +404,7 @@ requirements:
     dataObjectsAndProjections:
       - status: Existing
         target: ordering.aftersale-and-reviewaction
-        evidence: [01_core_hexin/services/commerce/src/modules/order/OrderOperations.ts]
+        evidence: [01_core_hexin/services/commerce/src/modules/order_dingdan/03_application_yingyong/services_fuwu/OrderOperations.ts]
       - status: Designed
         target: reporting.aftersaleworkspaceprojection
         evidence: []

@@ -5,7 +5,7 @@ import { VoucherPort } from '../../voucher/VoucherModule';
 import { inventoryPort } from '../../inventory/InventoryModule';
 import { marketingPort } from '../../marketing/MarketingModule';
 import { fulfillmentPort } from '../../fulfillment/FulfillmentModule';
-import { orderPort } from '../../order/OrderModule';
+import { orderPort } from '../../order_dingdan';
 import { providerOccurredAt as requireProviderOccurredAt } from './port/PaymentGateway';
 
 const benefit = new BenefitPort();

@@ -1,5 +1,5 @@
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import type { CheckoutQuote } from '../checkout/CheckoutContractModule';
+import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { CheckoutQuote } from '../../../checkout/CheckoutContractModule';
 
 export interface StoredQuote {
   readonly checkout: string;
