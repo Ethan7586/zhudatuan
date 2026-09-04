@@ -1,12 +1,15 @@
 import type { HandlerRegistry } from '../foundation/application/HandlerRegistry';
 import type { ModuleJobs } from '../foundation/application/ModuleJob';
 import type { ModuleEvents } from '../foundation/application/ModuleEvent';
+import type { ModuleWorkers } from '../foundation/application/ModuleWorker';
 import type { Container, Token } from './Container';
 import { EventRegistry } from './EventRegistry';
 import { EVENT_SCHEMA_TYPES } from '../app/events';
 import { PROVIDER_JOB_IDS, jobDefinition } from '../foundation/application/JobCatalog';
-import type { JobRegistry } from './JobRegistry';
+import type { JobRegistry } from '../modules/runtime/application/registry/JobRegistry';
 import { JobAssembler } from './JobAssembler';
+import type { WorkerRegistry } from '../modules/runtime/application/registry/WorkerRegistry';
+import type { ModuleManifest } from './ModuleManifest';
 
 export interface PublicPortToken<T> {
   readonly key: string;
@@ -63,67 +66,57 @@ export interface ModulePorts {
 
 export interface ModuleContext {
   readonly workload: 'api' | 'jobs' | 'provider';
+  readonly worker?: string;
   readonly handlers: HandlerRegistry;
   readonly ports: ModulePorts;
   readonly jobs?: ModuleJobs;
+  readonly workers?: ModuleWorkers;
   readonly events: ModuleEvents;
   service<T>(token: Token<T>): T;
 }
-type ModuleLoadContext = Omit<ModuleContext, 'ports' | 'jobs' | 'events' | 'service'> &
+type ModuleLoadContext = Omit<ModuleContext, 'ports' | 'jobs' | 'workers' | 'worker' | 'events' | 'service'> &
   Readonly<{
     container: Container;
     jobs?: JobRegistry;
+    workers?: WorkerRegistry;
     worker?: string;
     batch?: number;
     poll?: number;
   }>;
 
 export interface CommerceModule {
+  readonly manifest: ModuleManifest;
   readonly id: string;
   readonly dependencies: readonly string[];
   readonly services: readonly string[];
+  readonly capabilities?: readonly string[];
   dependenciesFor?(workload: ModuleContext['workload']): readonly string[];
   servicesFor?(workload: ModuleContext['workload']): readonly string[];
   bindingsFor?(workload: ModuleContext['workload']): readonly string[];
+  workersFor?(workload: ModuleContext['workload']): readonly string[];
   bind(context: ModuleContext): readonly PublicPortBinding[];
   register(context: ModuleContext): void | Promise<void>;
 }
 
-export interface ModuleManifest {
-  readonly id: string;
-  readonly dependencies: readonly string[];
-  readonly services: readonly string[];
-  readonly workloads: Readonly<Record<ModuleContext['workload'], Readonly<{ dependencies: readonly string[]; bindings: readonly string[]; services: readonly string[] }>>>;
-}
-
-export interface ModuleWorkloads {
-  readonly jobs?: Readonly<{ dependencies?: readonly string[]; bindings?: readonly string[]; services?: readonly string[] }>;
-  readonly provider?: Readonly<{ dependencies?: readonly string[]; bindings?: readonly string[]; services?: readonly string[] }>;
-}
-
-export function defineModuleManifest(id: string, dependencies: readonly string[], services: readonly string[] = [], workloads: ModuleWorkloads = {}): ModuleManifest {
-  if (!/^[a-z]+$/.test(id) || dependencies.some((dependency) => !/^[a-z]+$/.test(dependency) || dependency === id)) {
-    throw new Error(`MODULE_MANIFEST_INVALID:${id}`);
-  }
-  if (new Set(dependencies).size !== dependencies.length) throw new Error(`MODULE_DEPENDENCY_DUPLICATE:${id}`);
-  if (services.some((service) => !/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)*$/.test(service))) throw new Error(`MODULE_SERVICE_INVALID:${id}`);
-  if (new Set(services).size !== services.length) throw new Error(`MODULE_SERVICE_DUPLICATE:${id}`);
-  const api = workloadDefinition(id, dependencies, dependencies, services);
-  const jobs = workloadDefinition(id, workloads.jobs?.dependencies ?? [], workloads.jobs?.bindings ?? [], workloads.jobs?.services ?? []);
-  const provider = workloadDefinition(id, workloads.provider?.dependencies ?? [], workloads.provider?.bindings ?? [], workloads.provider?.services ?? []);
-  return Object.freeze({ id, dependencies: api.dependencies, services: api.services, workloads: Object.freeze({ api, jobs, provider }) });
-}
-
 export class ModuleRegistry {
   private readonly modules = new Map<string, CommerceModule>();
+  private readonly capabilityOwners = new Map<string, string>();
   private readonly publicPorts = new PublicPortRegistry();
   private readonly eventSubscribers = new EventRegistry();
   private frozen = false;
 
   add(module: CommerceModule): void {
     if (this.frozen) throw new Error('MODULE_REGISTRY_FROZEN');
+    if (module.manifest.id !== module.id) throw new Error(`MODULE_MANIFEST_ID_MISMATCH:${module.id}`);
+    if (!same(module.manifest.dependencies, module.dependencies) || !same(module.manifest.services, module.services)) throw new Error(`MODULE_MANIFEST_REGISTRATION_MISMATCH:${module.id}`);
+    if (!same(module.manifest.extensionCapabilities, module.capabilities ?? [])) throw new Error(`MODULE_MANIFEST_CAPABILITY_MISMATCH:${module.id}`);
     if (this.modules.has(module.id)) throw new Error(`MODULE_DUPLICATE:${module.id}`);
+    for (const capability of module.capabilities ?? []) {
+      const owner = this.capabilityOwners.get(capability);
+      if (owner !== undefined) throw new Error(`MODULE_CAPABILITY_OWNER_DUPLICATE:${capability}:${owner}:${module.id}`);
+    }
     this.modules.set(module.id, module);
+    for (const capability of module.capabilities ?? []) this.capabilityOwners.set(capability, module.id);
   }
 
   async load(context: ModuleLoadContext): Promise<void> {
@@ -139,6 +132,7 @@ export class ModuleRegistry {
       const services = module.servicesFor?.(context.workload) ?? module.services;
       return {
         workload: context.workload,
+        ...(context.worker === undefined ? {} : { worker: context.worker }),
         handlers: context.handlers,
         events: Object.freeze({
           add: (subscription: import('../foundation/application/ModuleEvent').ModuleEventSubscription) => {
@@ -148,9 +142,12 @@ export class ModuleRegistry {
             }
             for (const event of subscription.events) this.eventSubscribers.subscribe(event, subscription.handler);
           },
+          handlers: (event: string) => this.eventSubscribers.handlers(event),
         }),
         ports: Object.freeze({ get: <T>(token: PublicPortToken<T>) => this.publicPorts.get(module.id, dependencies, token) }),
         ...(jobAssembler === undefined ? {} : { jobs: Object.freeze({ add: (binding: import('../foundation/application/ModuleJob').ModuleJob) => jobAssembler.add(module.id, binding) }) }),
+        ...(context.workers === undefined ? {} : { workers: Object.freeze({ add: (binding: import('../foundation/application/ModuleWorker').ModuleWorker) =>
+          context.workers!.register(module.id, module.workersFor?.(context.workload) ?? [], binding) }) }),
         service: <T>(token: Token<T>) => {
           if (!services.includes(token.key)) throw new Error(`MODULE_SERVICE_UNDECLARED:${module.id}:${token.key}`);
           return context.container.get(token);
@@ -170,10 +167,15 @@ export class ModuleRegistry {
     this.publicPorts.freeze();
     this.eventSubscribers.freeze();
     jobAssembler?.assertComplete();
+    context.workers?.freeze(modules.flatMap((module) => (module.workersFor?.(context.workload) ?? []).map((id) => ({ owner: module.id, id }))));
   }
 
   catalog(): readonly string[] {
     return Object.freeze([...this.modules.keys()].sort());
+  }
+
+  capabilityCatalog(): readonly string[] {
+    return Object.freeze([...this.modules.values()].flatMap((module) => module.capabilities ?? []).sort());
   }
 
   portCatalog(): readonly string[] {
@@ -191,19 +193,13 @@ export class ModuleRegistry {
 
 const providerJobIds = new Set<string>(PROVIDER_JOB_IDS);
 
+function same(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
 function required(value: string | undefined, code: string): string {
   if (!value) throw new Error(code);
   return value;
-}
-
-function workloadDefinition(id: string, dependencies: readonly string[], bindings: readonly string[], services: readonly string[]) {
-  if (dependencies.some((dependency) => !/^[a-z]+$/.test(dependency) || dependency === id)) throw new Error(`MODULE_MANIFEST_INVALID:${id}`);
-  if (new Set(dependencies).size !== dependencies.length) throw new Error(`MODULE_DEPENDENCY_DUPLICATE:${id}`);
-  if (bindings.some((dependency) => !dependencies.includes(dependency))) throw new Error(`MODULE_BINDING_DEPENDENCY_UNDECLARED:${id}`);
-  if (new Set(bindings).size !== bindings.length) throw new Error(`MODULE_BINDING_DEPENDENCY_DUPLICATE:${id}`);
-  if (services.some((service) => !/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)*$/.test(service))) throw new Error(`MODULE_SERVICE_INVALID:${id}`);
-  if (new Set(services).size !== services.length) throw new Error(`MODULE_SERVICE_DUPLICATE:${id}`);
-  return Object.freeze({ dependencies: Object.freeze([...dependencies]), bindings: Object.freeze([...bindings]), services: Object.freeze([...services]) });
 }
 
 function ordered(modules: ReadonlyMap<string, CommerceModule>, workload: ModuleContext['workload']): readonly CommerceModule[] {

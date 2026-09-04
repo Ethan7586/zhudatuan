@@ -9,12 +9,108 @@ model:
   peakOrderTps: 300
   peakPaymentCallbackTps: 600
   voucherBatch: 1000000
+  voucherCredentials: 10000000
+  concurrentImports: 64
   reportDays: 366
   annualGrowthPercent: 80
 provider:
   maxConnections: 1000
   defaultRequestsPerSecond: 20
+imports:
+  kinds: [member, product, inventory, vouchercredential, finance, order]
+  maximumRows: 1000000
+  previewRows: 100
+  chunkRows: 1000
+  maximumConcurrentJobs: 32
+  maximumConcurrentChunks: 8
+  maximumConcurrentRows: 8
+  chunkLeaseSeconds: 300
+  maximumFileBytes: 1073741824
+  maximumSpreadsheetBytes: 33554432
+  maximumExpandedBytes: 268435456
+  maximumCompressionRatio: 100
+  maximumSpreadsheetEntries: 10000
+  maximumColumns: 128
+workers:
+  provider:
+    concurrency: 32
+    queue: 1024
+    deadlineMilliseconds: 120000
+  report:
+    concurrency: 8
+    queue: 256
+    deadlineMilliseconds: 300000
+  notification:
+    concurrency: 32
+    queue: 2048
+    deadlineMilliseconds: 30000
+clients:
+  auth: { initialGzipKb: 90, featureGzipKb: 80 }
+  console: { initialGzipKb: 95, featureGzipKb: 100 }
+  storefront: { initialGzipKb: 110, featureGzipKb: 100 }
+  miniapp: { initialGzipKb: 80, featureGzipKb: 80 }
+  store: { initialGzipKb: 95, featureGzipKb: 90 }
+  supplier: { initialGzipKb: 95, featureGzipKb: 90 }
+navigation:
+  maximumRoutes: 200
+  maximumNodes: 200
 runtime:
+  upload:
+    authorizationSeconds: 300
+    maximumAuthorizationSeconds: 900
+    maximumChunkBytes: 8388608
+    maximumAttachmentBytes: 20971520
+    maximumRetentionDays: 3650
+    retentionDays:
+      import: 1
+      aftersale: 365
+      support: 365
+      qualification: 3650
+  queue:
+    maximumDepth: 4096
+    reservedDepth: 1024
+    lowPriority: 80
+    deferred: [export, import, maintenance]
+    protected: [transaction, payment, inventory, identity, risk]
+  cleanup:
+    batch: 500
+    objectConcurrency: 8
+    inboxDays: 90
+    outboxDays: 90
+  worker:
+    outbox:
+      batch: 100
+      concurrency: 8
+      pollMilliseconds: 500
+    scheduler:
+      leaseSeconds: 45
+      pollMilliseconds: 30000
+  voucherTender:
+    holdTtlSeconds: 1800
+  voucherExport:
+    pageRows: 1000
+    snapshotTtlSeconds: 86400
+    downloadTtlSeconds: 300
+    revealConcurrency: 16
+  cart:
+    maximumLines: 100
+    maximumBatchItems: 100
+    maximumQuantity: 999
+    tokenBytes: 32
+  checkout:
+    quoteTtlSeconds: 900
+    dependencyTimeoutMilliseconds: 500
+    parallelConcurrency: 8
+    maximumPriceDriftMinor: 0
+    confirmationTokenBytes: 32
+  risk:
+    syncDeadlineMilliseconds: 80
+    complexScoreRules: 20
+    failClosed: [high, critical]
+    signalRetentionDays:
+      public: 30
+      personal: 7
+      sensitive: 1
   authentication:
     bootstrap:
       ttlSeconds: 600
@@ -30,6 +126,7 @@ runtime:
     otp:
       validMinutes: 10
       resendSeconds: 30
+      maximumAttempts: 10
   poolBudget:
     databaseMaximumConnections: 100
     maximumUtilizationPercent: 70

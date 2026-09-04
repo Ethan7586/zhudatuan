@@ -12,11 +12,17 @@
   },
   "exports": {
     "./client": "./src/ClientEnvironment.ts",
+    "./clientcatalog": "./src/ClientCatalog.ts",
+    "./miniapp": "./src/MiniappEnvironment.ts",
     "./networkcatalog": "./src/NetworkCatalog.ts",
     "./networkhtml": "./src/NetworkHtml.ts",
+    "./provider": "./src/ProviderConfig.ts",
     "./route": "./src/RouteCatalog.ts",
+    "./routepath": "./src/RoutePath.ts",
     "./runtime": "./src/RuntimeCatalog.ts",
-    "./server": "./src/ServerEnvironment.ts"
+    "./server": "./src/ServerEnvironment.ts",
+    "./store": "./src/StoreEnvironment.ts",
+    "./supplier": "./src/SupplierEnvironment.ts"
   },
   "devDependencies": {
     "typescript": "5.9.3",

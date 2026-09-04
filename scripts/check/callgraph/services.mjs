@@ -66,8 +66,11 @@ function manifestServices(sourceFile) {
       ts.forEachChild(node, visit);
       return;
     }
-    const api = literalSet(node.arguments[2]);
-    const workloads = node.arguments[3] && ts.isObjectLiteralExpression(node.arguments[3]) ? objectProperties(node.arguments[3], sourceFile) : new Map();
+    const input = node.arguments[0];
+    const structured = input && ts.isObjectLiteralExpression(input) ? objectProperties(input, sourceFile) : null;
+    const api = literalSet(structured?.get('services') ?? node.arguments[2]);
+    const workloadNode = structured?.get('workloads') ?? node.arguments[3];
+    const workloads = workloadNode && ts.isObjectLiteralExpression(workloadNode) ? objectProperties(workloadNode, sourceFile) : new Map();
     const jobs = workloadServices(workloads.get('jobs'), sourceFile);
     const provider = workloadServices(workloads.get('provider'), sourceFile);
     values = api && jobs && provider ? { api, jobs, provider } : null;
@@ -96,6 +99,7 @@ function serviceScopes(sourceFile) {
     ['handlers', 'api'],
     ['ports', 'api'],
     ['jobs', 'jobs'],
+    ['workers', 'jobs'],
     ['jobPorts', 'jobs'],
     ['providerJobs', 'provider'],
     ['providerPorts', 'provider'],

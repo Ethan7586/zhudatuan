@@ -8,7 +8,7 @@ export interface QualificationProfile {
 }
 export interface QualificationPolicy {
   readonly id: string;
-  readonly version: number;
+  readonly policyVersion: number;
   readonly hash: string;
   readonly rule: Record<string, unknown>;
   readonly resources: readonly Readonly<{

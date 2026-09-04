@@ -1,7 +1,9 @@
 import type { AfterSaleLine, AvailableAfterSaleLine } from './AfterSaleLine';
 import type { AfterSaleReturn } from './Return';
+import type { OperationOutputFor, OrderAfterSaleAttachmentType, OrderAfterSaleReason } from '@shop/contract';
 
-export type AfterSaleState = 'applied' | 'reviewing' | 'approved' | 'returning' | 'received' | 'refunding' | 'resolved' | 'rejected';
+export type AfterSaleState = OperationOutputFor<'order.aftersales.read'>['items'][number]['state'];
+export type AfterSaleApplyReceipt = Readonly<Pick<OperationOutputFor<'order.aftersales.apply'>, 'id' | 'state'>>;
 
 export interface AfterSaleAttachment {
   readonly objectId: string;
@@ -14,7 +16,7 @@ export interface AfterSaleAttachment {
 export type AfterSaleAttachmentInput = Readonly<{
   readonly objectId: string;
   readonly name: string;
-  readonly contentType: 'image/jpeg' | 'image/png' | 'application/pdf';
+  readonly contentType: OrderAfterSaleAttachmentType;
   readonly sizeBytes: number;
   readonly sha256: string;
 }>;
@@ -40,6 +42,7 @@ export interface AfterSaleTimelineItem {
 export interface AfterSale {
   readonly id: string;
   readonly orderId: string;
+  readonly orderNumber: string;
   readonly state: AfterSaleState;
   readonly reasonCode: string;
   readonly description: string;
@@ -66,7 +69,7 @@ export interface AfterSalePage {
 
 export interface ApplyAfterSaleInput {
   readonly lines: readonly Readonly<{ lineId: string; quantity: number }>[];
-  readonly reason: string;
+  readonly reason: OrderAfterSaleReason;
   readonly description: string;
   readonly attachments: readonly AfterSaleAttachmentInput[];
 }

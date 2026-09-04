@@ -53,7 +53,7 @@ export interface InvitationAccessPort {
       issuer: string;
       membership: string | null;
       organization: string | null;
-      target: 'console' | 'storefront';
+      target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
       kind: 'signin' | 'enrollment' | 'campaign';
       policy: string | null;
       termsHash: string | null;
@@ -70,7 +70,7 @@ export interface InvitationAccessPort {
       membership: string;
       grantDigest: string;
       organization: string;
-      target: 'console' | 'storefront';
+      target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
       policy: string | null;
       termsHash: string | null;
       expiresAt: Date;

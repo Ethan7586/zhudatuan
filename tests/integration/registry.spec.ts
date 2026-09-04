@@ -4,6 +4,7 @@ import { OperationCatalog } from '@shop/contract';
 import { COMMERCE_MODULES, BUSINESS_MODULES } from '../../services/commerce/src/app/modules';
 import { ModuleRegistry, type CommerceModule } from '../../services/commerce/src/bootstrap/ModuleRegistry';
 import { RouteRegistry } from '../../services/commerce/src/bootstrap/RouteRegistry';
+import { defineModuleManifest } from '../../services/commerce/src/bootstrap/ModuleManifest';
 
 test('every contract operation has one executable route and path parameters round-trip', () => {
   const routes = new RouteRegistry();
@@ -17,12 +18,13 @@ test('every contract operation has one executable route and path parameters roun
 });
 
 test('all bounded contexts, support modules, runtime and observability have a deterministic dependency order', async () => {
-  assert.equal(BUSINESS_MODULES.length, 29);
-  assert.equal(COMMERCE_MODULES.length, 32);
+  assert.equal(BUSINESS_MODULES.length, 30);
+  assert.equal(COMMERCE_MODULES.length, 33);
   const registry = new ModuleRegistry();
   const loaded: string[] = [];
   for (const module of COMMERCE_MODULES)
     registry.add({
+      manifest: module.manifest,
       id: module.id,
       dependencies: module.dependencies,
       services: [],
@@ -48,5 +50,5 @@ test('module dependency cycle and missing dependency both fail startup', async (
 });
 
 function module(id: string, dependencies: readonly string[]): CommerceModule {
-  return { id, dependencies, services: [], bind: () => [], register: () => undefined };
+  return { manifest: defineModuleManifest({ id, dependencies }), id, dependencies, services: [], capabilities: [], bind: () => [], register: () => undefined };
 }

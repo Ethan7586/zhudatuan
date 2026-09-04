@@ -1,13 +1,115 @@
 version: 3
 capabilities:
+  - code: surface.auth
+    kind: feature
+    owner: capability
+    permission: null
+  - code: surface.console
+    kind: feature
+    owner: capability
+    permission: null
+  - code: surface.storefront
+    kind: feature
+    owner: capability
+    permission: null
+  - code: surface.miniapp
+    kind: feature
+    owner: capability
+    permission: null
+  - code: surface.store
+    kind: feature
+    owner: capability
+    permission: null
+  - code: surface.supplier
+    kind: feature
+    owner: capability
+    permission: null
+  - code: approval.workflow
+    kind: feature
+    owner: approval
+    permission: null
+    dependencies: [surface.console]
+  - code: voucher.lifecycle
+    kind: feature
+    owner: voucher
+    permission: null
+  - code: runtime.importing
+    kind: feature
+    owner: runtime
+    permission: null
+    dependencies: [surface.console]
   - code: identity.federation
     kind: entitlement
     owner: identity
     permission: null
+  - code: identity.registration.reset
+    kind: entitlement
+    owner: identity
+    permission: identity.registration.reset
   - code: identity.directory
     kind: entitlement
     owner: organization
     permission: null
+  - code: approval.templates.create
+    kind: operation
+    owner: approval
+    permission: approval.template.manage
+    audience: console
+    dependencies: [approval.workflow]
+  - code: approval.templates.revise
+    kind: operation
+    owner: approval
+    permission: approval.template.manage
+    audience: console
+    dependencies: [approval.workflow]
+  - code: approval.templates.enable
+    kind: operation
+    owner: approval
+    permission: approval.template.manage
+    audience: console
+    dependencies: [approval.workflow]
+  - code: approval.templates.disable
+    kind: operation
+    owner: approval
+    permission: approval.template.manage
+    audience: console
+    dependencies: [approval.workflow]
+  - code: approval.templates.get
+    kind: operation
+    owner: approval
+    permission: approval.read
+    audience: console
+    dependencies: [approval.workflow]
+  - code: approval.templates.list
+    kind: operation
+    owner: approval
+    permission: approval.read
+    audience: console
+    dependencies: [approval.workflow]
+  - code: approval.tasks.list
+    kind: operation
+    owner: approval
+    permission: approval.read
+    audience: console
+    dependencies: [approval.workflow]
+  - code: approval.tasks.approve
+    kind: operation
+    owner: approval
+    permission: approval.task.decide
+    audience: console
+    dependencies: [approval.workflow]
+  - code: approval.tasks.reject
+    kind: operation
+    owner: approval
+    permission: approval.task.decide
+    audience: console
+    dependencies: [approval.workflow]
+  - code: approval.instances.get
+    kind: operation
+    owner: approval
+    permission: approval.read
+    audience: console
+    dependencies: [approval.workflow]
   - code: navigation.tree.read
     kind: operation
     owner: navigation
@@ -68,6 +170,11 @@ capabilities:
     owner: identity
     permission: identity.link.manage
     audience: public
+  - code: identity.providers.center.read
+    kind: operation
+    owner: identity
+    permission: identity.provider.manage
+    audience: console
   - code: identity.providers.manage
     kind: operation
     owner: identity
@@ -123,6 +230,56 @@ capabilities:
     owner: runtime
     permission: runtime.health.read
     audience: console
+  - code: runtime.jobs.read
+    kind: operation
+    owner: runtime
+    permission: runtime.task.read
+    audience: console
+  - code: runtime.jobs.cancel
+    kind: operation
+    owner: runtime
+    permission: runtime.task.manage
+    audience: console
+  - code: runtime.uploads.create
+    kind: operation
+    owner: runtime
+    permission: runtime.import.manage
+    audience: console
+    dependencies: [runtime.importing]
+  - code: runtime.imports.create
+    kind: operation
+    owner: runtime
+    permission: runtime.import.manage
+    audience: console
+    dependencies: [runtime.importing]
+  - code: runtime.imports.read
+    kind: operation
+    owner: runtime
+    permission: runtime.task.read
+    audience: console
+    dependencies: [runtime.importing]
+  - code: runtime.imports.confirm
+    kind: operation
+    owner: runtime
+    permission: runtime.import.manage
+    audience: console
+    dependencies: [runtime.importing]
+  - code: runtime.imports.retry
+    kind: operation
+    owner: runtime
+    permission: runtime.task.manage
+    audience: console
+    dependencies: [runtime.importing]
+  - code: runtime.exports.read
+    kind: operation
+    owner: runtime
+    permission: runtime.task.read
+    audience: console
+  - code: runtime.exports.cancel
+    kind: operation
+    owner: runtime
+    permission: runtime.task.manage
+    audience: console
   - code: identity.sessions.create
     kind: operation
     owner: identity
@@ -162,12 +319,12 @@ capabilities:
     kind: operation
     owner: identity
     permission: identity.session.read
-    audience: storefront
+    audience: public
   - code: identity.memberships.switch
     kind: operation
     owner: identity
     permission: identity.session.manage
-    audience: storefront
+    audience: public
   - code: identity.challenges.create
     kind: operation
     owner: identity
@@ -253,15 +410,60 @@ capabilities:
     owner: organization
     permission: organization.layer.read
     audience: console
+  - code: organization.malls.create
+    kind: operation
+    owner: organization
+    permission: organization.mall.manage
+    audience: console
+  - code: organization.malls.read
+    kind: operation
+    owner: organization
+    permission: organization.mall.read
+    audience: console
+  - code: organization.malls.update
+    kind: operation
+    owner: organization
+    permission: organization.mall.manage
+    audience: console
   - code: access.center.read
     kind: operation
     owner: access
     permission: access.center.read
     audience: console
-  - code: access.owners.transfer
+  - code: access.ownership.read
     kind: operation
     owner: access
-    permission: access.owner.transfer
+    permission: access.ownership.read
+    audience: console
+  - code: access.ownership.transfers.preview
+    kind: operation
+    owner: access
+    permission: access.ownership.transfer
+    audience: console
+  - code: access.ownership.transfers.create
+    kind: operation
+    owner: access
+    permission: access.ownership.transfer
+    audience: console
+  - code: access.ownership.transfers.accept.preview
+    kind: operation
+    owner: access
+    permission: access.ownership.accept
+    audience: console
+  - code: access.ownership.transfers.accept
+    kind: operation
+    owner: access
+    permission: access.ownership.accept
+    audience: console
+  - code: access.ownership.transfers.cancel.preview
+    kind: operation
+    owner: access
+    permission: access.ownership.transfer
+    audience: console
+  - code: access.ownership.transfers.cancel
+    kind: operation
+    owner: access
+    permission: access.ownership.transfer
     audience: console
   - code: access.overrides.manage
     kind: operation
@@ -292,6 +494,41 @@ capabilities:
     kind: operation
     owner: partner
     permission: partner.read
+    audience: console
+  - code: partner.customers.create
+    kind: operation
+    owner: partner
+    permission: partner.customer.manage
+    audience: console
+  - code: partner.customers.update
+    kind: operation
+    owner: partner
+    permission: partner.customer.manage
+    audience: console
+  - code: partner.customers.enable
+    kind: operation
+    owner: partner
+    permission: partner.customer.manage
+    audience: console
+  - code: partner.customers.disable
+    kind: operation
+    owner: partner
+    permission: partner.customer.manage
+    audience: console
+  - code: partner.customers.get
+    kind: operation
+    owner: partner
+    permission: partner.customer.read
+    audience: console
+  - code: partner.customers.list
+    kind: operation
+    owner: partner
+    permission: partner.customer.read
+    audience: console
+  - code: partner.customeroptions.list
+    kind: operation
+    owner: partner
+    permission: partner.customer.read
     audience: console
   - code: partner.partners.manage
     kind: operation
@@ -343,11 +580,13 @@ capabilities:
     owner: member
     permission: member.import
     audience: console
+    dependencies: [runtime.importing]
   - code: member.imports.read
     kind: operation
     owner: member
     permission: member.import
     audience: console
+    dependencies: [runtime.importing]
   - code: qualification.center.read
     kind: operation
     owner: qualification
@@ -363,6 +602,24 @@ capabilities:
     owner: qualification
     permission: qualification.manage
     audience: console
+  - code: qualification.qualifications.publish
+    kind: operation
+    owner: qualification
+    permission: qualification.manage
+    audience: console
+    dependencies: [qualification.center.read]
+  - code: qualification.qualifications.revoke
+    kind: operation
+    owner: qualification
+    permission: qualification.manage
+    audience: console
+    dependencies: [qualification.center.read]
+  - code: qualification.evidenceuploads.create
+    kind: operation
+    owner: qualification
+    permission: qualification.manage
+    audience: console
+    dependencies: [qualification.center.read]
   - code: channel.distributors.create
     kind: operation
     owner: channel
@@ -413,6 +670,16 @@ capabilities:
     owner: catalog
     permission: catalog.pool.allocate
     audience: console
+  - code: catalog.listings.price.set
+    kind: operation
+    owner: catalog
+    permission: catalog.listing.manage
+    audience: console
+  - code: catalog.listings.pool.set
+    kind: operation
+    owner: catalog
+    permission: catalog.listing.manage
+    audience: console
   - code: catalog.product.detail.read
     kind: operation
     owner: catalog
@@ -438,6 +705,11 @@ capabilities:
     owner: catalog
     permission: catalog.listing.read
     audience: console
+  - code: catalog.facets.read
+    kind: operation
+    owner: catalog
+    permission: catalog.listing.read
+    audience: console
   - code: catalog.listings.publish
     kind: operation
     owner: catalog
@@ -458,11 +730,13 @@ capabilities:
     owner: catalog
     permission: catalog.import.manage
     audience: console
+    dependencies: [runtime.importing]
   - code: catalog.imports.read
     kind: operation
     owner: catalog
     permission: catalog.import.read
     audience: console
+    dependencies: [runtime.importing]
   - code: pricing.rules.create
     kind: operation
     owner: pricing
@@ -473,20 +747,52 @@ capabilities:
     owner: pricing
     permission: pricing.rule.manage
     audience: console
+  - code: pricing.offers.read
+    kind: operation
+    owner: pricing
+    permission: pricing.offer.read
+    audience: public
+  - code: inventory.availability.read
+    kind: operation
+    owner: inventory
+    permission: inventory.read
+    audience: public
   - code: inventory.imports.create
     kind: operation
     owner: inventory
     permission: inventory.import.manage
     audience: console
+    dependencies: [runtime.importing]
   - code: inventory.imports.read
     kind: operation
     owner: inventory
     permission: inventory.import.read
     audience: console
+    dependencies: [runtime.importing]
   - code: marketing.campaigns.read
     kind: operation
     owner: marketing
     permission: marketing.read
+    audience: console
+  - code: marketing.campaigns.create
+    kind: operation
+    owner: marketing
+    permission: marketing.manage
+    audience: console
+  - code: marketing.campaigns.revise
+    kind: operation
+    owner: marketing
+    permission: marketing.manage
+    audience: console
+  - code: marketing.campaigns.publish
+    kind: operation
+    owner: marketing
+    permission: marketing.manage
+    audience: console
+  - code: marketing.campaigns.disable
+    kind: operation
+    owner: marketing
+    permission: marketing.manage
     audience: console
   - code: reporting.dashboard.read
     kind: operation
@@ -578,10 +884,20 @@ capabilities:
     owner: experience
     permission: experience.version.publish
     audience: console
+  - code: experience.published.read
+    kind: operation
+    owner: experience
+    permission: null
+    audience: public
   - code: cart.current.read
     kind: operation
     owner: cart
     permission: cart.read
+    audience: storefront
+  - code: cart.anonymous.merge
+    kind: operation
+    owner: cart
+    permission: cart.manage
     audience: storefront
   - code: cart.items.put
     kind: operation
@@ -603,7 +919,17 @@ capabilities:
     owner: order
     permission: order.create
     audience: storefront
+  - code: order.orders.cancel
+    kind: operation
+    owner: order
+    permission: order.cancel
+    audience: public
   - code: order.orders.read
+    kind: operation
+    owner: order
+    permission: order.read
+    audience: public
+  - code: order.detail.read
     kind: operation
     owner: order
     permission: order.read
@@ -612,12 +938,24 @@ capabilities:
     kind: operation
     owner: order
     permission: order.reminder.create
-    audience: storefront
+    audience: public
   - code: order.orders.export
     kind: operation
     owner: order
     permission: order.export
     audience: console
+  - code: order.imports.create
+    kind: operation
+    owner: order
+    permission: order.import.manage
+    audience: console
+    dependencies: [runtime.importing]
+  - code: order.imports.read
+    kind: operation
+    owner: order
+    permission: order.import.read
+    audience: console
+    dependencies: [runtime.importing]
   - code: order.aftersales.read
     kind: operation
     owner: order
@@ -663,6 +1001,11 @@ capabilities:
     owner: fulfillment
     permission: fulfillment.return.manage
     audience: console
+  - code: payment.intents.create
+    kind: operation
+    owner: payment
+    permission: payment.create
+    audience: storefront
   - code: payment.intents.read
     kind: operation
     owner: payment
@@ -718,101 +1061,423 @@ capabilities:
     owner: payment
     permission: null
     audience: webhook
-  - code: voucher.cardlibraries.read
+  - code: voucher.products.create
     kind: operation
     owner: voucher
-    permission: voucher.cardlibrary.read
+    permission: voucher.product.manage
     audience: console
-  - code: voucher.cardlibraries.create
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.products.revise
     kind: operation
     owner: voucher
-    permission: voucher.cardlibrary.create
+    permission: voucher.product.manage
     audience: console
-  - code: voucher.cardlibraries.allocate
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.products.enable
     kind: operation
     owner: voucher
-    permission: voucher.cardlibrary.allocate
+    permission: voucher.product.manage
     audience: console
-  - code: voucher.imports.read
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.products.disable
     kind: operation
     owner: voucher
-    permission: voucher.cardlibrary.read
+    permission: voucher.product.manage
     audience: console
-  - code: voucher.programs.read
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.products.get
     kind: operation
     owner: voucher
-    permission: voucher.program.read
+    permission: voucher.product.read
     audience: console
-  - code: voucher.programs.manage
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.products.list
     kind: operation
     owner: voucher
-    permission: voucher.program.manage
+    permission: voucher.product.read
     audience: console
-  - code: voucher.reserves.read
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.productoptions.list
     kind: operation
     owner: voucher
-    permission: voucher.reserve.read
+    permission: voucher.product.read
     audience: console
-  - code: voucher.reserves.request
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.credentialpools.create
     kind: operation
     owner: voucher
-    permission: voucher.reserve.request
+    permission: voucher.credential.manage
     audience: console
-  - code: voucher.reserves.decide
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.credentials.generate
     kind: operation
     owner: voucher
-    permission: voucher.reserve.decide
+    permission: voucher.credential.manage
     audience: console
-  - code: voucher.batches.read
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.credentials.import
     kind: operation
     owner: voucher
-    permission: voucher.batch.read
+    permission: voucher.credential.manage
     audience: console
-  - code: voucher.batches.issue
+    dependencies:
+      - voucher.lifecycle
+      - runtime.importing
+  - code: voucher.credentialpools.close
     kind: operation
     owner: voucher
-    permission: voucher.issue
+    permission: voucher.credential.manage
     audience: console
-  - code: voucher.batches.retry
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.credentialpools.get
     kind: operation
     owner: voucher
-    permission: voucher.issue
+    permission: voucher.credential.read
     audience: console
-  - code: voucher.status.batch
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.credentialpools.list
     kind: operation
     owner: voucher
-    permission: voucher.status.manage
+    permission: voucher.credential.read
     audience: console
-  - code: voucher.statusbatches.read
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.credentials.list
     kind: operation
     owner: voucher
-    permission: voucher.history.read
+    permission: voucher.credential.read
     audience: console
-  - code: voucher.bindings.read
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.credentials.get
     kind: operation
     owner: voucher
-    permission: voucher.binding.read
+    permission: voucher.credential.read
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.credentialexports.create
+    kind: operation
+    owner: voucher
+    permission: voucher.credential.export
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.jobs.get
+    kind: operation
+    owner: voucher
+    permission: voucher.job.read
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.stockrequests.create
+    kind: operation
+    owner: voucher
+    permission: voucher.stockrequest.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.stockrequests.update
+    kind: operation
+    owner: voucher
+    permission: voucher.stockrequest.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.stockrequests.submit
+    kind: operation
+    owner: voucher
+    permission: voucher.stockrequest.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.stockrequests.cancel
+    kind: operation
+    owner: voucher
+    permission: voucher.stockrequest.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.stockrequests.get
+    kind: operation
+    owner: voucher
+    permission: voucher.stockrequest.read
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.stockrequests.list
+    kind: operation
+    owner: voucher
+    permission: voucher.stockrequest.read
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.stockrequestoptions.list
+    kind: operation
+    owner: voucher
+    permission: voucher.stockrequest.read
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.issueorders.create
+    kind: operation
+    owner: voucher
+    permission: voucher.issue.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.issueorders.update
+    kind: operation
+    owner: voucher
+    permission: voucher.issue.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.issueorders.submit
+    kind: operation
+    owner: voucher
+    permission: voucher.issue.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.issueorders.cancel
+    kind: operation
+    owner: voucher
+    permission: voucher.issue.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.issueorders.get
+    kind: operation
+    owner: voucher
+    permission: voucher.issue.read
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.issueorders.list
+    kind: operation
+    owner: voucher
+    permission: voucher.issue.read
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.issuebatches.retry
+    kind: operation
+    owner: voucher
+    permission: voucher.issue.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.issuebatches.get
+    kind: operation
+    owner: voucher
+    permission: voucher.issue.read
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.issueorderexports.create
+    kind: operation
+    owner: voucher
+    permission: voucher.export.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.actionbatches.create
+    kind: operation
+    owner: voucher
+    permission: voucher.action.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.actionbatches.get
+    kind: operation
+    owner: voucher
+    permission: voucher.action.read
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.actionbatches.list
+    kind: operation
+    owner: voucher
+    permission: voucher.action.read
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.actionbatches.retry
+    kind: operation
+    owner: voucher
+    permission: voucher.action.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.actionexports.create
+    kind: operation
+    owner: voucher
+    permission: voucher.export.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.search.read
+    kind: operation
+    owner: voucher
+    permission: voucher.search.read
     audience: public
-  - code: voucher.bindings.manage
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.activations.secret
     kind: operation
     owner: voucher
-    permission: voucher.binding.manage
+    permission: null
+    audience: public
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.activations.numbersecret
+    kind: operation
+    owner: voucher
+    permission: null
+    audience: public
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.vouchers.bind
+    kind: operation
+    owner: voucher
+    permission: voucher.holder.manage
     audience: console
-  - code: voucher.redemptions.read
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.vouchers.unbind
+    kind: operation
+    owner: voucher
+    permission: voucher.holder.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.vouchers.get
+    kind: operation
+    owner: voucher
+    permission: voucher.holder.read
+    audience: public
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.vouchers.getbynumber
+    kind: operation
+    owner: voucher
+    permission: voucher.search.read
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.vouchers.timeline
+    kind: operation
+    owner: voucher
+    permission: voucher.holder.read
+    audience: public
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.redemptions.quote
+    kind: operation
+    owner: voucher
+    permission: verification.verify
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.tenderholds.create
+    kind: operation
+    owner: voucher
+    permission: verification.verify
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.tenderholds.consume
+    kind: operation
+    owner: voucher
+    permission: verification.verify
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.tenderholds.release
+    kind: operation
+    owner: voucher
+    permission: verification.verify
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.redemptions.create
+    kind: operation
+    owner: voucher
+    permission: verification.verify
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.refunds.create
+    kind: operation
+    owner: voucher
+    permission: voucher.refund.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.redemptions.get
     kind: operation
     owner: voucher
     permission: voucher.redemption.read
     audience: public
-  - code: voucher.history.read
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.searchfacets.read
     kind: operation
     owner: voucher
-    permission: voucher.history.read
+    permission: voucher.search.read
     audience: console
-  - code: voucher.redemptions.reverse
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.searchsnapshots.create
     kind: operation
     owner: voucher
-    permission: voucher.redemption.reverse
+    permission: voucher.search.read
     audience: console
+    dependencies:
+      - voucher.lifecycle
+  - code: voucher.searchexports.create
+    kind: operation
+    owner: voucher
+    permission: voucher.export.manage
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
+  - code: voucher.exports.get
+    kind: operation
+    owner: voucher
+    permission: voucher.export.read
+    audience: console
+    dependencies:
+      - voucher.lifecycle
+      - approval.workflow
   - code: benefit.accounts.read
     kind: operation
     owner: benefit
@@ -878,12 +1543,32 @@ capabilities:
     owner: finance
     permission: finance.overview.read
     audience: console
+  - code: finance.facets.read
+    kind: operation
+    owner: finance
+    permission: finance.overview.read
+    audience: console
+  - code: finance.audit.read
+    kind: operation
+    owner: finance
+    permission: audit.read
+    audience: console
   - code: finance.entries.read
     kind: operation
     owner: finance
     permission: finance.entry.read
     audience: console
   - code: finance.statements.read
+    kind: operation
+    owner: finance
+    permission: finance.statement.read
+    audience: console
+  - code: finance.statementimports.create
+    kind: operation
+    owner: finance
+    permission: finance.statement.import
+    audience: console
+  - code: finance.statementimports.read
     kind: operation
     owner: finance
     permission: finance.statement.read
@@ -1187,6 +1872,16 @@ capabilities:
     kind: operation
     owner: observability
     permission: observability.clienterror.read
+    audience: console
+  - code: observability.healthoverview.read
+    kind: operation
+    owner: observability
+    permission: observability.health.read
+    audience: console
+  - code: observability.slo.read
+    kind: operation
+    owner: observability
+    permission: observability.health.read
     audience: console
   - code: channel.connections.read
     kind: operation

@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
+import { isConsumerTarget, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
 import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationReply } from '../../../../foundation/application/OperationHandler';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
-import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
+import type { KmsClient } from '../../../../foundation/application/KmsPort';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { Message } from '../../domain/model/Message';
 import { MessagePolicy } from '../../domain/policy/MessagePolicy';
@@ -32,6 +32,8 @@ interface PreparedMessage {
   readonly loaded: LoadedMessage;
   readonly message: EncryptedSupportMessage;
   readonly attachmentIds: readonly string[];
+  readonly kind: 'text' | 'attachment';
+  readonly visibility: 'external' | 'internal';
 }
 
 export class SendSupportMessage implements MessageSender {
@@ -51,7 +53,7 @@ export class SendSupportMessage implements MessageSender {
 
   async loadMessage(context: ReadTransactionContext, input: OperationInputFor<'support.messages.send'>, execution: ExecutionContext<'support.messages.send'>): Promise<PreparedSupportOperation> {
     const actor = await this.support.actor(context, execution);
-    const target = await this.tickets.readMessageTarget(context, input.path.caseid, actor.scopes, actor.member, actor.target === 'storefront');
+    const target = await this.tickets.readMessageTarget(context, input.path.caseid, actor.scopes, actor.member, isConsumerTarget(actor.target));
     return Object.freeze({ actor, target });
   }
 
@@ -59,10 +61,13 @@ export class SendSupportMessage implements MessageSender {
     const loaded = value as LoadedMessage;
     const wire = bodyRecord(input);
     const attachmentIds = wire.attachmentIds;
+    const author = isConsumerTarget(loaded.actor.target) ? 'member' : 'agent';
     const body = this.messagesPolicy.prepare({
-      body: textField(wire, 'message', 4000),
+      body: wire.message,
       clientMessageId: textField(wire, 'clientMessageId', 128),
       attachmentIds: Array.isArray(attachmentIds) ? attachmentIds.map(String) : undefined,
+      author,
+      visibility: wire.visibility,
     });
     const id = `message:${randomUUID()}`;
     const envelope = await this.kms.encrypt('pii', 'support/message', body.body, {
@@ -70,7 +75,7 @@ export class SendSupportMessage implements MessageSender {
       conversation: loaded.target.conversation,
       messageId: id,
     });
-    return Object.freeze({ loaded, attachmentIds: body.attachmentIds, message: Object.freeze({ id, clientMessageId: body.clientMessageId, ciphertext: envelope.ciphertext, fingerprint: envelope.fingerprint, keyVersion: envelope.keyVersion, body: body.body }) });
+    return Object.freeze({ loaded, attachmentIds: body.attachmentIds, kind: body.kind, visibility: body.visibility, message: Object.freeze({ id, clientMessageId: body.clientMessageId, ciphertext: envelope.ciphertext, fingerprint: envelope.fingerprint, keyVersion: envelope.keyVersion, body: body.body }) });
   }
 
   async sendMessage(
@@ -81,13 +86,15 @@ export class SendSupportMessage implements MessageSender {
   ): Promise<OperationReply<OperationOutputFor<'support.messages.send'>>> {
     const prepared = value as PreparedMessage;
     const actor = prepared.loaded.actor;
-    const target = await this.tickets.lockMessageTarget(context, input.path.caseid, actor.scopes, actor.member, actor.target === 'storefront');
+    const target = await this.tickets.lockMessageTarget(context, input.path.caseid, actor.scopes, actor.member, isConsumerTarget(actor.target));
     if (target.ticket.id !== prepared.loaded.target.ticket.id || target.conversation !== prepared.loaded.target.conversation) throw new DomainError('VERSION_CONFLICT');
     this.ticketsPolicy.assertVersion(target.ticket, execution.expectedVersion);
-    const authorType = actor.target === 'storefront' ? 'member' : 'agent';
+    const authorType = isConsumerTarget(actor.target) ? 'member' : 'agent';
     this.ticketsPolicy.assertWritable(target.ticket, authorType);
-    if (authorType === 'agent') await this.agents.assertSender(context, actor.membership, target.ticket.scope);
-    await this.evidence.assertReady(context, target.conversation, target.ticket.scope, prepared.attachmentIds);
+    const participant = authorType === 'agent' ? await this.agents.assertSender(context, actor.membership, target.ticket.scope) : actor.member;
+    this.ticketsPolicy.assertParticipant(target.ticket, authorType, participant, target.member);
+    const attachments = await this.evidence.inspect(context, target.conversation, target.ticket.scope, prepared.attachmentIds);
+    this.messagesPolicy.assertAttachments(prepared.attachmentIds, attachments);
     const replay = await this.messages.existing(context, target.conversation, actor.actor, prepared.message.clientMessageId);
     if (replay) {
       if (replay.bodyHash !== prepared.message.fingerprint) throw new DomainError('SUPPORT_CLIENT_MESSAGE_CONFLICT');
@@ -101,11 +108,13 @@ export class SendSupportMessage implements MessageSender {
       conversation: target.conversation,
       authorType,
       authorId: actor.actor,
+      kind: prepared.kind,
+      visibility: prepared.visibility,
       sequence: conversation.sequence,
       message: prepared.message,
       attachments: prepared.attachmentIds,
     });
-    new Message(stored.id, stored.clientMessageId, stored.conversationId, stored.authorType, stored.authorId, stored.bodyHash, stored.sequence, stored.version, stored.createdAt);
+    new Message(stored.id, stored.clientMessageId, stored.conversationId, stored.authorType, stored.authorId, stored.kind, stored.visibility, stored.bodyHash, stored.sequence, stored.version, stored.createdAt);
     const ticket = await this.tickets.advanceMessage(context, target.ticket, execution.expectedVersion!, authorType);
     await this.events.history(context, target.ticket.id, target.ticket.scope, 'message', actor.actor, { message: stored.id, sequence: stored.sequence, state: ticket.state });
     await this.events.append(context, {
@@ -117,6 +126,43 @@ export class SendSupportMessage implements MessageSender {
       payload: { ticketId: target.ticket.id, conversationId: target.conversation, messageId: stored.id, sequence: stored.sequence, version: conversation.version, memberId: target.member },
     });
     return reply(stored, ticket.id, ticket.state, ticket.version, conversation.version, prepared.message.body);
+  }
+
+  async sendSystemMessage(
+    context: WriteTransactionContext,
+    target: SupportMessageTarget,
+    input: Readonly<{ body: string; clientMessageId: string; trace: string }>
+  ): Promise<StoredSupportMessage> {
+    const content = this.messagesPolicy.prepare({ body: input.body, clientMessageId: input.clientMessageId, attachmentIds: [], author: 'system', visibility: 'internal' });
+    const id = `message:${randomUUID()}`;
+    const envelope = await this.kms.encrypt('pii', 'support/message', content.body, { scope: target.ticket.scope, conversation: target.conversation, messageId: id });
+    const message = Object.freeze({ id, clientMessageId: content.clientMessageId, ciphertext: envelope.ciphertext, fingerprint: envelope.fingerprint, keyVersion: envelope.keyVersion, body: content.body });
+    const replay = await this.messages.existing(context, target.conversation, 'system', content.clientMessageId);
+    if (replay) {
+      if (replay.bodyHash !== message.fingerprint) throw new DomainError('SUPPORT_CLIENT_MESSAGE_CONFLICT');
+      return replay;
+    }
+    const conversation = await this.conversations.advance(context, target.conversation, target.conversationVersion).catch(() => {
+      throw new DomainError('VERSION_CONFLICT');
+    });
+    const stored = await this.messages.append(context, {
+      scope: target.ticket.scope,
+      conversation: target.conversation,
+      authorType: 'system',
+      authorId: 'system',
+      kind: 'system',
+      visibility: 'internal',
+      sequence: conversation.sequence,
+      message,
+      attachments: [],
+    });
+    new Message(stored.id, stored.clientMessageId, stored.conversationId, stored.authorType, stored.authorId, stored.kind, stored.visibility, stored.bodyHash, stored.sequence, stored.version, stored.createdAt);
+    await this.events.history(context, target.ticket.id, target.ticket.scope, 'system.message', 'system', { message: stored.id, sequence: stored.sequence });
+    await this.events.append(context, {
+      type: 'support.message.sent', aggregateType: 'conversation', aggregate: target.conversation, scope: target.ticket.scope, trace: input.trace,
+      payload: { ticketId: target.ticket.id, conversationId: target.conversation, messageId: stored.id, sequence: stored.sequence, version: conversation.version, memberId: target.member },
+    });
+    return stored;
   }
 }
 
@@ -138,6 +184,8 @@ function reply(
         conversationId: stored.conversationId,
         authorType: stored.authorType,
         authorId: stored.authorId,
+        kind: stored.kind,
+        visibility: stored.visibility,
         body,
         sequence: stored.sequence,
         version: stored.version,

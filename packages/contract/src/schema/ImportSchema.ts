@@ -14,7 +14,7 @@ const base = {
   updated_at: isoUtc,
 } as const;
 
-export const importInput = strictObject({ objectRef: string(), sha256: string() });
+export const importInput = strictObject({ objectRef: string(), sha256: string(), fileName: optional(string()) });
 export const importCreated = strictObject(base);
 export const importRead = strictObject({
   ...base,

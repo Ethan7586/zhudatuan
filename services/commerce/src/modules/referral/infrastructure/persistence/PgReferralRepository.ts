@@ -15,8 +15,9 @@ export class PgReferralRepository implements ReferralRepository {
   async setting(context: ReadTransactionContext, scope: string) {
     const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query(
-      `select id,scope_id "scopeId",enabled,first_touch_days "firstTouchDays",rate_basis_points "rateBasisPoints",
-      minimum_withdrawal_minor "minimumWithdrawalMinor",currency,version,updated_at "updatedAt" from referral.setting where scope_id=$1`,
+      `select id,scope_id "scopeId",enabled,recruit_enabled "recruitEnabled",review_required "reviewRequired",reward_enabled "rewardEnabled",
+      binding_mode "bindingMode",first_touch_days "firstTouchDays",freeze_days "freezeDays",settlement_trigger "settlementTrigger",rate_basis_points "rateBasisPoints",
+      minimum_withdrawal_minor "minimumWithdrawalMinor",monthly_withdrawal_limit "monthlyWithdrawalLimit",currency,version,updated_at "updatedAt" from referral.setting where scope_id=$1`,
       [scope]
     );
     return result.rows[0] ? Object.freeze({ ...result.rows[0] }) : null;
@@ -24,21 +25,24 @@ export class PgReferralRepository implements ReferralRepository {
   async manageSetting(context: WriteTransactionContext, input: Parameters<ReferralRepository['manageSetting']>[1]) {
     const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query(
-      `insert into referral.setting(id,scope_id,enabled,first_touch_days,rate_basis_points,minimum_withdrawal_minor,currency,version,created_at,updated_at)
-      values($1,$2,$3,$4,$5,$6,$7,1,clock_timestamp(),clock_timestamp()) on conflict(id) do update set enabled=excluded.enabled,
-      first_touch_days=excluded.first_touch_days,rate_basis_points=excluded.rate_basis_points,minimum_withdrawal_minor=excluded.minimum_withdrawal_minor,
-      currency=excluded.currency,version=referral.setting.version+1,updated_at=clock_timestamp()
-      where referral.setting.scope_id=$2 and referral.setting.version=$8
-      returning id,scope_id "scopeId",enabled,first_touch_days "firstTouchDays",rate_basis_points "rateBasisPoints",
-      minimum_withdrawal_minor "minimumWithdrawalMinor",currency,version,updated_at "updatedAt"`,
-      [input.id, input.scopeId, input.enabled, input.firstTouchDays, input.rateBasisPoints, input.minimumWithdrawalMinor, input.currency, input.expectedVersion]
+      `insert into referral.setting(id,scope_id,enabled,recruit_enabled,review_required,reward_enabled,binding_mode,first_touch_days,freeze_days,
+      settlement_trigger,rate_basis_points,minimum_withdrawal_minor,monthly_withdrawal_limit,currency,version,created_at,updated_at)
+      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,1,clock_timestamp(),clock_timestamp()) on conflict(id) do update set enabled=excluded.enabled,
+      recruit_enabled=excluded.recruit_enabled,review_required=excluded.review_required,reward_enabled=excluded.reward_enabled,binding_mode=excluded.binding_mode,
+      first_touch_days=excluded.first_touch_days,freeze_days=excluded.freeze_days,settlement_trigger=excluded.settlement_trigger,rate_basis_points=excluded.rate_basis_points,
+      minimum_withdrawal_minor=excluded.minimum_withdrawal_minor,monthly_withdrawal_limit=excluded.monthly_withdrawal_limit,currency=excluded.currency,
+      version=referral.setting.version+1,updated_at=clock_timestamp() where referral.setting.scope_id=$2 and referral.setting.version=$15
+      returning id,scope_id "scopeId",enabled,recruit_enabled "recruitEnabled",review_required "reviewRequired",reward_enabled "rewardEnabled",
+      binding_mode "bindingMode",first_touch_days "firstTouchDays",freeze_days "freezeDays",settlement_trigger "settlementTrigger",rate_basis_points "rateBasisPoints",
+      minimum_withdrawal_minor "minimumWithdrawalMinor",monthly_withdrawal_limit "monthlyWithdrawalLimit",currency,version,updated_at "updatedAt"`,
+      [input.id, input.scopeId, input.enabled, input.recruitEnabled, input.reviewRequired, input.rewardEnabled, input.bindingMode, input.firstTouchDays, input.freezeDays, input.settlementTrigger, input.rateBasisPoints, input.minimumWithdrawalMinor, input.monthlyWithdrawalLimit, input.currency, input.expectedVersion]
     );
     return required(result.rows[0], 'VERSION_CONFLICT');
   }
   async products(context: ReadTransactionContext, scope: string, page: Parameters<ReferralRepository['products']>[2]) {
     const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query(
-      `select id,product_id "productId",enabled,rate_basis_points "rateBasisPoints",version,updated_at "updatedAt"
+      `select id,product_id "productId",enabled,rate_basis_points "rateBasisPoints",reward_basis_points "rewardBasisPoints",version,updated_at "updatedAt"
       from referral.product where scope_id=$1 and ($2::text is null or id>$2) order by id limit $3`,
       [scope, page.id, page.fetch]
     );
@@ -47,12 +51,12 @@ export class PgReferralRepository implements ReferralRepository {
   async manageProduct(context: WriteTransactionContext, input: Parameters<ReferralRepository['manageProduct']>[1]) {
     const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query(
-      `insert into referral.product(id,scope_id,product_id,enabled,rate_basis_points,version,created_at,updated_at)
-      values($1,$2,$3,$4,$5,1,clock_timestamp(),clock_timestamp()) on conflict(id) do update set enabled=excluded.enabled,
-      rate_basis_points=excluded.rate_basis_points,version=referral.product.version+1,updated_at=clock_timestamp()
-      where referral.product.scope_id=$2 and referral.product.product_id=$3 and referral.product.version=$6
-      returning id,product_id "productId",enabled,rate_basis_points "rateBasisPoints",version,updated_at "updatedAt"`,
-      [input.id, input.scopeId, input.productId, input.enabled, input.rateBasisPoints, input.expectedVersion]
+      `insert into referral.product(id,scope_id,product_id,enabled,rate_basis_points,reward_basis_points,version,created_at,updated_at)
+      values($1,$2,$3,$4,$5,$6,1,clock_timestamp(),clock_timestamp()) on conflict(id) do update set enabled=excluded.enabled,
+      rate_basis_points=excluded.rate_basis_points,reward_basis_points=excluded.reward_basis_points,version=referral.product.version+1,updated_at=clock_timestamp()
+      where referral.product.scope_id=$2 and referral.product.product_id=$3 and referral.product.version=$7
+      returning id,product_id "productId",enabled,rate_basis_points "rateBasisPoints",reward_basis_points "rewardBasisPoints",version,updated_at "updatedAt"`,
+      [input.id, input.scopeId, input.productId, input.enabled, input.rateBasisPoints, input.rewardBasisPoints, input.expectedVersion]
     );
     return required(result.rows[0], 'VERSION_CONFLICT');
   }
@@ -80,10 +84,10 @@ export class PgReferralRepository implements ReferralRepository {
   async applyMember(context: WriteTransactionContext, input: Parameters<ReferralRepository['applyMember']>[1]) {
     const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query(
-      `insert into referral.member(id,scope_id,member_id,display_name,mobile_masked,state,maker_id,reason,applied_at,version)
-      values($1,$2,$3,$4,$5,'applied',$6,$7,clock_timestamp(),1) on conflict(scope_id,member_id) do nothing
+      `insert into referral.member(id,scope_id,member_id,display_name,mobile_masked,state,maker_id,checker_id,reason,applied_at,approved_at,version)
+      values($1,$2,$3,$4,$5,$8,$6,case when $8='active' then 'system:referral' end,$7,clock_timestamp(),case when $8='active' then clock_timestamp() end,1) on conflict(scope_id,member_id) do nothing
       returning id,member_id "memberId",state status,applied_at "appliedAt",approved_at "approvedAt",disqualified_at "disqualifiedAt",version`,
-      [input.id, input.scopeId, input.memberId, input.displayName, maskMobile(input.mobile), input.makerId, input.reason]
+      [input.id, input.scopeId, input.memberId, input.displayName, maskMobile(input.mobile), input.makerId, input.reason, input.state]
     );
     return required(result.rows[0], 'REFERRAL_NOT_ELIGIBLE');
   }
@@ -102,7 +106,7 @@ export class PgReferralRepository implements ReferralRepository {
   async bindings(context: ReadTransactionContext, scope: string, customer: string | null, page: Parameters<ReferralRepository['bindings']>[3]) {
     const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query(
-      `select id,promoter_id "promoterId",customer_id "memberId",source,bound_at "boundAt",version
+      `select id,promoter_id "promoterId",customer_id "memberId",source,bound_at "boundAt",expires_at "expiresAt",state status,version
       from referral.binding where scope_id=$1 and ($2::text is null or customer_id=$2) and ($3::text is null or id>$3) order by id limit $4`,
       [scope, customer, page.id, page.fetch]
     );
@@ -111,22 +115,46 @@ export class PgReferralRepository implements ReferralRepository {
   async binding(context: WriteTransactionContext, scope: string, customer: string) {
     const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query(
-      `select id,scope_id "scopeId",customer_id "customerId",promoter_id "promoterId",
-      token_fingerprint "tokenFingerprint",bound_at "boundAt",version from referral.binding where scope_id=$1 and customer_id=$2 for share`,
+      `select id,scope_id "scopeId",customer_id "customerId",promoter_id "promoterId",promoter_member_id "promoterMemberId",
+      token_fingerprint "tokenFingerprint",source,bound_at "boundAt",expires_at "expiresAt",state,version
+      from referral.binding where scope_id=$1 and customer_id=$2 and state='active' for update`,
       [scope, customer]
     );
     return result.rows[0] ? Object.freeze({ ...result.rows[0] }) : null;
   }
+  async attribution(context: WriteTransactionContext, scope: string, promoter: string, observedAt: string) {
+    const result = await this.transactions.database(context).query<{ promoterMemberId: string; ancestors: string[] }>(
+      `with recursive relation(member_id,depth,path) as (
+        select member.member_id,1,array[member.member_id] from referral.member member
+        where member.scope_id=$1 and member.id=$2 and member.state='active'
+        union all
+        select parent.member_id,relation.depth+1,relation.path||parent.member_id from relation
+        join referral.binding binding on binding.scope_id=$1 and binding.customer_id=relation.member_id and binding.state='active'
+          and binding.bound_at<=$3::timestamptz and (binding.expires_at is null or binding.expires_at>$3::timestamptz)
+        join referral.member parent on parent.scope_id=binding.scope_id and parent.id=binding.promoter_id and parent.state='active'
+        where relation.depth<32 and not(parent.member_id=any(relation.path))
+      ) select min(member_id) filter(where depth=1) "promoterMemberId",array_agg(member_id order by depth) ancestors from relation`,
+      [scope, promoter, observedAt]
+    );
+    const row = result.rows[0];
+    return row?.promoterMemberId ? Object.freeze({ promoterMemberId: row.promoterMemberId, ancestors: Object.freeze(row.ancestors) }) : null;
+  }
   async bind(context: WriteTransactionContext, input: Parameters<ReferralRepository['bind']>[1]) {
     const database = this.transactions.database(context);
-    const result = await this.transactions.database(context).query(
-      `insert into referral.binding(id,scope_id,customer_id,promoter_id,token_fingerprint,source,bound_at,version)
-      select $1,$2,$3,promoter.id,$5,$6,clock_timestamp(),1 from referral.member promoter
+    await database.query(`select pg_advisory_xact_lock(hashtextextended($1,0))`, [`referral:binding:${input.scopeId}:${input.customerId}`]);
+    await database.query(
+      `update referral.binding set state='superseded',superseded_at=$2::timestamptz,version=version+1
+      where scope_id=$1 and customer_id=$3 and state='active' and expires_at is not null and expires_at<=$2::timestamptz`,
+      [input.scopeId, input.boundAt, input.customerId]
+    );
+    const result = await database.query(
+      `insert into referral.binding(id,scope_id,customer_id,promoter_id,promoter_member_id,token_fingerprint,source,bound_at,expires_at,state,version)
+      select $1,$2,$3,promoter.id,promoter.member_id,$5,$6,$7::timestamptz,$8::timestamptz,'active',1 from referral.member promoter
       join referral.setting setting on setting.scope_id=promoter.scope_id and setting.enabled
-      where promoter.id=$4 and promoter.scope_id=$2 and promoter.state='active' and promoter.member_id<>$3
-      on conflict(scope_id,customer_id) do nothing
-      returning id,promoter_id "promoterId",customer_id "memberId",source,bound_at "boundAt",version`,
-      [input.id, input.scopeId, input.customerId, input.promoterId, input.fingerprint, input.source]
+      where promoter.id=$4 and promoter.scope_id=$2 and promoter.state='active' and promoter.member_id=$9 and promoter.member_id<>$3
+      on conflict do nothing
+      returning id,promoter_id "promoterId",customer_id "memberId",source,bound_at "boundAt",expires_at "expiresAt",state status,version`,
+      [input.id, input.scopeId, input.customerId, input.promoterId, input.fingerprint, input.source, input.boundAt, input.expiresAt, input.promoterMemberId]
     );
     return required(result.rows[0], 'REFERRAL_ALREADY_BOUND');
   }

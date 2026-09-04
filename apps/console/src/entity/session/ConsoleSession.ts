@@ -1,7 +1,7 @@
 import { SCOPE_KINDS, type ConsoleScopeKind, type ScopeKind } from '@shop/authz';
 import { z } from 'zod';
 import { DatabaseIntegerSchema } from '../../shared/schema/DatabaseInteger';
-import { NavigationNodeSchema, NavigationTreeSchema, type NavigationNode } from '../../shared/navigation/NavigationContract';
+import { NavigationTreeSchema, type NavigationNode, type NavigationTree } from '../../shared/navigation/NavigationContract';
 
 export const ScopeSchema = z.object({
   kind: z.enum(SCOPE_KINDS),
@@ -12,7 +12,7 @@ export const ScopeSchema = z.object({
   path: z.array(z.object({ kind: z.enum(SCOPE_KINDS), id: z.string().min(1) })).optional(),
 });
 
-export { NavigationNodeSchema, NavigationTreeSchema };
+export { NavigationTreeSchema };
 export type ConsoleNavigationNode = NavigationNode;
 
 export const SessionSchema = z.object({
@@ -57,7 +57,7 @@ export interface ConsoleContext {
   readonly profile: ConsoleProfile;
   readonly scopes: readonly ConsoleScope[];
   readonly scope: ConsoleScope;
-  readonly navigation?: z.infer<typeof NavigationTreeSchema>;
+  readonly navigation?: NavigationTree;
 }
 
 export function uniqueScopes(scopes: readonly ConsoleScope[]): readonly ConsoleScope[] {
@@ -76,10 +76,10 @@ function mergeScope(current: ConsoleScope, candidate: ConsoleScope): ConsoleScop
   return Object.freeze({
     ...current,
     ...candidate,
-    ...(candidate.tenant ?? current.tenant ? { tenant: candidate.tenant ?? current.tenant } : {}),
-    ...(candidate.name ?? current.name ? { name: candidate.name ?? current.name } : {}),
+    ...((candidate.tenant ?? current.tenant) ? { tenant: candidate.tenant ?? current.tenant } : {}),
+    ...((candidate.name ?? current.name) ? { name: candidate.name ?? current.name } : {}),
     ...(candidate.parent_id !== undefined || current.parent_id !== undefined ? { parent_id: candidate.parent_id ?? current.parent_id ?? null } : {}),
-    ...(candidate.path ?? current.path ? { path: candidate.path ?? current.path } : {}),
+    ...((candidate.path ?? current.path) ? { path: candidate.path ?? current.path } : {}),
   });
 }
 

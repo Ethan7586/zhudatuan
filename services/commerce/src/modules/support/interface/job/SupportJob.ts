@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { RunSupportJob } from '../../application/process/RunSupportJob';
 
 export class SupportJob implements JobProcessor {
@@ -11,7 +11,7 @@ export class SupportJob implements JobProcessor {
     if (job.kind !== this.kind) throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
     const payload = record(job.payload);
-    const execution = { scope: job.scope_id ?? 'organization-platform-root', trace: job.id, signal, deadline };
+    const execution = { scope: job.scope ?? 'organization-platform-root', trace: job.id, signal, deadline };
     if (this.kind === 'supportscan') return this.processManager.scan(text(payload.evidence, 'SUPPORT_EVIDENCE_REQUIRED'), execution);
     if (this.kind === 'supportrelay') return this.processManager.relayEvent(text(payload.event, 'SUPPORT_EVENT_REQUIRED'), execution);
     return this.processManager.escalate(text(payload.ticket, 'SUPPORT_TICKET_REQUIRED'), phase(payload.phase), execution);

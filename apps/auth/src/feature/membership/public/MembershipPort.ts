@@ -1,7 +1,7 @@
-import type { AuthTarget } from '@shop/config/client';
+import type { SessionRequest } from '../../../shared/security/ReturnTarget';
 import type { MembershipSelection } from '../model/Membership';
 
 export interface MembershipPort {
-  read(target: AuthTarget, signal?: AbortSignal): Promise<MembershipSelection>;
-  select(membership: string, target: AuthTarget, signal?: AbortSignal): Promise<Readonly<{ redirectUrl: string }>>;
+  read(session: SessionRequest, signal?: AbortSignal): Promise<MembershipSelection>;
+  select(membership: string, session: SessionRequest, signal?: AbortSignal): Promise<Readonly<{ redirectUrl: string }>>;
 }

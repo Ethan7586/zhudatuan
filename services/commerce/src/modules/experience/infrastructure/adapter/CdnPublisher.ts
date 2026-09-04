@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { serializeExperience } from '@shop/contract';
-import type { ObjectStore, StoredObject } from '../../../../foundation/infrastructure/ObjectStore';
+import type { ObjectStore, StoredObject } from '../../../runtime/public/ObjectPort';
 
 export class CdnPublisher {
   constructor(private readonly objects: ObjectStore) {}

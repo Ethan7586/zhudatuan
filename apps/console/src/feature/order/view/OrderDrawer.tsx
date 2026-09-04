@@ -1,16 +1,20 @@
 import { chineseReference } from '@shop/presentation';
 import { Dialog as AriaDialog, Heading, Modal, ModalOverlay, Tab, TabList, TabPanel, Tabs } from 'react-aria-components';
+import { useEffect } from 'react';
 import { OrderDrawerPanel } from './OrderDrawerPanel';
 import { OrderIcon } from './OrderIcon';
 import { formatOrderTime, fulfillmentLabel, fulfillmentTone, paymentLabel, paymentTone } from './OrderPresentation';
 import type { OrderDetailTab } from '../model/Order';
 import type { DetailViewModel } from '../viewmodel/DetailViewModel';
+import { OrderCommandDialog } from './OrderCommandDialog';
 
 const tabs: readonly Readonly<{ key: OrderDetailTab; label: string }>[] = Object.freeze([
   { key: 'overview', label: '订单概览' },
   { key: 'products', label: '商品与履约' },
   { key: 'payment', label: '支付与退款' },
   { key: 'aftersale', label: '售后' },
+  { key: 'finance', label: '财务核对' },
+  { key: 'support', label: '客服工单' },
   { key: 'operations', label: '操作记录' },
 ]);
 
@@ -19,17 +23,25 @@ export function OrderDrawer({
   tab,
   viewmodel,
   onTab,
+  onDetail,
   onClose,
 }: Readonly<{
   orderId: string;
   tab: OrderDetailTab;
   viewmodel: DetailViewModel;
   onTab: (tab: OrderDetailTab) => void;
+  onDetail: () => void;
   onClose: () => void;
 }>) {
   const order = viewmodel.data;
+  const visibleTabs = order === undefined ? tabs : tabs.filter((item) => tabVisible(item.key, order, viewmodel.support));
+  const currentTab = visibleTabs.some((item) => item.key === tab) ? tab : 'overview';
+  useEffect(() => {
+    if (order !== undefined && currentTab !== tab) onTab(currentTab);
+  }, [currentTab, onTab, order, tab]);
 
   return (
+    <>
     <ModalOverlay
       className="orderdraweroverlay"
       isOpen
@@ -72,20 +84,20 @@ export function OrderDrawer({
 
           <Tabs
             className="orderdrawertabsystem"
-            selectedKey={tab}
+            selectedKey={currentTab}
             onSelectionChange={(key) => {
               const selected = tabs.find((item) => item.key === key)?.key;
               if (selected !== undefined) onTab(selected);
             }}
           >
             <TabList className="orderdrawertabs" aria-label="订单详情分类">
-              {tabs.map((item) => (
+              {visibleTabs.map((item) => (
                 <Tab key={item.key} id={item.key}>
                   {item.label}
                 </Tab>
               ))}
             </TabList>
-            <TabPanel id={tab} className="orderdrawerbody">
+            <TabPanel id={currentTab} className="orderdrawerbody">
               {viewmodel.pending ? (
                 <p className="orderdrawerstate" role="status">
                   正在读取订单权威快照…
@@ -94,7 +106,8 @@ export function OrderDrawer({
               {viewmodel.failed ? (
                 <section className="orderdrawererror" role="alert">
                   <strong>订单详情读取失败</strong>
-                  <p>暂时无法读取订单详情，请稍后重试。</p>
+                  <p>{viewmodel.error ?? '暂时无法读取订单详情，请稍后重试。'}</p>
+                  {viewmodel.trace ? <small>请求追踪号：{viewmodel.trace}</small> : null}
                   <button
                     type="button"
                     onClick={() => {
@@ -111,11 +124,17 @@ export function OrderDrawer({
                   <p>未找到与该内部编号或展示订单号精确匹配的订单。</p>
                 </section>
               ) : null}
-              {order === undefined ? null : <OrderDrawerPanel order={order} tab={tab} />}
+              {order === undefined ? null : <OrderDrawerPanel order={order} tab={currentTab} viewmodel={viewmodel} />}
             </TabPanel>
           </Tabs>
 
           <footer className="orderdrawerfooter">
+            <div>
+              {order ? <button type="button" onClick={onDetail}>打开完整详情</button> : null}
+              {viewmodel.canCancel ? <button type="button" onClick={viewmodel.actions.openCancel}>取消订单</button> : null}
+              {viewmodel.canRemind ? <button type="button" onClick={viewmodel.actions.openReminder}>提醒履约</button> : null}
+              {viewmodel.canReceive ? <button type="button" onClick={viewmodel.actions.openReceive}>确认收货</button> : null}
+            </div>
             <button type="button" onClick={onClose}>
               关闭
             </button>
@@ -123,5 +142,17 @@ export function OrderDrawer({
         </AriaDialog>
       </Modal>
     </ModalOverlay>
+    <OrderCommandDialog model={viewmodel} />
+    </>
   );
+}
+
+function tabVisible(tab: OrderDetailTab, order: NonNullable<DetailViewModel['data']>, support: DetailViewModel['support']): boolean {
+  if (tab === 'products') return order.sections.products.state !== 'hidden' || order.sections.fulfillment.state !== 'hidden';
+  if (tab === 'payment') return order.sections.payment.state !== 'hidden' || order.sections.aftersale.state !== 'hidden';
+  if (tab === 'aftersale') return order.sections.aftersale.state !== 'hidden';
+  if (tab === 'finance') return order.sections.finance.state !== 'hidden';
+  if (tab === 'support') return support.state !== 'hidden';
+  if (tab === 'operations') return order.sections.audit.state !== 'hidden';
+  return true;
 }

@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { RunSettlement } from '../../application/process/RunSettlement';
 
 export class SettlementJob implements JobProcessor {
@@ -8,7 +8,7 @@ export class SettlementJob implements JobProcessor {
     if (job.kind !== 'settlement') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
     const payload = object(job.payload);
-    const execution = { scope: job.scope_id || 'finance', trace: job.id, signal, deadline };
+    const execution = { scope: job.scope || 'finance', trace: job.id, signal, deadline };
     if (payload.withdrawal !== undefined) {
       return this.settlements.withdraw(text(payload.withdrawal, 'WITHDRAWAL_REQUIRED'), execution);
     }

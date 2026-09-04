@@ -1,6 +1,7 @@
 import { Paperclip, Send } from 'lucide-react';
 import type { KeyboardEvent } from 'react';
 import type { PendingAttachment } from '../model/Attachment';
+import { SUPPORT_ATTACHMENT_TYPES } from '@shop/contract';
 
 export function SupportComposer({
   value,
@@ -52,7 +53,7 @@ export function SupportComposer({
           <Paperclip size={18} />
           <input
             type="file"
-            accept="image/jpeg,image/png,application/pdf,text/plain"
+            accept={SUPPORT_ATTACHMENT_TYPES.join(',')}
             disabled={disabled}
             onChange={(event) => {
               const file = event.target.files?.[0];
@@ -71,7 +72,7 @@ export function SupportComposer({
           disabled={disabled}
           placeholder={unavailable || '输入消息，按回车键发送，按住上档键并回车换行'}
         />
-        <button type="submit" disabled={disabled || !value.trim() || attachments.some((item) => item.state !== 'clean')}>
+        <button type="submit" disabled={disabled || (!value.trim() && attachments.length === 0) || attachments.some((item) => item.state !== 'clean')}>
           <Send size={16} />
           {sending ? '发送中…' : '发送'}
         </button>

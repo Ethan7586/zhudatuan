@@ -1,4 +1,5 @@
 import { DomainError } from '../../../../foundation/domain/DomainError';
+import { isConsumerTarget } from '@shop/contract';
 import type { InvitationKind, InvitationTarget } from '../model/Invitation';
 
 export class InvitationPolicy {
@@ -11,8 +12,8 @@ export class InvitationPolicy {
       throw new DomainError('VALIDATION_FAILED', { field: 'expiresAt' });
     }
     if (input.kind === 'signin' && (!input.membership || !input.principal || input.maxUses !== 1)) throw new DomainError('VALIDATION_FAILED', { field: 'kind' });
-    if (input.kind === 'enrollment' && (!input.membership || input.principal || !input.recipientHash || input.maxUses !== 1 || input.target !== 'storefront')) throw new DomainError('VALIDATION_FAILED', { field: 'kind' });
-    if (input.kind === 'campaign' && (input.target !== 'storefront' || input.membership || input.principal)) throw new DomainError('VALIDATION_FAILED', { field: 'kind' });
+    if (input.kind === 'enrollment' && (!input.membership || input.principal || !input.recipientHash || input.maxUses !== 1 || !isConsumerTarget(input.target))) throw new DomainError('VALIDATION_FAILED', { field: 'kind' });
+    if (input.kind === 'campaign' && (!isConsumerTarget(input.target) || input.membership || input.principal)) throw new DomainError('VALIDATION_FAILED', { field: 'kind' });
     if (input.target === 'console' && (input.kind !== 'signin' || !input.recipientHash || input.assurance < 2)) throw new DomainError('PROOF_REQUIRED');
   }
 }

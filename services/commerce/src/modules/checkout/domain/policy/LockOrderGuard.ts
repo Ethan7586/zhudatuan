@@ -1,4 +1,4 @@
-export const CHECKOUT_LOCK_ORDER = Object.freeze(['idempotency', 'quote', 'cart', 'inventory', 'voucher', 'benefit', 'order', 'payment', 'finance', 'audit', 'outbox'] as const);
+export const CHECKOUT_LOCK_ORDER = Object.freeze(['idempotency', 'quote', 'cart', 'inventory', 'voucher', 'marketing', 'benefit', 'order', 'payment', 'finance', 'audit', 'outbox'] as const);
 
 export type CheckoutLock = (typeof CHECKOUT_LOCK_ORDER)[number];
 

@@ -30,6 +30,10 @@ export class Announcement {
     this.audience = announcementAudience(audience);
     Object.freeze(this);
   }
+
+  canTransition(next: Announcement['state']): boolean {
+    return this.state === next || (this.state === 'draft' && next === 'published') || (this.state === 'published' && next === 'retired');
+  }
 }
 
 export function announcementAudience(value: Readonly<Record<string, unknown>>): AnnouncementAudience {

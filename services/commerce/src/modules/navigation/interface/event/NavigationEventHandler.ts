@@ -9,19 +9,30 @@ export interface NavigationEventEnvelope {
 
 export class NavigationEventHandler {
   constructor(private readonly invalidator: NavigationInvalidationPort) {}
+
   handle(event: NavigationEventEnvelope): Promise<boolean> {
-    const text = (name: string): string | undefined => (typeof event.payload[name] === 'string' ? event.payload[name] : undefined);
-    const principal = text('principalId');
-    const membership = text('membershipId');
-    const payloadScope = text('scopeId');
-    if (payloadScope !== undefined && payloadScope !== event.scope) throw new Error('NAVIGATION_EVENT_SCOPE_MISMATCH');
-    const catalog = event.type === 'navigation.catalog.changed';
+    const payloadScopes = values(event.payload, ['scopeId', 'scope']);
+    if (payloadScopes.some((scope) => scope !== event.scope)) throw new Error('NAVIGATION_EVENT_SCOPE_MISMATCH');
+    const principals = values(event.payload, ['principalId']);
+    const memberships = values(event.payload, ['membershipId', 'membership', 'previousMembership', 'targetMembership']);
+    const scopes = payloadScopes;
+    if (scopes.length === 0 && event.type !== 'navigation.catalog.changed') scopes.push(event.scope);
+    const targets = values(event.payload, ['target']);
     return this.invalidator.invalidate({
       event: event.id,
-      ...(principal === undefined ? {} : { principal }),
-      ...(membership === undefined ? {} : { membership }),
-      scope: event.scope,
-      ...(catalog ? { catalog: true } : {}),
+      ...(principals.length === 0 ? {} : { principals: Object.freeze(principals) }),
+      ...(memberships.length === 0 ? {} : { memberships: Object.freeze(memberships) }),
+      ...(scopes.length === 0 ? {} : { scopes: Object.freeze(scopes) }),
+      ...(targets.length === 0 ? {} : { targets: Object.freeze(targets) }),
+      ...(event.type === 'navigation.catalog.changed' ? { catalog: true } : {}),
     });
   }
+}
+
+function values(payload: Readonly<Record<string, unknown>>, fields: readonly string[]): string[] {
+  return [...new Set(fields.flatMap((field) => (text(payload[field]) ? [text(payload[field])!] : [])))];
+}
+
+function text(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
 }

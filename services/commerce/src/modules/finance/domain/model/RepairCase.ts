@@ -16,6 +16,8 @@ export class RepairCase {
     readonly statementId: string,
     readonly status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'reversed',
     readonly sourceHash: string,
+    readonly sourceJournalId: string,
+    readonly sourceJournalHash: string,
     readonly previewHash: string,
     readonly differences: readonly RepairDifference[],
     readonly entries: readonly FinanceEntryTemplate[],
@@ -30,6 +32,8 @@ export class RepairCase {
       !id ||
       !statementId ||
       !/^[a-f0-9]{64}$/.test(sourceHash) ||
+      !sourceJournalId.startsWith('journal:') ||
+      !/^[a-f0-9]{64}$/.test(sourceJournalHash) ||
       !/^[a-f0-9]{64}$/.test(previewHash) ||
       !makerId ||
       !reason ||

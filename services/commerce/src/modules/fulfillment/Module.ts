@@ -2,7 +2,7 @@ import { PgInventoryReturnPort } from './infrastructure/persistence/PgInventoryR
 
 import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
 import { defineModule } from '../../bootstrap/DefinedModule';
-import { FULFILLMENT_ORDER_PORT } from '../order/public';
+import { ORDER_FULFILLMENT_PORT } from '../order/public';
 import { ORGANIZATION_READ_PORT } from '../organization/public';
 import { ReturnsInspectHandler } from './application/handler/ReturnsInspectHandler';
 import { ReturnsReceiveHandler } from './application/handler/ReturnsReceiveHandler';
@@ -12,30 +12,27 @@ import { FulfillmentPort } from './infrastructure/persistence/FulfillmentPort';
 import { FulfillmentScopeReader } from './infrastructure/persistence/FulfillmentScopeReader';
 import { PgFulfillmentRepository } from './infrastructure/persistence/PgFulfillmentRepository';
 import { Manifest } from './Manifest';
-import { FINANCE_FULFILLMENT_PORT, INVENTORY_RETURN_PORT, PAYMENT_FULFILLMENT_PORT } from './public';
-import { createProviderJobs } from './interface/job/JobFactory';
+import { FINANCE_FULFILLMENT_PORT, INVENTORY_RETURN_PORT } from './public';
+import { createJobs, createProviderJobs } from './interface/job/JobFactory';
+import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
 
 export const FulfillmentModule = defineModule(Manifest, {
+  events: [{ handler: 'fulfillmentevent', events: EVENT_SUBSCRIPTIONS.fulfillmentevent }],
+  jobs: createJobs,
   providerJobs: createProviderJobs,
   handlers: (context) => {
     const transactions = new PgTransactionAccess();
-    const repository = new PgFulfillmentRepository(transactions, new FulfillmentScopeReader(context.ports.get(FULFILLMENT_ORDER_PORT), context.ports.get(ORGANIZATION_READ_PORT)));
+    const repository = new PgFulfillmentRepository(transactions, new FulfillmentScopeReader(context.ports.get(ORDER_FULFILLMENT_PORT), context.ports.get(ORGANIZATION_READ_PORT)));
     return [new TrackingReadHandler(repository), new ShipmentsCreateHandler(repository), new ReturnsReceiveHandler(repository), new ReturnsInspectHandler(repository)];
   },
   ports: (context) => {
-    const fulfillment = new FulfillmentPort(context.ports.get(FULFILLMENT_ORDER_PORT));
     return [
-      { token: PAYMENT_FULFILLMENT_PORT, value: fulfillment },
-      { token: FINANCE_FULFILLMENT_PORT, value: fulfillment },
-      { token: INVENTORY_RETURN_PORT, value: new PgInventoryReturnPort(context.ports.get(FULFILLMENT_ORDER_PORT)) },
+      { token: FINANCE_FULFILLMENT_PORT, value: new FulfillmentPort() },
+      { token: INVENTORY_RETURN_PORT, value: new PgInventoryReturnPort(context.ports.get(ORDER_FULFILLMENT_PORT)) },
     ];
   },
   jobPorts: (context) => {
-    const fulfillment = new FulfillmentPort(context.ports.get(FULFILLMENT_ORDER_PORT));
-    return [
-      { token: PAYMENT_FULFILLMENT_PORT, value: fulfillment },
-      { token: FINANCE_FULFILLMENT_PORT, value: fulfillment },
-    ];
+    return [{ token: FINANCE_FULFILLMENT_PORT, value: new FulfillmentPort() }];
   },
-  providerPorts: (context) => [{ token: INVENTORY_RETURN_PORT, value: new PgInventoryReturnPort(context.ports.get(FULFILLMENT_ORDER_PORT)) }],
+  providerPorts: (context) => [{ token: INVENTORY_RETURN_PORT, value: new PgInventoryReturnPort(context.ports.get(ORDER_FULFILLMENT_PORT)) }],
 });

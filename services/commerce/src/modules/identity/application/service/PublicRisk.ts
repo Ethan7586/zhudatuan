@@ -7,7 +7,7 @@ export async function assertPublicRisk(
   request: OperationRequest,
   subject: string,
   client: string,
-  target: 'console' | 'storefront' = (request.security.kind === 'session' ? request.security.access.actor.target : request.security.target) ?? 'storefront',
+  target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier' = (request.security.kind === 'session' ? request.security.access.actor.target : request.security.target) ?? 'storefront',
   signals: Readonly<Record<string, number>> = { 'login.attempt': 1 }
 ): Promise<void> {
   const { outcome } = await risk.evaluate({

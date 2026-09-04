@@ -1,8 +1,28 @@
+import { OP_CATALOG_LISTINGS_PRICE_SET, OP_CATALOG_LISTINGS_PUBLISH, OP_CATALOG_LISTINGS_UNPUBLISH, OP_CATALOG_PRODUCTS_ARCHIVE, OP_CATALOG_PRODUCTS_CREATE, OP_CATALOG_PRODUCTS_UPDATE } from '@shop/contract/ids';
+import { isPublishedProduct, type ProductStatus } from '@shop/presentation';
 import type { Listing } from './Product';
 
-export type ProductStatus = 'draft' | 'review' | 'active' | 'archived';
-export type ProductAction = Readonly<{ kind: 'create' }> | Readonly<{ kind: 'edit'; listing: Listing; status: ProductStatus }> | Readonly<{ kind: 'archive'; listing: Listing }> | Readonly<{ kind: 'price'; listing: Listing }> | Readonly<{ kind: 'publish'; listing: Listing }> | Readonly<{ kind: 'unpublish'; listing: Listing }>;
+export type ManagedListing = Extract<Listing, Readonly<{ pool_id: string | null }>>;
 
-export function isPublishedListing(status: string): boolean { return status === 'published' || status === 'available'; }
-export function canChangeListingPublication(listingStatus: string, productStatus: string | undefined): boolean { return isPublishedListing(listingStatus) || productStatus === 'active'; }
-export function productStatus(value: string | undefined): ProductStatus { return value === 'draft' || value === 'review' || value === 'active' || value === 'archived' ? value : 'draft'; }
+export type ProductAction =
+  | Readonly<{ operation: typeof OP_CATALOG_PRODUCTS_CREATE }>
+  | Readonly<{ operation: typeof OP_CATALOG_PRODUCTS_UPDATE; listing: Listing; status: ProductStatus; expectedVersion: number }>
+  | Readonly<{ operation: typeof OP_CATALOG_PRODUCTS_ARCHIVE; listing: Listing; expectedVersion: number }>
+  | Readonly<{ operation: typeof OP_CATALOG_LISTINGS_PRICE_SET; listing: Listing; expectedVersion: number }>
+  | Readonly<{ operation: typeof OP_CATALOG_LISTINGS_PUBLISH; listing: Listing }>
+  | Readonly<{ operation: typeof OP_CATALOG_LISTINGS_UNPUBLISH; listing: Listing }>;
+
+export function isPublishedListing(status: string): boolean {
+  return isPublishedProduct(status);
+}
+export function isManagedListing(listing: Listing): listing is ManagedListing {
+  return 'pool_id' in listing;
+}
+export function canChangeListingPublication(listingStatus: string, productStatus: string | undefined): boolean {
+  return isPublishedListing(listingStatus) || productStatus === 'active';
+}
+
+export function productVersion(value: string | number | undefined): number | undefined {
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : undefined;
+}

@@ -8,7 +8,7 @@ export interface ProductSku {
   readonly compareMinor: number | null;
   readonly currency: string;
   readonly available: number;
-  readonly state: 'available' | 'unavailable';
+  readonly state: NonNullable<ProductDto['availability']>['state'];
   readonly priceVersion: string;
   readonly inventoryVersion: string;
 }
@@ -80,3 +80,6 @@ export function inventoryStatus(stock: number) {
   if (stock <= 5) return Object.freeze({ canPurchase: true, actionButtonStateText: '库存紧张', availabilityText: `仅余 ${stock} 件` });
   return Object.freeze({ canPurchase: true, actionButtonStateText: '立即购买', availabilityText: '库存充足' });
 }
+import type { OperationOutputFor } from '@shop/contract';
+
+type ProductDto = OperationOutputFor<'storefront.catalog.read'>['items'][number];

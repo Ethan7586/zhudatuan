@@ -8,6 +8,7 @@ export interface RefundRequest {
   readonly reason: string;
   readonly scope: string;
   readonly actor: string;
+  readonly expectedVersion: number;
 }
 
 export interface RefundRepository {

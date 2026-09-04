@@ -9,7 +9,7 @@ export class PgAuthorizationPort implements AuthorizationPort {
     context: ReadTransactionContext,
     input: Readonly<{
       membership: string;
-      target: 'console' | 'storefront';
+      target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
       operation: string;
       resource: string | null;
     }>

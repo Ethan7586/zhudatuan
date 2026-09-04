@@ -14,6 +14,7 @@ Every metric has one owner, minor-unit currency where applicable, an explicit ve
 | Finance             | Finance   | debit/credit/balance/difference/v1       | scope, account, partner, period   | journal imbalance or reconciliation difference     |
 | Support SLA         | Support   | first response/resolution/escalation/v1  | scope, priority, queue, agent     | deadline breach                                    |
 | Reporting watermark | Reporting | offset age/rebuild hash/v1               | scope, projection, metric version | watermark lag or rebuild mismatch                  |
+| Member sales         | Reporting | member.amount/member.orders/v1           | customer, member, mall, application, day | frozen-snapshot total differs from paid-order evidence |
 | Access denial       | Access    | allow/deny/challenge/review/v1           | operation, scope kind, reason     | cross-scope denial anomaly                         |
 | Risk decision       | Risk      | allow/challenge/review/deny/v1           | policy version, operation, scope  | deny spike or policy replay difference             |
 

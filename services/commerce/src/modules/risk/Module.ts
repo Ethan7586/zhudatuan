@@ -1,21 +1,24 @@
 import { defineModule } from '../../bootstrap/DefinedModule';
 import { Manifest } from './Manifest';
 import { createJobs } from './interface/job/JobFactory';
-import { CheckoutRisk } from './infrastructure/persistence/CheckoutRisk';
-import { CHECKOUT_RISK_PORT } from './public';
+import { EvaluateRiskDecision } from './infrastructure/persistence/EvaluateRiskDecision';
+import { RISK_DECISION_PORT } from './public';
 import { CenterReadHandler } from './application/handler/CenterReadHandler';
 import { PoliciesManageHandler } from './application/handler/PoliciesManageHandler';
 import { CasesReviewHandler } from './application/handler/CasesReviewHandler';
 import { PgRiskAdministrationRepository } from './infrastructure/persistence/PgRiskAdministrationRepository';
 import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
 import { PgJobScheduler } from '../../adapter/database/PgJobScheduler';
+import { MEMBER_READ_PORT } from '../member/public';
+import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
 
 export const RiskModule = defineModule(Manifest, {
   jobs: createJobs,
-  handlers: () => {
+  events: [{ handler: 'riskscan', events: EVENT_SUBSCRIPTIONS.riskscan }],
+  handlers: (context) => {
     const transactions = new PgTransactionAccess();
     const risks = new PgRiskAdministrationRepository(transactions);
-    return [new CenterReadHandler(risks), new PoliciesManageHandler(risks, new PgJobScheduler(transactions)), new CasesReviewHandler(risks)];
+    return [new CenterReadHandler(risks, context.ports.get(MEMBER_READ_PORT)), new PoliciesManageHandler(risks, new PgJobScheduler(transactions)), new CasesReviewHandler(risks)];
   },
-  ports: [{ token: CHECKOUT_RISK_PORT, value: new CheckoutRisk() }],
+  ports: [{ token: RISK_DECISION_PORT, value: new EvaluateRiskDecision() }],
 });

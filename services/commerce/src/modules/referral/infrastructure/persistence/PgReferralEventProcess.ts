@@ -1,4 +1,3 @@
-import type { QueryResultRow } from 'pg';
 import { PgOutbox } from '../../../../adapter/database/PgOutbox';
 import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
@@ -6,97 +5,90 @@ import type { TransactionManager } from '../../../../foundation/persistence/Tran
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { referralEvent } from '../../domain/event/ReferralEvents';
 import { Commission } from '../../domain/model/Commission';
-import { CommissionPolicy } from '../../domain/policy/CommissionPolicy';
 import { ReferralRate } from '../../domain/value/ReferralRate';
-import type { FinancePoster } from '../../application/port/FinancePoster';
-import type { ReferralEventProcess, ReferralOrderEvent } from '../../application/port/ReferralEventProcess';
-import { array, assertEvent, deterministic, enqueueSettlement, integer, object, optionalText, orderLine, safeNumber, text, timestamp } from './ReferralEventCodec';
-import { ReverseCommissions } from '../../application/service/ReverseCommissions';
-
-interface SettingRow extends QueryResultRow {
-  readonly enabled: boolean;
-  readonly rate_basis_points: number;
-  readonly currency: string;
-}
-
-interface BindingRow extends QueryResultRow {
-  readonly beneficiary_id: string;
-}
-
-interface ProductRow extends QueryResultRow {
-  readonly product_id: string;
-  readonly enabled: boolean;
-  readonly rate_basis_points: number;
-}
-
-interface CommissionRow extends QueryResultRow {
-  readonly id: string;
-  readonly beneficiary_id: string;
-  readonly order_line_id: string;
-  readonly amount_minor: number;
-  readonly base_minor: number;
-  readonly refunded_base_minor: number;
-  readonly reversed_minor: number;
-  readonly rate_basis_points: number;
-  readonly currency: string;
-  readonly state: string;
-  readonly version: number;
-}
+import type { ReferralFinancePort } from '../../../finance/public';
+import type { ReferralEventProcess, ReferralProcessEvent } from '../../application/port/ReferralEventProcess';
+import { array, assertEvent, benefitAmount, deterministic, enqueueSettlement, integer, object, orderLine, safeNumber, text, timestamp } from './ReferralEventCodec';
+import type { ApprovalReadPort } from '../../../approval/public';
+import { WithdrawalPolicy } from '../../domain/policy/WithdrawalPolicy';
+import { SettlementPolicy } from '../../domain/policy/SettlementPolicy';
+import { CommissionPolicy } from '../../domain/policy/CommissionPolicy';
+import { PgReferralRefund } from './PgReferralRefund';
+import type { ReferralBindingRow, ReferralProductRow, ReferralSettingRow } from './ReferralEventRows';
 
 /** Consumes an immutable order fact and mutates only Referral-owned state. */
 export class PgReferralEventProcess implements ReferralEventProcess {
   private readonly transactions = new PgTransactionAccess();
   private readonly outbox: PgOutbox;
+  private readonly refunds: PgReferralRefund;
+  private readonly withdrawals = new WithdrawalPolicy();
+  private readonly settlement = new SettlementPolicy();
   private readonly commissions = new CommissionPolicy();
-  private readonly reversals: ReverseCommissions;
 
   constructor(
     private readonly manager: TransactionManager,
-    private readonly finance: FinancePoster
+    private readonly finance: ReferralFinancePort,
+    private readonly approvals: ApprovalReadPort
   ) {
     this.outbox = new PgOutbox(manager);
-    this.reversals = new ReverseCommissions(finance);
+    this.refunds = new PgReferralRefund(manager, finance);
   }
 
-  process(input: ReferralOrderEvent, signal: AbortSignal, deadline: number): Promise<void> {
+  process(input: ReferralProcessEvent, signal: AbortSignal, deadline: number): Promise<void> {
     assertEvent(input);
     return this.manager.write({ tenant: input.scopeId, membership: '', scope: input.scopeId, actor: 'system:referral', trace: input.eventId, operation: 'referralevent', workload: 'jobs', signal, deadline }, async (context) => {
       const transaction = this.transactions.database(context);
-      await transaction.query(`select pg_advisory_xact_lock(hashtextextended($1,0))`, [`referral:${input.scopeId}:${input.orderId}`]);
+      await transaction.query(`select pg_advisory_xact_lock(hashtextextended($1,0))`, [`referral:${input.scopeId}:${input.resourceId}`]);
       const runtime = new PgRuntimeWriter(transaction);
       const inbox = await runtime.claim('job:referralevent', input.eventId);
       if (!inbox) throw new Error('REFERRAL_EVENT_CONTEXT_MISSING');
-      if (inbox.type !== input.eventType || inbox.scope !== input.scopeId || inbox.aggregate !== input.orderId) throw new Error('REFERRAL_EVENT_CONTEXT_MISMATCH');
+      if (inbox.type !== input.eventType || inbox.version !== 1 || inbox.scope !== input.scopeId || inbox.aggregate !== input.sourceId) throw new Error('REFERRAL_EVENT_CONTEXT_MISMATCH');
       const payload = object(inbox.payload, 'REFERRAL_EVENT_PAYLOAD_INVALID');
       const occurredAt = timestamp(inbox.occurredAt);
       if (input.eventType === 'order.paid') await this.paid(context, transaction, input, payload, occurredAt);
       if (input.eventType === 'order.received') await this.received(transaction, input, payload, occurredAt);
-      if (input.eventType === 'refund.completed') await this.refunded(context, transaction, input, payload, occurredAt);
+      if (input.eventType === 'refund.completed') await this.refunds.apply(context, transaction, input, payload, occurredAt);
+      if (input.eventType === 'approval.instance.approved') await this.approved(context, transaction, input, payload, occurredAt);
       if (!(await runtime.completeInbox('job:referralevent', input.eventId))) throw new Error('REFERRAL_INBOX_CONFLICT');
     });
   }
 
-  private async paid(context: WriteTransactionContext, transaction: SqlExecutor, input: ReferralOrderEvent, payload: Readonly<Record<string, unknown>>, occurredAt: string): Promise<void> {
+  private async paid(context: WriteTransactionContext, transaction: SqlExecutor, input: ReferralProcessEvent, payload: Readonly<Record<string, unknown>>, occurredAt: string): Promise<void> {
     const snapshot = object(payload.snapshot, 'REFERRAL_ORDER_SNAPSHOT_REQUIRED');
-    if (text(snapshot.order, 'REFERRAL_ORDER_REFERENCE_REQUIRED') !== input.orderId) throw new Error('REFERRAL_ORDER_SNAPSHOT_MISMATCH');
+    if (text(snapshot.order, 'REFERRAL_ORDER_REFERENCE_REQUIRED') !== input.resourceId) throw new Error('REFERRAL_ORDER_SNAPSHOT_MISMATCH');
     const memberId = text(snapshot.member, 'REFERRAL_MEMBER_REFERENCE_REQUIRED');
     const currency = text(snapshot.currency, 'REFERRAL_CURRENCY_REQUIRED');
-    const setting = (await transaction.query<SettingRow>(`select enabled,rate_basis_points,currency from referral.setting where scope_id=$1 for share`, [input.scopeId])).rows[0];
+    if (text(payload.member, 'REFERRAL_MEMBER_REFERENCE_REQUIRED') !== memberId || text(payload.currency, 'REFERRAL_CURRENCY_REQUIRED') !== currency) throw new Error('REFERRAL_ORDER_SNAPSHOT_MISMATCH');
+    const setting = (await transaction.query<ReferralSettingRow>(`select enabled,reward_enabled,settlement_trigger,rate_basis_points,currency,version,freeze_days from referral.setting where scope_id=$1 for share`, [input.scopeId])).rows[0];
     if (!setting?.enabled) return;
     if (setting.currency !== currency) throw new Error('REFERRAL_CURRENCY_MISMATCH');
     const binding = (
-      await transaction.query<BindingRow>(
-        `select member.member_id beneficiary_id from referral.binding binding
+      await transaction.query<ReferralBindingRow>(
+        `select binding.id,member.member_id beneficiary_id,
+        (select inviter.member_id from referral.binding parentbinding
+          join referral.member inviter on inviter.id=parentbinding.promoter_id and inviter.scope_id=parentbinding.scope_id and inviter.state='active'
+          where parentbinding.scope_id=binding.scope_id and parentbinding.customer_id=member.member_id
+            and parentbinding.bound_at<=$3::timestamptz and (parentbinding.expires_at is null or parentbinding.expires_at>$3::timestamptz)
+          order by parentbinding.bound_at desc,parentbinding.id desc limit 1) inviter_beneficiary_id
+        from referral.binding binding
         join referral.member member on member.id=binding.promoter_id and member.scope_id=binding.scope_id and member.state='active'
-        where binding.scope_id=$1 and binding.customer_id=$2 for share of binding,member`,
-        [input.scopeId, memberId]
+        where binding.scope_id=$1 and binding.customer_id=$2 and binding.bound_at<=$3::timestamptz and (binding.expires_at is null or binding.expires_at>$3::timestamptz)
+        order by binding.bound_at desc,binding.id desc limit 1 for share of binding,member`,
+        [input.scopeId, memberId, occurredAt]
       )
     ).rows[0];
     if (!binding || binding.beneficiary_id === memberId) return;
     const lines = array(snapshot.lines, 'REFERRAL_ORDER_LINES_REQUIRED').map(orderLine);
+    const totalMinor = integer(snapshot.totalMinor, 'REFERRAL_ORDER_AMOUNT_INVALID');
+    if (lines.reduce((sum, line) => sum + line.payableMinor, 0) !== totalMinor) throw new Error('REFERRAL_ORDER_EVIDENCE_MISMATCH');
+    const benefitMinor = benefitAmount(snapshot.tenders, totalMinor);
+    const bases = this.commissions.bases(
+      lines.map(({ lineId, payableMinor }) => ({ id: lineId, amountMinor: BigInt(payableMinor) })),
+      benefitMinor
+    );
     const productIds = [...new Set(lines.map(({ productId }) => productId))];
-    const products = await transaction.query<ProductRow>(
-      `select product_id,enabled,rate_basis_points from referral.product
+    const products = await transaction.query<ReferralProductRow>(
+      `select id,product_id,enabled,rate_basis_points,reward_basis_points,version from referral.product
       where scope_id=$1 and product_id=any($2::text[]) for share`,
       [input.scopeId, productIds]
     );
@@ -104,140 +96,138 @@ export class PgReferralEventProcess implements ReferralEventProcess {
     for (const line of lines) {
       const product = configured.get(line.productId);
       if (!product?.enabled) continue;
-      const rate = product.rate_basis_points > 0 ? product.rate_basis_points : setting.rate_basis_points;
-      const amountMinor = new ReferralRate(rate).apply(BigInt(line.payableMinor));
-      if (amountMinor === 0n) continue;
-      const businessKey = `commission:${input.scopeId}:${input.orderId}:${line.lineId}:${binding.beneficiary_id}`;
-      const id = deterministic('referralcommission', businessKey);
-      const commission = new Commission(id, businessKey, input.scopeId, input.orderId, binding.beneficiary_id, amountMinor, currency, 'pending', 0n, 1);
-      const inserted = await transaction.query<{ id: string; version: number }>(
-        `insert into referral.commission(id,business_key,scope_id,order_id,order_line_id,product_id,beneficiary_id,
-          base_minor,refunded_base_minor,amount_minor,rate_basis_points,currency,reversed_minor,state,origin_event_id,
-          eligible_at,version,created_at,updated_at)
-        values($1,$2,$3,$4,$5,$6,$7,$8,0,$9,$10,$11,0,'pending',$12,null,1,$13::timestamptz,$13::timestamptz)
-        on conflict(business_key) do nothing returning id,version`,
-        [
-          commission.id,
-          commission.businessKey,
-          commission.scopeId,
-          commission.orderId,
+      const baseMinor = bases.get(line.lineId) ?? 0n;
+      const commissionRate = product.rate_basis_points > 0 ? product.rate_basis_points : setting.rate_basis_points;
+      const recipients = this.commissions.recipients({
+        customerId: memberId,
+        directMemberId: binding.beneficiary_id,
+        inviterMemberId: binding.inviter_beneficiary_id,
+        rewardEnabled: setting.reward_enabled,
+        commissionBasisPoints: commissionRate,
+        rewardBasisPoints: product.reward_basis_points,
+      });
+      for (const recipient of recipients) {
+        const amountMinor = new ReferralRate(recipient.rateBasisPoints).apply(baseMinor);
+        if (amountMinor === 0n) continue;
+        const businessKey = `commission:${input.scopeId}:${input.resourceId}:${line.lineId}:${product.id}:${product.version}:${recipient.kind}:${recipient.beneficiaryId}`;
+        const id = deterministic('referralcommission', businessKey);
+        const commission = new Commission(
+          id,
+          businessKey,
+          input.scopeId,
+          input.resourceId,
           line.lineId,
-          line.productId,
-          commission.beneficiaryId,
-          line.payableMinor,
-          safeNumber(commission.money.amountMinor),
-          rate,
-          commission.money.currency,
-          input.eventId,
-          occurredAt,
-        ]
-      );
-      if (!inserted.rows[0]) continue;
-      await this.outbox.append(
-        context,
-        referralEvent({
-          eventId: deterministic('event', input.eventId, id, 'created'),
-          type: 'referral.commission.created',
-          aggregateId: commission.id,
-          aggregateVersion: 1,
-          scopeId: input.scopeId,
-          actorId: 'system:referral',
-          correlationId: input.eventId,
-          causationId: input.eventId,
-          occurredAt,
-          payload: { commissionId: commission.id, orderId: commission.orderId, amountMinor: safeNumber(commission.money.amountMinor), currency: commission.money.currency },
-        })
-      );
-    }
-  }
-
-  private async received(transaction: SqlExecutor, input: ReferralOrderEvent, payload: Readonly<Record<string, unknown>>, occurredAt: string): Promise<void> {
-    if (text(payload.orderId, 'REFERRAL_ORDER_REFERENCE_REQUIRED') !== input.orderId) throw new Error('REFERRAL_ORDER_EVENT_MISMATCH');
-    if (text(payload.fulfillmentState, 'REFERRAL_FULFILLMENT_STATE_REQUIRED') !== 'received') throw new Error('REFERRAL_RECEIPT_EVIDENCE_INVALID');
-    const changed = await transaction.query(
-      `update referral.commission set state='available',eligible_at=$3::timestamptz,version=version+1,updated_at=clock_timestamp()
-      where scope_id=$1 and order_id=$2 and state='pending' and reversed_minor<amount_minor returning id`,
-      [input.scopeId, input.orderId, occurredAt]
-    );
-    if ((changed.rowCount ?? 0) > 0) await enqueueSettlement(transaction, input.scopeId, input.orderId, occurredAt);
-  }
-
-  private async refunded(context: WriteTransactionContext, transaction: SqlExecutor, input: ReferralOrderEvent, payload: Readonly<Record<string, unknown>>, occurredAt: string): Promise<void> {
-    if (text(payload.order, 'REFERRAL_ORDER_REFERENCE_REQUIRED') !== input.orderId) throw new Error('REFERRAL_ORDER_EVENT_MISMATCH');
-    const refundId = text(payload.refund, 'REFERRAL_REFUND_REFERENCE_REQUIRED');
-    const refundedMinor = integer(payload.amountMinor, 'REFERRAL_REFUND_AMOUNT_INVALID');
-    const lineId = optionalText(payload.lineId);
-    const result = await transaction.query<CommissionRow>(
-      `select id,beneficiary_id,order_line_id,amount_minor::float8 amount_minor,base_minor::float8 base_minor,
-      refunded_base_minor::float8 refunded_base_minor,reversed_minor::float8 reversed_minor,rate_basis_points,currency,state,version
-      from referral.commission where scope_id=$1 and order_id=$2
-        and ($3::text is null or order_line_id=$3) order by order_line_id,id for update`,
-      [input.scopeId, input.orderId, lineId]
-    );
-    const rows = result.rows;
-    if (rows.length === 0) return;
-    const allocations = this.commissions.allocate(
-      rows.map((row) => ({ id: row.id, amountMinor: BigInt(row.base_minor - row.refunded_base_minor) })),
-      BigInt(
-        Math.min(
-          refundedMinor,
-          rows.reduce((sum, row) => sum + row.base_minor - row.refunded_base_minor, 0)
-        )
-      ),
-      10_000
-    );
-    for (const row of rows) {
-      const baseDelta = allocations.get(row.id) ?? 0n;
-      if (baseDelta === 0n) continue;
-      const targetBase = BigInt(row.refunded_base_minor) + baseDelta;
-      const targetAmount = new ReferralRate(row.rate_basis_points).apply(targetBase);
-      const amountDelta = targetAmount - BigInt(row.reversed_minor);
-      if (amountDelta <= 0n) continue;
-      const movementKey = `reverse:${refundId}:${row.id}`;
-      let journalId: string | null = null;
-      if (row.state === 'settled') {
-        journalId = (
-          await this.reversals.reverse(context, {
-            businessKey: movementKey,
-            scopeId: input.scopeId,
-            beneficiaryId: row.beneficiary_id,
-            amountMinor: amountDelta,
-            currency: row.currency,
+          product.id,
+          product.version,
+          binding.id,
+          recipient.beneficiaryId,
+          recipient.kind,
+          baseMinor,
+          0n,
+          recipient.rateBasisPoints,
+          amountMinor,
+          currency,
+          'pending',
+          0n,
+          1
+        );
+        const snapshot = {
+          productId: line.productId,
+          kind: commission.kind,
+          rateBasisPoints: commission.rateBasisPoints,
+          commissionBasisPoints: commissionRate,
+          rewardBasisPoints: product.reward_basis_points,
+          rewardEnabled: setting.reward_enabled,
+          settlementTrigger: setting.settlement_trigger,
+          freezeDays: setting.freeze_days,
+          productVersion: commission.ruleVersion,
+          settingVersion: setting.version,
+        };
+        const inserted = await transaction.query<{ id: string; version: number }>(
+          `insert into referral.commission(id,business_key,scope_id,order_id,order_line_id,product_id,beneficiary_id,kind,
+            binding_id,rule_id,rule_version,rule_snapshot,setting_version,base_minor,refunded_base_minor,amount_minor,
+            rate_basis_points,currency,reversed_minor,state,origin_event_id,origin_event_version,eligible_at,version,created_at,updated_at)
+          values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13,$14,0,$15,$16,$17,0,'pending',$18,$19,null,1,$20::timestamptz,$20::timestamptz)
+          on conflict(business_key) do nothing returning id,version`,
+          [
+            commission.id,
+            commission.businessKey,
+            commission.scopeId,
+            commission.orderId,
+            line.lineId,
+            line.productId,
+            commission.beneficiaryId,
+            commission.kind,
+            commission.attributionId,
+            commission.ruleId,
+            commission.ruleVersion,
+            JSON.stringify(snapshot),
+            setting.version,
+            safeNumber(commission.baseMinor),
+            safeNumber(commission.money.amountMinor),
+            commission.rateBasisPoints,
+            commission.money.currency,
+            input.eventId,
+            1,
             occurredAt,
+          ]
+        );
+        if (!inserted.rows[0]) continue;
+        await this.outbox.append(
+          context,
+          referralEvent({
+            eventId: deterministic('event', input.eventId, id, 'created'),
+            type: 'referral.commission.created',
+            aggregateId: commission.id,
+            aggregateVersion: 1,
+            scopeId: input.scopeId,
+            actorId: 'system:referral',
+            correlationId: input.eventId,
+            causationId: input.eventId,
+            occurredAt,
+            payload: { commissionId: commission.id, orderId: commission.orderId, amountMinor: safeNumber(commission.money.amountMinor), currency: commission.money.currency },
           })
-        ).journalId;
+        );
       }
-      const movement = await transaction.query(
-        `insert into referral.commissionmovement(id,movement_key,scope_id,commission_id,refund_id,direction,base_minor,
-          amount_minor,reason,event_id,journal_id,created_at)
-        values($1,$2,$3,$4,$5,'debit',$6,$7,'refund',$8,$9,$10::timestamptz)
-        on conflict(movement_key) do nothing returning id`,
-        [deterministic('commissionmovement', movementKey), movementKey, input.scopeId, row.id, refundId, safeNumber(baseDelta), safeNumber(amountDelta), input.eventId, journalId, occurredAt]
-      );
-      if (!movement.rows[0]) continue;
-      const updated = await transaction.query<{ version: number }>(
-        `update referral.commission set refunded_base_minor=$2,reversed_minor=$3,
-          state=case when $3=amount_minor then 'reversed' else state end,version=version+1,updated_at=clock_timestamp()
-        where id=$1 and scope_id=$4 and version=$5 returning version`,
-        [row.id, safeNumber(targetBase), safeNumber(targetAmount), input.scopeId, row.version]
-      );
-      const version = updated.rows[0]?.version;
-      if (!version) throw new Error('REFERRAL_COMMISSION_VERSION_CONFLICT');
-      await this.outbox.append(
-        context,
-        referralEvent({
-          eventId: deterministic('event', input.eventId, row.id, 'reversed'),
-          type: 'referral.commission.reversed',
-          aggregateId: row.id,
-          aggregateVersion: version,
-          scopeId: input.scopeId,
-          actorId: 'system:referral',
-          correlationId: input.eventId,
-          causationId: input.eventId,
-          occurredAt,
-          payload: { commissionId: row.id, reversalId: deterministic('commissionmovement', movementKey), amountMinor: safeNumber(amountDelta), currency: row.currency, reason: 'refund' },
-        })
-      );
     }
+    if (setting.settlement_trigger === 'paid') {
+      const releaseAt = this.settlement.releaseAt(occurredAt, setting.freeze_days);
+      const changed = await transaction.query(
+        `update referral.commission set state='available',eligible_at=$3::timestamptz,version=version+1,updated_at=clock_timestamp()
+        where scope_id=$1 and order_id=$2 and state='pending' and rule_snapshot->>'settlementTrigger'='paid' returning id`,
+        [input.scopeId, input.resourceId, releaseAt]
+      );
+      if ((changed.rowCount ?? 0) > 0) await enqueueSettlement(transaction, input.scopeId, input.resourceId, releaseAt);
+    }
+  }
+
+  private async received(transaction: SqlExecutor, input: ReferralProcessEvent, payload: Readonly<Record<string, unknown>>, occurredAt: string): Promise<void> {
+    if (text(payload.orderId, 'REFERRAL_ORDER_REFERENCE_REQUIRED') !== input.resourceId) throw new Error('REFERRAL_ORDER_EVENT_MISMATCH');
+    if (text(payload.fulfillmentState, 'REFERRAL_FULFILLMENT_STATE_REQUIRED') !== 'received') throw new Error('REFERRAL_RECEIPT_EVIDENCE_INVALID');
+    const changed = await transaction.query<{ eligible_at: Date | string }>(
+      `update referral.commission set state='available',
+      eligible_at=$3::timestamptz+make_interval(days=>(rule_snapshot->>'freezeDays')::integer),version=version+1,updated_at=clock_timestamp()
+      where scope_id=$1 and order_id=$2 and state='pending' and reversed_minor<amount_minor
+        and rule_snapshot->>'settlementTrigger'='received' returning eligible_at`,
+      [input.scopeId, input.resourceId, occurredAt]
+    );
+    const releaseAt = changed.rows.map(({ eligible_at }) => new Date(eligible_at).toISOString()).sort()[0];
+    if (releaseAt) await enqueueSettlement(transaction, input.scopeId, input.resourceId, releaseAt);
+  }
+
+  private async approved(context: WriteTransactionContext, transaction: SqlExecutor, input: ReferralProcessEvent, payload: Readonly<Record<string, unknown>>, occurredAt: string): Promise<void> {
+    if (payload.subjectKind !== 'withdrawal' || text(payload.subjectId, 'REFERRAL_APPROVAL_SUBJECT_INVALID') !== input.resourceId || payload.action !== 'referral.withdrawal.pay') throw new Error('REFERRAL_APPROVAL_SUBJECT_INVALID');
+    const instance = await this.approvals.read(context, input.scopeId, input.sourceId);
+    if (!instance || instance.state !== 'approved' || instance.subjectId !== input.resourceId || instance.subjectVersion !== payload.subjectVersion || instance.action !== 'referral.withdrawal.pay')
+      throw new Error('REFERRAL_APPROVAL_EVIDENCE_INVALID');
+    const checker = [...instance.decisions].reverse().find(({ outcome }) => outcome === 'approved')?.actorId ?? '';
+    this.withdrawals.assertApproval({ requesterId: instance.requesterId, checkerId: checker, subjectId: instance.subjectId, withdrawalId: input.resourceId, action: instance.action });
+    const changed = await transaction.query(
+      `update referral.withdrawalclaim set state='processing',approval_proof_id=$3,approved_at=$4::timestamptz,version=version+1
+      where id=$1 and scope_id=$2 and state='requested' and approval_instance_id=$5 and version=$6`,
+      [input.resourceId, input.scopeId, text(payload.proofId, 'REFERRAL_APPROVAL_PROOF_REQUIRED'), occurredAt, input.sourceId, instance.subjectVersion]
+    );
+    if (changed.rowCount === 0) throw new Error('REFERRAL_WITHDRAWAL_APPROVAL_CONFLICT');
+    await enqueueSettlement(transaction, input.scopeId, input.resourceId, occurredAt);
   }
 }

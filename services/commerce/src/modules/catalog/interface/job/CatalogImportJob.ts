@@ -1,5 +1,5 @@
-import { importId } from '../../../../foundation/application/BatchImport';
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import { resourceId } from '../../../../foundation/application/Validation';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { CatalogImportProcess } from '../../application/process/CatalogImportProcess';
 
 export class CatalogImportJob implements JobProcessor {
@@ -7,6 +7,6 @@ export class CatalogImportJob implements JobProcessor {
 
   process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
     if (job.kind !== 'catalogimport') throw new Error('JOB_KIND_MISMATCH');
-    return this.imports.execute(importId(job.payload, 'CATALOGIMPORT_REQUIRED'), job.scope_id ?? 'organization-platform-root', signal, deadline);
+    return this.imports.execute(resourceId(job.payload, 'import', 'import', 'CATALOGIMPORT_REQUIRED'), job.scope ?? 'organization-platform-root', signal, deadline);
   }
 }

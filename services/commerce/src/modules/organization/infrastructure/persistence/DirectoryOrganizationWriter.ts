@@ -4,9 +4,20 @@ import type { DirectoryConnection } from '../../domain/model/DirectoryConnection
 
 export async function writeDirectoryOrganization(database: SqlExecutor, connection: DirectoryConnection, subject: StagedSubject): Promise<void> {
   const parent = subject.parentorganization ?? connection.organizationid;
-  const parentExists = await database.query("select id from organization.organization where id=$1 and status='active'", [parent]);
+  const parentExists = await database.query(
+    `select parent.id from organization.organization parent
+     where parent.id=$1 and parent.status='active' and (parent.id=$2 or parent.kind='department')
+       and exists(select 1 from organization.unitclosure boundary where boundary.ancestor_id=$2 and boundary.descendant_id=parent.id)`,
+    [parent, connection.organizationid]
+  );
   if (!parentExists.rows[0]) throw new Error('DIRECTORY_PARENT_NOT_FOUND');
-  const current = await database.query<{ parent_id: string | null }>('select parent_id from organization.organization where id=$1 for update', [subject.organization]);
+  const current = await database.query<{ parent_id: string | null; visible: boolean }>(
+    `select organization.parent_id,exists(select 1 from organization.unitclosure boundary
+      where boundary.ancestor_id=$2 and boundary.descendant_id=organization.id) visible
+     from organization.organization organization where organization.id=$1 and organization.kind='department' for update`,
+    [subject.organization, connection.organizationid]
+  );
+  if (current.rows[0] && !current.rows[0].visible) throw new Error('DIRECTORY_SCOPE_BOUNDARY_VIOLATION');
   if (current.rows[0]?.parent_id !== undefined && current.rows[0].parent_id !== parent) {
     const cycle = await database.query('select 1 from organization.unitclosure where ancestor_id=$1 and descendant_id=$2', [subject.organization, parent]);
     if (cycle.rows[0]) throw new Error('DIRECTORY_HIERARCHY_CYCLE');

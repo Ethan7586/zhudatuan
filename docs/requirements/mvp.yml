@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx#MVP上线功能清单!A3:F24
 workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
-navigationCatalogSha256: 5191a956ebfa896847411843c07115759b1e36c5b1943272798008172ea3f6d5
-contractSha256: 3e4d5a0dad5ad2742b167cd1a30486a56969a4dc4d78ba4c6d7dff44229fa7bb
+navigationCatalogSha256: 7985155f4ed97c07691d327316ca572f35d526bfc30a1b4c1d0d9454d897c30e
+contractSha256: 7e1d71c1da0c36fa76c8169345fc6a2dbdfccade034c48f63c867fe983afae76
 generated: true
 count: 22
 requirements:
@@ -26,7 +26,7 @@ requirements:
       - ""
       - ""
       - 忽略
-    release: nonblocking
+    release: required
     providers: []
     clarifications: []
     navigation:
@@ -34,24 +34,52 @@ requirements:
       - platformcatalog
       - platformvoucher
       - groupcontrol
+      - groupproduct
+      - groupvoucher
       - mallcontrol
+      - mallproduct
+      - mallvoucher
+      - groupinvitation
+      - mallinvitation
+      - storecart
+      - storepayment
+      - storevouchers
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappvouchers
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
     routeids:
       - consolecontrol
+      - consoleimporttask
       - consoleproductdetail
-      - consoleproductimport
       - consoleproducts
+      - consolesettings
       - consolevouchers
     routes:
       - /scopes/:scopeKind/:scopeId/control
       - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
       - /scopes/:scopeKind/:scopeId/products
       - /scopes/:scopeKind/:scopeId/products/:productId
+      - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/vouchers
     directOperations:
       - catalog.pools.read
       - organization.layers.read
-      - voucher.cardlibraries.create
-      - voucher.cardlibraries.read
+      - voucher.credentialpools.create
+      - voucher.credentialpools.list
     transitiveOperations:
       - audit.records.read
       - benefit.accounts.read
@@ -65,6 +93,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -73,6 +102,7 @@ requirements:
       - checkout.quote.create
       - fulfillment.tracking.read
       - identity.challenges.create
+      - identity.invitations.read
       - identity.invitations.resolve
       - identity.mobile.challenges.create
       - identity.mobile.manage
@@ -97,18 +127,88 @@ requirements:
       - notification.preferences.read
       - order.orders.create
       - order.reminders.create
+      - partner.customeroptions.list
+      - partner.customers.create
+      - partner.customers.disable
+      - partner.customers.enable
+      - partner.customers.get
+      - partner.customers.list
+      - partner.customers.update
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
       - verification.sessions.read
-      - voucher.cardlibraries.allocate
+      - voucher.actionbatches.create
+      - voucher.actionbatches.get
+      - voucher.actionbatches.list
+      - voucher.actionbatches.retry
+      - voucher.actionexports.create
+      - voucher.activations.numbersecret
+      - voucher.activations.secret
+      - voucher.credentialexports.create
+      - voucher.credentialpools.close
+      - voucher.credentialpools.get
+      - voucher.credentials.generate
+      - voucher.credentials.get
+      - voucher.credentials.import
+      - voucher.credentials.list
+      - voucher.exports.get
+      - voucher.issuebatches.get
+      - voucher.issuebatches.retry
+      - voucher.issueorderexports.create
+      - voucher.issueorders.cancel
+      - voucher.issueorders.create
+      - voucher.issueorders.get
+      - voucher.issueorders.list
+      - voucher.issueorders.submit
+      - voucher.issueorders.update
+      - voucher.jobs.get
+      - voucher.productoptions.list
+      - voucher.products.create
+      - voucher.products.disable
+      - voucher.products.enable
+      - voucher.products.get
+      - voucher.products.list
+      - voucher.products.revise
+      - voucher.redemptions.create
+      - voucher.redemptions.get
+      - voucher.redemptions.quote
+      - voucher.refunds.create
+      - voucher.search.read
+      - voucher.searchexports.create
+      - voucher.searchfacets.read
+      - voucher.searchsnapshots.create
+      - voucher.stockrequestoptions.list
+      - voucher.stockrequests.cancel
+      - voucher.stockrequests.create
+      - voucher.stockrequests.get
+      - voucher.stockrequests.list
+      - voucher.stockrequests.submit
+      - voucher.stockrequests.update
+      - voucher.tenderholds.consume
+      - voucher.tenderholds.create
+      - voucher.tenderholds.release
+      - voucher.vouchers.bind
+      - voucher.vouchers.get
+      - voucher.vouchers.getbynumber
+      - voucher.vouchers.timeline
+      - voucher.vouchers.unbind
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -122,6 +222,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -131,6 +232,7 @@ requirements:
       - checkout.quote.create
       - fulfillment.tracking.read
       - identity.challenges.create
+      - identity.invitations.read
       - identity.invitations.resolve
       - identity.mobile.challenges.create
       - identity.mobile.manage
@@ -156,20 +258,90 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - organization.layers.read
+      - partner.customeroptions.list
+      - partner.customers.create
+      - partner.customers.disable
+      - partner.customers.enable
+      - partner.customers.get
+      - partner.customers.list
+      - partner.customers.update
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
       - verification.sessions.read
-      - voucher.cardlibraries.allocate
-      - voucher.cardlibraries.create
-      - voucher.cardlibraries.read
+      - voucher.actionbatches.create
+      - voucher.actionbatches.get
+      - voucher.actionbatches.list
+      - voucher.actionbatches.retry
+      - voucher.actionexports.create
+      - voucher.activations.numbersecret
+      - voucher.activations.secret
+      - voucher.credentialexports.create
+      - voucher.credentialpools.close
+      - voucher.credentialpools.create
+      - voucher.credentialpools.get
+      - voucher.credentialpools.list
+      - voucher.credentials.generate
+      - voucher.credentials.get
+      - voucher.credentials.import
+      - voucher.credentials.list
+      - voucher.exports.get
+      - voucher.issuebatches.get
+      - voucher.issuebatches.retry
+      - voucher.issueorderexports.create
+      - voucher.issueorders.cancel
+      - voucher.issueorders.create
+      - voucher.issueorders.get
+      - voucher.issueorders.list
+      - voucher.issueorders.submit
+      - voucher.issueorders.update
+      - voucher.jobs.get
+      - voucher.productoptions.list
+      - voucher.products.create
+      - voucher.products.disable
+      - voucher.products.enable
+      - voucher.products.get
+      - voucher.products.list
+      - voucher.products.revise
+      - voucher.redemptions.create
+      - voucher.redemptions.get
+      - voucher.redemptions.quote
+      - voucher.refunds.create
+      - voucher.search.read
+      - voucher.searchexports.create
+      - voucher.searchfacets.read
+      - voucher.searchsnapshots.create
+      - voucher.stockrequestoptions.list
+      - voucher.stockrequests.cancel
+      - voucher.stockrequests.create
+      - voucher.stockrequests.get
+      - voucher.stockrequests.list
+      - voucher.stockrequests.submit
+      - voucher.stockrequests.update
+      - voucher.tenderholds.consume
+      - voucher.tenderholds.create
+      - voucher.tenderholds.release
+      - voucher.vouchers.bind
+      - voucher.vouchers.get
+      - voucher.vouchers.getbynumber
+      - voucher.vouchers.timeline
+      - voucher.vouchers.unbind
     modules:
       - audit
       - benefit
@@ -184,6 +356,7 @@ requirements:
       - notification
       - order
       - organization
+      - partner
       - payment
       - runtime
       - verification
@@ -191,7 +364,7 @@ requirements:
     tables:
       - organization.organization
       - catalog.poolbinding
-      - voucher.cardpool
+      - voucher.credentialpool
     moduleSources:
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
@@ -206,6 +379,7 @@ requirements:
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/organization
+      - services/commerce/src/modules/partner
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
@@ -236,22 +410,57 @@ requirements:
       - ""
       - ""
       - 忽略
-    release: nonblocking
+    release: required
     providers: []
     clarifications:
       - distributiondefinition
     navigation:
       - distributioncontrol
+      - distributionreferral
+      - groupcontrol
       - groupreferral
+      - groupvoucher
+      - mallcontrol
+      - mallvoucher
       - mallreferral
+      - groupinvitation
+      - mallinvitation
+      - storecart
+      - storepayment
+      - storevouchers
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappvouchers
+      - miniappbenefits
+      - miniappreferral
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
+      - distributionreferralview
+      - groupreferralview
+      - mallreferralview
     routeids:
       - consolecontrol
       - consolereferral
       - consolereferralview
+      - consolesettings
+      - miniappreferral
     routes:
+      - /referral
       - /scopes/:scopeKind/:scopeId/control
       - /scopes/:scopeKind/:scopeId/referral
       - /scopes/:scopeKind/:scopeId/referral/:view
+      - /scopes/:scopeKind/:scopeId/settings
     directOperations:
       - channel.distributors.read
     transitiveOperations:
@@ -269,6 +478,7 @@ requirements:
       - benefit.plans.read
       - capability.assignments.manage
       - capability.assignments.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -281,6 +491,7 @@ requirements:
       - checkout.quote.create
       - fulfillment.tracking.read
       - identity.challenges.create
+      - identity.invitations.read
       - identity.invitations.resolve
       - identity.mobile.challenges.create
       - identity.mobile.manage
@@ -303,6 +514,13 @@ requirements:
       - notification.preferences.read
       - order.orders.create
       - order.reminders.create
+      - partner.customeroptions.list
+      - partner.customers.create
+      - partner.customers.disable
+      - partner.customers.enable
+      - partner.customers.get
+      - partner.customers.list
+      - partner.customers.update
       - payment.intents.read
       - referral.bindings.create
       - referral.bindings.read
@@ -319,17 +537,72 @@ requirements:
       - referral.settings.read
       - referral.withdrawals.create
       - referral.withdrawals.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
       - verification.sessions.read
-      - voucher.cardlibraries.allocate
+      - voucher.actionbatches.create
+      - voucher.actionbatches.get
+      - voucher.actionbatches.list
+      - voucher.actionbatches.retry
+      - voucher.actionexports.create
+      - voucher.activations.numbersecret
+      - voucher.activations.secret
+      - voucher.exports.get
+      - voucher.issuebatches.get
+      - voucher.issuebatches.retry
+      - voucher.issueorderexports.create
+      - voucher.issueorders.cancel
+      - voucher.issueorders.create
+      - voucher.issueorders.get
+      - voucher.issueorders.list
+      - voucher.issueorders.submit
+      - voucher.issueorders.update
+      - voucher.productoptions.list
+      - voucher.products.create
+      - voucher.products.disable
+      - voucher.products.enable
+      - voucher.products.get
+      - voucher.products.list
+      - voucher.products.revise
+      - voucher.redemptions.create
+      - voucher.redemptions.get
+      - voucher.redemptions.quote
+      - voucher.refunds.create
+      - voucher.search.read
+      - voucher.searchexports.create
+      - voucher.searchfacets.read
+      - voucher.searchsnapshots.create
+      - voucher.stockrequestoptions.list
+      - voucher.stockrequests.cancel
+      - voucher.stockrequests.create
+      - voucher.stockrequests.get
+      - voucher.stockrequests.list
+      - voucher.stockrequests.submit
+      - voucher.stockrequests.update
+      - voucher.tenderholds.consume
+      - voucher.tenderholds.create
+      - voucher.tenderholds.release
+      - voucher.vouchers.bind
+      - voucher.vouchers.get
+      - voucher.vouchers.getbynumber
+      - voucher.vouchers.timeline
+      - voucher.vouchers.unbind
     operations:
       - audit.records.read
       - benefit.accounts.read
@@ -345,6 +618,7 @@ requirements:
       - benefit.plans.read
       - capability.assignments.manage
       - capability.assignments.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -358,6 +632,7 @@ requirements:
       - checkout.quote.create
       - fulfillment.tracking.read
       - identity.challenges.create
+      - identity.invitations.read
       - identity.invitations.resolve
       - identity.mobile.challenges.create
       - identity.mobile.manage
@@ -380,6 +655,13 @@ requirements:
       - notification.preferences.read
       - order.orders.create
       - order.reminders.create
+      - partner.customeroptions.list
+      - partner.customers.create
+      - partner.customers.disable
+      - partner.customers.enable
+      - partner.customers.get
+      - partner.customers.list
+      - partner.customers.update
       - payment.intents.read
       - referral.bindings.create
       - referral.bindings.read
@@ -396,17 +678,72 @@ requirements:
       - referral.settings.read
       - referral.withdrawals.create
       - referral.withdrawals.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
       - verification.sessions.read
-      - voucher.cardlibraries.allocate
+      - voucher.actionbatches.create
+      - voucher.actionbatches.get
+      - voucher.actionbatches.list
+      - voucher.actionbatches.retry
+      - voucher.actionexports.create
+      - voucher.activations.numbersecret
+      - voucher.activations.secret
+      - voucher.exports.get
+      - voucher.issuebatches.get
+      - voucher.issuebatches.retry
+      - voucher.issueorderexports.create
+      - voucher.issueorders.cancel
+      - voucher.issueorders.create
+      - voucher.issueorders.get
+      - voucher.issueorders.list
+      - voucher.issueorders.submit
+      - voucher.issueorders.update
+      - voucher.productoptions.list
+      - voucher.products.create
+      - voucher.products.disable
+      - voucher.products.enable
+      - voucher.products.get
+      - voucher.products.list
+      - voucher.products.revise
+      - voucher.redemptions.create
+      - voucher.redemptions.get
+      - voucher.redemptions.quote
+      - voucher.refunds.create
+      - voucher.search.read
+      - voucher.searchexports.create
+      - voucher.searchfacets.read
+      - voucher.searchsnapshots.create
+      - voucher.stockrequestoptions.list
+      - voucher.stockrequests.cancel
+      - voucher.stockrequests.create
+      - voucher.stockrequests.get
+      - voucher.stockrequests.list
+      - voucher.stockrequests.submit
+      - voucher.stockrequests.update
+      - voucher.tenderholds.consume
+      - voucher.tenderholds.create
+      - voucher.tenderholds.release
+      - voucher.vouchers.bind
+      - voucher.vouchers.get
+      - voucher.vouchers.getbynumber
+      - voucher.vouchers.timeline
+      - voucher.vouchers.unbind
     modules:
       - audit
       - benefit
@@ -448,6 +785,7 @@ requirements:
       - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
+      - services/commerce/src/modules/partner
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/referral
       - services/commerce/src/modules/runtime
@@ -487,6 +825,27 @@ requirements:
     clarifications: []
     navigation:
       - groupdashboard
+      - groupcontrol
+      - malldashboard
+      - mallcontrol
+      - storecart
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
     routeids:
       - consolecockpit
     routes:
@@ -506,6 +865,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -535,10 +895,19 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -558,6 +927,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -588,10 +958,19 @@ requirements:
       - order.reminders.create
       - payment.intents.read
       - reporting.dashboard.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -664,7 +1043,30 @@ requirements:
     providers: []
     clarifications: []
     navigation:
+      - groupcontrol
       - groupapplication
+      - mallcontrol
+      - malldesign
+      - storehome
+      - storecart
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniapphome
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
     routeids:
       - consoleexperience
     routes:
@@ -685,6 +1087,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -722,10 +1125,19 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -745,6 +1157,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -783,10 +1196,19 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - storefront.bootstrap.read
       - verification.challenges.issue
       - verification.challenges.verify
@@ -869,13 +1291,48 @@ requirements:
     providers: []
     clarifications: []
     navigation:
+      - platformcatalog
+      - groupcontrol
       - groupproduct
+      - mallcontrol
+      - mallproduct
+      - storecart
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeinventorywork
+      - storeaccountwork
+      - suppliercatalog
+      - supplierinventory
+      - supplierpricing
+      - supplieraccount
+      - platformproductdetail
+      - groupproductdetail
+      - mallproductdetail
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
     routeids:
+      - consoleimporttask
       - consoleproductdetail
-      - consoleproductimport
       - consoleproducts
+      - suppliercatalog
+      - supplierinventory
+      - supplierpricing
     routes:
+      - /scopes/:scopeKind/:scopeId/catalog
       - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
+      - /scopes/:scopeKind/:scopeId/inventory
+      - /scopes/:scopeKind/:scopeId/pricing
       - /scopes/:scopeKind/:scopeId/products
       - /scopes/:scopeKind/:scopeId/products/:productId
     directOperations:
@@ -893,12 +1350,16 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
+      - catalog.facets.read
       - catalog.imports.create
       - catalog.imports.read
       - catalog.listings.batch
+      - catalog.listings.pool.set
+      - catalog.listings.price.set
       - catalog.listings.publish
       - catalog.listings.read
       - catalog.listings.unpublish
@@ -921,6 +1382,7 @@ requirements:
       - identity.stepup.complete
       - identity.stepup.start
       - identity.tickets.exchange
+      - inventory.availability.read
       - inventory.imports.create
       - inventory.imports.read
       - marketing.campaigns.read
@@ -934,12 +1396,22 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - pricing.offers.read
       - pricing.rules.create
       - pricing.rules.publish
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -959,12 +1431,16 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
+      - catalog.facets.read
       - catalog.imports.create
       - catalog.imports.read
       - catalog.listings.batch
+      - catalog.listings.pool.set
+      - catalog.listings.price.set
       - catalog.listings.publish
       - catalog.listings.read
       - catalog.listings.unpublish
@@ -988,6 +1464,7 @@ requirements:
       - identity.stepup.complete
       - identity.stepup.start
       - identity.tickets.exchange
+      - inventory.availability.read
       - inventory.imports.create
       - inventory.imports.read
       - marketing.campaigns.read
@@ -1001,12 +1478,22 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - pricing.offers.read
       - pricing.rules.create
       - pricing.rules.publish
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -1084,16 +1571,68 @@ requirements:
     providers: []
     clarifications: []
     navigation:
+      - groupcontrol
       - grouporder
+      - mallcontrol
+      - mallorder
+      - storecart
+      - storepayment
+      - storeorders
+      - storeorder
+      - storeaftersale
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniapporders
+      - miniapporder
+      - miniappaftersale
+      - miniappbenefits
+      - miniappprofile
+      - storetasks
+      - storeorderswork
+      - storefulfillment
+      - storereturnwork
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - suppliertasks
+      - supplierorders
+      - suppliershipments
+      - supplierreturns
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
+      - grouporderdetail
+      - mallorderdetail
+      - storeorderdetailwork
     routeids:
       - consoleorderdetail
       - consoleorders
+      - consoletasks
+      - supplierorders
+      - supplierreturns
+      - suppliershipments
+      - suppliertasks
     routes:
       - /scopes/:scopeKind/:scopeId/orders
+      - /scopes/:scopeKind/:scopeId/orders
       - /scopes/:scopeKind/:scopeId/orders/:orderId
+      - /scopes/:scopeKind/:scopeId/returns
+      - /scopes/:scopeKind/:scopeId/shipments
+      - /scopes/:scopeKind/:scopeId/tasks
+      - /scopes/:scopeKind/:scopeId/tasks
     directOperations:
       - order.orders.read
     transitiveOperations:
+      - approval.instances.get
+      - approval.tasks.approve
+      - approval.tasks.list
+      - approval.tasks.reject
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -1106,6 +1645,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -1139,18 +1679,32 @@ requirements:
       - order.aftersales.approve
       - order.aftersales.read
       - order.aftersales.reject
+      - order.detail.read
+      - order.imports.create
+      - order.imports.read
+      - order.orders.cancel
       - order.orders.create
       - order.orders.export
       - order.orders.receive
       - order.reminders.create
+      - payment.intents.create
       - payment.intents.read
       - payment.recoveries.read
       - payment.recoveries.resolve
       - payment.refunds.request
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -1158,6 +1712,10 @@ requirements:
       - verification.history.read
       - verification.sessions.read
     operations:
+      - approval.instances.get
+      - approval.tasks.approve
+      - approval.tasks.list
+      - approval.tasks.reject
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -1170,6 +1728,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -1203,19 +1762,33 @@ requirements:
       - order.aftersales.approve
       - order.aftersales.read
       - order.aftersales.reject
+      - order.detail.read
+      - order.imports.create
+      - order.imports.read
+      - order.orders.cancel
       - order.orders.create
       - order.orders.export
       - order.orders.read
       - order.orders.receive
       - order.reminders.create
+      - payment.intents.create
       - payment.intents.read
       - payment.recoveries.read
       - payment.recoveries.resolve
       - payment.refunds.request
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -1223,6 +1796,7 @@ requirements:
       - verification.history.read
       - verification.sessions.read
     modules:
+      - approval
       - audit
       - benefit
       - cart
@@ -1243,6 +1817,7 @@ requirements:
       - fulfillment.fulfillmentorder
       - payment.refund
     moduleSources:
+      - services/commerce/src/modules/approval
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -1293,14 +1868,108 @@ requirements:
     clarifications:
       - voucherarchive
     navigation:
+      - platformvoucher
+      - groupcontrol
       - groupvoucher
+      - mallcontrol
+      - mallvoucher
+      - storecart
+      - storepayment
+      - storevouchers
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappvouchers
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
     routeids:
+      - consoleimporttask
+      - consoletasks
       - consolevouchers
     routes:
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
+      - /scopes/:scopeKind/:scopeId/tasks
       - /scopes/:scopeKind/:scopeId/vouchers
     directOperations:
-      - voucher.cardlibraries.read
+      - approval.tasks.approve
+      - approval.tasks.reject
+      - approval.templates.disable
+      - approval.templates.enable
+      - approval.templates.list
+      - approval.templates.revise
+      - partner.customers.create
+      - partner.customers.list
+      - voucher.actionbatches.create
+      - voucher.actionbatches.get
+      - voucher.actionbatches.list
+      - voucher.actionbatches.retry
+      - voucher.actionexports.create
+      - voucher.activations.numbersecret
+      - voucher.activations.secret
+      - voucher.credentialexports.create
+      - voucher.credentialpools.close
+      - voucher.credentialpools.create
+      - voucher.credentialpools.get
+      - voucher.credentialpools.list
+      - voucher.credentials.generate
+      - voucher.credentials.get
+      - voucher.credentials.import
+      - voucher.credentials.list
+      - voucher.exports.get
+      - voucher.issuebatches.get
+      - voucher.issuebatches.retry
+      - voucher.issueorderexports.create
+      - voucher.issueorders.cancel
+      - voucher.issueorders.create
+      - voucher.issueorders.get
+      - voucher.issueorders.list
+      - voucher.issueorders.submit
+      - voucher.issueorders.update
+      - voucher.jobs.get
+      - voucher.productoptions.list
+      - voucher.products.create
+      - voucher.products.disable
+      - voucher.products.enable
+      - voucher.products.get
+      - voucher.products.list
+      - voucher.products.revise
+      - voucher.redemptions.create
+      - voucher.redemptions.get
+      - voucher.redemptions.quote
+      - voucher.refunds.create
+      - voucher.search.read
+      - voucher.searchexports.create
+      - voucher.searchfacets.read
+      - voucher.searchsnapshots.create
+      - voucher.stockrequestoptions.list
+      - voucher.stockrequests.cancel
+      - voucher.stockrequests.create
+      - voucher.stockrequests.get
+      - voucher.stockrequests.list
+      - voucher.stockrequests.submit
+      - voucher.stockrequests.update
+      - voucher.tenderholds.consume
+      - voucher.tenderholds.create
+      - voucher.tenderholds.release
+      - voucher.vouchers.bind
+      - voucher.vouchers.get
+      - voucher.vouchers.getbynumber
+      - voucher.vouchers.timeline
+      - voucher.vouchers.unbind
     transitiveOperations:
+      - approval.instances.get
+      - approval.tasks.list
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -1313,6 +1982,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -1331,7 +2001,11 @@ requirements:
       - identity.stepup.complete
       - identity.stepup.start
       - identity.tickets.exchange
+      - marketing.campaigns.create
+      - marketing.campaigns.disable
+      - marketing.campaigns.publish
       - marketing.campaigns.read
+      - marketing.campaigns.revise
       - member.addresses.manage
       - member.addresses.read
       - member.profile.read
@@ -1341,36 +2015,40 @@ requirements:
       - notification.preferences.read
       - order.orders.create
       - order.reminders.create
+      - partner.customeroptions.list
+      - partner.customers.disable
+      - partner.customers.enable
+      - partner.customers.get
+      - partner.customers.update
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
       - verification.sessions.read
-      - voucher.batches.issue
-      - voucher.batches.read
-      - voucher.batches.retry
-      - voucher.bindings.manage
-      - voucher.bindings.read
-      - voucher.cardlibraries.allocate
-      - voucher.cardlibraries.create
-      - voucher.history.read
-      - voucher.imports.read
-      - voucher.programs.manage
-      - voucher.programs.read
-      - voucher.redemptions.read
-      - voucher.redemptions.reverse
-      - voucher.reserves.decide
-      - voucher.reserves.read
-      - voucher.reserves.request
-      - voucher.status.batch
-      - voucher.statusbatches.read
     operations:
+      - approval.instances.get
+      - approval.tasks.approve
+      - approval.tasks.list
+      - approval.tasks.reject
+      - approval.templates.disable
+      - approval.templates.enable
+      - approval.templates.list
+      - approval.templates.revise
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -1383,6 +2061,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -1401,7 +2080,11 @@ requirements:
       - identity.stepup.complete
       - identity.stepup.start
       - identity.tickets.exchange
+      - marketing.campaigns.create
+      - marketing.campaigns.disable
+      - marketing.campaigns.publish
       - marketing.campaigns.read
+      - marketing.campaigns.revise
       - member.addresses.manage
       - member.addresses.read
       - member.profile.read
@@ -1411,37 +2094,92 @@ requirements:
       - notification.preferences.read
       - order.orders.create
       - order.reminders.create
+      - partner.customeroptions.list
+      - partner.customers.create
+      - partner.customers.disable
+      - partner.customers.enable
+      - partner.customers.get
+      - partner.customers.list
+      - partner.customers.update
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
       - verification.sessions.read
-      - voucher.batches.issue
-      - voucher.batches.read
-      - voucher.batches.retry
-      - voucher.bindings.manage
-      - voucher.bindings.read
-      - voucher.cardlibraries.allocate
-      - voucher.cardlibraries.create
-      - voucher.cardlibraries.read
-      - voucher.history.read
-      - voucher.imports.read
-      - voucher.programs.manage
-      - voucher.programs.read
-      - voucher.redemptions.read
-      - voucher.redemptions.reverse
-      - voucher.reserves.decide
-      - voucher.reserves.read
-      - voucher.reserves.request
-      - voucher.status.batch
-      - voucher.statusbatches.read
+      - voucher.actionbatches.create
+      - voucher.actionbatches.get
+      - voucher.actionbatches.list
+      - voucher.actionbatches.retry
+      - voucher.actionexports.create
+      - voucher.activations.numbersecret
+      - voucher.activations.secret
+      - voucher.credentialexports.create
+      - voucher.credentialpools.close
+      - voucher.credentialpools.create
+      - voucher.credentialpools.get
+      - voucher.credentialpools.list
+      - voucher.credentials.generate
+      - voucher.credentials.get
+      - voucher.credentials.import
+      - voucher.credentials.list
+      - voucher.exports.get
+      - voucher.issuebatches.get
+      - voucher.issuebatches.retry
+      - voucher.issueorderexports.create
+      - voucher.issueorders.cancel
+      - voucher.issueorders.create
+      - voucher.issueorders.get
+      - voucher.issueorders.list
+      - voucher.issueorders.submit
+      - voucher.issueorders.update
+      - voucher.jobs.get
+      - voucher.productoptions.list
+      - voucher.products.create
+      - voucher.products.disable
+      - voucher.products.enable
+      - voucher.products.get
+      - voucher.products.list
+      - voucher.products.revise
+      - voucher.redemptions.create
+      - voucher.redemptions.get
+      - voucher.redemptions.quote
+      - voucher.refunds.create
+      - voucher.search.read
+      - voucher.searchexports.create
+      - voucher.searchfacets.read
+      - voucher.searchsnapshots.create
+      - voucher.stockrequestoptions.list
+      - voucher.stockrequests.cancel
+      - voucher.stockrequests.create
+      - voucher.stockrequests.get
+      - voucher.stockrequests.list
+      - voucher.stockrequests.submit
+      - voucher.stockrequests.update
+      - voucher.tenderholds.consume
+      - voucher.tenderholds.create
+      - voucher.tenderholds.release
+      - voucher.vouchers.bind
+      - voucher.vouchers.get
+      - voucher.vouchers.getbynumber
+      - voucher.vouchers.timeline
+      - voucher.vouchers.unbind
     modules:
+      - approval
       - audit
       - benefit
       - cart
@@ -1453,16 +2191,22 @@ requirements:
       - navigation
       - notification
       - order
+      - partner
       - payment
       - runtime
       - verification
       - voucher
     tables:
-      - voucher.program
-      - voucher.reserverequest
+      - partner.customer
+      - voucher.product
+      - voucher.credentialpool
+      - voucher.stockrequest
+      - voucher.issueorder
+      - voucher.issuebatch
       - voucher.voucher
       - voucher.redemption
     moduleSources:
+      - services/commerce/src/modules/approval
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -1474,6 +2218,7 @@ requirements:
       - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
+      - services/commerce/src/modules/partner
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
@@ -1493,12 +2238,12 @@ requirements:
           - MVPGROUPVOUCHER
           - MVPMALLVOUCHER
         term: 客户管理与产品档案
-        status: open
+        status: resolved
         blocking: true
         owner: product
-        acceptance: null
-        resolvedby: null
-        reason: 工作簿明确标记第1点待确认，签字前不能标记Released
+        acceptance: 客户归 Partner Customer 子域，产品档案归 Rich Voucher Product 与 Catalog，不在 Voucher 建第二份客户或商品主数据
+        resolvedby: docs/architecture/福利商城理想方案20260904.md
+        reason: 理想方案已经裁决归属，历史待确认项转换为必须通过的实现与迁移验收
     status: Designed
     evidence: []
   - id: MVPGROUPFINANCE
@@ -1521,30 +2266,86 @@ requirements:
         5我的发票
       - ""
       - 忽略
-    release: nonblocking
+    release: required
     providers: []
     clarifications: []
     navigation:
+      - groupcontrol
       - groupfinance
+      - mallcontrol
+      - mallfinance
+      - storecart
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplierstatements
+      - supplierreconciliation
+      - supplierinvoice
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
+      - groupfinanceentry
+      - mallfinanceentry
+      - groupfinancestatement
+      - mallfinancestatement
+      - groupfinancereconciliation
+      - mallfinancereconciliation
+      - groupfinancesettlement
+      - mallfinancesettlement
+      - groupfinancewithdrawal
+      - mallfinancewithdrawal
+      - groupfinanceinvoice
+      - mallfinanceinvoice
+      - groupfinancegovernance
+      - mallfinancegovernance
+      - groupfinanceaudit
+      - mallfinanceaudit
     routeids:
       - consolefinance
+      - consolefinanceaudit
       - consolefinanceentry
+      - consolefinancegovernance
       - consolefinanceinvoice
       - consolefinancereconciliation
       - consolefinancesettlement
       - consolefinancestatement
       - consolefinancewithdrawal
+      - consoletasks
+      - supplierinvoice
+      - supplierreconciliation
+      - supplierstatements
     routes:
       - /scopes/:scopeKind/:scopeId/finance
+      - /scopes/:scopeKind/:scopeId/finance/audit
       - /scopes/:scopeKind/:scopeId/finance/entries
+      - /scopes/:scopeKind/:scopeId/finance/governance
       - /scopes/:scopeKind/:scopeId/finance/invoices
       - /scopes/:scopeKind/:scopeId/finance/reconciliations
       - /scopes/:scopeKind/:scopeId/finance/settlements
       - /scopes/:scopeKind/:scopeId/finance/statements
       - /scopes/:scopeKind/:scopeId/finance/withdrawals
+      - /scopes/:scopeKind/:scopeId/invoices
+      - /scopes/:scopeKind/:scopeId/reconciliation
+      - /scopes/:scopeKind/:scopeId/statements
+      - /scopes/:scopeKind/:scopeId/tasks
     directOperations:
       - finance.overview.read
     transitiveOperations:
+      - approval.instances.get
+      - approval.tasks.approve
+      - approval.tasks.list
+      - approval.tasks.reject
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -1557,13 +2358,16 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
       - checkout.quote.create
+      - finance.audit.read
       - finance.backfills.decide
       - finance.backfills.read
       - finance.entries.read
+      - finance.facets.read
       - finance.holds.read
       - finance.periods.manage
       - finance.periods.read
@@ -1580,6 +2384,8 @@ requirements:
       - finance.settlements.adjust
       - finance.settlements.decide
       - finance.settlements.read
+      - finance.statementimports.create
+      - finance.statementimports.read
       - finance.statements.export
       - finance.statements.read
       - finance.withdrawals.create
@@ -1618,10 +2424,19 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -1629,6 +2444,10 @@ requirements:
       - verification.history.read
       - verification.sessions.read
     operations:
+      - approval.instances.get
+      - approval.tasks.approve
+      - approval.tasks.list
+      - approval.tasks.reject
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -1641,13 +2460,16 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
       - checkout.quote.create
+      - finance.audit.read
       - finance.backfills.decide
       - finance.backfills.read
       - finance.entries.read
+      - finance.facets.read
       - finance.holds.read
       - finance.overview.read
       - finance.periods.manage
@@ -1665,6 +2487,8 @@ requirements:
       - finance.settlements.adjust
       - finance.settlements.decide
       - finance.settlements.read
+      - finance.statementimports.create
+      - finance.statementimports.read
       - finance.statements.export
       - finance.statements.read
       - finance.withdrawals.create
@@ -1703,10 +2527,19 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -1714,6 +2547,7 @@ requirements:
       - verification.history.read
       - verification.sessions.read
     modules:
+      - approval
       - audit
       - benefit
       - cart
@@ -1735,6 +2569,7 @@ requirements:
       - finance.statement
       - invoice.request
     moduleSources:
+      - services/commerce/src/modules/approval
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -1783,7 +2618,28 @@ requirements:
     providers: []
     clarifications: []
     navigation:
+      - groupcontrol
       - groupreporting
+      - mallcontrol
+      - mallreporting
+      - storecart
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
     routeids:
       - consolereporting
     routes:
@@ -1803,6 +2659,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -1839,10 +2696,19 @@ requirements:
       - reporting.malls.read
       - reporting.products.read
       - reporting.voucherconsumption.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -1862,6 +2728,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -1899,10 +2766,19 @@ requirements:
       - reporting.products.read
       - reporting.sales.read
       - reporting.voucherconsumption.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -1978,11 +2854,42 @@ requirements:
     providers: []
     clarifications: []
     navigation:
+      - groupcontrol
       - groupsupport
+      - mallcontrol
+      - mallsupport
+      - storecart
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - storesupport
+      - storesupportcase
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - miniappsupport
+      - miniappsupportcase
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storesupportwork
+      - storeaccountwork
+      - suppliersupport
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
+      - groupsupportcase
+      - mallsupportcase
     routeids:
       - consolesupport
       - consolesupportcase
+      - suppliersupport
     routes:
+      - /scopes/:scopeKind/:scopeId/support
       - /scopes/:scopeKind/:scopeId/support
       - /scopes/:scopeKind/:scopeId/support/:caseId
     directOperations:
@@ -2000,6 +2907,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -2028,13 +2936,24 @@ requirements:
       - notification.preferences.read
       - observability.clienterrors.create
       - observability.clienterrors.read
+      - observability.healthoverview.read
+      - observability.slo.read
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - support.accounts.manage
       - support.accounts.read
       - support.agents.manage
@@ -2073,6 +2992,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -2101,13 +3021,24 @@ requirements:
       - notification.preferences.read
       - observability.clienterrors.create
       - observability.clienterrors.read
+      - observability.healthoverview.read
+      - observability.slo.read
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - support.accounts.manage
       - support.accounts.read
       - support.agents.manage
@@ -2209,7 +3140,12 @@ requirements:
     clarifications:
       - grouprisk
     navigation:
+      - platformsettings
+      - distributionsettings
+      - groupcontrol
       - groupsettings
+      - mallcontrol
+      - mallsettings
       - groupadmin
       - groupmemberdata
       - groupinvitation
@@ -2219,10 +3155,46 @@ requirements:
       - grouprisk
       - groupprovider
       - groupdirectory
+      - malladmin
+      - mallmemberdata
+      - mallinvitation
+      - mallpartner
+      - mallqualification
+      - mallmessage
+      - mallrisk
+      - mallprovider
+      - malldirectory
+      - storecart
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - storenotifications
+      - groupapproval
+      - mallapproval
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - miniappnotifications
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
+      - groupapprovaltemplate
+      - mallapprovaltemplate
     routeids:
       - consoleaccess
+      - consoleapprovals
+      - consoleapprovaltemplate
       - consoledirectory
       - consolefederation
+      - consoleimporttask
       - consoleinvitations
       - consolemembers
       - consolenotifications
@@ -2230,9 +3202,14 @@ requirements:
       - consolequalification
       - consolerisk
       - consolesettings
+      - supplieraccount
     routes:
+      - /scopes/:scopeKind/:scopeId/account
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
+      - /scopes/:scopeKind/:scopeId/settings/approvals
+      - /scopes/:scopeKind/:scopeId/settings/approvals/:templateId
       - /scopes/:scopeKind/:scopeId/settings/directory
       - /scopes/:scopeKind/:scopeId/settings/federation
       - /scopes/:scopeKind/:scopeId/settings/invitations
@@ -2245,9 +3222,21 @@ requirements:
       - access.center.read
     transitiveOperations:
       - access.overrides.manage
-      - access.owners.transfer
+      - access.ownership.read
+      - access.ownership.transfers.accept
+      - access.ownership.transfers.accept.preview
+      - access.ownership.transfers.cancel
+      - access.ownership.transfers.cancel.preview
+      - access.ownership.transfers.create
+      - access.ownership.transfers.preview
       - access.roles.manage
       - access.scopes.manage
+      - approval.templates.create
+      - approval.templates.disable
+      - approval.templates.enable
+      - approval.templates.get
+      - approval.templates.list
+      - approval.templates.revise
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -2262,6 +3251,7 @@ requirements:
       - benefit.plans.read
       - capability.assignments.manage
       - capability.assignments.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -2289,6 +3279,7 @@ requirements:
       - identity.password.change
       - identity.password.reset
       - identity.password.verify
+      - identity.providers.center.read
       - identity.providers.manage
       - identity.providers.read
       - identity.providers.test
@@ -2324,6 +3315,9 @@ requirements:
       - organization.directories.sync
       - organization.directories.syncruns.read
       - organization.directoryevents.receive
+      - organization.malls.create
+      - organization.malls.read
+      - organization.malls.update
       - organization.stores.manage
       - organization.stores.read
       - partner.partners.manage
@@ -2331,14 +3325,26 @@ requirements:
       - payment.intents.read
       - qualification.center.read
       - qualification.decisions.preview
+      - qualification.evidenceuploads.create
       - qualification.policies.manage
+      - qualification.qualifications.publish
+      - qualification.qualifications.revoke
       - risk.cases.review
       - risk.center.read
       - risk.policies.manage
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -2348,9 +3354,21 @@ requirements:
     operations:
       - access.center.read
       - access.overrides.manage
-      - access.owners.transfer
+      - access.ownership.read
+      - access.ownership.transfers.accept
+      - access.ownership.transfers.accept.preview
+      - access.ownership.transfers.cancel
+      - access.ownership.transfers.cancel.preview
+      - access.ownership.transfers.create
+      - access.ownership.transfers.preview
       - access.roles.manage
       - access.scopes.manage
+      - approval.templates.create
+      - approval.templates.disable
+      - approval.templates.enable
+      - approval.templates.get
+      - approval.templates.list
+      - approval.templates.revise
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -2365,6 +3383,7 @@ requirements:
       - benefit.plans.read
       - capability.assignments.manage
       - capability.assignments.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -2392,6 +3411,7 @@ requirements:
       - identity.password.change
       - identity.password.reset
       - identity.password.verify
+      - identity.providers.center.read
       - identity.providers.manage
       - identity.providers.read
       - identity.providers.test
@@ -2427,6 +3447,9 @@ requirements:
       - organization.directories.sync
       - organization.directories.syncruns.read
       - organization.directoryevents.receive
+      - organization.malls.create
+      - organization.malls.read
+      - organization.malls.update
       - organization.stores.manage
       - organization.stores.read
       - partner.partners.manage
@@ -2434,14 +3457,26 @@ requirements:
       - payment.intents.read
       - qualification.center.read
       - qualification.decisions.preview
+      - qualification.evidenceuploads.create
       - qualification.policies.manage
+      - qualification.qualifications.publish
+      - qualification.qualifications.revoke
       - risk.cases.review
       - risk.center.read
       - risk.policies.manage
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -2450,6 +3485,7 @@ requirements:
       - verification.sessions.read
     modules:
       - access
+      - approval
       - audit
       - benefit
       - capability
@@ -2478,6 +3514,7 @@ requirements:
       - risk.policy
     moduleSources:
       - services/commerce/src/modules/access
+      - services/commerce/src/modules/approval
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/capability
@@ -2510,12 +3547,12 @@ requirements:
         requirements:
           - MVPGROUPSETTING
         term: 集团风控设置
-        status: open
+        status: resolved
         blocking: true
         owner: product
-        acceptance: null
-        resolvedby: null
-        reason: 工作簿明确标记风控设置待确认，需定义策略对象和审批权限
+        acceptance: 集团风控使用 Risk Policy 和 Case 聚合，策略启用需 Step-up、MakerChecker 与 Approval 证据
+        resolvedby: docs/architecture/福利商城理想方案20260904.md
+        reason: 理想方案已经定义风险策略对象、审批边界和质量门，历史待确认项不再开放
     status: Designed
     evidence: []
   - id: MVPMALLDASHBOARD
@@ -2539,12 +3576,34 @@ requirements:
     providers: []
     clarifications: []
     navigation:
+      - groupdashboard
+      - groupcontrol
       - malldashboard
-      - storehome
+      - mallcontrol
+      - storecart
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
     routeids:
       - consolecockpit
+      - miniapphome
       - storehome
     routes:
+      - /
       - /
       - /scopes/:scopeKind/:scopeId/cockpit
     directOperations:
@@ -2562,6 +3621,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -2591,10 +3651,19 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -2614,6 +3683,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -2644,10 +3714,19 @@ requirements:
       - order.reminders.create
       - payment.intents.read
       - reporting.dashboard.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -2720,18 +3799,46 @@ requirements:
     providers: []
     clarifications: []
     navigation:
+      - groupcontrol
+      - groupapplication
+      - mallcontrol
       - malldesign
       - storehome
+      - storecart
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniapphome
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
     routeids:
       - consoleexperience
+      - miniapphome
       - storehome
     routes:
+      - /
       - /
       - /scopes/:scopeKind/:scopeId/experience
     directOperations:
       - experience.applications.read
       - storefront.bootstrap.read
     transitiveOperations:
+      - approval.instances.get
+      - approval.tasks.approve
+      - approval.tasks.list
+      - approval.tasks.reject
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -2744,6 +3851,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -2752,6 +3860,7 @@ requirements:
       - experience.applications.create
       - experience.applications.detail.read
       - experience.applications.update
+      - experience.published.read
       - experience.versions.publish
       - experience.versions.restore
       - experience.versions.save
@@ -2781,10 +3890,19 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -2792,6 +3910,10 @@ requirements:
       - verification.history.read
       - verification.sessions.read
     operations:
+      - approval.instances.get
+      - approval.tasks.approve
+      - approval.tasks.list
+      - approval.tasks.reject
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -2804,6 +3926,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -2813,6 +3936,7 @@ requirements:
       - experience.applications.detail.read
       - experience.applications.read
       - experience.applications.update
+      - experience.published.read
       - experience.versions.publish
       - experience.versions.restore
       - experience.versions.save
@@ -2842,10 +3966,19 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - storefront.bootstrap.read
       - verification.challenges.issue
       - verification.challenges.verify
@@ -2854,6 +3987,7 @@ requirements:
       - verification.history.read
       - verification.sessions.read
     modules:
+      - approval
       - audit
       - benefit
       - cart
@@ -2875,6 +4009,7 @@ requirements:
       - experience.release
       - experience.publication
     moduleSources:
+      - services/commerce/src/modules/approval
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -2924,19 +4059,60 @@ requirements:
     providers: []
     clarifications: []
     navigation:
+      - platformcatalog
+      - groupcontrol
+      - groupproduct
+      - mallcontrol
       - mallproduct
+      - storehome
       - storecatalog
       - storeproduct
+      - storecart
+      - storecheckout
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniapphome
+      - miniappcatalog
+      - miniappproduct
+      - miniappcart
+      - miniappcheckout
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeinventorywork
+      - storeaccountwork
+      - suppliercatalog
+      - supplierinventory
+      - supplierpricing
+      - supplieraccount
+      - platformproductdetail
+      - groupproductdetail
+      - mallproductdetail
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
     routeids:
+      - consoleimporttask
       - consoleproductdetail
-      - consoleproductimport
       - consoleproducts
+      - miniappcatalog
+      - miniappproduct
       - storecatalog
+      - storeinventorywork
       - storeproduct
     routes:
       - /products
+      - /products
+      - /products/:productId
       - /products/:productId
       - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
+      - /scopes/:scopeKind/:scopeId/inventory
       - /scopes/:scopeKind/:scopeId/products
       - /scopes/:scopeKind/:scopeId/products/:productId
     directOperations:
@@ -2954,12 +4130,16 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
+      - catalog.facets.read
       - catalog.imports.create
       - catalog.imports.read
       - catalog.listings.batch
+      - catalog.listings.pool.set
+      - catalog.listings.price.set
       - catalog.listings.publish
       - catalog.listings.read
       - catalog.listings.unpublish
@@ -2983,6 +4163,7 @@ requirements:
       - identity.stepup.complete
       - identity.stepup.start
       - identity.tickets.exchange
+      - inventory.availability.read
       - inventory.imports.create
       - inventory.imports.read
       - marketing.campaigns.read
@@ -2998,12 +4179,22 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - pricing.offers.read
       - pricing.rules.create
       - pricing.rules.publish
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - storefront.bootstrap.read
       - storefront.catalog.read
       - verification.challenges.issue
@@ -3025,12 +4216,16 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
+      - catalog.facets.read
       - catalog.imports.create
       - catalog.imports.read
       - catalog.listings.batch
+      - catalog.listings.pool.set
+      - catalog.listings.price.set
       - catalog.listings.publish
       - catalog.listings.read
       - catalog.listings.unpublish
@@ -3055,6 +4250,7 @@ requirements:
       - identity.stepup.complete
       - identity.stepup.start
       - identity.tickets.exchange
+      - inventory.availability.read
       - inventory.imports.create
       - inventory.imports.read
       - marketing.campaigns.read
@@ -3070,12 +4266,22 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - pricing.offers.read
       - pricing.rules.create
       - pricing.rules.publish
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - storefront.bootstrap.read
       - storefront.catalog.read
       - verification.challenges.issue
@@ -3154,34 +4360,98 @@ requirements:
     providers: []
     clarifications: []
     navigation:
+      - groupcontrol
+      - grouporder
+      - mallcontrol
       - mallorder
+      - storehome
       - storecart
       - storecheckout
       - storepayment
       - storeorders
       - storeorder
       - storeaftersale
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniapphome
+      - miniappcart
+      - miniappcheckout
+      - miniapppayment
+      - miniapporders
+      - miniapporder
+      - miniappaftersale
+      - miniappbenefits
+      - miniappprofile
+      - storetasks
+      - storeorderswork
+      - storefulfillment
+      - storereturnwork
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - suppliertasks
+      - supplierorders
+      - suppliershipments
+      - supplierreturns
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
+      - grouporderdetail
+      - mallorderdetail
+      - storeorderdetailwork
     routeids:
       - consoleorderdetail
       - consoleorders
+      - consoletasks
+      - miniappaftersale
+      - miniappcart
+      - miniappcheckout
+      - miniapporder
+      - miniapporders
+      - miniapppayment
       - storeaftersale
       - storecart
       - storecheckout
+      - storefulfillment
       - storeorder
       - storeorders
+      - storeorderswork
+      - storeorderwork
       - storepayment
+      - storereturnwork
+      - storetasks
     routes:
       - /cart
+      - /cart
+      - /checkout
       - /checkout
       - /orders
+      - /orders
+      - /orders/:orderId
       - /orders/:orderId
       - /orders/:orderId/aftersales
+      - /orders/:orderId/aftersales
       - /payments/:paymentId/result
+      - /payments/:paymentId/result
+      - /scopes/:scopeKind/:scopeId/fulfillment
+      - /scopes/:scopeKind/:scopeId/orders
       - /scopes/:scopeKind/:scopeId/orders
       - /scopes/:scopeKind/:scopeId/orders/:orderId
+      - /scopes/:scopeKind/:scopeId/orders/:orderId
+      - /scopes/:scopeKind/:scopeId/returns
+      - /scopes/:scopeKind/:scopeId/tasks
+      - /scopes/:scopeKind/:scopeId/tasks
     directOperations:
       - order.orders.read
     transitiveOperations:
+      - approval.instances.get
+      - approval.tasks.approve
+      - approval.tasks.list
+      - approval.tasks.reject
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -3194,6 +4464,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -3232,18 +4503,32 @@ requirements:
       - order.aftersales.approve
       - order.aftersales.read
       - order.aftersales.reject
+      - order.detail.read
+      - order.imports.create
+      - order.imports.read
+      - order.orders.cancel
       - order.orders.create
       - order.orders.export
       - order.orders.receive
       - order.reminders.create
+      - payment.intents.create
       - payment.intents.read
       - payment.recoveries.read
       - payment.recoveries.resolve
       - payment.refunds.request
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - storefront.bootstrap.read
       - verification.challenges.issue
       - verification.challenges.verify
@@ -3252,6 +4537,10 @@ requirements:
       - verification.history.read
       - verification.sessions.read
     operations:
+      - approval.instances.get
+      - approval.tasks.approve
+      - approval.tasks.list
+      - approval.tasks.reject
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -3264,6 +4553,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -3302,19 +4592,33 @@ requirements:
       - order.aftersales.approve
       - order.aftersales.read
       - order.aftersales.reject
+      - order.detail.read
+      - order.imports.create
+      - order.imports.read
+      - order.orders.cancel
       - order.orders.create
       - order.orders.export
       - order.orders.read
       - order.orders.receive
       - order.reminders.create
+      - payment.intents.create
       - payment.intents.read
       - payment.recoveries.read
       - payment.recoveries.resolve
       - payment.refunds.request
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - storefront.bootstrap.read
       - verification.challenges.issue
       - verification.challenges.verify
@@ -3323,6 +4627,7 @@ requirements:
       - verification.history.read
       - verification.sessions.read
     modules:
+      - approval
       - audit
       - benefit
       - cart
@@ -3344,6 +4649,7 @@ requirements:
       - fulfillment.fulfillmentorder
       - payment.refund
     moduleSources:
+      - services/commerce/src/modules/approval
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -3395,17 +4701,116 @@ requirements:
     clarifications:
       - voucherarchive
     navigation:
+      - platformvoucher
+      - groupcontrol
+      - groupvoucher
+      - mallcontrol
       - mallvoucher
+      - storecart
+      - storepayment
       - storevouchers
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappvouchers
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
     routeids:
+      - consoleimporttask
+      - consoletasks
       - consolevouchers
+      - miniappvouchers
+      - storeverification
       - storevouchers
+      - storevoucherswork
     routes:
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
+      - /scopes/:scopeKind/:scopeId/tasks
+      - /scopes/:scopeKind/:scopeId/verification
+      - /scopes/:scopeKind/:scopeId/vouchers
       - /scopes/:scopeKind/:scopeId/vouchers
       - /vouchers
+      - /vouchers
     directOperations:
-      - voucher.cardlibraries.read
+      - approval.tasks.approve
+      - approval.tasks.reject
+      - approval.templates.disable
+      - approval.templates.enable
+      - approval.templates.list
+      - approval.templates.revise
+      - partner.customers.create
+      - partner.customers.list
+      - voucher.actionbatches.create
+      - voucher.actionbatches.get
+      - voucher.actionbatches.list
+      - voucher.actionbatches.retry
+      - voucher.actionexports.create
+      - voucher.activations.numbersecret
+      - voucher.activations.secret
+      - voucher.credentialexports.create
+      - voucher.credentialpools.close
+      - voucher.credentialpools.create
+      - voucher.credentialpools.get
+      - voucher.credentialpools.list
+      - voucher.credentials.generate
+      - voucher.credentials.get
+      - voucher.credentials.import
+      - voucher.credentials.list
+      - voucher.exports.get
+      - voucher.issuebatches.get
+      - voucher.issuebatches.retry
+      - voucher.issueorderexports.create
+      - voucher.issueorders.cancel
+      - voucher.issueorders.create
+      - voucher.issueorders.get
+      - voucher.issueorders.list
+      - voucher.issueorders.submit
+      - voucher.issueorders.update
+      - voucher.jobs.get
+      - voucher.productoptions.list
+      - voucher.products.create
+      - voucher.products.disable
+      - voucher.products.enable
+      - voucher.products.get
+      - voucher.products.list
+      - voucher.products.revise
+      - voucher.redemptions.create
+      - voucher.redemptions.get
+      - voucher.redemptions.quote
+      - voucher.refunds.create
+      - voucher.search.read
+      - voucher.searchexports.create
+      - voucher.searchfacets.read
+      - voucher.searchsnapshots.create
+      - voucher.stockrequestoptions.list
+      - voucher.stockrequests.cancel
+      - voucher.stockrequests.create
+      - voucher.stockrequests.get
+      - voucher.stockrequests.list
+      - voucher.stockrequests.submit
+      - voucher.stockrequests.update
+      - voucher.tenderholds.consume
+      - voucher.tenderholds.create
+      - voucher.tenderholds.release
+      - voucher.vouchers.bind
+      - voucher.vouchers.get
+      - voucher.vouchers.getbynumber
+      - voucher.vouchers.timeline
+      - voucher.vouchers.unbind
     transitiveOperations:
+      - approval.instances.get
+      - approval.tasks.list
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -3418,6 +4823,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -3436,7 +4842,11 @@ requirements:
       - identity.stepup.complete
       - identity.stepup.start
       - identity.tickets.exchange
+      - marketing.campaigns.create
+      - marketing.campaigns.disable
+      - marketing.campaigns.publish
       - marketing.campaigns.read
+      - marketing.campaigns.revise
       - member.addresses.manage
       - member.addresses.read
       - member.profile.read
@@ -3446,36 +4856,40 @@ requirements:
       - notification.preferences.read
       - order.orders.create
       - order.reminders.create
+      - partner.customeroptions.list
+      - partner.customers.disable
+      - partner.customers.enable
+      - partner.customers.get
+      - partner.customers.update
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
       - verification.sessions.read
-      - voucher.batches.issue
-      - voucher.batches.read
-      - voucher.batches.retry
-      - voucher.bindings.manage
-      - voucher.bindings.read
-      - voucher.cardlibraries.allocate
-      - voucher.cardlibraries.create
-      - voucher.history.read
-      - voucher.imports.read
-      - voucher.programs.manage
-      - voucher.programs.read
-      - voucher.redemptions.read
-      - voucher.redemptions.reverse
-      - voucher.reserves.decide
-      - voucher.reserves.read
-      - voucher.reserves.request
-      - voucher.status.batch
-      - voucher.statusbatches.read
     operations:
+      - approval.instances.get
+      - approval.tasks.approve
+      - approval.tasks.list
+      - approval.tasks.reject
+      - approval.templates.disable
+      - approval.templates.enable
+      - approval.templates.list
+      - approval.templates.revise
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -3488,6 +4902,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -3506,7 +4921,11 @@ requirements:
       - identity.stepup.complete
       - identity.stepup.start
       - identity.tickets.exchange
+      - marketing.campaigns.create
+      - marketing.campaigns.disable
+      - marketing.campaigns.publish
       - marketing.campaigns.read
+      - marketing.campaigns.revise
       - member.addresses.manage
       - member.addresses.read
       - member.profile.read
@@ -3516,37 +4935,92 @@ requirements:
       - notification.preferences.read
       - order.orders.create
       - order.reminders.create
+      - partner.customeroptions.list
+      - partner.customers.create
+      - partner.customers.disable
+      - partner.customers.enable
+      - partner.customers.get
+      - partner.customers.list
+      - partner.customers.update
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
       - verification.sessions.read
-      - voucher.batches.issue
-      - voucher.batches.read
-      - voucher.batches.retry
-      - voucher.bindings.manage
-      - voucher.bindings.read
-      - voucher.cardlibraries.allocate
-      - voucher.cardlibraries.create
-      - voucher.cardlibraries.read
-      - voucher.history.read
-      - voucher.imports.read
-      - voucher.programs.manage
-      - voucher.programs.read
-      - voucher.redemptions.read
-      - voucher.redemptions.reverse
-      - voucher.reserves.decide
-      - voucher.reserves.read
-      - voucher.reserves.request
-      - voucher.status.batch
-      - voucher.statusbatches.read
+      - voucher.actionbatches.create
+      - voucher.actionbatches.get
+      - voucher.actionbatches.list
+      - voucher.actionbatches.retry
+      - voucher.actionexports.create
+      - voucher.activations.numbersecret
+      - voucher.activations.secret
+      - voucher.credentialexports.create
+      - voucher.credentialpools.close
+      - voucher.credentialpools.create
+      - voucher.credentialpools.get
+      - voucher.credentialpools.list
+      - voucher.credentials.generate
+      - voucher.credentials.get
+      - voucher.credentials.import
+      - voucher.credentials.list
+      - voucher.exports.get
+      - voucher.issuebatches.get
+      - voucher.issuebatches.retry
+      - voucher.issueorderexports.create
+      - voucher.issueorders.cancel
+      - voucher.issueorders.create
+      - voucher.issueorders.get
+      - voucher.issueorders.list
+      - voucher.issueorders.submit
+      - voucher.issueorders.update
+      - voucher.jobs.get
+      - voucher.productoptions.list
+      - voucher.products.create
+      - voucher.products.disable
+      - voucher.products.enable
+      - voucher.products.get
+      - voucher.products.list
+      - voucher.products.revise
+      - voucher.redemptions.create
+      - voucher.redemptions.get
+      - voucher.redemptions.quote
+      - voucher.refunds.create
+      - voucher.search.read
+      - voucher.searchexports.create
+      - voucher.searchfacets.read
+      - voucher.searchsnapshots.create
+      - voucher.stockrequestoptions.list
+      - voucher.stockrequests.cancel
+      - voucher.stockrequests.create
+      - voucher.stockrequests.get
+      - voucher.stockrequests.list
+      - voucher.stockrequests.submit
+      - voucher.stockrequests.update
+      - voucher.tenderholds.consume
+      - voucher.tenderholds.create
+      - voucher.tenderholds.release
+      - voucher.vouchers.bind
+      - voucher.vouchers.get
+      - voucher.vouchers.getbynumber
+      - voucher.vouchers.timeline
+      - voucher.vouchers.unbind
     modules:
+      - approval
       - audit
       - benefit
       - cart
@@ -3558,15 +5032,21 @@ requirements:
       - navigation
       - notification
       - order
+      - partner
       - payment
       - runtime
       - verification
       - voucher
     tables:
+      - partner.customer
+      - voucher.product
+      - voucher.stockrequest
       - voucher.voucher
+      - voucher.tenderhold
       - voucher.redemption
-      - voucher.reversal
+      - voucher.refund
     moduleSources:
+      - services/commerce/src/modules/approval
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -3578,6 +5058,7 @@ requirements:
       - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
+      - services/commerce/src/modules/partner
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
@@ -3614,33 +5095,84 @@ requirements:
         5我的发票
       - ""
       - 忽略
-    release: nonblocking
+    release: required
     providers: []
     clarifications: []
     navigation:
+      - groupcontrol
+      - groupfinance
+      - mallcontrol
       - mallfinance
+      - storecart
+      - storepayment
       - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplierstatements
+      - supplierreconciliation
+      - supplierinvoice
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
+      - groupfinanceentry
+      - mallfinanceentry
+      - groupfinancestatement
+      - mallfinancestatement
+      - groupfinancereconciliation
+      - mallfinancereconciliation
+      - groupfinancesettlement
+      - mallfinancesettlement
+      - groupfinancewithdrawal
+      - mallfinancewithdrawal
+      - groupfinanceinvoice
+      - mallfinanceinvoice
+      - groupfinancegovernance
+      - mallfinancegovernance
+      - groupfinanceaudit
+      - mallfinanceaudit
     routeids:
       - consolefinance
+      - consolefinanceaudit
       - consolefinanceentry
+      - consolefinancegovernance
       - consolefinanceinvoice
       - consolefinancereconciliation
       - consolefinancesettlement
       - consolefinancestatement
       - consolefinancewithdrawal
+      - consoletasks
+      - miniappbenefits
       - storebenefits
     routes:
       - /benefits
+      - /benefits
       - /scopes/:scopeKind/:scopeId/finance
+      - /scopes/:scopeKind/:scopeId/finance/audit
       - /scopes/:scopeKind/:scopeId/finance/entries
+      - /scopes/:scopeKind/:scopeId/finance/governance
       - /scopes/:scopeKind/:scopeId/finance/invoices
       - /scopes/:scopeKind/:scopeId/finance/reconciliations
       - /scopes/:scopeKind/:scopeId/finance/settlements
       - /scopes/:scopeKind/:scopeId/finance/statements
       - /scopes/:scopeKind/:scopeId/finance/withdrawals
+      - /scopes/:scopeKind/:scopeId/tasks
     directOperations:
       - finance.overview.read
     transitiveOperations:
+      - approval.instances.get
+      - approval.tasks.approve
+      - approval.tasks.list
+      - approval.tasks.reject
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -3653,13 +5185,16 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
       - checkout.quote.create
+      - finance.audit.read
       - finance.backfills.decide
       - finance.backfills.read
       - finance.entries.read
+      - finance.facets.read
       - finance.holds.read
       - finance.invoices.download
       - finance.invoices.read
@@ -3678,6 +5213,8 @@ requirements:
       - finance.settlements.adjust
       - finance.settlements.decide
       - finance.settlements.read
+      - finance.statementimports.create
+      - finance.statementimports.read
       - finance.statements.export
       - finance.statements.read
       - finance.withdrawals.create
@@ -3716,10 +5253,19 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -3727,6 +5273,10 @@ requirements:
       - verification.history.read
       - verification.sessions.read
     operations:
+      - approval.instances.get
+      - approval.tasks.approve
+      - approval.tasks.list
+      - approval.tasks.reject
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -3739,13 +5289,16 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
       - checkout.quote.create
+      - finance.audit.read
       - finance.backfills.decide
       - finance.backfills.read
       - finance.entries.read
+      - finance.facets.read
       - finance.holds.read
       - finance.invoices.download
       - finance.invoices.read
@@ -3765,6 +5318,8 @@ requirements:
       - finance.settlements.adjust
       - finance.settlements.decide
       - finance.settlements.read
+      - finance.statementimports.create
+      - finance.statementimports.read
       - finance.statements.export
       - finance.statements.read
       - finance.withdrawals.create
@@ -3803,10 +5358,19 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -3814,6 +5378,7 @@ requirements:
       - verification.history.read
       - verification.sessions.read
     modules:
+      - approval
       - audit
       - benefit
       - cart
@@ -3834,6 +5399,7 @@ requirements:
       - finance.statement
       - invoice.request
     moduleSources:
+      - services/commerce/src/modules/approval
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -3882,7 +5448,28 @@ requirements:
     providers: []
     clarifications: []
     navigation:
+      - groupcontrol
+      - groupreporting
+      - mallcontrol
       - mallreporting
+      - storecart
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
     routeids:
       - consolereporting
     routes:
@@ -3902,6 +5489,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -3938,10 +5526,19 @@ requirements:
       - reporting.malls.read
       - reporting.products.read
       - reporting.voucherconsumption.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -3961,6 +5558,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -3998,10 +5596,19 @@ requirements:
       - reporting.products.read
       - reporting.sales.read
       - reporting.voucherconsumption.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -4077,18 +5684,53 @@ requirements:
     providers: []
     clarifications: []
     navigation:
+      - groupcontrol
+      - groupsupport
+      - mallcontrol
       - mallsupport
+      - storecart
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - storesecurity
       - storesupport
       - storesupportcase
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - miniappsecurity
+      - miniappsupport
+      - miniappsupportcase
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storesupportwork
+      - storeaccountwork
+      - suppliersupport
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
+      - groupsupportcase
+      - mallsupportcase
     routeids:
       - consolesupport
       - consolesupportcase
+      - miniappsupport
+      - miniappsupportcase
       - storesupport
       - storesupportcase
+      - storesupportwork
     routes:
+      - /scopes/:scopeKind/:scopeId/support
       - /scopes/:scopeKind/:scopeId/support
       - /scopes/:scopeKind/:scopeId/support/:caseId
       - /support
+      - /support
+      - /support/:caseId
       - /support/:caseId
     directOperations:
       - support.cases.read
@@ -4106,6 +5748,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -4136,13 +5779,24 @@ requirements:
       - notification.preferences.read
       - observability.clienterrors.create
       - observability.clienterrors.read
+      - observability.healthoverview.read
+      - observability.slo.read
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - support.accounts.manage
       - support.accounts.read
       - support.agents.manage
@@ -4182,6 +5836,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -4212,13 +5867,24 @@ requirements:
       - notification.preferences.read
       - observability.clienterrors.create
       - observability.clienterrors.read
+      - observability.healthoverview.read
+      - observability.slo.read
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - support.accounts.manage
       - support.accounts.read
       - support.agents.manage
@@ -4319,7 +5985,21 @@ requirements:
     providers: []
     clarifications: []
     navigation:
+      - platformsettings
+      - distributionsettings
+      - groupcontrol
+      - groupsettings
+      - mallcontrol
       - mallsettings
+      - groupadmin
+      - groupmemberdata
+      - groupinvitation
+      - grouppartner
+      - groupqualification
+      - groupmessage
+      - grouprisk
+      - groupprovider
+      - groupdirectory
       - malladmin
       - mallmemberdata
       - mallinvitation
@@ -4329,13 +6009,39 @@ requirements:
       - mallrisk
       - mallprovider
       - malldirectory
+      - storecart
+      - storepayment
+      - storebenefits
       - storeprofile
       - storesecurity
       - storenotifications
+      - groupapproval
+      - mallapproval
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - miniappsecurity
+      - miniappnotifications
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
+      - groupapprovaltemplate
+      - mallapprovaltemplate
     routeids:
       - consoleaccess
+      - consoleapprovals
+      - consoleapprovaltemplate
       - consoledirectory
       - consolefederation
+      - consoleimporttask
       - consoleinvitations
       - consolemembers
       - consolenotifications
@@ -4343,15 +6049,28 @@ requirements:
       - consolequalification
       - consolerisk
       - consolesettings
+      - miniappnotifications
+      - miniappprofile
+      - miniappsecurity
+      - storeaccountwork
+      - storedevices
       - storenotifications
       - storeprofile
       - storesecurity
     routes:
       - /notifications
+      - /notifications
+      - /profile
       - /profile
       - /profile/security
+      - /profile/security
+      - /scopes/:scopeKind/:scopeId/account
+      - /scopes/:scopeKind/:scopeId/devices
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
+      - /scopes/:scopeKind/:scopeId/settings/approvals
+      - /scopes/:scopeKind/:scopeId/settings/approvals/:templateId
       - /scopes/:scopeKind/:scopeId/settings/directory
       - /scopes/:scopeKind/:scopeId/settings/federation
       - /scopes/:scopeKind/:scopeId/settings/invitations
@@ -4364,9 +6083,21 @@ requirements:
       - access.center.read
     transitiveOperations:
       - access.overrides.manage
-      - access.owners.transfer
+      - access.ownership.read
+      - access.ownership.transfers.accept
+      - access.ownership.transfers.accept.preview
+      - access.ownership.transfers.cancel
+      - access.ownership.transfers.cancel.preview
+      - access.ownership.transfers.create
+      - access.ownership.transfers.preview
       - access.roles.manage
       - access.scopes.manage
+      - approval.templates.create
+      - approval.templates.disable
+      - approval.templates.enable
+      - approval.templates.get
+      - approval.templates.list
+      - approval.templates.revise
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -4381,6 +6112,7 @@ requirements:
       - benefit.plans.read
       - capability.assignments.manage
       - capability.assignments.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -4408,6 +6140,7 @@ requirements:
       - identity.password.change
       - identity.password.reset
       - identity.password.verify
+      - identity.providers.center.read
       - identity.providers.manage
       - identity.providers.read
       - identity.providers.test
@@ -4439,6 +6172,8 @@ requirements:
       - notification.templates.read
       - observability.clienterrors.create
       - observability.clienterrors.read
+      - observability.healthoverview.read
+      - observability.slo.read
       - order.orders.create
       - order.reminders.create
       - organization.directories.manage
@@ -4446,6 +6181,9 @@ requirements:
       - organization.directories.sync
       - organization.directories.syncruns.read
       - organization.directoryevents.receive
+      - organization.malls.create
+      - organization.malls.read
+      - organization.malls.update
       - organization.stores.manage
       - organization.stores.read
       - partner.partners.manage
@@ -4453,14 +6191,26 @@ requirements:
       - payment.intents.read
       - qualification.center.read
       - qualification.decisions.preview
+      - qualification.evidenceuploads.create
       - qualification.policies.manage
+      - qualification.qualifications.publish
+      - qualification.qualifications.revoke
       - risk.cases.review
       - risk.center.read
       - risk.policies.manage
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -4470,9 +6220,21 @@ requirements:
     operations:
       - access.center.read
       - access.overrides.manage
-      - access.owners.transfer
+      - access.ownership.read
+      - access.ownership.transfers.accept
+      - access.ownership.transfers.accept.preview
+      - access.ownership.transfers.cancel
+      - access.ownership.transfers.cancel.preview
+      - access.ownership.transfers.create
+      - access.ownership.transfers.preview
       - access.roles.manage
       - access.scopes.manage
+      - approval.templates.create
+      - approval.templates.disable
+      - approval.templates.enable
+      - approval.templates.get
+      - approval.templates.list
+      - approval.templates.revise
       - audit.records.read
       - benefit.accounts.read
       - benefit.budgets.manage
@@ -4487,6 +6249,7 @@ requirements:
       - benefit.plans.read
       - capability.assignments.manage
       - capability.assignments.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -4514,6 +6277,7 @@ requirements:
       - identity.password.change
       - identity.password.reset
       - identity.password.verify
+      - identity.providers.center.read
       - identity.providers.manage
       - identity.providers.read
       - identity.providers.test
@@ -4545,6 +6309,8 @@ requirements:
       - notification.templates.read
       - observability.clienterrors.create
       - observability.clienterrors.read
+      - observability.healthoverview.read
+      - observability.slo.read
       - order.orders.create
       - order.reminders.create
       - organization.directories.manage
@@ -4552,6 +6318,9 @@ requirements:
       - organization.directories.sync
       - organization.directories.syncruns.read
       - organization.directoryevents.receive
+      - organization.malls.create
+      - organization.malls.read
+      - organization.malls.update
       - organization.stores.manage
       - organization.stores.read
       - partner.partners.manage
@@ -4559,14 +6328,26 @@ requirements:
       - payment.intents.read
       - qualification.center.read
       - qualification.decisions.preview
+      - qualification.evidenceuploads.create
       - qualification.policies.manage
+      - qualification.qualifications.publish
+      - qualification.qualifications.revoke
       - risk.cases.review
       - risk.center.read
       - risk.policies.manage
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -4575,6 +6356,7 @@ requirements:
       - verification.sessions.read
     modules:
       - access
+      - approval
       - audit
       - benefit
       - capability
@@ -4605,6 +6387,7 @@ requirements:
       - risk.policy
     moduleSources:
       - services/commerce/src/modules/access
+      - services/commerce/src/modules/approval
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/capability
@@ -4655,10 +6438,29 @@ requirements:
     providers: []
     clarifications: []
     navigation:
+      - groupcontrol
+      - mallcontrol
       - groupprovider
       - mallprovider
+      - storecart
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
     routeids:
-      - authcallback
       - authinvitation
       - authlink
       - authlogin
@@ -4666,7 +6468,6 @@ requirements:
       - consolefederation
     routes:
       - /
-      - /callback
       - /invitation
       - /link
       - /membership
@@ -4693,6 +6494,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -4705,6 +6507,7 @@ requirements:
       - identity.mobile.manage
       - identity.password.change
       - identity.password.reset
+      - identity.providers.center.read
       - identity.providers.read
       - identity.session.delete
       - identity.session.read
@@ -4720,10 +6523,19 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -4743,6 +6555,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -4760,6 +6573,7 @@ requirements:
       - identity.mobile.manage
       - identity.password.change
       - identity.password.reset
+      - identity.providers.center.read
       - identity.providers.read
       - identity.session.delete
       - identity.session.read
@@ -4778,10 +6592,19 @@ requirements:
       - order.orders.create
       - order.reminders.create
       - payment.intents.read
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -4864,13 +6687,37 @@ requirements:
       - meal
     clarifications: []
     navigation:
+      - distributionchannel
+      - groupcontrol
       - groupchannel
+      - mallcontrol
       - mallchannel
       - platformchannel
+      - storecart
+      - storepayment
+      - storebenefits
+      - storeprofile
+      - grouptasks
+      - malltasks
+      - miniappcart
+      - miniapppayment
+      - miniappbenefits
+      - miniappprofile
+      - storeverification
+      - storevoucherswork
+      - storedevices
+      - storeaccountwork
+      - supplierconnections
+      - supplieraccount
+      - platformimporttask
+      - groupimporttask
+      - mallimporttask
     routeids:
       - consolechannels
+      - supplierconnections
     routes:
       - /scopes/:scopeKind/:scopeId/channels
+      - /scopes/:scopeKind/:scopeId/connections
     directOperations:
       - channel.connections.read
     transitiveOperations:
@@ -4886,6 +6733,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -4930,10 +6778,19 @@ requirements:
       - payment.recoveries.read
       - payment.recoveries.resolve
       - payment.webhooks.wechat
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -4953,6 +6810,7 @@ requirements:
       - benefit.lots.read
       - benefit.plans.manage
       - benefit.plans.read
+      - cart.anonymous.merge
       - cart.current.read
       - cart.items.batch
       - cart.items.put
@@ -4998,10 +6856,19 @@ requirements:
       - payment.recoveries.read
       - payment.recoveries.resolve
       - payment.webhooks.wechat
+      - runtime.exports.cancel
+      - runtime.exports.read
       - runtime.health.dependency
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - runtime.imports.confirm
+      - runtime.imports.create
+      - runtime.imports.read
+      - runtime.imports.retry
+      - runtime.jobs.cancel
+      - runtime.jobs.read
+      - runtime.uploads.create
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage

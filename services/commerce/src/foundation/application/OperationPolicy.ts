@@ -1,11 +1,11 @@
 import { DomainError } from '../domain/DomainError';
-import type { Operation } from '@shop/contract';
+import { isOperationTarget, type Operation } from '@shop/contract';
 import type { Scope } from '@shop/authz';
 import { token } from '../../bootstrap/Container';
 import type { Actor } from '../security/AccessContext';
 import type { AccessPipeline } from '../security/AccessPipeline';
 import type { DecisionSink } from '../security/DecisionSink';
-import type { OperationSecurityContext } from '../security/OperationSecurityContext';
+import type { ClientTarget, OperationSecurityContext } from '../security/OperationSecurityContext';
 import type { PreauthResolver } from '../security/PreauthResolver';
 import { assertRiskAllowed, type RiskGate } from '../security/RiskGate';
 import { ResourceResolver } from './ResourceResolver';
@@ -42,7 +42,7 @@ export class SecureOperationPolicy implements OperationPolicy {
     if (operation.assuranceLevel === 'anonymous' || operation.audience === 'system' || operation.audience === 'webhook') {
       const channel = operation.audience === 'system' ? 'system' : operation.audience === 'webhook' ? 'webhook' : 'public';
       const requested = headers['x-client-target'];
-      const target = requested === 'console' || requested === 'storefront' ? requested : null;
+      const target = isOperationTarget(requested) ? requested : null;
       assertTarget(operation, target);
       const trace = headers['x-trace-id'] ?? headers['x-request-id'] ?? `anonymous:${operation.id}`;
       if (channel === 'public' && target !== null) await this.authorizePublic(operation, headers, `anonymous:${target}`, target, trace, deadline, signal);
@@ -64,7 +64,7 @@ export class SecureOperationPolicy implements OperationPolicy {
     return Object.freeze({ kind: 'session', access });
   }
 
-  private async authorizePublic(operation: Operation, headers: Readonly<Record<string, string>>, principal: string, target: 'console' | 'storefront', trace: string, deadline: number, signal: AbortSignal): Promise<void> {
+  private async authorizePublic(operation: Operation, headers: Readonly<Record<string, string>>, principal: string, target: ClientTarget, trace: string, deadline: number, signal: AbortSignal): Promise<void> {
     const actor: Actor = Object.freeze({ id: principal, session: trace, membership: 'public', credentialVersion: 0, accessVersion: 0, target, assurance: { level: 0 } });
     try {
       const assessment = await this.risk.evaluate({
@@ -85,14 +85,14 @@ export class SecureOperationPolicy implements OperationPolicy {
   }
 }
 
-function exactBrowserTarget(operation: Operation, headers: Readonly<Record<string, string>>): 'console' | 'storefront' {
+function exactBrowserTarget(operation: Operation, headers: Readonly<Record<string, string>>): ClientTarget {
   const requested = headers['x-client-target'];
-  if (requested !== 'console' && requested !== 'storefront') throw new DomainError('AUTHORIZATION_DENIED');
+  if (!isOperationTarget(requested)) throw new DomainError('AUTHORIZATION_DENIED');
   assertTarget(operation, requested);
   return requested;
 }
 
-function hasSessionCredential(headers: Readonly<Record<string, string>>, target: 'console' | 'storefront'): boolean {
+function hasSessionCredential(headers: Readonly<Record<string, string>>, target: ClientTarget): boolean {
   if (/^Bearer\s+/i.test(headers.authorization ?? '')) return true;
   const expected = `__Host-${target}-session=`;
   return (headers.cookie ?? '').split(';').some((part) => part.trim().startsWith(expected));
@@ -100,7 +100,7 @@ function hasSessionCredential(headers: Readonly<Record<string, string>>, target:
 
 const PUBLIC_SCOPE: Scope = Object.freeze({ kind: 'platform', id: 'organization-platform-root', path: Object.freeze([]) });
 
-function assertTarget(operation: Operation, target: 'console' | 'storefront' | null): void {
+function assertTarget(operation: Operation, target: ClientTarget | null): void {
   const targets = operation.targets as readonly string[];
   if (targets.length === 0 ? target !== null : target === null || !targets.includes(target)) throw new DomainError('AUTHORIZATION_DENIED');
 }

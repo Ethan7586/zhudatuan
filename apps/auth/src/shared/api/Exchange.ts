@@ -20,5 +20,5 @@ export async function exchangeSession(
     commandContext(environment, target, csrf, signal)
   );
   if (exchanged.returnTarget.target !== target) throw new ClientError('RETURN_TARGET_INVALID');
-  return approvedDestination(exchanged.returnTarget.url, target, { console: environment.consoleOrigin, storefront: environment.storefrontOrigin });
+  return approvedDestination(exchanged.returnTarget.url, target, environment.returnOrigins);
 }

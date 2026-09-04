@@ -2,7 +2,7 @@ import type { IdentityMembership } from '../../../access/public/IdentityAccessPo
 
 export interface MembershipCandidate {
   readonly id: string;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly accessVersion: number;
   readonly displayName: string;
   readonly organizationName: string;

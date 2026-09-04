@@ -3,6 +3,7 @@ import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { PendingEvidence, SupportJobRepository } from '../../application/port/SupportJobRepository';
+import type { AttachmentScanResult } from '../../application/port/AttachmentScanPort';
 import { AssignmentRule } from '../../domain/model/AssignmentRule';
 import type { TicketPriority } from '../../domain/model/Ticket';
 import { AssignmentPolicy, type Agent } from '../../domain/policy/AssignmentPolicy';
@@ -31,16 +32,17 @@ export class PgSupportJobRepository implements SupportJobRepository {
     return row ? Object.freeze({ id, objectReference: row.object_ref, sha256: row.sha256, size: Number(row.size_bytes), contentType: row.kind, originalName: row.original_name, uploadExpiresAt: new Date(row.upload_expires_at).toISOString(), scope: row.scope_id, ticket: row.ticket_id, conversation: row.conversation_id }) : undefined;
   }
 
-  async completeEvidence(context: WriteTransactionContext, evidence: PendingEvidence, clean: boolean, reason: string | null): Promise<void> {
+  async completeEvidence(context: WriteTransactionContext, evidence: PendingEvidence, scan: AttachmentScanResult): Promise<void> {
     const database = this.transactions.database(context);
-    const result = await database.query(
+    const updated = await database.query(
       `update support.evidence set state=$2,uploaded_at=coalesce(uploaded_at,clock_timestamp()),scanned_at=clock_timestamp(),
-      scan_reason=$3,version=version+1 where id=$1 and state='pending'`,
-      [evidence.id, clean ? 'clean' : 'rejected', reason]
+      scan_reason=$3,scan_recovery=$4,version=version+1 where id=$1 and state='pending'`,
+      [evidence.id, scan.clean ? 'clean' : 'rejected', scan.reason, scan.recovery]
     );
-    if (result.rowCount !== 1) return;
-    await this.append(database, clean ? 'support.attachment.ready' : 'support.attachment.rejected', 'evidence', evidence.id, evidence.scope, {
+    if (updated.rowCount !== 1) return;
+    await this.append(database, scan.clean ? 'support.attachment.ready' : 'support.attachment.rejected', 'evidence', evidence.id, evidence.scope, {
       ticketId: evidence.ticket, conversationId: evidence.conversation, evidenceId: evidence.id, version: 2,
+      ...(scan.clean ? {} : { reason: scan.reason, recovery: scan.recovery }),
     }, `supportscan:${evidence.id}`);
   }
 
@@ -93,12 +95,12 @@ export class PgSupportJobRepository implements SupportJobRepository {
         from support.agent target left join support.ticket ticket on ticket.assigned_agent_id=target.id
         where target.scope_id=$1 and target.state='available' group by target.id order by target.id`, [scope]
       ),
-      database.query<{ id: string; scope_id: string; skill: string; priorities: TicketPriority[]; weight: number }>(
-        `select id,scope_id,skill,priorities,weight from support.assignmentrule where scope_id=$1 and state='active' order by weight desc,id`, [scope]
+      database.query<{ id: string; scope_id: string; skill: string; priorities: TicketPriority[]; weight: number; version: number }>(
+        `select id,scope_id,skill,priorities,weight,version from support.assignmentrule where scope_id=$1 and state='active' order by weight desc,id`, [scope]
       ),
     ]);
     let candidates: readonly Agent[] = candidateRows.rows.map((row) => ({ id: row.id, online: true, state: row.state, load: Number(row.load), capacity: Number(row.capacity), skills: row.skills, scopes: [scope], lastAssignedAt: row.last_assigned_at }));
-    const rules = ruleRows.rows.map((row) => new AssignmentRule(row.id, row.scope_id, row.skill, row.priorities, Number(row.weight), true));
+    const rules = ruleRows.rows.map((row) => new AssignmentRule(row.id, row.scope_id, row.skill, row.priorities, Number(row.weight), true, Number(row.version)));
     const policy = new AssignmentPolicy();
     for (const ticket of tickets.rows) {
       await database.query('select id from support.assignment where ticket_id=$1 and released_at is null for update', [ticket.id]);

@@ -25,10 +25,18 @@ export function usePaymentViewModel(paymentId: string) {
   const continuePayment = async () => {
     if (!query.data?.action) return;
     setContinuing(true);
-    try { await continuation.current.execute(query.data.action); } finally { setContinuing(false); await query.refetch(); }
+    try {
+      await continuation.current.execute(query.data.action);
+    } finally {
+      setContinuing(false);
+      await query.refetch();
+    }
   };
-  return Object.freeze({ valid, continuing, payment: query.data ?? null,
-    state: !valid ? 'failed' as const : query.isPending ? 'loading' as const : query.isError || !query.data ? 'failed' as const : ['captured', 'failed', 'expired'].includes(query.data.state) ? 'ready' as const : 'stale' as const,
+  return Object.freeze({
+    valid,
+    continuing,
+    payment: query.data ?? null,
+    state: !valid ? ('failed' as const) : query.isPending ? ('loading' as const) : query.isError || !query.data ? ('failed' as const) : ['captured', 'failed', 'expired'].includes(query.data.state) ? ('ready' as const) : ('stale' as const),
     actions: Object.freeze({ refresh: query.refetch, continuePayment }),
   });
 }

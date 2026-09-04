@@ -1,5 +1,19 @@
-version: 2
+version: 3
 owner: identity
+schema:
+  provider:
+    required: [id, type, issuer, audiences, clientId, secretRef, keyVersion, enabled]
+    issuer: httpsurl
+    audiences: nonemptyunique
+    clientId: publicidentifier
+    secretRef: secretreference
+    keyVersion: positiveinteger
+  wechatapplication:
+    required: [scene, appId, secretRef, keyVersion]
+    scenes: [miniapp, jsapi]
+    appId: wechatapplicationid
+    secretRef: secretreference
+    keyVersion: positiveinteger
 types:
   oidc:
     timeoutMilliseconds: 5000
@@ -34,3 +48,7 @@ security:
   retryAttempts: 3
   allowedAlgorithms: [RS256, ES256]
   secretReference: ^[a-z][a-z0-9./]{2,127}$
+  redirectAllowlist: [https://passport.fufu.wang]
+  bindingConflict: reject
+  accountLink: explicitproof
+  keyRotationDays: 90

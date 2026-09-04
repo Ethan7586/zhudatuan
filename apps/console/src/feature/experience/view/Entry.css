@@ -72,7 +72,7 @@
   place-items: center;
   border-radius: 16px;
   background: var(--sw-brand-light);
-  color: var(--vi-brand);
+  color: var(--sw-brand);
   font-weight: 800;
 }
 .commerceentryempty p {
@@ -93,7 +93,7 @@
   border-radius: 10px;
   background: var(--sw-surface-subtle);
   padding: 10px 12px;
-  color: var(--vi-brand);
+  color: var(--sw-brand);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 11px;
   overflow-wrap: anywhere;
@@ -112,7 +112,7 @@
 }
 .commerceentryfeedback {
   min-height: 18px;
-  color: var(--vi-brand);
+  color: var(--sw-brand);
   font-weight: 700;
 }
 @keyframes commerceqrpulse {

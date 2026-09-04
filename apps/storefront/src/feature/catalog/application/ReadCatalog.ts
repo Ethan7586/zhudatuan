@@ -1,11 +1,10 @@
 import type { CatalogFilter } from '../model/CatalogFilter';
 import type { CatalogPage } from '../model/CatalogPage';
-import { CatalogGateway } from '../infrastructure/CatalogGateway';
-import { mapCatalog } from '../infrastructure/CatalogMapper';
+import type { CatalogPort } from '../public/CatalogPort';
 
 export class ReadCatalog {
-  constructor(private readonly gateway: Pick<CatalogGateway, 'read'>) {}
+  constructor(private readonly gateway: Pick<CatalogPort, 'read'>) {}
   async execute(filter: CatalogFilter = {}, signal?: AbortSignal): Promise<CatalogPage> {
-    return mapCatalog(await this.gateway.read(filter, signal));
+    return this.gateway.read(filter, signal);
   }
 }

@@ -1,112 +1,164 @@
-import { chineseDomainLabel, chineseReference, chineseSectionLabel } from '@shop/presentation';
-import { Button, ResourcePanel } from '@shop/design';
-
-import { DataTable, MetricGrid, type DataColumn } from '@shop/design';
-import { formatDate, formatMinor } from '../../../shared/ui/Format';
+import { chineseDomainLabel, chineseReference, chineseSectionLabel, presentProductMediaKind, presentProductStatus, presentProductType, presentResourceCondition } from '@shop/presentation';
+import { Button, DataTable, MetricGrid, ResourcePanel, ResourceState, SectionBoundary, type ResourceCondition } from '@shop/design';
+import { formatDate } from '../../../shared/ui/Format';
 import type { ProductDetail } from '../model/Product';
-import type { ProductDetailViewModel } from '../viewmodel/ProductDetailViewModel';
+import type { ProductDetailSectionViewModel, ProductDetailViewModel } from '../viewmodel/ProductDetailViewModel';
+import { channelColumns, formatInteger, poolColumns, priceColumns, qualificationColumns, skuColumns, stockColumns, timelineColumns } from './ProductDetailColumns';
 
-type Sku = ProductDetail['skus'][number];
-type Listing = ProductDetail['listings'][number];
-type Stock = ProductDetail['inventory'][number];
-type Price = ProductDetail['prices'][number];
-
-const skuColumns: readonly DataColumn<Sku>[] = Object.freeze([
-  { key: 'code', label: '商品规格编码', render: (row) => chineseReference('规格', row.code) },
-  { key: 'specifications', label: '规格', render: (row) => row.specifications.map((item) => `${item.name}：${item.value}`).join(' · ') || '—' },
-  { key: 'status', label: '状态', render: (row) => chineseDomainLabel(row.status) },
-  { key: 'version', label: '版本', render: (row) => `第 ${formatInteger(row.version)} 版` },
-]);
-
-const listingColumns: readonly DataColumn<Listing>[] = Object.freeze([
-  { key: 'title', label: '商城标题', render: (row) => row.title },
-  { key: 'scope', label: '商城范围', render: (row) => chineseReference('商城', row.scope) },
-  { key: 'pool', label: '来源池', render: (row) => (row.pool ? chineseReference('商品池', row.pool) : '未绑定') },
-  { key: 'sku', label: '商品规格', render: (row) => chineseReference('规格', row.sku) },
-  { key: 'status', label: '上架状态', render: (row) => chineseDomainLabel(row.status) },
-  { key: 'effective', label: '生效时间', render: (row) => formatDate(row.effectiveAt) },
-  { key: 'expires', label: '失效时间', render: (row) => formatDate(row.expiresAt) },
-]);
-
-const stockColumns: readonly DataColumn<Stock>[] = Object.freeze([
-  { key: 'sku', label: '商品规格', render: (row) => chineseReference('规格', row.sku) },
-  { key: 'scope', label: '库存范围', render: (row) => chineseReference('库存范围', row.scope) },
-  { key: 'location', label: '库位', render: (row) => chineseReference('库位', row.location) },
-  { key: 'onhand', label: '在手库存', render: (row) => formatInteger(row.onhand) },
-  { key: 'safety', label: '安全库存', render: (row) => formatInteger(row.safety) },
-  { key: 'status', label: '状态', render: (row) => chineseDomainLabel(row.status) },
-]);
-
-const priceColumns: readonly DataColumn<Price>[] = Object.freeze([
-  { key: 'sku', label: '商品规格', render: (row) => chineseReference('规格', row.sku) },
-  { key: 'scope', label: '价格范围', render: (row) => chineseReference('价格范围', row.scope) },
-  { key: 'price', label: '当前售价', render: (row) => formatDatabaseMinor(row.amountMinor, row.currency) },
-  { key: 'compare', label: '划线价', render: (row) => (row.compareMinor === null ? '—' : formatDatabaseMinor(row.compareMinor, row.currency)) },
-  { key: 'status', label: '价格簿状态', render: (row) => chineseDomainLabel(row.bookStatus) },
-  { key: 'effective', label: '生效时间', render: (row) => formatDate(row.effectiveAt) },
-  { key: 'expires', label: '失效时间', render: (row) => formatDate(row.expiresAt) },
-]);
-
-export function ProductDetailPage({ routeTitle, viewmodel }: Readonly<{ routeTitle: string; viewmodel: ProductDetailViewModel }>) {
+export function ProductDetailPage({ routeTitle, onBack, viewmodel }: Readonly<{ routeTitle: string; onBack: () => void; viewmodel: ProductDetailViewModel }>) {
   const data = viewmodel.data;
   return (
     <ResourcePanel
-      title={routeTitle}
+      title={data?.title ?? routeTitle}
       eyebrow={chineseSectionLabel('商品详情')}
-      description={data === undefined ? '正在读取商品的服务端详情。' : `${data.title} · ${data.subtitle ?? '服务端商品主档'} · ${chineseReference('商品', data.id)}`}
+      description={data === undefined ? '正在读取商品权威主档。' : `${data.subtitle ?? '商品主档'} · ${chineseReference('商品', data.id)}`}
       condition={viewmodel.condition}
       {...(viewmodel.error === undefined ? {} : { error: viewmodel.error })}
       retry={viewmodel.refresh}
-      actions={<Button onPress={viewmodel.refresh}>刷新</Button>}
+      actions={
+        <>
+          <Button onPress={onBack}>返回商品列表</Button>
+          <Button onPress={viewmodel.refresh}>刷新全部分区</Button>
+        </>
+      }
     >
-      {data === undefined ? <span /> : <ProductDetailContent data={data} />}
+      {data === undefined ? <span /> : <ProductDetailContent data={data} viewmodel={viewmodel} />}
     </ResourcePanel>
   );
 }
 
-function ProductDetailContent({ data }: Readonly<{ data: ProductDetail }>) {
+function ProductDetailContent({ data, viewmodel }: Readonly<{ data: ProductDetail; viewmodel: ProductDetailViewModel }>) {
+  const { core, pricing, inventory, qualification } = viewmodel.sections;
   return (
-    <div className="featurestack">
+    <div className="productdetailworkspace">
+      <ProductHero data={data} />
       <MetricGrid
         items={[
-          { label: '商品状态', value: chineseDomainLabel(data.status), detail: chineseDomainLabel(data.product_type) },
-          { label: '商品规格', value: formatInteger(data.skus.length), detail: '商品主档投影' },
-          { label: '商城上架', value: formatInteger(data.listings.length), detail: '当前范围可见' },
-          { label: '库存记录', value: formatInteger(data.inventory.length), detail: '当前范围可见' },
-          { label: '价格记录', value: formatInteger(data.prices.length), detail: '当前范围可见' },
-          { label: '主档版本', value: `第 ${formatInteger(data.version)} 版`, detail: chineseReference('分类', data.category_id) },
+          { label: '商品状态', value: presentProductStatus(data.status).label, detail: presentProductType(data.product_type) },
+          { label: '商品规格', value: formatInteger(data.skus.length), detail: '商品主档权威数据' },
+          { label: '商城投放', value: formatInteger(data.listings.length), detail: '当前授权范围' },
+          { label: '商品池', value: formatInteger(data.pools.length), detail: '当前投池关系' },
+          { label: '渠道来源', value: formatInteger(data.channels.length), detail: '最近同步映射' },
+          { label: '主档版本', value: `第 ${formatInteger(data.version)} 版`, detail: formatDate(data.updatedAt) },
         ]}
       />
-      <section className="capabilitynote" aria-labelledby="productdetailscope">
-        <h2 id="productdetailscope">范围与来源责任</h2>
-        <p>商品主档来自商品中心；商品规格、商城上架、库存与价格由服务端按当前授权范围聚合，只呈现接口协议允许的字段。</p>
-      </section>
-      <DetailTable id="productskus" title="商品规格" caption="商品规格与属性" rows={data.skus} columns={skuColumns} rowKey={(row) => row.id} />
-      <DetailTable id="productlistings" title="商城与来源池" caption="商品商城上架与来源池" rows={data.listings} columns={listingColumns} rowKey={(row) => row.id} />
-      <DetailTable id="productinventory" title="库存" caption="商品库存" rows={data.inventory} columns={stockColumns} rowKey={(row) => `${row.sku}:${row.scope}:${row.location}`} />
-      <DetailTable id="productprices" title="价格" caption="商品价格" rows={data.prices} columns={priceColumns} rowKey={(row) => `${row.sku}:${row.scope}:${row.bookVersion}`} />
+      <DetailSection id="productbase" title="基础信息" description="商品中心维护的权威主档字段。" model={core}>
+        <dl className="productdetailfacts">
+          <Entry label="商品编号" value={chineseReference('商品', data.id)} />
+          <Entry label="商品名称" value={data.title} />
+          <Entry label="商品类型" value={presentProductType(data.product_type)} />
+          <Entry label="分类" value={chineseReference('分类', data.category_id)} />
+          <Entry label="品牌" value={data.brand_id ? chineseReference('品牌', data.brand_id) : '未绑定品牌'} />
+          <Entry label="商品所有方" value={data.owner_partner_id ? chineseReference('合作方', data.owner_partner_id) : '平台自营'} />
+          <Entry label="创建时间" value={formatDate(data.createdAt)} />
+          <Entry label="更新时间" value={formatDate(data.updatedAt)} />
+        </dl>
+        {data.description === null ? null : <p className="productdetaildescription">{data.description}</p>}
+      </DetailSection>
+      <DetailSection id="productskus" title="规格" description="规格编码、属性、状态和并发版本。" model={core} empty={data.skus.length === 0} emptyMessage="该商品尚未建立规格。">
+        <DataTable caption="商品规格" rows={data.skus} columns={skuColumns} rowKey={(row) => row.id} />
+      </DetailSection>
+      <DetailSection id="productmedia" title="媒体" description="商品封面、图片、视频与业务文档。" model={core} empty={data.media.length === 0} emptyMessage="该商品尚未上传媒体资料。">
+        <MediaGrid rows={data.media} />
+      </DetailSection>
+      <DetailSection id="productprices" title="报价" description="定价域返回的当前范围报价；不会使用列表快照冒充。" model={pricing} empty={pricing.data?.prices.length === 0} emptyMessage="当前授权范围暂无有效报价。">
+        {pricing.data === undefined ? null : <DataTable caption="商品报价" rows={pricing.data.prices} columns={priceColumns} rowKey={(row) => `${row.sku}:${row.scope}:${row.bookVersion}:${row.effectiveAt}`} />}
+      </DetailSection>
+      <DetailSection id="productinventory" title="库存" description="库存域返回的在手、安全与可售数量。" model={inventory} empty={inventory.data?.inventory.length === 0} emptyMessage="当前授权范围暂无库存记录。">
+        {inventory.data === undefined ? null : <DataTable caption="商品库存" rows={inventory.data.inventory} columns={stockColumns} rowKey={(row) => `${row.sku}:${row.scope}:${row.location}`} />}
+      </DetailSection>
+      <DetailSection
+        id="productqualification"
+        title="资格"
+        description="资格域按商城投放计算的当前售卖结论。"
+        model={qualification}
+        empty={qualification.data?.qualifications.length === 0}
+        emptyMessage="当前商品没有需要展示的商城资格结论。"
+      >
+        {qualification.data === undefined ? null : <DataTable caption="商品资格" rows={qualification.data.qualifications} columns={qualificationColumns} rowKey={(row) => row.listing} />}
+      </DetailSection>
+      <DetailSection id="productchannels" title="渠道" description="上游渠道商品映射与最近同步证据。" model={core} empty={data.channels.length === 0} emptyMessage="该商品没有外部渠道来源，当前为平台自营商品。">
+        <DataTable caption="商品渠道" rows={data.channels} columns={channelColumns} rowKey={(row) => `${row.provider}:${row.externalId}`} />
+      </DetailSection>
+      <DetailSection id="productpools" title="投池" description="当前授权范围内可见的商品池和商城投放关系。" model={core} empty={data.pools.length === 0} emptyMessage="该商品尚未进入当前范围可见的商品池。">
+        <DataTable caption="商品投池" rows={data.pools} columns={poolColumns} rowKey={(row) => row.id} />
+      </DetailSection>
+      <DetailSection id="producttimeline" title="时间线" description="商品主档、商城投放和渠道同步的真实时间证据。" model={core} empty={data.timeline.length === 0} emptyMessage="该商品暂无可见变更记录。">
+        <DataTable caption="商品时间线" rows={data.timeline} columns={timelineColumns} rowKey={(row) => row.id} />
+      </DetailSection>
     </div>
   );
 }
 
-function DetailTable<T extends object>({ id, title, caption, rows, columns, rowKey }: Readonly<{ id: string; title: string; caption: string; rows: readonly T[]; columns: readonly DataColumn<T>[]; rowKey: (row: T) => string }>) {
+function ProductHero({ data }: Readonly<{ data: ProductDetail }>) {
   return (
-    <section aria-labelledby={id}>
-      <h2 id={id}>{title}</h2>
-      {rows.length === 0 ? <p role="status">当前授权范围暂无{title}数据。</p> : <DataTable caption={caption} rows={rows} columns={columns} rowKey={rowKey} />}
+    <header className="productdetailhero">
+      <div className="productdetailcover">{data.cover_url === null ? <span aria-hidden="true">商</span> : <img src={data.cover_url} alt={`${data.title}封面`} />}</div>
+      <div>
+        <p className="eyebrow">{presentProductType(data.product_type)}</p>
+        <h2>{data.title}</h2>
+        <p>{data.subtitle ?? '暂无商品副标题'}</p>
+        <div className="productdetailtags">
+          <span>{presentProductStatus(data.status).label}</span>
+          <span>第 {formatInteger(data.version)} 版</span>
+          <span>{chineseReference('分类', data.category_id)}</span>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function DetailSection({
+  id,
+  title,
+  description,
+  model,
+  empty = false,
+  emptyMessage,
+  children,
+}: Readonly<{ id: string; title: string; description: string; model: ProductDetailSectionViewModel; empty?: boolean; emptyMessage?: string; children: React.ReactNode }>) {
+  const condition: ResourceCondition = model.condition === 'ready' && empty ? 'empty' : model.condition;
+  return (
+    <section className="productdetailsection" aria-labelledby={id}>
+      <header>
+        <div>
+          <h2 id={id}>{title}</h2>
+          <p>{description}</p>
+        </div>
+        <span className={`productsectionstate is${condition}`}>{presentResourceCondition(condition)}</span>
+      </header>
+      <SectionBoundary title={`${title}暂时无法显示`} resetKey={condition}>
+        <ResourceState condition={condition} {...(model.error === undefined ? {} : { error: model.error })} retry={model.refresh} emptyTitle={`暂无${title}`} emptyMessage={emptyMessage ?? `当前范围没有${title}数据。`}>
+          {children}
+        </ResourceState>
+      </SectionBoundary>
     </section>
   );
 }
 
-function formatInteger(value: number | string): string {
-  const normalized = String(value);
-  if (!/^-?\d+$/.test(normalized)) return '—';
-  const sign = normalized.startsWith('-') ? '-' : '';
-  const digits = sign === '' ? normalized : normalized.slice(1);
-  return `${sign}${digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+function MediaGrid({ rows }: Readonly<{ rows: ProductDetail['media'] }>) {
+  return (
+    <div className="productmediagrid">
+      {rows.map((media) => (
+        <article key={media.id}>
+          {media.kind === 'image' ? <img src={media.url} alt={media.alt ?? presentProductMediaKind(media.kind).title} /> : <span aria-hidden="true">{presentProductMediaKind(media.kind).badge}</span>}
+          <div>
+            <strong>{media.alt ?? presentProductMediaKind(media.kind).title}</strong>
+            <a href={media.url} target="_blank" rel="noreferrer">
+              打开原始资料
+            </a>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
 }
 
-function formatDatabaseMinor(value: number | string, currency: string): string {
-  const normalized = typeof value === 'number' ? value : Number(value);
-  return Number.isSafeInteger(normalized) ? formatMinor(normalized, currency) : `${formatInteger(value)} ${currency} 分`;
+function Entry({ label, value }: Readonly<{ label: string; value: string }>) {
+  return (
+    <div>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </div>
+  );
 }

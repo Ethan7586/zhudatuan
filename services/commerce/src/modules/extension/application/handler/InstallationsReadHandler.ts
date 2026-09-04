@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { keysetPage, queryPage } from '../../../../foundation/interface/Validation';
+import { keysetPage, queryPage } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { InstallationRepository } from '../port/InstallationRepository';
 
@@ -14,6 +14,27 @@ export class InstallationsReadHandler implements OperationHandler<'extension.ins
     const page = queryPage(input);
     const rows = await this.installations.list(context.transaction, page, page.fetch);
     const result = keysetPage(rows, page, 'installed_at');
-    return { status: 200, body: { ...result, items: [...result.items] } as OperationOutputFor<'extension.installations.read'> };
+    return {
+      status: 200,
+      body: {
+        ...result,
+        items: result.items.map((item) => ({
+          ...item,
+          manifest: {
+            ...item.manifest,
+            capabilities: [...item.manifest.capabilities],
+            dependencies: item.manifest.dependencies.map((dependency) => ({ ...dependency, capabilities: [...dependency.capabilities] })),
+            permissions: [...item.manifest.permissions],
+            eventSubscriptions: [...item.manifest.eventSubscriptions],
+            secretRefs: [...item.manifest.secretRefs],
+            sandbox: { ...item.manifest.sandbox },
+            rateLimits: { ...item.manifest.rateLimits },
+            timeout: { ...item.manifest.timeout },
+            retryPolicy: { ...item.manifest.retryPolicy },
+            circuitPolicy: { ...item.manifest.circuitPolicy },
+          },
+        })),
+      },
+    };
   }
 }

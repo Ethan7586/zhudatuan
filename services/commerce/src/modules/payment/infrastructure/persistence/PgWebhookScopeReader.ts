@@ -1,6 +1,6 @@
 import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { PaymentWebhookOrderPort } from '../../../order/public';
+import type { OrderReadPort } from '../../../order/public';
 import type { VerifiedPaymentWebhook } from '../../application/port/WebhookInboxRepository';
 import type { WebhookScopeReader } from '../../application/port/WebhookScopeReader';
 
@@ -9,7 +9,7 @@ export class PgWebhookScopeReader implements WebhookScopeReader {
 
   constructor(
     private readonly manager: TransactionManager,
-    private readonly orders: PaymentWebhookOrderPort
+    private readonly orders: Pick<OrderReadPort, 'resolveScope'>
   ) {}
 
   async resolve(notification: VerifiedPaymentWebhook, signal: AbortSignal, deadline: number): Promise<string> {

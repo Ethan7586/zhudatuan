@@ -14,8 +14,8 @@
   },
   "types": "./index.ts",
   "dependencies": {
+    "@shop/config": "1.0.0",
     "@shop/contract": "1.0.0",
-    "@shop/providerbookcore": "1.0.0",
     "@shop/providercore": "1.0.0"
   },
   "devDependencies": {

@@ -7,6 +7,9 @@ import { CsrfProtector } from '../../src/foundation/security/CsrfProtector';
 const csrf = new CsrfProtector('contract-test-key-that-is-at-least-thirty-two-bytes', {
   console: 'https://console.example',
   storefront: 'https://storefront.example',
+  miniapp: 'https://miniapp.example',
+  store: 'https://store.example',
+  supplier: 'https://supplier.example',
 });
 
 function application(handler = vi.fn(async () => ({ status: 200, body: { accepted: true } }))) {

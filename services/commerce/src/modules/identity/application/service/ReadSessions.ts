@@ -1,7 +1,7 @@
 import { IdentityAction as OperationAction } from '../model/IdentityAction';
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
 
-import { keysetRows, queryPage } from '../../../../foundation/interface/Validation';
+import { keysetRows, queryPage } from '../../../../foundation/application/Validation';
 import type { SessionRepository } from '../port/SessionRepository';
 
 export class ReadSessions {

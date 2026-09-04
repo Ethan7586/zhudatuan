@@ -1,5 +1,5 @@
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { QueryPage } from '../../../../foundation/interface/Validation';
+import type { QueryPage } from '../../../../foundation/application/Validation';
 import type { ConnectionState } from '../../domain/model/Connection';
 
 export interface ConnectionConfiguration {
@@ -17,7 +17,7 @@ export interface ConnectionRepository {
   ): Promise<Readonly<Record<string, unknown>>>;
   update(
     context: WriteTransactionContext,
-    input: Readonly<{ id: string; scope: string; actor: string; trace: string; secretRef: string | null; configuration: ConnectionConfiguration; expectedVersion: number | null }>
+    input: Readonly<{ id: string; scope: string; actor: string; trace: string; secretRef: string | null | undefined; configuration: ConnectionConfiguration; expectedVersion: number | null }>
   ): Promise<Readonly<Record<string, unknown>>>;
   read(context: ReadTransactionContext, scope: string, page: QueryPage): Promise<readonly Readonly<Record<string, unknown>>[]>;
   transition(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; actor: string; trace: string; state: ConnectionState; expectedVersion: number | null }>): Promise<Readonly<Record<string, unknown>>>;

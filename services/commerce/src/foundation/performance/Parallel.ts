@@ -4,15 +4,24 @@ export async function mapParallel<T, R>(values: readonly T[], concurrency: numbe
   if (!Number.isSafeInteger(concurrency) || concurrency < 1) throw new Error('PARALLEL_CONCURRENCY_INVALID');
   const result = new Array<R>(values.length);
   let cursor = 0;
+  let failed = false;
+  let failure: unknown;
   await Promise.all(
     Array.from({ length: Math.min(concurrency, values.length) }, async () => {
-      for (;;) {
+      while (!failed) {
         const index = cursor++;
         if (index >= values.length) return;
-        result[index] = await operation(values[index]!);
+        try {
+          result[index] = await operation(values[index]!);
+        } catch (cause) {
+          // Stop scheduling, then drain active work before the caller handles
+          // failure, releases resources or retries the batch.
+          if (!failed) { failed = true; failure = cause; }
+        }
       }
     })
   );
+  if (failed) throw failure;
   return result;
 }
 

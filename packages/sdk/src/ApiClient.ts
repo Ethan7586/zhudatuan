@@ -1,4 +1,4 @@
-import type { ContractJsonValue, OperationId, OperationInputFor, OperationOutputFor, OperationQuery, Schema } from '@shop/contract';
+import type { ContractJsonValue, OperationId, OperationInputFor, OperationOutputFor, OperationQuery } from '@shop/contract';
 import { HttpHeader } from '@shop/contract/http';
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
@@ -29,7 +29,7 @@ export class ApiClient implements OperationExecutor {
   async execute<TKey extends OperationId>(operation: OperationDescriptor<TKey>, input: OperationInputFor<TKey>, context: RequestContext): Promise<OperationOutputFor<TKey>> {
     if (context.contractVersion !== CONTRACT_VERSION) throw new Error('SDK_CONTRACT_VERSION_MISMATCH');
     if (operation.responseMode === 'stream') throw new Error('SDK_STREAM_OPERATION_REQUIRES_STREAM_METHOD');
-    if (operation.method !== 'GET' && operation.audience !== 'webhook' && context.idempotencyKey === undefined) {
+    if (operation.idempotencyPolicy !== 'none' && context.idempotencyKey === undefined) {
       throw new Error('SDK_IDEMPOTENCY_KEY_REQUIRED');
     }
     const parsed = operation.input.parse(input);
@@ -140,6 +140,7 @@ export class ApiClient implements OperationExecutor {
     if (lastEventId !== undefined) headers[HttpHeader.lastEventId] = lastEventId;
     if (context.catalogVersion !== undefined) headers[HttpHeader.navigationCatalog] = context.catalogVersion;
     if (context.proof !== undefined) headers[HttpHeader.actionProof] = context.proof;
+    if (context.cartToken !== undefined) headers[HttpHeader.cartToken] = context.cartToken;
     if (context.csrfToken !== undefined) headers[HttpHeader.csrfToken] = context.csrfToken;
     if (context.deviceId !== undefined) headers[HttpHeader.deviceId] = context.deviceId;
     if (context.target !== undefined) headers[HttpHeader.clientTarget] = context.target;

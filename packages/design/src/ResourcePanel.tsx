@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from 'react';
 import { ResourceState, type ResourceCondition } from './ResourceState';
+import { SectionBoundary } from './SectionBoundary';
 
 export interface ResourcePanelProps {
   readonly title: string;
@@ -11,6 +12,7 @@ export interface ResourcePanelProps {
   readonly notice?: ReactNode;
   readonly error?: string;
   readonly retry?: () => void;
+  readonly headingLevel?: 1 | 2;
 }
 
 const sourceLabels: Record<ResourceCondition, string> = {
@@ -19,7 +21,9 @@ const sourceLabels: Record<ResourceCondition, string> = {
   ready: '实时数据',
   refreshing: '正在刷新',
   stale: '数据已过期',
-  denied: '访问受限',
+  forbidden: '访问受限',
+  unavailable: '依赖不可用',
+  notconfigured: '尚未配置',
   notfound: '资源不存在',
   conflict: '数据冲突',
   ratelimited: '请求受限',
@@ -28,14 +32,14 @@ const sourceLabels: Record<ResourceCondition, string> = {
   retry: '正在重试',
 };
 
-export function ResourcePanel({ title, description, condition, children, eyebrow, actions, notice, error, retry }: ResourcePanelProps) {
+export function ResourcePanel({ title, description, condition, children, eyebrow, actions, notice, error, retry, headingLevel = 1 }: ResourcePanelProps) {
   const titleId = useId();
   return (
     <section className="resourcepanel" aria-labelledby={titleId}>
       <header className="resourceheading">
         <div>
           {eyebrow === undefined ? null : <p className="eyebrow">{eyebrow}</p>}
-          <h1 id={titleId}>{title}</h1>
+          {headingLevel === 1 ? <h1 id={titleId}>{title}</h1> : <h2 id={titleId}>{title}</h2>}
           {description === undefined ? null : <p>{description}</p>}
         </div>
         <span className={`datasource datasource-${condition}`}>
@@ -49,9 +53,11 @@ export function ResourcePanel({ title, description, condition, children, eyebrow
         </div>
       )}
       {notice}
-      <ResourceState condition={condition} {...(error === undefined ? {} : { error })} {...(retry === undefined ? {} : { retry })}>
-        {children}
-      </ResourceState>
+      <SectionBoundary title={`${title}暂时无法显示`} resetKey={condition}>
+        <ResourceState condition={condition} {...(error === undefined ? {} : { error })} {...(retry === undefined ? {} : { retry })}>
+          {children}
+        </ResourceState>
+      </SectionBoundary>
     </section>
   );
 }

@@ -1,9 +1,10 @@
-import { nodeTelemetry, type Telemetry } from '@shop/telemetry';
+import { nodeTelemetry, type ObservableTelemetry, type ObservationReader, type Telemetry } from '@shop/telemetry';
 import { token } from '../../bootstrap/Container';
 
 export const TELEMETRY = token<Telemetry>('telemetry');
+export const OBSERVATIONS = token<ObservationReader>('telemetry.observations');
 
-export function commerceTelemetry(): Telemetry {
+export function commerceTelemetry(): ObservableTelemetry {
   return nodeTelemetry((record) => {
     process.stdout.write(`${JSON.stringify(record)}\n`);
   });

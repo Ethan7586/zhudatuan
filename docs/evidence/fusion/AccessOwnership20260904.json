@@ -1,0 +1,68 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.3 Access and 9.8 permission center",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "ownershipOperations": [
+    "access.ownership.read",
+    "access.ownership.transfers.preview",
+    "access.ownership.transfers.create",
+    "access.ownership.transfers.accept.preview",
+    "access.ownership.transfers.accept",
+    "access.ownership.transfers.cancel.preview",
+    "access.ownership.transfers.cancel"
+  ],
+  "roleOperations": ["save", "status", "assign", "revoke", "delete"],
+  "roleTemplates": [
+    "malloperator",
+    "catalogoperator",
+    "ordersupport",
+    "financeoperator",
+    "financereviewer",
+    "administrator",
+    "custom"
+  ],
+  "invariants": [
+    "explicit-deny-precedes-allow",
+    "server-side-finance-voucher-refund-owner-separation",
+    "role-write-uses-expected-version-and-idempotency",
+    "role-change-bumps-affected-membership-access-version",
+    "stale-access-version-sessions-are-rejected-and-revoked",
+    "ownership-transfer-binds-source-target-scope-and-versions",
+    "ownership-transfer-requires-independent-source-and-target-proofs",
+    "ownership-transfer-state-is-monotonic",
+    "ownership-acceptance-atomically-swaps-the-unique-owner",
+    "ownership-expiry-is-atomic-with-timeline-and-outbox-event"
+  ],
+  "experience": {
+    "defaultTasks": ["members", "roles", "scopes", "ownership"],
+    "roleJourneySteps": 3,
+    "draftAutosaveSeconds": 2,
+    "draftPersistsAcrossRouteAndScope": true,
+    "advancedCategoriesCollapsed": true,
+    "chinesePermissionSearchIncludesSynonymsCodesAndHelp": true,
+    "refundSearchCovered": true,
+    "previewProofExecute": true,
+    "mobileReadinessAndCoolingVisible": true
+  },
+  "verification": {
+    "consoleTypecheck": "passed",
+    "commerceTypecheck": "passed",
+    "consoleAccessTests": "9 passed",
+    "commerceAccessAndSessionTests": "22 passed",
+    "errors": "passed",
+    "operations": "passed",
+    "events": "passed",
+    "ownership": "passed",
+    "duplicates": "passed",
+    "pagination": "passed",
+    "performance": "passed",
+    "transactions": "passed",
+    "naming": "passed",
+    "visuals": "passed",
+    "migrationReplay": "321 migrations applied; final catalog assertion intentionally awaits 20260904031000_publish_ideal_contract.sql",
+    "globalClientEntryPoints": "miniapp, store and supplier implementation is deferred to their declared work packages"
+  }
+}

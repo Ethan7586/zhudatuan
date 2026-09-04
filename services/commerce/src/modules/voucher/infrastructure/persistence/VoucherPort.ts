@@ -1,242 +1,230 @@
 import { randomUUID } from 'node:crypto';
+import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { DomainError } from '../../../../foundation/domain/DomainError';
+import { VOUCHER_TERMS } from './IssueTerms';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { VoucherChoice, VoucherRefund, VoucherTender } from '../../public/VoucherTender';
+import type { VoucherAccountingPort } from '../../../finance/public';
+import type { OrganizationReadPort } from '../../../organization/public';
+import type {
+  CheckoutVoucherGateway,
+  FulfillmentVoucherItem,
+  FulfillmentVoucherPort,
+  FulfillmentVoucherReceipt,
+  PaymentVoucherPort,
+  VerificationVoucherPort,
+  VoucherChoice,
+  VoucherRefund,
+  VoucherTender,
+} from '../../public';
+import { VoucherRefundWriter } from './VoucherRefundWriter';
+import { timeline, VoucherRedemptionWriter } from './VoucherRedemptionWriter';
+import { VoucherTenderWriter } from './VoucherTenderWriter';
+import { HOLD_FIELDS, VOUCHER_FIELDS } from './VoucherSupport';
 
-interface VoucherDatabase {
-  query<R extends object = Record<string, unknown>>(text: string, values?: readonly unknown[]): Promise<Readonly<{ rows: readonly R[] }>>;
-}
-
-interface FinancialPosting {
-  post(
-    context: WriteTransactionContext,
-    intent: Readonly<{
-      scope: string;
-      referenceType: string;
-      referenceId: string;
-      currency: string;
-      description: string;
-      debit: Readonly<{ code: string; kind: 'asset' | 'liability' | 'income' | 'expense' }>;
-      credit: Readonly<{ code: string; kind: 'asset' | 'liability' | 'income' | 'expense' }>;
-      amountMinor: number;
-      occurredAt?: string;
-    }>
-  ): Promise<string>;
-}
-
-/** Public voucher boundary. It owns eligibility, locks, state events, redemption, reversal, and accounting facts. */
-export class VoucherPort {
+export class VoucherPort implements CheckoutVoucherGateway, PaymentVoucherPort, VerificationVoucherPort, FulfillmentVoucherPort {
   private readonly transactions = new PgTransactionAccess();
-  constructor(private readonly finance?: FinancialPosting) {}
+  private readonly tenders = new VoucherTenderWriter(this.transactions);
+
+  constructor(private readonly finance?: VoucherAccountingPort, private readonly organizations?: Pick<OrganizationReadPort, 'scope'>) {}
 
   async preview(context: ReadTransactionContext, vouchers: readonly string[], member: string, scope: string): Promise<readonly VoucherChoice[]> {
-    const database = this.transactions.database(context);
-    if (vouchers.length === 0) return [];
-    return (
-      await database.query<VoucherChoice>(
-        `select voucher.id,voucher.remaining_minor::float8 "remainingMinor",
-      voucher.version::float8 version,program.id program from voucher.voucher voucher join voucher.program program on program.id=voucher.program_id
-      where voucher.id=any($1::text[]) and voucher.member_id=$2 and program.scope_id=$3 and program.status='active'
-      and voucher.state='active' and voucher.expires_at>clock_timestamp() order by voucher.id`,
-        [vouchers, member, scope]
-      )
-    ).rows;
+    if (vouchers.length === 0) return Object.freeze([]);
+    const rows = await this.transactions.database(context).query<VoucherChoice>(
+      `select voucher.id,voucher.remaining_minor::integer as "remainingMinor",voucher.version::integer,
+      voucher.product_id as product from voucher.voucher voucher
+      join voucher.holder holder on holder.id=voucher.holder_id and holder.scope_id=voucher.scope_id and holder.state='bound'
+      where voucher.id=any($1::text[]) and voucher.scope_id=$2 and holder.member_id=$3
+      and voucher.state='active' and voucher.remaining_minor>0 and voucher.starts_at<=clock_timestamp() and voucher.expires_at>clock_timestamp()
+      order by voucher.id`,
+      [[...new Set(vouchers)], scope, member]
+    );
+    return Object.freeze(rows.rows.map((row) => Object.freeze(row)));
   }
 
   async available(context: ReadTransactionContext, member: string, scope: string): Promise<readonly VoucherChoice[]> {
-    const database = this.transactions.database(context);
-    const ids = await database.query<{ id: string }>(
-      `select voucher.id from voucher.voucher voucher join voucher.program program on program.id=voucher.program_id
-      where voucher.member_id=$1 and program.scope_id=$2 and program.status='active' and voucher.state='active'
-      and voucher.expires_at>clock_timestamp() order by voucher.expires_at,voucher.id limit 100`,
-      [member, scope]
+    const rows = await this.transactions.database(context).query<{ id: string }>(
+      `select voucher.id from voucher.voucher voucher
+      join voucher.holder holder on holder.id=voucher.holder_id and holder.scope_id=voucher.scope_id and holder.state='bound'
+      where voucher.scope_id=$1 and holder.member_id=$2 and voucher.state='active'
+      and voucher.remaining_minor>0 and voucher.starts_at<=clock_timestamp() and voucher.expires_at>clock_timestamp()
+      order by voucher.expires_at,voucher.id limit 100`,
+      [scope, member]
     );
-    return this.preview(
-      context,
-      ids.rows.map(({ id }) => id),
-      member,
-      scope
-    );
+    return this.preview(context, rows.rows.map(({ id }) => id), member, scope);
   }
 
   async reserve(context: WriteTransactionContext, order: string, member: string, scope: string, tenders: readonly VoucherTender[]): Promise<void> {
-    const database = this.transactions.database(context);
     if (tenders.length === 0) return;
     const normalized = [...tenders].sort((left, right) => left.reference.localeCompare(right.reference));
-    const ids = normalized.map(({ reference }) => reference);
-    if (new Set(ids).size !== ids.length) throw new Error('VOUCHER_SELECTION_DUPLICATE');
-    const rows = (
-      await database.query<{ id: string; remaining_minor: number; state: string }>(
-        `select voucher.id,
-      voucher.remaining_minor::float8 remaining_minor,voucher.state from voucher.voucher voucher
-      join voucher.program program on program.id=voucher.program_id where voucher.id=any($1::text[])
-      and voucher.member_id=$2 and program.scope_id=$3 and program.status='active' and voucher.state='active'
-      and voucher.expires_at>clock_timestamp() order by voucher.id for update of voucher`,
-        [ids, member, scope]
-      )
-    ).rows;
-    if (rows.length !== normalized.length) throw new Error('VOUCHER_NOT_USABLE');
+    if (!order || !member || !scope || new Set(normalized.map(({ reference }) => reference)).size !== normalized.length) {
+      throw new DomainError('VOUCHER_HOLD_CONFLICT');
+    }
     for (const tender of normalized) {
-      if (!Number.isSafeInteger(tender.amountMinor) || tender.amountMinor <= 0) throw new Error('VOUCHER_TENDER_AMOUNT_INVALID');
-      const voucher = rows.find(({ id }) => id === tender.reference)!;
-      if (voucher.remaining_minor < tender.amountMinor) throw new Error('VOUCHER_BALANCE_INSUFFICIENT');
-      await database.query(
-        `insert into voucher.reserve(id,voucher_id,owner_id,state,expires_at,version)
-        values($1,$2,$3,'approved',clock_timestamp()+interval '30 minutes',0)`,
-        [`voucherreserve:${randomUUID()}`, voucher.id, order]
-      );
-      await database.query(`update voucher.voucher set state='held',version=version+1 where id=$1`, [voucher.id]);
-      await status(database, voucher.id, voucher.state, 'held', 'orderreserve');
+      await this.tenders.reserve({ context, scope, voucher: tender.reference, owner: order, member,
+        amountMinor: tender.amountMinor, ttlSeconds: RUNTIME_LIMITS.voucherTender.holdTtlSeconds,
+        idempotency: `checkout:${order}:${tender.reference}`, actor: context.actor, now: new Date() });
     }
   }
 
   async release(context: WriteTransactionContext, order: string): Promise<void> {
     const database = this.transactions.database(context);
-    const reservations = await database.query<{ voucher_id: string }>(
-      `update voucher.reserve set state='released',version=version+1
-      where owner_id=$1 and state in('requested','approved') returning voucher_id`,
-      [order]
-    );
-    if (reservations.rows.length === 0) return;
-    const restored = await database.query<{ id: string; state: string }>(
-      `update voucher.voucher
-      set state='active',version=version+1
-      where id=any($1::text[]) and state='held' returning id,state`,
-      [reservations.rows.map(({ voucher_id }) => voucher_id)]
-    );
-    for (const voucher of restored.rows) await status(database, voucher.id, 'held', voucher.state, 'orderrelease');
+    const holds = await database.query<HoldRow>(`select ${HOLD_FIELDS} from voucher.tenderhold hold where hold.owner_id=$1 and hold.scope_id=$2 and hold.state='active' order by hold.voucher_id,hold.id`, [order, context.scope]);
+    for (const hold of holds.rows) {
+      await this.tenders.release({ context, scope: context.scope, hold: hold.id, ifActive: true,
+        reason: 'checkoutrelease', actor: context.actor, now: new Date() });
+    }
   }
 
-  async consume(context: WriteTransactionContext, order: string, member: string, voucherid: string, amountMinor: number): Promise<void> {
-    const database = this.transactions.database(context);
-    const reserved = await database.query(
-      `update voucher.reserve set state='consumed',version=version+1 where voucher_id=$1 and owner_id=$2
-      and state='approved' returning id`,
-      [voucherid, order]
+  async consume(context: WriteTransactionContext, order: string, member: string, voucher: string, amountMinor: number): Promise<void> {
+    const held = await this.transactions.database(context).query<HoldRow & { member_id: string }>(
+      `select ${HOLD_FIELDS},holder.member_id from voucher.tenderhold hold
+      join voucher.voucher voucher on voucher.id=hold.voucher_id and voucher.scope_id=hold.scope_id
+      join voucher.holder holder on holder.id=voucher.holder_id and holder.scope_id=voucher.scope_id and holder.state='bound'
+      where hold.voucher_id=$1 and hold.owner_id=$2 and hold.scope_id=$3 and hold.state in('active','consumed')`,
+      [voucher, order, context.scope]
     );
-    if (!reserved.rows[0]) throw new Error('VOUCHER_HOLD_MISSING');
-    const voucher = await database.query<{ state: string; scope_id: string; program_id: string }>(
-      `update voucher.voucher voucher
-      set remaining_minor=remaining_minor-$2,state=case when remaining_minor=$2 then 'redeemed' else 'active' end,version=version+1
-      from voucher.program program where voucher.id=$1 and voucher.member_id=$3 and voucher.remaining_minor>=$2 and voucher.state='held'
-      and program.id=voucher.program_id returning voucher.state,program.scope_id,program.id program_id`,
-      [voucherid, amountMinor, member]
-    );
-    const selected = voucher.rows[0];
-    if (!selected) throw new Error('VOUCHER_BALANCE_INSUFFICIENT');
-    const redemption = await database.query(
-      `insert into voucher.redemption(id,voucher_id,verification_id,order_id,amount_minor,redeemed_at,version)
-      values($1,$2,$3,$4,$5,clock_timestamp(),0) on conflict(verification_id) do nothing returning id`,
-      [`redemption:${randomUUID()}`, voucherid, `order:${order}:${voucherid}`, order, amountMinor]
-    );
-    if (!redemption.rows[0]) throw new Error('VOUCHER_REDEMPTION_DUPLICATE');
-    await status(database, voucherid, 'held', selected.state, 'orderpayment');
-    await this.financial().post(context, {
-      scope: selected.scope_id,
-      referenceType: 'voucher.redeem',
-      referenceId: `${order}:${voucherid}`,
-      currency: 'CNY',
-      description: 'Voucher redemption',
-      debit: { code: `voucher.program.${selected.program_id}`, kind: 'liability' },
-      credit: { code: 'commerce.clearing', kind: 'income' },
+    const hold = held.rows[0];
+    if (!hold || hold.member_id !== member || Number(hold.amount_minor) !== amountMinor) throw new DomainError('VOUCHER_HOLD_CONFLICT');
+    await this.redemptions().redeem({
+      context,
+      scope: hold.scope_id,
+      voucher,
+      hold: hold.id,
+      verification: `order:${order}:${voucher}`,
+      order,
       amountMinor,
+      idempotency: `checkoutconsume:${order}:${voucher}`,
+      actor: context.actor,
+      now: new Date(),
     });
   }
 
   async refund(context: WriteTransactionContext, input: VoucherRefund): Promise<void> {
-    const database = this.transactions.database(context);
-    const redemption = (
-      await database.query<{ id: string; amount_minor: number; state: string; scope_id: string; program_id: string }>(
-        `select
-      redemption.id,redemption.amount_minor::float8 amount_minor,voucher.state,program.scope_id,program.id program_id
-      from voucher.redemption redemption join voucher.voucher voucher on voucher.id=redemption.voucher_id
-      join voucher.program program on program.id=voucher.program_id where redemption.voucher_id=$1 and redemption.order_id=$2
-      and voucher.member_id=$3 for update of redemption,voucher`,
-        [input.voucher, input.order, input.member]
-      )
-    ).rows[0];
-    if (!redemption) throw new Error('VOUCHER_REFUND_REDEMPTION_MISSING');
-    const prior = await database.query<{ amount: number }>(
-      `select coalesce(sum(amount_minor),0)::float8 amount from voucher.reversal
-      where redemption_id=$1 and state='reversed'`,
-      [redemption.id]
+    if (!Number.isSafeInteger(input.amountMinor) || input.amountMinor <= 0) throw new DomainError('VALIDATION_FAILED');
+    const selected = await this.transactions.database(context).query<{ id: string; scope_id: string }>(
+      `select redemption.id,redemption.scope_id from voucher.redemption redemption
+      join voucher.holder holder on holder.id=redemption.holder_id and holder.scope_id=redemption.scope_id and holder.voucher_id=redemption.voucher_id
+      where redemption.voucher_id=$1 and redemption.order_id=$2 and holder.member_id=$3 and redemption.scope_id=$4 order by redemption.redeemed_at desc limit 1`,
+      [input.voucher, input.order, input.member, context.scope]
     );
-    if ((prior.rows[0]?.amount ?? 0) + input.amountMinor > redemption.amount_minor) throw new Error('VOUCHER_REFUND_EXCEEDS_REDEMPTION');
-    const reversal = await database.query(
-      `insert into voucher.reversal(id,redemption_id,reference_id,amount_minor,state,reason,evidence,occurred_at)
-      values($1,$2,$3,$4,'reversed','paymentrefund',jsonb_build_object('refund',$3),clock_timestamp())
-      on conflict(redemption_id,reference_id) do nothing returning id`,
-      [`reversal:${randomUUID()}`, redemption.id, input.refund, input.amountMinor]
-    );
-    if (!reversal.rows[0]) return;
-    const restored = await database.query<{ state: string }>(
-      `update voucher.voucher set remaining_minor=remaining_minor+$2,
-      state='reversed',version=version+1 where id=$1 and state='redeemed' returning state`,
-      [input.voucher, input.amountMinor]
-    );
-    await status(database, input.voucher, redemption.state, restored.rows[0]!.state, 'paymentrefund');
-    await this.financial().post(context, {
+    const redemption = selected.rows[0];
+    if (!redemption) throw new DomainError('RESOURCE_NOT_FOUND');
+    await new VoucherRefundWriter(this.accounting(), this.transactions).refund({
+      context,
       scope: redemption.scope_id,
-      referenceType: 'voucher.refund',
-      referenceId: `${input.refund}:${input.voucher}`,
-      currency: 'CNY',
-      description: 'Voucher redemption refund',
-      debit: { code: 'commerce.refund', kind: 'expense' },
-      credit: { code: `voucher.program.${redemption.program_id}`, kind: 'liability' },
+      redemption: redemption.id,
       amountMinor: input.amountMinor,
+      reason: '支付退款返还卡券余额',
+      idempotency: `payment:${input.refund}:${input.voucher}`,
+      actor: context.actor,
+      now: new Date(),
     });
   }
 
   async redeemableScope(context: ReadTransactionContext, voucher: string, member: string): Promise<string | null> {
-    const database = this.transactions.database(context);
-    const result = await database.query<{ scope_id: string }>(
-      `select program.scope_id from voucher.voucher voucher
-      join voucher.program program on program.id=voucher.program_id where voucher.id=$1 and voucher.member_id=$2
-      and voucher.state='active' and voucher.remaining_minor>0 and voucher.expires_at>clock_timestamp()
-      and program.status='active'`,
+    const row = await this.transactions.database(context).query<{ scope_id: string }>(
+      `select voucher.scope_id from voucher.voucher voucher
+      join voucher.holder holder on holder.id=voucher.holder_id and holder.scope_id=voucher.scope_id and holder.state='bound'
+      where voucher.id=$1 and holder.member_id=$2 and voucher.state='active'
+      and voucher.remaining_minor>0 and voucher.starts_at<=clock_timestamp() and voucher.expires_at>clock_timestamp()`,
       [voucher, member]
     );
-    return result.rows[0]?.scope_id ?? null;
+    return row.rows[0]?.scope_id ?? null;
   }
 
-  async redeemVerification(context: WriteTransactionContext, input: Readonly<{ voucher: string; verification: string; scope: string; actor: string }>) {
+  async redeemVerification(
+    context: WriteTransactionContext,
+    input: Readonly<{ voucher: string; verification: string; scope: string; store: string; actor: string }>
+  ): Promise<Readonly<{ id: string; amountMinor: number }> | null> {
+    const redeemed = await this.redemptions().redeemVerified({ context, ...input, now: new Date() });
+    return redeemed ? Object.freeze({ id: redeemed.id, amountMinor: redeemed.amountMinor }) : null;
+  }
+
+  async issue(
+    context: WriteTransactionContext,
+    input: Readonly<{ fulfillment: string; order: string; scope: string; member: string; items: readonly FulfillmentVoucherItem[] }>
+  ): Promise<FulfillmentVoucherReceipt> {
+    if (!input.fulfillment || !input.order || !input.scope || !input.member || input.items.length === 0) throw new Error('VOUCHER_FULFILLMENT_INVALID');
+    const items = [...input.items].sort((left, right) => left.line.localeCompare(right.line));
+    if (new Set(items.map(({ line }) => line)).size !== items.length) throw new Error('VOUCHER_FULFILLMENT_LINE_DUPLICATE');
     const database = this.transactions.database(context);
-    const id = `redemption:${input.verification}`;
-    const changed = await database.query<{ id: string; amount_minor: number; previous_state: string }>(
-      `with locked as (
-        select voucher.id,voucher.remaining_minor,voucher.state previous_state from voucher.voucher voucher
-        join voucher.program program on program.id=voucher.program_id where voucher.id=$1 and program.scope_id=$2
-        and program.status='active' and voucher.state='active' and voucher.remaining_minor>0
-        and voucher.expires_at>clock_timestamp() for update
-      ), redemption as (insert into voucher.redemption(id,voucher_id,verification_id,amount_minor,redeemed_at,version)
-        select $3,id,$4,remaining_minor,clock_timestamp(),0 from locked on conflict(verification_id) do nothing
-        returning voucher_id,amount_minor)
-      update voucher.voucher target set remaining_minor=0,state='redeemed',version=target.version+1 from locked,redemption
-      where target.id=locked.id and redemption.voucher_id=target.id
-      returning target.id,redemption.amount_minor::float8 amount_minor,locked.previous_state`,
-      [input.voucher, input.scope, id, input.verification]
-    );
-    const accepted = changed.rows[0];
-    if (!accepted) return null;
-    await database.query(
-      `insert into voucher.statusevent(voucher_id,sequence,previous_state,next_state,reason,actor_id,occurred_at)
-      select $1,coalesce(max(sequence),0)+1,$2,'redeemed','store_verification',$3,clock_timestamp()
-      from voucher.statusevent where voucher_id=$1`,
-      [input.voucher, accepted.previous_state, input.actor]
-    );
-    return { id, amountMinor: accepted.amount_minor };
+    const issued: string[] = [];
+    for (const item of items) {
+      if (!item.line || !item.product || !item.sku || !Number.isSafeInteger(item.quantity) || item.quantity <= 0) throw new Error('VOUCHER_FULFILLMENT_ITEM_INVALID');
+      const reason = `fulfillment:${input.fulfillment}:${item.line}`;
+      await database.query(`select pg_advisory_xact_lock(hashtextextended($1,0))`, [reason]);
+      const prior = await database.query<{ id: string }>(
+        `select voucher.id from voucher.timeline event join voucher.voucher voucher on voucher.id=event.voucher_id
+        join voucher.holder holder on holder.id=voucher.holder_id where event.reason=$1 and event.actor_id='system:fulfillment'
+        and voucher.scope_id=$2 and holder.member_id=$3 order by voucher.id`,
+        [reason, input.scope, input.member]
+      );
+      if (prior.rows.length > item.quantity) throw new Error('VOUCHER_FULFILLMENT_QUANTITY_CONFLICT');
+      const needed = item.quantity - prior.rows.length;
+      const selected = needed === 0 ? [] : (await database.query<VoucherRow & { activation: string }>(
+        `select ${VOUCHER_FIELDS},terms.activation from voucher.voucher voucher ${VOUCHER_TERMS}
+        join voucher.product product on product.id=voucher.product_id and product.scope_id=voucher.scope_id
+        where voucher.product_id=$1 and voucher.scope_id=$2 and product.state='enabled' and voucher.holder_id is null
+        and voucher.state in('available','allocated') and voucher.expires_at>clock_timestamp()
+        order by voucher.expires_at,voucher.id for update of voucher skip locked limit $3`,
+        [item.product, input.scope, needed]
+      )).rows;
+      if (selected.length !== needed) throw new DomainError('VOUCHER_STOCK_INSUFFICIENT');
+      for (const voucher of selected) {
+        const holder = `holder:${randomUUID()}`;
+        const now = new Date();
+        const state = voucher.activation === 'automatic' && new Date(voucher.starts_at) <= now ? 'active' : 'bound';
+        await database.query(
+          `insert into voucher.holder(id,scope_id,voucher_id,member_id,state,version,bound_at,released_at) values($1,$2,$3,$4,'bound',1,$5,null)`,
+          [holder, input.scope, voucher.id, input.member, now]
+        );
+        const changed = await database.query(
+          `update voucher.voucher set holder_id=$3,state=$4,version=version+1 where id=$1 and scope_id=$2 and holder_id is null and version=$5 returning id`,
+          [voucher.id, input.scope, holder, state, voucher.version]
+        );
+        if (!changed.rows[0]) throw new Error('VOUCHER_FULFILLMENT_QUANTITY_CONFLICT');
+        await timeline(database, voucher.id, input.scope, voucher.state, state, reason, 'system:fulfillment', now);
+      }
+      issued.push(...prior.rows.map(({ id }) => id), ...selected.map(({ id }) => id));
+    }
+    const vouchers = Object.freeze([...issued].sort());
+    if (vouchers.length !== items.reduce((sum, item) => sum + item.quantity, 0)) throw new Error('VOUCHER_FULFILLMENT_QUANTITY_CONFLICT');
+    return Object.freeze({ reference: `voucherissue:${input.fulfillment}`, vouchers });
   }
 
-  private financial(): FinancialPosting {
+  private accounting(): VoucherAccountingPort {
     if (!this.finance) throw new Error('VOUCHER_FINANCE_DEPENDENCY_REQUIRED');
     return this.finance;
   }
+
+  private redemptions(): VoucherRedemptionWriter {
+    if (!this.organizations) throw new Error('VOUCHER_ORGANIZATION_DEPENDENCY_REQUIRED');
+    return new VoucherRedemptionWriter(this.accounting(), this.organizations, this.transactions);
+  }
 }
 
-async function status(database: VoucherDatabase, voucher: string, previous: string, next: string, reason: string): Promise<void> {
-  await database.query(
-    `insert into voucher.statusevent(voucher_id,sequence,previous_state,next_state,reason,actor_id,occurred_at)
-    select $1,coalesce(max(sequence),0)+1,$2,$3,$4,'system',clock_timestamp() from voucher.statusevent where voucher_id=$1`,
-    [voucher, previous, next, reason]
-  );
+interface VoucherRow {
+  readonly id: string;
+  readonly scope_id: string;
+  readonly product_id: string;
+  readonly credential_id: string;
+  readonly holder_id: string | null;
+  readonly initial_minor: number;
+  readonly remaining_minor: number;
+  readonly currency: string;
+  readonly state: string;
+  readonly starts_at: Date;
+  readonly expires_at: Date;
+  readonly version: number;
+}
+
+interface HoldRow {
+  readonly id: string;
+  readonly scope_id: string;
+  readonly voucher_id: string;
+  readonly owner_id: string;
+  readonly amount_minor: number;
+  readonly state: string;
+  readonly expires_at: Date;
 }

@@ -1,6 +1,6 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { CatalogSku } from '../../application/port/CatalogSku';
+import type { CatalogSku } from '../../public/CatalogSku';
 export class PgCatalogSku implements CatalogSku {
   private readonly transactions = new PgTransactionAccess();
   async find(context: ReadTransactionContext, scope: string, reference: string): Promise<string | null> {

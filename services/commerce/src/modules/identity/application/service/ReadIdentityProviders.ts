@@ -3,6 +3,7 @@ import { DomainError } from '../../../../foundation/domain/DomainError';
 
 import type { ProviderRepository } from '../port/ProviderRepository';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';
+import { isOperationTarget } from '@shop/contract';
 export class ReadIdentityProviders {
   constructor(
     private readonly providers: ProviderRepository,
@@ -12,7 +13,7 @@ export class ReadIdentityProviders {
     return async (request, database) => {
       const value = request.input.query.returntarget;
       const requested = request.input.headers['x-client-target'];
-      if (requested !== 'console' && requested !== 'storefront') throw new DomainError('VALIDATION_FAILED');
+      if (!isOperationTarget(requested)) throw new DomainError('VALIDATION_FAILED');
       if (value !== undefined && typeof value !== 'string') throw new DomainError('VALIDATION_FAILED');
       const target = value === undefined ? undefined : this.targets.verify(value);
       if (target !== undefined && target.target !== requested) throw new DomainError('VALIDATION_FAILED');

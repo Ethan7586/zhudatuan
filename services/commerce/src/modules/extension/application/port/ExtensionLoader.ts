@@ -23,8 +23,15 @@ export interface ExtensionLoader {
   activate(candidate: ExtensionCandidate): Promise<void>;
   discard(candidate: ExtensionCandidate): Promise<void>;
   active(candidate: ExtensionCandidate): boolean;
-  disable(provider: string, scope: string): Promise<void>;
-  reconcile(): Promise<void>;
+  disable(provider: string, scope: string, deadline?: number): Promise<ExtensionDrain>;
+  reconcile(signal?: AbortSignal, deadline?: number): Promise<void>;
+}
+
+export interface ExtensionDrain {
+  readonly drained: boolean;
+  readonly stopped: boolean;
+  readonly active: number;
+  readonly waited: number;
 }
 
 export interface ExtensionLoadContext {
@@ -74,22 +81,18 @@ export interface ExtensionSummary extends Readonly<Record<string, unknown>> {
   readonly health_reason: unknown;
   readonly checked_at: unknown;
 }
-export interface ExtensionStateSink {
-  degrade(context: ReadTransactionContext, id: string, scope: string): Promise<void>;
-}
-
 export interface ExtensionRepository {
-  manifest(context: ReadTransactionContext, provider: string): Promise<RegisteredManifest | null>;
+  manifest(context: ReadTransactionContext, provider: string, version?: string): Promise<RegisteredManifest | null>;
+  manifests(context: ReadTransactionContext): Promise<readonly RegisteredManifest[]>;
   install(context: WriteTransactionContext, input: InstallInput): Promise<Installation>;
   reconfigure(
     context: WriteTransactionContext,
     id: string,
     scope: string,
-    input: Readonly<{ baseUrl: string | null; endpoints: Readonly<Record<string, string>>; secretRef: string | null; healthOperation: string; actor: string; trace: string }>
+    input: Readonly<{ baseUrl: string | null; endpoints: Readonly<Record<string, string>>; secretRef: string | null | undefined; healthOperation: string; actor: string; trace: string }>
   ): Promise<Installation>;
   lock(context: WriteTransactionContext, id: string, scope: string): Promise<Installation | null>;
   activation(context: WriteTransactionContext, id: string, scope: string, provider: string): Promise<Readonly<{ candidate: Installation; active: Installation | null }>>;
-  latestHealth(context: ReadTransactionContext, id: string, version: number): Promise<Readonly<{ state: 'healthy' | 'degraded' | 'unavailable'; checkedAt: string; latency: number }> | null>;
   transition(context: WriteTransactionContext, installation: Installation, next: InstallationState, actor: string, evidence: unknown): Promise<Installation>;
   health(context: WriteTransactionContext, record: HealthRecord): Promise<void>;
   enqueueHealth(context: WriteTransactionContext, id: string, scope: string, delaySeconds?: number): Promise<void>;

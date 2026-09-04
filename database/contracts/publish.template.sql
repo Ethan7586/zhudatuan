@@ -34,12 +34,14 @@ select membership.id,'role:self','1970-01-01T00:00:00Z' from access.membership m
 insert into capability.capability(id,kind,name,version,status) values
 {{CAPABILITIES}};
 
-insert into capability.operation(operation_id,capability_id,permission_code,audience) values
+{{CAPABILITYDEPENDENCYINSERT}}
+
+insert into capability.operation(operation_id,capability_id,permission_code,audience,targets) values
 {{OPERATIONCAPABILITIES}};
 
 insert into capability.entitlement(id,scope_id,capability_id,state,quota,effective_at,expires_at,version)
 select 'platform:'||capability.id,'organization-platform-root',capability.id,'enabled',null,'1970-01-01T00:00:00Z',null,0
-from capability.capability capability where capability.kind='operation';
+from capability.capability capability where capability.kind in('operation','feature','entitlement');
 
 create or replace function identity.resolve_session(p_token_hash text)
 returns table(actor_id text,session_id text,membership_id text,credential_version bigint,access_version bigint,target text,assurance_level smallint,assurance_verified_at timestamptz)
@@ -305,25 +307,6 @@ begin
   values(p_consumer,p_event_id,p_event_type,p_event_version,p_trace_id,p_payload,clock_timestamp()) on conflict do nothing;
   return found;
 end $function$;
-
-create or replace function runtime.acquire_lease(p_resource text,p_owner text,p_seconds integer)
-returns text language plpgsql security definer set search_path=runtime,pg_temp as $function$
-declare lease_token text;
-begin
-  if p_seconds not between 5 and 900 then raise exception 'LEASE_DURATION_INVALID'; end if;
-  lease_token=encode(gen_random_bytes(24),'hex');
-  insert into runtime.lease(resource,owner,token,acquired_at,deadline,version)
-  values(p_resource,p_owner,lease_token,clock_timestamp(),clock_timestamp()+make_interval(secs=>p_seconds),0)
-  on conflict(resource) do update set owner=excluded.owner,token=excluded.token,acquired_at=excluded.acquired_at,deadline=excluded.deadline,version=runtime.lease.version+1
-  where runtime.lease.deadline<=clock_timestamp();
-  if not found then return null; end if;
-  return lease_token;
-end $function$;
-
-create or replace function runtime.release_lease(p_resource text,p_owner text,p_token text)
-returns boolean language sql security definer set search_path=runtime,pg_temp as $function$
-  delete from runtime.lease where resource=p_resource and owner=p_owner and token=p_token returning true
-$function$;
 
 create or replace function runtime.accept_provider_webhook(p_provider text,p_external_id text,p_sha256 text,p_headers jsonb,p_payload text,p_trace_id text,p_event_type text,p_event_version integer,p_event_payload jsonb)
 returns text language plpgsql security definer set search_path=runtime,pg_temp as $function$

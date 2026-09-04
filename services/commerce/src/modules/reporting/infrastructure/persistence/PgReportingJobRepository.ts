@@ -22,6 +22,10 @@ export class PgReportingJobRepository implements ReportingJobRepository {
     return this.repository(context).exportRows(id, report, cursor, fetch);
   }
 
+  exportCount(context: ReadTransactionContext, id: string, report: ExportReport) {
+    return this.repository(context).exportCount(id, report);
+  }
+
   advanceExport(context: WriteTransactionContext, id: string, cursor: string, count: number): Promise<void> {
     return this.repository(context).advanceExport(id, cursor, count);
   }

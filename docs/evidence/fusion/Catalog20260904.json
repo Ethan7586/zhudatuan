@@ -1,0 +1,84 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.9 Catalog",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "operations": [
+    "catalog.pools.read",
+    "catalog.pools.attach",
+    "catalog.pools.detach",
+    "catalog.pools.allocate",
+    "catalog.product.detail.read",
+    "catalog.products.create",
+    "catalog.products.update",
+    "catalog.products.archive",
+    "catalog.listings.read",
+    "catalog.listings.publish",
+    "catalog.listings.unpublish",
+    "catalog.listings.batch",
+    "catalog.imports.create",
+    "catalog.imports.read"
+  ],
+  "events": [
+    "catalog.product.created",
+    "catalog.product.updated",
+    "catalog.product.archived",
+    "catalog.listing.published",
+    "catalog.listing.unpublished"
+  ],
+  "aggregates": [
+    "Product",
+    "Category",
+    "Sku",
+    "Pool",
+    "Listing"
+  ],
+  "invariants": [
+    "sku-code-is-normalized-and-unique-within-its-owning-scope",
+    "all-product-sku-pool-and-listing-aggregates-start-at-version-one-and-reject-stale-expected-versions",
+    "disabled-categories-cannot-be-used-by-product-creation-or-import",
+    "pool-membership-is-many-to-many-and-deduplicated-by-pool-and-sku",
+    "pool-to-mall-binding-changes-consume-the-pool-expected-version-and-increment-it-exactly-once",
+    "archived-products-cannot-create-new-listings-and-a-product-archive-unpublishes-current-listings-in-the-same-transaction",
+    "listing-publication-requires-an-active-product-sku-pool-and-mall-scope-plus-qualification-price-inventory-and-channel-readiness",
+    "qualification-pricing-and-inventory-ports-are-evaluated-in-a-bounded-three-way-parallel read",
+    "single-and-batch-publication-use-the-same-domain-policy-and-return-stable-per-row-success-or-failure-receipts",
+    "batch-listing-updates-use-one-set-based-version-fenced-save-and-one-set-based-validated-outbox-write",
+    "product-detail-keeps-authoritative-catalog-data-and-healthy-panels-when-one-read-dependency-is-unavailable",
+    "product-detail-exposes-catalog-inventory-and-pricing-watermarks-plus-machine-readable-gaps",
+    "cart-checkout-experience-referral-member-and-storefront-share-one-minimal-catalog-facade-instead-of-direct-table-adapters",
+    "runtime-importing-exclusively-owns-import-files-chunks-errors-progress-reports-and-retry-leases",
+    "catalog-importing-only-owns-csv-row-domain-application-and-restartable-job-orchestration",
+    "runtime-import-responses-expose-exact-contract-fields-and-never-leak-tenant-or-object-store-columns"
+  ],
+  "retainedLiExperience": [
+    "unified-product-list-search-filter-status-and-detail-drawer",
+    "real-product-create-update-archive-and-authoritative-reread",
+    "sku-specification-price-inventory-and-listing-panels-with-local-error-states",
+    "pool-allocation-and-mall-binding-with-version-conflict-feedback",
+    "single-and-batch-publication-with-readable-per-row-results",
+    "real-direct-upload-catalog-import-and-durable-task-center-progress",
+    "storefront-search-category-detail-quick-preview-and-server-owned-purchasability"
+  ],
+  "verification": {
+    "authorityHashes": "matched after the final 6.9 change",
+    "commerceTypecheck": "passed",
+    "contractSdkAndConsoleTypecheck": "passed",
+    "catalogRuntimeAndOutboxTests": "7 files and 15 tests passed",
+    "sharedImportLifecycleTests": "passed including catalog inventory member and voucher",
+    "consoleProductTests": "3 files and 10 tests passed",
+    "storefrontCatalogTests": "2 files and 3 tests passed",
+    "contractTests": "3 files and 1236 tests passed",
+    "databaseMigrationInventory": "historical=171 repair=156 total=327",
+    "databaseReplay": "327 migrations applied; runtime operations=307 events=127; Catalog private import tables removed and Runtime Importing contracts passed",
+    "eventsOperationsAndJobs": "passed with 0 violations",
+    "boundariesAndOwnership": "passed with 0 findings",
+    "transactionPaginationAndPerformance": "passed with 0 violations",
+    "duplicates": "passed with 0 violations",
+    "naming": "passed with 0 findings",
+    "globalGeneration": "Catalog contract artifacts are current; the global trace awaits the real miniapp, store and supplier feature entrypoints",
+    "globalCallGraph": "Catalog has no broken call point; six generated client bindings remain deferred to the miniapp, store and supplier client work packages"
+  }
+}

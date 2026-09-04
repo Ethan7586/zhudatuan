@@ -1,88 +1,53 @@
-import type { OperationId } from '@shop/contract';
-import type { ContractJsonObject } from '@shop/contract/schema';
+import {
+  OP_EXPERIENCE_APPLICATIONS_COPY,
+  OP_EXPERIENCE_APPLICATIONS_DETAIL_READ,
+  OP_EXPERIENCE_APPLICATIONS_READ,
+  OP_EXPERIENCE_VERSIONS_PUBLISH,
+  OP_EXPERIENCE_VERSIONS_RESTORE,
+  OP_EXPERIENCE_VERSIONS_SAVE,
+  OP_EXPERIENCE_VERSIONS_VALIDATE,
+  OP_ORGANIZATION_MALLS_CREATE,
+} from '@shop/contract/ids';
+import type { OperationId, OperationOutputFor } from '@shop/contract';
+import type { DeepReadonly } from '../../../shared/model/Immutable';
 
-export type ExperienceStatus = 'draft' | 'active' | 'disabled';
+type ExperienceDto = DeepReadonly<OperationOutputFor<'experience.applications.read'>['items'][number]>;
+export type ExperienceStatus = ExperienceDto['status'];
 export type ExperienceView = 'all' | 'published' | 'drafts' | 'attention';
-export type ExperienceBlockType = 'hero' | 'notice' | 'shortcut' | 'productcollection' | 'richtext';
+export type ExperienceBlockType = ExperienceBlock['component'];
 export const EXPERIENCE_PAGE_LIMIT = 50;
 
-export type ExperienceEntry =
-  | Readonly<{ handle: string; url: string; state: 'ready'; releaseId: string; releaseVersion: string; contentHash: string }>
-  | Readonly<{ handle: string; url: string; state: 'unpublished' }>
-  | Readonly<{ handle: string; url: string; state: 'disabled' }>
-  | Readonly<{ handle: string; url: string; state: 'invalid'; requestId: string }>;
+export type ExperienceEntry = ExperienceDto['entry'];
+export type Experience = ExperienceDto;
+export type ExperiencePage = DeepReadonly<OperationOutputFor<'experience.applications.read'>>;
+export type ExperienceDocument = DeepReadonly<OperationOutputFor<'experience.versions.save'>['configuration']>;
+export type ExperienceBlock = ExperienceDocument['pages'][number]['blocks'][number];
+export type ExperienceVersion = DeepReadonly<OperationOutputFor<'experience.versions.save'>>;
+export type ExperienceHistory = DeepReadonly<OperationOutputFor<'experience.applications.detail.read'>['history'][number]>;
+export type ExperienceDetail = DeepReadonly<OperationOutputFor<'experience.applications.detail.read'>>;
 
-export interface Experience {
-  readonly id: string;
-  readonly mallId: string;
-  readonly code: string;
-  readonly publicSlug: string;
-  readonly name: string;
-  readonly status: ExperienceStatus;
-  readonly version: number;
-  readonly headSequence: number | null;
-  readonly publishedSequence: number | null;
-  readonly entry: ExperienceEntry;
-  readonly updatedAt: string;
+export interface ApplicationCopy {
+  readonly targetMallId: string;
+  readonly reason: string;
 }
-
-export interface ExperiencePage {
-  readonly items: readonly Experience[];
-  readonly count: number;
-  readonly nextCursor?: string;
-}
-
-export interface ExperienceBlock {
-  readonly id: string;
-  readonly component: ExperienceBlockType;
-  readonly content: ContractJsonObject;
-  readonly action?: Readonly<{ type: 'link' | 'product' | 'category' | 'collection' | 'exchangeableproduct' | 'micropage' | 'marketingactivity'; target: string }> | undefined;
-}
-
-export interface ExperienceDocument {
-  readonly version: 2;
+export interface VersionDraft {
   readonly application: string;
-  readonly pages: readonly Readonly<{ id: string; path: string; blocks: readonly ExperienceBlock[] }>[];
-}
-
-export interface ExperienceVersion {
-  readonly id: string;
-  readonly application_id: string;
-  readonly sequence: number;
-  readonly schema_version: '2';
   readonly configuration: ExperienceDocument;
-  readonly configuration_hash: string;
-  readonly validation_state: 'pending' | 'valid' | 'invalid';
   readonly reason: string;
-  readonly created_by: string;
-  readonly created_at: string;
 }
 
-export interface ExperienceHistory {
-  readonly id: string;
-  readonly sequence: number;
-  readonly schemaVersion: '2';
-  readonly validationState: 'pending' | 'valid' | 'invalid';
-  readonly reason: string;
-  readonly createdAt: string;
-  readonly lifecycle: 'published' | 'draft';
-}
-
-export interface ExperienceDetail extends Experience {
-  readonly head: ExperienceVersion | null;
-  readonly published: ExperienceVersion | null;
-  readonly history: readonly ExperienceHistory[];
-}
-
-export interface ApplicationDraft { readonly code: string; readonly publicSlug: string; readonly name: string }
-export interface ApplicationUpdate { readonly name: string; readonly status: ExperienceStatus }
-export interface VersionDraft { readonly application: string; readonly configuration: ExperienceDocument; readonly reason: string }
-
-export interface VersionValidation { readonly id: string; readonly application_id: string; readonly validation_state: 'valid' | 'invalid' }
-export interface PublicationReceipt { readonly id: string; readonly application_id: string; readonly version_id: string; readonly pool_id: string; readonly state: 'scheduled' | 'active' | 'retired' | 'failed'; readonly effective_at: string; readonly retired_at: string | null; readonly published_by: string }
-export type ExperienceAction = Readonly<{ kind: 'create' }> | Readonly<{ kind: 'copy' | 'manage' | 'design'; record: Experience }>;
+export type VersionValidation = DeepReadonly<OperationOutputFor<'experience.versions.validate'>>;
+export type ValidationIssue = VersionValidation['issues'][number];
+export type PublicationReceipt = DeepReadonly<OperationOutputFor<'experience.versions.publish'>>;
+export type ExperienceAction = Readonly<{ kind: 'create' }> | Readonly<{ kind: 'copy'; record: Experience }> | Readonly<{ kind: 'manage'; record: Experience }> | Readonly<{ kind: 'design'; record: Experience }>;
 
 export const experienceOperations = Object.freeze({
-  create: 'experience.applications.create', copy: 'experience.applications.copy', readDetail: 'experience.applications.detail.read', read: 'experience.applications.read', update: 'experience.applications.update',
-  save: 'experience.versions.save', validate: 'experience.versions.validate', publish: 'experience.versions.publish', restore: 'experience.versions.restore',
+  create: OP_ORGANIZATION_MALLS_CREATE,
+  copy: OP_EXPERIENCE_APPLICATIONS_COPY,
+  readDetail: OP_EXPERIENCE_APPLICATIONS_DETAIL_READ,
+  read: OP_EXPERIENCE_APPLICATIONS_READ,
+  save: OP_EXPERIENCE_VERSIONS_SAVE,
+  validate: OP_EXPERIENCE_VERSIONS_VALIDATE,
+  publish: OP_EXPERIENCE_VERSIONS_PUBLISH,
+  restore: OP_EXPERIENCE_VERSIONS_RESTORE,
 } satisfies Readonly<Record<string, OperationId>>);

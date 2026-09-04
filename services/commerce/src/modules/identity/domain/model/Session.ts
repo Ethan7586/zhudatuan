@@ -6,11 +6,11 @@ export class Session {
   readonly membership: string;
   readonly credentialVersion: number;
   readonly accessVersion: number;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly assurance: 1 | 2 | 3;
   readonly expiresAt: Date;
 
-  constructor(value: Readonly<{ id: string; principal: string; membership: string; credentialVersion: number; accessVersion: number; target: 'console' | 'storefront'; assurance: 1 | 2 | 3; expiresAt: Date }>) {
+  constructor(value: Readonly<{ id: string; principal: string; membership: string; credentialVersion: number; accessVersion: number; target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'; assurance: 1 | 2 | 3; expiresAt: Date }>) {
     if (
       !value.id ||
       !value.principal ||

@@ -1,0 +1,10 @@
+.records { display: flex; flex-direction: column; gap: 20rpx; }
+.summary { display: flex; align-items: baseline; justify-content: space-between; padding: 0 8rpx; }
+.summarytitle { color: var(--shop-text); font-size: 28rpx; font-weight: 600; }
+.summarycopy { color: var(--shop-text-muted); font-size: 20rpx; }
+.record { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12rpx 20rpx; padding: 28rpx; background: var(--shop-surface); border: 1rpx solid var(--shop-border); border-radius: var(--shop-radius-large); box-shadow: var(--shop-shadow-raised); }
+.recordmain { display: flex; flex-direction: column; gap: 8rpx; min-width: 0; }
+.recordtitle { overflow: hidden; color: var(--shop-text); font-size: 30rpx; font-weight: 600; line-height: 42rpx; text-overflow: ellipsis; white-space: nowrap; }
+.recorddetail { overflow: hidden; color: var(--shop-text-secondary); font-size: 24rpx; line-height: 36rpx; text-overflow: ellipsis; white-space: nowrap; }
+.status { align-self: start; padding: 8rpx 16rpx; color: var(--shop-success); background: var(--shop-success-surface); border-radius: 999rpx; font-size: 22rpx; line-height: 30rpx; }
+.timestamp { grid-column: 1 / -1; color: var(--shop-text-muted); font-size: 22rpx; line-height: 30rpx; }

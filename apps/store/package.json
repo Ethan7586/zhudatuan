@@ -1,0 +1,33 @@
+{
+  "name": "@shop/store",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=4175 --host=0.0.0.0",
+    "build": "vite build",
+    "test": "vitest run --config vitest.config.ts",
+    "test:component": "vitest run --config vitest.config.ts src/app/StoreApp.test.tsx",
+    "typecheck": "tsc --noEmit",
+    "lint": "npm run typecheck"
+  },
+  "dependencies": {
+    "@shop/config": "1.0.0",
+    "@shop/contract": "1.0.0",
+    "@shop/design": "1.0.0",
+    "@shop/presentation": "1.0.0",
+    "@shop/sdk": "1.0.0",
+    "@vitejs/plugin-react": "6.0.2",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "vite": "8.1.5"
+  },
+  "devDependencies": {
+    "@testing-library/react": "16.3.2",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "jsdom": "30.0.1",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

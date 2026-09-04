@@ -25,7 +25,7 @@ export class MembershipSelector {
   ) {}
   async begin(
     database: ReadTransactionContext,
-    input: Readonly<{ principal: string; target: 'console' | 'storefront'; memberships: readonly MembershipCandidate[]; assurance: number; authorization: AuthTransaction; returnTarget: string }>,
+    input: Readonly<{ principal: string; target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'; memberships: readonly MembershipCandidate[]; assurance: number; authorization: AuthTransaction; returnTarget: string }>,
     context: Readonly<{ peer: string; agent: string; device: string }>
   ) {
     const selection = await this.repository.create(requireWriteTransaction(database), {

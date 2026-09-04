@@ -5,7 +5,7 @@ export class InvitationClaim {
   readonly id: string;
   readonly invitation: string;
   readonly kind: 'signin' | 'enrollment' | 'campaign';
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly recipientHash: Buffer | null;
   readonly state: InvitationClaimState;
   readonly proof: 'otp' | 'sso' | 'terms' | null;
@@ -18,7 +18,7 @@ export class InvitationClaim {
       id: string;
       invitation: string;
       kind: 'signin' | 'enrollment' | 'campaign';
-      target: 'console' | 'storefront';
+      target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
       recipientHash: Buffer | null;
       state: InvitationClaimState;
       proof: 'otp' | 'sso' | 'terms' | null;

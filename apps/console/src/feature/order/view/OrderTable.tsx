@@ -1,7 +1,7 @@
 import { formatMinor } from '../../../shared/ui/Format';
 import { chineseReference } from '@shop/presentation';
 import { OrderIcon } from './OrderIcon';
-import { aftersaleLabel, aftersaleTone, formatOrderTime, fulfillmentLabel, fulfillmentTone, paymentLabel, paymentTone, productSummary } from './OrderPresentation';
+import { aftersaleLabel, aftersaleTone, formatOrderTime, fulfillmentLabel, fulfillmentTone, lifecycleLabel, paymentLabel, paymentTone, productSummary } from './OrderPresentation';
 import type { OrderColumnKey } from '../model/OrderColumn';
 import type { OrderRecord } from '../model/Order';
 
@@ -25,9 +25,9 @@ export function OrderTable({
             <th scope="col">订单 / 时间</th>
             {visible.has('member') ? <th scope="col">会员 / 企业</th> : null}
             {visible.has('product') ? <th scope="col">商品摘要</th> : null}
-            {visible.has('payment') ? <th scope="col">金额 / 支付</th> : null}
-            {visible.has('fulfillment') ? <th scope="col">履约状态</th> : null}
-            {visible.has('aftersale') ? <th scope="col">售后</th> : null}
+            {visible.has('payment') ? <th className="orderamountcolumn" scope="col">金额 / 支付</th> : null}
+            {visible.has('fulfillment') ? <th className="orderstatuscolumn" scope="col">履约状态</th> : null}
+            {visible.has('aftersale') ? <th className="orderstatuscolumn" scope="col">售后</th> : null}
             <th scope="col">操作</th>
           </tr>
         </thead>
@@ -66,14 +66,14 @@ function OrderRow({
         }
       }}
     >
-      <td>
+      <td data-label="订单 / 时间">
         <div className="orderprimarycell">
           <strong>{order.order_number}</strong>
-          <span>{formatOrderTime(order.created_at)}</span>
+          <span>{lifecycleLabel(order.lifecycle_state)} · {formatOrderTime(order.created_at)}</span>
         </div>
       </td>
       {visible.has('member') ? (
-        <td>
+        <td data-label="会员 / 企业">
           <div className="orderprimarycell">
             <strong>{order.member_id ? chineseReference('会员', order.member_id) : '会员编号不可用'}</strong>
             <span>{order.scope_id ? chineseReference('组织范围', order.scope_id) : '组织范围不可用'}</span>
@@ -81,7 +81,7 @@ function OrderRow({
         </td>
       ) : null}
       {visible.has('product') ? (
-        <td>
+        <td data-label="商品摘要">
           <div className="orderproductcell">
             <span className="orderproductthumb">
               <OrderIcon name="package" />
@@ -94,7 +94,7 @@ function OrderRow({
         </td>
       ) : null}
       {visible.has('payment') ? (
-        <td>
+        <td className="orderamountcolumn" data-label="金额 / 支付">
           <div className="orderprimarycell">
             <strong>{formatMinor(order.total_minor, order.currency)}</strong>
             <span className={`orderstatustext tone-${paymentTone(order.payment_state)}`}>
@@ -105,14 +105,14 @@ function OrderRow({
         </td>
       ) : null}
       {visible.has('fulfillment') ? (
-        <td>
+        <td className="orderstatuscolumn" data-label="履约状态">
           <StatusPill icon="truck" label={fulfillmentLabel(order.fulfillment_state)} tone={fulfillmentTone(order.fulfillment_state)} />
         </td>
       ) : null}
       {visible.has('aftersale') ? (
-        <td>{order.aftersale_state === 'none' ? <span className="ordermutetext">无售后</span> : <StatusPill icon="clock" label={aftersaleLabel(order.aftersale_state)} tone={aftersaleTone(order.aftersale_state)} />}</td>
+        <td className="orderstatuscolumn" data-label="售后">{order.aftersale_state === 'none' ? <span className="ordermutetext">无售后</span> : <StatusPill icon="clock" label={aftersaleLabel(order.aftersale_state)} tone={aftersaleTone(order.aftersale_state)} />}</td>
       ) : null}
-      <td>
+      <td data-label="操作">
         <div className="orderrowactions">
           <button
             type="button"

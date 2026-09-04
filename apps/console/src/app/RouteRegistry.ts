@@ -27,28 +27,41 @@ for (const id of NAVIGATION_IDS) if (!navigationids.has(id)) throw new Error(`NA
 for (const routeid of Object.keys(ROUTES) as RouteId[]) if (!routeids.has(routeid)) throw new Error(`COMPONENT_ROUTE_MISSING:${routeid}`);
 
 const routeBindings = Object.freeze(manifests.flatMap((manifest) => manifest.routes.map((route) => Object.freeze({ manifest, route, load: route.load ?? manifest.load }))));
-
 export const RouteRegistry = Object.freeze({
   all: (): readonly ComponentManifest[] => manifests,
   routes: () => routeBindings,
   match(pathname: string): ComponentManifest | undefined {
-    return routeBindings.find(({ route }) => matchPath({ path: relativeRoute(route.routeid), end: true }, `/${scopeSuffix(pathname)}`))?.manifest;
+    return routeBindings.find(({ route }) => matchPath({ path: ROUTES[route.routeid], end: true }, pathname))?.manifest;
   },
-  hasComponent(component: string): component is (typeof COMPONENT_KEYS)[number] { return components.has(component); },
+  resolve(pathname: string) {
+    for (const { route } of routeBindings) {
+      const match = matchPath({ path: ROUTES[route.routeid], end: true }, pathname);
+      if (match === null) continue;
+      const parameters = Object.fromEntries(
+        Object.entries(match.params)
+          .filter((entry): entry is [string, string] => entry[1] !== undefined)
+          .map(([name, value]) => [name, decodeRouteParameter(name, value)])
+      );
+      return Object.freeze({ routeid: route.routeid, parameters: Object.freeze(parameters) });
+    }
+    return undefined;
+  },
+  hasComponent(component: string): component is (typeof COMPONENT_KEYS)[number] {
+    return components.has(component);
+  },
 });
-
-export function relativeRoute(routeid: RouteId): string {
-  const prefix = '/scopes/:scopeKind/:scopeId/';
-  const path = ROUTES[routeid];
-  if (!path.startsWith(prefix)) throw new Error(`CONSOLE_ROUTE_SCOPE_INVALID:${routeid}`);
-  return path.slice(prefix.length);
-}
-
-export function scopeSuffix(pathname: string): string { return pathname.split('/').filter(Boolean).slice(3).join('/'); }
 function isManifest(value: unknown): value is ComponentManifest {
   if (!value || typeof value !== 'object') return false;
   const item = value as Partial<ComponentManifest>;
   return typeof item.component === 'string' && Array.isArray(item.navigationids) && Array.isArray(item.routes) && typeof item.load === 'function';
+}
+
+function decodeRouteParameter(name: string, value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    throw new Error(`ROUTE_PARAMETER_ENCODING_INVALID:${name}`);
+  }
 }
 
 export type ConsoleRouteBinding = Readonly<{ manifest: ComponentManifest; route: ComponentRoute; load: ComponentManifest['load'] }>;

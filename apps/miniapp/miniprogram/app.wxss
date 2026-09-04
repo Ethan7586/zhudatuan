@@ -1,0 +1,12 @@
+@import "styles/tokens.wxss";
+
+page {
+  background: var(--shop-background);
+  color: var(--shop-text);
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 30rpx;
+}
+
+button::after {
+  border: 0;
+}

@@ -98,8 +98,19 @@ function checkRequirements() {
     if (ids.has(requirement.id)) fail('REQUIREMENT_ID_DUPLICATE', location);
     ids.add(requirement.id);
     checkStatus(requirement, location);
-    if (!['console', 'auth', 'storefront'].includes(requirement.client)) fail('NON_MVP_CLIENT', location, requirement.client);
-    if (!String(requirement.uiRoute).startsWith('/scopes/:scopeKind/:scopeId/')) fail('ROUTE_OUTSIDE_SCOPE_WORKSPACE', location, requirement.uiRoute);
+    if (!Array.isArray(requirement.clients) || requirement.clients.length === 0) fail('REQUIREMENT_CLIENT_MISSING', location);
+    for (const client of requirement.clients ?? []) {
+      if (!['console', 'auth', 'storefront'].includes(client)) fail('REQUIREMENT_CLIENT_INVALID', location, client);
+    }
+    if (!Array.isArray(requirement.uiRoutes) || requirement.uiRoutes.length === 0) fail('REQUIREMENT_ROUTE_MISSING', location);
+    if (!Array.isArray(requirement.frontend) || requirement.frontend.length === 0) fail('REQUIREMENT_FRONTEND_TRACE_MISSING', location);
+    for (const frontend of requirement.frontend ?? []) {
+      if (!['console', 'auth', 'storefront'].includes(frontend.client)) fail('REQUIREMENT_CLIENT_INVALID', location, frontend.client);
+      if (!String(frontend.route).startsWith('/')) fail('REQUIREMENT_ROUTE_INVALID', location, frontend.route);
+      if (frontend.client === 'console' && !String(frontend.route).startsWith('/scopes/:scopeKind/:scopeId/')) {
+        fail('ROUTE_OUTSIDE_SCOPE_WORKSPACE', location, frontend.route);
+      }
+    }
     const operation = operationById.get(requirement.capability);
     if (!operation) {
       fail('REQUIREMENT_OPERATION_MISSING', location, requirement.capability);

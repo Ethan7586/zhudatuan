@@ -1,5 +1,6 @@
+import type { OperationRisk } from '@shop/contract';
+import type { Decision, RiskDecisionDraft } from '../../domain/model/Decision';
 import type { Signal } from '../../domain/model/Signal';
-import type { Decision } from '../../domain/model/Decision';
 import type { RiskOutcome } from '../../domain/model/RiskPolicy';
 
 export interface RiskCheckInput {
@@ -11,6 +12,10 @@ export interface RiskCheckInput {
   readonly trace: string;
   readonly amountMinor: number | null;
   readonly signals: readonly Signal[];
+  readonly risk: OperationRisk;
+  readonly mode: 'sync' | 'async';
+  readonly deadline: number;
+  readonly signal: AbortSignal;
 }
 
 export interface RiskCheck {
@@ -38,15 +43,6 @@ export interface RiskRepository {
   signals(actor: string, scopes: readonly string[]): Promise<readonly Signal[]>;
   velocities(actor: string, operation: string, scopes: readonly string[], seconds: readonly number[]): Promise<ReadonlyMap<number, number>>;
   blocked(actor: string, scopes: readonly string[]): Promise<boolean>;
-  decision(input: Readonly<{ check: RiskCheckInput; policy: string; version: number; outcome: RiskOutcome; score: number; safeReason: string; evidence: Readonly<Record<string, unknown>> }>): Promise<string>;
-  center(scope: string, cursor: string | null, fetch: number): Promise<readonly Readonly<Record<string, unknown>>[]>;
-  savePolicy(input: Readonly<{ id: string; scope: string; name: string; rule: RiskPolicyRecord['activeRule']; ruleHash: string; rolloutPercent: number; actor: string }>): Promise<Readonly<Record<string, unknown>>>;
-  activatePolicy(input: Readonly<{ id: string; scope: string; version: number; rolloutPercent: number; actor: string; trace: string }>): Promise<Readonly<Record<string, unknown>>>;
-  retirePolicy(id: string, scope: string): Promise<Readonly<Record<string, unknown>>>;
-  riskCase(id: string, scope: string): Promise<Readonly<{ id: string; state: 'open' | 'reviewing' | 'cleared' | 'confirmed' | 'closed'; actor: string | null }> | null>;
-  reviewCase(input: Readonly<{ id: string; scope: string; state: string; reviewer: string; reason: string; evidence: Readonly<Record<string, unknown>>; trace: string }>): Promise<Readonly<Record<string, unknown>>>;
-  replay(policy: string, version: number): Promise<Readonly<{ scope: string; rule: unknown }> | null>;
-  replaySample(scope: string): Promise<readonly Readonly<{ actor: string; operation: string; outcome: RiskOutcome; evidence: Record<string, unknown>; falsePositive: boolean }>[]>;
-  completeReplay(policy: string, version: number, preview: Readonly<Record<string, unknown>>): Promise<void>;
-  catalogDecision(decision: string): Promise<Readonly<{ decision: string; scope: string; resource: string }> | null>;
+  decision(input: Readonly<{ check: RiskCheckInput; draft: RiskDecisionDraft; scopeChain: readonly string[] }>): Promise<string>;
+  defer(input: RiskCheckInput): Promise<string>;
 }

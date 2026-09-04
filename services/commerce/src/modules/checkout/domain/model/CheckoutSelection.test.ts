@@ -30,4 +30,9 @@ describe('checkoutSelection', () => {
     expect(() => checkoutSelection({ ...base, lines: [{ listingId: 'listing:a', quantity: 0, lineVersion: 1 }] })).toThrow();
     expect(() => checkoutSelection({ ...base, paymentScene: 'native' })).toThrow();
   });
+
+  it('normalizes delivery choices and rejects undeclared client pricing fields', () => {
+    expect(checkoutSelection(base).delivery).toEqual({ method: 'standard', note: null, scheduledAt: null });
+    expect(() => checkoutSelection({ ...base, delivery: { shippingMinor: 1 } })).toThrow('VALIDATION_FAILED');
+  });
 });

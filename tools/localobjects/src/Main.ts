@@ -1,4 +1,5 @@
 import { localInfrastructureEnvironment } from '@shop/config/server';
+import { IMPORT_CAPACITY } from '@shop/config/runtime';
 import { bytesResponse, jsonBody, jsonResponse, startLocalHttps, type LocalHandler } from '../../localinfra/src/Http';
 import { LocalObjects } from './LocalObjects';
 
@@ -16,11 +17,22 @@ const handler: LocalHandler = async (request) => {
     const value = await objects.readAuthorized(decodeURIComponent(publicMatch[1] ?? ''), request.url.searchParams.get('expires'), request.url.searchParams.get('signature'));
     return bytesResponse(200, value.bytes, value.metadata.contentType);
   }
+  const publicUpload = /^\/v1\/public-upload\/([^/]+)$/.exec(request.url.pathname);
+  if (publicUpload && request.method === 'PUT') {
+    await objects.writeAuthorized(decodeURIComponent(publicUpload[1] ?? ''), request.url.searchParams.get('expires'),
+      request.url.searchParams.get('signature'), request.headers, request.body);
+    return { status: 204 };
+  }
   objects.authorizeHeader(request.headers.authorization);
 
   if (request.url.pathname === '/v1/uploads' && request.method === 'POST') {
     const body = jsonBody(request);
     return jsonResponse(201, { id: objects.create(body.path, body.contentType) });
+  }
+  if (request.url.pathname === '/v1/uploads/authorizations' && request.method === 'POST') {
+    const body = jsonBody(request);
+    return jsonResponse(200, objects.authorizeUpload({ path: body.path, contentType: body.contentType, size: body.size,
+      sha256: body.sha256, expiresIn: body.expiresIn, retentionUntil: body.retentionUntil }));
   }
   const part = /^\/v1\/uploads\/([^/]+)\/parts\/(\d+)$/.exec(request.url.pathname);
   if (part && request.method === 'PUT') {
@@ -49,6 +61,15 @@ const handler: LocalHandler = async (request) => {
     const value = await objects.read(request.url.searchParams.get('reference') ?? '');
     return bytesResponse(200, value.bytes, value.metadata.contentType);
   }
+  if (request.url.pathname === '/v1/objects' && request.method === 'DELETE') {
+    await objects.remove(request.url.searchParams.get('reference') ?? '');
+    return { status: 204 };
+  }
+  if (request.url.pathname === '/v1/objects/locks' && request.method === 'POST') {
+    const body = jsonBody(request);
+    if (body.mode !== 'compliance') return jsonResponse(400, { code: 'OBJECT_LOCK_MODE_INVALID' });
+    return jsonResponse(200, await objects.lock(typeof body.reference === 'string' ? body.reference : '', body.until));
+  }
   if (request.url.pathname === '/v1/objects/authorizations' && request.method === 'POST') {
     const body = jsonBody(request);
     return jsonResponse(200, await objects.authorize(typeof body.reference === 'string' ? body.reference : '', body.expiresIn));
@@ -59,4 +80,4 @@ const handler: LocalHandler = async (request) => {
 await startLocalHttps('localobjects', port, handler, {
   certificateFile: environment.tlsCertificateFile,
   keyFile: environment.tlsKeyFile,
-});
+}, IMPORT_CAPACITY.maximumFileBytes);

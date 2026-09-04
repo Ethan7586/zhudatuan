@@ -1,15 +1,25 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { VersionRepository } from '../port/VersionRepository';
+import type { ExperienceValidator } from '../service/ExperienceValidator';
+import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 
 export class VersionsValidateHandler implements OperationHandler<'experience.versions.validate', 'write'> {
   readonly operation = 'experience.versions.validate' as const;
   readonly mode = 'write' as const;
-  constructor(private readonly versions: VersionRepository) {}
+  constructor(private readonly validator: ExperienceValidator) {}
   async execute(input: OperationInputFor<'experience.versions.validate'>, context: WriteHandlerContext<'experience.versions.validate'>): Promise<OperationReply<OperationOutputFor<'experience.versions.validate'>>> {
+    requireSession(context.security);
     context.signal.throwIfAborted();
-    const validated = await this.versions.validate(context.transaction, input.path.versionid);
-    return { status: 200, body: validated as unknown as OperationOutputFor<'experience.versions.validate'> };
+    const validation = await this.validator.validate(context.transaction, input.path.versionid);
+    return {
+      status: 200,
+      body: {
+        id: input.path.versionid,
+        application_id: validation.candidate.application,
+        validation_state: validation.issues.length === 0 ? 'valid' : 'invalid',
+        issues: validation.issues,
+      } as OperationOutputFor<'experience.versions.validate'>,
+    };
   }
 }

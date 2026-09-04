@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../public/JobProcess';
 import type { CleanupRuntime } from '../../application/process/CleanupRuntime';
 
 export class RuntimeCleanupJob implements JobProcessor {
@@ -7,6 +7,6 @@ export class RuntimeCleanupJob implements JobProcessor {
   process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
     if (job.kind !== 'cleanup') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
-    return this.cleanup.execute(job.id, signal, deadline);
+    return this.cleanup.execute(job, signal, deadline);
   }
 }

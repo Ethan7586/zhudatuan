@@ -1,5 +1,9 @@
 .reportpage { display: grid; gap: var(--sw-space-2); }
 .reportcontext { margin: var(--sw-space-1) 0 0; color: var(--sw-text-secondary); font-size: var(--sw-font-size-body-sm); }
+.reportpreset { display: grid; gap: .35rem; border: 1px solid color-mix(in srgb, var(--sw-brand) 28%, var(--sw-border)); border-radius: var(--sw-radius-md); background: color-mix(in srgb, var(--sw-brand) 6%, var(--sw-surface)); padding: var(--sw-space-1-5) var(--sw-space-2); }
+.reportpreset strong { color: var(--sw-brand-ink); }
+.reportpreset span { color: var(--sw-text); line-height: 1.6; }
+.reportpreset small { color: var(--sw-text-secondary); }
 .reportcontent { display: grid; overflow: hidden; border: 1px solid var(--sw-border); border-radius: var(--sw-radius-md); background: var(--sw-surface); box-shadow: var(--sw-shadow-sm); }
 .reportcontent > footer { display: flex; min-height: 3.5rem; align-items: center; justify-content: space-between; gap: var(--sw-space-2); border-top: 1px solid var(--sw-border); padding: var(--sw-space-1) var(--sw-space-2); color: var(--sw-text-secondary); }
 .reportexport { display: grid; gap: var(--sw-space-2); }

@@ -1,0 +1,11 @@
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  define: {
+    'import.meta.env.MODE': JSON.stringify('test'),
+    'import.meta.env.VITE_API_BASE_URL': JSON.stringify('http://127.0.0.1:3001'),
+    'import.meta.env.VITE_AUTH_BASE_URL': JSON.stringify('http://127.0.0.1:3002'),
+    'import.meta.env.VITE_CLIENT_VERSION': JSON.stringify('0.0.0-test'),
+  },
+  test: { environment: 'jsdom', include: ['src/**/*.test.{ts,tsx}'] },
+});

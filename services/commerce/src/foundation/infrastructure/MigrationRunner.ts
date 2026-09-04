@@ -5,7 +5,7 @@ import type { PoolClient } from 'pg';
 import { TARGET_SCHEMA_HEAD } from '@shop/config/server';
 
 import { Semaphore } from '../performance/Semaphore';
-import type { KmsClient } from './KmsClient';
+import type { KmsClient } from '../application/KmsPort';
 import type { DatabasePool } from '../persistence/Pool';
 
 interface HistoryContract {

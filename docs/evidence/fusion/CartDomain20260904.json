@@ -1,0 +1,53 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.15 Cart",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "operations": [
+    "cart.current.read",
+    "cart.items.put",
+    "cart.items.batch",
+    "cart.anonymous.merge"
+  ],
+  "aggregates": ["Cart", "CartLine"],
+  "invariants": [
+    "a-cart-is-owned-by-exactly-one-member-or-one-sha256-anonymous-token-digest-within-one-mall-and-published-application-scope",
+    "raw-anonymous-cart-tokens-never-cross-the-cart-actor-boundary-into-persistence",
+    "cart-and-line-writes-use-client-expected-versions-row-locking-and-compare-and-swap",
+    "batch-commands-return-one-result-per-requested-item-and-the-latest-cart-and-line-versions-without-rolling-back-unrelated-valid-items",
+    "zero-quantity-removes-a-line-while-positive-quantity-is-bounded-by-configured-line-batch-and-quantity-limits",
+    "different-listing-references-for-the-same-authoritative-sku-coalesce-to-one-cart-line",
+    "cart-lines-store-only-listing-sku-quantity-selection-and-version-and-never-freeze-price-inventory-or-product-copy",
+    "current-catalog-pricing-and-inventory-public-ports-produce-each-read-model-and-cart-never-creates-a-second-offer-truth",
+    "unpublished-unavailable-out-of-scope-unpriced-out-of-stock-and-changed-variant-lines-remain-visible-with-specific-Chinese-recovery-guidance",
+    "anonymous-to-member-merge-is-scope-bound-deterministic-business-key-deduplicated-and-exactly-once-by-token-digest-claim",
+    "overflow-or-conflicting-merge-plans-fail-closed-without-consuming-the-anonymous-cart",
+    "experience-and-checkout-consume-only-minimal-cart-public-summaries-and-never-repository-records"
+  ],
+  "retainedLiExperience": [
+    "the-existing-zhudatuan-li-cart-page-card-layout-quantity-controls-selection-summary-and-checkout-entry-are-retained",
+    "guest-browsing-and-cart-editing-now-use-an-opaque-browser-token-and-the-same-authoritative-server-cart-as-member-shopping",
+    "member-login-performs-the-one-time-guest-cart-merge-before-clearing-local-token-state",
+    "selection-is-server-persisted-instead-of-encoded-in-the-url-or-maintained-as-a-second-local-truth",
+    "invalid-lines-are-readable-but-cannot-be-selected-or-incremented-and-valid-lines-display-current-price-stock-and-benefit-applicability",
+    "all-cart-actions-have-real-operation-effects-with-loading-conflict-partial-failure-and-retry-feedback"
+  ],
+  "verification": {
+    "authorityHashes": "matched after the final 6.15 change",
+    "commerceTypecheck": "passed",
+    "commerceCartAndHttpPolicyTests": "6 files and 36 tests passed",
+    "storefrontTypecheckAndCartTests": "passed; 2 files and 4 tests passed",
+    "sdkAndContractTypecheck": "passed",
+    "contractTests": "6 files and 51 tests passed",
+    "databaseMigrationInventory": "historical=171 repair=162 total=333",
+    "databaseReplay": "333 migrations applied and Cart owner exclusivity, token digest, active uniqueness, line uniqueness, version guard, merge claim, RLS and operation contracts passed",
+    "navigation": "97 nodes generated and zero violations",
+    "errorsTransactionsBoundariesOwnershipDuplicatesNaming": "passed with zero Cart findings",
+    "eventsOperationsJobs": "passed with zero violations",
+    "globalGeneration": "Cart contract, runtime and navigation artifacts are current; requirement trace still awaits the real Miniapp feature root",
+    "globalCallGraph": "Cart has no broken call point; six generated bindings remain in the future Miniapp, Store and Supplier surface packages",
+    "globalLineBudget": "Cart files pass; 16 pre-existing Access, Approval, Organization, Capability, Pricing, Checkout, Bootstrap and shared console debts remain for their owning cleanup packages"
+  }
+}

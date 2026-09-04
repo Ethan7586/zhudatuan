@@ -5,17 +5,19 @@ import type { ExecutionContext } from '../../../../foundation/application/Handle
 import type { AfterSalePolicyPort } from '../../../qualification/public';
 import type { OrganizationReadPort } from '../../../organization/public';
 import type { AfterSaleRepository } from '../../application/port/AfterSaleRepository';
-import type { VerifiedAfterSaleAttachment } from '../../application/service/AfterSaleAttachmentService';
+import type { VerifiedAfterSaleAttachment } from '../../application/service/AfterSaleAttachment';
 import { AfterSalePersistence } from './AfterSalePersistence';
 import { orderRequest } from './PgOrderRepository';
+import type { MemberReadPort } from '../../../member/public';
 export class PgAfterSaleRepository implements AfterSaleRepository {
   private readonly persistence: AfterSalePersistence;
   constructor(
     private readonly transactions: PgTransactionAccess,
     policies: AfterSalePolicyPort,
-    organizations: OrganizationReadPort
+    organizations: OrganizationReadPort,
+    members: Pick<MemberReadPort, 'search'>
   ) {
-    this.persistence = new AfterSalePersistence(policies, organizations);
+    this.persistence = new AfterSalePersistence(policies, organizations, members);
   }
   read(context: ReadTransactionContext, input: OperationInputFor<'order.aftersales.read'>, execution: ExecutionContext<'order.aftersales.read'>) {
     const database = this.transactions.database(context);

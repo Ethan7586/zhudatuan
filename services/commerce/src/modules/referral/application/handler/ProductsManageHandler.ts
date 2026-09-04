@@ -2,7 +2,7 @@ import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, integerField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, integerField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { ReferralCatalogPort } from '../../../catalog/public';
 import { ReferralProduct } from '../../domain/model/ReferralProduct';
@@ -21,13 +21,22 @@ export class ProductsManageHandler implements OperationHandler<'referral.product
     const product = input.path.productid;
     const source = await this.catalog.product(access.scope.id, product);
     if (!source?.active) throw new DomainError('REFERRAL_PRODUCT_DISABLED');
-    const model = new ReferralProduct(product, access.scope.id, product, booleanField(body, 'enabled'), integerField(body, 'rateBasisPoints'), expected(context.expectedVersion));
+    const model = new ReferralProduct(
+      product,
+      access.scope.id,
+      product,
+      booleanField(body, 'enabled'),
+      integerField(body, 'rateBasisPoints'),
+      integerField(body, 'rewardBasisPoints'),
+      expected(context.expectedVersion)
+    );
     const result = await this.referrals.manageProduct(context.transaction, {
       id: model.id,
       scopeId: model.scopeId,
       productId: model.productId,
       enabled: model.enabled,
       rateBasisPoints: model.rate.basisPoints,
+      rewardBasisPoints: model.rewardRate.basisPoints,
       expectedVersion: model.version,
     });
     return { status: 200, body: result as OperationOutputFor<'referral.products.manage'> };

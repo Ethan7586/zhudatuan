@@ -12,8 +12,16 @@ describe('AssignmentPolicy', () => {
 
   it('requires an active matching rule when rules are configured', () => {
     const policy = new AssignmentPolicy();
-    const rule = new AssignmentRule('rule:one', 'mall:one', 'vip', ['urgent'], 100, true);
+    const rule = new AssignmentRule('rule:one', 'mall:one', 'vip', ['urgent'], 100, true, 1);
     expect(policy.decide({ scope: 'mall:one', skill: 'general', priority: 'normal', agents: [agent('agent:a')], rules: [rule] })).toBeNull();
     expect(policy.decide({ scope: 'mall:one', skill: 'vip', priority: 'urgent', agents: [agent('agent:a', { skills: ['vip'] })], rules: [rule] })?.id).toBe('agent:a');
+  });
+
+  it('uses exactly the same eligibility rules for a requested manual assignee', () => {
+    const policy = new AssignmentPolicy();
+    const input = { scope: 'mall:one', skill: 'general', priority: 'normal' as const, agents: [agent('agent:full', { load: 10 }), agent('agent:ready')] };
+    expect(policy.select(input, 'agent:full')).toBeNull();
+    expect(policy.select(input, 'agent:ready')?.id).toBe('agent:ready');
+    expect(policy.decide(input)?.id).toBe('agent:ready');
   });
 });

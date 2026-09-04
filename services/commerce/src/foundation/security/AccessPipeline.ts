@@ -52,7 +52,18 @@ export class AccessPipeline {
       const risk = await this.risk.evaluate({ actor, operation, scope, trace, deadline, signal, ...(resource === undefined ? {} : { resource }) });
       assertRiskAllowed(risk.outcome);
       await this.decisions.append({ actor, operation, scope, outcome: 'allow', reason: 'POLICY_ALLOWED', trace, deadline, signal, ...(resource === undefined ? {} : { resource }) });
-      return { actor, membership, organization: snapshot.organization, scope, accessVersion: membership.accessVersion, capabilities, capabilityVersion: snapshot.capabilityVersion, assurance: actor.assurance, trace };
+      return {
+        actor,
+        membership,
+        roles: snapshot.roles,
+        organization: snapshot.organization,
+        scope,
+        accessVersion: membership.accessVersion,
+        capabilities,
+        capabilityVersion: snapshot.capabilityVersion,
+        assurance: actor.assurance,
+        trace,
+      };
     } catch (cause) {
       const reason = failureReason(cause);
       await this.decisions.append({

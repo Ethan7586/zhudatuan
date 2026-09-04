@@ -1,7 +1,7 @@
 import { identityLifecycle as operationLifecycle, type IdentityLifecycle as OperationLifecycle } from '../model/IdentityAction';
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
 
-import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
+import type { KmsClient } from '../../../../foundation/application/KmsPort';
 import type { IdentityMemberPort } from '../../../member/public';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import type { CredentialRepository, CredentialSecurity } from '../port/CredentialRepository';

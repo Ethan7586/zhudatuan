@@ -1,4 +1,6 @@
 import type { MembershipAccess, Scope } from '@shop/authz';
+import type { AuthorizationRole } from './AuthorizationSnapshot';
+import type { ClientTarget } from './OperationSecurityContext';
 
 export interface Actor {
   readonly id: string;
@@ -6,13 +8,14 @@ export interface Actor {
   readonly membership: string;
   readonly credentialVersion: number;
   readonly accessVersion: number;
-  readonly target: 'console' | 'storefront';
+  readonly target: ClientTarget;
   readonly assurance: Readonly<{ level: number; verified?: Date }>;
 }
 
 export interface AccessContext {
   readonly actor: Actor;
   readonly membership: MembershipAccess;
+  readonly roles: readonly AuthorizationRole[];
   readonly organization: string;
   readonly scope: Scope;
   readonly accessVersion: number;

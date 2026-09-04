@@ -1,5 +1,5 @@
 import { migrationEnvironment, processEnvironment } from '@shop/config/server';
-import { KmsClient } from '../foundation/infrastructure/KmsClient';
+import { HttpKmsClient } from '../foundation/infrastructure/KmsClient';
 import { MigrationRunner } from '../foundation/infrastructure/MigrationRunner';
 import { secretText, WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 import { createPool } from '../foundation/persistence/Pool';
@@ -10,7 +10,7 @@ if (!/^[a-z0-9][a-z0-9/._:-]{7,511}$/i.test(environment.snapshotRef)) throw new 
 const secrets = new WorkloadSecretStore(environment.secretStoreEndpoint, environment.secretStoreBearerToken);
 const connection = await secretText(secrets, environment.databaseConnectionRef, 'database');
 const pool = createPool(connection, 'migration');
-const runner = new MigrationRunner(pool, new KmsClient(environment.kmsEndpoint, environment.kmsBearerToken), environment.directory, {
+const runner = new MigrationRunner(pool, new HttpKmsClient(environment.kmsEndpoint, environment.kmsBearerToken), environment.directory, {
   distributorKeyRef: environment.distributorKeyRef,
   identityKeyRef: environment.identityKeyRef,
   partnerKeyRef: environment.partnerKeyRef,

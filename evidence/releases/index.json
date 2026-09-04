@@ -4,17 +4,14 @@
   "releaseEligible": false,
   "requirements": {
     "released": 0,
-    "required": 18,
-    "nonblocking": 4
+    "required": 22,
+    "nonblocking": 0
   },
   "providers": {
     "released": 0,
     "required": 11
   },
   "blockers": [
-    "MVPGROUPSETTING:grouprisk",
-    "MVPGROUPVOUCHER:voucherarchive",
-    "MVPMALLVOUCHER:voucherarchive",
     "SIGNED_RELEASE_EVIDENCE_REQUIRED"
   ]
 }

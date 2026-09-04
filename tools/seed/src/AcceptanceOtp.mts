@@ -31,7 +31,7 @@ try {
   const platform = await database.query('select min(capability_version) minimum,max(capability_version) maximum,count(*) capabilities from capability.navigation_capabilities($1)', [['organization-platform-root']]);
   const scopes = await database.query('select scope_kind,count(*) count from organization.navigation_scopes($1) group by scope_kind order by scope_kind', [[membership]]);
   const operations = await database.query(
-    "select operation_id from capability.membership_operations($1) where operation_id in('catalog.pools.read','voucher.cardlibraries.read','voucher.cardlibraries.create','channel.providers.read','member.profile.read','organization.layers.read') order by operation_id",
+    "select operation_id from capability.membership_operations($1) where operation_id in('catalog.pools.read','voucher.credentialpools.list','voucher.credentialpools.create','channel.providers.read','member.profile.read','organization.layers.read') order by operation_id",
     [membership]
   );
   const permissions = await database.query(

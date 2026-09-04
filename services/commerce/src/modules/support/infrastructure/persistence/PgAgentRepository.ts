@@ -3,7 +3,7 @@ import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionA
 import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationReply } from '../../../../foundation/application/OperationHandler';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, integerField, keysetPage, queryPage, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, integerField, keysetPage, queryPage, textField } from '../../../../foundation/application/Validation';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { AgentRepository } from '../../application/port/SupportRepositories';
 import type { AgentStore } from '../../application/port/SupportPersistence';

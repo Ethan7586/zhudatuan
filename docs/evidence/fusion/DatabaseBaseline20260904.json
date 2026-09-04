@@ -1,0 +1,62 @@
+{
+  "counts": {
+    "inbox": 100,
+    "orders": 1,
+    "outbox": 264,
+    "journals": 7,
+    "payments": 1,
+    "vouchers": 0,
+    "stockItems": 26,
+    "watermarks": 9,
+    "paymentIntents": 1,
+    "activeVoucherHolds": 0
+  },
+  "schema": "zhudatuan.database-baseline.v1",
+  "catalog": {
+    "events": 103,
+    "tables": 299,
+    "migrations": 316,
+    "operations": 276,
+    "publicTables": 0
+  },
+  "watermark": {
+    "lastAdvancedAt": "2026-09-02T20:27:55.048754+00:00",
+    "maximumVersion": 41,
+    "minimumVersion": 1
+  },
+  "capturedAt": "2026-09-04T07:53:43.886759+00:00",
+  "invariants": {
+    "pendingInbox": 0,
+    "pendingOutbox": 129,
+    "unbalancedJournals": 0
+  },
+  "environment": "local-deterministic",
+  "amountsMinor": {
+    "orders": 8900,
+    "captured": 8900,
+    "refunded": 0,
+    "voucherHeld": 0,
+    "financeDebit": 1621950,
+    "financeCredit": 1621950,
+    "benefitBalance": 1604150,
+    "paymentIntents": 8900,
+    "voucherInitial": 0,
+    "voucherRedeemed": 0,
+    "benefitRemaining": 591100,
+    "voucherRemaining": 0
+  },
+  "findings": [
+    {
+      "id": "benefit.globalbalance.delta",
+      "owner": "benefit",
+      "state": "open",
+      "valueMinor": 1013050
+    },
+    {
+      "id": "runtime.outbox.pending",
+      "owner": "runtime",
+      "state": "open",
+      "count": 129
+    }
+  ]
+}

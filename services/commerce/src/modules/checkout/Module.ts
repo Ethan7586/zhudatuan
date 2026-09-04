@@ -12,21 +12,22 @@ import { CHECKOUT_CATALOG_PORT } from '../catalog/public';
 import { CHECKOUT_EXPERIENCE_PORT } from '../experience/public';
 import { CHECKOUT_INVOICE_PORT } from '../finance/public';
 import { CHECKOUT_INVENTORY_PORT } from '../inventory/public';
-import { CHECKOUT_MARKETING_PORT } from '../marketing/public';
+import { MARKETING_READ_PORT, MARKETING_RESERVE_PORT } from '../marketing/public';
 import { MEMBER_ADDRESS_PORT } from '../member/public';
-import { CHECKOUT_ORDER_PORT } from '../order/public';
+import { ORDER_INTENT_PORT } from '../order/public';
 import { ORGANIZATION_READ_PORT } from '../organization/public';
-import { CHECKOUT_PAYMENT_PORT } from '../payment/public';
+import { CHECKOUT_HOLD_PORT, CHECKOUT_PAYMENT_PORT } from '../payment/public';
 import { CHECKOUT_PRICING_PORT } from '../pricing/public';
 import { CHECKOUT_QUALIFICATION_PORT } from '../qualification/public';
-import { CHECKOUT_RISK_PORT } from '../risk/public';
+import { RISK_DECISION_PORT } from '../risk/public';
 import { CHECKOUT_VOUCHER_PORT } from '../voucher/public';
 import { Manifest } from './Manifest';
 import { ConfirmQuoteHandler } from './application/handler/ConfirmQuoteHandler';
 import { QuoteCreateHandler } from './application/handler/QuoteCreateHandler';
 import { QuotesCurrentReadHandler } from './application/handler/QuotesCurrentReadHandler';
 import { RUNTIME_CHECKOUT_PORT } from './public';
-import { CheckoutConfirmationService } from './infrastructure/persistence/CheckoutConfirmationService';
+import { ConfirmCheckout } from './application/service/ConfirmCheckout';
+import { CheckoutReservations } from './application/service/CheckoutReservations';
 import { CheckoutPort } from './application/service/CheckoutPort';
 import { QuoteReader } from './application/service/QuoteReader';
 import { CurrentQuoteReader } from './infrastructure/persistence/CurrentQuoteReader';
@@ -46,6 +47,10 @@ export const CheckoutModule = defineModule(Manifest, {
     const voucher = context.ports.get(CHECKOUT_VOUCHER_PORT);
     const transactions = new PgTransactionAccess();
     const address = context.ports.get(MEMBER_ADDRESS_PORT);
+    const inventory = context.ports.get(CHECKOUT_INVENTORY_PORT);
+    const marketing = context.ports.get(MARKETING_RESERVE_PORT);
+    const orders = context.ports.get(ORDER_INTENT_PORT);
+    const payment = context.ports.get(CHECKOUT_PAYMENT_PORT);
     const checkout = new CheckoutPort(
       context.service(SECURITY_KEYS).quote,
       new QuoteReader({
@@ -56,11 +61,12 @@ export const CheckoutModule = defineModule(Manifest, {
         catalog: context.ports.get(CHECKOUT_CATALOG_PORT),
         experience: context.ports.get(CHECKOUT_EXPERIENCE_PORT),
         invoice: context.ports.get(CHECKOUT_INVOICE_PORT),
-        inventory: context.ports.get(CHECKOUT_INVENTORY_PORT),
-        marketing: context.ports.get(CHECKOUT_MARKETING_PORT),
-        orders: context.ports.get(CHECKOUT_ORDER_PORT),
+        inventory,
+        marketing: context.ports.get(MARKETING_READ_PORT),
+        orders,
         pricing,
         qualification: context.ports.get(CHECKOUT_QUALIFICATION_PORT),
+        risk: context.ports.get(RISK_DECISION_PORT),
         voucher,
       })
     );
@@ -68,22 +74,17 @@ export const CheckoutModule = defineModule(Manifest, {
     const outbox = new PgOutbox(new PgTransactionManager(pool));
     const creator = new QuoteCreator(checkout, pricing, sessions, outbox, SystemClock);
     const current = new CurrentQuoteReader(members, checkout, sessions, pricing);
-    const confirmation = new CheckoutConfirmationService(
+    const reservations = new CheckoutReservations(inventory, voucher, marketing, benefit, context.ports.get(CHECKOUT_HOLD_PORT));
+    const confirmation = new ConfirmCheckout(
       checkout,
       members,
       sessions,
       pricing,
-      address,
       context.ports.get(CHECKOUT_CART_PORT),
-      context.ports.get(CHECKOUT_INVENTORY_PORT),
-      benefit,
-      voucher,
-      context.ports.get(CHECKOUT_MARKETING_PORT),
-      context.ports.get(CHECKOUT_ORDER_PORT),
-      context.ports.get(CHECKOUT_PAYMENT_PORT),
-      context.ports.get(CHECKOUT_INVOICE_PORT),
+      reservations,
+      orders,
+      payment,
       context.ports.get(ORGANIZATION_READ_PORT),
-      context.ports.get(CHECKOUT_RISK_PORT),
       outbox
     );
     const quotes = new PgQuoteRepository(transactions, creator, current);

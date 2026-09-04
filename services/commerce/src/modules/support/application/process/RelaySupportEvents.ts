@@ -1,33 +1,23 @@
 import { COMMERCE_EVENTS } from '@shop/contract';
 import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import type { RealtimePort, SupportRealtimeEvent } from '../port/RealtimePort';
+import type { RealtimePort, SupportReplayPort } from '../port/RealtimePort';
 import type { OutboxRelayPort } from '../../../runtime/public';
 import type { SupportJobExecution } from './RunSupportJob';
 
 const supportEvents: ReadonlySet<string> = new Set(COMMERCE_EVENTS.filter(({ module }) => module === 'support').map(({ type }) => type));
 
 export class RelaySupportEvents {
-  constructor(private readonly transactions: TransactionManager, private readonly outbox: OutboxRelayPort, private readonly realtime: RealtimePort) {}
+  constructor(private readonly transactions: TransactionManager, private readonly outbox: OutboxRelayPort, private readonly realtime: RealtimePort, private readonly replay: SupportReplayPort) {}
 
   async execute(id: string, execution: SupportJobExecution): Promise<void> {
-    const event = await this.transactions.write(options(execution), (context) => this.outbox.claim(context, { event: id, worker: execution.trace, prefix: 'support.' }));
+    const event = await this.transactions.write(options(execution), async (context) => {
+      const claimed = await this.outbox.claim(context, { event: id, worker: execution.trace, prefix: 'support.' });
+      return claimed ? this.replay.authoritative(context, claimed) : null;
+    });
     if (!event) return;
     if (!supportEvents.has(event.type)) throw new Error('SUPPORT_RELAY_EVENT_UNDECLARED');
-    const output = Object.freeze({
-      id: event.id,
-      type: event.type,
-      scopeId: event.scope,
-      ticketId: text(event.payload.ticketId) ?? event.aggregate,
-      conversationId: text(event.payload.conversationId) ?? event.aggregate,
-      ...(text(event.payload.memberId) === null ? {} : { memberId: text(event.payload.memberId)! }),
-      ...(typeof event.payload.messageId === 'string' ? { messageId: event.payload.messageId } : {}),
-      ...(typeof event.payload.evidenceId === 'string' ? { evidenceId: event.payload.evidenceId } : {}),
-      ...(Number.isSafeInteger(event.payload.sequence) ? { sequence: Number(event.payload.sequence) } : {}),
-      ...(Number.isSafeInteger(event.payload.version) ? { version: Number(event.payload.version) } : {}),
-      occurredAt: event.occurredAt,
-    }) as SupportRealtimeEvent;
     try {
-      const cursor = await this.realtime.publish(output);
+      const cursor = await this.realtime.publish(event);
       await this.transactions.write(options(execution), (context) => this.outbox.complete(context, { event: id, cursor, worker: execution.trace }));
     } catch (cause) {
       const reason = cause instanceof Error ? cause.message.slice(0, 120) : 'SUPPORT_RELAY_FAILED';
@@ -35,10 +25,6 @@ export class RelaySupportEvents {
       throw cause;
     }
   }
-}
-
-function text(value: unknown): string | null {
-  return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
 function options(execution: SupportJobExecution) {

@@ -10,9 +10,9 @@ export interface RecoveryPage {
 }
 
 export interface RecoveryRepository {
-  read(context: ReadTransactionContext, input: Readonly<{ scope: string; page: RecoveryPage }>): Promise<Readonly<Record<string, unknown>>>;
+  read(context: ReadTransactionContext, input: Readonly<{ scope: string; order: string | null; page: RecoveryPage }>): Promise<Readonly<Record<string, unknown>>>;
   resolve(
     context: WriteTransactionContext,
-    input: Readonly<{ case: string; action: RecoveryAction; reason: string; scope: string; actor: string; membership: string; trace: string; idempotency: string }>
+    input: Readonly<{ case: string; action: RecoveryAction; reason: string; scope: string; actor: string; membership: string; trace: string; idempotency: string; expectedVersion: number }>
   ): Promise<Readonly<{ case: string; request: string; action: RecoveryAction; state: 'resolved' | 'accepted' }>>;
 }

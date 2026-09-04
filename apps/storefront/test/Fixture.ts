@@ -53,6 +53,10 @@ export function profileFixture(overrides: Partial<Profile> = {}): Profile {
     phoneVerified: true,
     paymentEligible: true,
     accessVersion: 1,
+    locale: 'zh-CN',
+    timezone: 'Asia/Shanghai',
+    marketingAllowed: false,
+    preferenceVersion: 1,
     ...overrides,
   };
 }

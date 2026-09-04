@@ -4,5 +4,5 @@ export const ControlManifest = defineComponent({
   component: 'control',
   navigationids: ['platformcontrol', 'distributioncontrol', 'groupcontrol', 'mallcontrol'],
   routes: [{ routeid: 'consolecontrol' }],
-  load: () => import('./ControlRoute'),
+  load: () => import('./route/ControlRoute'),
 });

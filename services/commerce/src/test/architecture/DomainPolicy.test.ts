@@ -3,8 +3,10 @@ import { Money } from '@shop/kernel';
 import { CheckoutPolicy } from '../../modules/checkout/domain/policy/CheckoutPolicy';
 import { PublishPolicy } from '../../modules/experience/domain/policy/PublishPolicy';
 import { PostingPolicy } from '../../modules/finance/domain/policy/PostingPolicy';
+import { AccountCode } from '../../modules/finance/domain/value/AccountCode';
 import { PasswordPolicy } from '../../modules/identity/domain/policy/PasswordPolicy';
-import { available, Reservation } from '../../modules/inventory/domain/model/Reservation';
+import { Reservation } from '../../modules/inventory/domain/model/Reservation';
+import { available } from '../../modules/inventory/domain/model/StockItem';
 import { Order } from '../../modules/order/domain/model/Order';
 import { AllocationPolicy } from '../../modules/payment/domain/policy/AllocationPolicy';
 import { RiskPolicy } from '../../modules/risk/domain/model/RiskPolicy';
@@ -15,20 +17,20 @@ import { Ticket } from '../../modules/support/domain/model/Ticket';
 import { Template } from '../../modules/notification/domain/model/Template';
 import { Announcement } from '../../modules/notification/domain/model/Announcement';
 import { Preference } from '../../modules/notification/domain/model/Preference';
-import { VoucherPolicy } from '../../modules/voucher/domain/policy/VoucherPolicy';
+import { Voucher } from '../../modules/voucher/domain/model/Voucher';
 
 describe('high-risk domain invariants', () => {
   it('rejects stale checkout evidence and invalid publication evidence', () => {
     expect(() => new CheckoutPolicy().assertVersions({ price: 2, stock: 4 }, { price: 2, stock: 3 })).toThrow('CHECKOUT_VERSION_CONFLICT:stock');
-    expect(() => new PublishPolicy().assertPublishable({ schema: true, assets: true, actions: false, capabilities: true, bindings: true, preview: true })).toThrow('EXPERIENCE_PUBLICATION_INVALID');
+    expect(() => new PublishPolicy().assertPublishable([{ code: 'ACTION_TARGET_INVALID', path: 'pages.0.blocks.0.action', message: '跳转无效' }])).toThrow('EXPERIENCE_PUBLICATION_INVALID');
   });
 
   it('preserves finance balance and original-tender refund limits', () => {
     const cny = (minor: number) => Money.of(minor, 'CNY');
     expect(() =>
       new PostingPolicy().assertBalanced([
-        { side: 'debit', amount: cny(100) },
-        { side: 'credit', amount: cny(99) },
+        { account: AccountCode.of('cash', 'asset'), side: 'debit', amount: cny(100) },
+        { account: AccountCode.of('commerce.clearing', 'income'), side: 'credit', amount: cny(99) },
       ])
     ).toThrow('FINANCE_JOURNAL_UNBALANCED');
     expect(
@@ -50,16 +52,18 @@ describe('high-risk domain invariants', () => {
 
   it('keeps inventory, order and voucher state machines final', () => {
     expect(available(10, 4, 2)).toBe(4);
-    const reservation = new Reservation('reservation', 1);
-    reservation.commit();
+    const reservation = Reservation.reserve({ id: 'reservation:one', stockitem: 'stock:one', ownerKind: 'order', owner: 'order:one', quantity: 1,
+      createdAt: '2026-09-05T00:00:00.000Z', expiresAt: '2026-09-05T00:30:00.000Z' }).commit(new Date('2026-09-05T00:01:00.000Z'));
     expect(() => reservation.release()).toThrow('INVENTORY_RESERVATION_FINAL');
     expect(() => new Order('order', 'cancelled', 'paid', 'shipped', 'none').assertCancellable()).toThrow('ORDER_NOT_CANCELLABLE');
-    expect(() => new VoucherPolicy().assertTransition('redeemed', 'active')).toThrow('VOUCHER_STATE_INVALID');
+    const voucher = new Voucher({ id: 'voucher', credential: 'credential', product: 'product', holder: 'holder', initialMinor: 100,
+      remainingMinor: 0, state: 'redeemed', startsAt: new Date('2026-09-04T00:00:00.000Z'), expiresAt: new Date('2026-09-06T00:00:00.000Z'), version: 2 });
+    expect(() => voucher.activate(new Date('2026-09-05T00:00:00.000Z'))).toThrow('VOUCHER_STATE_INVALID');
   });
 
   it('uses deterministic risk precedence and least-loaded support assignment', () => {
     const engine = new RiskEngine();
-    const decision = (rule: unknown, actor: string, operation: string) => engine.evaluate(new RiskPolicy('policy', 1, rule, 100).rule, { actor, operation, amountMinor: null, velocity: 0, blocked: false, signals: [] }).outcome;
+    const decision = (rule: unknown, actor: string, operation: string) => engine.evaluate(new RiskPolicy('policy', 1, rule, 100), { actor, operation, resource: null, amountMinor: null, velocity: 0, blocked: false, signals: [] }).outcome;
     expect(decision({ blockedActors: ['actor'], challengeOperations: ['payment'] }, 'actor', 'payment')).toBe('deny');
     expect(decision({ reviewOperations: ['refund'], challengeOperations: ['refund'] }, 'other', 'refund')).toBe('review');
     const selected = new AssignmentPolicy().decide({
@@ -71,9 +75,9 @@ describe('high-risk domain invariants', () => {
       skill: 'order',
     });
     expect(selected?.id).toBe('a');
-    const rules = [new AssignmentRule('rule', 'mall', 'order', ['urgent'], 100, true)];
+    const rules = [new AssignmentRule('rule', 'mall', 'order', ['urgent'], 100, true, 1)];
     expect(new AssignmentPolicy().decide({ agents: [{ id: 'a', online: true, state: 'available', load: 0, capacity: 10, skills: ['order'], scopes: ['mall'], lastAssignedAt: null }], rules, scope: 'mall', skill: 'order', priority: 'normal' })).toBeNull();
-    const ticket = new Ticket('ticket', 'conversation', 'mall', 'urgent', 'resolved', 1);
+    const ticket = new Ticket('ticket', 'conversation', 'mall', 'urgent', 'resolved', null, null, 1);
     ticket.requireTransition('closed');
     expect(() => ticket.requireTransition('assigned')).toThrow('SUPPORT_TICKET_TRANSITION_INVALID');
   });

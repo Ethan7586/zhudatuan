@@ -11,7 +11,6 @@ import type {
   WechatRefundNotificationSummary,
 } from './NotificationModels';
 import { verifyWechatPaySignedBody, type WechatPaySignatureHeaders } from './Signature';
-
 export function readWechatPayNotificationKind(body: string): WechatPayNotificationKind {
   if (new TextEncoder().encode(body).byteLength > 64 * 1024) {
     throw new WechatPayProtocolError('WECHAT_PAY_NOTIFICATION_TOO_LARGE');

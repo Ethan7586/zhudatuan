@@ -8,6 +8,7 @@ import type { InvitationRepository } from '../port/InvitationRepository';
 import type { InvitationHashPort } from '../port/InvitationSecurity';
 
 const DECOY = InvitationCode.issue(Buffer.alloc(24));
+const EXPLAINABLE_STATES = new Set(['INVITATION_ACCEPTED', 'INVITATION_EXPIRED', 'INVITATION_REVOKED']);
 
 export class InvitationLookup {
   constructor(
@@ -15,11 +16,11 @@ export class InvitationLookup {
     private readonly hasher: InvitationHashPort
   ) {}
 
-  find(database: ReadTransactionContext, raw: unknown, target: 'console' | 'storefront'): Promise<Invitation> {
+  find(database: ReadTransactionContext, raw: unknown, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<Invitation> {
     return this.resolve(raw, (hashes) => this.repository.find(database, hashes, target));
   }
 
-  lock(database: WriteTransactionContext, raw: unknown, target: 'console' | 'storefront'): Promise<Invitation> {
+  lock(database: WriteTransactionContext, raw: unknown, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<Invitation> {
     return this.resolve(raw, (hashes) => this.repository.lock(database, hashes, target));
   }
 
@@ -36,6 +37,7 @@ export class InvitationLookup {
     try {
       invitation = await lookup(this.hasher.candidates(code));
     } catch (cause) {
+      if (cause instanceof DomainError && EXPLAINABLE_STATES.has(cause.code)) throw cause;
       if (cause instanceof ApplicationError) throw new DomainError('INVITATION_INVALID');
       throw cause;
     }

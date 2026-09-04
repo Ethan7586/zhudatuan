@@ -1,13 +1,14 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { CatalogPartnerPort } from '../../public/CatalogPartnerPort';
 export class PgCatalogPartnerPort implements CatalogPartnerPort {
   private readonly transactions = new PgTransactionAccess();
-  async scope(context: ReadTransactionContext, partner: string): Promise<string | null> {
+  async scopes(context: ReadTransactionContext, partners: readonly string[]): Promise<ReadonlyMap<string, string>> {
+    if (partners.length === 0) return new Map();
     const database = this.transactions.database(context);
-    const result = await database.query<{
-      scope_id: string;
-    }>(`select scope_id from partner.partner where id=$1 and status='active'`, [partner]);
-    return result.rows[0]?.scope_id ?? null;
+    const result = await database.query<{ id: string; scope_id: string }>(
+      `select id,scope_id from partner.partner where id=any($1::text[]) and status='active' order by id`, [partners]
+    );
+    return new Map(result.rows.map(({ id, scope_id }) => [id, scope_id]));
   }
 }

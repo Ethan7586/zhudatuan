@@ -3,7 +3,7 @@ import type { CommitContext, FinalizeContext, PrepareContext } from '../../../..
 import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { AfterSaleRepository } from '../port/AfterSaleRepository';
-import { AfterSaleAttachmentService, type VerifiedAfterSaleAttachment } from '../service/AfterSaleAttachmentService';
+import { AfterSaleAttachment, type VerifiedAfterSaleAttachment } from '../service/AfterSaleAttachment';
 
 type Reply = OperationReply<OperationOutputFor<'order.aftersales.apply'>>;
 
@@ -12,7 +12,7 @@ export class AfterSalesApplyHandler implements DurableOperationHandler<'order.af
   readonly mode = 'write' as const;
   constructor(
     private readonly afterSales: AfterSaleRepository,
-    private readonly attachments: AfterSaleAttachmentService
+    private readonly attachments: AfterSaleAttachment
   ) {}
   prepare(input: OperationInputFor<'order.aftersales.apply'>, context: PrepareContext<'order.aftersales.apply'>): Promise<readonly VerifiedAfterSaleAttachment[]> {
     return this.attachments.verify(input, requireSession(context.security).membership.id);

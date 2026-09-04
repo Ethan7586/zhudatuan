@@ -1,5 +1,5 @@
 import { Button } from '@shop/design';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Rule, RuleChange } from '../model/SupportConfig';
 
 type Body = RuleChange;
@@ -11,7 +11,7 @@ export function RuleSettings({ rows, busy, disabled, onSave }: Readonly<{ rows: 
   const [priorities, setPriorities] = useState<Body['priorities']>(row?.priorities ?? ['normal']);
   const [weight, setWeight] = useState(row?.weight ?? 100);
   const [state, setState] = useState<Body['state']>(row?.state ?? 'active');
-  const edit = (value: string) => {
+  const edit = useCallback((value: string) => {
     const found = rows.find((item) => item.id === value);
     setId(value);
     if (found) {
@@ -21,7 +21,7 @@ export function RuleSettings({ rows, busy, disabled, onSave }: Readonly<{ rows: 
       setWeight(found.weight);
       setState(found.state);
     }
-  };
+  }, [rows]);
   const create = () => {
     setId(`rule:${crypto.randomUUID()}`);
     setName('');
@@ -32,7 +32,7 @@ export function RuleSettings({ rows, busy, disabled, onSave }: Readonly<{ rows: 
   };
   useEffect(() => {
     if (!row && rows[0] && name === '默认分配') edit(rows[0].id);
-  }, [rows]);
+  }, [edit, name, row, rows]);
   return (
     <section className="supportsettingsection">
       <header>
@@ -40,11 +40,11 @@ export function RuleSettings({ rows, busy, disabled, onSave }: Readonly<{ rows: 
           <h2>分配规则</h2>
           <p>按数据范围、技能、容量、权重和稳定顺序分配。</p>
         </div>
-        <Button onPress={create}>新增规则</Button>
+        <Button onPress={create} isDisabled={disabled}>新增规则</Button>
       </header>
       <label>
         选择规则
-        <select value={id} onChange={(event) => edit(event.target.value)}>
+        <select value={id} onChange={(event) => edit(event.target.value)} disabled={disabled}>
           {row ? null : <option value={id}>新规则</option>}
           {rows.map((item) => (
             <option key={item.id} value={item.id}>
@@ -56,11 +56,11 @@ export function RuleSettings({ rows, busy, disabled, onSave }: Readonly<{ rows: 
       <div className="supportsettingsgrid">
         <label>
           规则名称
-          <input value={name} onChange={(event) => setName(event.target.value)} />
+          <input value={name} onChange={(event) => setName(event.target.value)} disabled={disabled} />
         </label>
         <label>
           技能
-          <select value={skill} onChange={(event) => setSkill(event.target.value)}>
+          <select value={skill} onChange={(event) => setSkill(event.target.value)} disabled={disabled}>
             <option value="general">通用服务</option>
             {rows
               .filter((item) => item.skill !== 'general')
@@ -73,7 +73,7 @@ export function RuleSettings({ rows, busy, disabled, onSave }: Readonly<{ rows: 
         </label>
         <label>
           优先级
-          <select multiple value={[...priorities]} onChange={(event) => setPriorities([...event.currentTarget.selectedOptions].map((item) => item.value as Body['priorities'][number]))}>
+          <select multiple value={[...priorities]} onChange={(event) => setPriorities([...event.currentTarget.selectedOptions].map((item) => item.value as Body['priorities'][number]))} disabled={disabled}>
             <option value="urgent">紧急</option>
             <option value="high">高</option>
             <option value="normal">普通</option>
@@ -82,11 +82,11 @@ export function RuleSettings({ rows, busy, disabled, onSave }: Readonly<{ rows: 
         </label>
         <label>
           权重
-          <input type="number" min={0} value={weight} onChange={(event) => setWeight(Number(event.target.value))} />
+          <input type="number" min={0} value={weight} onChange={(event) => setWeight(Number(event.target.value))} disabled={disabled} />
         </label>
         <label>
           状态
-          <select value={state} onChange={(event) => setState(event.target.value as Body['state'])}>
+          <select value={state} onChange={(event) => setState(event.target.value as Body['state'])} disabled={disabled}>
             <option value="active">启用</option>
             <option value="disabled">禁用</option>
           </select>

@@ -1,4 +1,5 @@
 version: 4
+owner: product
 sheets:
   - { name: 1-平台层, label: 平台层, prefix: PLAT, start: 4, end: 71, level: platform, role: platformoperator, scope: platform }
   - { name: 2-分销层, label: 分销层, prefix: DIST, start: 4, end: 44, level: distribution, role: distributoroperator, scope: distributor }
@@ -11,11 +12,11 @@ sheets:
 providers:
   - { id: jdproduct, row: 2, core: jdcore }
   - { id: jdfresh, row: 3, core: jdcore }
-  - { id: tmall, row: 4, core: tmallcore }
+  - { id: tmall, row: 4, core: self }
   - { id: supplier, row: 5, core: local }
   - { id: cake, row: 6, core: cakecore }
   - { id: flower, row: 7, core: cakecore }
-  - { id: book, row: 8, core: bookcore }
+  - { id: book, row: 8, core: self }
   - { id: charge, row: 9, core: wanliancore }
   - { id: foodvoucher, row: 10, core: cakecore }
   - { id: movie, row: 11, core: wanliancore }
@@ -34,20 +35,20 @@ mvp:
     title: 平台基础
     source: { sheet: MVP上线功能清单, row: 3, range: A3:F3 }
     status: Designed
-    release: nonblocking
+    release: required
     modules: [organization, catalog, voucher]
-    directOperations: [organization.layers.read, catalog.pools.read, voucher.cardlibraries.read, voucher.cardlibraries.create]
+    directOperations: [organization.layers.read, catalog.pools.read, voucher.credentialpools.list, voucher.credentialpools.create]
     transitiveOperations: []
     journeys: [tests/journey/PlatformJourney.spec.ts]
     providers: []
     clarifications: []
     runbook: catalogsync
-    tables: [organization.organization, catalog.poolbinding, voucher.cardpool]
+    tables: [organization.organization, catalog.poolbinding, voucher.credentialpool]
   - id: MVPDISTRIBUTION
     title: 分销层
     source: { sheet: MVP上线功能清单, row: 4, range: A4:F4 }
     status: Designed
-    release: nonblocking
+    release: required
     modules: [organization, channel, capability, partner, referral]
     directOperations: [channel.distributors.read]
     transitiveOperations: []
@@ -113,19 +114,19 @@ mvp:
     source: { sheet: MVP上线功能清单, row: 9, range: A9:F9 }
     status: Designed
     release: required
-    modules: [voucher, benefit]
-    directOperations: [voucher.cardlibraries.read]
+    modules: [voucher, partner, approval, benefit]
+    directOperations: &vouchermvpoperations [voucher.products.create, voucher.products.revise, voucher.products.enable, voucher.products.disable, voucher.products.get, voucher.products.list, voucher.productoptions.list, voucher.credentialpools.create, voucher.credentials.generate, voucher.credentials.import, voucher.credentialpools.close, voucher.credentialpools.get, voucher.credentialpools.list, voucher.credentials.list, voucher.credentials.get, voucher.credentialexports.create, voucher.jobs.get, voucher.stockrequests.create, voucher.stockrequests.update, voucher.stockrequests.submit, voucher.stockrequests.cancel, voucher.stockrequests.get, voucher.stockrequests.list, voucher.stockrequestoptions.list, voucher.issueorders.create, voucher.issueorders.update, voucher.issueorders.submit, voucher.issueorders.cancel, voucher.issueorders.get, voucher.issueorders.list, voucher.issuebatches.retry, voucher.issuebatches.get, voucher.issueorderexports.create, voucher.actionbatches.create, voucher.actionbatches.get, voucher.actionbatches.list, voucher.actionbatches.retry, voucher.actionexports.create, voucher.search.read, voucher.activations.secret, voucher.activations.numbersecret, voucher.vouchers.bind, voucher.vouchers.unbind, voucher.vouchers.get, voucher.vouchers.getbynumber, voucher.vouchers.timeline, voucher.redemptions.quote, voucher.tenderholds.create, voucher.tenderholds.consume, voucher.tenderholds.release, voucher.redemptions.create, voucher.refunds.create, voucher.redemptions.get, voucher.searchfacets.read, voucher.searchsnapshots.create, voucher.searchexports.create, voucher.exports.get, partner.customers.create, partner.customers.list, approval.templates.list, approval.templates.revise, approval.templates.enable, approval.templates.disable, approval.tasks.approve, approval.tasks.reject]
     transitiveOperations: []
     journeys: [tests/journey/GroupVoucherJourney.spec.ts]
     providers: []
     clarifications: [voucherarchive]
     runbook: benefitgrant
-    tables: [voucher.program, voucher.reserverequest, voucher.voucher, voucher.redemption]
+    tables: [partner.customer, voucher.product, voucher.credentialpool, voucher.stockrequest, voucher.issueorder, voucher.issuebatch, voucher.voucher, voucher.redemption]
   - id: MVPGROUPFINANCE
     title: 集团财务
     source: { sheet: MVP上线功能清单, row: 10, range: A10:F10 }
     status: Designed
-    release: nonblocking
+    release: required
     modules: [finance]
     directOperations: [finance.overview.read]
     transitiveOperations: []
@@ -230,19 +231,19 @@ mvp:
     source: { sheet: MVP上线功能清单, row: 18, range: A18:F18 }
     status: Designed
     release: required
-    modules: [voucher, benefit]
-    directOperations: [voucher.cardlibraries.read]
+    modules: [voucher, partner, approval, benefit]
+    directOperations: *vouchermvpoperations
     transitiveOperations: []
     journeys: [tests/journey/MallVoucherJourney.spec.ts]
     providers: []
     clarifications: [voucherarchive]
     runbook: voucherexpiry
-    tables: [voucher.voucher, voucher.redemption, voucher.reversal]
+    tables: [partner.customer, voucher.product, voucher.stockrequest, voucher.voucher, voucher.tenderhold, voucher.redemption, voucher.refund]
   - id: MVPMALLFINANCE
     title: 商城财务
     source: { sheet: MVP上线功能清单, row: 19, range: A19:F19 }
     status: Designed
-    release: nonblocking
+    release: required
     modules: [finance]
     directOperations: [finance.overview.read]
     transitiveOperations: []
@@ -320,52 +321,52 @@ clarifications:
   - id: distributiondefinition
     requirements: [MVPDISTRIBUTION]
     term: 分销层
-    status: open
+    status: resolved
     blocking: false
     owner: product
-    acceptance: null
-    resolvedby: null
-    reason: 工作簿功能说明为空且备注为忽略，只记录定义缺口，不阻塞本次MVP发布
+    acceptance: 分销层定义为平台与租户之间的业务范围，拥有集团绑定、配额、佣金和渠道治理职责
+    resolvedby: docs/architecture/福利商城理想方案20260904.md
+    reason: 理想方案已给出唯一范围模型和分销层职责，历史“忽略”备注不再降低发布要求
   - id: voucherarchive
     requirements: [MVPGROUPVOUCHER, MVPMALLVOUCHER]
     term: 客户管理与产品档案
-    status: open
+    status: resolved
     blocking: true
     owner: product
-    acceptance: null
-    resolvedby: null
-    reason: 工作簿明确标记第1点待确认，签字前不能标记Released
+    acceptance: 客户归 Partner Customer 子域，产品档案归 Rich Voucher Product 与 Catalog，不在 Voucher 建第二份客户或商品主数据
+    resolvedby: docs/architecture/福利商城理想方案20260904.md
+    reason: 理想方案已经裁决归属，历史待确认项转换为必须通过的实现与迁移验收
   - id: grouprisk
     requirements: [MVPGROUPSETTING]
     term: 集团风控设置
-    status: open
+    status: resolved
     blocking: true
     owner: product
-    acceptance: null
-    resolvedby: null
-    reason: 工作簿明确标记风控设置待确认，需定义策略对象和审批权限
+    acceptance: 集团风控使用 Risk Policy 和 Case 聚合，策略启用需 Step-up、MakerChecker 与 Approval 证据
+    resolvedby: docs/architecture/福利商城理想方案20260904.md
+    reason: 理想方案已经定义风险策略对象、审批边界和质量门，历史待确认项不再开放
 bindings:
   PLAT001: { 'module': 'reporting', 'operation': 'reporting.dashboard.read', 'route': '/scopes/:scopeKind/:scopeId/reporting', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'reporting.metric' }
   PLAT002: { 'module': 'reporting', 'operation': 'reporting.exports.create', 'route': '/scopes/:scopeKind/:scopeId/reporting', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'reporting.metric' }
   PLAT003: { 'module': 'reporting', 'operation': 'reporting.dashboard.read', 'route': '/scopes/:scopeKind/:scopeId/reporting', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'reporting.metric' }
   PLAT004: { 'module': 'reporting', 'operation': 'reporting.dashboard.read', 'route': '/scopes/:scopeKind/:scopeId/reporting', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'reporting.metric' }
   PLAT005: { 'module': 'pricing', 'operation': 'pricing.rules.create', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'pricing.rule' }
-  PLAT006: { 'module': 'access', 'operation': 'access.owners.transfer', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'access.membershiprole' }
+  PLAT006: { 'module': 'access', 'operation': 'access.ownership.transfers.create', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'access.ownershiptransfer' }
   PLAT007: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'organization.organization' }
   PLAT008: { 'module': 'pricing', 'operation': 'pricing.rules.create', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'pricing.rule' }
-  PLAT009: { 'module': 'access', 'operation': 'access.owners.transfer', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'access.membershiprole' }
+  PLAT009: { 'module': 'access', 'operation': 'access.ownership.transfers.create', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'access.ownershiptransfer' }
   PLAT010: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'organization.organization' }
-  PLAT011: { 'module': 'access', 'operation': 'access.owners.transfer', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'access.membershiprole' }
+  PLAT011: { 'module': 'access', 'operation': 'access.ownership.transfers.create', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'access.ownershiptransfer' }
   PLAT012: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.assignment' }
   PLAT013: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.assignment' }
   PLAT014: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.assignment' }
-  PLAT015: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.voucher' }
-  PLAT016: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.voucher' }
-  PLAT017: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.voucher' }
-  PLAT018: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.voucher' }
-  PLAT019: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.voucher' }
-  PLAT020: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.voucher' }
-  PLAT021: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.voucher' }
+  PLAT015: { 'module': 'voucher', 'operation': 'voucher.credentialpools.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.credentialpool' }
+  PLAT016: { 'module': 'partner', 'operation': 'partner.customers.list', 'route': '/scopes/:scopeKind/:scopeId/settings/partners', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'partner.customer' }
+  PLAT017: { 'module': 'voucher', 'operation': 'voucher.products.list', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.product' }
+  PLAT018: { 'module': 'voucher', 'operation': 'voucher.stockrequests.list', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.stockrequest' }
+  PLAT019: { 'module': 'voucher', 'operation': 'voucher.actionbatches.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.actionbatch' }
+  PLAT020: { 'module': 'voucher', 'operation': 'voucher.search.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.voucher' }
+  PLAT021: { 'module': 'voucher', 'operation': 'voucher.vouchers.timeline', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.redemption' }
   PLAT022: { 'module': 'finance', 'operation': 'finance.statements.export', 'route': '/scopes/:scopeKind/:scopeId/finance', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'finance.journal' }
   PLAT023: { 'module': 'finance', 'operation': 'finance.statements.export', 'route': '/scopes/:scopeKind/:scopeId/finance', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'finance.journal' }
   PLAT024: { 'module': 'finance', 'operation': 'finance.statements.export', 'route': '/scopes/:scopeKind/:scopeId/finance', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'finance.journal' }
@@ -418,14 +419,14 @@ bindings:
   DIST003: { 'module': 'reporting', 'operation': 'reporting.dashboard.read', 'route': '/scopes/:scopeKind/:scopeId/reporting', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'reporting.metric' }
   DIST004: { 'module': 'reporting', 'operation': 'reporting.dashboard.read', 'route': '/scopes/:scopeKind/:scopeId/reporting', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'reporting.metric' }
   DIST005: { 'module': 'pricing', 'operation': 'pricing.rules.create', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'pricing.rule' }
-  DIST006: { 'module': 'access', 'operation': 'access.owners.transfer', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'access.membershiprole' }
+  DIST006: { 'module': 'access', 'operation': 'access.ownership.transfers.create', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'access.ownershiptransfer' }
   DIST007: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'organization.organization' }
-  DIST008: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'voucher.voucher' }
-  DIST009: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'voucher.voucher' }
-  DIST010: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'voucher.voucher' }
-  DIST011: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'voucher.voucher' }
-  DIST012: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'voucher.voucher' }
-  DIST013: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'voucher.voucher' }
+  DIST008: { 'module': 'partner', 'operation': 'partner.customers.list', 'route': '/scopes/:scopeKind/:scopeId/settings/partners', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'partner.customer' }
+  DIST009: { 'module': 'voucher', 'operation': 'voucher.products.list', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'voucher.product' }
+  DIST010: { 'module': 'voucher', 'operation': 'voucher.stockrequests.list', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'voucher.stockrequest' }
+  DIST011: { 'module': 'voucher', 'operation': 'voucher.actionbatches.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'voucher.actionbatch' }
+  DIST012: { 'module': 'voucher', 'operation': 'voucher.search.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'voucher.voucher' }
+  DIST013: { 'module': 'voucher', 'operation': 'voucher.vouchers.timeline', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'voucher.redemption' }
   DIST014: { 'module': 'finance', 'operation': 'finance.statements.export', 'route': '/scopes/:scopeKind/:scopeId/finance', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'finance.journal' }
   DIST015: { 'module': 'finance', 'operation': 'finance.statements.export', 'route': '/scopes/:scopeKind/:scopeId/finance', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'finance.journal' }
   DIST016: { 'module': 'finance', 'operation': 'finance.statements.export', 'route': '/scopes/:scopeKind/:scopeId/finance', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'finance.journal' }
@@ -468,16 +469,16 @@ bindings:
   GROUP012: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/GroupSettingJourney.spec.ts', 'table': 'organization.organization' }
   GROUP013: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/GroupSettingJourney.spec.ts', 'table': 'organization.organization' }
   GROUP014: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/GroupSettingJourney.spec.ts', 'table': 'organization.organization' }
-  GROUP015: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
-  GROUP016: { 'module': 'order', 'operation': 'order.reminders.create', 'route': '/scopes/:scopeKind/:scopeId/orders', 'journey': 'tests/journey/GroupOrderJourney.spec.ts', 'table': 'ordering.orderrecord' }
-  GROUP017: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
-  GROUP018: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
-  GROUP019: { 'module': 'order', 'operation': 'order.reminders.create', 'route': '/scopes/:scopeKind/:scopeId/orders', 'journey': 'tests/journey/GroupOrderJourney.spec.ts', 'table': 'ordering.orderrecord' }
-  GROUP020: { 'module': 'order', 'operation': 'order.reminders.create', 'route': '/scopes/:scopeKind/:scopeId/orders', 'journey': 'tests/journey/GroupOrderJourney.spec.ts', 'table': 'ordering.orderrecord' }
-  GROUP021: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
-  GROUP022: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
-  GROUP023: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
-  GROUP024: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
+  GROUP015: { 'module': 'voucher', 'operation': 'voucher.searchfacets.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
+  GROUP016: { 'module': 'voucher', 'operation': 'voucher.issueorders.list', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.issueorder' }
+  GROUP017: { 'module': 'partner', 'operation': 'partner.customers.list', 'route': '/scopes/:scopeKind/:scopeId/settings/partners', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'partner.customer' }
+  GROUP018: { 'module': 'voucher', 'operation': 'voucher.products.list', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.product' }
+  GROUP019: { 'module': 'voucher', 'operation': 'voucher.issueorders.list', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.issueorder' }
+  GROUP020: { 'module': 'voucher', 'operation': 'voucher.issueorders.list', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.issueorder' }
+  GROUP021: { 'module': 'voucher', 'operation': 'voucher.actionbatches.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.actionbatch' }
+  GROUP022: { 'module': 'voucher', 'operation': 'voucher.search.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
+  GROUP023: { 'module': 'voucher', 'operation': 'voucher.search.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
+  GROUP024: { 'module': 'benefit', 'operation': 'benefit.grants.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'benefit.grantbatch' }
   GROUP025: { 'module': 'verification', 'operation': 'verification.challenges.issue', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'verification.challenge' }
   GROUP026: { 'module': 'order', 'operation': 'order.reminders.create', 'route': '/scopes/:scopeKind/:scopeId/orders', 'journey': 'tests/journey/GroupOrderJourney.spec.ts', 'table': 'ordering.orderrecord' }
   GROUP027: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.case' }
@@ -529,12 +530,12 @@ bindings:
   MALL005: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'organization.organization' }
   MALL006: { 'module': 'catalog', 'operation': 'catalog.pools.attach', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/MallProductJourney.spec.ts', 'table': 'catalog.product' }
   MALL007: { 'module': 'verification', 'operation': 'verification.challenges.issue', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/MallVoucherJourney.spec.ts', 'table': 'verification.challenge' }
-  MALL008: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/MallVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
-  MALL009: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/MallVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
-  MALL010: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/MallVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
-  MALL011: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/MallVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
+  MALL008: { 'module': 'voucher', 'operation': 'voucher.search.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/MallVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
+  MALL009: { 'module': 'benefit', 'operation': 'benefit.grants.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/MallVoucherJourney.spec.ts', 'table': 'benefit.grantbatch' }
+  MALL010: { 'module': 'benefit', 'operation': 'benefit.ledgers.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/MallVoucherJourney.spec.ts', 'table': 'finance.entry' }
+  MALL011: { 'module': 'marketing', 'operation': 'marketing.campaigns.read', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'marketing.campaign' }
   MALL012: { 'module': 'marketing', 'operation': 'marketing.campaigns.read', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'marketing.campaign' }
-  MALL013: { 'module': 'voucher', 'operation': 'voucher.cardlibraries.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/MallVoucherJourney.spec.ts', 'table': 'voucher.voucher' }
+  MALL013: { 'module': 'marketing', 'operation': 'marketing.campaigns.read', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'marketing.campaign' }
   MALL014: { 'module': 'marketing', 'operation': 'marketing.campaigns.read', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'marketing.campaign' }
   MALL015: { 'module': 'catalog', 'operation': 'catalog.pools.attach', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/MallProductJourney.spec.ts', 'table': 'catalog.product' }
   MALL016: { 'module': 'catalog', 'operation': 'catalog.pools.attach', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/MallProductJourney.spec.ts', 'table': 'catalog.product' }
@@ -547,7 +548,7 @@ bindings:
   MALL023: { 'module': 'member', 'operation': 'member.addresses.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'member.profile' }
   MALL024: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'organization.organization' }
   MALL025: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/MallSupportJourney.spec.ts', 'table': 'support.case' }
-  MALL026: { 'module': 'access', 'operation': 'access.owners.transfer', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'access.membershiprole' }
+  MALL026: { 'module': 'access', 'operation': 'access.ownership.transfers.create', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'access.ownershiptransfer' }
   MALL027: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'organization.organization' }
   MALL028: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'organization.organization' }
   MALL029: { 'module': 'reporting', 'operation': 'reporting.exports.create', 'route': '/scopes/:scopeKind/:scopeId/reporting', 'journey': 'tests/journey/MallDashboardJourney.spec.ts', 'table': 'reporting.metric' }
@@ -641,4 +642,3 @@ bindings:
   INTEG018: { 'module': 'channel', 'operation': 'channel.distributors.create', 'route': '/scopes/:scopeKind/:scopeId/channels', 'journey': 'tests/journey/ProviderJourney.spec.ts', 'table': 'channel.connection' }
   INTEG019: { 'module': 'channel', 'operation': 'channel.distributors.create', 'route': '/scopes/:scopeKind/:scopeId/channels', 'journey': 'tests/journey/ProviderJourney.spec.ts', 'table': 'channel.connection' }
   INTEG020: { 'module': 'channel', 'operation': 'channel.distributors.create', 'route': '/scopes/:scopeKind/:scopeId/channels', 'journey': 'tests/journey/ProviderJourney.spec.ts', 'table': 'channel.connection' }
-

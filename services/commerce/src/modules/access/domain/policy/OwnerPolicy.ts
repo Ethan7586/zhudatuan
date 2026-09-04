@@ -7,8 +7,8 @@ export interface OwnerTransferState {
   readonly scope: string;
   readonly currentOrganization: string;
   readonly targetOrganization: string;
-  readonly currentClient: 'console' | 'storefront';
-  readonly targetClient: 'console' | 'storefront';
+  readonly currentClient: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
+  readonly targetClient: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly currentStatus: string;
   readonly targetStatus: string;
   readonly roleKind: string;

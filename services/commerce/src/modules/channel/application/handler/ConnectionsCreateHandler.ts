@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord } from '../../../../foundation/interface/Validation';
+import { bodyRecord } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { ConnectionRepository } from '../port/ConnectionRepository';
 import { connectionConfiguration, connectionProvider, secretReference } from '../service/ConnectionConfiguration';
@@ -20,7 +20,7 @@ export class ConnectionsCreateHandler implements OperationHandler<'channel.conne
       scope: access.scope.id,
       actor: access.actor.id,
       trace: access.trace,
-      secretRef: secretReference(body),
+      secretRef: secretReference(body, false) ?? null,
       configuration: connectionConfiguration(body),
     });
     return { status: 201, body: created as OperationOutputFor<'channel.connections.create'> };

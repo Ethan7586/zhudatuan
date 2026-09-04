@@ -1,10 +1,15 @@
 import type { SupportAttachment } from './Attachment';
+import type { OperationOutputFor } from '@shop/contract';
+
+type MessageDto = OperationOutputFor<'support.messages.read'>['items'][number];
 
 export interface SupportMessage {
   readonly id: string;
   readonly clientMessageId: string;
-  readonly authorType: 'member' | 'agent';
+  readonly authorType: MessageDto['authorType'];
   readonly authorId: string;
+  readonly kind: MessageDto['kind'];
+  readonly visibility: MessageDto['visibility'];
   readonly body: string;
   readonly sequence: number;
   readonly version: number;

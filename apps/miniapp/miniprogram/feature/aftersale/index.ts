@@ -1,0 +1,1 @@
+export { AftersaleManifest } from './Manifest';

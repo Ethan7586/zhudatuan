@@ -1,0 +1,71 @@
+.financecommandform {
+  display: grid;
+  gap: 10px;
+}
+
+.financecommandform > label:not(.financecommandconfirm) {
+  display: grid;
+  gap: 5px;
+  color: var(--sw-text-secondary);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.financecommandform select,
+.financecommandform textarea,
+.financecommandform input[type='password'] {
+  width: 100%;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 5px;
+  background: var(--sw-surface);
+  color: var(--sw-text);
+  padding: 8px 10px;
+  font: inherit;
+}
+
+.financecommandform textarea { resize: vertical; }
+
+.financecommandconfirm {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 7px;
+  color: var(--sw-muted);
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.financecommandform > p { margin: 0; color: var(--sw-warning-strong); font-size: 9px; }
+
+.financecommandform > div,
+.financecommandreceipt > button {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.financecommandform button,
+.financecommandreceipt > button {
+  min-height: 34px;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 5px;
+  background: var(--sw-surface);
+  color: var(--sw-text);
+  padding: 0 12px;
+}
+
+.financecommandform .financesubmitreview {
+  border-color: var(--sw-brand);
+  background: var(--sw-brand);
+  color: var(--sw-surface);
+}
+
+.financecommandform button:disabled { opacity: 0.48; }
+.financecommandreceipt { display: grid; gap: 10px; }
+
+.financepreviewnotice {
+  display: block;
+  margin: 0 0 7px;
+  color: var(--sw-warning-strong);
+  font-size: 9px;
+  text-align: right;
+}

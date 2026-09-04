@@ -15,5 +15,14 @@ export interface NavigationInvalidationState {
 }
 
 export interface NavigationInvalidationPort extends NavigationInvalidationState {
-  invalidate(value: Readonly<{ event: string; principal?: string; membership?: string; scope?: string; catalog?: boolean }>): Promise<boolean>;
+  invalidate(
+    value: Readonly<{
+      event: string;
+      principals?: readonly string[];
+      memberships?: readonly string[];
+      scopes?: readonly string[];
+      targets?: readonly string[];
+      catalog?: boolean;
+    }>
+  ): Promise<boolean>;
 }

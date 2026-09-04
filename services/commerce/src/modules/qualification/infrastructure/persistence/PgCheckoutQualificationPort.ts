@@ -17,7 +17,7 @@ export class PgCheckoutQualificationPort implements CheckoutQualificationPort {
     const database = this.transactions.database(context);
     const result = await database.query<{
       id: string;
-      version: number;
+      policyVersion: number;
       hash: string;
       rule: Record<string, unknown>;
       resources: readonly Readonly<{
@@ -29,7 +29,7 @@ export class PgCheckoutQualificationPort implements CheckoutQualificationPort {
       quantity: number | null;
       amountMinor: number | null;
     }>(
-      `select policy.id,policy.active_version version,version.rule_hash hash,version.rule,
+      `select policy.id,policy.active_version "policyVersion",version.rule_hash hash,version.rule,
       coalesce((select jsonb_agg(jsonb_build_object('kind',resource.kind,'id',resource.resource_id)
         order by resource.kind,resource.resource_id) from qualification.resource resource
         where resource.policy_id=policy.id and resource.policy_version=policy.active_version),'[]') resources,

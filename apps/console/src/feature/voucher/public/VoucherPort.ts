@@ -1,16 +1,13 @@
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import type { VoucherProgramDraft, VoucherRecordPage, VoucherView } from '../model/Voucher';
+import type { VoucherChoiceKind, VoucherChoicePage, VoucherCommand, VoucherFacets, VoucherProgress, VoucherProgressKind, VoucherReadQuery, VoucherReceipt, VoucherRecord, VoucherRecordPage, VoucherTimeline, VoucherView } from '../model/Voucher';
 
 export interface VoucherPort {
-  read(context: ConsoleContext, view: VoucherView, cursor?: string, signal?: AbortSignal): Promise<VoucherRecordPage>;
-  createLibrary(context: ConsoleContext, prefix: string, identity: string, signal?: AbortSignal): Promise<void>;
-  allocateLibrary(context: ConsoleContext, input: Readonly<{ library: string; version: number; scope: string; count: number; proof: string; identity: string }>, signal?: AbortSignal): Promise<void>;
-  saveProgram(context: ConsoleContext, draft: VoucherProgramDraft, identity: string, signal?: AbortSignal): Promise<void>;
-  requestReserve(context: ConsoleContext, input: Readonly<{ program: string; count: number; reason: string; identity: string }>, signal?: AbortSignal): Promise<void>;
-  decideReserve(context: ConsoleContext, input: Readonly<{ reserve: string; version: number; decision: 'approved' | 'rejected'; reason: string; proof: string; identity: string }>, signal?: AbortSignal): Promise<void>;
-  issueBatch(context: ConsoleContext, input: Readonly<{ program: string; version: number; cardpool: string; count: number; reserve?: string; proof: string; identity: string }>, signal?: AbortSignal): Promise<void>;
-  retryBatch(context: ConsoleContext, input: Readonly<{ batch: string; version: number; proof: string; identity: string }>, signal?: AbortSignal): Promise<void>;
-  changeStatus(context: ConsoleContext, input: Readonly<{ ids: readonly string[]; version: number; action: 'activate' | 'disable' | 'extend' | 'void'; reason: string; expiresAt?: string; proof: string; identity: string }>, signal?: AbortSignal): Promise<void>;
-  bind(context: ConsoleContext, input: Readonly<{ voucher: string; version: number; member: string; reason: string; identity: string }>, signal?: AbortSignal): Promise<void>;
-  reverse(context: ConsoleContext, input: Readonly<{ redemption: string; version: number; reason: string; proof: string; identity: string }>, signal?: AbortSignal): Promise<void>;
+  read(context: ConsoleContext, view: VoucherView, query: VoucherReadQuery, signal?: AbortSignal): Promise<VoucherRecordPage>;
+  detail(context: ConsoleContext, view: VoucherView, id: string, signal?: AbortSignal): Promise<VoucherRecord>;
+  choices(context: ConsoleContext, kind: VoucherChoiceKind, signal?: AbortSignal): Promise<VoucherChoicePage>;
+  facets(context: ConsoleContext, query: VoucherReadQuery, signal?: AbortSignal): Promise<VoucherFacets>;
+  byNumber(context: ConsoleContext, number: string, signal?: AbortSignal): Promise<VoucherRecord>;
+  timeline(context: ConsoleContext, voucher: string, cursor?: string, signal?: AbortSignal): Promise<VoucherTimeline>;
+  progress(context: ConsoleContext, kind: VoucherProgressKind, id: string, signal?: AbortSignal): Promise<VoucherProgress>;
+  execute(context: ConsoleContext, command: VoucherCommand, signal?: AbortSignal): Promise<VoucherReceipt>;
 }

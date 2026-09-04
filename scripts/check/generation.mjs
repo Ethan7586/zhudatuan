@@ -21,11 +21,23 @@ const outputs = [
   'packages/contract/src/RequirementCatalog.ts',
   'packages/config/src/RouteCatalog.ts',
   'apps/auth/src/generated/RouteBinding.ts',
+  'apps/auth/src/generated/NavigationBinding.ts',
   'apps/console/src/generated/NavigationBinding.ts',
   'apps/console/src/generated/RouteBinding.ts',
-  'apps/storefront/src/generated/NavigationBinding.ts',
   'apps/storefront/src/generated/RouteBinding.ts',
-  'services/commerce/src/bootstrap/ProviderFactories.ts',
+  'apps/storefront/src/generated/NavigationBinding.ts',
+  'apps/miniapp/miniprogram/generated/NavigationBinding.ts',
+  'apps/miniapp/miniprogram/generated/PageBinding.ts',
+  'apps/miniapp/miniprogram/generated/RouteBinding.ts',
+  'apps/miniapp/miniprogram/app.json',
+  'apps/miniapp/miniprogram/styles/tokens.wxss',
+  'apps/miniapp/miniprogram/assets/brandmark.svg',
+  'apps/miniapp/miniprogram/assets/wingcode.svg',
+  'apps/store/src/generated/NavigationBinding.ts',
+  'apps/store/src/generated/RouteBinding.ts',
+  'apps/supplier/src/generated/NavigationBinding.ts',
+  'apps/supplier/src/generated/RouteBinding.ts',
+  'services/commerce/src/modules/extension/infrastructure/loader/ProviderCatalog.ts',
   'services/commerce/src/modules/navigation/infrastructure/registry/NavigationCatalog.ts',
   'evidence/navigation/catalog.json',
   'evidence/releases/index.json',
@@ -50,6 +62,11 @@ function generate() {
 
 function fingerprint() {
   const hash = createHash('sha256');
-  for (const file of outputs) hash.update(file).update('\0').update(readFileSync(resolve(repositoryRoot, file))).update('\0');
+  for (const file of outputs)
+    hash
+      .update(file)
+      .update('\0')
+      .update(readFileSync(resolve(repositoryRoot, file)))
+      .update('\0');
   return hash.digest('hex');
 }

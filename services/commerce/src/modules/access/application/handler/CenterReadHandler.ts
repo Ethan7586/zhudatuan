@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { keysetPage, queryPage } from '../../../../foundation/interface/Validation';
+import { keysetPage, queryPage } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { AccessAdministrationRepository } from '../port/AccessAdministrationRepository';
 
@@ -12,7 +12,12 @@ export class CenterReadHandler implements OperationHandler<'access.center.read',
   async execute(input: OperationInputFor<'access.center.read'>, context: HandlerContext<'access.center.read'>): Promise<OperationReply<OperationOutputFor<'access.center.read'>>> {
     const identity = requireSession(context.security);
     const page = queryPage(input);
-    const rows = await this.access.center(context.transaction, { organization: identity.scope.id, after: page.id, limit: page.fetch });
+    const [rows, roles, templates, separationRules] = await Promise.all([
+      this.access.center(context.transaction, { organization: identity.scope.id, after: page.id, limit: page.fetch }),
+      this.access.roles(context.transaction, identity.scope.id),
+      this.access.roleTemplates(context.transaction),
+      this.access.separationRules(context.transaction),
+    ]);
     const items = rows.map((row) => ({
       id: row.id,
       display_name: row.displayName,
@@ -26,6 +31,15 @@ export class CenterReadHandler implements OperationHandler<'access.center.read',
       overrides: [...row.overrides],
     }));
     const result = keysetPage(items, page, 'id');
-    return { status: 200, body: { ...result, items: [...result.items] } as OperationOutputFor<'access.center.read'> };
+    return {
+      status: 200,
+      body: {
+        ...result,
+        items: [...result.items],
+        roles: roles.map((role) => ({ ...role, allows: [...role.allows], denies: [...role.denies], members: role.members.map((member) => ({ ...member })) })),
+        templates: templates.map((template) => ({ ...template, allows: [...template.allows], denies: [...template.denies] })),
+        separationRules: separationRules.map((rule) => ({ ...rule })),
+      } as OperationOutputFor<'access.center.read'>,
+    };
   }
 }

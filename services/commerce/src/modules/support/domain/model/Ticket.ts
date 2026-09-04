@@ -16,12 +16,26 @@ export class Ticket {
     readonly scope: string,
     readonly priority: TicketPriority,
     readonly state: TicketState,
+    readonly assignedAgent: string | null,
+    readonly reopenUntil: string | null,
     readonly version: number
   ) {
-    if (!id || !conversation || !scope || !Number.isSafeInteger(version) || version < 0) throw new Error('SUPPORT_TICKET_INVALID');
+    if (!id || !conversation || !scope || !Number.isSafeInteger(version) || version < 1) throw new Error('SUPPORT_TICKET_INVALID');
+    if ((state === 'assigned' || state === 'waiting') && assignedAgent === null) throw new Error('SUPPORT_TICKET_ASSIGNMENT_INVALID');
+    if ((state === 'closed') !== (reopenUntil !== null) || (reopenUntil !== null && Number.isNaN(Date.parse(reopenUntil)))) throw new Error('SUPPORT_TICKET_REOPEN_WINDOW_INVALID');
+    Object.freeze(this);
   }
 
-  requireTransition(target: TicketState): void {
+  requireTransition(target: TicketState, at?: Date): void {
     if (!transitions[this.state].includes(target)) throw new Error(`SUPPORT_TICKET_TRANSITION_INVALID:${this.state}:${target}`);
+    if (this.state === 'closed' && target === 'open') {
+      if (!at || this.reopenUntil === null || at.getTime() > Date.parse(this.reopenUntil)) {
+        throw new Error('SUPPORT_TICKET_REOPEN_WINDOW_EXPIRED');
+      }
+    }
+  }
+
+  assertAgent(agent: string): void {
+    if (!agent || this.assignedAgent !== agent) throw new Error('SUPPORT_TICKET_PARTICIPANT_DENIED');
   }
 }

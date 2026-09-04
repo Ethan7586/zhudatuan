@@ -2,7 +2,7 @@ import { defineComponent } from '../../shared/manifest/ComponentManifest';
 
 export const SettingsManifest = defineComponent({
   component: 'settings',
-  navigationids: ['groupsettings', 'mallsettings'],
+  navigationids: ['platformsettings', 'distributionsettings', 'groupsettings', 'mallsettings'],
   routes: [{ routeid: 'consolesettings' }],
-  load: () => import('./SettingsRoute'),
+  load: () => import('./route/SettingsRoute'),
 });

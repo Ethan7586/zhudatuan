@@ -3,12 +3,11 @@ import { PgReferralFinancePort } from './infrastructure/persistence/PgReferralFi
 import { defineModule } from '../../bootstrap/DefinedModule';
 import { Manifest } from './Manifest';
 import { InvoicePort } from './application/service/InvoicePort';
-import { FinancePort } from './infrastructure/persistence/FinancePort';
-import { BENEFIT_ACCOUNTING_PORT, CHECKOUT_INVOICE_PORT, PROVIDER_FINANCE_PORT, VOUCHER_ACCOUNTING_PORT } from './public/index';
+import { BENEFIT_ACCOUNTING_PORT, BENEFIT_SETTLEMENT_READ_PORT, CHECKOUT_INVOICE_PORT, ORDER_IMPORT_FINANCE_PORT, PROVIDER_FINANCE_PORT, VOUCHER_ACCOUNTING_PORT } from './public/index';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { REFERRAL_FINANCE_PORT } from './public/ReferralFinancePort';
 import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { PgFinanceOperationRepository } from './infrastructure/persistence/PgFinanceOperationRepository';
+import { createFinanceAdapters } from './infrastructure/persistence/FinanceAdapters';
 import { OverviewReadHandler } from './application/handler/OverviewReadHandler';
 import { EntriesReadHandler } from './application/handler/EntriesReadHandler';
 import { StatementsReadHandler } from './application/handler/StatementsReadHandler';
@@ -44,69 +43,96 @@ import { RepairsPreviewHandler } from './application/handler/RepairsPreviewHandl
 import { RepairsSubmitHandler } from './application/handler/RepairsSubmitHandler';
 import { RepairsDecideHandler } from './application/handler/RepairsDecideHandler';
 import { RepairsReverseHandler } from './application/handler/RepairsReverseHandler';
+import { ImportsCreateHandler } from './application/handler/ImportsCreateHandler';
+import { ImportsReadHandler } from './application/handler/ImportsReadHandler';
+import { FacetsReadHandler } from './application/handler/FacetsReadHandler';
 import { createJobs, createProviderJobs } from './interface/job/JobFactory';
-import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
+import { PgJobScheduler } from '../../adapter/database/PgJobScheduler';
+import { IMPORT_OBJECT_PORT, RUNTIME_IMPORT_PORT } from '../runtime/public';
+import { OBJECT_STORE } from '../runtime/public/ObjectPort';
+import { PgFacetRepository } from './infrastructure/persistence/PgFacetRepository';
+import { ORGANIZATION_READ_PORT } from '../organization/public';
+import { FINANCE_CHANNEL_PORT } from '../channel/public';
+import { AUDIT_READ_PORT } from '../audit/public';
+import { EVENT_EVIDENCE_READ_PORT } from '../runtime/public';
+import { AuditReadHandler } from './application/handler/AuditReadHandler';
+import { PgAuditProjectionRepository } from './infrastructure/persistence/PgAuditProjectionRepository';
+import { PgAccountingPort } from './infrastructure/persistence/PgAccountingPort';
+import { PgSettlementReadPort } from './infrastructure/persistence/PgSettlementReadPort';
+import { PgStatementEvidencePort } from './infrastructure/persistence/PgStatementEvidencePort';
+import { PgChannelReconciliationPort } from './infrastructure/persistence/PgChannelReconciliationPort';
+import { FinanceEventSubscriptions } from './interface/event/FinanceEventSubscriptions';
 
 export const FinanceModule = defineModule(Manifest, {
   jobs: createJobs,
   providerJobs: createProviderJobs,
-  events: [{ handler: 'reconciliation', events: EVENT_SUBSCRIPTIONS.reconciliation }],
+  events: FinanceEventSubscriptions,
   handlers: (context) => {
-    const repository = new PgFinanceOperationRepository(new PgTransactionAccess(), context);
+    const transactions = new PgTransactionAccess();
+    const finance = createFinanceAdapters(transactions, context);
+    const imports = context.ports.get(RUNTIME_IMPORT_PORT);
     return [
-      new OverviewReadHandler(repository),
-      new EntriesReadHandler(repository),
-      new StatementsReadHandler(repository),
-      new StatementsExportHandler(repository),
-      new ReconciliationsManageHandler(repository),
-      new ReconciliationsReadHandler(repository),
-      new SettlementsReadHandler(repository),
-      new SettlementsDecideHandler(repository),
-      new SettlementsAdjustHandler(repository),
-      new WithdrawalsReadHandler(repository),
-      new WithdrawalsCreateHandler(repository),
-      new WithdrawalsDecideHandler(repository),
-      new WithdrawalsRecoverHandler(repository),
-      new HoldsReadHandler(repository),
-      new PeriodsReadHandler(repository),
-      new PeriodsManageHandler(repository),
-      new BackfillsReadHandler(repository),
-      new BackfillsDecideHandler(repository),
-      new PoliciesManageHandler(repository),
-      new InvoicesReadHandler(repository),
-      new InvoicesDownloadHandler(repository),
-      new ProfilesManageHandler(repository),
-      new ProfilesReadHandler(repository),
-      new RequestsCreateHandler(repository),
-      new RequestsReadHandler(repository),
-      new RequestsCancelHandler(repository),
-      new RequestsDecideHandler(repository),
-      new RedInvoiceHandler(repository),
-      new PoliciesReadHandler(repository),
-      new PoliciesPreviewHandler(repository),
-      new RepairsReadHandler(repository),
-      new RepairsPreviewHandler(repository),
-      new RepairsSubmitHandler(repository),
-      new RepairsDecideHandler(repository),
-      new RepairsReverseHandler(repository),
+      new OverviewReadHandler(finance.accountRead),
+      new FacetsReadHandler(new PgFacetRepository(transactions), context.ports.get(ORGANIZATION_READ_PORT), context.ports.get(FINANCE_CHANNEL_PORT)),
+      new AuditReadHandler(new PgAuditProjectionRepository(transactions), context.ports.get(ORGANIZATION_READ_PORT), context.ports.get(EVENT_EVIDENCE_READ_PORT), context.ports.get(AUDIT_READ_PORT)),
+      new EntriesReadHandler(finance.journalRead),
+      new ImportsCreateHandler(imports, new PgJobScheduler(transactions), context.ports.get(IMPORT_OBJECT_PORT),
+        context.ports.get(ORGANIZATION_READ_PORT), context.ports.get(FINANCE_CHANNEL_PORT)),
+      new ImportsReadHandler(imports, context.service(OBJECT_STORE)),
+      new StatementsReadHandler(finance.statementRead),
+      new StatementsExportHandler(finance.statementProcess),
+      new ReconciliationsManageHandler(finance.reconciliation),
+      new ReconciliationsReadHandler(finance.reconciliationRead),
+      new SettlementsReadHandler(finance.settlementRead),
+      new SettlementsDecideHandler(finance.settlement),
+      new SettlementsAdjustHandler(finance.settlement),
+      new WithdrawalsReadHandler(finance.withdrawalRead),
+      new WithdrawalsCreateHandler(finance.withdrawal),
+      new WithdrawalsDecideHandler(finance.withdrawal),
+      new WithdrawalsRecoverHandler(finance.withdrawal),
+      new HoldsReadHandler(finance.accountRead),
+      new PeriodsReadHandler(finance.accountRead),
+      new PeriodsManageHandler(finance.period),
+      new BackfillsReadHandler(finance.statementRead),
+      new BackfillsDecideHandler(finance.statementProcess),
+      new PoliciesManageHandler(finance.policyCommand),
+      new InvoicesReadHandler(finance.invoiceRead),
+      new InvoicesDownloadHandler(finance.invoiceProcess),
+      new ProfilesManageHandler(finance.invoiceProfile),
+      new ProfilesReadHandler(finance.invoiceRead),
+      new RequestsCreateHandler(finance.invoiceRequest),
+      new RequestsReadHandler(finance.invoiceRead),
+      new RequestsCancelHandler(finance.invoiceRequest),
+      new RequestsDecideHandler(finance.invoiceRequest),
+      new RedInvoiceHandler(finance.invoiceRequest),
+      new PoliciesReadHandler(finance.policyRead),
+      new PoliciesPreviewHandler(finance.policyProcess),
+      new RepairsReadHandler(finance.repairRead),
+      new RepairsPreviewHandler(finance.repairProcess),
+      new RepairsSubmitHandler(finance.repairProcess),
+      new RepairsDecideHandler(finance.repairProcess),
+      new RepairsReverseHandler(finance.repairProcess),
     ];
   },
-  ports: (context) => {
-    const accounting = new FinancePort();
+  ports: () => {
+    const accounting = new PgAccountingPort();
     return [
       { token: CHECKOUT_INVOICE_PORT, value: new InvoicePort() },
       { token: BENEFIT_ACCOUNTING_PORT, value: accounting },
+      { token: BENEFIT_SETTLEMENT_READ_PORT, value: new PgSettlementReadPort() },
       { token: VOUCHER_ACCOUNTING_PORT, value: accounting },
       { token: REFERRAL_FINANCE_PORT, value: new PgReferralFinancePort() },
+      { token: ORDER_IMPORT_FINANCE_PORT, value: new PgStatementEvidencePort() },
     ];
   },
   jobPorts: () => {
-    const accounting = new FinancePort();
+    const accounting = new PgAccountingPort();
     return [
       { token: BENEFIT_ACCOUNTING_PORT, value: accounting },
       { token: VOUCHER_ACCOUNTING_PORT, value: accounting },
       { token: REFERRAL_FINANCE_PORT, value: new PgReferralFinancePort() },
+      { token: ORDER_IMPORT_FINANCE_PORT, value: new PgStatementEvidencePort() },
     ];
   },
-  providerPorts: [{ token: PROVIDER_FINANCE_PORT, value: new FinancePort() }],
+  providerPorts: [{ token: PROVIDER_FINANCE_PORT, value: new PgChannelReconciliationPort() }],
 });

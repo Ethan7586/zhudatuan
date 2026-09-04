@@ -1,17 +1,17 @@
 import type { DelegationRole, DelegationScope, OverrideChange, VersionChange } from '../../application/port/AccessRepository';
 import { Membership } from '../../domain/model/Membership';
-import { Role, type PermissionEffect, type RoleKind } from '../../domain/model/Role';
+import { Role, type PermissionEffect, type RoleKind, type RoleTemplateCode } from '../../domain/model/Role';
 import { Scope } from '../../domain/model/Scope';
 
 export interface CenterRow {
   readonly id: string;
-  readonly display_name: string;
+  readonly display_name: string | null;
   readonly employee_no: string | null;
   readonly mobile_masked: string | null;
   readonly client: string;
   readonly status: string;
   readonly access_version: number;
-  readonly roles: readonly Readonly<{ role: string; name: string; kind: RoleKind; version: number; allows: readonly string[]; denies: readonly string[] }>[];
+  readonly roles: readonly Readonly<{ role: string; name: string; description: string; status: 'active' | 'disabled'; kind: RoleKind; template: RoleTemplateCode | null; version: number; allows: readonly string[]; denies: readonly string[] }>[];
   readonly scopes: readonly Readonly<{ id: string; kind: string; scope: string; effect: PermissionEffect; expires: string | null }>[];
   readonly overrides: readonly Readonly<{ permission: string; effect: PermissionEffect; expires: string | null }>[];
 }
@@ -19,9 +19,11 @@ export interface RoleRow {
   readonly id: string;
   readonly scope_id: string;
   readonly name: string;
+  readonly description: string;
   readonly status: string;
   readonly version: number;
   readonly kind: RoleKind;
+  readonly template_code: RoleTemplateCode | null;
 }
 export interface RoleChangeRow extends RoleRow {
   readonly allow_count: number;
@@ -96,7 +98,7 @@ export interface DelegationScopeRow {
   readonly expires_at: Date | null;
 }
 export function roleModel(row: RoleRow): Role {
-  return new Role({ id: row.id, scope: row.scope_id, name: row.name, status: row.status, version: Number(row.version), kind: row.kind });
+  return new Role({ id: row.id, scope: row.scope_id, name: row.name, description: row.description, status: row.status, version: Number(row.version), kind: row.kind, template: row.template_code });
 }
 export function membershipModel(row: MembershipRow): Membership {
   return new Membership({ id: row.id, organization: row.organization_id, client: row.client, status: row.status, accessVersion: Number(row.access_version) });

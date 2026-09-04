@@ -6,5 +6,11 @@ export interface AuditHistoryRecord extends Record<string, unknown> {
 }
 
 export interface AuditHistoryRepository {
-  records(context: ReadTransactionContext, scope: string, cursor: Readonly<{ sort: string | null; id: string | null }>, fetch: number): Promise<readonly AuditHistoryRecord[]>;
+  records(
+    context: ReadTransactionContext,
+    scope: string,
+    cursor: Readonly<{ sort: string | null; id: string | null }>,
+    watermark: string,
+    fetch: number
+  ): Promise<readonly AuditHistoryRecord[]>;
 }

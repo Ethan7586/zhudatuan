@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { RecoverPayment } from '../../application/process/RecoverPayment';
 
 export class PaymentRecoveryJob implements JobProcessor {
@@ -11,7 +11,7 @@ export class PaymentRecoveryJob implements JobProcessor {
     if (job.kind !== this.kind) throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
     const payload = object(job.payload);
-    const execution = { signal, deadline, scope: job.scope_id || 'payment', trace: job.id };
+    const execution = { signal, deadline, scope: job.scope || 'payment', trace: job.id };
     const event = optionalText(payload.providerEvent, 'PAYMENT_PROVIDER_EVENT_INVALID');
     if (this.kind === 'paymentquery') {
       return this.recovery.query(text(payload.intent, 'PAYMENT_INTENT_REQUIRED'), event, execution);

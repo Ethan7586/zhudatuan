@@ -45,12 +45,20 @@ export class WechatPayProtocolError extends Error {
   readonly providerRequestId: string | null;
 
   constructor(code: string, options: { retryable?: boolean; providerRequestId?: string | null } = {}) {
-    super('WeChat Pay request could not be completed safely');
+    super(paymentMessage(code));
     this.name = 'WechatPayProtocolError';
     this.code = code;
     this.retryable = options.retryable ?? false;
     this.providerRequestId = options.providerRequestId ?? null;
   }
+}
+
+function paymentMessage(code: string): string {
+  if (/CANCELLED/.test(code)) return '本次支付操作已取消，请确认订单状态后再试。';
+  if (/DEADLINE|NETWORK|TIMEOUT/.test(code)) return '支付服务响应超时，系统将自动核对支付结果。';
+  if (/CONFIG|KEY|SIGNATURE|CERTIFICATE/.test(code)) return '支付服务配置需要处理，请联系管理员。';
+  if (/PROVIDER|UNAVAILABLE|CIRCUIT/.test(code)) return '支付服务暂时不可用，请稍后重试。';
+  return '支付结果暂时无法安全确认，系统将继续核对。';
 }
 
 export function parseWechatPayTransaction(value: unknown): WechatPayTransaction {

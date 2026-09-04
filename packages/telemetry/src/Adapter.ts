@@ -5,14 +5,36 @@ import type { TelemetryContext } from './Context';
 import type { Tracer, TraceSpan } from './Tracer';
 import { Redactor } from './Redactor';
 import { ClientErrorBuffer } from './ClientErrors';
+import { TELEMETRY_SAMPLING } from './RedactionCatalog';
+import { TELEMETRY_BUFFER } from './RedactionCatalog';
+import { ObservationBuffer } from './Observations';
+import type { ObservableTelemetry } from './Telemetry';
 
 export type TelemetryWriter = (record: Readonly<Record<string, unknown>>) => void | Promise<void>;
 
-export function createTelemetry(writer: TelemetryWriter): Telemetry {
+export function createTelemetry(writer: TelemetryWriter): ObservableTelemetry {
   const redactor = new Redactor();
-  const safe: TelemetryWriter = (record) => writer(redactor.redact(record) as Readonly<Record<string, unknown>>);
+  const observations = new ObservationBuffer(TELEMETRY_BUFFER.capacity, TELEMETRY_BUFFER.retentionSeconds * 1_000, TELEMETRY_BUFFER.maximumRead);
+  const safe: TelemetryWriter = (record) => {
+    const value = Object.freeze(redactor.redact(record) as Readonly<Record<string, unknown>>);
+    observations.record(value);
+    try {
+      const result = writer(value);
+      if (isPromiseLike(result)) void Promise.resolve(result).catch(() => observations.record(backendFailure()));
+    } catch {
+      observations.record(backendFailure());
+    }
+  };
   const sink: LogSink = { write: safe };
-  return Object.freeze({ logger: new Logger(sink), metrics: new SinkMetrics(safe), tracer: new SinkTracer(safe), clientErrors: new ClientErrorBuffer(safe) });
+  return Object.freeze({ logger: new Logger(sink), metrics: new SinkMetrics(safe), tracer: new SinkTracer(safe), clientErrors: new ClientErrorBuffer(safe, 2_000, 7 * 24 * 60 * 60 * 1_000, () => Date.now(), TELEMETRY_SAMPLING.errors), observations });
+}
+
+function backendFailure(): Readonly<Record<string, unknown>> {
+  return Object.freeze({ kind: 'telemetryhealth', event: 'telemetry.backend.failure', result: 'degraded' });
+}
+
+function isPromiseLike(value: void | Promise<void>): value is Promise<void> {
+  return value !== undefined && typeof value.then === 'function';
 }
 
 class SinkMetrics implements Metrics {

@@ -8,10 +8,10 @@ interface SelectionRow {
   readonly id: string;
   readonly transaction_id: string | null;
   readonly principal_id: string;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly candidate_memberships: readonly Readonly<{
     id: string;
-    target: 'console' | 'storefront';
+    target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
     accessVersion: number;
     displayName: string;
     organizationName: string;

@@ -5,7 +5,7 @@ import { DomainError } from '../domain/DomainError';
 export type RiskOutcome = 'allow' | 'challenge' | 'review' | 'deny';
 export interface RiskAssessment {
   readonly outcome: RiskOutcome;
-  readonly safeReason: 'policy' | 'amount' | 'velocity' | 'signal' | 'list';
+  readonly safeReason: 'policy' | 'amount' | 'velocity' | 'signal' | 'list' | 'timeout' | 'dependency';
   readonly decision: string | null;
 }
 

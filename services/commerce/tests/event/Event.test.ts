@@ -35,6 +35,9 @@ describe('event contract and replay', () => {
           accepted.add(key);
           return { rows: [{ inserted }], rowCount: 1 } as unknown as QueryResult;
         }
+        if (text.includes('select exists(select 1 from runtime.jobs')) {
+          return { rows: [{ existing: false, depth: 0 }], rowCount: 1 } as unknown as QueryResult;
+        }
         return { rows: [], rowCount: text.includes('insert into runtime.job') ? 1 : null } as unknown as QueryResult;
       },
       release: () => observed.push('release'),

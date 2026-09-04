@@ -9,7 +9,7 @@ export interface Address {
   readonly isDefault: boolean;
   readonly tag?: string;
   readonly version: number;
-  readonly status: 'active' | 'deleted';
+  readonly status: AddressDto['status'];
 }
 
 export interface AddressDraft {
@@ -19,4 +19,8 @@ export interface AddressDraft {
   readonly city: string;
   readonly district: string;
   readonly detail: string;
+  readonly isDefault: boolean;
 }
+import type { OperationOutputFor } from '@shop/contract';
+
+type AddressDto = OperationOutputFor<'member.addresses.read'>['items'][number];

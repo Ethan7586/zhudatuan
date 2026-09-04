@@ -14,7 +14,7 @@ export class InvitationGuard {
     private readonly protector: FederationProtector
   ) {}
 
-  async assert(request: OperationRequest, target: 'console' | 'storefront'): Promise<void> {
+  async assert(request: OperationRequest, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<void> {
     const peer = request.input.headers['x-peer-address'] ?? 'unknown';
     const agent = request.input.headers['user-agent'] ?? 'unknown';
     const device = request.input.headers['x-device-id'] ?? 'browser';
@@ -29,7 +29,7 @@ export class InvitationGuard {
     ]);
   }
 
-  assertRecipient(request: OperationRequest, target: 'console' | 'storefront', recipient: Buffer | null): Promise<void> {
+  assertRecipient(request: OperationRequest, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier', recipient: Buffer | null): Promise<void> {
     if (recipient === null) return Promise.resolve();
     const trace = request.input.headers['x-trace-id'] ?? request.input.idempotency ?? request.input.publicActor ?? 'public:invitation';
     return this.rates.consume({
@@ -42,7 +42,7 @@ export class InvitationGuard {
     });
   }
 
-  assertRecipientWithin(context: WriteTransactionContext, request: OperationRequest, target: 'console' | 'storefront', recipient: Buffer | null): Promise<void> {
+  assertRecipientWithin(context: WriteTransactionContext, request: OperationRequest, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier', recipient: Buffer | null): Promise<void> {
     if (recipient === null) return Promise.resolve();
     const trace = request.input.headers['x-trace-id'] ?? request.input.idempotency ?? request.input.publicActor ?? 'public:invitation';
     return this.rates.consumeWithin(context, {

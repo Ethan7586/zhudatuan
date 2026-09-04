@@ -6,6 +6,7 @@ import type { ReturnTargetPort } from '../port/ReturnTargetPort';
 import type { RegistrationPolicyRepository } from '../port/RegistrationPolicyRepository';
 import { passwordPolicyView } from './PasswordPolicyView';
 import { registrationPolicyView } from './RegistrationPolicyView';
+import { isOperationTarget } from '@shop/contract';
 
 const METHODS = Object.freeze(['password', 'otp', 'invitation', 'federation'] as const);
 
@@ -15,7 +16,7 @@ export class ReadIdentityBootstrap {
   action(): IdentityAction<'read'> {
     return async (request, database) => {
       const requested = request.input.headers['x-client-target'];
-      if (requested !== 'console' && requested !== 'storefront') throw new DomainError('VALIDATION_FAILED');
+      if (!isOperationTarget(requested)) throw new DomainError('VALIDATION_FAILED');
       const supplied = request.input.query.returntarget;
       const path = request.input.query.returnpath;
       if ((supplied !== undefined && typeof supplied !== 'string') || (path !== undefined && typeof path !== 'string') || (supplied !== undefined && path !== undefined)) {

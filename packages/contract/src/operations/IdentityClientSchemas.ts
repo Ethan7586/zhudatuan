@@ -40,6 +40,7 @@ const schemas = Object.freeze({
   "identity.links.read": Object.freeze({ input: identityInputSchema("IdentityLinksReadInput", [], false), output: identityOutputSchema("IdentityLinksReadOutput") }),
   "identity.links.create": Object.freeze({ input: identityInputSchema("IdentityLinksCreateInput", [], true), output: identityOutputSchema("IdentityLinksCreateOutput") }),
   "identity.links.revoke": Object.freeze({ input: identityInputSchema("IdentityLinksRevokeInput", ["linkid"], true), output: identityOutputSchema("IdentityLinksRevokeOutput") }),
+  "identity.providers.center.read": Object.freeze({ input: identityInputSchema("IdentityProvidersCenterReadInput", [], false), output: identityOutputSchema("IdentityProvidersCenterReadOutput") }),
   "identity.providers.manage": Object.freeze({ input: identityInputSchema("IdentityProvidersManageInput", ["providerid"], true), output: identityOutputSchema("IdentityProvidersManageOutput") }),
   "identity.providers.test": Object.freeze({ input: identityInputSchema("IdentityProvidersTestInput", ["providerid"], true), output: identityOutputSchema("IdentityProvidersTestOutput") }),
 });

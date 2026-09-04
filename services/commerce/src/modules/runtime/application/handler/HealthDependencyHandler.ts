@@ -4,8 +4,8 @@ import type { DurableOperationHandler, OperationReply } from '../../../../founda
 import type { Cache } from '../../../../foundation/cache/Cache';
 import type { QueryMetrics } from '../../../../foundation/persistence/QueryMetrics';
 import type { RuntimeQueueState, RuntimeRepository } from '../port/RuntimeRepository';
-import type { ReadinessCheckpoint } from '../service/ReadinessService';
-import { ReadinessService } from '../service/ReadinessService';
+import type { ReadinessCheckpoint } from '../service/EvaluateReadiness';
+import { EvaluateReadiness } from '../service/EvaluateReadiness';
 
 interface DependencyCheckpoint {
   readonly readiness: ReadinessCheckpoint;
@@ -17,7 +17,7 @@ export class HealthDependencyHandler implements DurableOperationHandler<'runtime
   readonly mode = 'read' as const;
   constructor(
     private readonly runtime: RuntimeRepository,
-    private readonly readiness: ReadinessService,
+    private readonly readiness: EvaluateReadiness,
     private readonly cache: Cache,
     private readonly metrics: QueryMetrics
   ) {}

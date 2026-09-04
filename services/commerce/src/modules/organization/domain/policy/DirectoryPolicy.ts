@@ -6,6 +6,10 @@ export class DirectoryPolicy {
       throw new Error('DIRECTORY_PAGE_INVALID');
     }
     const departments = new Map(page.subjects.filter((item) => item.type === 'department').map((item) => [item.externalid, item.parentid]));
+    for (const subject of page.subjects) {
+      if (subject.type === 'department' && subject.parentid === subject.externalid) throw new Error('DIRECTORY_HIERARCHY_CYCLE');
+      if (subject.type === 'user' && subject.parentid !== null) throw new Error('DIRECTORY_USER_PARENT_INVALID');
+    }
     for (const id of departments.keys()) {
       const seen = new Set<string>();
       let cursor: string | null = id;

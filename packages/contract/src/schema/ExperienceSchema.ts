@@ -7,7 +7,15 @@ const nullableTime = union([isoUtc, nullSchema()]);
 const jsonObject = record(string(), ContractJsonValueSchema);
 const action = strictObject({ type: literal(['link', 'product', 'category', 'collection', 'exchangeableproduct', 'micropage', 'marketingactivity']), target: string() });
 const block = strictObject({ id: string(), component: literal(['hero', 'notice', 'shortcut', 'productcollection', 'richtext']), content: jsonObject, action: optional(action) });
-const document = strictObject({ version: literal(2), application: string(), pages: array(strictObject({ id: string(), path: string(), blocks: array(block) })) });
+const theme = strictObject({ preset: literal(['shop', 'market', 'governance']), primaryColor: string(), accentColor: string(), logoObjectRef: union([string(), nullSchema()]), faviconObjectRef: union([string(), nullSchema()]) });
+const domain = strictObject({
+  mode: literal(['platform', 'custom', 'unknown']),
+  address: union([string(), nullSchema()]),
+  state: literal(['ready', 'pending', 'invalid', 'disabled', 'unknown']),
+});
+const navigation = strictObject({ id: string(), label: string(), page: string() });
+const document = strictObject({ version: literal(2), application: string(), theme, navigation: array(navigation), assets: array(string()), pages: array(strictObject({ id: string(), path: string(), blocks: array(block) })) });
+const validationIssue = strictObject({ code: string(), path: string(), message: string() });
 const versionRecord = strictObject({
   id: string(),
   application_id: string(),
@@ -16,6 +24,7 @@ const versionRecord = strictObject({
   configuration: document,
   configuration_hash: string(),
   validation_state: literal(['pending', 'valid', 'invalid']),
+  validation_issues: array(validationIssue),
   reason: string(),
   created_by: string(),
   created_at: isoUtc,
@@ -52,6 +61,8 @@ const entry = discriminatedUnion('state', [
 const summary = strictObject({
   id: string(),
   mallId: string(),
+  mallName: union([string(), nullSchema()]),
+  brandName: union([string(), nullSchema()]),
   code: string(),
   publicSlug: handle,
   name: string(),
@@ -59,13 +70,15 @@ const summary = strictObject({
   version,
   headSequence: union([version, nullSchema()]),
   publishedSequence: union([version, nullSchema()]),
+  theme: union([theme, nullSchema()]),
+  domain,
   entry,
   updatedAt: isoUtc,
 });
 
 export const EXPERIENCE_BODY_SCHEMAS = {
-  ExperienceApplicationsCreateInput: strictObject({ code: string(), publicSlug: string(), name: string() }),
-  ExperienceApplicationsCopyInput: strictObject({ code: string(), publicSlug: string(), name: string(), reason: string() }),
+  ExperienceApplicationsCreateInput: strictObject({ mallId: string() }),
+  ExperienceApplicationsCopyInput: strictObject({ targetMallId: string(), reason: string() }),
   ExperienceApplicationsUpdateInput: strictObject({ name: optional(string()), status: optional(literal(['draft', 'active', 'disabled'])) }),
   ExperienceVersionsSaveInput: strictObject({ schemaVersion: union([literal('2'), literal(2)]), configuration: document, reason: string() }),
   ExperienceVersionsValidateInput: strictObject({}),
@@ -76,6 +89,7 @@ export const EXPERIENCE_BODY_SCHEMAS = {
 export const EXPERIENCE_QUERY_SCHEMAS = {
   ExperienceApplicationsReadInput: strictObject({ ...pageQuery, application: optional(string()) }),
   ExperienceApplicationDetailReadInput: strictObject({}),
+  ExperiencePublishedReadInput: strictObject({ mall: string(), channel: literal(['web', 'miniapp', 'store']), locale: string() }),
 } as const;
 
 export const EXPERIENCE_OUTPUT_SCHEMAS = {
@@ -90,7 +104,21 @@ export const EXPERIENCE_OUTPUT_SCHEMAS = {
   }),
   ExperienceApplicationsUpdateOutput: summary,
   ExperienceVersionsSaveOutput: versionRecord,
-  ExperienceVersionsValidateOutput: strictObject({ id: string(), application_id: string(), validation_state: literal(['valid', 'invalid']) }),
+  ExperienceVersionsValidateOutput: strictObject({ id: string(), application_id: string(), validation_state: literal(['valid', 'invalid']), issues: array(validationIssue) }),
   ExperienceVersionsPublishOutput: release,
   ExperienceVersionsRestoreOutput: versionRecord,
+  ExperiencePublishedReadOutput: strictObject({
+    application: string(),
+    mall: string(),
+    pool: string(),
+    release: string(),
+    version: string(),
+    hash: contentHash,
+    document,
+    effectiveAt: isoUtc,
+    objectKey: string(),
+    channel: literal(['web', 'miniapp', 'store']),
+    locale: string(),
+    etag: string(),
+  }),
 } as const;

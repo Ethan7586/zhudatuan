@@ -1,0 +1,66 @@
+{
+  "schema": "zhudatuan.fusion-baseline.v1",
+  "capturedAt": "2026-09-04T15:41:29+08:00",
+  "main": {
+    "workspace": "zhudatuan",
+    "branch": "backend-reconstruction",
+    "commit": "5fb180fb74dd36243cf7179b413ff4e44ad18a86",
+    "trackedFiles": 4748,
+    "statusSha256": "045fc48b40c83590f80c29021dd05188ea4d8a1f3a93f5ebda787cd967f041d7",
+    "operations": 276,
+    "events": 103,
+    "modules": 32,
+    "clients": 3,
+    "routes": 53,
+    "navigationNodes": 63,
+    "channelExtensions": 11,
+    "migrations": 316
+  },
+  "source": {
+    "workspace": "zhudatuan_li",
+    "branch": "codex/l1-consumer-qr-multi-registration-20260903",
+    "commit": "b763b7a12c9aa825c532a35c3cce06da4455ed98",
+    "trackedFiles": 2682,
+    "statusSha256": "07251fbcc35e3841e60434d3f6d3342372c6898386c453fcdd3373bbe01cf7d2",
+    "operations": 328,
+    "events": 64
+  },
+  "operationDiff": {
+    "shared": 231,
+    "sourceOnly": 97,
+    "mainOnly": 45,
+    "sourceOnlyVoucher": 57,
+    "sourceOnlyOther": 40
+  },
+  "authorities": {
+    "workbook": {
+      "path": "docs/福利商城功能清单.xlsx",
+      "sha256": "48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436",
+      "mvpRange": "MVP上线功能清单!A3:F24",
+      "mvpCount": 22
+    },
+    "ideal": {
+      "path": "docs/architecture/福利商城理想方案20260904.md",
+      "sha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+    },
+    "changes": {
+      "path": "docs/architecture/福利商城代码修改清单20260904.md",
+      "sha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff"
+    },
+    "functions": {
+      "path": "zhudatuan_li/docs/当前代码业务功能清单-20260904.md",
+      "sha256": "bc1e7d0730b21ea97d2561fad82341feac4113179f53c26e8e641c8ff25c9b94"
+    },
+    "ux": {
+      "path": "zhudatuan_li/docs/zhudatuan-console-UX-acceptance-report-20260904.md",
+      "sha256": "66bcec351b605c043744f817d557f25ecea9a0c45165d89c897760c73463a266"
+    }
+  },
+  "protection": {
+    "preserveUserChanges": true,
+    "historicalMigrationsReadOnly": true,
+    "sourceRepositoryBuildDependency": false,
+    "compatibilityLayerAllowed": false,
+    "doubleWriteAllowed": false
+  }
+}

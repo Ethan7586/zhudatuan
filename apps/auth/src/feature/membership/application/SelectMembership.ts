@@ -1,7 +1,9 @@
-import type { AuthTarget } from '@shop/config/client';
+import type { SessionRequest } from '../../../shared/security/ReturnTarget';
 import type { MembershipPort } from '../public/MembershipPort';
 
 export class SelectMembership {
   constructor(private readonly port: MembershipPort) {}
-  execute(membership: string, target: AuthTarget, signal?: AbortSignal) { return this.port.select(membership, target, signal); }
+  execute(membership: string, session: SessionRequest, signal?: AbortSignal) {
+    return this.port.select(membership, session, signal);
+  }
 }

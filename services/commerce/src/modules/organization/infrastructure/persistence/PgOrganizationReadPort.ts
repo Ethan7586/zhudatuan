@@ -4,6 +4,15 @@ import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { OrganizationReadPort, OrganizationScopeSnapshot } from '../../public/OrganizationReadPort';
 export class PgOrganizationReadPort implements OrganizationReadPort {
   private readonly transactions = new PgTransactionAccess();
+  async summaries(context: ReadTransactionContext, ids: readonly string[]): Promise<readonly { id: string; name: string; kind: string }[]> {
+    if (ids.length === 0) return Object.freeze([]);
+    const database = this.transactions.database(context);
+    const result = await database.query<{ id: string; name: string; kind: string }>(
+      `select id,name,kind from organization.organization where id=any($1::text[]) order by name,id`,
+      [ids]
+    );
+    return Object.freeze(result.rows.map((row) => Object.freeze(row)));
+  }
   async activeMalls(context: ReadTransactionContext, scopeId: string): Promise<readonly string[]> {
     const database = this.transactions.database(context);
     const result = await database.query<{

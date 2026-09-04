@@ -1,5 +1,5 @@
 import { createCipheriv, createHash, randomBytes } from 'node:crypto';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { SecretMaterial } from '@shop/contract';
 import type { SecretStore } from '../../../foundation/infrastructure/SecretStore';
 import { LifecyclePolicy } from '../domain/policy/LifecyclePolicy';
@@ -9,6 +9,9 @@ import { WecomDirectoryClient } from '../infrastructure/adapter/wecom/WecomDirec
 import { WecomDirectoryProvider } from '../infrastructure/adapter/wecom/WecomDirectoryProvider';
 import { WecomDirectoryMapper } from '../infrastructure/adapter/wecom/WecomDirectoryMapper';
 import { SubjectHasher } from '../../identity/domain/service/SubjectHasher';
+import { DirectoryReconciler } from '../application/service/DirectoryReconciler';
+import type { DirectoryRepository, StagedSubject } from '../application/port/DirectoryRepository';
+import type { MembershipLifecycle } from '../application/service/MembershipLifecycle';
 
 const connection = new DirectoryConnection({
   id: '11111111-1111-4111-8111-111111111111',
@@ -56,6 +59,20 @@ describe('Directory policies', () => {
     expect(mapped.hash.equals(expected)).toBe(true);
     expect(JSON.stringify(mapped)).not.toContain('User-1');
   });
+  it('previews the complete batch diff without changing directory or membership state', async () => {
+    const subjects = ['create', 'update', 'freeze', 'restore'].map(staged);
+    const current = new Map([
+      [subjects[1]!.hash.toString('hex'), { id: 'old:update', status: 'active', sourceversion: 1, missingcount: 0, membership: 'membership:update' }],
+      [subjects[2]!.hash.toString('hex'), { id: 'old:freeze', status: 'active', sourceversion: 1, missingcount: 1, membership: 'membership:freeze' }],
+      [subjects[3]!.hash.toString('hex'), { id: 'old:restore', status: 'inactive', sourceversion: 1, missingcount: 0, membership: 'membership:restore' }],
+    ]);
+    const repository = { current: vi.fn(async () => current), apply: vi.fn() } as unknown as DirectoryRepository;
+    const lifecycle = { apply: vi.fn() } as unknown as MembershipLifecycle;
+    const result = await new DirectoryReconciler(repository, lifecycle).preview({} as never, connection, subjects);
+    expect(result).toEqual({ read: 4, applied: 4, creates: 1, updates: 1, freezes: 1, restores: 1, conflicts: 0, ignored: 0 });
+    expect(repository.apply).not.toHaveBeenCalled();
+    expect(lifecycle.apply).not.toHaveBeenCalled();
+  });
 });
 
 describe('WeCom directory webhook', () => {
@@ -94,6 +111,12 @@ function material(value: string): SecretMaterial {
     [Symbol.toPrimitive]: () => {
       throw new Error('forbidden');
     },
+  });
+}
+function staged(kind: string, index: number): StagedSubject {
+  return Object.freeze({
+    id: `subject:${kind}`, hash: Buffer.alloc(32, index + 1), type: 'user', status: kind === 'freeze' ? 'inactive' : 'active', attributes: null,
+    sourceversion: 2, organization: 'enterprise:root', parentorganization: null, displayname: kind, membership: null, explicitdeparture: false,
   });
 }
 function encrypt(xml: string, key: Buffer, recipient: string): string {

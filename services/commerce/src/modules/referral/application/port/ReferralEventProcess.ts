@@ -1,10 +1,13 @@
-export interface ReferralOrderEvent {
+export type ReferralEventType = 'order.paid' | 'order.received' | 'refund.completed' | 'approval.instance.approved';
+
+export interface ReferralProcessEvent {
   readonly eventId: string;
-  readonly eventType: 'order.paid' | 'order.received' | 'refund.completed';
+  readonly eventType: ReferralEventType;
   readonly scopeId: string;
-  readonly orderId: string;
+  readonly sourceId: string;
+  readonly resourceId: string;
 }
 
 export interface ReferralEventProcess {
-  process(event: ReferralOrderEvent, signal: AbortSignal, deadline: number): Promise<void>;
+  process(event: ReferralProcessEvent, signal: AbortSignal, deadline: number): Promise<void>;
 }

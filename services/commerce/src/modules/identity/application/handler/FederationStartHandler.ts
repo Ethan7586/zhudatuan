@@ -3,7 +3,7 @@ import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } f
 import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
 import type { IdentityLifecycle } from '../model/IdentityAction';
 import { identityReply, identityRequest, type IdentityLifecycleCheckpoint, type PreparedIdentityLifecycle } from '../model/IdentityExecution';
-import type { LoadedFederationStart, PreparedFederationStart } from '../service/FederationService';
+import type { LoadedFederationStart, PreparedFederationStart } from '../service/FederateIdentity';
 
 export class FederationStartHandler implements DurableOperationHandler<'identity.federations.start', PreparedIdentityLifecycle<PreparedFederationStart>, IdentityLifecycleCheckpoint<PreparedFederationStart>, 'write', LoadedFederationStart> {
   readonly operation = 'identity.federations.start' as const;

@@ -1,9 +1,10 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { ProductRepository } from '../port/ProductRepository';
+import { productRecordEvent } from '../../domain/event/CatalogEvents';
 
 export class ProductsCreateHandler implements OperationHandler<'catalog.products.create', 'write'> {
   readonly operation = 'catalog.products.create' as const;
@@ -18,9 +19,9 @@ export class ProductsCreateHandler implements OperationHandler<'catalog.products
       brand: typeof body.brand === 'string' ? body.brand : null,
       category: textField(body, 'category'),
       title: textField(body, 'title', 300),
-      kind: typeof body.type === 'string' ? body.type : 'physical',
+      kind: typeof body.type === 'string' ? body.type as 'physical' | 'virtual' | 'service' | 'voucher' : 'physical',
       attributes: body.attributes && typeof body.attributes === 'object' && !Array.isArray(body.attributes) ? (body.attributes as Readonly<Record<string, unknown>>) : Object.freeze({}),
     });
-    return { status: 201, body: created as unknown as OperationOutputFor<'catalog.products.create'> };
+    return { status: 201, body: created as unknown as OperationOutputFor<'catalog.products.create'>, events: [productRecordEvent('catalog.product.created', created, { actor: access.actor.id, trace: context.traceId })] };
   }
 }

@@ -3,7 +3,6 @@ import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionA
 import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-
 import type { CreateFederation, FederationCallbackRecord, FederationRepository, FederationResolution } from '../../application/port/FederationRepository';
 import type { FederatedSubject } from '../../domain/model/FederatedSubject';
 import { FederationTransaction } from '../../domain/model/FederationTransaction';
@@ -17,7 +16,7 @@ interface TransactionRow {
   readonly status: FederationTransaction['state'];
   readonly version: number;
   readonly expires_at: Date;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly purpose: 'signin' | 'link';
   readonly link_principal_id: string | null;
   readonly link_membership_id: string | null;

@@ -1,16 +1,16 @@
 import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { MemberAccessPort } from '../../../access/public';
 import type { SupportBenefitPort } from '../../../benefit/public';
 import type { MemberReadPort } from '../../../member/public';
-import type { GetOrderSummary } from '../../../order/public';
+import type { OrderSupportPort } from '../../../order/public';
 import type { OrganizationReadPort } from '../../../organization/public';
 import type { SupportContextPort, SupportContextView } from '../../application/port/SupportPersistence';
 
 export class PgSupportContextRepository implements SupportContextPort {
   constructor(
-    private readonly orders: Pick<GetOrderSummary, 'execute' | 'recent'>,
+    private readonly orders: OrderSupportPort,
     private readonly organizations: OrganizationReadPort,
     private readonly members: MemberAccessPort,
     private readonly benefits: SupportBenefitPort,
@@ -24,11 +24,6 @@ export class PgSupportContextRepository implements SupportContextPort {
 
   descendants(context: ReadTransactionContext, scope: string): Promise<readonly string[]> {
     return this.organizations.descendants(context, scope);
-  }
-
-  async assertOrder(context: ReadTransactionContext, order: string, scope: string, member: string, memberOnly: boolean): Promise<void> {
-    const scopes = memberOnly ? [] : await this.organizations.descendants(context, scope);
-    if (!(await this.orders.execute(context, order, scopes, member, memberOnly))) throw new Error('SUPPORT_ORDER_SCOPE_INVALID');
   }
 
   async benefit(context: ReadTransactionContext, type: string, id: string, scope: string, member: string): Promise<Readonly<Record<string, unknown>>> {
@@ -50,6 +45,10 @@ export class PgSupportContextRepository implements SupportContextPort {
       orders: Object.freeze(orders.map((order) => Object.freeze({ id: order.id, number: order.number, state: order.state, totalMinor: order.totalMinor }))),
       benefits: Object.freeze(benefits.map(benefitView)),
     });
+  }
+
+  async collaborate(context: WriteTransactionContext, input: Readonly<{ order: string; supportCase: string; scopes: readonly string[]; member: string; memberOnly: boolean; actor: string; trace: string }>): Promise<void> {
+    await this.orders.collaborate(context, { id: `supportcollaboration:${input.supportCase}`, ...input });
   }
 
   database(context: ReadTransactionContext): SqlExecutor {

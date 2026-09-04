@@ -17,8 +17,8 @@
 .supportpanelheader > div { display: flex; align-items: center; gap: var(--sw-space-1); }
 .supportpanelheader span { display: grid; min-width: 1.5rem; height: 1.5rem; place-items: center; border-radius: var(--sw-radius-full); background: var(--sw-brand-light); color: var(--sw-brand-dark); font-size: var(--sw-font-size-caption); }
 .supportownership { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sw-space-0-5); padding: var(--sw-space-1) var(--sw-space-2); }
-.supportownership button, .supportsettings nav button { min-height: var(--sw-min-touch-target); border: .0625rem solid var(--sw-border); border-radius: var(--sw-radius-sm); background: var(--sw-surface); color: var(--sw-text-secondary); font-weight: 700; }
-.supportownership button[aria-pressed='true'], .supportsettings nav button[aria-selected='true'] { border-color: var(--sw-brand); background: var(--sw-brand-light); color: var(--sw-brand-dark); }
+.supportownership button, .supportsettings [role='tablist'] button { min-height: var(--sw-min-touch-target); border: .0625rem solid var(--sw-border); border-radius: var(--sw-radius-sm); background: var(--sw-surface); color: var(--sw-text-secondary); font-weight: 700; }
+.supportownership button[aria-pressed='true'], .supportsettings [role='tablist'] button[aria-selected='true'] { border-color: var(--sw-brand); background: var(--sw-brand-light); color: var(--sw-brand-dark); }
 .supportfilters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sw-space-1); border-bottom: .0625rem solid var(--sw-border); padding: 0 var(--sw-space-2) var(--sw-space-1); }
 .supportfilters label { display: grid; min-width: 0; gap: var(--sw-space-0-5); color: var(--sw-muted); font-size: var(--sw-font-size-caption); }
 .supportfilters :where(input, select), .supportassign :where(select, textarea), .supportsettings :where(input, select, textarea) { width: 100%; min-width: 0; min-height: 2.5rem; border: .0625rem solid var(--sw-border); border-radius: var(--sw-radius-sm); background: var(--sw-surface-subtle); color: var(--sw-text); padding: var(--sw-space-1); }
@@ -55,10 +55,16 @@
 .supportcontextsection dl div { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: var(--sw-space-1); }
 .supportcontextsection dt { color: var(--sw-muted); }
 .supportcontextsection dd { min-width: 0; margin: 0; overflow: hidden; color: var(--sw-text); font-weight: 700; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+.supportorderlink { margin-left: var(--sw-space-0-5); border: 0; background: transparent; color: var(--sw-brand); cursor: pointer; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: .15em; }
+.supportorderlink:focus-visible { border-radius: var(--sw-radius-xs); outline: .125rem solid var(--sw-focus); outline-offset: .125rem; }
 .supportassign { display: grid; gap: var(--sw-space-1); }
 .supportassign textarea { min-height: 4rem; resize: vertical; }
+.supportassignverify { display: grid; gap: var(--sw-space-1); border-radius: var(--sw-radius-sm); background: var(--sw-warning-surface); color: var(--sw-warning-strong); padding: var(--sw-space-1); }
+.supportassignverify p { margin: 0; }
 .supportcontextactions { display: flex; flex-wrap: wrap; gap: var(--sw-space-1); border-top: .0625rem solid var(--sw-border); padding-top: var(--sw-space-2); }
 .supportcontextempty, .supportwelcome { display: grid; height: 100%; place-content: center; justify-items: center; gap: var(--sw-space-1); padding: var(--sw-space-3); color: var(--sw-muted); text-align: center; }
+.supportsettingempty { display: grid; min-height: 18rem; place-content: center; justify-items: center; gap: var(--sw-space-1); color: var(--sw-muted); text-align: center; }
+.supportsettingempty :where(h2, p) { margin: 0; }
 .supportcontextempty span, .supportwelcome > span { display: grid; width: 4rem; height: 4rem; place-items: center; border-radius: var(--sw-radius-full); background: var(--sw-brand-light); color: var(--sw-brand-dark); font-size: var(--sw-font-size-h2); font-weight: 800; }
 .supportcontextempty p, .supportwelcome :where(p,h2,small) { margin: 0; }
 .supportactionerror, .supportsettingswarning, .supportsettingsnotice { margin: 0; border-radius: var(--sw-radius-sm); padding: var(--sw-space-1); }
@@ -76,8 +82,9 @@
 .supporthistory li > span { display: grid; width: 2rem; height: 2rem; place-items: center; border-radius: var(--sw-radius-full); background: var(--sw-brand-light); color: var(--sw-brand-dark); }
 .supporthistory li p, .supporthistory li time { margin: 0; color: var(--sw-muted); font-size: var(--sw-font-size-caption); }
 .supportsettings { display: grid; gap: var(--sw-space-2); border: .0625rem solid var(--sw-border); border-radius: var(--sw-radius-lg); background: var(--sw-surface); padding: var(--sw-space-3); box-shadow: var(--sw-shadow-card); }
-.supportsettings nav { display: flex; flex-wrap: wrap; gap: var(--sw-space-1); }
-.supportsettings nav button { padding: 0 var(--sw-space-2); }
+.supportsettings [role='tablist'] { display: flex; flex-wrap: wrap; gap: var(--sw-space-1); }
+.supportsettings [role='tablist'] button { padding: 0 var(--sw-space-2); }
+.supportsettingsverify { display: flex; align-items: center; justify-content: space-between; gap: var(--sw-space-2); border-radius: var(--sw-radius-sm); background: var(--sw-warning-surface); color: var(--sw-warning-strong); padding: var(--sw-space-1); }
 .supportsettingsection { display: grid; gap: var(--sw-space-2); }
 .supportsettingsection > header { display: flex; align-items: start; justify-content: space-between; gap: var(--sw-space-2); }
 .supportsettingsection h2, .supportsettingsection p { margin: 0; }

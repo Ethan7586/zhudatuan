@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
 import type { DurableCommit, DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { CipherEnvelope, KmsClient } from '../../../../foundation/infrastructure/KmsClient';
+import type { CipherEnvelope, KmsClient } from '../../../../foundation/application/KmsPort';
 import type { WebhookConnection, WebhookRepository } from '../port/WebhookRepository';
 
 interface PreparedWebhook {
@@ -13,6 +13,7 @@ interface PreparedWebhook {
   readonly signatureHash: string;
   readonly receivedAt: string;
   readonly trace: string;
+  readonly scope: string;
 }
 
 export class WebhooksReceiveHandler implements DurableOperationHandler<'channel.webhooks.receive', PreparedWebhook, Readonly<{ id: string; state: string; replayed: boolean }>, 'write', WebhookConnection> {
@@ -34,10 +35,13 @@ export class WebhooksReceiveHandler implements DurableOperationHandler<'channel.
     const id = required(input.path.connectionid, 'CHANNEL_WEBHOOK_CONNECTION_REQUIRED');
     const external = required(context.headers['x-provider-event-id'], 'CHANNEL_WEBHOOK_EVENT_ID_REQUIRED', 255);
     const receivedAt = new Date().toISOString();
-    const request = JSON.stringify({ headers: context.headers, body: context.rawBody, receivedAt });
+    const headers = providerHeaders(context.headers);
+    const request = JSON.stringify({ headers, body: context.rawBody, receivedAt });
     const envelope = await this.kms.encrypt('evidence', 'channel/webhook', request, { connection: id, provider: connection.provider, scope: connection.scope, external });
-    return Object.freeze({ connection: id, external, envelope, rawHash: digest(context.rawBody), signatureHash: digest(context.headers['x-provider-signature'] ?? ''), receivedAt, trace: context.traceId });
+    return Object.freeze({ connection: id, external, envelope, rawHash: digest(context.rawBody), signatureHash: digest(context.headers['x-provider-signature'] ?? ''), receivedAt, trace: context.traceId, scope: connection.scope });
   }
+
+  transactionScope(_input: OperationInputFor<'channel.webhooks.receive'>, prepared: PreparedWebhook): string { return prepared.scope; }
 
   async commit(
     _input: OperationInputFor<'channel.webhooks.receive'>,
@@ -72,4 +76,10 @@ function required(value: string | null | undefined, code: string, maximum = 255)
 }
 function digest(value: string): string {
   return createHash('sha256').update(value).digest('hex');
+}
+
+function providerHeaders(headers: Readonly<Record<string, string>>): Readonly<Record<string, string>> {
+  const entries = Object.entries(headers);
+  if (entries.length > 128 || entries.some(([key, value]) => key.length > 128 || value.length > 8192)) throw new Error('CHANNEL_WEBHOOK_HEADERS_TOO_LARGE');
+  return Object.freeze(Object.fromEntries(entries));
 }

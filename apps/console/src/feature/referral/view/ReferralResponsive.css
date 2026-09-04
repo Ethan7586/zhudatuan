@@ -1,0 +1,19 @@
+@media (max-width: 720px) {
+  .referraltabs {
+    width: 100%;
+  }
+  .referralpanel > header,
+  .referralpagination,
+  .referralreceipt,
+  .referralapproval > div {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .referralfieldgrid {
+    grid-template-columns: 1fr;
+  }
+  .referralrowactions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

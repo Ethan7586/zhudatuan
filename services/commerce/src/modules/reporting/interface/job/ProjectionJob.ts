@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { ProjectReporting } from '../../application/process/ProjectReporting';
 
 export class ProjectionJob implements JobProcessor {
@@ -8,7 +8,7 @@ export class ProjectionJob implements JobProcessor {
     if (job.kind !== 'projection') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
     const event = text(object(job.payload).eventId, 'EVENT_ID_REQUIRED');
-    return this.projection.execute(event, { scope: job.scope_id ?? 'reporting', trace: job.id, signal, deadline });
+    return this.projection.execute(event, { scope: job.scope ?? 'reporting', trace: job.id, signal, deadline });
   }
 }
 

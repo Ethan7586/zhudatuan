@@ -1,0 +1,18 @@
+.federationnotice { display:flex; gap:.85rem; align-items:flex-start; }
+.federationnotice > span { display:grid; width:2.4rem; height:2.4rem; flex:0 0 auto; place-items:center; border-radius:var(--sw-radius-md); background:var(--sw-success-surface); color:var(--sw-success-strong); font-weight:900; }
+.federationnotice p { margin:.25rem 0 0; color:var(--sw-text-secondary); line-height:1.55; }
+.federationgrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; margin-top:1.25rem; }
+.federationcard { overflow:hidden; border:.0625rem solid var(--sw-border); border-radius:var(--sw-radius-lg); background:var(--sw-surface); box-shadow:0 .35rem 1.2rem color-mix(in srgb,var(--sw-brand-ink) 5%,transparent); }
+.federationcard > header { display:grid; grid-template-columns:auto 1fr auto; gap:.85rem; align-items:center; padding:1.1rem; background:linear-gradient(135deg,color-mix(in srgb,var(--sw-brand) 8%,var(--sw-surface)),var(--sw-surface)); }
+.federationcard h2 { margin:0; font-size:1rem; }
+.federationcard header p { margin:.2rem 0 0; color:var(--sw-text-secondary); font-size:.78rem; }
+.federationcard header > strong { border-radius:999px; background:var(--sw-success-surface); padding:.3rem .55rem; color:var(--sw-success-strong); font-size:.72rem; }
+.federationicon { display:grid; width:2.8rem; height:2.8rem; place-items:center; border-radius:.85rem; background:var(--sw-brand); color:var(--sw-surface); font-weight:900; }
+.federationicon.is-oidc { background:var(--sw-brand-ink); }
+.federationcard dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; margin:0; padding:1.1rem; border-top:.0625rem solid var(--sw-border); }
+.federationcard dt { color:var(--sw-muted); font-size:.72rem; }
+.federationcard dd { overflow-wrap:anywhere; margin:.25rem 0 0; color:var(--sw-text); font-size:.82rem; font-weight:700; }
+.federationcard footer { border-top:.0625rem solid var(--sw-border); padding:.9rem 1.1rem; }
+.federationerror { color:var(--sw-danger); }
+@media (max-width:48rem) { .federationgrid { grid-template-columns:1fr; } .federationcard > header { grid-template-columns:auto 1fr; } .federationcard header > strong { grid-column:2; justify-self:start; } }
+@media (max-width:32rem) { .federationcard dl { grid-template-columns:1fr; } }

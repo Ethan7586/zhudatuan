@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PgTransactionAccess, SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { Cart } from '../../domain/model/Cart';
 import { PgCartRepository } from './PgCartRepository';
 
 function database(rows: ReadonlyArray<ReadonlyArray<Record<string, unknown>>>): SqlExecutor {
@@ -9,35 +10,35 @@ function database(rows: ReadonlyArray<ReadonlyArray<Record<string, unknown>>>): 
 }
 
 const context = {} as WriteTransactionContext;
+const member = Object.freeze({ kind: 'member' as const, member: 'member:1', mall: 'mall:1', application: 'app:1' });
 function repository(target: SqlExecutor): PgCartRepository {
   return new PgCartRepository({ database: () => target } as unknown as PgTransactionAccess);
 }
 
 describe('PgCartRepository', () => {
-  it('rejects a stale cart version after locking the active cart', async () => {
+  it('rejects a stale cart version while holding the owner-scoped row lock', async () => {
     const target = database([[{ id: 'cart:1', version: 4 }]]);
-    await expect(repository(target).lockOrCreate(context, 'member:1', 'mall:1', 'app:1', 3)).rejects.toMatchObject({ code: 'VERSION_CONFLICT' });
+    await expect(repository(target).lockExisting(context, member, 3)).rejects.toMatchObject({ code: 'VERSION_CONFLICT' });
+    expect(target.query).toHaveBeenCalledWith(expect.stringContaining("owner_kind='member'"), ['member:1', 'mall:1', 'app:1']);
   });
 
-  it('locks line versions in stable listing order', async () => {
-    const target = database([
-      [
-        { listing_id: 'listing:a', version: 2 },
-        { listing_id: 'listing:b', version: 3 },
-      ],
-    ]);
-    await repository(target).lineVersions(context, 'cart:1', ['listing:b', 'listing:a']);
-    expect(target.query).toHaveBeenCalledWith(expect.stringContaining('order by listing_id for update'), ['cart:1', ['listing:a', 'listing:b']]);
+  it('uses a cart compare-and-swap and verifies every planned line mutation', async () => {
+    const target = database([[]]);
+    const cart = new Cart({ id: 'cart:1', owner: member, version: 7, updatedAt: '2026-09-05T00:00:00.000Z', lines: [] });
+    await expect(repository(target).mutate(context, cart, [{ listing: 'listing:1', sku: 'sku:1', quantity: 2, selected: true, version: null }])).rejects.toMatchObject({ code: 'VERSION_CONFLICT' });
+    expect(target.query).toHaveBeenCalledWith(expect.stringMatching(/version=\$3[\s\S]*count\(\*\) from applied/), expect.arrayContaining(['cart:1', 7]));
   });
 
-  it('mutates a whole batch in one CTE and increments the cart exactly once', async () => {
-    const target = database([[{ listing_id: 'listing:a' }, { listing_id: 'listing:b' }], []]);
-    await repository(target).mutate(context, 'cart:1', [
-      { listing: 'listing:a', quantity: 2, version: 1, sku: 'sku:a', title: 'A', listingVersion: '7', unitMinor: 100, currency: 'CNY', priceVersion: 'price:1' },
-      { listing: 'listing:b', quantity: 0, version: 0, sku: '', title: '', listingVersion: '', unitMinor: 0, currency: '', priceVersion: '' },
-    ]);
-    expect(target.query).toHaveBeenCalledTimes(2);
-    expect(target.query).toHaveBeenNthCalledWith(1, expect.stringMatching(/removed as[\s\S]*updated as[\s\S]*inserted as/), expect.any(Array));
-    expect(target.query).toHaveBeenNthCalledWith(2, expect.stringContaining('version=version+1'), ['cart:1']);
+  it('looks up anonymous carts by digest and exact storefront scope without accepting a raw token', async () => {
+    const target = database([[]]);
+    const digest = 'a'.repeat(64);
+    await expect(repository(target).current(context, { kind: 'anonymous', tokenDigest: digest, mall: 'mall:1', application: 'app:1' })).resolves.toBeNull();
+    expect(target.query).toHaveBeenCalledWith(expect.stringContaining('token_digest=$1'), [digest, 'mall:1', 'app:1']);
+  });
+
+  it('does not expose or consume an anonymous cart from another scope during merge', async () => {
+    const target = database([[], []]);
+    await expect(repository(target).prepareMerge(context, 'b'.repeat(64), member)).resolves.toEqual({ state: 'none' });
+    expect(target.query).toHaveBeenNthCalledWith(2, expect.stringContaining('mall_id=$2 and application_id=$3'), ['b'.repeat(64), 'mall:1', 'app:1']);
   });
 });

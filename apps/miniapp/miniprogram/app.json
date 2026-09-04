@@ -1,0 +1,29 @@
+{
+  "pages": [
+    "feature/home/page",
+    "feature/benefit/page",
+    "feature/cart/page",
+    "feature/checkout/page",
+    "feature/notification/page",
+    "feature/order/page",
+    "feature/aftersale/page",
+    "feature/payment/page",
+    "feature/catalog/page",
+    "feature/product/page",
+    "feature/account/page",
+    "feature/referral/page",
+    "feature/support/page",
+    "feature/voucher/page"
+  ],
+  "window": {
+    "navigationBarTitleText": "智慧翼福利商城",
+    "navigationBarBackgroundColor": "#143A8F",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F5F7FA",
+    "backgroundTextStyle": "light",
+    "enablePullDownRefresh": true
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json"
+}

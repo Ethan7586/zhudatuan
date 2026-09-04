@@ -5,9 +5,8 @@ import { applies, eligible, type CartRow, type LineRow, type PolicyRow, type Pur
 export function evaluateLine(source: LineRow, cart: CartRow, policies: readonly PolicyRow[], purchases: ReadonlyMap<string, PurchaseRow>, tags: ReadonlySet<string>): QuoteLine {
   const reasons: string[] = [];
   if (!source.listing_id || source.listing_status !== 'published' || source.product_id === null) reasons.push('LISTING_NOT_PURCHASABLE');
-  if (source.listing_version === null || source.cart_listing_version !== String(source.listing_version)) reasons.push('LISTING_VERSION_CHANGED');
+  if (source.listing_version === null) reasons.push('LISTING_VERSION_CHANGED');
   if (source.unit_minor === null || source.currency !== 'CNY') reasons.push('PRICE_UNAVAILABLE');
-  else if (source.cart_price_version !== source.price_version || source.cart_unit_minor !== source.unit_minor) reasons.push('PRICE_VERSION_CHANGED');
   if (source.stockitem_id === null) reasons.push('INVENTORY_UNAVAILABLE');
   else if ((source.onhand ?? 0) - (source.safety ?? 0) - (source.reserved ?? 0) < source.quantity) reasons.push('INVENTORY_INSUFFICIENT');
   if (cart.profile_status !== 'active') reasons.push('MEMBER_PROFILE_INACTIVE');

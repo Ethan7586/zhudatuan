@@ -22,12 +22,12 @@ export const ToastContainer: React.FC<{ readonly toasts: readonly ToastMessage[]
             key={toast.id}
             className={`pointer-events-auto flex items-center justify-between gap-3 px-4 py-3 rounded-md shadow-lg border text-sm font-medium transition-all duration-200 animate-in slide-in-from-top-2 ${
               isSuccess
-                ? 'bg-white text-gray-900 border-green-200 shadow-green-900/5'
+                ? 'bg-surface text-content border-success shadow-success-strong/5'
                 : isError
-                  ? 'bg-white text-gray-900 border-red-200 shadow-red-900/5'
+                  ? 'bg-surface text-content border-danger shadow-danger-strong/5'
                   : isWarning
-                    ? 'bg-white text-gray-900 border-amber-200 shadow-amber-900/5'
-                    : 'bg-white text-gray-900 border-blue-200 shadow-blue-900/5'
+                    ? 'bg-surface text-content border-warning shadow-warning-strong/5'
+                    : 'bg-surface text-content border-brand shadow-brand-dark/5'
             }`}
           >
             <div className="flex items-center gap-2.5">
@@ -37,7 +37,7 @@ export const ToastContainer: React.FC<{ readonly toasts: readonly ToastMessage[]
               {!isSuccess && !isError && !isWarning && <Info className="w-5 h-5 text-[var(--sw-brand)] flex-shrink-0" />}
               <span className="leading-snug">{toast.text}</span>
             </div>
-            <button onClick={() => removeToast(toast.id)} className="text-gray-400 hover:text-gray-600 transition-colors p-0.5 rounded">
+            <button onClick={() => removeToast(toast.id)} className="text-muted hover:text-secondary transition-colors p-0.5 rounded">
               <X className="w-4 h-4" />
             </button>
           </div>

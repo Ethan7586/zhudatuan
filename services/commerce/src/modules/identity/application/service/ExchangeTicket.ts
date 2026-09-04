@@ -9,7 +9,8 @@ import type { AuthTicketPort } from '../port/AuthTicketPort';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';
 import { returnDestination } from './ReturnDestination';
-import { bodyRecord } from '../../../../foundation/interface/Validation';
+import { bodyRecord } from '../../../../foundation/application/Validation';
+import { OPERATION_TARGETS } from '@shop/contract';
 
 export class ExchangeTicket {
   constructor(
@@ -20,7 +21,7 @@ export class ExchangeTicket {
   ) {}
   action(): OperationAction {
     return async (request, database) => {
-      const current = (['console', 'storefront'] as const).map((target) => this.cookies.read(request.input.headers.cookie, `__Host-${target}-session`)).filter((token): token is string => token !== undefined);
+      const current = OPERATION_TARGETS.map((target) => this.cookies.read(request.input.headers.cookie, `__Host-${target}-session`)).filter((token): token is string => token !== undefined);
       if (current.length === 0) reject('AUTHENTICATION_REQUIRED');
       const token = randomBytes(48).toString('base64url');
       const body = bodyRecord(request.input);

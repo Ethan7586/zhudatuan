@@ -44,10 +44,18 @@ if (api.indexOf('assertRuntimeReady') > api.indexOf('listen('))
     detail: 'readiness before listen',
   });
 const jobs = readFileSync(join(root, 'services/commerce/src/app/JobsMain.ts'), 'utf8');
-for (const token of ['bootstrapJobs', 'JOB_RUNTIME_CATALOG_DRIFT', 'OutboxRelay', 'RuntimeScheduler'])
+for (const token of ['bootstrapJobs', 'JOB_RUNTIME_CATALOG_DRIFT', 'registries.workers.all'])
   if (!jobs.includes(token)) {
     violations.push({ code: 'JOBS_BOOTSTRAP_EDGE_MISSING', location: 'services/commerce/src/app/JobsMain.ts', detail: token });
   }
+const runtimeModule = readFileSync(join(root, 'services/commerce/src/modules/runtime/Module.ts'), 'utf8');
+const runtimeWorkers = readFileSync(join(root, 'services/commerce/src/modules/runtime/infrastructure/queue/WorkerFactory.ts'), 'utf8');
+const runtimeManifest = readFileSync(join(root, 'services/commerce/src/modules/runtime/Manifest.ts'), 'utf8');
+if (!runtimeModule.includes('workers: createWorkers')) violations.push({ code: 'RUNTIME_WORKER_EDGE_MISSING', location: 'services/commerce/src/modules/runtime/Module.ts', detail: 'workers: createWorkers' });
+for (const token of ['OutboxRelay', 'RuntimeScheduler'])
+  if (!runtimeWorkers.includes(token)) violations.push({ code: 'RUNTIME_WORKER_EDGE_MISSING', location: 'services/commerce/src/modules/runtime/infrastructure/queue/WorkerFactory.ts', detail: token });
+for (const token of ["workers: ['outboxrelay', 'scheduler']"])
+  if (!runtimeManifest.includes(token)) violations.push({ code: 'RUNTIME_WORKER_MANIFEST_MISSING', location: 'services/commerce/src/modules/runtime/Manifest.ts', detail: token });
 const pipeline = readFileSync(join(root, 'services/commerce/src/foundation/application/OperationPipeline.ts'), 'utf8');
 for (const token of ['operationSchema', 'policy.authorize', 'handlers.get', 'schema.output.parse'])
   if (!pipeline.includes(token)) {

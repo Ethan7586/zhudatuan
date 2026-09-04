@@ -16,6 +16,10 @@ export interface Profile {
   readonly phoneVerified: boolean;
   readonly paymentEligible: boolean;
   readonly accessVersion: number;
+  readonly locale: string;
+  readonly timezone: string;
+  readonly marketingAllowed: boolean;
+  readonly preferenceVersion: number;
 }
 
 export interface EnterpriseMall {

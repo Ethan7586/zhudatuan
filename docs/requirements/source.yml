@@ -3,8 +3,8 @@ source: RepositoryAuthority docs/福利商城功能清单.xlsx
 workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
 counts:
   mvp: 22
-  required: 18
-  nonblocking: 4
+  required: 22
+  nonblocking: 0
   providerRequired: 11
 mvp:
   - id: MVPPLATFORM
@@ -13,7 +13,7 @@ mvp:
       sheet: MVP上线功能清单
       row: 3
       range: A3:F3
-    release: nonblocking
+    release: required
     clarifications: []
   - id: MVPDISTRIBUTION
     title: 分销层
@@ -21,7 +21,7 @@ mvp:
       sheet: MVP上线功能清单
       row: 4
       range: A4:F4
-    release: nonblocking
+    release: required
     clarifications:
       - distributiondefinition
   - id: MVPGROUPDASHBOARD
@@ -71,7 +71,7 @@ mvp:
       sheet: MVP上线功能清单
       row: 10
       range: A10:F10
-    release: nonblocking
+    release: required
     clarifications: []
   - id: MVPGROUPREPORT
     title: 集团数据统计
@@ -145,7 +145,7 @@ mvp:
       sheet: MVP上线功能清单
       row: 19
       range: A19:F19
-    release: nonblocking
+    release: required
     clarifications: []
   - id: MVPMALLREPORT
     title: 商城数据统计
@@ -202,7 +202,7 @@ providers:
     row: 4
     label: 天猫超市
     priority: 1
-    core: tmallcore
+    core: self
   - id: supplier
     row: 5
     label: 自有供应商
@@ -222,7 +222,7 @@ providers:
     row: 8
     label: 图书
     priority: 1
-    core: bookcore
+    core: self
   - id: charge
     row: 9
     label: 虚拟卡券/直充
@@ -248,30 +248,30 @@ clarifications:
     requirements:
       - MVPDISTRIBUTION
     term: 分销层
-    status: open
+    status: resolved
     blocking: false
     owner: product
-    acceptance: null
-    resolvedby: null
-    reason: 工作簿功能说明为空且备注为忽略，只记录定义缺口，不阻塞本次MVP发布
+    acceptance: 分销层定义为平台与租户之间的业务范围，拥有集团绑定、配额、佣金和渠道治理职责
+    resolvedby: docs/architecture/福利商城理想方案20260904.md
+    reason: 理想方案已给出唯一范围模型和分销层职责，历史“忽略”备注不再降低发布要求
   - id: voucherarchive
     requirements:
       - MVPGROUPVOUCHER
       - MVPMALLVOUCHER
     term: 客户管理与产品档案
-    status: open
+    status: resolved
     blocking: true
     owner: product
-    acceptance: null
-    resolvedby: null
-    reason: 工作簿明确标记第1点待确认，签字前不能标记Released
+    acceptance: 客户归 Partner Customer 子域，产品档案归 Rich Voucher Product 与 Catalog，不在 Voucher 建第二份客户或商品主数据
+    resolvedby: docs/architecture/福利商城理想方案20260904.md
+    reason: 理想方案已经裁决归属，历史待确认项转换为必须通过的实现与迁移验收
   - id: grouprisk
     requirements:
       - MVPGROUPSETTING
     term: 集团风控设置
-    status: open
+    status: resolved
     blocking: true
     owner: product
-    acceptance: null
-    resolvedby: null
-    reason: 工作簿明确标记风控设置待确认，需定义策略对象和审批权限
+    acceptance: 集团风控使用 Risk Policy 和 Case 聚合，策略启用需 Step-up、MakerChecker 与 Approval 证据
+    resolvedby: docs/architecture/福利商城理想方案20260904.md
+    reason: 理想方案已经定义风险策略对象、审批边界和质量门，历史待确认项不再开放

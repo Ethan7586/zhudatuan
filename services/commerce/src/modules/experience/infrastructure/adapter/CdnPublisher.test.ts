@@ -1,13 +1,20 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { serializeExperience } from '@shop/contract';
-import type { ObjectStore, ObjectUpload, StoredObject } from '../../../../foundation/infrastructure/ObjectStore';
+import type { ObjectMetadata, ObjectStore, ObjectUpload } from '../../../runtime/public/ObjectPort';
 import { CdnPublisher } from './CdnPublisher';
 
-const document = { version: 2, application: 'application:test', pages: [{ id: 'home', path: '/', blocks: [] }] };
+const document = {
+  version: 2,
+  application: 'application:test',
+  theme: { preset: 'shop', primaryColor: '#1F5EFF', accentColor: '#19A974', logoObjectRef: null, faviconObjectRef: null },
+  navigation: [{ id: 'navigation:home', label: '首页', page: 'home' }],
+  assets: [],
+  pages: [{ id: 'home', path: '/', blocks: [] }],
+} as const;
 
 class MemoryObjects implements ObjectStore {
-  readonly values = new Map<string, { bytes: Uint8Array; object: StoredObject & { contentType: string; path: string } }>();
+  readonly values = new Map<string, { bytes: Uint8Array; object: ObjectMetadata }>();
   creates = 0;
 
   async create(path: string, contentType: string): Promise<ObjectUpload> {
@@ -20,7 +27,8 @@ class MemoryObjects implements ObjectStore {
       abort: async () => undefined,
       complete: async () => {
         const sha256 = createHash('sha256').update(bytes).digest('hex');
-        const object = { reference: `object:${path}`, sha256, size: bytes.byteLength, scan: 'clean' as const, contentType, path };
+        const object = { reference: `object:${path}`, sha256, size: bytes.byteLength, scan: 'clean' as const, contentType, path,
+          retentionUntil: null, lockedUntil: null };
         this.values.set(path, { bytes, object });
         this.values.set(object.reference, { bytes, object });
         return object;
@@ -35,10 +43,17 @@ class MemoryObjects implements ObjectStore {
     if (!value) throw new Error('NOT_FOUND');
     return value;
   }
+  async lock(_reference: string, until: string) { return { mode: 'compliance' as const, lockedUntil: until }; }
   async read(reference: string) {
     const value = this.values.get(reference)?.bytes;
     if (!value) throw new Error('NOT_FOUND');
     return value;
+  }
+  async *chunks(reference: string) {
+    yield await this.read(reference);
+  }
+  async remove(reference: string) {
+    this.values.delete(reference);
   }
   async authorize(reference: string) {
     return { url: `https://objects.test/${reference}`, expiresAt: new Date(Date.now() + 60_000).toISOString() };

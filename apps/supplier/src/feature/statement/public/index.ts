@@ -1,0 +1,1 @@
+export { statementManifest } from './Manifest';

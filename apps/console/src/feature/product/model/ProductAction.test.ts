@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { canChangeListingPublication, productStatus } from './ProductAction';
+import { editableProductStatus } from '@shop/presentation';
+import { canChangeListingPublication, productVersion } from './ProductAction';
 
 describe('product publication policy', () => {
   it('allows publication only after the product is active', () => {
@@ -12,7 +13,13 @@ describe('product publication policy', () => {
   });
 
   it('preserves the authoritative product status for editing', () => {
-    expect(productStatus('review')).toBe('review');
-    expect(productStatus('unknown')).toBe('draft');
+    expect(editableProductStatus('review')).toBe('review');
+    expect(editableProductStatus(undefined)).toBe('draft');
+  });
+
+  it('accepts only safe authoritative versions for optimistic writes', () => {
+    expect(productVersion('7')).toBe(7);
+    expect(productVersion(-1)).toBeUndefined();
+    expect(productVersion('not-a-version')).toBeUndefined();
   });
 });

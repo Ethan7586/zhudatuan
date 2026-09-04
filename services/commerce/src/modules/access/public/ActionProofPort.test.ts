@@ -16,7 +16,7 @@ const checker: ActionProofChecker = Object.freeze({ membership: 'membership:chec
 
 describe('PgActionProofPort', () => {
   it('issues an opaque five-minute proof only after both actors are authorized for the exact action', async () => {
-    const query = vi.fn().mockResolvedValueOnce({ rows: [{ expires_at: '2026-08-30T10:05:00.000Z' }] });
+    const query = vi.fn().mockResolvedValueOnce({ rows: [{ independent: true }] }).mockResolvedValueOnce({ rows: [{ expires_at: '2026-08-30T10:05:00.000Z' }] });
     const authorizations = port(snapshot(checker.membership, checker.accessVersion), snapshot(binding.makerMembership, 4));
 
     const issued = await withWriteTransaction(query, (context) => new PgActionProofPort(authorizations).issue(context, binding, checker));
@@ -35,6 +35,15 @@ describe('PgActionProofPort', () => {
     const query = vi.fn();
     const authorizations = port(snapshot(checker.membership, checker.accessVersion), { ...snapshot(binding.makerMembership, 4), resource: { kind: 'mall', id: 'mall:other', path: [] } });
     await expect(withReadTransaction(query, (context) => new PgActionProofPort(authorizations).validate(context, binding, checker))).rejects.toMatchObject({ code: 'ACTION_PROOF_INVALID' });
+  });
+
+  it('rejects different memberships of the same principal before issuing a proof', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [{ independent: false }] });
+    const authorizations = port(snapshot(checker.membership, checker.accessVersion), snapshot(binding.makerMembership, 4));
+    await expect(withWriteTransaction(query, context => new PgActionProofPort(authorizations).issue(context, binding, checker)))
+      .rejects.toMatchObject({ code: 'MAKER_CHECKER_SEPARATION_REQUIRED' });
+    expect(query).toHaveBeenCalledTimes(1);
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('access.memberships_independent'), [binding.makerMembership, checker.membership]);
   });
 });
 

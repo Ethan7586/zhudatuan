@@ -1,5 +1,6 @@
 import { bearerToken, distinctValues, enumValue, integerValue, pickEnvironment, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
 import type { AuthTarget } from './ClientEnvironment';
+import { CLIENT_ORIGINS, CLIENT_TARGETS } from './ClientCatalog';
 import { NETWORK_CATALOG } from './NetworkCatalog';
 
 export const API_ENVIRONMENT_KEYS = [
@@ -69,7 +70,7 @@ export function apiReturnTargets(environment: ApiEnvironment): AuthReturnTargets
   }
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('AUTH_RETURN_TARGETS_INVALID');
   const record = parsed as Readonly<Record<string, unknown>>;
-  const keys: readonly AuthTarget[] = ['console', 'storefront'];
+  const keys: readonly AuthTarget[] = CLIENT_TARGETS;
   if (Object.keys(record).sort().join(',') !== [...keys].sort().join(',')) throw new Error('AUTH_RETURN_TARGETS_INVALID');
   return Object.freeze(Object.fromEntries(keys.map((key) => [key, webUrl(record[key])])) as Record<AuthTarget, string>);
 }
@@ -114,10 +115,10 @@ function validateProductionNetwork(source: ApiEnvironment | EnvironmentSource): 
   const allowed = apiAllowedOrigins(source)
     .slice()
     .sort();
-  const expectedAllowed = [NETWORK_CATALOG.origins.auth, NETWORK_CATALOG.origins.console, NETWORK_CATALOG.origins.storefront].sort();
+  const expectedAllowed = Object.values(CLIENT_ORIGINS).sort();
   if (allowed.join(',') !== expectedAllowed.join(',')) throw new Error('PRODUCTION_ALLOWED_ORIGINS_INVALID');
   const targets = apiReturnTargets(source);
-  if (targets.console !== NETWORK_CATALOG.origins.console || targets.storefront !== NETWORK_CATALOG.origins.storefront) throw new Error('PRODUCTION_RETURN_TARGETS_INVALID');
+  if (CLIENT_TARGETS.some((target) => targets[target] !== CLIENT_ORIGINS[target])) throw new Error('PRODUCTION_RETURN_TARGETS_INVALID');
   if (apiStorefrontOrigin(source) !== NETWORK_CATALOG.origins.storefront) throw new Error('PRODUCTION_STOREFRONT_ORIGIN_INVALID');
 }
 

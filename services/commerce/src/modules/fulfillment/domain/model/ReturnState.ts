@@ -2,7 +2,7 @@ export class ReturnState {
   private constructor(readonly value: string) {}
 
   static from(value: string): ReturnState {
-    if (!value) throw new Error('RETURN_STATE_REQUIRED');
+    if (!states.has(value)) throw new Error('RETURN_STATE_REQUIRED');
     return new ReturnState(value);
   }
 
@@ -11,8 +11,15 @@ export class ReturnState {
     return 'received';
   }
 
+  dispatch(): string {
+    if (this.value !== 'authorized') throw new Error('RETURN_STATE_CONFLICT');
+    return 'intransit';
+  }
+
   inspect(accepted: boolean): string {
     if (this.value !== 'received') throw new Error('RETURN_STATE_CONFLICT');
     return accepted ? 'accepted' : 'rejected';
   }
 }
+
+const states = new Set(['authorized', 'intransit', 'received', 'accepted', 'rejected']);

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { HttpClient } from '../../services/commerce/src/foundation/http/HttpClient';
 import { NetworkPolicy } from '../../services/commerce/src/foundation/security/NetworkPolicy';
-import { AfterSaleAttachmentService } from '../../services/commerce/src/modules/order/application/service/AfterSaleAttachmentService';
+import { AfterSaleAttachment } from '../../services/commerce/src/modules/order/application/service/AfterSaleAttachment';
 
 test('provider egress rejects SSRF, DNS rebinding and oversized responses', async () => {
   await assert.rejects(new NetworkPolicy({ hosts: ['provider.example'] }, async () => ['169.254.169.254']).assert('https://provider.example/order'), /NETWORK_ADDRESS_DENIED/);
@@ -18,7 +18,7 @@ test('provider egress rejects SSRF, DNS rebinding and oversized responses', asyn
 test('attachments reject spoofed type, excessive size and malicious scan state', async () => {
   const png = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1]);
   const data = Buffer.from(png).toString('base64');
-  const attachments = new AfterSaleAttachmentService({
+  const attachments = new AfterSaleAttachment({
     create: async () =>
       ({
         append: async () => undefined,

@@ -12,7 +12,13 @@ const capacity = parse(await readFile(resolve(root, 'config/capacity.yml'), 'utf
 const telemetry = parse(await readFile(resolve(root, 'config/telemetry.yml'), 'utf8'));
 const network = parse(await readFile(resolve(root, 'infrastructure/network/Edge.yml'), 'utf8'));
 const identity = parse(await readFile(resolve(root, 'config/identityproviders.yml'), 'utf8'));
-validate(cache, capacity, telemetry, network, identity);
+const clients = parse(await readFile(resolve(root, 'config/clients.yml'), 'utf8'));
+const events = parse(await readFile(resolve(root, 'packages/contract/definitions/events.yml'), 'utf8'));
+validate(cache, capacity, telemetry, network, identity, clients, events);
+const serviceLevels = Object.fromEntries(Object.entries(telemetry.serviceLevels).map(([id, level]) => {
+  const { targetKey, ...definition } = level;
+  return [id, { ...definition, target: telemetry.slo[targetKey] }];
+}));
 
 const source =
   `// Generated from config/cache.yml and config/capacity.yml. Do not edit.\n` +
@@ -21,26 +27,50 @@ const source =
   `export const CACHE_CATALOG = Object.freeze(${JSON.stringify(cache.caches, null, 2)} as const);\n\n` +
   `export const CAPACITY_MODEL = Object.freeze(${JSON.stringify(capacity.model, null, 2)} as const);\n\n` +
   `export const PROVIDER_CAPACITY = Object.freeze(${JSON.stringify(capacity.provider, null, 2)} as const);\n\n` +
+  `export const IMPORT_CAPACITY = Object.freeze(${JSON.stringify(capacity.imports, null, 2)} as const);\n\n` +
+  `export const WORKER_CAPACITY = Object.freeze(${JSON.stringify(capacity.workers, null, 2)} as const);\n\n` +
+  `export const CLIENT_BUNDLE_CAPACITY = Object.freeze(${JSON.stringify(capacity.clients, null, 2)} as const);\n\n` +
+  `export const NAVIGATION_CAPACITY = Object.freeze(${JSON.stringify(capacity.navigation, null, 2)} as const);\n\n` +
   `export const RUNTIME_LIMITS = Object.freeze(${JSON.stringify(capacity.runtime, null, 2)} as const);\n`;
 await emit(resolve(root, 'packages/config/src/RuntimeCatalog.ts'), source);
 
 const redactionSource =
   `// Generated from config/telemetry.yml. Do not edit.\n` +
   `export const REDACTION_KEYS = Object.freeze(${JSON.stringify(telemetry.redaction.deny, null, 2)} as const);\n\n` +
-  `export const REDACTION_KEY_PATTERN = new RegExp(\`(?:\${REDACTION_KEYS.join('|')})\`, 'i');\n`;
+  `export const REDACTION_KEY_PATTERN = new RegExp(\`(?:\${REDACTION_KEYS.join('|')})\`, 'i');\n\n` +
+  `export const TELEMETRY_METRICS = Object.freeze(${JSON.stringify(telemetry.metrics, null, 2)} as const);\n\n` +
+  `export const TELEMETRY_BUFFER = Object.freeze(${JSON.stringify(telemetry.buffer, null, 2)} as const);\n\n` +
+  `export const TELEMETRY_HEALTH = Object.freeze(${JSON.stringify(telemetry.health, null, 2)} as const);\n\n` +
+  `export const TELEMETRY_SLO = Object.freeze(${JSON.stringify(telemetry.slo, null, 2)} as const);\n\n` +
+  `export const TELEMETRY_SERVICE_LEVELS = Object.freeze(${JSON.stringify(serviceLevels, null, 2)} as const);\n\n` +
+  `export const TELEMETRY_ALERTS = Object.freeze(${JSON.stringify(telemetry.alerts, null, 2)} as const);\n\n` +
+  `export const TELEMETRY_SAMPLING = Object.freeze(${JSON.stringify(telemetry.sampling, null, 2)} as const);\n`;
 await emit(resolve(root, 'packages/telemetry/src/RedactionCatalog.ts'), redactionSource);
 
-const origins = Object.freeze({
-  api: origin(network.routes.api.host),
-  auth: origin(network.routes.auth.host),
-  console: origin(network.routes.console.host),
-  storefront: origin(network.routes.storefront.host),
-});
+const origins = Object.freeze({ api: origin(network.routes.api.host), ...Object.fromEntries(clients.clients.map((client) => [client.id, origin(network.routes[client.route].host)])) });
 const networkSource =
   `// Generated from infrastructure/network/Edge.yml. Do not edit.\n` +
   `export const NETWORK_CHECKSUM = '${createHash('sha256').update(JSON.stringify(network)).digest('hex')}' as const;\n\n` +
   `export const NETWORK_CATALOG = Object.freeze(${JSON.stringify({ origins, storefront: { entryPath: network.routes.storefront.entryPath, fallback: network.routes.storefront.fallback } }, null, 2)} as const);\n`;
 await emit(resolve(root, 'packages/config/src/NetworkCatalog.ts'), networkSource);
+
+const clientCatalog = clients.clients.map((client) => ({
+  ...client,
+  origin: origins[client.id],
+  localOrigin: `http://127.0.0.1:${client.localPort}`,
+}));
+const clientSource =
+  `// Generated from config/clients.yml and infrastructure/network/Edge.yml. Do not edit.\n` +
+  `export const CLIENT_CATALOG_CHECKSUM = '${createHash('sha256').update(JSON.stringify({ clients, routes: network.routes })).digest('hex')}' as const;\n` +
+  `const CLIENT_SOURCE = ${JSON.stringify(clientCatalog, null, 2)} as const;\n` +
+  `export const CLIENT_CATALOG = Object.freeze(CLIENT_SOURCE.map((client) => Object.freeze({ ...client, domains: Object.freeze([...client.domains]) })));\n` +
+  `export type ClientSurface = (typeof CLIENT_CATALOG)[number]['id'];\n` +
+  `export type ClientTarget = Exclude<(typeof CLIENT_CATALOG)[number]['target'], null>;\n` +
+  `export const CLIENT_BY_ID: ReadonlyMap<ClientSurface, (typeof CLIENT_CATALOG)[number]> = new Map(CLIENT_CATALOG.map((client) => [client.id, client]));\n` +
+  `export const CLIENT_TARGETS = Object.freeze(CLIENT_CATALOG.flatMap((client) => client.target === null ? [] : [client.target])) as readonly ClientTarget[];\n` +
+  `export const CLIENT_ORIGINS = Object.freeze(Object.fromEntries(CLIENT_CATALOG.map((client) => [client.id, client.origin]))) as Readonly<Record<ClientSurface, string>>;\n` +
+  `export const CLIENT_LOCAL_ORIGINS = Object.freeze(Object.fromEntries(CLIENT_CATALOG.map((client) => [client.id, client.localOrigin]))) as Readonly<Record<ClientSurface, string>>;\n`;
+await emit(resolve(root, 'packages/config/src/ClientCatalog.ts'), clientSource);
 
 const providerTypes = Object.keys(identity.types).sort();
 const providerSource =
@@ -50,6 +80,7 @@ const providerSource =
   `export type IdentityProviderType = (typeof IDENTITY_PROVIDER_TYPES)[number];\n\n` +
   `export const IDENTITY_PROVIDER_CONFIGURATION = Object.freeze({\n` +
   `  schemaVersion: ${identity.version},\n` +
+  `  schema: Object.freeze(${JSON.stringify(identity.schema, null, 2)} as const),\n` +
   `  callbackOrigin: '${origins.auth}',\n` +
   `  discoveryPath: '${identity.security.discoveryPath}',\n` +
   `  discoveryTtlSeconds: ${identity.security.discoveryTtlSeconds},\n` +
@@ -66,6 +97,10 @@ const providerSource =
   `  maximumResponseBytes: ${identity.security.maximumResponseBytes},\n` +
   `  retryAttempts: ${identity.security.retryAttempts},\n` +
   `  allowedAlgorithms: Object.freeze(${JSON.stringify(identity.security.allowedAlgorithms)} as const),\n` +
+  `  redirectAllowlist: Object.freeze(${JSON.stringify(identity.security.redirectAllowlist)} as const),\n` +
+  `  bindingConflict: '${identity.security.bindingConflict}',\n` +
+  `  accountLink: '${identity.security.accountLink}',\n` +
+  `  keyRotationDays: ${identity.security.keyRotationDays},\n` +
   `  typePolicies: Object.freeze(${JSON.stringify(identity.types, null, 2)} as const),\n` +
   `  secretReference: new RegExp(${JSON.stringify(identity.security.secretReference)}),\n` +
   `});\n\n` +
@@ -81,7 +116,7 @@ const providerSource =
   `}\n`;
 await emit(resolve(root, 'packages/config/src/IdentityProvider.ts'), providerSource);
 
-function validate(cacheDocument, capacityDocument, telemetryDocument, networkDocument, identityDocument) {
+function validate(cacheDocument, capacityDocument, telemetryDocument, networkDocument, identityDocument, clientDocument, eventDocument) {
   if (cacheDocument?.version !== 1 || cacheDocument.owner !== 'platform' || typeof cacheDocument.caches !== 'object') throw new Error('CACHE_CATALOG_INVALID');
   const browser = cacheDocument.browser;
   const query = browser?.query;
@@ -97,6 +132,9 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
     browser.scopeChange?.cancelPending !== true ||
     browser.scopeChange?.removePrevious !== true
   ) throw new Error('BROWSER_CACHE_POLICY_INVALID');
+  const eventIds = new Set((eventDocument?.events ?? []).map(({ id }) => id));
+  const requiredCaches = ['publishedexperience', 'listing', 'accessversion', 'navigation', 'providerhealth', 'reportingwatermark'];
+  if (requiredCaches.some((name) => cacheDocument.caches[name] === undefined)) throw new Error('CACHE_REQUIRED_ENTRY_MISSING');
   for (const [name, value] of Object.entries(cacheDocument.caches)) {
     if (
       !/^[a-z][a-z0-9]*$/.test(name) ||
@@ -107,7 +145,11 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
       !Number.isSafeInteger(value.staleSeconds) ||
       value.staleSeconds < 0 ||
       value.staleSeconds > value.maximumSeconds ||
-      typeof value.commandRevalidate !== 'boolean'
+      typeof value.commandRevalidate !== 'boolean' ||
+      !Array.isArray(value.invalidatedBy) ||
+      value.invalidatedBy.length === 0 ||
+      new Set(value.invalidatedBy).size !== value.invalidatedBy.length ||
+      value.invalidatedBy.some((event) => !eventIds.has(event))
     )
       throw new Error(`CACHE_ENTRY_INVALID:${name}`);
   }
@@ -116,6 +158,12 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
     capacityDocument.owner !== 'platform' ||
     typeof capacityDocument.model !== 'object' ||
     typeof capacityDocument.provider !== 'object' ||
+    typeof capacityDocument.imports !== 'object' ||
+    typeof capacityDocument.workers !== 'object' ||
+    typeof capacityDocument.clients !== 'object' ||
+    typeof capacityDocument.navigation !== 'object' ||
+    typeof capacityDocument.runtime?.cart !== 'object' ||
+    typeof capacityDocument.runtime?.checkout !== 'object' ||
     typeof capacityDocument.runtime?.authentication?.otp !== 'object' ||
     typeof capacityDocument.runtime?.external !== 'object' ||
     typeof capacityDocument.runtime?.http !== 'object' ||
@@ -123,10 +171,105 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
     typeof capacityDocument.runtime?.pool !== 'object' ||
     typeof capacityDocument.runtime?.poolBudget !== 'object' ||
     typeof capacityDocument.runtime?.sql !== 'object'
+    || typeof capacityDocument.runtime?.queue !== 'object'
+    || typeof capacityDocument.runtime?.cleanup !== 'object'
+    || typeof capacityDocument.runtime?.worker !== 'object'
   ) {
     throw new Error('CAPACITY_CATALOG_INVALID');
   }
+  const cart = capacityDocument.runtime.cart;
+  const queue = capacityDocument.runtime.queue;
+  if (Object.keys(queue).sort().join(',') !== 'deferred,lowPriority,maximumDepth,protected,reservedDepth'
+    || !Number.isSafeInteger(queue.maximumDepth) || queue.maximumDepth < 256
+    || !Number.isSafeInteger(queue.reservedDepth) || queue.reservedDepth < 1 || queue.reservedDepth >= queue.maximumDepth
+    || !Number.isSafeInteger(queue.lowPriority) || queue.lowPriority < 1 || queue.lowPriority > 1000
+    || queue.deferred?.join(',') !== 'export,import,maintenance'
+    || queue.protected?.join(',') !== 'transaction,payment,inventory,identity,risk'
+    || queue.deferred.some(value => queue.protected.includes(value))) throw new Error('QUEUE_CAPACITY_INVALID');
+  const cleanup = capacityDocument.runtime.cleanup;
+  if (Object.keys(cleanup).sort().join(',') !== 'batch,inboxDays,objectConcurrency,outboxDays'
+    || !Number.isSafeInteger(cleanup.batch) || cleanup.batch < 1 || cleanup.batch > 5000
+    || !Number.isSafeInteger(cleanup.objectConcurrency) || cleanup.objectConcurrency < 1 || cleanup.objectConcurrency > 32
+    || !Number.isSafeInteger(cleanup.inboxDays) || cleanup.inboxDays < 1 || cleanup.inboxDays > 365
+    || !Number.isSafeInteger(cleanup.outboxDays) || cleanup.outboxDays < 1 || cleanup.outboxDays > 365) throw new Error('CLEANUP_CAPACITY_INVALID');
+  const runtimeWorker = capacityDocument.runtime.worker;
+  if (Object.keys(runtimeWorker).sort().join(',') !== 'outbox,scheduler'
+    || Object.keys(runtimeWorker.outbox ?? {}).sort().join(',') !== 'batch,concurrency,pollMilliseconds'
+    || !Number.isSafeInteger(runtimeWorker.outbox.batch) || runtimeWorker.outbox.batch < 1 || runtimeWorker.outbox.batch > 1000
+    || !Number.isSafeInteger(runtimeWorker.outbox.concurrency) || runtimeWorker.outbox.concurrency < 1 || runtimeWorker.outbox.concurrency > runtimeWorker.outbox.batch
+    || !Number.isSafeInteger(runtimeWorker.outbox.pollMilliseconds) || runtimeWorker.outbox.pollMilliseconds < 50 || runtimeWorker.outbox.pollMilliseconds > 60_000
+    || Object.keys(runtimeWorker.scheduler ?? {}).sort().join(',') !== 'leaseSeconds,pollMilliseconds'
+    || !Number.isSafeInteger(runtimeWorker.scheduler.leaseSeconds) || runtimeWorker.scheduler.leaseSeconds < 5 || runtimeWorker.scheduler.leaseSeconds > 900
+    || !Number.isSafeInteger(runtimeWorker.scheduler.pollMilliseconds) || runtimeWorker.scheduler.pollMilliseconds < 1_000 || runtimeWorker.scheduler.pollMilliseconds > 300_000) {
+    throw new Error('RUNTIME_WORKER_CAPACITY_INVALID');
+  }
+  const voucherExport = capacityDocument.runtime.voucherExport;
+  const voucherTender = capacityDocument.runtime.voucherTender;
+  if (!voucherTender || Object.keys(voucherTender).join(',') !== 'holdTtlSeconds' ||
+    !Number.isSafeInteger(voucherTender.holdTtlSeconds) || voucherTender.holdTtlSeconds <= 0) {
+    throw new Error('CAPACITY_VOUCHER_TENDER_INVALID');
+  }
+  if (!voucherExport || Object.keys(voucherExport).sort().join(',') !== 'downloadTtlSeconds,pageRows,revealConcurrency,snapshotTtlSeconds' ||
+    Object.values(voucherExport).some(value => !Number.isSafeInteger(value) || value <= 0) ||
+    voucherExport.pageRows > capacityDocument.model.voucherBatch || voucherExport.revealConcurrency > voucherExport.pageRows ||
+    voucherExport.downloadTtlSeconds < 60 || voucherExport.downloadTtlSeconds > 300 ||
+    voucherExport.snapshotTtlSeconds < voucherExport.downloadTtlSeconds || voucherExport.snapshotTtlSeconds > 86400) {
+    throw new Error('VOUCHER_EXPORT_CAPACITY_INVALID');
+  }
+  if (
+    !Number.isSafeInteger(cart.maximumLines) ||
+    cart.maximumLines < 1 ||
+    cart.maximumLines > capacityDocument.runtime.sql.maximumRows ||
+    !Number.isSafeInteger(cart.maximumBatchItems) ||
+    cart.maximumBatchItems < 1 ||
+    cart.maximumBatchItems > cart.maximumLines ||
+    !Number.isSafeInteger(cart.maximumQuantity) ||
+    cart.maximumQuantity < 1 ||
+    !Number.isSafeInteger(cart.tokenBytes) ||
+    cart.tokenBytes < 32
+  ) throw new Error('CART_CAPACITY_INVALID');
+  const checkout = capacityDocument.runtime.checkout;
+  if (
+    !Number.isSafeInteger(checkout.quoteTtlSeconds) ||
+    checkout.quoteTtlSeconds < 60 ||
+    checkout.quoteTtlSeconds > 3600 ||
+    !Number.isSafeInteger(checkout.dependencyTimeoutMilliseconds) ||
+    checkout.dependencyTimeoutMilliseconds < 50 ||
+    checkout.dependencyTimeoutMilliseconds > capacityDocument.runtime.http.totalDeadlineMilliseconds ||
+    !Number.isSafeInteger(checkout.parallelConcurrency) ||
+    checkout.parallelConcurrency < 2 ||
+    checkout.parallelConcurrency > 16 ||
+    !Number.isSafeInteger(checkout.maximumPriceDriftMinor) ||
+    checkout.maximumPriceDriftMinor < 0 ||
+    !Number.isSafeInteger(checkout.confirmationTokenBytes) ||
+    checkout.confirmationTokenBytes < 32
+  ) throw new Error('CHECKOUT_CAPACITY_INVALID');
+  const imports = capacityDocument.imports;
+  if (capacityDocument.model.voucherCredentials < 1_000_000 ||
+    Object.keys(imports).sort().join(',') !== 'chunkLeaseSeconds,chunkRows,kinds,maximumColumns,maximumCompressionRatio,maximumConcurrentChunks,maximumConcurrentJobs,maximumConcurrentRows,maximumExpandedBytes,maximumFileBytes,maximumRows,maximumSpreadsheetBytes,maximumSpreadsheetEntries,previewRows' ||
+    imports.kinds?.join(',') !== 'member,product,inventory,vouchercredential,finance,order' ||
+    [imports.maximumRows,imports.previewRows,imports.chunkRows,imports.maximumConcurrentJobs,imports.maximumConcurrentChunks,
+      imports.maximumConcurrentRows,imports.chunkLeaseSeconds,imports.maximumFileBytes,imports.maximumSpreadsheetBytes,
+      imports.maximumExpandedBytes,imports.maximumCompressionRatio,imports.maximumSpreadsheetEntries,imports.maximumColumns].some(value => !Number.isSafeInteger(value) || value < 1) ||
+    imports.previewRows > imports.chunkRows || imports.chunkRows > imports.maximumRows ||
+    imports.maximumConcurrentRows > imports.chunkRows || imports.maximumConcurrentChunks > imports.maximumConcurrentJobs ||
+    imports.maximumSpreadsheetBytes > imports.maximumFileBytes || imports.maximumExpandedBytes < imports.maximumSpreadsheetBytes ||
+    imports.maximumCompressionRatio > 1000 || imports.maximumSpreadsheetEntries > 100000 || imports.maximumColumns > 256 ||
+    imports.chunkLeaseSeconds < 30 || imports.chunkLeaseSeconds > 900) throw new Error('IMPORT_CAPACITY_INVALID');
+  for (const worker of ['provider', 'report', 'notification']) {
+    const policy = capacityDocument.workers[worker];
+    if (!Number.isSafeInteger(policy?.concurrency) || policy.concurrency < 1 || !Number.isSafeInteger(policy.queue) || policy.queue < policy.concurrency || !Number.isSafeInteger(policy.deadlineMilliseconds) || policy.deadlineMilliseconds < 1) throw new Error(`WORKER_CAPACITY_INVALID:${worker}`);
+  }
+  if (Object.keys(capacityDocument.clients).join(',') !== 'auth,console,storefront,miniapp,store,supplier') throw new Error('CLIENT_CAPACITY_INVALID');
+  if (
+    Object.keys(capacityDocument.navigation).sort().join(',') !== 'maximumNodes,maximumRoutes' ||
+    !Number.isSafeInteger(capacityDocument.navigation.maximumRoutes) ||
+    capacityDocument.navigation.maximumRoutes < 1 ||
+    !Number.isSafeInteger(capacityDocument.navigation.maximumNodes) ||
+    capacityDocument.navigation.maximumNodes < 1
+  ) throw new Error('NAVIGATION_CAPACITY_INVALID');
   const redaction = telemetryDocument?.redaction?.deny;
+  const telemetryBuffer = telemetryDocument?.buffer;
   if (
     telemetryDocument?.version !== 1 ||
     telemetryDocument.owner !== 'reliability' ||
@@ -137,16 +280,84 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
   ) {
     throw new Error('TELEMETRY_REDACTION_INVALID');
   }
+  if (Object.keys(telemetryBuffer ?? {}).sort().join(',') !== 'capacity,maximumRead,retentionSeconds'
+    || !Number.isSafeInteger(telemetryBuffer.capacity) || telemetryBuffer.capacity < 1000 || telemetryBuffer.capacity > 100000
+    || !Number.isSafeInteger(telemetryBuffer.retentionSeconds) || telemetryBuffer.retentionSeconds < 60 || telemetryBuffer.retentionSeconds > 86400
+    || !Number.isSafeInteger(telemetryBuffer.maximumRead) || telemetryBuffer.maximumRead < 100 || telemetryBuffer.maximumRead > telemetryBuffer.capacity) {
+    throw new Error('TELEMETRY_BUFFER_INVALID');
+  }
+  const health = telemetryDocument?.health;
+  if (Object.keys(health ?? {}).sort().join(',') !== 'checks,freshnessSeconds,queueBacklogDepth'
+    || !Number.isSafeInteger(health.freshnessSeconds) || health.freshnessSeconds < 60 || health.freshnessSeconds > telemetryBuffer.retentionSeconds
+    || !Number.isSafeInteger(health.queueBacklogDepth) || health.queueBacklogDepth < 1
+    || health.checks?.join(',') !== 'dependency,queue,provider,servicelevel,release') throw new Error('TELEMETRY_HEALTH_INVALID');
+  for (const [id, level] of Object.entries(telemetryDocument.serviceLevels ?? {})) {
+    const indicator = level?.indicator;
+    const indicatorKeys = indicator?.type === 'ratio' ? 'goodResult,metric,type' : 'metric,percentile,type';
+    if (!/^[a-z][a-z0-9]*$/.test(id)
+      || Object.keys(level ?? {}).sort().join(',') !== 'direction,indicator,owner,runbook,severity,targetKey,title,unit,windowSeconds'
+      || Object.keys(indicator ?? {}).sort().join(',') !== indicatorKeys
+      || !['ratio', 'percentile'].includes(indicator.type)
+      || !/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+$/.test(indicator.metric)
+      || (indicator.type === 'ratio' && (typeof indicator.goodResult !== 'string' || !indicator.goodResult))
+      || (indicator.type === 'percentile' && ![50, 90, 95, 99].includes(indicator.percentile))
+      || !['minimum', 'maximum'].includes(level.direction)
+      || !['percent', 'milliseconds', 'seconds'].includes(level.unit)
+      || !['warning', 'critical'].includes(level.severity)
+      || typeof level.title !== 'string' || !level.title.trim()
+      || !/^[a-z][a-z0-9]*$/.test(level.owner)
+      || !/^docs\/operations\/[a-z0-9]+\.md$/.test(level.runbook)
+      || !Number.isSafeInteger(level.windowSeconds) || level.windowSeconds < 60 || level.windowSeconds > telemetryBuffer.retentionSeconds
+      || typeof level.targetKey !== 'string' || typeof telemetryDocument.slo?.[level.targetKey] !== 'number'
+      || telemetryDocument.slo[level.targetKey] <= 0
+      || (level.unit === 'percent' && telemetryDocument.slo[level.targetKey] >= 100)) throw new Error(`TELEMETRY_SERVICE_LEVEL_INVALID:${id}`);
+  }
+  if (Object.keys(telemetryDocument.serviceLevels ?? {}).length < 1) throw new Error('TELEMETRY_SERVICE_LEVEL_MISSING');
+  for (const [id, rule] of Object.entries(telemetryDocument.alerts ?? {})) {
+    if (!/^[a-z][a-z0-9]*$/.test(id)
+      || Object.keys(rule ?? {}).sort().join(',') !== 'measure,owner,runbook,severity,signal,threshold,title,windowSeconds'
+      || typeof rule.title !== 'string' || !rule.title.trim()
+      || !/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+$/.test(rule.signal)
+      || !['count', 'percent', 'burnrate'].includes(rule.measure)
+      || !Number.isFinite(rule.threshold) || rule.threshold < 0
+      || !Number.isSafeInteger(rule.windowSeconds) || rule.windowSeconds < 60 || rule.windowSeconds > telemetryBuffer.retentionSeconds
+      || !['warning', 'critical'].includes(rule.severity)
+      || !/^[a-z][a-z0-9]*$/.test(rule.owner)
+      || !/^docs\/operations\/[a-z0-9]+\.md$/.test(rule.runbook)) throw new Error(`TELEMETRY_ALERT_INVALID:${id}`);
+  }
+  if (Object.keys(telemetryDocument.alerts ?? {}).length < 1) throw new Error('TELEMETRY_ALERT_MISSING');
+  for (const metric of ['approval', 'voucherbatch', 'importing', 'reconciliation', 'providercapability', 'webvitals']) {
+    const dimensions = telemetryDocument.metrics?.[metric];
+    if (!Array.isArray(dimensions) || dimensions.length === 0 || new Set(dimensions).size !== dimensions.length) throw new Error(`TELEMETRY_METRIC_INVALID:${metric}`);
+  }
+  for (const [name, ratio] of Object.entries(telemetryDocument.sampling ?? {})) if (typeof ratio !== 'number' || ratio < 0 || ratio > 1) throw new Error(`TELEMETRY_SAMPLING_INVALID:${name}`);
   if (
     networkDocument?.version !== 1 ||
     networkDocument.owner !== 'platform' ||
     !networkDocument.routes ||
-    !['api', 'auth', 'console', 'storefront'].every((name) => /^[a-z0-9.-]+$/.test(networkDocument.routes[name]?.host ?? '')) ||
+    !['api', 'auth', 'console', 'storefront', 'miniapp', 'store', 'supplier'].every((name) => /^[a-z0-9.-]+$/.test(networkDocument.routes[name]?.host ?? '')) ||
     networkDocument.routes.storefront.entryPath !== '/s' ||
     networkDocument.routes.storefront.fallback !== 'index.html' ||
-    new Set(['api', 'auth', 'console', 'storefront'].map((name) => networkDocument.routes[name].host)).size !== 4
+    new Set(['api', 'auth', 'console', 'storefront', 'miniapp', 'store', 'supplier'].map((name) => networkDocument.routes[name].host)).size !== 7
   ) {
     throw new Error('NETWORK_CATALOG_INVALID');
+  }
+  const expectedClients = ['auth', 'console', 'storefront', 'miniapp', 'store', 'supplier'];
+  if (
+    clientDocument?.version !== 1 ||
+    clientDocument.owner !== 'platform' ||
+    !Array.isArray(clientDocument.clients) ||
+    clientDocument.clients.map(({ id }) => id).join(',') !== expectedClients.join(',') ||
+    clientDocument.clients.some(
+      (client) =>
+        client.route !== client.id ||
+        networkDocument.routes[client.route]?.artifact !== client.id ||
+        !Number.isSafeInteger(client.localPort) ||
+        !['src', 'miniprogram'].includes(client.sourceRoot) ||
+        (client.id === 'miniapp') !== (client.sourceRoot === 'miniprogram')
+    )
+  ) {
+    throw new Error('CLIENT_CATALOG_INVALID');
   }
   const headers = networkDocument.headers;
   const authCsp = headers?.auth?.contentSecurityPolicy;
@@ -177,7 +388,7 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
   const identitySecurity = identityDocument?.security;
   const expectedTypes = ['oidc', 'wechat', 'wecomcorp', 'wecomsuite'];
   if (
-    identityDocument?.version !== 2 ||
+    identityDocument?.version !== 3 ||
     identityDocument.owner !== 'identity' ||
     typeof identityTypes !== 'object' ||
     Object.keys(identityTypes).sort().join(',') !== expectedTypes.join(',') ||
@@ -190,6 +401,25 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
   ) {
     throw new Error('IDENTITY_PROVIDER_CATALOG_INVALID');
   }
+  const providerSchema = identityDocument.schema?.provider;
+  const wechatSchema = identityDocument.schema?.wechatapplication;
+  if (
+    providerSchema?.required?.join(',') !== 'id,type,issuer,audiences,clientId,secretRef,keyVersion,enabled' ||
+    providerSchema.issuer !== 'httpsurl' ||
+    providerSchema.audiences !== 'nonemptyunique' ||
+    providerSchema.clientId !== 'publicidentifier' ||
+    providerSchema.secretRef !== 'secretreference' ||
+    providerSchema.keyVersion !== 'positiveinteger' ||
+    wechatSchema?.required?.join(',') !== 'scene,appId,secretRef,keyVersion' ||
+    wechatSchema.scenes?.join(',') !== 'miniapp,jsapi' ||
+    wechatSchema.appId !== 'wechatapplicationid' ||
+    wechatSchema.secretRef !== 'secretreference' ||
+    wechatSchema.keyVersion !== 'positiveinteger' ||
+    identitySecurity.redirectAllowlist?.join(',') !== 'https://passport.fufu.wang' ||
+    identitySecurity.bindingConflict !== 'reject' ||
+    identitySecurity.accountLink !== 'explicitproof' ||
+    identitySecurity.keyRotationDays !== 90
+  ) throw new Error('IDENTITY_PROVIDER_SCHEMA_INVALID');
   for (const [name, policy] of Object.entries(identityTypes)) {
     if (!expectedTypes.includes(name) || !Number.isSafeInteger(policy.timeoutMilliseconds) || policy.timeoutMilliseconds < 1 || !Number.isSafeInteger(policy.circuitFailureThreshold) || policy.circuitFailureThreshold < 1 || !Number.isSafeInteger(policy.circuitRecoveryMilliseconds) || policy.circuitRecoveryMilliseconds < 1) {
       throw new Error(`IDENTITY_PROVIDER_TYPE_INVALID:${name}`);
@@ -199,7 +429,7 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
     if (!Number.isSafeInteger(identitySecurity[name]) || identitySecurity[name] < 1) throw new Error(`IDENTITY_PROVIDER_SECURITY_INVALID:${name}`);
   }
   const otp = capacityDocument.runtime.authentication.otp;
-  if (otp.validMinutes !== 10 || otp.resendSeconds !== 30) throw new Error('OTP_POLICY_INVALID');
+  if (otp.validMinutes !== 10 || otp.resendSeconds !== 30 || otp.maximumAttempts !== 10) throw new Error('OTP_POLICY_INVALID');
   const authentication = capacityDocument.runtime.authentication;
   const password = authentication.password;
   if (

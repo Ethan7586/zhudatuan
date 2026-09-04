@@ -27,11 +27,13 @@ describe('login challenge destination resolution', () => {
 
   it('issues phone change only through the authenticated mobile challenge lifecycle', async () => {
     const issued = vi.fn(async (_context: unknown, value: Record<string, unknown>) => ({ id: String(value.id), purpose: String(value.purpose), expiresAt: new Date('2026-08-31T12:10:00Z') }));
+    const throttle = vi.fn();
     const command = createCommand({
       principal: null,
       mobileCiphertext: null,
       decrypt: '+8613800138000',
       issued,
+      throttle,
       encrypt: vi.fn(async () => ({ ciphertext: 'mobile-challenge-ciphertext', fingerprint: 'f'.repeat(64), keyVersion: 'current' })),
     });
     const lifecycle = command.mobile();
@@ -45,14 +47,17 @@ describe('login challenge destination resolution', () => {
 
     expect(response).toMatchObject({ status: 202, body: { purpose: 'phone_change' } });
     expect(issued).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ principal: 'principal:one', purpose: 'phone_change', destinationHash: expect.stringMatching(/^[a-f0-9]{64}$/), queueDelivery: true, scope: 'mall:one' }));
+    expect((throttle.mock.calls[0]![1] as readonly (readonly [string, string])[]).map(([, bucket]) => bucket)).toEqual([
+      'send:phone_change', 'network:send:phone_change', 'device:send:phone_change',
+    ]);
   });
 });
 
-function createCommand(input: Readonly<{ principal: string | null; mobileCiphertext: string | null; decrypt: string; issued: ReturnType<typeof vi.fn>; encrypt: ReturnType<typeof vi.fn> }>) {
+function createCommand(input: Readonly<{ principal: string | null; mobileCiphertext: string | null; decrypt: string; issued: ReturnType<typeof vi.fn>; encrypt: ReturnType<typeof vi.fn>; throttle?: ReturnType<typeof vi.fn> }>) {
   return new CreateChallenge(
     { decrypt: vi.fn(async () => input.decrypt), encrypt: input.encrypt } as never,
     { evaluate: vi.fn(async () => ({ outcome: 'allow', safeReason: 'policy', decision: null })) } as never,
-    { throttle: vi.fn(), issue: input.issued } as never,
+    { throttle: input.throttle ?? vi.fn(), issue: input.issued } as never,
     'identity-key-with-at-least-thirty-two-bytes',
     'session-key-with-at-least-thirty-two-bytes',
     {} as never,

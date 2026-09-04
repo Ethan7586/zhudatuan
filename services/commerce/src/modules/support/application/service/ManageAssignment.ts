@@ -2,16 +2,21 @@ import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationReply } from '../../../../foundation/application/OperationHandler';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { AssignmentStore, SupportEventStore } from '../port/SupportPersistence';
+import { AssignmentPolicy } from '../../domain/policy/AssignmentPolicy';
+import type { AgentStore, AssignmentRuleStore, AssignmentStore, SupportEventStore } from '../port/SupportPersistence';
 import type { AssignmentRepository } from '../port/SupportRepositories';
 import type { ReadSupportContext } from './ReadSupportContext';
 
 export class ManageAssignment implements AssignmentRepository {
+  private readonly policy = new AssignmentPolicy();
+
   constructor(
     private readonly support: ReadSupportContext,
     private readonly assignments: AssignmentStore,
+    private readonly agents: AgentStore,
+    private readonly rules: AssignmentRuleStore,
     private readonly events: SupportEventStore
   ) {}
 
@@ -26,10 +31,18 @@ export class ManageAssignment implements AssignmentRepository {
     if (actor.target !== 'console') throw new DomainError('AUTHORIZATION_DENIED');
     const ticket = await this.assignments.lockTicket(context, textField(body, 'case'), actor.scopes);
     if (ticket.version !== execution.expectedVersion) throw new DomainError('VERSION_CONFLICT');
+    const requested = textField(body, 'agent');
+    const [candidates, rules] = await Promise.all([
+      this.agents.candidates(context, ticket.scope),
+      this.rules.assignmentRules(context, ticket.scope),
+    ]);
+    if (!this.policy.select({ agents: candidates, rules, scope: ticket.scope, skill: ticket.skill, priority: ticket.priority }, requested)) {
+      throw new DomainError('SUPPORT_AGENT_INVALID');
+    }
     const assignment = await this.assignments.assign(context, {
       assignment: input.path.assignmentid,
       ticket,
-      agent: textField(body, 'agent'),
+      agent: requested,
       reason: textField(body, 'reason'),
       expectedVersion: execution.expectedVersion,
     });

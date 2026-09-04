@@ -1,9 +1,13 @@
+import type { OperationOutputFor } from '@shop/contract';
+
+type AgentDto = OperationOutputFor<'support.agents.read'>['items'][number];
+
 export interface Agent {
   readonly id: string;
   readonly membershipId: string;
   readonly skills: readonly string[];
   readonly capacity: number;
-  readonly state: 'offline' | 'available' | 'busy' | 'disabled';
+  readonly state: AgentDto['state'];
   readonly version: number;
 }
 

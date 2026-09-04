@@ -1,0 +1,4 @@
+{
+  "component": true,
+  "usingComponents": { "records": "/components/records/records" }
+}

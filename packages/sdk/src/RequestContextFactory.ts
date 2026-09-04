@@ -1,5 +1,5 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
-import { parseStorefrontHandle } from '@shop/contract';
+import { isOperationTarget, parseStorefrontHandle, type OperationTarget } from '@shop/contract';
 import type { RequestContext, RequestScope } from './RequestContext';
 
 export type { RequestContext, RequestScope } from './RequestContext';
@@ -13,9 +13,10 @@ export interface RequestContextOptions {
   readonly idempotencyKey?: string;
   readonly expectedVersion?: number;
   readonly proof?: string;
+  readonly cartToken?: string;
   readonly csrfToken?: string;
   readonly deviceId?: string;
-  readonly target?: 'console' | 'storefront';
+  readonly target?: OperationTarget;
   readonly catalogVersion?: string;
   readonly ifNoneMatch?: string;
   readonly lastEventId?: string;
@@ -26,6 +27,7 @@ export function createRequestContext(clientVersion: string, options: RequestCont
   required(clientVersion, 'SDK_CLIENT_VERSION_REQUIRED');
   optionalVersion(options.accessVersion, 'SDK_ACCESS_VERSION_INVALID');
   optionalVersion(options.expectedVersion, 'SDK_EXPECTED_VERSION_INVALID');
+  if (options.target !== undefined && !isOperationTarget(options.target)) throw new Error('SDK_CLIENT_TARGET_INVALID');
   const traceId = options.traceId ?? randomId();
   required(traceId, 'SDK_TRACE_ID_REQUIRED');
   if (options.scope !== undefined) {
@@ -44,6 +46,7 @@ export function createRequestContext(clientVersion: string, options: RequestCont
     ...(options.idempotencyKey === undefined ? {} : { idempotencyKey: required(options.idempotencyKey, 'SDK_IDEMPOTENCY_KEY_INVALID') }),
     ...(options.expectedVersion === undefined ? {} : { expectedVersion: options.expectedVersion }),
     ...(options.proof === undefined ? {} : { proof: required(options.proof, 'SDK_ACTION_PROOF_INVALID') }),
+    ...(options.cartToken === undefined ? {} : { cartToken: token(options.cartToken) }),
     ...(csrfToken === undefined ? {} : { csrfToken: required(csrfToken, 'SDK_CSRF_TOKEN_INVALID') }),
     ...(options.deviceId === undefined ? {} : { deviceId: required(options.deviceId, 'SDK_DEVICE_ID_INVALID') }),
     ...(options.target === undefined ? {} : { target: options.target }),
@@ -70,4 +73,9 @@ function required(value: string, code: string): string {
 
 function optionalVersion(value: number | undefined, code: string): void {
   if (value !== undefined && (!Number.isSafeInteger(value) || value < 0)) throw new Error(code);
+}
+
+function token(value: string): string {
+  if (!/^[A-Za-z0-9_-]{43}$/.test(value)) throw new Error('SDK_CART_TOKEN_INVALID');
+  return value;
 }

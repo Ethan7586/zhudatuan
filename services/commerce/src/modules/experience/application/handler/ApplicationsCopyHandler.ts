@@ -1,9 +1,8 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import { ApplicationIdentity } from '../../domain/value/ApplicationIdentity';
 import type { ApplicationRepository } from '../port/ApplicationRepository';
 
 export class ApplicationsCopyHandler implements OperationHandler<'experience.applications.copy', 'write'> {
@@ -15,10 +14,9 @@ export class ApplicationsCopyHandler implements OperationHandler<'experience.app
     const body = bodyRecord(input);
     const copied = await this.applications.copy(context.transaction, {
       source: input.path.applicationid,
+      targetMall: textField(body, 'targetMallId'),
       actor: access.actor.id,
-      name: textField(body, 'name'),
       reason: textField(body, 'reason', 500),
-      identity: new ApplicationIdentity(textField(body, 'code', 32), textField(body, 'publicSlug', 48)),
     });
     return { status: 201, body: copied as unknown as OperationOutputFor<'experience.applications.copy'> };
   }

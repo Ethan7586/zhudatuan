@@ -10,6 +10,7 @@ export interface ProviderCallContext {
   readonly traceId: string;
   readonly idempotencyKey?: string;
   readonly deadline: number;
+  readonly signal?: AbortSignal;
 }
 
 export interface CatalogBatch {
@@ -95,6 +96,16 @@ export interface ProviderWebhookRequest {
   readonly headers: Readonly<Record<string, string>>;
   readonly body: string;
   readonly receivedAt: string;
+}
+
+export type ProviderOperationKind = 'order' | 'return' | 'refund';
+export type ProviderOperationState = 'queued' | 'submitted' | 'processing' | 'succeeded' | 'failed' | 'unknown';
+export interface ProviderOperationResult {
+  readonly state: string;
+  readonly externalReference: string | null;
+  readonly code?: string;
+  readonly accepted?: boolean;
+  readonly itemCount?: number;
 }
 
 export interface CatalogSource {

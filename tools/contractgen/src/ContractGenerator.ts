@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { parse } from 'yaml';
-import { buildOpenapi, identityClientSchemaSource, operationSource, schemaSource, sdkDomainSources, sdkSource, stable, type OperationDefinition } from './ClientArtifacts';
+import { buildOpenapi, identityClientSchemaSource, operationSource, schemaSource, sdkDomainSources, sdkSource, sdkSurfaceSource, stable, surfaceSource, type ClientDefinition, type OperationDefinition } from './ClientArtifacts';
 
 interface EventDefinition {
   readonly id: string;
@@ -39,7 +39,10 @@ type EventFieldType = EventScalarType | `optional${EventScalarType}` | `nullable
 interface CapabilityDefinition {
   readonly code: string;
   readonly kind: string;
+  readonly owner: string;
+  readonly permission: string | null;
   readonly audience?: OperationDefinition['audience'];
+  readonly dependencies?: readonly string[];
 }
 interface ErrorDefinition {
   readonly code: string;
@@ -88,6 +91,7 @@ interface PermissionDefinition {
 
 const root = resolve(import.meta.dirname, '../../..');
 const definitions = resolve(root, 'packages/contract/definitions');
+const clients = await readClients();
 const authority = parse(await readFile(resolve(root, 'config/authorities.yml'), 'utf8')) as Readonly<{ contract?: Readonly<{ version?: unknown }> }>;
 const contractVersion = authorityVersion(authority.contract?.version);
 const operations = (await catalog<OperationDefinition>('operations.yml', 'operations', 3)).map(withBoundaryErrors);
@@ -96,9 +100,10 @@ const capabilities = await catalog<CapabilityDefinition>('capabilities.yml', 'ca
 const errorCatalog = await readErrorCatalog();
 const errors = errorCatalog.api;
 const permissions = await catalog<PermissionDefinition>('permissions.yml', 'permissions', 3);
-validateOperations(operations);
+validateOperations(operations, clients);
 validateEvents(events);
 validatePermissions(operations, permissions);
+validateCapabilities(capabilities, permissions);
 validateCapabilityAudiences(operations, capabilities);
 validateErrors(errorCatalog);
 const check = process.argv.includes('--check');
@@ -106,20 +111,40 @@ const openapi = buildOpenapi(operations, new Map(errors.map(({ code, status }) =
 const eventArtifact = stable({ version: 3, events: events.map((item) => ({ type: item.id, version: item.version, module: item.owner, schema: item.schema, payload: item.payload })) });
 const permissionArtifact = permissions;
 const errorArtifact = errorCatalog;
-const contractChecksum = hash(JSON.stringify({ openapi, events: eventArtifact, permissions: permissionArtifact, errors: errorArtifact }));
+const contractChecksum = hash(JSON.stringify({ openapi, events: eventArtifact, capabilities, permissions: permissionArtifact, errors: errorArtifact }));
 
 await emit(resolve(root, 'packages/contract/openapi.json'), `${JSON.stringify(openapi, null, 2)}\n`);
 await emit(resolve(root, 'packages/contract/events.json'), `${JSON.stringify(eventArtifact, null, 2)}\n`);
 await emit(resolve(root, 'packages/contract/src/operations/CommerceCatalog.ts'), operationSource(operations));
+await emit(resolve(root, 'packages/contract/src/Surface.ts'), surfaceSource(clients));
+await emit(resolve(root, 'packages/contract/src/OperationPolicyCatalog.ts'), operationPolicySource(operations));
+await emit(
+  resolve(root, 'packages/contract/src/OperationIds.ts'),
+  identifierSource(
+    'OP',
+    operations.map(({ id }) => id),
+    'definitions/operations.yml'
+  )
+);
 await emit(resolve(root, 'packages/contract/src/operations/CommerceSchemas.ts'), schemaSource(operations));
 await emit(resolve(root, 'packages/contract/src/operations/IdentityClientSchemas.ts'), identityClientSchemaSource(operations));
 await emit(resolve(root, 'packages/contract/src/events/CommerceEvents.ts'), eventSource(events));
 await emit(resolve(root, 'packages/contract/src/EventSerializer.ts'), eventSerializerSource(events));
+await emit(resolve(root, 'packages/contract/src/CapabilityCatalog.ts'), capabilitySource(capabilities));
 await emit(resolve(root, 'packages/contract/src/ContractIdentity.ts'), contractIdentitySource(contractChecksum, contractVersion));
 await emit(resolve(root, 'packages/contract/src/ErrorContract.ts'), errorSource(errorCatalog));
 await emit(resolve(root, 'packages/presentation/src/generated/ErrorPolicy.ts'), errorPolicySource(errorCatalog));
 await emit(resolve(root, 'packages/authz/src/PermissionCatalog.ts'), permissionSource(permissions));
+await emit(
+  resolve(root, 'packages/authz/src/PermissionIds.ts'),
+  identifierSource(
+    'PERM',
+    permissions.map(({ code }) => code),
+    'packages/contract/definitions/permissions.yml'
+  )
+);
 await emit(resolve(root, 'packages/sdk/src/operations/CommerceClient.ts'), sdkSource(operations));
+await emit(resolve(root, 'packages/sdk/src/SurfaceCatalog.ts'), sdkSurfaceSource(clients, operations));
 for (const [domain, source] of sdkDomainSources(operations)) await emit(resolve(root, `packages/sdk/src/operations/${domain}.ts`), source);
 await emit(resolve(root, 'services/commerce/src/foundation/interface/OperationController.ts'), operationControllerSource(operations));
 await emitRuntimeContract(contractChecksum);
@@ -142,6 +167,38 @@ async function readErrorCatalog(): Promise<ErrorCatalogDefinition> {
     transport: payload.transport as readonly LocalErrorDefinition[],
     client: payload.client as readonly LocalErrorDefinition[],
   };
+}
+
+async function readClients(): Promise<readonly ClientDefinition[]> {
+  const payload = parse(await readFile(resolve(root, 'config/clients.yml'), 'utf8')) as Readonly<{ version?: unknown; owner?: unknown; clients?: unknown }>;
+  if (payload.version !== 1 || payload.owner !== 'platform' || !Array.isArray(payload.clients)) throw new Error('CLIENT_CATALOG_INVALID');
+  const clients = payload.clients as readonly ClientDefinition[];
+  const expected = ['auth', 'console', 'storefront', 'miniapp', 'store', 'supplier'];
+  if (clients.map(({ id }) => id).join(',') !== expected.join(',')) throw new Error('CLIENT_SURFACE_ORDER_INVALID');
+  const ids = new Set<string>();
+  const targets = new Set<string>();
+  const workspaces = new Set<string>();
+  const paths = new Set<string>();
+  const routes = new Set<string>();
+  const ports = new Set<number>();
+  for (const client of clients) {
+    if (ids.has(client.id) || workspaces.has(client.workspace) || paths.has(client.path) || routes.has(client.route) || ports.has(client.localPort)) throw new Error(`CLIENT_CATALOG_DUPLICATE:${client.id}`);
+    if (client.target !== null && targets.has(client.target)) throw new Error(`CLIENT_TARGET_DUPLICATE:${client.target}`);
+    if (client.workspace !== `@shop/${client.id}` || client.path !== `apps/${client.id}` || client.route !== client.id) throw new Error(`CLIENT_IDENTITY_INVALID:${client.id}`);
+    if (!Array.isArray(client.domains) || new Set(client.domains).size !== client.domains.length || client.domains.some((domain) => !/^[a-z]+$/.test(domain))) throw new Error(`CLIENT_DOMAIN_POLICY_INVALID:${client.id}`);
+    if (!Number.isSafeInteger(client.localPort) || client.localPort < 1024 || client.localPort > 65_535) throw new Error(`CLIENT_PORT_INVALID:${client.id}`);
+    if ((client.id === 'auth') !== (client.target === null) || (client.id === 'auth') !== (client.audience === 'public')) throw new Error(`CLIENT_AUTH_POLICY_INVALID:${client.id}`);
+    if (client.id === 'auth' && client.domains.join(',') !== 'identity') throw new Error('CLIENT_AUTH_DOMAIN_POLICY_INVALID');
+    if ((client.id === 'miniapp') !== (client.transport === 'wechat')) throw new Error(`CLIENT_TRANSPORT_INVALID:${client.id}`);
+    if (client.target !== null && client.target !== client.id) throw new Error(`CLIENT_TARGET_INVALID:${client.id}`);
+    ids.add(client.id);
+    if (client.target !== null) targets.add(client.target);
+    workspaces.add(client.workspace);
+    paths.add(client.path);
+    routes.add(client.route);
+    ports.add(client.localPort);
+  }
+  return Object.freeze(clients.map((client) => Object.freeze({ ...client })));
 }
 
 function withBoundaryErrors(operation: OperationDefinition): OperationDefinition {
@@ -168,11 +225,13 @@ function withBoundaryErrors(operation: OperationDefinition): OperationDefinition
   return Object.freeze({ ...operation, errorUnion: Object.freeze([...codes].sort()) });
 }
 
-function validateOperations(values: readonly OperationDefinition[]): void {
+function validateOperations(values: readonly OperationDefinition[], clients: readonly ClientDefinition[]): void {
   const ids = new Set<string>();
   const routes = new Set<string>();
   const required = [
     'id',
+    'version',
+    'title',
     'owner',
     'method',
     'path',
@@ -197,6 +256,11 @@ function validateOperations(values: readonly OperationDefinition[]): void {
     'timeout',
     'rateClass',
     'risk',
+    'concurrencyPolicy',
+    'executionMode',
+    'auditLevel',
+    'sensitiveFields',
+    'lifecycle',
     'resourceResolver',
     'resourceParameter',
     'idempotent',
@@ -208,14 +272,32 @@ function validateOperations(values: readonly OperationDefinition[]): void {
   for (const item of values) {
     for (const field of required) if (!(field in item)) throw new Error(`OPERATION_FIELD_MISSING:${item.id}:${field}`);
     if (!/^[a-z]+(?:\.[a-z]+)+$/.test(item.id) || ids.has(item.id)) throw new Error(`OPERATION_ID_INVALID:${item.id}`);
+    if (!Number.isSafeInteger(item.version) || item.version < 1 || typeof item.title !== 'string' || item.title.trim().length < 2) throw new Error(`OPERATION_IDENTITY_INVALID:${item.id}`);
     const pathAllowed = item.path.startsWith('/api/v1/') || (item.id.startsWith('runtime.health.') && item.path.startsWith('/health/'));
     if (!pathAllowed || routes.has(`${item.method} ${item.path}`)) throw new Error(`OPERATION_ROUTE_INVALID:${item.id}`);
     if (item.capability !== item.id || !Array.isArray(item.scopeKinds) || !Array.isArray(item.errorUnion)) throw new Error(`OPERATION_POLICY_INVALID:${item.id}`);
-    const expectedTargets = item.audience === 'public' ? ['console', 'storefront'] : item.audience === 'console' || item.audience === 'storefront' ? [item.audience] : [];
-    if (!Array.isArray(item.targets) || JSON.stringify(item.targets) !== JSON.stringify(expectedTargets)) throw new Error(`OPERATION_TARGETS_INVALID:${item.id}`);
+    const targetClients = clients.filter((client): client is ClientDefinition & { readonly target: NonNullable<ClientDefinition['target']> } => client.target !== null);
+    const expectedPublicTargets = targetClients.map(({ target }) => target);
+    const eligibleTargets = targetClients.filter(({ audience }) => audience === item.audience).map(({ target }) => target);
+    const validTargets =
+      item.audience === 'public'
+        ? JSON.stringify(item.targets) === JSON.stringify(expectedPublicTargets)
+        : item.audience === 'system' || item.audience === 'webhook'
+          ? item.targets.length === 0
+          : item.targets.length > 0 && item.targets.every((target) => eligibleTargets.includes(target)) && item.targets.includes(item.audience);
+    if (!Array.isArray(item.targets) || new Set(item.targets).size !== item.targets.length || !validTargets) throw new Error(`OPERATION_TARGETS_INVALID:${item.id}`);
     const pathParameters = [...item.path.matchAll(/\{([a-z][a-z0-9]*)\}/g)].map((match) => match[1]!);
     if (item.resourceResolver === 'none' ? item.resourceParameter !== null : item.resourceParameter !== null && !pathParameters.includes(item.resourceParameter)) throw new Error(`OPERATION_RESOURCE_PARAMETER_INVALID:${item.id}`);
     if (!Number.isInteger(item.timeout) || item.timeout < 1) throw new Error(`OPERATION_TIMEOUT_INVALID:${item.id}`);
+    if (!['none', 'optimistic', 'serialized'].includes(item.concurrencyPolicy)) throw new Error(`OPERATION_CONCURRENCY_POLICY_INVALID:${item.id}`);
+    if (item.method === 'GET' && item.concurrencyPolicy !== 'none') throw new Error(`OPERATION_QUERY_CONCURRENCY_INVALID:${item.id}`);
+    if (item.expectedVersion === 'required' && item.concurrencyPolicy !== 'optimistic') throw new Error(`OPERATION_VERSION_CONCURRENCY_INVALID:${item.id}`);
+    if (!['sync', 'async', 'stream'].includes(item.executionMode) || (item.responseMode === 'stream') !== (item.executionMode === 'stream')) throw new Error(`OPERATION_EXECUTION_MODE_INVALID:${item.id}`);
+    if (!['none', 'basic', 'detailed', 'critical'].includes(item.auditLevel)) throw new Error(`OPERATION_AUDIT_LEVEL_INVALID:${item.id}`);
+    if (!Array.isArray(item.sensitiveFields) || item.sensitiveFields.some((field) => typeof field !== 'string' || !/^(?:path|query|body|response)(?:\.[a-z][a-zA-Z0-9]*)+$/.test(field))) {
+      throw new Error(`OPERATION_SENSITIVE_FIELDS_INVALID:${item.id}`);
+    }
+    if (!['active', 'deprecated'].includes(item.lifecycle)) throw new Error(`OPERATION_LIFECYCLE_INVALID:${item.id}`);
     if (item.csrfPolicy === 'required' && (item.method === 'GET' || item.originPolicy !== 'sameorigin')) throw new Error(`OPERATION_CSRF_POLICY_INVALID:${item.id}`);
     if (item.idempotencyPolicy === 'required' && item.idempotencyScope === 'none') throw new Error(`OPERATION_IDEMPOTENCY_POLICY_INVALID:${item.id}`);
     if (['optional', 'session', 'mfa', 'stepup'].includes(item.assuranceLevel) && !item.errorUnion.includes('PERMISSION_DENIED')) throw new Error(`OPERATION_PERMISSION_ERROR_MISSING:${item.id}`);
@@ -230,8 +312,8 @@ function validateOperations(values: readonly OperationDefinition[]): void {
         item.originPolicy !== 'sameorigin' ||
         item.csrfPolicy !== 'required' ||
         item.targetPolicy !== 'exact' ||
-        item.targets.length !== 1 ||
-        item.targets[0] !== 'console' ||
+        item.audience !== 'console' ||
+        !item.targets.includes('console') ||
         !['ACTION_PROOF_INVALID', 'ACTION_PROOF_REPLAYED', 'ACTION_PROOF_REQUIRED', 'MAKER_CHECKER_SEPARATION_REQUIRED'].every((code) => item.errorUnion.includes(code)))
     )
       throw new Error(`OPERATION_MAKER_CHECKER_POLICY_INVALID:${item.id}`);
@@ -326,6 +408,35 @@ function validateCapabilityAudiences(values: readonly OperationDefinition[], def
     }
 }
 
+function validateCapabilities(values: readonly CapabilityDefinition[], permissionDefinitions: readonly PermissionDefinition[]): void {
+  const known = new Set<string>();
+  const knownPermissions = new Set(permissionDefinitions.map(({ code }) => code));
+  for (const capability of values) {
+    if (!/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+$/.test(capability.code) || known.has(capability.code)) throw new Error(`CAPABILITY_CODE_INVALID:${capability.code}`);
+    if (!['operation', 'feature', 'uiblock', 'quota', 'entitlement'].includes(capability.kind)) throw new Error(`CAPABILITY_KIND_INVALID:${capability.code}`);
+    if (!/^[a-z]+$/.test(capability.owner) || (capability.permission !== null && typeof capability.permission !== 'string')) throw new Error(`CAPABILITY_OWNER_INVALID:${capability.code}`);
+    if (capability.permission !== null && !knownPermissions.has(capability.permission)) throw new Error(`CAPABILITY_PERMISSION_UNKNOWN:${capability.code}:${capability.permission}`);
+    if (capability.dependencies !== undefined && (!Array.isArray(capability.dependencies) || new Set(capability.dependencies).size !== capability.dependencies.length)) throw new Error(`CAPABILITY_DEPENDENCY_INVALID:${capability.code}`);
+    known.add(capability.code);
+  }
+  const edges = new Map(values.map((capability) => [capability.code, capability.dependencies ?? []]));
+  for (const [capability, dependencies] of edges)
+    for (const dependency of dependencies) {
+      if (!known.has(dependency) || dependency === capability) throw new Error(`CAPABILITY_DEPENDENCY_INVALID:${capability}:${dependency}`);
+    }
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
+  const visit = (capability: string): void => {
+    if (visiting.has(capability)) throw new Error(`CAPABILITY_DEPENDENCY_CYCLE:${capability}`);
+    if (visited.has(capability)) return;
+    visiting.add(capability);
+    for (const dependency of edges.get(capability) ?? []) visit(dependency);
+    visiting.delete(capability);
+    visited.add(capability);
+  };
+  for (const capability of known) visit(capability);
+}
+
 function validateErrors(catalog: ErrorCatalogDefinition): void {
   const allCodes = new Set<string>();
   for (const [kind, values] of Object.entries(catalog) as readonly [keyof ErrorCatalogDefinition, readonly (ErrorDefinition | LocalErrorDefinition)[]][]) {
@@ -377,9 +488,11 @@ async function emitRuntimeContract(contractChecksum: string): Promise<void> {
   const template = await readFile(resolve(root, 'database/contracts/publish.template.sql'), 'utf8');
   const operationRows = operations.map((item) => sqlRow([item.id, item.owner, item.method, item.path, contractVersion])).join(',\n');
   const eventRows = events.map((item) => sqlRow([item.id, item.version, item.owner, item.schema])).join(',\n');
-  const capabilityRows = operations.map((item) => sqlRow([item.id, 'operation', item.id, 3, 'active'])).join(',\n');
-  const bindings = operations.map((item) => sqlRow([item.id, item.id, item.permission, item.audience])).join(',\n');
-  const used = new Set(operations.flatMap((item) => (item.permission === null ? [] : [item.permission])));
+  const capabilityRows = capabilities.map((item) => sqlRow([item.code, item.kind, item.code, 3, 'active'])).join(',\n');
+  const dependencyRows = capabilities.flatMap((item) => (item.dependencies ?? []).map((dependency) => sqlRow([item.code, dependency]))).join(',\n');
+  const dependencyInsert = dependencyRows.length === 0 ? '-- The canonical capability catalog declares no dependencies.' : `insert into capability.dependency(capability_id,depends_on_id) values\n${dependencyRows}\non conflict do nothing;`;
+  const bindings = operations.map((item) => sqlRow([item.id, item.id, item.permission, item.audience, `{${item.targets.join(',')}}`])).join(',\n');
+  const used = new Set([...operations.flatMap((item) => (item.permission === null ? [] : [item.permission])), ...capabilities.flatMap((item) => (item.permission === null ? [] : [item.permission]))]);
   const permissionRows = permissions
     .filter(({ code }) => used.has(code))
     .sort((left, right) => left.code.localeCompare(right.code))
@@ -391,14 +504,59 @@ async function emitRuntimeContract(contractChecksum: string): Promise<void> {
       .replace('{{OPERATIONS}}', operationRows)
       .replace('{{EVENTS}}', eventRows)
       .replace('{{CAPABILITIES}}', capabilityRows)
+      .replace('{{CAPABILITYDEPENDENCYINSERT}}', dependencyInsert)
       .replace('{{OPERATIONCAPABILITIES}}', bindings)
       .replace('{{PERMISSIONS}}', permissionRows)
       .replace('{{CONTRACTCHECKSUM}}', contractChecksum)
   );
 }
 
+function capabilitySource(values: readonly CapabilityDefinition[]): string {
+  const features = values.filter(({ kind }) => kind === 'feature').map(({ code }) => code);
+  const allOwners = [...new Set(values.map(({ owner }) => owner))].sort();
+  const all = allOwners.map((owner) => `  ${JSON.stringify(owner)}: Object.freeze(${JSON.stringify(values.filter((item) => item.owner === owner).map(({ code }) => code))} as const),`).join('\n');
+  const owners = [...new Set(values.filter(({ kind }) => kind === 'operation').map(({ owner }) => owner))].sort();
+  const operations = owners.map((owner) => `  ${JSON.stringify(owner)}: Object.freeze(${JSON.stringify(values.filter((item) => item.kind === 'operation' && item.owner === owner).map(({ code }) => code))} as const),`).join('\n');
+  return `// Generated from packages/contract/definitions/capabilities.yml. Do not edit.\nexport const CAPABILITY_CATALOG = Object.freeze(${JSON.stringify(values, null, 2)} as const);\nexport type CapabilityCode = (typeof CAPABILITY_CATALOG)[number]['code'];\nexport const FEATURE_CAPABILITY_CODES = Object.freeze(${JSON.stringify(features)} as const);\nexport const CAPABILITY_CODES_BY_OWNER = Object.freeze({\n${all}\n});\nexport const OPERATION_CAPABILITY_CODES_BY_OWNER = Object.freeze({\n${operations}\n});\n`;
+}
+
 function permissionSource(values: readonly PermissionDefinition[]): string {
   return `// Generated from packages/contract/definitions/permissions.yml. Do not edit.\nimport type { PermissionDefinition } from './Permission';\n\nexport const PERMISSION_CATALOG = Object.freeze(${JSON.stringify(values, null, 2)} as const satisfies readonly PermissionDefinition[]);\nconst byCode: ReadonlyMap<string, PermissionDefinition> = new Map(PERMISSION_CATALOG.map((permission) => [permission.code, permission]));\nexport function permissionDefinition(code: string): PermissionDefinition { const permission=byCode.get(code); if(!permission) throw new Error('PERMISSION_UNKNOWN'); return permission; }\n`;
+}
+
+function identifierSource(prefix: 'OP' | 'PERM', values: readonly string[], source: string): string {
+  const identifier = (value: string) => `${prefix}_${value.toUpperCase().replace(/[^A-Z0-9]+/g, '_')}`;
+  const declarations = values.map((value) => `export const ${identifier(value)} = ${JSON.stringify(value)} as const;`).join('\n');
+  if (prefix === 'PERM') return `// Generated from ${source}. Do not edit.\n${declarations}\n`;
+  const groups = new Map<string, string[]>();
+  for (const value of values) {
+    const domain = value.split('.')[0]!;
+    groups.set(domain, [...(groups.get(domain) ?? []), value]);
+  }
+  const catalogs = [...groups].map(([domain, entries]) => `export const ${domain.toUpperCase().replace(/[^A-Z0-9]+/g, '_')}_OPERATION_IDS = Object.freeze([${entries.map(identifier).join(', ')}] as const);`).join('\n');
+  return `// Generated from ${source}. Do not edit.\n${declarations}\n${catalogs}\n`;
+}
+
+function operationPolicySource(values: readonly OperationDefinition[]): string {
+  const policies = values.map(({ id, version, title, method, path, capability, permission, assuranceLevel, makerChecker, expectedVersion, concurrencyPolicy, executionMode, auditLevel, sensitiveFields, lifecycle, errorUnion }) => ({
+    id,
+    version,
+    title,
+    method,
+    path,
+    capability,
+    permission,
+    assuranceLevel,
+    makerChecker,
+    expectedVersion,
+    concurrencyPolicy,
+    executionMode,
+    auditLevel,
+    sensitiveFields,
+    lifecycle,
+    actionProof: errorUnion.includes('ACTION_PROOF_REQUIRED'),
+  }));
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from './OperationCatalog';\n\nconst POLICIES = ${JSON.stringify(policies, null, 2)} as const;\nexport type ClientOperationPolicy = typeof POLICIES[number];\nconst BY_ID: ReadonlyMap<string, ClientOperationPolicy> = new Map(POLICIES.map((policy) => [policy.id, policy]));\nexport function operationPolicy(id: OperationId): ClientOperationPolicy { const policy = BY_ID.get(id); if (!policy) throw new Error('OPERATION_UNKNOWN'); return policy; }\n`;
 }
 
 function errorSource(catalog: ErrorCatalogDefinition): string {
@@ -455,7 +613,13 @@ function eventFieldSchema(type: EventFieldType): string {
     statementsnapshot: 'StatementSnapshotSchema',
     providerevidence: 'ProviderEvidenceSchema',
     recoveryevidence: 'RecoveryEvidenceSchema',
-    orderexportfilter: 'OrderExportFilterSchema',
+    orderexportfilter: `OrderExportFilterSchema.omit({ order: true, placed: true }).extend({
+      search: z.string().max(128).optional(), view: z.enum(['unpaid','unshipped','active','completed','exception']).optional(),
+      placed: z.enum(['today','7days','30days']).optional(), from: TimeSchema.optional(), to: TimeSchema.optional(),
+      channel: z.string().max(64).optional(), product: z.string().max(128).optional(), member: z.string().max(128).optional(),
+      memberIds: z.array(EventIdSchema).optional(), timezone: z.string().max(64).optional(),
+      minimumMinor: MoneySchema.nonnegative().optional(), maximumMinor: MoneySchema.nonnegative().optional()
+    })`,
     financeexportfilter: 'FinanceExportFilterSchema',
     authorizationsnapshot: 'AuthorizationSnapshotSchema',
   };
@@ -501,4 +665,3 @@ function authorityVersion(value: unknown): string {
   if (typeof value !== 'string' || !/^\d+\.\d+\.\d+$/.test(value)) throw new Error('CONTRACT_AUTHORITY_VERSION_INVALID');
   return value;
 }
-

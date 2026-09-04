@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./compact": "./src/CompactFailure.ts",
+    "./records": "./src/RecordProjection.ts"
   },
   "types": "./src/index.ts",
   "dependencies": {

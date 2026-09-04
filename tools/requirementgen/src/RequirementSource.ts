@@ -15,7 +15,7 @@ export interface SheetDefinition {
 export interface ProviderDefinition {
   readonly id: string;
   readonly row: number;
-  readonly core?: 'jdcore' | 'cakecore' | 'wanliancore' | 'tmallcore' | 'bookcore' | 'local';
+  readonly core?: 'jdcore' | 'cakecore' | 'wanliancore' | 'self' | 'local';
 }
 
 export interface MvpDefinition {
@@ -27,7 +27,7 @@ export interface MvpDefinition {
     range: string;
   }>;
   readonly status: 'Designed' | 'Implemented' | 'Integrated' | 'Accepted' | 'Released';
-  readonly release: 'required' | 'nonblocking';
+  readonly release: 'required';
   readonly modules: readonly string[];
   readonly directOperations: readonly string[];
   readonly transitiveOperations: readonly string[];
@@ -117,13 +117,7 @@ export async function loadRequirementSource(root: string): Promise<RequirementSo
   );
   if (mvp.length !== 22) throw new Error('MVP_SOURCE_COUNT_INVALID:' + mvp.length);
   const required = mvp.filter(({ release }) => release === 'required');
-  const nonblocking = mvp.filter(({ release }) => release === 'nonblocking');
-  if (required.length !== 18 || nonblocking.length !== 4) throw new Error(`MVP_RELEASE_COUNT_INVALID:${required.length}:${nonblocking.length}`);
-  assertExactKeys(
-    nonblocking.map(({ id }) => id),
-    ['MVPPLATFORM', 'MVPDISTRIBUTION', 'MVPGROUPFINANCE', 'MVPMALLFINANCE'],
-    'MVP_NONBLOCKING'
-  );
+  if (required.length !== 22) throw new Error(`MVP_RELEASE_COUNT_INVALID:${required.length}`);
   if (mvp.some(({ id }) => !/^MVP[A-Z]+$/.test(id))) throw new Error('MVP_ID_INVALID');
   if (mvp.some(({ directOperations, transitiveOperations }) => directOperations.some((operation) => transitiveOperations.includes(operation)))) {
     throw new Error('MVP_OPERATION_CLASSIFICATION_OVERLAP');
@@ -158,8 +152,8 @@ export async function loadRequirementSource(root: string): Promise<RequirementSo
     throw new Error('REQUIREMENT_CLARIFICATION_INVALID');
   }
   assertExactKeys(clarifications.map(({ id }) => id), ['distributiondefinition', 'voucherarchive', 'grouprisk'], 'REQUIREMENT_CLARIFICATION');
-  const blocking = clarifications.filter(({ blocking, status }) => blocking && status === 'open');
-  assertExactKeys(blocking.map(({ id }) => id), ['voucherarchive', 'grouprisk'], 'REQUIREMENT_BLOCKING_CLARIFICATION');
+  const unresolved = clarifications.filter(({ status }) => status !== 'resolved');
+  if (unresolved.length > 0) throw new Error(`REQUIREMENT_CLARIFICATION_UNRESOLVED:${unresolved.map(({ id }) => id).join(',')}`);
   return Object.freeze({ version: document.version, sheets, bindings, providers, mvp, clarifications });
 }
 

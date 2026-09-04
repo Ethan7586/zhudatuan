@@ -1,16 +1,10 @@
-import type { Voucher } from './Voucher';
-
 export interface Redemption {
   readonly id: string;
-  readonly voucherId: string;
-  readonly orderId: string | null;
+  readonly order: string | null;
   readonly amountMinor: number;
+  readonly refundedMinor: number;
+  readonly currency: string;
+  readonly state: OperationOutputFor<'voucher.redemptions.get'>['state'];
   readonly redeemedAt: string;
-  readonly reversedMinor: number;
-  readonly state: 'redeemed' | 'partially_reversed' | 'reversed';
 }
-
-export interface VoucherCenter {
-  readonly vouchers: readonly Voucher[];
-  readonly redemptions: readonly Redemption[];
-}
+import type { OperationOutputFor } from '@shop/contract';

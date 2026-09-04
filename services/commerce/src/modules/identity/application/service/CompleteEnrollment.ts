@@ -2,19 +2,19 @@ import { randomUUID } from 'node:crypto';
 import type { IdentityEnrollmentsCompleteBody } from '@shop/contract';
 
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requirePreauth } from '../../../../foundation/security/OperationSecurityContext';
 import { AuthTransaction } from '../../domain/model/AuthTransaction';
 import { PasswordPolicy } from '../../domain/policy/PasswordPolicy';
 import { canonicalMobile } from '../../domain/value/IdentitySubject';
 import { identityLifecycle as operationLifecycle, type IdentityLifecycle as OperationLifecycle } from '../model/IdentityAction';
-import type { EnrollmentDraft, EnrollmentInvitationScope, EnrollmentService } from './EnrollmentService';
+import type { EnrollmentDraft, EnrollmentInvitationScope, EnrollIdentity } from './EnrollIdentity';
 
 export class CompleteEnrollment {
   constructor(
     private readonly kms: KmsClient,
-    private readonly enrollment: EnrollmentService,
+    private readonly enrollment: EnrollIdentity,
     private readonly passwords = new PasswordPolicy()
   ) {}
 

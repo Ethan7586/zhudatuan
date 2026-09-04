@@ -3,6 +3,12 @@ import type { DirectoryConnection } from '../../domain/model/DirectoryConnection
 import { LifecyclePolicy } from '../../domain/policy/LifecyclePolicy';
 import type { DirectoryRepository, DirectoryCounts, StagedSubject } from '../port/DirectoryRepository';
 import type { MembershipLifecycle } from './MembershipLifecycle';
+import { DirectoryDiff } from '../../domain/model/DirectoryDiff';
+
+interface PlannedSubject {
+  readonly subject: StagedSubject;
+  readonly kind: import('../port/DirectoryRepository').DirectoryApplyKind | 'noop';
+}
 
 export class DirectoryReconciler {
   constructor(
@@ -11,22 +17,9 @@ export class DirectoryReconciler {
     private readonly policy = new LifecyclePolicy()
   ) {}
   async reconcile(context: WriteTransactionContext, connection: DirectoryConnection, subjects: readonly StagedSubject[], trace: string): Promise<DirectoryCounts> {
-    const current = await this.repository.current(
-      context,
-      connection.id,
-      subjects.map((item) => item.hash)
-    );
-    let applied = 0,
-      conflicts = 0,
-      ignored = 0;
-    for (const source of subjects) {
-      const existing = current.get(source.hash.toString('hex')) ?? null;
-      const kind = this.policy.decide(existing, { status: source.status, sourceversion: source.sourceversion, explicitdeparture: source.explicitdeparture });
-      if (kind === 'noop') {
-        ignored += 1;
-        continue;
-      }
-      const subject = { ...source, membership: existing?.membership ?? source.membership };
+    const plan = await this.plan(context, connection, subjects);
+    for (const { subject, kind } of plan) {
+      if (kind === 'noop') continue;
       if (subject.type === 'user' && subject.membership !== null && ['freeze', 'restore', 'update'].includes(kind))
         await this.lifecycle.apply(context, {
           membership: subject.membership,
@@ -37,9 +30,26 @@ export class DirectoryReconciler {
           trace,
         });
       await this.repository.apply(context, connection, subject, kind);
-      if (kind === 'conflict') conflicts += 1;
-      else applied += 1;
     }
-    return Object.freeze({ read: subjects.length, applied, conflicts, ignored });
+    return new DirectoryDiff(plan.map(({ kind }) => kind));
+  }
+
+  async preview(context: WriteTransactionContext, connection: DirectoryConnection, subjects: readonly StagedSubject[]): Promise<DirectoryCounts> {
+    const plan = await this.plan(context, connection, subjects);
+    return new DirectoryDiff(plan.map(({ kind }) => kind));
+  }
+
+  private async plan(context: WriteTransactionContext, connection: DirectoryConnection, subjects: readonly StagedSubject[]): Promise<readonly PlannedSubject[]> {
+    const current = await this.repository.current(
+      context,
+      connection.id,
+      subjects.map((item) => item.hash)
+    );
+    return Object.freeze(subjects.map((source) => {
+      const existing = current.get(source.hash.toString('hex')) ?? null;
+      const kind = this.policy.decide(existing, { status: source.status, sourceversion: source.sourceversion, explicitdeparture: source.explicitdeparture });
+      const subject = { ...source, membership: existing?.membership ?? source.membership };
+      return Object.freeze({ subject: Object.freeze(subject), kind });
+    }));
   }
 }

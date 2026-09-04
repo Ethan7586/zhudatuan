@@ -1,7 +1,8 @@
 import { DomainError } from '../domain/DomainError';
+import type { OperationTarget } from '@shop/contract';
 import type { AccessContext } from './AccessContext';
 
-export type ClientTarget = 'console' | 'storefront';
+export type ClientTarget = OperationTarget;
 export type PreauthPurpose = 'federationselection' | 'invitationproof' | 'enrollment';
 
 export interface AnonymousSecurityContext {

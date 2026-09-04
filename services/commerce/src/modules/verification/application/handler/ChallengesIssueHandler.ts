@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { ChallengeRepository } from '../port/ChallengeRepository';
 
@@ -14,16 +14,17 @@ export class ChallengesIssueHandler implements OperationHandler<'verification.ch
     const access = requireSession(context.security);
     const body = bodyRecord(input);
     const purpose = purposeField(body.purpose);
-    const nonce = randomBytes(32).toString('base64url');
+    const token = randomBytes(32).toString('base64url');
     const result = await this.challenges.issue(context.transaction, {
       id: `verification:${randomUUID()}`,
       scope: access.scope.id,
       membership: access.membership.id,
       purpose,
       voucher: purpose === 'voucher_redeem' ? textField(body, 'voucher') : null,
-      nonceHash: digest(nonce),
+      tokenHash: digest(token),
+      now: new Date(),
     });
-    return { status: 201, body: { ...result, nonce } as OperationOutputFor<'verification.challenges.issue'> };
+    return { status: 201, body: { ...result, token } as OperationOutputFor<'verification.challenges.issue'> };
   }
 }
 

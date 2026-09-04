@@ -13,3 +13,12 @@ exceptions:
 forbidden:
   productionFileSuffixes:
     - .generated.ts
+  runtimeDirectories:
+    - auth-web
+    - storefront-web
+    - admin-web
+    - commerce-api
+requiredTerms:
+  - approval
+  - credential
+  - importing

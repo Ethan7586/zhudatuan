@@ -1,0 +1,66 @@
+.financeimportwizard { display: grid; gap: 18px; }
+.financeimportsteps { display: grid; grid-template-columns: repeat(6, minmax(72px, 1fr)); gap: 6px; margin: 0; padding: 0; list-style: none; }
+.financeimportsteps li { display: grid; justify-items: center; gap: 5px; color: var(--sw-muted); font-size: 10px; text-align: center; }
+.financeimportsteps li span { display: grid; width: 24px; height: 24px; place-items: center; border: 1px solid var(--sw-border-strong); border-radius: 50%; background: var(--sw-surface); }
+.financeimportsteps li.isactive { color: var(--sw-brand); font-weight: 700; }
+.financeimportsteps li.isactive span { border-color: var(--sw-brand); background: var(--sw-brand); color: white; }
+.financeimportsteps li.iscomplete span { border-color: var(--sw-success-strong); background: var(--sw-success-surface); color: var(--sw-success-strong); }
+.financeimportcontent { display: grid; gap: 14px; }
+.financeimportcontent header h3 { margin: 0; color: var(--sw-text); font-size: 16px; }
+.financeimportcontent header p,
+.financeimportcontent > p { margin: 5px 0 0; color: var(--sw-muted); font-size: 12px; line-height: 1.55; }
+.financeimportcontent > label,
+.financeimportfields label { display: grid; gap: 6px; color: var(--sw-text-secondary); font-size: 12px; font-weight: 650; }
+.financeimportcontent input,
+.financeimportcontent select { min-height: 42px; border: 1px solid var(--sw-border-strong); border-radius: 7px; background: var(--sw-surface); color: var(--sw-text); padding: 0 11px; font: inherit; }
+.financeprovidercard,
+.financeimporttemplate,
+.financefilecard,
+.financeimportnotice,
+.financeimportchecks,
+.financeimporttask,
+.financeimporterrors { display: grid; gap: 8px; border: 1px solid var(--sw-border); border-radius: 9px; background: var(--sw-surface-subtle); padding: 12px; }
+.financeprovidercard > div,
+.financeimporttask > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.financeprovidercard p,
+.financeimporttemplate p,
+.financeimportnotice p,
+.financeimportchecks p,
+.financeimporterrors p { margin: 0; color: var(--sw-muted); font-size: 11px; line-height: 1.5; }
+.financeprovidercard dl,
+.financeimporttask dl { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; margin: 0; }
+.financeprovidercard dl div,
+.financeimporttask dl div { display: grid; grid-template-columns: auto 1fr; gap: 7px; }
+.financeprovidercard dt,
+.financeimporttask dt { color: var(--sw-muted); font-size: 10px; }
+.financeprovidercard dd,
+.financeimporttask dd { margin: 0; color: var(--sw-text); font-size: 10px; text-align: right; }
+.financefilecard { grid-template-columns: 1fr auto; }
+.financefilecard small { grid-column: 1 / -1; color: var(--sw-muted); }
+.financeimportmapping { display: grid; border: 1px solid var(--sw-border); border-radius: 8px; overflow: hidden; }
+.financeimportmapping > div { display: grid; grid-template-columns: 110px 120px 1fr; gap: 10px; padding: 9px 11px; border-bottom: 1px solid var(--sw-border); }
+.financeimportmapping > div:last-child { border-bottom: 0; }
+.financeimportmapping strong { color: var(--sw-brand); font-size: 11px; }
+.financeimportmapping span { color: var(--sw-text); font-size: 11px; }
+.financeimportmapping small { color: var(--sw-muted); font-size: 10px; }
+.financeimportfields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+.financeimportchecks ul,
+.financeimporterrors ul { display: grid; gap: 5px; margin: 0; padding-left: 18px; color: var(--sw-text-secondary); font-size: 11px; }
+.financeimportconfirm { display: grid !important; grid-template-columns: auto 1fr; align-items: start; gap: 8px !important; font-weight: 500 !important; line-height: 1.5; }
+.financeimportconfirm input { min-height: auto; }
+.financeimporthint,
+.financeimportcontent > [role='alert'] { margin: 0 !important; color: var(--sw-warning-strong) !important; font-size: 11px !important; }
+.financeuploadprogress { display: grid; gap: 6px; color: var(--sw-muted); font-size: 11px; }
+.financeuploadprogress progress,
+.financeimporttask progress { width: 100%; accent-color: var(--sw-brand); }
+.financeimportcontent footer { display: flex; justify-content: flex-end; gap: 8px; }
+
+@media (max-width: 760px) {
+  .financeimportsteps { grid-template-columns: repeat(3, 1fr); row-gap: 12px; }
+  .financeimportfields,
+  .financeprovidercard dl,
+  .financeimporttask dl { grid-template-columns: 1fr; }
+  .financeimportmapping > div { grid-template-columns: 1fr; gap: 3px; }
+  .financeimportcontent footer { display: grid; grid-template-columns: 1fr; }
+  .financeimportcontent footer button { width: 100%; min-height: 44px; }
+}

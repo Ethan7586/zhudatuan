@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { OPERATION_TARGETS } from '@shop/contract';
 
 export interface InvitationRateRule {
   readonly fingerprint: string;
@@ -11,7 +12,7 @@ const WINDOW_SECONDS = 15 * 60;
 const LIMITS = Object.freeze({ code: 12, device: 60, network: 240 });
 
 export class InvitationRatePolicy {
-  rules(target: 'console' | 'storefront', fingerprints: Readonly<{ code: string; device: string; network: string }>): readonly InvitationRateRule[] {
+  rules(target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier', fingerprints: Readonly<{ code: string; device: string; network: string }>): readonly InvitationRateRule[] {
     return Object.freeze(
       (Object.keys(LIMITS) as readonly (keyof typeof LIMITS)[]).map((dimension) =>
         Object.freeze({
@@ -23,7 +24,7 @@ export class InvitationRatePolicy {
       )
     );
   }
-  recipient(target: 'console' | 'storefront', fingerprint: string): InvitationRateRule {
+  recipient(target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier', fingerprint: string): InvitationRateRule {
     return Object.freeze({
       fingerprint,
       bucket: bucket(target, 'recipient'),
@@ -34,7 +35,7 @@ export class InvitationRatePolicy {
 }
 
 export function invitationRateBuckets(): readonly string[] {
-  return Object.freeze((['console', 'storefront'] as const).flatMap((target) => [...(Object.keys(LIMITS) as readonly (keyof typeof LIMITS)[]).map((dimension) => bucket(target, dimension)), bucket(target, 'recipient')]));
+  return Object.freeze(OPERATION_TARGETS.flatMap((target) => [...(Object.keys(LIMITS) as readonly (keyof typeof LIMITS)[]).map((dimension) => bucket(target, dimension)), bucket(target, 'recipient')]));
 }
 
 function bucket(target: string, dimension: string): string {

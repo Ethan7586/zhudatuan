@@ -1,8 +1,7 @@
 import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
 import { defineModule } from '../../bootstrap/DefinedModule';
 import { SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
-import { readDatabaseWorkload, writeDatabaseWorkload } from '../../foundation/persistence/Workload';
+import { APPROVAL_PORT } from '../approval/public';
 import { REFERRAL_CATALOG_PORT } from '../catalog/public';
 import { REFERRAL_MEMBER_PORT } from '../member/public';
 import { BindingsCreateHandler } from './application/handler/BindingsCreateHandler';
@@ -32,6 +31,7 @@ import { Manifest } from './Manifest';
 import { REFERRAL_READ_PORT, REFERRAL_WRITE_PORT } from './public';
 import { createJobs } from './interface/job/JobFactory';
 import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
+import { RequestWithdrawalApproval } from './application/service/RequestWithdrawalApproval';
 
 export const ReferralModule = defineModule(Manifest, {
   jobs: createJobs,
@@ -57,14 +57,15 @@ export const ReferralModule = defineModule(Manifest, {
       new EarningsReadHandler(referrals, commissions),
       new LinksReadHandler(referrals, tokens, SystemClock),
       new WithdrawalsReadHandler(referrals, withdrawals),
-      new WithdrawalsCreateHandler(referrals, withdrawals, UuidIdentifier),
+      new WithdrawalsCreateHandler(referrals, withdrawals, UuidIdentifier, new RequestWithdrawalApproval(context.ports.get(APPROVAL_PORT))),
     ];
   },
   ports: (context) => {
-    const pool = context.service(DATABASE_POOL);
+    const transactions = new PgTransactionAccess();
+    const referrals = new PgReferralRepository(transactions, context.ports.get(REFERRAL_MEMBER_PORT));
     return [
-      { token: REFERRAL_READ_PORT, value: new PgReferralReadPort(pool.workload(readDatabaseWorkload(context.workload))) },
-      { token: REFERRAL_WRITE_PORT, value: new PgReferralWritePort(pool.workload(writeDatabaseWorkload(context.workload))) },
+      { token: REFERRAL_READ_PORT, value: new PgReferralReadPort(transactions) },
+      { token: REFERRAL_WRITE_PORT, value: new PgReferralWritePort(referrals) },
     ];
   },
 });

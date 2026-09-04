@@ -4,11 +4,11 @@ import type { OperationId, OperationInputFor } from '@shop/contract';
 import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
 import type { CheckoutRepository } from '../../application/port/CheckoutRepository';
-import type { CheckoutConfirmationService } from './CheckoutConfirmationService';
+import type { ConfirmCheckout } from '../../application/service/ConfirmCheckout';
 export class PgCheckoutRepository implements CheckoutRepository {
   constructor(
     private readonly transactions: PgTransactionAccess,
-    private readonly confirmation: CheckoutConfirmationService
+    private readonly confirmation: ConfirmCheckout
   ) {}
   confirm(context: WriteTransactionContext, input: OperationInputFor<'order.orders.create'>, execution: ExecutionContext<'order.orders.create'>) {
     return this.confirmation.execute(checkoutRequest('order.orders.create', input, execution), context) as never;

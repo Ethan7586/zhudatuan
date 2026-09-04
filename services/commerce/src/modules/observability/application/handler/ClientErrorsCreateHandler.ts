@@ -2,7 +2,7 @@ import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { ClientErrorInput } from '@shop/telemetry';
 import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
 import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, optionalText, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, optionalText, textField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { ClientErrorRepository } from '../port/ClientErrorRepository';
 
@@ -15,17 +15,19 @@ export class ClientErrorsCreateHandler implements DurableOperationHandler<'obser
   async prepare(input: OperationInputFor<'observability.clienterrors.create'>, context: PrepareContext<'observability.clienterrors.create'>): Promise<ClientErrorInput> {
     const access = requireSession(context.security);
     const body = bodyRecord(input);
-    return Object.freeze({
+    return this.errors.sanitize(Object.freeze({
       scope: access.scope,
       surface: textField(body, 'surface', 32),
       route: textField(body, 'route', 500),
+      operation: optionalText(body, 'operation', 160),
+      release: textField(body, 'release', 120),
       message: textField(body, 'message', 500),
       stack: optionalText(body, 'stack', 8_000),
       componentStack: optionalText(body, 'componentStack', 8_000),
       traceId: access.trace,
       actorId: access.actor.id,
       membershipId: access.membership.id,
-    });
+    }));
   }
 
   async commit(_input: OperationInputFor<'observability.clienterrors.create'>, prepared: ClientErrorInput, _context: CommitContext<'observability.clienterrors.create'>) {

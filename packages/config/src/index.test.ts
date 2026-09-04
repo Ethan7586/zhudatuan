@@ -3,7 +3,10 @@ import {
   CANONICAL_API_ORIGIN,
   CANONICAL_AUTH_ORIGIN,
   CANONICAL_CONSOLE_ORIGIN,
+  CANONICAL_MINIAPP_ORIGIN,
+  CANONICAL_STORE_ORIGIN,
   CANONICAL_STOREFRONT_ORIGIN,
+  CANONICAL_SUPPLIER_ORIGIN,
   LOCAL_API_ORIGIN,
   LOCAL_AUTH_ORIGIN,
   authClientEnvironment,
@@ -29,11 +32,28 @@ import {
   validateJobsEnvironment,
   validateProviderWorkerEnvironment,
 } from './ServerEnvironment';
+import { relativeRoutePath } from './RoutePath';
+import { providerConnectionConfig } from './ProviderConfig';
 
 const secretStoreBearerToken = 's'.repeat(43);
 const kmsBearerToken = 'k'.repeat(43);
 
 describe('canonical runtime configuration', () => {
+  it('parses provider configuration without exposing secrets and rejects unknown keys', () => {
+    const value = {
+      id: 'jd-main', baseUrl: 'https://provider.example.com', secretRef: 'secret/provider/jd', healthOperation: 'health', endpoints: { health: '/health', catalog: '/catalog' },
+      limits: { connectionTimeoutMs: 1000, responseTimeoutMs: 5000, totalDeadlineMs: 15000, maxConcurrency: 8, requestsPerSecond: 20, maxAttempts: 3, failureThreshold: 5, recoveryMs: 30000 },
+    };
+    expect(providerConnectionConfig(value, 'health')).toMatchObject({ id: 'jd-main', secretRef: 'secret/provider/jd' });
+    expect(JSON.stringify(providerConnectionConfig(value, 'health'))).not.toContain('credential');
+    expect(() => providerConnectionConfig({ ...value, token: 'leak' }, 'health')).toThrow('PROVIDER_CONFIG_UNKNOWN_KEY:token');
+  });
+
+  it('derives client-relative routes through one shared implementation', () => {
+    expect(relativeRoutePath('/scopes/:scopeKind/:scopeId/orders', '/scopes/:scopeKind/:scopeId', 'consoleorders')).toBe('orders');
+    expect(() => relativeRoutePath('/orders', '/scopes/:scopeKind/:scopeId', 'consoleorders')).toThrow('ROUTE_BASE_INVALID:consoleorders');
+  });
+
   it('owns every canonical key exactly once', () => {
     expect(new Set(API_ENVIRONMENT_KEYS).size).toBe(API_ENVIRONMENT_KEYS.length);
     expect(new Set(JOBS_ENVIRONMENT_KEYS).size).toBe(JOBS_ENVIRONMENT_KEYS.length);
@@ -87,10 +107,16 @@ describe('canonical runtime configuration', () => {
     expect(() => validateJobsEnvironment({ ...jobs, KMS_BEARER_TOKEN: secretStoreBearerToken })).toThrow('WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
   });
 
-  it('accepts only two hard-cut authentication return targets', () => {
+  it('accepts exactly the five hard-cut authentication return targets', () => {
     const valid = apiEnvironment();
     expect(() => validateApiEnvironment(valid)).not.toThrow();
-    expect(apiReturnTargets(valid)).toEqual({ console: CANONICAL_CONSOLE_ORIGIN, storefront: CANONICAL_STOREFRONT_ORIGIN });
+    expect(apiReturnTargets(valid)).toEqual({
+      console: CANONICAL_CONSOLE_ORIGIN,
+      storefront: CANONICAL_STOREFRONT_ORIGIN,
+      miniapp: CANONICAL_MINIAPP_ORIGIN,
+      store: CANONICAL_STORE_ORIGIN,
+      supplier: CANONICAL_SUPPLIER_ORIGIN,
+    });
     expect(apiStorefrontOrigin(valid)).toBe(CANONICAL_STOREFRONT_ORIGIN);
     expect(apiStorefrontOrigin({ ...valid, APP_ENV: 'development', PUBLIC_STOREFRONT_ORIGIN: 'http://127.0.0.1:3000' })).toBe('http://127.0.0.1:3000');
     expect(() => apiStorefrontOrigin({ ...valid, APP_ENV: 'development', PUBLIC_STOREFRONT_ORIGIN: 'http://localhost:3000' })).toThrow('PUBLIC_STOREFRONT_ORIGIN_INVALID');
@@ -175,8 +201,14 @@ function apiEnvironment() {
     APP_ENV: 'production',
     AUTH_MODE: 'membership',
     SERVICE_VERSION: '1.0.0',
-    API_ALLOWED_ORIGINS: `${CANONICAL_AUTH_ORIGIN},${CANONICAL_CONSOLE_ORIGIN},${CANONICAL_STOREFRONT_ORIGIN}`,
-    AUTH_RETURN_TARGETS: JSON.stringify({ console: CANONICAL_CONSOLE_ORIGIN, storefront: CANONICAL_STOREFRONT_ORIGIN }),
+    API_ALLOWED_ORIGINS: `${CANONICAL_AUTH_ORIGIN},${CANONICAL_CONSOLE_ORIGIN},${CANONICAL_STOREFRONT_ORIGIN},${CANONICAL_MINIAPP_ORIGIN},${CANONICAL_STORE_ORIGIN},${CANONICAL_SUPPLIER_ORIGIN}`,
+    AUTH_RETURN_TARGETS: JSON.stringify({
+      console: CANONICAL_CONSOLE_ORIGIN,
+      storefront: CANONICAL_STOREFRONT_ORIGIN,
+      miniapp: CANONICAL_MINIAPP_ORIGIN,
+      store: CANONICAL_STORE_ORIGIN,
+      supplier: CANONICAL_SUPPLIER_ORIGIN,
+    }),
     PUBLIC_STOREFRONT_ORIGIN: CANONICAL_STOREFRONT_ORIGIN,
     DATABASE_API_CONNECTION_REF: 'secret/database/api',
     REDIS_CONNECTION_REF: 'secret/redis/query',

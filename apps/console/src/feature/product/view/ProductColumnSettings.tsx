@@ -2,8 +2,11 @@ import { Dialog } from '@shop/design';
 import type { ProductColumnKey } from './ProductTable';
 
 const columns: readonly Readonly<{ key: ProductColumnKey; label: string }>[] = Object.freeze([
-  { key: 'category', label: '商品类型' },
-  { key: 'sku', label: '商品规格' },
+  { key: 'category', label: '分类 / 来源' },
+  { key: 'sku', label: 'SKU 摘要' },
+  { key: 'malls', label: '商城覆盖' },
+  { key: 'price', label: '有效售价' },
+  { key: 'stock', label: '可售库存' },
   { key: 'status', label: '状态' },
   { key: 'updated', label: '更新时间' },
 ]);
@@ -19,7 +22,7 @@ export function ProductColumnSettings({ open, visible, onChange, onClose }: Prod
   return (
     <Dialog open={open} title="列设置" eyebrow="表格显示偏好" onClose={onClose}>
       <div className="productcolumnpanel">
-        <p>仅调整本次浏览中的显示列，不改变服务端查询或业务数据。</p>
+        <p>显示偏好会按当前账号和管理范围保存；切换范围时互不影响，也不会改变业务数据。</p>
         <div className="productcolumnchoices">
           {columns.map((column) => (
             <label key={column.key}>

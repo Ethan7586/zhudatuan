@@ -1,5 +1,33 @@
 version: 4
 api:
+  - code: ACCESS_GRANT_CONFLICT
+    owner: access
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.access_grant_conflict
+    message: 同一权限不能同时设置为允许和拒绝。
+    english: A permission cannot be both allowed and denied.
+    status: 400
+    audit: true
+    details: []
+    reserved: false
+  - code: ACCESS_SEPARATION_REQUIRED
+    owner: access
+    category: authorization
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.access_separation_required
+    message: 所选高风险职责必须由不同人员承担，请调整权限。
+    english: Conflicting high-risk duties must be assigned to different people.
+    status: 403
+    audit: true
+    details: []
+    reserved: false
   - code: ACCESS_VERSION_STALE
     owner: identity
     category: conflict
@@ -53,6 +81,188 @@ api:
     message: 当前身份没有执行此操作的权限。
     english: Your current identity cannot perform this action.
     status: 403
+    audit: true
+    details: []
+    reserved: false
+  - code: APPROVAL_ALREADY_DECIDED
+    owner: approval
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.approval_already_decided
+    message: 该审批已经处理，请刷新查看最新结果。
+    english: This approval has already been decided. Refresh to view the result.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: APPROVAL_EVIDENCE_HASH_INVALID
+    owner: approval
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.approval_evidence_hash_invalid
+    message: 审批证据摘要无效，请重新发起申请。
+    english: The approval evidence digest is invalid. Submit the request again.
+    status: 400
+    audit: true
+    details: []
+    reserved: false
+  - code: APPROVAL_INSTANCE_CONFLICT
+    owner: approval
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.approval_instance_conflict
+    message: 审批实例已发生变化，请刷新后重试。
+    english: The approval instance has changed. Refresh and try again.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: APPROVAL_INSTANCE_EXPIRED
+    owner: approval
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.approval_instance_expired
+    message: 该审批已过期，请由申请人重新提交。
+    english: This approval has expired. Ask the requester to submit it again.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: APPROVAL_NOT_ASSIGNED
+    owner: approval
+    category: authorization
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.approval_not_assigned
+    message: 当前审批任务未分配给你，无法处理。
+    english: This approval task is not assigned to you.
+    status: 403
+    audit: true
+    details: []
+    reserved: false
+  - code: APPROVAL_PROOF_INVALID
+    owner: approval
+    category: authorization
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.approval_proof_invalid
+    message: 审批证明无效、已过期或已被使用，请重新申请。
+    english: The approval proof is invalid, expired, or already used.
+    status: 403
+    audit: true
+    details: []
+    reserved: false
+  - code: APPROVAL_REQUEST_HASH_INVALID
+    owner: approval
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.approval_request_hash_invalid
+    message: 执行请求摘要无效，请刷新后重试。
+    english: The execution request digest is invalid. Refresh and try again.
+    status: 400
+    audit: true
+    details: []
+    reserved: false
+  - code: APPROVAL_SELF_DECISION_FORBIDDEN
+    owner: approval
+    category: authorization
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.approval_self_decision_forbidden
+    message: 申请人与审批人必须为不同成员。
+    english: The requester and approver must be different memberships.
+    status: 403
+    audit: true
+    details: []
+    reserved: false
+  - code: APPROVAL_TASK_CONFLICT
+    owner: approval
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.approval_task_conflict
+    message: 审批任务已被其他人处理，请刷新查看结果。
+    english: Another approver has already processed this task.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: APPROVAL_TEMPLATE_ACTIVE_CONFLICT
+    owner: approval
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.approval_template_active_conflict
+    message: 当前审批对象已有启用模板，请先停用后再启用此模板。
+    english: Another template is active for this approval subject. Disable it before enabling this template.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: APPROVAL_TEMPLATE_CODE_CONFLICT
+    owner: approval
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.approval_template_code_conflict
+    message: 当前范围已存在相同编码的审批模板，请更换编码。
+    english: An approval template with this code already exists in the current scope.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: APPROVAL_TEMPLATE_DISABLED
+    owner: approval
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.approval_template_disabled
+    message: 该审批模板未启用，暂时不能发起审批。
+    english: This approval template is not enabled.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: APPROVAL_TEMPLATE_VERSION_CONFLICT
+    owner: approval
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.approval_template_version_conflict
+    message: 审批模板已被更新，请刷新后重新编辑。
+    english: The approval template has changed. Refresh before editing again.
+    status: 409
     audit: true
     details: []
     reserved: false
@@ -126,6 +336,48 @@ api:
     audit: false
     details: []
     reserved: false
+  - code: CAPABILITY_DEPENDENCY_UNHEALTHY
+    owner: capability
+    category: dependency
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.capability_dependency_unhealthy
+    message: 依赖能力尚未可用，请先处理依赖项后再开启。
+    english: A required capability is unavailable. Resolve its dependency before enabling this capability.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: CAPABILITY_PARENT_REQUIRED
+    owner: capability
+    category: authorization
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.capability_parent_required
+    message: 上级范围尚未授予此能力，当前范围不能单独开启。
+    english: The parent scope has not granted this capability, so it cannot be enabled here.
+    status: 403
+    audit: true
+    details: []
+    reserved: false
+  - code: CAPABILITY_QUOTA_EXCEEDED
+    owner: capability
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.capability_quota_exceeded
+    message: 当前配额超过上级范围可分配额度，请调低后重试。
+    english: The quota exceeds the amount available from the parent scope.
+    status: 400
+    audit: true
+    details: []
+    reserved: false
   - code: CART_EMPTY
     owner: cart
     category: conflict
@@ -179,6 +431,188 @@ api:
     message: 提交的信息不符合要求，请检查后重试。
     english: Check the submitted information and try again.
     status: 400
+    audit: false
+    details: []
+    reserved: false
+  - code: CHECKOUT_BENEFIT_TIMEOUT
+    owner: checkout
+    category: dependency
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.checkout_benefit_timeout
+    message: 福利额度查询超时，请稍后重新报价。
+    english: Benefit balance lookup timed out. Create a new quote and try again.
+    status: 504
+    audit: false
+    details: []
+    reserved: false
+  - code: CHECKOUT_CART_TIMEOUT
+    owner: checkout
+    category: dependency
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.checkout_cart_timeout
+    message: 购物车读取超时，请稍后重试。
+    english: Cart lookup timed out. Try again shortly.
+    status: 504
+    audit: false
+    details: []
+    reserved: false
+  - code: CHECKOUT_CATALOG_TIMEOUT
+    owner: checkout
+    category: dependency
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.checkout_catalog_timeout
+    message: 商品信息查询超时，请稍后重新报价。
+    english: Catalog lookup timed out. Create a new quote and try again.
+    status: 504
+    audit: false
+    details: []
+    reserved: false
+  - code: CHECKOUT_EXPERIENCE_TIMEOUT
+    owner: checkout
+    category: dependency
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.checkout_experience_timeout
+    message: 商城发布信息查询超时，请稍后重试。
+    english: Published storefront lookup timed out. Try again shortly.
+    status: 504
+    audit: false
+    details: []
+    reserved: false
+  - code: CHECKOUT_FINANCE_TIMEOUT
+    owner: checkout
+    category: dependency
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.checkout_finance_timeout
+    message: 开票信息查询超时，请稍后重试。
+    english: Invoice profile lookup timed out. Try again shortly.
+    status: 504
+    audit: false
+    details: []
+    reserved: false
+  - code: CHECKOUT_INVENTORY_TIMEOUT
+    owner: checkout
+    category: dependency
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.checkout_inventory_timeout
+    message: 库存查询超时，请稍后重新报价。
+    english: Inventory lookup timed out. Create a new quote and try again.
+    status: 504
+    audit: false
+    details: []
+    reserved: false
+  - code: CHECKOUT_MARKETING_TIMEOUT
+    owner: checkout
+    category: dependency
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.checkout_marketing_timeout
+    message: 优惠计算超时，请稍后重新报价。
+    english: Promotion evaluation timed out. Create a new quote and try again.
+    status: 504
+    audit: false
+    details: []
+    reserved: false
+  - code: CHECKOUT_MEMBER_TIMEOUT
+    owner: checkout
+    category: dependency
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.checkout_member_timeout
+    message: 会员资料查询超时，请稍后重试。
+    english: Member profile lookup timed out. Try again shortly.
+    status: 504
+    audit: false
+    details: []
+    reserved: false
+  - code: CHECKOUT_ORDER_TIMEOUT
+    owner: checkout
+    category: dependency
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.checkout_order_timeout
+    message: 历史购买记录查询超时，请稍后重试。
+    english: Purchase history lookup timed out. Try again shortly.
+    status: 504
+    audit: false
+    details: []
+    reserved: false
+  - code: CHECKOUT_PRICING_TIMEOUT
+    owner: checkout
+    category: dependency
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.checkout_pricing_timeout
+    message: 价格查询超时，请稍后重新报价。
+    english: Pricing lookup timed out. Create a new quote and try again.
+    status: 504
+    audit: false
+    details: []
+    reserved: false
+  - code: CHECKOUT_QUALIFICATION_TIMEOUT
+    owner: checkout
+    category: dependency
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.checkout_qualification_timeout
+    message: 购买资格查询超时，请稍后重新报价。
+    english: Qualification lookup timed out. Create a new quote and try again.
+    status: 504
+    audit: false
+    details: []
+    reserved: false
+  - code: CHECKOUT_RISK_TIMEOUT
+    owner: checkout
+    category: dependency
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.checkout_risk_timeout
+    message: 安全校验超时，请稍后重试。
+    english: Risk assessment timed out. Try again shortly.
+    status: 504
+    audit: false
+    details: []
+    reserved: false
+  - code: CHECKOUT_VOUCHER_TIMEOUT
+    owner: checkout
+    category: dependency
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.checkout_voucher_timeout
+    message: 卡券查询超时，请稍后重新报价。
+    english: Voucher lookup timed out. Create a new quote and try again.
+    status: 504
     audit: false
     details: []
     reserved: false
@@ -770,6 +1204,34 @@ api:
     audit: false
     details: []
     reserved: false
+  - code: INVITATION_ACCEPTED
+    owner: identity
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: signin
+    messageKey: error.invitation_accepted
+    message: 该邀请已经接受，未重复创建或变更账号。请直接登录；如需其他身份，请联系管理员重新邀请。
+    english: This invitation has already been accepted. Sign in, or ask an administrator for a new invitation if you need another identity.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: INVITATION_EXPIRED
+    owner: identity
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.invitation_expired
+    message: 该邀请已过期，未创建或变更账号。请联系管理员重新发送邀请。
+    english: This invitation has expired. No account was created or changed. Ask an administrator to send a new invitation.
+    status: 410
+    audit: true
+    details: []
+    reserved: false
   - code: INVITATION_INVALID
     owner: identity
     category: validation
@@ -778,8 +1240,8 @@ api:
     exposure: message
     action: none
     messageKey: error.invitation_invalid
-    message: 邀请码无效、已过期或暂不可用，请核对后重试。
-    english: Check the submitted information and try again.
+    message: 无法识别该邀请码，未创建或变更账号。请核对完整邀请码后重试。
+    english: This invitation code could not be recognized. No account was created or changed. Check the complete code and try again.
     status: 400
     audit: true
     details: []
@@ -809,6 +1271,20 @@ api:
     message: 邀请码无效、已过期或暂不可用，请核对后重试。
     english: The requested content was not found.
     status: 404
+    audit: true
+    details: []
+    reserved: false
+  - code: INVITATION_REVOKED
+    owner: identity
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.invitation_revoked
+    message: 该邀请已被管理员撤销，未创建或变更账号。请联系管理员确认后重新邀请。
+    english: This invitation was revoked by an administrator. No account was created or changed. Contact the administrator for a new invitation.
+    status: 409
     audit: true
     details: []
     reserved: false
@@ -852,6 +1328,20 @@ api:
     english: Check the submitted information and try again.
     status: 403
     audit: true
+    details: []
+    reserved: false
+  - code: MARKETING_BUDGET_CONFLICT
+    owner: marketing
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.marketing_budget_conflict
+    message: 活动优惠额度已发生变化，请刷新报价后重试。
+    english: The campaign budget changed. Refresh the quote and try again.
+    status: 409
+    audit: false
     details: []
     reserved: false
   - code: MEMBERSHIP_INACTIVE
@@ -952,6 +1442,62 @@ api:
     audit: false
     details: []
     reserved: false
+  - code: ORDER_IMPORT_DUPLICATE
+    owner: order
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.order_import_duplicate
+    message: 该来源订单已经导入，请查看原任务结果。
+    english: This source order has already been imported. Review the original result.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: ORDER_IMPORT_EVIDENCE_INVALID
+    owner: order
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.order_import_evidence_invalid
+    message: 资金凭证无法核验，订单将保留为待核验状态。
+    english: The funding evidence could not be verified. The order remains pending verification.
+    status: 422
+    audit: true
+    details: []
+    reserved: false
+  - code: ORDER_IMPORT_MAPPING_INVALID
+    owner: order
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.order_import_mapping_invalid
+    message: 商城、渠道、消费者或商品映射无效，请修正后重试。
+    english: A mall, channel, member, or product mapping is invalid. Correct it and retry.
+    status: 422
+    audit: true
+    details: []
+    reserved: false
+  - code: ORDER_IMPORT_ROW_FAILED
+    owner: order
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.order_import_row_failed
+    message: 订单导入行未通过校验，请下载错误报告修正。
+    english: An order import row failed validation. Download the error report and correct it.
+    status: 422
+    audit: true
+    details: []
+    reserved: false
   - code: ORDER_NOT_CANCELLABLE
     owner: order
     category: conflict
@@ -976,6 +1522,48 @@ api:
     messageKey: error.order_receipt_state_invalid
     message: 数据状态已经变化，请刷新后重试。
     english: The state has changed. Refresh and try again.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: ORDER_REMINDER_NOT_ALLOWED
+    owner: order
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.order_reminder_not_allowed
+    message: 当前订单无需催单，或 30 分钟内已经提醒过履约方。
+    english: This order does not need a reminder, or its fulfillment party was reminded within the last 30 minutes.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: ORDER_SNAPSHOT_INVALID
+    owner: order
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.order_snapshot_invalid
+    message: 订单交易快照不完整或金额不一致，操作已停止。
+    english: The order transaction snapshot is incomplete or inconsistent. The operation was stopped.
+    status: 422
+    audit: true
+    details: []
+    reserved: false
+  - code: ORDER_TRANSITION_INVALID
+    owner: order
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.order_transition_invalid
+    message: 订单状态已经变化，请刷新后重试。
+    english: The order state has changed. Refresh and try again.
     status: 409
     audit: true
     details: []
@@ -1008,8 +1596,78 @@ api:
     audit: true
     details: []
     reserved: false
+  - code: OWNER_MEMBERSHIP_PROTECTED
+    owner: identity
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.owner_membership_protected
+    message: 不能重置当前账号或商城所有者，请先完成所有权转移。
+    english: The current account or mall owner cannot be reset before ownership transfer.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: OWNER_TRANSFER_COOLING_PERIOD
+    owner: access
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.owner_transfer_cooling_period
+    message: 所有权转移仍在 24 小时冷静期内，请在冷静期结束后再接受。
+    english: The ownership transfer is still in its 24-hour cooling period.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: OWNER_TRANSFER_EXPIRED
+    owner: access
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.owner_transfer_expired
+    message: 这笔所有权转移已经过期，请由当前所有者重新发起。
+    english: The ownership transfer has expired. Ask the current owner to start again.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: OWNER_TRANSFER_INVALID
+    owner: access
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.owner_transfer_invalid
+    message: 所有权转移信息不完整或已经失效，请刷新后重试。
+    english: The ownership transfer is invalid or stale. Refresh and try again.
+    status: 400
+    audit: true
+    details: []
+    reserved: false
+  - code: OWNER_TRANSFER_PENDING
+    owner: access
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.owner_transfer_pending
+    message: 当前范围已有待接受的所有权转移，请先处理后再发起。
+    english: This scope already has a pending ownership transfer.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
   - code: OWNER_TRANSFER_REQUIRED
-    owner: runtime
+    owner: access
     category: validation
     retryable: false
     retryAfter: false
@@ -1019,6 +1677,90 @@ api:
     message: 提交的信息不符合要求，请检查后重试。
     english: Check the submitted information and try again.
     status: 403
+    audit: true
+    details: []
+    reserved: false
+  - code: OWNER_TRANSFER_ROLE_INVALID
+    owner: access
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.owner_transfer_role_invalid
+    message: 原所有者的后续角色无效，请重新选择。
+    english: Select a valid role for the former owner.
+    status: 400
+    audit: true
+    details: []
+    reserved: false
+  - code: OWNER_TRANSFER_STATE_INVALID
+    owner: access
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.owner_transfer_state_invalid
+    message: 这笔所有权转移当前不能执行该操作，请刷新后确认状态。
+    english: The ownership transfer is not in a state that allows this action.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: PARTNER_AGREEMENT_PERIOD_INVALID
+    owner: partner
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.partner_agreement_period_invalid
+    message: 客户协议的生效时间、失效时间或授权范围不正确，请检查后重试。
+    english: Check the customer agreement period and granted capabilities, then try again.
+    status: 400
+    audit: true
+    details: []
+    reserved: false
+  - code: PARTNER_CONTACT_INVALID
+    owner: partner
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.partner_contact_invalid
+    message: 联系人姓名、手机号或邮箱不正确，请检查后重试。
+    english: Check the contact name, phone number, or email address, then try again.
+    status: 400
+    audit: true
+    details: []
+    reserved: false
+  - code: PARTNER_CUSTOMER_IDENTIFIER_CONFLICT
+    owner: partner
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.partner_customer_identifier_conflict
+    message: 当前租户已存在相同统一标识的客户，请核对后再创建或修改。
+    english: A customer with the same normalized identifier already exists in this tenant.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: PARTNER_CUSTOMER_STATE_INVALID
+    owner: partner
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.partner_customer_state_invalid
+    message: 当前客户状态或协议状态不允许此操作，请刷新后检查协议有效期。
+    english: The customer or agreement state does not allow this action. Refresh and check the agreement period.
+    status: 409
     audit: true
     details: []
     reserved: false
@@ -1034,6 +1776,48 @@ api:
     english: Check the submitted information and try again.
     status: 400
     audit: false
+    details: []
+    reserved: false
+  - code: PAYMENT_ALLOCATION_UNBALANCED
+    owner: payment
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.payment_allocation_unbalanced
+    message: 支付金额分配不完整，请返回订单重新确认支付方式。
+    english: The payment allocation is incomplete. Return to the order and confirm the payment methods.
+    status: 400
+    audit: true
+    details: []
+    reserved: false
+  - code: PAYMENT_INTENT_CONFLICT
+    owner: payment
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.payment_intent_conflict
+    message: 支付状态已经变化，请刷新查看最新结果。
+    english: The payment state has changed. Refresh to view the latest result.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: PAYMENT_INTENT_NOT_PAYABLE
+    owner: payment
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.payment_intent_not_payable
+    message: 当前订单无需支付或已不能继续支付，请刷新订单状态。
+    english: This order no longer needs or accepts payment. Refresh the order status.
+    status: 409
+    audit: true
     details: []
     reserved: false
   - code: PAYMENT_REFUND_EXCEEDS_AVAILABLE
@@ -1540,6 +2324,20 @@ api:
     audit: false
     details: []
     reserved: false
+  - code: SUPPORT_MESSAGE_VISIBILITY_DENIED
+    owner: support
+    category: authorization
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.support_message_visibility_denied
+    message: 用户消息只能对会话双方可见，请取消内部可见设置后重试。
+    english: Member messages cannot be marked as internal.
+    status: 403
+    audit: true
+    details: []
+    reserved: false
   - code: SUPPORT_STREAM_UNAVAILABLE
     owner: support
     category: dependency
@@ -1612,7 +2410,7 @@ api:
       - field
     reserved: false
   - code: VERIFICATION_DEVICE_DENIED
-    owner: identity
+    owner: verification
     category: authorization
     retryable: false
     retryAfter: false
@@ -1639,16 +2437,16 @@ api:
     audit: false
     details: []
     reserved: false
-  - code: VERIFICATION_NONCE_REPLAYED
-    owner: identity
+  - code: VERIFICATION_TOKEN_INVALID
+    owner: verification
     category: conflict
     retryable: false
     retryAfter: false
     exposure: message
     action: none
-    messageKey: error.verification_nonce_replayed
-    message: 数据状态已经变化，请刷新后重试。
-    english: The state has changed. Refresh and try again.
+    messageKey: error.verification_token_invalid
+    message: 核验凭证已失效，请重新生成。
+    english: The verification token is no longer valid. Generate a new one and try again.
     status: 409
     audit: false
     details: []
@@ -1667,6 +2465,90 @@ api:
     audit: false
     details: []
     reserved: false
+  - code: VOUCHER_APPROVAL_REQUIRED
+    owner: voucher
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: contact
+    messageKey: error.voucher_approval_required
+    message: 此操作需要完成审批后才能继续，请前往审批中心处理。
+    english: Complete the required approval before continuing.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: VOUCHER_BATCH_NOT_RETRYABLE
+    owner: voucher
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.voucher_batch_not_retryable
+    message: 当前批次没有可重试的失败项，请刷新后查看最新结果。
+    english: This batch has no retryable failed items.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: VOUCHER_CREDENTIAL_CONFLICT
+    owner: voucher
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.voucher_credential_conflict
+    message: 凭证已存在或状态已变化，请检查重复卡号并刷新重试。
+    english: The credential already exists or its state has changed.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: VOUCHER_EXPORT_NOT_READY
+    owner: voucher
+    category: conflict
+    retryable: true
+    retryAfter: true
+    exposure: message
+    action: retry
+    messageKey: error.voucher_export_not_ready
+    message: 导出文件仍在生成或审批中，请稍后重试。
+    english: The export is still being approved or generated.
+    status: 409
+    audit: false
+    details: []
+    reserved: false
+  - code: VOUCHER_HOLD_CONFLICT
+    owner: voucher
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.voucher_hold_conflict
+    message: 卡券已被其他交易预占或该预占已处理，请刷新后重试。
+    english: The voucher is held by another transaction or the hold is already resolved.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: VOUCHER_HOLD_EXPIRED
+    owner: voucher
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.voucher_hold_expired
+    message: 卡券预占已过期，请重新校验并创建预占。
+    english: The voucher hold has expired.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
   - code: VOUCHER_NOT_REDEEMABLE
     owner: voucher
     category: conflict
@@ -1679,6 +2561,48 @@ api:
     english: The state has changed. Refresh and try again.
     status: 409
     audit: false
+    details: []
+    reserved: false
+  - code: VOUCHER_NOT_USABLE
+    owner: voucher
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.voucher_not_usable
+    message: 所选卡券已失效、余额不足或不适用于当前订单，请重新选择。
+    english: A selected voucher is no longer usable for this order. Choose another voucher.
+    status: 409
+    audit: false
+    details: []
+    reserved: false
+  - code: VOUCHER_POOL_CLOSED
+    owner: voucher
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.voucher_pool_closed
+    message: 卡号库已关闭，只能查看，不能再生成、导入或分配凭证。
+    english: The credential pool is closed and read-only.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: VOUCHER_PRODUCT_INCOMPLETE
+    owner: voucher
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.voucher_product_incomplete
+    message: 产品缺少有效客户、资格、卡号库或有效期，暂不能启用。
+    english: The product is missing an eligible customer, qualification, pool, or validity period.
+    status: 422
+    audit: true
     details: []
     reserved: false
   - code: VOUCHER_REDEMPTION_CONFLICT
@@ -1695,6 +2619,34 @@ api:
     audit: false
     details: []
     reserved: false
+  - code: VOUCHER_REFUND_EXCEEDS_REDEMPTION
+    owner: voucher
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.voucher_refund_exceeds_redemption
+    message: 累计退款金额超过原核销金额，请核对退款记录。
+    english: The cumulative refund exceeds the original redemption.
+    status: 409
+    audit: true
+    details: []
+    reserved: false
+  - code: VOUCHER_SECRET_INVALID
+    owner: voucher
+    category: validation
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.voucher_secret_invalid
+    message: 卡券信息无效或暂不可激活，请核对后重试。
+    english: The voucher details are invalid or cannot be activated.
+    status: 400
+    audit: true
+    details: []
+    reserved: false
   - code: VOUCHER_STATE_INVALID
     owner: voucher
     category: conflict
@@ -1707,6 +2659,20 @@ api:
     english: The state has changed. Refresh and try again.
     status: 409
     audit: false
+    details: []
+    reserved: false
+  - code: VOUCHER_STOCK_INSUFFICIENT
+    owner: voucher
+    category: conflict
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: refresh
+    messageKey: error.voucher_stock_insufficient
+    message: 可用凭证库存不足，请减少数量或补充卡号库。
+    english: Available voucher stock is insufficient.
+    status: 409
+    audit: true
     details: []
     reserved: false
   - code: WECHAT_BINDING_TOKEN_INVALID

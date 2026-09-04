@@ -1,64 +1,93 @@
 import { defineModule } from '../../bootstrap/DefinedModule';
-import { Manifest } from './Manifest';
-import { VoucherPort } from './infrastructure/persistence/VoucherPort';
-import { VOUCHER_ACCOUNTING_PORT } from '../finance/public/index';
-import { CHECKOUT_VOUCHER_PORT, PAYMENT_VOUCHER_PORT, VERIFICATION_VOUCHER_PORT } from './public/index';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
+import { PgTransactionManager } from '../../adapter/database/PgTransactionManager';
+import { KMS_CLIENT } from '../../foundation/application/KmsPort';
+import { DATABASE_POOL } from '../../foundation/persistence/Pool';
+import { OBJECT_STORE } from '../runtime/public/ObjectPort';
+import { MEMBER_ACCESS_PORT, TASK_AUTHORIZATION_PORT } from '../access/public';
+import { APPROVAL_PORT, APPROVAL_READ_PORT } from '../approval/public';
+import { EXPORT_PORT, IMPORT_OBJECT_PORT, JOB_PORT, RUNTIME_IMPORT_PORT } from '../runtime/public';
+import { ExportsGetHandler } from './application/handler/ExportsGetHandler';
+import { VOUCHER_ACCOUNTING_PORT } from '../finance/public';
+import { ORGANIZATION_READ_PORT } from '../organization/public';
+import { VOUCHER_CUSTOMER_PORT } from '../partner/public';
+import { CHECKOUT_QUALIFICATION_PORT } from '../qualification/public';
+import { createVoucherHandlers } from './application/service/OperationAssembly';
+import { VoucherApplication } from './application/service/VoucherApplication';
+import { VoucherActivation } from './application/service/VoucherActivation';
+import { PreparedVoucherSearch } from './application/service/PreparedVoucherSearch';
+import { EnvelopeCredentialProtector } from './infrastructure/crypto/EnvelopeCredentialProtector';
+import { PgVoucherExport } from './infrastructure/persistence/PgVoucherExport';
+import { PgActionBatchRepository } from './infrastructure/persistence/PgActionBatchRepository';
+import { PgActivationRate } from './infrastructure/persistence/PgActivationRate';
+import { PgCredentialPoolRepository } from './infrastructure/persistence/PgCredentialPoolRepository';
+import { PgCredentialRepository } from './infrastructure/persistence/PgCredentialRepository';
+import { PgIssueOrderRepository } from './infrastructure/persistence/PgIssueOrderRepository';
+import { PgStockRequestRepository } from './infrastructure/persistence/PgStockRequestRepository';
+import { PgTenderRepository } from './infrastructure/persistence/PgTenderRepository';
+import { PgVoucherProductRepository } from './infrastructure/persistence/PgVoucherProductRepository';
 import { PgVoucherRepository } from './infrastructure/persistence/PgVoucherRepository';
-import { CardLibrariesAllocateHandler } from './application/handler/CardLibrariesAllocateHandler';
-import { CardLibrariesCreateHandler } from './application/handler/CardLibrariesCreateHandler';
-import { CardLibrariesReadHandler } from './application/handler/CardLibrariesReadHandler';
-import { ImportsReadHandler } from './application/handler/ImportsReadHandler';
-import { ProgramsManageHandler } from './application/handler/ProgramsManageHandler';
-import { ProgramsReadHandler } from './application/handler/ProgramsReadHandler';
-import { ReservesDecideHandler } from './application/handler/ReservesDecideHandler';
-import { ReservesReadHandler } from './application/handler/ReservesReadHandler';
-import { ReservesRequestHandler } from './application/handler/ReservesRequestHandler';
-import { BatchesIssueHandler } from './application/handler/BatchesIssueHandler';
-import { BatchesReadHandler } from './application/handler/BatchesReadHandler';
-import { BatchesRetryHandler } from './application/handler/BatchesRetryHandler';
-import { StatusBatchHandler } from './application/handler/StatusBatchHandler';
-import { StatusBatchesReadHandler } from './application/handler/StatusBatchesReadHandler';
-import { BindingsManageHandler } from './application/handler/BindingsManageHandler';
-import { BindingsReadHandler } from './application/handler/BindingsReadHandler';
-import { HistoryReadHandler } from './application/handler/HistoryReadHandler';
-import { RedemptionsReadHandler } from './application/handler/RedemptionsReadHandler';
-import { RedemptionsReverseHandler } from './application/handler/RedemptionsReverseHandler';
+import { VoucherProductReference } from './infrastructure/persistence/VoucherProductReference';
+import { PgVoucherSearch } from './infrastructure/persistence/PgVoucherSearch';
+import { VoucherPort } from './infrastructure/persistence/VoucherPort';
+import { Manifest } from './Manifest';
+import { CHECKOUT_VOUCHER_PORT, FULFILLMENT_VOUCHER_PORT, PAYMENT_VOUCHER_PORT, VERIFICATION_VOUCHER_PORT } from './public';
 import { createJobs } from './interface/job/JobFactory';
+import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
 
 export const VoucherModule = defineModule(Manifest, {
-  jobs: createJobs,
   handlers: (context) => {
-    const repository = new PgVoucherRepository(new PgTransactionAccess(), context);
+    const protector = new EnvelopeCredentialProtector(context.service(KMS_CLIENT));
+    const finance = context.ports.get(VOUCHER_ACCOUNTING_PORT);
+    const members = context.ports.get(MEMBER_ACCESS_PORT);
+    const approval = context.ports.get(APPROVAL_PORT);
+    const decisions = context.ports.get(APPROVAL_READ_PORT);
+    const jobs = context.ports.get(JOB_PORT);
+    const exports = context.ports.get(EXPORT_PORT);
+    const organizations = context.ports.get(ORGANIZATION_READ_PORT);
+    const vouchers = new PgVoucherRepository(new PgActivationRate(), members, organizations, finance);
+    const application = new VoucherApplication(
+      members,
+      new PgVoucherProductRepository(new VoucherProductReference(
+        context.ports.get(VOUCHER_CUSTOMER_PORT),
+        context.ports.get(CHECKOUT_QUALIFICATION_PORT),
+      )),
+      new PgCredentialPoolRepository(),
+      new PgCredentialRepository(
+        jobs,
+        context.ports.get(RUNTIME_IMPORT_PORT),
+        exports,
+        context.ports.get(IMPORT_OBJECT_PORT),
+      ),
+      new PgStockRequestRepository(approval, decisions),
+      new PgIssueOrderRepository(approval, decisions, jobs, exports),
+      new PgActionBatchRepository(jobs, exports),
+      vouchers,
+      new PgTenderRepository(finance, organizations),
+      new PreparedVoucherSearch(new PgVoucherSearch(), protector),
+      new PgVoucherExport(exports, jobs),
+      new VoucherActivation(vouchers, protector),
+    );
     return [
-      new CardLibrariesReadHandler(repository),
-      new CardLibrariesCreateHandler(repository),
-      new CardLibrariesAllocateHandler(repository),
-      new ImportsReadHandler(repository),
-      new ProgramsReadHandler(repository),
-      new ProgramsManageHandler(repository),
-      new ReservesReadHandler(repository),
-      new ReservesRequestHandler(repository),
-      new ReservesDecideHandler(repository),
-      new BatchesReadHandler(repository),
-      new BatchesIssueHandler(repository),
-      new BatchesRetryHandler(repository),
-      new StatusBatchHandler(repository),
-      new StatusBatchesReadHandler(repository),
-      new BindingsReadHandler(repository),
-      new BindingsManageHandler(repository),
-      new RedemptionsReadHandler(repository),
-      new HistoryReadHandler(repository),
-      new RedemptionsReverseHandler(repository),
+      ...createVoucherHandlers(application),
+      new ExportsGetHandler(
+        exports,
+        context.service(OBJECT_STORE),
+        context.ports.get(TASK_AUTHORIZATION_PORT),
+        new PgTransactionManager(context.service(DATABASE_POOL)),
+      ),
     ];
   },
+  jobs: createJobs,
+  events: [{ handler: 'voucherissue', events: EVENT_SUBSCRIPTIONS.voucherissue }],
   ports: (context) => {
-    const checkout = new VoucherPort();
-    return [
-      { token: CHECKOUT_VOUCHER_PORT, value: checkout },
-      { token: VERIFICATION_VOUCHER_PORT, value: checkout },
-      { token: PAYMENT_VOUCHER_PORT, value: new VoucherPort(context.ports.get(VOUCHER_ACCOUNTING_PORT)) },
-    ];
+    const finance = context.ports.get(VOUCHER_ACCOUNTING_PORT);
+    const organizations = context.ports.get(ORGANIZATION_READ_PORT);
+    return Object.freeze([
+      { token: CHECKOUT_VOUCHER_PORT, value: new VoucherPort() },
+      { token: VERIFICATION_VOUCHER_PORT, value: new VoucherPort(finance, organizations) },
+      { token: PAYMENT_VOUCHER_PORT, value: new VoucherPort(finance, organizations) },
+    ]);
   },
-  jobPorts: (context) => [{ token: PAYMENT_VOUCHER_PORT, value: new VoucherPort(context.ports.get(VOUCHER_ACCOUNTING_PORT)) }],
+  jobPorts: (context) => [{ token: PAYMENT_VOUCHER_PORT, value: new VoucherPort(context.ports.get(VOUCHER_ACCOUNTING_PORT), context.ports.get(ORGANIZATION_READ_PORT)) }],
+  providerPorts: [{ token: FULFILLMENT_VOUCHER_PORT, value: new VoucherPort() }],
 });

@@ -1,13 +1,13 @@
-import { financeLifecycle, type FinancePersistence } from './FinanceAction';
+import { financeLifecycle, type FinanceEntries } from './FinanceOperation';
 /** Invoice persistence queries. */
 import { DomainError } from '../../../../foundation/domain/DomainError';
 
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { keysetResult, queryPage } from '../../../../foundation/interface/Validation';
-import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
+import { keysetResult, queryPage } from '../../../../foundation/application/Validation';
+import type { ObjectStore } from '../../../runtime/public/ObjectPort';
 import type { MemberAccessPort } from '../../../access/public';
 
-export function invoiceQueryPersistence(members: MemberAccessPort, objects: Pick<ObjectStore, 'authorize'>): Pick<FinancePersistence, 'profilesRead' | 'requestsRead' | 'invoicesRead' | 'invoicesDownload'> {
+export function invoiceQueries(members: MemberAccessPort, objects: Pick<ObjectStore, 'authorize'>): FinanceEntries<'profilesRead' | 'requestsRead' | 'invoicesRead' | 'invoicesDownload'> {
   return {
     profilesRead: async (request, database) => {
       const access = requireAccess(request);
@@ -26,7 +26,9 @@ export function invoiceQueryPersistence(members: MemberAccessPort, objects: Pick
       const result = await database.query(
         `select request.id,request.profile_id,request.settlement_id,request.amount_minor,request.currency,
         request.state,request.created_at,request.version,request.requested_by,request.approved_by,request.reason,request.evidence,
-        request.source_hash,request.kind,request.red_of_request_id,document.object_ref,document.sha256,document.issued_at,
+        request.source_hash,request.kind,request.red_of_request_id,request.issue_hash,request.issue_count,
+        request.issue_watermark,request.provider,request.provider_reference,request.response_hash,
+        document.object_ref,document.sha256,document.issued_at,
         coalesce((select jsonb_agg(jsonb_build_object('settlementLine',line.settlement_line_id,'amountMinor',line.amount_minor,
           'taxMinor',line.tax_minor,'sourceHash',line.source_hash) order by line.settlement_line_id)
           from invoice.requestline line where line.request_id=request.id),'[]'::jsonb) lines from invoice.request request

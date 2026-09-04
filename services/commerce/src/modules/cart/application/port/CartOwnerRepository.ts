@@ -1,11 +1,13 @@
 import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { CartOwner } from '../../domain/model/Cart';
 
-export interface CartOwner {
-  readonly member: string;
+export interface MemberCartOwner extends Extract<CartOwner, { kind: 'member' }> {}
+export interface AnonymousCartScope {
   readonly mall: string;
-  readonly application: string | null;
+  readonly application: string;
 }
 
 export interface CartOwnerRepository {
-  resolve(context: ReadTransactionContext, membership: string): Promise<CartOwner>;
+  member(context: ReadTransactionContext, membership: string): Promise<MemberCartOwner>;
+  anonymous(context: ReadTransactionContext, handle: string): Promise<AnonymousCartScope>;
 }

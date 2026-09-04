@@ -1,12 +1,12 @@
 import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
 
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { ConsoleScopeKind } from '@shop/authz';
+import type { NavigationScopeKind } from '@shop/authz';
 
 export interface NavigationScope {
   readonly membership: string;
   readonly id: string;
-  readonly kind: ConsoleScopeKind;
+  readonly kind: NavigationScopeKind;
   readonly status: string;
   readonly version: number;
   readonly default: boolean;

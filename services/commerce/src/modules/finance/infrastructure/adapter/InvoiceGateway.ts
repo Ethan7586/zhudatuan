@@ -1,5 +1,6 @@
 import type { InvoiceInput, InvoiceIssuer, IssuedInvoice } from '../../application/port/InvoiceIssuer';
 import { HttpClient } from '../../../../foundation/http/HttpClient';
+import { invalidExternalResponse, readExternalJson } from '../../../../foundation/http/ExternalResponse';
 
 export interface InvoiceConfiguration {
   readonly endpoint: string;
@@ -20,6 +21,7 @@ export class InvoiceGateway implements InvoiceIssuer {
   }
 
   async issue(input: InvoiceInput): Promise<IssuedInvoice> {
+    if (!/^[a-f0-9]{64}$/.test(input.inputHash)) throw new Error('INVOICE_INPUT_HASH_INVALID');
     const response = await this.http.send(
       `${this.configuration.endpoint.replace(/\/$/, '')}/v1/invoices`,
       {
@@ -30,18 +32,18 @@ export class InvoiceGateway implements InvoiceIssuer {
           authorization: `Bearer ${this.configuration.bearer}`,
           'content-type': 'application/json',
           'idempotency-key': input.request,
+          'x-input-hash': input.inputHash,
         },
         body: JSON.stringify(input),
       },
       { mode: 'businesskeywrite' }
     );
-    if (!response.ok) throw new Error('INVOICE_PROVIDER_UNAVAILABLE');
-    const value = (await response.json()) as { externalId?: unknown; documentBase64?: unknown; contentType?: unknown };
+    const value = (await readExternalJson(response, 'INVOICE_PROVIDER_UNAVAILABLE', 'INVOICE_PROVIDER_RESPONSE_INVALID')) as { externalId?: unknown; documentBase64?: unknown; contentType?: unknown };
     if (typeof value.externalId !== 'string' || !value.externalId || typeof value.documentBase64 !== 'string' || value.contentType !== 'application/pdf') {
-      throw new Error('INVOICE_PROVIDER_RESPONSE_INVALID');
+      throw invalidExternalResponse('INVOICE_PROVIDER_RESPONSE_INVALID');
     }
     const document = Uint8Array.from(Buffer.from(value.documentBase64, 'base64'));
-    if (document.byteLength < 5 || new TextDecoder().decode(document.slice(0, 5)) !== '%PDF-') throw new Error('INVOICE_DOCUMENT_INVALID');
+    if (document.byteLength < 5 || new TextDecoder().decode(document.slice(0, 5)) !== '%PDF-') throw invalidExternalResponse('INVOICE_DOCUMENT_INVALID');
     return Object.freeze({ externalId: value.externalId, provider: this.configuration.provider, document, contentType: 'application/pdf' });
   }
 }

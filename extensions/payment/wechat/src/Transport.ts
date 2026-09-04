@@ -13,6 +13,8 @@ export interface WechatPayClientOptions {
   nonce?: string;
   signal?: AbortSignal;
   deadline?: number;
+  requestId?: string;
+  traceId?: string;
 }
 
 export async function requestWechatPayJson(config: WechatPayConfig, canonicalUrl: string, method: 'GET' | 'POST', body: string, options: WechatPayClientOptions): Promise<{ value: unknown; providerRequestId: string | null }> {
@@ -72,6 +74,8 @@ async function send(
         accept: 'application/json',
         authorization,
         'wechatpay-serial': platformKey.id,
+        ...(options.requestId ? { 'x-request-id': trace(options.requestId) } : {}),
+        ...(options.traceId ? { 'x-trace-id': trace(options.traceId) } : {}),
         ...(method === 'POST' ? { 'content-type': 'application/json' } : {}),
       },
       ...(method === 'POST' ? { body } : {}),
@@ -92,6 +96,11 @@ async function send(
     body: rawBody,
     providerRequestId: boundedHeader(response.headers.get('request-id')),
   };
+}
+
+function trace(value: string): string {
+  if (!/^[A-Za-z0-9:._-]{1,128}$/.test(value)) throw new WechatPayProtocolError('WECHAT_PAY_TRACE_INVALID');
+  return value;
 }
 
 async function readBoundedBody(response: Response): Promise<string> {

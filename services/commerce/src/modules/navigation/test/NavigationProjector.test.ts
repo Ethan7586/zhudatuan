@@ -7,8 +7,8 @@ import { result, withReadTransaction } from '../../../test/TransactionFixture';
 describe('NavigationProjector', () => {
   it('reads each bounded context once and produces a filtered immutable tree', async () => {
     const calls = { identity: 0, access: 0, organization: 0, capability: 0 };
-    const permissions = new Set(NAVIGATION_CATALOG.flatMap((node) => [...node.permissions]));
-    const capabilities = new Set(NAVIGATION_CATALOG.flatMap((node) => [...node.capabilities]));
+    const permissions = new Set(NAVIGATION_CATALOG.flatMap((node) => (node.permission === null ? [] : [node.permission])));
+    const capabilities = new Set(NAVIGATION_CATALOG.map((node) => node.capability));
     const projector = new NavigationProjector(
       {
         read: async () => {
@@ -47,7 +47,7 @@ describe('NavigationProjector', () => {
     expect(projection.tree.nodes.length).toBeGreaterThan(0);
     expect(projection.tree.scope).toEqual({ id: 'enterprise:1', kind: 'enterprise' });
     expect(Object.isFrozen(projection.tree)).toBe(true);
-    expect(projection.key.cache).toMatch(/^navigation:v1:[a-f0-9]{64}$/);
+    expect(projection.key.cache).toMatch(/^navigation:v2:[a-f0-9]{64}$/);
     expect(JSON.stringify(projection.tree)).not.toContain('permissions');
   });
 
@@ -76,6 +76,7 @@ function accessContext(): AccessContext {
   return {
     actor: { id: 'principal:1', session: 'session:1', membership: 'membership:1', credentialVersion: 1, accessVersion: 7, target: 'console', assurance: { level: 2 } },
     membership: { id: 'membership:1', active: true, accessVersion: 7, permissions: { allows: new Set(), denies: new Set() }, scopes: [] },
+    roles: [],
     organization: 'enterprise:1',
     scope,
     accessVersion: 7,

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { isProviderCapability, manifestPayload, type JsonObject, type JsonValue, type ProviderManifest } from '@shop/contract';
+import { isProviderCapability, manifestPayload, type JsonObject, type JsonValue, type ProviderDependency, type ProviderManifest } from '@shop/contract';
 
 export class Manifest {
   readonly hash: string;
@@ -17,20 +17,23 @@ export class Manifest {
       'circuitPolicy',
       'configSchema',
       'contractVersion',
+      'dependencies',
       'eventSubscriptions',
       'healthOperation',
       'id',
       'kind',
+      'name',
       'permissions',
       'rateLimits',
       'retryPolicy',
       'secretRefs',
+      'sandbox',
       'signature',
       'timeout',
       'version',
       'webhookContract',
     ];
-    if (Object.keys(source).sort().join(',') !== fields.join(',')) throw new Error('PROVIDER_MANIFEST_FIELDS_INVALID');
+    if (Object.keys(source).sort().join(',') !== fields.sort().join(',')) throw new Error('PROVIDER_MANIFEST_FIELDS_INVALID');
     if (expectedId !== undefined && id !== expectedId) throw new Error('PROVIDER_MANIFEST_ID_MISMATCH');
     const capabilities = strings(source.capabilities, 'PROVIDER_MANIFEST_CAPABILITY_INVALID');
     if (capabilities.length === 0 || !capabilities.every(isProviderCapability) || new Set(capabilities).size !== capabilities.length) {
@@ -38,16 +41,19 @@ export class Manifest {
     }
     const manifest: ProviderManifest = {
       id,
+      name: text(source.name, 'PROVIDER_MANIFEST_NAME_INVALID'),
       kind: literal(source.kind, 'channel', 'PROVIDER_MANIFEST_KIND_INVALID'),
       version: text(source.version, 'PROVIDER_MANIFEST_VERSION_INVALID'),
       apiVersion: text(source.apiVersion, 'PROVIDER_MANIFEST_API_VERSION_INVALID'),
       contractVersion: text(source.contractVersion, 'PROVIDER_MANIFEST_CONTRACT_VERSION_INVALID'),
+      dependencies: dependencies(source.dependencies),
       healthOperation: text(source.healthOperation, 'PROVIDER_MANIFEST_HEALTH_INVALID'),
-      capabilities,
-      permissions: unique(source.permissions, 'PROVIDER_MANIFEST_PERMISSION_INVALID'),
+      capabilities: Object.freeze(capabilities),
+      permissions: requiredUnique(source.permissions, 'PROVIDER_MANIFEST_PERMISSION_INVALID'),
       configSchema: text(source.configSchema, 'PROVIDER_MANIFEST_SCHEMA_INVALID'),
       eventSubscriptions: unique(source.eventSubscriptions, 'PROVIDER_MANIFEST_EVENT_INVALID'),
       secretRefs: unique(source.secretRefs, 'PROVIDER_MANIFEST_SECRET_REF_INVALID'),
+      sandbox: sandbox(source.sandbox),
       rateLimits: rateLimits(source.rateLimits),
       timeout: timeouts(source.timeout),
       retryPolicy: retryPolicy(source.retryPolicy),
@@ -57,6 +63,32 @@ export class Manifest {
     };
     return new Manifest(Object.freeze(manifest));
   }
+}
+
+function dependencies(value: JsonValue | undefined): readonly ProviderDependency[] {
+  if (!Array.isArray(value)) throw new Error('PROVIDER_MANIFEST_DEPENDENCY_INVALID');
+  const parsed = value.map((candidate) => {
+    const source = object(candidate, 'PROVIDER_MANIFEST_DEPENDENCY_INVALID');
+    if (Object.keys(source).sort().join(',') !== 'capabilities,id,version') throw new Error('PROVIDER_MANIFEST_DEPENDENCY_INVALID');
+    const id = text(source.id, 'PROVIDER_MANIFEST_DEPENDENCY_INVALID');
+    const version = text(source.version, 'PROVIDER_MANIFEST_DEPENDENCY_INVALID');
+    const capabilities = strings(source.capabilities, 'PROVIDER_MANIFEST_DEPENDENCY_INVALID');
+    if (!/^[a-z][a-z0-9]{1,63}$/.test(id) || !/^\d+\.\d+\.\d+$/.test(version) || capabilities.length === 0 || !capabilities.every(isProviderCapability) || new Set(capabilities).size !== capabilities.length) {
+      throw new Error('PROVIDER_MANIFEST_DEPENDENCY_INVALID');
+    }
+    return Object.freeze({ id, version, capabilities: Object.freeze(capabilities) });
+  });
+  if (new Set(parsed.map(({ id }) => id)).size !== parsed.length) throw new Error('PROVIDER_MANIFEST_DEPENDENCY_INVALID');
+  return Object.freeze(parsed);
+}
+
+function sandbox(value: JsonValue | undefined): ProviderManifest['sandbox'] {
+  const source = object(value, 'PROVIDER_SANDBOX_INVALID');
+  if (Object.keys(source).sort().join(',') !== 'endpointRef,mode,supported' || source.supported !== true) throw new Error('PROVIDER_SANDBOX_INVALID');
+  const mode = source.mode === 'endpoint' || source.mode === 'local' ? source.mode : undefined;
+  const endpointRef = source.endpointRef === null ? null : text(source.endpointRef, 'PROVIDER_SANDBOX_INVALID');
+  if (!mode || (mode === 'endpoint' && !endpointRef) || (mode === 'local' && endpointRef !== null)) throw new Error('PROVIDER_SANDBOX_INVALID');
+  return Object.freeze({ supported: true, mode, endpointRef });
 }
 
 function rateLimits(value: JsonValue | undefined): ProviderManifest['rateLimits'] {
@@ -94,9 +126,14 @@ function strings(value: JsonValue | undefined, code: string): string[] {
   if (!Array.isArray(value) || !value.every((item) => typeof item === 'string' && item.trim())) throw new Error(code);
   return value.map(String);
 }
-function unique(value: JsonValue | undefined, code: string): string[] {
+function unique(value: JsonValue | undefined, code: string): readonly string[] {
   const items = strings(value, code);
   if (new Set(items).size !== items.length) throw new Error(code);
+  return Object.freeze(items);
+}
+function requiredUnique(value: JsonValue | undefined, code: string): readonly string[] {
+  const items = unique(value, code);
+  if (items.length === 0) throw new Error(code);
   return items;
 }
 function number(value: JsonValue | undefined, code: string): number {

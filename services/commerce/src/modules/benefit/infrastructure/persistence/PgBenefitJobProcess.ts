@@ -54,7 +54,7 @@ export class PgBenefitJobProcess implements BenefitJobProcess {
       return;
     }
     const accountid = `benefit:${digest(`${item.member_id}:${batch.scope_id}:${batch.kind}:${batch.currency}`)}`;
-    const financeid = await this.finance.account(context, batch.scope_id, `benefit.${accountid}`, batch.currency, 'liability');
+    const financeid = await this.finance.ensureAccount(context, { scopeId: batch.scope_id, code: `benefit.${accountid}`, currency: batch.currency, kind: 'liability' });
     await client.query(
       `insert into benefit.account(id,member_id,scope_id,kind,currency,status,version,finance_account_id)
       values($1,$2,$3,$4,$5,'active',0,$6) on conflict(member_id,scope_id,kind,currency) do nothing`,

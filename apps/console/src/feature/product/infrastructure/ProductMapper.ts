@@ -1,26 +1,35 @@
 import type { OperationOutputFor } from '@shop/contract';
-import type { ListingPage, PoolPage, ProductDetail, ProductReceipt } from '../model/Product';
+import type { ListingPage, PoolPage, ProductBatch, ProductDetail, ProductFacets } from '../model/Product';
+import type { ProductImport } from '../model/ProductImport';
 import { deepFreeze } from '../../../shared/model/Immutable';
-import { ListingPageSchema, PoolPageSchema } from './ProductDto';
 
 export class ProductMapper {
-  page(value: unknown): ListingPage {
-    const page = ListingPageSchema.parse(value);
-    return Object.freeze({ ...page, items: Object.freeze(page.items.map((item) => Object.freeze(item))) });
+  page(value: OperationOutputFor<'catalog.listings.read'>): ListingPage {
+    return deepFreeze(structuredClone(value));
   }
 
-  pools(value: unknown): PoolPage {
-    const page = PoolPageSchema.parse(value);
-    return Object.freeze({ ...page, items: Object.freeze(page.items.map((item) => Object.freeze(item))) });
+  pools(value: OperationOutputFor<'catalog.pools.read'>): PoolPage {
+    return deepFreeze(structuredClone(value));
   }
 
   detail(value: OperationOutputFor<'catalog.product.detail.read'>): ProductDetail {
     return deepFreeze(structuredClone(value));
   }
 
-  receipt(value: unknown): ProductReceipt {
-    if (typeof value !== 'object' || value === null) return Object.freeze({});
-    const candidate = value as { id?: unknown; count?: unknown; version?: unknown };
-    return Object.freeze({ ...(typeof candidate.id === 'string' ? { id: candidate.id } : {}), ...(typeof candidate.count === 'number' ? { count: candidate.count } : {}), ...(typeof candidate.version === 'string' || typeof candidate.version === 'number' ? { version: Number(candidate.version) } : {}) });
+  facets(value: OperationOutputFor<'catalog.facets.read'>): ProductFacets {
+    return deepFreeze(structuredClone(value));
+  }
+
+  batch(value: OperationOutputFor<'catalog.listings.batch'>): ProductBatch {
+    return deepFreeze(structuredClone(value));
+  }
+
+  importTask(value: OperationOutputFor<'runtime.imports.read'>, detail?: OperationOutputFor<'catalog.imports.read'>): ProductImport {
+    return deepFreeze({
+      ...structuredClone(value),
+      last_error: detail?.last_error ?? null,
+      errors: detail?.errors ?? [],
+      ...(detail?.report === undefined ? {} : { report: { ...detail.report } }),
+    });
   }
 }

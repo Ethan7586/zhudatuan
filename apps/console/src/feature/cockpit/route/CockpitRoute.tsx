@@ -1,10 +1,10 @@
 import { useDependencies } from '../../../app/DependencyContext';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
-import { scopePath } from '../../../shared/url/ScopePath';
+import { scopeRoutePath } from '../../../shared/url/ScopePath';
 import { useRouteTitle } from '../../../shared/ui/RouteTitle';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router';
-import type { BusinessInsight } from '../model/Cockpit';
+import type { CockpitDestination } from '../model/Cockpit';
 import { CockpitPage } from '../view/CockpitPage';
 import { useCockpitViewModel } from '../viewmodel/CockpitViewModel';
 import '../view/Cockpit.css';
@@ -14,6 +14,13 @@ export function Component() {
   const context = useConsoleContext();
   const dependencies = useDependencies();
   const navigate = useNavigate();
-  const openInsight = useCallback((target: BusinessInsight['target']) => void navigate(scopePath(context.scope, target === 'reports' ? 'reporting' : 'orders')), [context.scope, navigate]);
-  return <CockpitPage title={title} model={useCockpitViewModel(context, dependencies.cockpit, openInsight)} />;
+  const open = useCallback(
+    (destination: CockpitDestination) => {
+      if (destination.kind === 'product') void navigate(scopeRoutePath(context.scope, 'consoleproductdetail', { productId: destination.productId }));
+      else if (destination.kind === 'orders') void navigate(scopeRoutePath(context.scope, 'consoleorders'));
+      else void navigate(scopeRoutePath(context.scope, destination.target === 'reports' ? 'consolereporting' : 'consoleorders'));
+    },
+    [context.scope, navigate]
+  );
+  return <CockpitPage title={title} model={useCockpitViewModel(context, dependencies.cockpit, open)} />;
 }

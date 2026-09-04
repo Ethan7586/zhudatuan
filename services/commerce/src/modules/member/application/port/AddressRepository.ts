@@ -1,5 +1,6 @@
-import type { CipherEnvelope } from '../../../../foundation/infrastructure/KmsClient';
+import type { CipherEnvelope } from '../../../../foundation/application/KmsPort';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { AddressBook, RemoveAddressDecision, SaveAddressDecision } from '../../domain/model/AddressBook';
 
 export interface MemberAddressInput {
   readonly id: string;
@@ -11,7 +12,7 @@ export interface MemberAddressInput {
   readonly recipientEnvelope: CipherEnvelope;
   readonly mobileEnvelope: CipherEnvelope;
   readonly addressEnvelope: CipherEnvelope;
-  readonly expectedVersion: number | null;
+  readonly expectedVersion: number;
 }
 
 export interface MemberAddressSummary {
@@ -20,12 +21,14 @@ export interface MemberAddressSummary {
   readonly mobile_masked: string;
   readonly address_masked: string;
   readonly region_code: string;
+  readonly is_default: boolean;
   readonly status: 'active' | 'deleted';
   readonly version: number;
 }
 
 export interface AddressRepository {
   list(context: ReadTransactionContext, member: string, after: string | null, limit: number): Promise<readonly MemberAddressSummary[]>;
-  remove(context: WriteTransactionContext, id: string, member: string, expectedVersion: number | null): Promise<Readonly<{ id: string; status: string; version: number }> | null>;
-  save(context: WriteTransactionContext, input: MemberAddressInput): Promise<MemberAddressSummary | null>;
+  book(context: WriteTransactionContext, member: string): Promise<AddressBook>;
+  remove(context: WriteTransactionContext, member: string, decision: RemoveAddressDecision): Promise<Readonly<{ id: string; status: string; version: number }> | null>;
+  save(context: WriteTransactionContext, input: MemberAddressInput, decision: SaveAddressDecision): Promise<MemberAddressSummary | null>;
 }

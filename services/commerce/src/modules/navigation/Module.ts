@@ -9,7 +9,7 @@ import { BENEFIT_READ_PORT } from '../benefit/public';
 import { NAVIGATION_CAPABILITY_PORT } from '../capability/public';
 import { CATALOG_READ_PORT } from '../catalog/public';
 import { EXPERIENCE_READ_PORT } from '../experience/public';
-import { IDENTITY_READ_PORT, NAVIGATION_IDENTITY_PORT } from '../identity/public';
+import { IDENTITY_READ_PORT, MEMBERSHIP_CONTEXT_PORT } from '../identity/public';
 import { INVENTORY_READ_PORT } from '../inventory/public';
 import { MEMBER_READ_PORT } from '../member/public';
 import { ORDER_READ_PORT } from '../order/public';
@@ -25,6 +25,7 @@ import { BootstrapQuery } from './application/service/BootstrapQuery';
 import { CatalogMapper } from './application/service/CatalogMapper';
 import { CatalogQuery } from './application/service/CatalogQuery';
 import { NavigationProjector } from './application/service/NavigationProjector';
+import { navigationFeatureVersion } from './application/service/NavigationVersion';
 import { ReadNavigationCatalog } from './application/service/ReadNavigationCatalog';
 import { ReadNavigationHealth } from './application/service/ReadNavigationHealth';
 import { ReadNavigationTree } from './application/service/ReadNavigationTree';
@@ -32,9 +33,8 @@ import { NavigationInvalidator } from './infrastructure/cache/NavigationInvalida
 import { RedisNavigationCache } from './infrastructure/cache/RedisNavigationCache';
 import { PgNavigationProjectionRepository } from './infrastructure/persistence/PgNavigationProjectionRepository';
 import { CatalogNavigationReader } from './infrastructure/registry/CatalogNavigationReader';
-import { NAVIGATION_CATALOG, NAVIGATION_CATALOG_HASH } from './infrastructure/registry/NavigationCatalog';
+import { NAVIGATION_CATALOG, NAVIGATION_CATALOG_HASH, NAVIGATION_FEATURE_FLAGS } from './infrastructure/registry/NavigationCatalog';
 import { Manifest } from './Manifest';
-import { NAVIGATION_READ_PORT } from './public/NavigationReadPort';
 import { createJobs } from './interface/job/JobFactory';
 import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
 
@@ -47,7 +47,7 @@ export const NavigationModule = defineModule(Manifest, {
     const cache = new RedisNavigationCache(context.service(CACHE), secret, context.service(TELEMETRY));
     const invalidator = new NavigationInvalidator(cache, secret, clock);
     const projector = new NavigationProjector(
-      context.ports.get(NAVIGATION_IDENTITY_PORT),
+      context.ports.get(MEMBERSHIP_CONTEXT_PORT),
       context.ports.get(NAVIGATION_ACCESS_PORT),
       context.ports.get(NAVIGATION_ORGANIZATION_PORT),
       context.ports.get(NAVIGATION_CAPABILITY_PORT),
@@ -57,11 +57,13 @@ export const NavigationModule = defineModule(Manifest, {
       NAVIGATION_CATALOG_HASH
     );
     const projections = new PgNavigationProjectionRepository(new PgTransactionAccess(), projector);
-    const tree = new ReadNavigationTree(projections, cache, new Singleflight(), secret, NAVIGATION_CATALOG_HASH);
+    const tree = new ReadNavigationTree(projections, cache, new Singleflight(), secret, NAVIGATION_CATALOG_HASH, navigationFeatureVersion(NAVIGATION_FEATURE_FLAGS));
+    const navigation = new CatalogNavigationReader(NAVIGATION_CATALOG, NAVIGATION_CATALOG_HASH);
     const bootstrap = new BootstrapQuery({
       identity: context.ports.get(IDENTITY_READ_PORT),
       membership: context.ports.get(MEMBERSHIP_READ_PORT),
-      navigation: context.ports.get(NAVIGATION_READ_PORT),
+      navigation,
+      capability: context.ports.get(NAVIGATION_CAPABILITY_PORT),
       member: context.ports.get(MEMBER_READ_PORT),
       benefit: context.ports.get(BENEFIT_READ_PORT),
       order: context.ports.get(ORDER_READ_PORT),
@@ -76,5 +78,4 @@ export const NavigationModule = defineModule(Manifest, {
       new CatalogReadHandler(catalog),
     ];
   },
-  ports: [{ token: NAVIGATION_READ_PORT, value: new CatalogNavigationReader() }],
 });

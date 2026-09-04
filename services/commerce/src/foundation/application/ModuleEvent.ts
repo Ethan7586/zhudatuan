@@ -7,4 +7,5 @@ export interface ModuleEventSubscription {
 
 export interface ModuleEvents {
   add(subscription: ModuleEventSubscription): void;
+  handlers?(event: string): readonly string[];
 }

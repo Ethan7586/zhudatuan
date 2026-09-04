@@ -1,5 +1,5 @@
 import type { Telemetry } from '@shop/telemetry';
-import type { ClaimedJob } from '../application/JobRunner';
+import type { ClaimedJob } from '../../modules/runtime/public/JobProcess';
 import { failureLog } from './FailureLog';
 
 export class JobMetrics {
@@ -10,7 +10,7 @@ export class JobMetrics {
       requestId: job.id,
       traceId: trace(job.payload) ?? job.id,
       ...(correlationId === undefined ? {} : { correlationId }),
-      ...(job.scope_id === null ? {} : { scopeId: job.scope_id }),
+      ...(job.scope === null ? {} : { scopeId: job.scope }),
       module: owner,
       job: job.kind,
       attempt: job.attempts,
@@ -19,13 +19,13 @@ export class JobMetrics {
       data: failureLog(cause),
     });
   }
-  observe(job: ClaimedJob, owner: string, milliseconds: number, outcome: 'success' | 'retry' | 'deadletter', errorCode?: string): void {
+  observe(job: ClaimedJob, owner: string, milliseconds: number, outcome: 'success' | 'retry' | 'deadletter' | 'cancelled', errorCode?: string): void {
     const correlationId = correlation(job.payload);
     const context = {
       requestId: job.id,
       traceId: trace(job.payload) ?? job.id,
       ...(correlationId === undefined ? {} : { correlationId }),
-      ...(job.scope_id === null ? {} : { scopeId: job.scope_id }),
+      ...(job.scope === null ? {} : { scopeId: job.scope }),
       module: owner,
       job: job.kind,
       attempt: job.attempts,

@@ -1,38 +1,73 @@
-export interface NavigationNodeValue {
-  readonly id: string;
+export interface NavigationBreadcrumb {
+  readonly key: string;
   readonly title: string;
+}
+
+export interface NavigationExperience {
   readonly icon: string;
+  readonly routeKey: string;
   readonly route: string;
   readonly component: string;
-  readonly order: number;
-  readonly entry: string;
+  readonly placement: 'primary' | 'secondary' | 'contextual';
   readonly disabled: boolean;
+  readonly disabledReason: string | null;
+  readonly breadcrumbs: readonly NavigationBreadcrumb[];
+}
+
+export interface NavigationNodeValue {
+  readonly key: string;
+  readonly title: string;
+  readonly parent: string | null;
+  readonly order: number;
+  readonly operation: string;
+  readonly experience: NavigationExperience;
   readonly children: readonly NavigationNodeValue[];
 }
 
 export class NavigationNode implements NavigationNodeValue {
-  readonly id: string;
+  readonly key: string;
   readonly title: string;
-  readonly icon: string;
-  readonly route: string;
-  readonly component: string;
+  readonly parent: string | null;
   readonly order: number;
-  readonly entry: string;
-  readonly disabled: boolean;
+  readonly operation: string;
+  readonly experience: NavigationExperience;
   readonly children: readonly NavigationNodeValue[];
 
   constructor(value: Omit<NavigationNodeValue, 'children'> & { readonly children?: readonly NavigationNodeValue[] }) {
-    if (!/^[a-z][a-z0-9]*$/.test(value.id) || !value.title.trim() || !value.route.startsWith('/')) throw new Error('NAVIGATION_NODE_INVALID');
+    if (!validKey(value.key) || (value.parent !== null && !validKey(value.parent))) throw new Error('NAVIGATION_NODE_KEY_INVALID');
+    if (!chineseTitle(value.title)) throw new Error('NAVIGATION_NODE_TITLE_INVALID');
     if (!Number.isSafeInteger(value.order) || value.order < 0) throw new Error('NAVIGATION_NODE_ORDER_INVALID');
-    this.id = value.id;
-    this.title = value.title;
-    this.icon = value.icon;
-    this.route = value.route;
-    this.component = value.component;
+    if (!/^[a-z]+(?:\.[a-z]+)+$/.test(value.operation)) throw new Error('NAVIGATION_NODE_OPERATION_INVALID');
+    validateExperience(value.experience, value.key, value.title);
+    this.key = value.key;
+    this.title = value.title.trim();
+    this.parent = value.parent;
     this.order = value.order;
-    this.entry = value.entry;
-    this.disabled = value.disabled;
-    this.children = Object.freeze([...(value.children ?? [])]);
+    this.operation = value.operation;
+    this.experience = Object.freeze({
+      ...value.experience,
+      breadcrumbs: Object.freeze(value.experience.breadcrumbs.map((item) => Object.freeze({ ...item }))),
+    });
+    this.children = Object.freeze((value.children ?? []).map((child) => new NavigationNode(child)));
     Object.freeze(this);
   }
+}
+
+function validateExperience(value: NavigationExperience, key: string, title: string): void {
+  if (!/^[a-z][a-z0-9]*$/.test(value.icon) || !validKey(value.routeKey) || !value.route.startsWith('/') || value.route.includes('?') || value.route.includes('#') || !validKey(value.component) || !['primary', 'secondary', 'contextual'].includes(value.placement)) {
+    throw new Error('NAVIGATION_NODE_EXPERIENCE_INVALID');
+  }
+  if ((value.disabled && !chineseTitle(value.disabledReason ?? '')) || (!value.disabled && value.disabledReason !== null)) throw new Error('NAVIGATION_NODE_DISABLED_REASON_INVALID');
+  const leaf = value.breadcrumbs.at(-1);
+  if (value.breadcrumbs.length === 0 || leaf?.key !== key || leaf.title !== title || value.breadcrumbs.some((item) => !validKey(item.key) || !chineseTitle(item.title))) {
+    throw new Error('NAVIGATION_NODE_BREADCRUMB_INVALID');
+  }
+}
+
+function validKey(value: string): boolean {
+  return /^[a-z][a-z0-9]*$/.test(value);
+}
+
+function chineseTitle(value: string): boolean {
+  return value.trim().length > 0 && value.length <= 80 && /\p{Script=Han}/u.test(value);
 }

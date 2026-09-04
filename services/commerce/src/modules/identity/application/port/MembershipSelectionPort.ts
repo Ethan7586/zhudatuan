@@ -7,7 +7,7 @@ export type { MembershipCandidate } from '../model/MembershipCandidate';
 export interface MembershipSelectionValue {
   readonly id: string;
   readonly principal: string;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly memberships: readonly MembershipCandidate[];
   readonly expiresAt: Date;
   readonly transaction: string | null;

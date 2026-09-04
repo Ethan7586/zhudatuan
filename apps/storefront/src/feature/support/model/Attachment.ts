@@ -1,4 +1,7 @@
-export type SupportAttachmentType = 'image/jpeg' | 'image/png' | 'application/pdf' | 'text/plain';
+import type { OperationOutputFor } from '@shop/contract';
+export type { SupportAttachmentType } from '@shop/contract';
+
+type AttachmentDto = OperationOutputFor<'support.messages.read'>['attachments'][number];
 
 export interface SupportAttachment {
   readonly id: string;
@@ -6,7 +9,9 @@ export interface SupportAttachment {
   readonly name: string;
   readonly contentType: string;
   readonly size: number;
-  readonly state: 'pending' | 'clean' | 'rejected';
+  readonly state: AttachmentDto['state'];
+  readonly rejectionReason: string | null;
+  readonly recoveryAction: string | null;
   readonly download: Readonly<{ url: string; expiresAt: string }> | null;
   readonly createdAt: string;
 }
@@ -14,6 +19,6 @@ export interface SupportAttachment {
 export interface PendingAttachment {
   readonly id: string;
   readonly name: string;
-  readonly state: 'uploading' | 'pending' | 'clean' | 'rejected' | 'failed';
+  readonly state: SupportAttachment['state'] | 'uploading' | 'failed';
   readonly error?: string;
 }

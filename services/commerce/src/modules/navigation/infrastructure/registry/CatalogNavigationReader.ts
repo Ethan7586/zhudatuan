@@ -1,11 +1,21 @@
-import type { NavigationReadPort, StorefrontNavigationItem } from '../../public/NavigationReadPort';
-import { NAVIGATION_CATALOG, NAVIGATION_CATALOG_HASH } from './NavigationCatalog';
+import type { ConsumerNavigationReader, ConsumerNavigationSnapshot } from '../../application/port/ConsumerNavigationReader';
+import { NavigationFilter, type CatalogNavigationNode } from '../../application/service/NavigationFilter';
+import { navigationVersion } from '../../application/service/NavigationVersion';
+import type { NavigationContext } from '../../domain/model/NavigationContext';
 
-export class CatalogNavigationReader implements NavigationReadPort {
-  storefront(): Readonly<{ items: readonly StorefrontNavigationItem[]; version: string }> {
-    const items = NAVIGATION_CATALOG.filter((item) => item.surface === 'storefront')
-      .map(({ id, title, icon, route, order }) => Object.freeze({ id, title, icon, route, order }))
-      .sort((left, right) => left.order - right.order || left.id.localeCompare(right.id));
-    return Object.freeze({ items: Object.freeze(items), version: NAVIGATION_CATALOG_HASH });
+export class CatalogNavigationReader implements ConsumerNavigationReader {
+  readonly featureFlags: ReadonlySet<string>;
+  constructor(
+    private readonly catalog: readonly CatalogNavigationNode[],
+    private readonly catalogHash: string,
+    private readonly filter = new NavigationFilter()
+  ) {
+    this.featureFlags = new Set(catalog.flatMap((node) => node.featureFlags));
+  }
+
+  read(context: NavigationContext): ConsumerNavigationSnapshot {
+    const nodes = this.filter.apply(this.catalog, context);
+    const version = navigationVersion(this.catalogHash, context).version;
+    return Object.freeze({ nodes, version });
   }
 }

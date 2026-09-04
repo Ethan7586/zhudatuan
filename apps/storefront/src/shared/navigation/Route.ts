@@ -1,4 +1,4 @@
-import { ROUTES, type RouteId } from '../../generated/RouteBinding';
+import { ROUTES } from '../../generated/RouteBinding';
 
 export type PageName = 'home' | 'catalog' | 'product' | 'cart' | 'orders';
 export function pathForPage(page: PageName): string {
@@ -6,13 +6,6 @@ export function pathForPage(page: PageName): string {
   if (page === 'cart') return ROUTES.storecart;
   if (page === 'orders') return ROUTES.storeorders;
   return ROUTES.storehome;
-}
-export function routePath(route: RouteId, parameters: Readonly<Record<string, string>> = {}): string {
-  return ROUTES[route].replace(/:([A-Za-z]+)/g, (_, name: string) => {
-    const value = parameters[name];
-    if (!value || !/^[A-Za-z0-9][A-Za-z0-9.:/-]{1,254}$/.test(value)) throw new Error(`ROUTE_PARAMETER_INVALID:${name}`);
-    return encodeURIComponent(value);
-  });
 }
 export function pathForFeature(name: string): string {
   if (/客服/.test(name)) return ROUTES.storesupport;

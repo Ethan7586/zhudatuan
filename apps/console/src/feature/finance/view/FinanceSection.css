@@ -1,0 +1,114 @@
+.financesectionworkspace {
+  overflow: hidden;
+}
+
+.financesectiontoolbar {
+  display: flex;
+  min-height: 64px;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid var(--sw-border);
+  background: var(--sw-surface-subtle);
+  padding: 10px 18px;
+}
+
+.financesectiontoolbar label,
+.financeactionform > label,
+.financeactionfields label {
+  display: grid;
+  gap: 6px;
+  color: var(--sw-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.financesectiontoolbar select,
+.financeactionform input,
+.financeactionform textarea,
+.financeactionform select {
+  min-height: 40px;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 6px;
+  background: var(--sw-surface);
+  color: var(--sw-text);
+  padding: 8px 10px;
+  font: inherit;
+}
+
+.financesectiontoolbar select { min-width: 190px; }
+.financesectiontoolbar > span { color: var(--sw-muted); font-size: 10px; line-height: 1.5; }
+.financesectionreceipt { padding: 14px 18px 0; }
+.financesectionworkspace .resourcepanel { border: 0; border-radius: 0; box-shadow: none; }
+.financesectionworkspace .datatable button { min-height: 36px; }
+
+.financelocalempty {
+  display: grid;
+  min-height: 180px;
+  place-content: center;
+  gap: 6px;
+  color: var(--sw-text-secondary);
+  text-align: center;
+}
+
+.financelocalempty p { margin: 0; color: var(--sw-muted); }
+
+.financerecorddetail {
+  display: grid;
+  gap: 20px;
+}
+
+.financerecorddetail > header h3 { margin: 10px 0 4px; font-size: 20px; }
+.financerecorddetail > header p { margin: 0; color: var(--sw-muted); line-height: 1.6; }
+.financerecorddetail h4 { margin: 0 0 10px; font-size: 13px; }
+.financerecorddetail .financedetailgrid { gap: 12px; }
+.financerecorddetail .financedetailgrid > div { grid-template-columns: 96px minmax(0, 1fr); }
+.financerecorddetail .financedetailgrid dd { overflow-wrap: anywhere; }
+
+.financetechnicalfacts {
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.financetechnicalfacts summary { cursor: pointer; color: var(--sw-text-secondary); font-weight: 700; }
+.financetechnicalfacts[open] summary { margin-bottom: 12px; }
+.financerecordactions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--sw-border); padding-top: 16px; }
+
+.financeactionform {
+  display: grid;
+  gap: 14px;
+}
+
+.financeactiontarget {
+  display: grid;
+  gap: 5px;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-surface-subtle);
+  padding: 12px;
+}
+
+.financeactiontarget span,
+.financeactiontarget p { color: var(--sw-muted); font-size: 11px; }
+.financeactiontarget p { margin: 0; line-height: 1.6; }
+.financeactionfields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.financeactionwide { grid-column: 1 / -1; }
+.financeactionform textarea { resize: vertical; }
+.financeactionform > .financecommandconfirm { grid-template-columns: auto 1fr; align-items: start; }
+.financeactionform > .financecommandconfirm input { min-height: 16px; }
+.financeactionstepup { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--sw-warning); border-radius: 8px; background: var(--sw-warning-surface); padding: 10px; }
+.financeactionstepup p { margin: 0; color: var(--sw-warning-strong); }
+.financeactionerror { color: var(--sw-danger-strong); }
+.financeactionvalidation { color: var(--sw-warning-strong); }
+.financeactionform > footer { display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--sw-border); padding-top: 14px; }
+
+@media (max-width: 720px) {
+  .financesectiontoolbar { align-items: stretch; flex-direction: column; }
+  .financesectiontoolbar select { width: 100%; min-height: 44px; }
+  .financeactionfields { grid-template-columns: 1fr; }
+  .financeactionwide { grid-column: auto; }
+  .financerecorddetail .financedetailgrid { grid-template-columns: 1fr; }
+  .financerecordactions > button,
+  .financeactionform > footer > button { min-height: 44px; flex: 1; }
+}

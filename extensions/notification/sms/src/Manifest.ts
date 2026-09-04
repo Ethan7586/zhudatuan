@@ -9,9 +9,10 @@ export const SmsManifest = Object.freeze({
   id: 'sms',
   version: '1.0.0',
   contractVersion: 'notification.delivery.v1',
-  capabilities: ['Delivery'],
+  capabilities: ['Delivery', 'TemplateMapping', 'OptOut', 'Receipt'],
   configSchema: 'notification.sms.aliyun.v1',
   secretRefs: ['credentialRef'],
+  permissions: ['network:dysmsapi.aliyuncs.com', 'network:ecsmetadata', 'secret:notification'],
   healthOperation: 'client',
   ...SMS_POLICY,
 } as const);

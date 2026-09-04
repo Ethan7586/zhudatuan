@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { RunFulfillment } from '../../application/process/RunFulfillment';
 
 export class FulfillmentJob implements JobProcessor {
@@ -11,7 +11,7 @@ export class FulfillmentJob implements JobProcessor {
     if (job.kind !== this.kind) throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
     const payload = object(job.payload);
-    const execution = { scope: job.scope_id || 'system', trace: job.id, signal, deadline };
+    const execution = { scope: job.scope || 'system', trace: job.id, signal, deadline };
     if (this.kind === 'fulfillment' && payload.aftersale !== undefined) {
       return this.fulfillment.authorizeReturn(text(payload.aftersale, 'AFTERSALE_REQUIRED'), execution);
     }

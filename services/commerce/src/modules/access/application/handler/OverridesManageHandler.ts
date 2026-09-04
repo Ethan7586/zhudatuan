@@ -2,7 +2,7 @@ import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import { Override } from '../../domain/model/Override';
 import { PermissionPolicy } from '../../domain/policy/PermissionPolicy';

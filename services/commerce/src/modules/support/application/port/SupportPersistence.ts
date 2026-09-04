@@ -2,6 +2,9 @@ import type { ReadTransactionContext, WriteTransactionContext } from '../../../.
 import type { ReadState } from '../../domain/model/ReadState';
 import type { Ticket, TicketPriority, TicketState } from '../../domain/model/Ticket';
 import type { Agent } from '../../domain/policy/AssignmentPolicy';
+import type { AssignmentRule } from '../../domain/model/AssignmentRule';
+import type { MessageAuthor, MessageKind, MessageVisibility } from '../../domain/model/Message';
+import type { MessageEvidence } from '../../domain/policy/MessagePolicy';
 
 export interface SupportContextView {
   readonly member: Readonly<{ id: string; displayName: string; employeeNo: string | null; mobileMasked: string | null }>;
@@ -13,9 +16,9 @@ export interface SupportContextView {
 export interface SupportContextPort {
   member(context: ReadTransactionContext, membership: string): Promise<string>;
   descendants(context: ReadTransactionContext, scope: string): Promise<readonly string[]>;
-  assertOrder(context: ReadTransactionContext, order: string, scope: string, member: string, memberOnly: boolean): Promise<void>;
   benefit(context: ReadTransactionContext, type: string, id: string, scope: string, member: string): Promise<Readonly<Record<string, unknown>>>;
   view(context: ReadTransactionContext, scope: string, member: string, memberOnly: boolean): Promise<SupportContextView>;
+  collaborate(context: WriteTransactionContext, input: Readonly<{ order: string; supportCase: string; scopes: readonly string[]; member: string; memberOnly: boolean; actor: string; trace: string }>): Promise<void>;
 }
 
 export interface AssignmentTicket {
@@ -74,8 +77,10 @@ export interface StoredSupportMessage {
   readonly id: string;
   readonly clientMessageId: string;
   readonly conversationId: string;
-  readonly authorType: 'member' | 'agent';
+  readonly authorType: MessageAuthor;
   readonly authorId: string;
+  readonly kind: MessageKind;
+  readonly visibility: MessageVisibility;
   readonly bodyHash: string;
   readonly sequence: number;
   readonly version: number;
@@ -89,8 +94,10 @@ export interface MessageStore {
     input: Readonly<{
       scope: string;
       conversation: string;
-      authorType: 'member' | 'agent';
+      authorType: MessageAuthor;
       authorId: string;
+      kind: MessageKind;
+      visibility: MessageVisibility;
       sequence: number;
       message: EncryptedSupportMessage;
       attachments: readonly string[];
@@ -103,13 +110,17 @@ export interface ConversationStore {
 }
 
 export interface EvidenceStore {
-  assertReady(context: WriteTransactionContext, conversation: string, scope: string, ids: readonly string[]): Promise<void>;
+  inspect(context: WriteTransactionContext, conversation: string, scope: string, ids: readonly string[]): Promise<readonly MessageEvidence[]>;
 }
 
 export interface AgentStore {
   assertSender(context: ReadTransactionContext, membership: string, scope: string): Promise<string>;
   findByMembership(context: ReadTransactionContext, membership: string, scopes: readonly string[]): Promise<string | null>;
   candidates(context: ReadTransactionContext, scope: string): Promise<readonly Agent[]>;
+}
+
+export interface AssignmentRuleStore {
+  assignmentRules(context: ReadTransactionContext, scope: string): Promise<readonly AssignmentRule[]>;
 }
 
 export interface ReadStateStore {

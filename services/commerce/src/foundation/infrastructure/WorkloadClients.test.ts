@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { KmsClient } from './KmsClient';
+import { HttpKmsClient } from './KmsClient';
 import { WorkloadSecretStore } from './SecretStore';
 
 const secretStoreBearer = 's'.repeat(43);
@@ -8,7 +8,7 @@ const kmsBearer = 'k'.repeat(43);
 describe('internal workload clients', () => {
   it('requires a valid bearer at construction', () => {
     expect(() => new WorkloadSecretStore('https://secrets.internal', 'short')).toThrow('SECRET_STORE_BEARER_TOKEN_INVALID');
-    expect(() => new KmsClient('https://kms.internal', 'short')).toThrow('KMS_BEARER_TOKEN_INVALID');
+    expect(() => new HttpKmsClient('https://kms.internal', 'short')).toThrow('KMS_BEARER_TOKEN_INVALID');
   });
 
   it('sends the Secret Store bearer without exposing it in the URL', async () => {
@@ -43,7 +43,7 @@ describe('internal workload clients', () => {
       calls += 1;
       return calls === 1 ? new Response(JSON.stringify({ ciphertext, fingerprint: 'f'.repeat(64), keyVersion: 'local-v1' }), { status: 200 }) : new Response(JSON.stringify({ plaintext: '13800138000' }), { status: 200 });
     };
-    const kms = new KmsClient('https://kms.internal', kmsBearer, fetcher);
+    const kms = new HttpKmsClient('https://kms.internal', kmsBearer, fetcher);
     const envelope = await kms.encrypt('pii', 'identity/mobile', '13800138000', { principal: 'principal:one' });
     await expect(kms.decrypt('pii', 'identity/mobile', envelope.ciphertext, { principal: 'principal:one' })).resolves.toBe('13800138000');
     expect(calls).toBe(2);

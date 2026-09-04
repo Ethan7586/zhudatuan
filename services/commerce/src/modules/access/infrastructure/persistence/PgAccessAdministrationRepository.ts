@@ -1,18 +1,51 @@
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { AccessVersionService } from '../../application/service/AccessVersionService';
+import { AccessVersionPublisher } from '../../application/service/AccessVersionPublisher';
 import type { AccessAdministrationRepository } from '../../application/port/AccessAdministrationRepository';
 import { PgAccessRepository } from './PgAccessRepository';
 export class PgAccessAdministrationRepository implements AccessAdministrationRepository {
   private readonly access = new PgAccessRepository();
-  private readonly versions = new AccessVersionService(this.access);
+  private readonly versions = new AccessVersionPublisher(this.access);
   center(context: ReadTransactionContext, input: Parameters<AccessAdministrationRepository['center']>[1]) {
     return this.access.center(context, input);
+  }
+  roles(context: ReadTransactionContext, scope: string) {
+    return this.access.roles(context, scope);
+  }
+  roleTemplates(context: ReadTransactionContext) {
+    return this.access.roleTemplates(context);
+  }
+  separationRules(context: ReadTransactionContext) {
+    return this.access.separationRules(context);
   }
   lockRole(context: WriteTransactionContext, role: string, scope: string) {
     return this.access.lockRole(context, role, scope);
   }
+  rolePermissions(context: ReadTransactionContext, role: string) {
+    return this.access.rolePermissions(context, role);
+  }
+  roleImpact(context: ReadTransactionContext, role: string) {
+    return this.access.roleImpact(context, role);
+  }
+  roleTemplate(context: ReadTransactionContext, code: string) {
+    return this.access.roleTemplate(context, code);
+  }
   saveRole(context: WriteTransactionContext, input: Parameters<AccessAdministrationRepository['saveRole']>[1]) {
     return this.access.saveRole(context, input);
+  }
+  setRoleStatus(context: WriteTransactionContext, role: string, scope: string, status: 'active' | 'disabled', expectedVersion: number) {
+    return this.access.setRoleStatus(context, role, scope, status, expectedVersion);
+  }
+  deleteRole(context: WriteTransactionContext, role: string, scope: string, expectedVersion: number) {
+    return this.access.deleteRole(context, role, scope, expectedVersion);
+  }
+  assignRole(context: WriteTransactionContext, role: string, membership: string, issuer: string) {
+    return this.access.assignRole(context, role, membership, issuer);
+  }
+  revokeRole(context: WriteTransactionContext, role: string, membership: string) {
+    return this.access.revokeRole(context, role, membership);
+  }
+  lockMemberships(context: WriteTransactionContext, memberships: readonly string[]) {
+    return this.access.lockMemberships(context, memberships);
   }
   bumpRole(context: WriteTransactionContext, role: string, reason: string, trace: string) {
     return this.versions.bumpRole(context, role, reason, trace);
@@ -31,24 +64,6 @@ export class PgAccessAdministrationRepository implements AccessAdministrationRep
   }
   revokeOverride(context: WriteTransactionContext, input: Parameters<AccessAdministrationRepository['revokeOverride']>[1]) {
     return this.access.revokeOverride(context, input);
-  }
-  lockOwnership(context: WriteTransactionContext, scope: string) {
-    return this.access.lockOwnership(context, scope);
-  }
-  lockMemberships(context: WriteTransactionContext, memberships: readonly string[]) {
-    return this.access.lockMemberships(context, memberships);
-  }
-  expireRole(context: WriteTransactionContext, membership: string, role: string) {
-    return this.access.expireRole(context, membership, role);
-  }
-  assignRole(context: WriteTransactionContext, input: Parameters<AccessAdministrationRepository['assignRole']>[1]) {
-    return this.access.assignRole(context, input);
-  }
-  transferOwnership(context: WriteTransactionContext, input: Parameters<AccessAdministrationRepository['transferOwnership']>[1]) {
-    return this.access.transferOwnership(context, input);
-  }
-  ownerTransferred(context: WriteTransactionContext, input: Parameters<AccessAdministrationRepository['ownerTransferred']>[1]) {
-    return this.access.ownerTransferred(context, input);
   }
   bump(context: WriteTransactionContext, membership: string, reason: string, trace: string) {
     return this.versions.bump(context, membership, reason, trace);

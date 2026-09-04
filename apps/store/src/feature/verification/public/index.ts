@@ -1,0 +1,1 @@
+export { verificationManifest } from './Manifest';

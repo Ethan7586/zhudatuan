@@ -5,12 +5,13 @@ import type { AccessPartnerPort } from '../../../partner/public';
 import { GrantPlan, type GrantPermission, type GrantRole, type GrantScope } from '../../domain/model/GrantPlan';
 import type { AccessRepository, DelegationPermission, DelegationRole, DelegationScope, DelegationTarget } from '../port/AccessRepository';
 import type { AuthorizationRepository } from '../port/AuthorizationRepository';
+import { isConsumerTarget, isOperationTarget, type OperationTarget } from '@shop/contract';
 
 export interface InvitationPlanInput {
   readonly issuer: string;
   readonly membership: string | null;
   readonly organization: string | null;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly kind: 'signin' | 'enrollment' | 'campaign';
   readonly policy: string | null;
   readonly termsHash: string | null;
@@ -94,12 +95,14 @@ export class CreateInvitationGrant {
   }
 }
 
-function canonicalClient(value: string): 'console' | 'storefront' {
-  return value === 'storefront' ? 'storefront' : 'console';
+function canonicalClient(value: string): OperationTarget {
+  const target = value === 'operator' ? 'console' : value;
+  if (!isOperationTarget(target) || target === 'miniapp') throw new DomainError('MEMBERSHIP_NOT_INVITED');
+  return target;
 }
 function assertTarget(input: InvitationPlanInput, target: DelegationTarget | null): void {
   if (input.kind === 'campaign') {
-    if (target !== null || input.target !== 'storefront') throw new DomainError('DELEGATION_DENIED');
+    if (target !== null || !isConsumerTarget(input.target)) throw new DomainError('DELEGATION_DENIED');
     return;
   }
   if (!target || !target.principal || canonicalClient(target.client) !== input.target) throw new DomainError('MEMBERSHIP_NOT_INVITED');

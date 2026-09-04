@@ -1,14 +1,19 @@
 import type { ProviderWorkerEnvironment } from '@shop/config/server';
 import { createPool, DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { QueryMetrics, QUERY_METRICS } from '../foundation/persistence/QueryMetrics';
-import { KmsClient, KMS_CLIENT } from '../foundation/infrastructure/KmsClient';
+import { KMS_CLIENT } from '../foundation/application/KmsPort';
+import { HttpKmsClient } from '../foundation/infrastructure/KmsClient';
 import { secretText, SECRET_STORE, WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 import { commerceTelemetry, TELEMETRY } from '../foundation/telemetry/Telemetry';
 import { EXTENSION_LOADER } from '../modules/extension/application/port/ExtensionLoader';
 import { EXTENSION_REGISTRY, ExtensionRegistry } from './ExtensionRegistry';
-import { loadProviders } from './ProviderLoader';
+import { extensionLoader } from '../modules/extension/infrastructure/loader/ExtensionBootstrap';
 import { MANIFEST_VERIFIER, SignatureVerifier } from './SignatureVerifier';
 import type { Container } from './Container';
+import { LOG_SINK } from '../modules/observability/application/port/LogSink';
+import { METRIC_SINK } from '../modules/observability/application/port/MetricSink';
+import { TRACE_SINK } from '../modules/observability/application/port/TraceSink';
+import { TelemetryLogSink, TelemetryMetricSink, TelemetryTraceSink } from '../modules/observability/infrastructure/adapter/TelemetrySinks';
 
 export interface ProviderRuntime {
   readonly pool: DatabasePool;
@@ -29,8 +34,8 @@ export async function createProviderRuntime(environment: ProviderWorkerEnvironme
   }
   const verifier = new SignatureVerifier(await secretText(secrets, required(environment.EXTENSION_MANIFEST_KEY_REF, 'EXTENSION_MANIFEST_KEY_REF_MISSING'), 'manifest'));
   const extensions = new ExtensionRegistry(verifier);
-  const loader = await loadProviders(pool, secrets, extensions);
-  const kms = new KmsClient(required(environment.KMS_ENDPOINT, 'KMS_ENDPOINT_MISSING'), required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'));
+  const loader = await extensionLoader(pool, secrets, extensions);
+  const kms = new HttpKmsClient(required(environment.KMS_ENDPOINT, 'KMS_ENDPOINT_MISSING'), required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'));
   const telemetry = commerceTelemetry();
   return Object.freeze({
     pool,
@@ -41,6 +46,9 @@ export async function createProviderRuntime(environment: ProviderWorkerEnvironme
       container.bind(SECRET_STORE, secrets);
       container.bind(KMS_CLIENT, kms);
       container.bind(TELEMETRY, telemetry);
+      container.bind(METRIC_SINK, new TelemetryMetricSink(telemetry));
+      container.bind(TRACE_SINK, new TelemetryTraceSink(telemetry));
+      container.bind(LOG_SINK, new TelemetryLogSink(telemetry));
       container.bind(MANIFEST_VERIFIER, verifier);
       container.bind(EXTENSION_REGISTRY, extensions);
       container.bind(EXTENSION_LOADER, loader);

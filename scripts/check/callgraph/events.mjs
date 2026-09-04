@@ -3,11 +3,18 @@ import { asArray, idOf, readCatalog, target, unique, violation } from './catalog
 
 const handlerTargets = Object.freeze({
   experiencepublish: 'services/commerce/src/modules/experience/interface/job/ExperiencePublishJob.ts',
+  experienceprovision: 'services/commerce/src/modules/experience/interface/job/ExperienceProvisionJob.ts',
   notification: 'services/commerce/src/modules/notification/interface/job/NotificationJob.ts',
   projection: 'services/commerce/src/modules/reporting/interface/job/ProjectionJob.ts',
   referralevent: 'services/commerce/src/modules/referral/interface/job/ReferralEventJob.ts',
+  orderevent: 'services/commerce/src/modules/order/interface/job/OrderEventJob.ts',
+  paymentcancel: 'services/commerce/src/modules/payment/interface/job/PaymentCancellationJob.ts',
+  fulfillmentevent: 'services/commerce/src/modules/fulfillment/interface/job/FulfillmentEventJob.ts',
   reconciliation: 'services/commerce/src/modules/finance/interface/job/ReconciliationJob.ts',
   navigation: 'services/commerce/src/modules/navigation/interface/job/NavigationEventJob.ts',
+  sessionrevocation: 'services/commerce/src/modules/identity/interface/job/SessionRevocationJob.ts',
+  riskscan: 'services/commerce/src/modules/risk/interface/job/RiskScanJob.ts',
+  voucherissue: 'services/commerce/src/modules/voucher/interface/job/IssueBatchJob.ts',
 });
 const handlerRegistry = 'services/commerce/src/generated/EventSubscriptions.ts';
 

@@ -1,5 +1,5 @@
 // Generated from config/cache.yml and config/capacity.yml. Do not edit.
-export const CONFIG_CHECKSUM = '05c47ecafd0e6159c879574b2010f6f2464c368f32688d020ed4ef69317689b1' as const;
+export const CONFIG_CHECKSUM = 'f9d868e66f22b24c4a669b2d9e9b31ff20b67f66ccb7b950c5f81fe4c2b951a2' as const;
 
 export const BROWSER_QUERY_POLICY = Object.freeze({
   "query": {
@@ -43,47 +43,105 @@ export const BROWSER_QUERY_POLICY = Object.freeze({
 } as const);
 
 export const CACHE_CATALOG = Object.freeze({
-  "experience": {
-    "key": "mall:version",
+  "publishedexperience": {
+    "key": "mall:publicationversion",
     "maximumSeconds": 86400,
     "staleSeconds": 30,
-    "commandRevalidate": false
+    "commandRevalidate": false,
+    "invalidatedBy": [
+      "experience.release.activated"
+    ]
   },
   "storefrontentry": {
     "key": "handle",
     "maximumSeconds": 60,
     "staleSeconds": 0,
-    "commandRevalidate": true
+    "commandRevalidate": true,
+    "invalidatedBy": [
+      "experience.release.activated",
+      "organization.membership.changed"
+    ]
   },
-  "catalog": {
+  "listing": {
     "key": "mall:listing:version",
     "maximumSeconds": 300,
     "staleSeconds": 30,
-    "commandRevalidate": true
+    "commandRevalidate": true,
+    "invalidatedBy": [
+      "catalog.listing.published",
+      "catalog.listing.unpublished",
+      "pricing.rule.published",
+      "pricing.offer.changed",
+      "inventory.stock.changed"
+    ]
   },
   "category": {
     "key": "mall:categoryversion",
     "maximumSeconds": 3600,
     "staleSeconds": 60,
-    "commandRevalidate": true
+    "commandRevalidate": true,
+    "invalidatedBy": [
+      "catalog.listing.published",
+      "catalog.listing.unpublished"
+    ]
   },
-  "access": {
+  "accessversion": {
     "key": "membership:authzversion:capabilityversion",
     "maximumSeconds": 60,
     "staleSeconds": 0,
-    "commandRevalidate": true
+    "commandRevalidate": true,
+    "invalidatedBy": [
+      "access.version.changed",
+      "capability.changed",
+      "organization.membership.changed"
+    ]
   },
-  "reporting": {
+  "navigation": {
+    "key": "target:membership:scope:authzversion:capabilityversion:catalogversion",
+    "maximumSeconds": 300,
+    "staleSeconds": 0,
+    "commandRevalidate": true,
+    "invalidatedBy": [
+      "navigation.catalog.changed",
+      "access.version.changed",
+      "capability.changed",
+      "organization.membership.changed",
+      "extension.enabled",
+      "extension.disabled"
+    ]
+  },
+  "providerhealth": {
+    "key": "provider:capability:healthversion",
+    "maximumSeconds": 30,
+    "staleSeconds": 5,
+    "commandRevalidate": false,
+    "invalidatedBy": [
+      "channel.sync.completed",
+      "extension.enabled",
+      "extension.disabled",
+      "extension.degraded"
+    ]
+  },
+  "reportingwatermark": {
     "key": "scope:metric:period:projectionversion",
     "maximumSeconds": 300,
     "staleSeconds": 60,
-    "commandRevalidate": false
+    "commandRevalidate": false,
+    "invalidatedBy": [
+      "order.placed",
+      "order.paid",
+      "finance.entry.posted"
+    ]
   },
   "session": {
     "key": "session:version",
     "maximumSeconds": 60,
     "staleSeconds": 0,
-    "commandRevalidate": true
+    "commandRevalidate": true,
+    "invalidatedBy": [
+      "identity.session.revoked",
+      "identity.member.reset"
+    ]
   }
 } as const);
 
@@ -96,6 +154,8 @@ export const CAPACITY_MODEL = Object.freeze({
   "peakOrderTps": 300,
   "peakPaymentCallbackTps": 600,
   "voucherBatch": 1000000,
+  "voucherCredentials": 10000000,
+  "concurrentImports": 64,
   "reportDays": 366,
   "annualGrowthPercent": 80
 } as const);
@@ -105,7 +165,163 @@ export const PROVIDER_CAPACITY = Object.freeze({
   "defaultRequestsPerSecond": 20
 } as const);
 
+export const IMPORT_CAPACITY = Object.freeze({
+  "kinds": [
+    "member",
+    "product",
+    "inventory",
+    "vouchercredential",
+    "finance",
+    "order"
+  ],
+  "maximumRows": 1000000,
+  "previewRows": 100,
+  "chunkRows": 1000,
+  "maximumConcurrentJobs": 32,
+  "maximumConcurrentChunks": 8,
+  "maximumConcurrentRows": 8,
+  "chunkLeaseSeconds": 300,
+  "maximumFileBytes": 1073741824,
+  "maximumSpreadsheetBytes": 33554432,
+  "maximumExpandedBytes": 268435456,
+  "maximumCompressionRatio": 100,
+  "maximumSpreadsheetEntries": 10000,
+  "maximumColumns": 128
+} as const);
+
+export const WORKER_CAPACITY = Object.freeze({
+  "provider": {
+    "concurrency": 32,
+    "queue": 1024,
+    "deadlineMilliseconds": 120000
+  },
+  "report": {
+    "concurrency": 8,
+    "queue": 256,
+    "deadlineMilliseconds": 300000
+  },
+  "notification": {
+    "concurrency": 32,
+    "queue": 2048,
+    "deadlineMilliseconds": 30000
+  }
+} as const);
+
+export const CLIENT_BUNDLE_CAPACITY = Object.freeze({
+  "auth": {
+    "initialGzipKb": 90,
+    "featureGzipKb": 80
+  },
+  "console": {
+    "initialGzipKb": 95,
+    "featureGzipKb": 100
+  },
+  "storefront": {
+    "initialGzipKb": 110,
+    "featureGzipKb": 100
+  },
+  "miniapp": {
+    "initialGzipKb": 80,
+    "featureGzipKb": 80
+  },
+  "store": {
+    "initialGzipKb": 95,
+    "featureGzipKb": 90
+  },
+  "supplier": {
+    "initialGzipKb": 95,
+    "featureGzipKb": 90
+  }
+} as const);
+
+export const NAVIGATION_CAPACITY = Object.freeze({
+  "maximumRoutes": 200,
+  "maximumNodes": 200
+} as const);
+
 export const RUNTIME_LIMITS = Object.freeze({
+  "upload": {
+    "authorizationSeconds": 300,
+    "maximumAuthorizationSeconds": 900,
+    "maximumChunkBytes": 8388608,
+    "maximumAttachmentBytes": 20971520,
+    "maximumRetentionDays": 3650,
+    "retentionDays": {
+      "import": 1,
+      "aftersale": 365,
+      "support": 365,
+      "qualification": 3650
+    }
+  },
+  "queue": {
+    "maximumDepth": 4096,
+    "reservedDepth": 1024,
+    "lowPriority": 80,
+    "deferred": [
+      "export",
+      "import",
+      "maintenance"
+    ],
+    "protected": [
+      "transaction",
+      "payment",
+      "inventory",
+      "identity",
+      "risk"
+    ]
+  },
+  "cleanup": {
+    "batch": 500,
+    "objectConcurrency": 8,
+    "inboxDays": 90,
+    "outboxDays": 90
+  },
+  "worker": {
+    "outbox": {
+      "batch": 100,
+      "concurrency": 8,
+      "pollMilliseconds": 500
+    },
+    "scheduler": {
+      "leaseSeconds": 45,
+      "pollMilliseconds": 30000
+    }
+  },
+  "voucherTender": {
+    "holdTtlSeconds": 1800
+  },
+  "voucherExport": {
+    "pageRows": 1000,
+    "snapshotTtlSeconds": 86400,
+    "downloadTtlSeconds": 300,
+    "revealConcurrency": 16
+  },
+  "cart": {
+    "maximumLines": 100,
+    "maximumBatchItems": 100,
+    "maximumQuantity": 999,
+    "tokenBytes": 32
+  },
+  "checkout": {
+    "quoteTtlSeconds": 900,
+    "dependencyTimeoutMilliseconds": 500,
+    "parallelConcurrency": 8,
+    "maximumPriceDriftMinor": 0,
+    "confirmationTokenBytes": 32
+  },
+  "risk": {
+    "syncDeadlineMilliseconds": 80,
+    "complexScoreRules": 20,
+    "failClosed": [
+      "high",
+      "critical"
+    ],
+    "signalRetentionDays": {
+      "public": 30,
+      "personal": 7,
+      "sensitive": 1
+    }
+  },
   "authentication": {
     "bootstrap": {
       "ttlSeconds": 600
@@ -122,7 +338,8 @@ export const RUNTIME_LIMITS = Object.freeze({
     },
     "otp": {
       "validMinutes": 10,
-      "resendSeconds": 30
+      "resendSeconds": 30,
+      "maximumAttempts": 10
     }
   },
   "poolBudget": {

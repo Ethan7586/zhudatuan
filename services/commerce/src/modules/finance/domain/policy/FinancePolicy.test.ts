@@ -2,20 +2,24 @@ import { describe, expect, it } from 'vitest';
 import { Money } from '@shop/kernel';
 import { PostingPolicy } from './PostingPolicy';
 import { SettlementPolicy } from './SettlementPolicy';
+import { AccountCode } from '../value/AccountCode';
+
+const debit = AccountCode.of('cash', 'asset');
+const credit = AccountCode.of('commerce.clearing', 'income');
 
 describe('finance policies', () => {
   it('accepts a balanced journal and rejects a difference', () => {
     const policy = new PostingPolicy();
     expect(() =>
       policy.assertBalanced([
-        { side: 'debit', amount: Money.of(100) },
-        { side: 'credit', amount: Money.of(100) },
+        { account: debit, side: 'debit', amount: Money.of(100) },
+        { account: credit, side: 'credit', amount: Money.of(100) },
       ])
     ).not.toThrow();
     expect(() =>
       policy.assertBalanced([
-        { side: 'debit', amount: Money.of(100) },
-        { side: 'credit', amount: Money.of(99) },
+        { account: debit, side: 'debit', amount: Money.of(100) },
+        { account: credit, side: 'credit', amount: Money.of(99) },
       ])
     ).toThrow('FINANCE_JOURNAL_UNBALANCED');
   });

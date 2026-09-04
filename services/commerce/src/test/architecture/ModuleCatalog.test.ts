@@ -3,10 +3,10 @@ import { OperationCatalog } from '@shop/contract';
 import { BUSINESS_MODULES, COMMERCE_MODULES, SUPPORT_MODULES } from '../../app/modules';
 
 describe('bounded-context catalog', () => {
-  it('contains exactly twenty-nine business modules and one Navigation support module', () => {
-    expect(BUSINESS_MODULES).toHaveLength(29);
-    expect(COMMERCE_MODULES).toHaveLength(32);
-    expect(new Set(BUSINESS_MODULES.map(({ id }) => id)).size).toBe(29);
+  it('contains exactly thirty business modules and one Navigation support module', () => {
+    expect(BUSINESS_MODULES).toHaveLength(30);
+    expect(COMMERCE_MODULES).toHaveLength(33);
+    expect(new Set(BUSINESS_MODULES.map(({ id }) => id)).size).toBe(30);
     expect(SUPPORT_MODULES.map(({ id }) => id)).toEqual(['navigation']);
   });
 

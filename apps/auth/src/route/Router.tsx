@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
+import { RouteScroll } from '@shop/design';
 import type { Dependencies } from '../app/Dependencies';
 import { DependencyProvider } from '../app/DependencyContext';
 import { RouteRegistry } from '../app/RouteRegistry';
@@ -10,5 +11,33 @@ import { Loading } from '../shared/ui/Loading';
 import { NotFound } from './RouteError';
 
 export function Router({ dependencies }: Readonly<{ dependencies: Dependencies }>) {
-  return <DependencyProvider value={dependencies}><BrowserRouter><Suspense fallback={<AuthShell><AuthCard stage={1} onBack={() => undefined}><Loading label="正在初始化安全登录…" /></AuthCard></AuthShell>}><Routes>{RouteRegistry.all().map((manifest) => { const Component = lazy(() => manifest.load().then((module) => ({ default: module.Component }))); return <Route key={manifest.routeid} path={ROUTES[manifest.routeid]} element={<Component />} />; })}<Route path="*" element={<NotFound />} /></Routes></Suspense></BrowserRouter></DependencyProvider>;
+  return (
+    <DependencyProvider value={dependencies}>
+      <BrowserRouter>
+        <AuthScroll />
+        <Suspense
+          fallback={
+            <AuthShell>
+              <AuthCard stage={1} onBack={() => undefined}>
+                <Loading label="正在初始化安全登录…" />
+              </AuthCard>
+            </AuthShell>
+          }
+        >
+          <Routes>
+            {RouteRegistry.all().map((manifest) => {
+              const Component = lazy(() => manifest.load().then((module) => ({ default: module.Component })));
+              return <Route key={manifest.routeid} path={ROUTES[manifest.routeid]} element={<Component />} />;
+            })}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </DependencyProvider>
+  );
+}
+
+function AuthScroll() {
+  const location = useLocation();
+  return <RouteScroll entry={location.key} />;
 }

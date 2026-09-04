@@ -1,7 +1,7 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { MemberAccessPort } from '../../../access/public';
-import type { PaymentOrderPort } from '../../../order/public';
+import type { OrderPaymentPort } from '../../../order/public';
 import type { PaymentRepository } from '../../application/port/PaymentRepository';
 import { PaymentReader } from './PaymentReader';
 export class PgPaymentRepository implements PaymentRepository {
@@ -9,7 +9,7 @@ export class PgPaymentRepository implements PaymentRepository {
   constructor(
     private readonly transactions: PgTransactionAccess,
     members: Pick<MemberAccessPort, 'member'>,
-    orders: Pick<PaymentOrderPort, 'payment'>
+    orders: Pick<OrderPaymentPort, 'payment'>
   ) {
     this.reader = new PaymentReader(members, orders);
   }

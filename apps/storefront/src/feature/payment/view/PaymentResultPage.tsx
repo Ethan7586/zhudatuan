@@ -13,7 +13,7 @@ export function PaymentResultPage({ viewmodel, openOrder }: Readonly<{ viewmodel
         title="暂时无法读取支付状态"
         detail="订单不会因此重复扣款，请稍后重试。"
         action={
-          <button type="button" onClick={() => void actions.refresh()} className="rounded-full bg-[var(--sw-brand)] px-5 py-2 font-bold text-white">
+          <button type="button" onClick={() => void actions.refresh()} className="rounded-full bg-[var(--sw-brand)] px-5 py-2 font-bold text-inverse">
             重新查询
           </button>
         }
@@ -23,28 +23,28 @@ export function PaymentResultPage({ viewmodel, openOrder }: Readonly<{ viewmodel
   const terminal = payment.state === 'failed' || payment.state === 'expired';
   return (
     <section className="sw-web-container mx-auto max-w-xl px-4 py-12 text-center">
-      <div className={`mx-auto grid h-16 w-16 place-items-center rounded-full ${captured ? 'bg-emerald-50 text-emerald-600' : terminal ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-[var(--sw-brand)]'}`}>
+      <div className={`mx-auto grid h-16 w-16 place-items-center rounded-full ${captured ? 'bg-success-surface text-success-strong' : terminal ? 'bg-danger-surface text-danger-strong' : 'bg-brand-light text-[var(--sw-brand)]'}`}>
         {captured ? <CheckCircle2 size={34} /> : terminal ? <CircleAlert size={34} /> : payment.state === 'recovery' ? <RefreshCw className="animate-spin" size={30} /> : <Clock3 size={30} />}
       </div>
       <h1 className="mt-5 text-xl font-black">{title(payment.state)}</h1>
-      <p className="mt-2 text-sm text-gray-500">{detail(payment.state)}</p>
-      <dl className="mt-6 rounded-xl border bg-white p-4 text-left text-xs">
+      <p className="mt-2 text-sm text-muted">{detail(payment.state)}</p>
+      <dl className="mt-6 rounded-xl border bg-surface p-4 text-left text-xs">
         <div className="flex justify-between">
-          <dt className="text-gray-400">支付编号</dt>
+          <dt className="text-muted">支付编号</dt>
           <dd>{chineseReference('支付记录', payment.paymentId)}</dd>
         </div>
         <div className="mt-3 flex justify-between">
-          <dt className="text-gray-400">订单编号</dt>
+          <dt className="text-muted">订单编号</dt>
           <dd>{chineseReference('内部订单', payment.orderId)}</dd>
         </div>
         <div className="mt-3 flex justify-between">
-          <dt className="text-gray-400">支付有效期</dt>
+          <dt className="text-muted">支付有效期</dt>
           <dd>{new Date(payment.expiresAt).toLocaleString('zh-CN')}</dd>
         </div>
       </dl>
       <div className="mt-6 flex justify-center gap-3">
         {payment.state === 'pending' && payment.action ? (
-          <button type="button" disabled={continuing} onClick={() => void actions.continuePayment()} className="rounded-full bg-[var(--sw-brand)] px-6 py-2.5 font-bold text-white disabled:opacity-50">
+          <button type="button" disabled={continuing} onClick={() => void actions.continuePayment()} className="rounded-full bg-[var(--sw-brand)] px-6 py-2.5 font-bold text-inverse disabled:opacity-50">
             {continuing ? '正在唤起支付…' : '继续支付'}
           </button>
         ) : null}
@@ -63,9 +63,9 @@ function State({ icon, title, detail, action }: { readonly icon: React.ReactNode
   return (
     <section className="sw-web-container mx-auto grid min-h-[420px] max-w-xl place-items-center px-4 text-center">
       <div>
-        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-blue-50 text-[var(--sw-brand)]">{icon}</div>
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-brand-light text-[var(--sw-brand)]">{icon}</div>
         <h1 className="mt-4 text-xl font-black">{title}</h1>
-        <p className="mt-2 text-sm text-gray-500">{detail}</p>
+        <p className="mt-2 text-sm text-muted">{detail}</p>
         {action ? <div className="mt-5">{action}</div> : null}
       </div>
     </section>

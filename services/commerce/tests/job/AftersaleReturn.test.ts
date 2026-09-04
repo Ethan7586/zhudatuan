@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PoolClient, QueryResult } from 'pg';
-import type { ClaimedJob } from '../../src/foundation/application/JobRunner';
+import type { ClaimedJob } from '../../src/modules/runtime/public/JobProcess';
 import type { DatabasePool } from '../../src/foundation/persistence/Pool';
 import { PgTransactionManager } from '../../src/adapter/database/PgTransactionManager';
 import { RunFulfillment } from '../../src/modules/fulfillment/application/process/RunFulfillment';
@@ -44,6 +44,7 @@ describe('aftersale return authorization job', () => {
           operations: operations as never,
           orders: orders as never,
           organizations: { scope: vi.fn(async () => ({ tenant: 'tenant:one' })) } as never,
+          vouchers: { issue: vi.fn() } as never,
         })
       )
     );
@@ -63,7 +64,8 @@ describe('aftersale return authorization job', () => {
 });
 
 function job(): ClaimedJob {
-  return { id: 'job:return:one', kind: 'fulfillment', scope_id: 'mall:one', payload: { aftersale: 'aftersale:one' }, attempts: 1, fencing_token: 1 };
+  return { id: 'job:return:one', kind: 'fulfillment', scope: 'mall:one', payload: { aftersale: 'aftersale:one' }, attempts: 1, token: 1,
+    authorization: { kind: 'system', actor: 'test', scope: 'mall:one', operation: 'test', source: 'jobs', capturedAt: new Date().toISOString() } };
 }
 
 function database(calls: string[]) {

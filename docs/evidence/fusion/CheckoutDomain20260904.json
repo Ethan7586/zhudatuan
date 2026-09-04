@@ -1,0 +1,52 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.16 Checkout",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "operations": [
+    "checkout.quote.create",
+    "checkout.quotes.current.read",
+    "order.orders.create"
+  ],
+  "aggregates": ["CheckoutSession", "Quote"],
+  "invariants": [
+    "each-quote-freezes-cart-product-price-qualification-inventory-marketing-voucher-benefit-shipping-tax-address-invoice-experience-and-risk-evidence-with-versions",
+    "catalog-pricing-inventory-qualification-marketing-benefit-risk-experience-and-supporting-dependencies-run-with-configured-concurrency-total-deadline-and-dependency-specific-timeout-codes",
+    "quote-hash-uses-stable-canonical-serialization-and-server-secret-signing-and-is-bound-to-member-mall-cart-and-expiry",
+    "the-public-client-receives-a-256-bit-one-time-confirmation-token-while-persistence-stores-only-its-sha256-digest",
+    "the-order-create-contract-accepts-quote-id-confirmation-token-payment-scene-and-idempotency-but-never-client-calculated-price-discount-shipping-tax-or-payable-amount",
+    "confirmation-reloads-the-signed-frozen-quote-and-rejects-expiry-cart-selection-structural-version-evidence-and-configured-price-drift",
+    "confirmation-is-single-use-and-database-enforced-as-the-only-quoted-to-confirmed-transition",
+    "lock-order-is-idempotency-quote-cart-inventory-voucher-marketing-benefit-order-payment-finance-audit-outbox",
+    "inventory-voucher-marketing-and-benefit-holds-are-created-before-order-and-released-through-one-idempotent-reverse-compensation-boundary-on-any-later-failure",
+    "the-order-and-payment-intent-are-created-from-the-frozen-server-quote-and-outbox-events-are-appended in-the-same-write-transaction",
+    "expired-order-processing-is-claimed-once-and-releases-inventory-voucher-marketing-benefit-and-payment-holds-through-public-ports",
+    "checkout-session-state-hash-version-expiry-owner-and-quote-transitions-are-constrained-and-row-level-secured-in-the-target-schema"
+  ],
+  "retainedLiExperience": [
+    "the-existing-zhudatuan-li-checkout-layout-address-choice-delivery-choice-benefit-allocation-order-summary-and-primary-submit-flow-are-retained",
+    "the-summary-now-explains-that-product-price-benefit-shipping-tax-and-address-are-server-frozen-for-this-short-lived-confirmation",
+    "internal-quote-identifiers-signatures-and-technical-error-details-are-not-shown-as-primary-consumer-content",
+    "loading-expiry-conflict-requote-payment-recovery-and-submit-retry-have-one-consistent-action-language",
+    "a-fresh-quote-provides-the-only-confirmation-token-and-current-quote-read-never-replays-that-secret"
+  ],
+  "verification": {
+    "authorityHashes": "matched after the final 6.16 change",
+    "commerceTypecheck": "passed",
+    "storefrontTypecheck": "passed",
+    "checkoutTests": "11 files and 25 tests passed, including parallel starts, dependency deadlines, signing tamper, expiry and drift, one-time confirmation, reverse compensation, fault injection and expiry idempotency",
+    "storefrontCheckoutTests": "1 file and 1 test passed",
+    "contractTests": "6 files and 51 tests passed",
+    "commerceContractTests": "3 files and 1260 tests passed",
+    "databaseMigrationInventory": "historical=171 repair=163 total=334",
+    "databaseReplay": "334 migrations applied and checkout digest, hash, state, version, expiry, uniqueness, transition guard, expiry receipt, RLS and operation contracts passed",
+    "errorsTransactionsBoundariesOwnershipDuplicatesNaming": "passed with zero Checkout findings",
+    "eventsOperationsJobs": "passed with zero violations",
+    "globalGeneration": "Checkout contract, runtime, database object and navigation artifacts are current; requirement trace still awaits the real Miniapp feature root",
+    "globalCallGraph": "Checkout has no broken call point; six generated bindings remain in the future Miniapp, Store and Supplier surface packages",
+    "globalFrontend": "Storefront Checkout is implemented; 37 findings remain in the planned Approval, Miniapp, Store and Supplier surface packages",
+    "globalLineBudget": "Checkout files pass; 14 pre-existing Access, Approval, Organization, Capability, Bootstrap and shared Console debts remain for their owning cleanup packages"
+  }
+}

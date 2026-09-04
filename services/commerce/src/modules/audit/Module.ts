@@ -4,11 +4,15 @@ import { createJobs } from './interface/job/JobFactory';
 import { RecordsReadHandler } from './application/handler/RecordsReadHandler';
 import { PgAuditHistoryRepository } from './infrastructure/persistence/PgAuditHistoryRepository';
 import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { ORDER_AUDIT_READ_PORT } from './public';
-import { PgOrderAuditReadPort } from './infrastructure/persistence/PgOrderAuditReadPort';
+import { AUDIT_PORT, AUDIT_READ_PORT } from './public';
+import { PgAuditReadPort } from './infrastructure/persistence/PgAuditReadPort';
+import { AUDIT_SINK } from '../../foundation/application/AuditSink';
 
 export const AuditModule = defineModule(Manifest, {
   jobs: createJobs,
-  handlers: () => [new RecordsReadHandler(new PgAuditHistoryRepository(new PgTransactionAccess()))],
-  ports: [{ token: ORDER_AUDIT_READ_PORT, value: new PgOrderAuditReadPort() }],
+  handlers: (context) => [new RecordsReadHandler(new PgAuditHistoryRepository(new PgTransactionAccess()), context.service(AUDIT_SINK))],
+  ports: (context) => [
+    { token: AUDIT_PORT, value: context.service(AUDIT_SINK) },
+    { token: AUDIT_READ_PORT, value: new PgAuditReadPort() },
+  ],
 });

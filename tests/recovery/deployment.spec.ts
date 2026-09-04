@@ -24,7 +24,7 @@ function release() {
       operationHash: sha,
       eventHash: sha,
       jobHash: sha,
-      jobCount: 33,
+      jobCount: 48,
       requirementHash: sha,
       migrationHead: TARGET_SCHEMA_HEAD,
       migrationHash: sha,

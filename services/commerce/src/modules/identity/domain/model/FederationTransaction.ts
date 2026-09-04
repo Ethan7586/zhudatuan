@@ -19,7 +19,7 @@ export interface FederationTransactionValue {
   readonly state: FederationState;
   readonly version: number;
   readonly expiresat: Date;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly purpose: 'signin' | 'link';
   readonly principal: string | null;
   readonly membership: string | null;
@@ -31,7 +31,7 @@ export class FederationTransaction implements FederationTransactionValue {
   readonly state: FederationState;
   readonly version: number;
   readonly expiresat: Date;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly purpose: 'signin' | 'link';
   readonly principal: string | null;
   readonly membership: string | null;

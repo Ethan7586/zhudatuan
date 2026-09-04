@@ -3,7 +3,6 @@ import { extname, join, relative } from 'node:path';
 import { repositoryRoot } from './lib/RepositoryRoot.mjs';
 
 const root = repositoryRoot;
-const limit = 299;
 const roots = ['apps', 'services', 'packages', 'extensions'];
 const sourceExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.css', '.wxml', '.wxss']);
 const ignoredDirectories = new Set(['.next', '.open-next', 'build', 'coverage', 'dist', 'node_modules', 'out', 'storybook-static', 'test', 'tests', '__tests__']);
@@ -38,17 +37,30 @@ const failures = roots
       file: relative(root, file).split('\\').join('/'),
       generated: generatedFile(source),
       lines: source.split(/\r?\n/).length,
+      limit: lineLimit(relative(root, file).split('\\').join('/')),
     };
   })
   .filter(({ file }) => !vendoredStaticPrefixes.some((prefix) => file.startsWith(prefix)))
   .filter(({ generated }) => !generated)
-  .filter(({ lines }) => lines > limit)
+  .filter(({ lines, limit }) => lines > limit)
   .sort((left, right) => right.lines - left.lines);
 
 if (failures.length > 0) {
-  console.error(`product source line budget failed: limit=${limit} count=${failures.length}`);
-  for (const item of failures) console.error(`${item.lines}\t${item.file}`);
+  console.error(`product source line budget failed: count=${failures.length}`);
+  for (const item of failures) console.error(`${item.lines}>${item.limit}\t${item.file}`);
   process.exit(1);
 }
 
-console.log(`product source line budget passed: limit=${limit}`);
+console.log('product source line budget passed: route=80 viewmodel=220 view=220 gateway=180 application=120 model=150 other=250');
+
+function lineLimit(file) {
+  const frontendCode = /^apps\/(?:auth|console|storefront)\/src\//.test(file) && /\.(?:ts|tsx|js|jsx|mjs|cjs)$/.test(file);
+  if (!frontendCode) return 250;
+  if (/\/route\//.test(file)) return 80;
+  if (/\/viewmodel\//.test(file)) return 220;
+  if (/\/(?:view|ui)\//.test(file)) return 220;
+  if (/(?:Gateway|Mapper)\.(?:ts|tsx|js|jsx|mjs|cjs)$/.test(file)) return 180;
+  if (/\/application\//.test(file)) return 120;
+  if (/\/(?:model|public)\//.test(file)) return 150;
+  return 250;
+}

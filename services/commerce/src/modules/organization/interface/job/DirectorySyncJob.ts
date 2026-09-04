@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { SynchronizeDirectory } from '../../application/process/SynchronizeDirectory';
 
 export class DirectorySyncJob implements JobProcessor {
@@ -8,7 +8,8 @@ export class DirectorySyncJob implements JobProcessor {
     const payload = record(job.payload);
     const connection = text(payload.connection);
     const run = text(payload.run);
-    await this.synchronization.execute(connection, run, { trace: job.id, attempts: job.attempts, signal, deadline });
+    if (job.scope === null) throw new Error('JOB_PAYLOAD_INVALID');
+    await this.synchronization.execute(connection, run, { trace: job.id, scope: job.scope, attempts: job.attempts, signal, deadline });
   }
 }
 function record(value: unknown): Record<string, unknown> {

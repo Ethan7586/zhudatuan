@@ -11,16 +11,16 @@ export function NotificationPage({ viewmodel }: Readonly<{ viewmodel: ReturnType
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="font-bold tracking-[.18em] text-[var(--sw-brand)]">智慧翼 · 消息中心</p>
-          <h1 className="mt-1 text-xl font-black text-gray-900">通知中心</h1>
-          <p className="mt-1 text-gray-500">订单、卡券、售后和企业公告均来自服务端真实投递记录。</p>
+          <h1 className="mt-1 text-xl font-black text-content">通知中心</h1>
+          <p className="mt-1 text-muted">订单、卡券、售后和企业公告均来自服务端真实投递记录。</p>
         </div>
-        <button type="button" disabled={fetching} onClick={() => void actions.refresh()} className="inline-flex items-center gap-1 rounded-lg border bg-white px-3 py-2 font-bold disabled:opacity-50">
+        <button type="button" disabled={fetching} onClick={() => void actions.refresh()} className="inline-flex items-center gap-1 rounded-lg border bg-surface px-3 py-2 font-bold disabled:opacity-50">
           <RefreshCw size={14} className={fetching ? 'animate-spin' : ''} />
           刷新
         </button>
       </header>
       {message ? (
-        <div role="alert" className="mb-3 flex items-center gap-2 rounded-lg bg-red-50 p-3 font-bold text-red-700">
+        <div role="alert" className="mb-3 flex items-center gap-2 rounded-lg bg-danger-surface p-3 font-bold text-danger-strong">
           <CircleAlert size={16} />
           {message}
         </div>
@@ -29,28 +29,28 @@ export function NotificationPage({ viewmodel }: Readonly<{ viewmodel: ReturnType
         <div className="space-y-2">
           {state === 'loading' ? <State text="正在读取通知…" /> : null}
           {notifications.map((item) => (
-            <article key={item.id} className={`rounded-xl border bg-white p-4 shadow-sm ${item.readAt ? 'border-gray-100' : 'border-blue-200 ring-1 ring-blue-50'}`}>
+            <article key={item.id} className={`rounded-xl border bg-surface p-4 shadow-sm ${item.readAt ? 'border-edge' : 'border-brand ring-1 ring-brand-light'}`}>
               <div className="flex items-start gap-3">
-                <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${item.readAt ? 'bg-gray-100 text-gray-500' : 'bg-blue-50 text-[var(--sw-brand)]'}`}>
+                <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${item.readAt ? 'bg-subtle text-muted' : 'bg-brand-light text-[var(--sw-brand)]'}`}>
                   {item.kind === 'announcement' ? <Bell size={17} /> : icon(item.channel)}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <b className="text-sm text-gray-900">{item.subject ?? eventLabel(item.eventType)}</b>
-                    <time className="text-gray-400">{format(item.createdAt)}</time>
+                    <b className="text-sm text-content">{item.subject ?? eventLabel(item.eventType)}</b>
+                    <time className="text-muted">{format(item.createdAt)}</time>
                   </div>
-                  <p className="mt-2 whitespace-pre-wrap break-words leading-5 text-gray-600">{item.body}</p>
+                  <p className="mt-2 whitespace-pre-wrap break-words leading-5 text-secondary">{item.body}</p>
                   <div className="mt-3 flex items-center justify-between">
-                    <span className="text-gray-400">
+                    <span className="text-muted">
                       {channelLabel(item.channel)} · {chineseDomainLabel(item.state)}
                     </span>
                     {item.readAt ? (
-                      <span className="inline-flex items-center gap-1 text-gray-400">
+                      <span className="inline-flex items-center gap-1 text-muted">
                         <Check size={13} />
                         已读
                       </span>
                     ) : (
-                      <button type="button" disabled={busy !== null} onClick={() => void actions.acknowledge(item)} className="rounded-md bg-blue-50 px-2.5 py-1.5 font-bold text-[var(--sw-brand)] disabled:opacity-50">
+                      <button type="button" disabled={busy !== null} onClick={() => void actions.acknowledge(item)} className="rounded-md bg-brand-light px-2.5 py-1.5 font-bold text-[var(--sw-brand)] disabled:opacity-50">
                         {busy === `notification:${item.id}` ? '保存中…' : '标记已读'}
                       </button>
                     )}
@@ -61,33 +61,43 @@ export function NotificationPage({ viewmodel }: Readonly<{ viewmodel: ReturnType
           ))}
           {state === 'empty' ? <State text="暂无通知" /> : null}
         </div>
-        <aside className="h-fit rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <h2 className="text-base font-black text-gray-900">消息偏好</h2>
-          <p className="mt-1 text-gray-500">关闭后不影响交易处理；微信订阅会同步记录授权状态。</p>
+        <aside className="h-fit rounded-xl border border-edge bg-surface p-4 shadow-sm">
+          <h2 className="text-base font-black text-content">消息偏好</h2>
+          <p className="mt-1 text-muted">关闭后不影响交易处理；微信订阅会同步记录授权状态。</p>
           <div className="mt-4 divide-y">
             {preferences.map((item) => {
               const key = `preference:${item.channel}:${item.eventType}`;
               return (
-                <label key={key} className="flex cursor-pointer items-center justify-between gap-3 py-3">
-                  <span>
-                    <b className="block text-gray-800">{eventLabel(item.eventType)}</b>
-                    <span className="text-gray-400">
+                <div key={key} className="py-3">
+                  <label className="flex cursor-pointer items-center justify-between gap-3">
+                    <span>
+                    <b className="block text-content">{eventLabel(item.eventType)}</b>
+                    <span className="text-muted">
                       {channelLabel(item.channel)}
                       {item.channel === 'wechat' ? ` · ${authorizationLabel(item.authorization)}` : ''}
                     </span>
-                  </span>
-                  <input
-                    aria-label={`${eventLabel(item.eventType)}${channelLabel(item.channel)}`}
-                    type="checkbox"
-                    checked={item.enabled}
-                    disabled={busy !== null}
-                    onChange={(event) => void actions.toggle(item.channel, item.eventType, event.target.checked)}
-                    className="h-4 w-4 accent-[var(--sw-brand)]"
-                  />
-                </label>
+                    </span>
+                    <input aria-label={`${eventLabel(item.eventType)}${channelLabel(item.channel)}`} type="checkbox" checked={item.enabled}
+                      disabled={busy !== null} onChange={(event) => void actions.toggle(item, event.target.checked)}
+                      className="h-4 w-4 accent-[var(--sw-brand)]" />
+                  </label>
+                  <details className="mt-2 rounded-lg bg-subtle px-3 py-2 text-muted">
+                    <summary className="cursor-pointer font-bold text-secondary">免打扰时段{item.quietStart && item.quietEnd ? ` · ${item.quietStart.slice(0, 5)}–${item.quietEnd.slice(0, 5)}` : ' · 未设置'}</summary>
+                    <form className="mt-3 grid grid-cols-[1fr_1fr_auto] items-end gap-2" onSubmit={(event) => {
+                      event.preventDefault();
+                      const data = new FormData(event.currentTarget);
+                      void actions.quiet(item, String(data.get('start')), String(data.get('end')), true);
+                    }}>
+                      <TimeField name="start" label="开始" value={item.quietStart?.slice(0, 5) ?? '22:00'} />
+                      <TimeField name="end" label="结束" value={item.quietEnd?.slice(0, 5) ?? '07:00'} />
+                      <button type="submit" disabled={busy !== null} className="rounded-md bg-surface px-2.5 py-2 font-bold text-[var(--sw-brand)] disabled:opacity-50">保存</button>
+                    </form>
+                    {item.quietStart ? <button type="button" disabled={busy !== null} onClick={() => void actions.quiet(item, '22:00', '07:00', false)} className="mt-2 font-bold text-danger-strong">关闭免打扰</button> : null}
+                  </details>
+                </div>
               );
             })}
-            {state !== 'loading' && preferences.length === 0 ? <p className="py-6 text-center text-gray-400">商城尚未发布可配置的消息模板</p> : null}
+            {state !== 'loading' && preferences.length === 0 ? <p className="py-6 text-center text-muted">商城尚未发布可配置的消息模板</p> : null}
           </div>
         </aside>
       </div>
@@ -95,9 +105,13 @@ export function NotificationPage({ viewmodel }: Readonly<{ viewmodel: ReturnType
   );
 }
 
+function TimeField({ name, label, value }: Readonly<{ name: string; label: string; value: string }>) {
+  return <label className="grid gap-1"><span>{label}</span><input type="time" name={name} defaultValue={value} required className="min-w-0 rounded-md border border-edge bg-surface px-2 py-1.5 text-content" /></label>;
+}
+
 function State({ text }: { readonly text: string }) {
   return (
-    <div role="status" className="grid min-h-32 place-items-center rounded-xl border border-dashed bg-white text-gray-400">
+    <div role="status" className="grid min-h-32 place-items-center rounded-xl border border-dashed bg-surface text-muted">
       <span className="inline-flex items-center gap-2">
         <LoaderCircle size={17} className="animate-spin" />
         {text}

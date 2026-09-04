@@ -1,4 +1,5 @@
 import type { Quote } from '../model/Quote';
+import type { Tender } from '../model/Tender';
 import { nullableText } from '../../../shared/format/Text';
 
 type Value = Readonly<Record<string, unknown>>;
@@ -8,7 +9,8 @@ export function mapQuote(value: Value): Quote {
     checkoutId: String(value.checkoutId),
     quoteId: String(value.quoteId),
     quoteVersion: Number(value.quoteVersion),
-    signature: String(value.signature),
+    confirmationToken: nullableText(value.confirmationToken),
+    evidenceHash: String(value.evidenceHash),
     expiresAt: String(value.expiresAt),
     cartVersion: Number(value.cartVersion),
     lines: Object.freeze(
@@ -26,11 +28,12 @@ export function mapQuote(value: Value): Quote {
     subtotalMinor: Number(value.subtotalMinor),
     discountMinor: Number(value.discountMinor),
     shippingMinor: Number(value.shippingMinor),
+    taxMinor: Number(value.taxMinor),
     payableMinor: Number(value.payableMinor),
     benefitMinor: Number(value.benefitMinor),
     personalMinor: Number(value.personalMinor),
     currency: String(value.currency),
-    tenders: Object.freeze((value.tenders as readonly Value[]).map((tender) => Object.freeze({ kind: tender.kind as 'benefit' | 'voucher' | 'wechat', reference: nullableText(tender.reference), amountMinor: Number(tender.amountMinor) }))),
+    tenders: Object.freeze((value.tenders as readonly Value[]).map((tender) => Object.freeze({ kind: tender.kind as Tender['kind'], reference: nullableText(tender.reference), amountMinor: Number(tender.amountMinor) }))),
     rejections: Object.freeze((value.rejections as readonly Value[]).map((item) => Object.freeze({ listing: String(item.listing), reasons: Object.freeze(item.reasons as readonly string[]) }))),
   });
 }

@@ -1,10 +1,11 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { organizationScope } from '../../../../foundation/security/OrganizationScope';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { RecoveryAction, RecoveryRepository } from '../port/RecoveryRepository';
+import { DomainError } from '../../../../foundation/domain/DomainError';
 
 const actions = new Set<RecoveryAction>(['replay', 'requery', 'retryrefund', 'resolve']);
 
@@ -19,20 +20,29 @@ export class RecoveriesResolveHandler implements OperationHandler<'payment.recov
     const action = textField(body, 'action', 32) as RecoveryAction;
     if (!actions.has(action)) throw new Error('PAYMENT_RECOVERY_ACTION_INVALID');
     const result = await this.recoveries.resolve(context.transaction, {
-      case: required(input.path.caseid, 'PAYMENT_RECOVERY_CASE_REQUIRED'),
+      case: required(input.path.caseid, 'caseid'),
       action,
       reason: textField(body, 'reason', 500),
       scope: organizationScope(access.scope),
       actor: access.actor.id,
       membership: access.membership.id,
       trace: access.trace,
-      idempotency: required(context.idempotencyKey, 'IDEMPOTENCY_KEY_REQUIRED'),
+      idempotency: required(context.idempotencyKey, 'idempotency'),
+      expectedVersion: requiredVersion(context.expectedVersion),
     });
     return { status: 202, body: result as OperationOutputFor<'payment.recoveries.resolve'> };
   }
 }
 
-function required(value: string | undefined, code: string): string {
-  if (!value) throw new Error(code);
+function requiredVersion(value: number | undefined): number {
+  if (!Number.isSafeInteger(value) || value! < 0) throw new DomainError('EXPECTED_VERSION_REQUIRED');
+  return value!;
+}
+
+function required(value: string | undefined, field: string): string {
+  if (!value) {
+    if (field === 'idempotency') throw new DomainError('IDEMPOTENCY_KEY_REQUIRED');
+    throw new DomainError('VALIDATION_FAILED', { field });
+  }
   return value;
 }

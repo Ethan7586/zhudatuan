@@ -14,12 +14,28 @@ describe('NavigationEventHandler', () => {
     });
 
     await expect(handler.handle({ id: 'event:one', type: 'membership.updated', scope: 'tenant:one', payload: {} })).resolves.toBe(true);
-    expect(received).toEqual({ event: 'event:one', scope: 'tenant:one' });
+    expect(received).toEqual({ event: 'event:one', scopes: ['tenant:one'] });
   });
 
   it('rejects a payload scope that conflicts with the authenticated envelope', () => {
     const handler = new NavigationEventHandler({ invalidate: async () => true, lastEventAt: () => null });
 
     expect(() => handler.handle({ id: 'event:two', type: 'membership.updated', scope: 'tenant:one', payload: { scopeId: 'tenant:two' } })).toThrow('NAVIGATION_EVENT_SCOPE_MISMATCH');
+    expect(() => handler.handle({ id: 'event:three', type: 'access.owner.transferred', scope: 'tenant:one', payload: { scope: 'tenant:two' } })).toThrow('NAVIGATION_EVENT_SCOPE_MISMATCH');
+  });
+
+  it('targets permission, capability, installation and catalog changes precisely', async () => {
+    const received: NavigationInvalidation[] = [];
+    const handler = new NavigationEventHandler({ invalidate: async (value) => (received.push(value), true), lastEventAt: () => null });
+    await handler.handle({ id: 'event:access', type: 'access.version.changed', scope: 'enterprise:one', payload: { membership: 'membership:one' } });
+    await handler.handle({ id: 'event:capability', type: 'capability.changed', scope: 'mall:one', payload: { scopeId: 'mall:one' } });
+    await handler.handle({ id: 'event:extension', type: 'extension.enabled', scope: 'enterprise:one', payload: { installation: 'installation:one' } });
+    await handler.handle({ id: 'event:catalog', type: 'navigation.catalog.changed', scope: 'platform:one', payload: {} });
+    expect(received).toEqual([
+      { event: 'event:access', memberships: ['membership:one'], scopes: ['enterprise:one'] },
+      { event: 'event:capability', scopes: ['mall:one'] },
+      { event: 'event:extension', scopes: ['enterprise:one'] },
+      { event: 'event:catalog', catalog: true },
+    ]);
   });
 });

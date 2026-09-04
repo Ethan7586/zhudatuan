@@ -14,9 +14,9 @@ const namingPolicy = parse(fs.readFileSync(path.join(root, 'config/naming.yml'),
 const allowedRootFiles = new Set(['Module.ts', 'Manifest.ts']);
 const allowedLayers = new Set(['application', 'domain', 'infrastructure', 'interface', 'public', 'test']);
 const allowedLeaves = Object.freeze({
-  application: new Set(['handler', 'port', 'service', 'process', 'model']),
+  application: new Set(['handler', 'port', 'service', 'process', 'model', 'registry']),
   domain: new Set(['model', 'value', 'policy', 'service', 'event', 'error']),
-  infrastructure: new Set(['persistence', 'adapter', 'integration', 'cache', 'messaging', 'registry', 'security']),
+  infrastructure: new Set(['persistence', 'adapter', 'integration', 'cache', 'messaging', 'registry', 'security', 'process', 'queue', 'storage', 'loader', 'crypto', 'export', 'search']),
   interface: new Set(['http', 'job', 'event', 'webhook']),
 });
 const layerRule = Object.freeze({ domain: new Set(['application', 'infrastructure', 'interface']), application: new Set(['infrastructure', 'interface']), infrastructure: new Set(['interface']), interface: new Set() });
@@ -24,6 +24,8 @@ const publicDatabase = /\b(?:OperationDatabase|DatabasePool|QueryResult(?:Row)?|
 const publicResultRow = /\b(?:QueryResult(?:Row)?|rowCount|\.rows\b|[a-zA-Z]+_id\b)/;
 const sql = /\b(?:select\s+.+\s+from|insert\s+into|update\s+[a-z]|delete\s+from|merge\s+into|truncate\s+)/is;
 const externalMethods = new Set(['decrypt', 'deliver', 'download', 'encrypt', 'exchange', 'fetch', 'prepay', 'refund', 'request', 'send', 'upload', 'verifyNotification']);
+const domainTechnology = /^(?:react(?:\/|$)|fastify(?:\/|$)|pg(?:\/|$)|postgres(?:\/|$)|redis(?:\/|$)|ioredis(?:\/|$)|@prisma(?:\/|$)|drizzle(?:-|\/|$)|typeorm(?:\/|$)|sequelize(?:\/|$)|kysely(?:\/|$)|.*(?:^|\/)sdk(?:\/|$)|@shop\/contract\/client$)/i;
+const generatedContractName = /(?:Input|Output|Schema|Client)(?:For)?$/;
 
 export const architectureDiagnostics = Object.freeze([
   'MODULE_ROOT_FILE_FORBIDDEN',
@@ -40,7 +42,16 @@ export const architectureDiagnostics = Object.freeze([
   'HANDLER_SQL_FORBIDDEN',
   'PUBLIC_DATABASE_TYPE_FORBIDDEN',
   'PUBLIC_IMPLEMENTATION_FORBIDDEN',
+  'PUBLIC_INDEX_MISSING',
+  'PUBLIC_INDEX_TARGET_INVALID',
   'PUBLIC_RESULT_ROW_FORBIDDEN',
+  'DOMAIN_LAYER_DEPENDENCY_FORBIDDEN',
+  'DOMAIN_MODULE_DEPENDENCY_FORBIDDEN',
+  'DOMAIN_TECHNOLOGY_DEPENDENCY_FORBIDDEN',
+  'DOMAIN_GENERATED_DTO_FORBIDDEN',
+  'APPLICATION_LAYER_DEPENDENCY_FORBIDDEN',
+  'INTERFACE_LAYER_DEPENDENCY_FORBIDDEN',
+  'INTERFACE_SQL_FORBIDDEN',
   'REPOSITORY_PATH_INVALID',
   'REPOSITORY_OWNER_INVALID',
   'CROSS_SCHEMA_SQL_FORBIDDEN',
@@ -48,9 +59,11 @@ export const architectureDiagnostics = Object.freeze([
   'MODULE_DEPENDENCY_UNDECLARED',
   'TRANSACTION_CONTEXT_ESCAPE',
   'RAW_TRANSACTION_IMPORT_FORBIDDEN',
+  'EXTERNAL_FAILURE_MAPPING_MISSING',
   'EXTERNAL_CALL_IN_TRANSACTION',
   'UNRESOLVED_IMPORT',
   'MODULE_SYMLINK_ESCAPE',
+  'AMBIGUOUS_RESPONSIBILITY_NAME',
   'PRODUCTION_NAME_INVALID',
 ]);
 
@@ -75,6 +88,9 @@ export function auditBoundaries(options = {}) {
     }
   }
   for (const entry of fs.readdirSync(moduleRoot, { withFileTypes: true })) {
+    if (entry.isDirectory() && !fs.existsSync(path.join(moduleRoot, entry.name, 'public/index.ts'))) {
+      add('PUBLIC_INDEX_MISSING', `services/commerce/src/modules/${entry.name}/public/index.ts`, entry.name);
+    }
     if (entry.isFile() && isTestFile(entry.name)) add('MODULE_ROOT_TEST_FORBIDDEN', relative(path.join(moduleRoot, entry.name)), 'global architecture test belongs in services/commerce/test/architecture');
   }
   for (const operation of operations) {
@@ -89,7 +105,7 @@ export function auditBoundaries(options = {}) {
     if (!sourceFile) continue;
     const source = sourceFile.text;
     if (file.endsWith('Operations.ts')) add('OPERATIONS_AGGREGATOR_FORBIDDEN', rel, 'production Operations aggregator');
-    auditName(rel, add);
+    auditName(rel, sourceFile, add);
 
     if (!file.startsWith(`${moduleRoot}${path.sep}`)) continue;
     const moduleRelative = path.relative(moduleRoot, file);
@@ -99,15 +115,53 @@ export function auditBoundaries(options = {}) {
     if (!fs.realpathSync.native(file).startsWith(`${fs.realpathSync.native(moduleDirectory)}${path.sep}`)) add('MODULE_SYMLINK_ESCAPE', rel, owner);
     auditLayout(parts, rel, sourceFile, add);
     auditImports(owner, parts[1], rel, sourceFile, add);
-    if (parts[1] === 'Module.ts') auditModuleDependencies(owner, rel, sourceFile, sourceMap, add);
+    auditDomainDependencies(owner, parts[1], rel, sourceFile, add);
+    auditInterfaceBoundary(owner, parts, rel, sourceFile, add);
+    if (parts[1] === 'Module.ts' || parts[1] === 'application') auditModuleDependencies(owner, rel, sourceFile, sourceMap, add);
     auditHandler(rel, sourceFile, source, operationByPath.get(rel), assemblyInstantiations, add);
     auditPublic(parts, rel, sourceFile, source, add);
     auditRepositories(owner, parts, rel, sourceFile, add);
     auditTransactionSafety(parts, rel, sourceFile, source, add);
+    auditInfrastructureFailure(parts, rel, sourceFile, add);
   }
 
   for (const violation of auditOwnership(sources, options.objects)) add('CROSS_SCHEMA_SQL_FORBIDDEN', violation.file, `${violation.module}->${violation.schema}`);
   return findings.sort((left, right) => `${left.code}:${left.file}:${left.detail}`.localeCompare(`${right.code}:${right.file}:${right.detail}`));
+}
+
+function auditDomainDependencies(owner, layer, rel, sourceFile, add) {
+  if (layer !== 'domain') return;
+  for (const reference of moduleReferences(sourceFile)) {
+    if (domainTechnology.test(reference.specifier)) {
+      add('DOMAIN_TECHNOLOGY_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, reference.specifier);
+    }
+    if (reference.specifier.startsWith('@shop/contract') && generatedContractImports(reference.node).some((name) => generatedContractName.test(name))) {
+      add('DOMAIN_GENERATED_DTO_FORBIDDEN', `${rel}:${reference.line}`, reference.specifier);
+    }
+    if (!reference.target) continue;
+    const target = relative(reference.target);
+    const foundation = target.match(/^services\/commerce\/src\/foundation\/([^/]+)\//);
+    if (foundation && foundation[1] !== 'domain') {
+      add('DOMAIN_LAYER_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, `domain->foundation/${foundation[1]}`);
+    }
+    const module = target.match(/^services\/commerce\/src\/modules\/([^/]+)\/([^/]+)\//);
+    if (!module) continue;
+    const [, targetOwner, targetLayer] = module;
+    if (targetOwner !== owner) add('DOMAIN_MODULE_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, `${owner}->${targetOwner}`);
+    else if (targetLayer !== 'domain') add('DOMAIN_LAYER_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, `domain->${targetLayer}`);
+  }
+}
+
+function generatedContractImports(node) {
+  if (!ts.isImportDeclaration(node)) return [];
+  const clause = node.importClause;
+  if (!clause) return [];
+  const names = clause.name ? [clause.name.text] : [];
+  const bindings = clause.namedBindings;
+  if (bindings && ts.isNamedImports(bindings)) {
+    for (const element of bindings.elements) names.push((element.propertyName ?? element.name).text);
+  } else if (bindings && ts.isNamespaceImport(bindings)) names.push(bindings.name.text);
+  return names;
 }
 
 function auditModuleDependencies(owner, rel, sourceFile, sourceMap, add) {
@@ -117,7 +171,7 @@ function auditModuleDependencies(owner, rel, sourceFile, sourceMap, add) {
   if (!manifest) return;
   const declared = manifestDependencies(manifest);
   for (const reference of moduleReferences(sourceFile)) {
-    if (!reference.target || reference.node.importClause?.isTypeOnly === true) continue;
+    if (!reference.target) continue;
     const target = relative(reference.target);
     const match = target.match(/^services\/commerce\/src\/modules\/([^/]+)\/public\//);
     if (!match || match[1] === owner || declared.has(match[1])) continue;
@@ -125,12 +179,36 @@ function auditModuleDependencies(owner, rel, sourceFile, sourceMap, add) {
   }
 }
 
+function auditInterfaceBoundary(owner, parts, rel, sourceFile, add) {
+  if (parts[1] !== 'interface') return;
+  const containsSql = containsNode(sourceFile, (node) =>
+    (ts.isStringLiteralLike(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isTemplateExpression(node)) && sql.test(node.getText(sourceFile))
+  );
+  if (containsSql) add('INTERFACE_SQL_FORBIDDEN', rel, 'interface contains persistence logic');
+  if (path.basename(rel) === 'JobFactory.ts') return;
+  for (const reference of moduleReferences(sourceFile)) {
+    if (!reference.target) continue;
+    const target = relative(reference.target);
+    const module = target.match(/^services\/commerce\/src\/modules\/([^/]+)\/([^/]+)\//);
+    if (module?.[1] === owner && ['domain', 'infrastructure'].includes(module[2])) {
+      add('INTERFACE_LAYER_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, `interface->${module[2]}`);
+    }
+    const foundation = target.match(/^services\/commerce\/src\/foundation\/([^/]+)\//);
+    if (foundation && ['persistence', 'infrastructure'].includes(foundation[1])) {
+      add('INTERFACE_LAYER_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, `interface->foundation/${foundation[1]}`);
+    }
+  }
+}
+
 function manifestDependencies(sourceFile) {
   const dependencies = new Set();
   const call = firstNode(sourceFile, (node) => ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'defineModuleManifest');
   if (!call || !ts.isCallExpression(call)) return dependencies;
-  addStringArray(call.arguments[1], dependencies);
-  const workloads = call.arguments[3];
+  const input = call.arguments[0];
+  const structured = input && ts.isObjectLiteralExpression(input);
+  const inputProperties = structured ? propertyMap(input) : new Map();
+  addStringArray(structured ? inputProperties.get('dependencies') : call.arguments[1], dependencies);
+  const workloads = structured ? inputProperties.get('workloads') : call.arguments[3];
   if (workloads && ts.isObjectLiteralExpression(workloads)) {
     const visit = (node) => {
       if (ts.isPropertyAssignment(node) && propertyName(node.name) === 'dependencies') addStringArray(node.initializer, dependencies);
@@ -139,6 +217,14 @@ function manifestDependencies(sourceFile) {
     visit(workloads);
   }
   return dependencies;
+}
+
+function propertyMap(object) {
+  const values = new Map();
+  for (const property of object.properties) {
+    if (ts.isPropertyAssignment(property)) values.set(propertyName(property.name), property.initializer);
+  }
+  return values;
 }
 
 function addStringArray(node, values) {
@@ -160,6 +246,16 @@ function auditLayout(parts, rel, sourceFile, add) {
     if (containsNode(sourceFile, (node) => ts.isIfStatement(node) || ts.isSwitchStatement(node) || ts.isConditionalExpression(node)) || sql.test(sourceFile.text)) {
       add('MODULE_COMPOSITION_LOGIC_FORBIDDEN', rel, 'assembly contains decision or SQL');
     }
+    if (/\b(?:process|Deno|Bun)\.env\b/.test(sourceFile.text) || containsNode(sourceFile, (node) => ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword)) {
+      add('MODULE_COMPOSITION_LOGIC_FORBIDDEN', rel, 'assembly reads environment or performs dynamic import');
+    }
+    const exported = sourceFile.statements.filter((statement) => statement.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword));
+    if (exported.length !== 1 || !ts.isVariableStatement(exported[0]) || !exported[0].declarationList.declarations.some((declaration) => ts.isIdentifier(declaration.name) && declaration.name.text.endsWith('Module'))) {
+      add('MODULE_COMPOSITION_LOGIC_FORBIDDEN', rel, 'assembly must export exactly one Module declaration');
+    }
+    if (sourceFile.statements.some((statement) => ts.isClassDeclaration(statement) || ts.isExportDeclaration(statement))) {
+      add('MODULE_COMPOSITION_LOGIC_FORBIDDEN', rel, 'assembly contains implementation or re-export');
+    }
   }
   if (parts[1] === 'Manifest.ts') {
     for (const statement of sourceFile.statements) {
@@ -176,6 +272,12 @@ function auditImports(owner, layer, rel, sourceFile, add) {
     if (!reference.external && !reference.target) add('UNRESOLVED_IMPORT', `${rel}:${reference.line}`, reference.specifier);
     if (!reference.target) continue;
     const target = relative(reference.target);
+    if (layer === 'application') {
+      const foundation = target.match(/^services\/commerce\/src\/foundation\/([^/]+)\//);
+      if (foundation && ['infrastructure', 'interface'].includes(foundation[1])) {
+        add('APPLICATION_LAYER_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, `application->foundation/${foundation[1]}`);
+      }
+    }
     const targetMatch = target.match(/^services\/commerce\/src\/modules\/([^/]+)\/(.+)$/);
     if (!targetMatch) continue;
     const [, targetOwner, targetPath] = targetMatch;
@@ -214,6 +316,16 @@ function auditPublic(parts, rel, sourceFile, source, add) {
   if (publicDatabase.test(source)) add('PUBLIC_DATABASE_TYPE_FORBIDDEN', rel, 'database capability in public contract');
   if (publicResultRow.test(source)) add('PUBLIC_RESULT_ROW_FORBIDDEN', rel, 'database-shaped public result');
   if (sourceFile.statements.some((statement) => ts.isClassDeclaration(statement) || ts.isFunctionDeclaration(statement))) add('PUBLIC_IMPLEMENTATION_FORBIDDEN', rel, 'public contains implementation');
+  if (parts.at(-1) === 'index.ts') {
+    for (const statement of sourceFile.statements) {
+      if (ts.isExportDeclaration(statement) && statement.moduleSpecifier && ts.isStringLiteralLike(statement.moduleSpecifier) && !statement.moduleSpecifier.text.startsWith('./') && statement.moduleSpecifier.text !== '@shop/contract') {
+        add('PUBLIC_INDEX_TARGET_INVALID', rel, statement.moduleSpecifier.text);
+      }
+    }
+    if (/\bexport\s+(?:type\s+)?\{[^}]*\b(?:Pg[A-Z][A-Za-z]*|[A-Za-z]*Repository|[A-Za-z]*Entity)\b/s.test(source)) {
+      add('PUBLIC_INDEX_TARGET_INVALID', rel, 'implementation or persistence export');
+    }
+  }
 }
 
 function auditRepositories(owner, parts, rel, sourceFile, add) {
@@ -260,8 +372,30 @@ function auditTransactionSafety(parts, rel, sourceFile, source, add) {
   }
 }
 
-function auditName(rel, add) {
+function auditInfrastructureFailure(parts, rel, sourceFile, add) {
+  if (parts[1] !== 'infrastructure') return;
+  const references = moduleReferences(sourceFile);
+  const importsHttp = references.some((reference) => reference.target && relative(reference.target) === 'services/commerce/src/foundation/http/HttpClient.ts');
+  if (!importsHttp) return;
+  const importsStandardMapper = references.some((reference) => reference.target && [
+    'services/commerce/src/foundation/domain/Failure.ts',
+    'services/commerce/src/foundation/http/ExternalResponse.ts',
+  ].includes(relative(reference.target)));
+  const mapsPublicFailure = references.some((reference) => reference.target && relative(reference.target) === 'services/commerce/src/foundation/domain/DomainError.ts') &&
+    containsNode(sourceFile, ts.isCatchClause);
+  if (!importsStandardMapper && !mapsPublicFailure) add('EXTERNAL_FAILURE_MAPPING_MISSING', rel, 'HttpClient exception or response is not mapped to a standard Failure');
+}
+
+function auditName(rel, sourceFile, add) {
   if (!rel.startsWith('services/commerce/src/modules/')) return;
+  const ambiguous = /(?:Helper|Helpers|Utils|Common|Manager|Service)$/;
+  const stem = path.basename(rel, path.extname(rel));
+  if (ambiguous.test(stem)) add('AMBIGUOUS_RESPONSIBILITY_NAME', rel, `file:${stem}`);
+  for (const statement of sourceFile.statements) {
+    if ((ts.isClassDeclaration(statement) || ts.isInterfaceDeclaration(statement) || ts.isTypeAliasDeclaration(statement)) && statement.name && ambiguous.test(statement.name.text)) {
+      add('AMBIGUOUS_RESPONSIBILITY_NAME', rel, `declaration:${statement.name.text}`);
+    }
+  }
   const directoryPattern = new RegExp(namingPolicy.production.directory);
   const filePattern = new RegExp(namingPolicy.production.file);
   const parts = rel.split('/').slice(4);
@@ -271,10 +405,12 @@ function auditName(rel, add) {
 
 function handlerInstantiations(sources, sourceMap) {
   const counts = new Map();
-  for (const file of sources.filter((candidate) => path.basename(candidate) === 'Module.ts')) {
+  for (const file of sources) {
+    const rel = relative(file).split('/');
+    if (rel[0] !== 'services' || rel[1] !== 'commerce' || rel[2] !== 'src' || rel[3] !== 'modules' || !rel[4]) continue;
     const sourceFile = sourceMap.get(fs.realpathSync.native(file));
     if (!sourceFile) continue;
-    const owner = path.basename(path.dirname(file));
+    const owner = rel[4];
     const visit = (node) => {
       if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.text.endsWith('Handler')) {
         const key = `${owner}:${node.expression.text}`;

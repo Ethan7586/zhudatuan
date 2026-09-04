@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { ExpireOrders } from '../../application/process/ExpireOrders';
 
 export class OrderExpiryJob implements JobProcessor {
@@ -11,7 +11,7 @@ export class OrderExpiryJob implements JobProcessor {
     return this.expiry.execute({
       checkout: optionalText(payload.checkout),
       order: optionalText(payload.order),
-      scope: job.scope_id || 'order',
+      scope: job.scope || 'order',
       trace: job.id,
       signal,
       deadline,

@@ -1,15 +1,11 @@
 import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { CartOffer } from '../../domain/model/CartLine';
 
-export interface CartOffer {
+export interface CartOfferReference {
   readonly listing: string;
-  readonly sku: string;
-  readonly title: string;
-  readonly listingVersion: string;
-  readonly unitMinor: number;
-  readonly currency: string;
-  readonly priceVersion: string;
+  readonly sku: string | null;
 }
 
 export interface CartOfferRepository {
-  resolve(context: ReadTransactionContext, mall: string, listings: readonly string[]): Promise<ReadonlyMap<string, CartOffer>>;
+  resolve(context: ReadTransactionContext, mall: string, references: readonly CartOfferReference[]): Promise<ReadonlyMap<string, CartOffer>>;
 }

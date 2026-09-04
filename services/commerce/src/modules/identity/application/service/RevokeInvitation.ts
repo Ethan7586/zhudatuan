@@ -4,7 +4,7 @@ import { DomainError } from '../../../../foundation/domain/DomainError';
 
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
 
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import type { InvitationRepository } from '../port/InvitationRepository';
 import type { IdentityEventRepository } from '../port/IdentityEventRepository';
 

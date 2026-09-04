@@ -33,6 +33,8 @@ const entryNames = new Set([
   'Verify.ts',
   'Migrate.ts',
   'Seed.ts',
+  'Visual.ts',
+  'Journey.ts',
   'Launch.mjs',
 ]);
 const operationPattern = /^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){2,}$/;
@@ -58,9 +60,10 @@ function entrypoints(sources, packages) {
     if (parts[0] === 'apps' && parts[2] === 'pages' && ['.ts', '.tsx'].includes(path.extname(name))) {
       entries.add(source);
     }
-    if (parts.includes('miniprogram') && (parts.includes('page') || parts.includes('component') || parts.includes('custom-tab-bar'))) {
+    if (parts.includes('miniprogram') && (parts.includes('page') || parts.includes('component') || parts.includes('custom-tab-bar') || miniappComponentSource(source))) {
       entries.add(source);
     }
+    if (parts.includes('miniprogram') && name === 'app.ts') entries.add(source);
     if (parts[0] === 'apps' && parts.includes('feature') && (name === 'Manifest.ts' || name === 'index.ts')) entries.add(source);
   }
   for (const directory of packages.values()) {
@@ -82,6 +85,17 @@ function entrypoints(sources, packages) {
     }
   }
   return entries;
+}
+
+function miniappComponentSource(source) {
+  if (!['.ts', '.tsx', '.js', '.jsx'].includes(path.extname(source))) return false;
+  const descriptor = source.replace(/\.(?:[jt]sx?)$/, '.json');
+  if (!existsSync(descriptor)) return false;
+  try {
+    return JSON.parse(readFileSync(descriptor, 'utf8')).component === true;
+  } catch {
+    return false;
+  }
 }
 
 function scriptTargets(scripts) {
@@ -287,6 +301,8 @@ export function audit() {
     for (const reference of moduleReferences(sourceFile, packages)) {
       if (!reference.external && !reference.target) {
         values.push(violation('BROKEN_TEST_IMPORT', `${relative(test)}:${reference.line}`, reference.specifier));
+      } else if (!reference.external && reference.target) {
+        values.push(...bindingViolations(sourceFile, reference, reference.target, sourceFiles, packages, exportCache));
       }
     }
   }

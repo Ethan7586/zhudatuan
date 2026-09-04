@@ -11,6 +11,8 @@ export interface ClientErrorInput {
   readonly scope: TelemetryScope;
   readonly surface: string;
   readonly route: string;
+  readonly operation: string | null;
+  readonly release: string;
   readonly message: string;
   readonly stack: string | null;
   readonly componentStack: string | null;
@@ -42,23 +44,31 @@ export class ClientErrorBuffer implements ClientErrorTelemetry {
     private readonly writer: ClientErrorWriter,
     private readonly capacity = 2_000,
     private readonly retentionMs = 7 * 24 * 60 * 60 * 1_000,
-    private readonly now = () => Date.now()
+    private readonly now = () => Date.now(),
+    private readonly sampleRate = 1
   ) {
-    if (!Number.isSafeInteger(capacity) || capacity < 1 || retentionMs < 1) throw new Error('TELEMETRY_BUFFER_CONFIG_INVALID');
+    if (!Number.isSafeInteger(capacity) || capacity < 1 || retentionMs < 1 || !Number.isFinite(sampleRate) || sampleRate < 0 || sampleRate > 1) throw new Error('TELEMETRY_BUFFER_CONFIG_INVALID');
   }
 
   record(input: ClientErrorInput): ClientErrorRecord {
     const timestamp = this.now();
     this.prune(timestamp);
     const safe = this.redactor.redact(input) as ClientErrorInput;
-    const fingerprint = fingerprintOf(`${safe.scope.id}\n${safe.surface}\n${safe.route}\n${safe.message}\n${safe.stack ?? ''}`);
+    const fingerprint = fingerprintOf(`${safe.scope.id}\n${safe.surface}\n${safe.release}\n${safe.route}\n${safe.operation ?? ''}\n${safe.message}\n${safe.stack ?? ''}`);
     const current = this.records.get(fingerprint);
     const observedAt = new Date(timestamp).toISOString();
     const record = Object.freeze({ ...safe, fingerprint, faultCode: faultCode(fingerprint), occurrences: (current?.occurrences ?? 0) + 1, firstSeenAt: current?.firstSeenAt ?? observedAt, lastSeenAt: observedAt });
     this.records.delete(fingerprint);
     this.records.set(fingerprint, record);
     this.trim();
-    void this.writer(Object.freeze({ kind: 'clienterror', event: 'client.error', ...record }));
+    if (sampled(fingerprint, this.sampleRate) && aggregateBoundary(record.occurrences)) {
+      const { message, stack, componentStack, ...attributes } = record;
+      void this.writer(Object.freeze({
+        kind: 'clienterror', event: 'client.error', sampleRate: this.sampleRate, ...attributes,
+        detailReference: `clienterror:${fingerprint}`,
+        detail: Object.freeze({ message, stack, componentStack }),
+      }));
+    }
     return record;
   }
 
@@ -84,6 +94,16 @@ export class ClientErrorBuffer implements ClientErrorTelemetry {
       this.records.delete(oldest);
     }
   }
+}
+
+function aggregateBoundary(occurrences: number): boolean {
+  return (occurrences & (occurrences - 1)) === 0;
+}
+
+function sampled(fingerprint: string, rate: number): boolean {
+  if (rate === 1) return true;
+  if (rate === 0) return false;
+  return Number.parseInt(fingerprint.slice(0, 8), 16) / 0x1_0000_0000 < rate;
 }
 
 function contains(grant: TelemetryScope, resource: TelemetryScope): boolean {

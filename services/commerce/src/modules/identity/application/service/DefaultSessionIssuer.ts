@@ -8,6 +8,7 @@ import type { IdentityAccessPort } from '../../../access/public';
 import { Session } from '../../domain/model/Session';
 import type { SessionRepository } from '../port/SessionRepository';
 import { DomainError } from '../../../../foundation/domain/DomainError';
+import { RefreshTokenFamily } from '../../domain/model/RefreshTokenFamily';
 
 export class DefaultSessionIssuer implements SessionIssuer {
   constructor(
@@ -36,7 +37,12 @@ export class DefaultSessionIssuer implements SessionIssuer {
       assurance,
       expiresAt: new Date(now.getTime() + this.policy.ttlSeconds * 1000),
     });
-    await this.repository.create(context, { session, tokenHash: hash(token), ipHash: this.digest(value.peer), userAgent: value.agent.slice(0, 512), deviceLabel: value.device.slice(0, 128), trace: value.trace });
+    const tokenFamily = new RefreshTokenFamily({
+      id: `tokenfamily:${randomUUID()}`,
+      session: session.id,
+      current: { id: `refreshtoken:${randomUUID()}`, hash: hash(token), sequence: 0, issuedAt: now },
+    });
+    await this.repository.create(context, { session, tokenFamily, ipHash: this.digest(value.peer), userAgent: value.agent.slice(0, 512), deviceLabel: value.device.slice(0, 128), trace: value.trace });
     const expiresin = session.ttlSeconds(now);
     const csrf = this.csrf.issue(token, session.target, expiresin);
     return Object.freeze({ session: session.id, membership: session.membership, target: session.target, expiresin, headers: this.cookies.session(session.target, token, csrf, expiresin) });

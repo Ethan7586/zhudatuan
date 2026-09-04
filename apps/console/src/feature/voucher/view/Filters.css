@@ -1,0 +1,101 @@
+.voucherfacets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  border-top: 1px solid var(--sw-border);
+  border-bottom: 1px solid var(--sw-border);
+  padding: 10px 14px;
+}
+
+.voucherfacets > strong,
+.voucherfacets > small {
+  color: var(--sw-muted);
+  font-size: 10px;
+}
+
+.voucherfacets > small {
+  margin-left: auto;
+}
+
+.voucherfacets button {
+  min-height: 28px;
+  border: 1px solid var(--sw-border);
+  border-radius: 999px;
+  background: var(--sw-surface);
+  padding: 0 10px;
+  color: var(--sw-muted);
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.voucherfacets button[aria-pressed='true'] {
+  border-color: var(--sw-brand);
+  background: var(--sw-brand-light);
+  color: var(--sw-brand);
+  font-weight: 750;
+}
+
+.voucherfacets button span {
+  margin-left: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.voucherexact {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 320px) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 11px;
+  background: var(--sw-surface-subtle);
+  padding: 11px 13px;
+}
+
+.voucherexact > div {
+  display: grid;
+  gap: 2px;
+}
+
+.voucherexact > div strong {
+  color: var(--sw-brand-ink);
+  font-size: 11px;
+}
+
+.voucherexact > div span,
+.voucherexact > p {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: 9px;
+}
+
+.voucherexact > input {
+  min-height: 36px;
+  border: 1px solid var(--sw-border);
+  border-radius: 9px;
+  background: var(--sw-surface);
+  padding: 0 11px;
+  color: var(--sw-brand-ink);
+}
+
+.voucherexactresult {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 3px;
+  border: 1px solid var(--sw-success);
+  border-radius: 9px;
+  background: var(--sw-success-surface);
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.voucherexactresult strong {
+  color: var(--sw-success-strong);
+}
+
+.voucherexactresult span {
+  color: var(--sw-muted);
+  font-size: 10px;
+}

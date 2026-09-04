@@ -1,4 +1,5 @@
 import { HttpClient } from '../../../../foundation/http/HttpClient';
+import { invalidExternalResponse, readExternalJson } from '../../../../foundation/http/ExternalResponse';
 import type { PayoutGateway as PayoutPort, PayoutInput, PayoutResult } from '../../application/port/PayoutGateway';
 
 export interface PayoutConfiguration {
@@ -19,6 +20,7 @@ export class PayoutGateway implements PayoutPort {
   }
 
   async submit(input: PayoutInput): Promise<PayoutResult> {
+    if (!/^[a-f0-9]{64}$/.test(input.inputHash)) throw new Error('PAYOUT_INPUT_HASH_INVALID');
     const response = await this.http.send(
       `${this.configuration.endpoint.replace(/\/$/, '')}/v1/payouts`,
       {
@@ -29,15 +31,15 @@ export class PayoutGateway implements PayoutPort {
           authorization: `Bearer ${this.configuration.bearer}`,
           'content-type': 'application/json',
           'idempotency-key': input.withdrawal,
+          'x-input-hash': input.inputHash,
         },
         body: JSON.stringify(input),
       },
       { mode: 'businesskeywrite' }
     );
-    if (!response.ok) throw new Error('PAYOUT_PROVIDER_UNAVAILABLE');
-    const value = (await response.json()) as Readonly<{ reference?: unknown; state?: unknown; reason?: unknown }>;
+    const value = (await readExternalJson(response, 'PAYOUT_PROVIDER_UNAVAILABLE', 'PAYOUT_PROVIDER_RESPONSE_INVALID')) as Readonly<{ reference?: unknown; state?: unknown; reason?: unknown }>;
     if (typeof value.reference !== 'string' || !value.reference || !['processing', 'paid', 'failed'].includes(String(value.state)) || (value.reason !== undefined && typeof value.reason !== 'string'))
-      throw new Error('PAYOUT_PROVIDER_RESPONSE_INVALID');
-    return Object.freeze({ reference: value.reference, state: value.state as PayoutResult['state'], ...(value.reason === undefined ? {} : { reason: value.reason }) });
+      throw invalidExternalResponse('PAYOUT_PROVIDER_RESPONSE_INVALID');
+    return Object.freeze({ provider: this.configuration.provider, reference: value.reference, state: value.state as PayoutResult['state'], ...(value.reason === undefined ? {} : { reason: value.reason }) });
   }
 }

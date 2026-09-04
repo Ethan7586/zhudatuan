@@ -1,11 +1,12 @@
 import { array, boolean, literal, null as nullSchema, optional, record, strictObject, string, union } from 'zod/mini';
 import { ContractJsonValueSchema } from './JsonSchema';
 import { isoUtc, pageOutput, pageQuery, unsigned, version } from './Primitives';
+import { SUPPORT_ATTACHMENT_TYPES, SUPPORT_CHANNELS, SUPPORT_PRIORITIES, SUPPORT_STATES } from '../Vocabulary';
 
 const nullableText = union([string(), nullSchema()]);
-const priority = literal(['low', 'normal', 'high', 'urgent']);
-const state = literal(['open', 'assigned', 'waiting', 'resolved', 'closed']);
-const channel = literal(['inapp', 'wechat', 'email', 'sms']);
+const priority = literal(SUPPORT_PRIORITIES);
+const state = literal(SUPPORT_STATES);
+const channel = literal(SUPPORT_CHANNELS);
 const accountValidation = literal(['verified', 'notrequired', 'unverified']);
 const ticket = strictObject({
   id: string(),
@@ -37,8 +38,10 @@ const message = strictObject({
   id: string(),
   clientMessageId: string(),
   conversationId: string(),
-  authorType: literal(['member', 'agent']),
+  authorType: literal(['member', 'agent', 'system']),
   authorId: string(),
+  kind: literal(['text', 'attachment', 'system']),
+  visibility: literal(['external', 'internal']),
   body: string(),
   sequence: unsigned,
   version,
@@ -57,6 +60,8 @@ const visibleEvidence = strictObject({
   contentType: string(),
   sizeBytes: unsigned,
   state: literal(['pending', 'clean', 'rejected']),
+  rejectionReason: nullableText,
+  recoveryAction: nullableText,
   download: optional(strictObject({ url: string(), expiresAt: isoUtc })),
   createdAt: isoUtc,
 });
@@ -73,8 +78,8 @@ const account = strictObject({ id: string(), scope_id: string(), provider: chann
 const accountRead = strictObject({ id: string(), provider: channel, display_name: string(), state: literal(['active', 'disabled']), validation_state: accountValidation, validation_code: string(), validated_at: union([isoUtc, nullSchema()]), version });
 const rule = strictObject({ id: string(), scope_id: string(), name: string(), skill: string(), priorities: array(priority), weight: unsigned, state: literal(['active', 'disabled']), version, created_at: isoUtc, updated_at: isoUtc });
 const ruleRead = strictObject({ id: string(), name: string(), skill: string(), priorities: array(priority), weight: unsigned, state: literal(['active', 'disabled']), version, updated_at: isoUtc });
-const sla = strictObject({ id: string(), scope_id: string(), priority, response_seconds: unsigned, resolution_seconds: unsigned, version });
-const slaRead = strictObject({ id: string(), priority, response_seconds: unsigned, resolution_seconds: unsigned, version });
+const sla = strictObject({ id: string(), scope_id: string(), priority, response_seconds: unsigned, resolution_seconds: unsigned, reopen_seconds: unsigned, version });
+const slaRead = strictObject({ id: string(), priority, response_seconds: unsigned, resolution_seconds: unsigned, reopen_seconds: unsigned, version });
 const history = strictObject({ sequence: unsigned, cursor_id: string(), kind: string(), actor_id: string(), evidence: ContractJsonValueSchema, occurred_at: isoUtc });
 const supportEvent = strictObject({
   id: string(),
@@ -103,13 +108,13 @@ export const SUPPORT_BODY_SCHEMAS = {
   SupportCasesUpdateInput: strictObject({ subject: optional(string()), priority: optional(priority), state: optional(state) }),
   SupportCasesCloseInput: strictObject({}),
   SupportCasesReopenInput: strictObject({}),
-  SupportMessagesSendInput: strictObject({ message: string(), clientMessageId: string(), attachmentIds: optional(array(string())) }),
-  SupportAttachmentsCreateInput: strictObject({ name: string(), contentType: literal(['image/jpeg', 'image/png', 'application/pdf', 'text/plain']), sizeBytes: unsigned, sha256: string() }),
+  SupportMessagesSendInput: strictObject({ message: optional(string()), clientMessageId: string(), attachmentIds: optional(array(string())), visibility: optional(literal(['external', 'internal'])) }),
+  SupportAttachmentsCreateInput: strictObject({ name: string(), contentType: literal(SUPPORT_ATTACHMENT_TYPES), sizeBytes: unsigned, sha256: string() }),
   SupportAssignmentsManageInput: strictObject({ case: string(), agent: string(), reason: string() }),
   SupportAgentsManageInput: strictObject({ membership: string(), skills: array(string()), capacity: unsigned, state: literal(['offline', 'available', 'busy', 'disabled']) }),
   SupportAccountsManageInput: strictObject({ provider: channel, displayName: string(), secretRef: optional(nullableText), state: optional(literal(['active', 'disabled'])) }),
   SupportRulesManageInput: strictObject({ name: string(), skill: string(), priorities: array(priority), weight: unsigned, state: literal(['active', 'disabled']) }),
-  SupportSlasManageInput: strictObject({ priority, responseSeconds: unsigned, resolutionSeconds: unsigned }),
+  SupportSlasManageInput: strictObject({ priority, responseSeconds: unsigned, resolutionSeconds: unsigned, reopenSeconds: unsigned }),
   SupportReadstatesManageInput: strictObject({ lastSequence: unsigned }),
 } as const;
 export const SUPPORT_QUERY_SCHEMAS = {
@@ -121,6 +126,7 @@ export const SUPPORT_QUERY_SCHEMAS = {
     agentId: optional(string()),
     skill: optional(string()),
     unread: optional(union([boolean(), literal(['true', 'false'])])),
+    orderId: optional(string()),
     keyword: optional(string()),
     updatedAfter: optional(string()),
     updatedBefore: optional(string()),

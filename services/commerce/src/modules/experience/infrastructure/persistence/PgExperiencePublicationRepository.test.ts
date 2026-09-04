@@ -6,9 +6,17 @@ import { PgExperiencePublicationRepository } from './PgExperiencePublicationRepo
 const context = {} as WriteTransactionContext;
 const target = Object.freeze({
   application: 'application:one',
-  configuration: {},
+  configuration: Object.freeze({
+    version: 2 as const,
+    application: 'application:one',
+    theme: Object.freeze({ preset: 'shop' as const, primaryColor: '#1F5EFF', accentColor: '#19A974', logoObjectRef: null, faviconObjectRef: null }),
+    navigation: Object.freeze([{ id: 'navigation:home', label: '首页', page: 'home' }]),
+    assets: Object.freeze([]),
+    pages: Object.freeze([{ id: 'home', path: 'home', blocks: Object.freeze([]) }]),
+  }),
   effectiveAt: '2026-09-01T00:00:00.000Z',
   hash: 'a'.repeat(64),
+  pool: 'pool:one',
   release: 'release:new',
   state: 'scheduled',
   version: 'version:new',
@@ -18,10 +26,40 @@ function database(): SqlExecutor {
   return {
     query: vi.fn(async (sql: string) => {
       if (sql.includes('from runtime.inbox inbox join runtime.outbox')) {
-        return result([{ id: 'event:one', type: 'experience.published', version: 1, aggregate: target.application, scope: 'mall:one', payload: {}, occurredAt: target.effectiveAt }]);
+        return result([{ id: 'event:one', type: 'experience.release.requested', version: 1, aggregate: target.application, scope: 'mall:one', payload: {}, occurredAt: target.effectiveAt }]);
       }
-      if (sql.includes('superseded')) return result([{ superseded: false }]);
-      if (sql.includes('select mall_id')) return result([{ mall_id: 'mall:one', public_slug: 'mall-one' }]);
+      if (sql.includes('superseded'))
+        return result([
+          {
+            superseded: false,
+            id: target.release,
+            application_id: target.application,
+            version_id: target.version,
+            pool_id: target.pool,
+            state: target.state,
+            effective_at: target.effectiveAt,
+            retired_at: null,
+            failed_at: null,
+            failure_code: null,
+            published_by: 'actor:publisher',
+          },
+        ]);
+      if (sql.includes('select id,mall_id'))
+        return result([
+          {
+            id: target.application,
+            mall_id: 'mall:one',
+            code: 'MALLONE',
+            public_slug: 'mall-one',
+            name: '一号商城',
+            status: 'active',
+            is_primary: true,
+            head_version_id: target.version,
+            version: 2,
+            created_at: target.effectiveAt,
+            updated_at: target.effectiveAt,
+          },
+        ]);
       if (sql.includes('update runtime.inbox')) return result([], 1);
       return result([]);
     }),

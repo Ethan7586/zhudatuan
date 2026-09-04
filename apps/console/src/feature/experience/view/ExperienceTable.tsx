@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { chineseReference } from '@shop/presentation';
 import { DataTable, type DataColumn } from '@shop/design';
 import { formatDate } from '../../../shared/ui/Format';
-import { applicationStatusLabel, applicationStatusTone, entryLabel, entryTone, publicationLabel } from './ExperiencePresentation';
+import { applicationStatusLabel, applicationStatusTone, domainLabel, domainTone, publicationLabel, themeLabel } from './ExperiencePresentation';
 import type { Experience } from '../model/Experience';
 import type { CommerceWorkspaceMode } from '../model/ExperienceScope';
 
@@ -49,13 +49,13 @@ function applicationColumns(
       ),
     },
     {
-      key: 'entry',
-      label: '商城码',
+      key: 'theme',
+      label: '主题 / 商城',
       render: (row) => (
-        <button data-entry-trigger={`${row.id}:badge`} className={`commerceentrybadge is-${entryTone(row.entry.state)}`} type="button" onClick={() => onEntry(row, `${row.id}:badge`)}>
-          <i aria-hidden="true" />
-          {entryLabel(row.entry.state)}
-        </button>
+        <div className="commercebinding">
+          <strong>{themeLabel(row.theme)}</strong>
+          <span>{row.mallName ?? chineseReference('商城', row.mallId)}</span>
+        </div>
       ),
     },
     {
@@ -69,7 +69,20 @@ function applicationColumns(
       ),
     },
     {
-      key: 'status',
+      key: 'publication',
+      label: '发布 / 域名健康',
+      render: (row) => (
+        <div className="commercepublication">
+          <strong>{publicationLabel(row)}</strong>
+          <span className={`commercestate is-${domainTone(row.domain)}`}>
+            <i aria-hidden="true" />
+            {domainLabel(row.domain)}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'operation',
       label: '经营状态',
       render: (row) => (
         <span className={`commercestate is-${applicationStatusTone(row.status)}`}>

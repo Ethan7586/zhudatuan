@@ -86,7 +86,7 @@ function ReconciliationRow({
         </td>
       ) : null}
       {visible.has('scope') ? <td>{chineseReference('合作方', row.partnerId)}</td> : null}
-      {visible.has('matched') ? <td>{count(row.itemCounts.matched)}</td> : null}
+      {visible.has('matched') ? <td><span className="financecellpair"><strong>{count(row.itemCounts.matched)}</strong><small>{row.statementHash ? '账单校验完成' : '等待账单校验'}</small></span></td> : null}
       {visible.has('differences') ? <td>{count(row.itemCounts.difference, true)}</td> : null}
       {visible.has('channelAmount') ? <td className="financemoney">{formatMinor(row.debitMinor)}</td> : null}
       {visible.has('ledgerAmount') ? <td className="financemoney">{formatMinor(row.creditMinor)}</td> : null}
@@ -99,8 +99,19 @@ function ReconciliationRow({
       {visible.has('time') ? <td>{formatTime(row.updatedAt)}</td> : null}
       <td>
         {canOpen ? (
-          <button className="financeviewbutton" type="button" onClick={(event) => { event.stopPropagation(); onOpen(); }}>查看差异</button>
-        ) : <span className="financenodifference">无差异</span>}
+          <button
+            className="financeviewbutton"
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onOpen();
+            }}
+          >
+            查看差异
+          </button>
+        ) : (
+          <span className="financenodifference">无差异</span>
+        )}
       </td>
     </tr>
   );
@@ -141,9 +152,17 @@ export function FinancePagination({
         </select>
       </label>
       <div>
-        {hasCursor ? <button type="button" aria-label="返回第一页" onClick={() => onCursor()}><FinanceIcon name="arrowLeft" /></button> : null}
+        {hasCursor ? (
+          <button type="button" aria-label="返回第一页" onClick={() => onCursor()}>
+            <FinanceIcon name="arrowLeft" />
+          </button>
+        ) : null}
         <span>当前页</span>
-        {page.nextCursor === undefined ? null : <button type="button" aria-label="下一页" onClick={() => onCursor(page.nextCursor)}><FinanceIcon name="arrowRight" /></button>}
+        {page.nextCursor === undefined ? null : (
+          <button type="button" aria-label="下一页" onClick={() => onCursor(page.nextCursor)}>
+            <FinanceIcon name="arrowRight" />
+          </button>
+        )}
       </div>
     </footer>
   );

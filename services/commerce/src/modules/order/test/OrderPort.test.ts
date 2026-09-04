@@ -25,7 +25,9 @@ describe('OrderPort', () => {
         invoice: null,
         delivery: {},
         experienceVersion: 'version:one',
-        lines: [],
+        lines: [{ sku: 'sku:one', listing: 'listing:one', product: 'product:one', productType: 'physical', category: '福利', title: '礼品',
+          quantity: 1, unitMinor: 100, totalMinor: 100, discountMinor: 0, payableMinor: 100, provider: null, partner: null,
+          versions: { listing: 1, product: 1, sku: 1, price: 'price:one', stock: 1 }, accepted: true }],
       })
     );
 
@@ -34,6 +36,18 @@ describe('OrderPort', () => {
     expect(insert).not.toContain('received_at');
     expect(created.record).not.toHaveProperty('received_at');
     expect(created.record).not.toHaveProperty('receipt_event_id');
+  });
+
+  it('keeps a split order in progress until every line quantity is fulfilled', async () => {
+    const queries: string[] = [];
+    const query = vi.fn(async (sql: string) => {
+      queries.push(sql);
+      return result([{ id: 'order:one' }]);
+    });
+    await withWriteTransaction(query, (context) => new OrderPort().completeFulfillment(context, 'order:one', [{ line: 'line:digital', quantity: 1 }]));
+    const aggregate = queries.find((sql) => sql.includes('update ordering.orderrecord')) ?? '';
+    expect(aggregate).toContain("then 'processing' else 'delivered'");
+    expect(aggregate).toContain('fulfilled_quantity<quantity');
   });
 });
 

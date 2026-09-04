@@ -1,2 +1,1 @@
-export { useCartCommand } from '../viewmodel/CartCommandViewModel';
-export { useCartViewModel } from './CartReader';
+export type { CartChange, CartPort } from './CartPort';

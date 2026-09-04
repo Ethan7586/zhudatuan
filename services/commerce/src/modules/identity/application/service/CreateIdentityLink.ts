@@ -1,12 +1,12 @@
 import { identityLifecycle as operationLifecycle, type IdentityLifecycle as OperationLifecycle } from '../model/IdentityAction';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
-import type { FederationService, LoadedFederationStart, PreparedFederationStart } from '../service/FederationService';
+import type { FederateIdentity, LoadedFederationStart, PreparedFederationStart } from '../service/FederateIdentity';
 import { provider, requestContext } from './StartFederation';
 export class CreateIdentityLink {
-  constructor(private readonly federation: FederationService) {}
+  constructor(private readonly federation: FederateIdentity) {}
   lifecycle(): OperationLifecycle<PreparedFederationStart, LoadedFederationStart> {
     return operationLifecycle({
       load: (request, database) => this.federation.loadStart(database, provider(request)),

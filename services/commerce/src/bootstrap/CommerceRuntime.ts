@@ -1,6 +1,6 @@
 import { SystemClock } from '@shop/kernel';
 import type { Telemetry } from '@shop/telemetry';
-import { apiReturnTargets, apiStorefrontOrigin, WechatApplicationCatalog, type ApiEnvironment, type JobsEnvironment } from '@shop/config/server';
+import { apiReturnTargets, apiStorefrontOrigin, type ApiEnvironment, type JobsEnvironment } from '@shop/config/server';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
 import { CSRF_PROTECTOR, CsrfProtector } from '../foundation/security/CsrfProtector';
 import { PgSessionResolver } from '../foundation/security/PgSessionResolver';
@@ -12,25 +12,26 @@ import { createPool, type DatabasePool } from '../foundation/persistence/Pool';
 import { IDENTITY_SECURITY_KEYS, INVITATION_KEY_VERSIONS, NAVIGATION_SECURITY_KEY, secretText, SECURITY_KEYS, SECRET_STORE, WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 import { DATABASE_POOL } from '../foundation/persistence/Pool';
 import { QUERY_METRICS, QueryMetrics } from '../foundation/persistence/QueryMetrics';
-import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
+import { KMS_CLIENT } from '../foundation/application/KmsPort';
+import { HttpKmsClient } from '../foundation/infrastructure/KmsClient';
 import { COMMERCE_MODULES } from '../app/modules';
 import { EXTENSION_REGISTRY, ExtensionRegistry } from './ExtensionRegistry';
 import { MANIFEST_VERIFIER, SignatureVerifier } from './SignatureVerifier';
-import { providerCatalogLoader } from './ProviderLoader';
+import { extensionCatalog } from '../modules/extension/infrastructure/loader/ExtensionBootstrap';
 import type { Container } from './Container';
 import { PgDecisionSink } from '../modules/access/infrastructure/persistence/PgDecisionSink';
 import { PgSessionSecurity } from '../modules/identity/infrastructure/persistence/PgSessionSecurity';
 import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/RiskCheckAdapter';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { PAYMENT_GATEWAY } from '../modules/payment/application/port/PaymentGateway';
-import { WechatGateway } from '../modules/payment/infrastructure/adapter/WechatGateway';
+import { WechatPaymentFactory } from '@shop/wechatpayment';
 import { DELIVERY_REGISTRY, DeliveryRegistry } from '../modules/notification/infrastructure/registry/DeliveryRegistry';
 import { SmsFactory } from '@shop/notificationsms';
 import { InappFactory } from '@shop/notificationinapp';
-import { EmailChannel } from '../modules/notification/infrastructure/adapter/EmailChannel';
-import { WechatChannel } from '../modules/notification/infrastructure/adapter/WechatChannel';
-import { parseDeliveryConfiguration } from '../modules/notification/infrastructure/adapter/DeliveryConfiguration';
-import { HttpObjectStore, OBJECT_STORE } from '../foundation/infrastructure/ObjectStore';
+import { EmailFactory } from '@shop/notificationemail';
+import { WechatFactory } from '@shop/notificationwechat';
+import { OBJECT_STORE } from '../modules/runtime/public/ObjectPort';
+import { HttpObjectStore } from '../modules/runtime/infrastructure/storage/ObjectStore';
 import { INVOICE_ISSUER } from '../modules/finance/application/port/InvoiceIssuer';
 import { InvoiceGateway, type InvoiceConfiguration } from '../modules/finance/infrastructure/adapter/InvoiceGateway';
 import { PAYOUT_GATEWAY } from '../modules/finance/application/port/PayoutGateway';
@@ -43,11 +44,10 @@ import { RETURN_TARGETS } from '../modules/identity/infrastructure/security/Retu
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { RecordAudit } from '../modules/audit/application/service/RecordAudit';
 import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
-import { AUDIT_PORT } from '../modules/audit/application/port/AuditPort';
+import { AUDIT_REPOSITORY } from '../modules/audit/application/port/AuditRepository';
 import { EXTENSION_LOADER } from '../modules/extension/application/port/ExtensionLoader';
-import { commerceTelemetry, TELEMETRY } from '../foundation/telemetry/Telemetry';
+import { commerceTelemetry, OBSERVATIONS, TELEMETRY } from '../foundation/telemetry/Telemetry';
 import { DependencyMetrics } from '../foundation/telemetry/DependencyMetrics';
-import type { WechatPayConfigSource } from '@shop/wechatpayment';
 import { Singleflight } from '../foundation/performance/Singleflight';
 import { NAVIGATION_CLOCK } from '../modules/navigation/application/port/NavigationClock';
 import { PgPreauthResolver } from '../modules/identity/infrastructure/security/PgPreauthResolver';
@@ -58,6 +58,10 @@ import { InvitationHasher } from '../modules/identity/infrastructure/security/In
 import { PgTransactionManager } from '../adapter/database/PgTransactionManager';
 import { NETWORK_CATALOG } from '@shop/config/networkcatalog';
 import { STOREFRONT_CONFIG } from '../modules/experience/application/port/StorefrontConfig';
+import { LOG_SINK } from '../modules/observability/application/port/LogSink';
+import { METRIC_SINK } from '../modules/observability/application/port/MetricSink';
+import { TRACE_SINK } from '../modules/observability/application/port/TraceSink';
+import { TelemetryLogSink, TelemetryMetricSink, TelemetryTraceSink } from '../modules/observability/infrastructure/adapter/TelemetrySinks';
 
 export interface CommerceRuntime {
   readonly pool: DatabasePool;
@@ -106,23 +110,27 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
       : null;
   const returnTargets = workload === 'api' ? apiReturnTargets(environment as ApiEnvironment) : null;
   const storefrontOrigin = workload === 'api' ? apiStorefrontOrigin(environment as ApiEnvironment) : null;
-  const kms = environment.KMS_ENDPOINT ? new KmsClient(environment.KMS_ENDPOINT, required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING')) : null;
+  const kms = environment.KMS_ENDPOINT ? new HttpKmsClient(environment.KMS_ENDPOINT, required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING')) : null;
   const [applicationSource, paymentSource] = await Promise.all([
     resolveSecret(required(environment.WECHAT_APPLICATION_CONFIG_REF, 'WECHAT_APPLICATION_CONFIG_REF_MISSING'), 'providerconfig'),
     resolveSecret(required(environment.WECHAT_PAYMENT_CONFIG_REF, 'WECHAT_PAYMENT_CONFIG_REF_MISSING'), 'providerconfig'),
   ]);
-  const applications = WechatApplicationCatalog.parse(parseSecret(applicationSource, 'WECHAT_APPLICATION_CONFIG_INVALID'));
-  const payment = new WechatGateway(applications, parseSecret(paymentSource, 'WECHAT_PAYMENT_CONFIG_INVALID') as unknown as WechatPayConfigSource);
+  const payment = WechatPaymentFactory.create(
+    parseSecret(applicationSource, 'WECHAT_APPLICATION_CONFIG_INVALID'),
+    parseSecret(paymentSource, 'WECHAT_PAYMENT_CONFIG_INVALID')
+  );
   const invoices = 'INVOICE_CONFIG_REF' in environment && environment.INVOICE_CONFIG_REF ? new InvoiceGateway(JSON.parse(await secretText(secrets, environment.INVOICE_CONFIG_REF, 'finance')) as InvoiceConfiguration) : null;
   const payouts = 'PAYOUT_CONFIG_REF' in environment && environment.PAYOUT_CONFIG_REF ? new PayoutGateway(JSON.parse(await secretText(secrets, environment.PAYOUT_CONFIG_REF, 'finance')) as PayoutConfiguration) : null;
-  const deliveryConfiguration = 'NOTIFICATION_CONFIG_REF' in environment && environment.NOTIFICATION_CONFIG_REF ? parseDeliveryConfiguration(await secretText(secrets, environment.NOTIFICATION_CONFIG_REF, 'notification')) : null;
+  const deliveryConfiguration = 'NOTIFICATION_CONFIG_REF' in environment && environment.NOTIFICATION_CONFIG_REF
+    ? notificationConfiguration(await secretText(secrets, environment.NOTIFICATION_CONFIG_REF, 'notification')) : null;
   const deliveries = deliveryConfiguration
-    ? new DeliveryRegistry([InappFactory.create(), await SmsFactory.create(deliveryConfiguration.sms, secrets), new EmailChannel(deliveryConfiguration.email), new WechatChannel(deliveryConfiguration.wechat)])
+    ? new DeliveryRegistry([InappFactory.create(), await SmsFactory.create(deliveryConfiguration.sms, secrets),
+        await EmailFactory.create(deliveryConfiguration.email, secrets), await WechatFactory.create(deliveryConfiguration.wechat, secrets)])
     : null;
   const objects = environment.OBJECT_STORE_ENDPOINT && environment.OBJECT_STORE_TOKEN_REF ? new HttpObjectStore(environment.OBJECT_STORE_ENDPOINT, await secretText(secrets, environment.OBJECT_STORE_TOKEN_REF, 'objectstore')) : null;
   const verifier = new SignatureVerifier(manifestKey);
   const extensions = new ExtensionRegistry(verifier);
-  const extensionLoader = workload === 'api' ? providerCatalogLoader() : null;
+  const extensionLoader = workload === 'api' ? extensionCatalog() : null;
   const risk = new RiskCheckAdapter(pool);
   const transactions = new PgTransactionManager(pool);
   const decisions = workload === 'api' ? new PgDecisionSink(transactions, new PgSessionSecurity()) : null;
@@ -155,11 +163,15 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
       container.bind(DATABASE_POOL, pool);
       container.bind(QUERY_METRICS, queryMetrics);
       container.bind(TELEMETRY, telemetry);
+      container.bind(OBSERVATIONS, telemetry.observations);
+      container.bind(METRIC_SINK, new TelemetryMetricSink(telemetry));
+      container.bind(TRACE_SINK, new TelemetryTraceSink(telemetry));
+      container.bind(LOG_SINK, new TelemetryLogSink(telemetry));
       container.bind(CACHE, cache);
       container.bind(EVENT_STREAM, streams);
       container.bind(RISK_GATE, risk);
       container.bind(AUDIT_SINK, audit);
-      container.bind(AUDIT_PORT, auditRepository);
+      container.bind(AUDIT_REPOSITORY, auditRepository);
       container.bind(MANIFEST_VERIFIER, verifier);
       if (extensionLoader !== null) container.bind(EXTENSION_LOADER, extensionLoader);
       container.bind(EXTENSION_REGISTRY, extensions);
@@ -209,4 +221,10 @@ function parseSecret(value: string, code: string): Record<string, unknown> {
   }
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error(code);
   return parsed as Record<string, unknown>;
+}
+
+function notificationConfiguration(value: string): Readonly<{ sms: unknown; email: unknown; wechat: unknown }> {
+  const source = parseSecret(value, 'DELIVERY_CONFIGURATION_INVALID');
+  if (Object.keys(source).sort().join(',') !== 'email,sms,wechat') throw new Error('DELIVERY_CONFIGURATION_INVALID');
+  return Object.freeze({ sms: source.sms, email: source.email, wechat: source.wechat });
 }

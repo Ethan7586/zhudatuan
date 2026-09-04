@@ -1,10 +1,12 @@
 import type { OrderListFilter } from './OrderFilter';
+import type { OrderReturn } from './Order';
+import type { OperationOutputFor } from '@shop/contract';
 
 export interface AfterSaleQuery extends OrderListFilter {
   readonly cursor?: string;
 }
 
-export type AfterSaleState = 'applied' | 'reviewing' | 'approved' | 'returning' | 'received' | 'refunding' | 'resolved' | 'rejected';
+export type AfterSaleState = OperationOutputFor<'order.aftersales.read'>['items'][number]['state'];
 
 export interface AfterSaleLine {
   readonly lineId: string;
@@ -50,6 +52,7 @@ export interface AfterSaleTimelineEntry {
 export interface AfterSaleRecord {
   readonly id: string;
   readonly orderId: string;
+  readonly orderNumber: string;
   readonly state: AfterSaleState;
   readonly reasonCode: string;
   readonly description: string;
@@ -65,6 +68,7 @@ export interface AfterSaleRecord {
   readonly lines: readonly AfterSaleLine[];
   readonly attachments: readonly AfterSaleAttachment[];
   readonly timeline: readonly AfterSaleTimelineEntry[];
+  readonly returns: readonly OrderReturn[];
 }
 
 export interface AfterSalePage {

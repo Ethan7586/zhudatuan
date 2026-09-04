@@ -2,7 +2,7 @@ import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import { keysetPage, queryPage } from '../../../../foundation/interface/Validation';
+import { keysetPage, queryPage } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { ReferralRepository } from '../port/ReferralRepository';
 import type { WithdrawalRepository } from '../port/WithdrawalRepository';

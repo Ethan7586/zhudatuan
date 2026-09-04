@@ -1,5 +1,5 @@
 import { Button } from '@shop/design';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Account, AccountChange } from '../model/SupportConfig';
 
 type Body = AccountChange;
@@ -21,7 +21,7 @@ export function AccountSettings({
   const [displayName, setDisplayName] = useState(row?.displayName ?? '');
   const [secretRef, setSecretRef] = useState('');
   const [state, setState] = useState<Body['state']>(row?.state ?? 'active');
-  const edit = (value: string) => {
+  const edit = useCallback((value: string) => {
     const found = rows.find((item) => item.id === value);
     setId(value);
     if (!found) return;
@@ -29,7 +29,7 @@ export function AccountSettings({
     setDisplayName(found.displayName);
     setSecretRef('');
     setState(found.state);
-  };
+  }, [rows]);
   const create = () => {
     setId(nextId());
     setProvider('inapp');
@@ -39,7 +39,7 @@ export function AccountSettings({
   };
   useEffect(() => {
     if (!row && rows[0] && displayName === '' && secretRef === '') edit(rows[0].id);
-  }, [rows]);
+  }, [displayName, edit, row, rows, secretRef]);
   const secretRequired = provider !== 'inapp' && !row;
   return (
     <section className="supportsettingsection">
@@ -48,11 +48,11 @@ export function AccountSettings({
           <h2>渠道账号</h2>
           <p>密钥只保存到安全密钥库；保存前会先验证连接，列表永不读取或返回真实密钥。</p>
         </div>
-        <Button onPress={create}>新增账号</Button>
+        <Button onPress={create} isDisabled={disabled}>新增账号</Button>
       </header>
       <label>
         选择账号
-        <select value={id} onChange={(event) => edit(event.target.value)}>
+        <select value={id} onChange={(event) => edit(event.target.value)} disabled={disabled}>
           {row ? null : <option value={id}>新账号</option>}
           {rows.map((item) => (
             <option key={item.id} value={item.id}>
@@ -72,6 +72,7 @@ export function AccountSettings({
           渠道
           <select
             value={provider}
+            disabled={disabled}
             onChange={(event) => {
               setProvider(event.target.value as Body['provider']);
               setSecretRef('');
@@ -85,17 +86,17 @@ export function AccountSettings({
         </label>
         <label>
           账号显示名称
-          <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} maxLength={120} />
+          <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} maxLength={120} disabled={disabled} />
         </label>
         {provider === 'inapp' ? null : (
           <label>
             密钥引用
-            <input type="password" value={secretRef} onChange={(event) => setSecretRef(event.target.value)} placeholder={row ? '留空则复用并重新验证现有密钥' : '填写安全密钥库中的引用地址'} autoComplete="off" />
+            <input type="password" value={secretRef} onChange={(event) => setSecretRef(event.target.value)} placeholder={row ? '留空则复用并重新验证现有密钥' : '填写安全密钥库中的引用地址'} autoComplete="off" disabled={disabled} />
           </label>
         )}
         <label>
           状态
-          <select value={state} onChange={(event) => setState(event.target.value as Body['state'])}>
+          <select value={state} onChange={(event) => setState(event.target.value as Body['state'])} disabled={disabled}>
             <option value="active">启用</option>
             <option value="disabled">禁用</option>
           </select>

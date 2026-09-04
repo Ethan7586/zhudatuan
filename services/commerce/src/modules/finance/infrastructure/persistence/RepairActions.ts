@@ -1,23 +1,28 @@
-import type { FinancePersistence } from './FinanceAction';
 import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { FinanceEntries } from './FinanceOperation';
 import { createHash } from 'node:crypto';
 
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { bodyRecord, keysetRows, queryPage } from '../../../../foundation/interface/Validation';
+import { bodyRecord, keysetRows, queryPage } from '../../../../foundation/application/Validation';
 import type { RepairRepository } from '../../application/port/RepairRepository';
 import type { RepairPolicy } from '../../domain/policy/RepairPolicy';
 import type { Clock } from '../../../../foundation/domain/Clock';
 import { financeEntries, positive, text } from './PolicyActions';
 import { DomainError } from '../../../../foundation/domain/DomainError';
+import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import { executionRequestHash } from '../../../../foundation/application/OperationHash';
+import type { RepairApproval } from '../../application/service/RepairApproval';
+import { repairAmount } from '../../domain/model/RepairProposal';
 
 export function repairOperations(
   dependencies: Readonly<{
     scopes(database: SqlExecutor, scopeId: string): Promise<readonly string[]>;
     repository(database: SqlExecutor): RepairRepository;
     policy: RepairPolicy;
+    approval: RepairApproval;
     clock: Clock;
   }>
-): Pick<FinancePersistence, 'repairsRead' | 'repairsPreview' | 'repairsSubmit' | 'repairsDecide' | 'repairsReverse'> {
+): FinanceEntries<'repairsRead' | 'repairsPreview' | 'repairsSubmit' | 'repairsDecide' | 'repairsReverse'> {
   return {
     repairsRead: async (request, database) => {
       const access = requireAccess(request);
@@ -29,6 +34,7 @@ export function repairOperations(
       const access = requireAccess(request);
       const body = bodyRecord(request.input);
       const statementId = text(body.statementId, 'statementId');
+      const sourceJournalId = text(body.sourceJournalId, 'sourceJournalId');
       const sourceHash = hash(body.sourceHash, 'sourceHash');
       const sourceVersion = positive(body.expectedVersion, 'expectedVersion');
       const entries = financeEntries(body.entries);
@@ -38,23 +44,48 @@ export function repairOperations(
       if (!statement) throw new DomainError('FINANCE_REPAIR_CONFLICT');
       if (statement.hash !== sourceHash) throw new DomainError('FINANCE_REPAIR_HASH_MISMATCH');
       if (statement.version !== sourceVersion) throw new DomainError('VERSION_CONFLICT');
-      const source = { scopeId: access.scope.id, statementId, sourceHash, sourceVersion, entries, differences: statement.differences, makerId: access.actor.id, reason } as const;
+      const sourceJournal = await repository.sourceJournal(access.scope.id, sourceJournalId, statement.periodStart, statement.periodEnd, statement.currency);
+      if (!sourceJournal) throw new DomainError('FINANCE_REPAIR_CONFLICT');
+      const source = {
+        scopeId: access.scope.id,
+        statementId,
+        sourceHash,
+        sourceVersion,
+        sourceJournalId,
+        sourceJournalHash: sourceJournal.hash,
+        sourceJournalDebitMinor: sourceJournal.debitMinor,
+        entries,
+        differences: statement.differences,
+        makerId: access.membership.id,
+        reason,
+      } as const;
       const preview = dependencies.policy.preview(source, dependencies.clock.now());
       if (!preview.balanced) throw new DomainError('FINANCE_JOURNAL_UNBALANCED');
-      await repository.savePreview({ tokenHash: digest(preview.previewToken), ...source, previewHash: preview.previewHash, expiresAt: preview.expiresAt });
       const now = dependencies.clock.now().toISOString();
       const repair = {
         id: `reconciliationrepair:${digest(preview.previewHash)}`,
         statementId,
         status: 'draft',
         sourceHash,
+        sourceJournalId,
+        sourceJournalHash: sourceJournal.hash,
         previewHash: preview.previewHash,
         differences: statement.differences,
         entries,
-        makerId: access.actor.id,
+        makerId: access.membership.id,
         checkerId: null,
+        approvalInstanceId: null,
+        approvalAmountMinor: null,
+        sourceReversalJournalId: null,
+        replacementJournalId: null,
+        rollbackJournalId: null,
         reason,
-        version: sourceVersion,
+        decisionReason: null,
+        reverseReason: null,
+        reversedBy: null,
+        decidedAt: null,
+        reversedAt: null,
+        version: 1,
         createdAt: now,
         updatedAt: now,
       } as const;
@@ -63,14 +94,14 @@ export function repairOperations(
     repairsSubmit: async (request, database) => {
       const access = requireAccess(request);
       const body = bodyRecord(request.input);
-      const previewToken = text(body.previewToken, 'previewToken');
+      const previewToken = token(body.previewToken);
       const previewHash = hash(body.previewHash, 'previewHash');
       const sourceVersion = positive(body.expectedVersion, 'expectedVersion');
-      const reason = text(body.reason, 'reason');
-      const claims = dependencies.policy.verify(previewToken, { scopeId: access.scope.id, previewHash, makerId: access.actor.id }, dependencies.clock.now());
+      const claims = dependencies.policy.verify(previewToken, { scopeId: access.scope.id, previewHash, makerId: access.membership.id }, dependencies.clock.now());
       if (claims.sourceVersion !== sourceVersion) throw new DomainError('VERSION_CONFLICT');
       const id = `reconciliationrepair:${digest(`${claims.statementId}:${previewHash}`)}`;
-      const result = await dependencies.repository(database).submit({ id, tokenHash: digest(previewToken), scopeId: access.scope.id, makerId: access.actor.id, previewHash, sourceVersion, reason });
+      const receipt = await dependencies.approval.request(requireWriteTransaction(request.transaction), id, previewHash, claims);
+      const result = await dependencies.repository(database).submit({ id, previewHash, approvalInstanceId: receipt.instanceId, approvalAmountMinor: repairAmount(claims), proposal: claims });
       if (!result) throw new DomainError('FINANCE_REPAIR_CONFLICT');
       return recordResult(result, 201);
     },
@@ -79,9 +110,20 @@ export function repairOperations(
       const body = bodyRecord(request.input);
       const decision = body.decision === 'approve' ? 'approved' : body.decision === 'reject' ? 'rejected' : null;
       if (!decision) throw new DomainError('VALIDATION_FAILED', { field: 'decision' });
-      const result = await dependencies
-        .repository(database)
-        .decide({ id: request.input.path.repairid!, scopeId: access.scope.id, checkerId: access.actor.id, decision, expectedVersion: positive(body.expectedVersion, 'expectedVersion'), reason: text(body.reason, 'reason') });
+      const expectedVersion = positive(body.expectedVersion, 'expectedVersion');
+      const repository = dependencies.repository(database);
+      const current = await repository.lock(request.input.path.repairid!, access.scope.id);
+      if (current.status !== 'submitted') throw new DomainError('FINANCE_REPAIR_ALREADY_DECIDED');
+      if (current.version !== expectedVersion) throw new DomainError('VERSION_CONFLICT');
+      const proof = body.approvalProof === undefined ? null : text(body.approvalProof, 'approvalProof');
+      const authorized = await dependencies.approval.authorize(
+        requireWriteTransaction(request.transaction),
+        current,
+        decision,
+        proof,
+        executionRequestHash(request.type, { path: request.input.path, query: request.input.query, body: request.input.body }, request.input.expectedVersion)
+      );
+      const result = await repository.decide({ id: current.id, scopeId: current.scopeId, checkerId: authorized.checkerId, proofId: authorized.proofId, decision, expectedVersion, reason: text(body.reason, 'reason') });
       if (!result) throw new DomainError('FINANCE_REPAIR_CONFLICT');
       return recordResult(result);
     },
@@ -90,7 +132,7 @@ export function repairOperations(
       const body = bodyRecord(request.input);
       const result = await dependencies
         .repository(database)
-        .reverse({ id: request.input.path.repairid!, scopeId: access.scope.id, checkerId: access.actor.id, expectedVersion: positive(body.expectedVersion, 'expectedVersion'), reason: text(body.reason, 'reason') });
+        .reverse({ id: request.input.path.repairid!, scopeId: access.scope.id, checkerId: access.membership.id, expectedVersion: positive(body.expectedVersion, 'expectedVersion'), reason: text(body.reason, 'reason') });
       if (!result) throw new DomainError('FINANCE_REPAIR_CONFLICT');
       return recordResult(result);
     },
@@ -106,6 +148,13 @@ function hash(value: unknown, field: string): string {
   const result = text(value, field);
   if (!/^[a-f0-9]{64}$/.test(result)) throw new DomainError('VALIDATION_FAILED', { field });
   return result;
+}
+
+function token(value: unknown): string {
+  if (typeof value !== 'string' || value.length === 0 || value.length > 131_072 || !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/.test(value)) {
+    throw new DomainError('VALIDATION_FAILED', { field: 'previewToken' });
+  }
+  return value;
 }
 
 function digest(value: string): string {

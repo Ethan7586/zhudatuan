@@ -6,10 +6,10 @@ export interface FinanceJobExecution {
 }
 
 export interface InvoiceJobProcess {
-  issue(request: string, execution: FinanceJobExecution): Promise<void>;
+  issue(input: Readonly<{ request: string; business: string }>, execution: FinanceJobExecution): Promise<void>;
 }
 
 export interface SettlementJobProcess {
-  settle(reconciliation: string, execution: FinanceJobExecution): Promise<void>;
-  withdraw(withdrawal: string, execution: FinanceJobExecution): Promise<void>;
+  settle(input: Readonly<{ reconciliation: string; business: string }>, execution: FinanceJobExecution): Promise<void>;
+  withdraw(input: Readonly<{ withdrawal: string; business: string }>, execution: FinanceJobExecution): Promise<void>;
 }

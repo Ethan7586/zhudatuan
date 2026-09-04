@@ -2,18 +2,18 @@ import type { ReadTransactionContext, WriteTransactionContext } from '../../../.
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { IdentityAccessPort, IdentityMembership } from '../../public/IdentityAccessPort';
 import type { ImportedMembership, MemberImportAccessPort } from '../../public/MemberImportAccessPort';
-import type { AccessVersionService } from './AccessVersionService';
-import type { AccessMember, MemberAccessPort } from '../../public/MemberAccessPort';
+import type { AccessVersionPublisher } from './AccessVersionPublisher';
+import type { AccessMember, MemberAccessPort, MemberProfileProjection } from '../../public/MemberAccessPort';
 import type { AccessRepository, ActiveMembershipReference } from '../port/AccessRepository';
 export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberImportAccessPort {
   constructor(
     private readonly repository: AccessRepository,
-    private readonly versions: AccessVersionService
+    private readonly versions: AccessVersionPublisher
   ) {}
   async memberships(
     context: ReadTransactionContext,
     member: string,
-    target: 'console' | 'storefront'
+    target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'
   ): Promise<readonly IdentityMembership[]> {
     const result = await this.repository.activeMemberships(context, member, target);
     return Object.freeze(result.map(toIdentityMembership));
@@ -21,11 +21,11 @@ export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberI
   async session(
     context: WriteTransactionContext,
     membership: string,
-    target: 'console' | 'storefront'
+    target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'
   ): Promise<
     Readonly<{
       accessVersion: number;
-      client: 'console' | 'storefront';
+      client: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
     }>
   > {
     const accessVersion = await this.repository.lockSession(context, membership, target);
@@ -67,13 +67,16 @@ export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberI
   activeIn(context: ReadTransactionContext, member: string, organizations: readonly string[]): Promise<boolean> {
     return this.repository.activeMemberIn(context, member, organizations);
   }
-  async members(context: ReadTransactionContext, organization: string, after: string | null, limit: number): Promise<readonly AccessMember[]> {
-    return Object.freeze((await this.repository.memberPage(context, organization, after, limit)).map(mapAccessMember));
+  async members(context: ReadTransactionContext, organization: string, actorMembership: string, after: string | null, limit: number): Promise<readonly AccessMember[]> {
+    return Object.freeze((await this.repository.memberPage(context, organization, actorMembership, after, limit)).map(mapAccessMember));
   }
   async profile(context: ReadTransactionContext, membership: string): Promise<AccessMember> {
     const row = await this.repository.memberProfile(context, membership);
     if (!row) throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
     return mapAccessMember(row);
+  }
+  syncProfile(context: WriteTransactionContext, profile: MemberProfileProjection): Promise<void> {
+    return this.repository.upsertMemberProfile(context, profile);
   }
   async setEmployeeNumber(context: WriteTransactionContext, membership: string, employee: string | null): Promise<void> {
     if (!(await this.repository.setEmployeeNumber(context, membership, employee))) throw new Error('MEMBERSHIP_NOT_FOUND');
@@ -90,6 +93,13 @@ export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberI
     const target = await this.repository.managementMember(context, membership);
     if (target === null) throw new Error('MEMBERSHIP_NOT_FOUND');
     return target;
+  }
+  async resetRegistrations(context: WriteTransactionContext, input: Readonly<{ member: string; actorMembership: string; trace: string }>) {
+    const changes = await this.repository.resetMemberRegistrations(context, input.member, input.actorMembership);
+    if (changes === null) throw new DomainError('AUTHORIZATION_DENIED');
+    if (changes.length === 0) throw new DomainError('MEMBERSHIP_INACTIVE');
+    await this.repository.versionChanged(context, changes, 'registrationreset', input.trace);
+    return Object.freeze({ memberships: Object.freeze(changes.map(({ membership }) => membership)), accessVersion: Math.max(...changes.map(({ version }) => version)) });
   }
   async changeStatus(context: WriteTransactionContext, membership: string, status: 'active' | 'suspended' | 'left') {
     if (!(await this.repository.setMembershipStatus(context, membership, status))) throw new Error('MEMBERSHIP_NOT_FOUND');
@@ -152,7 +162,19 @@ function mapAccessMember(
     status: string;
     accessVersion: number;
     joinedAt: Date | null;
+    registrationResetAllowed: boolean;
+    registrationResetBlockReason: 'self' | 'protected' | 'inactive' | null;
   }>
 ): AccessMember {
-  return Object.freeze({ id: row.id, member: row.member, organization: row.organization, employee: row.employee, status: row.status, accessversion: row.accessVersion, joinedat: row.joinedAt });
+  return Object.freeze({
+    id: row.id,
+    member: row.member,
+    organization: row.organization,
+    employee: row.employee,
+    status: row.status,
+    accessversion: row.accessVersion,
+    joinedat: row.joinedAt,
+    registrationresetallowed: row.registrationResetAllowed,
+    registrationresetblockreason: row.registrationResetBlockReason,
+  });
 }

@@ -1,7 +1,7 @@
-import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
+import { isConsumerTarget, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
 import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, integerField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, integerField } from '../../../../foundation/application/Validation';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { ReadStateStore, SupportEventStore } from '../port/SupportPersistence';
 import type { ReadStateRepository } from '../port/SupportRepositories';
@@ -17,7 +17,7 @@ export class ManageReadState implements ReadStateRepository {
       membership: actor.membership,
       member: actor.member,
       scopes: actor.scopes,
-      storefront: actor.target === 'storefront',
+      storefront: isConsumerTarget(actor.target),
       lastSequence: integerField(bodyRecord(input), 'lastSequence'),
     });
     await this.events.append(context, {

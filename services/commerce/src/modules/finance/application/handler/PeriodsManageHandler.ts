@@ -1,12 +1,12 @@
 import type { OperationInputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler } from '../../../../foundation/application/OperationHandler';
-import type { AccountRepository } from '../port/OperationRepositories';
+import type { PeriodRepository } from '../port/FinanceCommandRepository';
 
 export class PeriodsManageHandler implements OperationHandler<'finance.periods.manage', 'write'> {
   readonly operation = 'finance.periods.manage' as const;
   readonly mode = 'write' as const;
-  constructor(private readonly accounts: AccountRepository) {}
+  constructor(private readonly accounts: PeriodRepository) {}
   async execute(input: OperationInputFor<'finance.periods.manage'>, context: WriteHandlerContext<'finance.periods.manage'>) {
     const result = await this.accounts.periodsManage(context.transaction, input, context);
     return result;

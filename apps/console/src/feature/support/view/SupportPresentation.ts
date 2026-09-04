@@ -8,7 +8,7 @@ const channels: Readonly<Record<string, string>> = Object.freeze({ inapp: '在�
 export const stateLabel = (value: string): string => states[value] ?? '待识别状态';
 export const priorityLabel = (value: string): string => priorities[value] ?? '普通';
 export const channelLabel = (value: string): string => channels[value] ?? '其他渠道';
-export const authorLabel = (value: Message): string => (value.authorType === 'agent' ? `客服 · ${shortId(value.authorId)}` : `用户 · ${shortId(value.authorId)}`);
+export const authorLabel = (value: Message): string => value.authorType === 'system' ? '系统记录' : value.authorType === 'agent' ? `客服 · ${shortId(value.authorId)}` : `用户 · ${shortId(value.authorId)}`;
 export const tone = (value: string): 'danger' | 'muted' | 'success' | 'warning' =>
   value === 'urgent' || value === 'high' || value === 'open' ? 'danger' : value === 'closed' || value === 'low' ? 'muted' : value === 'resolved' ? 'success' : 'warning';
 export const shortId = (value: string): string => chineseReference('编号', value);

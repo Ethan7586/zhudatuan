@@ -1,5 +1,6 @@
+import { Button } from '@shop/design';
 import { ArrowRight, KeyRound, RefreshCw } from 'lucide-react';
-import { useInvitationForm } from '../../login/viewmodel/LoginReducer';
+import { useInvitationForm } from '../../login';
 
 export function InvitationForm({
   busy,
@@ -35,14 +36,10 @@ export function InvitationForm({
       <p id="invitation-hint" className="authhint">
         邀请码仅用于本次验证，不会写入网址、浏览器存储或分析数据。
       </p>
-      <button
-        type="submit"
-        disabled={busy}
-        className="authprimary"
-      >
+      <Button type="submit" tone="primary" isDisabled={busy} className="authfull">
         {busy ? <RefreshCw className="authspin" aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
-        {busy ? '验证中...' : '使用邀请码登录'}
-      </button>
+        {busy ? '验证中...' : '继续接受邀请'}
+      </Button>
     </form>
   );
 }

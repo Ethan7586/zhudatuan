@@ -1,9 +1,9 @@
-import type { FinancePersistence } from './FinanceAction';
 import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { FinanceEntries } from './FinanceOperation';
 import { createHash } from 'node:crypto';
 
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { bodyRecord, keysetRows, queryPage } from '../../../../foundation/interface/Validation';
+import { bodyRecord, keysetRows, queryPage } from '../../../../foundation/application/Validation';
 import type { FinanceEntryTemplate } from '../../domain/model/FinancePolicy';
 import { FinancePolicy } from '../../domain/model/FinancePolicy';
 import type { PolicyRepository } from '../../application/port/PolicyRepository';
@@ -18,7 +18,7 @@ export function financePolicyOperations(
     preview: PolicyPreview;
     clock: Clock;
   }>
-): Pick<FinancePersistence, 'policiesRead' | 'policiesPreview'> {
+): FinanceEntries<'policiesRead' | 'policiesPreview'> {
   return {
     policiesRead: async (request, database) => {
       const access = requireAccess(request);
@@ -33,10 +33,11 @@ export function financePolicyOperations(
       const body = bodyRecord(request.input);
       const entries = financeEntries(body.entries);
       const version = positive(body.expectedVersion, 'expectedVersion');
+      const targetStatus = body.targetStatus === 'active' || body.targetStatus === 'retired' ? body.targetStatus : 'draft';
       const policy = new FinancePolicy(
-        `financepolicy:${digest(`${access.scope.id}:${text(body.name, 'name')}:${version}`)}`,
+        body.policyId === undefined ? `financepolicy:${digest(`${access.scope.id}:${text(body.name, 'name')}:${version}`)}` : text(body.policyId, 'policyId'),
         text(body.name, 'name'),
-        'draft',
+        targetStatus,
         text(body.trigger, 'trigger'),
         entries,
         time(body.effectiveAt, 'effectiveAt'),

@@ -23,7 +23,7 @@ const candidate = {
     operationHash: sha,
     eventHash: sha,
     jobHash: sha,
-    jobCount: 33,
+    jobCount: 48,
     requirementHash: sha,
     migrationHead: '20260829109000',
     migrationHash: sha,
@@ -51,7 +51,7 @@ function evidence() {
     ])
   );
   const checks = Object.fromEntries(
-    ['alertDelivery', 'databaseFreshReplay', 'databaseUpgrade', 'journey', 'performance', 'providerHealth', 'reconciliation', 'rollbackDrill', 'security', 'smoke', 'snapshotRestore'].map((id) => [id, { passed: true, evidenceSha256: sha }])
+    ['alertDelivery', 'databaseFreshReplay', 'databaseUpgrade', 'journey', 'migrationEvidence', 'performance', 'providerHealth', 'reconciliation', 'rollbackDrill', 'security', 'smoke', 'snapshotRestore'].map((id) => [id, { passed: true, evidenceSha256: sha }])
   );
   return {
     schema: 'shop.stage.v1',
@@ -59,6 +59,7 @@ function evidence() {
     completedAt: new Date(now).toISOString(),
     candidateSha256: createHash('sha256').update(candidateBytes).digest('hex'),
     checks,
+    migrationEvidence: { schema: 'shop.migration.evidence.v1', passed: true, exact: true, approvedDifferences: 0, archiveSha256: sha },
     requirements,
     providers,
   };
@@ -92,6 +93,7 @@ test('cutover evidence binds the release and proves all production invariants at
     releaseSha256: createHash('sha256').update(releaseBytes).digest('hex'),
     traffic: [1, 10, 50, 100],
     checks,
+    migrationEvidence: { schema: 'shop.migration.evidence.v1', passed: true, exact: true, approvedDifferences: 0, archiveSha256: sha },
     rollbackPolicy: 'automatic',
     databaseRepairPolicy: 'forwardfix',
     stages: [1, 10, 50, 100].map((percent) => ({ percent, decision: 'promote', checks: stageChecks })),

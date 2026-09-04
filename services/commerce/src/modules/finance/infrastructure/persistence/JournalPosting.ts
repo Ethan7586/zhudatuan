@@ -1,7 +1,7 @@
 import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
 /** Finance journal persistence. */
-import { FinancePort } from './FinancePort';
+import { PgAccountingPort } from './PgAccountingPort';
 import type { FinancePaymentPort } from '../../../payment/public';
 
 import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
@@ -9,7 +9,7 @@ import type { TransactionManager } from '../../../../foundation/persistence/Tran
 
 /** Converts accepted accounting events to idempotent journals; event owners never write ledger tables. */
 export class PostJournal {
-  private readonly finance = new FinancePort();
+  private readonly finance = new PgAccountingPort();
   private readonly access = new PgTransactionAccess();
   constructor(
     private readonly transactions: TransactionManager,
@@ -45,30 +45,24 @@ export class PostJournal {
       requireWriteTransaction(database.transaction),
       event === 'refund.completed'
         ? {
-            scope: target.scope,
-            referenceType: event,
-            referenceId: reference,
+            scopeId: target.scope,
+            source: { module: 'payment', aggregate: 'refund', aggregateId: reference, event: 'payment.refund.completed', eventId: eventid, leg: 'externalrefund' },
             currency,
             description: 'External payment refund',
             debit: { code: 'commerce.refund', kind: 'expense' },
             credit: { code: 'cash', kind: 'asset' },
             amountMinor: amount,
             occurredAt: target.receivedAt,
-            ownerEventId: eventid,
-            economicLegId: 'external.refund',
           }
         : {
-            scope: target.scope,
-            referenceType: event,
-            referenceId: reference,
+            scopeId: target.scope,
+            source: { module: 'payment', aggregate: 'payment', aggregateId: reference, event, eventId: eventid, leg: 'externalcapture' },
             currency,
             description: 'External payment capture',
             debit: { code: 'cash', kind: 'asset' },
             credit: { code: 'commerce.clearing', kind: 'income' },
             amountMinor: amount,
             occurredAt: target.receivedAt,
-            ownerEventId: eventid,
-            economicLegId: 'external.capture',
           }
     );
   }

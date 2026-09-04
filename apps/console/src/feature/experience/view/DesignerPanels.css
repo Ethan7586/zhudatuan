@@ -1,0 +1,246 @@
+.designerpages,
+.designercomponents,
+.designerproperties,
+.designervalidation {
+  padding: 14px;
+}
+.designerpages > header,
+.designercomponents section > header,
+.designerproperties > header,
+.designervalidation > header {
+  display: flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.designerpages header strong,
+.designercomponents header strong,
+.designerproperties header strong,
+.designervalidation header strong {
+  color: var(--sw-brand-ink);
+  font-size: 11px;
+}
+.designerpages header small,
+.designercomponents header small,
+.designerproperties header small,
+.designervalidation header small {
+  color: var(--sw-muted);
+  font-size: 9px;
+}
+.designerpages ol,
+.designerblocklist,
+.designervalidation ol {
+  display: grid;
+  gap: 5px;
+  margin: 8px 0;
+  padding: 0;
+  list-style: none;
+}
+.designerpages li > button,
+.designerblocklist li > button {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 28px 1fr;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  padding: 7px;
+  color: var(--sw-muted);
+  text-align: left;
+}
+.designerpages li[data-selected='true'] > button,
+.designerblocklist li[data-selected='true'] > button {
+  border-color: var(--sw-brand);
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-ink);
+}
+.designerpages li i,
+.designerblocklist li i {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--sw-surface-subtle);
+  color: var(--sw-brand);
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 800;
+}
+.designerpages li span,
+.designerblocklist li span {
+  display: grid;
+  min-width: 0;
+}
+.designerpages li strong,
+.designerblocklist li strong {
+  overflow: hidden;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.designerpages li small,
+.designerblocklist li small {
+  color: var(--sw-muted);
+  font-size: 8px;
+}
+.designerpages header button,
+.designerremove {
+  border: 0;
+  border-radius: 8px;
+  background: var(--sw-brand-light);
+  padding: 6px 8px;
+  color: var(--sw-brand);
+  font-size: 9px;
+  font-weight: 750;
+}
+.designerremove {
+  width: 100%;
+}
+.designercomponents {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+.designercomponentgrid {
+  display: grid;
+  gap: 6px;
+  margin-top: 7px;
+}
+.designercomponentgrid > button {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 9px;
+  align-items: center;
+  border: 1px solid var(--sw-border);
+  border-radius: 10px;
+  background: var(--sw-surface);
+  padding: 8px;
+  color: var(--sw-brand-ink);
+  text-align: left;
+}
+.designercomponentgrid > button > i {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--sw-brand-light);
+  color: var(--sw-brand);
+  font-style: normal;
+  font-weight: 800;
+}
+.designercomponentgrid > button > span {
+  display: grid;
+}
+.designercomponentgrid small,
+.designerempty {
+  color: var(--sw-muted);
+  font-size: 8px;
+  line-height: 1.5;
+}
+.designerblocklist li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border-radius: 9px;
+}
+.designerblocklist li nav {
+  display: grid;
+  grid-template-columns: repeat(3, 22px);
+  align-content: center;
+}
+.designerblocklist li nav button {
+  border: 0;
+  background: transparent;
+  color: var(--sw-muted);
+  font-size: 10px;
+}
+.designerside {
+  border: 0;
+}
+.designerproperties {
+  border-bottom: 1px solid var(--sw-border);
+}
+.designerfields {
+  display: grid;
+  gap: 11px;
+  margin-top: 10px;
+}
+.designerfields > label,
+.designerfields fieldset label {
+  display: grid;
+  gap: 5px;
+  color: var(--sw-muted);
+  font-size: 9px;
+  font-weight: 700;
+}
+.designerfields input,
+.designerfields select,
+.designerfields textarea {
+  width: 100%;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-surface);
+  padding: 8px 9px;
+  color: var(--sw-brand-ink);
+  font-size: 10px;
+}
+.designerfields textarea {
+  min-height: 74px;
+  resize: vertical;
+}
+.designerfields label small {
+  color: var(--sw-muted);
+  font-size: 8px;
+  font-weight: 500;
+}
+.designerfields fieldset {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  border: 1px solid var(--sw-border);
+  border-radius: 10px;
+  padding: 10px;
+}
+.designerfields legend {
+  color: var(--sw-brand-ink);
+  font-size: 9px;
+  font-weight: 800;
+}
+.designerthemechoice {
+  grid-template-columns: auto 12px 1fr;
+  align-items: center;
+}
+.designerthemechoice input {
+  width: auto;
+}
+.designerthemechoice i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.designerthemechoice label {
+  display: grid;
+}
+.designervalidation p {
+  color: var(--sw-muted);
+  font-size: 9px;
+  line-height: 1.6;
+}
+.designervalidation li button {
+  width: 100%;
+  border: 1px solid var(--sw-danger-border);
+  border-radius: 9px;
+  background: var(--sw-danger-surface);
+  padding: 8px;
+  color: var(--sw-danger-strong);
+  text-align: left;
+}
+.designervalidation li button strong,
+.designervalidation li button small {
+  display: block;
+  font-size: 9px;
+}

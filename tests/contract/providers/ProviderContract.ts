@@ -37,7 +37,7 @@ export async function providerContract(factory: ProviderFactory, createManifest:
 
 function contractSecret(): Readonly<Record<string, string>> {
   const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 1024, privateKeyEncoding: { type: 'pkcs8', format: 'pem' }, publicKeyEncoding: { type: 'spki', format: 'pem' } });
-  return { keyId: 'contract-key', secret: 'contract-secret', privateKey };
+  return { keyId: 'contract-key', secret: 'contract-secret', privateKey, authorizationExpiresAt: '2099-01-01T00:00:00.000Z' };
 }
 
 function endpoints(factory: ProviderFactory): Readonly<Record<string, string>> {
@@ -47,6 +47,7 @@ function endpoints(factory: ProviderFactory): Readonly<Record<string, string>> {
 function localPorts(): Partial<ProviderPorts> {
   return {
     catalog: { pullCatalog: async () => ({ records: [], errors: [], complete: true }) },
+    price: { pullPrice: async () => ({ records: [] }) },
     stock: { pullStock: async () => ({ records: [] }) },
     order: { submit: async () => ({ externalReference: 'order', state: 'accepted', rawReference: 'raw' }) },
     tracking: { pullTracking: async () => ({ externalReference: 'order', milestones: [] }) },

@@ -1,0 +1,15 @@
+{
+  "compileType": "miniprogram",
+  "miniprogramRoot": "miniprogram/",
+  "projectname": "zhudatuan-miniapp",
+  "setting": {
+    "checkInvalidKey": true,
+    "checkSiteMap": true,
+    "coverView": true,
+    "es6": true,
+    "enhance": true,
+    "minified": true,
+    "postcss": true,
+    "urlCheck": true
+  }
+}

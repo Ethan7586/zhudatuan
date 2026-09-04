@@ -12,6 +12,7 @@ describe('RedactionPolicy', () => {
       address: 'full street',
       errorCode: 'PAYMENT_FAILED',
       nested: { token: 'private', value: 'safe' },
+      opaque: 'Bearer never-expose-this',
     };
     expect(new RedactionPolicy().redact(source)).toEqual({
       password: '[REDACTED]',
@@ -22,6 +23,7 @@ describe('RedactionPolicy', () => {
       address: '[MINIMIZED]',
       errorCode: 'PAYMENT_FAILED',
       nested: { token: '[REDACTED]', value: 'safe' },
+      opaque: '[REDACTED]',
     });
     expect(source.password).toBe('secret');
   });

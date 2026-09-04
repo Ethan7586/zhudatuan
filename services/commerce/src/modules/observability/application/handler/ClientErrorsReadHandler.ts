@@ -1,7 +1,7 @@
-import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
+import { isClientSurface, type ClientSurface, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
 import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { limit } from '../../../../foundation/interface/Validation';
+import { limit } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { ClientErrorRepository } from '../port/ClientErrorRepository';
 
@@ -16,7 +16,7 @@ export class ClientErrorsReadHandler implements OperationHandler<'observability.
   }
 }
 
-function surface(value: string): 'console' | 'storefront' | 'auth' {
-  if (value !== 'console' && value !== 'storefront' && value !== 'auth') throw new Error('CLIENT_ERROR_SURFACE_INVALID');
+function surface(value: string): ClientSurface {
+  if (!isClientSurface(value)) throw new Error('CLIENT_ERROR_SURFACE_INVALID');
   return value;
 }

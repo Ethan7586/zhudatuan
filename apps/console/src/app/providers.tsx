@@ -24,12 +24,12 @@ export function createConsoleQueryClient(): QueryClient {
 }
 
 export function Providers({ client, dependencies }: Readonly<{ client?: QueryClient; dependencies?: ConsoleDependencies }>) {
-  const [fallbackClient] = useState(createConsoleQueryClient);
-  const [fallbackDependencies] = useState(createConsoleDependencies);
+  const [defaultClient] = useState(createConsoleQueryClient);
+  const [defaultDependencies] = useState(createConsoleDependencies);
   return (
     <AppBoundary>
-      <DependencyProvider value={dependencies ?? fallbackDependencies}>
-        <QueryClientProvider client={client ?? fallbackClient}>
+      <DependencyProvider value={dependencies ?? defaultDependencies}>
+        <QueryClientProvider client={client ?? defaultClient}>
           <Suspense fallback={<RouteLoading />}>
             <ConsoleApp />
           </Suspense>

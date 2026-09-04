@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobDeadletter } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobDeadletter } from '../../../runtime/public/JobProcess';
 import { PgRuntimeWriter, type RuntimeSql } from '../../../../adapter/database/PgRuntimeWriter';
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';

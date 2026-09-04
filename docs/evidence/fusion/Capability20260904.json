@@ -1,0 +1,62 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.4 Capability",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "publishableCapabilities": [
+    "surface.auth",
+    "surface.console",
+    "surface.storefront",
+    "surface.miniapp",
+    "surface.store",
+    "surface.supplier",
+    "approval.workflow",
+    "voucher.lifecycle",
+    "runtime.importing"
+  ],
+  "invariants": [
+    "capability-does-not-replace-permission",
+    "child-enable-requires-effective-parent-grant",
+    "child-quota-cannot-exceed-finite-parent-quota",
+    "enable-requires-transitively-healthy-dependencies",
+    "disable-persists-versioned-entitlement-history",
+    "write-entry-denies-disabled-capability-immediately",
+    "assignment-write-conditions-entitlement-and-capability-set-versions",
+    "capability-change-and-outbox-event-commit-in-one-transaction",
+    "navigation-projection-is-surface-specific-and-versioned",
+    "canonical-catalog-rejects-unknown-duplicate-or-cyclic-dependencies",
+    "module-registry-rejects-duplicate-publishable-capability-ownership"
+  ],
+  "assignmentProjection": [
+    "configuredState",
+    "inheritedFrom",
+    "quota",
+    "dependencyHealthy",
+    "disabledReason",
+    "dependencies",
+    "impact",
+    "version",
+    "capabilityVersion"
+  ],
+  "verification": {
+    "commerceTypecheck": "passed",
+    "commerceCapabilityAndRegistryTests": "13 passed",
+    "contractTypecheck": "passed",
+    "contractTests": "51 passed",
+    "contractGeneratorCheck": "passed",
+    "errors": "passed",
+    "operations": "passed",
+    "events": "passed",
+    "ownership": "passed",
+    "duplicates": "passed",
+    "pagination": "passed",
+    "performance": "passed",
+    "transactions": "passed",
+    "naming": "passed",
+    "jobs": "passed",
+    "migrationReplay": "322 migrations applied; final catalog assertion intentionally awaits 20260904031000_publish_ideal_contract.sql",
+    "globalCallGraph": "Capability has no broken call point; six generated client bindings remain deferred to the miniapp, store and supplier client work packages"
+  }
+}

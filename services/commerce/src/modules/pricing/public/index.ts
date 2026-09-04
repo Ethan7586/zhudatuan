@@ -4,7 +4,6 @@ export type { ProviderPrice } from './ProviderPrice';
 
 export interface CheckoutPricingPort {
   offers(context: ReadTransactionContext, scope: string, skus: readonly string[]): Promise<readonly CheckoutPrice[]>;
-  rules(context: ReadTransactionContext, scope: string): Promise<readonly CheckoutPriceRule[]>;
   quote(context: ReadTransactionContext, quote: string, member: string, mall: string): Promise<StoredPriceQuote>;
   saveQuote(
     context: ReadTransactionContext,
@@ -28,16 +27,11 @@ export interface CheckoutPricingPort {
 export interface CheckoutPrice {
   readonly sku: string;
   readonly amountMinor: number;
+  readonly compareMinor: number | null;
   readonly currency: string;
   readonly version: string;
-}
-export interface CheckoutPriceRule {
-  readonly id: string;
-  readonly version: number;
-  readonly priority: number;
-  readonly kind: string;
-  readonly condition: unknown;
-  readonly effect: unknown;
+  readonly breakdown: readonly import('./PricingReadPort').PriceComponent[];
+  readonly watermark: string;
 }
 export interface StoredPriceQuote {
   readonly id: string;
@@ -62,7 +56,11 @@ export interface CartPricingPort {
 export interface CatalogPricingPort {
   prices(context: ReadTransactionContext, skus: readonly string[], scopes: readonly string[]): Promise<readonly Readonly<Record<string, unknown>>[]>;
 }
+export interface CatalogPriceCommandPort {
+  setPrice(context: WriteTransactionContext, input: Readonly<{ scope: string; sku: string; amountMinor: number; currency: 'CNY'; expectedVersion: number }>): Promise<Readonly<{ sku: string; scope: string; amountMinor: number; currency: 'CNY'; version: number; effectiveAt: string; updatedAt: string }>>;
+}
+export const CATALOG_PRICE_COMMAND_PORT = publicPort<CatalogPriceCommandPort>('pricing', 'catalogcommand');
 export const CHECKOUT_PRICING_PORT = publicPort<CheckoutPricingPort>('pricing', 'checkout');
 export const CART_PRICING_PORT = publicPort<CartPricingPort>('pricing', 'cart');
 export const CATALOG_PRICING_PORT = publicPort<CatalogPricingPort>('pricing', 'catalog');
-export { PRICING_READ_PORT, type PricingReadPort, type StorefrontPrice } from './PricingReadPort';
+export { PRICING_READ_PORT, type EffectiveOffer, type PriceComponent, type PriceComponentKind, type PricingReadPort, type StorefrontPrice } from './PricingReadPort';

@@ -1,96 +1,18 @@
-import { z } from 'zod';
-import { DatabaseIntegerSchema } from '../../../shared/schema/DatabaseInteger';
-import { pageEnvelope } from '../../../shared/schema/PageEnvelope';
+import { operationSchema } from '@shop/contract';
+import {
+  OP_FINANCE_ENTRIES_READ,
+  OP_FINANCE_POLICIES_READ,
+  OP_FINANCE_RECONCILIATIONS_READ,
+  OP_FINANCE_SETTLEMENTS_READ,
+  OP_FINANCE_STATEMENTS_READ,
+  OP_FINANCE_WITHDRAWALS_READ,
+  OP_INVOICE_REQUESTS_READ,
+} from '@shop/contract/ids';
 
-const OptionalText = z.string().nullable().optional();
-const SignedDatabaseIntegerSchema = z
-  .union([z.number().int(), z.string().regex(/^-?(?:0|[1-9][0-9]*)$/)])
-  .transform((value) => (typeof value === 'number' ? value : Number(value)))
-  .refine(Number.isSafeInteger, 'DATABASE_INTEGER_OUT_OF_RANGE');
-
-const EntrySchema = z
-  .object({
-    id: z.string().min(1),
-    side: z.enum(['debit', 'credit']),
-    amount_minor: DatabaseIntegerSchema,
-    code: z.string().min(1),
-    currency: z.string().length(3),
-    reference_type: z.string().min(1),
-    reference_id: z.string().min(1),
-    description: z.string(),
-    posted_at: OptionalText,
-  })
-  .passthrough();
-
-const StatementSchema = z
-  .object({
-    id: z.string().min(1),
-    period_start: z.string().min(1),
-    period_end: z.string().min(1),
-    currency: z.string().length(3),
-    opening_minor: SignedDatabaseIntegerSchema,
-    debit_minor: DatabaseIntegerSchema,
-    credit_minor: DatabaseIntegerSchema,
-    closing_minor: SignedDatabaseIntegerSchema,
-    state: z.string().min(1),
-    generated_at: z.string().min(1),
-  })
-  .passthrough();
-
-const ReconciliationSchema = z
-  .object({
-    id: z.string().min(1),
-    provider: z.string().min(1),
-    partner_id: z.string().min(1),
-    period: z.string().min(1),
-    state: z.string().min(1),
-    difference_minor: SignedDatabaseIntegerSchema,
-    updated_at: z.string().min(1),
-  })
-  .passthrough();
-
-const SettlementSchema = z
-  .object({
-    id: z.string().min(1),
-    partner_id: z.string().min(1),
-    period: z.string().min(1),
-    reconciliation_id: z.string().min(1),
-    amount_minor: DatabaseIntegerSchema,
-    currency: z.string().length(3),
-    state: z.string().min(1),
-    version: DatabaseIntegerSchema,
-  })
-  .passthrough();
-
-const WithdrawalSchema = z
-  .object({
-    id: z.string().min(1),
-    settlement_id: z.string().min(1),
-    amount_minor: DatabaseIntegerSchema,
-    currency: z.string().length(3),
-    state: z.string().min(1),
-    created_at: z.string().min(1),
-    version: DatabaseIntegerSchema,
-  })
-  .passthrough();
-
-const InvoiceSchema = z
-  .object({
-    id: z.string().min(1),
-    profile_id: z.string().min(1),
-    amount_minor: DatabaseIntegerSchema,
-    currency: z.string().length(3),
-    state: z.string().min(1),
-    created_at: z.string().min(1),
-    version: DatabaseIntegerSchema,
-    settlement_id: OptionalText,
-    issued_at: OptionalText,
-  })
-  .passthrough();
-
-export const EntryPageSchema = pageEnvelope(EntrySchema);
-export const StatementPageSchema = pageEnvelope(StatementSchema);
-export const ReconciliationPageSchema = pageEnvelope(ReconciliationSchema);
-export const SettlementPageSchema = pageEnvelope(SettlementSchema);
-export const WithdrawalPageSchema = pageEnvelope(WithdrawalSchema);
-export const InvoicePageSchema = pageEnvelope(InvoiceSchema);
+export const EntryPageSchema = operationSchema(OP_FINANCE_ENTRIES_READ).output;
+export const StatementPageSchema = operationSchema(OP_FINANCE_STATEMENTS_READ).output;
+export const ReconciliationPageSchema = operationSchema(OP_FINANCE_RECONCILIATIONS_READ).output;
+export const SettlementPageSchema = operationSchema(OP_FINANCE_SETTLEMENTS_READ).output;
+export const WithdrawalPageSchema = operationSchema(OP_FINANCE_WITHDRAWALS_READ).output;
+export const InvoicePageSchema = operationSchema(OP_INVOICE_REQUESTS_READ).output;
+export const PolicyPageSchema = operationSchema(OP_FINANCE_POLICIES_READ).output;

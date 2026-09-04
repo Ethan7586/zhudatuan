@@ -8,7 +8,9 @@ import {
   createFetchIdentityFederationsSelectionRead,
   createFetchIdentityFederationsStart,
   createFetchIdentityInvitationsResolve,
+  createFetchIdentityLinksCreate,
   createFetchIdentityLinksRead,
+  createFetchIdentityLinksRevoke,
   createFetchIdentityPasswordReset,
   createFetchIdentityProvidersRead,
   createFetchIdentitySessionsComplete,
@@ -26,7 +28,9 @@ export interface IdentitySdk {
   readonly federationsSelectionRead: OperationMethod<'identity.federations.selection.read'>;
   readonly federationsStart: OperationMethod<'identity.federations.start'>;
   readonly invitationsResolve: OperationMethod<'identity.invitations.resolve'>;
+  readonly linksCreate: OperationMethod<'identity.links.create'>;
   readonly linksRead: OperationMethod<'identity.links.read'>;
+  readonly linksRevoke: OperationMethod<'identity.links.revoke'>;
   readonly passwordReset: OperationMethod<'identity.password.reset'>;
   readonly providersRead: OperationMethod<'identity.providers.read'>;
   readonly sessionsComplete: OperationMethod<'identity.sessions.complete'>;
@@ -45,7 +49,9 @@ export function createClient(environment: AuthEnvironment): IdentitySdk {
     federationsSelectionRead: createFetchIdentityFederationsSelectionRead(origin),
     federationsStart: createFetchIdentityFederationsStart(origin),
     invitationsResolve: createFetchIdentityInvitationsResolve(origin),
+    linksCreate: createFetchIdentityLinksCreate(origin),
     linksRead: createFetchIdentityLinksRead(origin),
+    linksRevoke: createFetchIdentityLinksRevoke(origin),
     passwordReset: createFetchIdentityPasswordReset(origin),
     providersRead: createFetchIdentityProvidersRead(origin),
     sessionsComplete: createFetchIdentitySessionsComplete(origin),

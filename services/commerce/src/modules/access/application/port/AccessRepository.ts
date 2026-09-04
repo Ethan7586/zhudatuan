@@ -2,18 +2,19 @@ import type { ReadTransactionContext, WriteTransactionContext } from '../../../.
 
 import type { Membership } from '../../domain/model/Membership';
 import type { Override } from '../../domain/model/Override';
-import type { PermissionEffect, Role } from '../../domain/model/Role';
+import type { PermissionEffect, Role, RoleTemplateCode } from '../../domain/model/Role';
 import type { Scope } from '../../domain/model/Scope';
+import type { MemberProfileProjection } from '../../public/MemberAccessPort';
 
 export interface AccessCenterRecord {
   readonly id: string;
   readonly displayName: string;
   readonly employeeNo: string | null;
   readonly mobileMasked: string | null;
-  readonly client: 'console' | 'storefront';
+  readonly client: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly status: string;
   readonly accessVersion: number;
-  readonly roles: readonly Readonly<{ role: string; name: string; kind: 'custom' | 'system' | 'owner'; version: number; allows: readonly string[]; denies: readonly string[] }>[];
+  readonly roles: readonly Readonly<{ role: string; name: string; description: string; status: 'active' | 'disabled'; kind: 'custom' | 'system' | 'owner'; template: RoleTemplateCode | null; version: number; allows: readonly string[]; denies: readonly string[] }>[];
   readonly scopes: readonly Readonly<{ id: string; kind: string; scope: string; effect: PermissionEffect; expires: string | null }>[];
   readonly overrides: readonly Readonly<{ permission: string; effect: PermissionEffect; expires: string | null }>[];
 }
@@ -21,6 +22,45 @@ export interface RoleChange {
   readonly role: Role;
   readonly allowCount: number;
   readonly denyCount: number;
+}
+export interface RolePermissionState {
+  readonly allows: readonly string[];
+  readonly denies: readonly string[];
+}
+export interface RoleImpact {
+  readonly people: number;
+  readonly scopes: number;
+}
+export interface RoleTemplate {
+  readonly code: RoleTemplateCode;
+  readonly name: string;
+  readonly description: string;
+  readonly allows: readonly string[];
+  readonly denies: readonly string[];
+  readonly version: number;
+}
+export interface RoleDirectoryRecord {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly status: 'active' | 'disabled';
+  readonly kind: 'custom' | 'system' | 'owner';
+  readonly template: RoleTemplateCode | null;
+  readonly version: number;
+  readonly allows: readonly string[];
+  readonly denies: readonly string[];
+  readonly affectedPeople: number;
+  readonly affectedScopes: number;
+  readonly members: readonly Readonly<{ membership: string; displayName: string; accessVersion: number }>[];
+}
+export interface RoleAssignmentChange {
+  readonly changed: boolean;
+  readonly accessVersion: number;
+}
+export interface SeparationRule {
+  readonly left: string;
+  readonly right: string;
+  readonly reason: string;
 }
 export interface OverrideTarget {
   readonly membership: Membership;
@@ -77,7 +117,7 @@ export interface DelegationScope {
 }
 export interface MembershipReference {
   readonly id: string;
-  readonly client: 'console' | 'storefront';
+  readonly client: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
 }
 export interface ActiveMembershipReference extends MembershipReference {
   readonly organization: string;
@@ -100,6 +140,8 @@ export interface MemberRecord {
   readonly status: string;
   readonly accessVersion: number;
   readonly joinedAt: Date | null;
+  readonly registrationResetAllowed: boolean;
+  readonly registrationResetBlockReason: 'self' | 'protected' | 'inactive' | null;
 }
 export interface PendingEmployeeRecord {
   readonly member: string;
@@ -110,8 +152,18 @@ export interface PendingEmployeeRecord {
 
 export interface AccessRepository {
   center(context: ReadTransactionContext, input: Readonly<{ organization: string; after: string | null; limit: number }>): Promise<readonly AccessCenterRecord[]>;
+  roles(context: ReadTransactionContext, scope: string): Promise<readonly RoleDirectoryRecord[]>;
+  roleTemplates(context: ReadTransactionContext): Promise<readonly RoleTemplate[]>;
+  separationRules(context: ReadTransactionContext): Promise<readonly SeparationRule[]>;
   lockRole(context: WriteTransactionContext, role: string, scope: string): Promise<Role | null>;
-  saveRole(context: WriteTransactionContext, input: Readonly<{ role: string; scope: string; name: string; allows: readonly string[]; denies: readonly string[]; expectedVersion: number }>): Promise<RoleChange | null>;
+  rolePermissions(context: ReadTransactionContext, role: string): Promise<RolePermissionState>;
+  roleImpact(context: ReadTransactionContext, role: string): Promise<RoleImpact>;
+  roleTemplate(context: ReadTransactionContext, code: string): Promise<RoleTemplate | null>;
+  saveRole(context: WriteTransactionContext, input: Readonly<{ role: string; scope: string; name: string; description: string; template: RoleTemplateCode | null; allows: readonly string[]; denies: readonly string[]; expectedVersion: number }>): Promise<RoleChange | null>;
+  setRoleStatus(context: WriteTransactionContext, role: string, scope: string, status: 'active' | 'disabled', expectedVersion: number): Promise<Role | null>;
+  deleteRole(context: WriteTransactionContext, role: string, scope: string, expectedVersion: number): Promise<boolean>;
+  assignRole(context: WriteTransactionContext, role: string, membership: string, issuer: string): Promise<boolean>;
+  revokeRole(context: WriteTransactionContext, role: string, membership: string): Promise<boolean>;
   scopePath(context: ReadTransactionContext, scope: string, kind: string): Promise<string | null>;
   grantScope(
     context: WriteTransactionContext,
@@ -120,12 +172,6 @@ export interface AccessRepository {
   lockOverrideTarget(context: WriteTransactionContext, membership: string): Promise<OverrideTarget | null>;
   setOverride(context: WriteTransactionContext, value: Override, issuer: string): Promise<OverrideChange | null>;
   revokeOverride(context: WriteTransactionContext, input: Readonly<{ membership: string; permission: string; reason: string }>): Promise<OverrideChange | null>;
-  lockOwnership(context: WriteTransactionContext, scope: string): Promise<Ownership | null>;
-  lockMemberships(context: WriteTransactionContext, memberships: readonly string[]): Promise<readonly Membership[]>;
-  expireRole(context: WriteTransactionContext, membership: string, role: string): Promise<boolean>;
-  assignRole(context: WriteTransactionContext, input: Readonly<{ membership: string; role: string; issuer: string }>): Promise<void>;
-  transferOwnership(context: WriteTransactionContext, input: Readonly<{ scope: string; membership: string; expectedVersion: number }>): Promise<boolean>;
-  ownerTransferred(context: WriteTransactionContext, input: Readonly<{ scope: string; previous: string; membership: string; version: number; trace: string }>): Promise<void>;
   incrementVersion(context: WriteTransactionContext, membership: string): Promise<VersionChange | null>;
   incrementRoleVersions(context: WriteTransactionContext, role: string): Promise<readonly VersionChange[]>;
   activate(context: WriteTransactionContext, membership: string): Promise<VersionChange | null>;
@@ -152,16 +198,18 @@ export interface AccessRepository {
   delegationScopes(context: ReadTransactionContext, membership: string): Promise<readonly DelegationScope[]>;
   campaignRoles(context: ReadTransactionContext): Promise<readonly DelegationRole[]>;
   delegationRoles(context: ReadTransactionContext, membership: string): Promise<readonly DelegationRole[]>;
-  activeMemberships(context: ReadTransactionContext, member: string, target: 'console' | 'storefront'): Promise<readonly ActiveMembershipReference[]>;
-  lockSession(context: WriteTransactionContext, membership: string, target: 'console' | 'storefront'): Promise<number | null>;
+  activeMemberships(context: ReadTransactionContext, member: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<readonly ActiveMembershipReference[]>;
+  lockSession(context: WriteTransactionContext, membership: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<number | null>;
   directoryMemberships(context: ReadTransactionContext, memberships: readonly string[]): Promise<readonly DirectoryMembershipReference[]>;
   ensureImported(context: WriteTransactionContext, input: Readonly<{ membership: string; member: string; principal: string; organization: string; client: 'operator' | 'storefront'; employee: string | null }>): Promise<void>;
   activeMember(context: ReadTransactionContext, membership: string): Promise<string | null>;
   activeMemberIn(context: ReadTransactionContext, member: string, organizations: readonly string[]): Promise<boolean>;
-  memberPage(context: ReadTransactionContext, organization: string, after: string | null, limit: number): Promise<readonly MemberRecord[]>;
+  memberPage(context: ReadTransactionContext, organization: string, actorMembership: string, after: string | null, limit: number): Promise<readonly MemberRecord[]>;
   memberProfile(context: ReadTransactionContext, membership: string): Promise<MemberRecord | null>;
+  upsertMemberProfile(context: WriteTransactionContext, profile: MemberProfileProjection): Promise<void>;
   setEmployeeNumber(context: WriteTransactionContext, membership: string, employee: string | null): Promise<boolean>;
   managementMember(context: WriteTransactionContext, membership: string): Promise<Readonly<{ member: string; accessVersion: number }> | null>;
+  resetMemberRegistrations(context: WriteTransactionContext, member: string, actorMembership: string): Promise<readonly VersionChange[] | null>;
   setMembershipStatus(context: WriteTransactionContext, membership: string, status: 'active' | 'suspended' | 'left'): Promise<boolean>;
   replaceDepartment(context: WriteTransactionContext, input: Readonly<{ membership: string; department: string; path: string; grant: string }>): Promise<void>;
   applyDirectoryState(context: WriteTransactionContext, input: Readonly<{ membership: string; status: 'active' | 'suspended' | 'left' }>): Promise<number | null>;

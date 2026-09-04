@@ -22,10 +22,9 @@ export class OidcDiscovery {
       async () => {
         const url = new URL(issuer);
         url.pathname = `${url.pathname.replace(/\/$/, '')}${IDENTITY_PROVIDER_CONFIGURATION.discoveryPath}`;
-        const response = await this.client.http.send(url, { headers: { accept: 'application/json' } }, { mode: 'read', signal, deadline });
-        if (!response.ok) throw new DomainError('IDENTITY_PROVIDER_UNAVAILABLE');
-        const body = (await response.json()) as Record<string, unknown>;
-        if (body.issuer !== issuer || typeof body.authorization_endpoint !== 'string' || typeof body.token_endpoint !== 'string' || typeof body.jwks_uri !== 'string') throw new Error('OIDC_DISCOVERY_INVALID');
+        const response = await this.client.send(url, { headers: { accept: 'application/json' } }, { mode: 'read', signal, deadline });
+        const body = await this.client.json(response, 'IDENTITY_PROVIDER_UNAVAILABLE');
+        if (body.issuer !== issuer || typeof body.authorization_endpoint !== 'string' || typeof body.token_endpoint !== 'string' || typeof body.jwks_uri !== 'string') throw new DomainError('IDENTITY_PROVIDER_UNAVAILABLE');
         const value = Object.freeze({ issuer, authorization: endpoint(body.authorization_endpoint), token: endpoint(body.token_endpoint), jwks: endpoint(body.jwks_uri) });
         this.cache.set(issuer, Object.freeze({ value, expires: Date.now() + IDENTITY_PROVIDER_CONFIGURATION.discoveryTtlSeconds * 1_000 }));
         return value;
@@ -36,6 +35,6 @@ export class OidcDiscovery {
 }
 function endpoint(value: string): string {
   const url = new URL(value);
-  if (url.protocol !== 'https:' || url.username || url.password || url.hash) throw new Error('OIDC_DISCOVERY_INVALID');
+  if (url.protocol !== 'https:' || url.username || url.password || url.hash) throw new DomainError('IDENTITY_PROVIDER_UNAVAILABLE');
   return url.toString();
 }

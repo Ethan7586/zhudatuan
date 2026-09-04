@@ -2,6 +2,7 @@ import { token } from '../../../../bootstrap/Container';
 
 export interface InvoiceInput {
   readonly request: string;
+  readonly inputHash: string;
   readonly kind: 'original' | 'red';
   readonly originalExternalId?: string;
   readonly title: string;
@@ -20,6 +21,7 @@ export interface IssuedInvoice {
 }
 
 export interface InvoiceIssuer {
+  /** Must return the same invoice identity and bytes for a repeated request/inputHash pair. */
   issue(input: InvoiceInput): Promise<IssuedInvoice>;
 }
 export const INVOICE_ISSUER = token<InvoiceIssuer>('finance.invoiceissuer');

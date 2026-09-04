@@ -1,11 +1,12 @@
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 
 import type { Session } from '../../domain/model/Session';
-import type { QueryPage } from '../../../../foundation/interface/Validation';
+import type { RefreshTokenFamily } from '../../domain/model/RefreshTokenFamily';
+import type { QueryPage } from '../../../../foundation/application/Validation';
 
 export interface SessionRecord {
   readonly session: Session;
-  readonly tokenHash: string;
+  readonly tokenFamily: RefreshTokenFamily;
   readonly ipHash: string;
   readonly userAgent: string;
   readonly deviceLabel: string;
@@ -20,7 +21,7 @@ export interface SessionRevocation {
 export interface SessionListRecord {
   readonly id: string;
   readonly membership: string;
-  readonly client: 'console' | 'storefront';
+  readonly client: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly deviceLabel: string;
   readonly userAgent: string;
   readonly assurance: number;

@@ -6,12 +6,31 @@ import { architectureDiagnostics } from '../audit/boundary.mjs';
 
 const root = repositoryRoot;
 const failures = [];
-const requiredCommerceLayers = ['handler', 'repository', 'http', 'event', 'job'];
+const requiredCommerceLayers = ['architecture', 'handler', 'repository', 'http', 'event', 'job'];
 const providerRoot = join(root, 'extensions/channel');
 const requirements = parse(readFileSync(join(root, 'config/requirements.yml'), 'utf8'));
 const providerAuthority = parse(readFileSync(join(root, 'config/providers.yml'), 'utf8'));
 const boundaryFixtures = parse(readFileSync(join(root, 'scripts/check/fixtures/Boundary.yml'), 'utf8'));
 const operationAuthority = parse(readFileSync(join(root, 'packages/contract/definitions/operations.yml'), 'utf8'), { merge: true });
+const browserRoot = join(root, 'tests/browser');
+
+for (const legacy of ['tests/browser/ConsoleMock.ts', 'tests/browser/OperationMock.ts', 'tests/browser/Fixtures.ts', 'tests/browser/OrderFixtures.ts', 'tests/browser/ProductFixtures.ts']) {
+  if (existsSync(join(root, legacy))) failures.push(`BROWSER_COMMERCE_MOCK_PRESENT:${legacy}`);
+}
+for (const file of allFiles(browserRoot).filter((name) => /\.(?:ts|tsx)$/.test(name))) {
+  if (/\bpage\.route\s*\(/.test(readFileSync(file, 'utf8'))) failures.push(`BROWSER_HTTP_MOCK_PRESENT:${short(file)}`);
+}
+for (const required of ['tests/browser/GlobalSetup.ts', 'tests/browser/Environment.ts', 'tests/browser/RealJourneys.spec.ts', 'tests/browser/VisualAcceptance.spec.ts', 'tools/seed/src/Visual.ts', 'tools/seed/src/Journey.ts']) {
+  if (!existsSync(join(root, required))) failures.push(`REAL_BROWSER_ASSET_MISSING:${required}`);
+}
+const visualAcceptancePath = join(browserRoot, 'VisualAcceptance.spec.ts');
+const visualAcceptance = existsSync(visualAcceptancePath) ? readFileSync(visualAcceptancePath, 'utf8') : '';
+for (const proof of ['AUTH_ROUTES', 'CONSOLE_ROUTES', 'STOREFRONT_ROUTES', 'expectWcagAA']) {
+  if (!visualAcceptance.includes(proof)) failures.push(`ROUTABLE_A11Y_MATRIX_PROOF_MISSING:${proof}`);
+}
+for (const routes of ['AUTH_ROUTES', 'CONSOLE_ROUTES', 'STOREFRONT_ROUTES']) {
+  if (!new RegExp(`Object\\.(?:entries|values)\\(\\s*${routes}\\s*\\)`).test(visualAcceptance)) failures.push(`ROUTABLE_A11Y_MATRIX_PROOF_MISSING:Object.enumerate(${routes})`);
+}
 
 const fixtureCodes = (boundaryFixtures.cases ?? []).map(({ code }) => code);
 if (JSON.stringify(fixtureCodes) !== JSON.stringify(architectureDiagnostics)) failures.push(`BOUNDARY_FIXTURE_CATALOG_INVALID:${fixtureCodes.length}`);
@@ -42,10 +61,26 @@ const repositoryImplementations = allFiles(join(root, 'services/commerce/src/mod
 );
 const repositoryContractPath = join(root, 'services/commerce/tests/repository/Repository.test.ts');
 const repositoryContract = existsSync(repositoryContractPath) ? readFileSync(repositoryContractPath, 'utf8') : '';
-for (const proof of ['describe.each(repositorySources)', 'schemaOwnership(objectAuthority.objects)', 'offset', 'select', 'PoolClient|DatabasePool']) {
+for (const proof of ['describe.each(repositorySources)', 'describe.each(persistenceSources)', 'schemaOwnership(objectAuthority.objects)', 'offset', 'select', 'PoolClient|DatabasePool']) {
   if (!repositoryContract.includes(proof)) failures.push(`REPOSITORY_TEST_MATRIX_PROOF_MISSING:${proof}`);
 }
 if (repositoryImplementations.length === 0) failures.push('REPOSITORY_TEST_MATRIX_EMPTY');
+
+const moduleQualityPath = join(root, 'services/commerce/tests/architecture/ModuleQuality.test.ts');
+const moduleQuality = existsSync(moduleQualityPath) ? readFileSync(moduleQualityPath, 'utf8') : '';
+for (const proof of [
+  "toHaveLength(33)",
+  "describe.each(modules)",
+  "Domain-backed rejection or invariant",
+  "Application use case",
+  "Persistence contract",
+  "every Operation",
+  "Scope and permission",
+  "idempotency and optimistic concurrency",
+  "closed failure union",
+]) {
+  if (!moduleQuality.includes(proof)) failures.push(`MODULE_QUALITY_TEST_PROOF_MISSING:${proof}`);
+}
 
 const mvp = Array.isArray(requirements?.mvp) ? requirements.mvp : [];
 if (mvp.length !== 22) failures.push(`MVP_REQUIREMENT_COUNT_INVALID:${mvp.length}`);
@@ -83,6 +118,10 @@ for (const app of ['auth', 'console', 'storefront']) {
   const manifest = JSON.parse(readFileSync(join(appRoot, 'package.json'), 'utf8'));
   if (typeof manifest.scripts?.['test:component'] !== 'string') failures.push(`APP_COMPONENT_SCRIPT_MISSING:${app}`);
   if (!allFiles(appRoot).some((name) => name.endsWith('.test.tsx'))) failures.push(`APP_COMPONENT_TEST_MISSING:${app}`);
+  const assembly = join(appRoot, 'src/route', app === 'console' ? 'Routes.test.ts' : 'Router.test.tsx');
+  const fallbackAssembly = app === 'auth' ? join(appRoot, 'src/route/Router.test.ts') : assembly;
+  const assemblySource = existsSync(fallbackAssembly) ? readFileSync(fallbackAssembly, 'utf8') : '';
+  for (const proof of ['RouteRegistry', app === 'console' ? 'COMPONENT_KEYS' : 'ROUTES']) if (!assemblySource.includes(proof)) failures.push(`ROUTE_ASSEMBLY_TEST_MISSING:${app}:${proof}`);
 }
 const matrix = join(root, 'packages/design/src/ResourceState.component.test.tsx');
 if (!existsSync(matrix)) failures.push('COMPONENT_STATE_MATRIX_MISSING');
@@ -104,7 +143,7 @@ if (failures.length > 0) {
   for (const failure of failures) console.error(failure);
   process.exit(1);
 }
-console.log(`test topology accepted: commerce=5 handlers=${operations.length} repositories=${repositoryImplementations.length} mvp=22 providers=11 clients=3 productionTestingImports=0`);
+console.log(`test topology accepted: commerce=6 modules=33 categories=7 handlers=${operations.length} repositories=${repositoryImplementations.length} mvp=22 providers=11 clients=3 browserMocks=0 routes=53 viewports=8 productionTestingImports=0`);
 
 function manifests(directory, result = []) {
   if (!existsSync(directory)) return result;

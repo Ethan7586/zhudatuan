@@ -1,0 +1,189 @@
+@import '../Navigation.css';
+@import '../Header.css';
+
+body:has(.consolelayout[data-visual-theme='console-v1']) {
+  overflow: hidden;
+}
+
+.consolelayout {
+  display: grid;
+  width: 100vw;
+  height: 100vh;
+  grid-template-columns: var(--sw-layout-sidebar) minmax(0, 1fr);
+  min-height: 0;
+  overflow: hidden;
+  background: var(--sw-surface-subtle);
+  transition: grid-template-columns var(--sw-duration-standard) var(--sw-ease-standard);
+}
+
+.consolelayout[data-sidebar='collapsed'] {
+  grid-template-columns: var(--sw-space-8) minmax(0, 1fr);
+}
+
+.consoleworkspace {
+  display: flex;
+  min-width: 0;
+  height: 100vh;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--sw-surface-subtle);
+}
+
+.mobilebackdrop {
+  display: none;
+}
+
+@media (max-width: 68rem) {
+  .consolelayout .consoleheader {
+    align-items: center;
+  }
+  .consoleheader .commandtrigger span {
+    max-width: 12rem;
+  }
+}
+
+@media (max-width: 54rem) {
+  .consoleheader .commandarea {
+    justify-self: stretch;
+  }
+  .consoleheader .commandtrigger {
+    width: 100%;
+  }
+  .consoleheader .taskbutton {
+    width: var(--sw-control-touch-target);
+    font-size: 0;
+  }
+  .consoleheader .taskbutton span {
+    margin: 0;
+  }
+  .scopebar .scopestatus {
+    display: none;
+  }
+
+  .consoleheader .operatorcopy {
+    display: none;
+  }
+}
+
+@media (max-width: 48rem) {
+  .consolelayout,
+  .consolelayout[data-sidebar='collapsed'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .consolelayout[data-mobile-nav] .consolesidebar,
+  .consolelayout[data-mobile-nav] .consolesidebar.iscollapsed {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: var(--sw-layer-drawer);
+    display: flex;
+    width: var(--sw-layout-sidebar);
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform var(--sw-duration-standard) var(--sw-ease-standard);
+  }
+
+  .consolelayout[data-mobile-nav='open'] .consolesidebar {
+    transform: translateX(0);
+  }
+  .consolelayout[data-mobile-nav] .consolesidebar .sidebarbrand {
+    display: flex;
+  }
+  .consolelayout[data-mobile-nav] .consolesidebar .sidebarbrandcopy,
+  .consolelayout[data-mobile-nav] .consolesidebar .sidebarlabel {
+    display: grid;
+  }
+
+  .consolelayout[data-mobile-nav] .consolesidebar .sidebarnavigation {
+    display: grid;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: var(--sw-space-1);
+  }
+
+  .consolelayout[data-mobile-nav] .consolesidebar .sidebarnavigation button {
+    justify-content: flex-start;
+    padding: 0 var(--sw-space-1-5);
+  }
+
+  .consolelayout[data-mobile-nav='open'] .mobilebackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: var(--sw-layer-popover);
+    display: block;
+    min-height: 0;
+    border: 0;
+    background: color-mix(in srgb, var(--sw-brand-ink) 48%, transparent);
+  }
+
+  .consolelayout .consoleheader {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding-inline: var(--sw-space-1-5);
+  }
+
+  .consoleheader .mobilemenubutton {
+    display: grid;
+  }
+  .consolebreadcrumb > span,
+  .consolebreadcrumb > i {
+    display: none;
+  }
+  .consoleheader .commandarea {
+    grid-column: 2;
+  }
+  .consoleheader .consoleactions {
+    grid-column: 3;
+  }
+  .consoleheader .taskbutton {
+    display: none;
+  }
+  .consoleworkspace .scopebar {
+    flex-direction: row;
+    padding-inline: var(--sw-space-1-5);
+  }
+  .scopecontext > span,
+  .scopecontext > .scopepath,
+  .scopecontext > i {
+    display: none;
+  }
+  .consoleworkspace .workspacebody {
+    padding-inline: var(--sw-space-1-5);
+  }
+}
+
+@media (max-width: 36rem) {
+  .consoleheader .commandarea {
+    display: none;
+  }
+  .consolelayout .consoleheader {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .consoleheader .consolebreadcrumb {
+    grid-column: 1;
+  }
+  .consoleheader .consoleactions {
+    grid-column: 2;
+  }
+  .consoleworkspace .scopebar {
+    padding-inline: var(--sw-space-1);
+  }
+  .consoleworkspace .scopecontext {
+    width: 100%;
+  }
+  .consoleworkspace #consolescope {
+    max-width: 100%;
+  }
+  .consoleworkspace :where(.scopedivider, #consoleperiod) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .consolelayout,
+  .consolelayout .consolesidebar {
+    transition: none;
+  }
+}

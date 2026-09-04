@@ -1,4 +1,4 @@
-import { array, literal, null as nullSchema, number, optional, record, strictObject, string, union } from 'zod/mini';
+import { array, boolean, lazy, literal, null as nullSchema, number, optional, record, strictObject, string, union, type ZodMiniType } from 'zod/mini';
 import { ContractJsonValueSchema } from './JsonSchema';
 import { isoUtc } from './Primitives';
 import { STOREFRONT_ENTRY_URL_PATTERN, STOREFRONT_HANDLE_PATTERN } from '../StorefrontEntry';
@@ -7,7 +7,8 @@ import { regex } from 'zod/mini';
 const nullableText = union([string(), nullSchema()]);
 const handle = string().check(regex(STOREFRONT_HANDLE_PATTERN));
 const publicUrl = string().check(regex(STOREFRONT_ENTRY_URL_PATTERN));
-const section = <T>(data: T) => strictObject({ state: literal(['complete', 'unavailable', 'failed']), version: string(), asOf: isoUtc, data: union([data as never, nullSchema()]) });
+const section = <TOutput>(data: ZodMiniType<TOutput>) =>
+  strictObject({ state: literal(['complete', 'unavailable', 'failed']), version: string(), asOf: isoUtc, data: union([data, nullSchema()]) });
 const binding = strictObject({ application: string(), mall: string(), pool: string(), release: string(), version: string(), tenant: string() });
 const identity = strictObject({
   state: literal(['anonymous', 'member']),
@@ -15,7 +16,35 @@ const identity = strictObject({
   membership: nullableText,
   csrf: optional(string()),
 });
-const navigation = strictObject({ id: string(), title: string(), icon: string(), route: string(), order: number() });
+interface StorefrontNavigationNode {
+  readonly key: string;
+  readonly title: string;
+  readonly parent: string | null;
+  readonly order: number;
+  readonly operation: string;
+  readonly experience: Readonly<{
+    icon: string;
+    routeKey: string;
+    route: string;
+    component: string;
+    placement: 'primary' | 'secondary' | 'contextual';
+    disabled: boolean;
+    disabledReason: string | null;
+    breadcrumbs: readonly Readonly<{ key: string; title: string }>[];
+  }>;
+  readonly children: readonly StorefrontNavigationNode[];
+}
+const navigation: ZodMiniType<StorefrontNavigationNode> = lazy(() =>
+  strictObject({
+    key: string(),
+    title: string(),
+    parent: nullableText,
+    order: number(),
+    operation: string(),
+    experience: strictObject({ icon: string(), routeKey: string(), route: string(), component: string(), placement: literal(['primary', 'secondary', 'contextual']), disabled: boolean(), disabledReason: nullableText, breadcrumbs: array(strictObject({ key: string(), title: string() })) }),
+    children: array(navigation),
+  })
+) as ZodMiniType<StorefrontNavigationNode>;
 const benefit = strictObject({ accounts: number(), availableMinor: number(), currency: nullableText, version: number() });
 const orders = strictObject({ total: number(), awaitingPayment: number(), fulfilling: number(), aftersale: number(), version: number() });
 const price = strictObject({ sku: string(), amountMinor: number(), compareMinor: union([number(), nullSchema()]), currency: string(), version: string() });
@@ -59,6 +88,10 @@ export const STOREFRONT_OUTPUT_SCHEMAS = {
     state: literal(['complete', 'partial']),
     entry: strictObject({ handle, url: publicUrl }),
     binding,
+    subject: strictObject({ principal: string(), membership: nullableText, member: nullableText }),
+    scope: strictObject({ id: string(), kind: literal('mall'), tenant: string() }),
+    capabilities: strictObject({ version: number(), values: array(string()) }),
+    navigationVersion: string(),
     identity: section(identity),
     navigation: section(array(navigation)),
     benefit: section(benefit),

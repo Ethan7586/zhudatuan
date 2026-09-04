@@ -27,30 +27,30 @@
   font-weight: 600;
   overflow-wrap: anywhere;
 }
-.orderlinepreview {
+.orderlinesummary {
   display: grid;
   gap: var(--sw-space-1);
 }
-.orderlinepreview > div {
+.orderlinesummary > div {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--sw-space-1);
 }
-.orderlinepreview > div > span:nth-child(2) {
+.orderlinesummary > div > span:nth-child(2) {
   display: grid;
   min-width: 0;
 }
-.orderlinepreview strong {
+.orderlinesummary strong {
   overflow: hidden;
   font-size: var(--sw-font-size-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.orderlinepreview small {
+.orderlinesummary small {
   color: var(--sw-muted);
 }
-.orderlinepreview b {
+.orderlinesummary b {
   font-size: var(--sw-font-size-caption);
 }
 .orderrecentoperation {
@@ -231,4 +231,49 @@
     overflow-x: auto;
     grid-template-columns: repeat(6, 4.25rem);
   }
+}
+
+.ordersectionalerts {
+  display: grid;
+  gap: var(--sw-space-1);
+}
+.ordersectionalerts:empty {
+  display: none;
+}
+.ordersectionstate {
+  display: flex;
+  gap: var(--sw-space-1);
+  align-items: flex-start;
+  margin: 0;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-subtle);
+  color: var(--sw-text-secondary);
+  padding: var(--sw-space-1-5);
+}
+.ordersectionstate.iserror {
+  border-color: var(--sw-warning);
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+.ordersectionstate > svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+}
+.ordersectionstate > span {
+  display: grid;
+  gap: var(--sw-space-0-5);
+}
+.ordersectionstate small {
+  color: inherit;
+}
+.ordersectionstate button {
+  width: max-content;
+  min-height: 2rem;
+  border: 0.0625rem solid currentColor;
+  border-radius: var(--sw-radius-sm);
+  background: transparent;
+  color: inherit;
+  padding: 0 var(--sw-space-1);
 }

@@ -4,11 +4,12 @@ import type { ReadTransactionContext, WriteTransactionContext } from '../../../.
 
 import { DomainError } from '../../../../foundation/domain/DomainError';
 
-import type { FulfillmentOrderPort } from '../../../order/public';
+import type { OrderFulfillmentPort } from '../../../order/public';
 import type { OrganizationReadPort } from '../../../organization/public';
 export interface ManagedFulfillment {
   readonly id: string;
   readonly order: string;
+  readonly member: string;
   readonly partner: string | null;
   readonly store: string | null;
   readonly state: string;
@@ -22,7 +23,7 @@ export interface ManagedReturn extends ManagedFulfillment {
 export class FulfillmentScopeReader {
   private readonly transactions = new PgTransactionAccess();
   constructor(
-    readonly orders: FulfillmentOrderPort,
+    readonly orders: OrderFulfillmentPort,
     private readonly organizations: OrganizationReadPort
   ) {}
   async member(context: ReadTransactionContext, order: string, member: string): Promise<void> {
@@ -35,12 +36,13 @@ export class FulfillmentScopeReader {
     const result = await database.query<{
       id: string;
       order: string;
+      member: string;
       partner: string | null;
       store: string | null;
       state: string;
       version: number;
     }>(
-      `select id,order_id "order",partner_id partner,store_id store,state,version::float8 version
+      `select id,order_id "order",member_id member,partner_id partner,store_id store,state,version::float8 version
       from fulfillment.fulfillmentorder where id=$1 for update`,
       [id]
     );
@@ -54,6 +56,7 @@ export class FulfillmentScopeReader {
     const result = await database.query<{
       id: string;
       order: string;
+      member: string;
       partner: string | null;
       store: string | null;
       state: string;
@@ -62,7 +65,7 @@ export class FulfillmentScopeReader {
       returnState: string;
       returnVersion: number;
     }>(
-      `select fulfillment.id,fulfillment.order_id "order",fulfillment.partner_id partner,fulfillment.store_id store,
+      `select fulfillment.id,fulfillment.order_id "order",fulfillment.member_id member,fulfillment.partner_id partner,fulfillment.store_id store,
       fulfillment.state,fulfillment.version::float8 version,returned.id "returnId",returned.state "returnState",
       returned.version::float8 "returnVersion"
       from fulfillment.returnrecord returned join fulfillment.fulfillmentorder fulfillment on fulfillment.id=returned.fulfillment_id

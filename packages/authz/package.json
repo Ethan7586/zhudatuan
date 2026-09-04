@@ -10,7 +10,8 @@
     "test": "vitest run"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./ids": "./src/PermissionIds.ts"
   },
   "types": "./src/index.ts",
   "devDependencies": {

@@ -8,7 +8,20 @@ export interface MemberSummary {
   readonly status: string;
   readonly version: number;
 }
+export interface PrincipalSummary {
+  readonly principal: string;
+  readonly displayName: string;
+  readonly mobileMasked: string | null;
+}
+export interface MemberProfileLabel {
+  readonly member: string;
+  readonly displayName: string;
+  readonly mobileMasked: string | null;
+}
 export interface MemberReadPort {
   summary(context: ReadTransactionContext, member: string, scope: string): Promise<MemberSummary | null>;
+  principals(context: ReadTransactionContext, principals: readonly string[], scope: string): Promise<readonly PrincipalSummary[]>;
+  profiles(context: ReadTransactionContext, members: readonly string[], scope: string): Promise<readonly MemberProfileLabel[]>;
+  search(context: ReadTransactionContext, query: string, limit?: number): Promise<readonly string[]>;
 }
 export const MEMBER_READ_PORT = publicPort<MemberReadPort>('member', 'read');

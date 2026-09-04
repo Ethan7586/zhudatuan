@@ -35,7 +35,7 @@ describe('identity login challenge', () => {
     ).resolves.toEqual({ principal_id: 'principal:one' });
     expect(queries[0]?.text).toContain('for update');
     expect(queries[0]?.text).not.toContain('set attempts');
-    expect(queries[0]?.values).toEqual(['challenge:login', 'digest:challenge:login:123456', 'login', 'subject:digest']);
+    expect(queries[0]?.values).toEqual(['challenge:login', 'digest:challenge:login:123456', 'login', 'subject:digest', 10]);
 
     await expect(
       withWriteTransaction(query, (context) =>
@@ -72,7 +72,8 @@ describe('identity login challenge', () => {
       )
     ).rejects.toMatchObject({ result: { status: 400, body: { code: 'CHALLENGE_INVALID' } } });
     expect(queries).toHaveLength(2);
-    expect(queries[1]?.text).toContain('attempts=least(10,attempts+1)');
+    expect(queries[1]?.text).toContain('attempts=least($2,attempts+1)');
+    expect(queries[1]?.values).toEqual(['challenge:login', 10]);
   });
 
   it('advances the principal session version and only carries it to surviving sessions', async () => {

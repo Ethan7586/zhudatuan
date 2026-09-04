@@ -1,6 +1,7 @@
 import { array, boolean, discriminatedUnion, literal, null as nullSchema, number, optional, strictObject, string, union } from 'zod/mini';
+import { CONSUMER_TARGETS, OPERATION_TARGETS } from '../Surface';
 
-const target = literal(['console', 'storefront']);
+const target = literal(OPERATION_TARGETS);
 const membershipShape = {
   id: string(),
   target,
@@ -24,11 +25,11 @@ const proof = strictObject({
 });
 const enrollment = strictObject({
   kind: literal('enrollment'),
-  enrollment: strictObject({ id: string(), expiresAt: string(), target: literal('storefront') }),
+  enrollment: strictObject({ id: string(), expiresAt: string(), target: literal(CONSUMER_TARGETS) }),
 });
 const invitationProof = strictObject({
   kind: literal('proofRequired'),
-  proof: strictObject({ reference: string(), expiresAt: string(), method: literal('otp'), target }),
+  proof: strictObject({ reference: string(), purpose: literal('invitation_login'), expiresAt: string(), retryAt: string(), attemptsRemaining: number(), method: literal('otp'), target }),
 });
 const policy = strictObject({
   terms_title: string(),
@@ -72,7 +73,7 @@ const invitation = strictObject({
   revoke_reason: union([string(), nullSchema()]),
   version: number(),
 });
-const createdInvitation = strictObject({
+export const createdInvitation = strictObject({
   id: string(),
   kind: literal(['signin', 'enrollment', 'campaign']),
   target,
@@ -92,8 +93,8 @@ export const IDENTITY_OUTPUT_SCHEMAS = {
   IdentitySessionsCreateOutput: discriminatedUnion('kind', [authorization, selection, proof, enrollment]),
   IdentitySessionsCompleteOutput: authorization,
   IdentityTicketsExchangeOutput: strictObject({ returnTarget, expiresIn: number() }),
-  IdentityChallengesCreateOutput: strictObject({ id: string(), purpose: literal(['login', 'password_reset', 'enrollment', 'enrollment_campaign']), expires_at: string(), retry_at: string() }),
-  IdentityMobileChallengesCreateOutput: strictObject({ id: string(), purpose: literal('phone_change'), expires_at: string(), retry_at: string() }),
+  IdentityChallengesCreateOutput: strictObject({ id: string(), purpose: literal(['login', 'password_reset', 'enrollment', 'enrollment_campaign']), expires_at: string(), retry_at: string(), attempts_remaining: number() }),
+  IdentityMobileChallengesCreateOutput: strictObject({ id: string(), purpose: literal('phone_change'), expires_at: string(), retry_at: string(), attempts_remaining: number() }),
   IdentityInvitationsResolveOutput: discriminatedUnion('kind', [authorization, invitationProof, enrollment]),
   IdentityInvitationsReadOutput: strictObject({ items: array(invitation), count: number(), nextCursor: optional(string()) }),
   IdentityInvitationsCreateOutput: createdInvitation,
@@ -110,7 +111,7 @@ export const IDENTITY_OUTPUT_SCHEMAS = {
   IdentityEnrollmentsReadOutput: strictObject({
     id: string(),
     kind: literal(['enrollment', 'campaign']),
-    target: literal('storefront'),
+    target: literal(CONSUMER_TARGETS),
     expiresAt: string(),
     subjectMode: literal(['bound', 'input']),
     organization: strictObject({ id: string(), name: string() }),
@@ -118,7 +119,7 @@ export const IDENTITY_OUTPUT_SCHEMAS = {
     employee: optional(strictObject({ displayName: string(), employeeNo: optional(string()), departmentName: optional(string()) })),
     policy,
   }),
-  IdentityEnrollmentsCompleteOutput: discriminatedUnion('kind', [authorization, strictObject({ kind: literal('enrolled'), target: literal('storefront') })]),
+  IdentityEnrollmentsCompleteOutput: discriminatedUnion('kind', [authorization, strictObject({ kind: literal('enrolled'), target: literal(CONSUMER_TARGETS) })]),
   IdentityFederationsStartOutput: redirect,
   IdentityFederationsCallbackOutput: redirect,
   IdentityFederationsSelectionReadOutput: strictObject({ memberships: array(membership), expiresAt: string(), target }),
@@ -143,6 +144,10 @@ export const IDENTITY_OUTPUT_SCHEMAS = {
   }),
   IdentityProvidersReadOutput: strictObject({
     items: array(strictObject({ id: string(), type: literal(['wechat', 'wecomcorp', 'wecomsuite', 'oidc']), status: literal('enabled') })),
+  }),
+  IdentityProvidersCenterReadOutput: strictObject({
+    items: array(strictObject({ id: string(), type: literal(['wechat', 'wecomcorp', 'wecomsuite', 'oidc']), status: literal('enabled') })),
+    count: number(),
   }),
   IdentityMembershipsReadOutput: strictObject({
     items: array(strictObject({ ...membershipShape, current: boolean(), accessVersion: number() })),

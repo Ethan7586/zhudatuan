@@ -1,0 +1,71 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.7 Member",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "operations": [
+    "member.members.read",
+    "member.profile.read",
+    "member.addresses.read",
+    "member.addresses.manage",
+    "member.favorites.read",
+    "member.favorites.put",
+    "member.imports.create",
+    "member.imports.read"
+  ],
+  "events": [
+    "member.address.changed",
+    "member.favorite.changed"
+  ],
+  "aggregates": [
+    "MemberProfile",
+    "AddressBook",
+    "FavoriteList",
+    "Preference"
+  ],
+  "invariants": [
+    "one-profile-per-principal-and-one-membership-per-organization-client",
+    "every-nonempty-address-book-has-exactly-one-default-address",
+    "address-writes-use-required-optimistic-versioning-and-a-member-row-lock",
+    "address-pii-is-encrypted-at-rest-and-only-masked-fields-are-returned-to-clients",
+    "address-deletion-is-a-versioned-business-invalidation-and-promotes-a-replacement-default",
+    "favorites-are-unique-by-member-and-listing-and-cross-device-writes-use-one-idempotent-upsert",
+    "favorite-removal-is-a-versioned-business-invalidation-without-physical-deletion",
+    "favorite-addition-requires-current-catalog-visibility-in-the-members-mall",
+    "invalid-favorites-remain-removable-and-return-a-readable-unavailability-explanation",
+    "member-profile-labels-are-read-only-through-the-scope-redacted-database-projection",
+    "identity-owns-invitation-queries-and-member-only-exposes-an-identity-registration-port",
+    "preference-is-a-real-profile-owned-projection-initialized-for-every-member",
+    "public-read-ports-return-minimal-masked-dtos-and-never-expose-repositories"
+  ],
+  "retainedLiExperience": [
+    "profile-membership-and-enterprise-summary",
+    "encrypted-address-list-create-update-and-delete-journey",
+    "explicit-default-address-selection-and-readable-default-badge",
+    "server-persisted-favorites-on-product-and-account-surfaces",
+    "unavailable-favorite-explanation-with-always-available-removal",
+    "membership-switching-with-authoritative-access-version",
+    "member-list-registration-reset-and-real-csv-import-task"
+  ],
+  "verification": {
+    "authorityHashes": "matched",
+    "commerceTypecheck": "passed",
+    "storefrontTypecheck": "passed",
+    "identityAndMemberTests": "45 files and 106 tests passed",
+    "storefrontAccountTests": "3 files and 5 tests passed",
+    "consoleMemberAndTaskTests": "3 files and 8 tests passed",
+    "contractTests": "6 files and 51 tests passed",
+    "contractGenerator": "current",
+    "databaseMigrationInventory": "historical=171 repair=154 total=325",
+    "databaseReplay": "325 migrations applied; runtime operations=304 capabilities=304 events=121; hard-cut SQL contracts passed",
+    "eventsAndOperations": "passed with 0 violations",
+    "boundariesAndOwnership": "passed with 0 findings",
+    "transactionPaginationAndPerformance": "passed",
+    "duplicates": "passed with 0 violations",
+    "naming": "passed with 0 findings",
+    "globalGeneration": "Member artifacts are current; the global trace awaits real miniapp, store and supplier feature entrypoints",
+    "globalCallGraph": "Member has no broken call point; six generated client bindings remain deferred to the miniapp, store and supplier client work package"
+  }
+}

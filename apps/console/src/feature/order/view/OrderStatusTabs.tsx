@@ -1,4 +1,5 @@
 import type { OrderView } from '../model/OrderFilter';
+import type { OrderDetailSectionState, OrderFacetData } from '../model/Order';
 
 interface StatusTab {
   readonly key: OrderView;
@@ -17,16 +18,18 @@ const tabs: readonly StatusTab[] = Object.freeze([
 
 export function OrderStatusTabs({
   active,
+  facets,
   onChange,
 }: Readonly<{
   active: OrderView;
+  facets: OrderDetailSectionState<OrderFacetData> | undefined;
   onChange: (view: OrderView) => void;
 }>) {
   return (
-    <nav className="orderstatustabs" aria-label="订单状态">
+    <nav className="orderstatustabs" aria-label="订单状态" aria-busy={facets === undefined}>
       {tabs.map((tab) => (
-        <button key={tab.key} type="button" aria-pressed={active === tab.key} onClick={() => onChange(tab.key)}>
-          {tab.label}
+        <button key={tab.key} type="button" aria-label={tab.label} aria-pressed={active === tab.key} onClick={() => onChange(tab.key)}>
+          {tab.label}{facets?.state === 'ready' ? <span className={tab.key === 'exception' ? 'isexception' : undefined} aria-hidden="true">{facets.data.counts[tab.key]}</span> : null}
         </button>
       ))}
     </nav>

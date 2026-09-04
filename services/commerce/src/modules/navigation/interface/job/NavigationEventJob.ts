@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { InvalidateNavigation } from '../../application/process/InvalidateNavigation';
 
 export class NavigationEventJob implements JobProcessor {
@@ -11,7 +11,7 @@ export class NavigationEventJob implements JobProcessor {
     const event = text(envelope.eventId, 'NAVIGATION_EVENT_ID_REQUIRED');
     const type = text(envelope.event, 'NAVIGATION_EVENT_TYPE_REQUIRED');
     const scope = text(envelope.scopeId, 'NAVIGATION_EVENT_SCOPE_REQUIRED');
-    if (job.scope_id !== scope) throw new Error('NAVIGATION_EVENT_SCOPE_MISMATCH');
+    if (job.scope !== scope) throw new Error('NAVIGATION_EVENT_SCOPE_MISMATCH');
     await this.invalidation.execute(event, type, record(envelope.payload, 'NAVIGATION_EVENT_PAYLOAD_INVALID'), { scope, trace: job.id, signal, deadline });
   }
 }

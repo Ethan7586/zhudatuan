@@ -1,0 +1,95 @@
+.operatorpage {
+  min-height: calc(100vh - 76px);
+  padding: var(--sw-space-4);
+  background: var(--sw-background);
+}
+
+.operatorpage .pageheader {
+  margin-bottom: var(--sw-space-3);
+}
+
+.worklist {
+  overflow: hidden;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  box-shadow: var(--sw-shadow-card);
+}
+
+.worklist > header,
+.worklist li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+}
+
+.worklist > header {
+  padding: 20px 24px;
+  border-bottom: 0.0625rem solid var(--sw-border);
+}
+
+.worklist h2,
+.worklist p {
+  margin: 0;
+}
+
+.worklist ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.worklist li {
+  min-height: 72px;
+  padding: 16px 24px;
+  border-bottom: 0.0625rem solid var(--sw-border);
+}
+
+.worklist li:last-child {
+  border-bottom: 0;
+}
+
+.worklist li p,
+.worklistmeta time,
+.worklistempty p {
+  color: var(--sw-text-secondary);
+  font-size: 14px;
+}
+
+.worklistmeta {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.worklistmeta span {
+  color: var(--sw-success-strong);
+  font-weight: 650;
+}
+
+.worklistempty {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.operatorfailure {
+  max-width: 640px;
+  margin: 12vh auto;
+}
+
+@media (max-width: 767px) {
+  .operatorpage {
+    padding: 20px 16px 88px;
+  }
+
+  .worklist > header,
+  .worklist li {
+    align-items: flex-start;
+    padding-inline: 16px;
+  }
+
+  .worklistmeta {
+    min-width: 88px;
+  }
+}

@@ -7,7 +7,7 @@
   background: color-mix(in srgb, var(--sw-brand-ink) 3%, transparent);
 }
 .productdrawer {
-  width: min(500px, 100vw);
+  width: clamp(480px, 35vw, 640px);
   height: 100%;
   border-left: 1px solid var(--sw-border);
   background: var(--sw-surface);
@@ -226,56 +226,13 @@
   background: var(--sw-commerce-warm);
   color: var(--sw-warning);
 }
-.productblocker {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid var(--sw-warning);
-  border-radius: 7px;
-  background: var(--sw-commerce-warm);
-  padding: 11px 12px;
-}
-.productblocker > svg {
-  width: 25px;
-  height: 25px;
-  color: var(--sw-warning);
-}
-.productblocker h3 {
-  margin: 0;
-  color: var(--sw-warning-strong);
-  font-size: 11px;
-  line-height: 17px;
-}
-.productblocker p {
-  margin: 1px 0 0;
-  color: var(--sw-warning-strong);
-  font-size: 10px;
-  line-height: 16px;
-}
-.productblocker button {
-  display: inline-flex;
-  min-height: 32px;
-  align-items: center;
-  gap: 4px;
-  border: 0;
-  background: transparent;
-  color: var(--sw-brand);
-  padding: 0;
-  font-size: 10px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.productblocker button svg {
-  width: 13px;
-  height: 13px;
-}
-@media (max-width: 760px) {
+@media (max-width: 1023px) {
   .productdraweroverlay {
     inset: 0;
   }
   .productdrawer {
     width: 100%;
+    border-left: 0;
   }
   .productdrawerheader {
     padding-inline: 15px;

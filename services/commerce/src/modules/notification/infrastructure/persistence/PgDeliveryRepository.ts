@@ -23,11 +23,15 @@ export class PgDeliveryRepository implements DeliveryRepository {
   async eventTemplates(context: ReadTransactionContext, scope: string, event: string, member: string | null) {
     const scopes = await this.notificationScopes(context, scope);
     const result = await this.transactions.database(context).query<TemplateRecord>(
-      `select distinct on(template.channel) template.* from notification.template template left join notification.preference preference
+      `select distinct on(template.channel) template.id,template.scope_id,template.channel,template.event_type,template.version,
+      template.variable_schema,template.provider_template,template.subject,template.body,template.status,template.created_at,template.purpose,template.mandatory,
+      coalesce(preference.enabled,true) preference_enabled,coalesce(preference.authorization_state,'unknown') authorization_state,
+      coalesce(preference.consent_source,'system') consent_source,preference.quiet_start::text,preference.quiet_end::text,
+      preference.quiet_timezone,coalesce(preference.version,0) preference_version
+      from notification.template template left join notification.preference preference
       on preference.member_id=$2 and preference.channel=template.channel and preference.event_type=template.event_type
       where template.scope_id=any($1::text[]) and template.event_type=$3 and template.status='active'
-      and($2::text is not null or template.channel='inapp') and coalesce(preference.enabled,true)
-      and(template.channel<>'wechat' or preference.authorization_state='accepted')
+      and($2::text is not null or template.channel='inapp')
       order by template.channel,array_position($1::text[],template.scope_id),template.version desc`,
       [scopes, member, event]
     );
@@ -52,12 +56,15 @@ export class PgDeliveryRepository implements DeliveryRepository {
     const database = this.transactions.database(context);
     const queued = await database.query<{ id: string }>(
       `insert into notification.dispatch(id,scope_id,member_id,template_id,channel,recipient_token,
-      recipient_ciphertext,recipient_key_version,recipient_ref,payload,subject,body,state,idempotency_key,available_at,created_at)
-      values($1,$2,$3,$4,(select channel from notification.template where id=$4),$5,$6,$7,$8,$9::jsonb,$10,$11,'queued',$12,
-      clock_timestamp(),clock_timestamp()) on conflict(scope_id,idempotency_key) do nothing returning id`,
-      [input.id, input.scope, input.member, input.template, input.recipientToken, input.recipientCiphertext, input.recipientKeyVersion, input.recipientRef, JSON.stringify(input.variables), input.subject, input.body, input.idempotency]
+      recipient_ciphertext,recipient_key_version,recipient_ref,payload,subject,body,event_type,template_version,provider_template,
+      variable_schema,purpose,mandatory,state,idempotency_key,available_at,attempt_count,max_attempts,created_at)
+      values($1,$2,$3,$4,(select channel from notification.template where id=$4),$5,$6,$7,$8,$9::jsonb,$10,$11,$12,$13,$14,
+      $15::jsonb,$16,$17,'queued',$18,$19,0,5,clock_timestamp()) on conflict(scope_id,idempotency_key) do nothing returning id`,
+      [input.id, input.scope, input.member, input.template, input.recipientToken, input.recipientCiphertext, input.recipientKeyVersion, input.recipientRef,
+        JSON.stringify(input.variables), input.subject, input.body, input.event, input.templateVersion, input.providerTemplate,
+        JSON.stringify(input.variableSchema), input.purpose, input.mandatory, input.idempotency, input.availableAt]
     );
-    if (queued.rows[0]) await new PgRuntimeWriter(database).schedule({ id: `job:${randomUUID()}`, kind: 'notification', owner: 'notification', scope: input.scope, payload: { dispatch: queued.rows[0].id }, priority: 20 });
+    if (queued.rows[0]) await new PgRuntimeWriter(database).schedule({ id: `job:notification:${randomUUID()}`, kind: 'notification', owner: 'notification', scope: input.scope, payload: { dispatch: queued.rows[0].id }, priority: 20, availableAt: input.availableAt });
   }
 
   async completeInbox(context: WriteTransactionContext, event: string): Promise<void> {
@@ -66,39 +73,95 @@ export class PgDeliveryRepository implements DeliveryRepository {
 
   async claim(context: WriteTransactionContext, id: string): Promise<DispatchRecord | null> {
     const result = await this.transactions.database(context).query<DispatchRecord>(
-      `update notification.dispatch dispatch set state='sending' from notification.template template
-      where dispatch.id=$1 and template.id=dispatch.template_id and dispatch.state in('queued','failed')
-      returning dispatch.id,dispatch.scope_id,dispatch.member_id,dispatch.template_id,dispatch.channel,template.event_type,template.version,
-        template.provider_template,template.variable_schema,dispatch.subject,dispatch.body,dispatch.payload,dispatch.recipient_ciphertext,
-        dispatch.recipient_ref,template.status`,
+      `with claimed as(
+        update notification.dispatch set state='sending',attempt_count=attempt_count+1,last_attempt_at=clock_timestamp()
+        where id=$1 and state in('queued','retrying') and available_at<=clock_timestamp() and attempt_count<max_attempts
+        returning id,scope_id,member_id,template_id,channel,event_type,template_version,provider_template,variable_schema,subject,body,
+          payload,recipient_ciphertext,recipient_ref,purpose,mandatory,attempt_count attempt_sequence,max_attempts
+      ) select claimed.id,claimed.scope_id,claimed.member_id,claimed.template_id,claimed.channel,claimed.event_type,
+        claimed.template_version,claimed.provider_template,claimed.variable_schema,claimed.subject,claimed.body,claimed.payload,
+        claimed.recipient_ciphertext,claimed.recipient_ref,claimed.purpose,claimed.mandatory,claimed.attempt_sequence,claimed.max_attempts,
+        coalesce(preference.enabled,true) preference_enabled,
+        coalesce(preference.authorization_state,'unknown') authorization_state,coalesce(preference.consent_source,'system') consent_source,
+        preference.quiet_start::text,preference.quiet_end::text,preference.quiet_timezone,
+        coalesce(preference.version,0) preference_version
+      from claimed left join notification.preference preference on preference.member_id=claimed.member_id
+        and preference.channel=claimed.channel and preference.event_type=claimed.event_type`,
       [id]
     );
     return result.rows[0] ? Object.freeze(result.rows[0]) : null;
   }
 
-  async complete(context: WriteTransactionContext, dispatch: DispatchRecord, receipt: DeliveryReceipt): Promise<void> {
+  async complete(context: WriteTransactionContext, dispatch: DispatchRecord, receipt: DeliveryReceipt, route: number): Promise<void> {
     const database = this.transactions.database(context);
-    const completed = await database.query<{ id: string; scope: string; channel: string }>(
-      `with completed as(update notification.dispatch set state='sent' where id=$1 and state='sending' returning id,scope_id,channel)
-      insert into notification.attempt(id,dispatch_id,scope_id,member_id,provider,external_id,state,attempted_at)
-      select $2,completed.id,completed.scope_id,$3,$4,$5,'sent',clock_timestamp() from completed
-      returning dispatch_id id,scope_id scope,(select channel from completed) channel`,
-      [dispatch.id, `attempt:${randomUUID()}`, dispatch.member_id, receipt.provider, receipt.externalId]
+    const completed = await database.query<{ id: string; scope: string; channel: string; fresh: boolean }>(
+      `with selected as(select id,scope_id,member_id,channel,state from notification.dispatch where id=$1 and state in('sending','sent')),
+      receipt as(insert into notification.providerreceipt(id,dispatch_id,scope_id,provider,external_id,received_at)
+        select $2,id,scope_id,$3,$4,clock_timestamp() from selected where state='sending'
+        on conflict(provider,external_id) do nothing returning dispatch_id),
+      accepted as(select dispatch_id from receipt union all select existing.dispatch_id from notification.providerreceipt existing
+        join selected on selected.id=existing.dispatch_id where existing.provider=$3 and existing.external_id=$4 and not exists(select 1 from receipt)),
+      completed as(update notification.dispatch dispatch set state='sent',last_error_class=null,last_error_code=null
+        from accepted where dispatch.id=accepted.dispatch_id and dispatch.state='sending' returning dispatch.id,dispatch.scope_id,dispatch.member_id,dispatch.channel)
+      ,attempted as(insert into notification.attempt(id,dispatch_id,scope_id,member_id,provider,external_id,state,sequence,route_index,attempted_at)
+      select $5,completed.id,completed.scope_id,completed.member_id,$3,$4,'sent',$6,$7,clock_timestamp() from completed
+      returning dispatch_id)
+      select completed.id,completed.scope_id scope,completed.channel,true fresh from completed
+      union all select selected.id,selected.scope_id,selected.channel,false fresh from selected join accepted on accepted.dispatch_id=selected.id
+      where selected.state='sent' and not exists(select 1 from completed)`,
+      [dispatch.id, `receipt:${randomUUID()}`, receipt.provider, receipt.externalId, `attempt:${randomUUID()}`, dispatch.attempt_sequence, route]
     );
     const row = completed.rows[0];
     if (!row) throw new Error('NOTIFICATION_DELIVERY_STATE_LOST');
-    const event = `event:${randomUUID()}`;
-    await new PgRuntimeWriter(database).append({ id: event, type: 'notification.delivered', aggregateType: 'dispatch', aggregate: row.id, scope: row.scope, payload: { dispatch: row.id, channel: row.channel }, trace: event });
+    if (row.fresh) {
+      const event = `event:${randomUUID()}`;
+      await new PgRuntimeWriter(database).append({ id: event, type: 'notification.delivered', aggregateType: 'dispatch', aggregate: row.id, scope: row.scope, payload: { dispatch: row.id, channel: row.channel }, trace: event });
+    }
   }
 
-  async fail(context: WriteTransactionContext, dispatch: DispatchRecord, provider: string, code: string): Promise<void> {
+  async recordFailure(context: WriteTransactionContext, dispatch: DispatchRecord, provider: string, route: number, failure: Readonly<{ kind: import('../../domain/model/Dispatch').DeliveryFailureClass; code: string }>): Promise<void> {
     await this.transactions.database(context).query(
-      `with failed as(update notification.dispatch set state='failed',available_at=clock_timestamp()
-      where id=$1 and state='sending' returning id,scope_id,member_id) insert into notification.attempt
-      (id,dispatch_id,scope_id,member_id,provider,state,error_code,attempted_at)
-      select $2,id,scope_id,member_id,$3,'failed',$4,clock_timestamp() from failed`,
-      [`${dispatch.id}`, `attempt:${randomUUID()}`, provider, code]
+      `insert into notification.attempt(id,dispatch_id,scope_id,member_id,provider,state,error_class,error_code,sequence,route_index,attempted_at)
+      select $2,id,scope_id,member_id,$3,case when $5='ambiguous' then 'ambiguous' else 'failed' end,$5,$6,$7,$4,clock_timestamp()
+      from notification.dispatch where id=$1 and state='sending'`,
+      [dispatch.id, `attempt:${randomUUID()}`, provider, route, failure.kind, failure.code, dispatch.attempt_sequence]
     );
+  }
+
+  async fail(context: WriteTransactionContext, dispatch: DispatchRecord, provider: string, route: number, failure: Readonly<{ kind: import('../../domain/model/Dispatch').DeliveryFailureClass; code: string }>): Promise<boolean> {
+    const result = await this.transactions.database(context).query<{ terminal: boolean }>(
+      `with failed as(update notification.dispatch set
+        state=case when $5 in('permanent','ambiguous') or attempt_count>=max_attempts then 'dead' else 'retrying' end,
+        available_at=case when $5 in('permanent','ambiguous') or attempt_count>=max_attempts then available_at
+          else clock_timestamp()+make_interval(secs=>least(3600,(2^least(attempt_count,10))*15)::integer) end,
+        last_error_class=$5,last_error_code=$6
+      where id=$1 and state='sending' returning id,scope_id,member_id,attempt_count,max_attempts,state='dead' terminal)
+      insert into notification.attempt(id,dispatch_id,scope_id,member_id,provider,state,error_class,error_code,sequence,route_index,attempted_at)
+      select $2,id,scope_id,member_id,$3,case when $5='ambiguous' then 'ambiguous' else 'failed' end,$5,$6,attempt_count,$4,clock_timestamp()
+      from failed returning (select terminal from failed) terminal`,
+      [dispatch.id, `attempt:${randomUUID()}`, provider, route, failure.kind, failure.code]
+    );
+    if (!result.rows[0]) throw new Error('NOTIFICATION_DELIVERY_STATE_LOST');
+    return result.rows[0].terminal;
+  }
+
+  async cancel(context: WriteTransactionContext, dispatch: DispatchRecord, reason: string): Promise<void> {
+    const result = await this.transactions.database(context).query(
+      `update notification.dispatch set state='cancelled',attempt_count=greatest(0,attempt_count-1),last_error_class='permanent',last_error_code=$2
+      where id=$1 and state='sending'`, [dispatch.id, `NOTIFICATION_${reason.toUpperCase()}`]
+    );
+    if (result.rowCount !== 1) throw new Error('NOTIFICATION_DELIVERY_STATE_LOST');
+  }
+
+  async defer(context: WriteTransactionContext, dispatch: DispatchRecord, availableAt: string): Promise<void> {
+    const database = this.transactions.database(context);
+    const result = await database.query(
+      `update notification.dispatch set state='retrying',attempt_count=greatest(0,attempt_count-1),available_at=$2,last_error_class=null,last_error_code=null
+      where id=$1 and state='sending'`, [dispatch.id, availableAt]
+    );
+    if (result.rowCount !== 1) throw new Error('NOTIFICATION_DELIVERY_STATE_LOST');
+    await new PgRuntimeWriter(database).schedule({ id: `job:notification:defer:${randomUUID()}`, kind: 'notification', owner: 'notification',
+      scope: dispatch.scope_id, payload: { dispatch: dispatch.id }, priority: 30, availableAt });
   }
 
   async challenge(context: ReadTransactionContext, id: string): Promise<ChallengeRecord | null> {

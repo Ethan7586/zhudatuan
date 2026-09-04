@@ -1,3 +1,6 @@
+import type { ProviderCapability } from '@shop/contract';
+import { validateConnectionLimits } from '../policy/ChannelPolicy';
+
 export type ConnectionState = 'draft' | 'testing' | 'enabled' | 'degraded' | 'disabled';
 
 export interface ConnectionLimits {
@@ -11,32 +14,56 @@ export interface ConnectionLimits {
   readonly recoveryMs: number;
 }
 
-const transitions: Readonly<Record<ConnectionState, readonly ConnectionState[]>> = Object.freeze({
-  draft: ['testing', 'disabled'],
-  testing: ['enabled', 'degraded', 'disabled'],
-  enabled: ['degraded', 'disabled'],
-  degraded: ['testing', 'enabled', 'disabled'],
-  disabled: ['testing'],
-});
+export interface ConnectionSnapshot {
+  readonly id: string;
+  readonly provider: string;
+  readonly scope: string;
+  readonly state: ConnectionState;
+  readonly contractVersion: string;
+  readonly capabilities: readonly ProviderCapability[];
+  readonly secretRef: string | null;
+  readonly region: string;
+  readonly limits: ConnectionLimits;
+  readonly version: number;
+}
 
 export class Connection {
-  constructor(
-    readonly id: string,
-    readonly provider: string,
-    readonly scope: string,
-    readonly state: ConnectionState,
-    readonly region: string,
-    readonly limits: ConnectionLimits,
-    readonly version: number
-  ) {
-    if (!id || !provider || !scope || !region || !Number.isSafeInteger(version) || version < 0) throw new Error('CHANNEL_CONNECTION_INVALID');
-  }
+  readonly id: string;
+  readonly provider: string;
+  readonly scope: string;
+  readonly state: ConnectionState;
+  readonly contractVersion: string;
+  readonly capabilities: readonly ProviderCapability[];
+  readonly secretRef: string | null;
+  readonly region: string;
+  readonly limits: ConnectionLimits;
+  readonly version: number;
 
-  canMoveTo(target: ConnectionState): boolean {
-    return transitions[this.state].includes(target);
-  }
-
-  requireTransition(target: ConnectionState): void {
-    if (!this.canMoveTo(target)) throw new Error(`CONNECTION_TRANSITION_INVALID:${this.state}:${target}`);
+  constructor(value: ConnectionSnapshot) {
+    if (
+      !value.id.trim() ||
+      !/^[a-z][a-z0-9]{1,63}$/.test(value.provider) ||
+      !value.scope.trim() ||
+      !value.region.trim() ||
+      !/^[a-z][a-z0-9]*\.v[1-9][0-9]*$/.test(value.contractVersion) ||
+      value.capabilities.length === 0 ||
+      new Set(value.capabilities).size !== value.capabilities.length ||
+      !Number.isSafeInteger(value.version) ||
+      value.version < 0 ||
+      (value.secretRef !== null && !/^[a-z0-9][a-z0-9/.-]{2,255}$/.test(value.secretRef))
+    )
+      throw new Error('CHANNEL_CONNECTION_INVALID');
+    validateConnectionLimits(value.limits);
+    this.id = value.id;
+    this.provider = value.provider;
+    this.scope = value.scope;
+    this.state = value.state;
+    this.contractVersion = value.contractVersion;
+    this.capabilities = Object.freeze([...value.capabilities]);
+    this.secretRef = value.secretRef;
+    this.region = value.region;
+    this.limits = Object.freeze({ ...value.limits });
+    this.version = value.version;
+    Object.freeze(this);
   }
 }

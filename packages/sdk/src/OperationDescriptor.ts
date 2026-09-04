@@ -1,4 +1,4 @@
-import type { ApiErrorCode, HttpMethod, OperationAudience, OperationTarget, OperationId, OperationInputFor, OperationOutputFor, OperationResponseMode, Schema } from '@shop/contract';
+import type { ApiErrorCode, HttpMethod, OperationAudience, OperationTarget, OperationId, OperationIdempotencyPolicy, OperationInputFor, OperationOutputFor, OperationResponseMode, Schema } from '@shop/contract';
 import type { RequestContext } from './RequestContext';
 import type { EventStream } from './EventStream';
 
@@ -9,6 +9,7 @@ export interface OperationDescriptor<TKey extends OperationId> {
   readonly audience: OperationAudience;
   readonly targets: readonly OperationTarget[];
   readonly responseMode: OperationResponseMode;
+  readonly idempotencyPolicy: OperationIdempotencyPolicy;
   readonly idempotent: boolean;
   readonly timeout: number;
   readonly errorUnion: readonly ApiErrorCode[];

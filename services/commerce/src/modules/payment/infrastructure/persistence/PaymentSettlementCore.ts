@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { OrderFulfillmentPlan } from '../../../order/public';
+import { Allocation } from '../../domain/model/Allocation';
 
 export interface SettlementBenefit {
   consume(context: WriteTransactionContext, order: string, account: string, amountMinor: number): Promise<void>;
@@ -20,10 +20,6 @@ export interface SettlementMarketing {
   commit(context: WriteTransactionContext, order: string): Promise<void>;
 }
 
-export interface SettlementFulfillment {
-  create(context: WriteTransactionContext, input: Readonly<{ order: string; payment: string; plans: readonly OrderFulfillmentPlan[] }>): Promise<readonly string[]>;
-}
-
 export interface SettlementOrders {
   paymentState(context: ReadTransactionContext, order: string): Promise<string>;
   markPaid(context: WriteTransactionContext, order: string): Promise<void>;
@@ -36,10 +32,10 @@ export interface SettlementOrders {
       capturedMinor: number;
       refundedMinor: number;
       state: string;
+      version: number;
       tenders: readonly Readonly<{ sequence: number; kind: 'wechat' | 'benefit' | 'voucher'; reference: string | null; amountMinor: number; state: string }>[];
     }>
   ): Promise<void>;
-  fulfillment(context: ReadTransactionContext, order: string): Promise<readonly OrderFulfillmentPlan[]>;
 }
 
 export interface SettlementTarget {
@@ -69,7 +65,6 @@ export class PaymentSettlementCore {
     private readonly voucher: SettlementVoucher,
     private readonly inventory: SettlementInventory,
     private readonly marketing: SettlementMarketing,
-    private readonly fulfillment: SettlementFulfillment,
     private readonly orders: SettlementOrders
   ) {}
 
@@ -91,7 +86,7 @@ export class PaymentSettlementCore {
         [target.intent]
       )
     ).rows;
-    if (tenderPlans.reduce((sum, plan) => sum + plan.amount_minor, 0) !== target.amountMinor) throw new Error('PAYMENT_TENDER_SUM_MISMATCH');
+    new Allocation(tenderPlans.map((plan) => Object.freeze({ sequence: plan.sequence, kind: plan.kind, reference: plan.reference_id, amountMinor: plan.amount_minor })), target.amountMinor);
     for (const plan of tenderPlans) {
       if (plan.kind === 'benefit') await this.consumeBenefit(context, target.order, plan);
       if (plan.kind === 'voucher') await this.consumeVoucher(context, target.order, target.member, plan);
@@ -128,11 +123,9 @@ export class PaymentSettlementCore {
       capturedMinor: target.amountMinor,
       refundedMinor: 0,
       state: 'captured',
+      version: 0,
       tenders: tenderPlans.map((plan) => Object.freeze({ sequence: plan.sequence, kind: plan.kind, reference: plan.reference_id, amountMinor: plan.amount_minor, state: 'captured' })),
     });
-    const fulfillmentPlans = await this.orders.fulfillment(context, target.order);
-    const fulfillments = await this.fulfillment.create(context, { order: target.order, payment, plans: fulfillmentPlans });
-    for (const fulfillment of fulfillments) await enqueue(database, target.scope, fulfillment);
     await events(database, target, payment);
     return payment;
   }
@@ -146,10 +139,6 @@ export class PaymentSettlementCore {
     if (!plan.reference_id) throw new Error('VOUCHER_REFERENCE_REQUIRED');
     await this.voucher.consume(context, order, member, plan.reference_id, plan.amount_minor);
   }
-}
-
-async function enqueue(database: SqlExecutor, scope: string, fulfillment: string): Promise<void> {
-  await new PgRuntimeWriter(database).schedule({ id: `job:${randomUUID()}`, kind: 'fulfillment', owner: 'fulfillment', scope, payload: { fulfillment }, priority: 10 });
 }
 
 async function events(database: SqlExecutor, target: SettlementTarget, payment: string): Promise<void> {

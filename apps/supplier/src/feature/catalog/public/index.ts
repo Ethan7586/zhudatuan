@@ -1,0 +1,1 @@
+export { catalogManifest } from './Manifest';

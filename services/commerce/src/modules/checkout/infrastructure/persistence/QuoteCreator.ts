@@ -5,11 +5,13 @@ import type { OutboxWriter } from '../../../../foundation/messaging/Outbox';
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { bodyRecord } from '../../../../foundation/interface/Validation';
+import { bodyRecord } from '../../../../foundation/application/Validation';
 import type { CheckoutPricingPort } from '../../../pricing/public';
 import type { CheckoutPort } from '../../application/service/CheckoutPort';
 import { quoteResult } from '../../application/service/QuoteResult';
 import type { CheckoutSessionStore } from '../../application/port/CheckoutSessionStore';
+import { CheckoutPolicy } from '../../domain/policy/CheckoutPolicy';
+import { confirmationDigest, issueConfirmationToken } from '../../domain/model/ConfirmationToken';
 
 export class QuoteCreator {
   constructor(
@@ -17,18 +19,28 @@ export class QuoteCreator {
     private readonly pricing: CheckoutPricingPort,
     private readonly repository: CheckoutSessionStore,
     private readonly outbox: OutboxWriter,
-    private readonly clock: Clock
+    private readonly clock: Clock,
+    private readonly policy = new CheckoutPolicy()
   ) {}
 
   async execute(request: OperationRequest, context: WriteTransactionContext): Promise<OperationResult> {
     const access = requireAccess(request);
     const selection = this.checkout.selection(bodyRecord(request.input));
-    const quote = await this.checkout.read(context, access.membership.id, selection, { expiresAt: request.input.deadline, signal: request.input.signal });
+    const quote = await this.checkout.read(context, access.membership.id, selection, {
+      expiresAt: request.input.deadline,
+      signal: request.input.signal,
+      actor: access.actor.id,
+      operation: 'checkout.quote.create',
+      trace: access.trace,
+      scopes: Object.freeze([access.scope.id, ...access.scope.path.map(({ id }) => id)]),
+    });
     const quoteId = `quote:${randomUUID()}`;
     const checkoutId = `checkout:${randomUUID()}`;
+    const confirmationToken = issueConfirmationToken();
     const signature = this.checkout.sign(quote);
     const evidenceHash = this.checkout.digest(quote.evidence);
-    const expiresAt = new Date(this.clock.now().getTime() + 15 * 60_000).toISOString();
+    const now = this.clock.now();
+    const expiresAt = this.policy.expiresAt(now);
     await this.pricing.saveQuote(context, {
       id: quoteId,
       member: quote.cart.member,
@@ -48,6 +60,7 @@ export class QuoteCreator {
       checkoutId,
       quoteId,
       signature,
+      confirmationDigest: confirmationDigest(confirmationToken),
       cartId: quote.cart.id,
       memberId: quote.cart.member,
       mallId: quote.cart.mall,
@@ -65,12 +78,12 @@ export class QuoteCreator {
         version: 1,
         aggregate: { type: 'checkout', id: checkoutId, version: 1 },
         tenant: quote.cart.mall,
-        occurred: this.clock.now().toISOString(),
+        occurred: now.toISOString(),
         trace: access.trace,
         payload: { checkout: checkoutId, quote: quoteId, member: quote.cart.member, mall: quote.cart.mall, payableMinor: quote.payableMinor, personalMinor: quote.personalMinor, currency: quote.currency, expiresAt, evidenceHash },
       })
     );
-    return { status: 201, body: quoteResult({ ...stored, payload: quote }, quote), headers: { etag: `"${stored.quoteVersion}"` } };
+    return { status: 201, body: quoteResult({ ...stored, payload: quote }, quote, confirmationToken), headers: { etag: `"${stored.quoteVersion}"` } };
   }
 }
 

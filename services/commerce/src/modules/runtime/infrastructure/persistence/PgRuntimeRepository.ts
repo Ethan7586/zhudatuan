@@ -6,14 +6,13 @@ import type { RuntimeDatabaseState, RuntimeQueueState, RuntimeRepository } from 
 export class PgRuntimeRepository implements RuntimeRepository {
   constructor(private readonly transactions: PgTransactionAccess) {}
   async databaseState(context: ReadTransactionContext): Promise<RuntimeDatabaseState> {
-    const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query<RuntimeDatabaseState>(
       `select not pg_is_in_recovery() writable,
        exists(select 1 from runtime.schemaversion where version=$1) migration,
        exists(select 1 from runtime.schemaversion where version=$2 and checksum=$3) contract,
        current_user='shopapp' role,
        (select count(*)::integer from runtime.operation) operations,
-       (select count(*)::integer from runtime.event) events`,
+       (select count(*)::integer from runtime.event where retired_at is null) events`,
       [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM]
     );
     const state = result.rows[0];
@@ -22,12 +21,11 @@ export class PgRuntimeRepository implements RuntimeRepository {
     return Object.freeze(state);
   }
   async queueState(context: ReadTransactionContext): Promise<RuntimeQueueState> {
-    const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query<RuntimeQueueState>(`select count(*) filter(where state='queued')::integer queued,
        count(*) filter(where state='running')::integer running,
-       (select count(*)::integer from runtime.deadletter where reviewed_at is null) deadletters,
+       (select count(*)::integer from runtime.deadletters where state='open') deadletters,
        coalesce(extract(epoch from (clock_timestamp()-(min(created_at) filter(where state='queued')))),0)::integer oldest_seconds
-       from runtime.job`);
+       from runtime.jobs`);
     const state = result.rows[0];
     if (!state) throw new Error('RUNTIME_QUEUE_STATE_MISSING');
     return Object.freeze(state);

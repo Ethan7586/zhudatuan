@@ -14,7 +14,28 @@ const objectAuthority = parse(readFileSync(join(root, 'database/contracts/object
   objects: readonly Readonly<{ id: string; owner?: string; operationalOwner?: string }>[];
 };
 const repositorySources = repositories(moduleRoot);
+const knownSchemas = new Set(objectAuthority.objects.flatMap(({ id }) => {
+  const schema = id.split('.')[0];
+  return schema ? [schema] : [];
+}));
+const persistenceSources = persistence(moduleRoot, knownSchemas);
 const schemasByOwner = schemaOwnership(objectAuthority.objects);
+
+describe.each(persistenceSources)('Persistence source contract: $name', ({ module, name, source, schemas }) => {
+  it('uses only owned data and bounded parameterized statements', () => {
+    const owned = schemasByOwner.get(module) ?? new Set<string>();
+    expect([...schemas].filter((schema) => !owned.has(schema))).toEqual([]);
+    expect(source).not.toMatch(/\bselect\s+(?:[a-z][a-z0-9_]*\.)?\*/i);
+    expect(source).not.toMatch(/\boffset\s+(?:\$\d+|\d+)/i);
+    expect(source).not.toMatch(/\.query\s*\(\s*['"`]\s*(?:begin|commit|rollback)\s*['"`]\s*[,)]/i);
+    expect(sqlLiterals(source)).not.toMatch(/\$\{\s*(?:input|request|command|payload|filter|sort|order|field|column|value)\b/);
+  });
+
+  it('keeps transaction capability behind the persistence boundary', () => {
+    expect(name).toMatch(/^[^/]+\/infrastructure\/persistence\//);
+    expect(source).not.toMatch(/export\s+(?:type\s+)?\{[^}]*(?:PoolClient|DatabasePool|PgTransactionAccess)[^}]*\}/s);
+  });
+});
 
 describe.each(repositorySources)('Repository source contract: $name', ({ module, name, source, schemas, queryCount }) => {
   it('uses only its authoritative schemas and parameterized bounded SQL', () => {
@@ -22,7 +43,7 @@ describe.each(repositorySources)('Repository source contract: $name', ({ module,
     expect([...schemas].filter((schema) => !owned.has(schema))).toEqual([]);
     expect(source).not.toMatch(/\bselect\s+(?:[a-z][a-z0-9_]*\.)?\*/i);
     expect(source).not.toMatch(/\boffset\s+(?:\$\d+|\d+)/i);
-    expect(source).not.toMatch(/['"`]\s*(?:begin|commit|rollback)\b/i);
+    expect(source).not.toMatch(/\.query\s*\(\s*['"`]\s*(?:begin|commit|rollback)\b/i);
     expect(queryCount).toBeGreaterThanOrEqual(0);
   });
 
@@ -100,6 +121,19 @@ function repositories(directory: string): readonly Readonly<{ module: string; na
   return Object.freeze(result.sort((left, right) => left.name.localeCompare(right.name)));
 }
 
+function persistence(directory: string, known: ReadonlySet<string>): readonly Readonly<{ module: string; name: string; source: string; schemas: ReadonlySet<string> }>[] {
+  const result: Readonly<{ module: string; name: string; source: string; schemas: ReadonlySet<string> }>[] = [];
+  for (const file of files(directory)) {
+    const name = relative(moduleRoot, file).split('\\').join('/');
+    if (!/^[^/]+\/infrastructure\/persistence\/.+\.ts$/.test(name)) continue;
+    const source = readFileSync(file, 'utf8');
+    if (!/\.query(?:<[^>]+>)?\s*\(|\.transaction\s*\(/.test(source)) continue;
+    const schemas = new Set([...source.matchAll(/\b(?:from|join|insert\s+into|update|delete\s+from)\s+([a-z][a-z0-9]*)\./gi)].map((match) => match[1]!).filter((schema) => known.has(schema)));
+    result.push(Object.freeze({ module: name.split('/')[0]!, name, source, schemas }));
+  }
+  return Object.freeze(result.sort((left, right) => left.name.localeCompare(right.name)));
+}
+
 function schemaOwnership(objects: readonly Readonly<{ id: string; owner?: string; operationalOwner?: string }>[]): ReadonlyMap<string, ReadonlySet<string>> {
   const result = new Map<string, Set<string>>();
   for (const object of objects) {
@@ -111,6 +145,13 @@ function schemaOwnership(objects: readonly Readonly<{ id: string; owner?: string
     result.set(owner, values);
   }
   return result;
+}
+
+function sqlLiterals(source: string): string {
+  return [...source.matchAll(/`([^`]*)`/gs)]
+    .map((match) => match[1]!)
+    .filter((value) => /\b(?:select|insert\s+into|update|delete\s+from)\b/i.test(value))
+    .join('\n');
 }
 
 function files(directory: string, result: string[] = []): readonly string[] {

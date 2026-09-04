@@ -5,14 +5,15 @@ import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { SeparationPolicy } from '../../domain/policy/SeparationPolicy';
 interface ConsumedProof extends Record<string, unknown> {
   readonly proof_id: string;
   readonly checker_membership_id: string;
 }
 export class PgMakerCheckerGuard implements MakerCheckerGuard {
+  private readonly separation = new SeparationPolicy();
   constructor(private readonly transactions: PgTransactionAccess) {}
   async verify(context: WriteTransactionContext, input: Parameters<MakerCheckerGuard['verify']>[1]): Promise<void> {
-    const database = this.transactions.database(context);
     const operation = OperationCatalog.get(input.operation);
     if (!operation.makerChecker) return;
     if (!operation.permission || !input.actionProof) throw new DomainError('ACTION_PROOF_INVALID');
@@ -29,7 +30,9 @@ export class PgMakerCheckerGuard implements MakerCheckerGuard {
       if (code) throw new DomainError(code);
       throw cause;
     }
-    if (!result.rows[0]) throw new DomainError('ACTION_PROOF_INVALID');
+    const consumed = result.rows[0];
+    if (!consumed) throw new DomainError('ACTION_PROOF_INVALID');
+    this.separation.assertActors(access.membership.id, consumed.checker_membership_id);
   }
 }
 function proofFailure(cause: unknown): 'ACTION_PROOF_INVALID' | 'ACTION_PROOF_REPLAYED' | 'MAKER_CHECKER_SEPARATION_REQUIRED' | undefined {

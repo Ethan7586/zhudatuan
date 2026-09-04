@@ -1,0 +1,45 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.5 Approval",
+  "requirements": [
+    "MVPGROUPVOUCHER",
+    "MVPMALLVOUCHER",
+    "MVPGROUPFINANCE",
+    "MVPMALLFINANCE",
+    "MVPGROUPORDER",
+    "MVPMALLORDER",
+    "MVPMALLDESIGN"
+  ],
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "contracts": {
+    "operations": 10,
+    "events": 11,
+    "permissions": 3,
+    "module": "approval",
+    "publicFacades": ["request", "cancel", "consume", "read"]
+  },
+  "invariants": [
+    "requester-checker-separation",
+    "frozen-template-version",
+    "terminal-instance-monotonicity",
+    "immutable-decisions",
+    "one-active-template-per-scope-subject",
+    "one-use-expiring-proof",
+    "proof-binds-scope-subject-action-version-amount-currency-evidence-constraints-operation-request",
+    "approval-never-mutates-requesting-domain"
+  ],
+  "verification": {
+    "contractTests": { "files": 6, "passed": 51 },
+    "approvalTests": { "files": 3, "passed": 10 },
+    "journeyTests": { "passed": 184 },
+    "operationViolations": 0,
+    "eventViolations": 0,
+    "callGraphViolations": 0,
+    "duplicateViolations": 0,
+    "errorContractMissing": 0,
+    "typecheck": ["@shop/contract", "@shop/commerce"]
+  }
+}

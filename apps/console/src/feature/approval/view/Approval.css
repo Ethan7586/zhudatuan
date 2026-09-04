@@ -1,0 +1,144 @@
+.approvalpage,
+.approvalstack,
+.approvalform {
+  display: grid;
+  gap: var(--sw-space-2);
+}
+.approvalactions,
+.approvalpagination,
+.approvalnumbers,
+.approvalfilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sw-space-1);
+  align-items: center;
+}
+.approvalpagination {
+  justify-content: space-between;
+}
+.approvalpagination > div {
+  display: flex;
+  gap: var(--sw-space-1);
+}
+.approvalfilters label,
+.approvalform > label,
+.approvalnumbers label {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: 700;
+}
+.approvalfilters :where(select),
+.approvalform :where(input, select, textarea) {
+  min-height: var(--sw-min-touch-target);
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1);
+  color: var(--sw-text);
+}
+.approvalform textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+.approvalbuilder,
+.approvalbuilder fieldset,
+.approvalapprover {
+  display: grid;
+  gap: var(--sw-space-1);
+}
+.approvalbuilder {
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  padding: var(--sw-space-1-5);
+}
+.approvalbuilder > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sw-space-1);
+}
+.approvalbuilder fieldset {
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  padding: var(--sw-space-1-5);
+}
+.approvalbuilder label {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: 700;
+}
+.approvalapprover {
+  grid-template-columns: minmax(8rem, 0.6fr) minmax(12rem, 1fr) minmax(8rem, 0.5fr) auto;
+  align-items: end;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-1);
+}
+.approvalnumbers > label {
+  flex: 1 1 12rem;
+}
+.approvalnotice,
+.approvaltarget,
+.approvalsecurity,
+.approvalerror {
+  margin: 0;
+  border-radius: var(--sw-radius-md);
+  padding: var(--sw-space-1-5);
+}
+.approvalnotice,
+.approvaltarget,
+.approvalsecurity {
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-dark);
+}
+.approvalnotice p {
+  margin: var(--sw-space-0-5) 0 0;
+}
+.approvaltarget {
+  display: grid;
+  gap: var(--sw-space-0-5);
+}
+.approvalerror {
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger-strong);
+}
+.approvalvalidation {
+  margin: 0;
+  color: var(--sw-muted);
+}
+.approvalform footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sw-space-1);
+  border-top: 0.0625rem solid var(--sw-border);
+  padding-top: var(--sw-space-2);
+}
+.approvallink {
+  border: 0;
+  background: transparent;
+  padding: var(--sw-space-0-5);
+  color: var(--sw-brand-dark);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.approvallink:focus-visible {
+  border-radius: var(--sw-radius-sm);
+  outline: 0;
+  box-shadow: var(--sw-shadow-focus);
+}
+@media (max-width: 48rem) {
+  .approvalfilters > label,
+  .approvalactions > * {
+    flex: 1 1 100%;
+  }
+  .approvalapprover {
+    grid-template-columns: 1fr;
+  }
+}

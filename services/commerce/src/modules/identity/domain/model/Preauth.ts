@@ -4,13 +4,13 @@ export type PreauthPurpose = 'federationselection' | 'invitationproof' | 'enroll
 export class Preauth {
   readonly id: string;
   readonly purpose: PreauthPurpose;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly principal: string | null;
   readonly reference: string;
   readonly version: number;
   readonly expiresAt: Date;
 
-  constructor(value: Readonly<{ id: string; purpose: PreauthPurpose; target: 'console' | 'storefront'; principal: string | null; reference: string; version: number; expiresAt: Date }>) {
+  constructor(value: Readonly<{ id: string; purpose: PreauthPurpose; target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'; principal: string | null; reference: string; version: number; expiresAt: Date }>) {
     if (!value.id || !value.reference || !Number.isSafeInteger(value.version) || value.version < 0 || !Number.isFinite(value.expiresAt.getTime())) throw new DomainError('AUTHENTICATION_REQUIRED');
     this.id = value.id;
     this.purpose = value.purpose;
@@ -22,7 +22,7 @@ export class Preauth {
     Object.freeze(this);
   }
 
-  assertActive(now: Date, purpose: PreauthPurpose, target: 'console' | 'storefront'): void {
+  assertActive(now: Date, purpose: PreauthPurpose, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): void {
     if (this.expiresAt <= now || this.purpose !== purpose || this.target !== target) throw new DomainError('AUTHENTICATION_REQUIRED');
   }
 }

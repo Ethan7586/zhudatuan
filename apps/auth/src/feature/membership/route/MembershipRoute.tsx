@@ -9,10 +9,14 @@ import { useMembershipViewModel } from '../viewmodel/MembershipViewModel';
 export function Component() {
   const dependencies = useDependencies();
   const navigate = useNavigate();
-  return <Guard route={ROUTES.authmembership} rejected={<InvalidRoute />}>{(request) => <MembershipView dependencies={dependencies} target={request.target} onRestart={() => navigate(ROUTES.authlogin, { replace: true })} />}</Guard>;
+  return (
+    <Guard route={ROUTES.authmembership} rejected={<InvalidRoute />}>
+      {(request) => <MembershipView dependencies={dependencies} session={request} onRestart={() => void navigate(ROUTES.authlogin, { replace: true })} />}
+    </Guard>
+  );
 }
 
-function MembershipView({ dependencies, target, onRestart }: Readonly<{ dependencies: ReturnType<typeof useDependencies>; target: Parameters<typeof useMembershipViewModel>[1]; onRestart: () => void }>) {
-  const vm = useMembershipViewModel(dependencies, target);
+function MembershipView({ dependencies, session, onRestart }: Readonly<{ dependencies: ReturnType<typeof useDependencies>; session: Parameters<typeof useMembershipViewModel>[1]; onRestart: () => void }>) {
+  const vm = useMembershipViewModel(dependencies, session);
   return <MembershipPage memberships={vm.memberships} busy={vm.busy} {...(vm.failure === undefined ? {} : { failure: vm.failure })} onSelect={vm.select} onRestart={onRestart} />;
 }

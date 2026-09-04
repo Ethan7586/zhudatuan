@@ -9,7 +9,7 @@ export interface AuthorizationSnapshot {
   readonly accessVersion: number;
   readonly credentialVersion: number;
   readonly organization: string;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly roles: readonly AuthorizationRole[];
   readonly allows: readonly string[];
   readonly denies: readonly string[];
@@ -23,7 +23,7 @@ export interface AuthorizationPort {
     context: ReadTransactionContext,
     input: Readonly<{
       membership: string;
-      target: 'console' | 'storefront';
+      target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
       operation: string;
       resource: string | null;
     }>

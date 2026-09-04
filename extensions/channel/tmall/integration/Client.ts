@@ -1,7 +1,12 @@
-import { createTmallClient as createTmallTransport } from '@shop/providertmallcore';
-import type { IntegrationConnection } from '@shop/providercore';
+import { RequestExecutor, type IntegrationConnection } from '@shop/providercore';
 import { TmallConfig } from '../Config';
+import { createTmallAuth } from './Auth';
 
 export function createTmallClient(connection: IntegrationConnection, fetcher?: typeof fetch) {
-  return createTmallTransport(TmallConfig.validate(connection), fetcher);
+  const validated = TmallConfig.validate(connection);
+  return new RequestExecutor(validated, createTmallAuth(validated.secret), fetcher);
+}
+
+export function checkTmallHealth(client: { health(): Promise<boolean> }): Promise<boolean> {
+  return client.health();
 }

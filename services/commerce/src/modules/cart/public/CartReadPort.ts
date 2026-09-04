@@ -4,12 +4,8 @@ import { publicPort } from '../../../bootstrap/ModuleRegistry';
 export interface CartItemSnapshot {
   readonly listing: string;
   readonly sku: string;
-  readonly title: string;
   readonly quantity: number;
-  readonly listingVersion: string;
-  readonly unitMinor: number;
-  readonly currency: string;
-  readonly priceVersion: string;
+  readonly selected: boolean;
   readonly version: number;
 }
 

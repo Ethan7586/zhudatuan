@@ -1,14 +1,25 @@
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { Membership } from '../../domain/model/Membership';
 import type { Override } from '../../domain/model/Override';
-import type { PermissionEffect, Role } from '../../domain/model/Role';
+import type { PermissionEffect, Role, RoleTemplateCode } from '../../domain/model/Role';
 import type { Scope } from '../../domain/model/Scope';
-import type { AccessCenterRecord, OverrideChange, OverrideTarget, Ownership, RoleChange } from './AccessRepository';
+import type { Membership } from '../../domain/model/Membership';
+import type { AccessCenterRecord, OverrideChange, OverrideTarget, RoleChange, RoleDirectoryRecord, RoleImpact, RolePermissionState, RoleTemplate, SeparationRule } from './AccessRepository';
 
 export interface AccessAdministrationRepository {
   center(context: ReadTransactionContext, input: Readonly<{ organization: string; after: string | null; limit: number }>): Promise<readonly AccessCenterRecord[]>;
+  roles(context: ReadTransactionContext, scope: string): Promise<readonly RoleDirectoryRecord[]>;
+  roleTemplates(context: ReadTransactionContext): Promise<readonly RoleTemplate[]>;
+  separationRules(context: ReadTransactionContext): Promise<readonly SeparationRule[]>;
   lockRole(context: WriteTransactionContext, role: string, scope: string): Promise<Role | null>;
-  saveRole(context: WriteTransactionContext, input: Readonly<{ role: string; scope: string; name: string; allows: readonly string[]; denies: readonly string[]; expectedVersion: number }>): Promise<RoleChange | null>;
+  rolePermissions(context: ReadTransactionContext, role: string): Promise<RolePermissionState>;
+  roleImpact(context: ReadTransactionContext, role: string): Promise<RoleImpact>;
+  roleTemplate(context: ReadTransactionContext, code: string): Promise<RoleTemplate | null>;
+  saveRole(context: WriteTransactionContext, input: Readonly<{ role: string; scope: string; name: string; description: string; template: RoleTemplateCode | null; allows: readonly string[]; denies: readonly string[]; expectedVersion: number }>): Promise<RoleChange | null>;
+  setRoleStatus(context: WriteTransactionContext, role: string, scope: string, status: 'active' | 'disabled', expectedVersion: number): Promise<Role | null>;
+  deleteRole(context: WriteTransactionContext, role: string, scope: string, expectedVersion: number): Promise<boolean>;
+  assignRole(context: WriteTransactionContext, role: string, membership: string, issuer: string): Promise<boolean>;
+  revokeRole(context: WriteTransactionContext, role: string, membership: string): Promise<boolean>;
+  lockMemberships(context: WriteTransactionContext, memberships: readonly string[]): Promise<readonly Membership[]>;
   bumpRole(context: WriteTransactionContext, role: string, reason: string, trace: string): Promise<void>;
   scopePath(context: WriteTransactionContext, scope: string, kind: string): Promise<string | null>;
   grantScope(
@@ -18,11 +29,5 @@ export interface AccessAdministrationRepository {
   lockOverrideTarget(context: WriteTransactionContext, membership: string): Promise<OverrideTarget | null>;
   setOverride(context: WriteTransactionContext, value: Override, issuer: string): Promise<OverrideChange | null>;
   revokeOverride(context: WriteTransactionContext, input: Readonly<{ membership: string; permission: string; reason: string }>): Promise<OverrideChange | null>;
-  lockOwnership(context: WriteTransactionContext, scope: string): Promise<Ownership | null>;
-  lockMemberships(context: WriteTransactionContext, memberships: readonly string[]): Promise<readonly Membership[]>;
-  expireRole(context: WriteTransactionContext, membership: string, role: string): Promise<boolean>;
-  assignRole(context: WriteTransactionContext, input: Readonly<{ membership: string; role: string; issuer: string }>): Promise<void>;
-  transferOwnership(context: WriteTransactionContext, input: Readonly<{ scope: string; membership: string; expectedVersion: number }>): Promise<boolean>;
-  ownerTransferred(context: WriteTransactionContext, input: Readonly<{ scope: string; previous: string; membership: string; version: number; trace: string }>): Promise<void>;
   bump(context: WriteTransactionContext, membership: string, reason: string, trace: string): Promise<number>;
 }

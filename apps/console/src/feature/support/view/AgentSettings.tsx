@@ -1,6 +1,6 @@
 import { Button } from '@shop/design';
 import { chineseDomainLabel, chineseReference } from '@shop/presentation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Agent } from '../model/Agent';
 import type { AgentChange } from '../model/SupportConfig';
 
@@ -13,7 +13,7 @@ export function AgentSettings({ rows, busy, disabled, onSave }: Readonly<{ rows:
   const [capacity, setCapacity] = useState(10);
   const [state, setState] = useState<Body['state']>('available');
   const skillOptions = [...new Set(['general', ...rows.flatMap((item) => item.skills)])];
-  const edit = (id: string) => {
+  const edit = useCallback((id: string) => {
     const value = rows.find((item) => item.id === id);
     setSelected(id);
     if (value) {
@@ -22,10 +22,10 @@ export function AgentSettings({ rows, busy, disabled, onSave }: Readonly<{ rows:
       setCapacity(value.capacity);
       setState(value.state);
     }
-  };
+  }, [rows]);
   useEffect(() => {
     if (!selected && rows[0]) edit(rows[0].id);
-  }, [rows, selected]);
+  }, [edit, rows, selected]);
   return (
     <section className="supportsettingsection">
       <header>
@@ -34,6 +34,7 @@ export function AgentSettings({ rows, busy, disabled, onSave }: Readonly<{ rows:
           <p>维护客服状态、技能与并发容量；禁用后由后台任务分批重分配。</p>
         </div>
         <Button
+          isDisabled={disabled}
           onPress={() => {
             setSelected(`agent:${crypto.randomUUID()}`);
             setMembership('');
@@ -47,7 +48,7 @@ export function AgentSettings({ rows, busy, disabled, onSave }: Readonly<{ rows:
       </header>
       <label>
         选择客服
-        <select value={row?.id ?? selected} onChange={(event) => edit(event.target.value)}>
+        <select value={row?.id ?? selected} onChange={(event) => edit(event.target.value)} disabled={disabled}>
           <option value={selected && !row ? selected : ''}>{selected && !row ? '新客服' : '请选择'}</option>
           {rows.map((item) => (
             <option key={item.id} value={item.id}>
@@ -59,12 +60,13 @@ export function AgentSettings({ rows, busy, disabled, onSave }: Readonly<{ rows:
       <div className="supportsettingsgrid">
         <label>
           {row ? '成员' : '成员编号'}
-          <input value={row ? chineseReference('成员', row.membershipId) : membership} onChange={(event) => setMembership(event.target.value)} readOnly={row !== undefined} placeholder="从成员管理复制成员编号" />
+          <input value={row ? chineseReference('成员', row.membershipId) : membership} onChange={(event) => setMembership(event.target.value)} readOnly={row !== undefined} disabled={disabled} placeholder="从成员管理复制成员编号" />
         </label>
         <label>
           服务技能
           <select
             multiple
+            disabled={disabled}
             value={skills
               .split(',')
               .map((value) => value.trim())
@@ -80,11 +82,11 @@ export function AgentSettings({ rows, busy, disabled, onSave }: Readonly<{ rows:
         </label>
         <label>
           并发容量
-          <input type="number" min={1} value={capacity} onChange={(event) => setCapacity(Number(event.target.value))} />
+          <input type="number" min={1} value={capacity} onChange={(event) => setCapacity(Number(event.target.value))} disabled={disabled} />
         </label>
         <label>
           状态
-          <select value={state} onChange={(event) => setState(event.target.value as Body['state'])}>
+          <select value={state} onChange={(event) => setState(event.target.value as Body['state'])} disabled={disabled}>
             <option value="available">可接单</option>
             <option value="busy">忙碌</option>
             <option value="offline">离线</option>

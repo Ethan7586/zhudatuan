@@ -1,11 +1,12 @@
 import { permissionDefinition } from '@shop/authz';
-import { OperationCatalog, type OperationId, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
+import { isConsumerTarget, OperationCatalog, type OperationId, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
 import { Redactor } from '@shop/telemetry';
 import type { DomainEvent } from '../domain/DomainEvent';
 import { DomainError } from '../domain/DomainError';
 import type { WriteTransactionContext } from '../persistence/TransactionContext';
 import type { TransactionManager, TransactionOptions } from '../persistence/TransactionManager';
 import { sessionAccess } from '../security/OperationSecurityContext';
+import { authorizationEvidence } from '../security/AuthorizationEvidence';
 import type { AuditDecorator } from './AuditDecorator';
 import type { ExecutionContext, FinalizeContext, HandlerContext } from './HandlerContext';
 import type { IdempotencyClaim, IdempotencyRepository } from './IdempotencyRepository';
@@ -28,6 +29,7 @@ export interface MakerCheckerGuard {
 
 export interface TransactionalEventWriter {
   append(context: WriteTransactionContext, event: DomainEvent): Promise<void>;
+  appendMany?(context: WriteTransactionContext, events: readonly DomainEvent[]): Promise<void>;
 }
 
 export class OperationExecutor {
@@ -131,14 +133,20 @@ export class OperationExecutor {
 
   private auditReply<TKey extends OperationId>(transaction: WriteTransactionContext, execution: ExecutionContext<TKey>, input: OperationInputFor<TKey>, reply: OperationReply<OperationOutputFor<TKey>>, scope?: string): Promise<void> {
     const identity = executionIdentity(execution, scope);
+    const sensitive = OperationCatalog.get(execution.operation).sensitiveFields;
+    const before = this.redactor.redactPaths(input, sensitive.filter(field => !field.startsWith('response.')));
+    const object = resourceOf(before);
     return this.audit.append(transaction, execution.operation, {
       scope: identity.scope,
       actor: identity.actor,
       actorType: identity.actorType,
-      resourceType: OperationCatalog.get(execution.operation).module,
-      resource: resourceOf(input),
-      before: this.redactor.redact(input),
-      after: this.redactor.redact(reply.body),
+      request: execution.requestId,
+      subject: Object.freeze({ type: identity.actorType, id: identity.actor }),
+      object: Object.freeze({ type: OperationCatalog.get(execution.operation).module, id: object }),
+      outcome: reply.status < 400 ? 'succeeded' : 'rejected',
+      reason: `http:${reply.status}`,
+      before,
+      after: this.redactor.redactPaths(reply.body, sensitive.filter(field => field.startsWith('response.')).map(field => field.slice('response.'.length))),
       evidence: Object.freeze({ status: reply.status, expectedVersion: execution.expectedVersion ?? null }),
       trace: execution.traceId,
     });
@@ -151,6 +159,7 @@ function idempotencyResponse<TKey extends OperationId>(handler: DurableOperation
 
 function transactionOptions(execution: ExecutionContext, scope?: string): TransactionOptions {
   const identity = executionIdentity(execution, scope);
+  const access = sessionAccess(execution.security);
   return Object.freeze({
     tenant: identity.tenant,
     membership: identity.membership,
@@ -160,6 +169,8 @@ function transactionOptions(execution: ExecutionContext, scope?: string): Transa
     operation: execution.operation,
     deadline: execution.deadline,
     signal: execution.signal,
+    workload: 'api',
+    ...(access ? { authorization: authorizationEvidence(access, execution.operation, new Date()) } : {}),
   });
 }
 
@@ -187,7 +198,8 @@ function transactionScope<TKey extends OperationId, TPrepared>(
   const operation = OperationCatalog.get(execution.operation);
   const webhook = operation.audience === 'webhook' && execution.security.kind === 'anonymous' && execution.security.channel === 'webhook';
   const publicFlow = operation.audience === 'public' && ((execution.security.kind === 'anonymous' && execution.security.channel === 'public') || execution.security.kind === 'preauth');
-  if (!webhook && !publicFlow) throw new Error('TRANSACTION_SCOPE_OVERRIDE_FORBIDDEN');
+  const anonymousStorefront = operation.audience === 'storefront' && operation.assuranceLevel === 'optional' && execution.security.kind === 'anonymous' && isConsumerTarget(execution.security.target);
+  if (!webhook && !publicFlow && !anonymousStorefront) throw new Error('TRANSACTION_SCOPE_OVERRIDE_FORBIDDEN');
   if (!/^[A-Za-z0-9][A-Za-z0-9:.-]{0,255}$/.test(scope)) throw new Error('TRANSACTION_SCOPE_INVALID');
   return scope;
 }
@@ -223,7 +235,9 @@ function resourceOf(input: unknown): string | null {
 }
 
 async function appendEvents(writer: TransactionalEventWriter, context: WriteTransactionContext, events: readonly DomainEvent[] | undefined): Promise<void> {
-  for (const event of events ?? []) await writer.append(context, event);
+  if (!events || events.length === 0) return;
+  if (writer.appendMany) return writer.appendMany(context, events);
+  for (const event of events) await writer.append(context, event);
 }
 
 function assertHandlerMode(method: string, handler: Readonly<{ operation: OperationId; mode: 'read' | 'write' }>): void {

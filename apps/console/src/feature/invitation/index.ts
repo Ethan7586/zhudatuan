@@ -1,0 +1,1 @@
+export { InvitationManifest } from './Manifest';

@@ -20,6 +20,24 @@ export interface QuoteLine {
   readonly reasons: readonly string[];
 }
 
+export interface QuoteSnapshot<T> {
+  readonly value: T;
+  readonly version: string;
+  readonly hash: string;
+}
+
+export interface ShippingSnapshot {
+  readonly method: 'standard' | 'express' | 'pickup' | 'digital';
+  readonly amountMinor: number;
+  readonly version: string;
+}
+
+export interface TaxSnapshot {
+  readonly mode: 'included';
+  readonly amountMinor: number;
+  readonly version: string;
+}
+
 export interface TenderChoice {
   readonly kind: 'benefit' | 'voucher' | 'wechat';
   readonly reference: string | null;
@@ -32,10 +50,16 @@ export interface CheckoutQuote {
   readonly lines: readonly QuoteLine[];
   readonly subtotalMinor: number;
   readonly discountMinor: number;
+  readonly shippingMinor: number;
+  readonly taxMinor: number;
   readonly payableMinor: number;
   readonly personalMinor: number;
   readonly currency: 'CNY';
   readonly tenders: readonly TenderChoice[];
+  readonly address: QuoteSnapshot<unknown> | null;
+  readonly invoice: QuoteSnapshot<unknown> | null;
+  readonly shipping: ShippingSnapshot;
+  readonly tax: TaxSnapshot;
   readonly evidence: Readonly<Record<string, unknown>>;
   readonly rejections: readonly Readonly<{ listing: string; reasons: readonly string[] }>[];
 }

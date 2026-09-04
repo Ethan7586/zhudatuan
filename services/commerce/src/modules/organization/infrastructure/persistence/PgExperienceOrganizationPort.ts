@@ -1,49 +1,69 @@
-import { randomUUID } from 'node:crypto';
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { ExperienceOrganizationPort } from '../../public/ExperienceOrganizationPort';
+import { databaseInteger } from '../../../../foundation/persistence/DatabaseInteger';
+import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { MallProvisionPort } from '../../public/MallProvisionPort';
 
-export class PgExperienceOrganizationPort implements ExperienceOrganizationPort {
-  private readonly transactions = new PgTransactionAccess();
+interface ProvisionRow {
+  readonly id: string;
+  readonly name: string;
+  readonly code: string;
+  readonly public_slug: string;
+  readonly brand_name: string;
+  readonly domain_mode: 'platform' | 'custom';
+  readonly custom_domain: string | null;
+  readonly timezone: string;
+  readonly currency: string;
+  readonly theme_preset: 'shop' | 'market' | 'governance';
+  readonly theme_primary_color: string;
+  readonly theme_accent_color: string;
+  readonly theme_logo_object_ref: string | null;
+  readonly theme_favicon_object_ref: string | null;
+  readonly status: 'draft' | 'active' | 'disabled';
+  readonly version: unknown;
+}
 
-  async createMall(context: WriteTransactionContext, input: Readonly<{ parent: string; name: string }>): Promise<string> {
-    const database = this.transactions.database(context);
-    const selected = await database.query<{ id: string; timezone: string }>(
-      `select id,timezone from organization.organization
-      where id=$1 and kind in('tenant','enterprise') and status='active' for key share`,
-      [input.parent]
-    );
-    const parent = selected.rows[0];
-    if (!parent) throw new DomainError('VALIDATION_FAILED', { field: 'scope' });
-    return this.insert(database, parent.id, parent.timezone, input.name);
+export class PgExperienceOrganizationPort implements MallProvisionPort {
+  constructor(private readonly transactions = new PgTransactionAccess()) {}
+
+  async mall(context: ReadTransactionContext, mall: string, minimumVersion: number) {
+    return (await this.malls(context, [mall])).find((candidate) => candidate.id === mall && candidate.version >= minimumVersion) ?? null;
   }
 
-  async copyMall(context: WriteTransactionContext, input: Readonly<{ source: string; name: string }>): Promise<string> {
-    const database = this.transactions.database(context);
-    const selected = await database.query<{ parent_id: string; timezone: string }>(
-      `select parent_id,timezone from organization.organization
-      where id=$1 and kind='mall' and status='active' and parent_id is not null for key share`,
-      [input.source]
+  async malls(context: ReadTransactionContext, malls: readonly string[]) {
+    const ids = [...new Set(malls)];
+    if (ids.length === 0) return Object.freeze([]);
+    const result = await this.transactions.database(context).query<ProvisionRow>(
+      `select organization.id,organization.name,organization.timezone,organization.status,mall.code,mall.public_slug,mall.brand_name,mall.domain_mode,mall.custom_domain,mall.currency,
+        mall.theme_preset,mall.theme_primary_color,mall.theme_accent_color,mall.theme_logo_object_ref,mall.theme_favicon_object_ref,mall.version
+       from organization.organization organization join organization.mall mall on mall.id=organization.id
+       where organization.id=any($1::text[]) and organization.kind='mall'`,
+      [ids]
     );
-    const source = selected.rows[0];
-    if (!source) throw new DomainError('RESOURCE_NOT_FOUND');
-    return this.insert(database, source.parent_id, source.timezone, input.name);
+    const byId = new Map(result.rows.map((row) => [row.id, row]));
+    return Object.freeze(
+      ids.flatMap((id) => {
+        const row = byId.get(id);
+        return row
+          ? [Object.freeze({
+          id: row.id,
+          name: row.name,
+          code: row.code,
+          publicSlug: row.public_slug,
+          brandName: row.brand_name,
+          domain: row.domain_mode === 'custom' ? Object.freeze({ mode: 'custom' as const, customDomain: required(row.custom_domain) }) : Object.freeze({ mode: 'platform' as const }),
+          timezone: row.timezone,
+          currency: row.currency,
+          theme: Object.freeze({ preset: row.theme_preset, primaryColor: row.theme_primary_color, accentColor: row.theme_accent_color, logoObjectRef: row.theme_logo_object_ref, faviconObjectRef: row.theme_favicon_object_ref }),
+          status: row.status,
+          version: databaseInteger(row.version),
+            })]
+          : [];
+      })
+    );
   }
+}
 
-  private async insert(database: ReturnType<PgTransactionAccess['database']>, parent: string, timezone: string, name: string): Promise<string> {
-    const id = `mall:${randomUUID()}`;
-    await database.query(
-      `insert into organization.organization(id,kind,parent_id,name,timezone,status,version,created_at,updated_at)
-      values($1,'mall',$2,$3,$4,'active',0,clock_timestamp(),clock_timestamp())`,
-      [id, parent, name, timezone]
-    );
-    await database.query(
-      `insert into organization.unitclosure(ancestor_id,descendant_id,depth)
-      select ancestor_id,$1,depth+1 from organization.unitclosure where descendant_id=$2
-      union all select $1,$1,0`,
-      [id, parent]
-    );
-    return id;
-  }
+function required(value: string | null): string {
+  if (!value) throw new Error('ORGANIZATION_CUSTOM_DOMAIN_MISSING');
+  return value;
 }

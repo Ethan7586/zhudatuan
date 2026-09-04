@@ -36,7 +36,7 @@
   border: 1px solid var(--sw-border-strong);
   border-radius: 10px;
   background: linear-gradient(145deg, var(--sw-surface-subtle), var(--sw-brand-light));
-  color: var(--vi-brand);
+  color: var(--sw-brand);
   font-size: 11px;
   font-weight: 800;
   place-items: center;
@@ -68,7 +68,7 @@
 }
 
 .commerceidentity button:hover {
-  color: var(--vi-brand);
+  color: var(--sw-brand);
 }
 .commerceidentity code,
 .commercebinding code {
@@ -89,6 +89,11 @@
   font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.commercebinding strong {
+  color: var(--sw-text-secondary);
+  font-size: 10px;
+  font-weight: 750;
 }
 .commerceversion strong,
 .commercepublication strong {
@@ -138,7 +143,7 @@
   color: var(--sw-promotion);
 }
 .commercestate.is-info {
-  color: var(--vi-brand);
+  color: var(--sw-brand);
 }
 .commercestate.is-neutral {
   color: var(--sw-disabled);
@@ -155,7 +160,7 @@
   border: 0;
   background: none;
   padding: 0 5px;
-  color: var(--vi-brand);
+  color: var(--sw-brand);
   font: inherit;
   font-size: 10px;
   font-weight: 750;
@@ -175,92 +180,9 @@
   display: flex;
   gap: 6px;
 }
-.commerceactionmore {
-  position: relative;
-  display: none;
-}
-.commerceactionmore summary {
-  color: var(--vi-brand);
-  font-size: 10px;
-  font-weight: 750;
-  cursor: pointer;
-}
-.commerceactionmore[open] {
-  z-index: 5;
-}
-.commerceactionmore[open]::before {
-  position: fixed;
-  z-index: -1;
-  inset: 0;
-  content: '';
-}
-.commerceactionmore[open] button {
-  position: absolute;
-  right: 0;
-  display: block;
-  width: 88px;
-  border: 1px solid var(--sw-border);
-  background: var(--sw-surface);
-  padding: 8px 12px;
-  box-shadow: var(--sw-shadow-overlay);
-  color: var(--sw-text-secondary);
-  text-align: left;
-}
-.commerceactionmore[open] button:nth-of-type(1) {
-  top: 22px;
-  border-radius: 8px 8px 0 0;
-}
-.commerceactionmore[open] button:nth-of-type(2) {
-  top: 54px;
-}
-.commerceactionmore[open] button:nth-of-type(3) {
-  top: 86px;
-  border-radius: 0 0 8px 8px;
-}
-.commerceentrybadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 0;
-  background: none;
-  padding: 0;
-  color: var(--sw-muted);
-  font: inherit;
-  font-size: 10px;
-  font-weight: 750;
-  cursor: pointer;
-}
-.commerceentrybadge i {
-  width: 8px;
-  height: 8px;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-}
-.commerceentrybadge.is-success {
-  color: var(--sw-success-strong);
-}
-.commerceentrybadge.is-warning {
-  color: var(--sw-warning);
-}
-.commerceentrybadge.is-danger {
-  color: var(--sw-danger-strong);
-}
-.commercerowaction.is-entry {
-  border-radius: 7px;
-  background: var(--sw-brand-light);
-  padding: 5px 8px;
-  text-decoration: none;
-}
-.commerceversion span {
-  color: var(--sw-muted);
-  font-size: 9px;
-}
 @media (max-width: 1180px) {
   .commerceactionwide {
     display: none;
-  }
-  .commerceactionmore {
-    display: block;
   }
   .commerceboard table {
     min-width: 760px;

@@ -3,11 +3,13 @@ import { definedOperationBodySchema, definedOperationOutputSchema, definedOperat
 
 export interface OperationDefinition {
   readonly id: string;
+  readonly version: number;
+  readonly title: string;
   readonly owner: string;
   readonly method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   readonly path: `/api/v1/${string}` | `/health/${string}`;
   readonly audience: 'public' | 'console' | 'storefront' | 'system' | 'webhook';
-  readonly targets: readonly ('console' | 'storefront')[];
+  readonly targets: readonly ('console' | 'storefront' | 'miniapp' | 'store' | 'supplier')[];
   readonly permission: string | null;
   readonly capability: string;
   readonly scopeKinds: readonly string[];
@@ -27,6 +29,11 @@ export interface OperationDefinition {
   readonly timeout: number;
   readonly rateClass: 'health' | 'identity' | 'read' | 'write' | 'critical' | 'webhook';
   readonly risk: 'low' | 'elevated' | 'high' | 'critical';
+  readonly concurrencyPolicy: 'none' | 'optimistic' | 'serialized';
+  readonly executionMode: 'sync' | 'async' | 'stream';
+  readonly auditLevel: 'none' | 'basic' | 'detailed' | 'critical';
+  readonly sensitiveFields: readonly string[];
+  readonly lifecycle: 'active' | 'deprecated';
   readonly resourceResolver: string;
   readonly resourceParameter: string | null;
   readonly idempotent: boolean;
@@ -34,6 +41,93 @@ export interface OperationDefinition {
   readonly controller: string;
   readonly handler: string;
   readonly sdk: string;
+}
+
+export interface ClientDefinition {
+  readonly id: 'auth' | 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
+  readonly title: string;
+  readonly workspace: string;
+  readonly path: string;
+  readonly audience: 'public' | 'console' | 'storefront';
+  readonly domains: readonly string[];
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier' | null;
+  readonly transport: 'browser' | 'wechat';
+  readonly route: string;
+  readonly localPort: number;
+}
+
+export function surfaceSource(clients: readonly ClientDefinition[]): string {
+  const surfaces = clients.map(({ id }) => id);
+  const targets = clients.flatMap(({ target }) => (target === null ? [] : [target]));
+  const consumers = clients.filter(({ audience, target }) => audience === 'storefront' && target !== null).map(({ target }) => target);
+  const operators = clients.filter(({ audience, target }) => audience === 'console' && target !== null).map(({ target }) => target);
+  return `// Generated from config/clients.yml. Do not edit.\nexport const CLIENT_SURFACES = ${JSON.stringify(surfaces)} as const;\nexport type ClientSurface = (typeof CLIENT_SURFACES)[number];\nexport const OPERATION_TARGETS = ${JSON.stringify(targets)} as const;\nexport type OperationTarget = (typeof OPERATION_TARGETS)[number];\nexport const CONSUMER_TARGETS = ${JSON.stringify(consumers)} as const satisfies readonly OperationTarget[];\nexport type ConsumerTarget = (typeof CONSUMER_TARGETS)[number];\nexport const OPERATOR_TARGETS = ${JSON.stringify(operators)} as const satisfies readonly OperationTarget[];\nexport type OperatorTarget = (typeof OPERATOR_TARGETS)[number];\nexport function isClientSurface(value: unknown): value is ClientSurface { return typeof value === 'string' && (CLIENT_SURFACES as readonly string[]).includes(value); }\nexport function isOperationTarget(value: unknown): value is OperationTarget { return typeof value === 'string' && (OPERATION_TARGETS as readonly string[]).includes(value); }\nexport function isConsumerTarget(value: unknown): value is ConsumerTarget { return typeof value === 'string' && (CONSUMER_TARGETS as readonly string[]).includes(value); }\nexport function isOperatorTarget(value: unknown): value is OperatorTarget { return typeof value === 'string' && (OPERATOR_TARGETS as readonly string[]).includes(value); }\n`;
+}
+
+export function sdkSurfaceSource(clients: readonly ClientDefinition[], operations: readonly OperationDefinition[]): string {
+  const allowed = Object.fromEntries(
+    clients.map((client) => [
+      client.id,
+      operations
+        .filter((operation) => allowedOnSurface(client, operation))
+        .map(({ id }) => id),
+    ])
+  );
+  const methods = Object.fromEntries(
+    clients.map((client) => [
+      client.id,
+      operations
+        .filter((operation) => allowedOnSurface(client, operation))
+        .map(({ id }) => ({ domain: id.split('.')[0]!, method: methodName(id) })),
+    ])
+  );
+  const catalog = clients.map(({ id, title, audience, target, transport }) => ({ id, title, audience, target, transport }));
+  const clientTypes = clients
+    .map((client) => {
+      const byDomain = new Map<string, string[]>();
+      for (const operation of operations.filter((item) => allowedOnSurface(client, item))) {
+        const domain = operation.id.split('.')[0]!;
+        byDomain.set(domain, [...(byDomain.get(domain) ?? []), methodName(operation.id)]);
+      }
+      const fields = [...byDomain]
+        .map(([domain, names]) => `  readonly ${domain}: Pick<CommerceClient[${JSON.stringify(domain)}], ${names.map((name) => JSON.stringify(name)).join(' | ')}>;`)
+        .join('\n');
+      return `export interface ${typeName(client.id)}SurfaceClient {\n${fields}\n}`;
+    })
+    .join('\n\n');
+  const clientMap = clients.map(({ id }) => `  readonly ${id}: ${typeName(id)}SurfaceClient;`).join('\n');
+  return `// Generated from config/clients.yml and definitions/operations.yml. Do not edit.
+import type { ClientSurface, OperationId } from '@shop/contract';
+import type { OperationExecutor } from './OperationDescriptor';
+import { createCommerceClient, type CommerceClient } from './operations/CommerceClient';
+
+export const SURFACE_CATALOG = Object.freeze(${JSON.stringify(catalog, null, 2)}.map((surface) => Object.freeze(surface)));
+export const SURFACE_OPERATION_IDS = Object.freeze(${JSON.stringify(allowed, null, 2)} as const satisfies Readonly<Record<ClientSurface, readonly OperationId[]>>);
+const SURFACE_METHODS = Object.freeze(${JSON.stringify(methods, null, 2)} as const);
+export const MINIAPP_TRANSPORT_POLICY = Object.freeze({ transport: 'wechat', credentials: 'session', maximumResponseBytes: 1048576, allowedHeaders: Object.freeze(['content-type', 'idempotency-key', 'if-match', 'x-client-target', 'x-contract-version', 'x-csrf-token', 'x-request-id', 'x-scope-id', 'x-scope-kind', 'x-trace-id']) } as const);
+
+${clientTypes}
+
+export interface SurfaceClientMap {
+${clientMap}
+}
+
+export function createSurfaceClient<TSurface extends ClientSurface>(surface: TSurface, executor: OperationExecutor): SurfaceClientMap[TSurface] {
+  const commerce = createCommerceClient(executor) as unknown as Readonly<Record<string, Readonly<Record<string, unknown>>>>;
+  const selected: Record<string, Record<string, unknown>> = {};
+  for (const descriptor of SURFACE_METHODS[surface]) {
+    const operation = commerce[descriptor.domain]?.[descriptor.method];
+    if (operation === undefined) throw new Error(\`SURFACE_OPERATION_MISSING:\${surface}:\${descriptor.domain}.\${descriptor.method}\`);
+    (selected[descriptor.domain] ??= {})[descriptor.method] = operation;
+  }
+  return Object.freeze(Object.fromEntries(Object.entries(selected).map(([domain, value]) => [domain, Object.freeze(value)]))) as unknown as SurfaceClientMap[TSurface];
+}
+`;
+}
+
+function allowedOnSurface(client: ClientDefinition, operation: OperationDefinition): boolean {
+  const domainAllowed = client.domains.length === 0 || client.domains.includes(operation.id.split('.')[0]!);
+  return domainAllowed && (client.target === null ? operation.audience === client.audience : operation.targets.includes(client.target));
 }
 
 export function buildOpenapi(operations: readonly OperationDefinition[], errorCatalog: ReadonlyMap<string, number>, version: string): unknown {
@@ -55,6 +149,7 @@ export function buildOpenapi(operations: readonly OperationDefinition[], errorCa
     paths[operation.path] ??= {};
     paths[operation.path]![operation.method.toLowerCase()] = compact({
       operationId: operation.id,
+      summary: operation.title,
       tags: [operation.owner],
       parameters: [...pathKeys(operation.path).map((name) => ({ name, in: 'path', required: true, schema: { type: 'string', minLength: 1 } })), ...(operation.method === 'GET' ? queryParameters(operation.requestSchema) : [])],
       requestBody:
@@ -65,6 +160,7 @@ export function buildOpenapi(operations: readonly OperationDefinition[], errorCa
               content: { 'application/json': { schema: bodySchema(operation.requestSchema) } },
             },
       'x-audience': operation.audience,
+      'x-operation-version': operation.version,
       'x-targets': operation.targets,
       'x-assurance-level': operation.assuranceLevel,
       'x-capability': operation.capability,
@@ -84,6 +180,11 @@ export function buildOpenapi(operations: readonly OperationDefinition[], errorCa
       'x-resource-resolver': operation.resourceResolver,
       'x-resource-parameter': operation.resourceParameter,
       'x-risk': operation.risk,
+      'x-concurrency-policy': operation.concurrencyPolicy,
+      'x-execution-mode': operation.executionMode,
+      'x-audit-level': operation.auditLevel,
+      'x-sensitive-fields': operation.sensitiveFields,
+      'x-lifecycle': operation.lifecycle,
       'x-scope-kinds': operation.scopeKinds,
       'x-timeout-ms': operation.timeout,
       security: operation.assuranceLevel === 'anonymous' || operation.audience === 'webhook' ? [] : operation.assuranceLevel === 'optional' ? [{}, { session: [] }] : [{ session: [] }],
@@ -102,6 +203,8 @@ export function buildOpenapi(operations: readonly OperationDefinition[], errorCa
 export function operationSource(values: readonly OperationDefinition[]): string {
   const definitions = values.map((item) => ({
     id: item.id,
+    version: item.version,
+    title: item.title,
     method: item.method,
     path: item.path,
     module: item.owner,
@@ -126,6 +229,11 @@ export function operationSource(values: readonly OperationDefinition[]): string 
     timeout: item.timeout,
     rateClass: item.rateClass,
     risk: item.risk,
+    concurrencyPolicy: item.concurrencyPolicy,
+    executionMode: item.executionMode,
+    auditLevel: item.auditLevel,
+    sensitiveFields: item.sensitiveFields,
+    lifecycle: item.lifecycle,
     resourceResolver: item.resourceResolver,
     resourceParameter: item.resourceParameter,
     idempotent: item.idempotent,
@@ -161,7 +269,10 @@ export function sdkDomainSources(values: readonly OperationDefinition[]): Readon
 export function identityClientSchemaSource(values: readonly OperationDefinition[]): string {
   const rows = values
     .filter(({ id }) => id.startsWith('identity.'))
-    .map((operation) => `  ${JSON.stringify(operation.id)}: Object.freeze({ input: identityInputSchema(${JSON.stringify(operation.requestSchema)}, ${JSON.stringify(pathKeys(operation.path))}, ${operation.method !== 'GET'}), output: identityOutputSchema(${JSON.stringify(operation.responseSchema)}) }),`)
+    .map(
+      (operation) =>
+        `  ${JSON.stringify(operation.id)}: Object.freeze({ input: identityInputSchema(${JSON.stringify(operation.requestSchema)}, ${JSON.stringify(pathKeys(operation.path))}, ${operation.method !== 'GET'}), output: identityOutputSchema(${JSON.stringify(operation.responseSchema)}) }),`
+    )
     .join('\n');
   return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId, OperationInputFor, OperationOutputFor, Schema } from '..';\nimport { identityInputSchema } from '../schema/IdentityInputSchema';\nimport { SECURITY_OUTPUT_SCHEMAS } from '../schema/AccessSchema';\nimport { IDENTITY_OUTPUT_SCHEMAS } from '../schema/IdentitySchema';\n\nconst outputs = Object.freeze({ ...SECURITY_OUTPUT_SCHEMAS, ...IDENTITY_OUTPUT_SCHEMAS });\nconst schemas = Object.freeze({\n${rows}\n});\nexport type IdentityOperationId = Extract<OperationId, \`identity.\${string}\`>;\nexport function identityClientSchema<TKey extends IdentityOperationId>(id: TKey): Readonly<{ input: Schema<OperationInputFor<TKey>>; output: Schema<OperationOutputFor<TKey>> }> {\n  const pair = schemas[id];\n  if (pair === undefined) throw new Error('IDENTITY_OPERATION_SCHEMA_MISSING');\n  return pair as unknown as Readonly<{ input: Schema<OperationInputFor<TKey>>; output: Schema<OperationOutputFor<TKey>> }>;\n}\nfunction identityOutputSchema(name: string): Schema<unknown> {\n  const schema = Reflect.get(outputs, name) as Schema<unknown> | undefined;\n  if (schema === undefined) throw new Error(\`IDENTITY_OUTPUT_SCHEMA_MISSING:\${name}\`);\n  return schema;\n}\n`;
 }
@@ -169,9 +280,8 @@ export function identityClientSchemaSource(values: readonly OperationDefinition[
 function sdkDomainSource(domain: string, operations: readonly OperationDefinition[]): string {
   const name = typeName(domain);
   const ids = operations.map(({ id }) => `  ${JSON.stringify(id)},`).join('\n');
-  const methods = operations
-    .map((operation) => `  readonly ${methodName(operation.id)}: ${operation.responseMode === 'stream' ? 'EventOperationMethod' : 'OperationMethod'}<${JSON.stringify(operation.id)}>;`)
-    .join('\n');
+  const methodCatalog = operations.map((operation) => `  ${JSON.stringify(operation.id)}: ${JSON.stringify(methodName(operation.id))},`).join('\n');
+  const methods = operations.map((operation) => `  readonly ${methodName(operation.id)}: ${operation.responseMode === 'stream' ? 'EventOperationMethod' : 'OperationMethod'}<${JSON.stringify(operation.id)}>;`).join('\n');
   const bindings = operations.map((operation) => `    ${methodName(operation.id)}: bind${typeName(methodName(operation.id))}(client),`).join('\n');
   const factories = operations
     .map((operation) => {
@@ -183,6 +293,7 @@ function sdkDomainSource(domain: string, operations: readonly OperationDefinitio
         audience: operation.audience,
         targets: operation.targets,
         responseMode: operation.responseMode,
+        idempotencyPolicy: operation.idempotencyPolicy,
         idempotent: operation.idempotent,
         timeout: operation.timeout,
         errorUnion: operation.errorUnion,
@@ -200,7 +311,16 @@ function sdkDomainSource(domain: string, operations: readonly OperationDefinitio
     domain === 'identity'
       ? `import { identityClientSchema } from '@shop/contract/identityschema';\nimport { defineScopedOperation } from '../ScopedOperationDescriptor';`
       : `import { exactOperationInput, exactOperationOutput } from '@shop/contract/schema';\nimport { defineOperation } from '../CatalogOperationDescriptor';`;
-  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport { ApiClient } from '../ApiClient';\nimport { FetchTransport } from '../FetchTransport';\nimport { bindEventOperation, bindOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';\n${schemaImport}\n\nexport const ${domain.toUpperCase()}_OPERATION_IDS = Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface ${name}Operations {\n${methods}\n}\n\nexport function createFetch${name}(baseUrl: string): ${name}Operations { return create${name}Operations(new ApiClient(baseUrl, new FetchTransport())); }\n\nexport function create${name}Operations(client: OperationExecutor): ${name}Operations { return Object.freeze({\n${bindings}\n  }); }\n\n${factories}\n`;
+  const hasEvents = operations.some(({ responseMode }) => responseMode === 'stream');
+  const hasRequests = operations.some(({ responseMode }) => responseMode !== 'stream');
+  const descriptorImports = [
+    ...(hasEvents ? ['bindEventOperation'] : []),
+    ...(hasRequests ? ['bindOperation'] : []),
+    ...(hasEvents ? ['type EventOperationMethod'] : []),
+    'type OperationExecutor',
+    ...(hasRequests ? ['type OperationMethod'] : []),
+  ].join(', ');
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport { ApiClient } from '../ApiClient';\nimport { FetchTransport } from '../FetchTransport';\nimport { ${descriptorImports} } from '../OperationDescriptor';\n${schemaImport}\n\nexport const ${domain.toUpperCase()}_OPERATION_IDS = Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface ${name}Operations {\n${methods}\n}\n\nexport const ${domain.toUpperCase()}_METHOD_BY_OPERATION = Object.freeze({\n${methodCatalog}\n} as const satisfies Readonly<Record<(typeof ${domain.toUpperCase()}_OPERATION_IDS)[number], keyof ${name}Operations>>);\n\nexport function createFetch${name}(baseUrl: string): ${name}Operations { return create${name}Operations(new ApiClient(baseUrl, new FetchTransport())); }\n\nexport function create${name}Operations(client: OperationExecutor): ${name}Operations { return Object.freeze({\n${bindings}\n  }); }\n\n${factories}\n`;
 }
 
 function requestSchema(operation: OperationDefinition): unknown {

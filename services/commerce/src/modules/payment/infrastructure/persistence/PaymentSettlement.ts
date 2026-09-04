@@ -1,12 +1,12 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { PaymentSettlementCore, type SettlementBenefit, type SettlementFulfillment, type SettlementInventory, type SettlementMarketing, type SettlementOrders, type SettlementVoucher } from './PaymentSettlementCore';
+import { PaymentSettlementCore, type SettlementBenefit, type SettlementInventory, type SettlementMarketing, type SettlementOrders, type SettlementVoucher } from './PaymentSettlementCore';
 
 export type { SettlementTarget } from './PaymentSettlementCore';
 
 export class PaymentSettlement extends PaymentSettlementCore {
-  constructor(benefit: SettlementBenefit, voucher: SettlementVoucher, inventory: SettlementInventory, marketing: SettlementMarketing, fulfillment: SettlementFulfillment, orders: SettlementOrders) {
-    super(benefit, voucher, inventory, marketing, fulfillment, orders);
+  constructor(benefit: SettlementBenefit, voucher: SettlementVoucher, inventory: SettlementInventory, marketing: SettlementMarketing, orders: SettlementOrders) {
+    super(benefit, voucher, inventory, marketing, orders);
   }
 }
 

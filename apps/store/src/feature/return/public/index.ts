@@ -1,0 +1,1 @@
+export { returnManifest } from './Manifest';

@@ -17,31 +17,56 @@ import { MEMBER_IMPORT_ACCESS_PORT } from './public/MemberImportAccessPort';
 import { MEMBERSHIP_READ_PORT } from './public/MembershipReadPort';
 import { PgAccessRepository } from './infrastructure/persistence/PgAccessRepository';
 import { PgAuthorizationRepository } from './infrastructure/persistence/PgAuthorizationRepository';
-import { AccessVersionService } from './application/service/AccessVersionService';
+import { AccessVersionPublisher } from './application/service/AccessVersionPublisher';
 import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import { DelegationPolicy } from './domain/policy/DelegationPolicy';
 import { ActivateMembership } from './application/service/ActivateMembership';
 import { CreateInvitationGrant } from './application/service/CreateInvitationGrant';
 import { ACTION_PROOF_PORT } from './public/ActionProofPort';
 import { AUTHORIZATION_PORT } from './public/AuthorizationPort';
+import { TASK_AUTHORIZATION_PORT } from './public/TaskAuthorizationPort';
+import { TaskAuthorization } from './application/service/TaskAuthorization';
 import { CenterReadHandler } from './application/handler/CenterReadHandler';
-import { OwnersTransferHandler } from './application/handler/OwnersTransferHandler';
 import { RolesManageHandler } from './application/handler/RolesManageHandler';
 import { OverridesManageHandler } from './application/handler/OverridesManageHandler';
 import { ScopesManageHandler } from './application/handler/ScopesManageHandler';
 import { PgAccessAdministrationRepository } from './infrastructure/persistence/PgAccessAdministrationRepository';
+import { PgAccessGovernanceRepository } from './infrastructure/persistence/PgAccessGovernanceRepository';
+import { ManageOwnershipTransfer } from './application/process/ManageOwnershipTransfer';
+import { OwnershipReadHandler } from './application/handler/OwnershipReadHandler';
+import { OwnershipPreviewHandler } from './application/handler/OwnershipPreviewHandler';
+import { OwnershipCreateHandler } from './application/handler/OwnershipCreateHandler';
+import { OwnershipAcceptPreviewHandler } from './application/handler/OwnershipAcceptPreviewHandler';
+import { OwnershipAcceptHandler } from './application/handler/OwnershipAcceptHandler';
+import { OwnershipCancelPreviewHandler } from './application/handler/OwnershipCancelPreviewHandler';
+import { OwnershipCancelHandler } from './application/handler/OwnershipCancelHandler';
+import { createJobs } from './interface/job/JobFactory';
 
 interface AccessComposition {
   readonly access: AccessPort;
   readonly authorization: PgAuthorizationRepository;
   readonly invitation: PgInvitationAccess;
   readonly repository: PgAccessRepository;
-  readonly versions: AccessVersionService;
+  readonly versions: AccessVersionPublisher;
 }
 export const AccessModule = defineModule(Manifest, {
+  jobs: createJobs,
   handlers: () => {
     const access = new PgAccessAdministrationRepository();
-    return [new CenterReadHandler(access), new OwnersTransferHandler(access), new RolesManageHandler(access), new OverridesManageHandler(access), new ScopesManageHandler(access)];
+    const ownership = new ManageOwnershipTransfer(new PgAccessGovernanceRepository());
+    return [
+      new CenterReadHandler(access),
+      new OwnershipReadHandler(ownership),
+      new OwnershipPreviewHandler(ownership),
+      new OwnershipCreateHandler(ownership),
+      new OwnershipAcceptPreviewHandler(ownership),
+      new OwnershipAcceptHandler(ownership),
+      new OwnershipCancelPreviewHandler(ownership),
+      new OwnershipCancelHandler(ownership),
+      new RolesManageHandler(access),
+      new OverridesManageHandler(access),
+      new ScopesManageHandler(access),
+    ];
   },
   ports: (context) => {
     const composition = compose(context);
@@ -54,15 +79,17 @@ export const AccessModule = defineModule(Manifest, {
       { token: NAVIGATION_ACCESS_PORT, value: new PgNavigationAccess(composition.authorization) },
       { token: INVITATION_ACCESS_PORT, value: composition.invitation },
       { token: AUTHORIZATION_PORT, value: authorizationPort },
+      { token: TASK_AUTHORIZATION_PORT, value: new TaskAuthorization(composition.authorization) },
       { token: ACTION_PROOF_PORT, value: new PgActionProofPort(authorizationPort) },
     ];
   },
   jobPorts: () => {
     const repository = new PgAccessRepository();
-    const access = new AccessPort(repository, new AccessVersionService(repository));
+    const access = new AccessPort(repository, new AccessVersionPublisher(repository));
     return [
       { token: IDENTITY_ACCESS_PORT, value: access },
       { token: MEMBER_IMPORT_ACCESS_PORT, value: access },
+      { token: TASK_AUTHORIZATION_PORT, value: new TaskAuthorization(new PgAuthorizationRepository()) },
     ];
   },
 });
@@ -70,7 +97,7 @@ export const AccessModule = defineModule(Manifest, {
 function compose(context: ModuleContext): AccessComposition {
   const repository = new PgAccessRepository();
   const authorization = new PgAuthorizationRepository();
-  const versions = new AccessVersionService(repository);
+  const versions = new AccessVersionPublisher(repository);
   const access = new AccessPort(repository, versions);
   const organizations = context.ports.get(ACCESS_ORGANIZATION_PORT);
   const grants = new CreateInvitationGrant(organizations, context.ports.get(ACCESS_PARTNER_PORT), repository, authorization);

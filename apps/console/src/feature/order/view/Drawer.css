@@ -189,3 +189,32 @@
 .ordermilestones .is-warning {
   color: var(--sw-danger-strong);
 }
+
+@media (max-width: 63.9375rem) {
+  .orderdrawermodal {
+    width: 100vw;
+  }
+  .orderdrawer {
+    border-left: 0;
+  }
+}
+
+@media (max-width: 47.9375rem) {
+  .orderdrawerheader,
+  .orderdrawerbody {
+    padding-inline: var(--sw-space-1-5);
+  }
+  .orderdrawer button,
+  .orderdrawer input,
+  .orderdrawer select,
+  .orderdrawer textarea {
+    min-height: 2.75rem;
+  }
+  .ordermilestones {
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: var(--sw-space-2);
+  }
+  .ordermilestones li:nth-child(3)::after {
+    display: none;
+  }
+}

@@ -7,7 +7,7 @@ import { StorefrontStepup } from './StorefrontStepup';
 afterEach(cleanup);
 
 describe('StorefrontStepup mobile readiness', () => {
-  it('prevents challenge delivery when the account has no bound mobile', async () => {
+  it('prevents challenge delivery when the account has no bound mobile', () => {
     render(<StorefrontStepup open onClose={vi.fn()} viewmodel={viewmodel()} />);
 
     expect(screen.getByText('当前账号未绑定手机号，请先在安全中心完成绑定。')).toBeTruthy();
@@ -16,5 +16,5 @@ describe('StorefrontStepup mobile readiness', () => {
 });
 
 function viewmodel(): ReturnType<typeof useStepupViewModel> {
-  return Object.freeze({ challenge: null, code: '', busy: false, error: null, phoneMasked: null, actions: Object.freeze({ send: vi.fn(async () => undefined), verify: vi.fn(async () => undefined), changeCode: vi.fn() }) });
+  return Object.freeze({ challenge: null, code: '', busy: false, error: null, phoneMasked: null, actions: Object.freeze({ send: vi.fn(() => Promise.resolve()), verify: vi.fn(() => Promise.resolve()), changeCode: vi.fn() }) });
 }

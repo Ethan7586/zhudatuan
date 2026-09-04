@@ -1,0 +1,95 @@
+.productbatchdialog {
+  width: min(720px, 100%);
+}
+.productbatchsummary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.productbatchsummary span {
+  display: grid;
+  gap: 3px;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-commerce-warm);
+  padding: 11px;
+  text-align: center;
+}
+.productbatchsummary small {
+  color: var(--sw-muted);
+  font-size: 10px;
+}
+.productbatchsummary strong {
+  font-size: 20px;
+}
+.productbatchitems {
+  max-height: 320px;
+  overflow: auto;
+}
+.productbatchitems li {
+  align-items: center;
+  border: 1px solid var(--sw-border);
+  border-radius: 7px;
+  padding: 9px 11px;
+}
+.productbatchitems li + li {
+  margin-top: 6px;
+}
+.productbatchitems li div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.productbatchitems li strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.productbatchitems li small {
+  color: var(--sw-muted);
+  font-size: 10px;
+}
+.productbatchitems li > span {
+  max-width: 48%;
+  text-align: right;
+}
+.productbatchitems li[data-state='ready'] > span,
+.productbatchitems li[data-state='succeeded'] > span {
+  color: var(--sw-success);
+  font-weight: 700;
+}
+.productbatchitems li[data-state='failed'] {
+  border-color: var(--sw-warning);
+  background: var(--sw-warning-surface);
+}
+.productbatchitems li[data-state='failed'] > span {
+  color: var(--sw-warning-strong);
+}
+.productbatcherror {
+  border-color: var(--sw-danger) !important;
+  background: var(--sw-danger-surface) !important;
+}
+.productbatcherror p {
+  color: var(--sw-danger) !important;
+}
+.productbatchcontent section button {
+  margin-top: 9px;
+  border: 1px solid var(--sw-brand);
+  border-radius: 7px;
+  background: var(--sw-surface);
+  padding: 7px 11px;
+  color: var(--sw-brand);
+}
+@media (max-width: 640px) {
+  .productbatchsummary {
+    grid-template-columns: 1fr;
+  }
+  .productbatchitems li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .productbatchitems li > span {
+    max-width: none;
+    text-align: left;
+  }
+}

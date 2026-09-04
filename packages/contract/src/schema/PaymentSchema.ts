@@ -1,6 +1,6 @@
-import { literal, null as nullSchema, record, strictObject, string, union } from 'zod/mini';
+import { literal, null as nullSchema, optional, record, strictObject, string, union } from 'zod/mini';
 import { ContractJsonValueSchema } from './JsonSchema';
-import { currency, isoUtc, pageOutput, pageQuery, unsigned } from './Primitives';
+import { currency, isoUtc, pageOutput, pageQuery, unsigned, version } from './Primitives';
 
 const nullableText = union([string(), nullSchema()]);
 const refund = strictObject({
@@ -28,8 +28,10 @@ const recovery = strictObject({
   opened_at: isoUtc,
   resolved_at: union([isoUtc, nullSchema()]),
   resolution_request_id: nullableText,
+  version,
 });
 export const PAYMENT_BODY_SCHEMAS = {
+  PaymentIntentsCreateInput: strictObject({ order: string(), scene: literal(['miniapp', 'jsapi']) }),
   PaymentRefundsRequestInput: strictObject({ payment: string(), amountMinor: unsigned, reason: string() }),
   PaymentRecoveriesResolveInput: strictObject({ action: literal(['replay', 'requery', 'retryrefund', 'resolve']), reason: string() }),
   // Provider notifications are authorized from the untouched raw payload and
@@ -39,10 +41,15 @@ export const PAYMENT_BODY_SCHEMAS = {
 
 export const PAYMENT_QUERY_SCHEMAS = {
   PaymentIntentsReadInput: strictObject({}),
-  PaymentRecoveriesReadInput: strictObject(pageQuery),
+  PaymentRecoveriesReadInput: strictObject({ ...pageQuery, orderId: optional(string()) }),
 } as const;
 
 export const PAYMENT_OUTPUT_SCHEMAS = {
+  PaymentIntentsCreateOutput: union([
+    strictObject({ intentId: string(), orderId: string(), paymentId: nullableText, state: literal('captured'), action: nullSchema(), expiresAt: isoUtc, retryAfter: literal(0) }),
+    strictObject({ intentId: string(), orderId: string(), paymentId: string(), state: literal('pending'), action: record(string(), string()), expiresAt: isoUtc, retryAfter: literal(0) }),
+    strictObject({ intentId: string(), orderId: string(), paymentId: string(), state: literal(['preparing', 'recovery', 'failed']), action: nullSchema(), expiresAt: isoUtc, retryAfter: unsigned }),
+  ]),
   PaymentIntentsReadOutput: union([
     strictObject({ intentId: string(), orderId: string(), paymentId: string(), state: literal('captured'), action: nullSchema(), expiresAt: isoUtc }),
     strictObject({ intentId: string(), orderId: string(), paymentId: string(), state: literal('pending'), action: record(string(), string()), expiresAt: isoUtc }),

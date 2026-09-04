@@ -3,7 +3,7 @@ import { CONTRACT_SCHEMA_HEAD, TARGET_SCHEMA_HEAD } from '@shop/config/server';
 import type { DatabasePool } from '../foundation/persistence/Pool';
 import { Container } from './Container';
 import type { ExtensionRegistry } from './ExtensionRegistry';
-import { JobRegistry } from './JobRegistry';
+import { JobRegistry } from '../modules/runtime/application/registry/JobRegistry';
 import { HandlerRegistry } from '../foundation/application/HandlerRegistry';
 import { ModuleRegistry, type CommerceModule } from './ModuleRegistry';
 
@@ -33,7 +33,7 @@ export async function assertProviderReady(pool: DatabasePool, extensions: Extens
     exists(select 1 from runtime.schemaversion where version=$1) migration,
     exists(select 1 from runtime.schemaversion where version=$2) contract,
     (select count(*)::integer from runtime.operation) operations,
-    (select count(*)::integer from runtime.event) events`,
+    (select count(*)::integer from runtime.event where retired_at is null) events`,
     [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD]
   );
   const state = result.rows[0];

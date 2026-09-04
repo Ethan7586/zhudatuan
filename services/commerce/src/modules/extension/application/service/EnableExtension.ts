@@ -1,10 +1,13 @@
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { HealthRecord } from '../../domain/model/HealthRecord';
-import type { ExtensionRepository } from '../port/ExtensionLoader';
+import type { ExtensionCandidate, ExtensionLoader, ExtensionRepository } from '../port/ExtensionLoader';
 
 export class EnableExtension {
-  constructor(private readonly repository: ExtensionRepository) {}
+  constructor(
+    private readonly repository: ExtensionRepository,
+    private readonly loader: ExtensionLoader
+  ) {}
 
   async test(context: WriteTransactionContext, id: string, scope: string, actor: string, trace: string): Promise<void> {
     const repository = this.repository;
@@ -19,15 +22,28 @@ export class EnableExtension {
     const repository = this.repository;
     const locked = await repository.lock(context, id, scope);
     if (!locked) throw new DomainError('RESOURCE_NOT_FOUND');
-    const health = await repository.latestHealth(context, id, locked.version);
-    if (!health || health.state !== 'healthy') throw new Error('EXTENSION_PROBES_REQUIRED');
-    const activation = await repository.activation(context, id, scope, locked.extension);
-    const current = activation.candidate;
-    if (!['testing', 'degraded'].includes(current.state)) throw new Error('EXTENSION_CANDIDATE_STALE');
-    await repository.health(context, new HealthRecord(current.id, current.version, health.state, health.checkedAt, health.latency));
-    if (activation.active) await repository.transition(context, activation.active, 'disabled', actor, { reason: 'atomic replacement', replacement: current.id, trace });
-    await repository.transition(context, current, 'enabled', actor, { reason: 'provider worker probes passed', health, trace });
-    await repository.enqueueHealth(context, current.id, current.scope);
-    return activation.active?.id ?? null;
+    if (!['testing', 'degraded'].includes(locked.state)) throw new Error('EXTENSION_CANDIDATE_STALE');
+    let candidate: ExtensionCandidate | undefined;
+    try {
+      candidate = await this.loader.stage(id, loadContext(context, scope, actor, trace));
+      if (candidate.installation !== locked.id || candidate.version !== locked.version || candidate.provider !== locked.extension || candidate.scope !== locked.scope) throw new Error('EXTENSION_CANDIDATE_STALE');
+      if (candidate.health.state !== 'healthy' || candidate.probes.sandbox.state !== 'healthy' || candidate.probes.canary.state !== 'healthy') throw new Error('EXTENSION_PROBES_REQUIRED');
+      const activation = await repository.activation(context, id, scope, locked.extension);
+      const current = activation.candidate;
+      if (current.version !== locked.version || !['testing', 'degraded'].includes(current.state)) throw new Error('EXTENSION_CANDIDATE_STALE');
+      await repository.health(context, new HealthRecord(current.id, current.version, candidate.health.state, candidate.health.checkedAt, candidate.latency));
+      if (activation.active) await repository.transition(context, activation.active, 'disabled', actor, { reason: 'atomic replacement', replacement: current.id, trace });
+      await repository.transition(context, current, 'enabled', actor, { reason: 'contract, configuration, sandbox and health probes passed', probes: candidate.probes, trace });
+      await repository.enqueueHealth(context, current.id, current.scope);
+      await this.loader.activate(candidate);
+      return activation.active?.id ?? null;
+    } catch (cause) {
+      if (candidate) await this.loader.discard(candidate).catch(() => undefined);
+      throw cause;
+    }
   }
+}
+
+function loadContext(context: WriteTransactionContext, scope: string, actor: string, trace: string) {
+  return { tenant: context.tenant, membership: context.membership, scope, actor, trace, workload: 'query' as const, deadline: context.deadline, signal: context.signal };
 }

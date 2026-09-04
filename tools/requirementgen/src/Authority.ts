@@ -24,6 +24,7 @@ interface AuthorityDocument {
   readonly architecture?: readonly Readonly<{ repositoryRelativePath: string; sha256: string }>[];
   readonly navigation?: Readonly<{ repositoryRelativePath: string; sha256: string; version: number }>;
   readonly visuals?: Readonly<{ repositoryRelativePath: string; sha256: string }>;
+  readonly owners?: Readonly<Record<string, Readonly<{ module: string; authority: string }>>>;
 }
 
 export async function loadRequirementAuthority(root: string): Promise<
@@ -53,11 +54,24 @@ export async function loadRequirementAuthority(root: string): Promise<
   if (actualHash !== authority.sha256) {
     throw new Error('REQUIREMENT_AUTHORITY_HASH_INVALID:' + actualHash);
   }
-  if (document.architecture?.length !== 1 || document.architecture[0]?.repositoryRelativePath !== 'docs/architecture/前端整体重构方案.md') {
+  const architecturePaths = [
+    'docs/architecture/前端整体重构方案.md',
+    'docs/architecture/福利商城理想方案20260904.md',
+    'docs/architecture/福利商城代码修改清单20260904.md',
+  ];
+  if (document.architecture?.length !== architecturePaths.length || document.architecture.some((item, index) => item.repositoryRelativePath !== architecturePaths[index])) {
     throw new Error('ARCHITECTURE_AUTHORITY_INVALID');
   }
-  await verifyAuthority(repositoryRoot, document.architecture[0]);
-  if (document.navigation?.version !== 2) throw new Error('ROUTE_CATALOG_VERSION_INVALID');
+  for (const architecture of document.architecture) await verifyAuthority(repositoryRoot, architecture);
+  const expectedOwners = Object.freeze({ approval: 'approval', vouchercredential: 'voucher', financeimport: 'finance', storeaudience: 'identity', supplieraudience: 'identity' });
+  if (Object.keys(document.owners ?? {}).sort().join(',') !== Object.keys(expectedOwners).sort().join(',')) throw new Error('ARCHITECTURE_OWNER_SET_INVALID');
+  for (const [fact, module] of Object.entries(expectedOwners)) {
+    const owner = document.owners?.[fact];
+    if (owner?.module !== module) throw new Error(`ARCHITECTURE_OWNER_INVALID:${fact}`);
+    assertRepositoryRelativePath(owner.authority);
+    await realpath(resolve(repositoryRoot, owner.authority));
+  }
+  if (document.navigation?.version !== 3) throw new Error('ROUTE_CATALOG_VERSION_INVALID');
   await verifyAuthority(repositoryRoot, required(document.navigation, 'NAVIGATION_AUTHORITY_MISSING'));
   await verifyAuthority(repositoryRoot, required(document.visuals, 'VISUAL_AUTHORITY_MISSING'));
   const visualDocument = parse(await readFile(resolve(repositoryRoot, document.visuals!.repositoryRelativePath), 'utf8')) as { readonly authority?: { readonly source?: unknown } };

@@ -2,7 +2,17 @@ import { defineComponent } from '../../shared/manifest/ComponentManifest';
 
 export const FinanceManifest = defineComponent({
   component: 'finance',
-  navigationids: ['groupfinance', 'mallfinance'],
+  navigationids: [
+    'groupfinance', 'mallfinance',
+    'groupfinanceentry', 'mallfinanceentry',
+    'groupfinancestatement', 'mallfinancestatement',
+    'groupfinancereconciliation', 'mallfinancereconciliation',
+    'groupfinancesettlement', 'mallfinancesettlement',
+    'groupfinancewithdrawal', 'mallfinancewithdrawal',
+    'groupfinanceinvoice', 'mallfinanceinvoice',
+    'groupfinancegovernance', 'mallfinancegovernance',
+    'groupfinanceaudit', 'mallfinanceaudit',
+  ],
   load: () => import('./route/FinanceRoute'),
   routes: [
     { routeid: 'consolefinance' },
@@ -12,5 +22,7 @@ export const FinanceManifest = defineComponent({
     { routeid: 'consolefinancesettlement', load: () => import('./route/SettlementRoute') },
     { routeid: 'consolefinancewithdrawal', load: () => import('./route/WithdrawalRoute') },
     { routeid: 'consolefinanceinvoice', load: () => import('./route/InvoiceRoute') },
+    { routeid: 'consolefinancegovernance', load: () => import('./route/GovernanceRoute') },
+    { routeid: 'consolefinanceaudit', load: () => import('./route/AuditRoute') },
   ],
 });

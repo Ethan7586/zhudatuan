@@ -1,6 +1,7 @@
 export class OrderReceivedSubscriber {
-  receive(eventId: string, scopeId: string, payload: Readonly<Record<string, unknown>>): Readonly<{ eventId: string; eventType: 'order.received'; scopeId: string; orderId: string }> {
-    return Object.freeze({ eventId, eventType: 'order.received', scopeId, orderId: reference(payload.orderId) });
+  receive(eventId: string, scopeId: string, payload: Readonly<Record<string, unknown>>) {
+    const order = reference(payload.orderId);
+    return Object.freeze({ eventId, eventType: 'order.received' as const, scopeId, sourceId: order, resourceId: order });
   }
 }
 

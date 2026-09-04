@@ -4,8 +4,8 @@ import { createHmac } from 'node:crypto';
 
 import { reject } from '../../../../foundation/application/OperationRejection';
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
-import type { KmsClient, CipherEnvelope } from '../../../../foundation/infrastructure/KmsClient';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
+import type { KmsClient, CipherEnvelope } from '../../../../foundation/application/KmsPort';
 import type { RiskGate } from '../../../../foundation/security/RiskGate';
 import type { IdentityMemberPort } from '../../../member/public';
 import type { ChallengePort } from '../port/ChallengePort';
@@ -108,6 +108,11 @@ export class ManageCredential {
         return { actor, body, mobile, envelope: await this.kms.encrypt('pii', 'identity/mobile', mobile, { principal: actor.actor.id }) };
       },
       execute: async (_request, database, value) => {
+        await this.challenges.throttle(requireWriteTransaction(database), [
+          [this.digest(value.mobile), 'verify:phone_change'],
+          [this.digest(_request.input.headers['x-peer-address'] ?? 'unknown'), 'network:verify:phone_change'],
+          [this.digest(_request.input.headers['x-device-id'] ?? 'unknown'), 'device:verify:phone_change'],
+        ]);
         await this.challenges.consume(requireWriteTransaction(database), textField(value.body, 'challenge'), textField(value.body, 'code'), (id, code) => this.code(id, code), value.actor.actor.id, {
           purpose: 'phone_change',
           destinationHash: this.digest(value.mobile),

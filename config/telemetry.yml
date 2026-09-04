@@ -1,5 +1,13 @@
 version: 1
 owner: reliability
+buffer:
+  capacity: 20000
+  retentionSeconds: 3600
+  maximumRead: 5000
+health:
+  freshnessSeconds: 300
+  queueBacklogDepth: 1000
+  checks: [dependency, queue, provider, servicelevel, release]
 slo:
   catalogP95Ms: 150
   queryP95Ms: 300
@@ -24,6 +32,37 @@ slo:
   availabilityPercent: 99.95
   rpoMinutes: 0
   rtoMinutes: 15
+serviceLevels:
+  operationavailability:
+    title: 核心操作可用率
+    indicator: {metric: commerce.operation.count, type: ratio, goodResult: success}
+    targetKey: availabilityPercent
+    unit: percent
+    direction: minimum
+    windowSeconds: 300
+    severity: critical
+    owner: reliability
+    runbook: docs/operations/deployment.md
+  operationlatency:
+    title: 核心操作 P95 延迟
+    indicator: {metric: commerce.operation.duration, type: percentile, percentile: 95}
+    targetKey: commandP95Ms
+    unit: milliseconds
+    direction: maximum
+    windowSeconds: 300
+    severity: warning
+    owner: reliability
+    runbook: docs/operations/deployment.md
+  outboxlatency:
+    title: Outbox P99 延迟
+    indicator: {metric: commerce.outbox.lag, type: percentile, percentile: 99}
+    targetKey: outboxP99Seconds
+    unit: seconds
+    direction: maximum
+    windowSeconds: 300
+    severity: critical
+    owner: runtime
+    runbook: docs/operations/projection.md
 browser:
   webVitals: [lcp, inp, cls, fcp, ttfb]
   navigation: [routeid, durationms, outcome]
@@ -33,16 +72,102 @@ browser:
   payment: [intent, confirmationms, outcome]
   upload: [kind, bytes, durationms, checksum, outcome]
   forbiddenFields: [query, payload, secret, token, password, otp, proof, pii]
+metrics:
+  approval: [template, state, decision, durationms, outcome]
+  voucherbatch: [kind, state, total, succeeded, failed, durationms]
+  importing: [kind, phase, total, accepted, rejected, duplicate, durationms]
+  reconciliation: [provider, state, matched, differences, durationms]
+  providercapability: [provider, capability, operation, outcome, durationms]
+  webvitals: [surface, routeid, metric, value, rating, navigationtype]
+sampling:
+  errors: 1
+  critical: 1
+  commands: 1
+  reads: 0.1
+  webvitals: 1
+  providerhealth: 0.1
 alerts:
-  entryFailure:
+  entryfailure:
+    title: 商城入口失败率过高
+    signal: experience.entry.resolve.failure
+    measure: percent
     windowSeconds: 300
-    maximumPercent: 1
-  entryInvalid:
+    threshold: 1
+    severity: critical
+    owner: experience
+    runbook: docs/operations/mallentry.md
+  entryinvalid:
+    title: 商城入口配置无效
+    signal: experience.entry.invalid
+    measure: count
     windowSeconds: 60
-    maximumCount: 0
-  sessionMallMismatch:
+    threshold: 0
+    severity: critical
+    owner: experience
+    runbook: docs/operations/mallentry.md
+  sessionmallmismatch:
+    title: 会话商城范围不匹配
+    signal: identity.session.mallmismatch
+    measure: count
     windowSeconds: 300
-    maximumCount: 20
+    threshold: 20
+    severity: warning
+    owner: identity
+    runbook: docs/operations/sessioncompromise.md
+  approvaloverdue:
+    title: 审批任务超时
+    signal: approval.task.overdue
+    measure: count
+    windowSeconds: 300
+    threshold: 0
+    severity: warning
+    owner: approval
+    runbook: docs/operations/approval.md
+  voucherbatchfailure:
+    title: 卡券批次失败率过高
+    signal: voucher.batch.failure
+    measure: percent
+    windowSeconds: 300
+    threshold: 1
+    severity: critical
+    owner: voucher
+    runbook: docs/operations/voucherissue.md
+  importfailure:
+    title: 导入失败率过高
+    signal: runtime.import.failure
+    measure: percent
+    windowSeconds: 300
+    threshold: 1
+    severity: warning
+    owner: runtime
+    runbook: docs/operations/catalogimport.md
+  reconciliationdifference:
+    title: 对账差异未清零
+    signal: finance.reconciliation.difference
+    measure: count
+    windowSeconds: 900
+    threshold: 0
+    severity: critical
+    owner: finance
+    runbook: docs/operations/reconciliation.md
+  providercapabilityfailure:
+    title: Provider 能力失败率过高
+    signal: extension.provider.failure
+    measure: percent
+    windowSeconds: 300
+    threshold: 5
+    severity: warning
+    owner: extension
+    runbook: docs/operations/providerhealth.md
+  servicelevelburn:
+    title: 核心操作错误预算消耗过快
+    signal: slo.operationavailability
+    measure: burnrate
+    windowSeconds: 300
+    threshold: 2
+    severity: critical
+    owner: reliability
+    runbook: docs/operations/deployment.md
 redaction:
   deny:
     - authorization
@@ -74,6 +199,7 @@ redaction:
     - phone
     - preauth
     - privatekey
+    - proof
     - recipient
     - secret
     - token

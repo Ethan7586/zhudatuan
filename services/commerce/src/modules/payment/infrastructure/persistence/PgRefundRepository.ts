@@ -2,7 +2,7 @@ import type { PgTransactionAccess } from '../../../../adapter/database/PgTransac
 import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { OrganizationReadPort } from '../../../organization/public';
-import type { PaymentOrderPort } from '../../../order/public';
+import type { OrderPaymentPort } from '../../../order/public';
 import type { RefundRepository } from '../../application/port/RefundRepository';
 import { RefundPlanner } from './RefundPlanner';
 
@@ -12,7 +12,7 @@ export class PgRefundRepository implements RefundRepository {
   constructor(
     private readonly transactions: PgTransactionAccess,
     private readonly organizations: Pick<OrganizationReadPort, 'descendants'>,
-    orders: Pick<PaymentOrderPort, 'payment' | 'recordRefund'>
+    orders: Pick<OrderPaymentPort, 'payment' | 'recordRefund'>
   ) {
     this.planner = new RefundPlanner(orders);
   }

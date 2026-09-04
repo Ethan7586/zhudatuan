@@ -1,7 +1,8 @@
 import { useNavigate, useSearchParams } from 'react-router';
 import { useSession } from '../../../entity/session/viewmodel/SessionContext';
+import { routePath, ROUTES } from '../../../generated/RouteBinding';
 import { pathForFeature } from '../../../shared/navigation/Route';
-import { useAccountIdentity } from '../../account/public/index';
+import { useAccountIdentity } from '../../account';
 import { useOrderState } from './OrderState';
 
 export function useOrderViewModel() {
@@ -22,10 +23,15 @@ export function useOrderViewModel() {
     status,
     visibleOrders,
     actions: Object.freeze({
-      filter: (value: string) => { const next = new URLSearchParams(search); if (value === 'all') next.delete('status'); else next.set('status', value); setSearch(next); },
-      open: (id: string) => void navigate(`/orders/${encodeURIComponent(id)}`),
-      aftersale: (id: string) => void navigate(`/orders/${encodeURIComponent(id)}/aftersales`),
-      invoices: () => void navigate('/orders?view=invoices'),
+      filter: (value: string) => {
+        const next = new URLSearchParams(search);
+        if (value === 'all') next.delete('status');
+        else next.set('status', value);
+        setSearch(next);
+      },
+      open: (id: string) => void navigate(routePath('storeorder', { orderId: id })),
+      aftersale: (id: string) => void navigate(routePath('storeaftersale', { orderId: id })),
+      invoices: () => void navigate(`${ROUTES.storeorders}?view=invoices`),
     }),
   });
 }

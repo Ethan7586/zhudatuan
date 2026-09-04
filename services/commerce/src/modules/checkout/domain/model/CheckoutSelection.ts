@@ -1,4 +1,5 @@
 import { DomainError } from '../../../../foundation/domain/DomainError';
+import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
 export interface SelectedCartLine {
   readonly listingId: string;
@@ -16,10 +17,16 @@ export interface CheckoutSelection {
   readonly lines: readonly SelectedCartLine[];
   readonly addressId: string | null;
   readonly invoiceId: string | null;
-  readonly delivery: Readonly<Record<string, unknown>>;
+  readonly delivery: DeliveryChoice;
   readonly voucherIds: readonly string[];
   readonly benefits: readonly BenefitChoice[];
   readonly paymentScene: 'miniapp' | 'jsapi';
+}
+
+export interface DeliveryChoice {
+  readonly method: 'standard' | 'express' | 'pickup' | 'digital';
+  readonly note: string | null;
+  readonly scheduledAt: string | null;
 }
 
 export function checkoutSelection(body: Readonly<Record<string, unknown>>): CheckoutSelection {
@@ -29,14 +36,14 @@ export function checkoutSelection(body: Readonly<Record<string, unknown>>): Chec
   const invoiceId = optionalText(body.invoiceId, 'invoiceId');
   const voucherIds = textList(body.voucherIds, 'voucherIds', 20).sort();
   const benefits = benefitChoices(body.benefits).sort((left, right) => left.accountId.localeCompare(right.accountId));
-  const delivery = record(body.delivery, 'delivery');
+  const delivery = deliveryChoice(body.delivery);
   const paymentScene = body.paymentScene;
   if (paymentScene !== 'miniapp' && paymentScene !== 'jsapi') throw new DomainError('VALIDATION_FAILED', { field: 'paymentScene' });
-  return Object.freeze({ cartVersion, lines: Object.freeze(lines), addressId, invoiceId, delivery: Object.freeze(delivery), voucherIds: Object.freeze(voucherIds), benefits: Object.freeze(benefits), paymentScene });
+  return Object.freeze({ cartVersion, lines: Object.freeze(lines), addressId, invoiceId, delivery, voucherIds: Object.freeze(voucherIds), benefits: Object.freeze(benefits), paymentScene });
 }
 
 function selectedLines(value: unknown): SelectedCartLine[] {
-  if (!Array.isArray(value) || value.length === 0 || value.length > 100) throw new DomainError('VALIDATION_FAILED', { field: 'lines' });
+  if (!Array.isArray(value) || value.length === 0 || value.length > RUNTIME_LIMITS.cart.maximumLines) throw new DomainError('VALIDATION_FAILED', { field: 'lines' });
   const result = value.map((entry) => {
     if (!recordValue(entry)) throw new DomainError('VALIDATION_FAILED', { field: 'lines' });
     return Object.freeze({ listingId: requiredText(entry.listingId, 'lines.listingId'), quantity: positive(entry.quantity, 'lines.quantity'), lineVersion: unsigned(entry.lineVersion, 'lines.lineVersion') });
@@ -62,10 +69,15 @@ function textList(value: unknown, field: string, maximum: number): string[] {
   return result;
 }
 
-function record(value: unknown, field: string): Record<string, unknown> {
-  if (!recordValue(value)) throw new DomainError('VALIDATION_FAILED', { field });
-  if (JSON.stringify(value).length > 8_192) throw new DomainError('VALIDATION_FAILED', { field: `${field}.size` });
-  return { ...value };
+function deliveryChoice(value: unknown): DeliveryChoice {
+  if (!recordValue(value)) throw new DomainError('VALIDATION_FAILED', { field: 'delivery' });
+  const allowed = new Set(['method', 'note', 'scheduledAt']);
+  if (Object.keys(value).some((key) => !allowed.has(key))) throw new DomainError('VALIDATION_FAILED', { field: 'delivery' });
+  const method = value.method ?? 'standard';
+  if (!['standard', 'express', 'pickup', 'digital'].includes(String(method))) throw new DomainError('VALIDATION_FAILED', { field: 'delivery.method' });
+  const note = optionalLimitedText(value.note, 'delivery.note', 200);
+  const scheduledAt = optionalTime(value.scheduledAt);
+  return Object.freeze({ method: method as DeliveryChoice['method'], note, scheduledAt });
 }
 
 function recordValue(value: unknown): value is Readonly<Record<string, unknown>> {
@@ -79,6 +91,20 @@ function optionalText(value: unknown, field: string): string | null {
 function requiredText(value: unknown, field: string): string {
   if (typeof value !== 'string' || value.trim().length === 0 || value.length > 255) throw new DomainError('VALIDATION_FAILED', { field });
   return value.trim();
+}
+
+function optionalLimitedText(value: unknown, field: string, maximum: number): string | null {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value !== 'string' || value.trim().length === 0 || value.trim().length > maximum) throw new DomainError('VALIDATION_FAILED', { field });
+  return value.trim();
+}
+
+function optionalTime(value: unknown): string | null {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value !== 'string') throw new DomainError('VALIDATION_FAILED', { field: 'delivery.scheduledAt' });
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) throw new DomainError('VALIDATION_FAILED', { field: 'delivery.scheduledAt' });
+  return parsed.toISOString();
 }
 
 function unsigned(value: unknown, field: string): number {

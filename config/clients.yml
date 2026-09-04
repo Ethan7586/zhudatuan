@@ -1,0 +1,69 @@
+version: 1
+owner: platform
+clients:
+  - id: auth
+    title: 身份中心
+    workspace: "@shop/auth"
+    path: apps/auth
+    sourceRoot: src
+    audience: public
+    domains: [identity]
+    target: null
+    transport: browser
+    route: auth
+    localPort: 3002
+  - id: console
+    title: 运营控制台
+    workspace: "@shop/console"
+    path: apps/console
+    sourceRoot: src
+    audience: console
+    domains: []
+    target: console
+    transport: browser
+    route: console
+    localPort: 4173
+  - id: storefront
+    title: 消费者商城
+    workspace: "@shop/storefront"
+    path: apps/storefront
+    sourceRoot: src
+    audience: storefront
+    domains: []
+    target: storefront
+    transport: browser
+    route: storefront
+    localPort: 3000
+  - id: miniapp
+    title: 微信小程序
+    workspace: "@shop/miniapp"
+    path: apps/miniapp
+    sourceRoot: miniprogram
+    audience: storefront
+    domains: []
+    target: miniapp
+    transport: wechat
+    route: miniapp
+    localPort: 4174
+  - id: store
+    title: 门店工作台
+    workspace: "@shop/store"
+    path: apps/store
+    sourceRoot: src
+    audience: console
+    domains: []
+    target: store
+    transport: browser
+    route: store
+    localPort: 4175
+  - id: supplier
+    title: 供应链后台
+    workspace: "@shop/supplier"
+    path: apps/supplier
+    sourceRoot: src
+    audience: console
+    domains: []
+    target: supplier
+    transport: browser
+    route: supplier
+    localPort: 4176

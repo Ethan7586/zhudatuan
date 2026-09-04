@@ -1,31 +1,33 @@
 import { Money } from '@shop/kernel';
+import { RUNTIME_LIMITS } from '@shop/config/runtime';
+import type { CheckoutSelection } from '../model/CheckoutSelection';
+import type { ShippingSnapshot, TaxSnapshot } from '../model/CheckoutQuote';
 
 export class CheckoutPolicy {
-  assertVersions(expected: Readonly<Record<string, number>>, actual: Readonly<Record<string, number>>): void {
-    for (const [key, version] of Object.entries(expected)) if (actual[key] !== version) throw new Error(`CHECKOUT_VERSION_CONFLICT:${key}`);
+  constructor(private readonly quoteTtlSeconds: number = RUNTIME_LIMITS.checkout.quoteTtlSeconds) {
+    if (!Number.isSafeInteger(quoteTtlSeconds) || quoteTtlSeconds < 60) throw new Error('CHECKOUT_QUOTE_TTL_INVALID');
   }
 
-  promotionDiscount(subtotal: Money, campaigns: readonly CampaignRule[]): Readonly<{ amount: Money; evidence: readonly CampaignEvidence[] }> {
-    const candidates = campaigns.flatMap((campaign) => {
-      if (campaign.minimumSubtotal.minor > subtotal.minor || campaign.remainingBudget.minor <= 0) return [];
-      const proportional = subtotal.multiplyRatio(campaign.basisPoints, 10_000);
-      const amount = Money.of(Math.min(subtotal.minor, campaign.remainingBudget.minor, campaign.maximum?.minor ?? Number.MAX_SAFE_INTEGER, Math.max(0, campaign.fixed.add(proportional).minor)), subtotal.currency.code);
-      return amount.minor === 0 ? [] : [{ ...campaign, amount }];
-    });
-    const stackable = candidates.filter(({ stackable }) => stackable);
-    const exclusive = candidates
-      .filter(({ stackable }) => !stackable)
-      .sort((left, right) => right.amount.minor - left.amount.minor || left.id.localeCompare(right.id))
-      .slice(0, 1);
-    const selected = [...exclusive, ...uniqueGroups(stackable)].sort((left, right) => left.id.localeCompare(right.id));
-    const amount = Money.of(
-      Math.min(
-        subtotal.minor,
-        selected.reduce((sum, item) => sum + item.amount.minor, 0)
-      ),
-      subtotal.currency.code
-    );
-    return Object.freeze({ amount, evidence: Object.freeze(selected.map(({ id, version, amount: discount }) => Object.freeze({ id, version, discount: discount.minor }))) });
+  expiresAt(now: Date): string {
+    return new Date(now.getTime() + this.quoteTtlSeconds * 1000).toISOString();
+  }
+
+  shipping(selection: CheckoutSelection, physical: boolean): ShippingSnapshot {
+    const method = physical ? selection.delivery.method : 'digital';
+    return Object.freeze({ method, amountMinor: 0, version: `shipping:${method}:1` });
+  }
+
+  tax(): TaxSnapshot {
+    return Object.freeze({ mode: 'included', amountMinor: 0, version: 'tax:included:1' });
+  }
+
+  payable(subtotal: Money, discount: Money, shipping: Money, tax: Money): Money {
+    if (discount.minor > subtotal.minor) throw new Error('CHECKOUT_DISCOUNT_INVALID');
+    return subtotal.subtract(discount).add(shipping).add(tax);
+  }
+
+  assertVersions(expected: Readonly<Record<string, number>>, actual: Readonly<Record<string, number>>): void {
+    for (const [key, version] of Object.entries(expected)) if (actual[key] !== version) throw new Error(`CHECKOUT_VERSION_CONFLICT:${key}`);
   }
 
   allocateTenders(total: Money, vouchers: readonly ValueChoice[], benefits: readonly ValueChoice[]): Readonly<{ tenders: readonly TenderAllocation[]; personal: Money }> {
@@ -45,24 +47,6 @@ export class CheckoutPolicy {
     return Object.freeze({ tenders: Object.freeze(tenders), personal: remaining });
   }
 }
-
-export interface CampaignRule {
-  readonly id: string;
-  readonly version: number;
-  readonly fixed: Money;
-  readonly basisPoints: number;
-  readonly minimumSubtotal: Money;
-  readonly maximum: Money | null;
-  readonly remainingBudget: Money;
-  readonly stackable: boolean;
-  readonly group: string;
-}
-
-export interface CampaignEvidence {
-  readonly id: string;
-  readonly version: number;
-  readonly discount: number;
-}
 export interface ValueChoice {
   readonly id: string;
   readonly amount: Money;
@@ -71,15 +55,6 @@ export interface TenderAllocation {
   readonly kind: 'voucher' | 'benefit' | 'wechat';
   readonly reference: string | null;
   readonly amount: Money;
-}
-
-function uniqueGroups(values: readonly (CampaignRule & { readonly amount: Money })[]): readonly (CampaignRule & { readonly amount: Money })[] {
-  const result = new Map<string, CampaignRule & { readonly amount: Money }>();
-  for (const value of values) {
-    const prior = result.get(value.group);
-    if (!prior || value.amount.minor > prior.amount.minor || (value.amount.minor === prior.amount.minor && value.id < prior.id)) result.set(value.group, value);
-  }
-  return [...result.values()];
 }
 
 function byId(left: ValueChoice, right: ValueChoice): number {

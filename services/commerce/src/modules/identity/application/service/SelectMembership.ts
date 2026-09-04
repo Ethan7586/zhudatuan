@@ -1,5 +1,5 @@
 import { IdentityAction as OperationAction } from '../model/IdentityAction';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import type { MembershipSelector } from '../service/MembershipSelector';
 import { requirePreauth } from '../../../../foundation/security/OperationSecurityContext';
 import { requestContext } from './StartFederation';

@@ -14,7 +14,7 @@ export interface CreateFederation {
   readonly browserhash: Buffer;
   readonly returntargethash: Buffer;
   readonly returntarget: string;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly riskhash: Buffer;
   readonly expiresat: Date;
   readonly authorization: AuthTicketBinding;

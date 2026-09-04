@@ -1,5 +1,8 @@
-export type NotificationKind = 'dispatch' | 'announcement';
-export type NotificationChannel = 'sms' | 'email' | 'wechat' | 'inapp';
+import type { OperationOutputFor } from '@shop/contract';
+
+type NotificationDto = OperationOutputFor<'notification.notifications.read'>['items'][number];
+export type NotificationKind = NotificationDto['kind'];
+export type NotificationChannel = NotificationDto['channel'];
 
 export interface Notification {
   readonly id: string;

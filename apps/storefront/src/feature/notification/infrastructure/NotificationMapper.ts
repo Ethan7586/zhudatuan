@@ -33,6 +33,11 @@ export function mapPreferences(value: OperationOutputFor<'notification.preferenc
         enabled: item.enabled,
         authorization: item.authorization_state,
         authorizedAt: item.authorized_at,
+        consentSource: item.consent_source,
+        quietStart: item.quiet_start,
+        quietEnd: item.quiet_end,
+        quietTimezone: item.quiet_timezone,
+        version: item.version,
       })
     )
   );

@@ -1,6 +1,7 @@
 import { Form, Input, Label, TextField } from 'react-aria-components';
 import { ProductIcon } from './ProductIcon';
 import type { ProductFilter } from '../model/ProductFilter';
+import type { ProductFacetOption, ProductFilterFacets } from '../model/ProductFacet';
 
 export interface ProductFilterProps {
   readonly value: ProductFilter;
@@ -8,9 +9,14 @@ export interface ProductFilterProps {
   readonly onApply: () => void;
   readonly onReset: () => void;
   readonly onColumns: () => void;
+  readonly facets?: ProductFilterFacets;
+  readonly facetsLoading: boolean;
+  readonly facetsError?: string;
+  readonly onRetryFacets: () => void;
 }
 
-export function ProductFilterForm({ value, onChange, onApply, onReset, onColumns }: ProductFilterProps) {
+export function ProductFilterForm({ value, onChange, onApply, onReset, onColumns, facets, facetsLoading, facetsError, onRetryFacets }: ProductFilterProps) {
+  const facetCount = facets === undefined ? 0 : facets.categories.length + facets.suppliers.length + facets.malls.length + facets.statuses.length;
   return (
     <Form
       className="producttoolbar"
@@ -28,10 +34,22 @@ export function ProductFilterForm({ value, onChange, onApply, onReset, onColumns
         </button>
       </TextField>
 
-      <TextField className="productcompactfield">
-        <Label className="sr-only">分类编号</Label>
-        <Input value={value.category} onChange={(event) => onChange({ ...value, category: event.target.value })} maxLength={200} placeholder="分类编号" />
-      </TextField>
+      <FacetSelect label="分类" value={value.category} options={facets?.categories ?? []} onChange={(category) => onChange({ ...value, category })} />
+      <FacetSelect label="供应商" value={value.supplier} options={facets?.suppliers ?? []} onChange={(supplier) => onChange({ ...value, supplier })} />
+      <FacetSelect label="商城范围" value={value.mall} options={facets?.malls ?? []} onChange={(mall) => onChange({ ...value, mall })} />
+      <FacetSelect label="状态" value={value.status} options={facets?.statuses ?? []} onChange={(status) => onChange({ ...value, status })} />
+
+      {facetsLoading ? (
+        <span className="productfacetstate" role="status">
+          正在加载筛选项…
+        </span>
+      ) : null}
+      {!facetsLoading && facetsError !== undefined ? (
+        <button className="productfacetretry" type="button" onClick={onRetryFacets}>
+          筛选项加载失败，重试
+        </button>
+      ) : null}
+      {!facetsLoading && facetsError === undefined && facets !== undefined && facetCount === 0 ? <span className="productfacetstate">当前范围暂无可用筛选项</span> : null}
 
       <button className="productreset" type="button" onClick={onReset}>
         重置
@@ -42,5 +60,31 @@ export function ProductFilterForm({ value, onChange, onApply, onReset, onColumns
         列设置
       </button>
     </Form>
+  );
+}
+
+interface FacetSelectProps {
+  readonly label: string;
+  readonly value: string;
+  readonly options: readonly ProductFacetOption[];
+  readonly onChange: (value: string) => void;
+}
+
+function FacetSelect({ label, value, options, onChange }: FacetSelectProps) {
+  if (options.length === 0 && value === '') return null;
+  const choices = options.some((option) => option.value === value) || value === '' ? options : [Object.freeze({ value, label: `已选${label}`, count: 0 }), ...options];
+  return (
+    <label className="productselectcontrol">
+      <span className="sr-only">{label}</span>
+      <select aria-label={label} value={value} onChange={(event) => onChange(event.target.value)}>
+        <option value="">{label}</option>
+        {choices.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}（{option.count}）
+          </option>
+        ))}
+      </select>
+      <ProductIcon name="chevron" />
+    </label>
   );
 }

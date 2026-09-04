@@ -59,20 +59,29 @@ export class PgAuthTicket implements AuthTicketPort {
       expires_at: Date;
     }>(
       `with accepted as (
-        select ticket.id,ticket.target,session.id session_id,session.expires_at
+        select ticket.id,ticket.target,session.id session_id,session.expires_at,
+          token.id token_id,token.family_id,token.sequence
         from identity.authticket ticket join identity.session session on session.id=ticket.session_id
+        join identity.refreshtoken token on token.session_id=session.id and token.token_hash=session.token_hash
         where ticket.token_hash=$1 and ticket.state_hash=$2 and ticket.nonce_hash=$3 and ticket.pkce_challenge=$4
-          and session.token_hash=any($5::text[])
+          and token.token_hash=any($5::text[]) and token.used_at is null and token.revoked_at is null
           and ticket.consumed_at is null and ticket.expires_at>clock_timestamp()
-          and session.revoked_at is null and session.expires_at>clock_timestamp() for update of ticket,session
+          and session.revoked_at is null and session.expires_at>clock_timestamp() for update of ticket,session,token
       ), consumed as (
         update identity.authticket ticket set consumed_at=clock_timestamp() from accepted
-        where ticket.id=accepted.id returning accepted.target,accepted.session_id,accepted.expires_at
+        where ticket.id=accepted.id returning accepted.*
+      ), used as (
+        update identity.refreshtoken token set used_at=clock_timestamp() from consumed
+        where token.id=consumed.token_id and token.used_at is null returning consumed.*
       ), rotated as (
-        update identity.session session set token_hash=$6,last_seen_at=clock_timestamp() from consumed
-        where session.id=consumed.session_id and session.token_hash=any($5::text[]) returning consumed.target,consumed.expires_at
-      ) select target,expires_at from rotated`,
-      [hash(exchange.ticket), exchange.stateHash, exchange.nonceHash, exchange.challenge, currentSessionTokens.map(hash), hash(nextSessionToken)]
+        update identity.session session set token_hash=$6,last_seen_at=clock_timestamp() from used
+        where session.id=used.session_id and session.token_hash=any($5::text[]) returning used.*
+      ), next as (
+        insert into identity.refreshtoken(id,family_id,session_id,parent_id,token_hash,sequence,issued_at)
+        select $7,family_id,session_id,token_id,$6,sequence+1,clock_timestamp() from rotated
+        returning session_id
+      ) select rotated.target,rotated.expires_at from rotated join next using(session_id)`,
+      [hash(exchange.ticket), exchange.stateHash, exchange.nonceHash, exchange.challenge, currentSessionTokens.map(hash), hash(nextSessionToken), `refreshtoken:${randomUUID()}`]
     );
     const accepted = result.rows[0];
     if (!accepted) throw new DomainError('AUTH_TICKET_EXCHANGE_REJECTED');

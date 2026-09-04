@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import type { CommerceModule } from './ModuleRegistry';
 import { ModuleRegistry, publicPort } from './ModuleRegistry';
+import { defineModuleManifest } from './ModuleManifest';
+import { defineModule } from './DefinedModule';
 
 describe('ModuleRegistry', () => {
   it('binds each module in dependency order and resolves dependency ports during binding', async () => {
     const dependency = publicPort<Readonly<{ value: string }>>('source', 'reader');
     const order: string[] = [];
     const source: CommerceModule = {
+      manifest: defineModuleManifest({ id: 'source', ports: [dependency] }),
       id: 'source',
       dependencies: [],
       services: [],
@@ -16,6 +19,7 @@ describe('ModuleRegistry', () => {
       },
     };
     const consumer: CommerceModule = {
+      manifest: defineModuleManifest({ id: 'consumer', dependencies: ['source'] }),
       id: 'consumer',
       dependencies: ['source'],
       services: [],
@@ -44,8 +48,9 @@ describe('ModuleRegistry', () => {
 
     const token = publicPort<string>('source', 'reader');
     const isolated = new ModuleRegistry();
-    isolated.add({ id: 'source', dependencies: [], services: [], bind: () => [{ token, value: 'value' }], register: () => undefined });
+    isolated.add({ manifest: defineModuleManifest({ id: 'source', ports: [token] }), id: 'source', dependencies: [], services: [], bind: () => [{ token, value: 'value' }], register: () => undefined });
     isolated.add({
+      manifest: defineModuleManifest({ id: 'consumer' }),
       id: 'consumer',
       dependencies: [],
       services: [],
@@ -56,10 +61,30 @@ describe('ModuleRegistry', () => {
     });
     await expect(isolated.load(context())).rejects.toThrow('PUBLIC_PORT_DEPENDENCY_UNDECLARED');
   });
+
+  it('rejects duplicate publishable capability ownership across plug-in modules', () => {
+    const registry = new ModuleRegistry();
+    registry.add(capabilityModule('alpha', 'surface.console'));
+    expect(() => registry.add(capabilityModule('beta', 'surface.console'))).toThrow(
+      'MODULE_CAPABILITY_OWNER_DUPLICATE:surface.console:alpha:beta'
+    );
+    expect(registry.capabilityCatalog()).toEqual(['surface.console']);
+  });
+
+  it('rejects a public port implementation that is absent from its manifest', () => {
+    const token = publicPort<string>('source', 'reader');
+    const source = defineModule(defineModuleManifest({ id: 'source' }), { ports: [{ token, value: 'value' }] });
+    expect(() => source.bind({ workload: 'api' } as never)).toThrow('MODULE_IMPLEMENTATION_UNDECLARED:source:api:publicports:source.reader');
+  });
 });
 
 function module(id: string, dependencies: readonly string[]): CommerceModule {
-  return { id, dependencies, services: [], bind: () => [], register: () => undefined };
+  return { manifest: defineModuleManifest({ id, dependencies }), id, dependencies, services: [], capabilities: [], bind: () => [], register: () => undefined };
+}
+
+function capabilityModule(id: string, capability: string): CommerceModule {
+  const manifest = defineModuleManifest({ id, capabilities: [capability] });
+  return { manifest, id, dependencies: [], services: [], capabilities: [capability], bind: () => [], register: () => undefined };
 }
 
 function context(): never {

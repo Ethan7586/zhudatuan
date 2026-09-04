@@ -11,7 +11,7 @@ export interface ActionProofBinding {
 }
 export interface ActionProofChecker {
   readonly membership: string;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly accessVersion: number;
 }
 export interface AuthorizedActionProof {

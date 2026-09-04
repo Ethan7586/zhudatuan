@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { DeviceRepository } from '../port/DeviceRepository';
 
@@ -21,9 +21,10 @@ export class DevicesManageHandler implements OperationHandler<'verification.devi
       fingerprintHash: createHash('sha256')
         .update(textField(body, 'fingerprint', 512))
         .digest('hex'),
-      publicKey: body.publicKey ?? null,
+      publicKey: typeof body.publicKey === 'string' ? body.publicKey : null,
       status,
       expectedVersion: context.expectedVersion ?? null,
+      now: new Date(),
     });
     return { status: 200, body: result as OperationOutputFor<'verification.devices.manage'> };
   }

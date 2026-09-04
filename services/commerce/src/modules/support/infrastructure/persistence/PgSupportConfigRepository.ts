@@ -3,7 +3,7 @@ import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionA
 import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationReply } from '../../../../foundation/application/OperationHandler';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, integerField, keysetPage, queryPage, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, integerField, keysetPage, queryPage, textField } from '../../../../foundation/application/Validation';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { AssignmentRule } from '../../domain/model/AssignmentRule';
 import { Sla } from '../../domain/model/Sla';
@@ -11,11 +11,12 @@ import type { TicketPriority } from '../../domain/model/Ticket';
 import type { AccountRepository, PreparedSupportOperation, RuleRepository, SlaRepository } from '../../application/port/SupportRepositories';
 import type { SupportAccountProvider, SupportAccountVerification, SupportAccountVerifier } from '../../application/port/SupportAccountVerifier';
 import type { ReadSupportContext } from '../../application/service/ReadSupportContext';
+import type { AssignmentRuleStore } from '../../application/port/SupportPersistence';
 
 interface LoadedAccount { readonly scope: string; readonly current: Pick<AccountRow, 'secret_ref' | 'channel'> | null }
 type PreparedAccount = SupportAccountVerification;
 
-export class PgSupportConfigRepository implements AccountRepository, RuleRepository, SlaRepository {
+export class PgSupportConfigRepository implements AccountRepository, RuleRepository, SlaRepository, AssignmentRuleStore {
   private readonly transactions = new PgTransactionAccess();
   constructor(private readonly support: ReadSupportContext, private readonly verifier: SupportAccountVerifier) {}
 
@@ -92,7 +93,7 @@ export class PgSupportConfigRepository implements AccountRepository, RuleReposit
     const weight = integerField(body, 'weight', 1);
     if (weight > 1000) throw new DomainError('VALIDATION_FAILED', { field: 'weight' });
     const skill = textField(body, 'skill', 64);
-    new AssignmentRule(input.path.ruleid, actor.scope, skill, priorities, weight, state === 'active');
+    new AssignmentRule(input.path.ruleid, actor.scope, skill, priorities, weight, state === 'active', expected + 1);
     const result = await this.transactions.database(context).query<RuleRow>(
       `insert into support.assignmentrule(id,scope_id,name,skill,priorities,weight,state,version,created_at,updated_at)
       select $1,$2,$3,$4,$5,$6,$7,1,clock_timestamp(),clock_timestamp() where $8=0
@@ -110,7 +111,7 @@ export class PgSupportConfigRepository implements AccountRepository, RuleReposit
     const actor = await this.console(context, execution);
     const page = queryPage(input);
     const result = await this.transactions.database(context).query<SlaRow>(
-      `select id,scope_id,priority,response_seconds,resolution_seconds,version from support.sla
+      `select id,scope_id,priority,response_seconds,resolution_seconds,reopen_seconds,version from support.sla
       where scope_id=$1 and ($2::text is null or id>$2) order by id limit $3`, [actor.scope, page.id, page.fetch]
     );
     const paged = keysetPage(result.rows.map(slaRead), page, 'id');
@@ -124,25 +125,26 @@ export class PgSupportConfigRepository implements AccountRepository, RuleReposit
     const priority = choice(body.priority, priorities, 'SUPPORT_PRIORITY_INVALID') as TicketPriority;
     const response = integerField(body, 'responseSeconds', 1);
     const resolution = integerField(body, 'resolutionSeconds', response);
-    new Sla(input.path.slaid, actor.scope, priority, response, resolution, expected);
+    const reopen = integerField(body, 'reopenSeconds', 1);
+    new Sla(input.path.slaid, actor.scope, priority, response, resolution, reopen, expected + 1);
     const result = await this.transactions.database(context).query<SlaRow>(
-      `insert into support.sla(id,scope_id,priority,response_seconds,resolution_seconds,version)
-      select $1,$2,$3,$4,$5,1 where $6=0
+      `insert into support.sla(id,scope_id,priority,response_seconds,resolution_seconds,reopen_seconds,version)
+      select $1,$2,$3,$4,$5,$6,1 where $7=0
       on conflict(id) do update set priority=excluded.priority,response_seconds=excluded.response_seconds,
-      resolution_seconds=excluded.resolution_seconds,version=support.sla.version+1
-      where support.sla.scope_id=$2 and support.sla.version=$6 returning *`,
-      [input.path.slaid, actor.scope, priority, response, resolution, expected]
+      resolution_seconds=excluded.resolution_seconds,reopen_seconds=excluded.reopen_seconds,version=support.sla.version+1
+      where support.sla.scope_id=$2 and support.sla.version=$7 returning *`,
+      [input.path.slaid, actor.scope, priority, response, resolution, reopen, expected]
     );
     const row = result.rows[0];
     if (!row) throw new DomainError('VERSION_CONFLICT');
     return { status: 200, headers: { etag: `"${row.version}"` }, body: sla(row) };
   }
 
-  async resolveSla(context: ReadTransactionContext, scope: string, priority: TicketPriority): Promise<Readonly<{ response: number; resolution: number }>> {
-    const result = await this.transactions.database(context).query<{ response_seconds: number; resolution_seconds: number }>('select response_seconds,resolution_seconds from support.resolve_sla($1,$2)', [scope, priority]);
+  async resolveSla(context: ReadTransactionContext, scope: string, priority: TicketPriority): Promise<Readonly<{ response: number; resolution: number; reopen: number }>> {
+    const result = await this.transactions.database(context).query<{ response_seconds: number; resolution_seconds: number; reopen_seconds: number }>('select response_seconds,resolution_seconds,reopen_seconds from support.resolve_sla($1,$2)', [scope, priority]);
     const row = result.rows[0];
     if (!row) throw new Error('SUPPORT_SLA_NOT_CONFIGURED');
-    return Object.freeze({ response: Number(row.response_seconds), resolution: Number(row.resolution_seconds) });
+    return Object.freeze({ response: Number(row.response_seconds), resolution: Number(row.resolution_seconds), reopen: Number(row.reopen_seconds) });
   }
 
   async assignmentRules(context: ReadTransactionContext, scope: string): Promise<readonly AssignmentRule[]> {
@@ -150,7 +152,7 @@ export class PgSupportConfigRepository implements AccountRepository, RuleReposit
       `select id,scope_id,name,skill,priorities,weight,state,version,created_at,updated_at
       from support.assignmentrule where scope_id=$1 and state='active' order by weight desc,id`, [scope]
     );
-    return Object.freeze(result.rows.map((row) => new AssignmentRule(row.id, row.scope_id, row.skill, row.priorities, Number(row.weight), true)));
+    return Object.freeze(result.rows.map((row) => new AssignmentRule(row.id, row.scope_id, row.skill, row.priorities, Number(row.weight), true, Number(row.version))));
   }
 
   private async console(context: ReadTransactionContext, execution: ExecutionContext) {
@@ -165,11 +167,11 @@ interface AccountRow { readonly id: string; readonly scope_id: string; readonly 
 type AccountReadRow = Omit<AccountRow, 'scope_id' | 'secret_ref' | 'secret_version'>;
 interface RuleRow { readonly id: string; readonly scope_id: string; readonly name: string; readonly skill: string; readonly priorities: TicketPriority[]; readonly weight: number; readonly state: 'active' | 'disabled'; readonly version: number; readonly created_at: string; readonly updated_at: string }
 interface RuleReadRow { readonly id: string; readonly name: string; readonly skill: string; readonly priorities: TicketPriority[]; readonly weight: number; readonly state: 'active' | 'disabled'; readonly version: number; readonly updated_at: string }
-interface SlaRow { readonly id: string; readonly scope_id: string; readonly priority: TicketPriority; readonly response_seconds: number; readonly resolution_seconds: number; readonly version: number }
+interface SlaRow { readonly id: string; readonly scope_id: string; readonly priority: TicketPriority; readonly response_seconds: number; readonly resolution_seconds: number; readonly reopen_seconds: number; readonly version: number }
 function rule(row: RuleRow) { return { ...row, weight: Number(row.weight), version: Number(row.version), created_at: instant(row.created_at), updated_at: instant(row.updated_at) }; }
 function ruleRead(row: RuleReadRow) { return { ...row, weight: Number(row.weight), version: Number(row.version), updated_at: instant(row.updated_at) }; }
-function sla(row: SlaRow) { return { ...row, response_seconds: Number(row.response_seconds), resolution_seconds: Number(row.resolution_seconds), version: Number(row.version) }; }
-function slaRead(row: SlaRow) { const value = sla(row); return { id: value.id, priority: value.priority, response_seconds: value.response_seconds, resolution_seconds: value.resolution_seconds, version: value.version }; }
+function sla(row: SlaRow) { return { ...row, response_seconds: Number(row.response_seconds), resolution_seconds: Number(row.resolution_seconds), reopen_seconds: Number(row.reopen_seconds), version: Number(row.version) }; }
+function slaRead(row: SlaRow) { const value = sla(row); return { id: value.id, priority: value.priority, response_seconds: value.response_seconds, resolution_seconds: value.resolution_seconds, reopen_seconds: value.reopen_seconds, version: value.version }; }
 function account(row: AccountRow) { return { id: row.id, scope_id: row.scope_id, provider: row.channel, display_name: row.external_ref, state: row.state, validation_state: row.validation_state, validation_code: row.validation_code, validated_at: row.validated_at === null ? null : instant(row.validated_at), version: Number(row.version) }; }
 function accountRead(row: AccountReadRow) { return { id: row.id, provider: row.channel, display_name: row.external_ref, state: row.state, validation_state: row.validation_state, validation_code: row.validation_code, validated_at: row.validated_at === null ? null : instant(row.validated_at), version: Number(row.version) }; }
 function expectedVersion(execution: ExecutionContext): number { if (execution.expectedVersion === undefined) throw new DomainError('VERSION_CONFLICT'); return execution.expectedVersion; }

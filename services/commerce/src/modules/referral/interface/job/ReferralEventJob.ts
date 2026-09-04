@@ -1,13 +1,15 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { ProcessReferralEvent } from '../../application/process/ProcessReferralEvent';
 import { OrderPaidSubscriber } from '../event/OrderPaidSubscriber';
 import { OrderReceivedSubscriber } from '../event/OrderReceivedSubscriber';
 import { RefundCompletedSubscriber } from '../event/RefundCompletedSubscriber';
+import { WithdrawalApprovedSubscriber } from '../event/WithdrawalApprovedSubscriber';
 
 export class ReferralEventJob implements JobProcessor {
   private readonly paid = new OrderPaidSubscriber();
   private readonly received = new OrderReceivedSubscriber();
   private readonly refunded = new RefundCompletedSubscriber();
+  private readonly approved = new WithdrawalApprovedSubscriber();
 
   constructor(private readonly processor: ProcessReferralEvent) {}
 
@@ -18,7 +20,7 @@ export class ReferralEventJob implements JobProcessor {
     const eventId = text(envelope.eventId, 'REFERRAL_EVENT_ID_REQUIRED');
     const eventType = text(envelope.event, 'REFERRAL_EVENT_TYPE_REQUIRED');
     const scopeId = text(envelope.scopeId, 'REFERRAL_SCOPE_REQUIRED');
-    if (job.scope_id !== scopeId) throw new Error('REFERRAL_SCOPE_MISMATCH');
+    if (job.scope !== scopeId) throw new Error('REFERRAL_SCOPE_MISMATCH');
     const payload = object(envelope.payload);
     const event =
       eventType === 'order.paid'
@@ -27,7 +29,9 @@ export class ReferralEventJob implements JobProcessor {
           ? this.received.receive(eventId, scopeId, payload)
           : eventType === 'refund.completed'
             ? this.refunded.receive(eventId, scopeId, payload)
-            : null;
+            : eventType === 'approval.instance.approved'
+              ? this.approved.receive(eventId, scopeId, payload)
+              : null;
     if (!event) throw new Error('REFERRAL_EVENT_UNSUPPORTED');
     await this.processor.execute(event, signal, deadline);
   }

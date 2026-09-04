@@ -9,8 +9,8 @@ export function withReadTransaction<T>(query: Query, work: (context: ReadTransac
   return manager(query).read(options('read'), work);
 }
 
-export function withWriteTransaction<T>(query: Query, work: (context: WriteTransactionContext) => Promise<T>): Promise<T> {
-  return manager(query).write(options('write'), work);
+export function withWriteTransaction<T>(query: Query, work: (context: WriteTransactionContext) => Promise<T>, operation = 'write'): Promise<T> {
+  return manager(query).write(options(operation), work);
 }
 
 function manager(query: Query): PgTransactionManager {

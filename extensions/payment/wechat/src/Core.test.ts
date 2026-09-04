@@ -1,7 +1,9 @@
 import { beforeAll, describe, expect, it } from 'vitest';
+import { WechatApplicationCatalog } from '@shop/config/server';
 import { loadWechatPayConfig, WechatPayConfigurationError } from './Config';
 import { createMerchantAuthorization, createMiniappPaymentParameters, merchantSignatureMessage, miniappSignatureMessage, verifyRsaSha256 } from './Crypto';
 import { createWechatPayDescription, mapWechatPayTradeState } from './Models';
+import { WechatGateway } from './Gateway';
 import { createWechatPayTestKeys, type WechatPayTestKeys } from '../test/TestKeys';
 
 let keys: WechatPayTestKeys;
@@ -65,6 +67,18 @@ describe('WeChat Pay configuration', () => {
 
   it('rejects a public URL that does not match the canonical webhook contract', () => {
     expect(() => loadWechatPayConfig({ ...keys.config, notifyUrl: 'https://fufu.wang/api/v1/payments/wechat/notify' })).toThrowError(expect.objectContaining({ code: 'WECHAT_PAY_NOTIFY_URL_INVALID' }));
+  });
+
+  it('stops provider work before parsing when the parent task is cancelled', async () => {
+    const applications = WechatApplicationCatalog.parse({ applications: [
+      { scene: 'miniapp', appId: keys.appId },
+      { scene: 'jsapi', appId: 'wx4df4137881a1d2bd' },
+    ] });
+    const gateway = new WechatGateway(applications, keys.config);
+    const controller = new AbortController();
+    controller.abort(new Error('TASK_CANCELLED'));
+    await expect(gateway.verifyNotification({}, '', { requestId: 'payment:one', traceId: 'trace:one', deadline: Date.now() + 1_000, signal: controller.signal }))
+      .rejects.toMatchObject({ code: 'WECHAT_PAY_REQUEST_CANCELLED', message: expect.stringMatching(/[\u3400-\u9fff]/u) });
   });
 });
 

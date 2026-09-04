@@ -6,7 +6,7 @@ import { AUDIT_SINK } from '../../services/commerce/src/foundation/application/A
 import { DATABASE_POOL } from '../../services/commerce/src/foundation/persistence/Pool.ts';
 import { SECURITY_KEYS } from '../../services/commerce/src/foundation/infrastructure/SecretStore.ts';
 import { KMS_CLIENT } from '../../services/commerce/src/foundation/infrastructure/KmsClient.ts';
-import { JobRunner } from '../../services/commerce/src/foundation/application/JobRunner.ts';
+import { RunJob } from '../../services/commerce/src/modules/runtime/application/process/RunJob.ts';
 import { HandlerRegistry } from '../../services/commerce/src/foundation/application/HandlerRegistry.ts';
 import { OperationExecutor } from '../../services/commerce/src/foundation/application/OperationExecutor.ts';
 import { AuditDecorator } from '../../services/commerce/src/foundation/application/AuditDecorator.ts';
@@ -23,7 +23,7 @@ import { PgIdempotencyRepository } from '../../services/commerce/src/adapter/dat
 import { PgTransactionalOutbox } from '../../services/commerce/src/adapter/database/PgTransactionalOutbox.ts';
 import { PgTransactionAccess } from '../../services/commerce/src/adapter/database/PgTransactionAccess.ts';
 import { PgTransactionManager } from '../../services/commerce/src/adapter/database/PgTransactionManager.ts';
-import { PgJobRepository } from '../../services/commerce/src/adapter/database/PgJobRepository.ts';
+import { PgJobQueue } from '../../services/commerce/src/modules/runtime/infrastructure/persistence/PgJobQueue.ts';
 import { PgDeadletterStore } from '../../services/commerce/src/adapter/database/PgDeadletterStore.ts';
 import { CartModule } from '../../services/commerce/src/modules/cart/Module.ts';
 import { CheckoutModule } from '../../services/commerce/src/modules/checkout/Module.ts';
@@ -62,7 +62,7 @@ import { PgCheckoutExperiencePort } from '../../services/commerce/src/modules/ex
 import { MEMBER_ACCESS_PORT } from '../../services/commerce/src/modules/access/public/index.ts';
 import { AccessPort } from '../../services/commerce/src/modules/access/application/service/AccessPort.ts';
 import { PgAccessRepository } from '../../services/commerce/src/modules/access/infrastructure/persistence/PgAccessRepository.ts';
-import { AccessVersionService } from '../../services/commerce/src/modules/access/application/service/AccessVersionService.ts';
+import { AccessVersionPublisher } from '../../services/commerce/src/modules/access/application/service/AccessVersionPublisher.ts';
 import { CHECKOUT_QUALIFICATION_PORT } from '../../services/commerce/src/modules/qualification/public/index.ts';
 import { PgCheckoutQualificationPort } from '../../services/commerce/src/modules/qualification/infrastructure/persistence/PgCheckoutQualificationPort.ts';
 import { CHECKOUT_RISK_PORT } from '../../services/commerce/src/modules/risk/public/index.ts';
@@ -130,11 +130,11 @@ export async function verifyMvpKernel(database) {
   const pricingPort = new PricingPort();
   const inventoryPort = new InventoryPort();
   const marketingPort = new MarketingPort();
-  const fulfillmentPort = new FulfillmentPort();
   const orderPort = new OrderPort();
+  const fulfillmentPort = new FulfillmentPort(orderPort);
   const transactionAccess = new PgTransactionAccess();
   const accessRepository = new PgAccessRepository();
-  const memberAccessPort = new AccessPort(accessRepository, new AccessVersionService(accessRepository));
+  const memberAccessPort = new AccessPort(accessRepository, new AccessVersionPublisher(accessRepository));
   const invoicePort = new InvoicePort();
   container.bind(KMS_CLIENT, Object.freeze({ decrypt: async () => fixture.payer }));
   container.bind(PAYMENT_GATEWAY, gateway);
@@ -376,9 +376,9 @@ async function verifyPayment(database, handlers, operations, gateway, order) {
     (select onhand::float8 from inventory.stockitem where id='${fixture.stock}') onhand,
     (select count(*)::integer from fulfillment.fulfillmentorder where order_id=$1) fulfillments,
     (select count(*)::integer from runtime.inbox where event_id='wechatpayment:mvp:wechat-notification') provider_inbox,
-    (select count(*)::integer from runtime.job where kind='paymentquery' and state='completed') completed_payment_jobs,
+    (select count(*)::integer from runtime.jobs where kind='paymentquery' and state='succeeded') completed_payment_jobs,
     (select count(*)::integer from runtime.inbox where consumer='job:reconciliation' and event_type='payment.captured' and processed_at is not null) finance_inbox,
-    (select count(*)::integer from runtime.job where kind='reconciliation' and state='completed') completed_finance_jobs,
+    (select count(*)::integer from runtime.jobs where kind='reconciliation' and state='succeeded') completed_finance_jobs,
     (select count(*)::integer from finance.journal journal join payment.payment payment on payment.id=journal.reference_id
       join payment.intent intent on intent.id=payment.intent_id where intent.order_id=$1 and journal.reference_type='payment.captured') journals,
     (select count(*)::integer from finance.entry entry join finance.journal journal on journal.id=entry.journal_id
@@ -428,7 +428,7 @@ function paymentJobDependencies() {
   const inventory = new InventoryPort();
   const marketing = new MarketingPort();
   return Object.freeze({
-    settlement: new PaymentSettlement(benefit, voucher, inventory, marketing, new FulfillmentPort(), orders),
+    settlement: new PaymentSettlement(benefit, voucher, inventory, marketing, new FulfillmentPort(orders), orders),
     refundSettlement: new RefundSettlement(benefit, voucher, orders, new PgOrganizationReadPort()),
     orders,
     operations: new ChannelOperationPort(),
@@ -456,14 +456,14 @@ function eventRegistry() {
 }
 
 async function runReconciliation(database, jobPool) {
-  const queued = (await database.query("select count(*)::integer count from runtime.job where kind='reconciliation' and state='queued'")).rows[0]?.count;
+  const queued = (await database.query("select count(*)::integer count from runtime.jobs where kind='reconciliation' and state='queued'")).rows[0]?.count;
   if (queued !== 1) {
     const [events, jobs, intents] = await Promise.all([
       database.query(
         `select event_type,published_at,error_code,failed_at,available_at,attempts from runtime.outbox
         where event_type in('payment.captured','order.paid') order by occurred_at,id`
       ),
-      database.query("select kind,state,attempts,payload from runtime.job where kind in('paymentquery','reconciliation') order by kind,id"),
+      database.query("select kind,state,attempts,payload from runtime.jobs where kind in('paymentquery','reconciliation') order by kind,id"),
       database.query('select intent.state,(select count(*) from payment.payment where intent_id=intent.id)::integer payments from payment.intent intent order by intent.id'),
     ]);
     throw new Error(`MVP_FINANCE_JOB_INVALID:${String(queued)}:${JSON.stringify({ events: events.rows, jobs: jobs.rows, intents: intents.rows })}`);
@@ -474,7 +474,7 @@ async function runReconciliation(database, jobPool) {
       new PgReconciliationProcess(new PgTransactionManager(jobPool), unavailableObjects(), {
         channel: new PgFinanceChannelPort(),
         payments: new PaymentPort(),
-        fulfillments: new FulfillmentPort(),
+        fulfillments: new FulfillmentPort(new OrderPort()),
       })
     )
   );
@@ -489,10 +489,11 @@ async function runReconciliation(database, jobPool) {
       }
     },
   });
-  const runner = new JobRunner(new PgTransactionManager(jobPool), singleJobRepository(controller), new PgDeadletterStore(), {
+  const runner = new RunJob(new PgTransactionManager(jobPool), singleJobRepository(controller), new PgDeadletterStore(), {
     worker: 'mvp:finance',
     workload: 'jobs',
     owner: 'finance',
+    queue: 'finance',
     batch: 1,
     lease: 30,
     concurrency: 1,
@@ -502,14 +503,14 @@ async function runReconciliation(database, jobPool) {
     retryMinimum: 10,
     retryMaximum: 100,
   });
-  await runner.run('reconciliation', guarded, controller.signal);
+  await runner.execute('reconciliation', guarded, controller.signal);
   if (processorFailure) throw processorFailure;
 }
 
 function singleJobRepository(controller) {
-  const jobs = new PgJobRepository();
+  const jobs = new PgJobQueue();
   return Object.freeze({
-    claim: (context, kind, worker, batch, lease, workload) => jobs.claim(context, kind, worker, batch, lease, workload),
+    claim: (context, request) => jobs.claim(context, request),
     heartbeat: (context, job, worker, lease) => jobs.heartbeat(context, job, worker, lease),
     async complete(context, job, worker) {
       try {
@@ -518,9 +519,9 @@ function singleJobRepository(controller) {
         controller.abort();
       }
     },
-    async fail(context, job, worker, terminal, delay) {
+    async fail(context, job, worker, terminal, delay, error) {
       try {
-        await jobs.fail(context, job, worker, terminal, delay);
+        await jobs.fail(context, job, worker, terminal, delay, error);
       } finally {
         controller.abort();
       }

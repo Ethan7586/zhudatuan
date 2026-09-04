@@ -16,38 +16,57 @@ browser:
     removePrevious: true
     triggers: [scopekind, scopeid, membership, accessversion]
 caches:
-  experience:
-    key: mall:version
+  publishedexperience:
+    key: mall:publicationversion
     maximumSeconds: 86400
     staleSeconds: 30
     commandRevalidate: false
+    invalidatedBy: [experience.release.activated]
   storefrontentry:
     key: handle
     maximumSeconds: 60
     staleSeconds: 0
     commandRevalidate: true
-  catalog:
+    invalidatedBy: [experience.release.activated, organization.membership.changed]
+  listing:
     key: mall:listing:version
     maximumSeconds: 300
     staleSeconds: 30
     commandRevalidate: true
+    invalidatedBy: [catalog.listing.published, catalog.listing.unpublished, pricing.rule.published, pricing.offer.changed, inventory.stock.changed]
   category:
     key: mall:categoryversion
     maximumSeconds: 3600
     staleSeconds: 60
     commandRevalidate: true
-  access:
+    invalidatedBy: [catalog.listing.published, catalog.listing.unpublished]
+  accessversion:
     key: membership:authzversion:capabilityversion
     maximumSeconds: 60
     staleSeconds: 0
     commandRevalidate: true
-  reporting:
+    invalidatedBy: [access.version.changed, capability.changed, organization.membership.changed]
+  navigation:
+    key: target:membership:scope:authzversion:capabilityversion:catalogversion
+    maximumSeconds: 300
+    staleSeconds: 0
+    commandRevalidate: true
+    invalidatedBy: [navigation.catalog.changed, access.version.changed, capability.changed, organization.membership.changed, extension.enabled, extension.disabled]
+  providerhealth:
+    key: provider:capability:healthversion
+    maximumSeconds: 30
+    staleSeconds: 5
+    commandRevalidate: false
+    invalidatedBy: [channel.sync.completed, extension.enabled, extension.disabled, extension.degraded]
+  reportingwatermark:
     key: scope:metric:period:projectionversion
     maximumSeconds: 300
     staleSeconds: 60
     commandRevalidate: false
+    invalidatedBy: [order.placed, order.paid, finance.entry.posted]
   session:
     key: session:version
     maximumSeconds: 60
     staleSeconds: 0
     commandRevalidate: true
+    invalidatedBy: [identity.session.revoked, identity.member.reset]

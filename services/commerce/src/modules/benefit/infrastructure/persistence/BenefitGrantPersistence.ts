@@ -73,9 +73,8 @@ export async function post(
   occurred?: string
 ) {
   await finance.post(context, {
-    scope,
-    referenceType,
-    referenceId,
+    scopeId: scope,
+    source: postingSource(referenceType, referenceId),
     currency,
     description,
     debit: { code: debitCode, kind: financeKind(debitKind) },
@@ -83,6 +82,11 @@ export async function post(
     amountMinor: amount,
     ...(occurred === undefined ? {} : { occurredAt: occurred }),
   });
+}
+
+function postingSource(event: string, reference: string) {
+  const [module, aggregate = 'entry'] = event.split('.');
+  return { module: module!, aggregate, aggregateId: reference, event, eventId: reference, leg: event } as const;
 }
 
 export async function event(client: SqlExecutor, type: string, aggregateType: string, aggregate: string, scope: string, payload: unknown, key: string) {

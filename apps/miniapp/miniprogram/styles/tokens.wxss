@@ -1,0 +1,40 @@
+/* Generated from packages/design/src/tokens.json v1.2.0. Do not edit. */
+page {
+  --shop-brand: #1F5EFF;
+  --shop-brand-hover: #174ED1;
+  --shop-brand-dark: #143A8F;
+  --shop-brand-ink: #07182F;
+  --shop-brand-light: #EAF1FF;
+  --shop-background: #F5F7FA;
+  --shop-surface: #FFFFFF;
+  --shop-surface-subtle: #F8FAFC;
+  --shop-border: #E2E8F0;
+  --shop-border-strong: #CBD5E1;
+  --shop-text: #172033;
+  --shop-text-secondary: #475569;
+  --shop-text-muted: #5F6F82;
+  --shop-text-disabled: #94A3B8;
+  --shop-text-inverse: #FFFFFF;
+  --shop-success: #087A55;
+  --shop-success-surface: #ECFDF5;
+  --shop-warning: #92400E;
+  --shop-warning-surface: #FFF7E6;
+  --shop-danger: #B91C1C;
+  --shop-danger-surface: #FEF2F2;
+  --shop-price: #E1251B;
+  --shop-promotion: #F04B3A;
+  --shop-commerce-warm: #FFF4EE;
+  --shop-hero-shade-strong: rgba(7, 24, 47, 0.92);
+  --shop-hero-shade-soft: rgba(20, 58, 143, 0.4);
+  --shop-inverse-border: rgba(255, 255, 255, 0.4);
+  --shop-inverse-tint: rgba(7, 24, 47, 0.24);
+  --shop-inverse-label: rgba(255, 255, 255, 0.86);
+  --shop-shadow-card: 0rpx 2rpx 8rpx rgba(7, 24, 47, 0.04);
+  --shop-shadow-raised: 0rpx 4rpx 18rpx rgba(7, 24, 47, 0.05);
+  --shop-shadow-hero: 0rpx 12rpx 36rpx rgba(7, 24, 47, 0.14);
+  --shop-shadow-navigation: 0rpx -8rpx 28rpx rgba(7, 24, 47, 0.08);
+  --shop-radius-small: 16rpx;
+  --shop-radius-medium: 24rpx;
+  --shop-radius-large: 32rpx;
+  --shop-radius-extra: 48rpx;
+}

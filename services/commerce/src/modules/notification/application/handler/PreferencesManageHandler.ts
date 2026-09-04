@@ -2,9 +2,9 @@ import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord } from '../../../../foundation/interface/Validation';
+import { bodyRecord } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import { Preference, type AuthorizationState } from '../../domain/model/Preference';
+import { Preference, type AuthorizationState, type QuietHours } from '../../domain/model/Preference';
 import { DELIVERY_CHANNELS, type DeliveryChannelId } from '../../domain/model/Template';
 import type { NotificationRepository } from '../port/NotificationRepository';
 
@@ -20,11 +20,24 @@ export class PreferencesManageHandler implements OperationHandler<'notification.
     const body = bodyRecord(input);
     const enabled = boolean(body.enabled);
     const authorization = channel === 'wechat' ? authorizationState(body.authorization) : 'unknown';
-    new Preference(member.member, channel, event, enabled, authorization);
-    const row = await this.notifications.changePreference(context.transaction, member.member, member.organization, channel, event, enabled, authorization);
-    if (!row) throw new DomainError('RESOURCE_NOT_FOUND');
+    const source = channel === 'wechat' && body.authorization !== undefined ? 'provider' : 'member';
+    const quiet = quietHours(body.quietHours);
+    const expected = context.expectedVersion ?? 0;
+    new Preference(member.member, channel, event, enabled, authorization, source, quiet, expected);
+    const row = await this.notifications.changePreference(context.transaction, member.member, member.organization, channel, event, enabled, authorization, source, quiet, expected);
+    if (!row) throw new DomainError('VERSION_CONFLICT');
     return { status: 200, body: row as OperationOutputFor<'notification.preferences.manage'> };
   }
+}
+
+function quietHours(value: unknown): QuietHours | null {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'object' || Array.isArray(value)) throw new Error('NOTIFICATION_QUIET_HOURS_INVALID');
+  const record = value as Readonly<Record<string, unknown>>;
+  if (Object.keys(record).sort().join(',') !== 'end,start,timezone' || typeof record.start !== 'string' || typeof record.end !== 'string' || typeof record.timezone !== 'string') {
+    throw new Error('NOTIFICATION_QUIET_HOURS_INVALID');
+  }
+  return Object.freeze({ start: record.start, end: record.end, timezone: record.timezone });
 }
 
 function channelId(value: unknown): DeliveryChannelId {

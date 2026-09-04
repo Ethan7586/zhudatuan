@@ -59,6 +59,15 @@
 .orderprimarycell > span {
   color: var(--sw-muted);
 }
+.ordertable .orderamountcolumn {
+  text-align: right;
+}
+.ordertable .orderamountcolumn .orderprimarycell {
+  justify-items: end;
+}
+.ordertable .orderstatuscolumn {
+  text-align: center;
+}
 
 .orderproductcell {
   display: flex;

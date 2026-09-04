@@ -1,73 +1,90 @@
+import { randomUUID } from 'node:crypto';
+import { Money, type CurrencyCode } from '@shop/kernel';
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { ProviderPrice } from '../../public/ProviderPrice';
+import { Offer } from '../../domain/model/Offer';
+import { PriceBook } from '../../domain/model/PriceBook';
+import { Quote } from '../../domain/model/Quote';
+import { PricingEngine } from '../../domain/service/PricingEngine';
+import { PgPricingReadPort } from './PgPricingReadPort';
+import { PgPriceWriter } from './PgPriceWriter';
 export class PricingPort {
-  private readonly transactions = new PgTransactionAccess();
-  async offers(context: ReadTransactionContext, scope: string, skus: readonly string[]) {
-    const database = this.transactions.database(context);
-    if (skus.length === 0) return Object.freeze([]);
-    const result = await database.query<{
-      sku: string;
-      amountMinor: number;
-      currency: string;
-      version: string;
-    }>(
-      `select distinct on(price.sku_id) price.sku_id sku,price.amount_minor::float8 "amountMinor",
-      book.currency,price.id version from pricing.pricebook book join pricing.price price on price.book_id=book.id
-      where book.scope_id=$1 and book.status='active' and price.sku_id=any($2::text[])
-      and price.effective_at<=clock_timestamp() and (price.expires_at is null or price.expires_at>clock_timestamp())
-      order by price.sku_id,price.effective_at desc,book.id,price.id`,
-      [scope, skus]
-    );
-    return Object.freeze(result.rows.map((row) => Object.freeze(row)));
+  private readonly read: PgPricingReadPort;
+  private readonly writer: PgPriceWriter;
+  constructor(private readonly transactions = new PgTransactionAccess(), private readonly engine = new PricingEngine()) {
+    this.read = new PgPricingReadPort(transactions);
+    this.writer = new PgPriceWriter(transactions);
   }
-  async rules(context: ReadTransactionContext, scope: string) {
-    const database = this.transactions.database(context);
-    const result = await database.query<{
-      id: string;
-      version: number;
-      priority: number;
-      kind: string;
-      condition: unknown;
-      effect: unknown;
-    }>(
-      `select id,version,priority,kind,condition,effect from pricing.rule where scope_id=$1 and status='published'
-      and (effective_at is null or effective_at<=clock_timestamp()) order by priority,id`,
-      [scope]
-    );
-    return Object.freeze(result.rows.map((row) => Object.freeze(row)));
+  async offers(context: ReadTransactionContext, scope: string, skus: readonly string[]) {
+    return this.read.offers(context, scope, skus);
   }
   async quote(context: ReadTransactionContext, quote: string, member: string, mall: string) {
     const database = this.transactions.database(context);
     const result = await database.query<{
       id: string;
-      member: string;
-      mall: string;
-      payload: unknown;
+      member_id: string;
+      mall_id: string;
+      currency: CurrencyCode;
+      subtotal_minor: number;
+      discount_minor: number;
+      payable_minor: number;
+      lines: readonly unknown[];
+      evidence_hash: string;
+      dependencies: Readonly<Record<string, unknown>>;
+      signed_payload: Readonly<Record<string, unknown>>;
       signature: string;
+      version: number;
+      expires_at: Date | string;
+      created_at: Date | string;
     }>(
-      `select id,member_id member,mall_id mall,signed_payload payload,signature from pricing.quote
-      where id=$1 and member_id=$2 and mall_id=$3 and expires_at>clock_timestamp()`,
-      [quote, member, mall]
+      `select id,member_id,mall_id,currency,subtotal_minor::float8,discount_minor::float8,payable_minor::float8,lines,evidence_hash,
+       dependencies,signed_payload,signature,version::integer,expires_at,created_at from pricing.quote where id=$1`,
+      [quote]
     );
     const row = result.rows[0];
-    if (!row) throw new Error('QUOTE_EXPIRED_OR_CONFLICT');
-    return Object.freeze(row);
+    if (!row) throw new DomainError('PRICE_QUOTE_EXPIRED');
+    const snapshot = Quote.restore({
+      id: row.id,
+      member: row.member_id,
+      mall: row.mall_id,
+      currency: row.currency,
+      subtotal: Money.of(Number(row.subtotal_minor), row.currency),
+      discount: Money.of(Number(row.discount_minor), row.currency),
+      payable: Money.of(Number(row.payable_minor), row.currency),
+      lines: row.lines,
+      evidenceHash: row.evidence_hash,
+      dependencies: row.dependencies,
+      payload: row.signed_payload,
+      signature: row.signature,
+      version: Number(row.version),
+      expiresAt: iso(row.expires_at),
+      createdAt: iso(row.created_at),
+    }).use(member, mall, new Date());
+    return Object.freeze({ id: snapshot.id, member: snapshot.member, mall: snapshot.mall, payload: snapshot.payload, signature: snapshot.signature });
   }
   async prices(context: ReadTransactionContext, skus: readonly string[], scopes: readonly string[]): Promise<readonly Readonly<Record<string, unknown>>[]> {
-    const database = this.transactions.database(context);
-    if (skus.length === 0 || scopes.length === 0) return Object.freeze([]);
-    const result = await database.query(
-      `select price.sku_id sku,book.scope_id scope,book.currency,price.amount_minor::text "amountMinor",
-      case when price.compare_minor is null then null else price.compare_minor::text end "compareMinor",
-      book.status "bookStatus",price.effective_at "effectiveAt",price.expires_at "expiresAt",book.version::text "bookVersion"
-      from pricing.price price join pricing.pricebook book on book.id=price.book_id
-      where price.sku_id=any($1::text[]) and book.scope_id=any($2::text[])
-      order by book.scope_id,price.sku_id,price.effective_at desc`,
-      [skus, scopes]
+    const offers = await this.read.offersMany(context, scopes, skus);
+    return Object.freeze(
+      offers.map((offer) =>
+        Object.freeze({
+          sku: offer.sku,
+          scope: offer.scope,
+          currency: offer.currency,
+          amountMinor: String(offer.amountMinor),
+          compareMinor: offer.compareMinor === null ? null : String(offer.compareMinor),
+          bookStatus: 'active',
+          effectiveAt: offer.effectiveAt,
+          expiresAt: offer.expiresAt,
+          bookVersion: offer.version,
+          priceVersion: offer.sourceVersion,
+        })
+      )
     );
-    return Object.freeze(result.rows.map((row) => Object.freeze(row)));
   }
+  async setPrice(context: WriteTransactionContext, input: Readonly<{ scope: string; sku: string; amountMinor: number; currency: 'CNY'; expectedVersion: number }>) { return this.writer.set(context, input); }
   async current(
     context: WriteTransactionContext,
     scope: string,
@@ -77,20 +94,8 @@ export class PricingPort {
     currency: string;
     version: string;
   }> | null> {
-    const database = this.transactions.database(context);
-    const result = await database.query<{
-      id: string;
-      amount_minor: number;
-      currency: string;
-    }>(
-      `select price.id,price.amount_minor::float8 amount_minor,book.currency from pricing.pricebook book
-      join pricing.price price on price.book_id=book.id where book.scope_id=$1 and book.status='active' and price.sku_id=$2
-      and price.effective_at<=clock_timestamp() and (price.expires_at is null or price.expires_at>clock_timestamp())
-      order by price.effective_at desc,price.id limit 1`,
-      [scope, sku]
-    );
-    const row = result.rows[0];
-    return row ? Object.freeze({ amountMinor: row.amount_minor, currency: row.currency, version: row.id }) : null;
+    const offer = (await this.read.offers(context, scope, [sku]))[0];
+    return offer ? Object.freeze({ amountMinor: offer.amountMinor, currency: offer.currency, version: offer.version }) : null;
   }
   async currentMany(
     context: ReadTransactionContext,
@@ -106,39 +111,57 @@ export class PricingPort {
       }>
     >
   > {
-    const database = this.transactions.database(context);
-    if (skus.length === 0) return new Map();
-    const result = await database.query<{
-      sku_id: string;
-      id: string;
-      amount_minor: number;
-      currency: string;
-    }>(
-      `select distinct on(price.sku_id) price.sku_id,price.id,price.amount_minor::float8 amount_minor,book.currency
-      from pricing.pricebook book join pricing.price price on price.book_id=book.id
-      where book.scope_id=$1 and book.status='active' and price.sku_id=any($2::text[])
-      and price.effective_at<=clock_timestamp() and (price.expires_at is null or price.expires_at>clock_timestamp())
-      order by price.sku_id,price.effective_at desc,price.id`,
-      [scope, skus]
-    );
-    return new Map(result.rows.map((row) => [row.sku_id, Object.freeze({ amountMinor: row.amount_minor, currency: row.currency, version: row.id })]));
+    const offers = await this.read.offers(context, scope, skus);
+    return new Map(offers.map((offer) => [offer.sku, Object.freeze({ amountMinor: offer.amountMinor, currency: offer.currency, version: offer.version })]));
   }
   async ensureProviderBook(context: WriteTransactionContext, id: string, scope: string, provider: string): Promise<void> {
-    const database = this.transactions.database(context);
-    await database.query(
-      `insert into pricing.pricebook(id,scope_id,currency,name,status,version) values($1,$2,'CNY',$3,'active',0)
-      on conflict(scope_id,name) do update set status='active'`,
-      [id, scope, `provider:${provider}`]
+    const book = PriceBook.create({ id, scope, currency: 'CNY', name: `provider:${provider}` }).snapshot();
+    await this.transactions.database(context).query(
+      `insert into pricing.pricebook(id,scope_id,currency,name,status,version) values($1,$2,$3,$4,$5,$6)
+      on conflict(scope_id,name) do update set status='active',version=case when pricing.pricebook.status='active' then pricing.pricebook.version else pricing.pricebook.version+1 end`,
+      [book.id, book.scope, book.currency, book.name, book.state, book.version]
     );
   }
   async saveProviderPrice(context: WriteTransactionContext, input: ProviderPrice): Promise<void> {
     const database = this.transactions.database(context);
-    await database.query(
-      `insert into pricing.price(id,book_id,sku_id,amount_minor,compare_minor,effective_at,expires_at)
-      values($1,$2,$3,$4,$5,$6,$7) on conflict(book_id,sku_id,effective_at) do update
-      set amount_minor=excluded.amount_minor,compare_minor=excluded.compare_minor,expires_at=excluded.expires_at`,
-      [input.id, input.book, input.sku, input.amountMinor, input.compareMinor, input.effectiveAt, input.expiresAt]
+    const offer = Offer.create({
+      id: input.id,
+      book: input.book,
+      sku: input.sku,
+      amountMinor: input.amountMinor,
+      compareMinor: nullableMinor(input.compareMinor),
+      currency: 'CNY',
+      effectiveAt: input.effectiveAt,
+      expiresAt: nullableTime(input.expiresAt),
+      updatedAt: new Date().toISOString(),
+    }).snapshot();
+    const result = await database.query<{ id: string; book_id: string; sku_id: string; scope_id: string; version: number; changed: boolean }>(
+      `with changed as(
+        insert into pricing.price(id,book_id,sku_id,amount_minor,compare_minor,effective_at,expires_at,version,updated_at)
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9) on conflict(book_id,sku_id,effective_at) do update
+        set amount_minor=excluded.amount_minor,compare_minor=excluded.compare_minor,expires_at=excluded.expires_at
+        where (pricing.price.amount_minor,pricing.price.compare_minor,pricing.price.expires_at)
+          is distinct from (excluded.amount_minor,excluded.compare_minor,excluded.expires_at)
+        returning id,book_id,sku_id,version)
+       select changed.id,changed.book_id,changed.sku_id,book.scope_id,changed.version::integer,true changed
+       from changed join pricing.pricebook book on book.id=changed.book_id
+       union all select current.id,current.book_id,current.sku_id,book.scope_id,current.version::integer,false
+       from pricing.price current join pricing.pricebook book on book.id=current.book_id
+       where current.book_id=$2 and current.sku_id=$3 and current.effective_at=$6 and not exists(select 1 from changed)`,
+      [offer.id, offer.book, offer.sku, offer.amount.minor, offer.compare?.minor ?? null, offer.effectiveAt, offer.expiresAt, offer.version, offer.updatedAt]
     );
+    const changed = result.rows[0];
+    if (!changed) throw new Error('PRICING_OFFER_SAVE_FAILED');
+    if (changed.changed)
+      await new PgRuntimeWriter(database).append({
+        id: `event:${randomUUID()}`,
+        type: 'pricing.offer.changed',
+        aggregateType: 'offer',
+        aggregate: changed.id,
+        scope: changed.scope_id,
+        trace: context.trace,
+        payload: { offer: changed.id, book: changed.book_id, sku: changed.sku_id, scope: changed.scope_id, version: changed.version },
+      });
   }
   async saveQuote(
     context: WriteTransactionContext,
@@ -159,23 +182,41 @@ export class PricingPort {
     }>
   ): Promise<void> {
     const database = this.transactions.database(context);
+    const quote = Quote.create({
+      id: input.id,
+      member: input.member,
+      mall: input.mall,
+      currency: input.currency as CurrencyCode,
+      subtotalMinor: input.subtotalMinor,
+      discountMinor: input.discountMinor,
+      payableMinor: input.payableMinor,
+      lines: array(input.lines),
+      evidenceHash: input.evidenceHash,
+      dependencies: object(input.evidence),
+      payload: object(input.payload),
+      signature: input.signature,
+      expiresAt: input.expiresAt,
+      createdAt: new Date().toISOString(),
+    }).snapshot();
     await database.query(
       `insert into pricing.quote(id,member_id,mall_id,currency,subtotal_minor,discount_minor,payable_minor,lines,evidence_hash,
-      dependencies,signed_payload,signature,expires_at,created_at) values($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10::jsonb,$11::jsonb,$12,$13,clock_timestamp())`,
+      dependencies,signed_payload,signature,version,expires_at,created_at) values($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10::jsonb,$11::jsonb,$12,$13,$14,$15)`,
       [
-        input.id,
-        input.member,
-        input.mall,
-        input.currency,
-        input.subtotalMinor,
-        input.discountMinor,
-        input.payableMinor,
-        JSON.stringify(input.lines),
-        input.evidenceHash,
-        JSON.stringify(input.evidence),
-        JSON.stringify(input.payload),
-        input.signature,
-        input.expiresAt,
+        quote.id,
+        quote.member,
+        quote.mall,
+        quote.currency,
+        quote.subtotal.minor,
+        quote.discount.minor,
+        quote.payable.minor,
+        JSON.stringify(quote.lines),
+        quote.evidenceHash,
+        JSON.stringify(quote.dependencies),
+        JSON.stringify(quote.payload),
+        quote.signature,
+        quote.version,
+        quote.expiresAt,
+        quote.createdAt,
       ]
     );
   }
@@ -183,4 +224,26 @@ export class PricingPort {
     const database = this.transactions.database(context);
     await database.query(`delete from pricing.quote where expires_at<clock_timestamp()-interval '7 days' and not(id=any($1::text[]))`, [retained]);
   }
+}
+
+function nullableMinor(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  if (!Number.isSafeInteger(value) || Number(value) < 0) throw new Error('PROVIDER_PRICE_INVALID');
+  return Number(value);
+}
+function nullableTime(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== 'string') throw new Error('PROVIDER_PRICE_TIME_INVALID');
+  return value;
+}
+function array(value: unknown): readonly unknown[] {
+  if (!Array.isArray(value)) throw new Error('PRICING_QUOTE_LINES_INVALID');
+  return Object.freeze([...value]);
+}
+function object(value: unknown): Readonly<Record<string, unknown>> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('PRICING_QUOTE_OBJECT_INVALID');
+  return Object.freeze({ ...(value as Record<string, unknown>) });
+}
+function iso(value: Date | string): string {
+  return (value instanceof Date ? value : new Date(value)).toISOString();
 }

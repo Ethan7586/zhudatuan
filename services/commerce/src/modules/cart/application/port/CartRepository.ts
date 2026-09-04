@@ -1,12 +1,18 @@
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { CartView } from '../../domain/model/Cart';
+import type { Cart, CartOwner } from '../../domain/model/Cart';
 import type { CartLineMutation } from '../../domain/model/CartLine';
 
+export type CartMergeState =
+  | Readonly<{ state: 'none' }>
+  | Readonly<{ state: 'completed' }>
+  | Readonly<{ state: 'ready'; source: Cart; target: Cart }>;
+
 export interface CartRepository {
-  current(context: ReadTransactionContext, member: string, mall: string, application: string): Promise<CartView | null>;
-  lockOrCreate(context: WriteTransactionContext, member: string, mall: string, application: string, expectedVersion: number): Promise<string>;
-  lockExisting(context: WriteTransactionContext, member: string, mall: string, application: string, expectedVersion: number): Promise<string>;
-  lineVersions(context: WriteTransactionContext, cart: string, listings: readonly string[]): Promise<ReadonlyMap<string, number>>;
-  mutate(context: WriteTransactionContext, cart: string, changes: readonly CartLineMutation[]): Promise<void>;
-  snapshot(context: ReadTransactionContext, cart: string): Promise<CartView>;
+  current(context: ReadTransactionContext, owner: CartOwner): Promise<Cart | null>;
+  lockOrCreate(context: WriteTransactionContext, owner: CartOwner, expectedVersion: number): Promise<Cart>;
+  lockExisting(context: WriteTransactionContext, owner: CartOwner, expectedVersion: number): Promise<Cart>;
+  mutate(context: WriteTransactionContext, cart: Cart, changes: readonly CartLineMutation[]): Promise<Cart>;
+  snapshot(context: ReadTransactionContext, cart: string): Promise<Cart>;
+  prepareMerge(context: WriteTransactionContext, tokenDigest: string, owner: Extract<CartOwner, { kind: 'member' }>): Promise<CartMergeState>;
+  completeMerge(context: WriteTransactionContext, source: Cart, target: Cart, changes: readonly CartLineMutation[]): Promise<Cart>;
 }

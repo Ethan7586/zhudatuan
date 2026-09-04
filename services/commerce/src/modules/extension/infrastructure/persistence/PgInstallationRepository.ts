@@ -12,6 +12,7 @@ interface InstallationRecord {
   readonly installed_at: DatabaseTime;
   readonly checked_at: DatabaseTime | null;
   readonly manifest: ProviderManifest;
+  readonly configuration_version: number;
   readonly version: number;
   readonly health_state: InstallationListItem['health_state'];
   readonly health_latency_ms: number | null;
@@ -30,7 +31,7 @@ export class PgInstallationRepository implements InstallationRepository {
     const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query<InstallationRecord>(
       `select installation.id,installation.extension_id,installation.extension_version,
-       installation.scope_id,installation.status,installation.manifest,installation.version,installation.installed_at,
+       installation.scope_id,installation.status,installation.manifest,installation.configuration_version,installation.version,installation.installed_at,
        health.state health_state,health.latency_ms health_latency_ms,health.reason health_reason,health.checked_at
        from extension.installation installation left join lateral(
          select state,latency_ms,reason,checked_at from extension.health where installation_id=installation.id

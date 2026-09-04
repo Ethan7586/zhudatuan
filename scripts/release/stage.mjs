@@ -6,7 +6,7 @@ import { REQUIRED_PROVIDER_IDS } from '../../packages/contract/src/provider/Prov
 import { MVP_REQUIREMENT_IDS } from '../../packages/contract/src/RequirementCatalog.ts';
 
 const sha = /^[0-9a-f]{64}$/;
-const requiredChecks = ['alertDelivery', 'databaseFreshReplay', 'databaseUpgrade', 'journey', 'performance', 'providerHealth', 'reconciliation', 'rollbackDrill', 'security', 'smoke', 'snapshotRestore'];
+const requiredChecks = ['alertDelivery', 'databaseFreshReplay', 'databaseUpgrade', 'journey', 'migrationEvidence', 'performance', 'providerHealth', 'reconciliation', 'rollbackDrill', 'security', 'smoke', 'snapshotRestore'];
 const requirementIds = [...MVP_REQUIREMENT_IDS].sort();
 const requiredClients = ['auth', 'console', 'storefront'];
 const requiredFacts = ['sourceTreeHash', 'contractHash', 'operationHash', 'eventHash', 'jobHash', 'requirementHash', 'migrationHash', 'ownershipHash', 'extensionHash', 'runtimeConfigHash', 'imageHash', 'sbomHash', 'provenanceHash'];
@@ -20,7 +20,7 @@ export function validateStage(stage, candidate, candidateBytes, now = Date.now()
       .join(',') !== requiredClients.join(',')
   )
     throw new Error('CANDIDATE_CLIENT_SET_INVALID');
-  if (candidate.facts?.jobCount !== 33 || candidate.facts?.migrationHead !== candidate.schemaHead) throw new Error('CANDIDATE_FACT_CATALOG_INVALID');
+  if (candidate.facts?.jobCount !== 48 || candidate.facts?.migrationHead !== candidate.schemaHead) throw new Error('CANDIDATE_FACT_CATALOG_INVALID');
   for (const fact of requiredFacts) if (!sha.test(candidate.facts?.[fact] ?? '')) throw new Error(`CANDIDATE_FACT_INVALID:${fact}`);
   if (
     candidate.facts.contractHash !== candidate.contractHash ||
@@ -38,6 +38,12 @@ export function validateStage(stage, candidate, candidateBytes, now = Date.now()
     const value = stage.checks?.[check];
     if (value?.passed !== true || !sha.test(value.evidenceSha256 ?? '')) throw new Error(`STAGE_CHECK_INVALID:${check}`);
   }
+  if (stage.migrationEvidence?.schema !== 'shop.migration.evidence.v1' || stage.migrationEvidence?.passed !== true
+    || typeof stage.migrationEvidence?.exact !== 'boolean' || !Number.isSafeInteger(stage.migrationEvidence?.approvedDifferences)
+    || stage.migrationEvidence.approvedDifferences < 0 || !sha.test(stage.migrationEvidence?.archiveSha256 ?? '')) {
+    throw new Error('STAGE_MIGRATION_EVIDENCE_INVALID');
+  }
+  if (stage.migrationEvidence.exact !== (stage.migrationEvidence.approvedDifferences === 0)) throw new Error('STAGE_MIGRATION_EVIDENCE_DECISION_INVALID');
   if (
     Object.keys(stage.requirements ?? {})
       .sort()

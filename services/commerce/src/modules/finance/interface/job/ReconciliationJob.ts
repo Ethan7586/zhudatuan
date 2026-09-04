@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { ReconcileFinance } from '../../application/process/ReconcileFinance';
 
 export class ReconciliationJob implements JobProcessor {
@@ -9,7 +9,7 @@ export class ReconciliationJob implements JobProcessor {
     if (signal.aborted) throw signal.reason;
     const payload = object(job.payload);
     if (payload.eventId) return this.reconciliation.post(payload, signal, deadline);
-    const scope = typeof job.scope_id === 'string' && job.scope_id ? job.scope_id : 'finance';
+    const scope = typeof job.scope === 'string' && job.scope ? job.scope : 'finance';
     return this.reconciliation.execute(text(payload.reconciliation, 'RECONCILIATION_REQUIRED'), scope, signal, deadline);
   }
 }

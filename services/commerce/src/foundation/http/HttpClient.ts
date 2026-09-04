@@ -1,8 +1,8 @@
 import { DomainError } from '../domain/DomainError';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
-import { Deadline } from '../performance/Deadline';
-import { Executor, type ExecutionMode } from '../performance/Executor';
+import { Deadline, Executor, type ExecutionMode } from '@shop/kernel';
 import { NetworkPolicy } from '../security/NetworkPolicy';
+import { Failure, mapFailure } from '../domain/Failure';
 
 export type HttpCallMode = ExecutionMode;
 
@@ -13,7 +13,7 @@ export interface HttpCallContext {
 }
 
 export class HttpClient {
-  private readonly executor = new Executor();
+  private readonly executor = new Executor(RUNTIME_LIMITS.external);
 
   constructor(
     private readonly fetcher: typeof fetch = fetch,
@@ -38,15 +38,15 @@ export class HttpClient {
       phase = 'response';
       timer = phaseTimer(controller, Math.min(deadline.remaining(), RUNTIME_LIMITS.external.responseTimeoutMilliseconds));
       const length = Number(response.headers.get('content-length') ?? 0);
-      if (Number.isFinite(length) && length > RUNTIME_LIMITS.external.maximumResponseBytes) throw new Error('HTTP_RESPONSE_TOO_LARGE');
+      if (Number.isFinite(length) && length > RUNTIME_LIMITS.external.maximumResponseBytes) throw new Failure('HTTP_RESPONSE_TOO_LARGE', 'response', false, response.status);
       const body = await boundedBody(response, RUNTIME_LIMITS.external.maximumResponseBytes);
       const payload = [204, 205, 304].includes(response.status) ? null : body;
       return new Response(payload, { status: response.status, statusText: response.statusText, headers: response.headers });
     } catch (cause) {
-      if (deadline.signal.aborted) throw deadline.signal.reason ?? new DomainError('DEADLINE_EXCEEDED');
-      if (controller.signal.aborted) throw new Error(phase === 'connection' ? 'HTTP_CONNECTION_TIMEOUT' : 'HTTP_RESPONSE_TIMEOUT', { cause });
-      if (cause instanceof Error && cause.message === 'HTTP_RESPONSE_TOO_LARGE') throw cause;
-      throw new Error('HTTP_TRANSPORT_FAILED', { cause });
+      if (cause instanceof Failure) throw cause;
+      if (deadline.signal.aborted) throw new Failure('DEADLINE_EXCEEDED', 'timeout', false, undefined, { cause: deadline.signal.reason ?? cause });
+      if (controller.signal.aborted) throw new Failure(phase === 'connection' ? 'HTTP_CONNECTION_TIMEOUT' : 'HTTP_RESPONSE_TIMEOUT', 'timeout', true, undefined, { cause });
+      throw mapFailure(cause, { code: 'HTTP_TRANSPORT_FAILED', kind: 'transport', retryable: true });
     } finally {
       clearTimeout(timer);
       deadline.signal.removeEventListener('abort', abort);
@@ -72,7 +72,7 @@ async function boundedBody(response: Response, maximum: number): Promise<ArrayBu
       total += value.byteLength;
       if (total > maximum) {
         await reader.cancel();
-        throw new Error('HTTP_RESPONSE_TOO_LARGE');
+        throw new Failure('HTTP_RESPONSE_TOO_LARGE', 'response', false, response.status);
       }
       chunks.push(value);
     }
@@ -96,5 +96,5 @@ function phaseTimer(controller: AbortController, milliseconds: number): ReturnTy
 }
 
 function retryableTransport(cause: unknown): boolean {
-  return cause instanceof Error && ['HTTP_CONNECTION_TIMEOUT', 'HTTP_RESPONSE_TIMEOUT', 'HTTP_TRANSPORT_FAILED'].includes(cause.message);
+  return cause instanceof Failure && cause.retryable;
 }

@@ -4,5 +4,5 @@ export const RiskManifest = defineComponent({
   component: 'risk',
   navigationids: ['grouprisk', 'mallrisk'],
   routes: [{ routeid: 'consolerisk' }],
-  load: () => import('./RiskRoute'),
+  load: () => import('./route/RiskRoute'),
 });

@@ -2,14 +2,12 @@ import { PgFinanceChannelPort } from './infrastructure/persistence/PgFinanceChan
 
 import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
 import { defineModule } from '../../bootstrap/DefinedModule';
-import { MANIFEST_VERIFIER } from '../../bootstrap/SignatureVerifier';
-import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
+import { KMS_CLIENT } from '../../foundation/application/KmsPort';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { PgTransactionManager } from '../../adapter/database/PgTransactionManager';
 import { EXTENSION_REGISTRY } from '../../bootstrap/ExtensionRegistry';
 import { CHANNEL_CAPABILITY_PORT } from '../capability/public';
-import { CHANNEL_EXTENSION_PORT, EXTENSION_LOADER } from '../extension/public';
-import type { ExtensionStateSink } from '../extension/public';
+import { EXTENSION_REGISTRY_PORT } from '../extension/public';
 import { CHANNEL_ORGANIZATION_PORT, ORGANIZATION_READ_PORT } from '../organization/public';
 import { BindingsManageHandler } from './application/handler/BindingsManageHandler';
 import { ConnectionsCreateHandler } from './application/handler/ConnectionsCreateHandler';
@@ -30,7 +28,6 @@ import { SyncRunsReadHandler } from './application/handler/SyncRunsReadHandler';
 import { SyncRunsStartHandler } from './application/handler/SyncRunsStartHandler';
 import { WebhooksReceiveHandler } from './application/handler/WebhooksReceiveHandler';
 import { SynchronizeChannel, type ChannelSyncDependencies } from './application/process/SynchronizeChannel';
-import { createSupplierProviderInstallation } from './infrastructure/persistence/SupplierProvider';
 import { PgConnectionRepository } from './infrastructure/persistence/PgConnectionRepository';
 import { PgDistributorRepository } from './infrastructure/persistence/PgDistributorRepository';
 import { PgExtensionStateSink } from './infrastructure/persistence/PgExtensionStateSink';
@@ -44,25 +41,13 @@ import { EXTENSION_STATE_PORT, FINANCE_CHANNEL_PORT, FULFILLMENT_CHANNEL_PORT, P
 import { createProviderJobs } from './interface/job/JobFactory';
 import { ChannelSyncJob } from './interface/job/ChannelSyncJob';
 
-export { createSupplierProviderInstallation };
-export type { CatalogSource } from './application/port/CatalogSource';
-export type { PriceSource } from './application/port/PriceSource';
-export type { RemoteOrderSubmitter } from './application/port/RemoteOrderSubmitter';
-export type { RemoteRefundProvider } from './application/port/RemoteRefundProvider';
-export type { StatementSource } from './application/port/StatementSource';
-export type { StockSource } from './application/port/StockSource';
-
-export function channelExtensionSink(): ExtensionStateSink {
-  return new PgExtensionStateSink();
-}
-
 export const ChannelModule = defineModule(Manifest, {
   providerJobs: createProviderJobs,
   handlers: (context) => {
     const transactions = new PgTransactionAccess();
-    const extension = context.ports.get(CHANNEL_EXTENSION_PORT);
-    const install = extension.install(context.service(MANIFEST_VERIFIER), context.service(EXTENSION_LOADER));
-    const connections = new PgConnectionRepository(transactions, install, extension.enable(), extension.disable(), extension.repository);
+    const extension = context.ports.get(EXTENSION_REGISTRY_PORT);
+    const install = extension.install();
+    const connections = new PgConnectionRepository(transactions, install, extension.enable(), extension.disable(), extension);
     const distributors = new PgDistributorRepository(transactions, context.ports.get(CHANNEL_ORGANIZATION_PORT), context.ports.get(ORGANIZATION_READ_PORT), context.ports.get(CHANNEL_CAPABILITY_PORT));
     const runs = new PgSyncRunRepository(transactions);
     const operations = new PgProviderOperationRepository(transactions);

@@ -8,6 +8,7 @@ import { RefundPlanner } from '../../infrastructure/persistence/RefundPlanner';
 import { PaymentReference } from '../../domain/model/PaymentReference';
 import { enqueuePaymentJob as enqueue, paymentDigest as digest, providerError as error, type IntentTarget, type ProviderObservation } from './PaymentRecoveryPersistence';
 import type { PaymentRecoveryDependencies } from './PgPaymentRecoveryProcess';
+import { paymentProviderExecution } from './PaymentRecoveryContext';
 import type { PaymentRecoveryExecution } from '../../application/port/PaymentRecoveryProcess';
 
 export class PgRefundRecoveryProcess {
@@ -27,7 +28,7 @@ export class PgRefundRecoveryProcess {
       await client.query(
         `insert into payment.recoverycase(id,scope_id,order_id,resource_type,resource_id,severity,state,error_code,evidence,
         occurrence_count,opened_at) values($1,$2,$3,'intent',$4,'high','open','PAYMENT_PROVIDER_REFUNDED',$5::jsonb,1,clock_timestamp())
-        on conflict(resource_type,resource_id) do update set occurrence_count=payment.recoverycase.occurrence_count+1,evidence=excluded.evidence`,
+        on conflict(resource_type,resource_id) do update set occurrence_count=payment.recoverycase.occurrence_count+1,evidence=excluded.evidence,version=payment.recoverycase.version+1`,
         [recovery, selected.scope_id, selected.order_id, selected.intent, JSON.stringify(evidence)]
       );
       await new PgRuntimeWriter(client).append({
@@ -120,18 +121,17 @@ export class PgRefundRecoveryProcess {
         kind: 'refund',
         idempotency: refundid,
         reference: refundid,
-        external: null,
         state: 'processing',
         requestHash: digest(`${refundid}:${selected.external_minor}:${selected.external_total}:${selected.currency}`),
-        response: {},
+        result: null,
       });
     });
     let result: Readonly<{ state: 'processing' | 'succeeded' | 'failed'; reference: string }>;
     try {
       result =
         selected.state === 'requested'
-          ? await this.gateway.refund({ refundNumber: PaymentReference.refund(refundid).text, transaction: selected.transaction, refundMinor: selected.external_minor, totalMinor: selected.external_total, reason: selected.reason })
-          : await this.gateway.queryRefund(PaymentReference.refund(refundid).text);
+          ? await this.gateway.refund({ refundNumber: PaymentReference.refund(refundid).text, transaction: selected.transaction, refundMinor: selected.external_minor, totalMinor: selected.external_total, reason: selected.reason }, paymentProviderExecution(execution))
+          : await this.gateway.queryRefund(PaymentReference.refund(refundid).text, paymentProviderExecution(execution));
       await this.write(execution, async (context, database) => {
         await database.query(
           `with changed as(
@@ -145,9 +145,8 @@ export class PgRefundRecoveryProcess {
           provider: 'wechat',
           kind: 'refund',
           idempotency: refundid,
-          external: result.reference,
           state: result.state === 'failed' ? 'failed' : result.state === 'succeeded' ? 'succeeded' : 'processing',
-          response: result,
+          result: { externalReference: result.reference, state: result.state },
         });
       });
     } catch (cause) {
@@ -160,7 +159,7 @@ export class PgRefundRecoveryProcess {
         select $3,changed.refund_id,$1,$4,'unknown',$2,$5,clock_timestamp() from changed`,
           [attempt, failure, `refundreceipt:${attempt}`, selected.scope_id, digest(failure)]
         );
-        await this.dependencies.operations.update(context, { provider: 'wechat', kind: 'refund', idempotency: refundid, state: 'unknown', response: { error: failure } });
+        await this.dependencies.operations.update(context, { provider: 'wechat', kind: 'refund', idempotency: refundid, state: 'unknown', result: { externalReference: null, state: 'unknown', code: failure } });
       });
       throw cause;
     }

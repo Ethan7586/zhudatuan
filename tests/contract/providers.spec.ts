@@ -15,17 +15,17 @@ import { TmallProvider, manifest as tmall } from '@shop/providertmall';
 import { providerContract, type ManifestFactory } from './providers/ProviderContract';
 
 const values: readonly [import('@shop/providercore').ProviderFactory, ManifestFactory, readonly ProviderPortName[]][] = [
-  [JdproductProvider, jdproduct, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
-  [JdfreshProvider, jdfresh, ['catalog', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
-  [TmallProvider, tmall, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
-  [SupplierProvider, supplier, ['catalog', 'stock', 'order', 'tracking', 'refund', 'statement']],
-  [CakeProvider, cake, ['catalog', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
-  [FlowerProvider, flower, ['catalog', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
-  [BookProvider, book, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
-  [ChargeProvider, charge, ['catalog', 'order', 'tracking', 'refund', 'statement', 'verification']],
-  [FoodvoucherProvider, foodvoucher, ['catalog', 'order', 'cancel', 'refund', 'statement', 'verification']],
-  [MovieProvider, movie, ['catalog', 'stock', 'order', 'cancel', 'refund', 'statement', 'verification']],
-  [MealProvider, meal, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement', 'verification']],
+  [JdproductProvider, jdproduct, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'return', 'refund', 'statement', 'webhook']],
+  [JdfreshProvider, jdfresh, ['catalog', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement', 'webhook']],
+  [TmallProvider, tmall, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'return', 'refund', 'statement', 'webhook']],
+  [SupplierProvider, supplier, ['catalog', 'price', 'stock', 'order', 'tracking', 'return', 'refund', 'statement']],
+  [CakeProvider, cake, ['catalog', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement', 'verification', 'webhook']],
+  [FlowerProvider, flower, ['catalog', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement', 'webhook']],
+  [BookProvider, book, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'return', 'refund', 'statement', 'webhook']],
+  [ChargeProvider, charge, ['catalog', 'order', 'tracking', 'refund', 'statement', 'verification', 'webhook']],
+  [FoodvoucherProvider, foodvoucher, ['catalog', 'order', 'cancel', 'refund', 'statement', 'verification', 'webhook']],
+  [MovieProvider, movie, ['catalog', 'stock', 'order', 'cancel', 'refund', 'statement', 'verification', 'webhook']],
+  [MealProvider, meal, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement', 'verification', 'webhook']],
 ];
 
 test('all and only workbook priority-one providers have executable contracts', async () => {

@@ -1,0 +1,86 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.1 Identity",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "contract": {
+    "operationCount": 37,
+    "operationAliases": [],
+    "entitlements": [
+      "identity.federation",
+      "identity.registration.reset"
+    ],
+    "audiences": [
+      "console",
+      "storefront",
+      "miniapp",
+      "store",
+      "supplier"
+    ],
+    "memberActions": [
+      "create",
+      "update",
+      "disable",
+      "enable",
+      "offboard",
+      "registrationReset"
+    ]
+  },
+  "invariants": [
+    "principal-is-not-membership",
+    "challenge-is-expiring-and-single-use",
+    "challenge-send-and-verify-use-independent-rate-buckets",
+    "refresh-token-family-rotates-atomically-and-replay-is-rejected",
+    "membership-switch-rotates-session-refreshes-access-version-and-revokes-old-session",
+    "invitation-secret-is-shown-once-and-invitation-replay-is-rejected",
+    "registration-reset-requires-owner-scope-recent-password-reason-and-confirmation",
+    "registration-reset-revokes-credentials-federation-links-and-sessions-without-deleting-history",
+    "registration-reset-cannot-target-self-or-protected-owner",
+    "federation-validates-pkce-state-nonce-issuer-audience-and-single-use-callback",
+    "wechat-miniapp-exchanges-code-and-maps-encrypted-unionid-openid-through-secret-store",
+    "membership-context-exposes-no-credential-token-or-secret",
+    "return-target-is-signed-and-restricted-to-canonical-client-origins",
+    "registration-reset-ui-requires-impact-acknowledgement-confirmation-text-and-owner-password"
+  ],
+  "retainedLiFlows": [
+    "shared-account-password-and-otp-login",
+    "multiple-membership-selection-and-authoritative-switch",
+    "pending-invitation-enrollment",
+    "forced-password-change-and-password-recovery",
+    "mobile-bind-and-high-risk-stepup",
+    "wechat-h5-and-miniapp-federation",
+    "wecom-and-oidc-federation",
+    "member-invite-disable-enable-offboard-and-registration-reset",
+    "li-registration-reset-impact-confirmation-password-verification-receipt-and-reinvite-ui",
+    "session-list-current-revoke-and-family-cleanup"
+  ],
+  "verification": {
+    "commerceIdentityTests": "42 files and 95 tests passed",
+    "commerceTypecheck": "passed",
+    "authTests": "24 files and 52 tests passed",
+    "authTypecheck": "passed",
+    "consoleMemberTests": "2 files and 6 tests passed",
+    "consoleTypecheck": "passed",
+    "contractTests": "6 files and 51 tests passed",
+    "contractGeneratorTests": "1 file and 3 tests passed",
+    "contractGeneratorCheck": "passed",
+    "operations": "passed",
+    "errors": "passed",
+    "events": "passed",
+    "ownership": "passed",
+    "duplicates": "passed",
+    "performance": "passed",
+    "transactions": "passed",
+    "naming": "passed",
+    "jobs": "passed",
+    "boundaries": "passed",
+    "configuration": "passed",
+    "migrationInventory": "historical=171 repair=152 total=323",
+    "migrationReplay": "323 migrations applied; final catalog assertion intentionally awaits 20260904031000_publish_ideal_contract.sql",
+    "globalGeneration": "Identity generation is current; global trace awaits the miniapp feature directory from the client work package",
+    "globalCallGraph": "Identity has no broken call point; six generated bindings remain deferred to the miniapp, store and supplier client work packages",
+    "globalFrontend": "Identity and auth have no frontend boundary violation; 37 findings remain in deferred approval, task, miniapp, store and supplier feature packages"
+  }
+}

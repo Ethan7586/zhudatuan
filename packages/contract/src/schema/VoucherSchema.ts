@@ -1,177 +1,224 @@
-import { array, boolean, literal, null as nullSchema, optional, strictObject, string, union } from 'zod/mini';
-import { importRead } from './ImportSchema';
+import { array, boolean, int, literal, maxLength, minLength, null as nullSchema, optional, positive, regex, strictObject, string, union } from 'zod/mini';
 import { ContractJsonValueSchema } from './JsonSchema';
 import { currency, isoUtc, pageOutput, pageQuery, unsigned, version } from './Primitives';
+import { voucherCredential } from '../VoucherCredential';
+import { importCreated } from './ImportSchema';
 
+const text = string().check(minLength(1), maxLength(255));
+const download = string().check(minLength(1), maxLength(2048));
+const reason = string().check(minLength(2), maxLength(1000));
+const secret = string().check(minLength(voucherCredential.secret.minimum), maxLength(voucherCredential.secret.maximum), regex(voucherCredential.secret.pattern));
+const number = string().check(minLength(voucherCredential.number.minimum), maxLength(voucherCredential.number.maximum), regex(voucherCredential.number.pattern));
+const hash = string().check(regex(/^[0-9a-f]{64}$/));
+const amount = int().check(positive());
+const quantity = int().check(positive());
 const nullableText = union([string(), nullSchema()]);
 const nullableTime = union([isoUtc, nullSchema()]);
-const allocationSummary = strictObject({ scope: string(), quantity: unsigned, used: unsigned, available: unsigned, version });
-const importProblem = strictObject({ row: unsigned, code: string() });
-const library = strictObject({
-  id: string(),
-  scope_id: string(),
-  code_prefix: string(),
-  next_sequence: unsigned,
-  provider: nullableText,
-  mode: literal(['generated', 'imported']),
-  status: literal(['draft', 'ready', 'depleted', 'disabled']),
+const stateChange = strictObject({ reason });
+const validity = strictObject({ startsAt: isoUtc, expiresAt: isoUtc });
+const productWrite = strictObject({
+  customer: text,
+  name: text,
+  faceMinor: amount,
+  currency,
+  qualification: text,
+  pool: optional(union([text, nullSchema()])),
+  validity,
+  activation: literal(['automatic', 'secret', 'numbersecret']),
+  approvalRequired: boolean(),
+});
+const product = strictObject({
+  id: text,
+  number: text,
+  scopeId: text,
+  customer: text,
+  name: text,
+  faceMinor: unsigned,
+  currency,
+  qualification: text,
+  pool: nullableText,
+  validity,
+  activation: literal(['automatic', 'secret', 'numbersecret']),
+  approvalRequired: boolean(),
+  state: literal(['draft', 'enabled', 'disabled', 'retired']),
   version,
-  import_state: nullableText,
-  total_count: union([unsigned, nullSchema()]),
-  success_count: union([unsigned, nullSchema()]),
-  failure_count: union([unsigned, nullSchema()]),
-  allocations: array(allocationSummary),
-  errors: array(importProblem),
+  createdAt: isoUtc,
+  updatedAt: isoUtc,
 });
-const createdLibrary = strictObject({
-  id: string(),
-  scope_id: string(),
-  code_prefix: string(),
-  next_sequence: unsigned,
-  provider: nullableText,
-  mode: literal(['generated', 'imported']),
-  status: literal(['draft', 'ready']),
-  version,
-  import: optional(string()),
-});
-const allocation = strictObject({ id: string(), cardpool_id: string(), scope_id: string(), quantity: unsigned, used_count: unsigned, available: unsigned, version });
-const programVersion = strictObject({ version, valueMinor: unsigned, validityDays: unsigned, approvalRequired: boolean(), status: string(), changedBy: string(), changedAt: isoUtc });
-const program = strictObject({ id: string(), scope_id: string(), name: string(), value_minor: unsigned, currency, default_valid_days: unsigned, status: string(), approval_required: boolean(), version, versions: array(programVersion) });
-const programSaved = strictObject({ id: string(), scope_id: string(), name: string(), value_minor: unsigned, default_valid_days: unsigned, currency, status: string(), approval_required: boolean(), version });
-const approval = strictObject({ sequence: unsigned, decision: literal(['approved', 'rejected']), reason: string(), actor: string(), occurredAt: isoUtc });
-const reserve = strictObject({
-  id: string(),
-  request_number: string(),
-  scope_id: string(),
-  program_id: string(),
-  program_version: version,
-  requested_count: unsigned,
-  requested_minor: unsigned,
-  reason: string(),
-  state: string(),
-  requested_by: string(),
-  submitted_at: nullableTime,
-  resolved_at: nullableTime,
-  resolved_by: nullableText,
-  created_at: isoUtc,
-  updated_at: isoUtc,
-});
-const reserveRead = strictObject({
-  id: string(),
-  request_number: string(),
-  program_id: string(),
-  name: string(),
-  requested_count: unsigned,
-  program_version: version,
-  requested_minor: unsigned,
-  reason: string(),
-  state: string(),
-  requested_by: string(),
-  submitted_at: nullableTime,
-  resolved_by: nullableText,
-  resolved_at: nullableTime,
-  created_at: isoUtc,
-  approvals: array(approval),
-});
-const issue = strictObject({
-  id: string(),
-  program_id: string(),
-  program_version: version,
-  cardpool_id: nullableText,
-  reserve_request_id: nullableText,
-  state: string(),
-  requested_count: unsigned,
-  issued_count: unsigned,
-  created_at: isoUtc,
-});
-const issueRead = strictObject({ ...issue.shape, name: string() });
-const statusBatch = strictObject({
-  id: string(),
-  scope_id: string(),
-  action: literal(['activate', 'disable', 'extend', 'void']),
-  expires_at: nullableTime,
-  reason: string(),
-  actor_id: string(),
-  state: string(),
-  requested_count: unsigned,
-  succeeded_count: unsigned,
-  failed_count: unsigned,
-  created_at: isoUtc,
-  updated_at: isoUtc,
-});
-const statusBatchRead = strictObject({
-  id: string(),
-  action: string(),
-  expires_at: nullableTime,
-  reason: string(),
-  actor_id: string(),
-  state: string(),
-  requested_count: unsigned,
-  succeeded_count: unsigned,
-  failed_count: unsigned,
-  created_at: isoUtc,
-  updated_at: isoUtc,
-});
-const statusItem = strictObject({ batch_id: string(), voucher_id: string(), state: string(), previous_state: nullableText, next_state: nullableText, error_code: nullableText, updated_at: isoUtc });
-const binding = strictObject({ id: string(), program_id: string(), name: string(), member_id: nullableText, initial_minor: unsigned, remaining_minor: unsigned, state: string(), expires_at: isoUtc, version, cursor_sort: isoUtc });
-const redemption = strictObject({
-  id: string(),
-  voucher_id: string(),
-  verification_id: string(),
-  order_id: nullableText,
-  amount_minor: unsigned,
-  redeemed_at: isoUtc,
-  reversed_at: nullableTime,
-  version,
-  program_id: string(),
-  reversed_minor: unsigned,
-  receipt_state: literal(['redeemed', 'partially_reversed', 'reversed']),
-  last_reversed_at: nullableTime,
-});
-const history = strictObject({ voucher_id: string(), sequence: unsigned, previous_state: nullableText, next_state: string(), reason: string(), actor_id: string(), occurred_at: isoUtc, cursor_id: string() });
-const reversed = strictObject({ id: string(), voucher_id: string(), amount_minor: unsigned, previous_state: string() });
-const imported = strictObject({ cardpool_id: string(), ...importRead.shape });
+const productVersion = strictObject({ version, snapshot: ContractJsonValueSchema, changedBy: text, changedAt: isoUtc });
+const productDetail = strictObject({ ...product.shape, versions: array(productVersion), supply: strictObject({ available: unsigned, allocated: unsigned }) });
+const option = strictObject({ id: text, number: text, name: text, faceMinor: unsigned, currency, available: unsigned });
+
+const poolWrite = strictObject({ product: text, name: text, mode: literal(['generated', 'imported']), prefix: text, capacity: quantity });
+const pool = strictObject({ id: text, number: text, scopeId: text, product: text, name: text, mode: literal(['generated', 'imported']), prefix: text,
+  capacity: unsigned, generated: unsigned, available: unsigned, allocated: unsigned, state: literal(['open', 'closed']), version, createdAt: isoUtc, updatedAt: isoUtc });
+const credential = strictObject({ id: text, pool: text, product: text, numberMasked: text, fingerprint: hash, keyVersion: text,
+  state: literal(['generated', 'available', 'allocated', 'void']), issueBatch: nullableText, version, createdAt: isoUtc });
+
+const job = strictObject({ id: text, kind: text, state: literal(['queued', 'running', 'completed', 'failed', 'cancelled']),
+  processed: unsigned, total: unsigned, succeeded: unsigned, failed: unsigned, retryable: unsigned, updatedAt: isoUtc });
+const exportJob = strictObject({ id: text, kind: text, state: literal(['pendingapproval', 'queued', 'running', 'completed', 'failed', 'expired']),
+  expiresAt: isoUtc, downloadToken: optional(download), fileName: optional(text), createdAt: isoUtc, updatedAt: isoUtc });
+
+const stockWrite = strictObject({ customer: text, product: text, pool: text, quantity, reason });
+const stockRequest = strictObject({ id: text, number: text, scopeId: text, customer: text, product: text, pool: text, quantity: unsigned,
+  reason: string(), state: literal(['draft', 'submitted', 'approved', 'rejected', 'cancelled', 'fulfilled']), approval: nullableText,
+  requestedBy: text, version, createdAt: isoUtc, updatedAt: isoUtc });
+const stockOption = strictObject({ request: text, number: text, product: text, pool: text, customer: text, available: unsigned, approved: unsigned });
+
+const issueWrite = strictObject({ customer: text, product: text, stockRequest: text, quantity, purpose: literal(['benefit', 'order', 'campaign', 'manual']),
+  delivery: literal(['account', 'claim']), validity, recipientSnapshot: text, reason });
+const issueOrder = strictObject({ id: text, number: text, scopeId: text, customer: text, product: text, stockRequest: text, quantity: unsigned,
+  purpose: literal(['benefit', 'order', 'campaign', 'manual']), delivery: literal(['account', 'claim']), validity, recipientSnapshot: text,
+  reason: string(), state: literal(['draft', 'submitted', 'approved', 'issuing', 'completed', 'failed', 'cancelled']), approval: nullableText,
+  issueBatch: nullableText, issued: unsigned, failed: unsigned, requestedBy: text, version, createdAt: isoUtc, updatedAt: isoUtc });
+const issueBatch = strictObject({ id: text, order: text, scopeId: text, state: literal(['queued', 'running', 'completed', 'failed', 'cancelled']),
+  requested: unsigned, processed: unsigned, succeeded: unsigned, failed: unsigned, retryable: unsigned, version, createdAt: isoUtc, updatedAt: isoUtc });
+
+const voucher = strictObject({ id: text, numberMasked: text, scopeId: text, product: text, productName: text, credential: text, holder: nullableText,
+  initialMinor: unsigned, remainingMinor: unsigned, currency, state: literal(['generated', 'available', 'allocated', 'bound', 'active', 'held', 'redeemed', 'disabled', 'void', 'reversed', 'expired']),
+  validity, version, createdAt: isoUtc, updatedAt: isoUtc });
+const redemptionSummary = strictObject({ id: text, order: nullableText, amountMinor: unsigned, refundedMinor: unsigned, currency,
+  state: literal(['succeeded', 'partiallyrefunded', 'refunded']), redeemedAt: isoUtc });
+const timeline = strictObject({ sequence: unsigned, previous: nullableText, next: text, reason: string(), actor: text, occurredAt: isoUtc,
+  redemption: union([redemptionSummary, nullSchema()]) });
+const filter = strictObject({ query: optional(string().check(maxLength(128))), product: optional(text), pool: optional(text), customer: optional(text),
+  holder: optional(text), state: optional(voucher.shape.state), expiresBefore: optional(isoUtc), expiresAfter: optional(isoUtc) });
+const facet = strictObject({ value: text, count: unsigned });
+const facets = strictObject({ states: array(facet), products: array(facet), pools: array(facet), watermark: isoUtc });
+const snapshot = strictObject({ id: text, filterHash: hash, watermark: isoUtc, count: unsigned, expiresAt: isoUtc, createdAt: isoUtc });
+
+const hold = strictObject({ id: text, voucher: text, owner: text, amountMinor: unsigned, state: literal(['active', 'consumed', 'released', 'expired']),
+  expiresAt: isoUtc, idempotency: text, version, createdAt: isoUtc, updatedAt: isoUtc });
+const redemption = strictObject({ id: text, voucher: text, hold: nullableText, verification: text, order: nullableText, amountMinor: unsigned,
+  refundedMinor: unsigned, currency, state: literal(['succeeded', 'partiallyrefunded', 'refunded']), version, redeemedAt: isoUtc, updatedAt: isoUtc });
+const refund = strictObject({ id: text, redemption: text, amountMinor: unsigned, currency, reason: string(), state: literal(['succeeded']),
+  ruleVersion: version, createdAt: isoUtc });
+
+const actionWrite = strictObject({ snapshot: text, action: literal(['activate', 'disable', 'enable', 'void', 'extend']), reason, expiresAt: optional(isoUtc) });
+const actionBatch = strictObject({ id: text, scopeId: text, snapshot: text, action: literal(['activate', 'disable', 'enable', 'void', 'extend']),
+  reason: string(), expiresAt: nullableTime, state: literal(['queued', 'running', 'completed', 'failed']), requested: unsigned, processed: unsigned,
+  succeeded: unsigned, failed: unsigned, retryable: unsigned, version, createdAt: isoUtc, updatedAt: isoUtc });
 
 export const VOUCHER_BODY_SCHEMAS = {
-  VoucherCardlibrariesAllocateInput: strictObject({ scope: string(), count: unsigned }),
-  VoucherProgramsManageInput: strictObject({ name: string(), valueMinor: unsigned, validityDays: unsigned, status: literal(['draft', 'active', 'paused', 'retired']), approvalRequired: optional(boolean()) }),
-  VoucherReservesRequestInput: strictObject({ program: string(), count: unsigned, reason: string() }),
-  VoucherReservesDecideInput: strictObject({ decision: literal(['approved', 'rejected']), reason: string(), evidence: optional(ContractJsonValueSchema) }),
-  VoucherBatchesIssueInput: strictObject({ program: string(), cardpool: string(), count: unsigned, reserve: optional(string()) }),
-  VoucherBatchesRetryInput: strictObject({}),
-  VoucherStatusBatchInput: strictObject({ ids: array(string()), action: literal(['activate', 'disable', 'extend', 'void']), reason: string(), expiresAt: optional(isoUtc) }),
-  VoucherBindingsManageInput: strictObject({ member: string(), reason: string() }),
-  VoucherRedemptionsReverseInput: strictObject({ reason: string() }),
+  VoucherProductsCreateInput: productWrite,
+  VoucherProductsReviseInput: productWrite,
+  VoucherProductsEnableInput: stateChange,
+  VoucherProductsDisableInput: stateChange,
+  VoucherCredentialpoolsCreateInput: poolWrite,
+  VoucherCredentialsGenerateInput: strictObject({ count: quantity }),
+  VoucherCredentialsImportInput: strictObject({ upload: text, fileHash: hash, fileName: text, mediaType: literal(['text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']), size: quantity }),
+  VoucherCredentialpoolsCloseInput: stateChange,
+  VoucherCredentialexportsCreateInput: strictObject({ pool: text, reason, watermark: isoUtc }),
+  VoucherStockrequestsCreateInput: stockWrite,
+  VoucherStockrequestsUpdateInput: stockWrite,
+  VoucherStockrequestsSubmitInput: stateChange,
+  VoucherStockrequestsCancelInput: stateChange,
+  VoucherIssueordersCreateInput: issueWrite,
+  VoucherIssueordersUpdateInput: issueWrite,
+  VoucherIssueordersSubmitInput: stateChange,
+  VoucherIssueordersCancelInput: stateChange,
+  VoucherIssuebatchesRetryInput: stateChange,
+  VoucherIssueorderexportsCreateInput: strictObject({ order: text, reason }),
+  VoucherActionbatchesCreateInput: actionWrite,
+  VoucherActionbatchesRetryInput: stateChange,
+  VoucherActionexportsCreateInput: strictObject({ batch: text, reason }),
+  VoucherActivationsSecretInput: strictObject({ secret }),
+  VoucherActivationsNumbersecretInput: strictObject({ number, secret }),
+  VoucherVouchersBindInput: strictObject({ member: text, reason }),
+  VoucherVouchersUnbindInput: stateChange,
+  VoucherRedemptionsQuoteInput: strictObject({ voucher: text, amountMinor: amount, order: optional(text) }),
+  VoucherTenderholdsCreateInput: strictObject({ voucher: text, owner: text, amountMinor: amount, ttlSeconds: int().check(positive()) }),
+  VoucherTenderholdsConsumeInput: strictObject({ verification: text, order: optional(text) }),
+  VoucherTenderholdsReleaseInput: stateChange,
+  VoucherRedemptionsCreateInput: strictObject({ voucher: text, hold: text, verification: text, amountMinor: amount, order: optional(text) }),
+  VoucherRefundsCreateInput: strictObject({ amountMinor: amount, reason }),
+  VoucherSearchsnapshotsCreateInput: strictObject({ filter }),
+  VoucherSearchexportsCreateInput: strictObject({ snapshot: text, reason }),
 } as const;
+
 export const VOUCHER_QUERY_SCHEMAS = {
-  VoucherCardlibrariesReadInput: strictObject(pageQuery),
-  VoucherImportsReadInput: strictObject({}),
-  VoucherProgramsReadInput: strictObject(pageQuery),
-  VoucherReservesReadInput: strictObject(pageQuery),
-  VoucherBatchesReadInput: strictObject(pageQuery),
-  VoucherStatusbatchesReadInput: strictObject({ ...pageQuery, batch: optional(string()) }),
-  VoucherBindingsReadInput: strictObject(pageQuery),
-  VoucherRedemptionsReadInput: strictObject(pageQuery),
-  VoucherHistoryReadInput: strictObject(pageQuery),
+  VoucherProductsGetInput: strictObject({}),
+  VoucherProductsListInput: strictObject({ ...pageQuery, state: optional(string()), customer: optional(string()) }),
+  VoucherProductoptionsListInput: strictObject(pageQuery),
+  VoucherCredentialpoolsGetInput: strictObject({}),
+  VoucherCredentialpoolsListInput: strictObject({ ...pageQuery, product: optional(string()), state: optional(string()) }),
+  VoucherCredentialsListInput: strictObject({ ...pageQuery, pool: optional(string()), state: optional(string()) }),
+  VoucherCredentialsGetInput: strictObject({}),
+  VoucherJobsGetInput: strictObject({}),
+  VoucherStockrequestsGetInput: strictObject({}),
+  VoucherStockrequestsListInput: strictObject({ ...pageQuery, state: optional(string()), customer: optional(string()) }),
+  VoucherStockrequestoptionsListInput: strictObject(pageQuery),
+  VoucherIssueordersGetInput: strictObject({}),
+  VoucherIssueordersListInput: strictObject({ ...pageQuery, state: optional(string()), customer: optional(string()) }),
+  VoucherIssuebatchesGetInput: strictObject({}),
+  VoucherActionbatchesGetInput: strictObject({}),
+  VoucherActionbatchesListInput: strictObject({ ...pageQuery, state: optional(string()), action: optional(string()) }),
+  VoucherSearchReadInput: strictObject({ ...pageQuery, ...filter.shape }),
+  VoucherVouchersGetInput: strictObject({}),
+  VoucherVouchersGetbynumberInput: strictObject({}),
+  VoucherVouchersTimelineInput: strictObject(pageQuery),
+  VoucherRedemptionsGetInput: strictObject({}),
+  VoucherSearchfacetsReadInput: filter,
+  VoucherExportsGetInput: strictObject({}),
 } as const;
+
 export const VOUCHER_OUTPUT_SCHEMAS = {
-  VoucherCardlibrariesReadOutput: pageOutput(library),
-  VoucherCardlibrariesCreateOutput: createdLibrary,
-  VoucherCardlibrariesAllocateOutput: allocation,
-  VoucherImportsReadOutput: imported,
-  VoucherProgramsReadOutput: pageOutput(program),
-  VoucherProgramsManageOutput: programSaved,
-  VoucherReservesReadOutput: pageOutput(reserveRead),
-  VoucherReservesRequestOutput: reserve,
-  VoucherReservesDecideOutput: strictObject({ id: string(), requested_by: string() }),
-  VoucherBatchesReadOutput: pageOutput(issueRead),
-  VoucherBatchesIssueOutput: issue,
-  VoucherBatchesRetryOutput: issue,
-  VoucherStatusBatchOutput: statusBatch,
-  VoucherStatusbatchesReadOutput: union([pageOutput(statusBatchRead), pageOutput(statusItem)]),
-  VoucherBindingsReadOutput: pageOutput(binding),
-  VoucherBindingsManageOutput: strictObject({ id: string(), state: literal('active'), version }),
-  VoucherRedemptionsReadOutput: pageOutput(redemption),
-  VoucherHistoryReadOutput: pageOutput(history),
-  VoucherRedemptionsReverseOutput: reversed,
+  VoucherProductsCreateOutput: product,
+  VoucherProductsReviseOutput: product,
+  VoucherProductsEnableOutput: product,
+  VoucherProductsDisableOutput: product,
+  VoucherProductsGetOutput: productDetail,
+  VoucherProductsListOutput: pageOutput(product),
+  VoucherProductoptionsListOutput: pageOutput(option),
+  VoucherCredentialpoolsCreateOutput: pool,
+  VoucherCredentialsGenerateOutput: job,
+  VoucherCredentialsImportOutput: importCreated,
+  VoucherCredentialpoolsCloseOutput: pool,
+  VoucherCredentialpoolsGetOutput: pool,
+  VoucherCredentialpoolsListOutput: pageOutput(pool),
+  VoucherCredentialsListOutput: pageOutput(credential),
+  VoucherCredentialsGetOutput: credential,
+  VoucherCredentialexportsCreateOutput: exportJob,
+  VoucherJobsGetOutput: job,
+  VoucherStockrequestsCreateOutput: stockRequest,
+  VoucherStockrequestsUpdateOutput: stockRequest,
+  VoucherStockrequestsSubmitOutput: stockRequest,
+  VoucherStockrequestsCancelOutput: stockRequest,
+  VoucherStockrequestsGetOutput: stockRequest,
+  VoucherStockrequestsListOutput: pageOutput(stockRequest),
+  VoucherStockrequestoptionsListOutput: pageOutput(stockOption),
+  VoucherIssueordersCreateOutput: issueOrder,
+  VoucherIssueordersUpdateOutput: issueOrder,
+  VoucherIssueordersSubmitOutput: issueOrder,
+  VoucherIssueordersCancelOutput: issueOrder,
+  VoucherIssueordersGetOutput: issueOrder,
+  VoucherIssueordersListOutput: pageOutput(issueOrder),
+  VoucherIssuebatchesRetryOutput: issueBatch,
+  VoucherIssuebatchesGetOutput: issueBatch,
+  VoucherIssueorderexportsCreateOutput: exportJob,
+  VoucherActionbatchesCreateOutput: actionBatch,
+  VoucherActionbatchesGetOutput: actionBatch,
+  VoucherActionbatchesListOutput: pageOutput(actionBatch),
+  VoucherActionbatchesRetryOutput: actionBatch,
+  VoucherActionexportsCreateOutput: exportJob,
+  VoucherSearchReadOutput: pageOutput(voucher),
+  VoucherActivationsSecretOutput: voucher,
+  VoucherActivationsNumbersecretOutput: voucher,
+  VoucherVouchersBindOutput: voucher,
+  VoucherVouchersUnbindOutput: voucher,
+  VoucherVouchersGetOutput: voucher,
+  VoucherVouchersGetbynumberOutput: voucher,
+  VoucherVouchersTimelineOutput: pageOutput(timeline),
+  VoucherRedemptionsQuoteOutput: strictObject({ voucher, amountMinor: unsigned, remainingMinor: unsigned, expiresAt: isoUtc }),
+  VoucherTenderholdsCreateOutput: hold,
+  VoucherTenderholdsConsumeOutput: redemption,
+  VoucherTenderholdsReleaseOutput: hold,
+  VoucherRedemptionsCreateOutput: redemption,
+  VoucherRefundsCreateOutput: refund,
+  VoucherRedemptionsGetOutput: redemption,
+  VoucherSearchfacetsReadOutput: facets,
+  VoucherSearchsnapshotsCreateOutput: snapshot,
+  VoucherSearchexportsCreateOutput: exportJob,
+  VoucherExportsGetOutput: exportJob,
 } as const;

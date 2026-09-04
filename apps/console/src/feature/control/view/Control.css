@@ -1,0 +1,29 @@
+.controlworkspace { min-width: 0; }
+.controlruntimepage { display: grid; gap: var(--sw-space-1-5); }
+.controlhero { position: relative; isolation: isolate; display: flex; min-height: 10.5rem; align-items: center; justify-content: space-between; gap: var(--sw-space-2); overflow: hidden; border: 1px solid var(--sw-border-strong); border-radius: var(--sw-radius-lg); background: radial-gradient(circle at 82% 125%, color-mix(in srgb, var(--sw-brand) 32%, transparent), transparent 16rem), linear-gradient(135deg, var(--sw-brand) 0%, var(--sw-brand-dark) 58%, var(--sw-brand-ink) 100%); padding: clamp(1.4rem, 3vw, 2.25rem); color: var(--sw-text-inverse); box-shadow: 0 10px 28px color-mix(in srgb, var(--sw-brand-ink) 15%, transparent); }
+.controlhero::after { position: absolute; z-index: -1; top: -5rem; right: 12%; width: 14rem; height: 14rem; border: 1px solid var(--sw-overlay-inverse-hairline); border-radius: 50%; box-shadow: 0 0 0 2.2rem color-mix(in srgb, var(--sw-text-inverse) 4%, transparent), 0 0 0 4.4rem color-mix(in srgb, var(--sw-text-inverse) 2%, transparent); content: ''; }
+.controlhero > div { display: grid; max-width: 48rem; gap: var(--sw-space-0-5); }
+.controlhero p, .controlhero h1, .controlhero span { margin: 0; }
+.controlhero p { color: color-mix(in srgb, var(--sw-text-inverse) 72%, transparent); font-size: var(--sw-font-size-caption); font-weight: 750; letter-spacing: .08em; }
+.controlhero h1 { font-size: clamp(1.7rem, 3vw, 2.35rem); letter-spacing: -.025em; }
+.controlhero strong { font-size: 1rem; }
+.controlhero span { color: color-mix(in srgb, var(--sw-text-inverse) 78%, transparent); font-size: var(--sw-font-size-caption); }
+.controlhero .shopbutton { flex: 0 0 auto; border-color: var(--sw-inverse-border); background: var(--sw-text-inverse); color: var(--sw-brand-ink); }
+.controlpanel { min-width: 0; }
+.runtimecontrol { display: grid; min-width: 0; gap: var(--sw-space-1-5); }
+.controlmetrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sw-space-1); }
+.controlmetrics article { display: grid; min-height: 7rem; align-content: center; border: 1px solid var(--sw-border); border-top: 3px solid var(--sw-success-strong); border-radius: var(--sw-radius-lg); background: var(--sw-surface); padding: var(--sw-space-1-5); box-shadow: var(--sw-shadow-card); }
+.controlmetrics article[data-healthy='false'] { border-top-color: var(--sw-warning-strong); }
+.controlmetrics span, .controlmetrics small { color: var(--sw-text-secondary); font-size: var(--sw-font-size-caption); }
+.controlmetrics strong { margin-block: var(--sw-space-0-5); color: var(--sw-brand-ink); font-size: clamp(1.45rem, 2vw, 2rem); }
+.controlwatermark { margin: 0; color: var(--sw-text-secondary); font-size: var(--sw-font-size-caption); text-align: right; }
+.controlpanel > footer { display: flex; align-items: center; justify-content: space-between; gap: var(--sw-space-1); margin-top: var(--sw-space-2); border-top: 1px solid var(--sw-border); padding-top: var(--sw-space-1-5); color: var(--sw-text-secondary); }
+.controlpanel > footer div { display: flex; gap: var(--sw-space-1); }
+.controlstate { display: inline-flex; min-height: 1.6rem; align-items: center; border-radius: 999px; background: var(--sw-warning-surface); color: var(--sw-warning-strong); padding: 0 var(--sw-space-1); font-size: var(--sw-font-size-caption); font-weight: 750; }
+.controlstate[data-healthy='true'] { background: var(--sw-success-surface); color: var(--sw-success-strong); }
+.controlassurance { display: grid; grid-template-columns: auto minmax(0, 38rem); justify-content: center; gap: var(--sw-space-2); margin: clamp(2rem, 10vh, 7rem) auto; border: 1px solid var(--sw-border); border-radius: var(--sw-radius-lg); background: linear-gradient(135deg, var(--sw-surface), var(--sw-surface-subtle)); padding: clamp(1.5rem, 5vw, 3.5rem); box-shadow: var(--sw-shadow-lg); }
+.controlassurance > span { display: grid; width: 3rem; height: 3rem; place-items: center; border-radius: 50%; background: var(--sw-brand-light); color: var(--sw-brand-dark); font-size: 1.5rem; }
+.controlassurance h1 { margin-block: var(--sw-space-0-5) var(--sw-space-1); }
+.controlassurance ul { display: grid; gap: var(--sw-space-0-5); margin-block: var(--sw-space-1-5); padding-left: 1.2rem; color: var(--sw-text-secondary); }
+@media (max-width: 840px) { .controlmetrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .controlassurance { grid-template-columns: 1fr; margin-top: var(--sw-space-2); } .controlpanel > footer { align-items: stretch; flex-direction: column; } .controlmetrics { grid-template-columns: 1fr; } .controlwatermark { text-align: left; } .controlhero { align-items: stretch; flex-direction: column; } .controlhero .shopbutton { align-self: flex-start; } }

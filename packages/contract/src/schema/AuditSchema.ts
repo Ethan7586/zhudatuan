@@ -1,4 +1,4 @@
-import { array, literal, null as nullSchema, strictObject, string, union } from 'zod/mini';
+import { array, literal, null as nullSchema, optional, strictObject, string, union } from 'zod/mini';
 import { ContractJsonValueSchema } from './JsonSchema';
 import { isoUtc, pageQuery, unsigned } from './Primitives';
 
@@ -9,16 +9,21 @@ const item = strictObject({
   scope_id: string(),
   actor_id: nullableText,
   actor_type: string(),
-  action: string(),
-  resource_type: string(),
-  resource_id: nullableText,
+  request_id: nullableText,
+  operation: string(),
+  subject_type: string(),
+  subject_id: nullableText,
+  object_type: string(),
+  object_id: nullableText,
+  outcome: literal(['succeeded', 'rejected', 'failed']),
+  reason: string(),
   before_hash: nullableText,
   after_hash: nullableText,
   evidence: ContractJsonValueSchema,
-  trace_id: string(),
+  trace_id: nullableText,
   previous_hash: nullableText,
   record_hash: string(),
   occurred_at: isoUtc,
 });
-export const AUDIT_QUERY_SCHEMAS = { AuditRecordsReadInput: strictObject(pageQuery) } as const;
-export const AUDIT_OUTPUT_SCHEMAS = { AuditRecordsReadOutput: strictObject({ items: array(item), count: unsigned, next: nullableText }) } as const;
+export const AUDIT_QUERY_SCHEMAS = { AuditRecordsReadInput: strictObject({ ...pageQuery, detail: optional(literal(['summary', 'evidence'])) }) } as const;
+export const AUDIT_OUTPUT_SCHEMAS = { AuditRecordsReadOutput: strictObject({ items: array(item), count: unsigned, next: nullableText, watermark: isoUtc, detail: literal(['summary', 'evidence']) }) } as const;

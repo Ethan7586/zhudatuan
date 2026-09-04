@@ -3,6 +3,8 @@ import { WECOM_PROVIDER_CONFIGURATION } from '@shop/config/server';
 import type { SecretStore } from '../../../../../foundation/infrastructure/SecretStore';
 import { providerCredential } from '../../../../../foundation/infrastructure/ProviderSecret';
 import { HttpClient } from '../../../../../foundation/http/HttpClient';
+import { Failure } from '../../../../../foundation/domain/Failure';
+import { invalidExternalResponse, readExternalJson } from '../../../../../foundation/http/ExternalResponse';
 import { Singleflight } from '../../../../../foundation/performance/Singleflight';
 import type { DirectoryConnection } from '../../../domain/model/DirectoryConnection';
 
@@ -49,8 +51,8 @@ export class WecomDirectoryClient {
         url.searchParams.set('corpid', tenant);
         url.searchParams.set('corpsecret', secret);
         const response = await this.http.send(url, { headers: { accept: 'application/json' } }, { mode: 'read', signal });
-        const body = (await response.json()) as Record<string, unknown>;
-        if (!response.ok || body.errcode !== 0 || typeof body.access_token !== 'string' || typeof body.expires_in !== 'number') throw new Error('DIRECTORY_PROVIDER_UNAVAILABLE');
+        const body = (await readExternalJson(response, 'DIRECTORY_PROVIDER_UNAVAILABLE', 'DIRECTORY_PROVIDER_RESPONSE_INVALID')) as Record<string, unknown>;
+        if (body.errcode !== 0 || typeof body.access_token !== 'string' || typeof body.expires_in !== 'number') throw new Failure('DIRECTORY_PROVIDER_UNAVAILABLE', 'provider', true);
         const value = Object.freeze({ value: body.access_token, expires: Date.now() + Math.max(60, body.expires_in - WECOM_PROVIDER_CONFIGURATION.tokenRefreshSkewSeconds) * 1000 });
         this.tokens.set(connection.id, value);
         return value.value;
@@ -62,7 +64,7 @@ export class WecomDirectoryClient {
     const url = new URL(WECOM_PROVIDER_CONFIGURATION.corp.departments);
     url.searchParams.set('access_token', token);
     const body = await this.request(url, signal);
-    if (!Array.isArray(body.department)) throw new Error('DIRECTORY_PROVIDER_RESPONSE_INVALID');
+    if (!Array.isArray(body.department)) throw invalidExternalResponse('DIRECTORY_PROVIDER_RESPONSE_INVALID');
     return body.department.map(record);
   }
   private async users(token: string, offset: number, signal: AbortSignal): Promise<readonly Record<string, unknown>[]> {
@@ -74,13 +76,14 @@ export class WecomDirectoryClient {
     url.searchParams.set('limit', String(WECOM_PROVIDER_CONFIGURATION.pageSize));
     const body = await this.request(url, signal);
     const source = Array.isArray(body.userlist) ? body.userlist : Array.isArray(body.user) ? body.user : null;
-    if (source === null) throw new Error('DIRECTORY_PROVIDER_RESPONSE_INVALID');
+    if (source === null) throw invalidExternalResponse('DIRECTORY_PROVIDER_RESPONSE_INVALID');
     return source.map(record).slice(0, WECOM_PROVIDER_CONFIGURATION.pageSize);
   }
   private async request(url: URL, signal: AbortSignal): Promise<Record<string, unknown>> {
     const response = await this.http.send(url, { headers: { accept: 'application/json' } }, { mode: 'read', signal });
-    const body = (await response.json()) as unknown;
-    if (!response.ok || body === null || typeof body !== 'object' || Array.isArray(body) || (body as Record<string, unknown>).errcode !== 0) throw new Error('DIRECTORY_PROVIDER_UNAVAILABLE');
+    const body = await readExternalJson(response, 'DIRECTORY_PROVIDER_UNAVAILABLE', 'DIRECTORY_PROVIDER_RESPONSE_INVALID');
+    if (body === null || typeof body !== 'object' || Array.isArray(body)) throw invalidExternalResponse('DIRECTORY_PROVIDER_RESPONSE_INVALID');
+    if ((body as Record<string, unknown>).errcode !== 0) throw new Failure('DIRECTORY_PROVIDER_UNAVAILABLE', 'provider', true);
     return body as Record<string, unknown>;
   }
 }
@@ -97,6 +100,6 @@ function decodeCursor(cursor: string | null): number {
   return (value as { offset: number }).offset;
 }
 function record(value: unknown): Record<string, unknown> {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('DIRECTORY_PROVIDER_RESPONSE_INVALID');
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw invalidExternalResponse('DIRECTORY_PROVIDER_RESPONSE_INVALID');
   return value as Record<string, unknown>;
 }

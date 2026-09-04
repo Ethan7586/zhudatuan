@@ -10,11 +10,14 @@ export interface BenefitLot {
 
 export interface BenefitAccount {
   readonly id: string;
-  readonly kind: 'welfare' | 'meal' | 'allowance';
+  readonly kind: BenefitAccountDto['kind'];
   readonly currency: string;
-  readonly status: 'active' | 'frozen' | 'closed';
+  readonly status: BenefitAccountDto['status'];
   readonly balanceMinor: number;
   readonly frozenMinor: number;
   readonly availableMinor: number;
   readonly lots: readonly BenefitLot[];
 }
+import type { OperationOutputFor } from '@shop/contract';
+
+type BenefitAccountDto = OperationOutputFor<'benefit.accounts.read'>['items'][number];

@@ -1,7 +1,8 @@
-import type { StorefrontSession } from '../../../entity/session';
-import { CartGateway } from '../infrastructure/CartGateway';
+import type { CartAccess, CartPort } from '../public/CartPort';
 
 export class ReadCart {
-  constructor(private readonly gateway: Pick<CartGateway, 'read'>) {}
-  execute(session: StorefrontSession, signal?: AbortSignal) { return this.gateway.read(session, signal); }
+  constructor(private readonly gateway: Pick<CartPort, 'read'>) {}
+  execute(access: CartAccess, signal?: AbortSignal) {
+    return this.gateway.read(access, signal);
+  }
 }

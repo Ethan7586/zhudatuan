@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { ReconcileDirectory } from '../../application/process/ReconcileDirectory';
 
 export class DirectoryReconcileJob implements JobProcessor {

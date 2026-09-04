@@ -1,8 +1,3 @@
-.consolelayout[data-route='applications'] {
-  --vi-route-accent: var(--sw-brand);
-  --vi-route-soft: var(--sw-brand-light);
-}
-
 .commerceworkspace {
   width: 100%;
   max-width: 1600px;
@@ -38,8 +33,8 @@
   height: 30px;
   flex: 0 0 auto;
   border-radius: 9px;
-  background: var(--vi-route-soft);
-  color: var(--vi-route-accent);
+  background: var(--sw-brand-light);
+  color: var(--sw-brand);
   font-size: 12px;
   font-weight: 800;
   place-items: center;
@@ -53,7 +48,7 @@
 .commerceownership strong,
 .commerceboundarybanner strong {
   display: block;
-  color: var(--vi-ink);
+  color: var(--sw-brand-ink);
   font-size: 12px;
   line-height: 19px;
 }
@@ -75,7 +70,7 @@
   border-radius: 9px;
   background: var(--sw-surface);
   padding: 0 11px;
-  color: var(--vi-brand);
+  color: var(--sw-brand);
   font: inherit;
   font-size: 10px;
   font-weight: 750;
@@ -95,7 +90,7 @@
   min-height: 106px;
   align-content: center;
   overflow: hidden;
-  border: 1px solid var(--vi-line);
+  border: 1px solid var(--sw-border);
   border-radius: 14px;
   background: var(--sw-surface);
   padding: 14px 16px;
@@ -113,16 +108,16 @@
 }
 
 .commercesummary article.is-success::before {
-  background: var(--vi-success);
+  background: var(--sw-success);
 }
 .commercesummary article.is-warning::before {
-  background: var(--vi-warning);
+  background: var(--sw-warning);
 }
 .commercesummary article.is-danger::before {
-  background: var(--vi-danger);
+  background: var(--sw-danger);
 }
 .commercesummary article.is-info::before {
-  background: var(--vi-brand);
+  background: var(--sw-brand);
 }
 .commercesummary span {
   color: var(--sw-muted);
@@ -131,7 +126,7 @@
 }
 .commercesummary strong {
   margin-top: 6px;
-  color: var(--vi-ink);
+  color: var(--sw-brand-ink);
   font-size: clamp(21px, 1.7vw, 27px);
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
@@ -191,7 +186,7 @@
   min-height: 66px;
   align-items: center;
   gap: 9px;
-  border: 1px solid var(--vi-line);
+  border: 1px solid var(--sw-border);
   border-radius: 11px;
   background: var(--sw-surface);
   padding: 10px 11px;
@@ -217,7 +212,7 @@
   flex: 0 0 auto;
   border-radius: 50%;
   background: var(--sw-brand-light);
-  color: var(--vi-brand);
+  color: var(--sw-brand);
   font-size: 10px;
   font-weight: 800;
   place-items: center;

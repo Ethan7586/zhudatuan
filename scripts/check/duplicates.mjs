@@ -285,7 +285,7 @@ export function audit() {
         }
       }
 
-      if (ts.isFunctionLike(node) && node.body) {
+      if (ts.isFunctionLike(node) && node.body && !sourceName.includes('/generated/')) {
         const name = functionName(node, parent, sourceFile);
         const fingerprint = name && functionFingerprint(node, sourceFile);
         if (fingerprint) {

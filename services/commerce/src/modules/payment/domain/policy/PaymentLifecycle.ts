@@ -1,4 +1,6 @@
-export type ProviderPaymentState = 'absent' | 'pending' | 'succeeded' | 'failed' | 'closed' | 'refunded';
+import type { ProviderPaymentState } from '@shop/contract';
+
+export type { ProviderPaymentState } from '@shop/contract';
 export type PaymentAction = 'settle' | 'requery' | 'close' | 'expire' | 'reset' | 'recover';
 
 export class PaymentLifecycle {

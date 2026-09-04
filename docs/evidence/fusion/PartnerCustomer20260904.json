@@ -1,0 +1,54 @@
+{
+  "point": "P01-partner-customer",
+  "verifiedAt": "2026-09-04T18:35:00+08:00",
+  "authorities": {
+    "checklist": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "ideal": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9",
+    "sourceFunctions": "bc1e7d0730b21ea97d2561fad82341feac4113179f53c26e8e641c8ff25c9b94",
+    "mvpWorkbook": "48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436"
+  },
+  "operations": [
+    "partner.customers.create",
+    "partner.customers.update",
+    "partner.customers.enable",
+    "partner.customers.disable",
+    "partner.customers.get",
+    "partner.customers.list",
+    "partner.customeroptions.list"
+  ],
+  "tables": [
+    "partner.customer",
+    "partner.customercontact",
+    "partner.customeragreement"
+  ],
+  "invariants": {
+    "customerMemberSeparated": true,
+    "tenantIdentifierUnique": true,
+    "piiEncrypted": true,
+    "searchHashesSeparated": true,
+    "contactOutputMasked": true,
+    "agreementHistoryRetained": true,
+    "effectiveAgreementRequiredForEnable": true,
+    "disabledHistoryRetained": true,
+    "voucherReadsThroughPort": true,
+    "scopeBoundQueries": true,
+    "optimisticConcurrency": true
+  },
+  "verification": {
+    "contractGeneration": "passed",
+    "contractTests": "25 passed",
+    "commerceTypecheck": "passed",
+    "partnerTests": "11 passed",
+    "errors": "passed",
+    "operations": "passed",
+    "boundaries": "passed",
+    "ownership": "passed",
+    "duplicates": "passed",
+    "pagination": "passed",
+    "performance": "passed",
+    "transactions": "passed",
+    "naming": "passed",
+    "migrationReplay": "new migration applied; final catalog assertion intentionally awaits 20260904031000_publish_ideal_contract.sql",
+    "calls": "partner operations connected; six generated client bindings await real miniapp, store and supplier entrypoints"
+  }
+}

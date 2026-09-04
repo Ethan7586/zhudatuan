@@ -1,0 +1,67 @@
+@layer feature {
+  .invitationproofform {
+    display: grid;
+    gap: var(--sw-space-1-5);
+  }
+
+  .invitationjourney {
+    display: grid;
+    gap: var(--sw-space-1);
+    padding: var(--sw-space-1-5);
+    border: var(--sw-border-width) solid var(--sw-border);
+    border-radius: var(--sw-radius-md);
+    background: var(--sw-surface-subtle);
+  }
+
+  .invitationjourney ol {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--sw-space-0-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .invitationjourney li {
+    display: grid;
+    justify-items: center;
+    gap: var(--sw-space-0-5);
+    color: var(--sw-muted);
+    text-align: center;
+    font-size: var(--sw-font-size-caption);
+  }
+
+  .invitationjourney li > span {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: var(--sw-border-width) solid var(--sw-border-strong);
+    border-radius: var(--sw-radius-full);
+    background: var(--sw-surface);
+  }
+
+  .invitationjourney li[data-state='current'],
+  .invitationjourney li[data-state='complete'] {
+    color: var(--sw-brand-dark);
+  }
+
+  .invitationjourney li[data-state='current'] > span,
+  .invitationjourney li[data-state='complete'] > span {
+    border-color: var(--sw-brand);
+    background: var(--sw-brand-light);
+  }
+
+  .invitationjourney p {
+    margin: 0;
+    color: var(--sw-text-secondary);
+    font-size: var(--sw-font-size-caption);
+    line-height: var(--sw-line-height-caption);
+  }
+}
+
+@media (max-width: 32rem) {
+  .invitationjourney ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

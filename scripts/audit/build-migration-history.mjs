@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 
 const directory = join(repositoryRoot, 'database', 'migrations');
-const head = '20260829054500';
+const head = '20260903116000';
 const files = (await readdir(directory)).filter((file) => /^\d{14}_[a-z0-9_]+\.sql$/.test(file) && file.slice(0, 14) <= head).sort();
 const migrations = await Promise.all(
   files.map(async (file) =>
@@ -16,7 +16,7 @@ const migrations = await Promise.all(
     })
   )
 );
-if (migrations.length !== 171 || migrations.at(-1)?.file.slice(0, 14) !== head) throw new Error('CANONICAL_MIGRATION_BASELINE_INVALID');
+if (migrations.length !== 316 || migrations.at(-1)?.file.slice(0, 14) !== head) throw new Error('CANONICAL_MIGRATION_BASELINE_INVALID');
 await writeFile(
   join(repositoryRoot, 'database', 'contracts', 'history.json'),
   `${JSON.stringify(

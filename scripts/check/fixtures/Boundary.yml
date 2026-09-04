@@ -14,7 +14,16 @@ cases:
   - { code: HANDLER_SQL_FORBIDDEN, positive: handler calls query, negative: handler calls repository }
   - { code: PUBLIC_DATABASE_TYPE_FORBIDDEN, positive: public imports pg, negative: public imports TransactionContext }
   - { code: PUBLIC_IMPLEMENTATION_FORBIDDEN, positive: public exports class, negative: public exports interface }
+  - { code: PUBLIC_INDEX_MISSING, positive: module has no public/index.ts, negative: module has public/index.ts }
+  - { code: PUBLIC_INDEX_TARGET_INVALID, positive: public/index.ts exports PgRepository, negative: public/index.ts exports sibling Port }
   - { code: PUBLIC_RESULT_ROW_FORBIDDEN, positive: public returns QueryResult, negative: public returns DTO }
+  - { code: DOMAIN_LAYER_DEPENDENCY_FORBIDDEN, positive: domain imports foundation/interface, negative: domain imports foundation/domain }
+  - { code: DOMAIN_MODULE_DEPENDENCY_FORBIDDEN, positive: cart domain imports catalog public, negative: cart application imports catalog public }
+  - { code: DOMAIN_TECHNOLOGY_DEPENDENCY_FORBIDDEN, positive: domain imports fastify, negative: domain imports node crypto }
+  - { code: DOMAIN_GENERATED_DTO_FORBIDDEN, positive: domain imports OperationInputFor, negative: domain imports OperationTarget }
+  - { code: APPLICATION_LAYER_DEPENDENCY_FORBIDDEN, positive: application imports foundation infrastructure, negative: application imports foundation application }
+  - { code: INTERFACE_LAYER_DEPENDENCY_FORBIDDEN, positive: interface job imports domain aggregate, negative: interface job imports application process }
+  - { code: INTERFACE_SQL_FORBIDDEN, positive: interface event executes update, negative: interface event maps payload }
   - { code: REPOSITORY_PATH_INVALID, positive: domain/repository, negative: application/port }
   - { code: REPOSITORY_OWNER_INVALID, positive: cart imports order Repository, negative: cart imports order public index }
   - { code: CROSS_SCHEMA_SQL_FORBIDDEN, positive: cart updates ordering, negative: cart updates cart }
@@ -22,7 +31,9 @@ cases:
   - { code: MODULE_DEPENDENCY_UNDECLARED, positive: cart imports catalog public port without declaring catalog, negative: cart imports declared catalog public port }
   - { code: TRANSACTION_CONTEXT_ESCAPE, positive: stores context on field, negative: passes context synchronously }
   - { code: RAW_TRANSACTION_IMPORT_FORBIDDEN, positive: handler imports PgTransactionAccess, negative: PgRepository imports PgTransactionAccess }
+  - { code: EXTERNAL_FAILURE_MAPPING_MISSING, positive: gateway imports HttpClient without Failure mapping, negative: gateway imports ExternalResponse }
   - { code: EXTERNAL_CALL_IN_TRANSACTION, positive: commit calls gateway, negative: finalize calls gateway }
   - { code: UNRESOLVED_IMPORT, positive: missing relative import, negative: resolvable relative import }
   - { code: MODULE_SYMLINK_ESCAPE, positive: symlink leaves module root, negative: real file stays in module root }
+  - { code: AMBIGUOUS_RESPONSIBILITY_NAME, positive: PaymentManager.ts, negative: CapturePayment.ts }
   - { code: PRODUCTION_NAME_INVALID, positive: payment_helper.ts, negative: PaymentPolicy.ts }

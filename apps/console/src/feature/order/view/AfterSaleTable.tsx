@@ -2,15 +2,28 @@ import { formatMinor } from '../../../shared/ui/Format';
 import { chineseReference } from '@shop/presentation';
 import { aftersaleLabel, aftersaleReasonLabel, aftersaleTone, formatOrderTime } from './OrderPresentation';
 import type { AfterSaleRecord } from '../model/AfterSale';
+import type { OrderAfterSaleDecision } from '../model/Order';
 
 export function AfterSaleTable({
   rows,
   activeOrder,
   onOpen,
+  canApprove,
+  canReject,
+  canReceiveReturn,
+  canInspectReturn,
+  onDecision,
+  onReturn,
 }: Readonly<{
   rows: readonly AfterSaleRecord[];
   activeOrder?: string;
   onOpen: (order: string) => void;
+  canApprove: boolean;
+  canReject: boolean;
+  canReceiveReturn: boolean;
+  canInspectReturn: boolean;
+  onDecision: (sale: AfterSaleRecord, decision: OrderAfterSaleDecision) => void;
+  onReturn: (sale: AfterSaleRecord, target: AfterSaleRecord['returns'][number], kind: 'receive' | 'inspect') => void;
 }>) {
   return (
     <div className="ordertablewrap">
@@ -30,7 +43,7 @@ export function AfterSaleTable({
         </thead>
         <tbody>
           {rows.map((sale) => (
-            <AfterSaleRow key={sale.id} sale={sale} active={activeOrder === sale.orderId} onOpen={() => onOpen(sale.orderId)} />
+            <AfterSaleRow key={sale.id} sale={sale} active={activeOrder === sale.orderId} onOpen={() => onOpen(sale.orderId)} canApprove={canApprove} canReject={canReject} canReceiveReturn={canReceiveReturn} canInspectReturn={canInspectReturn} onDecision={onDecision} onReturn={onReturn} />
           ))}
         </tbody>
       </table>
@@ -38,7 +51,9 @@ export function AfterSaleTable({
   );
 }
 
-function AfterSaleRow({ sale, active, onOpen }: Readonly<{ sale: AfterSaleRecord; active: boolean; onOpen: () => void }>) {
+function AfterSaleRow({ sale, active, onOpen, canApprove, canReject, canReceiveReturn, canInspectReturn, onDecision, onReturn }: Readonly<{ sale: AfterSaleRecord; active: boolean; onOpen: () => void; canApprove: boolean; canReject: boolean; canReceiveReturn: boolean; canInspectReturn: boolean; onDecision: (sale: AfterSaleRecord, decision: OrderAfterSaleDecision) => void; onReturn: (sale: AfterSaleRecord, target: AfterSaleRecord['returns'][number], kind: 'receive' | 'inspect') => void }>) {
+  const receivable = sale.returns.find((item) => item.state === 'authorized' || item.state === 'intransit');
+  const inspectable = sale.returns.find((item) => item.state === 'received');
   return (
     <tr
       className={active ? 'isactive' : undefined}
@@ -59,7 +74,10 @@ function AfterSaleRow({ sale, active, onOpen }: Readonly<{ sale: AfterSaleRecord
         </div>
       </td>
       <td>
-        <strong>{chineseReference('内部订单', sale.orderId)}</strong>
+        <div className="orderprimarycell">
+          <strong>{sale.orderNumber}</strong>
+          <span>{chineseReference('内部订单', sale.orderId)}</span>
+        </div>
       </td>
       <td>
         <div className="orderprimarycell">
@@ -87,6 +105,10 @@ function AfterSaleRow({ sale, active, onOpen }: Readonly<{ sale: AfterSaleRecord
           >
             查看
           </button>
+          {sale.state === 'reviewing' && canApprove ? <button type="button" onClick={(event) => { event.stopPropagation(); onDecision(sale, 'approve'); }}>批准</button> : null}
+          {sale.state === 'reviewing' && canReject ? <button type="button" onClick={(event) => { event.stopPropagation(); onDecision(sale, 'reject'); }}>拒绝</button> : null}
+          {receivable && canReceiveReturn ? <button type="button" onClick={(event) => { event.stopPropagation(); onReturn(sale, receivable, 'receive'); }}>登记退货收货</button> : null}
+          {inspectable && canInspectReturn ? <button type="button" onClick={(event) => { event.stopPropagation(); onReturn(sale, inspectable, 'inspect'); }}>登记质检</button> : null}
         </div>
       </td>
     </tr>

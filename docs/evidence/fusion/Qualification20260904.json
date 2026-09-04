@@ -1,0 +1,66 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.8 Qualification",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "operations": [
+    "qualification.center.read",
+    "qualification.decisions.preview",
+    "qualification.policies.manage",
+    "qualification.qualifications.publish",
+    "qualification.qualifications.revoke",
+    "qualification.evidenceuploads.create"
+  ],
+  "events": [
+    "qualification.changed",
+    "qualification.expired",
+    "qualification.revoked"
+  ],
+  "aggregates": [
+    "QualificationRule",
+    "QualificationCase",
+    "Evidence"
+  ],
+  "invariants": [
+    "only-a-reviewed-case-with-verified-immutable-evidence-and-a-future-expiry-can-be-published",
+    "evidence-is-verified-against-object-store-size-content-type-and-sha256-before-the-authoritative-case-lock",
+    "qualification-identity-scope-subject-applicability-evidence-and-review-fields-are-immutable-after-creation",
+    "case-state-changes-require-an-exact-expected-version-and-a-database-row-lock",
+    "case-version-increments-exactly-once-for-each-publish-revoke-or-expire-transition",
+    "preview-is-read-only-and-returns-policy-version-evidence-without-mutating-case-or-rule-state",
+    "checkout-and-after-sale-consumers-receive-minimal-read-only-decisions-with-policy-version",
+    "revocation-and-expiry-are-terminal-for-new-transactions-and-publish-domain-events-in-the-write-transaction",
+    "risk-consumes-qualification-events-idempotently-and-catalog-unpublishes-all-affected-listings-set-wise",
+    "catalog-listing-changes-and-their-outbox-events-share-one-transaction-and-use-two-bounded-set-based-statements",
+    "the-expiry-job-is-restartable-idempotent-and-protected-by-an-expected-version-fence",
+    "qualification-tables-are-scope-isolated-with-least-privilege-database-grants"
+  ],
+  "retainedLiExperience": [
+    "qualification-policy-list-create-edit-enable-disable-and-version-history",
+    "evidence-based-decision-simulator-with-no-write-side-effects",
+    "real-evidence-upload-direct-object-transfer-and-authoritative-publication-reread",
+    "business-language-subject-product-category-and-region-applicability",
+    "real-publish-and-revoke-actions-with-version-conflict-and-expiry-feedback",
+    "local-panel-errors-that-do-not-collapse-policy-case-or-preview-siblings"
+  ],
+  "verification": {
+    "authorityHashes": "matched",
+    "commerceTypecheck": "passed",
+    "consoleTypecheck": "passed",
+    "qualificationAndCatalogTests": "3 files and 9 tests passed",
+    "consoleQualificationTests": "route and gateway tests passed",
+    "contractTests": "6 files and 51 tests passed",
+    "sdkTests": "9 files and 33 tests passed",
+    "databaseMigrationInventory": "historical=171 repair=155 total=326",
+    "databaseReplay": "326 migrations applied; runtime operations=307 capabilities=307 events=124 jobs=48; hard-cut SQL contracts passed",
+    "eventsOperationsAndJobs": "passed with 0 violations",
+    "boundariesAndOwnership": "passed with 0 findings",
+    "transactionAndPerformance": "passed with 0 violations",
+    "duplicates": "passed with 0 violations",
+    "naming": "passed with 0 findings",
+    "globalGeneration": "Qualification artifacts are current; the global trace awaits real miniapp, store and supplier feature entrypoints",
+    "globalCallGraph": "Qualification has no broken call point; six generated client bindings remain deferred to the miniapp, store and supplier client work package"
+  }
+}

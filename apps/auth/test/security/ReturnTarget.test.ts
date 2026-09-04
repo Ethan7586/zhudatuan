@@ -1,20 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import { approvedDestination, authTargetSearch, readAuthRequest } from '../../src/shared/security/ReturnTarget';
+import { approvedDestination, authTargetSearch, readSessionRequest } from '../../src/shared/security/ReturnTarget';
 
 describe('return target security', () => {
-  const origins = { console: 'https://console.example.com', storefront: 'https://store.example.com' } as const;
+  const origins = {
+    console: 'https://console.example.com',
+    storefront: 'https://store.example.com',
+    miniapp: 'https://miniapp.example.com',
+    store: 'https://workbench.example.com',
+    supplier: 'https://supplier.example.com',
+  } as const;
 
   it('accepts a normalized relative return path and a single known target', () => {
-    expect(readAuthRequest({ search: '?target=console&returnpath=%2Forders%3Fstatus%3Dpaid' })).toEqual({ target: 'console', returnPath: '/orders?status=paid' });
+    expect(readSessionRequest({ search: '?target=console&returnpath=%2Forders%3Fstatus%3Dpaid' })).toEqual({ target: 'console', returnPath: '/orders?status=paid' });
+    expect(readSessionRequest({ search: '?target=miniapp' })).toEqual({ target: 'miniapp' });
+    expect(readSessionRequest({ search: '?target=store' })).toEqual({ target: 'store' });
+    expect(readSessionRequest({ search: '?target=supplier' })).toEqual({ target: 'supplier' });
   });
 
   it.each([
     '?target=console&target=storefront',
+    '?target=unknown',
     '?returnpath=https%3A%2F%2Fattacker.example',
     '?returnpath=%2F%2Fattacker.example',
     '?returnpath=%2Forders%5Cnext',
   ])('rejects duplicate or unsafe query input: %s', (search) => {
-    expect(() => readAuthRequest({ search })).toThrow('RETURN_TARGET_INVALID');
+    expect(() => readSessionRequest({ search })).toThrow('RETURN_TARGET_INVALID');
   });
 
   it('allows only HTTPS configured origins, with loopback HTTP limited to development', () => {

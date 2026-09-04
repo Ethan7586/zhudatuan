@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
+import { isConsumerTarget, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationReply } from '../../../../foundation/application/OperationHandler';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
-import { bodyRecord, keysetPage, queryPage, textField } from '../../../../foundation/interface/Validation';
+import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import { bodyRecord, keysetPage, queryPage, textField } from '../../../../foundation/application/Validation';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import { Conversation, type ConversationChannel } from '../../domain/model/Conversation';
@@ -14,25 +14,14 @@ import { AssignmentPolicy } from '../../domain/policy/AssignmentPolicy';
 import type { CaseRepository, PreparedSupportOperation } from '../../application/port/SupportRepositories';
 import type { SupportMessageTarget, TicketMessageStore } from '../../application/port/SupportPersistence';
 import { supportBoundary } from '../../application/service/SupportBoundary';
+import { SystemClock, type Clock } from '../../../../foundation/domain/Clock';
+import { Sla } from '../../domain/model/Sla';
 import type { ReadSupportContext } from '../../application/service/ReadSupportContext';
 import type { PgAgentRepository } from './PgAgentRepository';
 import type { PgMessageRepository } from './PgMessageRepository';
 import type { PgSupportConfigRepository } from './PgSupportConfigRepository';
 import type { PgSupportEventRepository } from './PgSupportEventRepository';
-
-interface PreparedCase {
-  readonly ticket: string;
-  readonly conversation: string;
-  readonly scope: string;
-  readonly subject: string;
-  readonly priority: TicketPriority;
-  readonly channel: ConversationChannel;
-  readonly order: string | null;
-  readonly referenceType: 'benefitlot' | null;
-  readonly reference: string | null;
-  readonly skill: string;
-  readonly message: null | Readonly<{ id: string; ciphertext: string; fingerprint: string; keyVersion: string }>;
-}
+import { supportBoolean as booleanValue, supportCaseDto as caseDto, supportChoice as choice, supportEventPayload as eventPayload, supportInstant as instant, supportMessageTargetSql as messageTargetSql, supportScalar as scalar, supportStringList as stringList, supportTicketDto as ticketDto, supportTicketPriority as ticketPriority, supportTicketState as ticketState, SUPPORT_CHANNELS as channels, SUPPORT_PRIORITIES as priorities, type PreparedSupportCase as PreparedCase, type SupportCaseReadRow as CaseReadRow, type SupportTargetRow as TargetRow, type SupportTicketOutputRow as TicketOutputRow } from './TicketRecord';
 
 export class PgTicketRepository implements CaseRepository, TicketMessageStore {
   private readonly transactions = new PgTransactionAccess();
@@ -44,7 +33,8 @@ export class PgTicketRepository implements CaseRepository, TicketMessageStore {
     private readonly agents?: PgAgentRepository,
     private readonly configuration?: PgSupportConfigRepository,
     private readonly messages?: PgMessageRepository,
-    private readonly events?: PgSupportEventRepository
+    private readonly events?: PgSupportEventRepository,
+    private readonly clock: Clock = SystemClock
   ) {}
 
   async prepareCase(input: OperationInputFor<'support.cases.create'>, execution: ExecutionContext<'support.cases.create'>): Promise<PreparedSupportOperation> {
@@ -76,17 +66,18 @@ export class PgTicketRepository implements CaseRepository, TicketMessageStore {
     const prepared = value as PreparedCase;
     const actor = await this.support!.actor(context, execution);
     if (prepared.scope !== actor.scope) throw new DomainError('SCOPE_DENIED');
-    if (prepared.order) await this.support!.assertOrder(context, prepared.order, actor.scope, actor.member, actor.target === 'storefront');
     const referenceEvidence = prepared.reference === null ? null : await this.support!.benefit(context, prepared.referenceType!, prepared.reference, actor.scope, actor.member);
-    const [sla, candidates, rules] = await Promise.all([
+    const [slaValues, candidates, rules] = await Promise.all([
       this.configuration!.resolveSla(context, actor.scope, prepared.priority),
       this.agents!.candidates(context, actor.scope),
       this.configuration!.assignmentRules(context, actor.scope),
     ]);
     const selected = this.policy.decide({ agents: candidates, rules, scope: actor.scope, skill: prepared.skill, priority: prepared.priority });
     const state: TicketState = selected ? 'assigned' : 'open';
+    const openedAt = this.clock.now();
+    const sla = new Sla(`resolved:${actor.scope}:${prepared.priority}`, actor.scope, prepared.priority, slaValues.response, slaValues.resolution, slaValues.reopen, 1);
+    const deadlines = sla.deadlines(openedAt);
     new Conversation(prepared.conversation, actor.scope, actor.member, prepared.channel, prepared.subject, prepared.order, prepared.message ? 1 : 0, 1);
-    new Ticket(prepared.ticket, prepared.conversation, actor.scope, prepared.priority, state, 1);
     const database = this.transactions.database(context);
     await database.query(
       `insert into support.conversation(id,scope_id,member_id,order_id,channel,subject,reference_type,reference_id,
@@ -97,13 +88,14 @@ export class PgTicketRepository implements CaseRepository, TicketMessageStore {
     const result = await database.query<TicketOutputRow>(
       `insert into support.ticket(id,scope_id,priority,state,assigned_agent_id,response_due_at,resolution_due_at,
       created_at,updated_at,version,conversation_id,skill)
-      values($1,$2,$3,$4,$5,clock_timestamp()+make_interval(secs=>$6),clock_timestamp()+make_interval(secs=>$7),
-      clock_timestamp(),clock_timestamp(),1,$8,$9)
+      values($1,$2,$3,$4,$5,$6,$7,$10,$10,1,$8,$9)
       returning id,scope_id,priority,state,assigned_agent_id,response_due_at,resolution_due_at,created_at,updated_at,version,conversation_id,skill`,
-      [prepared.ticket, actor.scope, prepared.priority, state, selected?.id ?? null, sla.response, sla.resolution, prepared.conversation, prepared.skill]
+      [prepared.ticket, actor.scope, prepared.priority, state, selected?.id ?? null, deadlines.response, deadlines.resolution, prepared.conversation, prepared.skill, openedAt.toISOString()]
     );
     const created = result.rows[0];
     if (!created) throw new Error('SUPPORT_TICKET_CREATE_FAILED');
+    new Ticket(prepared.ticket, prepared.conversation, actor.scope, prepared.priority, state, created.assigned_agent_id, null, Number(created.version));
+    if (prepared.order) await this.support!.collaborate(context, { order: prepared.order, supportCase: prepared.ticket, scopes: actor.scopes, member: actor.member, memberOnly: isConsumerTarget(actor.target), actor: actor.actor, trace: execution.traceId });
     if (selected) {
       await database.query(
         `insert into support.assignment(id,ticket_id,agent_id,reason,assigned_at,scope_id)
@@ -114,7 +106,7 @@ export class PgTicketRepository implements CaseRepository, TicketMessageStore {
       await this.events!.append(context, { type: 'support.ticket.assigned', aggregateType: 'ticket', aggregate: prepared.ticket, scope: actor.scope, trace: execution.traceId, payload: eventPayload(prepared.ticket, prepared.conversation, actor.member, { agentId: selected.id, version: 1 }) });
     }
     if (prepared.message) {
-      await this.messages!.append(context, { scope: actor.scope, conversation: prepared.conversation, authorType: actor.target === 'storefront' ? 'member' : 'agent', authorId: actor.actor, sequence: 1, message: { ...prepared.message, clientMessageId: prepared.message.id, body: '' }, attachments: [] });
+      await this.messages!.append(context, { scope: actor.scope, conversation: prepared.conversation, authorType: isConsumerTarget(actor.target) ? 'member' : 'agent', authorId: actor.actor, kind: 'text', visibility: 'external', sequence: 1, message: { ...prepared.message, clientMessageId: prepared.message.id, body: '' }, attachments: [] });
       await this.events!.append(context, { type: 'support.message.sent', aggregateType: 'conversation', aggregate: prepared.conversation, scope: actor.scope, trace: execution.traceId, payload: eventPayload(prepared.ticket, prepared.conversation, actor.member, { messageId: prepared.message.id, sequence: 1, version: 1 }) });
     }
     await this.events!.history(context, prepared.ticket, actor.scope, 'opened', actor.actor, { assigned: selected?.id ?? null, priority: prepared.priority, skill: prepared.skill });
@@ -157,8 +149,9 @@ export class PgTicketRepository implements CaseRepository, TicketMessageStore {
       and ($12::text is null or ticket.id=$12 or conversation.member_id=$12 or conversation.subject ilike '%'||$12||'%' or conversation.order_id=$12)
       and ($13::timestamptz is null or ticket.updated_at>=$13) and ($14::timestamptz is null or ticket.updated_at<=$14)
       and ($15::timestamptz is null or (ticket.updated_at,ticket.id)<($15::timestamptz,$16))
-      order by ticket.updated_at desc,ticket.id desc limit $17`,
-      [actor.scopes, actor.target === 'storefront', actor.membership, actor.member, statesFilter, prioritiesFilter, skill, agentFilter, ownership, currentAgent, unread, keyword, scalar(query.updatedAfter), scalar(query.updatedBefore), page.sort, page.id, page.fetch]
+      and ($17::text is null or conversation.order_id=$17)
+      order by ticket.updated_at desc,ticket.id desc limit $18`,
+      [actor.scopes, isConsumerTarget(actor.target), actor.membership, actor.member, statesFilter, prioritiesFilter, skill, agentFilter, ownership, currentAgent, unread, keyword, scalar(query.updatedAfter), scalar(query.updatedBefore), page.sort, page.id, scalar(query.orderId), page.fetch]
     );
     const rows = result.rows.map(caseDto);
     const paged = keysetPage(rows, page, 'updated_at', 'id');
@@ -180,7 +173,7 @@ export class PgTicketRepository implements CaseRepository, TicketMessageStore {
   async readHistory(context: ReadTransactionContext, input: OperationInputFor<'support.history.read'>, execution: ExecutionContext<'support.history.read'>): Promise<OperationReply<OperationOutputFor<'support.history.read'>>> {
     this.dependencies();
     const actor = await this.support!.actor(context, execution);
-    await this.readMessageTarget(context, input.path.caseid, actor.scopes, actor.member, actor.target === 'storefront');
+    await this.readMessageTarget(context, input.path.caseid, actor.scopes, actor.member, isConsumerTarget(actor.target));
     const page = queryPage(input);
     const result = await this.transactions.database(context).query<{ sequence: number; cursor_id: string; kind: string; actor_id: string; evidence: unknown; occurred_at: string }>(
       `select sequence,sequence::text cursor_id,kind,actor_id,evidence,occurred_at from support.history
@@ -219,13 +212,19 @@ export class PgTicketRepository implements CaseRepository, TicketMessageStore {
     const current = await this.lockMessageTarget(context, id, actor.scopes, actor.member, false);
     if (current.ticket.version !== execution.expectedVersion) throw new DomainError('VERSION_CONFLICT');
     const target = kind === 'updated' ? (body.state === undefined ? current.ticket.state : ticketState(body.state)) : kind === 'closed' ? 'closed' : 'open';
-    if (target !== current.ticket.state) current.ticket.requireTransition(target);
+    const changedAt = this.clock.now();
+    let reopenUntil = current.ticket.reopenUntil;
+    if (target !== current.ticket.state) current.ticket.requireTransition(target, changedAt);
+    if (target === 'closed' && current.ticket.state !== 'closed') {
+      const values = await this.configuration!.resolveSla(context, current.ticket.scope, current.ticket.priority);
+      reopenUntil = new Sla(`resolved:${current.ticket.scope}:${current.ticket.priority}`, current.ticket.scope, current.ticket.priority, values.response, values.resolution, values.reopen, 1).reopenUntil(changedAt);
+    } else if (target === 'open') reopenUntil = null;
     const priority = body.priority === undefined ? current.ticket.priority : ticketPriority(body.priority);
     const result = await this.transactions.database(context).query<TicketOutputRow>(
-      `update support.ticket set priority=$3,state=$4,updated_at=clock_timestamp(),version=version+1
+      `update support.ticket set priority=$3,state=$4,reopen_until=$6,updated_at=$7,version=version+1
       where id=$1 and scope_id=$2 and version=$5 returning id,scope_id,priority,state,assigned_agent_id,response_due_at,
       resolution_due_at,created_at,updated_at,version,conversation_id,skill`,
-      [id, current.ticket.scope, priority, target, execution.expectedVersion]
+      [id, current.ticket.scope, priority, target, execution.expectedVersion, reopenUntil, changedAt.toISOString()]
     );
     const updated = result.rows[0];
     if (!updated) throw new DomainError('VERSION_CONFLICT');
@@ -243,35 +242,10 @@ export class PgTicketRepository implements CaseRepository, TicketMessageStore {
     );
     const row = result.rows[0];
     if (!row) throw new DomainError('SUPPORT_TICKET_NOT_WRITABLE');
-    return Object.freeze({ ticket: new Ticket(row.id, row.conversation_id, row.scope_id, row.priority, row.state, Number(row.version)), conversation: row.conversation_id, conversationVersion: Number(row.conversation_version), member: row.member_id, assignedAgent: row.assigned_agent_id });
+    return Object.freeze({ ticket: new Ticket(row.id, row.conversation_id, row.scope_id, row.priority, row.state, row.assigned_agent_id, row.reopen_until === null ? null : instant(row.reopen_until), Number(row.version)), conversation: row.conversation_id, conversationVersion: Number(row.conversation_version), member: row.member_id, assignedAgent: row.assigned_agent_id });
   }
 
   private dependencies(): void {
     if (!this.support || !this.agents || !this.configuration || !this.messages || !this.events) throw new Error('SUPPORT_TICKET_DEPENDENCIES_REQUIRED');
   }
 }
-
-interface TargetRow { readonly id: string; readonly conversation_id: string; readonly scope_id: string; readonly priority: TicketPriority; readonly state: TicketState; readonly version: number; readonly assigned_agent_id: string | null; readonly member_id: string | null; readonly conversation_version: number }
-interface TicketOutputRow { readonly id: string; readonly scope_id: string; readonly priority: TicketPriority; readonly state: TicketState; readonly assigned_agent_id: string | null; readonly response_due_at: string; readonly resolution_due_at: string; readonly created_at: string; readonly updated_at: string; readonly version: number; readonly conversation_id: string; readonly skill: string }
-interface CaseReadRow extends TicketOutputRow { readonly member_id: string | null; readonly order_id: string | null; readonly channel: ConversationChannel; readonly subject: string; readonly reference_type: string | null; readonly reference_id: string | null; readonly unread_count: number; readonly sla_risk: 'normal' | 'risk' | 'overdue' }
-
-function messageTargetSql(lock: boolean): string {
-  return `select ticket.id,ticket.conversation_id,ticket.scope_id,ticket.priority,ticket.state,ticket.version,
-  ticket.assigned_agent_id,conversation.member_id,conversation.version conversation_version
-  from support.ticket ticket join support.conversation conversation on conversation.id=ticket.conversation_id
-  where ticket.id=$1 and ticket.scope_id=any($2::text[]) and (not $4::boolean or conversation.member_id=$3)
-  ${lock ? 'for update of ticket,conversation' : ''}`;
-}
-function ticketDto(row: TicketOutputRow) { return { ...row, version: Number(row.version), response_due_at: instant(row.response_due_at), resolution_due_at: instant(row.resolution_due_at), created_at: instant(row.created_at), updated_at: instant(row.updated_at) }; }
-function caseDto(row: CaseReadRow) { return { ...ticketDto(row), member_id: row.member_id, order_id: row.order_id, channel: row.channel, subject: row.subject, reference_type: row.reference_type, reference_id: row.reference_id, unread_count: Number(row.unread_count), sla_risk: row.sla_risk }; }
-function instant(value: string | Date): string { return new Date(value).toISOString(); }
-function choice(value: unknown, values: readonly string[], code: string): string { if (typeof value !== 'string' || !values.includes(value)) throw new Error(code); return value; }
-function ticketState(value: unknown): TicketState { return choice(value, states, 'SUPPORT_STATE_INVALID') as TicketState; }
-function ticketPriority(value: unknown): TicketPriority { return choice(value, priorities, 'SUPPORT_PRIORITY_INVALID') as TicketPriority; }
-function scalar(value: unknown): string | null { return typeof value === 'string' && value.length > 0 ? value : null; }
-function stringList(value: unknown): string[] | null { if (value === undefined) return null; const values = Array.isArray(value) ? value : [value]; return values.map(String); }
-function booleanValue(value: unknown): boolean | null { if (value === undefined) return null; if (value === true || value === 'true') return true; if (value === false || value === 'false') return false; throw new DomainError('VALIDATION_FAILED'); }
-function eventPayload(ticketId: string, conversationId: string, memberId: string | null, extra: Readonly<Record<string, unknown>>) { return { ticketId, conversationId, memberId, ...extra }; }
-const priorities = ['low', 'normal', 'high', 'urgent'] as const;
-const states = ['open', 'assigned', 'waiting', 'resolved', 'closed'] as const;
-const channels = ['inapp', 'wechat', 'email', 'sms'] as const;

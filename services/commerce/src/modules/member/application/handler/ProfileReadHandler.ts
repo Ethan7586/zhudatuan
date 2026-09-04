@@ -27,6 +27,10 @@ export class ProfileReadHandler implements OperationHandler<'member.profile.read
         employee_no: membership.employee,
         joined_at: membership.joinedAt,
         access_version: membership.accessVersion,
+        locale: profile.locale,
+        timezone: profile.timezone,
+        marketing_allowed: profile.marketingAllowed,
+        preference_version: profile.preferenceVersion,
       } as OperationOutputFor<'member.profile.read'>,
     };
   }

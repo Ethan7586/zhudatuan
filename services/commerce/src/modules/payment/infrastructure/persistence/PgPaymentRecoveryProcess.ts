@@ -4,7 +4,7 @@ import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/datab
 import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
 import type { PaymentGateway } from '../../application/port/PaymentGateway';
 import { PaymentReference } from '../../domain/model/PaymentReference';
-import { PaymentSettlement, type PaymentHoldReleaser } from './PaymentSettlement';
+import { PaymentSettlement } from './PaymentSettlement';
 import { RefundPlanner } from '../../infrastructure/persistence/RefundPlanner';
 import { RefundSettlement } from './RefundSettlement';
 import { PaymentLifecycle } from '../../domain/policy/PaymentLifecycle';
@@ -20,18 +20,9 @@ import {
   type IntentTarget,
   type ProviderObservation,
 } from './PaymentRecoveryPersistence';
-import type { PaymentJobOrderPort, PaymentOrderPort } from '../../../order/public/index';
-import type { ProviderOperationPort } from '../../../channel/public/index';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { PaymentRecoveryExecution, PaymentRecoveryProcess } from '../../application/port/PaymentRecoveryProcess';
-
-export interface PaymentRecoveryDependencies {
-  readonly settlement: PaymentSettlement;
-  readonly refundSettlement: RefundSettlement;
-  readonly orders: PaymentJobOrderPort & PaymentOrderPort;
-  readonly operations: Pick<ProviderOperationPort, 'record' | 'update'>;
-  readonly holds: Pick<PaymentHoldReleaser, 'release'>;
-}
+import { paymentProviderExecution, paymentRecoveryOptions as options, type PaymentRecoveryDependencies } from './PaymentRecoveryContext';
 export class PgPaymentRecoveryProcess implements PaymentRecoveryProcess {
   private readonly refunds: RefundPlanner;
   private readonly lifecycle = new PaymentLifecycle();
@@ -63,7 +54,7 @@ export class PgPaymentRecoveryProcess implements PaymentRecoveryProcess {
       return Object.freeze({ ...payment, order_number: order.number, scope_id: order.scope, mall_id: order.mall, member_id: order.member }) as IntentTarget;
     });
     if (!selected) return;
-    const observed = await this.gateway.query(PaymentReference.payment(selected.order_number).text, paymentApplication(selected));
+    const observed = await this.gateway.query(PaymentReference.payment(selected.order_number).text, paymentApplication(selected), paymentProviderExecution(execution));
     await this.write(execution, (_context, database) => recordProviderObservation(database, selected, observed, 'query'));
     assertProviderAmount(selected, observed);
     const action = this.lifecycle.afterQuery(observed.state, intentExpired(selected));
@@ -80,11 +71,11 @@ export class PgPaymentRecoveryProcess implements PaymentRecoveryProcess {
   private async closeExpired(selected: IntentTarget, execution: PaymentRecoveryExecution): Promise<void> {
     let closeFailure: unknown;
     try {
-      await this.gateway.close(PaymentReference.payment(selected.order_number).text, paymentApplication(selected));
+      await this.gateway.close(PaymentReference.payment(selected.order_number).text, paymentApplication(selected), paymentProviderExecution(execution));
     } catch (cause) {
       closeFailure = cause;
     }
-    const observed = await this.gateway.query(PaymentReference.payment(selected.order_number).text, paymentApplication(selected));
+    const observed = await this.gateway.query(PaymentReference.payment(selected.order_number).text, paymentApplication(selected), paymentProviderExecution(execution));
     await this.write(execution, (_context, database) => recordProviderObservation(database, selected, observed, 'close'));
     assertProviderAmount(selected, observed);
     const action = this.lifecycle.afterClose(observed.state);
@@ -169,7 +160,7 @@ export class PgPaymentRecoveryProcess implements PaymentRecoveryProcess {
     await database.query(
       `insert into payment.recoverycase(id,scope_id,order_id,resource_type,resource_id,severity,state,error_code,evidence,
       occurrence_count,opened_at) values($1,$2,$3,'intent',$4,'critical','open','PAYMENT_LATE_SUCCESS',$5::jsonb,1,clock_timestamp())
-      on conflict(resource_type,resource_id) do update set occurrence_count=payment.recoverycase.occurrence_count+1,evidence=excluded.evidence`,
+      on conflict(resource_type,resource_id) do update set occurrence_count=payment.recoverycase.occurrence_count+1,evidence=excluded.evidence,version=payment.recoverycase.version+1`,
       [`recovery:late:${selected.intent}`, selected.scope_id, selected.order_id, selected.intent, JSON.stringify(evidence)]
     );
     const runtime = new PgRuntimeWriter(database);
@@ -254,6 +245,4 @@ export class PgPaymentRecoveryProcess implements PaymentRecoveryProcess {
   }
 }
 
-function options(execution: PaymentRecoveryExecution) {
-  return { tenant: execution.scope, membership: '', scope: execution.scope, actor: 'job:payment', trace: execution.trace, operation: 'job.payment', workload: 'jobs' as const, signal: execution.signal, deadline: execution.deadline };
-}
+export type { PaymentRecoveryDependencies } from './PaymentRecoveryContext';

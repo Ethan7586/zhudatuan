@@ -10,6 +10,7 @@ import type { OperationHandler } from './OperationHandler';
 describe('OperationExecutor', () => {
   it('executes write concerns in one transaction and returns the typed reply', async () => {
     const order: string[] = [];
+    const commands: unknown[] = [];
     const transactions = fakeTransactions(order);
     const idempotency: IdempotencyRepository = {
       claim: async () => {
@@ -22,8 +23,9 @@ describe('OperationExecutor', () => {
       },
     };
     const audit = new AuditDecorator({
-      append: async () => {
-        order.push('audit');
+      append: async (context, command) => {
+        order.push(`audit:${context.id}`);
+        commands.push(command);
       },
     });
     const executor = new OperationExecutor(
@@ -36,8 +38,8 @@ describe('OperationExecutor', () => {
       },
       audit,
       {
-        append: async () => {
-          order.push('outbox');
+        append: async (context) => {
+          order.push(`outbox:${context.id}`);
         },
       }
     );
@@ -46,14 +48,15 @@ describe('OperationExecutor', () => {
       mode: 'write',
       execute: async () => {
         order.push('handler');
-        return { status: 201, body: {} as OperationOutputFor<'observability.clienterrors.create'> };
+        return { status: 201, body: {} as OperationOutputFor<'observability.clienterrors.create'>, events: [{} as never] };
       },
     };
 
     const reply = await executor.execute(handler, {} as OperationInputFor<'observability.clienterrors.create'>, execution('observability.clienterrors.create'));
 
     expect(reply.status).toBe(201);
-    expect(order).toEqual(['transaction.write', 'idempotency.claim', 'makerchecker', 'handler', 'audit', 'idempotency.complete']);
+    expect(order).toEqual(['transaction.write', 'idempotency.claim', 'makerchecker', 'handler', 'audit:transaction:write', 'outbox:transaction:write', 'idempotency.complete']);
+    expect(commands[0]).toMatchObject({ request: 'request:1', operation: 'observability.clienterrors.create', outcome: 'succeeded', reason: 'http:201' });
   });
 
   it('returns a completed idempotency response without invoking the handler', async () => {
@@ -194,6 +197,50 @@ describe('OperationExecutor', () => {
 
     expect(reads).toEqual(['public:identity:public']);
     expect(writes).toEqual(['mall-zhudatuan', 'mall-zhudatuan']);
+  });
+
+  it('routes an optional anonymous storefront read into its server-resolved mall scope', async () => {
+    const scopes: string[] = [];
+    const transactions: TransactionManager = {
+      read: async <T>(options: TransactionOptions, work: Parameters<TransactionManager['read']>[1]) => {
+        scopes.push(options.scope);
+        return work(context('read', options)) as Promise<T>;
+      },
+      write: async () => {
+        throw new Error('WRITE_NOT_EXPECTED');
+      },
+    };
+    const executor = new OperationExecutor(
+      transactions,
+      { claim: async () => ({ state: 'started' }), checkpoint: async () => undefined, complete: async () => undefined },
+      { verify: async () => undefined },
+      new AuditDecorator({ append: async () => undefined }),
+      { append: async () => undefined }
+    );
+    const reply = { status: 200, body: { items: [], nextCursor: null, version: '1', asOf: '2026-09-01T00:00:00.000Z' } as OperationOutputFor<'storefront.catalog.read'> };
+    const handler = {
+      operation: 'storefront.catalog.read' as const,
+      mode: 'read' as const,
+      load: async () => Object.freeze({ mall: 'mall-zhudatuan' }),
+      prepare: async (_input: unknown, _context: unknown, loaded: Readonly<{ mall: string }>) => loaded,
+      transactionScope: (_input: unknown, prepared: Readonly<{ mall: string }>) => prepared.mall,
+      commit: async () => ({ checkpoint: reply, response: reply }),
+      finalize: async () => reply,
+    };
+
+    await executor.execute(handler, {} as OperationInputFor<'storefront.catalog.read'>, {
+      requestId: 'request:catalog',
+      traceId: 'trace:catalog',
+      deadline: Date.now() + 10_000,
+      signal: new AbortController().signal,
+      operation: 'storefront.catalog.read',
+      headers: { 'x-storefront-handle': 'zhudatuan-local' },
+      rawBody: '',
+      security: { kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:catalog' },
+      publicActor: 'anonymous:storefront',
+    });
+
+    expect(scopes).toEqual(['public:navigation:public', 'mall-zhudatuan']);
   });
 
   it('routes a prepared preauth completion into its server-resolved scope', async () => {

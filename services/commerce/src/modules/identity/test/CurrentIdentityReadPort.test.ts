@@ -41,6 +41,7 @@ function session(): OperationSecurityContext {
         active: true,
         accessVersion: 7,
       },
+      roles: [],
       organization: 'mall:one',
       scope: { kind: 'mall', id: 'mall:one', path: [] },
       capabilities: new Set(),

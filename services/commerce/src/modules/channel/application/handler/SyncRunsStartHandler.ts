@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { SyncRunRepository } from '../port/SyncRunRepository';
 import type { SyncKind } from '../../domain/model/SyncRun';
@@ -16,11 +16,8 @@ export class SyncRunsStartHandler implements OperationHandler<'channel.syncruns.
     const access = requireSession(context.security);
     const body = bodyRecord(input);
     const kind = syncKind(textField(body, 'kind', 64));
-    const parameters =
-      kind === 'statement'
-        ? Object.freeze({ start: date(body.start), end: date(body.end), timezone: required(body.timezone, 'STATEMENT_TIMEZONE_REQUIRED'), partner: required(body.partner, 'STATEMENT_PARTNER_REQUIRED') })
-        : Object.freeze({});
-    const result = await this.runs.start(context.transaction, { scope: access.scope.id, connection: textField(body, 'connection'), kind, cursor: body.cursor ?? null, parameters });
+    const parameters = kind === 'statement' ? statementParameters(body) : Object.freeze({});
+    const result = await this.runs.start(context.transaction, { scope: access.scope.id, connection: textField(body, 'connection'), kind, cursor: optional(body.cursor, 'SYNC_CURSOR_INVALID', 2_048), parameters });
     return { status: 202, body: result as OperationOutputFor<'channel.syncruns.start'> };
   }
 }
@@ -30,11 +27,30 @@ function syncKind(value: string): SyncKind {
   return value as SyncKind;
 }
 function required(value: unknown, code: string): string {
-  if (typeof value !== 'string' || !value.trim()) throw new Error(code);
+  if (typeof value !== 'string' || !value.trim() || value.trim().length > 128) throw new Error(code);
   return value.trim();
 }
 function date(value: unknown): string {
   const text = String(value ?? '');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) throw new Error('STATEMENT_DATE_INVALID');
   return text;
+}
+
+function statementParameters(body: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
+  const start = date(body.start);
+  const end = date(body.end);
+  if (start > end) throw new Error('STATEMENT_PERIOD_INVALID');
+  const timezone = required(body.timezone, 'STATEMENT_TIMEZONE_REQUIRED');
+  try {
+    new Intl.DateTimeFormat('zh-CN', { timeZone: timezone }).format();
+  } catch {
+    throw new Error('STATEMENT_TIMEZONE_INVALID');
+  }
+  return Object.freeze({ start, end, timezone, partner: required(body.partner, 'STATEMENT_PARTNER_REQUIRED') });
+}
+
+function optional(value: unknown, code: string, maximum: number): string | null {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value !== 'string' || !value.trim() || value.trim().length > maximum) throw new Error(code);
+  return value.trim();
 }

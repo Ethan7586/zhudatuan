@@ -1,9 +1,10 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { DistributorRepository } from '../port/DistributorRepository';
+import type { BindingState } from '../../domain/model/Distributor';
 
 const states = new Set(['draft', 'active', 'expired', 'terminated']);
 
@@ -14,7 +15,7 @@ export class BindingsManageHandler implements OperationHandler<'channel.bindings
   async execute(input: OperationInputFor<'channel.bindings.manage'>, context: WriteHandlerContext<'channel.bindings.manage'>): Promise<OperationReply<OperationOutputFor<'channel.bindings.manage'>>> {
     const access = requireSession(context.security);
     const body = bodyRecord(input);
-    const state = textField(body, 'state', 64);
+    const state = textField(body, 'state', 64) as BindingState;
     if (!states.has(state)) throw new Error('STATE_INVALID');
     const result = await this.distributors.manageBinding(context.transaction, {
       id: input.path.bindingid,

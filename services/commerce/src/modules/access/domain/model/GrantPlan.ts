@@ -25,7 +25,7 @@ export interface GrantScope {
 
 export class GrantPlan {
   constructor(
-    readonly target: 'console' | 'storefront',
+    readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier',
     readonly organization: string,
     readonly membership: string | null,
     readonly principal: string | null,
@@ -36,6 +36,19 @@ export class GrantPlan {
     readonly policy: string | null,
     readonly termsHash: string | null
   ) {}
+
+  impact(): Readonly<{ people: number; scopes: number; allows: number; denies: number }> {
+    const effective = new Map<string, 'allow' | 'deny'>();
+    for (const permission of this.permissions) {
+      if (permission.effect === 'deny' || !effective.has(permission.code)) effective.set(permission.code, permission.effect);
+    }
+    return Object.freeze({
+      people: this.membership === null ? 0 : 1,
+      scopes: new Set(this.scopes.map((scope) => `${scope.kind}:${scope.scope}`)).size,
+      allows: [...effective.values()].filter((effect) => effect === 'allow').length,
+      denies: [...effective.values()].filter((effect) => effect === 'deny').length,
+    });
+  }
 
   digest(): string {
     const value = {

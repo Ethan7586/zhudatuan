@@ -1,7 +1,8 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { keysetPage, queryPage } from '../../../../foundation/interface/Validation';
+import { DomainError } from '../../../../foundation/domain/DomainError';
+import { keysetPage, queryPage } from '../../../../foundation/application/Validation';
 import { organizationScope } from '../../../../foundation/security/OrganizationScope';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { OrganizationHierarchyPort } from '../../../organization/public/HierarchyPort';
@@ -16,9 +17,15 @@ export class PartnersReadHandler implements OperationHandler<'partner.partners.r
   async execute(input: OperationInputFor<'partner.partners.read'>, context: HandlerContext<'partner.partners.read'>): Promise<OperationReply<OperationOutputFor<'partner.partners.read'>>> {
     const access = requireSession(context.security);
     const page = queryPage(input);
+    const kind = partnerKind(input.query?.kind);
     const scopes = await this.organizations.descendants(context.transaction, organizationScope(access.scope));
-    const rows = await this.partners.partners(context.transaction, { scopes, own: access.scope.id, sort: page.sort, id: page.id, fetch: page.fetch });
+    const rows = await this.partners.partners(context.transaction, { scopes, own: access.scope.id, kind, sort: page.sort, id: page.id, fetch: page.fetch });
     const result = keysetPage(rows, page, 'updated_at');
     return { status: 200, body: { ...result, items: [...result.items] } as OperationOutputFor<'partner.partners.read'> };
   }
+}
+function partnerKind(value: unknown): 'supplier' | 'brand' | 'store' | null {
+  if (value === undefined || value === null) return null;
+  if (value === 'supplier' || value === 'brand' || value === 'store') return value;
+  throw new DomainError('VALIDATION_FAILED');
 }

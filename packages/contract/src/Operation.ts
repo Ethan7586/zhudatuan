@@ -1,11 +1,17 @@
+import { OPERATION_TARGETS, type OperationTarget } from './Surface';
+
 export const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
 export type HttpMethod = (typeof HTTP_METHODS)[number];
 export const OPERATION_AUDIENCES = ['public', 'console', 'storefront', 'system', 'webhook'] as const;
 export type OperationAudience = (typeof OPERATION_AUDIENCES)[number];
-export const OPERATION_TARGETS = ['console', 'storefront'] as const;
-export type OperationTarget = (typeof OPERATION_TARGETS)[number];
+export { OPERATION_TARGETS } from './Surface';
+export type { OperationTarget } from './Surface';
 export type OperationPath = `/api/v1/${string}` | `/health/${string}`;
 export type OperationRisk = 'low' | 'elevated' | 'high' | 'critical';
+export type OperationConcurrencyPolicy = 'none' | 'optimistic' | 'serialized';
+export type OperationExecutionMode = 'sync' | 'async' | 'stream';
+export type OperationAuditLevel = 'none' | 'basic' | 'detailed' | 'critical';
+export type OperationLifecycle = 'active' | 'deprecated';
 export const OPERATION_ASSURANCES = ['anonymous', 'optional', 'preauth', 'session', 'mfa', 'stepup', 'service', 'signed'] as const;
 export type OperationAssurance = (typeof OPERATION_ASSURANCES)[number];
 export const OPERATION_ORIGIN_POLICIES = ['none', 'sameorigin', 'service', 'signed'] as const;
@@ -28,6 +34,8 @@ export type OperationScopeKind = (typeof OPERATION_SCOPE_KINDS)[number];
 
 interface OperationPolicy {
   readonly id: string;
+  readonly version: number;
+  readonly title: string;
   readonly path: OperationPath;
   readonly module: string;
   readonly audience: OperationAudience;
@@ -49,6 +57,11 @@ interface OperationPolicy {
   readonly timeout: number;
   readonly rateClass: OperationRateClass;
   readonly risk: OperationRisk;
+  readonly concurrencyPolicy: OperationConcurrencyPolicy;
+  readonly executionMode: OperationExecutionMode;
+  readonly auditLevel: OperationAuditLevel;
+  readonly sensitiveFields: readonly string[];
+  readonly lifecycle: OperationLifecycle;
   readonly resourceResolver: string;
   readonly resourceParameter: string | null;
   readonly idempotent: boolean;
@@ -85,6 +98,8 @@ export function operation<const T extends Operation>(definition: T): Readonly<T>
   if (!/^[a-z]+(?:\.[a-z]+)+$/.test(definition.id)) throw new Error('OPERATION_ID_INVALID');
   if (!definition.path.startsWith('/api/v1/') && !definition.path.startsWith('/health/')) throw new Error('OPERATION_PATH_INVALID');
   if (!Number.isInteger(definition.timeout) || definition.timeout < 1) throw new Error('OPERATION_TIMEOUT_INVALID');
+  if (!Number.isSafeInteger(definition.version) || definition.version < 1) throw new Error('OPERATION_VERSION_INVALID');
+  if (definition.title.trim().length < 2) throw new Error('OPERATION_TITLE_INVALID');
   if (definition.capability !== definition.id) throw new Error('OPERATION_CAPABILITY_INVALID');
   if (definition.targets.some((target) => !(OPERATION_TARGETS as readonly string[]).includes(target)) || new Set(definition.targets).size !== definition.targets.length) throw new Error('OPERATION_TARGET_INVALID');
   if (definition.scopeKinds.some((kind) => !(OPERATION_SCOPE_KINDS as readonly string[]).includes(kind))) throw new Error('OPERATION_SCOPE_KIND_INVALID');
@@ -93,6 +108,7 @@ export function operation<const T extends Operation>(definition: T): Readonly<T>
     targets: Object.freeze([...definition.targets]),
     scopeKinds: Object.freeze([...definition.scopeKinds]),
     errorUnion: Object.freeze([...definition.errorUnion]),
+    sensitiveFields: Object.freeze([...definition.sensitiveFields]),
     requirements: Object.freeze([...definition.requirements]),
   }) as Readonly<T>;
 }

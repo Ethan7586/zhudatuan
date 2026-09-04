@@ -5,7 +5,7 @@ import { reject } from '../../../../foundation/application/OperationRejection';
 import { randomUUID } from 'node:crypto';
 import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 import type { SessionListRecord, SessionRecord, SessionRepository, SessionRevocation } from '../../application/port/SessionRepository';
-import type { QueryPage } from '../../../../foundation/interface/Validation';
+import type { QueryPage } from '../../../../foundation/application/Validation';
 export class PgSessionRepository implements SessionRepository {
   private readonly transactions = new PgTransactionAccess();
   async credentialVersion(context: WriteTransactionContext, principal: string): Promise<number> {
@@ -28,7 +28,12 @@ export class PgSessionRepository implements SessionRepository {
       `insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,
       ip_hash,user_agent,device_label,assurance_level,expires_at,last_seen_at,created_at)
       values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,clock_timestamp(),clock_timestamp())`,
-      [session.id, session.principal, session.membership, value.tokenHash, session.credentialVersion, session.accessVersion, session.target, value.ipHash, value.userAgent, value.deviceLabel, session.assurance, session.expiresAt]
+      [session.id, session.principal, session.membership, value.tokenFamily.current.hash, session.credentialVersion, session.accessVersion, session.target, value.ipHash, value.userAgent, value.deviceLabel, session.assurance, session.expiresAt]
+    );
+    await database.query(
+      `insert into identity.refreshtoken(id,family_id,session_id,parent_id,token_hash,sequence,issued_at)
+      values($1,$2,$3,null,$4,$5,$6)`,
+      [value.tokenFamily.current.id, value.tokenFamily.id, session.id, value.tokenFamily.current.hash, value.tokenFamily.current.sequence, value.tokenFamily.current.issuedAt]
     );
     await new PgRuntimeWriter(database).append({
       id: `event:${randomUUID()}`,
@@ -107,7 +112,7 @@ export class PgSessionRepository implements SessionRepository {
     const database = this.transactions.database(context);
     const result = await database.query<SessionListRecord>(
       `select id,membership_id as membership,
-      case when client='storefront' then 'storefront' else 'console' end client,device_label as "deviceLabel",
+      client,device_label as "deviceLabel",
       user_agent as "userAgent",assurance_level as assurance,created_at as "createdAt",last_seen_at as "lastSeenAt",
       expires_at as "expiresAt",id=$2 as current from identity.session where principal_id=$1 and revoked_at is null
       and expires_at>clock_timestamp() and ($3::timestamptz is null or (last_seen_at,id)<($3::timestamptz,$4))

@@ -50,7 +50,7 @@ export async function runtimeReadiness(pool: DatabasePool, extensions: Extension
        current_user=$4 role,
        (select count(*)::integer from runtime.operation) operations,
        (select count(*)::integer from capability.operation) capabilities,
-       (select count(*)::integer from runtime.event) events,
+       (select count(*)::integer from runtime.event where retired_at is null) events,
        (select missing_count=0 from identity.invitation_key_readiness($5::text[])) "invitationKeys"`,
         [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM, expectedRole, invitationKeyVersions]
       );

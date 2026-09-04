@@ -1,0 +1,1 @@
+export { AccessManifest } from './Manifest';

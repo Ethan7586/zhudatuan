@@ -2,13 +2,13 @@ import { identityLifecycle as operationLifecycle, type IdentityLifecycle as Oper
 import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { createHmac, randomInt, randomUUID } from 'node:crypto';
-import { OperationCatalog } from '@shop/contract';
+import { isConsumerTarget, OperationCatalog } from '@shop/contract';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
 import { reject } from '../../../../foundation/application/OperationRejection';
 import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
-import type { KmsClient, CipherEnvelope } from '../../../../foundation/infrastructure/KmsClient';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
+import type { KmsClient, CipherEnvelope } from '../../../../foundation/application/KmsPort';
 import type { RiskGate } from '../../../../foundation/security/RiskGate';
 import { sessionAccess } from '../../../../foundation/security/OperationSecurityContext';
 import type { PreauthResolver } from '../../../../foundation/security/PreauthResolver';
@@ -18,7 +18,7 @@ import type { InvitationHashPort } from '../port/InvitationSecurity';
 import type { IdentityEventRepository } from '../port/IdentityEventRepository';
 import type { CredentialRepository } from '../port/CredentialRepository';
 import type { IdentityMemberPort } from '../../../member/public';
-import type { InvitationMemberPort } from '../../../member/public';
+import type { IdentityRegistrationPort } from '../../../member/public';
 import type { InvitationAccessPort } from '../../../access/public';
 import { canonicalIdentitySubject, canonicalMobile } from '../../domain/value/IdentitySubject';
 import { assertPublicRisk } from '../service/PublicRisk';
@@ -63,7 +63,7 @@ export class CreateChallenge {
     private readonly credentials: CredentialRepository,
     private readonly members: IdentityMemberPort,
     private readonly invitationAccess: InvitationAccessPort,
-    private readonly invitationMembers: InvitationMemberPort
+    private readonly invitationMembers: IdentityRegistrationPort
   ) {}
   lifecycle(): OperationLifecycle<PreparedChallenge, LoadedChallenge> {
     return operationLifecycle({
@@ -71,8 +71,8 @@ export class CreateChallenge {
         const input = challengeInput(request, this.invitationHash, (value) => this.digest(value));
         if (input.enrollmentId) {
           const preauth = await this.preauth.resolve(request.input.headers, OperationCatalog.get('identity.enrollments.complete'));
-          if (preauth.reference !== input.enrollmentId || preauth.target !== 'storefront') throw new DomainError('PREAUTH_REQUIRED');
-          const invitation = await this.invitations.claimed(database, preauth.reference, 'storefront');
+          if (preauth.reference !== input.enrollmentId || !isConsumerTarget(preauth.target)) throw new DomainError('PREAUTH_REQUIRED');
+          const invitation = await this.invitations.claimed(database, preauth.reference, preauth.target);
           if (!invitation.requiresEnrollment()) throw new DomainError('INVITATION_INVALID');
           if (input.purpose === 'enrollment_campaign') {
             if (invitation.state.kind !== 'campaign') throw new DomainError('INVITATION_INVALID');
@@ -119,13 +119,13 @@ export class CreateChallenge {
         let scope = value.scope;
         if (value.enrollment) {
           const preauth = await this.preauth.resolve(request.input.headers, OperationCatalog.get('identity.enrollments.complete'));
-          if (preauth.reference !== value.enrollment || preauth.target !== 'storefront') throw new DomainError('PREAUTH_REQUIRED');
+          if (preauth.reference !== value.enrollment || !isConsumerTarget(preauth.target)) throw new DomainError('PREAUTH_REQUIRED');
           const invitation = await this.invitations.lockClaimed(requireWriteTransaction(database), preauth.reference, preauth.target);
           const claim = await this.invitations.claim(requireWriteTransaction(database), preauth.reference);
           if (
             !invitation.requiresEnrollment() ||
             claim.invitation !== invitation.state.id ||
-            claim.target !== 'storefront' ||
+            !isConsumerTarget(claim.target) ||
             claim.state !== 'reserved' ||
             (invitation.state.kind === 'campaign') !== (value.purpose === 'enrollment_campaign') ||
             (invitation.state.recipientHash && !this.invitationHash.matchesRecipient(value.destination, invitation.state.recipientHash))
@@ -165,9 +165,9 @@ export class CreateChallenge {
 
   private async issue(request: OperationRequest, database: Parameters<OperationLifecycle<PreparedChallenge>['execute']>[1], value: PreparedChallenge) {
     await this.challenges.throttle(requireWriteTransaction(database), [
-      [value.destinationHash, value.purpose],
-      [value.peer, `network:${value.purpose}`],
-      [value.device, `device:${value.purpose}`],
+      [value.destinationHash, `send:${value.purpose}`],
+      [value.peer, `network:send:${value.purpose}`],
+      [value.device, `device:send:${value.purpose}`],
     ]);
     const issued = await this.challenges.issue(requireWriteTransaction(database), {
       id: value.id,
@@ -189,7 +189,16 @@ export class CreateChallenge {
       purpose: value.purpose,
     });
     const retryAt = new Date(issued.expiresAt.getTime() - (RUNTIME_LIMITS.authentication.otp.validMinutes * 60 - RUNTIME_LIMITS.authentication.otp.resendSeconds) * 1_000);
-    return { status: 202, body: { id: issued.id, purpose: issued.purpose, expires_at: issued.expiresAt.toISOString(), retry_at: retryAt.toISOString() } };
+    return {
+      status: 202,
+      body: {
+        id: issued.id,
+        purpose: issued.purpose,
+        expires_at: issued.expiresAt.toISOString(),
+        retry_at: retryAt.toISOString(),
+        attempts_remaining: RUNTIME_LIMITS.authentication.otp.maximumAttempts,
+      },
+    };
   }
   private digest(value: string): string {
     return createHmac('sha256', this.identityKey).update(value.trim().toLowerCase()).digest('hex');

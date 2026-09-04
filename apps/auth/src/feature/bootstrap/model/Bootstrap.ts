@@ -1,7 +1,8 @@
 import type { AuthTarget } from '@shop/config/client';
-import type { RegistrationPolicy } from '../../invitation/model/RegistrationPolicy';
+import type { OperationOutputFor } from '@shop/contract';
+import type { RegistrationPolicy } from '../../enrollment';
 
-export type LoginMethod = 'password' | 'otp' | 'invitation';
+export type LoginMethod = Exclude<OperationOutputFor<'identity.bootstrap.read'>['methods'][number], 'federation'>;
 
 export interface PasswordPolicy {
   readonly minimumLength: number;
@@ -17,7 +18,7 @@ export interface Bootstrap {
   readonly returnTarget: string;
   readonly expiresAt: number;
   readonly csrf: string;
-  readonly methods: readonly ('password' | 'otp' | 'invitation' | 'federation')[];
+  readonly methods: Readonly<OperationOutputFor<'identity.bootstrap.read'>['methods']>;
   readonly preferredMethod: LoginMethod;
   readonly password: Readonly<PasswordPolicy>;
   readonly otp: Readonly<{ validSeconds: number; resendSeconds: number }>;

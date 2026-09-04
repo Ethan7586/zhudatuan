@@ -22,7 +22,7 @@ describe('PgAfterSalePolicyPort', () => {
       }
     );
     expect(decision).toMatchObject({ eligible: true, requiresReturn: true, maximumQuantity: 3, windowDays: 10 });
-    expect(decision.policy).toMatchObject({ id: 'policy:1', version: 4, windowDays: 10 });
+    expect(decision.policy).toMatchObject({ id: 'policy:1', policyVersion: 4, rule: { windowDays: 10 } });
   });
 
   it('rejects unfulfilled, exhausted, expired and provider-disabled lines', async () => {

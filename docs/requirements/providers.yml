@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx#接口!A2:D21
 workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
-navigationCatalogSha256: 5191a956ebfa896847411843c07115759b1e36c5b1943272798008172ea3f6d5
-contractSha256: 3e4d5a0dad5ad2742b167cd1a30486a56969a4dc4d78ba4c6d7dff44229fa7bb
+navigationCatalogSha256: 7985155f4ed97c07691d327316ca572f35d526bfc30a1b4c1d0d9454d897c30e
+contractSha256: 7e1d71c1da0c36fa76c8169345fc6a2dbdfccade034c48f63c867fe983afae76
 generated: true
 count: 20
 priorities:
@@ -41,7 +41,7 @@ providers:
     status: Designed
     evidence: []
     extension: extensions/channel/tmall
-    core: tmallcore
+    core: self
   - requirement: INTEG004
     row: 5
     id: supplier
@@ -85,7 +85,7 @@ providers:
     status: Designed
     evidence: []
     extension: extensions/channel/book
-    core: bookcore
+    core: self
   - requirement: INTEG008
     row: 9
     id: charge

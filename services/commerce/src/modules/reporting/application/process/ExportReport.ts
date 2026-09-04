@@ -1,84 +1,77 @@
-import { safeErrorCode } from '../../../../foundation/domain/SafeError';
-import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
 import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
-import { exportHeader } from '../../domain/model/ExportJob';
+import type { ExportExecution, ExportPageRow, ExportPlan, ExportRenderer, ExportResult } from '../../../runtime/public';
+import { exportHeader, type ExportJob } from '../../domain/model/ExportJob';
 import type { ReportingJobRepository } from '../port/ReportingJobRepository';
 
-const PAGE_SIZE = 1000;
+const PAGE_ROWS = 1000;
 
-export interface ReportExportExecution {
-  readonly scope: string;
-  readonly trace: string;
-  readonly attempts: number;
-  readonly signal: AbortSignal;
-  readonly deadline: number;
+interface ReportPlan extends ExportPlan {
+  readonly export: ExportJob;
+  readonly execution: ExportExecution;
 }
 
-export class ExportReport {
+export class ExportReport implements ExportRenderer<ReportPlan> {
   constructor(
     private readonly transactions: TransactionManager,
     private readonly repository: ReportingJobRepository,
-    private readonly objects: ObjectStore,
     private readonly maximumAttempts: number
   ) {
     if (!Number.isSafeInteger(maximumAttempts) || maximumAttempts < 1) throw new Error('REPORT_EXPORT_ATTEMPTS_INVALID');
   }
 
-  async execute(id: string, execution: ReportExportExecution): Promise<void> {
-    const options = this.options(execution);
-    const selected = await this.transactions.write(options, (context) => this.repository.claimExport(context, id));
-    if (!selected) return;
-    const upload = await this.objects.create(`reports/${id.replaceAll(':', '/')}.csv`, 'text/csv');
-    try {
-      await upload.append(encode(`${exportHeader(selected.report).map(exportCsvCell).join(',')}\n`));
-      let cursor = selected.cursor;
-      for (;;) {
-        if (execution.signal.aborted) throw execution.signal.reason;
-        const page = await this.transactions.read(options, (context) => this.repository.exportRows(context, id, selected.report, cursor, PAGE_SIZE));
-        if (page.length === 0) break;
-        const lines: string[] = [];
-        for (const row of page) {
-          cursor = row.key;
-          lines.push(row.values.map(exportCsvCell).join(','));
-        }
-        await upload.append(encode(`${lines.join('\n')}\n`));
-        await this.transactions.write(options, (context) => this.repository.advanceExport(context, id, cursor!, page.length));
-      }
-      const stored = await upload.complete();
-      const verified = await this.objects.inspect(stored.reference);
-      if (verified.scan !== 'clean' || verified.sha256 !== stored.sha256 || verified.size !== stored.size || verified.contentType !== 'text/csv') {
-        throw new Error('REPORT_EXPORT_SCAN_OR_INTEGRITY_FAILED');
-      }
-      await this.transactions.write(options, (context) => this.repository.completeExport(context, id, stored));
-    } catch (cause) {
-      await upload.abort();
-      const code = safeErrorCode(cause, 'REPORT_EXPORT_FAILED');
-      await this.transactions.write(options, (context) => this.repository.failExport(context, id, code, execution.attempts >= this.maximumAttempts));
-      throw cause;
-    }
+  async open(id: string, execution: ExportExecution): Promise<ReportPlan | null> {
+    const selected = await this.transactions.write(options(execution), (context) => this.repository.claimExport(context, id));
+    if (selected === null) return null;
+    return Object.freeze({
+      id,
+      owner: 'reporting',
+      columns: exportHeader(selected.report),
+      cursor: selected.cursor,
+      pageRows: PAGE_ROWS,
+      expectedRows: null,
+      maximumAttempts: this.maximumAttempts,
+      export: selected,
+      execution,
+    });
   }
 
-  private options(execution: ReportExportExecution): TransactionOptions {
-    return {
-      tenant: execution.scope,
-      membership: '',
-      scope: execution.scope,
-      actor: 'job:export',
-      trace: execution.trace,
-      operation: 'job.reporting.export',
-      workload: 'jobs',
-      signal: execution.signal,
-      deadline: execution.deadline,
-    };
+  prepare(plan: ReportPlan): Promise<number | null> {
+    if (plan.export.scope !== plan.execution.scope) throw new Error('REPORT_EXPORT_SCOPE_MISMATCH');
+    return this.transactions.read(options(plan.execution), (context) => this.repository.exportCount(context, plan.id, plan.export.report));
+  }
+
+  async read(plan: ReportPlan, cursor: string | null, fetch: number): Promise<readonly ExportPageRow[]> {
+    const rows = await this.transactions.read(options(plan.execution), (context) => this.repository.exportRows(context, plan.id, plan.export.report, cursor, fetch));
+    return Object.freeze(rows.map((row) => Object.freeze({ cursor: row.key, cells: Object.freeze([...row.values]) })));
+  }
+
+  advance(plan: ReportPlan, cursor: string, count: number): Promise<void> {
+    return this.transactions.write(options(plan.execution), (context) => this.repository.advanceExport(context, plan.id, cursor, count));
+  }
+
+  complete(plan: ReportPlan, result: ExportResult): Promise<void> {
+    return this.transactions.write(options(plan.execution), (context) => this.repository.completeExport(context, plan.id, result.object));
+  }
+
+  fail(plan: ReportPlan, code: string, terminal: boolean): Promise<void> {
+    return this.transactions.write(options(plan.execution), (context) => this.repository.failExport(context, plan.id, code, terminal));
+  }
+
+  retryable(): boolean {
+    return true;
   }
 }
 
-export function exportCsvCell(value: unknown): string {
-  const raw = value === null || value === undefined ? '' : typeof value === 'object' ? JSON.stringify(value) : String(value);
-  const safe = /^[=+\-@]/.test(raw) ? `'${raw}` : raw;
-  return /[",\r\n]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
-}
-
-function encode(value: string): Uint8Array {
-  return new TextEncoder().encode(value);
+function options(execution: ExportExecution): TransactionOptions {
+  return {
+    tenant: execution.scope,
+    membership: '',
+    scope: execution.scope,
+    actor: 'job:export',
+    trace: execution.trace,
+    operation: 'job.reporting.export',
+    workload: 'jobs',
+    signal: execution.signal,
+    deadline: execution.deadline,
+  };
 }

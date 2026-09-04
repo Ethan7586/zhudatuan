@@ -1,4 +1,5 @@
 @media (max-width: 1040px) {
+  .financefacetgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .financefilters {
     flex-wrap: wrap;
   }
@@ -14,6 +15,7 @@
 }
 
 @media (max-width: 720px) {
+  .financefacetgrid { grid-template-columns: 1fr 1fr; }
   .financeworkspace {
     border-radius: 0;
   }
@@ -22,12 +24,7 @@
     flex-direction: column;
     padding: 18px 15px;
   }
-  .financepageactions {
-    width: 100%;
-  }
-  .financepageactions button {
-    flex: 1;
-  }
+  .financerefreshbutton { width: 100%; }
   .financestatusrail {
     align-items: flex-start;
     flex-direction: column;
@@ -44,7 +41,7 @@
   .financetabs {
     padding-inline: 7px;
   }
-  .financetoolbararea {
+  .financecolumnbar {
     padding-inline: 10px;
   }
   .financesearchfield {

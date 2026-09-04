@@ -8,6 +8,7 @@ export function SupportComposer({
   sending,
   failed,
   attachments,
+  attachmentAllowed,
   onDraft,
   onSend,
   onRetry,
@@ -18,6 +19,7 @@ export function SupportComposer({
   sending: boolean;
   failed?: MessageDraft;
   attachments: readonly UploadedAttachment[];
+  attachmentAllowed: boolean;
   onDraft: (value: string) => void;
   onSend: () => void;
   onRetry: () => void;
@@ -38,20 +40,22 @@ export function SupportComposer({
       }}
     >
       <div className="supportcomposerbar">
-        <label className="supportattach">
-          <span aria-hidden="true">＋</span>
-          <span className="sr-only">添加附件</span>
-          <input
-            type="file"
-            accept="image/jpeg,image/png,application/pdf,text/plain"
-            disabled={disabled}
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) onFile(file);
-              event.currentTarget.value = '';
-            }}
-          />
-        </label>
+        {attachmentAllowed ? (
+          <label className="supportattach">
+            <span aria-hidden="true">＋</span>
+            <span className="sr-only">添加附件</span>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,application/pdf,text/plain"
+              disabled={disabled}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) onFile(file);
+                event.currentTarget.value = '';
+              }}
+            />
+          </label>
+        ) : null}
         <span>按回车键发送 · 按住上档键并回车换行</span>
         <small>{draft.length}/4000</small>
       </div>
@@ -73,7 +77,7 @@ export function SupportComposer({
             重试上次发送
           </Button>
         ) : null}
-        <Button type="submit" tone="primary" isDisabled={disabled || draft.trim() === '' || attachments.some((item) => item.state !== 'clean')}>
+        <Button type="submit" tone="primary" isDisabled={disabled || (draft.trim() === '' && attachments.length === 0) || attachments.some((item) => item.state !== 'clean')}>
           {sending ? '发送中…' : '发送回复'}
         </Button>
       </div>

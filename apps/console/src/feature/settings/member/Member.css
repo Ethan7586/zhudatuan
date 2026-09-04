@@ -3,6 +3,10 @@
   flex-wrap: wrap;
   gap: var(--sw-space-1);
 }
+.memberactions small {
+  align-self: center;
+  color: var(--sw-muted);
+}
 .memberform {
   display: grid;
   gap: var(--sw-space-2);
@@ -70,6 +74,68 @@
 }
 .memberform footer {
   display: flex;
+  justify-content: flex-end;
+  gap: var(--sw-space-1);
+  border-top: 0.0625rem solid var(--sw-border);
+  padding-top: var(--sw-space-2);
+}
+.membervalidation {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+.memberimportnote {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  border: 0.0625rem solid var(--sw-brand);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-brand-light);
+  padding: var(--sw-space-2);
+  color: var(--sw-brand-dark);
+}
+.memberimportnote p {
+  margin: 0;
+}
+.registrationresetform,
+.registrationresetreceipt {
+  display: grid;
+  gap: var(--sw-space-2);
+}
+.registrationresetimpact,
+.registrationresetreceipt > div {
+  display: grid;
+  gap: var(--sw-space-1);
+  border: 0.0625rem solid color-mix(in srgb, var(--sw-danger) 28%, var(--sw-border));
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-danger-surface);
+  padding: var(--sw-space-2);
+  color: var(--sw-danger-strong);
+}
+.registrationresetimpact :where(p, ul),
+.registrationresetreceipt p {
+  margin: 0;
+}
+.registrationresetimpact ul {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  padding-left: var(--sw-space-3);
+}
+.memberform .registrationresetacknowledgement {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sw-space-1);
+}
+.memberform .registrationresetacknowledgement input {
+  flex: 0 0 auto;
+  min-height: auto;
+  margin-top: 0.2em;
+}
+.registrationresetreceipt small {
+  color: currentColor;
+}
+.registrationresetreceipt footer {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--sw-space-1);
   border-top: 0.0625rem solid var(--sw-border);

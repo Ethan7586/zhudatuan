@@ -1,3 +1,4 @@
+import { Button } from '@shop/design';
 import { Brand } from '@shop/design/brand';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 
@@ -44,13 +45,17 @@ export function AuthCard({
             <div className="authsurfacehead">
               <div className="authsteps" aria-label={`认证进度：第 ${stage} 步，共 2 步`}>
                 {stage === 2 && (
-                  <button type="button" onClick={onBack} className="authback" aria-label="返回上一阶段">
+                  <Button tone="quiet" onPress={onBack} className="authback" aria-label="返回上一阶段">
                     <ArrowLeft aria-hidden="true" />
-                  </button>
+                  </Button>
                 )}
-                <span className="authstep" data-current={stage === 1}>{stage === 2 ? <CheckCircle2 aria-label="账号认证已完成" /> : '1'}</span>
+                <span className="authstep" data-current={stage === 1}>
+                  {stage === 2 ? <CheckCircle2 aria-label="账号认证已完成" /> : '1'}
+                </span>
                 <span className="authstepbar" data-complete={stage === 2} />
-                <span className="authstep" data-current={stage === 2}>2</span>
+                <span className="authstep" data-current={stage === 2}>
+                  2
+                </span>
               </div>
               <div className="authsurfacelabel">
                 <Brand variant="mark" />

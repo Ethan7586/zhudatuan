@@ -4,7 +4,7 @@ import { PgNavigationOrganization } from './persistence/PgNavigationOrganization
 import { result, withReadTransaction } from '../../../test/TransactionFixture';
 
 describe('PgNavigationOrganization', () => {
-  it('projects only the four Console scope kinds from a mixed organization hierarchy', async () => {
+  it('projects all six navigable scope kinds and hides technical hierarchy kinds', async () => {
     const rows = [
       row('platform:root', 'platform', true),
       row('distributor:east', 'distributor'),
@@ -17,7 +17,7 @@ describe('PgNavigationOrganization', () => {
     const query = vi.fn(async () => result(rows));
     const scopes = await withReadTransaction(query, (context) => new PgNavigationOrganization().read(context, ['membership:one']));
 
-    expect(scopes.map((scope) => scope.kind)).toEqual(['platform', 'distributor', 'enterprise', 'mall']);
+    expect(scopes.map((scope) => scope.kind)).toEqual(['platform', 'distributor', 'enterprise', 'mall', 'store', 'supplier']);
     expect(scopes.find((scope) => scope.default)?.id).toBe('platform:root');
     expect(scopes.every((scope) => scope.version === 7)).toBe(true);
   });

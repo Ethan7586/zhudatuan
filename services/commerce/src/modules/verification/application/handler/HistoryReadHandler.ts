@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { keysetPage, queryPage } from '../../../../foundation/interface/Validation';
+import { keysetPage, queryPage } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { AttemptRepository } from '../port/AttemptRepository';
 

@@ -6,22 +6,23 @@ import { INVENTORY_READ_PORT } from './public/InventoryReadPort';
 import { PgInventoryReadPort } from './infrastructure/persistence/PgInventoryReadPort';
 import { ImportsCreateHandler } from './application/handler/ImportsCreateHandler';
 import { ImportsReadHandler } from './application/handler/ImportsReadHandler';
-import { PgInventoryImportRepository } from './infrastructure/persistence/PgInventoryImportRepository';
+import { AvailabilityReadHandler } from './application/handler/AvailabilityReadHandler';
 import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
 import { PgJobScheduler } from '../../adapter/database/PgJobScheduler';
-import { OBJECT_STORE } from '../../foundation/infrastructure/ObjectStore';
+import { OBJECT_STORE } from '../runtime/public/ObjectPort';
 import { createJobs, createProviderJobs } from './interface/job/JobFactory';
+import { IMPORT_OBJECT_PORT, RUNTIME_IMPORT_PORT } from '../runtime/public';
 
 export const InventoryModule = defineModule(Manifest, {
   jobs: createJobs,
   providerJobs: createProviderJobs,
   handlers: (context) => {
     const transactions = new PgTransactionAccess();
-    const imports = new PgInventoryImportRepository(transactions);
+    const imports = context.ports.get(RUNTIME_IMPORT_PORT);
     const objects = context.service(OBJECT_STORE);
-    return [new ImportsCreateHandler(imports, new PgJobScheduler(transactions), new ImportObjectService(objects)), new ImportsReadHandler(imports, objects)];
+    return [new AvailabilityReadHandler(new PgInventoryReadPort()), new ImportsCreateHandler(imports, new PgJobScheduler(transactions), context.ports.get(IMPORT_OBJECT_PORT)), new ImportsReadHandler(imports, objects)];
   },
-  ports: (context) => {
+  ports: () => {
     const inventory = new InventoryPort();
     return [
       { token: CHECKOUT_INVENTORY_PORT, value: inventory },
@@ -39,4 +40,3 @@ export const InventoryModule = defineModule(Manifest, {
   },
   providerPorts: [{ token: PROVIDER_INVENTORY_PORT, value: new InventoryPort() }],
 });
-import { ImportObjectService } from '../../foundation/application/ImportObjectService';

@@ -4,7 +4,13 @@ import { publicPort } from '../../../bootstrap/ModuleRegistry';
 export interface OrganizationReadPort {
   descendants(context: ReadTransactionContext, scopeId: string): Promise<readonly string[]>;
   activeMalls(context: ReadTransactionContext, scopeId: string): Promise<readonly string[]>;
+  summaries(context: ReadTransactionContext, ids: readonly string[]): Promise<readonly OrganizationSummary[]>;
   scope(context: ReadTransactionContext, scopeId: string, lock?: boolean): Promise<OrganizationScopeSnapshot>;
+}
+export interface OrganizationSummary {
+  readonly id: string;
+  readonly name: string;
+  readonly kind: string;
 }
 export interface OrganizationScopeSnapshot {
   readonly id: string;

@@ -13,7 +13,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const failureStates = new Set<ResourceCondition>(['denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure']);
+const failureStates = new Set<ResourceCondition>(['forbidden', 'unavailable', 'notconfigured', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure']);
 
 export const Matrix: Story = {
   render: () => (

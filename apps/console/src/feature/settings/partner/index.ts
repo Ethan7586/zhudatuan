@@ -1,0 +1,1 @@
+export { PartnerManifest } from './Manifest';

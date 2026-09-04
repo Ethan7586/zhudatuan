@@ -19,6 +19,12 @@ export function validateCutover(evidence, release, releaseBytes, now = Date.now(
     const result = evidence.checks?.[check];
     if (result?.passed !== true || !sha.test(result.evidenceSha256 ?? '')) throw new Error(`CUTOVER_CHECK_INVALID:${check}`);
   }
+  if (evidence.migrationEvidence?.schema !== 'shop.migration.evidence.v1' || evidence.migrationEvidence?.passed !== true
+    || typeof evidence.migrationEvidence?.exact !== 'boolean' || !Number.isSafeInteger(evidence.migrationEvidence?.approvedDifferences)
+    || evidence.migrationEvidence.approvedDifferences < 0 || !sha.test(evidence.migrationEvidence?.archiveSha256 ?? '')) {
+    throw new Error('CUTOVER_MIGRATION_EVIDENCE_INVALID');
+  }
+  if (evidence.migrationEvidence.exact !== (evidence.migrationEvidence.approvedDifferences === 0)) throw new Error('CUTOVER_MIGRATION_EVIDENCE_DECISION_INVALID');
   if (!Array.isArray(evidence.stages) || evidence.stages.length !== requiredTraffic.length) throw new Error('CUTOVER_STAGE_SET_INVALID');
   for (const [index, percentage] of requiredTraffic.entries()) {
     const stage = evidence.stages[index];

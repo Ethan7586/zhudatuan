@@ -14,4 +14,8 @@ describe('bootstrap contract', () => {
   it('rejects a bootstrap response with an invalid expiry', () => {
     expect(() => mapBootstrap({ ...bootstrapOutput(), expiresAt: 'invalid' })).toThrow('CONTRACT_INVALID');
   });
+
+  it('rejects a preferred method that the server did not make available', () => {
+    expect(() => mapBootstrap({ ...bootstrapOutput(), methods: ['otp'], preferredMethod: 'password' })).toThrow('CONTRACT_INVALID');
+  });
 });

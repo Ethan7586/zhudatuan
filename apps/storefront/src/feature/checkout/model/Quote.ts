@@ -13,13 +13,15 @@ export interface Quote {
   readonly checkoutId: string;
   readonly quoteId: string;
   readonly quoteVersion: number;
-  readonly signature: string;
+  readonly confirmationToken: string | null;
+  readonly evidenceHash: string;
   readonly expiresAt: string;
   readonly cartVersion: number;
   readonly lines: readonly QuoteLine[];
   readonly subtotalMinor: number;
   readonly discountMinor: number;
   readonly shippingMinor: number;
+  readonly taxMinor: number;
   readonly payableMinor: number;
   readonly benefitMinor: number;
   readonly personalMinor: number;

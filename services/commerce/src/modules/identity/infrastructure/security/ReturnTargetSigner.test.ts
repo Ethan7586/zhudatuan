@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { ReturnTargetSigner } from './ReturnTargetSigner';
 
 const NOW = new Date('2026-08-30T00:00:00.000Z');
-const TARGETS = Object.freeze({ console: 'https://console.fufu.wang', storefront: 'https://fufu.wang' });
+const TARGETS = Object.freeze({
+  console: 'https://console.fufu.wang',
+  storefront: 'https://fufu.wang',
+  miniapp: 'https://miniapp.fufu.wang',
+  store: 'https://store.fufu.wang',
+  supplier: 'https://supplier.fufu.wang',
+});
 const signer = new ReturnTargetSigner(TARGETS, 'current-return-target-key-that-is-long-enough', 'previous-return-target-key-that-is-long-enough');
 
 describe('ReturnTargetSigner', () => {

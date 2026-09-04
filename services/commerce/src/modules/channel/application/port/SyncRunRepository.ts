@@ -1,4 +1,4 @@
-import type { QueryPage } from '../../../../foundation/interface/Validation';
+import type { QueryPage } from '../../../../foundation/application/Validation';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { SyncKind } from '../../domain/model/SyncRun';
 

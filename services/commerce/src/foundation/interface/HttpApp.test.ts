@@ -9,6 +9,9 @@ import { HttpStream } from './HttpStream';
 const csrf = new CsrfProtector('http-app-test-key-that-is-at-least-thirty-two-bytes', {
   console: 'https://shop.example',
   storefront: 'https://shop.example',
+  miniapp: 'https://shop.example',
+  store: 'https://shop.example',
+  supplier: 'https://shop.example',
 });
 
 function routes(operation = 'identity.sessions.create'): RouteRegistry {
@@ -139,6 +142,45 @@ describe('HttpApp contract handshake', () => {
       })
     );
     expect(response.status).toBe(200);
+  });
+
+  it('accepts the anonymous bootstrap CSRF token for an optional-assurance cart write', async () => {
+    const response = await new HttpApp(routes('cart.items.batch'), ['https://shop.example'], csrf).handle(
+      new Request('https://api.example/api/v1/carts/current/items', {
+        method: 'PUT',
+        headers: {
+          'content-type': 'application/json',
+          cookie: '__Host-auth-csrf=guest-bootstrap',
+          origin: 'https://shop.example',
+          'x-cart-token': 'abcdefghijklmnopqrstuvwxyzABCDEFGH123456789',
+          'x-contract-version': CONTRACT_VERSION,
+          'x-client-target': 'storefront',
+          'x-csrf-token': 'guest-bootstrap',
+        },
+        body: '{}',
+      })
+    );
+    expect(response.status).toBe(200);
+  });
+
+  it('requires the signed session CSRF token when optional assurance resolves to a member session', async () => {
+    const response = await new HttpApp(routes('cart.items.batch'), ['https://shop.example'], csrf).handle(
+      new Request('https://api.example/api/v1/carts/current/items', {
+        method: 'PUT',
+        headers: {
+          'content-type': 'application/json',
+          cookie: '__Host-auth-csrf=guest-bootstrap; __Host-storefront-session=member-session; __Host-storefront-csrf=unsigned-token',
+          origin: 'https://shop.example',
+          'x-cart-token': 'abcdefghijklmnopqrstuvwxyzABCDEFGH123456789',
+          'x-contract-version': CONTRACT_VERSION,
+          'x-client-target': 'storefront',
+          'x-csrf-token': 'guest-bootstrap',
+        },
+        body: '{}',
+      })
+    );
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ code: 'CSRF_TOKEN_INVALID' });
   });
 
   it('allows an authenticated console operation to manage a different target surface', async () => {

@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 
 export class QuoteSigner {
   private readonly key: Buffer;
@@ -9,7 +9,7 @@ export class QuoteSigner {
   }
 
   sign(value: unknown): string {
-    return createHmac('sha256', this.key).update(stable(value)).digest('hex');
+    return createHmac('sha256', this.key).update(canonicalQuote(value)).digest('hex');
   }
 
   verify(value: unknown, signature: string): boolean {
@@ -18,12 +18,16 @@ export class QuoteSigner {
   }
 }
 
-function stable(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(stable).join(',')}]`;
+export function quoteHash(value: unknown): string {
+  return createHash('sha256').update(canonicalQuote(value)).digest('hex');
+}
+
+export function canonicalQuote(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalQuote).join(',')}]`;
   if (value !== null && typeof value === 'object') {
     return `{${Object.entries(value as Record<string, unknown>)
       .sort(([left], [right]) => left.localeCompare(right))
-      .map(([key, child]) => `${JSON.stringify(key)}:${stable(child)}`)
+      .map(([key, child]) => `${JSON.stringify(key)}:${canonicalQuote(child)}`)
       .join(',')}}`;
   }
   return JSON.stringify(value) ?? 'null';

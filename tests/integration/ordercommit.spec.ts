@@ -5,7 +5,7 @@ import { CHECKOUT_LOCK_ORDER } from '../../services/commerce/src/modules/checkou
 
 test('order commit has one fixed lock order and returns order plus prepared payment in one use case', () => {
   assert.deepEqual(CHECKOUT_LOCK_ORDER, ['idempotency', 'quote', 'cart', 'inventory', 'voucher', 'benefit', 'order', 'payment', 'finance', 'audit', 'outbox']);
-  const source = text('../../services/commerce/src/modules/checkout/infrastructure/persistence/CheckoutConfirmationService.ts');
+  const source = text('../../services/commerce/src/modules/checkout/application/service/ConfirmCheckout.ts');
   for (const stage of CHECKOUT_LOCK_ORDER.slice(1)) assert.match(source, new RegExp(`lock\\.advance\\('${stage}'\\)`));
   assert.match(source, /orders\.create[\s\S]+payment\.prepare[\s\S]+payment\.capture/);
   assert.match(source, /body: \{ order: saved\.record, payment \}/);

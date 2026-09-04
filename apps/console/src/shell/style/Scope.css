@@ -1,0 +1,137 @@
+.consolelayout[data-visual-theme='console-v1'] .scopebar {
+  display: flex;
+  height: var(--sw-layout-scopebar);
+  min-height: var(--sw-layout-scopebar);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+  overflow: hidden;
+  border-bottom: var(--sw-border-width) solid var(--sw-border);
+  background: var(--sw-surface);
+  padding: 0 var(--sw-space-3);
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopecontext,
+.consolelayout[data-visual-theme='console-v1'] .scopestatus {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--sw-space-1);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopecontext select {
+  field-sizing: content;
+  width: auto;
+  max-width: 18rem;
+  min-height: var(--sw-control-height-compact);
+  border: 0;
+  border-radius: var(--sw-radius-sm);
+  outline-offset: 0;
+  background: transparent;
+  color: var(--sw-text-secondary);
+  padding: 0 var(--sw-space-0-5);
+  font-size: var(--sw-font-size-caption);
+  cursor: pointer;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopecontext select:hover {
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-hover);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopedivider,
+.consolelayout[data-visual-theme='console-v1'] .scopestatus i {
+  color: var(--sw-border-strong);
+  font-style: normal;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopestatus {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopepath {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--sw-control-gap-compact);
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopepath li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  color: var(--sw-muted);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopepath li:not(:last-child)::after {
+  margin-left: var(--sw-control-gap-compact);
+  color: var(--sw-border-strong);
+  content: '›';
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopepath li[aria-current='page'] {
+  overflow: hidden;
+  color: var(--sw-text-secondary);
+  font-weight: var(--sw-font-weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .workspacebody {
+  width: min(100%, var(--sw-layout-content-max));
+  min-height: 0;
+  flex: 1;
+  margin: 0 auto;
+  overflow-y: auto;
+  padding: var(--sw-space-3);
+  scrollbar-gutter: stable;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .workspacebody h1[tabindex='-1']:focus {
+  outline: none;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolefooter {
+  display: flex;
+  height: var(--sw-layout-footer);
+  min-height: var(--sw-layout-footer);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+  border-top: var(--sw-border-width) solid var(--sw-border);
+  background: var(--sw-surface);
+  color: var(--sw-text-secondary);
+  padding: 0 var(--sw-space-3);
+  font-size: var(--sw-font-size-caption);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolefooterstatus {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sw-control-gap-compact);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolefooterstatus i {
+  width: var(--sw-space-1);
+  height: var(--sw-space-1);
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-success);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolefooter code {
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-background);
+  color: var(--sw-text-secondary);
+  padding: var(--sw-space-0-5) var(--sw-space-1);
+  font-family: var(--sw-font-mono, ui-monospace, monospace);
+  font-size: var(--sw-font-size-caption);
+}

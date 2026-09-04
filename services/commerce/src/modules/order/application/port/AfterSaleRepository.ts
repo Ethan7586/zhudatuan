@@ -2,7 +2,7 @@ import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationReply } from '../../../../foundation/application/OperationHandler';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { VerifiedAfterSaleAttachment } from '../service/AfterSaleAttachmentService';
+import type { VerifiedAfterSaleAttachment } from '../service/AfterSaleAttachment';
 
 export interface AfterSaleRepository {
   read(context: ReadTransactionContext, input: OperationInputFor<'order.aftersales.read'>, execution: ExecutionContext<'order.aftersales.read'>): Promise<OperationReply<OperationOutputFor<'order.aftersales.read'>>>;

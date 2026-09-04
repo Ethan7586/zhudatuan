@@ -1,5 +1,6 @@
 import type { Experience } from '../model/Experience';
 import type { CommerceTone } from '../model/ExperienceWorkspace';
+import { themePreset } from '../model/ThemePreset';
 
 export function applicationStatusLabel(value: string): string {
   const normalized = value.toLowerCase();
@@ -44,4 +45,23 @@ export function entryLabel(state: Experience['entry']['state']): string {
 export function entryTone(state: Experience['entry']['state']): CommerceTone {
   const tones: Readonly<Record<Experience['entry']['state'], CommerceTone>> = { ready: 'success', unpublished: 'warning', disabled: 'neutral', invalid: 'danger' };
   return tones[state];
+}
+
+export function themeLabel(theme: Experience['theme']): string {
+  return theme === null ? '主题待同步' : themePreset(theme.preset).name;
+}
+
+export function domainLabel(domain: Experience['domain']): string {
+  return {
+    ready: '域名正常',
+    pending: '等待生效',
+    invalid: '发布异常',
+    disabled: '已停用',
+    unknown: '资料待同步',
+  }[domain.state];
+}
+
+export function domainTone(domain: Experience['domain']): CommerceTone {
+  const tones: Readonly<Record<Experience['domain']['state'], CommerceTone>> = { ready: 'success', pending: 'warning', invalid: 'danger', disabled: 'neutral', unknown: 'info' };
+  return tones[domain.state];
 }

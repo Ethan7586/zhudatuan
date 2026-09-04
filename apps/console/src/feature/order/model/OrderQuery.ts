@@ -8,5 +8,19 @@ export interface OrderQuery extends OrderListFilter {
 }
 
 export function orderFilterKey(filter: OrderListFilter): readonly string[] {
-  return Object.freeze([filter.order, filter.placed, filter.lifecycle, filter.payment, filter.fulfillment, filter.mall]);
+  return Object.freeze([
+    filter.search,
+    filter.placed,
+    filter.from,
+    filter.to,
+    filter.lifecycle,
+    filter.payment,
+    filter.fulfillment,
+    filter.mall,
+    filter.channel,
+    filter.product,
+    filter.member,
+    filter.minimumMinor,
+    filter.maximumMinor,
+  ]);
 }

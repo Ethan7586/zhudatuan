@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { SettleReferral } from '../../application/process/SettleReferral';
 
 export class ReferralSettlementJob implements JobProcessor {
@@ -9,7 +9,7 @@ export class ReferralSettlementJob implements JobProcessor {
     if (signal.aborted) throw signal.reason;
     const payload = object(job.payload);
     const scopeId = text(payload.scopeId, 'REFERRAL_SCOPE_REQUIRED');
-    if (job.scope_id !== scopeId) throw new Error('REFERRAL_SCOPE_MISMATCH');
+    if (job.scope !== scopeId) throw new Error('REFERRAL_SCOPE_MISMATCH');
     const orderId = payload.orderId === null || payload.orderId === undefined ? null : text(payload.orderId, 'REFERRAL_ORDER_REFERENCE_INVALID');
     await this.settle.execute(scopeId, orderId, signal, deadline);
   }

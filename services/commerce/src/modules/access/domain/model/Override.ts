@@ -35,4 +35,9 @@ export class Override implements OverrideValue {
     this.expiresat = value.expiresat === null ? null : new Date(value.expiresat);
     Object.freeze(this);
   }
+
+  decides(inherited: 'allow' | 'deny' | null): 'allow' | 'deny' | null {
+    if (this.effect === 'deny' || inherited === 'deny') return 'deny';
+    return this.effect === 'allow' ? 'allow' : inherited;
+  }
 }

@@ -1,5 +1,6 @@
+import { Button } from '@shop/design';
 import { ArrowRight, Lock, RefreshCw, Smartphone } from 'lucide-react';
-import { CodeField } from '../../challenge/view/CodeField';
+import { ChallengeStatus, CodeField, type Challenge } from '../../challenge';
 import type { ActionResult } from '../../../shared/ui/ActionResult';
 import { useOtpForm } from '../viewmodel/LoginReducer';
 
@@ -11,7 +12,7 @@ export function OtpForm({
 }: Readonly<{
   busy: boolean;
   error: Readonly<Record<string, string>>;
-  onChallenge: (subject: string) => Promise<ActionResult<Readonly<{ id: string; resendSeconds: number }>>>;
+  onChallenge: (subject: string) => Promise<ActionResult<Challenge>>;
   onSubmit: (subject: string, challenge: string, code: string) => void;
 }>) {
   const vm = useOtpForm(busy, onChallenge, onSubmit);
@@ -46,25 +47,17 @@ export function OtpForm({
         </span>
         <span className="authcodegroup">
           <CodeField inputRef={vm.codeRef} value={vm.code} busy={busy} onChange={vm.setCode} />
-          <button
-            type="button"
-            onClick={() => void vm.send()}
-            disabled={busy || vm.sending || vm.seconds > 0}
-            className="authcodebutton"
-          >
+          <Button onPress={() => void vm.send()} isDisabled={busy || vm.sending || vm.seconds > 0} className="authcodebutton">
             {vm.sending ? '发送中…' : vm.seconds > 0 ? `${vm.seconds}s 后重发` : '获取验证码'}
-          </button>
+          </Button>
         </span>
+        {vm.challenge ? <ChallengeStatus challenge={vm.challenge} /> : null}
         {error.code && <span className="authfieldissue">{error.code}</span>}
       </label>
-      <button
-        type="submit"
-        disabled={busy}
-        className="authprimary"
-      >
+      <Button type="submit" tone="primary" isDisabled={busy} className="authfull">
         {busy ? <RefreshCw className="authspin" aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
         {busy ? '验证中...' : '登录'}
-      </button>
+      </Button>
     </form>
   );
 }

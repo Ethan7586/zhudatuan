@@ -17,7 +17,7 @@ export class WecomSuiteClient {
     const token = await this.token(instance, signal, deadline);
     const url = new URL(WECOM_PROVIDER_CONFIGURATION.suite.loginInfo);
     url.searchParams.set('access_token', token);
-    const response = await this.client.http.send(
+    const response = await this.client.send(
       url,
       {
         method: 'POST',
@@ -29,8 +29,7 @@ export class WecomSuiteClient {
       },
       { mode: 'none', signal, deadline }
     );
-    if (!response.ok) throw new DomainError('IDENTITY_PROVIDER_UNAVAILABLE');
-    return response.json() as Promise<Record<string, unknown>>;
+    return this.client.json(response, 'IDENTITY_PROVIDER_UNAVAILABLE');
   }
   private async token(instance: ProviderInstance, signal?: AbortSignal, deadline?: number): Promise<string> {
     const key = createHmac('sha256', this.cachekey).update(instance.id).digest('hex');
@@ -41,7 +40,7 @@ export class WecomSuiteClient {
       async () => {
         const credential = await this.client.credentials(instance.secretref);
         if (!credential.suiteid || !credential.token) throw new DomainError('IDENTITY_PROVIDER_CONFIGURATION_INVALID');
-        const response = await this.client.http.send(
+        const response = await this.client.send(
           WECOM_PROVIDER_CONFIGURATION.suite.suiteToken,
           {
             method: 'POST',
@@ -53,8 +52,8 @@ export class WecomSuiteClient {
           },
           { mode: 'none', signal, deadline }
         );
-        const body = (await response.json()) as Record<string, unknown>;
-        if (!response.ok || body.errcode !== 0 || typeof body.suite_access_token !== 'string' || typeof body.expires_in !== 'number') {
+        const body = await this.client.json(response, 'IDENTITY_PROVIDER_UNAVAILABLE');
+        if (body.errcode !== 0 || typeof body.suite_access_token !== 'string' || typeof body.expires_in !== 'number') {
           throw new DomainError('IDENTITY_PROVIDER_UNAVAILABLE');
         }
         const expires = Date.now() + Math.max(60, body.expires_in - WECOM_PROVIDER_CONFIGURATION.tokenRefreshSkewSeconds) * 1_000;

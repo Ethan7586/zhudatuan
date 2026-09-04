@@ -9,7 +9,7 @@ interface SnapshotRow {
   readonly access_version: number;
   readonly credential_version: number;
   readonly organization_id: string;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly role_assignments: AuthorizationRole[];
   readonly permission_allows: string[];
   readonly permission_denies: string[];
@@ -38,7 +38,7 @@ export class PgAuthorizationRepository implements AuthorizationRepository {
     context: ReadTransactionContext,
     input: Readonly<{
       membership: string;
-      target: 'console' | 'storefront';
+      target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
       operation: string;
       resource: string | null;
     }>

@@ -10,6 +10,8 @@ export interface TransactionOptions {
   readonly deadline: number;
   readonly signal: AbortSignal;
   readonly workload?: 'api' | 'jobs';
+  /** Immutable server-issued authorization evidence inherited by deferred work. */
+  readonly authorization?: Readonly<Record<string, unknown>>;
 }
 
 export interface TransactionManager {

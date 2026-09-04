@@ -2,7 +2,7 @@ import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import { ReferralMember } from '../../domain/model/ReferralMember';
 import type { Identifier } from '../port/Identifier';
@@ -20,7 +20,10 @@ export class MembersApplyHandler implements OperationHandler<'referral.members.a
     const body = bodyRecord(input);
     const member = await this.referrals.eligible(context.transaction, access.scope.id, access.membership.id);
     if (!member) throw new DomainError('REFERRAL_NOT_ELIGIBLE');
-    const model = new ReferralMember(this.identifiers.next('referralmember'), member.scopeId, member.memberId, 'applied', 1, access.actor.id);
+    const setting = await this.referrals.setting(context.transaction, member.scopeId);
+    if (setting?.enabled !== true || setting.recruitEnabled !== true) throw new DomainError('REFERRAL_NOT_ELIGIBLE');
+    const state = setting.reviewRequired === true ? 'applied' : 'active';
+    const model = new ReferralMember(this.identifiers.next('referralmember'), member.scopeId, member.memberId, state, 1, access.actor.id);
     const result = await this.referrals.applyMember(context.transaction, {
       id: model.id,
       scopeId: model.scopeId,
@@ -29,6 +32,7 @@ export class MembersApplyHandler implements OperationHandler<'referral.members.a
       mobile: textField(body, 'mobile', 20),
       makerId: access.actor.id,
       reason: textField(body, 'reason', 500),
+      state,
     });
     return { status: 201, body: result as OperationOutputFor<'referral.members.apply'> };
   }

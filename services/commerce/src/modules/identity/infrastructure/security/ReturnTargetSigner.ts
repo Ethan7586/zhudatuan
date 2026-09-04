@@ -2,7 +2,7 @@ import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { AuthReturnTargets, AuthTarget } from '@shop/config/server';
 import type { ReturnTargetPort, SignedReturnTarget } from '../../application/port/ReturnTargetPort';
 import { NETWORK_CATALOG } from '@shop/config/networkcatalog';
-import { parseStorefrontHandle } from '@shop/contract';
+import { isOperationTarget, parseStorefrontHandle } from '@shop/contract';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
 export type { SignedReturnTarget } from '../../application/port/ReturnTargetPort';
@@ -56,7 +56,7 @@ export class ReturnTargetSigner implements ReturnTargetPort {
       payload.version !== 2 ||
       payload.purpose !== 'returntarget' ||
       (payload.keyVersion !== 'current' && payload.keyVersion !== 'previous') ||
-      (payload.target !== 'console' && payload.target !== 'storefront') ||
+      !isOperationTarget(payload.target) ||
       typeof payload.url !== 'string' ||
       payload.url !== verifiedDestination(this.targets[payload.target], payload.target, payload.url) ||
       typeof payload.expiresAt !== 'string' ||

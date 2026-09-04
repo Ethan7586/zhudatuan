@@ -5,6 +5,7 @@ import type { CatalogReadPort } from '../../../catalog/public/CatalogReadPort';
 import type { ExperienceReadPort } from '../../../experience/public/ExperienceReadPort';
 import type { InventoryReadPort } from '../../../inventory/public/InventoryReadPort';
 import type { PricingReadPort } from '../../../pricing/public/PricingReadPort';
+import type { StorefrontEntry } from '../../../experience/public/ExperienceReadPort';
 import { CatalogMapper } from './CatalogMapper';
 import { assertEntryMall, entryHandle } from './EntryHandle';
 
@@ -17,8 +18,12 @@ export class CatalogQuery {
     private readonly mapper: CatalogMapper
   ) {}
 
-  async execute(input: OperationInputFor<'storefront.catalog.read'>, context: HandlerContext<'storefront.catalog.read'>) {
-    const binding = await this.experience.resolveEntry(context.transaction, entryHandle(context));
+  entry(context: HandlerContext<'storefront.catalog.read'>): Promise<StorefrontEntry> {
+    return this.experience.resolveEntry(context.transaction, entryHandle(context));
+  }
+
+  async execute(input: OperationInputFor<'storefront.catalog.read'>, context: HandlerContext<'storefront.catalog.read'>, resolved?: StorefrontEntry) {
+    const binding = resolved ?? (await this.entry(context));
     assertEntryMall(context, binding.mall);
     const queryInput = input.query ?? {};
     const limit = integer(queryInput.limit, 24);

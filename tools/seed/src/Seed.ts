@@ -2,11 +2,13 @@ import { createHash, createHmac } from 'node:crypto';
 import { Client } from 'pg';
 import { localSeedEnvironment } from '@shop/config/server';
 import { PasswordPolicy } from '../../../services/commerce/src/modules/identity/domain/policy/PasswordPolicy';
-import { KmsClient } from '../../../services/commerce/src/foundation/infrastructure/KmsClient';
+import { HttpKmsClient } from '../../../services/commerce/src/foundation/infrastructure/KmsClient';
 import { localSecret } from './LocalSecrets';
 import { assertLocalOwnership, ensureLocalOwner, LOCAL_OWNER } from './LocalOwner';
 import { ensureLocalChecker } from './LocalChecker';
 import { assertLocalBenefitLedger, ensureLocalBenefits } from './LocalBenefits';
+import { syncMemberProjection } from './MemberProjection';
+import { serializeExperience } from '@shop/contract';
 
 const environment = localSeedEnvironment();
 const [connectionString, password, identityKey] = await Promise.all([localSecret(environment.adminDatabaseConnectionRef), localSecret(environment.ethanPasswordRef), localSecret(environment.identityKeyRef)]);
@@ -14,7 +16,7 @@ const passwordHash = await new PasswordPolicy().hash(password);
 const subjectHash = createHmac('sha256', identityKey).update('ethan').digest('hex');
 const mobile = '+8613800138000';
 const mobileSubjectHash = createHmac('sha256', identityKey).update(mobile).digest('hex');
-const kms = new KmsClient(environment.kmsEndpoint, environment.kmsBearerToken);
+const kms = new HttpKmsClient(environment.kmsEndpoint, environment.kmsBearerToken);
 const mobileEnvelope = await kms.encrypt('pii', 'identity/mobile', mobile, { principal: LOCAL_OWNER.principal });
 const EMPLOYEE_PERMISSIONS = Object.freeze([
   'catalog.listing.read',
@@ -46,6 +48,7 @@ try {
     where id=$1 and principal_id=$4`,
     [LOCAL_OWNER.member, mobileEnvelope.ciphertext, mobileEnvelope.fingerprint, principalId]
   );
+  await syncMemberProjection(client, LOCAL_OWNER.member);
   await client.query("delete from identity.credential where principal_id=$1 and provider in('password','otp')", [principalId]);
   await client.query(
     `insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,rotated_at,created_at)
@@ -180,13 +183,13 @@ async function ensureLocalQualification(database: Client): Promise<void> {
 async function ensureLocalCommercialCatalog(database: Client): Promise<void> {
   await database.query(
     `insert into pricing.pricebook(id,scope_id,currency,name,status,version)
-    values('pricebook-local-zhudatuan','mall-zhudatuan','CNY','主打团福利商城验收价目表','active',1)
+    values('pricebook:local:zhudatuan','mall-zhudatuan','CNY','主打团福利商城验收价目表','active',1)
     on conflict(id) do update set scope_id=excluded.scope_id,currency=excluded.currency,name=excluded.name,status='active',
       version=pricing.pricebook.version+1`
   );
   await database.query(
     `insert into pricing.price(id,book_id,sku_id,amount_minor,compare_minor,effective_at,expires_at)
-    select 'price-local-'||md5(item.sku_id),'pricebook-local-zhudatuan',item.sku_id,
+    select 'price:local:'||md5(item.sku_id),'pricebook:local:zhudatuan',item.sku_id,
       greatest(coalesce(source.amount_minor,10000),100) amount_minor,
       greatest(coalesce(source.compare_minor,source.amount_minor,12800),greatest(coalesce(source.amount_minor,10000),100)) compare_minor,
       '1970-01-01T00:00:00Z',null
@@ -202,7 +205,7 @@ async function ensureLocalCommercialCatalog(database: Client): Promise<void> {
   );
   await database.query(
     `insert into inventory.stockitem(id,scope_id,sku_id,location_id,onhand,safety,version,status,updated_at)
-    select 'stock-local-'||md5(item.sku_id),'mall-zhudatuan',item.sku_id,'local-main',
+    select 'stock:local:'||md5(item.sku_id),'mall-zhudatuan',item.sku_id,'local-main',
       greatest(coalesce(source.onhand,100),coalesce(source.safety,0)+10),coalesce(source.safety,0),1,'active',clock_timestamp()
     from catalog.poolitem item
     left join lateral(select stock.onhand,stock.safety from inventory.stockitem stock
@@ -217,7 +220,7 @@ async function ensureLocalCommercialCatalog(database: Client): Promise<void> {
       (select count(*)::integer from catalog.listing listing where listing.pool_id='pool-local-zhudatuan'
         and listing.id!~'^[a-z][a-z0-9]*:[A-Za-z0-9][A-Za-z0-9.:/-]*$') invalid_listing,
       (select count(*)::integer from catalog.poolitem item where item.pool_id='pool-local-zhudatuan' and item.state='included'
-        and not exists(select 1 from pricing.price price where price.book_id='pricebook-local-zhudatuan' and price.sku_id=item.sku_id
+        and not exists(select 1 from pricing.price price where price.book_id='pricebook:local:zhudatuan' and price.sku_id=item.sku_id
           and price.amount_minor>0 and price.effective_at<=clock_timestamp() and (price.expires_at is null or price.expires_at>clock_timestamp()))) missing_price,
       (select count(*)::integer from catalog.poolitem item where item.pool_id='pool-local-zhudatuan' and item.state='included'
         and not exists(select 1 from inventory.stockitem stock where stock.scope_id='mall-zhudatuan' and stock.sku_id=item.sku_id
@@ -229,17 +232,26 @@ async function ensureLocalCommercialCatalog(database: Client): Promise<void> {
 
 async function ensureLocalMallCatalog(database: Client): Promise<void> {
   const application = 'application:zhudatuan:local';
-  const version = 'version:zhudatuan:local:v1';
-  const configuration = JSON.stringify({
+  const configuration = serializeExperience({
     application,
+    theme: { preset: 'shop', primaryColor: '#1F5EFF', accentColor: '#19A974', logoObjectRef: null, faviconObjectRef: null },
+    navigation: [{ id: `${application}:navigation:home`, label: '首页', page: `${application}:home` }],
+    assets: [],
     pages: [{ blocks: [{ component: 'hero', content: { subtitle: '企业福利，温暖抵达', title: '主打团福利商城' }, id: `${application}:home:hero` }], id: `${application}:home`, path: 'home' }],
     version: 2,
   });
   const contentHash = createHash('sha256').update(configuration).digest('hex');
+  const version = `version:zhudatuan:local:${contentHash.slice(0, 16)}`;
+  const release = `release:zhudatuan:local:${contentHash.slice(0, 16)}`;
+  const publication = `publication:zhudatuan:local:${contentHash.slice(0, 16)}`;
+  const evidence = JSON.stringify({
+    dependencies: Object.fromEntries(['catalog', 'marketing', 'pool', 'qualification', 'pricing', 'inventory', 'resources', 'domain', 'capabilities', 'channel'].map((name) => [name, { ready: true, version: `seed:${contentHash}` }])),
+    issues: [],
+  });
   await database.query(
     `insert into catalog.pool(id,scope_id,kind,name,status,version)
-    values('pool-local-zhudatuan','mall-zhudatuan','private','主打团福利商城 · 本地验收商品池','active',0)
-    on conflict(id) do update set scope_id=excluded.scope_id,name=excluded.name,status='active'`
+    values('pool-local-zhudatuan','mall-zhudatuan','private','主打团福利商城 · 本地验收商品池','active',1)
+    on conflict(id) do update set scope_id=excluded.scope_id,name=excluded.name,status='active',version=greatest(catalog.pool.version,1)`
   );
   await database.query(
     `insert into catalog.poolitem(pool_id,sku_id,state,source_version,added_at)
@@ -253,38 +265,48 @@ async function ensureLocalMallCatalog(database: Client): Promise<void> {
     on conflict(mall_id,pool_id) do update set status='active',effective_at=excluded.effective_at,expires_at=null`
   );
   await database.query(
-    `insert into experience.application(id,mall_id,code,public_slug,name,status,head_version_id,created_at,updated_at,version)
-    values($1,'mall-zhudatuan','ZHUDATUAN_LOCAL','zhudatuan-local','主打团福利商城','active',$2,clock_timestamp(),clock_timestamp(),1)
-    on conflict(id) do update set mall_id=excluded.mall_id,code=excluded.code,public_slug=excluded.public_slug,
-      name=excluded.name,status='active',head_version_id=excluded.head_version_id,updated_at=clock_timestamp()`,
+    `insert into experience.application(id,mall_id,code,public_slug,name,status,is_primary,head_version_id,created_at,updated_at,version)
+    values($1,'mall-zhudatuan','ZHUDATUAN_LOCAL','zhudatuan-local','主打团福利商城','active',true,$2,clock_timestamp(),clock_timestamp(),1)
+    on conflict(id) do update set name=excluded.name,status='active',head_version_id=excluded.head_version_id,
+      version=experience.application.version+1,updated_at=clock_timestamp()
+    where (experience.application.name,experience.application.status,experience.application.head_version_id)
+      is distinct from (excluded.name,excluded.status,excluded.head_version_id)`,
     [application, version]
   );
   await database.query(
-    `insert into experience.version(id,application_id,sequence,schema_version,configuration,configuration_hash,validation_state,reason,created_by,created_at)
-    values($1,$2,1,'2',$3::jsonb,$4,'valid','本地验收已发布装修',$5,clock_timestamp())
-    on conflict(id) do update set configuration=excluded.configuration,configuration_hash=excluded.configuration_hash,
-      validation_state='valid',reason=excluded.reason`,
-    [version, application, configuration, contentHash, LOCAL_OWNER.principal]
+    `insert into experience.version(id,application_id,sequence,schema_version,configuration,configuration_hash,validation_state,
+      validation_issues,publish_evidence,reason,created_by,created_at,frozen_at)
+    values($1,$2,(select coalesce(max(sequence),0)+1 from experience.version where application_id=$2),'2',$3::jsonb,$4,'valid',
+      '[]'::jsonb,$5::jsonb,'本地验收已发布装修',$6,clock_timestamp(),clock_timestamp()) on conflict(id) do nothing`,
+    [version, application, configuration, contentHash, evidence, LOCAL_OWNER.principal]
   );
   await database.query(
     `insert into experience.release(id,application_id,version_id,pool_id,state,effective_at,retired_at,published_by)
-    values('release:zhudatuan:local:v1',$1,$2,'pool-local-zhudatuan','active','1970-01-01T00:00:00Z',null,$3)
-    on conflict(id) do update set version_id=excluded.version_id,pool_id=excluded.pool_id,state='active',effective_at=excluded.effective_at,
-      retired_at=null,published_by=excluded.published_by`,
-    [application, version, LOCAL_OWNER.principal]
+    values($1,$2,$3,'pool-local-zhudatuan','scheduled','1970-01-01T00:00:00Z',null,$4) on conflict(id) do nothing`,
+    [release, application, version, LOCAL_OWNER.principal]
+  );
+  await database.query(
+    `update experience.release set state='retired',retired_at=clock_timestamp()
+    where application_id=$1 and state='active' and id<>$2`,
+    [application, release]
+  );
+  await database.query(
+    `update experience.release set state='active',retired_at=null,failed_at=null,failure_code=null
+    where id=$1 and state in('scheduled','failed')`,
+    [release]
   );
   await database.query(
     `insert into experience.publication(id,release_id,application_id,version_id,content_hash,object_key,object_ref,object_hash,
       object_size,state,staged_at,published_at,failure_code)
-    select 'publication:zhudatuan:local:v1','release:zhudatuan:local:v1',$1,$2,$3::char(64),
-      'experience/'||$1||'/'||$3::text||'.json','local://experience/'||$1||'/'||$3::text,$3::char(64),
+    select $1,$2,$3,$4,$5::char(64),
+      'experience/'||$3||'/'||$5::text||'.json','local://experience/'||$3||'/'||$5::text,$5::char(64),
       octet_length(version.configuration::text),'active',clock_timestamp(),clock_timestamp(),null
-    from experience.version version where version.id=$2
+    from experience.version version where version.id=$4
     on conflict(id) do update set release_id=excluded.release_id,application_id=excluded.application_id,
       version_id=excluded.version_id,content_hash=excluded.content_hash,object_key=excluded.object_key,
       object_ref=excluded.object_ref,object_hash=excluded.object_hash,object_size=excluded.object_size,
       state='active',published_at=clock_timestamp(),failure_code=null`,
-    [application, version, contentHash]
+    [publication, release, application, version, contentHash]
   );
 }
 
@@ -323,19 +345,20 @@ async function ensureLocalSupport(database: Client): Promise<void> {
   );
   await database.query(
     `insert into support.assignmentrule(id,scope_id,name,skill,priorities,weight,state,version,created_at,updated_at)
-    values('support-rule-local-general',$1,'商城综合客服','general',array['low','normal','high','urgent'],100,'active',0,clock_timestamp(),clock_timestamp())
+    values('support-rule-local-general',$1,'商城综合客服','general',array['low','normal','high','urgent'],100,'active',1,clock_timestamp(),clock_timestamp())
     on conflict(id) do update set scope_id=excluded.scope_id,name=excluded.name,skill=excluded.skill,
       priorities=excluded.priorities,weight=excluded.weight,state='active',updated_at=clock_timestamp()`,
     [LOCAL_OWNER.mall]
   );
   await database.query(
-    `insert into support.sla(id,scope_id,priority,response_seconds,resolution_seconds,version) values
-      ('support-sla-local-low',$1,'low',14400,172800,1),
-      ('support-sla-local-normal',$1,'normal',7200,86400,1),
-      ('support-sla-local-high',$1,'high',1800,28800,1),
-      ('support-sla-local-urgent',$1,'urgent',300,7200,1)
+    `insert into support.sla(id,scope_id,priority,response_seconds,resolution_seconds,reopen_seconds,version) values
+      ('support-sla-local-low',$1,'low',14400,172800,604800,1),
+      ('support-sla-local-normal',$1,'normal',7200,86400,604800,1),
+      ('support-sla-local-high',$1,'high',1800,28800,604800,1),
+      ('support-sla-local-urgent',$1,'urgent',300,7200,604800,1)
     on conflict(id) do update set scope_id=excluded.scope_id,priority=excluded.priority,
       response_seconds=excluded.response_seconds,resolution_seconds=excluded.resolution_seconds,
+      reopen_seconds=excluded.reopen_seconds,
       version=greatest(support.sla.version,excluded.version)`,
     [LOCAL_OWNER.mall]
   );

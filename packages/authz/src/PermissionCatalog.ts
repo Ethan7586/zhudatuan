@@ -66,7 +66,7 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "access.override.manage"
   },
   {
-    "code": "access.owner.transfer",
+    "code": "access.ownership.accept",
     "module": "access",
     "category": "access",
     "risk": "critical",
@@ -84,7 +84,49 @@ export const PERMISSION_CATALOG = Object.freeze([
       "brand"
     ],
     "makerChecker": true,
-    "description": "access.owner.transfer"
+    "description": "接受所有权转移"
+  },
+  {
+    "code": "access.ownership.read",
+    "module": "access",
+    "category": "access",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": false,
+    "description": "读取所有者、候选人和待处理转移"
+  },
+  {
+    "code": "access.ownership.transfer",
+    "module": "access",
+    "category": "access",
+    "risk": "critical",
+    "minimumAssurance": 3,
+    "delegatable": false,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": true,
+    "description": "发起或取消所有权转移"
   },
   {
     "code": "access.role.delegate",
@@ -169,6 +211,69 @@ export const PERMISSION_CATALOG = Object.freeze([
     ],
     "makerChecker": true,
     "description": "access.scope.manage"
+  },
+  {
+    "code": "approval.read",
+    "module": "approval",
+    "category": "approval",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": false,
+    "description": "查看审批模板、实例与本人任务"
+  },
+  {
+    "code": "approval.task.decide",
+    "module": "approval",
+    "category": "approval",
+    "risk": "critical",
+    "minimumAssurance": 3,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": true,
+    "description": "审批或驳回分配给本人的审批任务"
+  },
+  {
+    "code": "approval.template.manage",
+    "module": "approval",
+    "category": "approval",
+    "risk": "critical",
+    "minimumAssurance": 3,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": true,
+    "description": "创建、修订、启用或停用审批模板"
   },
   {
     "code": "audit.read",
@@ -1356,6 +1461,24 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "finance.statement.export"
   },
   {
+    "code": "finance.statement.import",
+    "module": "finance",
+    "category": "finance",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department"
+    ],
+    "makerChecker": false,
+    "description": "finance.statement.import"
+  },
+  {
     "code": "finance.statement.read",
     "module": "finance",
     "category": "finance",
@@ -1722,6 +1845,27 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "identity.provider.test"
   },
   {
+    "code": "identity.registration.reset",
+    "module": "identity",
+    "category": "identity",
+    "risk": "critical",
+    "minimumAssurance": 2,
+    "delegatable": false,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": false,
+    "description": "identity.registration.reset"
+  },
+  {
     "code": "identity.session.manage",
     "module": "identity",
     "category": "identity",
@@ -1944,6 +2088,27 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "invoice.request.red"
   },
   {
+    "code": "marketing.manage",
+    "module": "marketing",
+    "category": "marketing",
+    "risk": "critical",
+    "minimumAssurance": 3,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "supplier",
+      "brand",
+      "store"
+    ],
+    "makerChecker": true,
+    "description": "管理、发布和停用营销活动"
+  },
+  {
     "code": "marketing.read",
     "module": "marketing",
     "category": "marketing",
@@ -2154,7 +2319,7 @@ export const PERMISSION_CATALOG = Object.freeze([
       "supplier",
       "brand"
     ],
-    "makerChecker": false,
+    "makerChecker": true,
     "description": "notification.announcement.manage"
   },
   {
@@ -2258,7 +2423,7 @@ export const PERMISSION_CATALOG = Object.freeze([
       "supplier",
       "brand"
     ],
-    "makerChecker": false,
+    "makerChecker": true,
     "description": "notification.template.manage"
   },
   {
@@ -2315,6 +2480,19 @@ export const PERMISSION_CATALOG = Object.freeze([
     ],
     "makerChecker": false,
     "description": "observability.clienterror.read"
+  },
+  {
+    "code": "observability.health.read",
+    "module": "observability",
+    "category": "observability",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": false,
+    "allowedScopeKinds": [
+      "platform"
+    ],
+    "makerChecker": false,
+    "description": "observability.health.read"
   },
   {
     "code": "order.aftersale.apply",
@@ -2374,6 +2552,22 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "order.aftersale.read"
   },
   {
+    "code": "order.cancel",
+    "module": "order",
+    "category": "order",
+    "risk": "elevated",
+    "minimumAssurance": 2,
+    "delegatable": false,
+    "allowedScopeKinds": [
+      "enterprise",
+      "mall",
+      "owner",
+      "self"
+    ],
+    "makerChecker": false,
+    "description": "取消尚未支付且尚未履约的订单"
+  },
+  {
     "code": "order.create",
     "module": "order",
     "category": "order",
@@ -2403,6 +2597,42 @@ export const PERMISSION_CATALOG = Object.freeze([
     ],
     "makerChecker": false,
     "description": "order.export"
+  },
+  {
+    "code": "order.import.manage",
+    "module": "order",
+    "category": "order",
+    "risk": "critical",
+    "minimumAssurance": 3,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department"
+    ],
+    "makerChecker": false,
+    "description": "导入经批准的历史、线下或外部渠道订单"
+  },
+  {
+    "code": "order.import.read",
+    "module": "order",
+    "category": "order",
+    "risk": "high",
+    "minimumAssurance": 1,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department"
+    ],
+    "makerChecker": false,
+    "description": "查看外部订单导入任务和逐行收据"
   },
   {
     "code": "order.read",
@@ -2552,6 +2782,82 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "organization.layer.read"
   },
   {
+    "code": "organization.mall.manage",
+    "module": "organization",
+    "category": "organization",
+    "risk": "critical",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall"
+    ],
+    "makerChecker": false,
+    "description": "创建或维护商城完整资料"
+  },
+  {
+    "code": "organization.mall.read",
+    "module": "organization",
+    "category": "organization",
+    "risk": "high",
+    "minimumAssurance": 1,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall"
+    ],
+    "makerChecker": false,
+    "description": "查看商城完整资料"
+  },
+  {
+    "code": "partner.customer.manage",
+    "module": "partner",
+    "category": "partner",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": false,
+    "description": "partner.customer.manage"
+  },
+  {
+    "code": "partner.customer.read",
+    "module": "partner",
+    "category": "partner",
+    "risk": "elevated",
+    "minimumAssurance": 1,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": false,
+    "description": "partner.customer.read"
+  },
+  {
     "code": "partner.manage",
     "module": "partner",
     "category": "partner",
@@ -2592,6 +2898,19 @@ export const PERMISSION_CATALOG = Object.freeze([
     ],
     "makerChecker": false,
     "description": "partner.read"
+  },
+  {
+    "code": "payment.create",
+    "module": "payment",
+    "category": "payment",
+    "risk": "elevated",
+    "minimumAssurance": 2,
+    "delegatable": false,
+    "allowedScopeKinds": [
+      "owner"
+    ],
+    "makerChecker": false,
+    "description": "payment.create"
   },
   {
     "code": "payment.read",
@@ -2710,7 +3029,7 @@ export const PERMISSION_CATALOG = Object.freeze([
       "supplier",
       "brand"
     ],
-    "makerChecker": false,
+    "makerChecker": true,
     "description": "pricing.rule.manage"
   },
   {
@@ -3151,7 +3470,7 @@ export const PERMISSION_CATALOG = Object.freeze([
       "supplier",
       "brand"
     ],
-    "makerChecker": false,
+    "makerChecker": true,
     "description": "risk.manage"
   },
   {
@@ -3195,6 +3514,69 @@ export const PERMISSION_CATALOG = Object.freeze([
     ],
     "makerChecker": false,
     "description": "runtime.health.read"
+  },
+  {
+    "code": "runtime.import.manage",
+    "module": "runtime",
+    "category": "runtime",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": false,
+    "description": "runtime.import.manage"
+  },
+  {
+    "code": "runtime.task.manage",
+    "module": "runtime",
+    "category": "runtime",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": false,
+    "description": "runtime.task.manage"
+  },
+  {
+    "code": "runtime.task.read",
+    "module": "runtime",
+    "category": "runtime",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": false,
+    "description": "runtime.task.read"
   },
   {
     "code": "support.account.manage",
@@ -3560,7 +3942,25 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "verification.verify"
   },
   {
-    "code": "voucher.batch.read",
+    "code": "voucher.action.manage",
+    "module": "voucher",
+    "category": "voucher",
+    "risk": "critical",
+    "minimumAssurance": 3,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department"
+    ],
+    "makerChecker": true,
+    "description": "批量激活、停用、恢复、作废或延期卡券"
+  },
+  {
+    "code": "voucher.action.read",
     "module": "voucher",
     "category": "voucher",
     "risk": "high",
@@ -3575,10 +3975,49 @@ export const PERMISSION_CATALOG = Object.freeze([
       "department"
     ],
     "makerChecker": false,
-    "description": "voucher.batch.read"
+    "description": "查看卡券批量动作及逐项结果"
   },
   {
-    "code": "voucher.binding.manage",
+    "code": "voucher.credential.export",
+    "module": "voucher",
+    "category": "voucher",
+    "risk": "critical",
+    "minimumAssurance": 3,
+    "delegatable": false,
+    "allowedScopeKinds": [
+      "platform"
+    ],
+    "makerChecker": true,
+    "description": "一次性导出卡号与密钥明文"
+  },
+  {
+    "code": "voucher.credential.manage",
+    "module": "voucher",
+    "category": "voucher",
+    "risk": "critical",
+    "minimumAssurance": 3,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform"
+    ],
+    "makerChecker": false,
+    "description": "创建、生成、导入和关闭平台卡号库"
+  },
+  {
+    "code": "voucher.credential.read",
+    "module": "voucher",
+    "category": "voucher",
+    "risk": "low",
+    "minimumAssurance": 1,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform"
+    ],
+    "makerChecker": false,
+    "description": "查看平台卡号库和脱敏凭证"
+  },
+  {
+    "code": "voucher.export.manage",
     "module": "voucher",
     "category": "voucher",
     "risk": "high",
@@ -3593,10 +4032,46 @@ export const PERMISSION_CATALOG = Object.freeze([
       "department"
     ],
     "makerChecker": false,
-    "description": "voucher.binding.manage"
+    "description": "创建脱敏卡券业务导出"
   },
   {
-    "code": "voucher.binding.read",
+    "code": "voucher.export.read",
+    "module": "voucher",
+    "category": "voucher",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department"
+    ],
+    "makerChecker": false,
+    "description": "查看并领取卡券导出结果"
+  },
+  {
+    "code": "voucher.holder.manage",
+    "module": "voucher",
+    "category": "voucher",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department"
+    ],
+    "makerChecker": false,
+    "description": "绑定或解绑卡券持有人"
+  },
+  {
+    "code": "voucher.holder.read",
     "module": "voucher",
     "category": "voucher",
     "risk": "low",
@@ -3616,10 +4091,10 @@ export const PERMISSION_CATALOG = Object.freeze([
       "self"
     ],
     "makerChecker": false,
-    "description": "voucher.binding.read"
+    "description": "查看本人或授权范围内卡券"
   },
   {
-    "code": "voucher.cardlibrary.allocate",
+    "code": "voucher.issue.manage",
     "module": "voucher",
     "category": "voucher",
     "risk": "critical",
@@ -3634,10 +4109,10 @@ export const PERMISSION_CATALOG = Object.freeze([
       "department"
     ],
     "makerChecker": true,
-    "description": "voucher.cardlibrary.allocate"
+    "description": "提交发券申请、重试发券批次"
   },
   {
-    "code": "voucher.cardlibrary.create",
+    "code": "voucher.issue.read",
     "module": "voucher",
     "category": "voucher",
     "risk": "high",
@@ -3652,28 +4127,10 @@ export const PERMISSION_CATALOG = Object.freeze([
       "department"
     ],
     "makerChecker": false,
-    "description": "voucher.cardlibrary.create"
+    "description": "查看发券申请与批次结果"
   },
   {
-    "code": "voucher.cardlibrary.manage",
-    "module": "voucher",
-    "category": "voucher",
-    "risk": "critical",
-    "minimumAssurance": 3,
-    "delegatable": true,
-    "allowedScopeKinds": [
-      "platform",
-      "distributor",
-      "tenant",
-      "enterprise",
-      "mall",
-      "department"
-    ],
-    "makerChecker": false,
-    "description": "voucher.cardlibrary.manage"
-  },
-  {
-    "code": "voucher.cardlibrary.read",
+    "code": "voucher.job.read",
     "module": "voucher",
     "category": "voucher",
     "risk": "low",
@@ -3688,10 +4145,10 @@ export const PERMISSION_CATALOG = Object.freeze([
       "department"
     ],
     "makerChecker": false,
-    "description": "voucher.cardlibrary.read"
+    "description": "查看卡券生成、导入、发放、动作和导出任务进度"
   },
   {
-    "code": "voucher.history.read",
+    "code": "voucher.product.manage",
     "module": "voucher",
     "category": "voucher",
     "risk": "high",
@@ -3706,46 +4163,10 @@ export const PERMISSION_CATALOG = Object.freeze([
       "department"
     ],
     "makerChecker": false,
-    "description": "voucher.history.read"
+    "description": "创建、修订和管理卡券产品"
   },
   {
-    "code": "voucher.issue",
-    "module": "voucher",
-    "category": "voucher",
-    "risk": "critical",
-    "minimumAssurance": 3,
-    "delegatable": true,
-    "allowedScopeKinds": [
-      "platform",
-      "distributor",
-      "tenant",
-      "enterprise",
-      "mall",
-      "department"
-    ],
-    "makerChecker": true,
-    "description": "voucher.issue"
-  },
-  {
-    "code": "voucher.program.manage",
-    "module": "voucher",
-    "category": "voucher",
-    "risk": "high",
-    "minimumAssurance": 2,
-    "delegatable": true,
-    "allowedScopeKinds": [
-      "platform",
-      "distributor",
-      "tenant",
-      "enterprise",
-      "mall",
-      "department"
-    ],
-    "makerChecker": false,
-    "description": "voucher.program.manage"
-  },
-  {
-    "code": "voucher.program.read",
+    "code": "voucher.product.read",
     "module": "voucher",
     "category": "voucher",
     "risk": "low",
@@ -3760,7 +4181,7 @@ export const PERMISSION_CATALOG = Object.freeze([
       "department"
     ],
     "makerChecker": false,
-    "description": "voucher.program.read"
+    "description": "查看卡券产品及可供给选项"
   },
   {
     "code": "voucher.redemption.read",
@@ -3783,10 +4204,10 @@ export const PERMISSION_CATALOG = Object.freeze([
       "self"
     ],
     "makerChecker": false,
-    "description": "voucher.redemption.read"
+    "description": "查看本人或授权范围内的卡券核销与退款回执"
   },
   {
-    "code": "voucher.redemption.reverse",
+    "code": "voucher.refund.manage",
     "module": "voucher",
     "category": "voucher",
     "risk": "critical",
@@ -3801,10 +4222,33 @@ export const PERMISSION_CATALOG = Object.freeze([
       "department"
     ],
     "makerChecker": true,
-    "description": "voucher.redemption.reverse"
+    "description": "按原核销和退款规则返还卡券余额"
   },
   {
-    "code": "voucher.reserve.decide",
+    "code": "voucher.search.read",
+    "module": "voucher",
+    "category": "voucher",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "supplier",
+      "brand",
+      "store",
+      "owner",
+      "self"
+    ],
+    "makerChecker": false,
+    "description": "脱敏检索、聚合和冻结授权范围内卡券"
+  },
+  {
+    "code": "voucher.stockrequest.manage",
     "module": "voucher",
     "category": "voucher",
     "risk": "critical",
@@ -3819,10 +4263,10 @@ export const PERMISSION_CATALOG = Object.freeze([
       "department"
     ],
     "makerChecker": true,
-    "description": "voucher.reserve.decide"
+    "description": "创建、修订、提交和取消卡券库存申请"
   },
   {
-    "code": "voucher.reserve.read",
+    "code": "voucher.stockrequest.read",
     "module": "voucher",
     "category": "voucher",
     "risk": "high",
@@ -3837,43 +4281,7 @@ export const PERMISSION_CATALOG = Object.freeze([
       "department"
     ],
     "makerChecker": false,
-    "description": "voucher.reserve.read"
-  },
-  {
-    "code": "voucher.reserve.request",
-    "module": "voucher",
-    "category": "voucher",
-    "risk": "high",
-    "minimumAssurance": 2,
-    "delegatable": true,
-    "allowedScopeKinds": [
-      "platform",
-      "distributor",
-      "tenant",
-      "enterprise",
-      "mall",
-      "department"
-    ],
-    "makerChecker": false,
-    "description": "voucher.reserve.request"
-  },
-  {
-    "code": "voucher.status.manage",
-    "module": "voucher",
-    "category": "voucher",
-    "risk": "critical",
-    "minimumAssurance": 3,
-    "delegatable": true,
-    "allowedScopeKinds": [
-      "platform",
-      "distributor",
-      "tenant",
-      "enterprise",
-      "mall",
-      "department"
-    ],
-    "makerChecker": true,
-    "description": "voucher.status.manage"
+    "description": "查看卡券库存申请和可申请数量"
   }
 ] as const satisfies readonly PermissionDefinition[]);
 const byCode: ReadonlyMap<string, PermissionDefinition> = new Map(PERMISSION_CATALOG.map((permission) => [permission.code, permission]));

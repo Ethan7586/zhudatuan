@@ -1,14 +1,14 @@
-import type { WechatScene } from '@shop/config/server';
+import type { PaymentScene } from '../../public';
 import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { PaymentOrderPort } from '../../../order/public';
+import type { OrderPaymentPort } from '../../../order/public';
 import type { VerifiedPaymentWebhook, WebhookInboxRepository } from '../../application/port/WebhookInboxRepository';
 
 export class PgWebhookInboxRepository implements WebhookInboxRepository {
   constructor(
     private readonly transactions: PgTransactionAccess,
-    private readonly orders: Pick<PaymentOrderPort, 'payment'>
+    private readonly orders: Pick<OrderPaymentPort, 'payment'>
   ) {}
 
   async accept(context: WriteTransactionContext, input: Parameters<WebhookInboxRepository['accept']>[1]) {
@@ -89,7 +89,7 @@ interface PaymentTarget {
   readonly amount_minor: number;
   readonly currency: string;
   readonly payer_hash: string | null;
-  readonly scene: WechatScene;
+  readonly scene: PaymentScene;
   readonly application_hash: string;
 }
 

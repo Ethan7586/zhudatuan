@@ -179,7 +179,7 @@ describe.runIf(endpointAvailable)('Identity single-consumption concurrency', () 
 
   it('serializes enrollment identity creation and creates one principal, member and membership', async () => {
     const enrollments = new PgEnrollmentRepository();
-    const members = new MemberPort();
+    const members = new MemberPort({ syncProfile: async () => undefined });
     const access = new PgEmployeeAccessRepository();
     const subjectHash = hash(`${prefix}:subject`);
     const mobileHash = hash(`${prefix}:mobile`);

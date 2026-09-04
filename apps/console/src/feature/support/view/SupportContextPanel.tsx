@@ -18,6 +18,14 @@ export function SupportContextPanel({
   onReopen,
   onAssign,
   onHistory,
+  canAssign,
+  assignmentReady,
+  canClose,
+  canReopen,
+  canReadHistory,
+  canOpenOrder,
+  onOrder,
+  onVerify,
 }: Readonly<{
   open: boolean;
   ticket?: Ticket | undefined;
@@ -30,6 +38,14 @@ export function SupportContextPanel({
   onReopen: () => void;
   onAssign: (agent: string, reason: string) => void;
   onHistory: () => void;
+  canAssign: boolean;
+  assignmentReady: boolean;
+  canClose: boolean;
+  canReopen: boolean;
+  canReadHistory: boolean;
+  canOpenOrder: boolean;
+  onOrder: (order: string) => void;
+  onVerify: () => void;
 }>) {
   const [agent, setAgent] = useState('');
   const [reason, setReason] = useState('');
@@ -73,7 +89,7 @@ export function SupportContextPanel({
             <Row label="渠道" value={channelLabel(ticket.channel)} />
           </ContextSection>
           <ContextSection title="最近订单">
-            {context.orders.length ? context.orders.map((order) => <Row key={order.id} label={order.number} value={`${chineseDomainLabel(order.state)} · ${money(order.totalMinor)}`} />) : <Row label="订单" value="暂无订单" />}
+            {context.orders.length ? context.orders.map((order) => <OrderRow key={order.id} order={order} openable={canOpenOrder} onOpen={onOrder} />) : <Row label="订单" value="暂无订单" />}
           </ContextSection>
           <ContextSection title="福利权益">
             {context.benefits.length ? (
@@ -88,9 +104,9 @@ export function SupportContextPanel({
             <Time label="响应期限" value={ticket.responseDueAt} />
             <Time label="解决期限" value={ticket.resolutionDueAt} />
           </ContextSection>
-          <section className="supportcontextsection">
+          {canAssign ? <section className="supportcontextsection">
             <h3>转派工单</h3>
-            <div className="supportassign">
+            {assignmentReady ? <div className="supportassign">
               <select aria-label="目标客服" value={agent} onChange={(event) => setAgent(event.target.value)} disabled={busy}>
                 <option value="">选择可用客服</option>
                 {agents
@@ -105,19 +121,19 @@ export function SupportContextPanel({
               <Button onPress={() => onAssign(agent, reason)} isDisabled={busy || !agent || reason.trim().length < 4}>
                 确认转派
               </Button>
-            </div>
-          </section>
+            </div> : <div className="supportassignverify"><p>转派会改变当前负责人，请先完成短信二次验证。</p><Button onPress={onVerify}>验证身份后转派</Button></div>}
+          </section> : null}
           <section className="supportcontextactions">
-            <Button onPress={onHistory}>查看完整历史</Button>
-            {ticket.state === 'closed' ? (
+            {canReadHistory ? <Button onPress={onHistory}>查看完整历史</Button> : null}
+            {ticket.state === 'closed' && canReopen ? (
               <Button tone="primary" onPress={onReopen} isDisabled={busy}>
                 重新打开
               </Button>
-            ) : (
+            ) : ticket.state !== 'closed' && canClose ? (
               <Button tone="danger" onPress={onClose} isDisabled={busy}>
                 关闭工单
               </Button>
-            )}
+            ) : null}
           </section>
         </div>
       )}
@@ -147,6 +163,17 @@ function Time({ label, value }: Readonly<{ label: string; value: string }>) {
       <dt>{label}</dt>
       <dd>
         <time dateTime={value}>{formatTime(value)}</time>
+      </dd>
+    </div>
+  );
+}
+function OrderRow({ order, openable, onOpen }: Readonly<{ order: SupportContext['orders'][number]; openable: boolean; onOpen: (order: string) => void }>) {
+  return (
+    <div>
+      <dt>{order.number}</dt>
+      <dd>
+        {chineseDomainLabel(order.state)} · {money(order.totalMinor)}
+        {openable ? <button type="button" className="supportorderlink" onClick={() => onOpen(order.id)}>查看订单</button> : null}
       </dd>
     </div>
   );

@@ -10,12 +10,12 @@ export class BootstrapMapper {
     return Object.freeze({ state: 'complete', version: String(version), asOf, data });
   }
 
-  unavailable<T>(): BootstrapSection<T> {
-    return Object.freeze({ state: 'unavailable', version: '0', asOf: new Date().toISOString(), data: null });
+  unavailable<T>(asOf = new Date().toISOString()): BootstrapSection<T> {
+    return Object.freeze({ state: 'unavailable', version: '0', asOf, data: null });
   }
 
-  failed<T>(): BootstrapSection<T> {
-    return Object.freeze({ state: 'failed', version: '0', asOf: new Date().toISOString(), data: null });
+  failed<T>(asOf = new Date().toISOString()): BootstrapSection<T> {
+    return Object.freeze({ state: 'failed', version: '0', asOf, data: null });
   }
 
   result(input: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {

@@ -1,8 +1,9 @@
-import type { KeyboardEvent, MouseEvent } from 'react';
-import { chineseReference } from '@shop/presentation';
+import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import { chineseReference, presentCatalogGap, presentProductSource, presentProductStatus } from '@shop/presentation';
 import { ProductIcon } from './ProductIcon';
 import type { Listing } from '../model/Product';
-export type ProductColumnKey = 'category' | 'sku' | 'status' | 'updated';
+import { ProductSelectionBar } from './ProductSelectionBar';
+export type ProductColumnKey = 'category' | 'sku' | 'malls' | 'price' | 'stock' | 'status' | 'updated';
 
 interface ProductTableProps {
   readonly rows: readonly Listing[];
@@ -13,29 +14,18 @@ interface ProductTableProps {
   readonly onToggleAll: () => void;
   readonly onOpen: (row: Listing) => void;
   readonly onBatch: (published: boolean) => void;
+  readonly canBatch: boolean;
+  readonly batchReason?: string;
 }
 
-export function ProductTable({ rows, visibleColumns, selected, activeId, onToggle, onToggleAll, onOpen, onBatch }: ProductTableProps) {
+export function ProductTable({ rows, visibleColumns, selected, activeId, onToggle, onToggleAll, onOpen, onBatch, canBatch, batchReason }: ProductTableProps) {
   const allSelected = rows.length > 0 && rows.every((row) => selected.has(row.id));
   return (
     <section className="producttablecard" aria-labelledby="productlisttitle">
       <h2 id="productlisttitle" className="sr-only">
         商品列表
       </h2>
-      {selected.size === 0 ? null : (
-        <div className="productselectionbar" role="status">
-          <span>
-            已选择当前页 <strong>{selected.size}</strong> 项
-          </span>
-          <span>仅处理当前页已选记录，服务端按可见范围再次收敛</span>
-          <button type="button" onClick={() => onBatch(true)}>
-            批量上架
-          </button>
-          <button type="button" onClick={() => onBatch(false)}>
-            批量下架
-          </button>
-        </div>
-      )}
+      <ProductSelectionBar count={selected.size} canBatch={canBatch} onBatch={onBatch} {...(batchReason === undefined ? {} : { batchReason })} />
       <div className="producttablewrap">
         <table aria-label="商品列表">
           <thead>
@@ -44,8 +34,11 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                 <input type="checkbox" aria-label="选择本页商品" checked={allSelected} onChange={onToggleAll} />
               </th>
               <th>商品信息</th>
-              {visibleColumns.has('category') ? <th>商品类型</th> : null}
-              {visibleColumns.has('sku') ? <th>商品规格</th> : null}
+              {visibleColumns.has('category') ? <th>分类 / 来源</th> : null}
+              {visibleColumns.has('sku') ? <th>SKU 摘要</th> : null}
+              {visibleColumns.has('malls') ? <th>商城覆盖</th> : null}
+              {visibleColumns.has('price') ? <th>有效售价</th> : null}
+              {visibleColumns.has('stock') ? <th>可售库存</th> : null}
               {visibleColumns.has('status') ? <th>状态</th> : null}
               {visibleColumns.has('updated') ? <th>更新时间</th> : null}
               <th>操作</th>
@@ -57,7 +50,7 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                 <td className="productcheckcell">
                   <input type="checkbox" aria-label={`选择 ${row.title}`} checked={selected.has(row.id)} onClick={stopClick} onChange={() => onToggle(row.id)} />
                 </td>
-                <td>
+                <td data-label="商品信息">
                   <div className="productidentity">
                     <ProductThumbnail row={row} />
                     <button
@@ -73,22 +66,32 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                   </div>
                 </td>
                 {visibleColumns.has('category') ? (
-                  <td>
-                    {productType(row.product_type)}
+                  <td data-label="分类与来源">
+                    <CellPair primary={row.category_name ?? '分类待映射'} secondary={presentProductSource(row.source, row.source_partner_id)} />
                   </td>
                 ) : null}
                 {visibleColumns.has('sku') ? (
-                  <td>
-                    {chineseReference('规格', row.sku_id)}
+                  <td data-label="规格摘要">
+                    <CellPair primary={`${formatCount(row.sku_count)} / ${formatCount(row.sku_total)}`} secondary={row.code ?? chineseReference('规格', row.sku_id)} />
                   </td>
                 ) : null}
+                {visibleColumns.has('malls') ? (
+                  <td data-label="商城覆盖">
+                    <CellPair primary={`${formatCount(row.mall_count)} / ${formatCount(row.mall_total)}`} secondary={row.pool_name ?? <DataGap label={gapLabel(row, 'pool')} onOpen={() => onOpen(row)} />} />
+                  </td>
+                ) : null}
+                {visibleColumns.has('price') ? (
+                  <td className="productmoney" data-label="有效售价">{row.price_amount_minor === null ? <DataGap label={gapLabel(row, 'price')} onOpen={() => onOpen(row)} /> : formatMoney(row.price_amount_minor, row.price_currency)}</td>
+                ) : null}
+                {visibleColumns.has('stock') ? <td data-label="可售库存">{row.saleable_stock === null ? <DataGap label={gapLabel(row, 'stock')} onOpen={() => onOpen(row)} /> : formatCount(row.saleable_stock)}</td> : null}
                 {visibleColumns.has('status') ? (
-                  <td>
+                  <td data-label="商品状态">
                     <StatusBadge status={row.status} />
+                    {row.qualification_eligible === false ? <DataGap label="资格未通过" onOpen={() => onOpen(row)} /> : null}
                   </td>
                 ) : null}
-                {visibleColumns.has('updated') ? <td className="producttime">{formatTime(row.cursor_sort)}</td> : null}
-                <td>
+                {visibleColumns.has('updated') ? <td className="producttime" data-label="更新时间">{formatTime(row.cursor_sort)}</td> : null}
+                <td data-label="可用操作">
                   <div className="productrowactions">
                     <button
                       type="button"
@@ -130,8 +133,33 @@ function ProductThumbnail({ row }: Readonly<{ row: Listing }>) {
   );
 }
 
+function CellPair({ primary, secondary }: Readonly<{ primary: string; secondary: ReactNode }>) {
+  return (
+    <span className="productcellpair">
+      <strong>{primary}</strong>
+      <small>{secondary}</small>
+    </span>
+  );
+}
+
+function DataGap({ label, onOpen }: Readonly<{ label: string; onOpen: () => void }>) {
+  return (
+    <button
+      type="button"
+      className="productdatagap"
+      title={`${label}，查看修复方法`}
+      onClick={(event) => {
+        event.stopPropagation();
+        onOpen();
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
 export function StatusBadge({ status }: Readonly<{ status: string }>) {
-  const mapped = statusLabel(status);
+  const mapped = presentProductStatus(status);
   return (
     <span className="productstatus" data-tone={mapped.tone}>
       <i aria-hidden="true">
@@ -142,25 +170,18 @@ export function StatusBadge({ status }: Readonly<{ status: string }>) {
   );
 }
 
-function statusLabel(status: string): Readonly<{ label: string; tone: string; icon: 'check' | 'warning' }> {
-  if (status === 'available') return { label: '已上架', tone: 'success', icon: 'check' };
-  if (status === 'needs_attention') return { label: '待处理', tone: 'warning', icon: 'warning' };
-  if (status === 'pending_listing') return { label: '待上架', tone: 'info', icon: 'warning' };
-  if (status === 'pending_review') return { label: '待审核', tone: 'info', icon: 'warning' };
-  if (status === 'unpublished') return { label: '已下架', tone: 'muted', icon: 'warning' };
-  if (status === 'published') return { label: '已上架', tone: 'success', icon: 'check' };
-  if (status === 'partial') return { label: '部分上架', tone: 'warning', icon: 'warning' };
-  if (status === 'pending') return { label: '待上架', tone: 'info', icon: 'warning' };
-  if (status === 'review') return { label: '待审核', tone: 'info', icon: 'warning' };
-  if (status === 'incomplete') return { label: '待完善', tone: 'warning', icon: 'warning' };
-  if (status === 'offline' || status === 'archived') return { label: '已下架', tone: 'muted', icon: 'warning' };
-  return { label: status, tone: 'neutral', icon: 'check' };
+function gapLabel(row: Listing, kind: 'pool' | 'price' | 'stock'): string {
+  if (kind === 'pool') return row.data_gaps.includes('pool_missing') ? presentCatalogGap('pool_missing') : '直属范围';
+  if (kind === 'price') return presentCatalogGap(row.data_gaps.includes('pricing_unavailable') ? 'pricing_unavailable' : 'price_missing');
+  return presentCatalogGap(row.data_gaps.includes('inventory_unavailable') ? 'inventory_unavailable' : 'inventory_missing');
 }
 
-function productType(value: string | null | undefined): string {
-  if (value === 'physical') return '实物商品';
-  if (value === 'digital') return '数字商品';
-  return value ?? '分类合同待补';
+function formatMoney(cents: number, currency: string | null): string {
+  return new Intl.NumberFormat('zh-CN', { style: 'currency', currency: currency ?? 'CNY' }).format(cents / 100);
+}
+
+function formatCount(value: number): string {
+  return new Intl.NumberFormat('zh-CN').format(value);
 }
 
 function formatTime(value: string | undefined): string {

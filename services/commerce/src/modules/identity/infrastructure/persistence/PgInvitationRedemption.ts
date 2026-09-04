@@ -44,7 +44,7 @@ export class PgInvitationRedemption {
       id: string;
       invitation_id: string;
       kind: InvitationState['kind'];
-      target: 'console' | 'storefront';
+      target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
       recipient_hash: Buffer | null;
       state: 'reserved' | 'proofpending';
       proof_method: 'otp' | 'sso' | 'terms';

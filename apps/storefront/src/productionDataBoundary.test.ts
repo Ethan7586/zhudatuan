@@ -1,10 +1,11 @@
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const sourceRoot = dirname(fileURLToPath(import.meta.url));
 const blockedSegments = ['/mock/', '/services/mallService', '/services/mallState', '/services/mallCatalogCart', '/services/mallOrders', '/screens/', '/components/home/', '/components/security/', '/features/architecture/'];
+const features = ['account', 'aftersale', 'benefit', 'cart', 'catalog', 'checkout', 'home', 'notification', 'order', 'payment', 'product', 'referral', 'security', 'support', 'voucher'];
 
 function resolveSourceImport(importer: string, specifier: string) {
   if (!specifier.startsWith('.')) return null;
@@ -53,4 +54,18 @@ describe('production storefront data boundary', () => {
     expect(graph.some((file) => /\/src\/shell\/(?:Desktop|Tablet|Mobile)Shell\.tsx$/.test(file))).toBe(false);
     expect(graph.some((file) => file.endsWith('/src/App.tsx'))).toBe(false);
   });
+
+  it('keeps every canonical feature tested without device-specific business forks', () => {
+    const featureRoot = resolve(sourceRoot, 'feature');
+    expect(readdirSync(featureRoot, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map(({ name }) => name).sort()).toEqual(features);
+    for (const feature of features) {
+      const files = sourceFiles(resolve(featureRoot, feature));
+      expect(files.some((file) => /\.test\.tsx?$/.test(file)), `${feature} must retain an executable test`).toBe(true);
+      expect(files.filter((file) => /(?:^|\/)(?:desktop|laptop|tablet|mobile|android|miniprogram)(?:\/|[A-Z.])/i.test(file))).toEqual([]);
+    }
+  });
 });
+
+function sourceFiles(root: string): string[] {
+  return readdirSync(root, { withFileTypes: true }).flatMap((entry) => entry.isDirectory() ? sourceFiles(resolve(root, entry.name)) : [resolve(root, entry.name)]);
+}

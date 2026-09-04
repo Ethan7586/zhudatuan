@@ -1,4 +1,14 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleRegistry';
-export const Manifest = defineModuleManifest('support', ['access', 'order', 'benefit', 'organization', 'member'], ['event.stream', 'kms.client', 'object.store', 'secret.store'], {
-  jobs: { dependencies: ['runtime'], bindings: ['runtime'], services: ['database.pool', 'object.store', 'event.stream'] },
+import { CAPABILITY_CODES_BY_OWNER } from '@shop/contract';
+import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { SUPPORT_PORTS } from './public';
+
+export const SupportCapabilities = CAPABILITY_CODES_BY_OWNER.support;
+
+export const Manifest = defineModuleManifest({
+  id: 'support',
+  dependencies: ['access', 'order', 'benefit', 'organization', 'member'],
+  services: ['event.stream', 'kms.client', 'object.store', 'secret.store'],
+  ports: SUPPORT_PORTS,
+  workloads: { jobs: { dependencies: ['runtime'], bindings: ['runtime'], services: ['database.pool', 'object.store', 'event.stream'] } },
+  capabilities: SupportCapabilities,
 });

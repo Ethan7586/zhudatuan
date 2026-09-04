@@ -39,7 +39,7 @@ export function AfterSalePanel({
     );
   return viewmodel.data === undefined ? null : (
     <>
-      <AfterSaleTable rows={viewmodel.data.items} {...(selected === undefined ? {} : { activeOrder: selected })} onOpen={onOpen} />
+      <AfterSaleTable rows={viewmodel.data.items} {...(selected === undefined ? {} : { activeOrder: selected })} onOpen={onOpen} canApprove={viewmodel.canApprove} canReject={viewmodel.canReject} canReceiveReturn={viewmodel.canReceiveReturn} canInspectReturn={viewmodel.canInspectReturn} onDecision={viewmodel.actions.openDecision} onReturn={viewmodel.actions.openReturn} />
       {viewmodel.failed ? (
         <p className="orderstalebanner" role="status">
           刷新失败，当前保留最近一次已验证数据：{viewmodel.error}

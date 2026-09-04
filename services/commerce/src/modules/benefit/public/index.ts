@@ -1,6 +1,6 @@
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { BenefitGateway } from '../application/port/BenefitPort';
-export type { BenefitGateway, BenefitChoice, BenefitRefund, BenefitTender } from '../application/port/BenefitPort';
+import type { BenefitGateway } from './BenefitPort';
+export type { BenefitGateway, BenefitChoice, BenefitRefund, BenefitTender } from './BenefitPort';
 export type CheckoutBenefitPort = Pick<BenefitGateway, 'preview' | 'available' | 'reserve'>;
 export type PaymentBenefitPort = Pick<BenefitGateway, 'consume' | 'release' | 'refund'>;
 export const CHECKOUT_BENEFIT_PORT = publicPort<CheckoutBenefitPort>('benefit', 'checkout');

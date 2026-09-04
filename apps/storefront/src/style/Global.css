@@ -1,6 +1,7 @@
 @import '@shop/design/tokens.css';
 @import '@shop/design/base.css' layer(base);
 @import 'tailwindcss/index.css';
+@import '@shop/design/tailwind.css';
 
 * {
   box-sizing: border-box;
@@ -16,6 +17,23 @@ body {
   background: var(--sw-background);
   color: var(--sw-text);
   font-family: var(--sw-font-sans);
+}
+
+.storefronttheme {
+  min-height: 100dvh;
+}
+
+.storefronttheme[data-published-theme='true'] {
+  --sw-brand: var(--storefront-primary);
+  --sw-brand-hover: color-mix(in srgb, var(--storefront-primary) 84%, var(--sw-brand-ink));
+  --sw-brand-pressed: color-mix(in srgb, var(--storefront-primary) 72%, var(--sw-brand-ink));
+  --sw-brand-dark: color-mix(in srgb, var(--storefront-primary) 68%, var(--sw-brand-ink));
+  --sw-brand-light: color-mix(in srgb, var(--storefront-primary) 12%, var(--sw-surface));
+  --sw-brand-faint: color-mix(in srgb, var(--storefront-primary) 6%, var(--sw-surface));
+  --sw-brand-gradient: linear-gradient(135deg, var(--storefront-primary) 0%, var(--sw-brand-dark) 100%);
+  --sw-price: var(--storefront-accent);
+  --sw-promotion: var(--storefront-accent);
+  --sw-focus-color: color-mix(in srgb, var(--storefront-primary) 16%, transparent);
 }
 
 button,

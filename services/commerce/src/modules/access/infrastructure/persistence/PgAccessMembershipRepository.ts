@@ -1,6 +1,9 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { ActiveMembershipReference, DirectoryMembershipReference, MemberRecord } from '../../application/port/AccessRepository';
+import type { MemberProfileProjection } from '../../public/MemberAccessPort';
+import { isOperationTarget, type OperationTarget } from '@shop/contract';
+import { DomainError } from '../../../../foundation/domain/DomainError';
 interface MemberRow {
   readonly id: string;
   readonly member_id: string;
@@ -9,6 +12,8 @@ interface MemberRow {
   readonly status: string;
   readonly access_version: number;
   readonly joined_at: Date | null;
+  readonly registration_reset_allowed: boolean;
+  readonly registration_reset_block_reason: 'self' | 'protected' | 'inactive' | null;
 }
 interface IdentityMembershipRow {
   readonly id: string;
@@ -23,22 +28,22 @@ interface IdentityMembershipRow {
 }
 export class PgAccessMembershipRepository {
   protected readonly transactions = new PgTransactionAccess();
-  async activeMemberships(context: ReadTransactionContext, member: string, target: 'console' | 'storefront'): Promise<readonly ActiveMembershipReference[]> {
+  async activeMemberships(context: ReadTransactionContext, member: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<readonly ActiveMembershipReference[]> {
     const database = this.transactions.database(context);
     const result = await database.query<IdentityMembershipRow>(
       `select id,principal_id,client,organization_id,access_version,display_name,organization_name,scope_kind,role_label
       from access.identity_memberships($1,$2,null) order by organization_name,id`,
       [member, target]
     );
-    return Object.freeze(result.rows.map(identityMembership));
+    return Object.freeze(result.rows.map((row) => identityMembership(row, target)));
   }
-  async lockSession(context: WriteTransactionContext, membership: string, target: 'console' | 'storefront'): Promise<number | null> {
+  async lockSession(context: WriteTransactionContext, membership: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<number | null> {
     const database = this.transactions.database(context);
     const result = await database.query<{
       access_version: number;
     }>(
       `select access_version from access.membership where id=$1
-      and status='active' and (case when client='storefront' then 'storefront' else 'console' end)=$2 for update`,
+      and status='active' and (($2 in ('storefront','miniapp') and client='storefront') or ($2='console' and client='operator') or client=$2) for update`,
       [membership, target]
     );
     return result.rows[0] === undefined ? null : Number(result.rows[0].access_version);
@@ -90,23 +95,49 @@ export class PgAccessMembershipRepository {
     );
     return result.rows[0]?.eligible === true;
   }
-  async memberPage(context: ReadTransactionContext, organization: string, after: string | null, limit: number): Promise<readonly MemberRecord[]> {
+  async memberPage(context: ReadTransactionContext, organization: string, actorMembership: string, after: string | null, limit: number): Promise<readonly MemberRecord[]> {
     const database = this.transactions.database(context);
     const result = await database.query<MemberRow>(
-      `select id,member_id,organization_id,employee_no,status,access_version,joined_at
-      from access.membership where organization_id=$1 and ($2::text is null or id>$2) order by id limit $3`,
-      [organization, after, limit]
+      `select membership.id,membership.member_id,membership.organization_id,membership.employee_no,membership.status,
+      membership.access_version,membership.joined_at,
+      block.reason is null registration_reset_allowed,block.reason registration_reset_block_reason
+      from access.membership membership
+      left join lateral (
+        select case
+          when membership.id=$2 then 'self'
+          when membership.status not in('active','suspended') then 'inactive'
+          when exists(select 1 from access.membershiprole assignment join access.role role on role.id=assignment.role_id
+            where assignment.membership_id=membership.id and role.kind='owner' and role.status='active'
+              and assignment.effective_at<=clock_timestamp()
+              and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())) then 'protected'
+          else null end reason
+      ) block on true
+      where membership.organization_id=$1 and ($3::text is null or membership.id>$3)
+      order by membership.id limit $4`,
+      [organization, actorMembership, after, limit]
     );
     return Object.freeze(result.rows.map(memberRecord));
   }
   async memberProfile(context: ReadTransactionContext, membership: string): Promise<MemberRecord | null> {
     const database = this.transactions.database(context);
     const result = await database.query<MemberRow>(
-      `select id,member_id,organization_id,employee_no,status,access_version,joined_at
+      `select id,member_id,organization_id,employee_no,status,access_version,joined_at,
+      false registration_reset_allowed,'protected'::text registration_reset_block_reason
       from access.membership where id=$1 and status='active'`,
       [membership]
     );
     return result.rows[0] ? memberRecord(result.rows[0]) : null;
+  }
+  async upsertMemberProfile(context: WriteTransactionContext, profile: MemberProfileProjection): Promise<void> {
+    const database = this.transactions.database(context);
+    await database.query(
+      `insert into access.memberprofile(member_id,display_name,mobile_masked,source_version,updated_at)
+      values($1,$2,$3,$4,clock_timestamp()) on conflict(member_id) do update set
+      display_name=excluded.display_name,mobile_masked=excluded.mobile_masked,
+      source_version=excluded.source_version,updated_at=excluded.updated_at
+      where access.memberprofile.source_version<=excluded.source_version`,
+      [profile.member, profile.displayName, profile.mobileMasked, profile.sourceVersion]
+    );
   }
   async setEmployeeNumber(context: WriteTransactionContext, membership: string, employee: string | null): Promise<boolean> {
     const database = this.transactions.database(context);
@@ -131,6 +162,32 @@ export class PgAccessMembershipRepository {
     );
     const row = result.rows[0];
     return row ? Object.freeze({ member: row.member_id, accessVersion: Number(row.access_version) }) : null;
+  }
+  async resetMemberRegistrations(context: WriteTransactionContext, member: string, actorMembership: string): Promise<readonly import('../../application/port/AccessRepository').VersionChange[] | null> {
+    const database = this.transactions.database(context);
+    const authorization = await database.query<Readonly<{ actor_owner: boolean; target_protected: boolean }>>(
+      `select
+      exists(select 1 from access.membershiprole assignment join access.role role on role.id=assignment.role_id
+        join access.membership actor on actor.id=assignment.membership_id
+        where actor.id=$2 and actor.status='active' and role.kind='owner' and role.status='active'
+          and assignment.effective_at<=clock_timestamp() and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
+          and access.scope_allowed(actor.organization_id)) actor_owner,
+      exists(select 1 from access.membership target left join access.membershiprole assignment on assignment.membership_id=target.id
+        left join access.role role on role.id=assignment.role_id and role.status='active'
+        where target.member_id=$1 and (target.id=$2 or (role.kind='owner' and assignment.effective_at<=clock_timestamp()
+          and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())))) target_protected`,
+      [member, actorMembership]
+    );
+    const gate = authorization.rows[0];
+    if (!gate?.actor_owner) return null;
+    if (gate.target_protected) throw new DomainError('OWNER_MEMBERSHIP_PROTECTED');
+    const changed = await database.query<Readonly<{ membership_id: string; organization_id: string; access_version: number }>>(
+      `update access.membership membership set status='left',left_at=clock_timestamp(),access_version=access_version+1
+      where membership.member_id=$1 and membership.status<>'left' and access.scope_allowed(membership.organization_id)
+      returning membership.id membership_id,membership.organization_id,membership.access_version`,
+      [member]
+    );
+    return Object.freeze(changed.rows.map((row) => Object.freeze({ membership: row.membership_id, organization: row.organization_id, version: Number(row.access_version) })));
   }
   async setMembershipStatus(context: WriteTransactionContext, membership: string, status: 'active' | 'suspended' | 'left'): Promise<boolean> {
     const database = this.transactions.database(context);
@@ -204,10 +261,10 @@ export class PgAccessMembershipRepository {
   }
 }
 
-function identityMembership(row: IdentityMembershipRow): ActiveMembershipReference {
+function identityMembership(row: IdentityMembershipRow, requested?: OperationTarget): ActiveMembershipReference {
   return Object.freeze({
     id: row.id,
-    client: row.client === 'storefront' ? 'storefront' : 'console',
+    client: requested ?? membershipTarget(row.client),
     organization: row.organization_id,
     accessVersion: Number(row.access_version),
     displayName: row.display_name,
@@ -218,6 +275,21 @@ function identityMembership(row: IdentityMembershipRow): ActiveMembershipReferen
     logoUrl: null,
   });
 }
+function membershipTarget(value: string): OperationTarget {
+  const target = value === 'operator' ? 'console' : value;
+  if (!isOperationTarget(target) || target === 'miniapp') throw new Error('MEMBERSHIP_CLIENT_INVALID');
+  return target;
+}
 function memberRecord(row: MemberRow): MemberRecord {
-  return Object.freeze({ id: row.id, member: row.member_id, organization: row.organization_id, employee: row.employee_no, status: row.status, accessVersion: Number(row.access_version), joinedAt: row.joined_at });
+  return Object.freeze({
+    id: row.id,
+    member: row.member_id,
+    organization: row.organization_id,
+    employee: row.employee_no,
+    status: row.status,
+    accessVersion: Number(row.access_version),
+    joinedAt: row.joined_at,
+    registrationResetAllowed: row.registration_reset_allowed,
+    registrationResetBlockReason: row.registration_reset_block_reason,
+  });
 }

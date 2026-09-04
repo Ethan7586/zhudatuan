@@ -38,13 +38,17 @@ describe('PgAuthTicket exchange', () => {
     const accepted = queries[1]!;
     expect(accepted.values[4]).toEqual([hash(currentSessionToken)]);
     expect(accepted.values[5]).toBe(hash(nextSessionToken));
+    expect(accepted.values[6]).toMatch(/^refreshtoken:/);
     expect(accepted.values[4]).not.toContain(accepted.values[5]);
-    expect(accepted.text).toContain('session.token_hash=any($5::text[])');
-    expect(accepted.text).toContain('for update of ticket,session');
+    expect(accepted.text).toContain('token.token_hash=any($5::text[])');
+    expect(accepted.text).toContain('token.used_at is null');
+    expect(accepted.text).toContain('for update of ticket,session,token');
     expect(accepted.text).toContain('update identity.authticket ticket set consumed_at=clock_timestamp()');
     expect(accepted.text).toContain('update identity.session session set token_hash=$6');
-    expect(accepted.text).toContain('where session.id=consumed.session_id and session.token_hash=any($5::text[])');
-    expect(accepted.text).toContain('select target,expires_at from rotated');
+    expect(accepted.text).toContain('update identity.refreshtoken token set used_at=clock_timestamp()');
+    expect(accepted.text).toContain('where session.id=used.session_id and session.token_hash=any($5::text[])');
+    expect(accepted.text).toContain('insert into identity.refreshtoken');
+    expect(accepted.text).toContain('select rotated.target,rotated.expires_at');
   });
 });
 

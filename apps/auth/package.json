@@ -10,6 +10,7 @@
     "test:component": "vitest run --config vitest.config.ts test/integration/App.test.tsx",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
+    "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

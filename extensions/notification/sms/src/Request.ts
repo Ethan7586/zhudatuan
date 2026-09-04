@@ -10,14 +10,19 @@ export interface SmsMessage {
   readonly outId: string;
 }
 
-export async function sendAliyunSms(endpoint: string, message: SmsMessage, credential: SmsAccessCredential, signal: AbortSignal, transport: Transport = new HttpTransport()): Promise<string> {
-  const response = await transport.send(createAliyunRequest(endpoint, message, credential, new Date(), randomUUID(), signal));
+export interface SmsTraceContext {
+  readonly requestId?: string;
+  readonly traceId?: string;
+}
+
+export async function sendAliyunSms(endpoint: string, message: SmsMessage, credential: SmsAccessCredential, signal: AbortSignal, trace: SmsTraceContext = {}, transport: Transport = new HttpTransport()): Promise<string> {
+  const response = await transport.send(createAliyunRequest(endpoint, message, credential, new Date(), randomUUID(), signal, trace));
   const body = parseResponse(response.body);
   if (response.status < 200 || response.status >= 300 || body.Code !== 'OK' || !body.BizId) throw new Error(providerRejection(body.Code));
   return body.BizId;
 }
 
-export function createAliyunRequest(endpoint: string, message: SmsMessage, credential: SmsAccessCredential, now: Date, nonce: string, signal?: AbortSignal): TransportRequest {
+export function createAliyunRequest(endpoint: string, message: SmsMessage, credential: SmsAccessCredential, now: Date, nonce: string, signal?: AbortSignal, trace: SmsTraceContext = {}): TransportRequest {
   const query = canonicalQuery({ OutId: message.outId, PhoneNumbers: message.phoneNumbers, SignName: message.signName, TemplateCode: message.templateCode, TemplateParam: message.templateParam });
   const payloadHash = sha256('');
   const headers: Record<string, string> = {
@@ -29,6 +34,8 @@ export function createAliyunRequest(endpoint: string, message: SmsMessage, crede
     'x-acs-version': '2017-05-25',
   };
   if (credential.securityToken) headers['x-acs-security-token'] = credential.securityToken;
+  if (trace.requestId) headers['x-request-id'] = safeTrace(trace.requestId);
+  if (trace.traceId) headers['x-trace-id'] = safeTrace(trace.traceId);
   const signedHeaders = Object.keys(headers).sort();
   const canonicalHeaders = signedHeaders.map((name) => `${name}:${headers[name]!.trim()}`).join('\n');
   const canonicalRequest = ['POST', '/', query, `${canonicalHeaders}\n`, signedHeaders.join(';'), payloadHash].join('\n');
@@ -37,6 +44,11 @@ export function createAliyunRequest(endpoint: string, message: SmsMessage, crede
     .digest('hex');
   headers.authorization = `ACS3-HMAC-SHA256 Credential=${credential.accessKeyId},SignedHeaders=${signedHeaders.join(';')},Signature=${signature}`;
   return Object.freeze({ url: `https://${endpoint}/?${query}`, method: 'POST', headers: Object.freeze(headers), ...(signal ? { signal } : {}) });
+}
+
+function safeTrace(value: string): string {
+  if (!/^[A-Za-z0-9:._-]{1,128}$/.test(value)) throw new Error('ALIYUN_SMS_TRACE_INVALID');
+  return value;
 }
 
 function canonicalQuery(values: Readonly<Record<string, string>>): string {

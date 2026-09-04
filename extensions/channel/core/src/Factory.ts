@@ -1,9 +1,10 @@
-import type { ChannelProvider, ProviderManifest, UnsignedProviderManifest } from '@shop/contract';
+import { manifestPayload, type ChannelProvider, type ProviderManifest, type UnsignedProviderManifest } from '@shop/contract';
 import type { ProviderPorts } from '@shop/contract';
 import type { ProviderMapper } from './Mapper';
 import { createPorts, type ProviderOperations } from './PortFactory';
 import { Provider } from './Provider';
-import { validateConnection, type IntegrationClient, type IntegrationConnection } from './integration';
+import type { RequestExecutor } from './RequestExecutor';
+import { validateConnection, type IntegrationConnection } from './integration';
 
 export interface ProviderInstallation {
   readonly manifest: ProviderManifest;
@@ -16,11 +17,17 @@ export interface LocalProviderInstallation {
   health(): Promise<boolean>;
 }
 
+export interface LocalProviderRuntime {
+  readonly scope: string;
+  invoke(operation: string, arguments_: readonly unknown[]): Promise<unknown>;
+}
+
 export interface ProviderFactory {
   readonly id: string;
   readonly transport: 'remote' | 'local';
   readonly definition: UnsignedProviderManifest;
   readonly operations: readonly string[];
+  readonly provision?: (runtime: LocalProviderRuntime) => LocalProviderInstallation;
   create(installation: ProviderInstallation): ChannelProvider;
 }
 
@@ -28,7 +35,7 @@ export interface RemoteProviderDefinition {
   readonly definition: UnsignedProviderManifest;
   readonly operations: ProviderOperations;
   readonly mapper: ProviderMapper;
-  readonly client: (connection: IntegrationConnection) => IntegrationClient;
+  readonly client: (connection: IntegrationConnection) => RequestExecutor;
 }
 
 export function remoteProviderFactory(source: RemoteProviderDefinition): ProviderFactory {
@@ -65,29 +72,13 @@ export function requireLocal(installation: ProviderInstallation): LocalProviderI
   return installation.local;
 }
 
+export function requireProvisioner(factory: ProviderFactory): NonNullable<ProviderFactory['provision']> {
+  if (factory.transport !== 'local' || !factory.provision) throw new Error(`PROVIDER_LOCAL_PROVISIONER_MISSING:${factory.id}`);
+  return factory.provision;
+}
+
 export function assertInstallation(factory: ProviderFactory, installation: ProviderInstallation): void {
   const actual = installation.manifest;
   const expected = factory.definition;
-  const same =
-    actual.id === expected.id &&
-    actual.kind === expected.kind &&
-    actual.version === expected.version &&
-    actual.apiVersion === expected.apiVersion &&
-    actual.contractVersion === expected.contractVersion &&
-    actual.healthOperation === expected.healthOperation &&
-    actual.configSchema === expected.configSchema &&
-    equal(actual.capabilities, expected.capabilities) &&
-    equal(actual.permissions, expected.permissions) &&
-    equal(actual.eventSubscriptions, expected.eventSubscriptions) &&
-    equal(actual.secretRefs, expected.secretRefs) &&
-    actual.webhookContract === expected.webhookContract &&
-    JSON.stringify(actual.rateLimits) === JSON.stringify(expected.rateLimits) &&
-    JSON.stringify(actual.timeout) === JSON.stringify(expected.timeout) &&
-    JSON.stringify(actual.retryPolicy) === JSON.stringify(expected.retryPolicy) &&
-    JSON.stringify(actual.circuitPolicy) === JSON.stringify(expected.circuitPolicy);
-  if (!same) throw new Error(`PROVIDER_CONTRACT_MISMATCH:${expected.id}`);
-}
-
-function equal(left: readonly string[], right: readonly string[]): boolean {
-  return JSON.stringify([...left].sort()) === JSON.stringify([...right].sort());
+  if (manifestPayload(actual) !== manifestPayload({ ...expected, signature: actual.signature })) throw new Error(`PROVIDER_CONTRACT_MISMATCH:${expected.id}`);
 }

@@ -11,3 +11,17 @@ export function useCooldown() {
   const clear = useCallback(() => setSeconds(0), []);
   return Object.freeze({ seconds, start, clear });
 }
+
+export function useRemainingSeconds(timestamp: string): number {
+  const [seconds, setSeconds] = useState(() => remainingSeconds(timestamp));
+  useEffect(() => {
+    setSeconds(remainingSeconds(timestamp));
+    const timer = window.setInterval(() => setSeconds(remainingSeconds(timestamp)), 1_000);
+    return () => window.clearInterval(timer);
+  }, [timestamp]);
+  return seconds;
+}
+
+function remainingSeconds(timestamp: string): number {
+  return Math.max(0, Math.ceil((Date.parse(timestamp) - Date.now()) / 1_000));
+}

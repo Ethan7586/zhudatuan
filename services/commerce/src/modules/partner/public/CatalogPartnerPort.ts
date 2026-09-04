@@ -2,6 +2,6 @@ import type { ReadTransactionContext } from '../../../foundation/persistence/Tra
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
 
 export interface CatalogPartnerPort {
-  scope(context: ReadTransactionContext, partner: string): Promise<string | null>;
+  scopes(context: ReadTransactionContext, partners: readonly string[]): Promise<ReadonlyMap<string, string>>;
 }
 export const CATALOG_PARTNER_PORT = publicPort<CatalogPartnerPort>('partner', 'catalog');

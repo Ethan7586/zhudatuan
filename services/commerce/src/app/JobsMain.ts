@@ -2,9 +2,6 @@ import { jobsEnvironment } from '@shop/config/server';
 import { bootstrapJobs } from '../bootstrap/JobsBootstrap';
 import { createRuntime } from '../bootstrap/CommerceRuntime';
 import { assertRuntimeReady } from '../bootstrap/RuntimeReadiness';
-import { OutboxRelay } from '../adapter/messaging/OutboxRelay';
-import { RuntimeEventPublisher } from '../adapter/messaging/RuntimeEventPublisher';
-import { RuntimeScheduler } from '../foundation/infrastructure/RuntimeScheduler';
 import { ORDINARY_JOB_CATALOG } from '../foundation/application/JobCatalog';
 import { COMMERCE_MODULES } from './modules';
 import { mapParallel } from '../foundation/performance/Parallel';
@@ -23,12 +20,9 @@ await assertRuntimeReady(runtime.pool, runtime.extensions, 'jobs', runtime.invit
 
 const controller = new AbortController();
 for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, () => controller.abort(signal));
-const relay = new OutboxRelay(runtime.pool, new RuntimeEventPublisher(runtime.pool, registries.events), worker);
-const scheduler = new RuntimeScheduler(runtime.pool, worker);
 const runners = [
   ...registries.jobs.all().map((definition) => () => definition.job.execute(undefined, { id: definition.id, attempt: 1, signal: controller.signal })),
-  () => relay.run(controller.signal),
-  () => scheduler.run(controller.signal),
+  ...registries.workers.all().map(({ worker: technical }) => () => technical.run(controller.signal)),
 ];
-await mapParallel(runners, ORDINARY_JOB_CATALOG.length + 2, (runner) => runner());
+await mapParallel(runners, runners.length, (runner) => runner());
 await runtime.close();

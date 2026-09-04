@@ -14,8 +14,7 @@ import { ExportsReadHandler } from './application/handler/ExportsReadHandler';
 import { PgReportRepository } from './infrastructure/persistence/PgReportRepository';
 import { MetricReader } from './application/service/MetricReader';
 import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { PgJobScheduler } from '../../adapter/database/PgJobScheduler';
-import { OBJECT_STORE } from '../../foundation/infrastructure/ObjectStore';
+import { JOB_PORT, OBJECT_STORE } from '../runtime/public';
 
 export const ReportingModule = defineModule(Manifest, {
   jobs: createJobs,
@@ -32,7 +31,7 @@ export const ReportingModule = defineModule(Manifest, {
       new CategoriesReadHandler(metrics),
       new ChannelsReadHandler(metrics),
       new VoucherConsumptionReadHandler(metrics),
-      new ExportsCreateHandler(reports, new PgJobScheduler(transactions)),
+      new ExportsCreateHandler(reports, context.ports.get(JOB_PORT)),
       new ExportsReadHandler(reports, context.service(OBJECT_STORE)),
     ];
   },

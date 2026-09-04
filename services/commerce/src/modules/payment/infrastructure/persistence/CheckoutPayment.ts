@@ -1,11 +1,10 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { WechatScene } from '@shop/config/server';
 import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
 import type { CheckoutPaymentPort, CheckoutPaymentResult, PreparedPayment } from '../../public';
 import type { PaymentContinuation } from '../../application/port/PaymentContinuation';
 import { PaymentPort } from './PaymentPort';
-import type { PaymentTenderPlan } from '../../public/PaymentPlan';
+import type { PaymentScene, PaymentTenderPlan } from '../../public';
 import { PaymentSettlement } from './PaymentSettlement';
 interface PrepareInput {
   readonly order: string;
@@ -55,7 +54,7 @@ export class CheckoutPayment implements CheckoutPaymentPort {
     input: Readonly<{
       payment: PreparedPayment;
       order: string;
-      scene: WechatScene;
+      scene: PaymentScene;
     }>
   ): Promise<CheckoutPaymentResult> {
     if (!input.payment.external) throw new Error('PAYMENT_CONTINUATION_NOT_REQUIRED');

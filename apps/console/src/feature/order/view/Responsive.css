@@ -1,0 +1,73 @@
+@media (max-width: 47.9375rem) {
+  .ordertablewrap {
+    overflow: visible;
+    padding: var(--sw-space-1);
+  }
+  .ordertable {
+    display: block;
+    min-width: 0;
+  }
+  .ordertable thead {
+    position: absolute;
+    width: 0.0625rem;
+    height: 0.0625rem;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .ordertable tbody {
+    display: grid;
+    gap: var(--sw-space-1);
+  }
+  .ordertable tbody tr {
+    display: grid;
+    overflow: hidden;
+    border: 0.0625rem solid var(--sw-border);
+    border-radius: var(--sw-radius-md);
+    background: var(--sw-surface);
+    padding: var(--sw-space-1-5);
+    box-shadow: var(--sw-shadow-card);
+  }
+  .ordertable tbody td {
+    display: grid;
+    min-height: 2.75rem;
+    height: auto;
+    grid-template-columns: minmax(6.5rem, 34%) minmax(0, 1fr);
+    align-items: center;
+    gap: var(--sw-space-1);
+    border-bottom: 0.0625rem solid var(--sw-border);
+    padding: var(--sw-space-1) 0;
+    text-align: left;
+    white-space: normal;
+  }
+  .ordertable tbody td[data-label]::before {
+    color: var(--sw-muted);
+    content: attr(data-label);
+    font-size: var(--sw-font-size-caption);
+    font-weight: 600;
+  }
+  .ordertable tbody td:last-child {
+    border-bottom: 0;
+  }
+  .ordertable .orderamountcolumn,
+  .ordertable .orderstatuscolumn {
+    text-align: left;
+  }
+  .ordertable .orderamountcolumn .orderprimarycell {
+    justify-items: start;
+  }
+  .orderproductcell {
+    min-width: 0;
+    max-width: none;
+  }
+  .orderproductcell strong,
+  .orderproductcell small,
+  .orderprimarycell strong,
+  .orderprimarycell span {
+    white-space: normal;
+  }
+  .orderrowactions button {
+    min-height: 2.75rem;
+  }
+}

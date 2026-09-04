@@ -7,11 +7,13 @@ describe('reportMetricKey', () => {
     const base: ReportMetric = {
       code: 'sales.amount',
       version: 1,
+      definition: { name: '成交金额', formula: '支付金额合计', dimensions: ['mall'], granularity: 'day', owner: 'reporting' },
       scope: 'mall-zhudatuan',
       period: { from: '2026-08-30T00:00:00Z', to: '2026-08-31T00:00:00Z', timezone: 'Asia/Shanghai' },
       dimensions: { mall: 'mall-zhudatuan' },
       value: 100,
       unit: 'minor',
+      currency: 'CNY',
       watermark: '2026-08-31T01:00:00Z',
       projectionVersion: 1,
     };

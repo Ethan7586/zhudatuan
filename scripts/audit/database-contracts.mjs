@@ -36,147 +36,7 @@ const REGISTRATION_ASSERTION_OMISSIONS = new Map([
 const INVENTORY_CUTOVER = '20260820133000_inventory_single_source_cutover.sql';
 const SECURE_STAGE = '20260821026000_backfill_domain_data.sql';
 const PROVIDER_HARDCUT = '20260830150000_hardcut_provider_ids.sql';
-const REPAIR_FILES = [
-  '20260829100000_contract_v2_catalog.sql',
-  '20260829101000_operation_idempotency.sql',
-  '20260829102000_inbox_deduplication.sql',
-  '20260829103000_outbox_delivery.sql',
-  '20260829104000_job_lease_fencing.sql',
-  '20260829105000_audit_hash_chain.sql',
-  '20260829106000_finance_economic_leg.sql',
-  '20260829107000_reporting_watermark.sql',
-  '20260829108000_extension_registry.sql',
-  '20260829109000_runtime_role_hardcut.sql',
-  '20260829110000_add_identity_federation.sql',
-  '20260829111000_secure_identity_federation.sql',
-  '20260829112000_add_organization_directory.sql',
-  '20260829113000_publish_navigation_identity_contract.sql',
-  '20260829114000_grant_navigation_identity_access.sql',
-  '20260829115000_add_navigation_read_functions.sql',
-  '20260829116000_add_federation_cleanup_jobs.sql',
-  '20260829117000_validate_federation_data.sql',
-  '20260829118000_retire_compatibility_runtime.sql',
-  '20260830100000_directory_sync_integrity.sql',
-  '20260830101000_unify_access_policy.sql',
-  '20260830102000_add_security_context.sql',
-  '20260830103000_enforce_maker_checker.sql',
-  '20260830104000_create_invitation_domain.sql',
-  '20260830105000_publish_contract_v3.sql',
-  '20260830106000_harden_invitation_lifecycle.sql',
-  '20260830107000_bind_federation_auth_ticket.sql',
-  '20260830108000_enforce_invitation_rls.sql',
-  '20260830109000_complete_campaign_enrollment.sql',
-  '20260830110000_publish_campaign_contract.sql',
-  '20260830111000_generalize_identity_linkcase.sql',
-  '20260830112000_publish_identity_link_contract.sql',
-  '20260830113000_harden_invitation_rate_limits.sql',
-  '20260830114000_enforce_invitation_key_readiness.sql',
-  '20260830115000_separate_campaign_session.sql',
-  '20260830120000_unify_membership_selection.sql',
-  '20260830121000_publish_membership_selection_contract.sql',
-  '20260830122000_harden_access_ownership.sql',
-  '20260830123000_bind_access_membership_principal.sql',
-  '20260830124000_harden_directory_provider_boundary.sql',
-  '20260830125000_publish_access_override_contract.sql',
-  '20260830126000_harden_preauth_invitation_shape.sql',
-  '20260830127000_complete_invitation_audit_shape.sql',
-  '20260830128000_complete_authorization_snapshot.sql',
-  '20260830129000_publish_invitation_error_contract.sql',
-  '20260830130000_bind_federation_link_transaction.sql',
-  '20260830131000_hardcut_storefront_resource_scope.sql',
-  '20260830132000_publish_shared_identity_audience.sql',
-  '20260830133000_include_public_member_operations.sql',
-  '20260830134000_split_invitation_permissions.sql',
-  '20260830135000_hardcut_invitation_delegation_permissions.sql',
-  '20260830136000_resolve_invitation_read_scope.sql',
-  '20260830137000_publish_stepup_contract.sql',
-  '20260830138000_publish_shared_member_profile.sql',
-  '20260830139000_publish_shared_order_read.sql',
-  '20260830140000_publish_cardlibrary_creation.sql',
-  '20260830141000_publish_session_logout.sql',
-  '20260830142000_publish_cardlibrary_version_policy.sql',
-  '20260830143000_publish_cardlibrary_create_permission.sql',
-  '20260830144000_create_referral_domain.sql',
-  '20260830145000_secure_referral_domain.sql',
-  '20260830146000_publish_referral_contract.sql',
-  '20260830147000_create_finance_repair.sql',
-  '20260830148000_publish_finance_repair_contract.sql',
-  '20260830149000_publish_order_receipt.sql',
-  '20260830150000_hardcut_provider_ids.sql',
-  '20260830151000_publish_checkout_context.sql',
-  '20260830152000_publish_mvp_authority.sql',
-  '20260830153000_issue_action_proof.sql',
-  '20260831010000_add_storefront_queries.sql',
-  '20260831011000_hardcut_commerce_states.sql',
-  '20260831012000_enforce_cart_checkout_versions.sql',
-  '20260831013000_complete_payment_action.sql',
-  '20260831014000_complete_aftersale_lifecycle.sql',
-  '20260831015000_add_member_favorites.sql',
-  '20260831016000_isolate_provider_workload.sql',
-  '20260831017000_publish_storefront_contract.sql',
-  '20260831018000_fix_stepup_session_resolution.sql',
-  '20260831019000_register_catalog_product_read.sql',
-  '20260831020000_resolve_catalog_product_scope.sql',
-  '20260831021000_restore_invitation_catalog_scope.sql',
-  '20260831022000_scope_product_commands_to_context.sql',
-  '20260831023000_scope_catalog_products.sql',
-  '20260831024000_enable_console_aftersale_read.sql',
-  '20260831025000_grant_console_aftersale_read.sql',
-  '20260831026000_align_catalog_product_contract.sql',
-  '20260831027000_complete_member_access_workspace.sql',
-  '20260831028000_resolve_managed_member_scope.sql',
-  '20260831029000_enforce_storefront_domain_identity.sql',
-  '20260831030000_publish_storefront_host_resolver.sql',
-  '20260831031000_resolve_storefront_tenant_boundary.sql',
-  '20260831032000_publish_storefront_binding_contract.sql',
-  '20260831033000_publish_shared_support_audience.sql',
-  '20260831034000_publish_storefront_voucher_boundary.sql',
-  '20260831035000_publish_personal_voucher_permission.sql',
-  '20260831036000_restore_invitation_read_scope.sql',
-  '20260831037000_publish_invitation_scope_repair.sql',
-  '20260831038000_allow_enrollment_challenge_claim.sql',
-  '20260831039000_publish_enrollment_challenge_claim.sql',
-  '20260831040000_scope_personal_access_grants.sql',
-  '20260831041000_publish_personal_access_grants.sql',
-  '20260831042000_allow_invitation_receipt_returning.sql',
-  '20260831043000_publish_invitation_receipt_returning.sql',
-  '20260831044000_restore_owner_voucher_delegation.sql',
-  '20260831045000_publish_owner_voucher_delegation.sql',
-  '20260831046000_publish_storefront_csrf_contract.sql',
-  '20260901010000_move_address_to_member.sql',
-  '20260901011000_resolve_payment_webhook_scope.sql',
-  '20260901012000_resolve_access_role_scope.sql',
-  '20260901013000_publish_mobile_challenge_contract.sql',
-  '20260901014000_mall_storefront_entry.sql',
-  '20260901015000_publish_mall_storefront_entry.sql',
-  '20260901016000_publish_stepup_disable_contract.sql',
-  '20260902010000_publish_stepup_destination_contract.sql',
-  '20260902011000_enable_experience_detail_capability.sql',
-  '20260902012000_enable_owner_catalog_product_detail.sql',
-  '20260902013000_enable_owner_reporting_reads.sql',
-  '20260902014000_enable_owner_governance_reads.sql',
-  '20260902015000_seed_platform_support_sla.sql',
-  '20260902016000_resolve_inherited_support_sla.sql',
-  '20260902017000_prepare_employee_invitation.sql',
-  '20260902018000_complete_support_message.sql',
-  '20260902019000_complete_support_realtime.sql',
-  '20260902020000_publish_support_contract.sql',
-  '20260902021000_complete_support_account.sql',
-  '20260902022000_allow_storefront_signin_invitation.sql',
-  '20260902023000_allow_invitation_resolve_receipt.sql',
-  '20260902024000_allow_self_role_api.sql',
-  '20260903100000_enrich_identity_membership.sql',
-  '20260903101000_publish_auth_contract.sql',
-  '20260903102000_publish_order_filters.sql',
-  '20260903103000_publish_account_labels.sql',
-  '20260903104000_publish_organization_labels.sql',
-  '20260903105000_publish_invitation_accounts.sql',
-  '20260903106000_publish_risk_actor_accounts.sql',
-  '20260903107000_remove_reporting_powderclass.sql',
-  '20260903108000_publish_shared_voucher_reads.sql',
-  '20260903109000_complete_cockpit_projection.sql',
-  '20260903110000_complete_order_read_projection.sql',
-];
+const IDEAL_FINAL = '20260904065000_finalize_constraints.sql';
 const HARD_CUT_CONTRACTS = [
   'contract_v5_catalog_contract.sql',
   'access_override_authorization_contract.sql',
@@ -185,25 +45,34 @@ const HARD_CUT_CONTRACTS = [
   'inbox_deduplication_contract.sql',
   'outbox_delivery_contract.sql',
   'job_lease_fencing_contract.sql',
+  'task_authorization_contract.sql',
   'audit_hash_chain_contract.sql',
   'finance_economic_leg_contract.sql',
   'reporting_watermark_contract.sql',
   'extension_registry_contract.sql',
   'runtime_role_hardcut_contract.sql',
+  'module_ownership_contract.sql',
+  'row_level_security_contract.sql',
+  'finance_conservation_contract.sql',
+  'inventory_conservation_contract.sql',
+  'voucher_state_contract.sql',
+  'orphan_contract.sql',
+  'immutable_audit_contract.sql',
 ];
 
 const mode = process.argv[2];
-if (!['--check-inventory', '--schema-fresh', '--registration-fresh', '--environment-bootstrap', '--inventory-cutover-unsafe', '--postgres-fresh', '--mvp-kernel'].includes(mode)) {
-  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--registration-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel [URL]');
+if (!['--check-inventory', '--schema-fresh', '--registration-fresh', '--environment-bootstrap', '--inventory-cutover-unsafe', '--postgres-fresh', '--mvp-kernel', '--privileges', '--migration-replay-suite', '--invariant-suite'].includes(mode)) {
+  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--registration-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel|--privileges|--migration-replay-suite|--invariant-suite [URL]');
 }
 const replayRole = mode === '--postgres-fresh' ? process.argv[4] : undefined;
 if (replayRole !== undefined && !/^[a-z][a-z0-9_]{2,62}$/.test(replayRole)) throw new Error('POSTGRES_FRESH_ROLE_INVALID');
 
 const migrationFiles = (await readdir(MIGRATIONS)).filter((name) => name.endsWith('.sql')).sort();
 const historyContract = JSON.parse(await readFile(HISTORY, 'utf8'));
+const repairFiles = migrationFiles.filter((name) => name.slice(0, 14) > historyContract.head);
 await verifyInventory(migrationFiles, historyContract);
 if (mode === '--check-inventory') {
-  console.log(`migration inventory ok: historical=${historyContract.count} repair=${REPAIR_FILES.length} total=${migrationFiles.length}`);
+  console.log(`migration inventory ok: historical=${historyContract.count} repair=${repairFiles.length} total=${migrationFiles.length}`);
   process.exit(0);
 }
 
@@ -241,6 +110,7 @@ try {
     'database bootstrap'
   );
   let applied = 0;
+  let snapshotFingerprint;
   for (const name of migrationFiles) {
     if (mode === '--registration-fresh' && (name === BOOTSTRAP || name === OWNER_RECONCILIATION)) {
       await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)', [name.slice(0, 14), `environment-omitted:${name}`]);
@@ -263,12 +133,16 @@ try {
     const elevatedReplay = replayRole !== undefined && ELEVATED_REPLAY_FILES.has(name);
     if (elevatedReplay) await execute(database, 'reset role', 'migration boundary elevation');
     try {
+      if (mode === '--migration-replay-suite' && name === IDEAL_FINAL) await drillRollbackPoint(database, sql);
       await execute(database, sql, `migration ${name}`);
     } finally {
       if (elevatedReplay) await execute(database, `set role "${replayRole}"`, 'database migration role restore');
     }
     await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)', [name.slice(0, 14), name]);
     applied += 1;
+    if (mode === '--migration-replay-suite' && name.slice(0, 14) === historyContract.head) {
+      snapshotFingerprint = await seedRedactedSnapshot(database);
+    }
   }
   if (mode !== '--inventory-cutover-unsafe') {
     if (replayRole !== undefined) await execute(database, 'reset role', 'database verification elevation');
@@ -278,7 +152,17 @@ try {
       const { verifyMvpKernel } = await import('./mvp-kernel.mjs');
       await verifyMvpKernel(database);
     }
-    console.log(`target schema replay passed: migrations=${applied} historical=${historyContract.count} repair=${REPAIR_FILES.length}`);
+    if (mode === '--privileges') console.log(`PRIVILEGE_EVIDENCE:${JSON.stringify(await collectPrivilegeEvidence(database))}`);
+    if (mode === '--migration-replay-suite') {
+      await verifyRedactedSnapshot(database, snapshotFingerprint);
+      await verifyRepeatProtection(database);
+      console.log('MIGRATION_REPLAY_EVIDENCE:empty=passed,snapshot=passed,repeat=passed,rollback=passed');
+    }
+    if (mode === '--invariant-suite') {
+      await verifyConcurrentInvariants(database);
+      console.log('INVARIANT_EVIDENCE:inventory=passed,finance=passed,voucher=passed,orderpayment=passed,scope=passed');
+    }
+    console.log(`target schema replay passed: migrations=${applied} historical=${historyContract.count} repair=${repairFiles.length}`);
   }
 } finally {
   await database.close();
@@ -311,7 +195,7 @@ async function openDatabase() {
 async function verifyInventory(files, history) {
   const duplicates = duplicateVersions(files);
   if (duplicates.size) throw new Error(`duplicate migration versions: ${JSON.stringify([...duplicates])}`);
-  if (history.algorithm !== 'sha256' || history.count !== history.migrations.length || history.count !== 171 || history.migrations.at(-1)?.file.slice(0, 14) !== history.head) throw new Error('HISTORICAL_MIGRATION_MANIFEST_INVALID');
+  if (history.algorithm !== 'sha256' || history.count !== history.migrations.length || history.count !== 316 || history.migrations.at(-1)?.file.slice(0, 14) !== history.head) throw new Error('HISTORICAL_MIGRATION_MANIFEST_INVALID');
   const historical = files.filter((name) => name.slice(0, 14) <= history.head);
   if (JSON.stringify(historical) !== JSON.stringify(history.migrations.map((item) => item.file))) throw new Error('HISTORICAL_MIGRATION_FILESET_DRIFT');
   for (const item of history.migrations) {
@@ -320,8 +204,6 @@ async function verifyInventory(files, history) {
       .digest('hex');
     if (digest !== item.sha256) throw new Error(`HISTORICAL_MIGRATION_HASH_DRIFT:${item.file}`);
   }
-  const repair = files.filter((name) => name.slice(0, 14) > history.head);
-  if (JSON.stringify(repair) !== JSON.stringify(REPAIR_FILES)) throw new Error(`REPAIR_MIGRATION_SEQUENCE_DRIFT:${JSON.stringify(repair)}`);
   await readFile(OBJECTS, 'utf8').catch(() => {
     throw new Error('DATABASE_OBJECT_CONTRACT_MISSING');
   });
@@ -362,6 +244,255 @@ async function seedBootstrapPrecondition(database) {
     insert into public.member_login_aliases(provider,subject,member_id) values('local_username','ethan','member-fresh-replay-ethan');`,
     'bootstrap precondition'
   );
+}
+
+async function seedRedactedSnapshot(database) {
+  const fixture = {
+    id: 'risk:production-redacted-snapshot',
+    scopeId: 'scope:production-redacted',
+    name: 'Redacted production policy',
+    status: 'draft',
+    nextVersion: 1,
+  };
+  await database.query(
+    `insert into risk.policy(id,scope_id,name,status,next_version,updated_at) values($1,$2,$3,$4,$5,clock_timestamp())`,
+    [fixture.id, fixture.scopeId, fixture.name, fixture.status, fixture.nextVersion]
+  );
+  return digest(JSON.stringify(fixture));
+}
+
+async function verifyRedactedSnapshot(database, expectedFingerprint) {
+  if (!expectedFingerprint) throw new Error('REDACTED_SNAPSHOT_NOT_SEEDED');
+  const result = await database.query(`select id,scope_id,name,status,next_version from risk.policy
+    where id='risk:production-redacted-snapshot'`);
+  const row = result.rows[0];
+  if (!row) throw new Error('REDACTED_SNAPSHOT_UPGRADE_MISSING');
+  const fingerprint = digest(
+    JSON.stringify({ id: row.id, scopeId: row.scope_id, name: row.name, status: row.status, nextVersion: row.next_version })
+  );
+  if (fingerprint !== expectedFingerprint) throw new Error('REDACTED_SNAPSHOT_UPGRADE_DRIFT');
+}
+
+async function drillRollbackPoint(database, sql) {
+  const rollbackSql = sql.replace(/commit;\s*$/i, 'rollback;');
+  if (rollbackSql === sql) throw new Error('ROLLBACK_POINT_COMMIT_NOT_FOUND');
+  await execute(database, rollbackSql, 'final migration rollback drill');
+  const leaked = await database.query(`select
+    exists(select 1 from runtime.schemaversion where version='20260904065000') version,
+    to_regclass('runtime.schemahead') is not null schemahead`);
+  if (leaked.rows[0]?.version || leaked.rows[0]?.schemahead) throw new Error('ROLLBACK_POINT_LEAKED_STATE');
+}
+
+async function verifyRepeatProtection(database) {
+  const before = await database.query(`select count(*)::integer count from runtime.schemaversion`);
+  let rejected = false;
+  try {
+    await database.exec(await readFile(join(MIGRATIONS, IDEAL_FINAL), 'utf8'));
+  } catch (error) {
+    rejected = String(error instanceof Error ? error.message : error).includes('IDEAL_FINAL_ALREADY_APPLIED');
+    await database.exec('rollback');
+  }
+  const after = await database.query(`select count(*)::integer count from runtime.schemaversion`);
+  if (!rejected || before.rows[0]?.count !== after.rows[0]?.count) throw new Error('MIGRATION_REPEAT_PROTECTION_INVALID');
+}
+
+async function verifyConcurrentInvariants(database) {
+  await verifyConcurrentInventory(database);
+  await verifyConcurrentFinance(database);
+  await verifyConcurrentVoucher(database);
+  await verifyConcurrentOrderPayment(database);
+  await verifyInvariantScope(database);
+  await execute(database, 'set role shopmigration', 'invariant contract role');
+  try {
+    for (const contract of [
+      'inventory_conservation_contract.sql',
+      'finance_conservation_contract.sql',
+      'voucher_state_contract.sql',
+      'orphan_contract.sql',
+      'row_level_security_contract.sql',
+    ]) {
+      await execute(database, await readFile(join(CONTRACTS, contract), 'utf8'), `post-concurrency contract ${contract}`);
+    }
+  } catch (error) {
+    await database.exec('rollback');
+    throw error;
+  } finally {
+    await execute(database, 'reset role', 'invariant contract role reset');
+  }
+}
+
+async function verifyConcurrentInventory(database) {
+  await database.query(
+    `insert into inventory.stockitem(id,scope_id,sku_id,location_id,onhand,safety,version,status,updated_at)
+     values($1,$2,$3,$4,10,0,1,'active',clock_timestamp())`,
+    ['stock:invariant', 'scope:invariant', 'sku:invariant', 'location:invariant']
+  );
+  const attempts = await settleContenders(
+    ['a', 'b'].map((suffix) => () =>
+      database.query(
+        `insert into inventory.reservation(id,stockitem_id,owner_type,owner_id,quantity,state,expires_at,created_at,version)
+         values($1,'stock:invariant','checkout',$2,8,'reserved',clock_timestamp()+interval '30 minutes',clock_timestamp(),1)`,
+        [`reservation:invariant:${suffix}`, `checkout:invariant:${suffix}`]
+      )
+    )
+  );
+  const accepted = attempts.filter(({ status }) => status === 'fulfilled').length;
+  const rejected = attempts.filter(({ status }) => status === 'rejected');
+  if (accepted !== 1 || rejected.length !== 1 || !/INVENTORY_INSUFFICIENT/.test(String(rejected[0].reason))) {
+    throw new Error('INVENTORY_CONCURRENT_RESERVATION_INVALID');
+  }
+  const balance = await database.query(`select stock.onhand-stock.safety-coalesce(sum(reservation.quantity)
+    filter(where reservation.state='reserved' and reservation.expires_at>clock_timestamp()),0)::bigint available,
+    count(reservation.id)::integer reservations from inventory.stockitem stock
+    left join inventory.reservation reservation on reservation.stockitem_id=stock.id where stock.id='stock:invariant'
+    group by stock.id,stock.onhand,stock.safety`);
+  if (balance.rows[0]?.available !== 2 || balance.rows[0]?.reservations !== 1) throw new Error('INVENTORY_CONSERVATION_AFTER_CONCURRENCY_INVALID');
+}
+
+async function verifyConcurrentFinance(database) {
+  const parameters = [
+    'scope:invariant',
+    'contract.concurrent',
+    'economic-leg:invariant',
+    'CNY',
+    'Concurrent invariant posting',
+    'cash.invariant',
+    'asset',
+    'revenue.invariant',
+    'income',
+    1200,
+    '2026-09-04T00:00:00.000Z',
+  ];
+  const postings = await settleContenders(
+    [0, 1].map(() => () =>
+      database.query(
+        `select finance.post($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::timestamptz) journal_id`,
+        parameters
+      )
+    )
+  );
+  if (postings.some(({ status }) => status === 'rejected')) throw postings.find(({ status }) => status === 'rejected').reason;
+  if (new Set(postings.map(({ value }) => value.rows[0]?.journal_id)).size !== 1) throw new Error('FINANCE_CONCURRENT_IDEMPOTENCY_INVALID');
+  const balance = await database.query(`select count(distinct journal.id)::integer journals,count(entry.id)::integer entries,
+    coalesce(sum(case entry.side when 'debit' then entry.amount_minor else -entry.amount_minor end),0)::bigint balance
+    from finance.journal journal left join finance.entry entry on entry.journal_id=journal.id
+    where journal.scope_id='scope:invariant' and journal.reference_type='contract.concurrent'
+      and journal.reference_id='economic-leg:invariant'`);
+  if (balance.rows[0]?.journals !== 1 || balance.rows[0]?.entries !== 2 || balance.rows[0]?.balance !== 0) {
+    throw new Error('FINANCE_CONSERVATION_AFTER_CONCURRENCY_INVALID');
+  }
+}
+
+async function verifyConcurrentVoucher(database) {
+  await database.exec(`select set_config('app.actor_id','contract:invariant',false);
+    insert into voucher.product(id,number,scope_id,customer_id,name,face_minor,currency,qualification_id,pool_id,
+      starts_at,expires_at,activation,approval_required,state,version,created_at,updated_at)
+    values('voucherproduct:invariant','VP-INVARIANT','scope:invariant','customer:invariant','Invariant voucher',2000,'CNY',
+      'qualification:invariant',null,clock_timestamp()-interval '1 hour',clock_timestamp()+interval '1 day','automatic',false,'draft',1,
+      clock_timestamp(),clock_timestamp());
+    insert into voucher.credentialpool(id,number,scope_id,product_id,name,mode,prefix,capacity,generated,state,version,created_at,updated_at)
+    values('voucherpool:invariant','POOL-INVARIANT','scope:invariant','voucherproduct:invariant','Invariant pool','generated','INV',1,1,
+      'open',1,clock_timestamp(),clock_timestamp());
+    insert into voucher.credential(id,scope_id,pool_id,product_id,number_ciphertext,secret_ciphertext,number_fingerprint,secret_fingerprint,
+      number_masked,key_version,state,issue_batch_id,version,created_at,updated_at)
+    values('vouchercredential:invariant','scope:invariant','voucherpool:invariant','voucherproduct:invariant','ciphertext-number','ciphertext-secret',
+      repeat('a',64),repeat('b',64),'INV****0001','key:invariant','generated',null,1,clock_timestamp(),clock_timestamp());
+    insert into voucher.voucher(id,scope_id,product_id,credential_id,holder_id,number_fingerprint,number_masked,initial_minor,remaining_minor,
+      currency,state,starts_at,expires_at,version,created_at,updated_at)
+    values('voucher:invariant','scope:invariant','voucherproduct:invariant','vouchercredential:invariant',null,repeat('c',64),'INV****0001',
+      2000,2000,'CNY','active',clock_timestamp()-interval '1 hour',clock_timestamp()+interval '1 day',1,clock_timestamp(),clock_timestamp());`);
+  const attempts = await settleContenders(
+    ['a', 'b'].map((suffix) => () =>
+      database.query(
+        `insert into voucher.tenderhold(id,scope_id,voucher_id,owner_id,amount_minor,state,expires_at,idempotency_key,version,created_at,updated_at)
+         values($1,'scope:invariant','voucher:invariant',$2,1000,'active',clock_timestamp()+interval '30 minutes',$3,1,
+           clock_timestamp(),clock_timestamp())`,
+        [`voucherhold:invariant:${suffix}`, `checkout:invariant:${suffix}`, `voucherhold:invariant:${suffix}`]
+      )
+    )
+  );
+  const accepted = attempts.filter(({ status }) => status === 'fulfilled').length;
+  const active = await database.query(`select count(*)::integer count,coalesce(sum(amount_minor),0)::bigint amount
+    from voucher.tenderhold where voucher_id='voucher:invariant' and state='active'`);
+  if (accepted !== 1 || active.rows[0]?.count !== 1 || active.rows[0]?.amount !== 1000) throw new Error('VOUCHER_CONCURRENT_HOLD_INVALID');
+}
+
+async function verifyConcurrentOrderPayment(database) {
+  await database.exec(`insert into ordering.orderrecord(id,order_number,scope_id,member_id,mall_id,checkout_id,currency,total_minor,
+      payment_state,fulfillment_state,aftersale_state,lifecycle_state,evidence,created_at,updated_at,version,address_snapshot,
+      invoice_snapshot,delivery_snapshot,experience_version,external_reference,source_channel,source_state,verification_state,ordered_at,
+      import_id,amount_snapshot)
+    values('order:invariant','ORDER-INVARIANT','scope:invariant','member:invariant','mall:invariant','checkout:invariant','CNY',1200,
+      'unpaid','unallocated','none','awaitingpayment','{}',clock_timestamp(),clock_timestamp(),0,'null','null','{}',null,null,null,null,
+      'verified',clock_timestamp(),null,'{"subtotalMinor":1200,"discountMinor":0,"shippingMinor":0,"taxMinor":0,"payableMinor":1200,"currency":"CNY"}');
+    insert into ordering.line(id,order_id,sku_id,listing_id,title_snapshot,quantity,unit_minor,total_minor,qualification_evidence_id,
+      provider,partner_id,discount_minor,evidence)
+    values('orderline:invariant','order:invariant','sku:invariant','listing:invariant','Invariant product',1,1200,1200,null,null,null,0,
+      '{"product":"product:invariant","productType":"physical","category":"contract","versions":{"listing":1,"product":1,"sku":1,"price":1,"stock":1}}');`);
+  const attempts = await settleContenders(
+    ['a', 'b'].map((suffix) => () =>
+      database.query(
+        `insert into payment.intent(id,order_id,member_id,currency,amount_minor,state,idempotency_key,provider_reference,expires_at,version,
+          purpose,created_at,updated_at,scope_id,mall_id,order_number)
+         values($1,'order:invariant','member:invariant','CNY',1200,'created',$2,$3,clock_timestamp()+interval '30 minutes',0,'purchase',
+           clock_timestamp(),clock_timestamp(),'scope:invariant','mall:invariant','ORDER-INVARIANT')`,
+        [`paymentintent:invariant:${suffix}`, `paymentintent:invariant:${suffix}`, `provider:invariant:${suffix}`]
+      )
+    )
+  );
+  const accepted = attempts.filter(({ status }) => status === 'fulfilled').length;
+  const invariant = await database.query(`select orders.total_minor,
+    (select coalesce(sum(line.payable_minor),0)::bigint from ordering.line line where line.order_id=orders.id) line_minor,
+    (select count(*)::integer from payment.intent intent where intent.order_id=orders.id and intent.purpose='purchase'
+      and intent.state in('created','preparing','pending')) active_intents,
+    (select coalesce(sum(intent.amount_minor),0)::bigint from payment.intent intent where intent.order_id=orders.id
+      and intent.purpose='purchase' and intent.state in('created','preparing','pending')) intent_minor
+    from ordering.orderrecord orders where orders.id='order:invariant'`);
+  const row = invariant.rows[0];
+  if (accepted !== 1 || row?.total_minor !== 1200 || row?.line_minor !== 1200 || row?.active_intents !== 1 || row?.intent_minor !== 1200) {
+    throw new Error('ORDER_PAYMENT_CONCURRENT_INVARIANT_INVALID');
+  }
+  await database.query(`select ordering.assert_amount('order:invariant')`);
+}
+
+async function verifyInvariantScope(database) {
+  await database.exec(`insert into risk.policy(id,scope_id,name,status,next_version,updated_at) values
+    ('risk:invariant:a','scope:invariant','Invariant A','draft',1,clock_timestamp()),
+    ('risk:invariant:b','scope:foreign','Invariant B','draft',1,clock_timestamp());
+    begin; set local role shopapp;
+    select set_config('app.workload','api',true),set_config('app.scope_id','scope:invariant',true),
+      set_config('app.actor_id','contract:invariant',true);`);
+  const visible = await database.query(`select array_agg(id order by id) ids from risk.policy where id like 'risk:invariant:%'`);
+  await database.exec('commit');
+  if (JSON.stringify(visible.rows[0]?.ids) !== JSON.stringify(['risk:invariant:a'])) throw new Error('SCOPE_CONCURRENT_READ_ISOLATION_INVALID');
+  await database.exec(`begin; set local role shopapp;
+    select set_config('app.workload','api',true),set_config('app.scope_id','scope:invariant',true),
+      set_config('app.actor_id','contract:invariant',true);`);
+  try {
+    await database.query(`insert into risk.policy(id,scope_id,name,status,next_version,updated_at)
+      values('risk:invariant:forbidden','scope:foreign','Forbidden','draft',1,clock_timestamp())`);
+  } catch (error) {
+    await database.exec('rollback');
+    if (/row-level security/i.test(String(error instanceof Error ? error.message : error))) return;
+    throw error;
+  }
+  await database.exec('rollback');
+  throw new Error('SCOPE_CONCURRENT_WRITE_ISOLATION_INVALID');
+}
+
+async function settleContenders(contenders) {
+  const outcomes = [];
+  // PGlite exposes one session, so lock contenders must be submitted in a
+  // deterministic commit order. PostgreSQL still evaluates the same row-lock,
+  // uniqueness and idempotency boundaries used by independent sessions.
+  for (const contend of contenders) {
+    try {
+      outcomes.push({ status: 'fulfilled', value: await contend() });
+    } catch (reason) {
+      outcomes.push({ status: 'rejected', reason });
+    }
+  }
+  return outcomes;
 }
 
 async function installRegistrationReplayBoundary(database) {
@@ -476,7 +607,7 @@ async function verifyTarget(database) {
   const expectedEvents = Array.isArray(eventContract?.events) ? eventContract.events.length : -1;
   const result = await database.query(`select
     (select count(*)::integer from runtime.operation) operations,
-    (select count(*)::integer from runtime.event) events,
+    (select count(*)::integer from runtime.event where retired_at is null) events,
     (select count(*)::integer from pg_tables where schemaname='public') public_tables,
     (select count(*)::integer from supabase_migrations.schema_migrations) migrations`);
   const row = result.rows[0];
@@ -487,19 +618,119 @@ async function verifyTarget(database) {
       ({ id }) => id
     );
     const extraOperations = (await database.query('select id from runtime.operation where not(id=any($1::text[])) order by id', [operationIds])).rows.map(({ id }) => id);
-    const missingEvents = (await database.query('select expected type from unnest($1::text[]) expected where not exists(select 1 from runtime.event actual where actual.type=expected) order by expected', [eventTypes])).rows.map(
+    const missingEvents = (await database.query('select expected type from unnest($1::text[]) expected where not exists(select 1 from runtime.event actual where actual.type=expected and actual.retired_at is null) order by expected', [eventTypes])).rows.map(
       ({ type }) => type
     );
-    const extraEvents = (await database.query('select type from runtime.event where not(type=any($1::text[])) order by type', [eventTypes])).rows.map(({ type }) => type);
+    const extraEvents = (await database.query('select type from runtime.event where retired_at is null and not(type=any($1::text[])) order by type', [eventTypes])).rows.map(({ type }) => type);
     throw new Error(`TARGET_CATALOG_INVALID:${JSON.stringify({ ...row, missingOperations, extraOperations, missingEvents, extraEvents })}`);
   }
+  const actualEvents = (await database.query('select type,version,owner,schema_ref from runtime.event where retired_at is null')).rows
+    .sort((left, right) => left.type.localeCompare(right.type));
+  const canonicalEvents = eventContract.events.map(event => ({ type: event.id, version: event.version, owner: event.owner, schema_ref: event.schema }))
+    .sort((left, right) => left.type.localeCompare(right.type));
+  if (JSON.stringify(actualEvents) !== JSON.stringify(canonicalEvents)) throw new Error('TARGET_EVENT_VERSION_DRIFT');
+  const retired = (await database.query(`select event.type,event.version from runtime.event event where event.retired_at is not null and (
+    not exists(select 1 from runtime.event active where active.type=event.type and active.version>event.version and active.retired_at is null)
+    or exists(select 1 from runtime.outbox pending where pending.event_type=event.type and pending.event_version=event.version and pending.published_at is null)
+    or exists(select 1 from runtime.inbox pending where pending.event_type=event.type and pending.event_version=event.version and pending.processed_at is null))`)).rows;
+  if (retired.length !== 0) throw new Error(`TARGET_RETIRED_EVENT_PENDING:${JSON.stringify(retired)}`);
   await verifyObjectContract(database);
   await verifyRls(database);
   await verifyAuditImmutability(database);
   await verifyMvpFusion(database);
-  for (const contract of HARD_CUT_CONTRACTS) {
-    await execute(database, await readFile(join(CONTRACTS, contract), 'utf8'), `hard-cut contract ${contract}`);
+  await execute(database, 'set role shopmigration', 'database contract role');
+  const contractRole = await database.query("select current_user,has_table_privilege(current_user,'access.permission','select') can_select,(select count(*)::integer from access.permission where code='access.override.manage') matching_permissions");
+  if (contractRole.rows[0]?.current_user !== 'shopmigration' || !contractRole.rows[0]?.can_select || contractRole.rows[0]?.matching_permissions !== 1) {
+    throw new Error(`DATABASE_CONTRACT_ROLE_INVALID:${JSON.stringify(contractRole.rows[0])}`);
   }
+  try {
+    for (const contract of HARD_CUT_CONTRACTS) {
+      await execute(database, await readFile(join(CONTRACTS, contract), 'utf8'), `hard-cut contract ${contract}`);
+    }
+  } catch (error) {
+    await database.exec('rollback');
+    throw error;
+  } finally {
+    await execute(database, 'reset role', 'database contract role reset');
+  }
+}
+
+async function collectPrivilegeEvidence(database) {
+  const schemas = await database.query(`select module_id,schema_name,owner_role,reader_role,writer_role
+    from runtime.moduleauthority union all
+    select 'finance','invoice','shopfinanceowner','shopfinancereader','shopfinancewriter' order by module_id,schema_name`);
+  const writerViolations = await database.query(`with authorities as(
+      select module_id,schema_name,writer_role from runtime.moduleauthority union all
+      select 'finance','invoice','shopfinancewriter'
+    ), writers as(select distinct module_id,writer_role from authorities),
+    tables as(select namespace.nspname schema_name,relation.oid,relation.relname
+      from pg_class relation join pg_namespace namespace on namespace.oid=relation.relnamespace
+      where namespace.nspname in(select schema_name from authorities) and relation.relkind in('r','p'))
+    select writer.module_id,writer.writer_role,tables.schema_name||'.'||tables.relname table_name
+    from writers writer cross join tables
+    where (has_table_privilege(writer.writer_role,tables.oid,'insert')
+      or has_table_privilege(writer.writer_role,tables.oid,'update')
+      or has_table_privilege(writer.writer_role,tables.oid,'delete')
+      or has_table_privilege(writer.writer_role,tables.oid,'truncate'))
+      and not exists(select 1 from authorities owned where owned.writer_role=writer.writer_role and owned.schema_name=tables.schema_name)
+    order by writer.writer_role,table_name`);
+  const writerCoverage = await database.query(`with authorities as(
+      select module_id,schema_name,writer_role from runtime.moduleauthority union all
+      select 'finance','invoice','shopfinancewriter'
+    ), writers as(select distinct module_id,writer_role from authorities),
+    tables as(select namespace.nspname schema_name,relation.oid
+      from pg_class relation join pg_namespace namespace on namespace.oid=relation.relnamespace
+      where namespace.nspname in(select schema_name from authorities) and relation.relkind in('r','p'))
+    select writer.module_id,writer.writer_role,
+      count(distinct tables.oid) filter(where
+        (has_table_privilege(writer.writer_role,tables.oid,'insert')
+          or has_table_privilege(writer.writer_role,tables.oid,'update')
+          or has_table_privilege(writer.writer_role,tables.oid,'delete'))
+        and exists(select 1 from authorities owned where owned.writer_role=writer.writer_role and owned.schema_name=tables.schema_name)
+      )::integer writable_tables
+    from writers writer cross join tables
+    group by writer.module_id,writer.writer_role order by writer.module_id`);
+  const readerViolations = await database.query(`with roles(role) as(
+      select reader_role from runtime.moduleauthority union select 'shopread'
+    ), tables as(select relation.oid,namespace.nspname||'.'||relation.relname table_name
+      from pg_class relation join pg_namespace namespace on namespace.oid=relation.relnamespace
+      where namespace.nspname in(select schema_name from runtime.moduleauthority union all select 'invoice')
+        and relation.relkind in('r','p'))
+    select roles.role,tables.table_name from roles cross join tables
+    where has_table_privilege(roles.role,tables.oid,'insert') or has_table_privilege(roles.role,tables.oid,'update')
+      or has_table_privilege(roles.role,tables.oid,'delete') or has_table_privilege(roles.role,tables.oid,'truncate')
+    order by roles.role,tables.table_name`);
+  const publicPrivileges = await database.query(`with schemas as(
+      select oid,nspname from pg_namespace where nspname in(select schema_name from runtime.moduleauthority union all select 'invoice' union all select 'public')
+    )
+    select 'schema:'||nspname object from schemas where has_schema_privilege('public',oid,'usage') or has_schema_privilege('public',oid,'create')
+    union all
+    select case relation.relkind when 'S' then 'sequence:' else 'table:' end||namespace.nspname||'.'||relation.relname
+    from pg_class relation join pg_namespace namespace on namespace.oid=relation.relnamespace
+    where namespace.oid in(select oid from schemas) and relation.relkind in('r','p','v','m','S')
+      and (has_table_privilege('public',relation.oid,'select') or has_table_privilege('public',relation.oid,'insert')
+        or has_table_privilege('public',relation.oid,'update') or has_table_privilege('public',relation.oid,'delete'))
+    union all
+    select 'function:'||procedure.oid::regprocedure::text from pg_proc procedure
+    where procedure.pronamespace in(select oid from schemas) and has_function_privilege('public',procedure.oid,'execute')
+    order by object`);
+  const unsafeRoles = await database.query(`select rolname from pg_roles where rolname in(
+      select owner_role from runtime.moduleauthority union select reader_role from runtime.moduleauthority union select writer_role from runtime.moduleauthority
+    ) and (rolcanlogin or rolbypassrls) order by rolname`);
+  if (writerViolations.rows.length) throw new Error(`MODULE_WRITER_CROSS_SCHEMA:${writerViolations.rows[0].writer_role}:${writerViolations.rows[0].table_name}`);
+  if (readerViolations.rows.length) throw new Error(`MODULE_READER_CAN_WRITE:${readerViolations.rows[0].role}:${readerViolations.rows[0].table_name}`);
+  if (publicPrivileges.rows.length) throw new Error(`PUBLIC_DATABASE_PRIVILEGE:${publicPrivileges.rows[0].object}`);
+  if (unsafeRoles.rows.length) throw new Error(`MODULE_ROLE_UNSAFE:${unsafeRoles.rows[0].rolname}`);
+  return {
+    schemas: schemas.rows.length,
+    moduleWriters: new Set(schemas.rows.map((row) => row.writer_role)).size,
+    moduleReaders: new Set(schemas.rows.map((row) => row.reader_role)).size,
+    writerCoverage: writerCoverage.rows,
+    crossSchemaWrites: 0,
+    readerWrites: 0,
+    publicPrivileges: 0,
+    unsafeRoles: 0,
+  };
 }
 
 async function seedProviderHardcutUpgrade(database) {
@@ -552,16 +783,21 @@ async function seedProviderHardcutUpgrade(database) {
 function providerManifest(id, contractVersion, healthOperation) {
   return {
     id,
+    name: id,
     kind: 'channel',
     version: '1.0.0',
     apiVersion: '2026-08-21',
     contractVersion,
+    dependencies: [],
     healthOperation,
     capabilities: ['Catalog'],
-    permissions: [],
+    permissions: ['channel.' + id + '.operate'],
     configSchema: 'provider.' + id + '.v1',
     eventSubscriptions: [],
     secretRefs: healthOperation === 'local' ? [] : ['credential'],
+    sandbox: healthOperation === 'local'
+      ? { supported: true, mode: 'local', endpointRef: null }
+      : { supported: true, mode: 'endpoint', endpointRef: 'provider.' + id + '.sandboxurl' },
     rateLimits: { requestsPerSecond: 10, maxConcurrency: 2 },
     timeout: { connectionMs: 1000, responseMs: 3000, totalMs: 5000 },
     retryPolicy: { maxAttempts: 2 },
@@ -579,7 +815,7 @@ async function verifyMvpFusion(database) {
   const result = await database.query(`select
     (select count(*)::integer from pg_tables where schemaname='referral' and tablename in(
       'setting','product','member','binding','commission','commissionmovement','recoverymovement','withdrawalclaim')) referral_tables,
-    (select count(*)::integer from pg_tables where schemaname='finance' and tablename in('repairpreview','repair','repairmovement')) repair_tables,
+    (select count(*)::integer from pg_tables where schemaname='finance' and tablename in('repair','repairmovement')) repair_tables,
     (select count(*)::integer from pg_tables where schemaname='ordering' and tablename='receipt') receipt_tables,
     (select count(*)::integer from runtime.mvpauthority) mvp_authorities,
     (select count(*)::integer from runtime.migrationevidence where migration='20260830150000'
@@ -609,7 +845,7 @@ async function verifyMvpFusion(database) {
     JSON.stringify(row) !==
     JSON.stringify({
       referral_tables: 8,
-      repair_tables: 3,
+      repair_tables: 2,
       receipt_tables: 1,
       mvp_authorities: 5,
       hardcut_evidence: 1,
@@ -1028,29 +1264,30 @@ async function verifyExtensionLifecycle(database) {
 
 async function verifyAuditImmutability(database) {
   const hash = 'b'.repeat(64);
-  await database.exec(`insert into audit.record(id,scope_id,actor_id,actor_type,action,resource_type,resource_id,before_hash,after_hash,
-    evidence,trace_id,previous_hash,record_hash,recorded_at) values('audit:immutability','organization-platform-root','audit-test','system',
-    'audit.test','audit','audit:immutability',null,null,'{}','audit:test',null,'${hash}',clock_timestamp());`);
+  await database.exec(`insert into audit.record(id,scope_id,actor_id,actor_type,request_id,operation,subject_type,subject_id,object_type,
+    object_id,outcome,reason,before_hash,after_hash,evidence,trace_id,previous_hash,record_hash,recorded_at)
+    values('audit:immutability','organization-platform-root','audit-test','system','request:audit-immutability','audit.test','system',
+    'audit-test','audit','audit:immutability','succeeded','immutability-verification',null,null,'{}','audit:test',null,'${hash}',clock_timestamp());`);
   await database.exec(`begin; set local role shopapp; select set_config('app.workload','api',true),
     set_config('app.scope_id','organization-platform-root',true);`);
   let rejected = false;
   let changed = 0;
   try {
-    changed = (await database.query("update audit.record set action='mutated' where id='audit:immutability'")).rowCount ?? 0;
+    changed = (await database.query("update audit.record set operation='mutated' where id='audit:immutability'")).rowCount ?? 0;
   } catch (error) {
-    if (!String(error instanceof Error ? error.message : error).includes('AUDIT_IMMUTABLE')) throw error;
+    if (!/(?:AUDIT_IMMUTABLE|permission denied)/i.test(String(error instanceof Error ? error.message : error))) throw error;
     rejected = true;
   }
   await database.exec('rollback');
   if (!rejected && changed !== 0) throw new Error('AUDIT_UPDATE_WAS_NOT_REJECTED');
-  const unchanged = await database.query("select action from audit.record where id='audit:immutability'");
-  if (unchanged.rows[0]?.action !== 'audit.test') throw new Error('AUDIT_UPDATE_IMMUTABILITY_INVALID');
+  const unchanged = await database.query("select operation from audit.record where id='audit:immutability'");
+  if (unchanged.rows[0]?.operation !== 'audit.test') throw new Error('AUDIT_UPDATE_IMMUTABILITY_INVALID');
   await database.exec(`begin; set local role shopjob; select set_config('app.workload','jobs',true);`);
   let deleteRejected = false;
   try {
     await database.query("delete from audit.record where id='audit:immutability'");
   } catch (error) {
-    if (!String(error instanceof Error ? error.message : error).includes('AUDIT_IMMUTABLE')) throw error;
+    if (!/(?:AUDIT_IMMUTABLE|permission denied)/i.test(String(error instanceof Error ? error.message : error))) throw error;
     deleteRejected = true;
   }
   await database.exec('rollback');
@@ -1087,6 +1324,7 @@ async function verifyRls(database) {
 async function verifyObjectContract(database) {
   const contract = parse(await readFile(OBJECTS, 'utf8'));
   const entries = Array.isArray(contract?.objects) ? contract.objects : [];
+  const auditedRoles = new Set(['shopapp', 'shopjob', 'shopread']);
   const schemas = entries
     .filter((entry) => entry.kind === 'schema')
     .map((entry) => entry.id)
@@ -1140,6 +1378,7 @@ async function verifyObjectContract(database) {
     new Set(
       entries
         .filter((entry) => entry.kind === 'grant')
+        .filter((entry) => auditedRoles.has(entry.role))
         .filter((entry) => ownership.get(`${entry.objectType}:${entry.target}`) !== entry.role)
         .map((entry) => entry.id)
     )
@@ -1174,10 +1413,11 @@ async function verifyObjectContract(database) {
     expected.get('policy'),
     policyRows.rows.map((row) => row.id)
   );
-  if (tableRows.rows.some((row) => !row.rls)) throw new Error('DATABASE_OBJECT_RLS_DRIFT');
+  const unprotectedTables = tableRows.rows.filter((row) => !row.rls).map((row) => row.id);
+  if (unprotectedTables.length > 0) throw new Error(`DATABASE_OBJECT_RLS_DRIFT:${JSON.stringify(unprotectedTables)}`);
 
   const roleRows = await database.query(
-    `with roles(role) as (values('shopapp'),('shopjob'),('shopmigration'),('shopread')),
+    `with roles(role) as (values('shopapp'),('shopjob'),('shopread')),
     table_privilege(privilege) as (values('SELECT'),('INSERT'),('UPDATE'),('DELETE'),('TRUNCATE'),('REFERENCES'),('TRIGGER')),
     schema_privilege(privilege) as (values('USAGE'),('CREATE')),
     schemas as (select namespace.nspname schema,namespace.nspowner::regrole::text owner

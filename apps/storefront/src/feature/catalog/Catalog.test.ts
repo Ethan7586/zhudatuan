@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { OperationOutputFor } from '@shop/contract';
-import { mapCatalog, toFrontendProducts } from './infrastructure/CatalogMapper';
+import { CatalogGateway } from './infrastructure/CatalogGateway';
+import { mapCatalog } from './infrastructure/CatalogMapper';
+import { toFrontendProducts } from './viewmodel/CatalogPresentation';
 
 describe('storefront catalog mapping', () => {
   it('keeps authoritative minor amounts and converts only the presentation view', () => {
@@ -42,5 +44,17 @@ describe('storefront catalog mapping', () => {
       deliverySla: '供应商承诺两日内发货',
     });
     expect(toFrontendProducts(page.items.map(({ product }) => product))[0]).toMatchObject({ price: 88.99, originalPrice: 109.99 });
+  });
+});
+
+describe('storefront catalog gateway', () => {
+  it('maps domain filters to the exact HTTP contract once', async () => {
+    const catalogRead = vi.fn(() => Promise.resolve({ items: [], nextCursor: null, version: 'catalog:1', asOf: '2026-09-03T00:00:00.000Z' }));
+    const gateway = new CatalogGateway({ catalogRead } as never, (() => Object.freeze({ headers: Object.freeze({}) })) as never);
+    await gateway.read({ listingIds: ['listing:one', 'listing:one', 'listing:two'], query: '关怀礼盒', limit: 20 });
+    expect(catalogRead).toHaveBeenCalledWith(
+      { query: { listingIds: 'listing:one,listing:two', q: '关怀礼盒', limit: 20 } },
+      expect.objectContaining({ headers: {} })
+    );
   });
 });

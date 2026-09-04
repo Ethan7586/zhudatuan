@@ -7,7 +7,6 @@ const root = resolve(import.meta.dirname, '../../..');
 const check = process.argv.includes('--check');
 const source = await loadRequirementSource(root);
 const required = source.mvp.filter(({ release }) => release === 'required');
-const nonblocking = source.mvp.filter(({ release }) => release === 'nonblocking');
 const released: string[] = [];
 for (const requirement of required) {
   const path = resolve(root, 'evidence/releases', `${requirement.id}.json`);
@@ -25,7 +24,7 @@ const output = `${JSON.stringify(
     schema: 'zhudatuan.releaseeligibility.v2',
     derived: true,
     releaseEligible: released.length === required.length && blockers.length === 0 && providerReleased === 11,
-    requirements: { released: released.length, required: required.length, nonblocking: nonblocking.length },
+    requirements: { released: released.length, required: required.length, nonblocking: 0 },
     providers: { released: providerReleased, required: 11 },
     blockers: [...new Set(blockers)].sort(),
   },

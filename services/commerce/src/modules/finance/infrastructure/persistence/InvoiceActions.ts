@@ -1,4 +1,4 @@
-import type { FinanceAction, FinancePersistence } from './FinanceAction';
+import type { FinanceAction, FinanceEntries } from './FinanceOperation';
 /** Invoice persistence actions. */
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { createHash, randomUUID } from 'node:crypto';
@@ -6,24 +6,28 @@ import { createHash, randomUUID } from 'node:crypto';
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
 import { rowResult } from '../../../../adapter/database/DatabaseResult';
 import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, integerField, textField } from '../../../../foundation/interface/Validation';
-import type { FinanceRepositoryFactory } from './PgFinanceRepository';
+import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
+import type { FinanceWorkflowFactory } from './PgFinanceWorkflow';
+import { Invoice as InvoiceAggregate } from '../../domain/model/Invoice';
+import type { FinanceOrderPort } from '../../../order/public';
+import type { FinancePaymentPort } from '../../../payment/public';
 
-export function invoicePersistence(repository: FinanceRepositoryFactory): Pick<FinancePersistence, 'requestsCreate' | 'requestsCancel' | 'requestsDecide' | 'redInvoice'> {
+export function invoiceActions(repository: FinanceWorkflowFactory, orders: FinanceOrderPort, payments: FinancePaymentPort): FinanceEntries<'requestsCreate' | 'requestsCancel' | 'requestsDecide' | 'redInvoice'> {
   return {
-    requestsCreate: requestInvoice,
+    requestsCreate: (request, database) => requestInvoice(request, database, orders, payments),
     requestsCancel: cancelInvoice,
     requestsDecide: (request, database) => decideInvoice(request, database, repository),
     redInvoice,
   };
 }
 
-const requestInvoice: FinanceAction = async (request, database) => {
+const requestInvoice = async (request: Parameters<FinanceAction>[0], database: Parameters<FinanceAction>[1], orders: FinanceOrderPort, payments: FinancePaymentPort) => {
   const access = requireAccess(request);
   const body = bodyRecord(request.input);
   const id = `invoice:${randomUUID()}`;
   const amount = integerField(body, 'amountMinor', 1);
   const settlement = textField(body, 'settlement');
+  const profile = textField(body, 'profile');
   const lines = identifiers(body.lines, 'lines');
   const eligible = await database.query<InvoiceLine>(
     `select line.id,line.source_type,line.source_id,line.invoice_minor::float8 amount_minor,
@@ -40,22 +44,35 @@ const requestInvoice: FinanceAction = async (request, database) => {
   if (selected.length !== lines.length || selected.reduce((sum, line) => sum + line.amount_minor, 0) !== amount) {
     throw new Error('INVOICE_LINES_NOT_ELIGIBLE_OR_AMOUNT_MISMATCH');
   }
+  await assertInvoiceSources(request.transaction, selected, orders, payments);
   const sourceHash = createHash('sha256')
     .update(selected.map((line) => `${line.id}:${line.amount_minor}:${line.tax_minor}`).join(','))
     .digest('hex');
+  const proposal = InvoiceAggregate.submit({
+    id,
+    profileId: profile,
+    settlementId: settlement,
+    amountMinor: amount,
+    currency: 'CNY',
+    kind: 'original',
+    redOf: null,
+    lines: selected.map((line) => ({ id: line.id, description: `${line.source_type}:${line.source_id}`, amountMinor: line.amount_minor, taxMinor: line.tax_minor })),
+    requestedBy: access.actor.id,
+  }).snapshot();
   const result = await database.query(
     `insert into invoice.request(id,profile_id,settlement_id,amount_minor,currency,state,created_at,version,
     requested_by,reason,evidence,source_hash,kind) select $1,profile.id,$2,$3,settlement.currency,'submitted',clock_timestamp(),0,$4,$5,
     $6::jsonb,$7,'original' from invoice.profile profile join finance.settlement settlement on settlement.id=$2 where profile.id=$8
     and profile.owner_id=$9 and profile.status='active' and settlement.scope_id=$9 returning *`,
-    [id, settlement, amount, access.actor.id, textField(body, 'reason', 1000), JSON.stringify(record(body.evidence)), sourceHash, body.profile, access.scope.id]
+    [proposal.id, proposal.settlementId, proposal.amountMinor, proposal.requestedBy, textField(body, 'reason', 1000),
+      JSON.stringify(record(body.evidence)), sourceHash, proposal.profileId, access.scope.id]
   );
   if (!(result.rows[0] as { id?: string } | undefined)?.id) throw new Error('INVOICE_PROFILE_OR_SETTLEMENT_INVALID');
   await database.query(
     `insert into invoice.requestprofile(request_id,owner_id,title_ciphertext,title_key_version,taxid_ciphertext,taxid_token,
     taxid_key_version,address_ciphertext,address_key_version,profile_version) select $1,owner_id,title_ciphertext,title_key_version,
     taxid_ciphertext,taxid_token,taxid_key_version,address_ciphertext,address_key_version,version from invoice.profile where id=$2`,
-    [id, body.profile]
+    [id, proposal.profileId]
   );
   await database.query(
     `insert into invoice.requestline(id,request_id,settlement_line_id,kind,amount_minor,tax_minor,source_hash)
@@ -74,6 +91,22 @@ const requestInvoice: FinanceAction = async (request, database) => {
   return rowResult(result, 201);
 };
 
+async function assertInvoiceSources(context: Parameters<FinanceOrderPort['verified']>[0], lines: readonly InvoiceLine[], orders: FinanceOrderPort, payments: FinancePaymentPort): Promise<void> {
+  const paymentIds = distinct(lines.filter(({ source_type }) => source_type === 'payment').map(({ source_id }) => source_id));
+  const paymentOrders = await payments.orders(context, paymentIds);
+  if (new Set(paymentOrders.map(({ payment }) => payment)).size !== paymentIds.length) throw new Error('INVOICE_LINES_NOT_ELIGIBLE_OR_AMOUNT_MISMATCH');
+  const orderIds = distinct([
+    ...lines.filter(({ source_type }) => source_type === 'order').map(({ source_id }) => source_id),
+    ...paymentOrders.map(({ order }) => order),
+  ]);
+  const verified = await orders.verified(context, orderIds);
+  if (new Set(verified).size !== orderIds.length) throw new Error('INVOICE_LINES_NOT_ELIGIBLE_OR_AMOUNT_MISMATCH');
+}
+
+function distinct(values: readonly string[]): readonly string[] {
+  return Object.freeze([...new Set(values)].sort());
+}
+
 const cancelInvoice: FinanceAction = async (request, database) => {
   const access = requireAccess(request);
   const result = await database.query<{ id: string }>(
@@ -91,7 +124,7 @@ const cancelInvoice: FinanceAction = async (request, database) => {
   return rowResult(result);
 };
 
-async function decideInvoice(request: OperationRequest, database: Parameters<FinanceRepositoryFactory>[0], repository: FinanceRepositoryFactory) {
+async function decideInvoice(request: OperationRequest, database: Parameters<FinanceWorkflowFactory>[0], repository: FinanceWorkflowFactory) {
   const access = requireAccess(request);
   const body = bodyRecord(request.input);
   const decision = body.decision === 'approved' ? 'approved' : body.decision === 'rejected' ? 'rejected' : null;

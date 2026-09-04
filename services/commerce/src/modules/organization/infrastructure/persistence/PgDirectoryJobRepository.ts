@@ -22,7 +22,7 @@ export class PgDirectoryJobRepository implements DirectoryJobRepository {
     const source = `directory:${digest(`${anomaly.connection}:${anomaly.code}:${date}`)}`;
     return new PgRuntimeWriter(this.transactions.database(context)).deadletter({
       id: `alert:${source}`,
-      kind: 'directoryreconcile',
+      kind: 'provider',
       source,
       owner: 'organization',
       payload: { connectionhash: digest(anomaly.connection), count: anomaly.count },

@@ -12,7 +12,7 @@ values('contract:event','contract.leg','contract:journal','contract:finance','CN
 set constraints all immediate;
 do $contract$ begin
   if (select count(*) from pg_trigger where not tgisinternal and tgname in('payment_observation_immutable','payment_capture_immutable',
-    'payment_refundreceipt_immutable','voucher_redemption_immutable','voucher_reversal_immutable'))<>5 then
+    'payment_refundreceipt_immutable','voucher_refund_immutable'))<>4 then
     raise exception 'IMMUTABLE_RECEIPT_TRIGGER_MISSING';
   end if;
   begin

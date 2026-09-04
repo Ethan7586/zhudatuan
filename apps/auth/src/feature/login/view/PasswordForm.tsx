@@ -1,3 +1,4 @@
+import { Button } from '@shop/design';
 import { ArrowRight, Building2, Eye, EyeOff, Lock, RefreshCw, UserCheck } from 'lucide-react';
 import { usePasswordForm } from '../viewmodel/LoginReducer';
 
@@ -55,34 +56,26 @@ export function PasswordForm({
             disabled={busy}
             aria-invalid={error.password ? true : undefined}
           />
-          <button type="button" onClick={vm.toggle} className="authrevealsecret" aria-label={vm.visible ? '隐藏密码' : '显示密码'}>
+          <Button tone="quiet" onPress={vm.toggle} className="authrevealsecret" aria-label={vm.visible ? '隐藏密码' : '显示密码'}>
             {vm.visible ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
-          </button>
+          </Button>
         </span>
         {error.password && <span className="authfieldissue">{error.password}</span>}
       </label>
       <div className="authsecondaryactions">
-        <button type="button" onClick={onReset} className="authtextbutton">
+        <Button tone="quiet" onPress={onReset}>
           忘记密码？
-        </button>
-        <button
-          type="button"
-          onClick={onInvitation}
-          className="authregister"
-        >
+        </Button>
+        <Button tone="strong" onPress={onInvitation}>
           <UserCheck aria-hidden="true" />
           新用户注册
-        </button>
+        </Button>
       </div>
       <p className="authregisterhint">持企业邀请码创建员工商城账号</p>
-      <button
-        type="submit"
-        disabled={busy}
-        className="authprimary"
-      >
+      <Button type="submit" tone="primary" isDisabled={busy} className="authfull">
         {busy ? <RefreshCw className="authspin" aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
         {busy ? '验证中...' : '登录'}
-      </button>
+      </Button>
     </form>
   );
 }

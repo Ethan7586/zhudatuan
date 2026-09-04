@@ -1,13 +1,18 @@
-import type { OperationOutputFor } from '@shop/contract';
-import type { StorefrontClient } from '../../../shared/api/Client';
+import { createIdempotencyKey, uploadObject } from '@shop/sdk';
+import type { SupportOperations } from '@shop/sdk/support';
+import type { RequestContextFactory } from '../../../shared/api/RequestContext';
 import type { StorefrontSession } from '../../../entity/session';
 import type { SupportAttachmentType } from '../model/Attachment';
 import type { MessageDraft } from '../model/Message';
 import type { SupportPriority } from '../model/SupportCase';
 import { mapCases, mapConversation } from './SupportMapper';
+import type { SupportPort } from '../public/SupportPort';
 
-export class SupportGateway {
-  constructor(private readonly support: StorefrontClient['commerce']['support'], private readonly context: StorefrontClient['context']) {}
+export class SupportGateway implements SupportPort {
+  constructor(
+    private readonly support: SupportOperations,
+    private readonly context: RequestContextFactory
+  ) {}
   async cases(session: StorefrontSession, cursor?: string, signal?: AbortSignal) {
     const value = await this.support.casesRead({ query: { limit: 50, ...(cursor ? { cursor } : {}) } }, this.context(session, { signal }));
     return mapCases(value);
@@ -39,13 +44,23 @@ export class SupportGateway {
     return this.support.attachmentsCreate({ path: { caseid: id }, body: input }, this.context(session, { write: true, idempotencyKey }));
   }
 
-  readstate(session: StorefrontSession, conversation: string, sequence: number, idempotencyKey: string) {
-    return this.support.readstatesManage({ path: { conversationid: conversation }, body: { lastSequence: sequence } }, this.context(session, { write: true, idempotencyKey }));
+  async upload(session: StorefrontSession, id: string, input: Readonly<{ name: string; contentType: SupportAttachmentType; sizeBytes: number; sha256: string }>, file: File) {
+    const intent = await this.attachment(session, id, input, createIdempotencyKey());
+    await uploadObject({ url: intent.upload.url, headers: intent.upload.headers, body: file }).catch(() => {
+      throw new Error('附件直传失败，请重新选择文件');
+    });
+    return Object.freeze({ id: intent.id, name: file.name, state: 'pending' as const });
+  }
+
+  readstate(session: StorefrontSession, conversation: string, sequence: number) {
+    return this.support.readstatesManage({ path: { conversationid: conversation }, body: { lastSequence: sequence } }, this.context(session, { write: true, idempotencyKey: createIdempotencyKey() }));
   }
 
   events(session: StorefrontSession, conversationId: string, signal?: AbortSignal, lastEventId?: string) {
     return this.support.eventsRead({ query: { conversationId } }, this.context(session, { signal, lastEventId }));
   }
-}
 
-export type SupportEvent = OperationOutputFor<'support.events.read'>;
+  createMessageDraft(caseId: string, version: number, message: string, attachmentIds: readonly string[]): MessageDraft {
+    return Object.freeze({ caseId, version, message, attachmentIds: Object.freeze([...attachmentIds]), clientMessageId: crypto.randomUUID(), idempotencyKey: createIdempotencyKey() });
+  }
+}

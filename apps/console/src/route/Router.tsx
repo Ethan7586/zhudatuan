@@ -2,18 +2,21 @@ import { RouteLoading } from '@shop/design';
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router';
 import type { RouteRegistryContract } from '../shared/manifest/ComponentManifest';
-import { relativeRoute } from '../app/RouteRegistry';
-import { RouteError } from './RouteError';
+import { relativeRoute, ROOT_PATH, ROUTE_BASE } from '../generated/RouteBinding';
+import type { SessionPort } from '../entity/session/public/SessionPort';
 
 const ScopeShell = lazy(() => import('../shell/ScopeShell').then((module) => ({ default: module.ScopeShell })));
+const RouteError = lazy(() => import('./RouteError').then((module) => ({ default: module.RouteError })));
+const FeatureRouteError = lazy(() => import('./RouteError').then((module) => ({ default: module.FeatureRouteError })));
 
-export function createConsoleRouter(registry: RouteRegistryContract) {
-  const sessionLoaders = loadSessionLoaders(registry);
+export function createConsoleRouter(registry: RouteRegistryContract, session: SessionPort) {
+  const sessionLoaders = loadSessionLoaders(registry, session);
+  const featureRoutes = registry.routes().map(({ route, load }) => ({ path: relativeRoute(route.routeid), lazy: load, ErrorBoundary: IsolatedRouteError }));
   return createBrowserRouter([
-    { path: '/', loader: async (args) => (await sessionLoaders).landingLoader(args), element: <RouteLoading />, HydrateFallback: RouteLoading, errorElement: <RouteError /> },
+    { path: ROOT_PATH, loader: async (args) => (await sessionLoaders).landingLoader(args), element: <RouteLoading />, HydrateFallback: RouteLoading, errorElement: <ApplicationRouteError /> },
     {
       id: 'scope',
-      path: '/scopes/:scopeKind/:scopeId',
+      path: ROUTE_BASE,
       loader: async (args) => (await sessionLoaders).scopeLoader(args),
       element: (
         <Suspense fallback={<RouteLoading />}>
@@ -21,13 +24,29 @@ export function createConsoleRouter(registry: RouteRegistryContract) {
         </Suspense>
       ),
       HydrateFallback: RouteLoading,
-      errorElement: <RouteError />,
-      children: [{ index: true, element: <Navigate to="cockpit" replace /> }, ...registry.routes().map(({ route, load }) => ({ path: relativeRoute(route.routeid), lazy: load })), { path: '*', lazy: () => import('./NotFoundRoute') }],
+      errorElement: <ApplicationRouteError />,
+      children: [{ index: true, element: <Navigate to={relativeRoute('consolecockpit')} replace /> }, ...featureRoutes, { path: '*', lazy: () => import('./NotFoundRoute'), ErrorBoundary: IsolatedRouteError }],
     },
     { path: '*', lazy: () => import('./NotFoundRoute') },
   ]);
 }
 
-function loadSessionLoaders(registry: RouteRegistryContract) {
-  return import('./SessionLoader').then(({ createSessionLoaders }) => createSessionLoaders(registry));
+function ApplicationRouteError() {
+  return (
+    <Suspense fallback={<RouteLoading />}>
+      <RouteError />
+    </Suspense>
+  );
+}
+
+function IsolatedRouteError() {
+  return (
+    <Suspense fallback={<RouteLoading />}>
+      <FeatureRouteError />
+    </Suspense>
+  );
+}
+
+function loadSessionLoaders(registry: RouteRegistryContract, session: SessionPort) {
+  return import('./SessionLoader').then(({ createSessionLoaders }) => createSessionLoaders(registry, session));
 }

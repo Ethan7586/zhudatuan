@@ -3,7 +3,9 @@ import type { ReadTransactionContext, WriteTransactionContext } from '../../../.
 import { Money } from '@shop/kernel';
 import { PaymentReference } from '../../domain/model/PaymentReference';
 import { AllocationPolicy } from '../../domain/policy/AllocationPolicy';
-import type { PaymentOrderPort } from '../../../order/public';
+import type { OrderPaymentPort } from '../../../order/public';
+import { Refund } from '../../domain/model/Refund';
+import { DomainError } from '../../../../foundation/domain/DomainError';
 export interface RefundRequest {
   readonly id: string;
   readonly payment: string;
@@ -13,6 +15,7 @@ export interface RefundRequest {
   readonly scope: string;
   readonly scopes?: readonly string[];
   readonly aftersale?: string;
+  readonly expectedVersion?: number;
 }
 export interface PlannedRefund {
   readonly id: string;
@@ -30,6 +33,7 @@ interface PaymentRow {
   readonly order_id: string;
   readonly currency: string;
   readonly captured_minor: number;
+  readonly version: number;
 }
 interface TenderRow {
   readonly sequence: number;
@@ -46,7 +50,7 @@ interface RefundedRow {
 export class RefundPlanner {
   private readonly transactions = new PgTransactionAccess();
   constructor(
-    private readonly orders: Pick<PaymentOrderPort, 'payment' | 'recordRefund'>,
+    private readonly orders: Pick<OrderPaymentPort, 'payment' | 'recordRefund'>,
     private readonly allocation = new AllocationPolicy()
   ) {}
   async create(context: WriteTransactionContext, request: RefundRequest): Promise<PlannedRefund> {
@@ -54,7 +58,7 @@ export class RefundPlanner {
     const payment = (
       await database.query<PaymentRow>(
         `select payment.intent_id,intent.order_id,payment.currency,
-      payment.captured_minor::float8 captured_minor from payment.payment payment
+      payment.captured_minor::float8 captured_minor,payment.version::float8 version from payment.payment payment
       join payment.intent intent on intent.id=payment.intent_id where payment.id=$1 for update of payment`,
         [request.payment]
       )
@@ -77,6 +81,7 @@ export class RefundPlanner {
       }
       return existing;
     }
+    if (request.expectedVersion !== undefined && request.expectedVersion !== payment.version) throw new DomainError('VERSION_CONFLICT');
     const plans = (
       await database.query<Omit<TenderRow, 'refunded_minor'>>(
         `select sequence,kind,reference_id,amount_minor::float8 amount_minor
@@ -110,9 +115,12 @@ export class RefundPlanner {
     const external = legs.some(({ kind }) => kind === 'wechat');
     const internal = legs.some(({ kind }) => kind !== 'wechat');
     const provider = external && internal ? 'mixed' : external ? 'wechat' : 'internal';
+    new Refund({ id: request.id, payment: request.payment, amountMinor: request.amountMinor, currency: payment.currency,
+      state: 'requested', reason: request.reason, version: 0 });
     const inserted = await database.query<PlannedRefund>(
       `insert into payment.refund(id,payment_id,provider,provider_reference,idempotency_key,
-      amount_minor,currency,state,reason,aftersale_id,version) values($1,$2,$3,$4,$5,$6,$7,'requested',$8,$9,0)
+      amount_minor,currency,state,reason,aftersale_id,requested_at,completed_at,version)
+      values($1,$2,$3,$4,$5,$6,$7,'requested',$8,$9,clock_timestamp(),null,0)
       returning id,payment_id,provider,provider_reference,amount_minor::float8 amount_minor,currency,state,reason,aftersale_id`,
       [request.id, request.payment, provider, PaymentReference.refund(request.id).text, request.idempotency, request.amountMinor, payment.currency, request.reason, request.aftersale ?? null]
     );

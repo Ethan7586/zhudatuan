@@ -25,3 +25,16 @@ review:
   LGPL-3.0-or-later: dynamically linked vendor binary; notices and relink terms required
   MPL-2.0: file-level copyleft; modifications to covered files must remain available
   CC-BY-4.0: attribution required for bundled data
+assets:
+  - id: zhudatuanliwisdomwing
+    source: zhudatuan_li
+    kind: visualreference
+    license: proprietary
+    usage: design tokens, layouts, interactions, brandmark and wingcode
+    notice: internal product asset; preserve attribution in evidence manifest
+nativeDependencies:
+  - id: wechatminiprogramruntime
+    source: WeChat Developer Tools
+    license: platformterms
+    surface: miniapp
+    secretBundling: forbidden

@@ -1,1 +1,1 @@
-export { useAccountIdentity } from './AccountIdentity';
+export type { AccountPort } from './AccountPort';

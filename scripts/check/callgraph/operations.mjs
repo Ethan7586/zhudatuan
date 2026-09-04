@@ -62,7 +62,6 @@ function auditHandler(values, location, id, entry, sourceSet, instantiations) {
 function handlerInstantiations(sourceSet) {
   const values = new Map();
   for (const file of sourceSet) {
-    if (path.basename(file) !== 'Module.ts') continue;
     const parts = relative(file).split('/');
     const owner = parts[0] === 'services' && parts[1] === 'commerce' && parts[2] === 'src' && parts[3] === 'modules' ? parts[4] : undefined;
     if (!owner) continue;

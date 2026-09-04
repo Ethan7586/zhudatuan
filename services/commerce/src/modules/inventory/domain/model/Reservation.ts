@@ -1,36 +1,80 @@
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import { Aggregate } from '../../../../foundation/domain/Aggregate';
 
 export type ReservationState = 'reserved' | 'committed' | 'released' | 'expired';
 
-export class Reservation extends Aggregate {
-  constructor(
-    id: string,
-    readonly quantity: number,
-    private stateValue: ReservationState = 'reserved'
-  ) {
-    super(id);
-    if (!Number.isSafeInteger(quantity) || quantity < 1) throw new DomainError('INVENTORY_QUANTITY_INVALID');
+export interface ReservationSnapshot {
+  readonly id: string;
+  readonly stockitem: string;
+  readonly ownerKind: 'order' | 'checkout';
+  readonly owner: string;
+  readonly quantity: number;
+  readonly state: ReservationState;
+  readonly expiresAt: string;
+  readonly createdAt: string;
+  readonly version: number;
+}
+
+export class Reservation {
+  private constructor(private readonly value: ReservationSnapshot) {
+    validate(value);
+    Object.freeze(this);
   }
-  get state(): ReservationState {
-    return this.stateValue;
+
+  static reserve(input: Omit<ReservationSnapshot, 'state' | 'version'>): Reservation {
+    return new Reservation(freeze({ ...input, state: 'reserved', version: 1, expiresAt: iso(input.expiresAt), createdAt: iso(input.createdAt) }));
   }
-  commit(): void {
-    this.transition('committed');
+
+  static restore(value: ReservationSnapshot): Reservation {
+    return new Reservation(freeze(value));
   }
-  release(): void {
-    this.transition('released');
+
+  commit(at: Date): Reservation {
+    if (this.value.state === 'committed') return this;
+    this.assertPending();
+    if (at.getTime() >= Date.parse(this.value.expiresAt)) throw new DomainError('INVENTORY_RESERVATION_FINAL', { reason: 'RESERVATION_EXPIRED' });
+    return this.transition('committed');
   }
-  expire(): void {
-    this.transition('expired');
+
+  release(): Reservation {
+    if (this.value.state === 'released') return this;
+    this.assertPending();
+    return this.transition('released');
   }
-  private transition(next: Exclude<ReservationState, 'reserved'>): void {
-    if (this.stateValue !== 'reserved') throw new DomainError('INVENTORY_RESERVATION_FINAL');
-    this.stateValue = next;
+
+  expire(at: Date): Reservation {
+    if (this.value.state === 'expired') return this;
+    this.assertPending();
+    if (at.getTime() < Date.parse(this.value.expiresAt)) throw new DomainError('INVENTORY_RESERVATION_FINAL', { reason: 'RESERVATION_NOT_DUE' });
+    return this.transition('expired');
+  }
+
+  snapshot(): ReservationSnapshot {
+    return this.value;
+  }
+
+  private assertPending(): void {
+    if (this.value.state !== 'reserved') throw new DomainError('INVENTORY_RESERVATION_FINAL');
+  }
+
+  private transition(state: Exclude<ReservationState, 'reserved'>): Reservation {
+    return new Reservation(freeze({ ...this.value, state, version: this.value.version + 1 }));
   }
 }
 
-export function available(onhand: number, activeReserved: number, safety: number): number {
-  if (![onhand, activeReserved, safety].every((value) => Number.isSafeInteger(value) && value >= 0)) throw new DomainError('INVENTORY_BALANCE_INVALID');
-  return Math.max(0, onhand - activeReserved - safety);
+function validate(value: ReservationSnapshot): void {
+  if (!/^reservation:[A-Za-z0-9][A-Za-z0-9.:/-]*$/.test(value.id) || !/^stock:/.test(value.stockitem) || !value.owner) invalid();
+  if (!['order', 'checkout'].includes(value.ownerKind) || !['reserved', 'committed', 'released', 'expired'].includes(value.state)) invalid();
+  if (!Number.isSafeInteger(value.quantity) || value.quantity < 1 || !Number.isSafeInteger(value.version) || value.version < 1) invalid();
+  if (Date.parse(value.expiresAt) <= Date.parse(value.createdAt)) invalid();
+}
+function iso(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) invalid();
+  return date.toISOString();
+}
+function freeze(value: ReservationSnapshot): ReservationSnapshot {
+  return Object.freeze({ ...value });
+}
+function invalid(): never {
+  throw new DomainError('INVENTORY_QUANTITY_INVALID');
 }

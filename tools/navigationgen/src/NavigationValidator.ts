@@ -2,9 +2,13 @@ import type { NavigationDocument, NavigationNode, RouteDefinition } from './Navi
 
 export interface OperationReference {
   readonly id: string;
+  readonly owner: string;
+  readonly lifecycle: string;
   readonly permission: string | null;
   readonly capability: string;
   readonly requirements: readonly string[];
+  readonly targets: readonly string[];
+  readonly scopeKinds: readonly string[];
 }
 
 export interface ValidatedNavigation {
@@ -12,9 +16,19 @@ export interface ValidatedNavigation {
   readonly nodes: readonly NavigationNode[];
 }
 
-export function validateNavigation(document: NavigationDocument, operations: readonly OperationReference[]): ValidatedNavigation {
-  if (document.routes.length === 0 || document.routes.length > 150) throw new Error(`ROUTE_COUNT_INVALID:${document.routes.length}`);
-  if (document.nodes.length === 0 || document.nodes.length > 100) throw new Error(`NAVIGATION_NODE_COUNT_INVALID:${document.nodes.length}`);
+export interface NavigationCapacity {
+  readonly maximumRoutes: number;
+  readonly maximumNodes: number;
+}
+
+export function validateNavigation(document: NavigationDocument, operations: readonly OperationReference[], capacity: NavigationCapacity): ValidatedNavigation {
+  if (!Number.isSafeInteger(capacity.maximumRoutes) || capacity.maximumRoutes < 1 || !Number.isSafeInteger(capacity.maximumNodes) || capacity.maximumNodes < 1) {
+    throw new Error('NAVIGATION_CAPACITY_INVALID');
+  }
+  if (document.routes.length === 0) throw new Error('NAVIGATION_ROUTE_EMPTY');
+  if (document.routes.length > capacity.maximumRoutes) throw new Error(`NAVIGATION_ROUTE_CAPACITY_EXCEEDED:${document.routes.length}:${capacity.maximumRoutes}`);
+  if (document.nodes.length === 0) throw new Error('NAVIGATION_NODE_EMPTY');
+  if (document.nodes.length > capacity.maximumNodes) throw new Error(`NAVIGATION_NODE_CAPACITY_EXCEEDED:${document.nodes.length}:${capacity.maximumNodes}`);
   const operationById = new Map(operations.map((operation) => [operation.id, operation]));
   const routeById = new Map<string, RouteDefinition>();
   const routePaths = new Set<string>();
@@ -25,10 +39,17 @@ export function validateNavigation(document: NavigationDocument, operations: rea
     if (routePaths.has(key)) throw new Error(`ROUTE_PATH_DUPLICATE:${key}`);
     routePaths.add(key);
   }
+  for (const surface of ['auth', 'console', 'storefront', 'miniapp', 'store', 'supplier'] as const) {
+    const routes = document.routes.filter((route) => route.surface === surface);
+    if (routes.length === 0) throw new Error(`ROUTE_SURFACE_EMPTY:${surface}`);
+    const defaults = routes.filter((route) => route.default).length;
+    if (defaults !== 1) throw new Error(defaults === 0 ? `ROUTE_DEFAULT_MISSING:${surface}` : `ROUTE_DEFAULT_DUPLICATE:${surface}`);
+  }
   const byId = new Map<string, NavigationNode>();
   const nodeKeys = new Set<string>();
   for (const node of document.nodes) {
     if (byId.has(node.id)) throw new Error(`NAVIGATION_ID_DUPLICATE:${node.id}`);
+    if (!/\p{Script=Han}/u.test(node.title) || node.title.length > 80) throw new Error(`NAVIGATION_TITLE_INVALID:${node.id}`);
     byId.set(node.id, node);
     const nodeKey = `${node.surface}:${node.scope}:${node.routeid}`;
     if (nodeKeys.has(nodeKey)) throw new Error(`NAVIGATION_ROUTE_DUPLICATE:${nodeKey}`);
@@ -36,13 +57,17 @@ export function validateNavigation(document: NavigationDocument, operations: rea
     const route = routeById.get(node.routeid);
     if (route === undefined) throw new Error(`NAVIGATION_ROUTE_UNKNOWN:${node.id}:${node.routeid}`);
     if (route.surface !== node.surface) throw new Error(`NAVIGATION_ROUTE_SURFACE_INVALID:${node.id}`);
-    if (node.requirements.some((requirement) => !route.requirements.includes(requirement))) throw new Error(`NAVIGATION_ROUTE_REQUIREMENT_DRIFT:${node.id}`);
     const operation = operationById.get(node.entry);
     if (operation === undefined) throw new Error(`NAVIGATION_ENTRY_UNKNOWN:${node.id}:${node.entry}`);
-    if (operation.permission !== null && !node.permissions.includes(operation.permission)) throw new Error(`NAVIGATION_ENTRY_PERMISSION_MISSING:${node.id}`);
-    if (!node.capabilities.includes(operation.capability)) throw new Error(`NAVIGATION_ENTRY_CAPABILITY_MISSING:${node.id}`);
-    for (const requirement of node.requirements) {
-      if (!operation.requirements.includes(requirement) && !storefrontAggregate(node.id)) throw new Error(`NAVIGATION_ENTRY_REQUIREMENT_DRIFT:${node.id}:${requirement}`);
+    if (operation.lifecycle !== 'active') throw new Error(`NAVIGATION_ENTRY_INACTIVE:${node.id}:${node.entry}`);
+    if (!operation.targets.includes(node.surface)) throw new Error(`NAVIGATION_ENTRY_SURFACE_DENIED:${node.id}:${node.entry}`);
+    const consumerSelfScope = (node.surface === 'storefront' || node.surface === 'miniapp') && node.scope === 'mall' && (operation.scopeKinds.includes('owner') || operation.scopeKinds.includes('self'));
+    if (!operation.scopeKinds.includes(node.scope) && !consumerSelfScope) throw new Error(`NAVIGATION_ENTRY_SCOPE_DENIED:${node.id}:${node.entry}`);
+    if (!/^[a-z]+$/.test(operation.owner)) throw new Error(`NAVIGATION_ENTRY_OWNER_INVALID:${node.id}:${operation.owner}`);
+    if (operation.permission !== null && !/^[a-z]+(?:\.[a-z]+)+$/.test(operation.permission)) throw new Error(`NAVIGATION_ENTRY_PERMISSION_INVALID:${node.id}`);
+    if (!/^[a-z]+(?:\.[a-z]+)+$/.test(operation.capability)) throw new Error(`NAVIGATION_ENTRY_CAPABILITY_INVALID:${node.id}`);
+    if (!route.requirements.some((requirement) => operation.requirements.includes(requirement)) && !storefrontAggregate(node.id)) {
+      throw new Error(`NAVIGATION_ENTRY_REQUIREMENT_DRIFT:${node.id}`);
     }
   }
   for (const node of document.nodes) {
@@ -54,7 +79,7 @@ export function validateNavigation(document: NavigationDocument, operations: rea
   }
   const referenced = new Set(document.nodes.map(({ routeid }) => routeid));
   const routable = document.routes.filter(({ surface }) => surface !== 'auth');
-  const orphaned = routable.filter((route) => !referenced.has(route.id) && !isNestedRoute(route, routable, referenced));
+  const orphaned = routable.filter((route) => !referenced.has(route.id));
   if (orphaned.length > 0) throw new Error(`ROUTE_ORPHANED:${orphaned.map(({ id }) => id).join(',')}`);
   const routes = [...document.routes].sort((left, right) => left.surface.localeCompare(right.surface) || left.path.localeCompare(right.path) || left.id.localeCompare(right.id));
   const nodes = [...document.nodes].sort(
@@ -71,11 +96,5 @@ function visit(node: NavigationNode, nodes: ReadonlyMap<string, NavigationNode>,
 }
 
 function storefrontAggregate(id: string): boolean {
-  return id === 'storehome' || id === 'storeprofile';
-}
-
-function isNestedRoute(route: RouteDefinition, routes: readonly RouteDefinition[], referenced: ReadonlySet<string>): boolean {
-  const routeSuffix = route.path.replace('/scopes/:scopeKind/:scopeId', '');
-  if (/:[A-Za-z]/.test(routeSuffix)) return true;
-  return routes.some((parent) => parent.surface === route.surface && referenced.has(parent.id) && parent.id !== route.id && route.path.startsWith(`${parent.path}/`));
+  return id === 'storehome' || id === 'storeprofile' || id === 'miniapphome' || id === 'miniappprofile';
 }

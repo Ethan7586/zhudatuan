@@ -1,7 +1,7 @@
 import type { OperationInputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler } from '../../../../foundation/application/OperationHandler';
-import type { SettlementRepository } from '../port/OperationRepositories';
+import type { SettlementRepository } from '../port/FinanceCommandRepository';
 
 export class SettlementsDecideHandler implements OperationHandler<'finance.settlements.decide', 'write'> {
   readonly operation = 'finance.settlements.decide' as const;

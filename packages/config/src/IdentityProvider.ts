@@ -1,11 +1,45 @@
 // Generated from config/identityproviders.yml and infrastructure/network/Edge.yml. Do not edit.
-export const IDENTITY_PROVIDER_CHECKSUM = 'd5cfb06ac4ac1bbb9753316e2d2192c8a10b8aa3a6a731e4818734b2768b9a8f' as const;
+export const IDENTITY_PROVIDER_CHECKSUM = '37f9fe02b2c7cb8b57b138fd6b505c0b49e59e2ef8a74e40bc59b728007f3509' as const;
 
 export const IDENTITY_PROVIDER_TYPES = Object.freeze(["oidc","wechat","wecomcorp","wecomsuite"] as const);
 export type IdentityProviderType = (typeof IDENTITY_PROVIDER_TYPES)[number];
 
 export const IDENTITY_PROVIDER_CONFIGURATION = Object.freeze({
-  schemaVersion: 2,
+  schemaVersion: 3,
+  schema: Object.freeze({
+  "provider": {
+    "required": [
+      "id",
+      "type",
+      "issuer",
+      "audiences",
+      "clientId",
+      "secretRef",
+      "keyVersion",
+      "enabled"
+    ],
+    "issuer": "httpsurl",
+    "audiences": "nonemptyunique",
+    "clientId": "publicidentifier",
+    "secretRef": "secretreference",
+    "keyVersion": "positiveinteger"
+  },
+  "wechatapplication": {
+    "required": [
+      "scene",
+      "appId",
+      "secretRef",
+      "keyVersion"
+    ],
+    "scenes": [
+      "miniapp",
+      "jsapi"
+    ],
+    "appId": "wechatapplicationid",
+    "secretRef": "secretreference",
+    "keyVersion": "positiveinteger"
+  }
+} as const),
   callbackOrigin: 'https://passport.fufu.wang',
   discoveryPath: '/.well-known/openid-configuration',
   discoveryTtlSeconds: 3600,
@@ -22,6 +56,10 @@ export const IDENTITY_PROVIDER_CONFIGURATION = Object.freeze({
   maximumResponseBytes: 1048576,
   retryAttempts: 3,
   allowedAlgorithms: Object.freeze(["RS256","ES256"] as const),
+  redirectAllowlist: Object.freeze(["https://passport.fufu.wang"] as const),
+  bindingConflict: 'reject',
+  accountLink: 'explicitproof',
+  keyRotationDays: 90,
   typePolicies: Object.freeze({
   "oidc": {
     "timeoutMilliseconds": 5000,

@@ -1,32 +1,33 @@
-import type { Redemption, VoucherCenter } from '../model/Redemption';
+import type { OperationOutputFor } from '@shop/contract';
+import type { VoucherActivity } from '../model/VoucherActivity';
 import type { Voucher } from '../model/Voucher';
-import { nullableText } from '../../../shared/format/Text';
 
-type RecordValue = Readonly<Record<string, unknown>>;
+type VoucherDto = OperationOutputFor<'voucher.vouchers.get'>;
+type TimelineDto = OperationOutputFor<'voucher.vouchers.timeline'>['items'][number];
 
-export function mapVoucherCenter(bindings: readonly RecordValue[], redemptions: readonly RecordValue[]): VoucherCenter {
-  return Object.freeze({ vouchers: Object.freeze(bindings.map(mapVoucher)), redemptions: Object.freeze(redemptions.map(mapRedemption)) });
-}
-function mapVoucher(value: RecordValue): Voucher {
+export function mapVoucher(value: VoucherDto): Voucher {
   return Object.freeze({
-    id: String(value.id),
-    programId: String(value.program_id),
-    name: String(value.name),
-    initialMinor: Number(value.initial_minor),
-    remainingMinor: Number(value.remaining_minor),
-    state: String(value.state),
-    expiresAt: String(value.expires_at),
-    version: Number(value.version),
+    id: value.id,
+    productId: value.product,
+    productName: value.productName,
+    numberMasked: value.numberMasked,
+    initialMinor: value.initialMinor,
+    remainingMinor: value.remainingMinor,
+    currency: value.currency,
+    state: value.state,
+    startsAt: value.validity.startsAt,
+    expiresAt: value.validity.expiresAt,
+    version: value.version,
   });
 }
-function mapRedemption(value: RecordValue): Redemption {
+
+export function mapActivity(value: TimelineDto): VoucherActivity {
   return Object.freeze({
-    id: String(value.id),
-    voucherId: String(value.voucher_id),
-    orderId: nullableText(value.order_id),
-    amountMinor: Number(value.amount_minor),
-    redeemedAt: String(value.redeemed_at),
-    reversedMinor: Number(value.reversed_minor),
-    state: value.receipt_state as Redemption['state'],
+    sequence: value.sequence,
+    previous: value.previous,
+    next: value.next,
+    reason: value.reason,
+    occurredAt: value.occurredAt,
+    redemption: value.redemption ? Object.freeze({ ...value.redemption }) : null,
   });
 }

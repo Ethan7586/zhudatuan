@@ -1,8 +1,7 @@
 import { Money } from '@shop/kernel';
-import { createHash } from 'node:crypto';
 import type { QuoteLine } from '../../domain/model/CheckoutQuote';
-import type { CampaignRule } from '../../domain/policy/CheckoutPolicy';
 import type { CartItemSnapshot } from '../../../cart/public';
+import { quoteHash } from '../../domain/service/QuoteSigner';
 
 export interface CartRow {
   readonly id: string;
@@ -16,7 +15,9 @@ export interface CartRow {
   readonly city_code: string | null;
   readonly address_version: number | null;
   readonly address_region: string | null;
+  readonly address_snapshot: unknown | null;
   readonly invoice_version: number | null;
+  readonly invoice_snapshot: unknown | null;
   readonly experience_version: string | null;
   readonly experience_hash: string | null;
   readonly items: readonly CartItemSnapshot[];
@@ -25,10 +26,7 @@ export interface LineRow {
   readonly listing_id: string;
   readonly sku_id: string;
   readonly quantity: number;
-  readonly cart_listing_version: string;
   readonly cart_line_version: number;
-  readonly cart_price_version: string;
-  readonly cart_unit_minor: number;
   readonly listing_title: string | null;
   readonly listing_version: number | null;
   readonly listing_status: string | null;
@@ -39,6 +37,7 @@ export interface LineRow {
   readonly sku_version: number | null;
   readonly unit_minor: number | null;
   readonly price_version: string | null;
+  readonly price_breakdown: readonly Readonly<{ kind: string; label: string; amountMinor: number }>[];
   readonly currency: string | null;
   readonly stockitem_id: string | null;
   readonly onhand: number | null;
@@ -70,36 +69,6 @@ export interface PurchaseRow {
   readonly month_minor: number;
   readonly lifetime_minor: number;
 }
-export interface CampaignRow {
-  readonly id: string;
-  readonly version: number;
-  readonly rule: Record<string, unknown>;
-  readonly remaining_budget: number;
-}
-export interface PriceRuleRow {
-  readonly id: string;
-  readonly version: number;
-  readonly priority: number;
-  readonly kind: string;
-  readonly condition: unknown;
-  readonly effect: unknown;
-}
-
-export function campaignRule(row: CampaignRow): CampaignRule {
-  const rule = row.rule;
-  return {
-    id: row.id,
-    version: row.version,
-    fixed: Money.of(integer(rule.fixedMinor, 0, 0)),
-    basisPoints: integer(rule.basisPoints, 0, 10_000),
-    minimumSubtotal: Money.of(integer(rule.minimumSubtotal, 0, 0)),
-    maximum: rule.maximumMinor === undefined ? null : Money.of(integer(rule.maximumMinor, 0, 0)),
-    remainingBudget: Money.of(row.remaining_budget),
-    stackable: rule.stackable === true,
-    group: typeof rule.exclusiveGroup === 'string' ? rule.exclusiveGroup : row.id,
-  };
-}
-
 export function applies(policy: PolicyRow, line: LineRow): boolean {
   return policy.resources.length === 0 || policy.resources.some((resource) => resource.id === line.listing_id || resource.id === line.sku_id || resource.id === line.product_id);
 }
@@ -127,14 +96,8 @@ export function period(row: PurchaseRow | undefined, value: string, kind: 'quant
 export function strings(value: unknown): readonly string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
 }
-export function integer(value: unknown, fallback: number, maximum: number): number {
-  if (value === undefined) return fallback;
-  if (!Number.isSafeInteger(value) || (value as number) < 0 || (maximum > 0 && (value as number) > maximum)) throw new Error('MARKETING_RULE_INVALID');
-  return value as number;
-}
-
 export function quoteDigest(value: unknown): string {
-  return createHash('sha256').update(JSON.stringify(value)).digest('hex');
+  return quoteHash(value);
 }
 
 export function allocateLineDiscount(lines: readonly QuoteLine[], discount: Money, subtotal: Money): readonly QuoteLine[] {

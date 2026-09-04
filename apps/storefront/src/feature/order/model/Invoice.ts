@@ -3,7 +3,7 @@ export interface Invoice {
   readonly amountMinor: number;
   readonly currency: string;
   readonly state: string;
-  readonly kind: 'original' | 'red';
+  readonly kind: InvoiceDto['kind'];
   readonly createdAt: string;
   readonly issuedAt: string | null;
   readonly sha256: string | null;
@@ -17,3 +17,6 @@ export interface InvoiceDownload {
   readonly filename: string;
   readonly sha256: string;
 }
+import type { OperationOutputFor } from '@shop/contract';
+
+type InvoiceDto = OperationOutputFor<'finance.invoices.read'>['items'][number];

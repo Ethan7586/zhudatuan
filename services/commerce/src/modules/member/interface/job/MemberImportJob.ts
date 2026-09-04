@@ -1,5 +1,5 @@
-import { importId } from '../../../../foundation/application/BatchImport';
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import { resourceId } from '../../../../foundation/application/Validation';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { MemberImportProcess } from '../../application/process/MemberImportProcess';
 
 export class MemberImportJob implements JobProcessor {
@@ -7,6 +7,6 @@ export class MemberImportJob implements JobProcessor {
 
   process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
     if (job.kind !== 'memberimport') throw new Error('JOB_KIND_MISMATCH');
-    return this.imports.execute(importId(job.payload, 'MEMBERIMPORT_REQUIRED'), job.scope_id ?? 'organization-platform-root', signal, deadline);
+    return this.imports.execute(resourceId(job.payload, 'import', 'import', 'MEMBERIMPORT_REQUIRED'), job.scope ?? 'organization-platform-root', signal, deadline);
   }
 }

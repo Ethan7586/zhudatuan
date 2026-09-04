@@ -107,6 +107,20 @@
   background: var(--sw-commerce-warm);
   color: var(--sw-warning-strong);
 }
+.productpanelaction {
+  justify-self: start;
+  border: 1px solid var(--sw-brand);
+  border-radius: 7px;
+  background: var(--sw-surface);
+  padding: 8px 12px;
+  color: var(--sw-brand);
+  font-weight: 600;
+}
+.productpanelaction:disabled {
+  cursor: not-allowed;
+  border-color: var(--sw-border);
+  color: var(--sw-muted);
+}
 .productdrawerdisabledaction {
   justify-self: end;
   min-height: 36px;
@@ -215,75 +229,4 @@
 .productdetailstate.iserror {
   border-color: var(--sw-danger);
   color: var(--sw-danger);
-}
-.productdetailpanel {
-  display: grid;
-  gap: 12px;
-}
-.productdetailpanel > h3,
-.productdetailpanel > p {
-  margin: 0;
-}
-.productdetailpanel > h3 {
-  font-size: 14px;
-}
-.productdetailpanel > dl {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0;
-}
-.productdetailpanel > dl > div {
-  min-width: 0;
-  border: 1px solid var(--sw-border);
-  border-radius: 7px;
-  padding: 9px 10px;
-}
-.productdetailpanel dt {
-  color: var(--sw-muted);
-  font-size: 9px;
-}
-.productdetailpanel dd {
-  overflow-wrap: anywhere;
-  margin: 4px 0 0;
-  color: var(--sw-text-secondary);
-  font-size: 10px;
-}
-.productdetailcard {
-  border: 1px solid var(--sw-border);
-  border-radius: 8px;
-  background: var(--sw-surface);
-  padding: 11px;
-}
-.productdetailcard > header,
-.productdetailcard li {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-.productdetailcard > header span,
-.productdetailcard > p,
-.productdetailcard li span {
-  color: var(--sw-muted);
-  font-size: 10px;
-}
-.productdetailcard > p {
-  margin: 6px 0;
-}
-.productdetailcard ul {
-  display: grid;
-  gap: 5px;
-  margin: 8px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.productdetailcard li {
-  border-top: 1px solid var(--sw-border);
-  padding-top: 6px;
-  font-size: 10px;
-}
-@media (max-width: 640px) {
-  .productdetailpanel > dl {
-    grid-template-columns: 1fr;
-  }
 }

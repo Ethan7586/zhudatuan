@@ -1,0 +1,188 @@
+@layer component {
+  .authsteps,
+  .authsurfacelabel,
+  .authsecondaryactions,
+  .authcodegroup,
+  .authlabel {
+    display: flex;
+    align-items: center;
+  }
+
+  .authsteps {
+    gap: var(--sw-space-0-5);
+  }
+
+  .authback {
+    display: grid;
+    width: var(--sw-min-touch-target);
+    min-width: var(--sw-min-touch-target);
+    border-radius: var(--sw-radius-md);
+    padding: 0;
+    place-items: center;
+  }
+
+  .authback:hover {
+    background: var(--sw-border);
+    color: var(--sw-text);
+  }
+
+  .authback svg,
+  .authstep svg {
+    width: var(--sw-icon-size-sm);
+    height: var(--sw-icon-size-sm);
+  }
+
+  .authstep {
+    display: grid;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: var(--sw-border-width-strong) solid var(--sw-border);
+    border-radius: var(--sw-radius-full);
+    background: var(--sw-surface);
+    color: var(--sw-muted);
+    font-size: var(--sw-font-size-caption);
+    font-weight: var(--sw-font-weight-bold);
+    place-items: center;
+  }
+
+  .authstep[data-current='true'] {
+    border-color: var(--sw-brand);
+    background: var(--sw-brand);
+    color: var(--sw-surface);
+    box-shadow: var(--sw-shadow-brand-control);
+  }
+
+  .authstep:first-of-type:not([data-current='true']) {
+    border-color: var(--sw-brand-light);
+    background: var(--sw-brand-light);
+    color: var(--sw-brand-dark);
+  }
+
+  .authstepbar {
+    width: 1.75rem;
+    height: var(--sw-border-width-strong);
+    background: var(--sw-border);
+  }
+
+  .authstepbar[data-complete='true'] {
+    background: var(--sw-brand);
+  }
+
+  .authsurfacelabel {
+    min-width: 0;
+    gap: var(--sw-space-1);
+  }
+
+  .authsurfacelabel .swbrand-mark img {
+    width: var(--sw-icon-container-md);
+    height: var(--sw-icon-container-md);
+  }
+
+  .authsurfacelabel > span {
+    color: var(--sw-text-secondary);
+    font-size: var(--sw-font-size-caption);
+    font-weight: var(--sw-font-weight-bold);
+    letter-spacing: 0.08em;
+  }
+
+  .authpanel {
+    display: grid;
+    gap: var(--sw-space-2);
+  }
+
+  .authpanel > header h2,
+  .authpanel > header h1 {
+    margin-bottom: var(--sw-space-0-5);
+  }
+
+  .authpanel > header p,
+  .authstatus p {
+    margin: 0;
+    color: var(--sw-text-secondary);
+    font-size: var(--sw-font-size-body-sm);
+  }
+
+  .authformstack,
+  .authform,
+  .authdialogform,
+  .authpolicy {
+    display: grid;
+    gap: var(--sw-space-1-5);
+  }
+
+  .authfield {
+    display: grid;
+    gap: var(--sw-space-0-5);
+    color: var(--sw-text-secondary);
+    font-size: var(--sw-font-size-body-sm);
+    font-weight: var(--sw-font-weight-bold);
+  }
+
+  .authlabel {
+    gap: var(--sw-space-0-5);
+  }
+
+  .authlabel svg {
+    width: var(--sw-icon-size-sm);
+    height: var(--sw-icon-size-sm);
+    flex: 0 0 auto;
+  }
+
+  .authlabel svg {
+    color: var(--sw-muted);
+  }
+
+  .authinput {
+    width: 100%;
+    min-height: var(--sw-control-touch-target);
+    border: var(--sw-border-width) solid var(--sw-border-interactive);
+    border-radius: var(--sw-radius-md);
+    background: var(--sw-surface);
+    color: var(--sw-text);
+    padding: var(--sw-control-gap) var(--sw-control-padding);
+    box-shadow: var(--sw-shadow-control-rest), var(--sw-shadow-control-inset);
+  }
+
+  .authinput:focus {
+    border-color: var(--sw-brand);
+    outline: none;
+    box-shadow: var(--sw-shadow-focus);
+  }
+
+  .authsecretinput {
+    font-family: var(--sw-font-mono);
+  }
+
+  .authpassword {
+    position: relative;
+    display: block;
+  }
+
+  .authpassword .authinput {
+    padding-right: 3.5rem;
+  }
+
+  .authrevealsecret {
+    position: absolute;
+    top: 50%;
+    right: var(--sw-space-0-5);
+    display: grid;
+    width: var(--sw-control-touch-target);
+    border-radius: var(--sw-radius-sm);
+    padding: 0;
+    transform: translateY(-50%);
+    place-items: center;
+  }
+
+  .authrevealsecret svg {
+    width: var(--sw-icon-size-sm);
+    height: var(--sw-icon-size-sm);
+  }
+
+  .authfieldissue {
+    margin: 0;
+    color: var(--sw-danger-strong);
+    font-size: var(--sw-font-size-caption);
+    font-weight: var(--sw-font-weight-bold);
+  }
+}

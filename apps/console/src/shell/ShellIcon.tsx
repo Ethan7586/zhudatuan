@@ -1,4 +1,4 @@
-export type ShellIconName = 'applications' | 'bell' | 'building' | 'channel' | 'chevron' | 'collapse' | 'control' | 'finance' | 'menu' | 'members' | 'orders' | 'products' | 'search' | 'system' | 'tasks' | 'trend' | 'voucher';
+export type ShellIconName = 'applications' | 'bell' | 'building' | 'channel' | 'chevron' | 'collapse' | 'control' | 'finance' | 'help' | 'menu' | 'members' | 'orders' | 'products' | 'search' | 'system' | 'tasks' | 'trend' | 'voucher';
 
 const paths: Readonly<Record<ShellIconName, readonly string[]>> = Object.freeze({
   applications: ['M4 4h6v6H4z', 'M14 4h6v6h-6z', 'M4 14h6v6H4z', 'M14 14h6v6h-6z'],
@@ -9,6 +9,7 @@ const paths: Readonly<Record<ShellIconName, readonly string[]>> = Object.freeze(
   collapse: ['M4 4h16v16H4z', 'M9 4v16', 'm15 9-3 3 3 3'],
   control: ['M4 4h7v7H4z', 'M13 4h7v7h-7z', 'M4 13h7v7H4z', 'M13 13h7v7h-7z'],
   finance: ['M5 3h14v18H5z', 'M8 7h8', 'M8 11h8', 'M8 15h3', 'M14 15h2', 'M8 18h3', 'M14 18h2'],
+  help: ['M9.4 9a3 3 0 1 1 4.7 2.5c-1.5 1-2.1 1.6-2.1 3', 'M12 18h.01', 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20'],
   menu: ['M4 7h16', 'M4 12h16', 'M4 17h16'],
   members: ['M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8', 'M2 21a7 7 0 0 1 14 0', 'M17 8a3 3 0 0 1 0 6', 'M18 17a5 5 0 0 1 4 4'],
   orders: ['M3 7h11v10H3z', 'M14 10h4l3 3v4h-7z', 'M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4', 'M18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4'],

@@ -1,6 +1,6 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { isConsoleScopeKind, type ScopeKind } from '@shop/authz';
+import { isNavigationScopeKind, type ScopeKind } from '@shop/authz';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { databaseInteger } from '../../../../foundation/persistence/DatabaseInteger';
 import type { NavigationOrganizationPort, NavigationScope } from '../../public/NavigationOrganizationPort';
@@ -21,7 +21,7 @@ export class PgNavigationOrganization implements NavigationOrganizationPort {
     return Object.freeze(
       result.rows.flatMap((row) => {
         const kind = row.scope_kind as ScopeKind;
-        if (!isConsoleScopeKind(kind)) return [];
+        if (!isNavigationScopeKind(kind)) return [];
         return [Object.freeze({ membership: row.membership_id, id: row.scope_id, kind, status: row.scope_status, version: databaseInteger(row.scope_version), default: row.is_default })];
       })
     );

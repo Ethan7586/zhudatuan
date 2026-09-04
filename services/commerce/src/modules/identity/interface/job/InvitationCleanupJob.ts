@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { CleanupInvitations } from '../../application/process/CleanupInvitations';
 
 export class InvitationCleanupJob implements JobProcessor {
@@ -8,7 +8,7 @@ export class InvitationCleanupJob implements JobProcessor {
     if (job.kind !== 'invitationcleanup') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
     return this.cleanup.execute({
-      scope: job.scope_id ?? 'organization-platform-root',
+      scope: job.scope ?? 'organization-platform-root',
       trace: trace(job),
       job: job.id,
       attempts: job.attempts,

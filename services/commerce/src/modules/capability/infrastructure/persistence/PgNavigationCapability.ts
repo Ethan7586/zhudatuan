@@ -10,10 +10,10 @@ interface CapabilityRow {
 }
 export class PgNavigationCapability implements NavigationCapabilityPort {
   private readonly transactions = new PgTransactionAccess();
-  async read(context: ReadTransactionContext, scopes: readonly string[]): Promise<readonly NavigationCapability[]> {
+  async read(context: ReadTransactionContext, scopes: readonly string[], target: Parameters<NavigationCapabilityPort['read']>[2]): Promise<readonly NavigationCapability[]> {
     const database = this.transactions.database(context);
     if (scopes.length === 0) return Object.freeze([]);
-    const result = await database.query<CapabilityRow>('select scope_id,capability_code,capability_version from capability.navigation_capabilities($1)', [scopes]);
+    const result = await database.query<CapabilityRow>('select scope_id,capability_code,capability_version from capability.navigation_capabilities($1,$2)', [scopes, target]);
     const grouped = new Map<
       string,
       {

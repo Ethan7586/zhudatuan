@@ -21,7 +21,9 @@ function StorefrontRuntime({ entry }: Readonly<{ entry: ReturnType<typeof readEn
   return (
     <DependencyProvider value={dependencies}>
       <BrowserRouter basename={entry.basePath}>
-        <SessionRuntime entry={entry}><Router /></SessionRuntime>
+        <SessionRuntime entry={entry}>
+          <Router />
+        </SessionRuntime>
       </BrowserRouter>
     </DependencyProvider>
   );

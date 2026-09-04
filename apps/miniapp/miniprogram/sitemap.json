@@ -1,0 +1,4 @@
+{
+  "desc": "商城业务页面仅通过受控小程序路由访问",
+  "rules": [{ "action": "disallow", "page": "*" }]
+}

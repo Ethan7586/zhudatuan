@@ -1,10 +1,15 @@
-import type { StorefrontClient } from '../../../shared/api/Client';
+import type { IdentityOperations } from '@shop/sdk/identity';
+import type { RequestContextFactory } from '../../../shared/api/RequestContext';
 import type { StorefrontSession } from '../../../entity/session';
 import type { Security } from '../model/Security';
 import { mapSecurity, type DeviceView } from './SecurityMapper';
+import type { SecurityPort } from '../public/SecurityPort';
 
-export class SecurityGateway {
-  constructor(private readonly identity: StorefrontClient['commerce']['identity'], private readonly context: StorefrontClient['context']) {}
+export class SecurityGateway implements SecurityPort {
+  constructor(
+    private readonly identity: IdentityOperations,
+    private readonly context: RequestContextFactory
+  ) {}
   async read(session: StorefrontSession, signal?: AbortSignal): Promise<Security> {
     const context = this.context(session, { signal, includeScope: false });
     const [security, devices] = await Promise.all([this.identity.sessionRead({}, context), this.identity.sessionsRead({ query: { limit: 100 } }, context)]);
@@ -21,10 +26,7 @@ export class SecurityGateway {
     await this.identity.mobileManage({ body: { mobile, challenge, code } }, this.context(session, { write: true, includeScope: false, expectedVersion: session.accessVersion, idempotencyKey: key }));
   }
   async revoke(session: StorefrontSession, target: string, key: string): Promise<readonly string[]> {
-    const value = await this.identity.sessionsRevoke(
-      { path: { sessionid: target }, body: {} },
-      this.context(session, { write: true, includeScope: false, expectedVersion: session.accessVersion, idempotencyKey: key })
-    );
+    const value = await this.identity.sessionsRevoke({ path: { sessionid: target }, body: {} }, this.context(session, { write: true, includeScope: false, expectedVersion: session.accessVersion, idempotencyKey: key }));
     return value.sessions;
   }
 }

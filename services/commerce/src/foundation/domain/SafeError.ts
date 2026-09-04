@@ -1,8 +1,9 @@
 import { ApplicationError } from './ApplicationError';
+import { Failure } from './Failure';
 
 /** Returns a bounded catalog code for persistence, metrics and health responses without exposing exception text. */
 export function safeErrorCode(cause: unknown, fallback: string): string {
-  return cause instanceof ApplicationError ? cause.code : fallback;
+  return cause instanceof ApplicationError || cause instanceof Failure ? cause.code : fallback;
 }
 
 /** Reads only an explicit transport code used for control flow; arbitrary Error.message is never trusted. */

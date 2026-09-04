@@ -4,7 +4,9 @@ import { EventRegistry } from '../../bootstrap/EventRegistry';
 
 describe('RuntimeEventPublisher', () => {
   it('types polymorphic event parameters and enqueues the declared handler', async () => {
-    const query = vi.fn(async (sql: string, _values?: readonly unknown[]) => (sql.includes('runtime.accept_inbox') ? { rows: [{ inserted: true }], rowCount: 1 } : { rows: [], rowCount: 1 }));
+    const query = vi.fn(async (sql: string, _values?: readonly unknown[]) => sql.includes('runtime.accept_inbox')
+      ? { rows: [{ inserted: true }], rowCount: 1 }
+      : sql.includes('select exists(select 1 from runtime.jobs') ? { rows: [{ existing: false, depth: 0 }], rowCount: 1 } : { rows: [], rowCount: 1 });
     const client = { query, release: vi.fn() };
     const pool = { connect: vi.fn(async () => client), query, workload: () => pool, end: vi.fn() };
     const events = new EventRegistry();
@@ -47,6 +49,8 @@ describe('RuntimeEventPublisher', () => {
       'correlation:1',
       'command:1',
       1,
+      'reporting',
+      'projection',
     ]);
     expect(client.release).toHaveBeenCalledOnce();
   });

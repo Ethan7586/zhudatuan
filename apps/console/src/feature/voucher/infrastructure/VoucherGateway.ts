@@ -1,72 +1,96 @@
-import { createFetchVoucher } from '@shop/sdk/voucher';
+import * as Operation from '@shop/contract/ids';
+import type { RequestContext } from '@shop/sdk';
+import { createFetchVoucher, VOUCHER_METHOD_BY_OPERATION, type VoucherOperations } from '@shop/sdk/voucher';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import { consoleCommand, consoleRequest } from '../../../shared/api/Client';
-import type { VoucherProgramDraft, VoucherView } from '../model/Voucher';
+import { consoleCommand, consoleRequest } from '../../../shared/api/RequestContext';
+import type { VoucherChoiceKind, VoucherChoicePage, VoucherCommand, VoucherCommandInput, VoucherExecutionOptions, VoucherFacets, VoucherOperation, VoucherProgress, VoucherProgressKind, VoucherReadQuery, VoucherReceipt, VoucherRecord, VoucherRecordPage, VoucherTimeline, VoucherView } from '../model/Voucher';
+import { voucherReadOperations } from '../model/VoucherOperationCatalog';
 import type { VoucherPort } from '../public';
 import { VoucherMapper } from './VoucherMapper';
 
+type VoucherInvoker = (input: never, context: RequestContext) => Promise<unknown>;
+
 export class VoucherGateway implements VoucherPort {
-  private readonly client;
+  private readonly client: VoucherOperations;
 
-  constructor(baseUrl: string, private readonly mapper = new VoucherMapper()) {
-    this.client = createFetchVoucher(baseUrl);
+  constructor(baseUrl: string, private readonly mapper = new VoucherMapper(), client?: VoucherOperations) {
+    this.client = client ?? createFetchVoucher(baseUrl);
   }
 
-  async read(context: ConsoleContext, view: VoucherView, cursor?: string, signal?: AbortSignal) {
-    const input = { query: { limit: 50, ...(cursor ? { cursor } : {}) } };
-    const request = consoleRequest(context.scope, signal, context.session.accessVersion);
-    if (view === 'libraries') return this.mapper.page(view, await this.client.cardlibrariesRead(input, request));
-    if (view === 'programs') return this.mapper.page(view, await this.client.programsRead(input, request));
-    if (view === 'reserves') return this.mapper.page(view, await this.client.reservesRead(input, request));
-    if (view === 'batches') return this.mapper.page(view, await this.client.batchesRead(input, request));
-    if (view === 'statusbatches') return this.mapper.page(view, await this.client.statusbatchesRead(input, request));
-    if (view === 'bindings') return this.mapper.page(view, await this.client.bindingsRead(input, request));
-    if (view === 'redemptions') return this.mapper.page(view, await this.client.redemptionsRead(input, request));
-    return this.mapper.page(view, await this.client.historyRead(input, request));
+  async read(context: ConsoleContext, view: VoucherView, query: VoucherReadQuery, signal?: AbortSignal): Promise<VoucherRecordPage> {
+    const page = { limit: 50, ...(query.cursor ? { cursor: query.cursor } : {}), ...(query.state ? { state: query.state } : {}) };
+    if (view === 'products') return this.mapper.page(view, await this.request(context, Operation.OP_VOUCHER_PRODUCTS_LIST, { query: page }, { signal }));
+    if (view === 'pools') return this.mapper.page(view, await this.request(context, Operation.OP_VOUCHER_CREDENTIALPOOLS_LIST, { query: page }, { signal }));
+    if (view === 'credentials') return this.mapper.page(view, await this.request(context, Operation.OP_VOUCHER_CREDENTIALS_LIST, { query: page }, { signal }));
+    if (view === 'stocks') return this.mapper.page(view, await this.request(context, Operation.OP_VOUCHER_STOCKREQUESTS_LIST, { query: page }, { signal }));
+    if (view === 'issues') return this.mapper.page(view, await this.request(context, Operation.OP_VOUCHER_ISSUEORDERS_LIST, { query: page }, { signal }));
+    if (view === 'actions') return this.mapper.page(view, await this.request(context, Operation.OP_VOUCHER_ACTIONBATCHES_LIST, { query: page }, { signal }));
+    if (view === 'redemptions') {
+      if (!query.query) return Object.freeze({ items: Object.freeze([]), count: 0 });
+      const value = await this.request(context, Operation.OP_VOUCHER_REDEMPTIONS_GET, { path: { redemptionid: query.query } }, { signal });
+      return Object.freeze({ items: Object.freeze([this.mapper.single(view, value)]), count: 1 });
+    }
+    const filter = { limit: 50, ...(query.cursor ? { cursor: query.cursor } : {}), ...(query.query ? { query: query.query } : {}), ...(query.state ? { state: query.state } : {}) };
+    return this.mapper.page(view, await this.request(context, Operation.OP_VOUCHER_SEARCH_READ, { query: filter }, { signal }));
   }
 
-  async createLibrary(context: ConsoleContext, prefix: string, identity: string, signal?: AbortSignal): Promise<void> {
-    await this.client.cardlibrariesCreate({ body: { mode: 'generated', prefix, provider: null } }, this.command(context, { signal, identity }));
+  async detail(context: ConsoleContext, view: VoucherView, id: string, signal?: AbortSignal): Promise<VoucherRecord> {
+    if (view === 'products') return this.mapper.single(view, await this.request(context, Operation.OP_VOUCHER_PRODUCTS_GET, { path: { productid: id } }, { signal }));
+    if (view === 'pools') return this.mapper.single(view, await this.request(context, Operation.OP_VOUCHER_CREDENTIALPOOLS_GET, { path: { poolid: id } }, { signal }));
+    if (view === 'credentials') return this.mapper.single(view, await this.request(context, Operation.OP_VOUCHER_CREDENTIALS_GET, { path: { credentialid: id } }, { signal }));
+    if (view === 'stocks') return this.mapper.single(view, await this.request(context, Operation.OP_VOUCHER_STOCKREQUESTS_GET, { path: { requestid: id } }, { signal }));
+    if (view === 'issues') return this.mapper.single(view, await this.request(context, Operation.OP_VOUCHER_ISSUEORDERS_GET, { path: { orderid: id } }, { signal }));
+    if (view === 'actions') return this.mapper.single(view, await this.request(context, Operation.OP_VOUCHER_ACTIONBATCHES_GET, { path: { actionbatchid: id } }, { signal }));
+    if (view === 'redemptions') return this.mapper.single(view, await this.request(context, Operation.OP_VOUCHER_REDEMPTIONS_GET, { path: { redemptionid: id } }, { signal }));
+    return this.mapper.single(view, await this.request(context, Operation.OP_VOUCHER_VOUCHERS_GET, { path: { voucherid: id } }, { signal }));
   }
 
-  async allocateLibrary(context: ConsoleContext, input: Readonly<{ library: string; version: number; scope: string; count: number; proof: string; identity: string }>, signal?: AbortSignal): Promise<void> {
-    await this.client.cardlibrariesAllocate({ path: { libraryid: input.library }, body: { scope: input.scope, count: input.count } }, this.command(context, { signal, expectedVersion: input.version, proof: input.proof, identity: input.identity }));
+  async choices(context: ConsoleContext, kind: VoucherChoiceKind, signal?: AbortSignal): Promise<VoucherChoicePage> {
+    const operation = kind === 'product' ? Operation.OP_VOUCHER_PRODUCTOPTIONS_LIST : Operation.OP_VOUCHER_STOCKREQUESTOPTIONS_LIST;
+    return this.mapper.choices(kind, await this.request(context, operation, { query: { limit: 100 } }, { signal }));
   }
 
-  async saveProgram(context: ConsoleContext, draft: VoucherProgramDraft, identity: string, signal?: AbortSignal): Promise<void> {
-    const id = draft.id ?? `voucher-program:${crypto.randomUUID()}`;
-    await this.client.programsManage({ path: { programid: id }, body: { name: draft.name, valueMinor: draft.valueMinor, validityDays: draft.validityDays, status: draft.status, approvalRequired: draft.approvalRequired } }, this.command(context, { signal, identity, ...(draft.version === undefined ? {} : { expectedVersion: draft.version }) }));
+  async facets(context: ConsoleContext, query: VoucherReadQuery, signal?: AbortSignal): Promise<VoucherFacets> {
+    return this.mapper.facets(await this.request(context, Operation.OP_VOUCHER_SEARCHFACETS_READ, { query: { ...(query.query ? { query: query.query } : {}), ...(query.state ? { state: query.state } : {}) } }, { signal }));
   }
 
-  async requestReserve(context: ConsoleContext, input: Readonly<{ program: string; count: number; reason: string; identity: string }>, signal?: AbortSignal): Promise<void> {
-    await this.client.reservesRequest({ body: { program: input.program, count: input.count, reason: input.reason } }, this.command(context, { signal, identity: input.identity }));
+  async byNumber(context: ConsoleContext, number: string, signal?: AbortSignal): Promise<VoucherRecord> {
+    return this.mapper.single('search', await this.request(context, Operation.OP_VOUCHER_VOUCHERS_GETBYNUMBER, { path: { number } }, { signal }));
   }
 
-  async decideReserve(context: ConsoleContext, input: Readonly<{ reserve: string; version: number; decision: 'approved' | 'rejected'; reason: string; proof: string; identity: string }>, signal?: AbortSignal): Promise<void> {
-    await this.client.reservesDecide({ path: { reserveid: input.reserve }, body: { decision: input.decision, reason: input.reason } }, this.command(context, { signal, expectedVersion: input.version, proof: input.proof, identity: input.identity }));
+  async timeline(context: ConsoleContext, voucher: string, cursor?: string, signal?: AbortSignal): Promise<VoucherTimeline> {
+    return this.mapper.timeline(await this.request(context, Operation.OP_VOUCHER_VOUCHERS_TIMELINE, { path: { voucherid: voucher }, query: { limit: 100, ...(cursor ? { cursor } : {}) } }, { signal }));
   }
 
-  async issueBatch(context: ConsoleContext, input: Readonly<{ program: string; version: number; cardpool: string; count: number; reserve?: string; proof: string; identity: string }>, signal?: AbortSignal): Promise<void> {
-    await this.client.batchesIssue({ body: { program: input.program, cardpool: input.cardpool, count: input.count, ...(input.reserve ? { reserve: input.reserve } : {}) } }, this.command(context, { signal, expectedVersion: input.version, proof: input.proof, identity: input.identity }));
+  async progress(context: ConsoleContext, kind: VoucherProgressKind, id: string, signal?: AbortSignal): Promise<VoucherProgress> {
+    const operation = kind === 'job' ? Operation.OP_VOUCHER_JOBS_GET : kind === 'export' ? Operation.OP_VOUCHER_EXPORTS_GET : kind === 'issue' ? Operation.OP_VOUCHER_ISSUEBATCHES_GET : Operation.OP_VOUCHER_ACTIONBATCHES_GET;
+    const key = kind === 'job' ? 'jobid' : kind === 'export' ? 'exportid' : kind === 'issue' ? 'batchid' : 'actionbatchid';
+    return this.mapper.progress(kind, await this.request(context, operation, { path: { [key]: id } }, { signal }));
   }
 
-  async retryBatch(context: ConsoleContext, input: Readonly<{ batch: string; version: number; proof: string; identity: string }>, signal?: AbortSignal): Promise<void> {
-    await this.client.batchesRetry({ path: { batchid: input.batch }, body: {} }, this.command(context, { signal, expectedVersion: input.version, proof: input.proof, identity: input.identity }));
+  async execute(context: ConsoleContext, command: VoucherCommand, signal?: AbortSignal): Promise<VoucherReceipt> {
+    const value = await this.request(context, command.operation, command.input, { ...command.options, signal });
+    return this.mapper.receipt(command.operation, value);
   }
 
-  async changeStatus(context: ConsoleContext, input: Readonly<{ ids: readonly string[]; version: number; action: 'activate' | 'disable' | 'extend' | 'void'; reason: string; expiresAt?: string; proof: string; identity: string }>, signal?: AbortSignal): Promise<void> {
-    await this.client.statusBatch({ body: { ids: [...input.ids], action: input.action, reason: input.reason, ...(input.expiresAt ? { expiresAt: input.expiresAt } : {}) } }, this.command(context, { signal, expectedVersion: input.version, proof: input.proof, identity: input.identity }));
+  private request(context: ConsoleContext, operation: VoucherOperation, input: VoucherCommandInput, options: VoucherExecutionOptions = {}): Promise<unknown> {
+    const read = voucherReadOperations.has(operation);
+    if (!read && !options.identity) throw new Error('VOUCHER_IDEMPOTENCY_REQUIRED');
+    const request = read
+      ? consoleRequest(context.scope, options.signal, context.session.accessVersion)
+      : consoleCommand(context.scope, {
+          accessVersion: context.session.accessVersion,
+          ...(context.session.csrf ? { csrfToken: context.session.csrf } : {}),
+          ...(options.signal ? { signal: options.signal } : {}),
+          idempotencyKey: options.identity!,
+          ...(options.expectedVersion === undefined ? {} : { expectedVersion: options.expectedVersion }),
+          ...(options.proof ? { proof: options.proof } : {}),
+        });
+    return this.invoke(operation, input, request);
   }
 
-  async bind(context: ConsoleContext, input: Readonly<{ voucher: string; version: number; member: string; reason: string; identity: string }>, signal?: AbortSignal): Promise<void> {
-    await this.client.bindingsManage({ path: { voucherid: input.voucher }, body: { member: input.member, reason: input.reason } }, this.command(context, { signal, expectedVersion: input.version, identity: input.identity }));
-  }
-
-  async reverse(context: ConsoleContext, input: Readonly<{ redemption: string; version: number; reason: string; proof: string; identity: string }>, signal?: AbortSignal): Promise<void> {
-    await this.client.redemptionsReverse({ path: { redemptionid: input.redemption }, body: { reason: input.reason } }, this.command(context, { signal, expectedVersion: input.version, proof: input.proof, identity: input.identity }));
-  }
-
-  private command(context: ConsoleContext, options: Readonly<{ signal?: AbortSignal | undefined; expectedVersion?: number; proof?: string; identity: string }>) {
-    return consoleCommand(context.scope, { accessVersion: context.session.accessVersion, idempotencyKey: options.identity, ...(context.session.csrf ? { csrfToken: context.session.csrf } : {}), ...(options.signal ? { signal: options.signal } : {}), ...(options.expectedVersion === undefined ? {} : { expectedVersion: options.expectedVersion }), ...(options.proof ? { proof: options.proof } : {}) });
+  private invoke(operation: VoucherOperation, input: VoucherCommandInput, request: RequestContext): Promise<unknown> {
+    const method = this.client[VOUCHER_METHOD_BY_OPERATION[operation]] as unknown as VoucherInvoker;
+    return method(input as never, request);
   }
 }

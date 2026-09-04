@@ -21,5 +21,6 @@ export interface TelemetryContext {
   readonly provider?: string;
   readonly target?: string;
   readonly job?: string;
+  readonly queue?: string;
   readonly attempt?: number;
 }

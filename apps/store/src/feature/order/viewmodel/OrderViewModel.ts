@@ -1,0 +1,2 @@
+import { defineStoreViewModel } from '../../../shared/FeatureViewModel';
+export const orderViewModel = defineStoreViewModel({ routes: ['storeorderswork', 'storeorderwork'], title: '接单与备货', description: '查看门店订单并进入真实订单详情。', read: (client, context, route) => route.id === 'storeorderwork' ? client.order.detailRead({ path: { orderid: route.parameters.orderId } }, context) : client.order.ordersRead({ query: { limit: 50 } }, context) });

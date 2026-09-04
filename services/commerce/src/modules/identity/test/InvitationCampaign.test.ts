@@ -8,7 +8,7 @@ import { PgLinkCaseRepository } from '../infrastructure/persistence/PgLinkCaseRe
 import { CompleteEnrollment } from '../application/service/CompleteEnrollment';
 import { InvitationRedeemer } from '../application/service/InvitationRedeemer';
 import { SessionCookieAdapter } from '../infrastructure/security/SessionCookie';
-import { EnrollmentService } from '../application/service/EnrollmentService';
+import { EnrollIdentity } from '../application/service/EnrollIdentity';
 import { registrationPolicyView } from '../application/service/RegistrationPolicyView';
 import { withWriteTransaction } from '../../../test/TransactionFixture';
 
@@ -153,7 +153,7 @@ describe('campaign enrollment invitation', () => {
     const enrollments = { findPrincipal: async () => null, createPendingPrincipal: vi.fn(), activatePrincipal: vi.fn(), createPassword: vi.fn() };
     const assurances = { record: vi.fn() };
     const events = { publish: vi.fn() };
-    const enrollment = new EnrollmentService(
+    const enrollment = new EnrollIdentity(
       repository as never,
       access as never,
       members as never,

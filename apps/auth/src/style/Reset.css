@@ -1,0 +1,12 @@
+@layer reset {
+  html,
+  body,
+  #root {
+    min-width: 20rem;
+    min-height: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+}

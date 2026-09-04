@@ -1,0 +1,60 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.13 Marketing",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "operations": ["marketing.campaigns.read", "marketing.campaigns.create", "marketing.campaigns.revise", "marketing.campaigns.publish", "marketing.campaigns.disable"],
+  "events": [
+    "marketing.campaign.created",
+    "marketing.campaign.revised",
+    "marketing.campaign.published",
+    "marketing.campaign.disabled",
+    "marketing.promotion.reserved",
+    "marketing.promotion.committed",
+    "marketing.promotion.released",
+    "marketing.promotion.refunded"
+  ],
+  "aggregates": ["Campaign", "PromotionRule", "CouponRule", "Budget"],
+  "invariants": [
+    "campaign-detail-includes-scope-kind-state-effective-period-rule-budget-available-amount-audit-and-independent-business-and-budget-versions",
+    "campaign-create-revise-publish-and-disable-are-explicit-versioned-commands-and-publish-enforces-maker-checker-separation",
+    "audience-product-channel-period-exclusivity-stacking-and-budget-decisions-live-in-one-marketing-domain-policy-set",
+    "one-highest-priority-candidate-wins-per-exclusive-group-and-a-non-stackable-winner-excludes-all-other-groups",
+    "promotion-discounts-use-integer-minor-units-and-are-bounded-by-subtotal-rule-maximum-and-current-budget-availability",
+    "voucher-owns-credential-issue-bind-reserve-redeem-expire-and-void-while-marketing-owns-coupon-claim-rules-and-campaign-eligibility",
+    "pricing-delegates-campaign-evaluation-to-marketing-and-remains-the-owner-of-the-final-order-price",
+    "quote-evaluation-is-read-only-and-never-inserts-redemptions-or-mutates-campaign-budget",
+    "checkout-confirm-reserves-each-sorted-campaign-with-the-signed-rule-version-and-quote-expiry-inside-the-order-transaction",
+    "campaign-budget-reservation-is-atomic-cas-on-scope-state-period-rule-version-and-remaining-budget",
+    "reservation-replay-is-idempotent-by-campaign-and-order-and-conflicting-replay-fails-closed",
+    "payment-capture-commits-reservations-and-expiry-releases-only-due-reservations-through-a-bounded-runtime-job",
+    "partial-and-full-refunds-replenish-only-the-new-cumulative-proportional-delta-and-cannot-overrestore-a-promotion",
+    "historical-orders-retain-campaign-id-rule-version-and-discount-evidence-without-reinterpreting-current-rules",
+    "campaign-and-redemption-identities-are-immutable-and-business-version-budget-version-and-redemption-version-advance-independently",
+    "legacy-paused-and-cancelled-states-and-zero-versions-are-hard-cut-to-the-canonical-lifecycle-without-compatibility-branches"
+  ],
+  "retainedLiExperience": [
+    "existing-zhudatuan-li-campaign-and-voucher-visual-references-remain-the-authority-for-the-later-console-surface-package",
+    "existing-voucher-program-library-issue-binding-status-and-redemption-experience-remains-owned-by-voucher-and-is-not-duplicated-in-marketing",
+    "campaign-status-effective-period-budget-and-action-feedback-are-now-available-as-controlled-data-for-the-retained-editorial-commerce-ui",
+    "no-preview-only-button-or-browser-owned-campaign-rule-was-introduced-by-this-domain-package"
+  ],
+  "verification": {
+    "authorityHashes": "matched after the final 6.13 change",
+    "commerceTypecheck": "passed",
+    "marketingTests": "5 files and 16 tests passed",
+    "pricingCheckoutPaymentTests": "12 files and 44 tests passed",
+    "contractTests": "6 files and 51 tests passed",
+    "databaseMigrationInventory": "historical=171 repair=160 total=331",
+    "databaseReplay": "331 migrations applied and campaign, rule, budget, redemption, lifecycle, operation, event, permission, entitlement, index and trigger contracts passed",
+    "eventsOperationsJobsAndRuntimeGraph": "events, operations and jobs passed with 0 violations",
+    "boundariesOwnershipDuplicatesAndNaming": "passed with 0 findings",
+    "transactionsPerformancePaginationAndConfiguration": "passed with 0 violations",
+    "globalErrorGate": "Marketing has no unsafe error mapping; two pre-existing Inventory VERSION_CONFLICT mappings remain for global cleanup",
+    "globalGeneration": "Marketing contract artifacts are current; the global requirement trace awaits the real miniapp feature root",
+    "globalCallGraph": "Marketing has no broken call point; six generated bindings remain deferred to the Miniapp, Store and Supplier client surface packages",
+    "globalLineBudget": "Marketing files pass; remaining access, approval, console, organization, capability, pricing, checkout, bootstrap and job-catalog debts are scheduled in their owning packages or final global cleanup"
+  }
+}

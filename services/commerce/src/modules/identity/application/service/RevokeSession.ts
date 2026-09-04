@@ -5,6 +5,7 @@ import { requireAccess } from '../../../../foundation/application/OperationAcces
 import type { SessionRepository } from '../port/SessionRepository';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import type { IdentityEventRepository } from '../port/IdentityEventRepository';
+import { isOperationTarget, type OperationTarget } from '@shop/contract';
 
 export class RevokeSession {
   constructor(
@@ -38,7 +39,7 @@ export class RevokeSession {
     };
   }
 }
-function target(value: string): 'console' | 'storefront' {
-  if (value !== 'console' && value !== 'storefront') throw new Error('AUTH_RETURN_TARGET_INVALID');
+function target(value: string): OperationTarget {
+  if (!isOperationTarget(value)) throw new Error('AUTH_RETURN_TARGET_INVALID');
   return value;
 }

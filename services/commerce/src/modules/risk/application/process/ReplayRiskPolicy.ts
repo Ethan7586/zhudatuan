@@ -1,5 +1,4 @@
 import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import type { CatalogRiskDecisionPort } from '../../../catalog/public';
 import { RiskPolicy, type RiskOutcome } from '../../domain/model/RiskPolicy';
 import { signal } from '../../domain/model/Signal';
 import { RiskEngine } from '../../domain/policy/RiskEngine';
@@ -17,8 +16,7 @@ export class ReplayRiskPolicy {
 
   constructor(
     private readonly transactions: TransactionManager,
-    private readonly repository: RiskReplayRepository,
-    private readonly catalog: CatalogRiskDecisionPort
+    private readonly repository: RiskReplayRepository
   ) {}
 
   replay(policy: string, version: number, execution: RiskReplayExecution): Promise<void> {
@@ -33,12 +31,14 @@ export class ReplayRiskPolicy {
       for (const previous of samples) {
         if (execution.signal.aborted) throw execution.signal.reason;
         const evidence = record(previous.evidence, 'RISK_REPLAY_EVIDENCE_INVALID');
-        const result = this.engine.evaluate(candidate.rule, {
+        const context = record(evidence.context, 'RISK_REPLAY_CONTEXT_INVALID');
+        const result = this.engine.evaluate(candidate, {
           actor: previous.actor,
           operation: previous.operation,
-          amountMinor: optionalNumber(evidence.amountMinor),
-          velocity: number(evidence.velocity, 0),
-          blocked: evidence.blocked === true,
+          resource: previous.resource,
+          amountMinor: optionalNumber(context.amountMinor),
+          velocity: number(context.velocity, 0),
+          blocked: context.blocked === true,
           signals: signalList(evidence.signals),
         });
         outcomes[result.outcome] += 1;
@@ -52,13 +52,6 @@ export class ReplayRiskPolicy {
         changedRate: changed / Math.max(1, samples.length),
         falsePositiveRate: falsePositives / Math.max(1, samples.length),
       });
-    });
-  }
-
-  applyCatalogDecision(decision: string, execution: RiskReplayExecution): Promise<void> {
-    return this.transactions.write(this.options(execution), async (context) => {
-      const command = await this.repository.catalogDecision(context, decision);
-      if (command) await this.catalog.execute(context, { decision: command.decision, scope: command.scope, listing: command.resource });
     });
   }
 
@@ -80,9 +73,17 @@ export class ReplayRiskPolicy {
 function signalList(value: unknown) {
   if (!Array.isArray(value)) return Object.freeze([]);
   return Object.freeze(
-    value.slice(0, 500).map((candidate) => {
+    value.slice(0, 500).flatMap((candidate) => {
       const item = record(candidate, 'RISK_REPLAY_SIGNAL_INVALID');
-      return signal(text(item.type, 'RISK_REPLAY_SIGNAL_TYPE_INVALID'), number(item.value, 0), text(item.observedAt, 'RISK_REPLAY_SIGNAL_TIME_INVALID'));
+      if (typeof item.value !== 'number') return [];
+      return [signal({
+        type: text(item.type, 'RISK_REPLAY_SIGNAL_TYPE_INVALID'),
+        version: integer(item.version, 'RISK_REPLAY_SIGNAL_VERSION_INVALID'),
+        value: item.value,
+        source: text(item.source, 'RISK_REPLAY_SIGNAL_SOURCE_INVALID'),
+        sensitivity: sensitivity(item.sensitivity),
+        observedAt: text(item.observedAt, 'RISK_REPLAY_SIGNAL_TIME_INVALID'),
+      })];
     })
   );
 }
@@ -93,6 +94,16 @@ function optionalNumber(value: unknown): number | null {
 
 function number(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function integer(value: unknown, code: string): number {
+  if (!Number.isSafeInteger(value) || (value as number) < 1) throw new Error(code);
+  return value as number;
+}
+
+function sensitivity(value: unknown): 'public' | 'personal' | 'sensitive' {
+  if (value !== 'public' && value !== 'personal' && value !== 'sensitive') throw new Error('RISK_REPLAY_SIGNAL_SENSITIVITY_INVALID');
+  return value;
 }
 
 function text(value: unknown, code: string): string {

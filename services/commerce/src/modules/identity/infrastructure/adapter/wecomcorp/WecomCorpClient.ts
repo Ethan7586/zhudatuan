@@ -13,9 +13,8 @@ export class WecomCorpClient {
     const url = new URL(WECOM_PROVIDER_CONFIGURATION.corp.user);
     url.searchParams.set('access_token', token);
     url.searchParams.set('code', code);
-    const response = await this.client.http.send(url, { headers: { accept: 'application/json' } }, { mode: 'read', signal, deadline });
-    if (!response.ok) throw new DomainError('IDENTITY_PROVIDER_UNAVAILABLE');
-    return response.json() as Promise<Record<string, unknown>>;
+    const response = await this.client.send(url, { headers: { accept: 'application/json' } }, { mode: 'read', signal, deadline });
+    return this.client.json(response, 'IDENTITY_PROVIDER_UNAVAILABLE');
   }
   private async token(instance: ProviderInstance, signal?: AbortSignal, deadline?: number): Promise<string> {
     const cached = this.tokens.get(instance.id);
@@ -27,9 +26,9 @@ export class WecomCorpClient {
         const url = new URL(WECOM_PROVIDER_CONFIGURATION.corp.token);
         url.searchParams.set('corpid', credentials.tenant);
         url.searchParams.set('corpsecret', credentials.secret);
-        const response = await this.client.http.send(url, { headers: { accept: 'application/json' } }, { mode: 'read', signal, deadline });
-        const body = (await response.json()) as Record<string, unknown>;
-        if (!response.ok || body.errcode !== 0 || typeof body.access_token !== 'string' || typeof body.expires_in !== 'number') {
+        const response = await this.client.send(url, { headers: { accept: 'application/json' } }, { mode: 'read', signal, deadline });
+        const body = await this.client.json(response, 'IDENTITY_PROVIDER_UNAVAILABLE');
+        if (body.errcode !== 0 || typeof body.access_token !== 'string' || typeof body.expires_in !== 'number') {
           throw new DomainError('IDENTITY_PROVIDER_UNAVAILABLE');
         }
         const expires = Date.now() + Math.max(60, body.expires_in - WECOM_PROVIDER_CONFIGURATION.tokenRefreshSkewSeconds) * 1_000;

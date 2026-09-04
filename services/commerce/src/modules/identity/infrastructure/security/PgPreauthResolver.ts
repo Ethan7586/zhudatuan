@@ -1,6 +1,6 @@
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { createHash } from 'node:crypto';
-import type { Operation } from '@shop/contract';
+import { isOperationTarget, type Operation } from '@shop/contract';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import type { PreauthResolver } from '../../../../foundation/security/PreauthResolver';
 import type { PreauthPurpose, PreauthSecurityContext } from '../../../../foundation/security/OperationSecurityContext';
@@ -11,7 +11,7 @@ import { Preauth } from '../../domain/model/Preauth';
 interface PreauthRow {
   readonly id: string;
   readonly purpose: PreauthPurpose;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly principal_id: string | null;
   readonly reference_id: string;
   readonly version: number;
@@ -31,7 +31,7 @@ export class PgPreauthResolver implements PreauthResolver {
   async resolve(headers: Readonly<Record<string, string>>, operation: Operation): Promise<PreauthSecurityContext> {
     const token = requestCookie(headers.cookie, '__Host-preauth');
     const target = headers['x-client-target'];
-    if (!token || !/^[A-Za-z0-9_-]{64}$/.test(token) || (target !== 'console' && target !== 'storefront')) {
+    if (!token || !/^[A-Za-z0-9_-]{64}$/.test(token) || !isOperationTarget(target)) {
       throw new DomainError('AUTHENTICATION_REQUIRED');
     }
     const purpose = purposeOf(operation.id);

@@ -4,7 +4,7 @@ import { requireWriteTransaction } from '../../../../foundation/persistence/Tran
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { createHmac } from 'node:crypto';
 
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requirePreauth } from '../../../../foundation/security/OperationSecurityContext';
 import type { InvitationRepository } from '../port/InvitationRepository';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';

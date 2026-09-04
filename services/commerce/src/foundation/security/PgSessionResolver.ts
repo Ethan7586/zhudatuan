@@ -1,4 +1,5 @@
 import { DomainError } from '../domain/DomainError';
+import { isOperationTarget } from '@shop/contract';
 import { createHash } from 'node:crypto';
 import type { DatabasePool } from '../persistence/Pool';
 import type { Actor } from './AccessContext';
@@ -20,7 +21,7 @@ export class PgSessionResolver implements SessionResolver {
 
   async resolve(headers: Readonly<Record<string, string>>, _operation: string): Promise<Actor> {
     const target = headers['x-client-target'];
-    if (target !== undefined && target !== 'console' && target !== 'storefront') throw new Error('AUTH_TARGET_INVALID');
+    if (target !== undefined && !isOperationTarget(target)) throw new Error('AUTH_TARGET_INVALID');
     const token = bearer(headers.authorization) ?? (target === undefined ? null : cookie(headers.cookie, `__Host-${target}-session`));
     if (!token) throw new DomainError('AUTHENTICATION_REQUIRED');
     const result = await this.pool.query<SessionRow>('select actor_id,session_id,membership_id,credential_version,access_version,target,assurance_level,assurance_verified_at from identity.resolve_session($1)', [

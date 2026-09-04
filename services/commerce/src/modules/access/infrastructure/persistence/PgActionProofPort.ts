@@ -26,6 +26,10 @@ export class PgActionProofPort implements ActionProofPort {
     ) {
       throw new DomainError('ACTION_PROOF_INVALID');
     }
+    const separation = await database.query<{ readonly independent: boolean }>(
+      'select access.memberships_independent($1,$2) independent', [binding.makerMembership, checker.membership]
+    );
+    if (separation.rows[0]?.independent !== true) throw new DomainError('MAKER_CHECKER_SEPARATION_REQUIRED');
     return Object.freeze({ binding, checker, scope: snapshot.resource.id });
   }
   async issue(

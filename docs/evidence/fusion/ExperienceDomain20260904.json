@@ -1,0 +1,63 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.12 Experience",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "operations": [
+    "experience.applications.create",
+    "experience.applications.copy",
+    "experience.applications.detail.read",
+    "experience.applications.read",
+    "experience.applications.update",
+    "experience.versions.save",
+    "experience.versions.validate",
+    "experience.versions.publish",
+    "experience.versions.restore",
+    "experience.published.read"
+  ],
+  "events": ["experience.release.requested", "experience.release.activated", "experience.release.failed"],
+  "aggregates": ["Application", "ExperienceVersion", "Publication", "Release"],
+  "invariants": [
+    "application-identity-and-version-head-change-only-through-the-application-aggregate-with-an-exact-version-fence",
+    "shop-market-and-governance-are-the-only-theme-presets-and-share-one-versioned-component-schema",
+    "theme-pages-navigation-component-content-actions-and-resource-references-form-one-canonical-immutable-version-document",
+    "unknown-component-content-fields-unsafe-actions-duplicate-identities-missing-home-or-navigation-and-invalid-resource-references-fail-closed-with-field-paths",
+    "preview-validation-save-validation-and-publication-use-one-publish-policy-and-one-canonical-manifest-hash",
+    "publish-evidence-freezes-catalog-marketing-pool-qualification-pricing-inventory-resource-domain-capability-and-channel-versions",
+    "copy-creates-new-application-and-version-identities-without-domain-secrets-publication-release-runtime-state-or-history-identities",
+    "restore-appends-a-new-pending-version-and-never-mutates-a-historical-version",
+    "publication-freezes-the-version-and-enqueues-outbox-work-transactionally-before-external-cdn-io",
+    "cdn-content-is-addressed-by-sha256-and-the-active-publication-head-switches-only-after-a-verified-upload",
+    "cdn-failure-keeps-the-old-release-serviceable-records-a-locatable-safe-failure-and-allows-an-idempotent-retry",
+    "published-reads-return-a-release-etag-and-canonical-document-by-mall-channel-and-locale",
+    "published-cache-values-and-active-aliases-are-versioned-validated-and-rejected-on-cross-mall-or-hash-poisoning",
+    "cart-and-checkout-consume-read-only-published-snapshots-and-cannot-observe-editing-state",
+    "mall-creation-persists-the-complete-guided-draft-and-initializes-application-pool-and-theme-version-asynchronously",
+    "browser-draft-storage-is-hidden-behind-a-public-port-and-excludes-secrets-runtime-identities-and-publication-state"
+  ],
+  "retainedLiExperience": [
+    "one-guided-mall-wizard-retaining-the-three-shop-market-and-governance-visual-presets",
+    "brand-scope-opening-material-and-confirmation-steps-with-auto-saved-session-drafts",
+    "smart-wing-navigation-surfaces-status-colours-responsive-layout-and-human-readable-chinese-feedback",
+    "field-level-validation-publish-receipts-version-history-restore-entry-and-recoverable-error-states",
+    "desktop-tablet-and-mobile-layouts-without-a-fixed-width-theme-fork-or-second-dialog"
+  ],
+  "verification": {
+    "authorityHashes": "matched after the final 6.12 change",
+    "commerceTypecheck": "passed",
+    "experienceTests": "14 files and 52 tests passed",
+    "consoleExperienceTests": "7 files and 18 tests passed",
+    "contractTests": "6 files and 51 tests passed",
+    "seedTests": "7 tests passed",
+    "databaseMigrationInventory": "historical=171 repair=159 total=330",
+    "databaseReplay": "330 migrations applied and immutable versions, frozen evidence, release state, publication, operation, event and trigger contracts passed",
+    "eventsOperationsJobsAndRuntimeGraph": "passed with 0 violations",
+    "boundariesOwnershipDependenciesProvidersAndExtensions": "passed with 0 findings",
+    "transactionsPerformancePaginationDuplicatesAndNaming": "passed with 0 violations",
+    "experienceFrontendAndLineBudget": "passed; remaining frontend manifests, generated traces, call points and line debts belong to later global surface and prior-domain cleanup work",
+    "globalGeneration": "Experience artifacts are current; the global trace awaits the real miniapp feature root",
+    "globalCallGraph": "Experience has no broken call point; six generated bindings remain deferred to the Miniapp, Store and Supplier client surface work packages"
+  }
+}

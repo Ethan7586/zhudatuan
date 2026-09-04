@@ -1,4 +1,4 @@
-import type { WechatScene } from '@shop/config/server';
+import type { PaymentScene } from '../../public';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 
 export type VerifiedPaymentWebhook =
@@ -9,7 +9,7 @@ export type VerifiedPaymentWebhook =
       amountMinor: number;
       currency: 'CNY';
       payerHash: string;
-      application: Readonly<{ scene: WechatScene; applicationHash: string }>;
+      application: Readonly<{ scene: PaymentScene; applicationHash: string }>;
       evidence: object;
     }>
   | Readonly<{

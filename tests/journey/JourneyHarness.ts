@@ -70,7 +70,7 @@ export function journey(requirement: MvpRequirementId, evidence: JourneyEvidence
       assert.doesNotMatch(text, /catch\s*\{\s*return\s+(?:\[\]|\{\s*success:\s*true)/);
     }
     assert.match(migrationText, /deadletter|failed_at/i);
-    assert.match(source('services/commerce/src/foundation/application/JobRunner.ts'), /fail|retry|reschedule/i);
+    assert.match(source('services/commerce/src/modules/runtime/application/process/RunJob.ts'), /fail|retry|deadletter/i);
     assert.match(source('services/commerce/src/foundation/interface/ErrorMapper.ts'), /status|code/);
   });
 

@@ -19,6 +19,7 @@ export function SupportConversation({
   failed,
   messageAttachments,
   uploads,
+  attachmentAllowed,
   onDraft,
   onSend,
   onRetrySend,
@@ -40,6 +41,7 @@ export function SupportConversation({
   failed?: MessageDraft | undefined;
   messageAttachments: readonly Attachment[];
   uploads: readonly UploadedAttachment[];
+  attachmentAllowed: boolean;
   onDraft: (value: string) => void;
   onSend: () => void;
   onRetrySend: () => void;
@@ -143,7 +145,7 @@ export function SupportConversation({
           </Button>
         ) : null}
       </div>
-      <SupportComposer draft={draft} unavailable={unavailable} sending={sending} {...(failed === undefined ? {} : { failed })} attachments={uploads} onDraft={onDraft} onSend={onSend} onRetry={onRetrySend} onFile={onFile} />
+      <SupportComposer draft={draft} unavailable={unavailable} sending={sending} {...(failed === undefined ? {} : { failed })} attachments={uploads} attachmentAllowed={attachmentAllowed} onDraft={onDraft} onSend={onSend} onRetry={onRetrySend} onFile={onFile} />
     </section>
   );
 }
@@ -157,13 +159,13 @@ function MessageBubble({ message, attachments, date }: Readonly<{ message: Messa
         </div>
       ) : null}
       <article className="supportmessage" data-author={message.authorType}>
-        <span className="supportmessageavatar">{message.authorType === 'agent' ? '翼' : '客'}</span>
+        <span className="supportmessageavatar">{message.authorType === 'system' ? '系' : message.authorType === 'agent' ? '翼' : '客'}</span>
         <div>
           <header>
             <strong>{authorLabel(message)}</strong>
             <time dateTime={message.createdAt}>{formatTime(message.createdAt)}</time>
           </header>
-          <p>{message.body}</p>
+          {message.body ? <p>{message.body}</p> : null}
           {attachments.length ? (
             <ul className="supportmessageattachments">
               {attachments.map((item) => (
@@ -175,7 +177,7 @@ function MessageBubble({ message, attachments, date }: Readonly<{ message: Messa
                   ) : (
                     <span>{item.name}</span>
                   )}
-                  <em>{item.state === 'clean' ? '已通过安全检查' : item.state === 'pending' ? '安全扫描中' : '已拒绝'}</em>
+                  <em>{item.state === 'clean' ? '已通过安全检查' : item.state === 'pending' ? '安全扫描中，完成前不可下载' : item.recoveryAction ?? '安全检查未通过，请重新上传'}</em>
                 </li>
               ))}
             </ul>

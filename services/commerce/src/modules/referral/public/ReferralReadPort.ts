@@ -1,7 +1,8 @@
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
 
 export interface ReferralReadPort {
-  binding(scopeId: string, customerId: string): Promise<Readonly<{ promoterId: string; version: number }> | null>;
+  binding(context: ReadTransactionContext, scopeId: string, customerId: string): Promise<Readonly<{ promoterId: string; source: string; expiresAt: string | null; version: number }> | null>;
 }
 
 export const REFERRAL_READ_PORT = publicPort<ReferralReadPort>('referral', 'read');

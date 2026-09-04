@@ -1,8 +1,8 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { ChallengeRepository } from '../port/ChallengeRepository';
 
@@ -13,15 +13,20 @@ export class ChallengesVerifyHandler implements OperationHandler<'verification.c
   async execute(input: OperationInputFor<'verification.challenges.verify'>, context: WriteHandlerContext<'verification.challenges.verify'>): Promise<OperationReply<OperationOutputFor<'verification.challenges.verify'>>> {
     const access = requireSession(context.security);
     const body = bodyRecord(input);
+    const proof = randomBytes(32).toString('base64url');
     const result = await this.challenges.verify(context.transaction, {
       challenge: input.path.challengeid,
       scope: access.scope.id,
       actor: access.actor.id,
       trace: access.trace,
-      nonceHash: digest(textField(body, 'nonce', 256)),
+      tokenHash: digest(textField(body, 'token', 256)),
+      proofId: `verificationproof:${randomUUID()}`,
+      proofHash: digest(proof),
       deviceHash: digest(textField(body, 'device', 512)),
+      now: new Date(),
     });
-    return { status: 200, body: result as OperationOutputFor<'verification.challenges.verify'> };
+    if (!result.accepted) return { status: result.status, body: { code: result.code } } as never;
+    return { status: 200, body: { ...result.value, proof } as OperationOutputFor<'verification.challenges.verify'> };
   }
 }
 function digest(value: string): string {

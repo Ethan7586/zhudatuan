@@ -1,8 +1,8 @@
 import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
 import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
 import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { KMS_CLIENT } from '../../../../foundation/infrastructure/KmsClient';
-import { OBJECT_STORE } from '../../../../foundation/infrastructure/ObjectStore';
+import { KMS_CLIENT } from '../../../../foundation/application/KmsPort';
+import { OBJECT_STORE } from '../../../runtime/public/ObjectPort';
 import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
 import { ArchiveAudit } from '../../application/process/ArchiveAudit';
 import { PgAuditRepository } from '../../infrastructure/persistence/PgAuditRepository';

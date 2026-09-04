@@ -1,17 +1,17 @@
 import { createHash } from 'node:crypto';
 import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReferralOrderEvent } from '../../application/port/ReferralEventProcess';
+import type { ReferralProcessEvent } from '../../application/port/ReferralEventProcess';
 
-const SUPPORTED = new Set(['order.paid', 'order.received', 'refund.completed']);
+const SUPPORTED = new Set(['order.paid', 'order.received', 'refund.completed', 'approval.instance.approved']);
 
 export async function enqueueSettlement(transaction: SqlExecutor, scopeId: string, orderId: string, availableAt: string): Promise<void> {
   const id = deterministic('job', 'referralsettlement', scopeId, orderId);
   await new PgRuntimeWriter(transaction).schedule({ id, kind: 'referralsettlement', owner: 'referral', scope: scopeId, payload: { scopeId, orderId }, priority: 30, availableAt });
 }
 
-export function assertEvent(input: ReferralOrderEvent): void {
-  if (!input.eventId || !SUPPORTED.has(input.eventType) || !input.scopeId || !input.orderId) throw new Error('REFERRAL_EVENT_INVALID');
+export function assertEvent(input: ReferralProcessEvent): void {
+  if (!input.eventId || !SUPPORTED.has(input.eventType) || !input.scopeId || !input.sourceId || !input.resourceId) throw new Error('REFERRAL_EVENT_INVALID');
 }
 
 export function orderLine(value: unknown): Readonly<{ lineId: string; productId: string; payableMinor: number }> {
@@ -21,6 +21,33 @@ export function orderLine(value: unknown): Readonly<{ lineId: string; productId:
     productId: text(row.product, 'REFERRAL_PRODUCT_REFERENCE_REQUIRED'),
     payableMinor: integer(row.payableMinor, 'REFERRAL_LINE_AMOUNT_INVALID'),
   });
+}
+
+export function benefitAmount(value: unknown, expectedTotal: number): bigint {
+  if (!Array.isArray(value)) throw new Error('REFERRAL_ORDER_TENDERS_REQUIRED');
+  let total = 0n;
+  const benefit = value.reduce((sum, tender) => {
+    const row = object(tender, 'REFERRAL_ORDER_TENDER_INVALID');
+    const amount = BigInt(integer(row.amountMinor, 'REFERRAL_BENEFIT_AMOUNT_INVALID'));
+    total += amount;
+    return row.kind === 'benefit' ? sum + amount : sum;
+  }, 0n);
+  if (total !== BigInt(expectedTotal)) throw new Error('REFERRAL_ORDER_EVIDENCE_MISMATCH');
+  return benefit;
+}
+
+export function commissionableRefundAmount(value: unknown, totalMinor: number): number {
+  if (!Array.isArray(value)) throw new Error('REFERRAL_REFUND_TENDERS_REQUIRED');
+  let total = 0;
+  let included = 0;
+  for (const tender of value) {
+    const row = object(tender, 'REFERRAL_REFUND_TENDER_INVALID');
+    const amount = integer(row.amount_minor, 'REFERRAL_REFUND_AMOUNT_INVALID');
+    total += amount;
+    if (row.kind !== 'benefit') included += amount;
+  }
+  if (total !== totalMinor) throw new Error('REFERRAL_REFUND_EVIDENCE_MISMATCH');
+  return included;
 }
 
 export function object(value: unknown, code: string): Readonly<Record<string, unknown>> {

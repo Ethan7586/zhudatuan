@@ -8,7 +8,7 @@ import type { InvitationDigest } from './InvitationSecurity';
 export interface NewInvitation {
   readonly id: string;
   readonly kind: 'signin' | 'enrollment' | 'campaign';
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly organization: string;
   readonly membership: string | null;
   readonly principal: string | null;
@@ -27,7 +27,7 @@ export interface NewInvitation {
 
 export interface InvitationFilter {
   readonly scope: string;
-  readonly target: 'console' | 'storefront' | null;
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier' | null;
   readonly kind: 'signin' | 'enrollment' | 'campaign' | null;
   readonly status: 'draft' | 'active' | 'exhausted' | 'revoked' | 'expired' | null;
   readonly cursor: string | null;
@@ -65,6 +65,14 @@ export interface InvitationListRecord extends InvitationCreatedRecord {
   readonly revoke_reason: string | null;
 }
 
+export interface InvitationReadRecord extends InvitationCreatedRecord {
+  readonly issuer_membership_id: string;
+  readonly issuer_access_version: number;
+  readonly revoked_at: string | null;
+  readonly revoked_by: string | null;
+  readonly revoke_reason: string | null;
+}
+
 export interface InvitationRevokedRecord {
   readonly id: string;
   readonly kind: InvitationKind;
@@ -77,14 +85,14 @@ export interface InvitationRevokedRecord {
 }
 
 export interface InvitationRepository {
-  find(context: ReadTransactionContext, hashes: readonly InvitationDigest[], target: 'console' | 'storefront'): Promise<Invitation>;
-  lock(context: WriteTransactionContext, hashes: readonly InvitationDigest[], target: 'console' | 'storefront'): Promise<Invitation>;
-  claimed(context: ReadTransactionContext, claim: string, target: 'console' | 'storefront'): Promise<Invitation>;
-  lockClaimed(context: WriteTransactionContext, claim: string, target: 'console' | 'storefront'): Promise<Invitation>;
+  find(context: ReadTransactionContext, hashes: readonly InvitationDigest[], target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<Invitation>;
+  lock(context: WriteTransactionContext, hashes: readonly InvitationDigest[], target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<Invitation>;
+  claimed(context: ReadTransactionContext, claim: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<Invitation>;
+  lockClaimed(context: WriteTransactionContext, claim: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<Invitation>;
   claim(context: WriteTransactionContext, id: string): Promise<InvitationClaim>;
   bindRecipient(context: WriteTransactionContext, id: string, recipient: Buffer): Promise<InvitationClaim>;
   create(context: WriteTransactionContext, invitation: NewInvitation): Promise<InvitationCreatedRecord>;
-  read(context: ReadTransactionContext, filter: InvitationFilter): Promise<readonly InvitationListRecord[]>;
+  read(context: ReadTransactionContext, filter: InvitationFilter): Promise<readonly InvitationReadRecord[]>;
   revoke(context: WriteTransactionContext, id: string, actor: string, reason: string, version: number): Promise<InvitationRevokedRecord>;
   reserve(
     context: WriteTransactionContext,

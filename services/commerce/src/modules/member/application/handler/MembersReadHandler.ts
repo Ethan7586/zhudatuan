@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { keysetPage, queryPage } from '../../../../foundation/interface/Validation';
+import { keysetPage, queryPage } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { MemberRepository } from '../port/MemberRepository';
 
@@ -13,7 +13,7 @@ export class MembersReadHandler implements OperationHandler<'member.members.read
   async execute(input: OperationInputFor<'member.members.read'>, context: HandlerContext<'member.members.read'>): Promise<OperationReply<OperationOutputFor<'member.members.read'>>> {
     const access = requireSession(context.security);
     const page = queryPage(input);
-    const memberships = await this.members.memberships(context.transaction, access.scope.id, page.id, page.fetch);
+    const memberships = await this.members.memberships(context.transaction, access.scope.id, access.membership.id, page.id, page.fetch);
     const profiles = await this.members.profiles(context.transaction, [...new Set(memberships.map((membership) => membership.member))]);
     const byMember = new Map(profiles.map((profile) => [profile.id, profile]));
     const rows = memberships.flatMap((membership) => {
@@ -25,10 +25,14 @@ export class MembersReadHandler implements OperationHandler<'member.members.read
               display_name: profile.displayName,
               status: profile.status,
               membership_id: membership.id,
+              organization_id: membership.organization,
               employee_no: membership.employee,
               membership_status: membership.status,
               access_version: membership.accessVersion,
               joined_at: membership.joinedAt,
+              login_identity_bound: profile.loginIdentityBound,
+              registration_reset_allowed: membership.registrationResetAllowed && profile.loginIdentityBound,
+              registration_reset_block_reason: profile.loginIdentityBound ? membership.registrationResetBlockReason : 'unbound',
             },
           ]
         : [];

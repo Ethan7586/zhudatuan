@@ -10,7 +10,7 @@ export function SupportPage({ model }: Readonly<{ model: SupportViewModel }>) {
   const conversation = model.conversation;
   return (
     <section className="supportworkspace">
-      <SupportHeader scope={model.scope} settings={model.settingsOpen} connected={model.connected} onRefresh={model.actions.refresh} onSettings={model.actions.settings} />
+      <SupportHeader scope={model.scope} settings={model.settingsOpen} settingsAvailable={model.access.settings} connected={model.connected} realtime={model.access.realtime} onRefresh={model.actions.refresh} onSettings={model.actions.settings} />
       {model.settingsOpen ? (
         <SupportSettings model={model.settings} />
       ) : (
@@ -41,6 +41,7 @@ export function SupportPage({ model }: Readonly<{ model: SupportViewModel }>) {
               {...(conversation.failed ? { failed: conversation.failed } : {})}
               messageAttachments={conversation.messageAttachments}
               uploads={conversation.uploads}
+              attachmentAllowed={conversation.attachmentAllowed}
               onDraft={conversation.actions.draft}
               onSend={conversation.actions.send}
               onRetrySend={conversation.actions.retrySend}
@@ -63,6 +64,14 @@ export function SupportPage({ model }: Readonly<{ model: SupportViewModel }>) {
               onReopen={model.actions.reopenTicket}
               onAssign={model.actions.assign}
               onHistory={model.actions.openHistory}
+              canAssign={model.access.assign}
+              assignmentReady={model.access.assignmentReady}
+              canClose={model.access.close}
+              canReopen={model.access.reopen}
+              canReadHistory={model.access.history}
+              canOpenOrder={model.access.order}
+              onOrder={model.actions.order}
+              onVerify={model.actions.verify}
             />
           </div>
           <HistoryPanel

@@ -1,14 +1,28 @@
 import type { AuthTarget } from '@shop/config/client';
-import { LayoutDashboard, ShoppingBag } from 'lucide-react';
+import { ChoiceButton } from '@shop/design';
+import { Building2, LayoutDashboard, ShoppingBag, Smartphone, Store } from 'lucide-react';
 import { useEffect, useRef, type KeyboardEvent } from 'react';
 
-const targets: readonly Readonly<{ value: AuthTarget; title: string; description: string; icon: typeof ShoppingBag }>[] = Object.freeze([
+interface TargetOption {
+  readonly value: AuthTarget;
+  readonly title: string;
+  readonly description: string;
+  readonly icon: typeof ShoppingBag;
+}
+
+const targets: readonly TargetOption[] = Object.freeze([
   { value: 'storefront', title: '员工商城', description: '选购福利与查询订单', icon: ShoppingBag },
   { value: 'console', title: '运营控制台', description: '管理商城与企业运营', icon: LayoutDashboard },
 ]);
+const specialized: Readonly<Record<Exclude<AuthTarget, 'storefront' | 'console'>, TargetOption>> = Object.freeze({
+  miniapp: Object.freeze({ value: 'miniapp', title: '微信小程序', description: '在微信中领取与选购福利', icon: Smartphone }),
+  store: Object.freeze({ value: 'store', title: '门店工作台', description: '处理核销、履约与门店业务', icon: Store }),
+  supplier: Object.freeze({ value: 'supplier', title: '供应链后台', description: '管理商品、库存与履约协作', icon: Building2 }),
+});
 
 export function LoginTarget({ target, focusTarget, busy, onTarget }: Readonly<{ target: AuthTarget; focusTarget?: AuthTarget; busy: boolean; onTarget: (target: AuthTarget) => void }>) {
   const controls = useRef(new Map<AuthTarget, HTMLButtonElement>());
+  const options = target === 'storefront' || target === 'console' ? targets : Object.freeze([specialized[target], ...targets]);
   useEffect(() => {
     if (focusTarget === target) controls.current.get(target)?.focus();
   }, [focusTarget, target]);
@@ -16,20 +30,21 @@ export function LoginTarget({ target, focusTarget, busy, onTarget }: Readonly<{ 
     <fieldset className="authtargets">
       <legend>登录后进入</legend>
       <div role="radiogroup" aria-label="登录后进入">
-        {targets.map((item, index) => {
+        {options.map((item, index) => {
           const Icon = item.icon;
           const selected = target === item.value;
           return (
-            <button
-              ref={(control) => { if (control === null) controls.current.delete(item.value); else controls.current.set(item.value, control); }}
+            <ChoiceButton
+              ref={(control) => {
+                if (control === null) controls.current.delete(item.value);
+                else controls.current.set(item.value, control);
+              }}
               key={item.value}
-              type="button"
-              role="radio"
-              aria-checked={selected}
+              kind="radio"
+              selected={selected}
               disabled={busy}
-              onClick={() => onTarget(item.value)}
-              onKeyDown={(event) => move(event, index, onTarget)}
-              tabIndex={selected ? 0 : -1}
+              onChoose={() => onTarget(item.value)}
+              onKeyDown={(event) => move(event, index, options, onTarget)}
               className="authtarget"
               data-selected={selected}
             >
@@ -40,7 +55,7 @@ export function LoginTarget({ target, focusTarget, busy, onTarget }: Readonly<{ 
                 <strong>{item.title}</strong>
                 <small>{item.description}</small>
               </span>
-            </button>
+            </ChoiceButton>
           );
         })}
       </div>
@@ -48,10 +63,19 @@ export function LoginTarget({ target, focusTarget, busy, onTarget }: Readonly<{ 
   );
 }
 
-function move(event: KeyboardEvent<HTMLButtonElement>, index: number, onTarget: (target: AuthTarget) => void): void {
-  const next = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? (index + 1) % targets.length : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? (index + targets.length - 1) % targets.length : event.key === 'Home' ? 0 : event.key === 'End' ? targets.length - 1 : undefined;
+function move(event: KeyboardEvent<HTMLButtonElement>, index: number, options: readonly TargetOption[], onTarget: (target: AuthTarget) => void): void {
+  const next =
+    event.key === 'ArrowRight' || event.key === 'ArrowDown'
+      ? (index + 1) % options.length
+      : event.key === 'ArrowLeft' || event.key === 'ArrowUp'
+        ? (index + options.length - 1) % options.length
+        : event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? options.length - 1
+            : undefined;
   if (next === undefined) return;
   event.preventDefault();
-  onTarget(targets[next]!.value);
+  onTarget(options[next]!.value);
   event.currentTarget.parentElement?.querySelectorAll<HTMLElement>('[role="radio"]')[next]?.focus();
 }

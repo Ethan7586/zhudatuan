@@ -1,2 +1,4 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleRegistry';
-export const Manifest = defineModuleManifest('partner', ['organization'], ['database.pool', 'audit.sink', 'kms.client']);
+import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { ACCESS_PARTNER_PORT, CATALOG_PARTNER_PORT, VOUCHER_CUSTOMER_PORT } from './public';
+
+export const Manifest = defineModuleManifest({ id: 'partner', dependencies: ['organization'], services: ['database.pool', 'audit.sink', 'kms.client'], ports: [ACCESS_PARTNER_PORT, CATALOG_PARTNER_PORT, VOUCHER_CUSTOMER_PORT] });

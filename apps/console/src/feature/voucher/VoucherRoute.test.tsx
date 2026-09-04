@@ -5,176 +5,95 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation } from 'react-router';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
-import type { ConsoleContext } from '../../entity/session/ConsoleSession';
-import { Component } from './route/VoucherRoute';
 import { DependencyProvider } from '../../app/DependencyContext';
 import { createConsoleDependencies } from '../../app/Dependencies';
+import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
+import type { ConsoleContext } from '../../entity/session/ConsoleSession';
+import { StepupProvider } from '../../entity/session/StepupContext';
+import { Component } from './route/VoucherRoute';
 
 const requests: string[] = [];
 const writes: string[] = [];
 const server = setupServer(
-  http.get('*/api/v1/vouchers/programs', ({ request }) => {
-    requests.push(new URL(request.url).pathname);
-    return HttpResponse.json(programs);
-  }),
-  http.get('*/api/v1/vouchers/cardlibraries', ({ request }) => {
-    requests.push(new URL(request.url).pathname);
-    return HttpResponse.json(libraries);
-  }),
-  http.get('*/api/v1/vouchers/reserves', () => HttpResponse.json({ items: [], count: 0 })),
-  http.get('*/api/v1/vouchers/batches', () => HttpResponse.json({ items: [], count: 0 })),
-  http.post('*/api/v1/vouchers/cardlibraries', async ({ request }) => {
-    writes.push(`${request.method}:${JSON.stringify(await request.json())}`);
-    return HttpResponse.json({ id: 'cardpool:test', scope_id: 'platform:commerce', code_prefix: 'MVP2026', next_sequence: 1, provider: null, mode: 'generated', status: 'ready', version: 0 }, { status: 201 });
-  }),
-  http.put('*/api/v1/vouchers/programs/:programid', async ({ request, params }) => {
-    writes.push(`${request.method}:${String(params.programid)}:${JSON.stringify(await request.json())}`);
-    return HttpResponse.json({ id: String(params.programid), scope_id: 'platform:commerce', name: '中秋关怀券', value_minor: 8_800, default_valid_days: 180, currency: 'CNY', status: 'draft', approval_required: true, version: 1 });
-  }),
-  http.all('*/api/v1/vouchers/**', ({ request }) => {
-    writes.push(request.method);
-    return HttpResponse.json({ code: 'UNEXPECTED_VOUCHER_WRITE' }, { status: 500 });
-  })
+  http.get('*/api/v1/vouchers/product-options', () => HttpResponse.json(productOptions)),
+  http.get('*/api/v1/vouchers/search/facets', () => HttpResponse.json(facets)),
+  http.get('*/api/v1/vouchers/search', () => HttpResponse.json({ items: [voucher], count: 1 })),
+  http.get('*/api/v1/vouchers/by-number/:number', () => HttpResponse.json(voucher)),
+  http.get('*/api/v1/vouchers/:voucherid/timeline', () => HttpResponse.json(timeline)),
+  http.get('*/api/v1/vouchers/products', ({ request }) => { requests.push(new URL(request.url).pathname); return HttpResponse.json(products); }),
+  http.get('*/api/v1/vouchers/credential-pools', ({ request }) => { requests.push(new URL(request.url).pathname); return HttpResponse.json(pools); }),
+  http.get('*/api/v1/vouchers/products/:productid', ({ params }) => HttpResponse.json(products.items.find(({ id }) => id === params.productid) ?? products.items[0])),
+  http.post('*/api/v1/vouchers/credential-pools', async ({ request }) => { writes.push(JSON.stringify(await request.json())); return HttpResponse.json(pools.items[0], { status: 201 }); }),
+  http.get('*/api/v1/vouchers/:voucherid', () => HttpResponse.json(voucher)),
+  http.all('*/api/v1/vouchers/**', ({ request }) => { requests.push(new URL(request.url).pathname); return HttpResponse.json({ items: [], count: 0 }); })
 );
-
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
-afterEach(() => {
-  cleanup();
-  server.resetHandlers();
-  requests.length = 0;
-  writes.length = 0;
-  currentSearch = '';
-});
+afterEach(() => { cleanup(); server.resetHandlers(); requests.length = 0; writes.length = 0; currentSearch = ''; });
 afterAll(() => server.close());
 
-describe('Voucher governance workspace', () => {
-  it('renders the scoped program read model and switches tabs through the URL', async () => {
-    const user = userEvent.setup();
-    renderRoute('/vouchers');
-    expect(await screen.findByRole('table', { name: '卡券方案' })).toBeTruthy();
+describe('Rich Voucher workspace', () => {
+  it('renders scoped products, keeps LI workspace interaction and switches to credential pools through URL state', async () => {
+    const user = userEvent.setup(); renderRoute('/vouchers');
+    expect(await screen.findByRole('table', { name: '卡券产品' })).toBeTruthy();
     expect(screen.getByRole('heading', { level: 1, name: '卡券中心' })).toBeTruthy();
     expect(screen.getByText('当前网站归属：鸿泰集团')).toBeTruthy();
-    expect(screen.getByText('¥70.00')).toBeTruthy();
-
+    expect(screen.getAllByText('¥88.00')).toHaveLength(2);
     await user.click(screen.getByRole('button', { name: '卡号库' }));
     expect(await screen.findByRole('table', { name: '卡号库' })).toBeTruthy();
-    expect(new URLSearchParams(currentSearch).get('view')).toBe('libraries');
-    expect(requests).toContain('/api/v1/vouchers/cardlibraries');
+    expect(new URLSearchParams(currentSearch).get('view')).toBe('pools');
+    expect(requests).toContain('/api/v1/vouchers/credential-pools');
   });
 
-  it('filters the current page, opens a read-only summary and keeps both creation commands distinct', async () => {
-    const user = userEvent.setup();
-    renderRoute('/vouchers?view=programs&campaign=keep');
-    await screen.findByRole('table', { name: '卡券方案' });
-
-    await user.type(screen.getByRole('searchbox', { name: '搜索当前卡券视图' }), '夏季');
-    expect(screen.getByText('夏季高温关怀券')).toBeTruthy();
-    expect(screen.queryByText('新员工入职礼包')).toBeNull();
-    expect(new URLSearchParams(currentSearch).get('campaign')).toBe('keep');
-
-    await user.click(screen.getByRole('button', { name: '查看夏季高温关怀券摘要' }));
-    const drawer = await screen.findByRole('dialog', { name: '夏季高温关怀券' });
-    expect(within(drawer).getByText(/不推断未返回字段/)).toBeTruthy();
+  it('opens a server-refreshed drawer and submits a real credential-pool command', async () => {
+    const user = userEvent.setup(); renderRoute('/vouchers?view=products&campaign=keep');
+    await screen.findByRole('table', { name: '卡券产品' });
+    await user.type(screen.getByRole('searchbox', { name: '搜索当前卡券视图' }), '中秋');
+    expect(screen.getByText('中秋关怀券')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '查看中秋关怀券摘要' }));
+    const drawer = await screen.findByRole('dialog', { name: '中秋关怀券' });
+    expect(within(drawer).getByText(/权威服务端模型/)).toBeTruthy();
     await user.click(within(drawer).getByRole('button', { name: '关闭' }));
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-
-    await user.click(screen.getByRole('button', { name: '新建卡券' }));
-    const programCreator = await screen.findByRole('dialog', { name: '新建卡券' });
-    await user.clear(within(programCreator).getByRole('textbox', { name: '卡券名称' }));
-    await user.type(within(programCreator).getByRole('textbox', { name: '卡券名称' }), '中秋关怀券');
-    await user.clear(within(programCreator).getByRole('textbox', { name: '面值（元）' }));
-    await user.type(within(programCreator).getByRole('textbox', { name: '面值（元）' }), '88');
-    await user.clear(within(programCreator).getByRole('spinbutton', { name: '有效天数' }));
-    await user.type(within(programCreator).getByRole('spinbutton', { name: '有效天数' }), '180');
-    await user.click(within(programCreator).getByRole('button', { name: '保存方案' }));
-    await waitFor(() => expect(writes[0]).toMatch(/^PUT:voucher-program:[0-9a-f-]+:{"name":"中秋关怀券","valueMinor":8800,"validityDays":180,"status":"draft","approvalRequired":true}$/));
-    await waitFor(() => expect(screen.queryByRole('dialog', { name: '新建卡券' })).toBeNull());
-    expect(new URLSearchParams(currentSearch).get('view')).toBe('programs');
-    expect(new URLSearchParams(currentSearch).get('q')).toBeNull();
-    await waitFor(() => expect(requests.filter((path) => path === '/api/v1/vouchers/programs')).toHaveLength(2));
-
+    await user.click(screen.getByRole('button', { name: '卡号库' }));
+    await screen.findByRole('table', { name: '卡号库' });
     await user.click(screen.getByRole('button', { name: '新建卡号库' }));
-    const libraryCreator = await screen.findByRole('dialog', { name: '新建卡号库' });
-    await user.clear(within(libraryCreator).getByRole('textbox', { name: '卡号前缀' }));
-    await user.type(within(libraryCreator).getByRole('textbox', { name: '卡号前缀' }), 'MVP2026');
-    await user.click(within(libraryCreator).getByRole('button', { name: '确认创建' }));
-    await waitFor(() => expect(writes[1]).toBe('POST:{"mode":"generated","prefix":"MVP2026","provider":null}'));
+    const dialog = await screen.findByRole('dialog', { name: '新建卡号库' });
+    await user.selectOptions(await within(dialog).findByRole('combobox', { name: '卡券产品' }), 'voucherproduct:one');
+    await fill(user, dialog, '卡号库名称', '中秋凭证池');
+    await fill(user, dialog, '卡号前缀', 'AUTUMN');
+    await user.click(within(dialog).getByRole('button', { name: '确认提交' }));
+    await waitFor(() => expect(writes[0]).toContain('"product":"voucherproduct:one"'));
     await waitFor(() => expect(screen.queryByRole('dialog', { name: '新建卡号库' })).toBeNull());
-    expect(new URLSearchParams(currentSearch).get('view')).toBe('libraries');
-    await waitFor(() => expect(requests.filter((path) => path === '/api/v1/vouchers/cardlibraries')).toHaveLength(1));
+  });
+
+  it('keeps a full voucher number out of the URL and renders the authoritative timeline', async () => {
+    const user = userEvent.setup(); renderRoute('/vouchers?view=search&campaign=keep');
+    await screen.findByRole('table', { name: '统一检索' });
+    const number = screen.getByLabelText('完整券号');
+    await user.type(number, 'AUTUMN20260001');
+    await user.click(screen.getByRole('button', { name: '精准查询' }));
+    const result = await screen.findByRole('button', { name: '打开精准查询结果 AUTUMN***0001' });
+    expect(currentSearch).not.toContain('AUTUMN20260001');
+    await user.click(result);
+    const drawer = await screen.findByRole('dialog', { name: 'AUTUMN***0001' });
+    expect(await within(drawer).findByRole('heading', { name: '生命周期时间线' })).toBeTruthy();
+    expect(within(drawer).getByText('可用 → 已绑定')).toBeTruthy();
   });
 });
 
+async function fill(user: ReturnType<typeof userEvent.setup>, dialog: HTMLElement, label: string, value: string) { const input = within(dialog).getByRole('textbox', { name: new RegExp(label) }); await user.clear(input); await user.type(input, value); }
 let currentSearch = '';
+function LocationProbe() { currentSearch = useLocation().search; return null; }
+function renderRoute(entry: string) { const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } }); return render(<MemoryRouter initialEntries={[entry]}><QueryClientProvider client={client}><ConsoleContextProvider value={context}><StepupProvider controller={{ request: () => undefined }}><DependencyProvider value={createConsoleDependencies()}><LocationProbe /><Component /></DependencyProvider></StepupProvider></ConsoleContextProvider></QueryClientProvider></MemoryRouter>); }
 
-function LocationProbe() {
-  currentSearch = useLocation().search;
-  return null;
-}
-
-function renderRoute(entry: string) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(
-    <MemoryRouter initialEntries={[entry]}>
-      <QueryClientProvider client={client}>
-        <ConsoleContextProvider value={context}>
-          <DependencyProvider value={createConsoleDependencies()}>
-            <LocationProbe />
-            <Component />
-          </DependencyProvider>
-        </ConsoleContextProvider>
-      </QueryClientProvider>
-    </MemoryRouter>
-  );
-}
-
-const context: ConsoleContext = {
-  session: {
-    actor: 'actor:voucher',
-    membership: 'membership:voucher',
-    accessVersion: 7,
-    permissions: ['voucher.program.read', 'voucher.program.manage', 'voucher.cardlibrary.read', 'voucher.cardlibrary.create'],
-    capabilities: ['voucher.programs.read', 'voucher.programs.manage', 'voucher.cardlibraries.read', 'voucher.cardlibraries.create'],
-    target: 'console',
-    scope: { kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' },
-    scopes: [{ kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' }],
-    assurance: { level: 2 },
-    security: { hasLocalCredential: true, phoneMasked: null, passwordChangedAt: null },
-    csrf: 'csrf-token-at-least-sixteen-characters',
-    syncedAt: '2026-08-27T05:00:00.000Z',
-  },
-  profile: { display_name: '测试卡券运营', employee_no: null },
-  scope: { kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' },
-  scopes: [{ kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' }],
-};
-
-const programs = {
-  items: [
-    { id: 'voucher-program:new-employee', scope_id: 'platform:commerce', name: '新员工入职礼包', value_minor: 3_000, currency: 'CNY', default_valid_days: 365, status: 'active', approval_required: true, version: 12, versions: [] },
-    { id: 'voucher-program:summer-care', scope_id: 'platform:commerce', name: '夏季高温关怀券', value_minor: 4_000, currency: 'CNY', default_valid_days: 90, status: 'draft', approval_required: true, version: 7, versions: [] },
-  ],
-  count: 2,
-};
-
-const libraries = {
-  items: [
-    {
-      id: 'cardlibrary:employee-202608',
-      scope_id: 'platform:commerce',
-      code_prefix: 'SW-EMP-2608',
-      next_sequence: 5_001,
-      provider: null,
-      mode: 'generated',
-      status: 'ready',
-      version: 5,
-      import_state: null,
-      total_count: 5_000,
-      success_count: 5_000,
-      failure_count: 0,
-      allocations: [],
-      errors: [],
-    },
-  ],
-  count: 1,
-};
+const context: ConsoleContext = { session: { actor: 'actor:voucher', membership: 'membership:voucher', accessVersion: 7,
+  permissions: ['voucher.product.read', 'voucher.product.manage', 'voucher.credential.read', 'voucher.credential.manage', 'voucher.search.read', 'voucher.holder.read'],
+  capabilities: ['voucher.products.list', 'voucher.products.get', 'voucher.products.create', 'voucher.products.revise', 'voucher.products.enable', 'voucher.products.disable', 'voucher.productoptions.list', 'voucher.credentialpools.list', 'voucher.credentialpools.get', 'voucher.credentialpools.create', 'voucher.search.read', 'voucher.searchfacets.read', 'voucher.vouchers.get', 'voucher.vouchers.getbynumber', 'voucher.vouchers.timeline'],
+  target: 'console', scope: { kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' }, scopes: [{ kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' }], assurance: { level: 3 }, security: { hasLocalCredential: true, phoneMasked: null, passwordChangedAt: null }, csrf: 'csrf-token-at-least-sixteen-characters', syncedAt: '2026-09-04T00:00:00.000Z' },
+  profile: { display_name: '测试卡券运营', employee_no: null }, scope: { kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' }, scopes: [{ kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' }] };
+const validity = { startsAt: '2026-09-04T00:00:00.000Z', expiresAt: '2027-09-04T00:00:00.000Z' };
+const products = { items: [{ id: 'voucherproduct:one', number: 'VP202609040001', scopeId: 'platform:commerce', customer: 'customer:one', name: '中秋关怀券', faceMinor: 8800, currency: 'CNY', qualification: 'qualification:one', pool: 'pool:one', validity, activation: 'automatic', approvalRequired: true, state: 'enabled', version: 2, createdAt: '2026-09-04T00:00:00.000Z', updatedAt: '2026-09-04T00:01:00.000Z' }], count: 1 };
+const pools = { items: [{ id: 'pool:one', number: 'CP202609040001', scopeId: 'platform:commerce', product: 'voucherproduct:one', name: '中秋凭证池', mode: 'generated', prefix: 'AUTUMN', capacity: 1000, generated: 0, available: 0, allocated: 0, state: 'open', version: 1, createdAt: '2026-09-04T00:00:00.000Z', updatedAt: '2026-09-04T00:00:00.000Z' }], count: 1 };
+const productOptions = { items: [{ id: 'voucherproduct:one', number: 'VP202609040001', name: '中秋关怀券', faceMinor: 8800, currency: 'CNY', available: 900 }], count: 1 };
+const voucher = { id: 'voucher:one', numberMasked: 'AUTUMN***0001', scopeId: 'platform:commerce', product: 'voucherproduct:one', productName: '中秋关怀券', credential: 'credential:one', holder: 'member:one', initialMinor: 8800, remainingMinor: 8800, currency: 'CNY', state: 'bound', validity, version: 2, createdAt: '2026-09-04T00:00:00.000Z', updatedAt: '2026-09-04T00:01:00.000Z' };
+const facets = { states: [{ value: 'bound', count: 1 }], products: [{ value: 'voucherproduct:one', count: 1 }], pools: [{ value: 'pool:one', count: 1 }], watermark: '2026-09-04T00:01:00.000Z' };
+const timeline = { items: [{ sequence: 1, previous: 'available', next: 'bound', reason: '成员主动领取', actor: 'membership:operator', occurredAt: '2026-09-04T00:01:00.000Z', redemption: null }], count: 1 };

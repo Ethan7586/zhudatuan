@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { NotificationDeliveryProcess } from '../../application/process/NotificationDeliveryProcess';
 
 export class NotificationJobProcessor implements JobProcessor {
@@ -8,7 +8,7 @@ export class NotificationJobProcessor implements JobProcessor {
     if (job.kind !== 'notification') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
     const payload = object(job.payload);
-    const execution = { scope: job.scope_id ?? 'notification', trace: job.id, signal, deadline };
+    const execution = { scope: job.scope ?? 'notification', trace: job.id, signal, deadline };
     if (payload.challenge !== undefined) return this.dispatches.challenge(text(payload.challenge, 'IDENTITY_CHALLENGE_REQUIRED'), execution);
     if (payload.dispatch !== undefined) return this.dispatches.dispatch(text(payload.dispatch, 'NOTIFICATION_DISPATCH_REQUIRED'), execution);
     if (payload.event !== undefined)
@@ -33,7 +33,7 @@ export class IdentityNotificationJobProcessor implements JobProcessor {
     if (!/^challenge:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(challenge)) {
       throw new Error('IDENTITY_CHALLENGE_INVALID');
     }
-    await this.dispatches.challenge(challenge, { scope: job.scope_id ?? 'identity', trace: job.id, signal, deadline });
+    await this.dispatches.challenge(challenge, { scope: job.scope ?? 'identity', trace: job.id, signal, deadline });
   }
 }
 

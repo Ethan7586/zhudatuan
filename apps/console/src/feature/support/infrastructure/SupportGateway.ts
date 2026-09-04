@@ -1,8 +1,8 @@
 import { createIdempotencyKey, EventStreamResyncError, uploadObject } from '@shop/sdk';
-import type { OperationInputFor } from '@shop/contract';
+import type { ContractJsonObject, OperationBodyFor, SupportAttachmentType } from '@shop/contract';
 import { createFetchSupport } from '@shop/sdk/support';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import { consoleCommand, consoleRequest, consoleStream } from '../../../shared/api/Client';
+import { consoleCommand, consoleRequest, consoleStream } from '../../../shared/api/RequestContext';
 import type { MessageDraft, UploadedAttachment } from '../model/Message';
 import type { AccountChange, AgentChange, RuleChange, SlaChange } from '../model/SupportConfig';
 import type { SupportEvent } from '../model/SupportEvent';
@@ -11,12 +11,17 @@ import type { TicketFilter } from '../model/TicketFilter';
 import type { SupportPort } from '../public';
 import { SupportMapper } from './SupportMapper';
 
-export interface SupportGatewayConfig { readonly apiBaseUrl: string }
+export interface SupportGatewayConfig {
+  readonly apiBaseUrl: string;
+}
 
 export class SupportGateway implements SupportPort {
   private readonly client;
 
-  constructor(config: SupportGatewayConfig, private readonly mapper = new SupportMapper()) {
+  constructor(
+    config: SupportGatewayConfig,
+    private readonly mapper = new SupportMapper()
+  ) {
     this.client = createFetchSupport(config.apiBaseUrl);
   }
 
@@ -77,10 +82,7 @@ export class SupportGateway implements SupportPort {
   async upload(context: ConsoleContext, ticket: string, file: File): Promise<UploadedAttachment> {
     const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
     const sha256 = [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, '0')).join('');
-    const intent = await this.client.attachmentsCreate(
-      { path: { caseid: ticket }, body: { name: file.name, contentType: contentType(file.type), sizeBytes: file.size, sha256 } },
-      this.command(context)
-    );
+    const intent = await this.client.attachmentsCreate({ path: { caseid: ticket }, body: { name: file.name, contentType: contentType(file.type), sizeBytes: file.size, sha256 } }, this.command(context));
     await uploadObject({ url: intent.upload.url, headers: intent.upload.headers, body: file }).catch(() => {
       throw new Error('附件直传失败，请重新选择文件。');
     });
@@ -92,7 +94,9 @@ export class SupportGateway implements SupportPort {
   }
 
   async manageAccount(context: ConsoleContext, id: string, version: number, change: AccountChange): Promise<void> {
-    const body = { provider: change.provider, displayName: change.displayName, state: change.state, ...(change.secretRef !== undefined ? { secretRef: change.secretRef } : {}) } as NonNullable<OperationInputFor<'support.accounts.manage'>['body']>;
+    const body: ContractJsonObject = change.secretRef === undefined
+      ? { provider: change.provider, displayName: change.displayName, state: change.state }
+      : { provider: change.provider, displayName: change.displayName, state: change.state, secretRef: change.secretRef };
     await this.client.accountsManage({ path: { accountid: id }, body }, this.command(context, version));
   }
 
@@ -101,7 +105,7 @@ export class SupportGateway implements SupportPort {
   }
 
   async manageSla(context: ConsoleContext, id: string, version: number, change: SlaChange): Promise<void> {
-    const body = { priority: change.priority, responseSeconds: change.responseSeconds, resolutionSeconds: change.resolutionSeconds } as NonNullable<OperationInputFor<'support.slas.manage'>['body']>;
+    const body = { priority: change.priority, responseSeconds: change.responseSeconds, resolutionSeconds: change.resolutionSeconds, reopenSeconds: change.reopenSeconds } as OperationBodyFor<'SupportSlasManageInput'>;
     await this.client.slasManage({ path: { slaid: id }, body }, this.command(context, version));
   }
 
@@ -135,11 +139,16 @@ export class SupportGateway implements SupportPort {
   }
 
   private command(context: ConsoleContext, expectedVersion?: number, idempotencyKey = createIdempotencyKey()) {
-    return consoleCommand(context.scope, { accessVersion: context.session.accessVersion, ...(expectedVersion === undefined ? {} : { expectedVersion }), idempotencyKey, ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }) });
+    return consoleCommand(context.scope, {
+      accessVersion: context.session.accessVersion,
+      ...(expectedVersion === undefined ? {} : { expectedVersion }),
+      idempotencyKey,
+      ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
+    });
   }
 }
 
-function contentType(value: string): 'image/jpeg' | 'image/png' | 'application/pdf' | 'text/plain' {
+function contentType(value: string): SupportAttachmentType {
   if (value === 'image/jpeg' || value === 'image/png' || value === 'application/pdf' || value === 'text/plain') return value;
   throw new Error('仅支持 JPG、PNG、PDF 或 TXT 文件。');
 }
@@ -147,9 +156,13 @@ function contentType(value: string): 'image/jpeg' | 'image/png' | 'application/p
 function retryDelay(signal: AbortSignal): Promise<void> {
   return new Promise((resolve) => {
     const timer = window.setTimeout(resolve, 1_000);
-    signal.addEventListener('abort', () => {
-      window.clearTimeout(timer);
-      resolve();
-    }, { once: true });
+    signal.addEventListener(
+      'abort',
+      () => {
+        window.clearTimeout(timer);
+        resolve();
+      },
+      { once: true }
+    );
   });
 }

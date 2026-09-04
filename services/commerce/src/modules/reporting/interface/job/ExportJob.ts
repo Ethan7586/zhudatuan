@@ -1,20 +1,13 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
+import type { ExportRunnerPort } from '../../../runtime/public';
 import type { ExportReport } from '../../application/process/ExportReport';
 
 export class ExportJob implements JobProcessor {
-  constructor(private readonly exporter: ExportReport) {}
+  constructor(private readonly runtime: ExportRunnerPort, private readonly exporter: ExportReport) {}
 
   process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
-    if (job.kind !== 'export') throw new Error('JOB_KIND_MISMATCH');
-    if (signal.aborted) throw signal.reason;
     const id = text(object(job.payload).export, 'REPORT_EXPORT_REQUIRED');
-    return this.exporter.execute(id, {
-      scope: job.scope_id ?? 'reporting',
-      trace: job.id,
-      attempts: job.attempts,
-      signal,
-      deadline,
-    });
+    return this.runtime.executeExport('export', id, job, signal, deadline, this.exporter);
   }
 }
 

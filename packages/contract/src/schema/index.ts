@@ -1,4 +1,4 @@
-import { array, boolean, discriminatedUnion, literal, minLength, null as nullSchema, number, optional, strictObject, string, union, type ZodMiniObject, type ZodMiniString, type ZodMiniType } from 'zod/mini';
+import { discriminatedUnion, literal, minLength, null as nullSchema, number, optional, strictObject, string, union, type ZodMiniObject, type ZodMiniString, type ZodMiniType } from 'zod/mini';
 import { OPERATION_BODY_SCHEMAS, OPERATION_OUTPUT_SCHEMAS, OPERATION_QUERY_SCHEMAS } from './SchemaCatalog';
 import { IDENTITY_BODY_SCHEMAS, IDENTITY_QUERY_SCHEMAS } from './IdentityInputSchema';
 
@@ -7,6 +7,10 @@ import type { ContractJsonValue } from './JsonSchema';
 export { ContractJsonValueSchema } from './JsonSchema';
 export type Schema<T> = ZodMiniType<T>;
 export type SchemaOutput<TSchema> = TSchema extends Schema<infer TOutput> ? TOutput : never;
+export type OperationBodyName = keyof typeof OPERATION_BODY_SCHEMAS;
+export type OperationBodyFor<TName extends OperationBodyName> = SchemaOutput<(typeof OPERATION_BODY_SCHEMAS)[TName]>;
+export type OperationQueryName = keyof typeof OPERATION_QUERY_SCHEMAS;
+export type OperationQueryFor<TName extends OperationQueryName> = SchemaOutput<(typeof OPERATION_QUERY_SCHEMAS)[TName]>;
 
 export type OperationQueryValue = string | number | boolean | readonly string[] | null | undefined;
 export type OperationQuery = Readonly<Record<string, OperationQueryValue>>;
@@ -36,26 +40,8 @@ function operationBody(schemaName: string): Schema<ContractJsonValue> {
 }
 
 export function definedOperationBodySchema(schemaName: string): Schema<ContractJsonValue> | undefined {
-  const empty = strictObject({});
   const schemas: Readonly<Record<string, Schema<ContractJsonValue>>> = {
     ...(IDENTITY_BODY_SCHEMAS as Readonly<Record<string, Schema<ContractJsonValue>>>),
-    AccessOwnersTransferInput: strictObject({ targetMembership: string(), targetVersion: number(), reason: string() }),
-    AccessRolesManageInput: strictObject({ name: string(), allows: array(string()), denies: array(string()) }),
-    AccessOverridesManageInput: discriminatedUnion('action', [
-      strictObject({ action: literal('set'), targetMembership: string(), permission: string(), effect: literal(['allow', 'deny']), expiresAt: optional(string()), reason: string() }),
-      strictObject({ action: literal('revoke'), targetMembership: string(), permission: string(), reason: string() }),
-    ]) as Schema<ContractJsonValue>,
-    AccessScopesManageInput: strictObject({ targetMembership: string(), kind: string(), scope: string(), effect: optional(literal(['allow', 'deny'])), expiresAt: optional(string()) }) as Schema<ContractJsonValue>,
-    CapabilityAssignmentsManageInput: strictObject({ capability: string(), state: literal(['enabled', 'disabled']), quota: optional(number()), expiresAt: optional(string()) }) as Schema<ContractJsonValue>,
-    OrganizationDirectoriesManageInput: strictObject({
-      providerid: string(),
-      providertype: literal(['wecomcorp', 'wecomsuite']),
-      status: literal(['draft', 'enabled', 'paused', 'disabled', 'revoked']),
-      secretref: string(),
-      organizationid: string(),
-    }),
-    OrganizationDirectoriesSyncInput: strictObject({ mode: optional(literal(['full', 'incremental'])) }) as Schema<ContractJsonValue>,
-    OrganizationDirectoryeventsReceiveInput: empty,
     VoucherCardlibrariesCreateInput: discriminatedUnion('mode', [
       strictObject({ mode: literal('generated'), prefix: string(), provider: optional(union([string(), nullSchema()])) }),
       strictObject({ mode: literal('imported'), prefix: string(), provider: optional(union([string(), nullSchema()])), objectRef: string(), sha256: string() }),
@@ -78,6 +64,7 @@ export function definedOperationQuerySchema(schemaName: string): Schema<Operatio
     ...(IDENTITY_QUERY_SCHEMAS as Readonly<Record<string, Schema<OperationQuery>>>),
     OrganizationLayersReadInput: strictObject(page),
     AccessCenterReadInput: strictObject(page),
+    AccessOwnershipReadInput: empty,
     CapabilityAssignmentsReadInput: strictObject(page),
     NavigationTreeReadInput: strictObject({ scopeid: optional(string()) }),
     NavigationCatalogReadInput: empty,

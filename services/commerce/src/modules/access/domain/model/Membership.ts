@@ -1,6 +1,7 @@
 import { DomainError } from '../../../../foundation/domain/DomainError';
+import { isOperationTarget, type OperationTarget } from '@shop/contract';
 
-export type MembershipClient = 'console' | 'storefront';
+export type MembershipClient = OperationTarget;
 export type MembershipStatus = 'invited' | 'active' | 'suspended' | 'left';
 
 export class Membership {
@@ -17,11 +18,17 @@ export class Membership {
     const status = membershipStatus(value.status);
     this.id = value.id;
     this.organization = value.organization;
-    this.client = value.client === 'storefront' ? 'storefront' : 'console';
+    this.client = membershipClient(value.client);
     this.status = status;
     this.accessVersion = value.accessVersion;
     Object.freeze(this);
   }
+}
+
+function membershipClient(value: string): MembershipClient {
+  const target = value === 'operator' ? 'console' : value;
+  if (!isOperationTarget(target) || target === 'miniapp') throw new DomainError('VALIDATION_FAILED', { field: 'client' });
+  return target;
 }
 
 function membershipStatus(value: string): MembershipStatus {

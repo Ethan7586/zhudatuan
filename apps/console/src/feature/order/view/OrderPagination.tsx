@@ -2,31 +2,46 @@ import { OrderIcon } from './OrderIcon';
 
 export function OrderPagination({
   count,
-  hasCursor,
-  nextCursor,
-  onCursor,
+  page,
+  canFirst,
+  canPrevious,
+  canNext,
+  onFirst,
+  onPrevious,
+  onNext,
 }: Readonly<{
   count: number;
-  hasCursor: boolean;
-  nextCursor: string | undefined;
-  onCursor: (cursor?: string) => void;
+  page: number;
+  canFirst: boolean;
+  canPrevious: boolean;
+  canNext: boolean;
+  onFirst: () => void;
+  onPrevious: () => void;
+  onNext: () => void;
 }>) {
   return (
-    <footer className="orderpagination">
-      <span>本页 {count} 条</span>
+    <footer className="orderpagination" aria-label="订单分页">
+      <span>第 {page} 页 · 本页 {count} 条</span>
       <div>
-        {hasCursor ? (
-          <button type="button" onClick={() => onCursor()} aria-label="返回第一页">
+        {canFirst && !canPrevious ? (
+          <button type="button" onClick={onFirst} aria-label="返回第一页">
             <OrderIcon name="arrowLeft" />
             返回第一页
           </button>
         ) : null}
-        {nextCursor === undefined ? null : (
-          <button type="button" onClick={() => onCursor(nextCursor)} aria-label="下一页">
+        {canPrevious ? (
+          <button type="button" onClick={onPrevious} aria-label="上一页">
+            <OrderIcon name="arrowLeft" />
+            上一页
+          </button>
+        ) : null}
+        <strong aria-current="page">{page}</strong>
+        {canNext ? (
+          <button type="button" onClick={onNext} aria-label="下一页">
             下一页
             <OrderIcon name="arrowRight" />
           </button>
-        )}
+        ) : null}
       </div>
     </footer>
   );

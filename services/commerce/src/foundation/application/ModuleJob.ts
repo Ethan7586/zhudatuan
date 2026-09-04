@@ -1,4 +1,4 @@
-import type { JobDeadletter, JobProcessor } from './JobRunner';
+import type { JobDeadletter, JobProcessor } from '../../modules/runtime/public/JobProcess';
 import type { JobKind } from './JobCatalog';
 
 export interface ModuleJob {

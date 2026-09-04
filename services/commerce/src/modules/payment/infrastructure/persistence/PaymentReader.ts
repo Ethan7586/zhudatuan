@@ -2,7 +2,7 @@ import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAcce
 
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { MemberAccessPort } from '../../../access/public';
-import type { PaymentOrderPort } from '../../../order/public';
+import type { OrderPaymentPort } from '../../../order/public';
 interface PaymentRow {
   readonly intent_id: string;
   readonly order_id: string;
@@ -16,7 +16,7 @@ interface PaymentRow {
 export class PaymentReader {
   constructor(
     private readonly members: Pick<MemberAccessPort, 'member'>,
-    private readonly orders: Pick<PaymentOrderPort, 'payment'>
+    private readonly orders: Pick<OrderPaymentPort, 'payment'>
   ) {}
   async execute(database: SqlExecutor, membership: string, paymentid: string) {
     const member = await this.members.member(database.transaction, membership);

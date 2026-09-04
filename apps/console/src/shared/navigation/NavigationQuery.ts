@@ -1,7 +1,9 @@
 import { NAVIGATION_CATALOG_HASH } from '../../generated/NavigationBinding';
 import type { ScopeKind } from '@shop/authz';
+import { errorStatus } from '@shop/contract';
 import { NavigationTreeSchema } from './NavigationContract';
-import { consoleRequest, navigationTreeRead } from '../api/Client';
+import { consoleRequest } from '../api/RequestContext';
+import { navigationTreeRead } from './NavigationGateway';
 
 const capacity = 50;
 const cache = new Map<string, Readonly<{ etag: string; tree: unknown }>>();
@@ -22,7 +24,7 @@ export async function readConsoleNavigation(session: NavigationSession, scope: N
   const value = await navigationTreeRead({}, consoleRequest(scope, signal, session.accessVersion, prior === undefined ? undefined : { ifNoneMatch: prior.etag, cachedResponse: prior.tree }));
   const tree = NavigationTreeSchema.parse(value);
   if (tree.catalogVersion !== NAVIGATION_CATALOG_HASH || tree.scope.id !== scope.id || tree.scope.kind !== scope.kind) {
-    throw new Response('NAVIGATION_CATALOG_MISMATCH', { status: 409 });
+    throw new Response('NAVIGATION_CATALOG_MISMATCH', { status: errorStatus('NAVIGATION_CATALOG_MISMATCH') });
   }
   cache.delete(key);
   cache.set(key, Object.freeze({ etag: tree.etag, tree }));
@@ -32,6 +34,11 @@ export async function readConsoleNavigation(session: NavigationSession, scope: N
 
 export function clearConsoleNavigation(): void {
   cache.clear();
+}
+
+export function retainConsoleNavigation(session: NavigationSession, scope: NavigationScope): void {
+  const current = navigationKey(session, scope);
+  for (const key of cache.keys()) if (key !== current) cache.delete(key);
 }
 
 function navigationKey(session: NavigationSession, scope: NavigationScope): string {

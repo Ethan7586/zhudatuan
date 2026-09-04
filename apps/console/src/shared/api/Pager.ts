@@ -1,9 +1,6 @@
-export interface CursorPage<T> {
-  readonly items: readonly T[];
-  readonly nextCursor?: string;
-}
+import type { ClientPage } from '@shop/contract/client';
 
-export async function collectPages<T>(read: (cursor: string | undefined) => Promise<CursorPage<T>>, maximumPages = 100): Promise<readonly T[]> {
+export async function collectPages<T>(read: (cursor: string | undefined) => Promise<ClientPage<T>>, maximumPages = 100): Promise<readonly T[]> {
   if (!Number.isSafeInteger(maximumPages) || maximumPages < 1) throw new Error('PAGE_LIMIT_INVALID');
   const items: T[] = [];
   const cursors = new Set<string>();

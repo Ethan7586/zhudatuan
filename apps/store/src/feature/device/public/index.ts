@@ -1,0 +1,1 @@
+export { deviceManifest } from './Manifest';

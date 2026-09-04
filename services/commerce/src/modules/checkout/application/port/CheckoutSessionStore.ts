@@ -15,7 +15,7 @@ export interface StoredCurrentQuote {
 export interface CheckoutSessionStore extends OrderCheckoutSessionPort, OrderExpiryCheckoutPort, CheckoutRetentionPort {
   replaceCurrent(
     context: WriteTransactionContext,
-    input: Readonly<{ checkoutId: string; quoteId: string; signature: string; cartId: string; memberId: string; mallId: string; applicationId: string; addressId: string | null; selection: unknown; expiresAt: string }>
+    input: Readonly<{ checkoutId: string; quoteId: string; signature: string; confirmationDigest: string; cartId: string; memberId: string; mallId: string; applicationId: string; addressId: string | null; selection: unknown; expiresAt: string }>
   ): Promise<StoredCurrentQuote>;
   current(context: ReadTransactionContext, member: string, mall: string): Promise<StoredCurrentQuote | null>;
   saveEvidence(context: WriteTransactionContext, checkout: string, entries: readonly Readonly<{ kind: string; reference: string; version: string; hash: string }>[], expiresAt: string): Promise<void>;

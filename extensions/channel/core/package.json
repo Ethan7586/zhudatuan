@@ -10,7 +10,8 @@
     "test": "vitest run"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./test": "./test/ExtensionContract.ts"
   },
   "types": "./src/index.ts",
   "dependencies": {

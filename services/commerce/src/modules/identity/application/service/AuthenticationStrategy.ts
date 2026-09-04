@@ -11,7 +11,7 @@ export interface ProofView {
   readonly reference?: string;
   readonly expiresAt: string;
   readonly method: 'otp' | 'sso';
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
 }
 export interface EnrollmentView {
   readonly id: string;

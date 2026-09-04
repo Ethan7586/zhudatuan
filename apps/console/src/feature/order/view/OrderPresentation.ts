@@ -1,5 +1,5 @@
-import { chineseReference } from '@shop/presentation';
-import type { OrderRecord } from '../model/Order';
+import { chineseDomainLabel, chineseProviderLabel, chineseReference } from '@shop/presentation';
+import type { OrderPaymentTender, OrderRecord } from '../model/Order';
 
 export type OrderTone = 'brand' | 'success' | 'warning' | 'danger' | 'muted';
 
@@ -46,19 +46,11 @@ const lifecycleLabels: Readonly<Record<string, string>> = Object.freeze({
   cancelled: '已取消',
 });
 
-const aftersaleReasonLabels: Readonly<Record<string, string>> = Object.freeze({
-  quality: '商品质量问题',
-  damaged: '运输破损',
-  wrongitem: '错发或漏发',
-  notneeded: '不再需要',
-  service: '服务未按约完成',
-});
-
 export const paymentLabel = (value: string): string => paymentLabels[value] ?? '待识别状态';
 export const fulfillmentLabel = (value: string): string => fulfillmentLabels[value] ?? '待识别状态';
 export const aftersaleLabel = (value: string): string => aftersaleLabels[value] ?? '待识别状态';
 export const lifecycleLabel = (value: string): string => lifecycleLabels[value] ?? '待识别状态';
-export const aftersaleReasonLabel = (value: string): string => aftersaleReasonLabels[value] ?? '其他售后原因';
+export { afterSaleReasonText as aftersaleReasonLabel } from '@shop/presentation';
 
 export function paymentTone(value: string): OrderTone {
   if (value === 'paid') return 'brand';
@@ -86,6 +78,7 @@ export function formatOrderTime(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
@@ -93,7 +86,35 @@ export function formatOrderTime(value: string): string {
     hour12: false,
   })
     .format(date)
-    .replace('/', '-');
+    .replaceAll('/', '-');
+}
+
+export function providerLabel(provider: string | null, partner: string | null): string {
+  return provider ? chineseProviderLabel(provider) : partner ? chineseReference('合作方', partner) : '平台自营';
+}
+
+export function tenderLabel(kind: OrderPaymentTender['kind']): string {
+  return kind === 'wechat' ? '微信支付' : kind === 'benefit' ? '福利账户' : '福利券';
+}
+
+export function addressLabel(order: Pick<OrderRecord, 'address'>): string {
+  return order.address ? `${order.address.recipientMasked} · ${order.address.mobileMasked} · ${order.address.addressMasked}${order.address.regionCode ? `（${order.address.regionCode}）` : ''}` : '本单无需配送地址';
+}
+
+export function actionLabel(action: string): string {
+  return chineseDomainLabel(action.replaceAll('.', ' '));
+}
+
+export function recoveryResourceLabel(value: string): string {
+  return ({ intent: '支付意图', refund: '退款', deadletter: '失败任务' } as Readonly<Record<string, string>>)[value] ?? '支付资源';
+}
+
+export function recoveryLabel(value: string): string {
+  const known: Readonly<Record<string, string>> = {
+    PAYMENT_LATE_SUCCESS: '订单取消后支付成功',
+    PAYMENT_PROVIDER_REFUNDED: '渠道已退款但本地状态未完成',
+  };
+  return known[value] ?? '未归类支付异常';
 }
 
 export function productSummary(order: OrderRecord): Readonly<{ title: string; detail: string }> {

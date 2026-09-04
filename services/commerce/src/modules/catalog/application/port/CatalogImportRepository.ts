@@ -1,13 +1,8 @@
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-
-export interface CatalogImportRecord extends Readonly<Record<string, unknown>> {
-  readonly id: string;
-  readonly reportObjectRef: string | null;
-  readonly reportSha256: string | null;
-  readonly reportSize: number | null;
-}
+import type { ImportCandidate, ImportPreparedBatch, ImportTarget } from '../../../runtime/public';
 
 export interface CatalogImportRepository {
-  create(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; reference: string; sha256: string }>): Promise<Readonly<Record<string, unknown>>>;
-  read(context: ReadTransactionContext, id: string, scope: string): Promise<CatalogImportRecord | null>;
+  prepare(context: ReadTransactionContext, scope: string, rows: readonly ImportCandidate[]): Promise<ImportPreparedBatch>;
+  import(context: WriteTransactionContext, target: ImportTarget, row: number, value: Readonly<Record<string, string>>): Promise<void>;
+  release(context: WriteTransactionContext, importId: string, scope: string): Promise<void>;
 }

@@ -4,6 +4,9 @@ import { CsrfProtector } from './CsrfProtector';
 const protector = new CsrfProtector('csrf-test-key-that-is-at-least-thirty-two-bytes', {
   console: 'https://console.fufu.wang',
   storefront: 'https://fufu.wang',
+  miniapp: 'https://miniapp.fufu.wang',
+  store: 'https://store.fufu.wang',
+  supplier: 'https://supplier.fufu.wang',
 });
 
 describe('CsrfProtector', () => {

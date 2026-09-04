@@ -22,6 +22,12 @@ const request = strictObject({
   source_hash: nullableText,
   kind: literal(['original', 'red']),
   red_of_request_id: nullableText,
+  issue_hash: nullableText,
+  issue_count: union([unsigned, nullSchema()]),
+  issue_watermark: nullableTime,
+  provider: nullableText,
+  provider_reference: nullableText,
+  response_hash: nullableText,
 });
 const requestLine = strictObject({ settlementLine: string(), amountMinor: unsigned, taxMinor: unsigned, sourceHash: string() });
 const requestRead = strictObject({ ...request.shape, object_ref: nullableText, sha256: nullableText, issued_at: nullableTime, lines: array(requestLine) });

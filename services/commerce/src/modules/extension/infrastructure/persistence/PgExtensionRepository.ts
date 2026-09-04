@@ -13,30 +13,43 @@ interface InstallationRow {
   readonly extension_version: string;
   readonly scope_id: string;
   readonly status: InstallationState;
+  readonly configuration_version: number;
   readonly version: number;
 }
 
 export class PgExtensionRepository implements ExtensionRepository {
   constructor(private readonly transactions: PgTransactionAccess) {}
 
-  async manifest(context: ReadTransactionContext, provider: string): Promise<RegisteredManifest | null> {
+  async manifest(context: ReadTransactionContext, provider: string, version?: string): Promise<RegisteredManifest | null> {
     const database = this.transactions.database(context);
     const result = await database.query<RegisteredManifest>(
       `select manifest.id,manifest.version,manifest.manifest,manifest.manifest_hash,
       manifest.signature,manifest.contract_version,contract.status contract_status,contract.schema_hash from extension.manifest manifest
       join extension.contractversion contract on contract.extension_id=manifest.id and contract.contract_version=manifest.contract_version
-      where manifest.id=$1 and contract.status='verified' order by manifest.registered_at desc limit 1`,
-      [provider]
+      where manifest.id=$1 and ($2::text is null or manifest.version=$2) and contract.status='verified'
+      order by manifest.registered_at desc limit 1`,
+      [provider, version ?? null]
     );
     return result.rows[0] ?? null;
+  }
+
+  async manifests(context: ReadTransactionContext): Promise<readonly RegisteredManifest[]> {
+    const database = this.transactions.database(context);
+    const result = await database.query<RegisteredManifest>(
+      `select manifest.id,manifest.version,manifest.manifest,manifest.manifest_hash,
+      manifest.signature,manifest.contract_version,contract.status contract_status,contract.schema_hash from extension.manifest manifest
+      join extension.contractversion contract on contract.extension_id=manifest.id and contract.contract_version=manifest.contract_version
+      where contract.status='verified' order by manifest.id,manifest.version`
+    );
+    return Object.freeze(result.rows);
   }
 
   async install(context: WriteTransactionContext, input: InstallInput): Promise<Installation> {
     const database = this.transactions.database(context);
     const result = await database.query<InstallationRow>(
       `insert into extension.installation(id,extension_id,extension_version,scope_id,status,
-      manifest,base_url,endpoints,secret_ref,health_operation,version,installed_at) values($1,$2,$3,$4,'disabled',$5::jsonb,$6,$7::jsonb,$8,$9,0,
-      clock_timestamp()) returning id,extension_id,extension_version,scope_id,status,version`,
+      manifest,base_url,endpoints,secret_ref,health_operation,configuration_version,version,installed_at) values($1,$2,$3,$4,'disabled',$5::jsonb,$6,$7::jsonb,$8,$9,0,0,
+      clock_timestamp()) returning id,extension_id,extension_version,scope_id,status,configuration_version,version`,
       [input.id, input.manifest.id, input.manifest.version, input.scope, JSON.stringify(input.manifest), input.baseUrl, JSON.stringify(input.endpoints), input.secretRef, input.healthOperation]
     );
     const row = result.rows[0];
@@ -49,28 +62,29 @@ export class PgExtensionRepository implements ExtensionRepository {
     context: WriteTransactionContext,
     id: string,
     scope: string,
-    input: Readonly<{ baseUrl: string | null; endpoints: Readonly<Record<string, string>>; secretRef: string | null; healthOperation: string; actor: string; trace: string }>
+    input: Readonly<{ baseUrl: string | null; endpoints: Readonly<Record<string, string>>; secretRef: string | null | undefined; healthOperation: string; actor: string; trace: string }>
   ): Promise<Installation> {
     const database = this.transactions.database(context);
     const current = await this.lock(context, id, scope);
     if (!current) throw new DomainError('RESOURCE_NOT_FOUND');
-    if (current.state !== 'disabled') throw new Error('EXTENSION_RECONFIGURE_STATE_INVALID');
+    const changed = current.reconfigure(current.configurationVersion);
     const result = await database.query<InstallationRow>(
-      `update extension.installation set base_url=$3,endpoints=$4::jsonb,secret_ref=$5,
-      health_operation=$6,version=version+1 where id=$1 and scope_id=$2 and status='disabled' and version=$7
-      returning id,extension_id,extension_version,scope_id,status,version`,
-      [id, scope, input.baseUrl, JSON.stringify(input.endpoints), input.secretRef, input.healthOperation, current.version]
+      `update extension.installation set base_url=$3,endpoints=$4::jsonb,secret_ref=coalesce($5,secret_ref),
+      health_operation=$6,configuration_version=configuration_version+1,version=version+1
+      where id=$1 and scope_id=$2 and status='disabled' and configuration_version=$7 and version=$8
+      returning id,extension_id,extension_version,scope_id,status,configuration_version,version`,
+      [id, scope, input.baseUrl, JSON.stringify(input.endpoints), input.secretRef, input.healthOperation, current.configurationVersion, current.version]
     );
     const row = result.rows[0];
-    if (!row) throw new Error('EXTENSION_VERSION_CONFLICT');
-    await this.history(database, id, 'disabled', 'disabled', input.actor, { reason: 'configuration changed', trace: input.trace });
+    if (!row || row.version !== changed.version || row.configuration_version !== changed.configurationVersion) throw new Error('EXTENSION_CONFIGURATION_VERSION_CONFLICT');
+    await this.history(database, id, 'disabled', 'disabled', input.actor, { reason: 'configuration changed', configurationVersion: row.configuration_version, trace: input.trace });
     return installation(row);
   }
 
   async lock(context: WriteTransactionContext, id: string, scope: string): Promise<Installation | null> {
     const database = this.transactions.database(context);
     const result = await database.query<InstallationRow>(
-      `select id,extension_id,extension_version,scope_id,status,version
+      `select id,extension_id,extension_version,scope_id,status,configuration_version,version
       from extension.installation where id=$1 and scope_id=$2 for update`,
       [id, scope]
     );
@@ -80,7 +94,7 @@ export class PgExtensionRepository implements ExtensionRepository {
   async activation(context: WriteTransactionContext, id: string, scope: string, provider: string): Promise<Readonly<{ candidate: Installation; active: Installation | null }>> {
     const database = this.transactions.database(context);
     const result = await database.query<InstallationRow>(
-      `select id,extension_id,extension_version,scope_id,status,version
+      `select id,extension_id,extension_version,scope_id,status,configuration_version,version
       from extension.installation where scope_id=$2 and extension_id=$3 and (id=$1 or status='enabled') order by id for update`,
       [id, scope, provider]
     );
@@ -90,22 +104,12 @@ export class PgExtensionRepository implements ExtensionRepository {
     return Object.freeze({ candidate: installation(candidate), active: active ? installation(active) : null });
   }
 
-  async latestHealth(context: ReadTransactionContext, id: string, version: number): Promise<Readonly<{ state: 'healthy' | 'degraded' | 'unavailable'; checkedAt: string; latency: number }> | null> {
-    const database = this.transactions.database(context);
-    const result = await database.query<{ state: 'healthy' | 'degraded' | 'unavailable'; checkedAt: string; latency: number }>(
-      `select state,checked_at "checkedAt",latency_ms latency from extension.health
-      where installation_id=$1 and connection_version=$2 order by checked_at desc limit 1`,
-      [id, version]
-    );
-    return result.rows[0] ?? null;
-  }
-
   async transition(context: WriteTransactionContext, current: Installation, next: InstallationState, actor: string, evidence: unknown): Promise<Installation> {
     const database = this.transactions.database(context);
     const transitioned = current.transition(next);
     const result = await database.query<InstallationRow>(
       `update extension.installation set status=$3,version=version+1 where id=$1 and scope_id=$2
-      and status=$4 and version=$5 returning id,extension_id,extension_version,scope_id,status,version`,
+      and status=$4 and version=$5 returning id,extension_id,extension_version,scope_id,status,configuration_version,version`,
       [current.id, current.scope, next, current.state, current.version]
     );
     const row = result.rows[0];
@@ -166,7 +170,7 @@ export class PgExtensionRepository implements ExtensionRepository {
     const database = this.transactions.database(context);
     const result = await database.query<ExtensionListRow>(
       `select installation.id,installation.extension_id,installation.extension_version,
-      installation.scope_id,installation.status,installation.manifest,installation.version,installation.installed_at,
+      installation.scope_id,installation.status,installation.manifest,installation.configuration_version,installation.version,installation.installed_at,
       health.state health_state,health.latency_ms health_latency_ms,health.reason health_reason,health.checked_at
       from extension.installation installation left join lateral(select state,latency_ms,reason,checked_at from extension.health
         where installation_id=installation.id order by checked_at desc limit 1) health on true
@@ -221,7 +225,7 @@ function minuteKey(value: Date): string {
 }
 
 function installation(row: InstallationRow): Installation {
-  return new Installation(row.id, row.extension_id, row.extension_version, row.scope_id, row.status, Number(row.version));
+  return new Installation(row.id, row.extension_id, row.extension_version, row.scope_id, row.status, Number(row.configuration_version), Number(row.version));
 }
 
 function evidenceTrace(value: unknown): string {

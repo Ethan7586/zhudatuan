@@ -3,7 +3,7 @@ import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } f
 import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
 import type { IdentityLifecycle } from '../model/IdentityAction';
 import { identityReply, identityRequest, type IdentityLifecycleCheckpoint, type PreparedIdentityLifecycle } from '../model/IdentityExecution';
-import type { EnrollmentDraft, EnrollmentInvitationScope } from '../service/EnrollmentService';
+import type { EnrollmentDraft, EnrollmentInvitationScope } from '../service/EnrollIdentity';
 
 export class EnrollmentsCompleteHandler implements DurableOperationHandler<'identity.enrollments.complete', PreparedIdentityLifecycle<EnrollmentDraft>, IdentityLifecycleCheckpoint<EnrollmentDraft>, 'write', EnrollmentInvitationScope> {
   readonly operation = 'identity.enrollments.complete' as const;

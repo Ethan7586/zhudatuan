@@ -4,7 +4,7 @@ import { domainEvent } from '@shop/kernel';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import { RiskCase } from '../../domain/model/RiskCase';
 import type { RiskAdministrationRepository } from '../port/RiskAdministrationRepository';
@@ -18,10 +18,12 @@ export class CasesReviewHandler implements OperationHandler<'risk.cases.review',
   async execute(input: OperationInputFor<'risk.cases.review'>, context: WriteHandlerContext<'risk.cases.review'>): Promise<OperationReply<OperationOutputFor<'risk.cases.review'>>> {
     const access = requireSession(context.security);
     const body = bodyRecord(input);
+    if (context.expectedVersion === undefined) throw new DomainError('EXPECTED_VERSION_REQUIRED');
     const action = body.action;
     if (action !== 'accept' && action !== 'clear' && action !== 'confirm' && action !== 'close') throw new Error('RISK_CASE_ACTION_INVALID');
     const current = await this.risks.riskCase(context.transaction, input.path.caseid, access.scope.id);
     if (!current) throw new DomainError('RESOURCE_NOT_FOUND');
+    if (current.version !== context.expectedVersion) throw new DomainError('VERSION_CONFLICT');
     const state = new RiskCase(current.id, current.state, current.actor).review(action, access.actor.id);
     const evidence = evidenceRecord(body.evidence ?? {});
     const reviewed = await this.risks.reviewCase(context.transaction, {
@@ -31,7 +33,11 @@ export class CasesReviewHandler implements OperationHandler<'risk.cases.review',
       reviewer: access.actor.id,
       reason: textField(body, 'reason', 1000),
       evidence,
+      expectedVersion: context.expectedVersion,
     });
+    if (!reviewed) throw new DomainError('VERSION_CONFLICT');
+    const aggregateVersion = Reflect.get(reviewed, 'version');
+    if (!Number.isSafeInteger(aggregateVersion)) throw new Error('RISK_CASE_AGGREGATE_VERSION_MISSING');
     const terminal = state === 'cleared' || state === 'confirmed' || state === 'closed';
     const events = terminal
       ? [
@@ -39,7 +45,7 @@ export class CasesReviewHandler implements OperationHandler<'risk.cases.review',
             event: `event:${randomUUID()}`,
             type: 'risk.case.resolved',
             version: 1,
-            aggregate: { type: 'riskcase', id: current.id, version: 1 },
+            aggregate: { type: 'riskcase', id: current.id, version: aggregateVersion as number },
             tenant: access.scope.tenant ?? access.scope.id,
             actor: access.actor.id,
             occurred: new Date().toISOString(),

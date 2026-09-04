@@ -2,7 +2,7 @@ import { PgTransactionManager } from '../../../../adapter/database/PgTransaction
 import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
 import { jobDefinition } from '../../../../foundation/application/JobCatalog';
 import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { KMS_CLIENT } from '../../../../foundation/infrastructure/KmsClient';
+import { KMS_CLIENT } from '../../../../foundation/application/KmsPort';
 import { IDENTITY_SECURITY_KEYS, SECRET_STORE } from '../../../../foundation/infrastructure/SecretStore';
 import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
 import { IDENTITY_ACCESS_PORT } from '../../../access/public';
@@ -10,7 +10,7 @@ import { DirectoryProviderRegistry } from '../../application/service/DirectoryPr
 import { ReconcileDirectory } from '../../application/process/ReconcileDirectory';
 import { SynchronizeDirectory } from '../../application/process/SynchronizeDirectory';
 import { DirectoryReconciler } from '../../application/service/DirectoryReconciler';
-import { DirectorySyncService } from '../../application/service/DirectorySyncService';
+import { DirectorySynchronization } from '../../application/service/DirectorySynchronization';
 import { MembershipLifecycle } from '../../application/service/MembershipLifecycle';
 import { DirectoryPolicy } from '../../domain/policy/DirectoryPolicy';
 import { WecomDirectoryClient } from '../../infrastructure/adapter/wecom/WecomDirectoryClient';
@@ -21,6 +21,7 @@ import { DirectoryLeaseStore } from '../../infrastructure/persistence/DirectoryL
 import { PgDirectoryJobRepository } from '../../infrastructure/persistence/PgDirectoryJobRepository';
 import { DirectoryReconcileJob } from './DirectoryReconcileJob';
 import { DirectorySyncJob } from './DirectorySyncJob';
+import { LEASE_PORT } from '../../../runtime/public';
 
 export function createJobs(context: ModuleContext): readonly ModuleJob[] {
   const pool = context.service(DATABASE_POOL);
@@ -30,14 +31,14 @@ export function createJobs(context: ModuleContext): readonly ModuleJob[] {
   const providers = new DirectoryProviderRegistry([new WecomDirectoryProvider('wecomcorp', client), new WecomDirectoryProvider('wecomsuite', client)]);
   const lifecycle = new MembershipLifecycle(context.ports.get(IDENTITY_ACCESS_PORT));
   const reconciler = new DirectoryReconciler(repository, lifecycle);
-  const service = new DirectorySyncService(transactions, repository, providers, new WecomDirectoryMapper(context.service(IDENTITY_SECURITY_KEYS).identity), reconciler, new DirectoryPolicy(), lifecycle, context.service(KMS_CLIENT));
+  const synchronization = new DirectorySynchronization(transactions, repository, providers, new WecomDirectoryMapper(context.service(IDENTITY_SECURITY_KEYS).identity), reconciler, new DirectoryPolicy(), lifecycle, context.service(KMS_CLIENT));
   const sync = jobDefinition('directorysync');
   const reconcile = jobDefinition('directoryreconcile');
-  const leases = new DirectoryLeaseStore(pool);
+  const leases = new DirectoryLeaseStore(context.ports.get(LEASE_PORT));
   return Object.freeze([
     {
       id: 'directorysync',
-      processor: new DirectorySyncJob(new SynchronizeDirectory(leases, service, sync.lease, sync.retry.attempts)),
+      processor: new DirectorySyncJob(new SynchronizeDirectory(leases, synchronization, sync.lease, sync.retry.attempts)),
       resourceLeasePrefix: 'directory',
     },
     {

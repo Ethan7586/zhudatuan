@@ -1,17 +1,9 @@
-import { token } from '../../bootstrap/Container';
 import { bearerToken } from '@shop/config/server';
+import type { CipherEnvelope, KmsClient, KmsPurpose } from '../application/KmsPort';
 import { HttpClient } from '../http/HttpClient';
 import { NetworkPolicy } from '../security/NetworkPolicy';
 
-export interface CipherEnvelope {
-  readonly ciphertext: string;
-  readonly fingerprint: string;
-  readonly keyVersion: string;
-}
-
-export type KmsPurpose = 'cachehmac' | 'evidence' | 'pii' | 'providerconfig';
-
-export class KmsClient {
+export class HttpKmsClient implements KmsClient {
   private readonly http: HttpClient;
   private readonly bearer: string;
   constructor(
@@ -62,5 +54,3 @@ export class KmsClient {
     return value.plaintext;
   }
 }
-
-export const KMS_CLIENT = token<KmsClient>('kms.client');

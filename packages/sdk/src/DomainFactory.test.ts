@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createFetchSurface } from './ClientFactory';
 import { createFetchCatalog, createFetchCatalogListingsRead } from './operations/catalog';
 import { createFetchIdentity } from './operations/identity';
 
@@ -18,5 +19,15 @@ describe('generated domain factories', () => {
 
     expect(typeof readListings).toBe('function');
     expect(typeof identity.sessionRead).toBe('function');
+  });
+
+  it('constructs target-isolated browser clients without exposing another surface', () => {
+    const store = createFetchSurface('store', 'https://shop.example');
+    const supplier = createFetchSurface('supplier', 'https://shop.example');
+
+    expect(typeof store.verification.challengesVerify).toBe('function');
+    expect('finance' in store).toBe(false);
+    expect(typeof supplier.finance.statementsRead).toBe('function');
+    expect('approval' in supplier).toBe(false);
   });
 });

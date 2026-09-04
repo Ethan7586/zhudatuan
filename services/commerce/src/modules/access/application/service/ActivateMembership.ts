@@ -1,12 +1,12 @@
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { AccessVersionService } from './AccessVersionService';
+import { AccessVersionPublisher } from './AccessVersionPublisher';
 
 export interface ActivationGrant {
   readonly membership: string | null;
   readonly principal: string | null;
   readonly organization: string;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly issuerVersion: number;
   readonly digest: string;
 }
@@ -22,7 +22,7 @@ export interface ActivationRequest {
 }
 
 export class ActivateMembership {
-  constructor(private readonly versions: AccessVersionService) {}
+  constructor(private readonly versions: AccessVersionPublisher) {}
 
   async execute(context: WriteTransactionContext, input: ActivationRequest, grant: ActivationGrant): Promise<number> {
     if (

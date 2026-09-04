@@ -18,6 +18,26 @@ export interface RealtimePort {
   read(input: Readonly<{ scopes: readonly string[]; member: string; storefront: boolean; conversation: string | null; cursor: string | null; signal: AbortSignal }>): AsyncIterable<SupportRealtimeEvent>;
 }
 
+export interface DurableSupportEvent {
+  readonly id: string;
+  readonly type: string;
+  readonly version: number;
+  readonly scope: string;
+  readonly aggregate: string;
+  readonly payload: Readonly<Record<string, unknown>>;
+  readonly occurredAt: string;
+}
+
+export interface SupportReplayBatch {
+  readonly events: readonly SupportRealtimeEvent[];
+  readonly resumeCursor: string | null;
+}
+
+export interface SupportReplayPort {
+  authoritative(context: WriteTransactionContext, event: DurableSupportEvent): Promise<SupportRealtimeEvent>;
+  replay(context: ReadTransactionContext, input: Readonly<{ scopes: readonly string[]; member: string; storefront: boolean; conversation: string | null; cursor: string }>): Promise<SupportReplayBatch>;
+}
+
 export interface SupportStreamPresenter {
   present(input: Readonly<{
     scopes: readonly string[];
@@ -25,8 +45,10 @@ export interface SupportStreamPresenter {
     storefront: boolean;
     conversation: string | null;
     cursor: string | null;
+    replay: readonly SupportRealtimeEvent[];
     release: () => void;
   }>): OperationReply<OperationOutputFor<'support.events.read'>>;
 }
 import type { OperationOutputFor } from '@shop/contract';
 import type { OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';

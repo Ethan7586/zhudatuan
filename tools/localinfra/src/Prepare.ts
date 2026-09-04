@@ -201,8 +201,15 @@ function commerceEnvironment(prepared: PreparedSecrets): string {
     SERVICE_VERSION: 'local',
     AUTH_MODE: 'membership',
     API_PORT: '3001',
-    API_ALLOWED_ORIGINS: 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3002,http://127.0.0.1:3002,http://localhost:4173,http://127.0.0.1:4173',
-    AUTH_RETURN_TARGETS: JSON.stringify({ console: 'http://127.0.0.1:4173', storefront: 'http://127.0.0.1:3000' }),
+    API_ALLOWED_ORIGINS:
+      'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3002,http://127.0.0.1:3002,http://localhost:4173,http://127.0.0.1:4173,http://localhost:4174,http://127.0.0.1:4174,http://localhost:4175,http://127.0.0.1:4175,http://localhost:4176,http://127.0.0.1:4176',
+    AUTH_RETURN_TARGETS: JSON.stringify({
+      console: 'http://127.0.0.1:4173',
+      storefront: 'http://127.0.0.1:3000',
+      miniapp: 'http://127.0.0.1:4174',
+      store: 'http://127.0.0.1:4175',
+      supplier: 'http://127.0.0.1:4176',
+    }),
     PUBLIC_STOREFRONT_ORIGIN: 'http://127.0.0.1:3000',
     DATABASE_API_CONNECTION_REF: 'shop/local/database/api',
     DATABASE_JOB_CONNECTION_REF: 'shop/local/database/jobs',

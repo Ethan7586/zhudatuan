@@ -9,7 +9,7 @@ import { bootstrap } from '../TestData';
 
 describe('recovery journey', () => {
   it('verifies the subject, applies bootstrap password policy and clears secrets after reset', async () => {
-    const challenge = vi.fn(async () => actionSuccess({ id: 'challenge-1', expiresAt: '2099-01-01T00:00:00.000Z', retryAt: '2098-01-01T00:00:00.000Z', validSeconds: 300, resendSeconds: 60 }));
+    const challenge = vi.fn(async () => actionSuccess({ id: 'challenge-1', purpose: 'password_reset' as const, expiresAt: '2099-01-01T00:00:00.000Z', retryAt: '2098-01-01T00:00:00.000Z', attemptsRemaining: 10, validSeconds: 300, resendSeconds: 60 }));
     const reset = vi.fn(async () => actionSuccess(undefined));
     const user = userEvent.setup();
     render(<RecoveryTest onChallenge={challenge} onReset={reset} />);

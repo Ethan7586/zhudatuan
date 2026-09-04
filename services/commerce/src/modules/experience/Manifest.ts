@@ -1,4 +1,10 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleRegistry';
-export const Manifest = defineModuleManifest('experience', ['catalog', 'marketing', 'organization'], ['database.pool', 'cache', 'telemetry', 'storefront.config'], {
-  jobs: { services: ['database.pool', 'object.store', 'cache', 'telemetry'] },
+import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { CART_EXPERIENCE_PORT, CHECKOUT_EXPERIENCE_PORT, EXPERIENCE_READ_PORT } from './public';
+
+export const Manifest = defineModuleManifest({
+  id: 'experience',
+  dependencies: ['catalog', 'inventory', 'marketing', 'organization', 'pricing', 'qualification', 'runtime'],
+  services: ['database.pool', 'object.store', 'cache', 'telemetry', 'storefront.config'],
+  ports: [CART_EXPERIENCE_PORT, CHECKOUT_EXPERIENCE_PORT, EXPERIENCE_READ_PORT],
+  workloads: { jobs: { dependencies: ['catalog', 'organization'], bindings: ['catalog', 'organization'], services: ['database.pool', 'object.store', 'cache', 'telemetry'] } },
 });

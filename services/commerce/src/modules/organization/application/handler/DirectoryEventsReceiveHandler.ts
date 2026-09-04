@@ -3,7 +3,7 @@ import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
 import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
+import type { KmsClient } from '../../../../foundation/application/KmsPort';
 import type { DirectoryConnection } from '../../domain/model/DirectoryConnection';
 import type { OrganizationRepository } from '../port/OrganizationRepository';
 import type { DirectoryProviderRegistry } from '../service/DirectoryProviderRegistry';

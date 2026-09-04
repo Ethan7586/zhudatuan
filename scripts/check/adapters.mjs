@@ -12,17 +12,19 @@ const redis = createClient({ url: redisUrl, socket: { connectTimeout: 5_000, rec
 redis.on('error', () => undefined);
 await Promise.all([database.connect(), redis.connect()]);
 try {
-  const target = await database.query("select count(*)::integer migrations,to_regclass('runtime.job')::text jobs from supabase_migrations.schema_migrations");
+  const target = await database.query("select count(*)::integer migrations,to_regclass('runtime.jobs')::text jobs from supabase_migrations.schema_migrations");
   const expectedMigrations = readdirSync('database/migrations').filter((name) => name.endsWith('.sql')).length;
-  if (target.rows[0]?.migrations !== expectedMigrations || target.rows[0]?.jobs !== 'runtime.job') throw new Error('POSTGRES_ADAPTER_TARGET_INVALID');
+  if (target.rows[0]?.migrations !== expectedMigrations || target.rows[0]?.jobs !== 'runtime.jobs') throw new Error('POSTGRES_ADAPTER_TARGET_INVALID');
   await database.query('begin');
-  const job = `adapter:${randomUUID()}`;
+  const job = `job:adapter:${randomUUID()}`;
   await database.query(
-    `insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
-    values($1,'adaptercheck','runtime','{}'::jsonb,'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+    `insert into runtime.jobs(id,tenant_id,scope_id,kind,owner,queue,payload,state,priority,available_at,idempotency_key,
+      retention_until,version,created_by,updated_by,created_at,updated_at)
+    values($1,'tenant:adapter','organization-platform-root','adaptercheck','runtime','maintenance','{}'::jsonb,'queued',1,
+      clock_timestamp(),$1,clock_timestamp()+interval '1 day',1,'adaptercheck','adaptercheck',clock_timestamp(),clock_timestamp())`,
     [job]
   );
-  const claim = await database.query("select id from runtime.job where id=$1 and state='queued' for update skip locked", [job]);
+  const claim = await database.query("select id from runtime.jobs where id=$1 and state='queued' for update skip locked", [job]);
   if (claim.rows[0]?.id !== job) throw new Error('POSTGRES_QUEUE_CLAIM_INVALID');
   await database.query('rollback');
 

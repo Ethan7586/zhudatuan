@@ -1,123 +1,162 @@
-export type OrderDetailTab = 'overview' | 'products' | 'payment' | 'aftersale' | 'operations';
+import type { OperationBodyFor, OperationOutputFor, OrderAfterSaleDecision } from '@shop/contract';
+import type { DeepReadonly } from '../../../shared/model/Immutable';
 
-export interface OrderLine {
+type OrderPageOutput = DeepReadonly<OperationOutputFor<'order.orders.read'>>;
+type OrderDetailOutput = DeepReadonly<OperationOutputFor<'order.detail.read'>>;
+type SupportCaseOutput = DeepReadonly<OperationOutputFor<'support.cases.read'>['items'][number]>;
+type RecoveryOutput = DeepReadonly<OperationOutputFor<'payment.recoveries.read'>['items'][number]>;
+type ReturnOutput = DeepReadonly<OperationOutputFor<'fulfillment.returns.receive'>>;
+
+export type OrderDetailTab = 'overview' | 'products' | 'payment' | 'aftersale' | 'finance' | 'support' | 'operations';
+export type OrderPageTab = 'overview' | 'products' | 'payment' | 'fulfillment' | 'aftersale' | 'finance' | 'support' | 'audit';
+
+export type OrderRecord = OrderPageOutput['items'][number];
+export type OrderLine = OrderRecord['lines'][number];
+export type OrderAddress = NonNullable<OrderRecord['address']>;
+export type OrderPayment = OrderRecord['payment'];
+export type OrderPaymentTender = OrderPayment['tenders'][number];
+export type OrderFulfillment = OrderRecord['fulfillments'][number];
+export type FulfillmentMilestone = OrderFulfillment['milestones'][number];
+export type OrderRefund = OrderRecord['refunds'][number];
+export type OrderRefundTender = OrderRefund['tenders'][number];
+export type OrderAuditEntry = OrderRecord['timeline'][number];
+
+export type OrderDetailSectionState<T> =
+  | Readonly<{ state: 'ready'; data: T }>
+  | Readonly<{ state: 'hidden' }>
+  | Readonly<{ state: 'unavailable'; error: Readonly<{ code: string; message: string; retryable: boolean; traceId?: string }> }>;
+
+export type OrderFinance = Extract<OrderDetailOutput['finance'], { state: 'ready' }>['data'];
+
+export interface OrderSupportCase {
   readonly id: string;
-  readonly sku: string;
-  readonly listing: string;
-  readonly title: string;
-  readonly quantity: number;
-  readonly unitMinor: number;
-  readonly totalMinor: number;
-  readonly discountMinor: number;
-  readonly payableMinor: number;
-  readonly productType: string;
-  readonly category: string;
-  readonly provider?: string | null;
-  readonly partner?: string | null;
-}
-
-export interface OrderAddress {
-  readonly recipientMasked: string;
-  readonly mobileMasked: string;
-  readonly addressMasked: string;
-  readonly regionCode: string;
-}
-
-export interface OrderPaymentTender {
-  readonly sequence: number;
-  readonly kind: 'wechat' | 'benefit' | 'voucher';
-  readonly referenceMasked: string | null;
-  readonly amountMinor: number;
-  readonly state: 'planned' | 'held' | 'captured' | 'released';
-}
-
-export interface OrderPayment {
-  readonly paymentId: string | null;
-  readonly capturedMinor: number;
-  readonly refundedMinor: number;
-  readonly refundableMinor: number;
-  readonly updatedAt: string | null;
-  readonly tenders: readonly OrderPaymentTender[];
-}
-
-export interface FulfillmentMilestone {
-  readonly id: string;
-  readonly kind: string;
-  readonly state: string;
-  readonly trackingMasked: string | null;
-  readonly occurredAt: string;
-}
-
-export interface OrderFulfillment {
-  readonly id: string;
-  readonly provider: string | null;
-  readonly partner: string | null;
-  readonly kind: 'shipment' | 'delivery' | 'pickup' | 'service' | 'digital';
-  readonly state: 'pending' | 'submitted' | 'accepted' | 'processing' | 'ready' | 'completed' | 'cancelled' | 'failed';
-  readonly externalReferenceMasked: string | null;
-  readonly createdAt: string;
+  readonly subject: string;
+  readonly state: SupportCaseOutput['state'];
+  readonly priority: SupportCaseOutput['priority'];
+  readonly assignedAgentId: string | null;
+  readonly unreadCount: number;
+  readonly slaRisk: SupportCaseOutput['sla_risk'];
   readonly updatedAt: string;
-  readonly milestones: readonly FulfillmentMilestone[];
 }
 
-export interface OrderRefundTender {
-  readonly sequence: number;
-  readonly kind: 'wechat' | 'benefit' | 'voucher';
-  readonly referenceMasked: string | null;
-  readonly amountMinor: number;
-  readonly state: 'planned' | 'processing' | 'succeeded' | 'failed';
-}
-
-export interface OrderRefund {
+export interface OrderRecovery {
   readonly id: string;
-  readonly aftersaleId: string | null;
-  readonly provider: string;
-  readonly providerReferenceMasked: string;
-  readonly amountMinor: number;
-  readonly currency: string;
-  readonly state: 'requested' | 'submitted' | 'processing' | 'succeeded' | 'failed' | 'cancelled';
-  readonly reason: string;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-  readonly tenders: readonly OrderRefundTender[];
-}
-
-export interface OrderAuditEntry {
-  readonly id: string;
-  readonly action: string;
+  readonly orderId: string | null;
+  readonly orderNumber: string | null;
   readonly resourceType: string;
-  readonly resourceMasked: string | null;
-  readonly actorMasked: string;
-  readonly occurredAt: string;
-  readonly traceMasked: string;
+  readonly resourceId: string;
+  readonly severity: RecoveryOutput['severity'];
+  readonly state: RecoveryOutput['state'];
+  readonly errorCode: string;
+  readonly occurrenceCount: number;
+  readonly openedAt: string;
+  readonly resolvedAt: string | null;
+  readonly resolutionRequestId: string | null;
+  readonly version: number;
 }
 
-export interface OrderRecord {
+export interface OrderRecoveryPage {
+  readonly items: readonly OrderRecovery[];
+  readonly count: number;
+  readonly nextCursor?: string;
+}
+
+export type OrderRecoveryState =
+  | Readonly<{ state: 'loading' }>
+  | Readonly<{ state: 'ready'; data: OrderRecoveryPage }>
+  | Readonly<{ state: 'hidden' }>
+  | Readonly<{ state: 'unavailable'; error: Readonly<{ message: string; retryable: boolean; traceId?: string }> }>;
+
+export interface OrderReturn {
   readonly id: string;
-  readonly order_number: string;
-  readonly scope_id?: string;
-  readonly member_id?: string;
-  readonly mall_id?: string;
-  readonly total_minor: number;
-  readonly currency: string;
-  readonly payment_state: 'unpaid' | 'authorizing' | 'paid' | 'partially_refunded' | 'refunded' | 'failed';
-  readonly fulfillment_state: 'unallocated' | 'allocated' | 'processing' | 'shipped' | 'delivered' | 'received' | 'cancelled' | 'returned';
-  readonly aftersale_state: 'none' | 'applied' | 'reviewing' | 'approved' | 'returning' | 'received' | 'refunding' | 'resolved' | 'rejected';
-  readonly lifecycle_state: 'created' | 'awaitingpayment' | 'paid' | 'fulfilling' | 'shipped' | 'received' | 'completed' | 'cancelled';
-  readonly address: OrderAddress | null;
+  readonly state: ReturnOutput['state'];
+  readonly provider: string | null;
+  readonly providerReferenceMasked: string | null;
+  readonly trackingMasked: string | null;
+  readonly version: number;
+}
+
+export interface OrderOperationReceipt {
+  readonly id: string;
+  readonly state: string;
+  readonly version?: number;
+  readonly requestId?: string;
+}
+
+export type OrderSupportState =
+  | Readonly<{ state: 'loading' }>
+  | Readonly<{ state: 'ready'; data: readonly OrderSupportCase[] }>
+  | Readonly<{ state: 'hidden' }>
+  | Readonly<{ state: 'unavailable'; error: Readonly<{ message: string; retryable: boolean; traceId?: string }> }>;
+
+export interface OrderDetail {
+  readonly id: OrderDetailOutput['summary']['id'];
+  readonly order_number: OrderDetailOutput['summary']['orderNumber'];
+  readonly scope_id: OrderDetailOutput['summary']['scopeId'];
+  readonly mall_id: OrderDetailOutput['summary']['mallId'];
+  readonly total_minor: OrderDetailOutput['summary']['totalMinor'];
+  readonly currency: OrderDetailOutput['summary']['currency'];
+  readonly payment_state: OrderDetailOutput['summary']['paymentState'];
+  readonly fulfillment_state: OrderDetailOutput['summary']['fulfillmentState'];
+  readonly aftersale_state: OrderDetailOutput['summary']['aftersaleState'];
+  readonly lifecycle_state: OrderDetailOutput['summary']['lifecycleState'];
+  readonly address: OrderDetailOutput['summary']['address'];
   readonly payment: OrderPayment;
   readonly fulfillments: readonly OrderFulfillment[];
   readonly refunds: readonly OrderRefund[];
   readonly timeline: readonly OrderAuditEntry[];
-  readonly receivedAt: string | null;
-  readonly created_at: string;
-  readonly updated_at: string;
-  readonly version: number;
+  readonly receivedAt: OrderDetailOutput['summary']['receivedAt'];
+  readonly created_at: OrderDetailOutput['summary']['createdAt'];
+  readonly updated_at: OrderDetailOutput['summary']['updatedAt'];
+  readonly version: OrderDetailOutput['summary']['version'];
   readonly lines: readonly OrderLine[];
+  readonly sourceChannel: OrderDetailOutput['summary']['sourceChannel'];
+  readonly externalOrderNo: OrderDetailOutput['summary']['externalOrderNo'];
+  readonly sourceState: OrderDetailOutput['summary']['sourceState'];
+  readonly verificationState: OrderDetailOutput['summary']['verificationState'];
+  readonly orderedAt: OrderDetailOutput['summary']['orderedAt'];
+  readonly sections: Readonly<{
+    products: OrderDetailOutput['products'];
+    payment: OrderDetailOutput['payment'];
+    fulfillment: OrderDetailOutput['fulfillment'];
+    aftersale: OrderDetailOutput['aftersale'];
+    finance: OrderDetailOutput['finance'];
+    audit: OrderDetailOutput['audit'];
+  }>;
 }
 
-export interface OrderPage {
-  readonly items: readonly OrderRecord[];
-  readonly count: number;
-  readonly nextCursor?: string;
+export interface OrderImportSource {
+  readonly file: File;
 }
+
+type ImportOutput = OperationOutputFor<'order.imports.read'>;
+export interface OrderImportTask {
+  readonly id: string;
+  readonly state: ImportOutput['state'];
+  readonly totalCount: number;
+  readonly successCount: number;
+  readonly failureCount: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+type ExportOutput = OperationOutputFor<'order.orders.export'>;
+export interface OrderExportTask {
+  readonly id: string;
+  readonly state: ExportOutput['state'];
+  readonly watermark: string;
+  readonly createdAt: string;
+}
+
+export interface OrderCommandReceipt {
+  readonly id: string;
+  readonly orderId: string;
+  readonly state: string;
+  readonly version?: number;
+  readonly occurredAt: string;
+}
+
+export type OrderFacetData = Extract<OrderPageOutput['facets'], { state: 'ready' }>['data'];
+export type OrderPage = OrderPageOutput;
+export type OrderRecoveryAction = OperationBodyFor<'PaymentRecoveriesResolveInput'>['action'];
+export type { OrderAfterSaleDecision };

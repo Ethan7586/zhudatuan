@@ -2,29 +2,11 @@ import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionA
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { randomUUID } from 'node:crypto';
-import type { BenefitChoice, BenefitGateway, BenefitRefund, BenefitTender } from '../../application/port/BenefitPort';
-export type { BenefitChoice, BenefitRefund, BenefitTender } from '../../application/port/BenefitPort';
+import type { BenefitChoice, BenefitGateway, BenefitRefund, BenefitTender } from '../../public/BenefitPort';
+import type { PostingCommand } from '../../../finance/public';
+export type { BenefitChoice, BenefitRefund, BenefitTender } from '../../public/BenefitPort';
 interface FinancialPosting {
-  post(
-    context: WriteTransactionContext,
-    intent: Readonly<{
-      scope: string;
-      referenceType: string;
-      referenceId: string;
-      currency: string;
-      description: string;
-      debit: Readonly<{
-        code: string;
-        kind: 'asset' | 'liability' | 'income' | 'expense';
-      }>;
-      credit: Readonly<{
-        code: string;
-        kind: 'asset' | 'liability' | 'income' | 'expense';
-      }>;
-      amountMinor: number;
-      occurredAt?: string;
-    }>
-  ): Promise<string>;
+  post(context: WriteTransactionContext, command: PostingCommand): Promise<string>;
 }
 export class BenefitPort implements BenefitGateway {
   private readonly transactions = new PgTransactionAccess();
@@ -132,9 +114,8 @@ export class BenefitPort implements BenefitGateway {
       if (remaining === 0) break;
     }
     await this.financial().post(context, {
-      scope: selected.scope_id,
-      referenceType: 'benefit.consume',
-      referenceId: `${selected.id}:${order}`,
+      scopeId: selected.scope_id,
+      source: { module: 'benefit', aggregate: 'account', aggregateId: selected.id, event: 'benefit.consume', eventId: `${selected.id}:${order}`, leg: 'consume' },
       currency: selected.currency,
       description: 'Benefit order consumption',
       debit: { code: `benefit.${selected.id}`, kind: 'liability' },
@@ -193,9 +174,8 @@ export class BenefitPort implements BenefitGateway {
       if (remaining === 0) break;
     }
     await this.financial().post(context, {
-      scope: input.scope,
-      referenceType: 'benefit.refund',
-      referenceId: `${selected.id}:${input.id}`,
+      scopeId: input.scope,
+      source: { module: 'benefit', aggregate: 'account', aggregateId: selected.id, event: 'benefit.refund', eventId: input.id, leg: 'refund' },
       currency: selected.currency,
       description: 'Benefit refund restoration',
       debit: { code: 'benefit.refund', kind: 'expense' },

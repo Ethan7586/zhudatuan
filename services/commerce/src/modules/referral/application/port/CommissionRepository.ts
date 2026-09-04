@@ -1,4 +1,4 @@
-import type { QueryPage } from '../../../../foundation/interface/Validation';
+import type { QueryPage } from '../../../../foundation/application/Validation';
 import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 
 export interface CommissionRepository {

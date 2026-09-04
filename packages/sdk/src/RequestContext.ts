@@ -1,5 +1,5 @@
 import type { ScopeKind } from '@shop/authz';
-import type { StorefrontHandle } from '@shop/contract';
+import type { OperationTarget, StorefrontHandle } from '@shop/contract';
 
 export interface RequestScope {
   readonly kind: ScopeKind;
@@ -17,9 +17,10 @@ export interface RequestContext {
   readonly idempotencyKey?: string;
   readonly expectedVersion?: number;
   readonly proof?: string;
+  readonly cartToken?: string;
   readonly csrfToken?: string;
   readonly deviceId?: string;
-  readonly target?: 'console' | 'storefront';
+  readonly target?: OperationTarget;
   readonly catalogVersion?: string;
   readonly ifNoneMatch?: string;
   readonly lastEventId?: string;

@@ -21,15 +21,18 @@
     "./qrcode": "./src/QrCode.tsx",
     "./base.css": "./src/base.css",
     "./command.css": "./src/command.css",
+    "./tailwind.css": "./src/tailwind.css",
     "./tokens.css": "./src/tokens.css",
     "./workspace.css": "./src/workspace.css",
     "./shell.css": "./src/shell.css",
     "./tokens.json": "./src/tokens.json",
     "./mobile-platforms.json": "./src/mobile-platforms.json",
+    "./operator.css": "./src/operator.css",
     "./brand/*": "./src/brand/*"
   },
   "types": "./src/index.ts",
   "dependencies": {
+    "@shop/presentation": "1.0.0",
     "@tanstack/react-table": "9.1.2",
     "qrcode-generator": "1.4.4",
     "react": "19.2.8",

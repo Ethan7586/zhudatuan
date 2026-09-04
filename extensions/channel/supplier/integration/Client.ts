@@ -9,3 +9,7 @@ export class SupplierClient implements ProviderProbe {
     return 'closed' as const;
   }
 }
+
+export function checkSupplierHealth(client: ProviderProbe): Promise<boolean> {
+  return client.health();
+}

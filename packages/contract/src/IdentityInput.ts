@@ -1,4 +1,8 @@
-export type IdentityTarget = 'console' | 'storefront';
+import type { OperationTarget } from './Surface';
+import type { CONSUMER_TARGETS } from './Surface';
+
+export type IdentityTarget = OperationTarget;
+export type ConsumerIdentityTarget = (typeof CONSUMER_TARGETS)[number];
 
 export type AuthorizationRequest = Readonly<{
   readonly state: string;
@@ -29,13 +33,13 @@ export type IdentityInvitationsResolveBody = Readonly<AuthenticationShared & { c
 export type IdentityInvitationsCreateBody =
   | Readonly<{
       kind: 'enrollment';
-      target: 'storefront';
+      target: ConsumerIdentityTarget;
       organizationId: string;
       employee: Readonly<{ displayName: string; mobile: string; employeeNo?: string; departmentId?: string }>;
       expiresAt: string;
       reason: string;
     }>
-  | Readonly<{ kind: 'campaign'; target: 'storefront'; organizationId: string; maxUses: number; expiresAt: string; reason: string }>
+  | Readonly<{ kind: 'campaign'; target: ConsumerIdentityTarget; organizationId: string; maxUses: number; expiresAt: string; reason: string }>
   | Readonly<{ kind: 'signin'; target: IdentityTarget; membershipId: string; expiresAt: string; reason: string }>;
 
 export type IdentityInvitationsRevokeBody = Readonly<{ reason: string }>;

@@ -1,6 +1,7 @@
 import { defineModule } from '../../bootstrap/DefinedModule';
-import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
-import { OBJECT_STORE } from '../../foundation/infrastructure/ObjectStore';
+import { KMS_CLIENT } from '../../foundation/application/KmsPort';
+import { OBJECT_STORE } from '../runtime/public/ObjectPort';
+import { EVENT_REPLAY_PORT } from '../runtime/public';
 import { SECRET_STORE } from '../../foundation/infrastructure/SecretStore';
 import { EVENT_STREAM } from '../../foundation/stream/EventStream';
 import { MEMBER_ACCESS_PORT } from '../access/public';
@@ -42,6 +43,7 @@ import { PgSupportConfigRepository } from './infrastructure/persistence/PgSuppor
 import { PgSupportContextRepository } from './infrastructure/persistence/PgSupportContextRepository';
 import { PgSupportEventRepository } from './infrastructure/persistence/PgSupportEventRepository';
 import { PgTicketRepository } from './infrastructure/persistence/PgTicketRepository';
+import { PgSupportReplayRepository } from './infrastructure/persistence/PgSupportReplayRepository';
 import { RedisSupportStream } from './infrastructure/messaging/RedisSupportStream';
 import { ProviderAccountVerifier } from './infrastructure/adapter/ProviderAccountVerifier';
 import { SupportEventStream } from './interface/event/SupportEventStream';
@@ -67,9 +69,10 @@ export const SupportModule = defineModule(Manifest, {
     const conversation = new PgConversationRepository(context.service(KMS_CLIENT), context.service(OBJECT_STORE), support);
     const evidence = new PgEvidenceRepository(context.service(OBJECT_STORE), support, repository, events);
     const sender = new SendSupportMessage(context.service(KMS_CLIENT), support, repository, conversation, messages, evidence, agents, events);
-    const assignments = new ManageAssignment(support, new PgAssignmentRepository(), events);
+    const assignments = new ManageAssignment(support, new PgAssignmentRepository(), agents, configuration, events);
     const readstates = new ManageReadState(support, new PgReadStateRepository(), events);
     const realtime = new RedisSupportStream(context.service(EVENT_STREAM));
+    const replay = new PgSupportReplayRepository(context.ports.get(EVENT_REPLAY_PORT));
     const stream = new SupportEventStream(realtime);
     return [
       new CasesCreateHandler(repository),
@@ -91,7 +94,7 @@ export const SupportModule = defineModule(Manifest, {
       new SlaManageHandler(configuration),
       new HistoryReadHandler(repository),
       new ReadstatesManageHandler(readstates),
-      new EventsReadHandler(support, realtime, stream),
+      new EventsReadHandler(support, realtime, replay, stream),
     ];
   },
 });

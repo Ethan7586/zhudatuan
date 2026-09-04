@@ -3,7 +3,7 @@ import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionA
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { AccessRecord } from '../../domain/model/AccessRecord';
 import type { AuditRecord } from '../../domain/model/AuditRecord';
-import type { ArchiveBatch, AuditPort } from '../../application/port/AuditPort';
+import type { ArchiveBatch, ArchiveDisposal, ArchiveObject, AuditRepository } from '../../application/port/AuditRepository';
 import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 
 interface ArchiveRow {
@@ -15,8 +15,8 @@ interface ArchiveRow {
   readonly payload: Readonly<Record<string, unknown>>;
 }
 
-export class PgAuditRepository implements AuditPort {
-  private readonly transactions = new PgTransactionAccess();
+export class PgAuditRepository implements AuditRepository {
+  constructor(private readonly transactions = new PgTransactionAccess()) {}
 
   async previous(context: WriteTransactionContext, scope: string): Promise<string | null> {
     const database = this.transactions.database(context);
@@ -36,16 +36,22 @@ export class PgAuditRepository implements AuditPort {
     const database = this.transactions.database(context);
     const { input } = record;
     await database.query(
-      `insert into audit.record(id,scope_id,actor_id,actor_type,action,resource_type,resource_id,before_hash,after_hash,evidence,
-      trace_id,previous_hash,record_hash,recorded_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11,$12,$13,$14)`,
+      `insert into audit.record(id,scope_id,actor_id,actor_type,request_id,operation,subject_type,subject_id,object_type,object_id,
+      outcome,reason,before_hash,after_hash,evidence,trace_id,previous_hash,record_hash,recorded_at)
+      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::jsonb,$16,$17,$18,$19)`,
       [
         record.id,
         input.scope,
         input.actor,
         input.actorType,
-        input.action,
-        input.resourceType,
-        input.resource,
+        input.request,
+        input.operation,
+        input.subject.type,
+        input.subject.id,
+        input.object.type,
+        input.object.id,
+        input.outcome,
+        input.reason,
         record.beforeHash,
         record.afterHash,
         JSON.stringify(record.evidence),
@@ -61,35 +67,13 @@ export class PgAuditRepository implements AuditPort {
     const database = this.transactions.database(context);
     const { input } = record;
     await database.query(
-      `insert into audit.accessrecord(id,scope_id,actor_id,actor_type,resource_type,resource_id,fields,purpose,trace_id,
-      previous_hash,record_hash,accessed_at) values($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11,$12)`,
-      [record.id, input.scope, input.actor, input.actorType, input.resourceType, input.resource, JSON.stringify(record.fields), input.purpose, input.trace, record.previousHash, record.recordHash, record.accessedAt]
+      `insert into audit.accessrecord(id,scope_id,actor_id,actor_type,request_id,operation,subject_type,subject_id,object_type,
+      object_id,outcome,reason,fields,trace_id,previous_hash,record_hash,accessed_at)
+      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14,$15,$16,$17)`,
+      [record.id, input.scope, input.actor, input.actorType, input.request, input.operation, input.subject.type, input.subject.id,
+        input.object.type, input.object.id, input.outcome, input.reason, JSON.stringify(record.fields), input.trace,
+        record.previousHash, record.recordHash, record.accessedAt]
     );
-  }
-
-  async records(context: ReadTransactionContext, scope: string, cursor: Readonly<{ sort: string | null; id: string | null }>, fetch: number) {
-    const database = this.transactions.database(context);
-    const result = await database.query(
-      `select history.id,history.kind,history.scope_id,history.actor_id,history.actor_type,history.action,
-      history.resource_type,history.resource_id,history.before_hash,history.after_hash,history.evidence,history.trace_id,
-      history.previous_hash,history.record_hash,history.occurred_at from(
-      select record.id,'command' kind,record.scope_id,record.actor_id,record.actor_type,record.action,record.resource_type,record.resource_id,
-        record.before_hash,record.after_hash,record.evidence,record.trace_id,record.previous_hash,record.record_hash,record.recorded_at occurred_at
-      from audit.record record where audit.scope_allowed(record.scope_id) and not exists(
-        select 1 from audit.archiveitem item where item.record_kind='command' and item.record_id=record.id)
-      union all select accessrecord.id,'access',accessrecord.scope_id,accessrecord.actor_id,accessrecord.actor_type,accessrecord.purpose,
-        accessrecord.resource_type,accessrecord.resource_id,null,null,accessrecord.fields,accessrecord.trace_id,accessrecord.previous_hash,
-        accessrecord.record_hash,accessrecord.accessed_at from audit.accessrecord accessrecord where audit.scope_allowed(accessrecord.scope_id)
-          and not exists(select 1 from audit.archiveitem item where item.record_kind='access' and item.record_id=accessrecord.id)
-      union all select archive.id,'archive',archive.scope_id,null,'system','audit.archived','audit',archive.id,archive.first_record_hash,
-        archive.last_record_hash,jsonb_build_object('objectRef',archive.object_ref,'count',archive.record_count,'expiresAt',archive.expires_at,
-          'keyVersion',archive.key_version),archive.id,archive.first_record_hash,archive.last_record_hash,archive.archived_at
-        from audit.archiveref archive where audit.scope_allowed(archive.scope_id)) history
-      where $1=current_setting('app.scope_id',true) and ($2::timestamptz is null or (history.occurred_at,history.id)<($2::timestamptz,$3))
-      order by history.occurred_at desc,history.id desc limit $4`,
-      [scope, cursor.sort, cursor.id, fetch]
-    );
-    return result.rows;
   }
 
   async archiveBatch(context: ReadTransactionContext, limit: number): Promise<ArchiveBatch | null> {
@@ -137,20 +121,28 @@ export class PgAuditRepository implements AuditPort {
     });
   }
 
-  async completeArchive(context: WriteTransactionContext, batch: ArchiveBatch, object: Readonly<{ reference: string; sha256: string; size: number; keyVersion: string; expiresAt: string }>): Promise<void> {
+  async completeArchive(context: WriteTransactionContext, batch: ArchiveBatch, object: ArchiveObject): Promise<void> {
     const database = this.transactions.database(context);
     await database.query('select pg_advisory_xact_lock(hashtextextended($1,0))', [`audit:${batch.scope}`]);
+    const retention = await database.query<{ legal_hold: boolean }>(`select coalesce(
+      (select legal_hold from audit.retention where scope_id=$1),
+      (select legal_hold from audit.retention where scope_id='organization-platform-root'),false) legal_hold`, [batch.scope]);
+    if (retention.rows[0]?.legal_hold) throw new Error('AUDIT_ARCHIVE_LEGAL_HOLD_ACTIVE');
     const id = `archive:${createHash('sha256').update(`${batch.scope}:${batch.start}:${batch.end}:${batch.lastHash}`).digest('hex').slice(0, 32)}`;
     await database.query(
       `insert into audit.archiveref(id,scope_id,period_start,period_end,through_at,object_ref,sha256,object_size,key_version,
-      first_record_hash,last_record_hash,record_count,expires_at,archived_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,clock_timestamp())
+      first_record_hash,last_record_hash,record_count,expires_at,archived_at,plaintext_sha256,index_sha256,locked_until,bundle_version)
+      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,clock_timestamp(),$14,$15,$16,2)
       on conflict(id) do nothing`,
-      [id, batch.scope, batch.start.slice(0, 10), batch.end.slice(0, 10), batch.end, object.reference, object.sha256, object.size, object.keyVersion, batch.firstHash, batch.lastHash, batch.rows.length, object.expiresAt]
+      [id, batch.scope, batch.start.slice(0, 10), batch.end.slice(0, 10), batch.end, object.reference, object.sha256, object.size,
+        object.keyVersion, batch.firstHash, batch.lastHash, batch.rows.length, object.expiresAt, object.plaintextHash, object.indexHash, object.lockedUntil]
     );
     const persisted = await database.query(
       `select 1 from audit.archiveref where id=$1 and scope_id=$2 and object_ref=$3 and sha256=$4
-      and object_size=$5 and key_version=$6 and first_record_hash=$7 and last_record_hash=$8 and record_count=$9`,
-      [id, batch.scope, object.reference, object.sha256, object.size, object.keyVersion, batch.firstHash, batch.lastHash, batch.rows.length]
+      and object_size=$5 and key_version=$6 and first_record_hash=$7 and last_record_hash=$8 and record_count=$9
+      and plaintext_sha256=$10 and index_sha256=$11 and locked_until=$12 and expires_at=$13 and bundle_version=2`,
+      [id, batch.scope, object.reference, object.sha256, object.size, object.keyVersion, batch.firstHash, batch.lastHash,
+        batch.rows.length, object.plaintextHash, object.indexHash, object.lockedUntil, object.expiresAt]
     );
     if (!persisted.rows[0]) throw new Error('AUDIT_ARCHIVE_REFERENCE_CONFLICT');
     await database.query(
@@ -162,8 +154,43 @@ export class PgAuditRepository implements AuditPort {
       on conflict(record_kind,record_id) do nothing`,
       [id, batch.recordIds, batch.accessIds, batch.scope]
     );
-    const mapped = await database.query<{ count: number }>('select count(*)::integer count from audit.archiveitem where archive_id=$1', [id]);
-    if (mapped.rows[0]?.count !== batch.rows.length) throw new Error('AUDIT_ARCHIVE_SOURCE_CHANGED');
+    const expected = object.entries.map((entry) => ({ kind: entry.kind, id: entry.id, record_hash: entry.recordHash }));
+    const mapped = await database.query<{ count: number; exact: boolean }>(`select count(*)::integer count,
+      coalesce(bool_and(item.record_hash=expected.record_hash),false) exact
+      from jsonb_to_recordset($2::jsonb) expected(kind text,id text,record_hash text)
+      join audit.archiveitem item on item.archive_id=$1 and item.record_kind=expected.kind and item.record_id=expected.id`,
+      [id, JSON.stringify(expected)]);
+    if (mapped.rows[0]?.count !== batch.rows.length || !mapped.rows[0]?.exact) throw new Error('AUDIT_ARCHIVE_SOURCE_CHANGED');
+  }
+
+  async disposalBatch(context: ReadTransactionContext): Promise<ArchiveDisposal | null> {
+    const result = await this.transactions.database(context).query<{
+      archive: string; reference: string; sha256: string; scope: string;
+    }>(`select archive.id archive,archive.object_ref reference,archive.sha256,archive.scope_id scope
+      from audit.archiveref archive
+      where archive.expires_at<=clock_timestamp()
+        and not exists(select 1 from audit.archivedisposal disposal where disposal.archive_id=archive.id)
+        and not coalesce((select legal_hold from audit.retention where scope_id=archive.scope_id),
+          (select legal_hold from audit.retention where scope_id='organization-platform-root'),false)
+      order by archive.expires_at,archive.id limit 1`);
+    return result.rows[0] ? Object.freeze(result.rows[0]) : null;
+  }
+
+  async completeDisposal(context: WriteTransactionContext, disposal: ArchiveDisposal, trace: string): Promise<void> {
+    const database = this.transactions.database(context);
+    await database.query('select pg_advisory_xact_lock(hashtextextended($1,0))', [`audit:${disposal.scope}`]);
+    const inserted = await database.query(`insert into audit.archivedisposal(archive_id,scope_id,object_ref,object_sha256,reason,trace_id,removed_at)
+      select archive.id,archive.scope_id,archive.object_ref,archive.sha256,'legal-retention-expired',$5,clock_timestamp()
+      from audit.archiveref archive where archive.id=$1 and archive.scope_id=$2 and archive.object_ref=$3 and archive.sha256=$4
+        and archive.expires_at<=clock_timestamp()
+        and not coalesce((select legal_hold from audit.retention where scope_id=archive.scope_id),
+          (select legal_hold from audit.retention where scope_id='organization-platform-root'),false)
+      on conflict(archive_id) do nothing`, [disposal.archive, disposal.scope, disposal.reference, disposal.sha256, trace]);
+    if ((inserted.rowCount ?? 0) === 0) {
+      const existing = await database.query('select 1 from audit.archivedisposal where archive_id=$1 and object_ref=$2 and object_sha256=$3',
+        [disposal.archive, disposal.reference, disposal.sha256]);
+      if (!existing.rows[0]) throw new Error('AUDIT_ARCHIVE_DISPOSAL_CONFLICT');
+    }
   }
 
   async scheduleArchive(context: WriteTransactionContext, immediate: boolean): Promise<void> {

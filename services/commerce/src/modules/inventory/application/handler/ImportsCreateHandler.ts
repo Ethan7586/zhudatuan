@@ -3,14 +3,17 @@ import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { CommitContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
 import type { JobScheduler } from '../../../../foundation/application/JobScheduler';
 import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { ImportObjectService } from '../../../../foundation/application/ImportObjectService';
+import type { ImportObjectPort, ImportPort } from '../../../runtime/public';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import type { InventoryImportRecord, InventoryImportRepository } from '../port/InventoryImportRepository';
+import { authorizationEvidence } from '../../../../foundation/security/AuthorizationEvidence';
 
 interface PreparedImport {
   readonly scope: string;
   readonly reference: string;
   readonly sha256: string;
+  readonly name: string;
+  readonly mediaType: string;
+  readonly size: number;
 }
 
 type ImportReply = OperationReply<OperationOutputFor<'inventory.imports.create'>>;
@@ -20,19 +23,22 @@ export class ImportsCreateHandler implements DurableOperationHandler<'inventory.
   readonly mode = 'write' as const;
 
   constructor(
-    private readonly imports: InventoryImportRepository,
+    private readonly imports: ImportPort,
     private readonly jobs: JobScheduler,
-    private readonly objects: ImportObjectService
+    private readonly objects: ImportObjectPort
   ) {}
 
   async prepare(input: OperationInputFor<'inventory.imports.create'>, context: PrepareContext<'inventory.imports.create'>): Promise<PreparedImport> {
     const access = requireSession(context.security);
-    return Object.freeze({ scope: access.scope.id, ...(await this.objects.prepare(input)) });
+    return Object.freeze({ scope: access.scope.id, ...(await this.objects.prepare(input, access.scope.tenant ?? access.organization)) });
   }
 
   async commit(_input: OperationInputFor<'inventory.imports.create'>, prepared: PreparedImport, context: CommitContext<'inventory.imports.create'>) {
-    const id = `inventoryimport:${randomUUID()}`;
-    const record = await this.imports.create(context.transaction, { id, ...prepared });
+    const access = requireSession(context.security);
+    const id = `import:${randomUUID()}`;
+    const record = await this.imports.create(context.transaction, { id, scope: prepared.scope, owner: 'inventory', kind: 'stock',
+      reference: prepared.reference, sha256: prepared.sha256, name: prepared.name, mediaType: prepared.mediaType, size: prepared.size, actor: access.actor.id,
+      authorization: authorizationEvidence(access, this.operation, new Date()) });
     await this.jobs.schedule(context.transaction, { id: `job:${id}:0`, kind: 'inventoryimport', owner: 'inventory', scope: prepared.scope, payload: { import: id }, priority: 100 });
     const response = reply(record);
     return Object.freeze({ checkpoint: response, response });
@@ -43,18 +49,9 @@ export class ImportsCreateHandler implements DurableOperationHandler<'inventory.
   }
 }
 
-function reply(record: InventoryImportRecord): ImportReply {
+function reply(record: Awaited<ReturnType<ImportPort['create']>>): ImportReply {
   return {
     status: 202,
-    body: {
-      id: record.id,
-      state: record.state,
-      total_count: record.total_count,
-      cursor_value: record.cursor_value,
-      success_count: record.success_count,
-      failure_count: record.failure_count,
-      created_at: record.created_at,
-      updated_at: record.updated_at,
-    },
+    body: record as unknown as OperationOutputFor<'inventory.imports.create'>,
   };
 }

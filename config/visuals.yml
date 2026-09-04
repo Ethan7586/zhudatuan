@@ -1,4 +1,5 @@
 version: 2
+owner: frontend
 authority:
   owner: Ethan
   approvedAt: 2026-08-28T15:59:46+08:00
@@ -18,6 +19,15 @@ defaults:
   seed: visualv1
   data: deterministic
   motion: reduced
+breakpoints:
+  mobile: 0
+  tablet: 768
+  desktop: 1200
+  wide: 1600
+themes: [shop, market, governance]
+journeys:
+  source: tests/journey/IdealJourneyCatalog.ts
+  count: 44
 viewports:
   desktop1920:
     width: 1920
@@ -47,8 +57,23 @@ states: &a1
   - loading
   - empty
   - error
-  - denied
+  - forbidden
   - expired
+  - partial
+  - success
+resourceStates:
+  - loading
+  - refreshing
+  - empty
+  - error
+  - forbidden
+  - expired
+  - unavailable
+  - notconfigured
+  - notfound
+  - conflict
+  - offline
+  - running
   - partial
   - success
 interactions:
@@ -84,6 +109,9 @@ navigationTitles:
       settlements: 结算
       withdrawals: 提现
       invoices: 发票
+      governance: 规则与治理
+      approvals: 审批中心
+      tasks: 任务中心
       access: 权限中心
       members: 成员管理
       qualification: 资格管理
@@ -112,6 +140,15 @@ navigationTitles:
       - 客服中心
       - 登录 / 注册
       - 购物车
+  miniapp:
+    primary: [首页, 商品, 购物车, 订单, 卡包]
+    utility: [权益, 客服, 消息, 我的]
+  store:
+    primary: [今日待办, 订单, 履约, 核销, 卡券]
+    utility: [设备与交接]
+  supplier:
+    primary: [今日待办, 商品, 库存, 订单, 发货, 退货]
+    utility: [账单, 连接健康]
 masks:
   - currenttime
   - generatedidentifier
@@ -130,7 +167,7 @@ surfaces:
           - loading
           - empty
           - error
-          - denied
+          - forbidden
           - expired
           - partial
           - success
@@ -148,12 +185,6 @@ surfaces:
           - empty
           - error
           - expired
-          - success
-      - routeid: authcallback
-        baseline: authcallback
-        states:
-          - loading
-          - error
           - success
       - routeid: authlink
         baseline: authlink
@@ -178,7 +209,7 @@ surfaces:
       - routeid: consoleproductdetail
         baseline: consoleproductdetail
         states: *a1
-      - routeid: consoleproductimport
+      - routeid: consoleimporttask
         baseline: consoleproductimport
         states: *a1
       - routeid: consoleorders
@@ -201,6 +232,9 @@ surfaces:
         states: *a1
       - routeid: consolefinance
         baseline: consolefinance
+        states: *a1
+      - routeid: consolefinanceaudit
+        baseline: consolefinanceaudit
         states: *a1
       - routeid: consolefinanceentry
         baseline: consolefinanceentry
@@ -258,6 +292,18 @@ surfaces:
         states: *a1
       - routeid: consoledirectory
         baseline: consoledirectory
+        states: *a1
+      - routeid: consolefinancegovernance
+        baseline: consolefinancegovernance
+        states: *a1
+      - routeid: consoleapprovals
+        baseline: consoleapprovals
+        states: *a1
+      - routeid: consoleapprovaltemplate
+        baseline: consoleapprovaltemplate
+        states: *a1
+      - routeid: consoletasks
+        baseline: consoletasks
         states: *a1
   storefront:
     source: apps/storefront/src/generated/RouteBinding.ts
@@ -326,4 +372,53 @@ surfaces:
         baseline: storefrontnotifications
         responsive: true
         states: *a1
-
+  miniapp:
+    source: apps/miniapp/miniprogram/generated/RouteBinding.ts
+    routes:
+      - { routeid: miniapphome, baseline: miniapphome, responsive: true, states: *a1 }
+      - { routeid: miniappcatalog, baseline: miniappcatalog, responsive: true, states: *a1 }
+      - { routeid: miniappproduct, baseline: miniappproduct, responsive: true, states: *a1 }
+      - { routeid: miniappcart, baseline: miniappcart, responsive: true, states: *a1 }
+      - { routeid: miniappcheckout, baseline: miniappcheckout, responsive: true, states: *a1 }
+      - { routeid: miniapppayment, baseline: miniapppayment, responsive: true, states: *a1 }
+      - { routeid: miniapporders, baseline: miniapporders, responsive: true, states: *a1 }
+      - { routeid: miniapporder, baseline: miniapporder, responsive: true, states: *a1 }
+      - { routeid: miniappaftersale, baseline: miniappaftersale, responsive: true, states: *a1 }
+      - { routeid: miniappvouchers, baseline: miniappvouchers, responsive: true, states: *a1 }
+      - { routeid: miniappbenefits, baseline: miniappbenefits, responsive: true, states: *a1 }
+      - { routeid: miniappprofile, baseline: miniappprofile, responsive: true, states: *a1 }
+      - { routeid: miniappsecurity, baseline: miniappsecurity, responsive: true, states: *a1 }
+      - { routeid: miniappreferral, baseline: miniappreferral, responsive: true, states: *a1 }
+      - { routeid: miniappsupport, baseline: miniappsupport, responsive: true, states: *a1 }
+      - { routeid: miniappsupportcase, baseline: miniappsupportcase, responsive: true, states: *a1 }
+      - { routeid: miniappnotifications, baseline: miniappnotifications, responsive: true, states: *a1 }
+  store:
+    source: apps/store/src/generated/RouteBinding.ts
+    routes:
+      - { routeid: storetasks, baseline: storetasks, responsive: true, states: *a1 }
+      - { routeid: storeorderswork, baseline: storeorderswork, responsive: true, states: *a1 }
+      - { routeid: storeorderwork, baseline: storeorderwork, responsive: true, states: *a1 }
+      - { routeid: storefulfillment, baseline: storefulfillment, responsive: true, states: *a1 }
+      - { routeid: storeverification, baseline: storeverification, responsive: true, states: *a1 }
+      - { routeid: storevoucherswork, baseline: storevoucherswork, responsive: true, states: *a1 }
+      - { routeid: storedevices, baseline: storedevices, responsive: true, states: *a1 }
+      - { routeid: storeinventorywork, baseline: storeinventorywork, responsive: true, states: *a1 }
+      - { routeid: storereturnwork, baseline: storereturnwork, responsive: true, states: *a1 }
+      - { routeid: storesupportwork, baseline: storesupportwork, responsive: true, states: *a1 }
+      - { routeid: storeaccountwork, baseline: storeaccountwork, responsive: true, states: *a1 }
+  supplier:
+    source: apps/supplier/src/generated/RouteBinding.ts
+    routes:
+      - { routeid: suppliertasks, baseline: suppliertasks, responsive: true, states: *a1 }
+      - { routeid: supplieraccount, baseline: supplieraccount, responsive: true, states: *a1 }
+      - { routeid: suppliercatalog, baseline: suppliercatalog, responsive: true, states: *a1 }
+      - { routeid: supplierpricing, baseline: supplierpricing, responsive: true, states: *a1 }
+      - { routeid: supplierinventory, baseline: supplierinventory, responsive: true, states: *a1 }
+      - { routeid: supplierorders, baseline: supplierorders, responsive: true, states: *a1 }
+      - { routeid: suppliershipments, baseline: suppliershipments, responsive: true, states: *a1 }
+      - { routeid: supplierreturns, baseline: supplierreturns, responsive: true, states: *a1 }
+      - { routeid: supplierstatements, baseline: supplierstatements, responsive: true, states: *a1 }
+      - { routeid: supplierreconciliation, baseline: supplierreconciliation, responsive: true, states: *a1 }
+      - { routeid: supplierinvoice, baseline: supplierinvoice, responsive: true, states: *a1 }
+      - { routeid: supplierconnections, baseline: supplierconnections, responsive: true, states: *a1 }
+      - { routeid: suppliersupport, baseline: suppliersupport, responsive: true, states: *a1 }

@@ -8,7 +8,7 @@ describe('PgAuditRepository archive immutability', () => {
     const query = vi.fn(async (text: string) => {
       statements.push(text.replace(/\s+/g, ' ').trim());
       if (text.includes('select 1 from audit.archiveref')) return result([{ exists: 1 }]);
-      if (text.includes('select count(*)::integer count from audit.archiveitem')) return result([{ count: 2 }]);
+      if (text.includes('select count(*)::integer count')) return result([{ count: 2, exact: true }]);
       return result([]);
     });
     await withWriteTransaction(query, (context) =>
@@ -25,7 +25,12 @@ describe('PgAuditRepository archive immutability', () => {
           accessIds: ['access:1'],
           archiveYears: 7,
         },
-        { reference: 'object:audit', sha256: 'c'.repeat(64), size: 1024, keyVersion: 'kms:v1', expiresAt: '2033-01-02T00:00:00.000Z' }
+        { reference: 'object:audit', sha256: 'c'.repeat(64), size: 1024, keyVersion: 'kms:v1',
+          plaintextHash: 'd'.repeat(64), indexHash: 'e'.repeat(64), lockedUntil: '2033-01-02T00:00:00.000Z',
+          expiresAt: '2033-01-02T00:00:00.000Z', entries: [
+            { kind: 'command', id: 'audit:1', recordHash: 'a'.repeat(64) },
+            { kind: 'access', id: 'access:1', recordHash: 'b'.repeat(64) },
+          ] }
       )
     );
 

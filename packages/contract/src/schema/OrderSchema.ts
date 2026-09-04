@@ -1,7 +1,9 @@
-import { array, boolean, literal, null as nullSchema, optional, record, strictObject, string, union } from 'zod/mini';
+import { array, boolean, literal, maxLength, minLength, null as nullSchema, optional, record, strictObject, string, union } from 'zod/mini';
 import { ContractJsonValueSchema } from './JsonSchema';
-import { currency, expectedVersion, id, isoUtc, pageOutput, pageQuery, unsigned, version } from './Primitives';
-import { ORDER_FULFILLMENT_STATES, ORDER_LIFECYCLE_STATES, ORDER_LIST_VIEWS, ORDER_PAYMENT_STATES, ORDER_PLACED_FILTERS } from '../OrderContract';
+import { currency, expectedVersion, id, isoUtc, pageQuery, unsigned, version } from './Primitives';
+import { ORDER_AFTERSALE_BODY_SCHEMAS, ORDER_AFTERSALE_OUTPUT_SCHEMAS } from './OrderAfterSaleSchema';
+import { importCreated, importInput, importRead } from './ImportSchema';
+import { ORDER_AFTERSALE_STATES, ORDER_FULFILLMENT_STATES, ORDER_LIFECYCLE_STATES, ORDER_LIST_VIEWS, ORDER_PAYMENT_STATES, ORDER_PLACED_FILTERS } from '../OrderContract';
 
 const line = strictObject({
   id: string(),
@@ -33,6 +35,7 @@ const paymentTender = strictObject({
 });
 const paymentDetail = strictObject({
   paymentId: union([string(), nullSchema()]),
+  version,
   capturedMinor: unsigned,
   refundedMinor: unsigned,
   refundableMinor: unsigned,
@@ -51,7 +54,8 @@ const fulfillmentDetail = strictObject({
   provider: union([string(), nullSchema()]),
   partner: union([string(), nullSchema()]),
   kind: literal(['shipment', 'delivery', 'pickup', 'service', 'digital']),
-  state: literal(['pending', 'submitted', 'accepted', 'processing', 'ready', 'completed', 'cancelled', 'failed']),
+  state: literal(['pending', 'submitted', 'accepted', 'processing', 'ready', 'completed', 'cancelled', 'failed', 'needsaction']),
+  version,
   externalReferenceMasked: union([string(), nullSchema()]),
   createdAt: isoUtc,
   updatedAt: isoUtc,
@@ -95,10 +99,10 @@ const order = strictObject({
   checkout_id: string(),
   currency,
   total_minor: unsigned,
-  payment_state: string(),
-  fulfillment_state: string(),
-  aftersale_state: string(),
-  lifecycle_state: string(),
+  payment_state: literal(ORDER_PAYMENT_STATES),
+  fulfillment_state: literal(ORDER_FULFILLMENT_STATES),
+  aftersale_state: literal(ORDER_AFTERSALE_STATES),
+  lifecycle_state: literal(ORDER_LIFECYCLE_STATES),
   address: union([address, nullSchema()]),
   payment: paymentDetail,
   fulfillments: array(fulfillmentDetail),
@@ -110,75 +114,54 @@ const order = strictObject({
   version,
   lines: array(line),
 });
-const aftersaleState = literal(['applied', 'reviewing', 'approved', 'returning', 'received', 'refunding', 'resolved', 'rejected']);
-const unavailable = union([string(), nullSchema()]);
-const aftersaleLine = strictObject({
-  lineId: string(),
-  skuId: string(),
-  listingId: string(),
-  title: string(),
-  productType: string(),
-  provider: union([string(), nullSchema()]),
-  purchasedQuantity: unsigned,
-  fulfilledQuantity: unsigned,
-  claimedQuantity: unsigned,
-  requestedQuantity: unsigned,
-  maximumQuantity: unsigned,
-  unitMinor: unsigned,
-  refundMinor: unsigned,
-  available: boolean(),
-  unavailableReason: unavailable,
+const detailError = strictObject({ code: string(), message: string(), retryable: boolean(), traceId: string() });
+const localError = strictObject({ code: string(), message: string(), retryable: boolean() });
+const hidden = strictObject({ state: literal('hidden') });
+const unavailable = strictObject({ state: literal('unavailable'), error: detailError });
+const localUnavailable = strictObject({ state: literal('unavailable'), error: localError });
+const detailSummary = strictObject({
+  id: string(), orderNumber: string(), scopeId: string(), mallId: string(), currency, totalMinor: unsigned,
+  paymentState: literal(ORDER_PAYMENT_STATES), fulfillmentState: literal(ORDER_FULFILLMENT_STATES), aftersaleState: literal(ORDER_AFTERSALE_STATES), lifecycleState: literal(ORDER_LIFECYCLE_STATES),
+  sourceChannel: union([string(), nullSchema()]), externalOrderNo: union([string(), nullSchema()]),
+  sourceState: union([string(), nullSchema()]), verificationState: literal(['verified', 'pending', 'rejected']), orderedAt: isoUtc,
+  address: union([address, nullSchema()]), receivedAt: union([isoUtc, nullSchema()]), createdAt: isoUtc, updatedAt: isoUtc, version,
 });
-const aftersaleAttachment = strictObject({ objectId: string(), name: string(), mediaType: string(), sizeBytes: unsigned, contentHash: string() });
-const aftersaleTimeline = strictObject({
-  sequence: unsigned,
-  kind: string(),
-  previousState: union([aftersaleState, nullSchema()]),
-  state: aftersaleState,
-  evidence: ContractJsonValueSchema,
-  occurredAt: isoUtc,
-});
-const aftersale = strictObject({
-  id: string(),
-  orderId: string(),
-  state: aftersaleState,
-  reasonCode: string(),
-  description: string(),
+const productSection = union([strictObject({ state: literal('ready'), data: array(line) }), hidden, unavailable]);
+const paymentSection = union([strictObject({ state: literal('ready'), data: paymentDetail }), hidden, unavailable]);
+const fulfillmentSection = union([strictObject({ state: literal('ready'), data: array(fulfillmentDetail) }), hidden, unavailable]);
+const aftersaleSection = union([strictObject({ state: literal('ready'), data: strictObject({ state: literal(ORDER_AFTERSALE_STATES), refunds: array(refundDetail) }) }), hidden, unavailable]);
+const financeDetail = strictObject({
+  grossMinor: unsigned,
+  capturedMinor: unsigned,
+  refundedMinor: unsigned,
+  netMinor: unsigned,
+  outstandingMinor: unsigned,
   currency,
-  expectedRefundMinor: unsigned,
-  expectedRefund: strictObject({ totalMinor: unsigned, currency, tenders: array(strictObject({ kind: string(), reference: union([string(), nullSchema()]), amountMinor: unsigned })) }),
-  requiresReturn: boolean(),
-  unavailableReason: unavailable,
-  requestedBy: union([string(), nullSchema()]),
-  createdAt: isoUtc,
-  updatedAt: isoUtc,
-  version,
-  lines: array(aftersaleLine),
-  attachments: array(aftersaleAttachment),
-  timeline: array(aftersaleTimeline),
+  state: literal(['pending', 'balanced', 'partialrefund', 'refunded', 'attention']),
+  verificationState: literal(['verified', 'pending', 'rejected']),
+  watermark: isoUtc,
 });
-const availableLine = strictObject({
-  lineId: string(),
-  skuId: string(),
-  listingId: string(),
-  title: string(),
-  productType: string(),
-  provider: union([string(), nullSchema()]),
-  purchasedQuantity: unsigned,
-  fulfilledQuantity: unsigned,
-  claimedQuantity: unsigned,
-  maximumQuantity: unsigned,
-  expectedRefundMinor: unsigned,
-  available: boolean(),
-  unavailableReason: unavailable,
-  deadline: union([isoUtc, nullSchema()]),
-  requiresReturn: boolean(),
-});
+const financeSection = union([strictObject({ state: literal('ready'), data: financeDetail }), hidden, unavailable]);
+const auditSection = union([strictObject({ state: literal('ready'), data: array(auditTimeline) }), hidden, unavailable]);
+const facetSection = union([
+  strictObject({
+    state: literal('ready'),
+    data: strictObject({
+      counts: strictObject({ all: unsigned, unpaid: unsigned, unshipped: unsigned, active: unsigned, completed: unsigned, aftersale: unsigned, exception: unsigned }),
+      watermarks: strictObject({
+        order: union([isoUtc, nullSchema()]), payment: union([isoUtc, nullSchema()]), fulfillment: union([isoUtc, nullSchema()]),
+        aftersale: union([isoUtc, nullSchema()]), refund: union([isoUtc, nullSchema()]),
+      }),
+    }),
+  }),
+  localUnavailable,
+]);
 const exportResult = strictObject({
   id: string(),
   scope: string(),
   report: literal('orders'),
   filter: ContractJsonValueSchema,
+  watermark: isoUtc,
   state: literal('queued'),
   cursor: nullSchema(),
   recordCount: literal(0),
@@ -194,47 +177,54 @@ const exportResult = strictObject({
 export const ORDER_QUERY_SCHEMAS = {
   OrderOrdersReadInput: strictObject({
     ...pageQuery,
-    order: optional(string()),
+    search: optional(string()),
     view: optional(literal(ORDER_LIST_VIEWS)),
     placed: optional(literal(ORDER_PLACED_FILTERS)),
+    from: optional(isoUtc),
+    to: optional(isoUtc),
     lifecycle: optional(literal(ORDER_LIFECYCLE_STATES)),
     payment: optional(literal(ORDER_PAYMENT_STATES)),
     fulfillment: optional(literal(ORDER_FULFILLMENT_STATES)),
     mall: optional(string()),
+    channel: optional(string()),
+    product: optional(string()),
+    member: optional(string()),
+    minimumMinor: optional(unsigned),
+    maximumMinor: optional(unsigned),
   }),
+  OrderDetailReadInput: strictObject({}),
+  OrderImportsReadInput: strictObject({}),
   OrderAftersalesReadInput: strictObject({
     ...pageQuery,
     order: optional(string()),
+    search: optional(string()),
     placed: optional(literal(ORDER_PLACED_FILTERS)),
+    from: optional(isoUtc),
+    to: optional(isoUtc),
     lifecycle: optional(literal(ORDER_LIFECYCLE_STATES)),
     payment: optional(literal(ORDER_PAYMENT_STATES)),
     fulfillment: optional(literal(ORDER_FULFILLMENT_STATES)),
     mall: optional(string()),
+    channel: optional(string()),
+    product: optional(string()),
+    member: optional(string()),
+    minimumMinor: optional(unsigned),
+    maximumMinor: optional(unsigned),
   }),
 } as const;
 
 export const ORDER_BODY_SCHEMAS = {
-  OrderOrdersCreateInput: strictObject({ quoteId: string(), paymentScene: literal(['miniapp', 'jsapi']) }),
+  OrderOrdersCreateInput: strictObject({ quoteId: string(), confirmationToken: string().check(minLength(43), maxLength(171)), paymentScene: literal(['miniapp', 'jsapi']) }),
+  OrderOrdersCancelInput: strictObject({ expectedVersion, reason: string().check(minLength(2), maxLength(1000)) }),
   OrderRemindersCreateInput: strictObject({}),
-  OrderOrdersExportInput: strictObject({ order: optional(string()), placed: optional(string()), lifecycle: optional(string()), payment: optional(string()), fulfillment: optional(string()), mall: optional(string()) }),
-  OrderAftersaleattachmentsCreateInput: strictObject({
-    name: string(),
-    contentType: literal(['image/jpeg', 'image/png', 'application/pdf']),
-    sizeBytes: unsigned,
-    sha256: string(),
+  OrderOrdersExportInput: strictObject({
+    search: optional(string()), placed: optional(literal(ORDER_PLACED_FILTERS)), from: optional(isoUtc), to: optional(isoUtc),
+    lifecycle: optional(literal(ORDER_LIFECYCLE_STATES)), payment: optional(literal(ORDER_PAYMENT_STATES)),
+    fulfillment: optional(literal(ORDER_FULFILLMENT_STATES)), mall: optional(string()), channel: optional(string()),
+    product: optional(string()), member: optional(string()), minimumMinor: optional(unsigned), maximumMinor: optional(unsigned),
   }),
-  OrderAftersalesApplyInput: strictObject({
-    lines: array(strictObject({ lineId: string(), quantity: unsigned })),
-    reason: string(),
-    description: string(),
-    attachments: optional(
-      array(
-        strictObject({ objectId: string(), name: string(), contentType: literal(['image/jpeg', 'image/png', 'application/pdf']), sizeBytes: unsigned, sha256: string() })
-      )
-    ),
-  }),
-  OrderAftersalesApproveInput: strictObject({ reason: string(), evidence: optional(ContractJsonValueSchema) }),
-  OrderAftersalesRejectInput: strictObject({ reason: string(), evidence: optional(ContractJsonValueSchema) }),
+  OrderImportsCreateInput: importInput,
+  ...ORDER_AFTERSALE_BODY_SCHEMAS,
   OrderOrdersReceiveInput: strictObject({ expectedVersion, receivedAt: optional(isoUtc), reason: optional(string()) }),
 } as const;
 
@@ -249,10 +239,10 @@ export const ORDER_OUTPUT_SCHEMAS = {
       checkout_id: string(),
       currency,
       total_minor: unsigned,
-      payment_state: string(),
-      fulfillment_state: string(),
-      aftersale_state: string(),
-      lifecycle_state: string(),
+      payment_state: literal(ORDER_PAYMENT_STATES),
+      fulfillment_state: literal(ORDER_FULFILLMENT_STATES),
+      aftersale_state: literal(ORDER_AFTERSALE_STATES),
+      lifecycle_state: literal(ORDER_LIFECYCLE_STATES),
       evidence: ContractJsonValueSchema,
       address_snapshot: union([ContractJsonValueSchema, nullSchema()]),
       invoice_snapshot: union([ContractJsonValueSchema, nullSchema()]),
@@ -268,17 +258,22 @@ export const ORDER_OUTPUT_SCHEMAS = {
       strictObject({ paymentId: string(), state: literal('recovery'), retryAfter: unsigned }),
     ]),
   }),
-  OrderOrdersReadOutput: pageOutput(order),
+  OrderOrdersCancelOutput: strictObject({
+    orderId: id<'order'>(),
+    lifecycleState: literal('cancelled'),
+    fulfillmentState: literal('cancelled'),
+    cancelledAt: isoUtc,
+    version,
+    eventId: id<'event'>(),
+    repeated: boolean(),
+  }),
+  OrderOrdersReadOutput: strictObject({ items: array(order), count: unsigned, nextCursor: optional(string()), facets: facetSection }),
+  OrderDetailReadOutput: strictObject({ summary: detailSummary, products: productSection, payment: paymentSection, fulfillment: fulfillmentSection, aftersale: aftersaleSection, finance: financeSection, audit: auditSection }),
   OrderRemindersCreateOutput: strictObject({ id: string(), order_id: string(), member_id: string(), kind: literal('fulfillment'), state: literal('queued'), created_at: isoUtc }),
   OrderOrdersExportOutput: exportResult,
-  OrderAftersalesReadOutput: strictObject({ items: array(aftersale), count: unsigned, nextCursor: optional(string()), availableLines: array(availableLine) }),
-  OrderAftersaleattachmentsCreateOutput: strictObject({
-    objectId: string(),
-    upload: strictObject({ url: string(), method: literal('PUT'), headers: record(string(), string()), expiresAt: isoUtc }),
-  }),
-  OrderAftersalesApplyOutput: strictObject({ id: string(), orderId: string(), state: literal('reviewing'), expectedRefundMinor: unsigned, currency, requiresReturn: boolean(), createdAt: isoUtc, updatedAt: isoUtc, version }),
-  OrderAftersalesApproveOutput: strictObject({ id: string(), orderId: string(), state: literal(['approved', 'refunding']), version, updatedAt: isoUtc }),
-  OrderAftersalesRejectOutput: strictObject({ id: string(), orderId: string(), state: literal('rejected'), version, updatedAt: isoUtc }),
+  OrderImportsCreateOutput: importCreated,
+  OrderImportsReadOutput: importRead,
+  ...ORDER_AFTERSALE_OUTPUT_SCHEMAS,
   OrderOrdersReceiveOutput: strictObject({
     orderId: id<'order'>(),
     fulfillmentState: literal('received'),

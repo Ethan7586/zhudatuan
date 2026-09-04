@@ -5,3 +5,7 @@ import { JdfreshConfig } from '../Config';
 export function createJdfreshClient(connection: IntegrationConnection, fetcher?: typeof fetch) {
   return createJdClient(JdfreshConfig.validate(connection), fetcher);
 }
+
+export function checkJdfreshHealth(client: { health(): Promise<boolean> }): Promise<boolean> {
+  return client.health();
+}

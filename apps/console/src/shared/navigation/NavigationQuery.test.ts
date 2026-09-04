@@ -5,7 +5,8 @@ import type { ConsoleScope, ConsoleSession } from '../../entity/session/ConsoleS
 
 const navigationTreeRead = vi.fn<(...arguments_: unknown[]) => Promise<unknown>>();
 const consoleRequest = vi.fn((_scope: ConsoleScope, _signal: AbortSignal, _accessVersion: number, cache: Readonly<{ ifNoneMatch: string; cachedResponse: unknown }> | undefined) => ({ cache }));
-vi.mock('../api/Client', () => ({ navigationTreeRead, consoleRequest }));
+vi.mock('../api/RequestContext', () => ({ consoleRequest }));
+vi.mock('./NavigationGateway', () => ({ navigationTreeRead }));
 
 const scope: ConsoleScope = { kind: 'mall', id: 'mall:one' };
 const session: ConsoleSession = {
@@ -28,7 +29,28 @@ const tree = {
   etag: '"navigation:one"',
   generatedAt: '2026-08-30T00:00:00Z',
   catalogVersion: NAVIGATION_CATALOG_HASH,
-  nodes: [{ id: 'malldashboard', title: '数据', icon: 'dashboard', route: '/scopes/:scopeKind/:scopeId/cockpit', component: 'cockpit' as const, order: 1, entry: 'reporting.dashboard.read', disabled: false, children: [] }],
+  defaultKey: 'malldashboard',
+  defaultRoute: '/scopes/:scopeKind/:scopeId/cockpit',
+  nodes: [
+    {
+      key: 'malldashboard',
+      title: '经营驾驶舱',
+      parent: null,
+      order: 1,
+      operation: 'reporting.dashboard.read',
+      experience: {
+        icon: 'dashboard',
+        routeKey: 'consolecockpit' as const,
+        route: '/scopes/:scopeKind/:scopeId/cockpit',
+        component: 'cockpit' as const,
+        placement: 'primary' as const,
+        disabled: false,
+        disabledReason: null,
+        breadcrumbs: [{ key: 'malldashboard', title: '经营驾驶舱' }],
+      },
+      children: [],
+    },
+  ],
 };
 
 beforeEach(async () => {
@@ -50,6 +72,6 @@ describe('Console navigation query', () => {
   it('fails closed when the server catalog does not match the compiled binding', async () => {
     navigationTreeRead.mockResolvedValue({ ...tree, catalogVersion: 'stale' });
     const { readConsoleNavigation } = await import('./NavigationQuery');
-    await expect(readConsoleNavigation(session, scope, new AbortController().signal)).rejects.toMatchObject({ status: 409 });
+    await expect(readConsoleNavigation(session, scope, new AbortController().signal)).rejects.toMatchObject({ status: 503 });
   });
 });

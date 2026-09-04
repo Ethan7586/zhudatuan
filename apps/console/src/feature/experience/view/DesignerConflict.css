@@ -1,0 +1,97 @@
+.designerconflict {
+  margin: 12px;
+  border: 1px solid var(--sw-warning-border);
+  border-radius: 12px;
+  background: var(--sw-warning-surface);
+  padding: 12px;
+  color: var(--sw-brand-ink);
+}
+.designerconflict > header,
+.designerconflict > footer,
+.designerconflict article > header,
+.designerconflict dl {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.designerconflict > header div,
+.designerconflict article > header {
+  min-width: 0;
+}
+.designerconflict > header strong,
+.designerconflict > header small {
+  display: block;
+}
+.designerconflict > header strong {
+  font-size: 12px;
+}
+.designerconflict > header small,
+.designerconflict > p,
+.designerconflict article span,
+.designerconflict dt {
+  color: var(--sw-muted);
+  font-size: 9px;
+}
+.designerconflict > header > span,
+.designerconflict article > header span {
+  flex: none;
+  border-radius: 999px;
+  background: var(--sw-surface);
+  padding: 4px 7px;
+  color: var(--sw-warning-strong);
+  font-size: 8px;
+  font-weight: 800;
+}
+.designerconflictlist {
+  display: grid;
+  max-height: 240px;
+  gap: 7px;
+  overflow: auto;
+  margin: 10px 0;
+}
+.designerconflict article {
+  border: 1px solid var(--sw-border);
+  border-radius: 9px;
+  background: var(--sw-surface);
+  padding: 9px;
+}
+.designerconflict article[data-overlap='true'] {
+  border-color: var(--sw-danger-border);
+}
+.designerconflict article strong,
+.designerconflict dd {
+  font-size: 9px;
+}
+.designerconflict dl {
+  align-items: stretch;
+  margin: 7px 0 0;
+}
+.designerconflict dl > div {
+  width: 50%;
+  min-width: 0;
+}
+.designerconflict dd {
+  overflow-wrap: anywhere;
+  margin: 3px 0 0;
+}
+.designerconflict > footer {
+  justify-content: flex-end;
+}
+.designerconflict > footer button {
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-surface);
+  padding: 7px 10px;
+  color: var(--sw-brand-ink);
+  font-size: 9px;
+  font-weight: 750;
+}
+.designerconflict > footer .isprimary {
+  border-color: var(--sw-brand);
+  background: var(--sw-brand);
+  color: white;
+}
+.designerconflict > footer button:disabled {
+  opacity: 0.45;
+}

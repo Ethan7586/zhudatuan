@@ -4,7 +4,7 @@ export interface SessionIssue {
   readonly principal: string;
   readonly membership: string;
   readonly assurance: number;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly device: string;
   readonly peer: string;
   readonly agent: string;
@@ -14,7 +14,7 @@ export interface SessionIssue {
 export interface IssuedSession {
   readonly session: string;
   readonly membership: string;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly expiresin: number;
   readonly headers: Readonly<Record<string, string>>;
 }

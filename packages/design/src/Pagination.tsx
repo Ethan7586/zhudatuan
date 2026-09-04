@@ -1,4 +1,4 @@
-import { Button } from './Button';
+import { Button } from './atom/Button';
 
 export function Pagination({ previous, next, onPrevious, onNext }: Readonly<{ previous?: string; next?: string; onPrevious?: (cursor: string) => void; onNext?: (cursor: string) => void }>) {
   if (!previous && !next) return null;

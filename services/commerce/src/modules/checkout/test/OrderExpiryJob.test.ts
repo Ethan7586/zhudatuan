@@ -12,7 +12,7 @@ describe('OrderExpiryJob', () => {
     const client = {
       query: vi.fn(async (statement: string, values: readonly unknown[] = []) => {
         calls.push({ statement, values });
-        return result([]);
+        return statement.includes('checkout.expiryreceipt') ? result([{ id: String(values[0]) }]) : result([]);
       }),
       release: vi.fn(),
     } as unknown as PoolClient;

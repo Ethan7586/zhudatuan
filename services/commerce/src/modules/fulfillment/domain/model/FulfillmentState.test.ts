@@ -4,7 +4,8 @@ import { ReturnState } from './ReturnState';
 
 describe('fulfillment state machines', () => {
   it('accepts only explicit fulfillment transitions', () => {
-    expect(FulfillmentState.from('pending').transition('submit')).toBe('accepted');
+    expect(FulfillmentState.from('pending').transition('submit')).toBe('submitted');
+    expect(FulfillmentState.from('submitted').transition('accept')).toBe('accepted');
     expect(FulfillmentState.from('accepted').transition('ship')).toBe('processing');
     expect(FulfillmentState.from('processing').transition('complete')).toBe('completed');
     expect(() => FulfillmentState.from('completed').transition('progress')).toThrow('FULFILLMENT_STATE_CONFLICT');

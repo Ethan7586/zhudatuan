@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { RestockReturn } from '../../application/process/RestockReturn';
 
 export class InventorySyncJob implements JobProcessor {
@@ -14,7 +14,7 @@ export class InventorySyncJob implements JobProcessor {
     if (payload.return === undefined) return this.provider.process(job, signal, deadline);
     if (typeof payload.return !== 'string' || !payload.return) throw new Error('INVENTORY_RETURN_REQUIRED');
     return this.restock.execute(payload.return, {
-      scope: job.scope_id || 'inventory',
+      scope: job.scope || 'inventory',
       trace: job.id,
       signal,
       deadline,

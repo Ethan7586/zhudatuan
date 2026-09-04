@@ -1,0 +1,61 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.11 Inventory",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "operations": [
+    "inventory.availability.read",
+    "inventory.imports.create",
+    "inventory.imports.read"
+  ],
+  "events": [
+    "inventory.stock.changed",
+    "inventory.reservation.created",
+    "inventory.reservation.confirmed",
+    "inventory.reservation.released",
+    "inventory.reservation.expired"
+  ],
+  "aggregates": [
+    "StockItem",
+    "Reservation",
+    "StockSource"
+  ],
+  "invariants": [
+    "available-equals-onhand-minus-active-reservation-minus-safety-stock-and-is-never-exposed-as-negative",
+    "stock-and-reservation-versions-are-positive-and-every-mutation-uses-an-exact-version-fence",
+    "reservation-demands-are-aggregated-and-stock-items-are-locked-in-lexicographic-order",
+    "reserve-confirm-release-and-expire-are-mutually-exclusive-with-idempotent-terminal-replay",
+    "reservation-confirmation-at-or-after-ttl-is-rejected-and-expiry-only-transitions-active-reservations",
+    "stock-movement-is-an-append-only-ledger-protected-from-update-and-delete",
+    "provider-stock-observation-is-idempotent-by-stock-source-and-source-version",
+    "manual-stock-import-cannot-reduce-onhand-below-existing-commitments",
+    "runtime-owns-import-task-chunk-error-retry-report-and-retention-lifecycle",
+    "inventory-import-processors-own-only-stock-row-validation-and-domain-application",
+    "checkout-catalog-and-fulfillment-use-inventory-public-ports-and-never-read-inventory-tables",
+    "reservation-expiry-is-a-runtime-scheduled-job-and-uses-skip-locked-bounded-batches",
+    "stock-and-reservation-events-are-emitted-by-inventory-in-the-same-transaction-as-ledger-state",
+    "legacy-private-inventory-import-tables-events-and-database-roles-are-not-retained"
+  ],
+  "retainedLiExperience": [
+    "clear-stock-availability-and-source-watermark-presentation",
+    "guided-csv-stock-import-with-preflight-row-results-progress-and-error-report",
+    "human-readable-reservation-and-stock-statuses-without-internal-identifiers",
+    "recoverable-import-and-provider-failure-states-without-whole-page-crashes"
+  ],
+  "verification": {
+    "authorityHashes": "matched after the final 6.11 change",
+    "commerceTypecheck": "passed",
+    "inventoryTests": "5 files and 13 tests passed",
+    "inventoryCatalogCheckoutAndPaymentTests": "18 files and 56 tests passed",
+    "contractTests": "3 files and 1236 tests passed",
+    "databaseMigrationInventory": "historical=171 repair=158 total=329",
+    "databaseReplay": "329 migrations applied and Inventory constraints, immutable ledger triggers, import hard cut, operations, events, jobs and object contracts passed",
+    "eventsOperationsAndJobs": "passed with 0 violations",
+    "boundariesOwnershipDuplicatesAndNaming": "passed with 0 findings",
+    "transactionsAndPerformance": "passed with 0 violations",
+    "globalGeneration": "Inventory artifacts are current; the global trace awaits the real miniapp feature root",
+    "globalCallGraph": "Inventory has no broken call point; six generated bindings remain deferred to the Miniapp, Store and Supplier client surface work packages"
+  }
+}

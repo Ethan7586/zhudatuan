@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { IssueInvoice } from '../../application/process/IssueInvoice';
 
 export class InvoiceJob implements JobProcessor {
@@ -8,7 +8,7 @@ export class InvoiceJob implements JobProcessor {
     if (job.kind !== 'invoice') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
     const request = text(object(job.payload).request, 'INVOICE_REQUEST_REQUIRED');
-    return this.invoices.execute(request, { scope: job.scope_id ?? 'organization-platform-root', trace: job.id, signal, deadline });
+    return this.invoices.execute(request, { scope: job.scope ?? 'organization-platform-root', trace: job.id, signal, deadline });
   }
 }
 

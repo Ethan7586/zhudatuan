@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, screen, userEvent } from 'storybook/test';
-import { Button } from './Button';
-import { Dialog } from './Dialog';
+import { Button } from './atom/Button';
+import { Dialog } from './organism/Dialog';
 
 const meta = {
   title: '交互原语/Dialog',

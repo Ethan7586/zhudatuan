@@ -4,6 +4,7 @@ import type { ReadTransactionContext, WriteTransactionContext } from '../../../f
 import { NotificationsAckHandler } from '../application/handler/NotificationsAckHandler';
 import { NotificationsReadHandler } from '../application/handler/NotificationsReadHandler';
 import type { NotificationRepository } from '../application/port/NotificationRepository';
+import { notificationDevice } from '../domain/model/ReadWatermark';
 
 describe('notification member receipt', () => {
   it('reads storefront visibility without organization-wide dispatches', async () => {
@@ -11,7 +12,7 @@ describe('notification member receipt', () => {
     const notifications = vi.fn(async () => [{ id: 'dispatch:one', kind: 'dispatch', created_at: '2026-08-31T01:00:00Z' }]);
     const handler = new NotificationsReadHandler({ notifications } as unknown as NotificationRepository);
     const result = await handler.execute({ path: {}, query: {} } as never, context('notification.notifications.read', transaction));
-    expect(notifications).toHaveBeenCalledWith(transaction, 'membership:one', false, null, null, 51);
+    expect(notifications).toHaveBeenCalledWith(transaction, 'membership:one', notificationDevice('session:one'), false, null, null, 51);
     expect(result).toMatchObject({ status: 200, body: { count: 1 } });
   });
 
@@ -20,7 +21,7 @@ describe('notification member receipt', () => {
     const acknowledge = vi.fn(async () => ({ id: 'dispatch:one', readAt: '2026-08-31T01:02:00Z' }));
     const handler = new NotificationsAckHandler({ acknowledge } as unknown as NotificationRepository);
     const result = await handler.execute({ path: { notificationid: 'dispatch:one' }, query: {}, body: {} } as never, context('notification.notifications.ack', transaction));
-    expect(acknowledge).toHaveBeenCalledWith(transaction, 'membership:one', 'dispatch:one');
+    expect(acknowledge).toHaveBeenCalledWith(transaction, 'membership:one', notificationDevice('session:one'), 'dispatch:one');
     expect(result).toMatchObject({ status: 200, body: { id: 'dispatch:one' } });
   });
 });

@@ -1,4 +1,5 @@
 import type { EntryState } from '../../domain/policy/EntryPolicy';
+import type { ExperienceTheme } from '@shop/contract';
 
 export interface ApplicationEntry {
   readonly handle: string;
@@ -13,6 +14,8 @@ export interface ApplicationEntry {
 export interface ApplicationSummary {
   readonly id: string;
   readonly mallId: string;
+  readonly mallName: string | null;
+  readonly brandName: string | null;
   readonly code: string;
   readonly publicSlug: string;
   readonly name: string;
@@ -20,6 +23,12 @@ export interface ApplicationSummary {
   readonly version: number;
   readonly headSequence: number | null;
   readonly publishedSequence: number | null;
+  readonly theme: ExperienceTheme | null;
+  readonly domain: Readonly<{
+    mode: 'platform' | 'custom' | 'unknown';
+    address: string | null;
+    state: 'ready' | 'pending' | 'invalid' | 'disabled' | 'unknown';
+  }>;
   readonly entry: ApplicationEntry;
   readonly updatedAt: string;
 }

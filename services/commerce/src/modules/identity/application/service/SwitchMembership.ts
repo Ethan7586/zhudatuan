@@ -4,7 +4,7 @@ import { requireWriteTransaction } from '../../../../foundation/persistence/Tran
 import { reject } from '../../../../foundation/application/OperationRejection';
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
 
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import type { IdentityAccessPort } from '../../../access/public';
 import type { IdentityMemberPort } from '../../../member/public';
 import type { IdentityEventRepository } from '../port/IdentityEventRepository';
@@ -26,8 +26,9 @@ export class SwitchMembership {
       const current = requireAccess(request);
       const target = textField(bodyRecord(request.input), 'membershipId', 255);
       const member = await this.members.memberForPrincipal(database, current.actor.id);
-      const memberships = await this.access.memberships(database, member, 'storefront');
-      if (!memberships.some(({ id }) => id === target)) reject('MEMBERSHIP_SELECTION_REQUIRED');
+      const memberships = await this.access.memberships(database, member, current.actor.target);
+      const selected = memberships.find(({ id }) => id === target);
+      if (!selected) reject('MEMBERSHIP_SELECTION_REQUIRED');
       const revoked = await this.repository.revokeCurrent(database, current.actor.id, current.actor.session);
       if (!revoked) reject('AUTHENTICATION_REQUIRED');
       const context = requestContext(request);
@@ -35,11 +36,12 @@ export class SwitchMembership {
         principal: current.actor.id,
         membership: target,
         assurance: current.assurance.level,
-        target: 'storefront',
+        target: current.actor.target,
         device: context.device,
         peer: context.peer,
         agent: context.agent,
         trace: context.trace,
+        expectedAccessVersion: selected.accessVersion,
       });
       await this.events.publish(database, 'identity.session.revoked', 'session', current.actor.session, current.membership.id, context.trace, { sessions: [current.actor.session], reason: 'membership_switch' });
       await this.events.publish(database, 'identity.membership.switched', 'membership', target, target, context.trace, {

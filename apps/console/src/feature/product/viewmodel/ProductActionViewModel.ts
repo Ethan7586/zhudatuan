@@ -1,56 +1,75 @@
 import { useMutation } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
-import { actionState, presentError } from '@shop/presentation';
+import { useEffect, useRef, useState } from 'react';
+import { actionState, presentError, type ProductStatus, type ProductType } from '@shop/presentation';
+import { OP_CATALOG_LISTINGS_PRICE_SET, OP_CATALOG_PRODUCTS_CREATE, OP_CATALOG_PRODUCTS_UPDATE } from '@shop/contract/ids';
 import type { ProductDependencies } from '../../../app/Dependencies';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import type { ProductAction, ProductStatus } from '../model/ProductAction';
+import type { ProductAction } from '../model/ProductAction';
 import type { ProductCommand } from '../public';
+import { identityFor, type CommandIdentity } from '../../../shared/action/CommandIdentity';
+import { canUseOperation } from '../../../shared/security/OperationAccess';
 
-export interface ProductActionViewModel {
-  readonly action: ProductAction | null;
-  readonly title: string;
-  readonly category: string;
-  readonly type: 'physical' | 'virtual' | 'service' | 'voucher';
-  readonly status: ProductStatus;
-  readonly amount: string;
-  readonly submitting: boolean;
-  readonly error?: string;
-  readonly setTitle: (value: string) => void;
-  readonly setCategory: (value: string) => void;
-  readonly setType: (value: ProductActionViewModel['type']) => void;
-  readonly setStatus: (value: ProductStatus) => void;
-  readonly setAmount: (value: string) => void;
-  readonly submit: () => void;
-}
-
-export function useProductActionViewModel(action: ProductAction | null, context: ConsoleContext, dependencies: ProductDependencies, onDone: () => void): ProductActionViewModel {
+export function useProductActionViewModel(action: ProductAction | null, context: ConsoleContext, dependencies: ProductDependencies, onDone: () => void) {
   const listing = action !== null && 'listing' in action ? action.listing : undefined;
-  const [title, setTitle] = useState(listing?.title ?? '主打团臻选员工福利礼盒');
-  const [category, setCategory] = useState('企业福利专区');
-  const [type, setType] = useState<ProductActionViewModel['type']>('physical');
-  const [status, setStatus] = useState<ProductStatus>(action?.kind === 'edit' ? action.status : 'active');
-  const [amount, setAmount] = useState('99.00');
-  const actionkey = action === null ? 'closed' : `${action.kind}:${listing?.id ?? 'new'}`;
-  const identity = useMemo(() => crypto.randomUUID(), [actionkey]);
+  const allowed = action === null || canUseOperation(context, action.operation);
+  const [title, setTitle] = useState(listing?.title ?? '');
+  const [category, setCategory] = useState(listing?.category_id ?? '');
+  const [type, setType] = useState<ProductType>('physical');
+  const [status, setStatus] = useState<ProductStatus>(action?.operation === OP_CATALOG_PRODUCTS_UPDATE ? action.status : 'draft');
+  const [amount, setAmount] = useState('');
+  const actionkey = action === null ? 'closed' : `${action.operation}:${listing?.id ?? 'new'}`;
+  const commandidentity = useRef<CommandIdentity | undefined>(undefined);
+  useEffect(() => {
+    setTitle(listing?.title ?? '');
+    setCategory(listing?.category_id ?? '');
+    setType('physical');
+    setStatus(action?.operation === OP_CATALOG_PRODUCTS_UPDATE ? action.status : 'draft');
+    setAmount('');
+  }, [actionkey, action, listing]);
+  const identity = identityFor(commandidentity, JSON.stringify({ actionkey, amount, category, status, title, type }), dependencies.createIdentity);
   const mutation = useMutation({
     mutationKey: ['productaction', actionkey],
     mutationFn: async () => {
       if (action === null) throw new Error('PRODUCT_ACTION_MISSING');
       const request = command(context, identity);
-      if (action.kind === 'create') return dependencies.executeAction.execute(request, { kind: 'create', draft: { title, category, type } });
-      if (action.kind === 'edit') return dependencies.executeAction.execute(request, { kind: 'edit', listing: action.listing, title, category, status });
-      if (action.kind === 'price') return dependencies.executeAction.execute(request, { kind: 'price', listing: action.listing, amountMinor: priceMinor(amount) });
+      if (action.operation === OP_CATALOG_PRODUCTS_CREATE) return dependencies.executeAction.execute(request, { operation: action.operation, body: { title: title.trim(), category: category.trim(), type } });
+      if (action.operation === OP_CATALOG_PRODUCTS_UPDATE)
+        return dependencies.executeAction.execute(request, { operation: action.operation, listing: action.listing, expectedVersion: action.expectedVersion, body: { title: title.trim(), category: category.trim(), status } });
+      if (action.operation === OP_CATALOG_LISTINGS_PRICE_SET)
+        return dependencies.executeAction.execute(request, { operation: action.operation, listing: action.listing, expectedVersion: action.expectedVersion, body: { amountMinor: priceMinor(amount), currency: 'CNY' } });
       return dependencies.executeAction.execute(request, action);
     },
     onSuccess: onDone,
   });
   const state = actionState({ pending: mutation.isPending, commandId: identity, ...(mutation.data === undefined ? {} : { result: mutation.data }), ...(mutation.error === null ? {} : { error: mutation.error }) });
-  return Object.freeze({ action, state, title, category, type, status, amount, submitting: mutation.isPending, ...(mutation.error === null ? {} : { error: presentError(mutation.error).message }), setTitle, setCategory, setType, setStatus, setAmount, submit: () => { if (!mutation.isPending) mutation.mutate(); } });
+  return Object.freeze({
+    action,
+    allowed,
+    permissionReason: allowed ? undefined : '当前账号不能执行这项商品操作。',
+    state,
+    title,
+    category,
+    type,
+    status,
+    amount,
+    submitting: mutation.isPending,
+    ...(mutation.error === null ? {} : { error: presentError(mutation.error).message }),
+    setTitle,
+    setCategory,
+    setType,
+    setStatus,
+    setAmount,
+    submit: () => {
+      if (allowed && !mutation.isPending) mutation.mutate();
+    },
+  });
 }
 
-export function command(context: ConsoleContext, identity = crypto.randomUUID()): ProductCommand {
+export function command(context: ConsoleContext, identity: string): ProductCommand {
   return Object.freeze({ scope: { kind: context.scope.kind, id: context.scope.id }, accessVersion: context.session.accessVersion, identity, ...(context.session.csrf === undefined ? {} : { csrf: context.session.csrf }) });
 }
+
+export type ProductActionViewModel = ReturnType<typeof useProductActionViewModel>;
 
 function priceMinor(value: string): number {
   const parsed = Number(value);

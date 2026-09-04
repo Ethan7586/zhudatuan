@@ -7,6 +7,14 @@ import type { OrderExpiryRepository } from '../../application/port/OrderExpiryRe
 export class PgOrderExpiryRepository implements OrderExpiryRepository {
   private readonly transactions = new PgTransactionAccess();
 
+  async claim(context: WriteTransactionContext, id: string, scope: string): Promise<boolean> {
+    const result = await this.transactions.database(context).query(
+      `insert into checkout.expiryreceipt(id,scope_id,completed_at) values($1,$2,clock_timestamp()) on conflict(id) do nothing returning id`,
+      [id, scope]
+    );
+    return result.rows.length === 1;
+  }
+
   schedulePaymentQuery(context: WriteTransactionContext, intent: string, scope: string): Promise<void> {
     return new PgRuntimeWriter(this.transactions.database(context)).reschedule({
       id: `job:expiry:${intent}`,

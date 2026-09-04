@@ -2,8 +2,8 @@ import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
 import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, integerField, textField } from '../../../../foundation/interface/Validation';
-import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
+import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
+import type { KmsClient } from '../../../../foundation/application/KmsPort';
 import { organizationScope } from '../../../../foundation/security/OrganizationScope';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { OrganizationHierarchyPort } from '../../../organization/public/HierarchyPort';
@@ -16,7 +16,7 @@ interface PreparedStore {
   readonly region: string;
   readonly mall: string | null;
   readonly radius: number | null;
-  readonly envelope: Readonly<{ ciphertext: string; fingerprint: string; keyVersion: string }> | null;
+  readonly envelope: Readonly<{ ciphertext: string; fingerprint: string; keyVersion: string }> | null | undefined;
 }
 export class StoresManageHandler implements DurableOperationHandler<'organization.stores.manage', PreparedStore, OperationOutputFor<'organization.stores.manage'>, 'write'> {
   readonly operation = 'organization.stores.manage' as const;
@@ -36,8 +36,8 @@ export class StoresManageHandler implements DurableOperationHandler<'organizatio
     const mall = body.mall == null ? null : textField(body, 'mall');
     const radius = body.serviceRadiusMeters == null ? null : integerField(body, 'serviceRadiusMeters', 1);
     if (radius !== null && radius > 1_000_000) throw new DomainError('VALIDATION_FAILED');
-    const address = body.address == null ? null : textField(body, 'address', 1000);
-    const envelope = address === null ? null : await this.kms.encrypt('pii', 'partner/store/address', address, { store: id, scope: access.scope.id });
+    const address = body.address === undefined ? undefined : body.address === null ? null : textField(body, 'address', 1000);
+    const envelope = address === undefined ? undefined : address === null ? null : await this.kms.encrypt('pii', 'partner/store/address', address, { store: id, scope: access.scope.id });
     return Object.freeze({ id, name: textField(body, 'name', 160), status, region, mall, radius, envelope });
   }
   async commit(_input: OperationInputFor<'organization.stores.manage'>, prepared: PreparedStore, context: CommitContext<'organization.stores.manage'>) {
@@ -57,9 +57,10 @@ export class StoresManageHandler implements DurableOperationHandler<'organizatio
       mall: prepared.mall,
       region: prepared.region,
       radius: prepared.radius,
-      ciphertext: prepared.envelope?.ciphertext ?? null,
-      token: prepared.envelope?.fingerprint ?? null,
-      keyVersion: prepared.envelope?.keyVersion ?? null,
+      addressChanged: prepared.envelope !== undefined,
+      ciphertext: prepared.envelope === undefined ? undefined : (prepared.envelope?.ciphertext ?? null),
+      token: prepared.envelope === undefined ? undefined : (prepared.envelope?.fingerprint ?? null),
+      keyVersion: prepared.envelope === undefined ? undefined : (prepared.envelope?.keyVersion ?? null),
       expectedVersion: context.expectedVersion ?? null,
     });
     if (!row) throw new DomainError('VERSION_CONFLICT');

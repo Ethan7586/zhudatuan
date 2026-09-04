@@ -1,10 +1,10 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
+import { isConsumerTarget, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
 import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import { keysetPage, queryPage } from '../../../../foundation/interface/Validation';
-import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
-import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
+import { keysetPage, queryPage } from '../../../../foundation/application/Validation';
+import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import type { ObjectStore } from '../../../runtime/public/ObjectPort';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { mapParallel } from '../../../../foundation/performance/Parallel';
 import type { MessageReader } from '../../application/port/SupportRepositories';
@@ -16,8 +16,10 @@ interface MessageRecord {
   readonly client_message_id: string;
   readonly conversation_id: string;
   readonly scope_id: string;
-  readonly author_type: 'member' | 'agent';
+  readonly author_type: 'member' | 'agent' | 'system';
   readonly author_id: string;
+  readonly kind: 'text' | 'attachment' | 'system';
+  readonly visibility: 'external' | 'internal';
   readonly body_ciphertext: string;
   readonly sequence: number;
   readonly version: number;
@@ -31,6 +33,8 @@ interface EvidenceRecord {
   readonly content_type: string;
   readonly size_bytes: number;
   readonly state: 'pending' | 'clean' | 'rejected';
+  readonly scan_reason: string | null;
+  readonly scan_recovery: string | null;
   readonly object_ref: string;
   readonly created_at: string;
 }
@@ -81,26 +85,29 @@ export class PgConversationRepository implements MessageReader, ConversationStor
       left join support.readstate readstate on readstate.conversation_id=conversation.id and readstate.membership_id=$3
       where ticket.id=$1 and ticket.scope_id=any($2::text[])
       and (not $4::boolean or conversation.member_id=$5)`,
-      [input.path.caseid, actor.scopes, actor.membership, actor.target === 'storefront', actor.member]
+      [input.path.caseid, actor.scopes, actor.membership, isConsumerTarget(actor.target), actor.member]
     );
     const selected = conversation.rows[0];
     if (!selected) throw new Error('SUPPORT_CONVERSATION_NOT_READABLE');
-    const supportContext = await this.support.view(context, selected.scope_id, selected.member_id, actor.target === 'storefront');
+    const supportContext = await this.support.view(context, selected.scope_id, selected.member_id, isConsumerTarget(actor.target));
     const result = await database.query<MessageRecord>(
       `select message.id,message.client_message_id,message.conversation_id,message.scope_id,message.author_type,message.author_id,
-      message.body_ciphertext,message.sequence,message.version,message.created_at
+      message.kind,message.visibility,message.body_ciphertext,message.sequence,message.version,message.created_at
       from support.message message where message.conversation_id=$1
-      and ($2::bigint is null or (message.sequence,message.id)<($2::bigint,$3))
-      order by message.sequence desc,message.id desc limit $4`,
-      [selected.id, page.sort, page.id, page.fetch]
+      and (not $2::boolean or message.visibility='external')
+      and ($3::bigint is null or (message.sequence,message.id)<($3::bigint,$4))
+      order by message.sequence desc,message.id desc limit $5`,
+      [selected.id, isConsumerTarget(actor.target), page.sort, page.id, page.fetch]
     );
     const paged = keysetPage(result.rows, page, 'sequence');
     const evidence = await database.query<EvidenceRecord>(
       `select evidence.id,messageevidence.message_id,evidence.original_name,evidence.content_type,evidence.size_bytes,
-      evidence.state,evidence.object_ref,evidence.created_at from support.evidence evidence
+      evidence.state,evidence.scan_reason,evidence.scan_recovery,evidence.object_ref,evidence.created_at from support.evidence evidence
       left join support.messageevidence messageevidence on messageevidence.evidence_id=evidence.id
-      where evidence.conversation_id=$1 order by evidence.created_at,evidence.id`,
-      [selected.id]
+      left join support.message message on message.id=messageevidence.message_id
+      where evidence.conversation_id=$1 and (not $2::boolean or message.id is null or message.visibility='external')
+      order by evidence.created_at,evidence.id`,
+      [selected.id, isConsumerTarget(actor.target)]
     );
     return {
       status: 200,
@@ -130,6 +137,8 @@ export class PgConversationRepository implements MessageReader, ConversationStor
         conversationId: message.conversation_id,
         authorType: message.author_type,
         authorId: message.author_id,
+        kind: message.kind,
+        visibility: message.visibility,
         body: await this.kms.decrypt('pii', 'support/message', message.body_ciphertext, { scope: message.scope_id, conversation: message.conversation_id, messageId: message.id }),
         sequence: Number(message.sequence),
         version: Number(message.version),
@@ -144,6 +153,8 @@ export class PgConversationRepository implements MessageReader, ConversationStor
           contentType: evidence.content_type,
           sizeBytes: Number(evidence.size_bytes),
           state: evidence.state,
+          rejectionReason: evidence.scan_reason,
+          recoveryAction: evidence.scan_recovery,
           ...(download ? { download } : {}),
           createdAt: new Date(evidence.created_at).toISOString(),
         };

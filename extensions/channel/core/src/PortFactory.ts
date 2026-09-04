@@ -14,7 +14,7 @@ import type {
   TrackingSource,
   VerificationProvider,
 } from '@shop/contract';
-import type { IntegrationClient } from './integration';
+import type { RequestExecutor } from './RequestExecutor';
 import { ProviderMapper } from './Mapper';
 
 export interface ProviderOperations {
@@ -30,7 +30,7 @@ export interface ProviderOperations {
   readonly verification?: string;
 }
 
-export function createPorts(client: IntegrationClient, operations: ProviderOperations, mapper = new ProviderMapper(), secret?: Readonly<Record<string, string>>): Partial<ProviderPorts> {
+export function createPorts(client: RequestExecutor, operations: ProviderOperations, mapper = new ProviderMapper(), secret?: Readonly<Record<string, string>>): Partial<ProviderPorts> {
   return Object.freeze({
     ...(operations.catalog ? { catalog: catalog(client, operations.catalog, mapper) } : {}),
     ...(operations.price ? { price: price(client, operations.price, mapper) } : {}),
@@ -73,7 +73,7 @@ function webhook(secret: Readonly<Record<string, string>>): ProviderWebhookVerif
   };
 }
 
-function catalog(client: IntegrationClient, operation: string, mapper: ProviderMapper): CatalogSource {
+function catalog(client: RequestExecutor, operation: string, mapper: ProviderMapper): CatalogSource {
   return {
     async pullCatalog(context, cursor) {
       const value = await client.invoke(context, { operation, method: 'POST', idempotent: true, body: cursor === undefined ? {} : { cursor } });
@@ -88,7 +88,7 @@ function catalog(client: IntegrationClient, operation: string, mapper: ProviderM
   };
 }
 
-function price(client: IntegrationClient, operation: string, mapper: ProviderMapper): PriceSource {
+function price(client: RequestExecutor, operation: string, mapper: ProviderMapper): PriceSource {
   return {
     async pullPrice(context, keys) {
       const value = await client.invoke(context, { operation, method: 'POST', idempotent: true, body: { keys: keys.map(({ externalId, region }) => ({ externalId, ...(region === undefined ? {} : { region }) })) } });
@@ -97,7 +97,7 @@ function price(client: IntegrationClient, operation: string, mapper: ProviderMap
   };
 }
 
-function stock(client: IntegrationClient, operation: string, mapper: ProviderMapper): StockSource {
+function stock(client: RequestExecutor, operation: string, mapper: ProviderMapper): StockSource {
   return {
     async pullStock(context, keys) {
       const value = await client.invoke(context, { operation, method: 'POST', idempotent: true, body: { keys: keys.map(({ externalId, region }) => ({ externalId, ...(region === undefined ? {} : { region }) })) } });
@@ -106,25 +106,27 @@ function stock(client: IntegrationClient, operation: string, mapper: ProviderMap
   };
 }
 
-function order(client: IntegrationClient, operation: string, mapper: ProviderMapper): RemoteOrderSubmitter {
+function order(client: RequestExecutor, operation: string, mapper: ProviderMapper): RemoteOrderSubmitter {
   return {
     async submit(context, draft) {
+      requireIdempotency(context);
       const value = await client.invoke(context, { operation, method: 'POST', idempotent: false, body: { reference: draft.reference, payload: draft.payload } });
       return receipt(value, mapper);
     },
   };
 }
 
-function cancel(client: IntegrationClient, operation: string, mapper: ProviderMapper): RemoteOrderCanceller {
+function cancel(client: RequestExecutor, operation: string, mapper: ProviderMapper): RemoteOrderCanceller {
   return {
     async cancel(context, reference, reason) {
+      requireIdempotency(context);
       const value = await client.invoke(context, { operation, method: 'POST', idempotent: false, body: { reference, reason } });
       return { externalReference: mapper.string(value.externalReference, 'PROVIDER_REFERENCE_INVALID'), state: mapper.string(value.state, 'PROVIDER_STATE_INVALID') };
     },
   };
 }
 
-function tracking(client: IntegrationClient, operation: string, mapper: ProviderMapper): TrackingSource {
+function tracking(client: RequestExecutor, operation: string, mapper: ProviderMapper): TrackingSource {
   return {
     async pullTracking(context, reference) {
       const value = await client.invoke(context, { operation, method: 'POST', idempotent: true, body: { reference } });
@@ -133,18 +135,20 @@ function tracking(client: IntegrationClient, operation: string, mapper: Provider
   };
 }
 
-function refund(client: IntegrationClient, operation: string, mapper: ProviderMapper): RemoteRefundProvider {
+function refund(client: RequestExecutor, operation: string, mapper: ProviderMapper): RemoteRefundProvider {
   return {
     async refund(context, request) {
+      requireIdempotency(context);
       const value = await client.invoke(context, { operation, method: 'POST', idempotent: false, body: { ...request } });
       return { externalReference: mapper.string(value.externalReference, 'PROVIDER_REFERENCE_INVALID'), state: mapper.string(value.state, 'PROVIDER_STATE_INVALID') };
     },
   };
 }
 
-function remoteReturn(client: IntegrationClient, operation: string, mapper: ProviderMapper): RemoteReturnProvider {
+function remoteReturn(client: RequestExecutor, operation: string, mapper: ProviderMapper): RemoteReturnProvider {
   return {
     async authorize(context, request) {
+      requireIdempotency(context);
       const value = await client.invoke(context, { operation, method: 'POST', idempotent: false, body: { ...request } });
       return {
         externalReference: mapper.string(value.externalReference, 'PROVIDER_RETURN_REFERENCE_INVALID'),
@@ -155,7 +159,7 @@ function remoteReturn(client: IntegrationClient, operation: string, mapper: Prov
   };
 }
 
-function statement(client: IntegrationClient, operation: string, mapper: ProviderMapper): StatementSource {
+function statement(client: RequestExecutor, operation: string, mapper: ProviderMapper): StatementSource {
   return {
     async pullStatement(context, period) {
       const value = await client.invoke(context, { operation, method: 'POST', idempotent: true, body: { ...period } });
@@ -164,13 +168,19 @@ function statement(client: IntegrationClient, operation: string, mapper: Provide
   };
 }
 
-function verification(client: IntegrationClient, operation: string, mapper: ProviderMapper): VerificationProvider {
+function verification(client: RequestExecutor, operation: string, mapper: ProviderMapper): VerificationProvider {
   return {
     async verify(context, request) {
+      requireIdempotency(context);
       const value = await client.invoke(context, { operation, method: 'POST', idempotent: false, body: { reference: request.reference, evidence: request.evidence } });
       return { externalReference: mapper.string(value.externalReference, 'PROVIDER_REFERENCE_INVALID'), state: mapper.string(value.state, 'PROVIDER_STATE_INVALID') };
     },
   };
+}
+
+function requireIdempotency(context: ProviderCallContext): string {
+  if (!context.idempotencyKey?.trim()) throw new Error('PROVIDER_IDEMPOTENCY_KEY_REQUIRED');
+  return context.idempotencyKey;
 }
 
 function receipt(value: Readonly<Record<string, import('@shop/contract').JsonValue>>, mapper: ProviderMapper) {

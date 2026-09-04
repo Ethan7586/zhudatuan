@@ -25,7 +25,7 @@ export class RunSupportJob {
     const item = await this.transactions.read(options, (context) => this.repository.evidence(context, id));
     if (!item) return;
     const result = await this.scanner.scan(item);
-    await this.transactions.write(options, (context) => this.repository.completeEvidence(context, item, result.clean, result.reason));
+    await this.transactions.write(options, (context) => this.repository.completeEvidence(context, item, result));
   }
 
   escalate(ticket: string, reason: 'response' | 'resolution', execution: SupportJobExecution): Promise<void> {

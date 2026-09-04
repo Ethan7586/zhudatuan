@@ -1,4 +1,10 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleRegistry';
-export const Manifest = defineModuleManifest('risk', [], ['database.pool', 'audit.sink'], {
-  jobs: { dependencies: ['catalog'], services: ['database.pool'] },
+import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { RISK_DECISION_PORT } from './public';
+
+export const Manifest = defineModuleManifest({
+  id: 'risk',
+  dependencies: ['member'],
+  services: ['database.pool', 'audit.sink'],
+  ports: [RISK_DECISION_PORT],
+  workloads: { jobs: { dependencies: ['approval', 'catalog'], services: ['database.pool'] } },
 });

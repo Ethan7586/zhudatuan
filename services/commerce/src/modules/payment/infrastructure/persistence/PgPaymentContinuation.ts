@@ -5,17 +5,18 @@ import { PgTransactionManager } from '../../../../adapter/database/PgTransaction
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationHandler';
-import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
+import type { KmsClient } from '../../../../foundation/application/KmsPort';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import type { PaymentContinuation } from '../../application/port/PaymentContinuation';
 import type { PaymentGateway } from '../../application/port/PaymentGateway';
 import { PaymentHoldReleaser, PaymentSettlement } from './PaymentSettlement';
 import type { SettlementOrders } from './PaymentSettlementCore';
 import { PaymentReference } from '../../domain/model/PaymentReference';
+import { PaymentAttempt } from '../../domain/model/PaymentAttempt';
 import { transportErrorCode } from '../../../../foundation/domain/SafeError';
-import type { WechatScene } from '@shop/config/server';
+import type { PaymentScene } from '../../public';
 import type { MemberAccessPort } from '../../../access/public';
-import type { PaymentOrderPort } from '../../../order/public';
+import type { OrderPaymentPort } from '../../../order/public';
 import type { PaymentIdentityPort } from '../../../identity/public';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { sessionAccess } from '../../../../foundation/security/OperationSecurityContext';
@@ -23,6 +24,7 @@ import { sessionAccess } from '../../../../foundation/security/OperationSecurity
 interface IntentState {
   readonly intent: string;
   readonly attempt: string | null;
+  readonly sequence: number | null;
   readonly order_id: string;
   readonly order_number: string;
   readonly scope_id: string;
@@ -34,13 +36,13 @@ interface IntentState {
   readonly payer_ciphertext: string | null;
   readonly state: string | null;
   readonly parameters: unknown | null;
-  readonly scene: WechatScene | null;
+  readonly scene: PaymentScene | null;
   readonly application_hash: string | null;
   readonly expires_at: string;
 }
 export interface PaymentOrders extends SettlementOrders {
-  payment: PaymentOrderPort['payment'];
-  lockPayment: PaymentOrderPort['lockPayment'];
+  payment: OrderPaymentPort['payment'];
+  lockPayment: OrderPaymentPort['lockPayment'];
   markAuthorizing(context: WriteTransactionContext, order: string): Promise<void>;
   resetPayment(context: WriteTransactionContext, order: string): Promise<void>;
 }
@@ -61,29 +63,29 @@ export class PgPaymentContinuation implements PaymentContinuation {
     this.transactions = new PgTransactionManager(pool);
   }
 
-  async continue(request: OperationRequest, input: Readonly<{ order: string; scene: WechatScene }>): Promise<OperationResult> {
+  async continue(request: OperationRequest, input: Readonly<{ order: string; scene: PaymentScene }>): Promise<OperationResult> {
     const access = requireAccess(request);
     const order = input.order;
     if (!order) throw new DomainError('VALIDATION_FAILED', { field: 'order' });
     const sceneValue = input.scene;
     if (sceneValue !== 'miniapp' && sceneValue !== 'jsapi') throw new Error('PAYMENT_SCENE_INVALID');
-    const scene: WechatScene = sceneValue;
+    const scene: PaymentScene = sceneValue;
     const application = this.gateway.application(scene);
     let state: IntentState;
     const immediate = await this.write(request, async (context, client) => {
       const member = await this.members.member(context, access.membership.id);
       const target = await this.orders.lockPayment(context, order, member);
       if (!target || !['unpaid', 'authorizing'].includes(target.paymentState) || target.lifecycleState === 'cancelled') {
-        throw new Error('PAYMENT_INTENT_NOT_PAYABLE');
+        throw new DomainError('PAYMENT_INTENT_NOT_PAYABLE');
       }
       const payer = await this.identities.subject(context, access.actor.id, application.applicationHash);
       const existing = await client.query<Omit<IntentState, 'order_number' | 'scope_id' | 'mall_id' | 'member_id' | 'total_minor'>>(
         `select intent.id intent,intent.order_id,coalesce(wechat.amount_minor,0)::float8 amount_minor,
-        attempt.id attempt,attempt.state,attempt.scene,
+        attempt.id attempt,attempt.sequence,attempt.state,attempt.scene,
         attempt.application_hash,action.parameters,intent.expires_at
         from payment.intent intent
         left join payment.intenttender wechat on wechat.intent_id=intent.id and wechat.kind='wechat'
-        left join lateral(select candidate.id,candidate.state,candidate.scene,candidate.application_hash from payment.attempt candidate where candidate.intent_id=intent.id
+        left join lateral(select candidate.id,candidate.sequence,candidate.state,candidate.scene,candidate.application_hash from payment.attempt candidate where candidate.intent_id=intent.id
           and candidate.provider='wechat' order by candidate.requested_at desc,candidate.id desc limit 1) attempt on true
         left join lateral(select candidate.parameters from payment.action candidate where candidate.intent_id=intent.id
           and candidate.state='active' and candidate.expires_at>clock_timestamp() order by candidate.created_at desc,candidate.id desc limit 1) action on true
@@ -92,7 +94,7 @@ export class PgPaymentContinuation implements PaymentContinuation {
         [order]
       );
       const payment = existing.rows[0];
-      if (!payment) throw new Error('PAYMENT_INTENT_NOT_PAYABLE');
+      if (!payment) throw new DomainError('PAYMENT_INTENT_NOT_PAYABLE');
       const prior: IntentState = Object.freeze({
         ...payment,
         order_number: target.number,
@@ -121,19 +123,22 @@ export class PgPaymentContinuation implements PaymentContinuation {
         return { response: { status: 200, body: { intent: prior.intent, payment, state: 'captured' } } satisfies OperationResult } as const;
       }
       if (!prior.payer_identity || !prior.payer_ciphertext) throw new Error('WECHAT_IDENTITY_REQUIRED');
-      if (prior.attempt) {
+      if (prior.attempt && prior.state === 'started') {
         await client.query("update payment.attempt set state='started',requested_at=clock_timestamp(),completed_at=null where id=$1", [prior.attempt]);
         state = prior;
       } else {
         const attempt = `attempt:${randomUUID()}`;
+        const sequence = (prior.sequence ?? 0) + 1;
+        const started = new PaymentAttempt({ id: attempt, intent: prior.intent, provider: 'wechat', scene, applicationHash: application.applicationHash,
+          state: 'started', externalTransaction: null, requestedAt: new Date(), completedAt: null }).value;
         await client.query(
-          `insert into payment.attempt(id,intent_id,tender_id,provider,scene,application_hash,state,requested_at)
-          values($1,$2,'tender:wechat','wechat',$3,$4,'started',clock_timestamp())`,
-          [attempt, prior.intent, scene, application.applicationHash]
+          `insert into payment.attempt(id,intent_id,tender_id,provider,scene,application_hash,state,sequence,idempotency_key,requested_at)
+          values($1,$2,'tender:wechat','wechat',$3,$4,'started',$5,$6,clock_timestamp())`,
+          [started.id, started.intent, started.scene, started.applicationHash, sequence, `${prior.intent}:wechat:${sequence}`]
         );
         await client.query("update payment.intent set state='preparing',version=version+1 where id=$1 and state='created'", [prior.intent]);
         await this.orders.markAuthorizing(context, order);
-        state = { ...prior, attempt, state: 'started' };
+        state = { ...prior, attempt, sequence, state: 'started' };
       }
       return { state } as const;
     });
@@ -156,7 +161,7 @@ export class PgPaymentContinuation implements PaymentContinuation {
         payer,
         application,
         expiresAt: wechatTime(state.expires_at),
-      });
+      }, providerExecution(request));
       const response = { status: 201, body: { intent: state.intent, parameters } } satisfies OperationResult;
       await this.write(request, async (_context, database) => {
         await database.query(
@@ -216,6 +221,11 @@ export class PgPaymentContinuation implements PaymentContinuation {
       async (context) => work(context, this.access.database(context))
     );
   }
+}
+
+function providerExecution(request: OperationRequest) {
+  const trace = sessionAccess(request.security)?.trace ?? request.input.headers['request-id'] ?? request.type;
+  return Object.freeze({ requestId: request.input.headers['request-id'] ?? trace, traceId: trace, deadline: request.input.deadline, signal: request.input.signal });
 }
 
 function wechatTime(value: string): string {

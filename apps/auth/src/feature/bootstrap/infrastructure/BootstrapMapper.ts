@@ -5,6 +5,7 @@ import type { Bootstrap } from '../model/Bootstrap';
 export function mapBootstrap(value: OperationOutputFor<'identity.bootstrap.read'>): Bootstrap {
   const expiresAt = Date.parse(value.expiresAt);
   if (!Number.isFinite(expiresAt)) throw new TransportError('CONTRACT_INVALID', undefined, false);
+  if (!value.methods.includes(value.preferredMethod)) throw new TransportError('CONTRACT_INVALID', undefined, false);
   return Object.freeze({
     target: value.target,
     returnTarget: value.returnTarget,

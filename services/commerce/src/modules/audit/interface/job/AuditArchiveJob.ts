@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { ArchiveAudit } from '../../application/process/ArchiveAudit';
 
 export class AuditArchiveJob implements JobProcessor {

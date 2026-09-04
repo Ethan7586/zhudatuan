@@ -1,29 +1,31 @@
 import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
 import { rowResult } from '../../../../adapter/database/DatabaseResult';
 
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
-import { bodyRecord, keysetRows, queryPage, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, keysetRows, queryPage, textField } from '../../../../foundation/application/Validation';
 import type { AfterSalePolicyPort, AfterSaleDecision } from '../../../qualification/public';
 import { AfterSale } from '../../domain/model/AfterSale';
 import { Order } from '../../domain/model/Order';
 import { AfterSaleRefundPolicy } from '../../domain/policy/AfterSaleRefundPolicy';
-import type { VerifiedAfterSaleAttachment } from '../../application/service/AfterSaleAttachmentService';
+import type { VerifiedAfterSaleAttachment } from '../../application/service/AfterSaleAttachment';
 import type { OrganizationReadPort } from '../../../organization/public';
 import { organizationScope } from '../../../../foundation/security/OrganizationScope';
-import { availableAfterSaleLines, type LineRow, type OrderRow } from './AfterSaleAvailability';
+import { availableAfterSaleLines, type LineRow } from './AfterSaleAvailability';
 import { requestedLines, type RequestedLine } from './AfterSaleInput';
 import { OrderReadFilter } from '../../application/model/OrderReadFilter';
 import { ORDER_READ_FILTER_SQL, orderReadFilterValues } from './OrderReadSql';
+import { appendAfterSaleEvent, appendAfterSaleTimeline, attachAfterSale, loadAfterSaleLines, loadAfterSaleOrder, scheduleAfterSaleJob, transitionAfterSale } from './AfterSaleStore';
+import type { MemberReadPort } from '../../../member/public';
 export class AfterSalePersistence {
   private readonly refunds = new AfterSaleRefundPolicy();
   constructor(
     private readonly policies: AfterSalePolicyPort,
-    private readonly organizations: OrganizationReadPort
+    private readonly organizations: OrganizationReadPort,
+    private readonly members: Pick<MemberReadPort, 'search'>
   ) {}
 
   async read(request: OperationRequest, database: SqlExecutor): Promise<OperationResult> {
@@ -35,8 +37,10 @@ export class AfterSalePersistence {
     const scopes = member || supplier || store ? [] : await this.organizations.descendants(database.transaction, organizationScope(access.scope));
     const page = queryPage(request.input);
     const timezone = filter.placed === 'today' ? (await this.organizations.scope(database.transaction, access.organization)).timezone : 'UTC';
+    const memberIds = filter.member ? await this.members.search(database.transaction, filter.member) : [];
+    if (filter.member && memberIds.length === 0) return { status: 200, body: { items: [], count: 0, availableLines: [] } };
     const rows = await database.query(
-      `select aftersale.id,aftersale.order_id "orderId",aftersale.state,aftersale.reason_code "reasonCode",
+      `select aftersale.id,aftersale.order_id "orderId",orders.order_number "orderNumber",aftersale.state,aftersale.reason_code "reasonCode",
       aftersale.description,aftersale.currency,aftersale.expected_refund_minor::float8 "expectedRefundMinor",aftersale.expected_refund "expectedRefund",
       aftersale.requires_return "requiresReturn",aftersale.unavailable_reason "unavailableReason",
       aftersale.requested_by "requestedBy",aftersale.created_at "createdAt",aftersale.updated_at "updatedAt",
@@ -58,12 +62,13 @@ export class AfterSalePersistence {
         or (($3::boolean or $4::boolean) and exists(select 1 from ordering.suborder where order_id=orders.id and partner_id=$2))
         or (not $1::boolean and not $3::boolean and not $4::boolean and orders.scope_id=any($5::text[])))
         ${ORDER_READ_FILTER_SQL}
-        and ($14::timestamptz is null or (aftersale.created_at,aftersale.id)<($14::timestamptz,$15))
-      order by aftersale.created_at desc,aftersale.id desc limit $16`,
-      [member, access.scope.id, supplier, store, scopes, ...orderReadFilterValues(filter, timezone), page.sort, page.id, page.fetch]
+      and ($22::timestamptz is null or (aftersale.created_at,aftersale.id)<($22::timestamptz,$23))
+      order by aftersale.created_at desc,aftersale.id desc limit $24`,
+      [member, access.scope.id, supplier, store, scopes, ...orderReadFilterValues(filter, timezone, memberIds), page.sort, page.id, page.fetch]
     );
-    const availableOrder = member && filter.order ? await this.order(database, filter.order, access.scope.id, false) : null;
-    const availableLines = availableOrder === null ? [] : await availableAfterSaleLines(database, availableOrder, await this.lines(database, availableOrder.id, [], false), this.policies);
+    const availableReference = filter.order || filter.search;
+    const availableOrder = member && availableReference ? await loadAfterSaleOrder(database, availableReference, access.scope.id, false) : null;
+    const availableLines = availableOrder === null ? [] : await availableAfterSaleLines(database, availableOrder, await loadAfterSaleLines(database, availableOrder.id, [], false), this.policies);
     const result = keysetRows(rows.rows, page, 'createdAt');
     return { ...result, body: { ...(result.body as Record<string, unknown>), availableLines } };
   }
@@ -71,10 +76,10 @@ export class AfterSalePersistence {
   async apply(request: OperationRequest, database: SqlExecutor, attachments: readonly VerifiedAfterSaleAttachment[]): Promise<OperationResult> {
     const access = requireAccess(request);
     const body = bodyRecord(request.input);
-    const order = await this.order(database, request.input.path.orderid!, access.scope.id, true);
+    const order = await loadAfterSaleOrder(database, request.input.path.orderid!, access.scope.id, true);
     new Order(order.id, order.lifecycle_state, order.payment_state, order.fulfillment_state, order.aftersale_state).assertAftersaleAllowed();
     const requested = requestedLines(body.lines);
-    const lines = await this.lines(
+    const lines = await loadAfterSaleLines(
       database,
       order.id,
       requested.map(({ lineId }) => lineId),
@@ -153,12 +158,13 @@ export class AfterSalePersistence {
       );
       if (!claimed.rows[0]) throw new DomainError('ORDER_AFTERSALE_NOT_ALLOWED', { reason: 'QUANTITY_EXCEEDED' });
     }
-    await this.attach(database, aftersale, attachments);
-    await this.timeline(database, aftersale, null, 'applied', 'application', access.actor.id, { reason });
-    await this.event(database, aftersale, order.scope_id, 'aftersale.applied', access.trace, { order: order.id, member: order.member_id, state: 'applied', amountMinor, currency: order.currency, requiresReturn });
-    await this.transition(database, aftersale, 'applied', 'reviewing', 'reviewqueued', access.actor.id, { automatic: true });
+    await attachAfterSale(database, aftersale, attachments);
+    await appendAfterSaleTimeline(database, aftersale, null, 'applied', 'application', access.actor.id, { reason });
+    await appendAfterSaleEvent(database, aftersale, order.scope_id, 'aftersale.applied', access.trace, { order: order.id, member: order.member_id, state: 'applied', amountMinor, currency: order.currency, requiresReturn });
+    await database.query(`update ordering.orderrecord set aftersale_state='applied',version=version+1,updated_at=clock_timestamp() where id=$1`, [order.id]);
+    await transitionAfterSale(database, aftersale, 'applied', 'reviewing', 'reviewqueued', access.actor.id, { automatic: true });
     await database.query(`update ordering.orderrecord set aftersale_state='reviewing',version=version+1,updated_at=clock_timestamp() where id=$1`, [order.id]);
-    await this.event(database, aftersale, order.scope_id, 'aftersale.changed', access.trace, { order: order.id, member: order.member_id, previousState: 'applied', state: 'reviewing' });
+    await appendAfterSaleEvent(database, aftersale, order.scope_id, 'aftersale.changed', access.trace, { order: order.id, member: order.member_id, previousState: 'applied', state: 'reviewing' });
     const result = await database.query(
       `select id,order_id "orderId",state,expected_refund_minor::float8 "expectedRefundMinor",currency,requires_return "requiresReturn",created_at "createdAt",updated_at "updatedAt",version::float8 version from ordering.aftersale where id=$1`,
       [aftersale]
@@ -181,13 +187,14 @@ export class AfterSalePersistence {
     if (request.input.expectedVersion !== sale.version) throw new DomainError('VERSION_CONFLICT');
     AfterSale.from(sale.state).transition(decision);
     const reason = textField(body, 'reason', 1000);
-    await this.transition(database, sale.id, 'reviewing', decision, 'review', access.actor.id, { reason, evidence: body.evidence ?? null });
-    await this.event(database, sale.id, sale.scope_id, 'aftersale.changed', access.trace, { order: sale.order_id, member: sale.member_id, previousState: 'reviewing', state: decision });
+    await transitionAfterSale(database, sale.id, 'reviewing', decision, 'review', access.actor.id, { reason, evidence: body.evidence ?? null });
+    await appendAfterSaleEvent(database, sale.id, sale.scope_id, 'aftersale.changed', access.trace, { order: sale.order_id, member: sale.member_id, previousState: 'reviewing', state: decision });
     await database.query(
       `insert into ordering.reviewaction(id,aftersale_id,previous_state,next_state,reason,evidence,actor_id,membership_id,grant_evidence,trace_id,occurred_at)
       values($1,$2,'reviewing',$3,$4,$5,$6,$7,$8::jsonb,$9,clock_timestamp())`,
       [`review:${randomUUID()}`, sale.id, decision, reason, body.evidence ?? null, access.actor.id, access.membership.id, JSON.stringify({ permission: 'order.aftersale.decide', scope: access.scope }), access.trace]
     );
+    await database.query(`update ordering.orderrecord set aftersale_state=$2,version=version+1,updated_at=clock_timestamp() where id=$1`, [sale.order_id, decision]);
     let finalState: 'approved' | 'rejected' | 'refunding' = decision;
     if (decision === 'rejected') {
       await database.query(
@@ -195,73 +202,15 @@ export class AfterSalePersistence {
         from ordering.aftersaleline source where source.aftersale_id=$1 and target.id=source.line_id`,
         [sale.id]
       );
-    } else if (sale.requires_return) {
-      await this.job(database, `job:return:${sale.id}`, 'fulfillment', 'fulfillment', sale.scope_id, { aftersale: sale.id });
-    } else {
+    } else if (!sale.requires_return) {
       AfterSale.from('approved').transition('refunding');
-      await this.transition(database, sale.id, 'approved', 'refunding', 'refundqueued', access.actor.id, { requiresReturn: false });
-      await this.event(database, sale.id, sale.scope_id, 'aftersale.changed', access.trace, { order: sale.order_id, member: sale.member_id, previousState: 'approved', state: 'refunding' });
-      await this.job(database, `job:refund:${sale.id}`, 'paymentrefund', 'payment', sale.scope_id, { aftersale: sale.id });
+      await transitionAfterSale(database, sale.id, 'approved', 'refunding', 'refundqueued', access.actor.id, { requiresReturn: false });
+      await appendAfterSaleEvent(database, sale.id, sale.scope_id, 'aftersale.changed', access.trace, { order: sale.order_id, member: sale.member_id, previousState: 'approved', state: 'refunding' });
+      await scheduleAfterSaleJob(database, `job:refund:${sale.id}`, 'paymentrefund', 'payment', sale.scope_id, { aftersale: sale.id });
       finalState = 'refunding';
     }
-    await database.query(`update ordering.orderrecord set aftersale_state=$2,version=version+1,updated_at=clock_timestamp() where id=$1`, [sale.order_id, finalState]);
+    if (finalState !== decision) await database.query(`update ordering.orderrecord set aftersale_state=$2,version=version+1,updated_at=clock_timestamp() where id=$1`, [sale.order_id, finalState]);
     return rowResult(await database.query(`select id,order_id "orderId",state,version::float8 version,updated_at "updatedAt" from ordering.aftersale where id=$1`, [sale.id]));
   }
 
-  private async order(database: SqlExecutor, id: string, member: string, lock: boolean): Promise<OrderRow> {
-    const result = await database.query<OrderRow>(
-      `select id,scope_id,member_id,currency,lifecycle_state,payment_state,fulfillment_state,aftersale_state,evidence
-      from ordering.orderrecord where id=$1 and member_id=$2${lock ? ' for update' : ''}`,
-      [id, member]
-    );
-    const row = result.rows[0];
-    if (!row) throw new DomainError('RESOURCE_NOT_FOUND');
-    return row;
-  }
-
-  private async lines(database: SqlExecutor, order: string, ids: readonly string[], lock: boolean): Promise<readonly LineRow[]> {
-    const result = await database.query<LineRow>(
-      `select id,sku_id,listing_id,title_snapshot,quantity::float8 quantity,fulfilled_quantity::float8 fulfilled_quantity,
-      aftersale_quantity::float8 aftersale_quantity,payable_minor::float8 payable_minor,provider,
-      coalesce(evidence->>'productType','physical') product_type,fulfilled_at,
-      coalesce(evidence->'providerRule','{}') provider_rule from ordering.line
-      where order_id=$1 and (cardinality($2::text[])=0 or id=any($2::text[])) order by id${lock ? ' for update' : ''}`,
-      [order, ids]
-    );
-    return Object.freeze(result.rows);
-  }
-
-  private async attach(database: SqlExecutor, aftersale: string, attachments: readonly VerifiedAfterSaleAttachment[]): Promise<void> {
-    for (const [index, item] of attachments.entries()) {
-      await database.query(
-        `insert into ordering.aftersaleattachment(aftersale_id,sequence,object_id,file_name,media_type,size_bytes,content_hash,created_at)
-        values($1,$2,$3,$4,$5,$6,$7,clock_timestamp())`,
-        [aftersale, index + 1, item.objectId, item.name, item.mediaType, item.sizeBytes, item.contentHash]
-      );
-    }
-  }
-
-  private async transition(database: SqlExecutor, id: string, previous: string, next: string, kind: string, actor: string, evidence: unknown): Promise<void> {
-    const changed = await database.query(`update ordering.aftersale set state=$3,version=version+1,updated_at=clock_timestamp() where id=$1 and state=$2 returning id`, [id, previous, next]);
-    if (!changed.rows[0]) throw new DomainError('ORDER_AFTERSALE_NOT_ALLOWED');
-    await this.timeline(database, id, previous, next, kind, actor, evidence);
-  }
-
-  private async timeline(database: SqlExecutor, id: string, previous: string | null, next: string, kind: string, actor: string, evidence: unknown): Promise<void> {
-    await database.query(
-      `insert into ordering.aftersaletimeline(id,aftersale_id,sequence,kind,previous_state,next_state,actor_id,evidence,occurred_at)
-      select $1,$2,coalesce(max(sequence),0)+1,$3,$4,$5,$6,$7::jsonb,clock_timestamp()
-      from ordering.aftersaletimeline where aftersale_id=$2`,
-      [`timeline:${randomUUID()}`, id, kind, previous, next, actor, JSON.stringify(evidence)]
-    );
-  }
-
-  private async event(database: SqlExecutor, id: string, scope: string, type: string, trace: string, payload: unknown): Promise<void> {
-    await new PgRuntimeWriter(database).append({ id: `event:${randomUUID()}`, type, aggregateType: 'aftersale', aggregate: id, scope, payload: { aftersale: id, ...(payload as Record<string, unknown>) }, trace });
-  }
-
-  private async job(database: SqlExecutor, id: string, kind: string, owner: string, scope: string, payload: unknown): Promise<void> {
-    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('ORDER_JOB_PAYLOAD_INVALID');
-    await new PgRuntimeWriter(database).schedule({ id, kind, owner, scope, payload: payload as Readonly<Record<string, unknown>>, priority: 10 });
-  }
 }

@@ -49,7 +49,7 @@ export class PgAfterSalePolicyPort implements AfterSalePolicyPort {
       windowDays,
       deadline,
       unavailableReason,
-      policy: Object.freeze({ id: configured?.id ?? 'default', version: configured?.version ?? 0, ...source }),
+      policy: Object.freeze({ id: configured?.id ?? 'default', policyVersion: configured?.version ?? 0, rule: source }),
     });
   }
 }

@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { expect, vi } from 'vitest';
 import type { OperationOutputFor } from '@shop/contract';
 import type { AuthEnvironment } from '../src/config/Environment';
 import type { Bootstrap } from '../src/feature/bootstrap/model/Bootstrap';
@@ -10,6 +10,13 @@ export const environment: AuthEnvironment = Object.freeze({
   apiOrigin: 'http://127.0.0.1:3001',
   consoleOrigin: 'http://127.0.0.1:4173',
   storefrontOrigin: 'http://127.0.0.1:3000',
+  returnOrigins: Object.freeze({
+    console: 'http://127.0.0.1:4173',
+    storefront: 'http://127.0.0.1:3000',
+    miniapp: 'http://127.0.0.1:4174',
+    store: 'http://127.0.0.1:4175',
+    supplier: 'http://127.0.0.1:4176',
+  }),
   clientVersion: '1.0.0',
 });
 
@@ -48,6 +55,21 @@ export function identitySdk(methods: Partial<IdentitySdk>): IdentitySdk {
       return vi.fn(async () => { throw new Error(`UNEXPECTED_SDK_CALL:${String(property)}`); });
     },
   }) as IdentitySdk;
+}
+
+export function expectCommandContext(value: unknown, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier' = 'storefront'): void {
+  expect(value).toMatchObject({
+    target,
+    csrfToken: 'csrf-token',
+    deviceId: expect.stringMatching(/^[A-Za-z0-9_-]{43}$/),
+    idempotencyKey: expect.stringMatching(/^[0-9a-f-]{36}$/i),
+  });
+}
+
+export function expectQueryContext(value: unknown, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier' = 'storefront'): void {
+  expect(value).toMatchObject({ target, deviceId: expect.stringMatching(/^[A-Za-z0-9_-]{43}$/) });
+  expect(value).not.toHaveProperty('csrfToken');
+  expect(value).not.toHaveProperty('idempotencyKey');
 }
 
 export function bootstrapOutput(target: 'console' | 'storefront' = 'storefront'): OperationOutputFor<'identity.bootstrap.read'> {

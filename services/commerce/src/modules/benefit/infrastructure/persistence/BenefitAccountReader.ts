@@ -2,7 +2,7 @@ import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
 import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { keysetResult, queryPage } from '../../../../foundation/interface/Validation';
+import { keysetResult, queryPage } from '../../../../foundation/application/Validation';
 import { MEMBER_ACCESS_PORT } from '../../../access/public';
 
 export function benefitAccountReader(context: ModuleContext): (request: OperationRequest, database: SqlExecutor) => Promise<OperationResult> {

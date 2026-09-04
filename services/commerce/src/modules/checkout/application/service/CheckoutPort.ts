@@ -4,6 +4,7 @@ import type { CheckoutQuote } from '../../domain/model/CheckoutQuote';
 import { checkoutSelection, type CheckoutSelection } from '../../domain/model/CheckoutSelection';
 import { QuoteSigner } from '../../domain/service/QuoteSigner';
 import { storedQuote } from '../../domain/model/StoredQuote';
+import type { QuoteControl } from './QuoteDependencyCall';
 
 export type { CheckoutQuote, CheckoutSelection };
 
@@ -20,7 +21,7 @@ export class CheckoutPort {
   selection(input: Readonly<Record<string, unknown>>): CheckoutSelection {
     return checkoutSelection(input);
   }
-  read(transaction: ReadTransactionContext, membership: string, selection: CheckoutSelection, context: Readonly<{ expiresAt: number; signal: AbortSignal }>): Promise<CheckoutQuote> {
+  read(transaction: ReadTransactionContext, membership: string, selection: CheckoutSelection, context: QuoteControl): Promise<CheckoutQuote> {
     return this.reader.read(transaction, membership, selection, context);
   }
   sign(quote: CheckoutQuote): string {

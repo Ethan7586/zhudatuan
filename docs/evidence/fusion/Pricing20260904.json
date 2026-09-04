@@ -1,0 +1,60 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.10 Pricing",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "operations": [
+    "pricing.offers.read",
+    "pricing.rules.create",
+    "pricing.rules.publish"
+  ],
+  "events": [
+    "pricing.rule.created",
+    "pricing.rule.published",
+    "pricing.offer.changed"
+  ],
+  "aggregates": [
+    "PriceBook",
+    "Offer",
+    "PricingRule",
+    "Quote"
+  ],
+  "invariants": [
+    "all-money-is-validated-as-cny-integer-minor-units",
+    "price-books-offers-rules-and-quotes-have-positive-versions",
+    "offers-and-rules-use-half-open-effective-intervals",
+    "rule-publication-requires-an-exact-expected-version-and-an-independent-approver",
+    "pricing-engine-is-the-only-cost-markup-discount-tax-freight-calculation-implementation",
+    "stacking-policy-is-the-only-pricing-and-marketing-exclusivity-selection-implementation",
+    "pricing-loads-marketing-owned-eligible-campaigns-through-its-public-port-and-checkout-does-not-interpret-campaign-rules",
+    "effective-offer-reads-load-bounded-offers-and-rules-in-parallel-and-return-a-breakdown-version-and-watermark",
+    "checkout-and-catalog-consume-effective-offers-or-frozen-quotes-and-never-read-pricing-rule-tables",
+    "provider-offer-upserts-increment-the-offer-version-and-publish-an-event-only-when-content-changes",
+    "listing-cache-invalidations-include-rule-publication-and-offer-change-events",
+    "issued-quotes-are-immutable-persistent-snapshots-with-hash-signature-context-and-expiry-so-no-mutable-quote-cache-can-reinterpret-history",
+    "quote-retrieval-rejects-expired-or-context-mismatched-snapshots-with-price-quote-expired",
+    "largest-remainder-allocation-is-deterministic-and-preserves-every-minor-unit"
+  ],
+  "retainedLiExperience": [
+    "operator-price-rule-create-and-publish-workflow",
+    "human-readable-active-offer-list-and-price-breakdown",
+    "storefront-comparison-price-and-final-price-presentation",
+    "checkout-marketing-discount-voucher-benefit-and-personal-payment-summary",
+    "stable-expiring-quote-confirmation-without-client-side-price-calculation"
+  ],
+  "verification": {
+    "authorityHashes": "matched after the final 6.10 change",
+    "commerceContractSdkConsoleAndStorefrontTypecheck": "passed",
+    "pricingAndCheckoutTests": "8 files and 22 tests passed",
+    "contractTests": "3 files and 1236 tests passed",
+    "databaseMigrationInventory": "historical=171 repair=157 total=328",
+    "databaseReplay": "328 migrations applied and Pricing constraints, triggers, operations, events and object contracts passed",
+    "eventsOperationsAndJobs": "passed with 0 violations",
+    "boundariesAndOwnership": "passed with 0 findings",
+    "transactionsPerformanceDuplicatesAndNaming": "passed with 0 violations",
+    "globalGeneration": "Pricing artifacts are current; the global trace awaits real miniapp, store and supplier feature roots",
+    "globalCallGraph": "Pricing has no broken call point; six generated bindings remain deferred to the three client surface work packages"
+  }
+}

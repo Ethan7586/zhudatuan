@@ -1,6 +1,6 @@
 import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
 import { defineModule } from '../../bootstrap/DefinedModule';
-import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
+import { KMS_CLIENT } from '../../foundation/application/KmsPort';
 import { MEMBER_ACCESS_PORT } from '../access/public';
 import { NOTIFICATION_IDENTITY_PORT } from '../identity/public';
 import { ORGANIZATION_READ_PORT } from '../organization/public';
@@ -14,11 +14,14 @@ import { PreferencesReadHandler } from './application/handler/PreferencesReadHan
 import { TemplatesManageHandler } from './application/handler/TemplatesManageHandler';
 import { TemplatesReadHandler } from './application/handler/TemplatesReadHandler';
 import { PgNotificationRepository } from './infrastructure/persistence/PgNotificationRepository';
+import { VerificationChannelRegistry } from './infrastructure/adapter/VerificationChannelRegistry';
 import { Manifest } from './Manifest';
 import { createJobs } from './interface/job/JobFactory';
 import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
+import { VERIFICATION_CHANNEL_PORT } from './public';
 
 export const NotificationModule = defineModule(Manifest, {
+  ports: [{ token: VERIFICATION_CHANNEL_PORT, value: new VerificationChannelRegistry() }],
   jobs: createJobs,
   events: [{ handler: 'notification', events: EVENT_SUBSCRIPTIONS.notification }],
   handlers: (context) => {

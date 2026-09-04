@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord } from '../../../../foundation/interface/Validation';
+import { bodyRecord } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { ConnectionRepository } from '../port/ConnectionRepository';
 import { connectionConfiguration, secretReference } from '../service/ConnectionConfiguration';
@@ -18,7 +18,7 @@ export class ConnectionsUpdateHandler implements OperationHandler<'channel.conne
       scope: access.scope.id,
       actor: access.actor.id,
       trace: access.trace,
-      secretRef: secretReference(body),
+      secretRef: secretReference(body, true),
       configuration: connectionConfiguration(body),
       expectedVersion: context.expectedVersion ?? null,
     });

@@ -1,14 +1,32 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { OperationOutputFor } from '@shop/contract';
+import type { OrderOperations } from '@shop/sdk/order';
+import type { RequestContextFactory } from '../../shared/api/RequestContext';
+import type { StorefrontSession } from '../../entity/session';
+import { AfterSaleGateway } from './infrastructure/AfterSaleGateway';
 import { mapAfterSalePage } from './infrastructure/AfterSaleMapper';
 
 describe('AfterSale feature', () => {
+  it('reads aftersales through the explicit order relation instead of an internal-id search shortcut', async () => {
+    const aftersalesRead = vi.fn().mockResolvedValue({ items: [], count: 0, availableLines: [] });
+    const operations = { aftersalesRead } as unknown as OrderOperations;
+    const context = vi.fn().mockReturnValue({ headers: {} }) as unknown as RequestContextFactory;
+    const gateway = new AfterSaleGateway(operations, context);
+    const session: StorefrontSession = { membership: 'membership:one', scope: { kind: 'mall', id: 'mall:one' }, accessVersion: 1, csrfToken: 'csrf' };
+
+    await gateway.read(session, 'order:one');
+
+    expect(aftersalesRead).toHaveBeenCalledWith({ query: { order: 'order:one', limit: 50 } }, { headers: {} });
+    expect(context).toHaveBeenCalledWith(session);
+  });
+
   it('maps eligibility, refund split and immutable timeline without losing unavailable reasons', () => {
     const value: OperationOutputFor<'order.aftersales.read'> = {
       items: [
         {
           id: 'aftersale:one',
           orderId: 'order:one',
+          orderNumber: 'SW202609050001',
           state: 'returning',
           reasonCode: 'quality',
           description: '外包装破损且商品受损',

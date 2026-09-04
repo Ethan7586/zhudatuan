@@ -1,0 +1,95 @@
+.shopbutton {
+  display: inline-flex;
+  min-height: var(--sw-control-touch-target);
+  align-items: center;
+  justify-content: center;
+  gap: var(--sw-space-1);
+  border: var(--sw-border-width) solid var(--sw-border-strong);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  color: var(--sw-text);
+  padding: var(--sw-control-gap) var(--sw-control-padding);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: var(--sw-font-weight-bold);
+  line-height: var(--sw-line-height-body);
+  text-align: center;
+  touch-action: manipulation;
+  transition: background var(--sw-duration-fast) var(--sw-ease-standard);
+}
+
+.shopbutton svg {
+  width: var(--sw-icon-size-sm);
+  height: var(--sw-icon-size-sm);
+  flex: 0 0 auto;
+}
+
+.shopbutton:is([data-hovered], :hover) {
+  border-color: var(--sw-brand);
+  background: var(--sw-surface-subtle);
+}
+
+.shopbuttonprimary {
+  border-color: var(--sw-brand);
+  background: var(--sw-brand);
+  color: var(--sw-text-inverse);
+}
+
+.shopbuttonprimary:is([data-hovered], :hover) {
+  background: var(--sw-brand-hover);
+}
+
+.shopbuttonprimary:is([data-pressed], :active) {
+  background: var(--sw-brand-pressed);
+}
+
+.shopbuttonstrong {
+  border-color: var(--sw-brand-ink);
+  background: var(--sw-brand-ink);
+  color: var(--sw-text-inverse);
+}
+
+.shopbuttonstrong:is([data-hovered], :hover) {
+  border-color: var(--sw-sidebar-top);
+  background: var(--sw-sidebar-top);
+}
+
+.shopbuttonquiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--sw-brand-dark);
+  box-shadow: none;
+}
+
+.shopbuttonquiet:is([data-hovered], :hover) {
+  border-color: transparent;
+  background: var(--sw-brand-light);
+}
+
+.shopbuttondanger {
+  border-color: var(--sw-danger);
+  background: var(--sw-danger);
+  color: var(--sw-text-inverse);
+}
+
+.shopbuttondanger:is([data-hovered], :hover) {
+  border-color: var(--sw-danger-strong);
+  background: var(--sw-danger-strong);
+}
+
+.shopbutton:is([data-focus-visible], :focus-visible) {
+  outline: var(--sw-focus-width) solid var(--sw-brand);
+  outline-offset: var(--sw-focus-offset);
+}
+
+.shopbutton:is([data-pressed], :active) {
+  box-shadow: inset 0 0 0 0.125rem var(--sw-inverse-border);
+}
+
+.shopbutton:is([disabled], [data-disabled], [data-pending]) {
+  cursor: not-allowed;
+  opacity: var(--sw-opacity-disabled);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shopbutton { transition: none; }
+}

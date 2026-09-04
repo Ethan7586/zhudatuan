@@ -1,16 +1,18 @@
 import type { AuthTarget } from '@shop/config/client';
+import { CLIENT_TARGETS } from '@shop/config/clientcatalog';
 import { ClientError } from '@shop/sdk';
+import { hasControlCharacter } from './TextSafety';
 
-export interface AuthRequest {
+export interface SessionRequest {
   readonly target: AuthTarget;
   readonly returnTarget?: string;
   readonly returnPath?: string;
 }
 
-export function readAuthRequest(location: Pick<Location, 'search'>): AuthRequest {
+export function readSessionRequest(location: Pick<Location, 'search'>): SessionRequest {
   const query = new URLSearchParams(location.search);
   const targetValue = single(query, 'target');
-  const target = targetValue === 'console' ? 'console' : 'storefront';
+  const target = readTarget(targetValue);
   const returnTarget = safeValue(single(query, 'returntarget'));
   const returnPath = safePath(single(query, 'returnpath'));
   return Object.freeze({ target, ...(returnTarget ? { returnTarget } : {}), ...(!returnTarget && returnPath ? { returnPath } : {}) });
@@ -24,7 +26,7 @@ export function authTargetSearch(search: string, target: AuthTarget): string {
   return `?${query.toString()}`;
 }
 
-export function approvedDestination(value: string, target: AuthTarget, origins: Readonly<{ console: string; storefront: string }>): string {
+export function approvedDestination(value: string, target: AuthTarget, origins: Readonly<Record<AuthTarget, string>>): string {
   let destination: URL;
   try {
     destination = new URL(value);
@@ -36,6 +38,13 @@ export function approvedDestination(value: string, target: AuthTarget, origins: 
   return destination.toString();
 }
 
+function readTarget(value: string | undefined): AuthTarget {
+  if (value === undefined || value === '') return 'storefront';
+  const target = CLIENT_TARGETS.find((candidate) => candidate === value);
+  if (target === undefined) throw new ClientError('RETURN_TARGET_INVALID');
+  return target;
+}
+
 function single(query: URLSearchParams, key: string): string | undefined {
   const values = query.getAll(key);
   if (values.length > 1) throw new ClientError('RETURN_TARGET_INVALID');
@@ -45,7 +54,7 @@ function single(query: URLSearchParams, key: string): string | undefined {
 function safeValue(value: string | undefined): string | undefined {
   const normalized = value?.trim();
   if (!normalized) return undefined;
-  if (normalized.length > 2048 || /[\u0000-\u001f\u007f]/.test(normalized)) throw new ClientError('RETURN_TARGET_INVALID');
+  if (normalized.length > 2048 || hasControlCharacter(normalized)) throw new ClientError('RETURN_TARGET_INVALID');
   return normalized;
 }
 

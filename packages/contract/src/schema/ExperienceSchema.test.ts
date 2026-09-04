@@ -4,6 +4,8 @@ import { exactOperationOutput } from './index';
 const summary = Object.freeze({
   id: 'application:one',
   mallId: 'mall:one',
+  mallName: '一号福利商城',
+  brandName: '一号品牌',
   code: 'MALLONE',
   publicSlug: 'mall-one',
   name: '一号商城',
@@ -11,6 +13,8 @@ const summary = Object.freeze({
   version: 3,
   headSequence: 3,
   publishedSequence: 2,
+  theme: { preset: 'shop', primaryColor: '#2563eb', accentColor: '#f97316', logoObjectRef: null, faviconObjectRef: null },
+  domain: { mode: 'platform', address: 'https://fufu.wang/s/mall-one', state: 'ready' },
   updatedAt: '2026-09-01T00:00:00.000Z',
   entry: { handle: 'mall-one', url: 'https://fufu.wang/s/mall-one', state: 'ready', releaseId: 'release:one', releaseVersion: 'version:two', contentHash: 'a'.repeat(64) },
 });

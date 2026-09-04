@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, integerField, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import { Template, type DeliveryChannelId } from '../../domain/model/Template';
 import type { NotificationRepository } from '../port/NotificationRepository';
@@ -23,7 +23,9 @@ export class TemplatesManageHandler implements OperationHandler<'notification.te
       nullable(body.providerTemplate, 500),
       nullable(body.subject, 500),
       textField(body, 'body', 10_000),
-      state(body.status)
+      state(body.status),
+      purpose(body.purpose),
+      mandatory(body.mandatory)
     );
     const saved = await this.notifications.saveTemplate(context.transaction, {
       id: template.id,
@@ -35,7 +37,10 @@ export class TemplatesManageHandler implements OperationHandler<'notification.te
       providerTemplate: template.providerTemplate,
       subject: template.subject,
       body: template.body,
+      purpose: template.purpose,
+      mandatory: template.mandatory,
       status: template.state,
+      expectedVersion: context.expectedVersion ?? 0,
     });
     if (!saved) throw new Error('NOTIFICATION_TEMPLATE_ID_CONFLICT');
     if (!saved.matches) throw new Error('NOTIFICATION_TEMPLATE_IMMUTABLE_OR_TRANSITION_INVALID');
@@ -58,6 +63,16 @@ export class TemplatesManageHandler implements OperationHandler<'notification.te
       } as OperationOutputFor<'notification.templates.manage'>,
     };
   }
+}
+function purpose(value: unknown): 'transactional' | 'marketing' {
+  const selected = value ?? 'transactional';
+  if (!['transactional', 'marketing'].includes(String(selected))) throw new Error('NOTIFICATION_TEMPLATE_PURPOSE_INVALID');
+  return selected as 'transactional' | 'marketing';
+}
+function mandatory(value: unknown): boolean {
+  if (value === undefined) return false;
+  if (typeof value !== 'boolean') throw new Error('NOTIFICATION_TEMPLATE_PURPOSE_INVALID');
+  return value;
 }
 
 function channel(value: unknown): DeliveryChannelId {

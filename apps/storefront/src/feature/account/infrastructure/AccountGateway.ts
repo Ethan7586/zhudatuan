@@ -1,24 +1,28 @@
-import type { StorefrontClient } from '../../../shared/api/Client';
+import type { IdentityOperations } from '@shop/sdk/identity';
+import type { MemberOperations } from '@shop/sdk/member';
+import type { RequestContextFactory } from '../../../shared/api/RequestContext';
 import type { StorefrontSession } from '../../../entity/session';
 import type { Membership } from '../model/Membership';
-import { mapMemberships } from './AccountMapper';
-import { mapFavorites } from './AccountMapper';
+import { mapAddresses, mapFavorites, mapMemberships, mapProfile } from './AccountMapper';
 import type { Favorite } from '../model/Favorite';
-import type { OperationOutputFor } from '@shop/contract';
 import type { AddressDraft } from '../model/Address';
+import type { Address } from '../model/Address';
+import type { Profile } from '../model/Profile';
+import type { BenefitBalances } from '../../benefit/public/BenefitReader';
+import type { AccountPort } from '../public/AccountPort';
 
-export class AccountGateway {
+export class AccountGateway implements AccountPort {
   constructor(
-    private readonly member: StorefrontClient['commerce']['member'],
-    private readonly identity: StorefrontClient['commerce']['identity'],
-    private readonly context: StorefrontClient['context']
+    private readonly member: MemberOperations,
+    private readonly identity: IdentityOperations,
+    private readonly context: RequestContextFactory
   ) {}
-  profile(session: StorefrontSession, signal?: AbortSignal): Promise<OperationOutputFor<'member.profile.read'>> {
-    return this.member.profileRead({}, this.context(session, { signal }));
+  async profile(session: StorefrontSession, balances: BenefitBalances, signal?: AbortSignal): Promise<Profile> {
+    return mapProfile(await this.member.profileRead({}, this.context(session, { signal })), balances);
   }
 
-  addresses(session: StorefrontSession, signal?: AbortSignal): Promise<OperationOutputFor<'member.addresses.read'>> {
-    return this.member.addressesRead({ query: { limit: 50 } }, this.context(session, { signal }));
+  async addresses(session: StorefrontSession, signal?: AbortSignal): Promise<readonly Address[]> {
+    return mapAddresses(await this.member.addressesRead({ query: { limit: 50 } }, this.context(session, { signal })));
   }
 
   changeAddress(session: StorefrontSession, addressId: string, draft: AddressDraft | null, expectedVersion: number, idempotencyKey: string) {
@@ -31,6 +35,7 @@ export class AccountGateway {
               mobile: draft.mobile,
               address: draft.detail,
               region: [draft.province, draft.city, draft.district].filter(Boolean).join('/'),
+              is_default: draft.isDefault,
               status: 'active' as const,
             }
           : { status: 'deleted' as const },

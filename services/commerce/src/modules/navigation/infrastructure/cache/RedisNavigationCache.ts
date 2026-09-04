@@ -7,7 +7,7 @@ import type { NavigationKey } from '../../domain/model/NavigationKey';
 import { NavigationTree, type NavigationTreeValue } from '../../domain/model/NavigationTree';
 
 interface CacheEnvelope {
-  readonly schema: 1;
+  readonly schema: 2;
   readonly pointer: string;
   readonly key: string;
   readonly catalog: string;
@@ -28,7 +28,7 @@ export class RedisNavigationCache implements NavigationCacheRepository {
 
   async get(pointer: string): Promise<NavigationTree | null> {
     const key = await this.cache.get<string>(pointer);
-    if (typeof key !== 'string' || !/^navigation:v1:[a-f0-9]{64}$/.test(key)) return null;
+    if (typeof key !== 'string' || !/^navigation:v2:[a-f0-9]{64}$/.test(key)) return null;
     const envelope = await this.cache.get<CacheEnvelope>(key);
     if (!this.valid(envelope, pointer, key)) {
       if (envelope !== null) this.observe('corrupt');
@@ -45,7 +45,7 @@ export class RedisNavigationCache implements NavigationCacheRepository {
   async put(pointer: string, key: NavigationKey, tree: NavigationTreeValue): Promise<boolean> {
     const ttl = jitteredTtl();
     const now = Date.now();
-    const unsigned = { schema: 1 as const, pointer, key: key.cache, catalog: tree.catalogVersion, tree, createdAt: new Date(now).toISOString(), expiresAt: new Date(now + ttl * 1_000).toISOString() };
+    const unsigned = { schema: 2 as const, pointer, key: key.cache, catalog: tree.catalogVersion, tree, createdAt: new Date(now).toISOString(), expiresAt: new Date(now + ttl * 1_000).toISOString() };
     const envelope = Object.freeze({ ...unsigned, signature: this.sign(unsigned) });
     if (Buffer.byteLength(JSON.stringify(envelope)) > NAVIGATION_CONFIGURATION.maximumBytes) throw new Error('NAVIGATION_CACHE_SIZE_EXCEEDED');
     const stored = await this.cache.put(key.cache, envelope, ttl);
@@ -100,7 +100,7 @@ export class RedisNavigationCache implements NavigationCacheRepository {
   private valid(value: CacheEnvelope | null, pointer: string, key: string): value is CacheEnvelope {
     if (
       value === null ||
-      value.schema !== 1 ||
+      value.schema !== 2 ||
       typeof value.catalog !== 'string' ||
       typeof value.createdAt !== 'string' ||
       value.pointer !== pointer ||

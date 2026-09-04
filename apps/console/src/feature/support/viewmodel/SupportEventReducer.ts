@@ -27,16 +27,18 @@ export function reconcileQueue(current: InfiniteData<TicketPage, string | undefi
   if (!current) return current;
   return {
     ...current,
-    pages: current.pages.map((page) => Object.freeze({
-      ...page,
-      items: Object.freeze(page.items.map((ticket) => (ticket.id === event.ticketId ? reconcileTicket(ticket, event, selected) : ticket))),
-    })),
+    pages: current.pages.map((page) =>
+      Object.freeze({
+        ...page,
+        items: Object.freeze(page.items.map((ticket) => (ticket.id === event.ticketId ? reconcileTicket(ticket, event, selected) : ticket))),
+      })
+    ),
   };
 }
 
 export function reconcileUploads(current: readonly UploadedAttachment[], event: SupportEvent): readonly UploadedAttachment[] {
   if (!event.evidenceId || (event.type !== 'support.attachment.ready' && event.type !== 'support.attachment.rejected')) return current;
-  return Object.freeze(current.map((item) => (item.id === event.evidenceId ? Object.freeze({ ...item, state: event.type === 'support.attachment.ready' ? 'clean' as const : 'rejected' as const }) : item)));
+  return Object.freeze(current.map((item) => (item.id === event.evidenceId ? Object.freeze({ ...item, state: event.type === 'support.attachment.ready' ? ('clean' as const) : ('rejected' as const) }) : item)));
 }
 
 function reconcileTicket(ticket: Ticket, event: SupportEvent, selected?: string): Ticket {

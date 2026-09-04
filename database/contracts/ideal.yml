@@ -1,0 +1,197 @@
+version: 1
+artifact: commerce
+
+schemaHead:
+  contractVersion: 5.0.0
+  migrationHead: "20260907010000"
+  migrationCount: 415
+  historyHead: "20260903116000"
+  historyCount: 316
+  checksum: sha256
+
+tableResolution:
+  source: database/contracts/objects.yml
+  selector:
+    kind: table
+  identityField: id
+  ownerField: owner
+  requireEveryTable: true
+  rejectUnknownTable: true
+  rejectDuplicateTable: true
+
+ownership:
+  ownerPattern: ^shop[a-z]+owner$
+  aliases:
+    invoice: finance
+    ordering: order
+  ownerRoles:
+    login: false
+    bypassRls: false
+  migrationRole:
+    name: shopmigration
+    login: false
+    inherit: false
+    bypassRls: false
+
+keys:
+  primaryKey:
+    default: required
+    exemptions:
+      - reason: partition-child-inherits-parent-identity
+        relationKinds: [partition]
+      - reason: append-only-ledger-has-validated-business-key
+        tables:
+          - finance.entry
+          - inventory.movement
+  businessKey:
+    default: primary-or-unique-required
+    minimumColumns: 1
+    nullsDistinct: true
+
+classification:
+  default: internal
+  levels: [public, internal, sensitive, restricted]
+  sensitiveColumns:
+    - email
+    - phone
+    - mobile
+    - address
+    - recipient
+    - display_name
+    - taxid
+    - identity
+  restrictedColumns:
+    - secret
+    - token
+    - credential
+    - ciphertext
+    - private_key
+    - password
+    - voucher_code
+  protectedRepresentations:
+    restricted:
+      allowedSuffixes: [_ciphertext, _hash, _fingerprint, _masked, _key_version, _ref]
+      forbiddenSuffixes: [_plain, _plaintext, _raw]
+  moduleOverrides:
+    audit: sensitive
+    identity: restricted
+    member: sensitive
+    partner: sensitive
+    payment: sensitive
+    voucher: restricted
+    finance: sensitive
+    invoice: restricted
+
+retention:
+  default: lifecycle
+  rules:
+    - schemas: [audit, finance, invoice]
+      period: P7Y
+      disposition: archive-then-delete
+      legalHold: supported
+    - schemas: [ordering, fulfillment, payment, voucher, benefit, referral]
+      period: P5Y
+      disposition: archive-then-delete
+      legalHold: supported
+    - schemas: [identity, access, approval, risk]
+      period: P3Y
+      disposition: anonymize-then-delete
+      legalHold: supported
+    - schemas: [runtime, observability, notification]
+      period: P180D
+      disposition: checkpoint-then-delete
+      legalHold: false
+    - schemas: [reporting]
+      period: P2Y
+      disposition: rebuild-or-delete
+      legalHold: false
+
+partitioning:
+  catalogTable: runtime.partitionpolicy
+  requireCatalogMatch: true
+  requiredTables:
+    - audit.record
+    - audit.accessrecord
+    - finance.entry
+    - inventory.movement
+    - notification.deliveryattempt
+    - ordering.stateevent
+    - runtime.inbox
+    - runtime.outbox
+  default:
+    required: false
+  required:
+    strategy: range
+    key: occurred_at-or-created_at
+    futurePartitions: 3
+    retentionPartitions: 24
+
+rowLevelSecurity:
+  enabled: required
+  forced: required
+  publicPrivileges: zero
+  policies:
+    moduleOwner: moduleowner
+    moduleRead: moduleread
+    migration: migrationaccess
+  runtimeRoles:
+    - shopapp
+    - shopjob
+    - shopread
+  denyByDefault: true
+
+invariants:
+  contracts:
+    - database/contracts/sql/module_ownership_contract.sql
+    - database/contracts/sql/row_level_security_contract.sql
+    - database/contracts/sql/finance_conservation_contract.sql
+    - database/contracts/sql/inventory_conservation_contract.sql
+    - database/contracts/sql/voucher_state_contract.sql
+    - database/contracts/sql/orphan_contract.sql
+    - database/contracts/sql/immutable_audit_contract.sql
+  evidence:
+    machineReadable: true
+    redactSecrets: true
+    sampleIdentifier: business-number
+    requiredFields: [table, constraint, sampleBusinessNumber]
+
+migrationPlanning:
+  targetBatchBytes: 16777216
+  minimumBatchRows: 500
+  maximumBatchRows: 10000
+  assumedRowBytes: 1024
+  assumedRowsPerSecond: 5000
+  statementTimeoutMs: 30000
+  productionArchiveRequired: true
+
+migrationEvidence:
+  schema: shop.migration.evidence.v1
+  archiveRoot: docs/evidence/migration
+  sampleSize: 20
+  sampleTables:
+    - ordering.orderrecord
+    - payment.intent
+    - payment.payment
+    - finance.entry
+    - inventory.stockitem
+    - inventory.reservation
+    - voucher.voucher
+    - voucher.tenderhold
+  compare:
+    - tableCounts
+    - distributions
+    - amountsMinor
+    - inventory
+    - voucher
+    - sampleHashes
+  hardBlockers:
+    - orphanCount
+    - duplicateBusinessKeyCount
+    - undecryptableSecretCount
+    - unbalancedJournalCount
+    - negativeInventoryCount
+    - rlsScopeLeak
+  maximumLockWaitMs: 5000
+  maximumDurationMs: 1800000
+  productionSecretProofRequired: true
+  exactOrApprovedDifferencesRequired: true

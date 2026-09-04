@@ -2,7 +2,7 @@ import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionA
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { createHash, createHmac } from 'node:crypto';
-import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
+import type { KmsClient } from '../../../../foundation/application/KmsPort';
 import type { ProviderRepository, ProviderSummary } from '../../application/port/ProviderRepository';
 import { ProviderInstance, type ProviderInstanceValue } from '../../domain/model/ProviderInstance';
 import type { ProviderHttpClient } from '../security/ProviderHttpClient';
@@ -33,7 +33,7 @@ export class PgProviderRepository implements ProviderRepository {
       from identity.provider where status='enabled' and ($1::uuid is null or tenant_id=$1) order by type,id limit 64`,
       [tenant ?? null]
     );
-    return Object.freeze(result.rows.map((row) => Object.freeze({ id: row.id, type: row.type, status: row.status })));
+    return Object.freeze(result.rows.map((row) => Object.freeze({ id: row.id, type: row.type, status: 'enabled' as const })));
   }
   async require(context: ReadTransactionContext, id: string): Promise<ProviderInstance> {
     const database = this.transactions.database(context);

@@ -1,4 +1,6 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { randomUUID } from 'node:crypto';
+import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { OrderPaymentPort } from './OrderPaymentPort';
 import type { AfterSaleReturnEvidence } from '../../public';
@@ -118,7 +120,7 @@ export class OrderAfterSalePort extends OrderPaymentPort {
       [aftersale, returned, actor, accepted]
     );
   }
-  private async transition(database: import('../../../../adapter/database/PgTransactionAccess').SqlExecutor, aftersale: string, previous: string, next: string, kind: string, actor: string, evidence: unknown): Promise<void> {
+  private async transition(database: SqlExecutor, aftersale: string, previous: string, next: string, kind: string, actor: string, evidence: unknown): Promise<void> {
     const changed = await database.query<{
       order_id: string;
       scope_id: string;
@@ -151,5 +153,3 @@ export class OrderAfterSalePort extends OrderPaymentPort {
     if (next === 'refunding') await runtime.schedule({ id: `job:refund:${aftersale}`, kind: 'paymentrefund', owner: 'payment', scope: row.scope_id, payload: { aftersale }, priority: 10 });
   }
 }
-import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';

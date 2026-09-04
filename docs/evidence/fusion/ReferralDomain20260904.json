@@ -1,0 +1,81 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.14 Referral",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "operations": [
+    "referral.settings.read",
+    "referral.settings.manage",
+    "referral.products.read",
+    "referral.products.manage",
+    "referral.members.read",
+    "referral.members.apply",
+    "referral.members.approve",
+    "referral.members.disqualify",
+    "referral.bindings.read",
+    "referral.bindings.create",
+    "referral.commissions.read",
+    "referral.earnings.read",
+    "referral.links.read",
+    "referral.withdrawals.read",
+    "referral.withdrawals.create"
+  ],
+  "events": [
+    "referral.setting.changed",
+    "referral.product.changed",
+    "referral.member.applied",
+    "referral.member.approved",
+    "referral.member.disqualified",
+    "referral.binding.created",
+    "referral.commission.created",
+    "referral.commission.settled",
+    "referral.commission.reversed",
+    "referral.withdrawal.requested",
+    "referral.withdrawal.paid",
+    "referral.withdrawal.failed"
+  ],
+  "aggregates": ["ReferralRelation", "Attribution", "Commission", "CommissionRule", "Withdrawal"],
+  "invariants": [
+    "first-touch-attribution-is-fixed-for-its-days-or-permanent-window-and-only-an-expired-days-binding-can-be-superseded",
+    "binding-source-is-controlled-and-self-referral-circular-referral-and-duplicate-relation-paths-fail-closed",
+    "one-referral-token-can-bind-many-different-customers-while-each-customer-has-at-most-one-active-attribution",
+    "recruitment-can-be-closed-manually-reviewed-or-auto-approved-from-one-versioned-setting",
+    "direct-commission-and-optional-immediate-inviter-reward-are-the-only-two-recipient-kinds-and-the-total-product-rate-cannot-exceed-one-hundred-percent",
+    "benefit-funded-order-value-is-deterministically-removed-before-per-line-commission-and-reward-calculation",
+    "one-order-line-rule-version-and-recipient-kind-produces-at-most-one-commission-with-an-immutable-attribution-rule-setting-and-event-version-snapshot",
+    "paid-or-received-settlement-trigger-and-freeze-days-are-read-from-the-original-commission-snapshot-not-current-settings",
+    "refund-tenders-exclude-benefit-refunds-and-allocate-once-per-unique-order-line-before-each-commission-kind-is-reversed-from-original-evidence",
+    "batch-settlement-uses-advisory-locks-and-skip-locked-selection-and-persists-skipped-failed-and-succeeded-receipts-per-source-version",
+    "finance-posting-uses-a-stable-business-key-so-retry-and-concurrent-workers-cannot-create-a-second-ledger-entry",
+    "withdrawal-reserves-only-finance-settled-value-enforces-minimum-monthly-limit-pending-reversal-and-version-and-never-uses-unsettled-commission",
+    "withdrawal-payment-requires-a-central-approval-instance-proof-and-maker-checker-separation-before-finance-posting",
+    "legacy-withdrawals-without-real-approval-evidence-are-failed-and-release-their-reserved-balance-during-the-hard-cut",
+    "referral-public-ports-are-scope-bound-and-expose-only-self-binding-create-or-safe-self-attribution-read-while-admin-mutations-remain-operations"
+  ],
+  "retainedLiExperience": [
+    "the-existing-zhudatuan-li-six-section-referral-workspace-information-hierarchy-and-confirmed-action-dialog-are-retained",
+    "settings-now-expose-recruitment-review-reward-binding-trigger-freeze-minimum-and-monthly-withdrawal-policies-with-beginner-readable-Chinese-labels",
+    "product-rows-and-editing-retain-both-direct-commission-and-customer-reward-rates",
+    "commission-rows-distinguish-direct-commission-and-customer-reward-and-show-order-line-rule-version-reversal-and-settlement-state",
+    "permanent-and-expiring-bindings-have-explicit-human-readable-expiry-and-lifecycle-state",
+    "storefront-attribution-remains-operation-backed-idempotent-and-has-no-preview-only-or-placeholder-action"
+  ],
+  "verification": {
+    "authorityHashes": "matched after the final 6.14 change",
+    "commerceTypecheck": "passed",
+    "referralTests": "6 files and 16 tests passed",
+    "consoleTypecheckAndTests": "passed; 3 files and 10 tests passed",
+    "storefrontTests": "1 file and 7 tests passed",
+    "contractTests": "6 files and 51 tests passed",
+    "databaseMigrationInventory": "historical=171 repair=161 total=332",
+    "databaseReplay": "332 migrations applied and Referral setting, binding, commission evidence, withdrawal approval, settlement receipt, RLS, index, trigger and lifecycle contracts passed",
+    "errorsTransactionsBoundariesOwnershipDuplicatesNaming": "passed with zero Referral findings",
+    "eventsOperationsJobs": "passed with zero violations",
+    "globalGeneration": "Referral contract artifacts are current; the global requirement trace still awaits the real miniapp feature root",
+    "globalCallGraph": "Referral has no broken call point; six generated bindings remain in the future Miniapp, Store and Supplier surface packages",
+    "globalFrontend": "Referral console and storefront surfaces are complete; 37 manifest or canonical-brand findings remain in Approval, Task, Miniapp, Store and Supplier surface packages",
+    "globalLineBudget": "Referral files pass; 16 pre-existing Access, Approval, Organization, Capability, Pricing, Checkout, Bootstrap and shared console debts remain for their owning cleanup packages"
+  }
+}

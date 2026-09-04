@@ -1,5 +1,6 @@
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
+import { Failure } from '../domain/Failure';
 
 export type HostResolver = (hostname: string) => Promise<readonly string[]>;
 
@@ -49,7 +50,7 @@ async function resolveHost(hostname: string): Promise<readonly string[]> {
   try {
     return (await lookup(hostname, { all: true, verbatim: true })).map(({ address }) => address);
   } catch (cause) {
-    throw new Error('NETWORK_DNS_FAILED', { cause });
+    throw new Failure('NETWORK_DNS_FAILED', 'unavailable', true, undefined, { cause });
   }
 }
 

@@ -1,4 +1,5 @@
 version: 2
+owner: product
 routes:
   - id: authlogin
     surface: auth
@@ -18,12 +19,6 @@ routes:
     feature: membership
     requirements:
       - MVPIDENTITY
-  - id: authcallback
-    surface: auth
-    path: /callback
-    feature: federation
-    requirements:
-      - MVPIDENTITY
   - id: authlink
     surface: auth
     path: /link
@@ -34,6 +29,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/cockpit
     feature: cockpit
+    default: true
     requirements:
       - MVPGROUPDASHBOARD
       - MVPMALLDASHBOARD
@@ -67,14 +63,18 @@ routes:
       - MVPPLATFORM
       - MVPGROUPPOOL
       - MVPMALLPOOL
-  - id: consoleproductimport
+  - id: consoleimporttask
     surface: console
     path: /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
-    feature: product
+    feature: task
     requirements:
       - MVPPLATFORM
       - MVPGROUPPOOL
       - MVPMALLPOOL
+      - MVPGROUPVOUCHER
+      - MVPMALLVOUCHER
+      - MVPGROUPSETTING
+      - MVPMALLSETTING
   - id: consoleorders
     surface: console
     path: /scopes/:scopeKind/:scopeId/orders
@@ -119,6 +119,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/finance
     feature: finance
+    group: funds
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
@@ -126,6 +127,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/finance/entries
     feature: finance
+    group: funds
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
@@ -133,6 +135,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/finance/statements
     feature: finance
+    group: difference
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
@@ -140,6 +143,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/finance/reconciliations
     feature: finance
+    group: difference
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
@@ -147,6 +151,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/finance/settlements
     feature: finance
+    group: settlement
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
@@ -154,6 +159,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/finance/withdrawals
     feature: finance
+    group: withdrawal
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
@@ -161,6 +167,23 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/finance/invoices
     feature: finance
+    group: invoice
+    requirements:
+      - MVPGROUPFINANCE
+      - MVPMALLFINANCE
+  - id: consolefinancegovernance
+    surface: console
+    path: /scopes/:scopeKind/:scopeId/finance/governance
+    feature: finance
+    group: governance
+    requirements:
+      - MVPGROUPFINANCE
+      - MVPMALLFINANCE
+  - id: consolefinanceaudit
+    surface: console
+    path: /scopes/:scopeKind/:scopeId/finance/audit
+    feature: finance
+    group: governance
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
@@ -189,13 +212,17 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/settings
     feature: settings
+    group: system
     requirements:
+      - MVPPLATFORM
+      - MVPDISTRIBUTION
       - MVPGROUPSETTING
       - MVPMALLSETTING
   - id: consoleaccess
     surface: console
     path: /scopes/:scopeKind/:scopeId/settings/access
     feature: access
+    group: organization
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
@@ -203,6 +230,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/settings/members
     feature: member
+    group: organization
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
@@ -210,6 +238,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/settings/invitations
     feature: invitation
+    group: organization
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
@@ -217,6 +246,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/settings/partners
     feature: partner
+    group: resources
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
@@ -224,6 +254,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/settings/partners/qualifications
     feature: qualification
+    group: resources
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
@@ -231,6 +262,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/settings/messages
     feature: notification
+    group: connections
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
@@ -238,6 +270,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/settings/risk
     feature: risk
+    group: security
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
@@ -245,6 +278,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/settings/federation
     feature: federation
+    group: connections
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
@@ -253,6 +287,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/settings/directory
     feature: directory
+    group: organization
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
@@ -353,6 +388,283 @@ routes:
     feature: notification
     requirements:
       - MVPMALLSETTING
+  - id: consoleapprovals
+    surface: console
+    path: /scopes/:scopeKind/:scopeId/settings/approvals
+    feature: approval
+    group: organization
+    requirements:
+      - MVPGROUPSETTING
+      - MVPMALLSETTING
+  - id: consoleapprovaltemplate
+    surface: console
+    path: /scopes/:scopeKind/:scopeId/settings/approvals/:templateId
+    feature: approval
+    group: organization
+    requirements:
+      - MVPGROUPSETTING
+      - MVPMALLSETTING
+  - id: consoletasks
+    surface: console
+    path: /scopes/:scopeKind/:scopeId/tasks
+    feature: task
+    requirements:
+      - MVPGROUPORDER
+      - MVPMALLORDER
+      - MVPGROUPVOUCHER
+      - MVPMALLVOUCHER
+      - MVPGROUPFINANCE
+      - MVPMALLFINANCE
+  - id: miniapphome
+    surface: miniapp
+    path: /
+    feature: home
+    default: true
+    requirements:
+      - MVPMALLDASHBOARD
+      - MVPMALLDESIGN
+  - id: miniappcatalog
+    surface: miniapp
+    path: /products
+    feature: catalog
+    requirements:
+      - MVPMALLPOOL
+  - id: miniappproduct
+    surface: miniapp
+    path: /products/:productId
+    feature: product
+    requirements:
+      - MVPMALLPOOL
+  - id: miniappcart
+    surface: miniapp
+    path: /cart
+    feature: cart
+    requirements:
+      - MVPMALLORDER
+  - id: miniappcheckout
+    surface: miniapp
+    path: /checkout
+    feature: checkout
+    requirements:
+      - MVPMALLORDER
+  - id: miniapppayment
+    surface: miniapp
+    path: /payments/:paymentId/result
+    feature: payment
+    requirements:
+      - MVPMALLORDER
+  - id: miniapporders
+    surface: miniapp
+    path: /orders
+    feature: order
+    requirements:
+      - MVPMALLORDER
+  - id: miniapporder
+    surface: miniapp
+    path: /orders/:orderId
+    feature: order
+    requirements:
+      - MVPMALLORDER
+  - id: miniappaftersale
+    surface: miniapp
+    path: /orders/:orderId/aftersales
+    feature: aftersale
+    requirements:
+      - MVPMALLORDER
+  - id: miniappvouchers
+    surface: miniapp
+    path: /vouchers
+    feature: voucher
+    requirements:
+      - MVPMALLVOUCHER
+  - id: miniappbenefits
+    surface: miniapp
+    path: /benefits
+    feature: benefit
+    requirements:
+      - MVPMALLFINANCE
+  - id: miniappreferral
+    surface: miniapp
+    path: /referral
+    feature: referral
+    requirements:
+      - MVPDISTRIBUTION
+  - id: miniappprofile
+    surface: miniapp
+    path: /profile
+    feature: account
+    requirements:
+      - MVPMALLSETTING
+  - id: miniappsecurity
+    surface: miniapp
+    path: /profile/security
+    feature: account
+    requirements:
+      - MVPMALLSETTING
+  - id: miniappsupport
+    surface: miniapp
+    path: /support
+    feature: support
+    requirements:
+      - MVPMALLSUPPORT
+  - id: miniappsupportcase
+    surface: miniapp
+    path: /support/:caseId
+    feature: support
+    requirements:
+      - MVPMALLSUPPORT
+  - id: miniappnotifications
+    surface: miniapp
+    path: /notifications
+    feature: notification
+    requirements:
+      - MVPMALLSETTING
+  - id: storetasks
+    surface: store
+    path: /scopes/:scopeKind/:scopeId/tasks
+    feature: task
+    default: true
+    requirements:
+      - MVPMALLORDER
+  - id: storeorderswork
+    surface: store
+    path: /scopes/:scopeKind/:scopeId/orders
+    feature: order
+    requirements:
+      - MVPMALLORDER
+  - id: storeorderwork
+    surface: store
+    path: /scopes/:scopeKind/:scopeId/orders/:orderId
+    feature: order
+    requirements:
+      - MVPMALLORDER
+  - id: storefulfillment
+    surface: store
+    path: /scopes/:scopeKind/:scopeId/fulfillment
+    feature: fulfillment
+    requirements:
+      - MVPMALLORDER
+  - id: storereturnwork
+    surface: store
+    path: /scopes/:scopeKind/:scopeId/returns
+    feature: return
+    requirements:
+      - MVPMALLORDER
+  - id: storeverification
+    surface: store
+    path: /scopes/:scopeKind/:scopeId/verification
+    feature: verification
+    requirements:
+      - MVPMALLVOUCHER
+  - id: storevoucherswork
+    surface: store
+    path: /scopes/:scopeKind/:scopeId/vouchers
+    feature: voucher
+    requirements:
+      - MVPMALLVOUCHER
+  - id: storedevices
+    surface: store
+    path: /scopes/:scopeKind/:scopeId/devices
+    feature: device
+    requirements:
+      - MVPMALLSETTING
+  - id: storeinventorywork
+    surface: store
+    path: /scopes/:scopeKind/:scopeId/inventory
+    feature: inventory
+    requirements:
+      - MVPMALLPOOL
+  - id: storesupportwork
+    surface: store
+    path: /scopes/:scopeKind/:scopeId/support
+    feature: support
+    requirements:
+      - MVPMALLSUPPORT
+  - id: storeaccountwork
+    surface: store
+    path: /scopes/:scopeKind/:scopeId/account
+    feature: account
+    requirements:
+      - MVPMALLSETTING
+  - id: suppliertasks
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/tasks
+    feature: task
+    default: true
+    requirements:
+      - MVPGROUPORDER
+  - id: suppliercatalog
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/catalog
+    feature: catalog
+    requirements:
+      - MVPGROUPPOOL
+  - id: supplierinventory
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/inventory
+    feature: inventory
+    requirements:
+      - MVPGROUPPOOL
+  - id: supplierorders
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/orders
+    feature: order
+    requirements:
+      - MVPGROUPORDER
+  - id: suppliershipments
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/shipments
+    feature: fulfillment
+    requirements:
+      - MVPGROUPORDER
+  - id: supplierreturns
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/returns
+    feature: return
+    requirements:
+      - MVPGROUPORDER
+  - id: supplierstatements
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/statements
+    feature: finance
+    requirements:
+      - MVPGROUPFINANCE
+  - id: supplierconnections
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/connections
+    feature: connection
+    requirements:
+      - MVPPROVIDER
+  - id: supplierpricing
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/pricing
+    feature: pricing
+    requirements:
+      - MVPGROUPPOOL
+  - id: supplierreconciliation
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/reconciliation
+    feature: reconciliation
+    requirements:
+      - MVPGROUPFINANCE
+  - id: supplierinvoice
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/invoices
+    feature: invoice
+    requirements:
+      - MVPGROUPFINANCE
+  - id: suppliersupport
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/support
+    feature: support
+    requirements:
+      - MVPGROUPSUPPORT
+  - id: supplieraccount
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/account
+    feature: account
+    requirements:
+      - MVPGROUPSETTING
 nodes:
   - id: platformcontrol
     surface: console
@@ -362,14 +674,9 @@ nodes:
     icon: control
     order: 10
     entry: organization.layers.read
-    permissions:
-      - organization.layer.read
-    capabilities:
-      - organization.layers.read
-    requirements:
-      - MVPPLATFORM
     empty: hide
     routeid: consolecontrol
+    placement: primary
   - id: platformcatalog
     surface: console
     scope: platform
@@ -378,14 +685,9 @@ nodes:
     icon: product
     order: 20
     entry: catalog.pools.read
-    permissions:
-      - catalog.pool.read
-    capabilities:
-      - catalog.pools.read
-    requirements:
-      - MVPPLATFORM
     empty: hide
     routeid: consoleproducts
+    placement: primary
   - id: platformvoucher
     surface: console
     scope: platform
@@ -393,15 +695,21 @@ nodes:
     title: 卡券治理台
     icon: voucher
     order: 30
-    entry: voucher.cardlibraries.read
-    permissions:
-      - voucher.cardlibrary.read
-    capabilities:
-      - voucher.cardlibraries.read
-    requirements:
-      - MVPPLATFORM
+    entry: voucher.credentialpools.list
     empty: hide
     routeid: consolevouchers
+    placement: primary
+  - id: platformsettings
+    surface: console
+    scope: platform
+    parent: null
+    title: 平台设置
+    icon: settings
+    order: 50
+    entry: access.center.read
+    empty: hide
+    routeid: consolesettings
+    placement: primary
   - id: distributioncontrol
     surface: console
     scope: distributor
@@ -410,14 +718,42 @@ nodes:
     icon: control
     order: 10
     entry: channel.distributors.read
-    permissions:
-      - channel.distributor.read
-    capabilities:
-      - channel.distributors.read
-    requirements:
-      - MVPDISTRIBUTION
     empty: hide
     routeid: consolecontrol
+    placement: primary
+  - id: distributionreferral
+    surface: console
+    scope: distributor
+    parent: null
+    title: 分销管理
+    icon: referral
+    order: 20
+    entry: referral.settings.read
+    empty: hide
+    routeid: consolereferral
+    placement: primary
+  - id: distributionchannel
+    surface: console
+    scope: distributor
+    parent: null
+    title: 渠道管理
+    icon: channel
+    order: 30
+    entry: channel.connections.read
+    empty: hide
+    routeid: consolechannels
+    placement: primary
+  - id: distributionsettings
+    surface: console
+    scope: distributor
+    parent: null
+    title: 分销设置
+    icon: settings
+    order: 40
+    entry: access.center.read
+    empty: hide
+    routeid: consolesettings
+    placement: primary
   - id: groupdashboard
     surface: console
     scope: enterprise
@@ -426,30 +762,20 @@ nodes:
     icon: dashboard
     order: 10
     entry: reporting.dashboard.read
-    permissions:
-      - reporting.dashboard.read
-    capabilities:
-      - reporting.dashboard.read
-    requirements:
-      - MVPGROUPDASHBOARD
     empty: hide
     routeid: consolecockpit
+    placement: primary
   - id: groupcontrol
     surface: console
     scope: enterprise
-    parent: null
+    parent: groupdashboard
     title: 智慧翼中控台
     icon: control
     order: 15
     entry: runtime.health.dependency
-    permissions:
-      - runtime.health.read
-    capabilities:
-      - runtime.health.dependency
-    requirements:
-      - MVPPLATFORM
     empty: hide
     routeid: consolecontrol
+    placement: secondary
   - id: groupapplication
     surface: console
     scope: enterprise
@@ -458,14 +784,9 @@ nodes:
     icon: application
     order: 20
     entry: experience.applications.read
-    permissions:
-      - experience.application.read
-    capabilities:
-      - experience.applications.read
-    requirements:
-      - MVPGROUPAPPLICATION
     empty: hide
     routeid: consoleexperience
+    placement: primary
   - id: groupproduct
     surface: console
     scope: enterprise
@@ -474,14 +795,9 @@ nodes:
     icon: product
     order: 30
     entry: catalog.pools.read
-    permissions:
-      - catalog.pool.read
-    capabilities:
-      - catalog.pools.read
-    requirements:
-      - MVPGROUPPOOL
     empty: hide
     routeid: consoleproducts
+    placement: primary
   - id: grouporder
     surface: console
     scope: enterprise
@@ -490,30 +806,20 @@ nodes:
     icon: order
     order: 40
     entry: order.orders.read
-    permissions:
-      - order.read
-    capabilities:
-      - order.orders.read
-    requirements:
-      - MVPGROUPORDER
     empty: hide
     routeid: consoleorders
+    placement: primary
   - id: groupreferral
     surface: console
     scope: enterprise
-    parent: null
+    parent: groupproduct
     title: 分销返佣系统
     icon: referral
     order: 45
     entry: referral.settings.read
-    permissions:
-      - referral.setting.read
-    capabilities:
-      - referral.settings.read
-    requirements:
-      - MVPDISTRIBUTION
     empty: hide
     routeid: consolereferral
+    placement: secondary
   - id: groupvoucher
     surface: console
     scope: enterprise
@@ -521,31 +827,21 @@ nodes:
     title: 卡券治理台
     icon: voucher
     order: 50
-    entry: voucher.cardlibraries.read
-    permissions:
-      - voucher.cardlibrary.read
-    capabilities:
-      - voucher.cardlibraries.read
-    requirements:
-      - MVPGROUPVOUCHER
+    entry: voucher.products.list
     empty: hide
     routeid: consolevouchers
+    placement: primary
   - id: groupchannel
     surface: console
     scope: enterprise
-    parent: null
+    parent: groupsettings
     title: 渠道接入系统
     icon: channel
     order: 47
     entry: channel.connections.read
-    permissions:
-      - channel.connection.read
-    capabilities:
-      - channel.connections.read
-    requirements:
-      - MVPPROVIDER
     empty: hide
     routeid: consolechannels
+    placement: secondary
   - id: groupfinance
     surface: console
     scope: enterprise
@@ -554,14 +850,9 @@ nodes:
     icon: finance
     order: 60
     entry: finance.overview.read
-    permissions:
-      - finance.overview.read
-    capabilities:
-      - finance.overview.read
-    requirements:
-      - MVPGROUPFINANCE
     empty: hide
     routeid: consolefinance
+    placement: primary
   - id: groupreporting
     surface: console
     scope: enterprise
@@ -570,14 +861,9 @@ nodes:
     icon: reporting
     order: 70
     entry: reporting.sales.read
-    permissions:
-      - reporting.sales.read
-    capabilities:
-      - reporting.sales.read
-    requirements:
-      - MVPGROUPREPORT
     empty: hide
     routeid: consolereporting
+    placement: primary
   - id: groupsupport
     surface: console
     scope: enterprise
@@ -586,14 +872,9 @@ nodes:
     icon: support
     order: 80
     entry: support.cases.read
-    permissions:
-      - support.case.read
-    capabilities:
-      - support.cases.read
-    requirements:
-      - MVPGROUPSUPPORT
     empty: hide
     routeid: consolesupport
+    placement: secondary
   - id: groupsettings
     surface: console
     scope: enterprise
@@ -602,14 +883,9 @@ nodes:
     icon: settings
     order: 90
     entry: access.center.read
-    permissions:
-      - access.center.read
-    capabilities:
-      - access.center.read
-    requirements:
-      - MVPGROUPSETTING
     empty: hide
     routeid: consolesettings
+    placement: primary
   - id: malldashboard
     surface: console
     scope: mall
@@ -618,30 +894,20 @@ nodes:
     icon: dashboard
     order: 10
     entry: reporting.dashboard.read
-    permissions:
-      - reporting.dashboard.read
-    capabilities:
-      - reporting.dashboard.read
-    requirements:
-      - MVPMALLDASHBOARD
     empty: hide
     routeid: consolecockpit
+    placement: primary
   - id: mallcontrol
     surface: console
     scope: mall
-    parent: null
+    parent: malldashboard
     title: 智慧翼中控台
     icon: control
     order: 15
     entry: runtime.health.dependency
-    permissions:
-      - runtime.health.read
-    capabilities:
-      - runtime.health.dependency
-    requirements:
-      - MVPPLATFORM
     empty: hide
     routeid: consolecontrol
+    placement: secondary
   - id: malldesign
     surface: console
     scope: mall
@@ -650,14 +916,9 @@ nodes:
     icon: application
     order: 20
     entry: experience.applications.read
-    permissions:
-      - experience.application.read
-    capabilities:
-      - experience.applications.read
-    requirements:
-      - MVPMALLDESIGN
     empty: hide
     routeid: consoleexperience
+    placement: primary
   - id: mallproduct
     surface: console
     scope: mall
@@ -666,14 +927,9 @@ nodes:
     icon: product
     order: 30
     entry: catalog.pools.read
-    permissions:
-      - catalog.pool.read
-    capabilities:
-      - catalog.pools.read
-    requirements:
-      - MVPMALLPOOL
     empty: hide
     routeid: consoleproducts
+    placement: primary
   - id: mallorder
     surface: console
     scope: mall
@@ -682,14 +938,9 @@ nodes:
     icon: order
     order: 40
     entry: order.orders.read
-    permissions:
-      - order.read
-    capabilities:
-      - order.orders.read
-    requirements:
-      - MVPMALLORDER
     empty: hide
     routeid: consoleorders
+    placement: primary
   - id: mallvoucher
     surface: console
     scope: mall
@@ -697,31 +948,21 @@ nodes:
     title: 卡券治理台
     icon: voucher
     order: 50
-    entry: voucher.cardlibraries.read
-    permissions:
-      - voucher.cardlibrary.read
-    capabilities:
-      - voucher.cardlibraries.read
-    requirements:
-      - MVPMALLVOUCHER
+    entry: voucher.search.read
     empty: hide
     routeid: consolevouchers
+    placement: primary
   - id: mallchannel
     surface: console
     scope: mall
-    parent: null
+    parent: mallsettings
     title: 渠道接入系统
     icon: channel
     order: 47
     entry: channel.connections.read
-    permissions:
-      - channel.connection.read
-    capabilities:
-      - channel.connections.read
-    requirements:
-      - MVPPROVIDER
     empty: hide
     routeid: consolechannels
+    placement: secondary
   - id: mallfinance
     surface: console
     scope: mall
@@ -730,30 +971,20 @@ nodes:
     icon: finance
     order: 60
     entry: finance.overview.read
-    permissions:
-      - finance.overview.read
-    capabilities:
-      - finance.overview.read
-    requirements:
-      - MVPMALLFINANCE
     empty: hide
     routeid: consolefinance
+    placement: primary
   - id: mallreferral
     surface: console
     scope: mall
-    parent: null
+    parent: mallproduct
     title: 分销返佣系统
     icon: referral
     order: 45
     entry: referral.settings.read
-    permissions:
-      - referral.setting.read
-    capabilities:
-      - referral.settings.read
-    requirements:
-      - MVPDISTRIBUTION
     empty: hide
     routeid: consolereferral
+    placement: secondary
   - id: mallreporting
     surface: console
     scope: mall
@@ -762,14 +993,9 @@ nodes:
     icon: reporting
     order: 70
     entry: reporting.sales.read
-    permissions:
-      - reporting.sales.read
-    capabilities:
-      - reporting.sales.read
-    requirements:
-      - MVPMALLREPORT
     empty: hide
     routeid: consolereporting
+    placement: primary
   - id: mallsupport
     surface: console
     scope: mall
@@ -778,14 +1004,9 @@ nodes:
     icon: support
     order: 80
     entry: support.cases.read
-    permissions:
-      - support.case.read
-    capabilities:
-      - support.cases.read
-    requirements:
-      - MVPMALLSUPPORT
     empty: hide
     routeid: consolesupport
+    placement: secondary
   - id: mallsettings
     surface: console
     scope: mall
@@ -794,14 +1015,9 @@ nodes:
     icon: settings
     order: 90
     entry: access.center.read
-    permissions:
-      - access.center.read
-    capabilities:
-      - access.center.read
-    requirements:
-      - MVPMALLSETTING
     empty: hide
     routeid: consolesettings
+    placement: primary
   - id: platformchannel
     surface: console
     scope: platform
@@ -810,14 +1026,9 @@ nodes:
     icon: channel
     order: 40
     entry: channel.connections.read
-    permissions:
-      - channel.connection.read
-    capabilities:
-      - channel.connections.read
-    requirements:
-      - MVPPROVIDER
     empty: hide
     routeid: consolechannels
+    placement: primary
   - id: groupadmin
     surface: console
     scope: enterprise
@@ -826,14 +1037,9 @@ nodes:
     icon: access
     order: 10
     entry: access.center.read
-    permissions:
-      - access.center.read
-    capabilities:
-      - access.center.read
-    requirements:
-      - MVPGROUPSETTING
     empty: hide
     routeid: consoleaccess
+    placement: secondary
   - id: groupmemberdata
     surface: console
     scope: enterprise
@@ -842,14 +1048,9 @@ nodes:
     icon: member
     order: 20
     entry: member.members.read
-    permissions:
-      - member.read
-    capabilities:
-      - member.members.read
-    requirements:
-      - MVPGROUPSETTING
     empty: hide
     routeid: consolemembers
+    placement: secondary
   - id: groupinvitation
     surface: console
     scope: enterprise
@@ -858,14 +1059,9 @@ nodes:
     icon: member
     order: 15
     entry: identity.invitations.read
-    permissions:
-      - identity.invitation.read
-    capabilities:
-      - identity.invitations.read
-    requirements:
-      - MVPGROUPSETTING
     empty: hide
     routeid: consoleinvitations
+    placement: secondary
   - id: grouppartner
     surface: console
     scope: enterprise
@@ -874,14 +1070,9 @@ nodes:
     icon: partner
     order: 30
     entry: partner.partners.read
-    permissions:
-      - partner.read
-    capabilities:
-      - partner.partners.read
-    requirements:
-      - MVPGROUPSETTING
     empty: hide
     routeid: consolepartners
+    placement: secondary
   - id: groupqualification
     surface: console
     scope: enterprise
@@ -890,14 +1081,9 @@ nodes:
     icon: qualification
     order: 35
     entry: qualification.center.read
-    permissions:
-      - qualification.read
-    capabilities:
-      - qualification.center.read
-    requirements:
-      - MVPGROUPSETTING
     empty: hide
     routeid: consolequalification
+    placement: secondary
   - id: groupmessage
     surface: console
     scope: enterprise
@@ -906,30 +1092,20 @@ nodes:
     icon: notification
     order: 40
     entry: notification.templates.read
-    permissions:
-      - notification.template.read
-    capabilities:
-      - notification.templates.read
-    requirements:
-      - MVPGROUPSETTING
     empty: hide
     routeid: consolenotifications
+    placement: secondary
   - id: grouprisk
     surface: console
     scope: enterprise
-    parent: null
+    parent: groupsettings
     title: 系统治理台
     icon: risk
     order: 100
     entry: risk.center.read
-    permissions:
-      - risk.read
-    capabilities:
-      - risk.center.read
-    requirements:
-      - MVPGROUPSETTING
     empty: hide
     routeid: consolerisk
+    placement: secondary
   - id: groupprovider
     surface: console
     scope: enterprise
@@ -937,17 +1113,10 @@ nodes:
     title: 登录方式
     icon: identity
     order: 60
-    entry: identity.providers.read
-    permissions:
-      - identity.provider.manage
-    capabilities:
-      - identity.federation
-      - identity.providers.read
-    requirements:
-      - MVPGROUPSETTING
-      - MVPIDENTITY
+    entry: identity.providers.center.read
     empty: hide
     routeid: consolefederation
+    placement: secondary
   - id: groupdirectory
     surface: console
     scope: enterprise
@@ -956,15 +1125,9 @@ nodes:
     icon: directory
     order: 70
     entry: organization.directories.read
-    permissions:
-      - organization.directory.read
-    capabilities:
-      - identity.directory
-      - organization.directories.read
-    requirements:
-      - MVPGROUPSETTING
     empty: hide
     routeid: consoledirectory
+    placement: secondary
   - id: malladmin
     surface: console
     scope: mall
@@ -973,14 +1136,9 @@ nodes:
     icon: access
     order: 10
     entry: access.center.read
-    permissions:
-      - access.center.read
-    capabilities:
-      - access.center.read
-    requirements:
-      - MVPMALLSETTING
     empty: hide
     routeid: consoleaccess
+    placement: secondary
   - id: mallmemberdata
     surface: console
     scope: mall
@@ -989,14 +1147,9 @@ nodes:
     icon: member
     order: 20
     entry: member.members.read
-    permissions:
-      - member.read
-    capabilities:
-      - member.members.read
-    requirements:
-      - MVPMALLSETTING
     empty: hide
     routeid: consolemembers
+    placement: secondary
   - id: mallinvitation
     surface: console
     scope: mall
@@ -1005,14 +1158,9 @@ nodes:
     icon: member
     order: 15
     entry: identity.invitations.read
-    permissions:
-      - identity.invitation.read
-    capabilities:
-      - identity.invitations.read
-    requirements:
-      - MVPMALLSETTING
     empty: hide
     routeid: consoleinvitations
+    placement: secondary
   - id: mallpartner
     surface: console
     scope: mall
@@ -1021,14 +1169,9 @@ nodes:
     icon: partner
     order: 30
     entry: partner.partners.read
-    permissions:
-      - partner.read
-    capabilities:
-      - partner.partners.read
-    requirements:
-      - MVPMALLSETTING
     empty: hide
     routeid: consolepartners
+    placement: secondary
   - id: mallqualification
     surface: console
     scope: mall
@@ -1037,14 +1180,9 @@ nodes:
     icon: qualification
     order: 35
     entry: qualification.center.read
-    permissions:
-      - qualification.read
-    capabilities:
-      - qualification.center.read
-    requirements:
-      - MVPMALLSETTING
     empty: hide
     routeid: consolequalification
+    placement: secondary
   - id: mallmessage
     surface: console
     scope: mall
@@ -1053,30 +1191,20 @@ nodes:
     icon: notification
     order: 40
     entry: notification.templates.read
-    permissions:
-      - notification.template.read
-    capabilities:
-      - notification.templates.read
-    requirements:
-      - MVPMALLSETTING
     empty: hide
     routeid: consolenotifications
+    placement: secondary
   - id: mallrisk
     surface: console
     scope: mall
-    parent: null
+    parent: mallsettings
     title: 系统治理台
     icon: risk
     order: 100
     entry: risk.center.read
-    permissions:
-      - risk.read
-    capabilities:
-      - risk.center.read
-    requirements:
-      - MVPMALLSETTING
     empty: hide
     routeid: consolerisk
+    placement: secondary
   - id: mallprovider
     surface: console
     scope: mall
@@ -1084,17 +1212,10 @@ nodes:
     title: 登录方式
     icon: identity
     order: 60
-    entry: identity.providers.read
-    permissions:
-      - identity.provider.manage
-    capabilities:
-      - identity.federation
-      - identity.providers.read
-    requirements:
-      - MVPMALLSETTING
-      - MVPIDENTITY
+    entry: identity.providers.center.read
     empty: hide
     routeid: consolefederation
+    placement: secondary
   - id: malldirectory
     surface: console
     scope: mall
@@ -1103,15 +1224,9 @@ nodes:
     icon: directory
     order: 70
     entry: organization.directories.read
-    permissions:
-      - organization.directory.read
-    capabilities:
-      - identity.directory
-      - organization.directories.read
-    requirements:
-      - MVPMALLSETTING
     empty: hide
     routeid: consoledirectory
+    placement: secondary
   - id: storehome
     surface: storefront
     scope: mall
@@ -1120,14 +1235,9 @@ nodes:
     icon: home
     order: 10
     entry: storefront.bootstrap.read
-    permissions: []
-    capabilities:
-      - storefront.bootstrap.read
-    requirements:
-      - MVPMALLDASHBOARD
-      - MVPMALLDESIGN
     empty: hide
     routeid: storehome
+    placement: primary
   - id: storecatalog
     surface: storefront
     scope: mall
@@ -1136,13 +1246,9 @@ nodes:
     icon: product
     order: 20
     entry: storefront.catalog.read
-    permissions: []
-    capabilities:
-      - storefront.catalog.read
-    requirements:
-      - MVPMALLPOOL
     empty: hide
     routeid: storecatalog
+    placement: primary
   - id: storeproduct
     surface: storefront
     scope: mall
@@ -1151,13 +1257,9 @@ nodes:
     icon: product
     order: 30
     entry: storefront.catalog.read
-    permissions: []
-    capabilities:
-      - storefront.catalog.read
-    requirements:
-      - MVPMALLPOOL
     empty: hide
     routeid: storeproduct
+    placement: contextual
   - id: storecart
     surface: storefront
     scope: mall
@@ -1166,14 +1268,9 @@ nodes:
     icon: cart
     order: 40
     entry: cart.current.read
-    permissions:
-      - cart.read
-    capabilities:
-      - cart.current.read
-    requirements:
-      - MVPMALLORDER
     empty: hide
     routeid: storecart
+    placement: secondary
   - id: storecheckout
     surface: storefront
     scope: mall
@@ -1182,14 +1279,9 @@ nodes:
     icon: cart
     order: 50
     entry: checkout.quotes.current.read
-    permissions:
-      - checkout.create
-    capabilities:
-      - checkout.quotes.current.read
-    requirements:
-      - MVPMALLORDER
     empty: hide
     routeid: storecheckout
+    placement: secondary
   - id: storepayment
     surface: storefront
     scope: mall
@@ -1198,14 +1290,9 @@ nodes:
     icon: finance
     order: 60
     entry: payment.intents.read
-    permissions:
-      - payment.read
-    capabilities:
-      - payment.intents.read
-    requirements:
-      - MVPMALLORDER
     empty: hide
     routeid: storepayment
+    placement: contextual
   - id: storeorders
     surface: storefront
     scope: mall
@@ -1214,14 +1301,9 @@ nodes:
     icon: order
     order: 70
     entry: order.orders.read
-    permissions:
-      - order.read
-    capabilities:
-      - order.orders.read
-    requirements:
-      - MVPMALLORDER
     empty: hide
     routeid: storeorders
+    placement: primary
   - id: storeorder
     surface: storefront
     scope: mall
@@ -1229,15 +1311,10 @@ nodes:
     title: 订单详情
     icon: order
     order: 80
-    entry: order.orders.read
-    permissions:
-      - order.read
-    capabilities:
-      - order.orders.read
-    requirements:
-      - MVPMALLORDER
+    entry: order.detail.read
     empty: hide
     routeid: storeorder
+    placement: contextual
   - id: storeaftersale
     surface: storefront
     scope: mall
@@ -1246,14 +1323,9 @@ nodes:
     icon: aftersale
     order: 90
     entry: order.aftersales.read
-    permissions:
-      - order.aftersale.read
-    capabilities:
-      - order.aftersales.read
-    requirements:
-      - MVPMALLORDER
     empty: hide
     routeid: storeaftersale
+    placement: contextual
   - id: storevouchers
     surface: storefront
     scope: mall
@@ -1261,15 +1333,10 @@ nodes:
     title: 我的卡券
     icon: voucher
     order: 100
-    entry: voucher.bindings.read
-    permissions:
-      - voucher.binding.read
-    capabilities:
-      - voucher.bindings.read
-    requirements:
-      - MVPMALLVOUCHER
+    entry: voucher.search.read
     empty: hide
     routeid: storevouchers
+    placement: primary
   - id: storebenefits
     surface: storefront
     scope: mall
@@ -1278,14 +1345,9 @@ nodes:
     icon: finance
     order: 110
     entry: benefit.accounts.read
-    permissions:
-      - benefit.read
-    capabilities:
-      - benefit.accounts.read
-    requirements:
-      - MVPMALLFINANCE
     empty: hide
     routeid: storebenefits
+    placement: primary
   - id: storeprofile
     surface: storefront
     scope: mall
@@ -1294,14 +1356,9 @@ nodes:
     icon: member
     order: 120
     entry: member.profile.read
-    permissions:
-      - member.profile.read
-    capabilities:
-      - member.profile.read
-    requirements:
-      - MVPMALLSETTING
     empty: hide
     routeid: storeprofile
+    placement: primary
   - id: storesecurity
     surface: storefront
     scope: mall
@@ -1310,14 +1367,9 @@ nodes:
     icon: security
     order: 130
     entry: identity.sessions.read
-    permissions:
-      - identity.session.read
-    capabilities:
-      - identity.sessions.read
-    requirements:
-      - MVPMALLSETTING
     empty: hide
     routeid: storesecurity
+    placement: secondary
   - id: storesupport
     surface: storefront
     scope: mall
@@ -1326,14 +1378,9 @@ nodes:
     icon: support
     order: 140
     entry: support.cases.read
-    permissions:
-      - support.case.read
-    capabilities:
-      - support.cases.read
-    requirements:
-      - MVPMALLSUPPORT
     empty: hide
     routeid: storesupport
+    placement: primary
   - id: storesupportcase
     surface: storefront
     scope: mall
@@ -1342,14 +1389,9 @@ nodes:
     icon: support
     order: 150
     entry: support.messages.read
-    permissions:
-      - support.message.read
-    capabilities:
-      - support.messages.read
-    requirements:
-      - MVPMALLSUPPORT
     empty: hide
     routeid: storesupportcase
+    placement: contextual
   - id: storenotifications
     surface: storefront
     scope: mall
@@ -1358,11 +1400,842 @@ nodes:
     icon: notification
     order: 160
     entry: notification.notifications.read
-    permissions:
-      - notification.read
-    capabilities:
-      - notification.notifications.read
-    requirements:
-      - MVPMALLSETTING
     empty: hide
     routeid: storenotifications
+    placement: secondary
+  - id: groupapproval
+    surface: console
+    scope: enterprise
+    parent: groupsettings
+    title: 审批规则
+    icon: approval
+    order: 55
+    entry: approval.templates.list
+    empty: hide
+    routeid: consoleapprovals
+    placement: secondary
+  - id: mallapproval
+    surface: console
+    scope: mall
+    parent: mallsettings
+    title: 审批规则
+    icon: approval
+    order: 55
+    entry: approval.templates.list
+    empty: hide
+    routeid: consoleapprovals
+    placement: secondary
+  - id: grouptasks
+    surface: console
+    scope: enterprise
+    parent: groupdashboard
+    title: 我的任务
+    icon: task
+    order: 85
+    entry: runtime.jobs.read
+    empty: showdisabled
+    routeid: consoletasks
+    placement: secondary
+  - id: malltasks
+    surface: console
+    scope: mall
+    parent: malldashboard
+    title: 我的任务
+    icon: task
+    order: 85
+    entry: runtime.jobs.read
+    empty: showdisabled
+    routeid: consoletasks
+    placement: secondary
+  - id: miniapphome
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 首页
+    icon: home
+    order: 10
+    entry: storefront.bootstrap.read
+    empty: showdisabled
+    routeid: miniapphome
+    placement: primary
+  - id: miniappcatalog
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 选购福利
+    icon: product
+    order: 20
+    entry: storefront.catalog.read
+    empty: showdisabled
+    routeid: miniappcatalog
+    placement: primary
+  - id: miniappproduct
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 商品详情
+    icon: product
+    order: 30
+    entry: storefront.catalog.read
+    empty: showdisabled
+    routeid: miniappproduct
+    placement: contextual
+  - id: miniappcart
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 购物车
+    icon: cart
+    order: 40
+    entry: cart.current.read
+    empty: showdisabled
+    routeid: miniappcart
+    placement: secondary
+  - id: miniappcheckout
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 确认订单
+    icon: checkout
+    order: 50
+    entry: checkout.quotes.current.read
+    empty: showdisabled
+    routeid: miniappcheckout
+    placement: secondary
+  - id: miniapppayment
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 支付结果
+    icon: finance
+    order: 60
+    entry: payment.intents.read
+    empty: showdisabled
+    routeid: miniapppayment
+    placement: contextual
+  - id: miniapporders
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 我的订单
+    icon: order
+    order: 70
+    entry: order.orders.read
+    empty: showdisabled
+    routeid: miniapporders
+    placement: primary
+  - id: miniapporder
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 订单详情
+    icon: order
+    order: 80
+    entry: order.orders.read
+    empty: showdisabled
+    routeid: miniapporder
+    placement: contextual
+  - id: miniappaftersale
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 售后服务
+    icon: support
+    order: 90
+    entry: order.aftersales.read
+    empty: showdisabled
+    routeid: miniappaftersale
+    placement: contextual
+  - id: miniappvouchers
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 我的卡券
+    icon: voucher
+    order: 100
+    entry: voucher.search.read
+    empty: showdisabled
+    routeid: miniappvouchers
+    placement: secondary
+  - id: miniappbenefits
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 福利账户
+    icon: benefit
+    order: 110
+    entry: benefit.accounts.read
+    empty: showdisabled
+    routeid: miniappbenefits
+    placement: primary
+  - id: miniappreferral
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 推荐收益
+    icon: referral
+    order: 115
+    entry: referral.earnings.read
+    empty: showdisabled
+    routeid: miniappreferral
+    placement: secondary
+  - id: miniappprofile
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 我的
+    icon: member
+    order: 120
+    entry: member.profile.read
+    empty: hide
+    routeid: miniappprofile
+    placement: primary
+  - id: miniappsecurity
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 安全中心
+    icon: security
+    order: 130
+    entry: identity.sessions.read
+    empty: hide
+    routeid: miniappsecurity
+    placement: secondary
+  - id: miniappsupport
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 客服中心
+    icon: support
+    order: 140
+    entry: support.cases.read
+    empty: hide
+    routeid: miniappsupport
+    placement: secondary
+  - id: miniappsupportcase
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 客服会话
+    icon: support
+    order: 150
+    entry: support.messages.read
+    empty: hide
+    routeid: miniappsupportcase
+    placement: contextual
+  - id: miniappnotifications
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 消息通知
+    icon: notification
+    order: 160
+    entry: notification.notifications.read
+    empty: hide
+    routeid: miniappnotifications
+    placement: secondary
+  - id: storetasks
+    surface: store
+    scope: store
+    parent: null
+    title: 今日任务
+    icon: task
+    order: 10
+    entry: order.orders.read
+    empty: showdisabled
+    routeid: storetasks
+    placement: primary
+  - id: storeorderswork
+    surface: store
+    scope: store
+    parent: null
+    title: 接单与备货
+    icon: order
+    order: 20
+    entry: order.orders.read
+    empty: showdisabled
+    routeid: storeorderswork
+    placement: primary
+  - id: storefulfillment
+    surface: store
+    scope: store
+    parent: null
+    title: 发货管理
+    icon: fulfillment
+    order: 30
+    entry: order.orders.read
+    empty: showdisabled
+    routeid: storefulfillment
+    placement: primary
+  - id: storereturnwork
+    surface: store
+    scope: store
+    parent: null
+    title: 退货检验
+    icon: return
+    order: 35
+    entry: order.aftersales.read
+    empty: showdisabled
+    routeid: storereturnwork
+    placement: primary
+  - id: storeverification
+    surface: store
+    scope: store
+    parent: null
+    title: 扫码核销
+    icon: verification
+    order: 40
+    entry: verification.history.read
+    empty: showdisabled
+    routeid: storeverification
+    placement: primary
+  - id: storevoucherswork
+    surface: store
+    scope: store
+    parent: null
+    title: 核销记录
+    icon: voucher
+    order: 50
+    entry: verification.history.read
+    empty: showdisabled
+    routeid: storevoucherswork
+    placement: primary
+  - id: storedevices
+    surface: store
+    scope: store
+    parent: null
+    title: 设备与人员
+    icon: device
+    order: 60
+    entry: verification.devices.read
+    empty: hide
+    routeid: storedevices
+    placement: primary
+  - id: storeinventorywork
+    surface: store
+    scope: store
+    parent: null
+    title: 库存查询
+    icon: inventory
+    order: 70
+    entry: inventory.availability.read
+    empty: showdisabled
+    routeid: storeinventorywork
+    placement: primary
+  - id: storesupportwork
+    surface: store
+    scope: store
+    parent: null
+    title: 客服协同
+    icon: support
+    order: 80
+    entry: support.cases.read
+    empty: showdisabled
+    routeid: storesupportwork
+    placement: primary
+  - id: storeaccountwork
+    surface: store
+    scope: store
+    parent: null
+    title: 员工账户
+    icon: member
+    order: 90
+    entry: member.profile.read
+    empty: hide
+    routeid: storeaccountwork
+    placement: primary
+  - id: suppliertasks
+    surface: supplier
+    scope: supplier
+    parent: null
+    title: 待办任务
+    icon: task
+    order: 10
+    entry: order.orders.read
+    empty: showdisabled
+    routeid: suppliertasks
+    placement: primary
+  - id: suppliercatalog
+    surface: supplier
+    scope: supplier
+    parent: null
+    title: 商品目录
+    icon: product
+    order: 20
+    entry: catalog.listings.read
+    empty: showdisabled
+    routeid: suppliercatalog
+    placement: primary
+  - id: supplierinventory
+    surface: supplier
+    scope: supplier
+    parent: null
+    title: 库存同步
+    icon: inventory
+    order: 30
+    entry: inventory.availability.read
+    empty: showdisabled
+    routeid: supplierinventory
+    placement: primary
+  - id: supplierorders
+    surface: supplier
+    scope: supplier
+    parent: null
+    title: 订单处理
+    icon: order
+    order: 40
+    entry: order.orders.read
+    empty: showdisabled
+    routeid: supplierorders
+    placement: primary
+  - id: suppliershipments
+    surface: supplier
+    scope: supplier
+    parent: null
+    title: 发货管理
+    icon: fulfillment
+    order: 50
+    entry: order.orders.read
+    empty: showdisabled
+    routeid: suppliershipments
+    placement: primary
+  - id: supplierreturns
+    surface: supplier
+    scope: supplier
+    parent: null
+    title: 退货处理
+    icon: return
+    order: 60
+    entry: order.aftersales.read
+    empty: showdisabled
+    routeid: supplierreturns
+    placement: primary
+  - id: supplierstatements
+    surface: supplier
+    scope: supplier
+    parent: null
+    title: 对账账单
+    icon: finance
+    order: 70
+    entry: finance.statements.read
+    empty: showdisabled
+    routeid: supplierstatements
+    placement: primary
+  - id: supplierconnections
+    surface: supplier
+    scope: supplier
+    parent: null
+    title: 连接健康
+    icon: connection
+    order: 80
+    entry: channel.connections.read
+    empty: showdisabled
+    routeid: supplierconnections
+    placement: primary
+  - id: supplierpricing
+    surface: supplier
+    scope: supplier
+    parent: null
+    title: 价格管理
+    icon: finance
+    order: 35
+    entry: pricing.offers.read
+    empty: showdisabled
+    routeid: supplierpricing
+    placement: primary
+  - id: supplierreconciliation
+    surface: supplier
+    scope: supplier
+    parent: null
+    title: 对账处理
+    icon: finance
+    order: 75
+    entry: finance.reconciliations.read
+    empty: showdisabled
+    routeid: supplierreconciliation
+    placement: primary
+  - id: supplierinvoice
+    surface: supplier
+    scope: supplier
+    parent: null
+    title: 发票协同
+    icon: finance
+    order: 85
+    entry: invoice.requests.read
+    empty: showdisabled
+    routeid: supplierinvoice
+    placement: primary
+  - id: suppliersupport
+    surface: supplier
+    scope: supplier
+    parent: null
+    title: 客服协同
+    icon: support
+    order: 90
+    entry: support.cases.read
+    empty: showdisabled
+    routeid: suppliersupport
+    placement: primary
+  - id: supplieraccount
+    surface: supplier
+    scope: supplier
+    parent: null
+    title: 供应商账户
+    icon: member
+    order: 100
+    entry: member.profile.read
+    empty: hide
+    routeid: supplieraccount
+    placement: primary
+  - id: platformproductdetail
+    surface: console
+    scope: platform
+    parent: platformcatalog
+    title: 商品详情
+    icon: product
+    order: 910
+    entry: catalog.product.detail.read
+    empty: hide
+    routeid: consoleproductdetail
+    placement: contextual
+  - id: groupproductdetail
+    surface: console
+    scope: enterprise
+    parent: groupproduct
+    title: 商品详情
+    icon: product
+    order: 910
+    entry: catalog.product.detail.read
+    empty: hide
+    routeid: consoleproductdetail
+    placement: contextual
+  - id: mallproductdetail
+    surface: console
+    scope: mall
+    parent: mallproduct
+    title: 商品详情
+    icon: product
+    order: 910
+    entry: catalog.product.detail.read
+    empty: hide
+    routeid: consoleproductdetail
+    placement: contextual
+  - id: platformimporttask
+    surface: console
+    scope: platform
+    parent: platformcatalog
+    title: 导入任务详情
+    icon: task
+    order: 920
+    entry: runtime.jobs.read
+    empty: hide
+    routeid: consoleimporttask
+    placement: contextual
+  - id: groupimporttask
+    surface: console
+    scope: enterprise
+    parent: grouptasks
+    title: 导入任务详情
+    icon: task
+    order: 920
+    entry: runtime.jobs.read
+    empty: hide
+    routeid: consoleimporttask
+    placement: contextual
+  - id: mallimporttask
+    surface: console
+    scope: mall
+    parent: malltasks
+    title: 导入任务详情
+    icon: task
+    order: 920
+    entry: runtime.jobs.read
+    empty: hide
+    routeid: consoleimporttask
+    placement: contextual
+  - id: grouporderdetail
+    surface: console
+    scope: enterprise
+    parent: grouporder
+    title: 订单详情
+    icon: order
+    order: 930
+    entry: order.detail.read
+    empty: hide
+    routeid: consoleorderdetail
+    placement: contextual
+  - id: mallorderdetail
+    surface: console
+    scope: mall
+    parent: mallorder
+    title: 订单详情
+    icon: order
+    order: 930
+    entry: order.detail.read
+    empty: hide
+    routeid: consoleorderdetail
+    placement: contextual
+  - id: distributionreferralview
+    surface: console
+    scope: distributor
+    parent: distributionreferral
+    title: 分销业务视图
+    icon: referral
+    order: 940
+    entry: referral.settings.read
+    empty: hide
+    routeid: consolereferralview
+    placement: contextual
+  - id: groupreferralview
+    surface: console
+    scope: enterprise
+    parent: groupreferral
+    title: 分销业务视图
+    icon: referral
+    order: 940
+    entry: referral.settings.read
+    empty: hide
+    routeid: consolereferralview
+    placement: contextual
+  - id: mallreferralview
+    surface: console
+    scope: mall
+    parent: mallreferral
+    title: 分销业务视图
+    icon: referral
+    order: 940
+    entry: referral.settings.read
+    empty: hide
+    routeid: consolereferralview
+    placement: contextual
+  - id: groupfinanceentry
+    surface: console
+    scope: enterprise
+    parent: groupfinance
+    title: 账本分录
+    icon: finance
+    order: 951
+    entry: finance.entries.read
+    empty: hide
+    routeid: consolefinanceentry
+    placement: contextual
+  - id: mallfinanceentry
+    surface: console
+    scope: mall
+    parent: mallfinance
+    title: 账本分录
+    icon: finance
+    order: 951
+    entry: finance.entries.read
+    empty: hide
+    routeid: consolefinanceentry
+    placement: contextual
+  - id: groupfinancestatement
+    surface: console
+    scope: enterprise
+    parent: groupfinance
+    title: 财务账单
+    icon: finance
+    order: 952
+    entry: finance.statements.read
+    empty: hide
+    routeid: consolefinancestatement
+    placement: contextual
+  - id: mallfinancestatement
+    surface: console
+    scope: mall
+    parent: mallfinance
+    title: 财务账单
+    icon: finance
+    order: 952
+    entry: finance.statements.read
+    empty: hide
+    routeid: consolefinancestatement
+    placement: contextual
+  - id: groupfinancereconciliation
+    surface: console
+    scope: enterprise
+    parent: groupfinance
+    title: 财务对账
+    icon: finance
+    order: 953
+    entry: finance.reconciliations.read
+    empty: hide
+    routeid: consolefinancereconciliation
+    placement: contextual
+  - id: mallfinancereconciliation
+    surface: console
+    scope: mall
+    parent: mallfinance
+    title: 财务对账
+    icon: finance
+    order: 953
+    entry: finance.reconciliations.read
+    empty: hide
+    routeid: consolefinancereconciliation
+    placement: contextual
+  - id: groupfinancesettlement
+    surface: console
+    scope: enterprise
+    parent: groupfinance
+    title: 财务结算
+    icon: finance
+    order: 954
+    entry: finance.settlements.read
+    empty: hide
+    routeid: consolefinancesettlement
+    placement: contextual
+  - id: mallfinancesettlement
+    surface: console
+    scope: mall
+    parent: mallfinance
+    title: 财务结算
+    icon: finance
+    order: 954
+    entry: finance.settlements.read
+    empty: hide
+    routeid: consolefinancesettlement
+    placement: contextual
+  - id: groupfinancewithdrawal
+    surface: console
+    scope: enterprise
+    parent: groupfinance
+    title: 提现管理
+    icon: finance
+    order: 955
+    entry: finance.withdrawals.read
+    empty: hide
+    routeid: consolefinancewithdrawal
+    placement: contextual
+  - id: mallfinancewithdrawal
+    surface: console
+    scope: mall
+    parent: mallfinance
+    title: 提现管理
+    icon: finance
+    order: 955
+    entry: finance.withdrawals.read
+    empty: hide
+    routeid: consolefinancewithdrawal
+    placement: contextual
+  - id: groupfinanceinvoice
+    surface: console
+    scope: enterprise
+    parent: groupfinance
+    title: 发票管理
+    icon: finance
+    order: 956
+    entry: invoice.requests.read
+    empty: hide
+    routeid: consolefinanceinvoice
+    placement: contextual
+  - id: mallfinanceinvoice
+    surface: console
+    scope: mall
+    parent: mallfinance
+    title: 发票管理
+    icon: finance
+    order: 956
+    entry: invoice.requests.read
+    empty: hide
+    routeid: consolefinanceinvoice
+    placement: contextual
+  - id: groupfinancegovernance
+    surface: console
+    scope: enterprise
+    parent: groupfinance
+    title: 财务治理
+    icon: finance
+    order: 957
+    entry: finance.policies.read
+    empty: hide
+    routeid: consolefinancegovernance
+    placement: contextual
+  - id: mallfinancegovernance
+    surface: console
+    scope: mall
+    parent: mallfinance
+    title: 财务治理
+    icon: finance
+    order: 957
+    entry: finance.policies.read
+    empty: hide
+    routeid: consolefinancegovernance
+    placement: contextual
+  - id: groupfinanceaudit
+    surface: console
+    scope: enterprise
+    parent: groupfinance
+    title: 财务审计
+    icon: finance
+    order: 958
+    entry: finance.audit.read
+    empty: hide
+    routeid: consolefinanceaudit
+    placement: contextual
+  - id: mallfinanceaudit
+    surface: console
+    scope: mall
+    parent: mallfinance
+    title: 财务审计
+    icon: finance
+    order: 958
+    entry: finance.audit.read
+    empty: hide
+    routeid: consolefinanceaudit
+    placement: contextual
+  - id: groupsupportcase
+    surface: console
+    scope: enterprise
+    parent: groupsupport
+    title: 客服会话
+    icon: support
+    order: 960
+    entry: support.messages.read
+    empty: hide
+    routeid: consolesupportcase
+    placement: contextual
+  - id: mallsupportcase
+    surface: console
+    scope: mall
+    parent: mallsupport
+    title: 客服会话
+    icon: support
+    order: 960
+    entry: support.messages.read
+    empty: hide
+    routeid: consolesupportcase
+    placement: contextual
+  - id: groupapprovaltemplate
+    surface: console
+    scope: enterprise
+    parent: groupapproval
+    title: 审批模板详情
+    icon: approval
+    order: 970
+    entry: approval.templates.get
+    empty: hide
+    routeid: consoleapprovaltemplate
+    placement: contextual
+  - id: mallapprovaltemplate
+    surface: console
+    scope: mall
+    parent: mallapproval
+    title: 审批模板详情
+    icon: approval
+    order: 970
+    entry: approval.templates.get
+    empty: hide
+    routeid: consoleapprovaltemplate
+    placement: contextual
+  - id: storeorderdetailwork
+    surface: store
+    scope: store
+    parent: storeorderswork
+    title: 门店订单详情
+    icon: order
+    order: 980
+    entry: order.detail.read
+    empty: hide
+    routeid: storeorderwork
+    placement: contextual

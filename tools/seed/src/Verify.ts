@@ -2,8 +2,9 @@ import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto';
 import { Client } from 'pg';
 import { localSeedEnvironment, TARGET_SCHEMA_HEAD } from '@shop/config/server';
 import { COMMERCE_OPERATIONS, CONTRACT_VERSION } from '@shop/contract';
-import { KmsClient } from '../../../services/commerce/src/foundation/infrastructure/KmsClient';
-import { HttpObjectStore } from '../../../services/commerce/src/foundation/infrastructure/ObjectStore';
+import { HttpKmsClient } from '../../../services/commerce/src/foundation/infrastructure/KmsClient';
+import type { KmsClient } from '../../../services/commerce/src/foundation/application/KmsPort';
+import { HttpObjectStore } from '../../../services/commerce/src/modules/runtime/infrastructure/storage/ObjectStore';
 import { localFetch } from '@shop/localinfra';
 import { localSecret } from './LocalSecrets';
 
@@ -19,7 +20,7 @@ const [connectionString, objectToken, ethanPassword, identityKey] = await Promis
   localSecret(environment.identityKeyRef),
 ]);
 await Promise.all([expectReady('https://127.0.0.1:8443/health/ready'), expectReady('https://127.0.0.1:8444/health/ready'), expectReady('https://127.0.0.1:8445/health/ready'), expectReady('http://127.0.0.1:3001/health/ready')]);
-const kms = new KmsClient(environment.kmsEndpoint, environment.kmsBearerToken);
+const kms = new HttpKmsClient(environment.kmsEndpoint, environment.kmsBearerToken);
 await resetLocalVerificationRateLimits(connectionString, identityKey, kms);
 const context = { verification: randomUUID() };
 const envelope = await kms.encrypt('evidence', 'local/verification', 'p0-verification', context);

@@ -10,6 +10,7 @@ export interface MemberAddressSnapshot {
   readonly mobileMasked: string;
   readonly addressMasked: string;
   readonly regionCode: string;
+  readonly isDefault: boolean;
   readonly version: number;
 }
 

@@ -1,0 +1,64 @@
+{
+  "schema": "zhudatuan.fusion-evidence.v1",
+  "point": "6.2 Organization",
+  "authorities": {
+    "changesSha256": "968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff",
+    "idealSha256": "8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9"
+  },
+  "operations": [
+    "organization.malls.create",
+    "organization.malls.read",
+    "organization.malls.update"
+  ],
+  "events": [
+    "organization.mall.created",
+    "organization.mall.updated"
+  ],
+  "aggregates": [
+    "Organization",
+    "Mall",
+    "Membership",
+    "DirectoryConnection",
+    "SyncRun"
+  ],
+  "invariants": [
+    "hierarchy-is-acyclic-and-has-one-platform-root",
+    "mall-parent-is-visible-active-version-matched-and-within-quota",
+    "mall-code-public-slug-and-custom-domain-are-unique",
+    "mall-membership-and-resource-scope-cannot-cross-the-parent-boundary",
+    "mall-profile-is-explicitly-column-mapped-and-fully-reread",
+    "mall-create-and-update-use-idempotency-and-optimistic-versioning",
+    "mall-created-and-updated-events-commit-with-the-organization-write",
+    "experience-initialization-is-asynchronous-idempotent-and-owned-by-experience",
+    "organization-never-writes-experience-tables",
+    "experience-provisioning-never-uses-the-removed-experience-binding-table",
+    "directory-preview-computes-create-update-freeze-restore-without-mutating-state",
+    "directory-subject-identities-are-keyed-hashes-and-provider-secrets-stay-in-secret-store",
+    "browser-drafts-never-persist-pii-payment-identifiers-addresses-or-object-references"
+  ],
+  "retainedLiExperience": [
+    "four-step-themed-mall-creation",
+    "complete-opening-profile",
+    "custom-domain-and-managed-certificate-choice",
+    "wechat-official-account-video-payment-fulfillment-and-invoice-settings",
+    "same-journey-mall-update-with-immutable-code-slug-and-parent",
+    "session-safe-progress-save-before-unload-warning-and-readable-receipt",
+    "application-governance-copy-decoration-version-validation-publish-and-restore"
+  ],
+  "verification": {
+    "authorityHashes": "matched",
+    "commerceTypecheck": "passed",
+    "consoleTypecheck": "passed",
+    "organizationAndExperienceTests": "4 files and 15 tests passed",
+    "consoleMallTests": "4 files and 8 tests passed",
+    "contractTests": "6 files and 51 tests passed",
+    "contractGeneratorTests": "1 file and 3 tests passed",
+    "databaseMigrationInventory": "historical=171 repair=153 total=324",
+    "databaseReplay": "324 migrations applied; runtime operations=304 capabilities=304 events=119; hard-cut SQL contracts passed",
+    "databaseObjectContract": "tables, views, functions, triggers, RLS policies and audited grants matched",
+    "duplicates": "passed with 0 violations",
+    "naming": "passed with 0 findings",
+    "globalGeneration": "Organization artifacts are current; the global trace awaits real miniapp, store and supplier feature entrypoints",
+    "globalCallGraph": "Organization has no broken call point; six generated client bindings remain deferred to the miniapp, store and supplier client work package"
+  }
+}

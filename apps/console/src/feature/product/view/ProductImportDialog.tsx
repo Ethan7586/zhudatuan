@@ -1,0 +1,28 @@
+import type { ProductImportViewModel } from '../viewmodel/ProductImportViewModel';
+import { ProductImportOutcome } from './ProductImportOutcome';
+import { ProductImportSetup, ProductImportSteps } from './ProductImportSetup';
+
+export function ProductImportDialog({ viewmodel }: Readonly<{ viewmodel: ProductImportViewModel }>) {
+  if (!viewmodel.open) return null;
+  return (
+    <div className="productflowoverlay">
+      <button className="productflowbackdrop" type="button" onClick={viewmodel.actions.close} aria-label="关闭商品导入窗口" />
+      <form className="productflowdialog productimportdialog" aria-label="商品导入" onSubmit={(event) => event.preventDefault()}>
+        <header>
+          <div>
+            <p>服务端受控导入</p>
+            <h2>导入商品</h2>
+          </div>
+          <button type="button" onClick={viewmodel.actions.close} aria-label="关闭商品导入窗口">
+            ×
+          </button>
+        </header>
+        <div className="productflowbody">
+          <ProductImportSteps current={viewmodel.step} />
+          <ProductImportSetup viewmodel={viewmodel} />
+          <ProductImportOutcome viewmodel={viewmodel} />
+        </div>
+      </form>
+    </div>
+  );
+}

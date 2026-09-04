@@ -1,11 +1,12 @@
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
 import { createHmac } from 'node:crypto';
+import { isOperationTarget, type OperationTarget } from '@shop/contract';
 
 import { reject } from '../../../../foundation/application/OperationRejection';
 
 import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
-import { textField } from '../../../../foundation/interface/Validation';
+import { textField } from '../../../../foundation/application/Validation';
 import type { SessionIssuer } from '../port/SessionIssuer';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';
 import type { LoginGuardPort } from '../port/ChallengePort';
@@ -88,7 +89,7 @@ export class PasswordAuthenticator implements AuthenticationStrategy {
   }
 }
 
-function targetOf(value: unknown): 'console' | 'storefront' {
-  if (value !== 'console' && value !== 'storefront') throw new Error('AUTH_RETURN_TARGET_INVALID');
+function targetOf(value: unknown): OperationTarget {
+  if (!isOperationTarget(value)) throw new Error('AUTH_RETURN_TARGET_INVALID');
   return value;
 }

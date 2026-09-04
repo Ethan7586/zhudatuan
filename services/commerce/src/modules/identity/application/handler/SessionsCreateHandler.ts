@@ -4,7 +4,7 @@ import type { DurableOperationHandler, OperationReply } from '../../../../founda
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
 import type { IdentityAction, IdentityLifecycle } from '../model/IdentityAction';
 import { identityReply, identityRequest } from '../model/IdentityExecution';
-import type { LoadedFederationStart, PreparedFederationStart } from '../service/FederationService';
+import type { LoadedFederationStart, PreparedFederationStart } from '../service/FederateIdentity';
 
 type LoadedSession = Readonly<{ kind: 'authentication' }> | Readonly<{ kind: 'federation'; value: LoadedFederationStart }>;
 type PreparedSession =

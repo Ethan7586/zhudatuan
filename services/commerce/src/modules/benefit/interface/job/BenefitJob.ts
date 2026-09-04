@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { RunBenefitGrant } from '../../application/process/RunBenefitGrant';
 
 export class BenefitJob implements JobProcessor {
@@ -14,7 +14,7 @@ export class BenefitJob implements JobProcessor {
     const payload = object(job.payload);
     const subtype = payload.kind;
     if (subtype !== 'benefitgrant' && subtype !== 'benefitrevoke') throw new Error('BENEFIT_JOB_SUBTYPE_INVALID');
-    return this.grants.execute(subtype, text(job.scope_id, 'BENEFIT_SCOPE_REQUIRED'), text(payload.batch, 'BENEFIT_BATCH_REQUIRED'), signal, deadline);
+    return this.grants.execute(subtype, text(job.scope, 'BENEFIT_SCOPE_REQUIRED'), text(payload.batch, 'BENEFIT_BATCH_REQUIRED'), signal, deadline);
   }
 }
 

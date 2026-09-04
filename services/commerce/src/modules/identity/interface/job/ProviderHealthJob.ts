@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { MonitorIdentityProviders } from '../../application/process/MonitorIdentityProviders';
 
 export class ProviderHealthJob implements JobProcessor {
@@ -9,7 +9,7 @@ export class ProviderHealthJob implements JobProcessor {
     if (signal.aborted) throw signal.reason;
     const payload = record(job.payload);
     const requested = typeof payload.provider === 'string' ? payload.provider : null;
-    return this.monitor.execute(requested, job.scope_id ?? 'identity', job.id, signal, deadline);
+    return this.monitor.execute(requested, job.scope ?? 'identity', job.id, signal, deadline);
   }
 }
 

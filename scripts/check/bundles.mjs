@@ -13,6 +13,7 @@ const artifacts = [
   ['commerce', 'services/commerce/dist', null, null],
 ];
 const forbidden = [/@smart-wing\//, /storefront-web|admin-web|auth-web|commerce-api|core-read-cache/, /\/api\/(?:health|ready|ai)(?:\b|\/)/, /\b(?:MOCK_|SIMULATION_|FALLBACK_)\b/];
+const forbiddenSource = /(?:^|\/)(?:Legacy|Compat|Mock|Showcase|Demo)(?:[A-Z./]|$)|(?:^|\/)(?:Desktop|Laptop|Tablet|Mobile)(?:Home|Catalog|Product|Cart|Order|Shell|Page|View)/i;
 const findings = [];
 
 function files(directory, output = []) {
@@ -36,6 +37,7 @@ for (const [name, path, budget, lazyBudget] of artifacts) {
     const source = readFileSync(file, 'utf8');
     for (const pattern of forbidden) if (pattern.test(source)) findings.push(`BUNDLE_FORBIDDEN ${relative(root, file)} ${pattern}`);
   }
+  assertProductionSources(directory, name);
   if (typeof budget === 'number') {
     const measured = measureVite(directory, code);
     const initial = measured.initial / 1024;
@@ -69,7 +71,7 @@ function assertQrSplit() {
   if (!existsSync(manifestPath)) return;
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
   const qrKey = Object.keys(manifest).find((key) => key.endsWith('packages/design/src/QrCode.tsx'));
-  const experienceKey = Object.keys(manifest).find((key) => key.endsWith('src/feature/experience/ExperienceRoute.tsx'));
+  const experienceKey = Object.keys(manifest).find((key) => key.endsWith('src/feature/experience/route/ExperienceRoute.tsx'));
   const roots = Object.entries(manifest)
     .filter(([, item]) => item.isEntry)
     .map(([key]) => key);
@@ -90,6 +92,7 @@ function measureVite(directory, code) {
   const manifestPath = join(root, '.vite', 'manifest.json');
   if (!existsSync(manifestPath)) return { initial: compressed(code), lazy: 0 };
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  assertChunkBudgets(root, manifest);
   const entries = Object.entries(manifest);
   const roots = entries.filter(([, item]) => item.isEntry).map(([key]) => key);
   if (roots.length === 0) throw new Error(`BUNDLE_ENTRY_MISSING:${relative(root, manifestPath)}`);
@@ -97,6 +100,27 @@ function measureVite(directory, code) {
   const initial = Math.max(...entriesWithBase.map(({ base }) => bytes(root, base)));
   const lazy = Math.max(0, ...entriesWithBase.flatMap(({ entry, base }) => dynamicBranches(manifest, entry, base).map((branch) => bytes(root, branch))));
   return { initial, lazy };
+}
+
+function assertProductionSources(directory, name) {
+  const roots = [join(directory, '.vite/manifest.json'), join(directory, 'client/.vite/manifest.json')];
+  const manifestPath = roots.find(existsSync);
+  if (!manifestPath) return;
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  for (const key of Object.keys(manifest)) if (forbiddenSource.test(key)) findings.push(`BUNDLE_FORBIDDEN_SOURCE ${name} ${key}`);
+}
+
+function assertChunkBudgets(directory, manifest) {
+  const references = new Map();
+  for (const item of Object.values(manifest)) {
+    for (const key of [...(item.imports ?? []), ...(item.dynamicImports ?? [])]) references.set(key, (references.get(key) ?? 0) + 1);
+  }
+  for (const [key, item] of Object.entries(manifest)) {
+    if (!item.file || !existsSync(join(directory, item.file))) continue;
+    const size = gzipSync(readFileSync(join(directory, item.file)), { level: 9 }).byteLength;
+    if (key.includes('/feature/') && size > budgets.featureChunkGzipKb * 1024) findings.push(`BUNDLE_FEATURE_BUDGET ${key} ${(size / 1024).toFixed(1)}KB-gzip>${budgets.featureChunkGzipKb}KB-gzip`);
+    if ((references.get(key) ?? 0) > 1 && size > budgets.sharedChunkGzipKb * 1024) findings.push(`BUNDLE_SHARED_BUDGET ${key} ${(size / 1024).toFixed(1)}KB-gzip>${budgets.sharedChunkGzipKb}KB-gzip`);
+  }
 }
 
 function dynamicBranches(manifest, rootKey, rootAssets) {

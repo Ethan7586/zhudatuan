@@ -1,10 +1,18 @@
-version: 1
+version: 2
 owner: frontend
 budgets:
-  consoleInitialGzipKb: 95
-  storefrontInitialGzipKb: 110
-  authInitialGzipKb: 90
+  initialGzipKb:
+    auth: 90
+    console: 95
+    storefront: 110
+    miniapp: 80
+    store: 95
+    supplier: 95
   lazyFeatureGzipKb: 100
   sharedChunkGzipKb: 80
   featureChunkGzipKb: 100
   duplicateDependencyKb: 0
+applications: [auth, console, storefront, miniapp, store, supplier]
+services: [api, jobs, provider, migration]
+sourceMaps: hidden
+forbidden: [demo, mock, showcase, sourceMapSecret]

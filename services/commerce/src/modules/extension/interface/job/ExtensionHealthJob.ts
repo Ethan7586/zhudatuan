@@ -1,4 +1,4 @@
-import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { MonitorExtensions } from '../../application/process/MonitorExtensions';
 
 export class ExtensionHealthJob implements JobProcessor {
@@ -9,7 +9,7 @@ export class ExtensionHealthJob implements JobProcessor {
     if (signal.aborted) throw signal.reason;
     const payload = record(job.payload);
     if (payload.scan === true) return this.monitor.scan(signal, deadline);
-    return this.monitor.check(text(payload.installation, 'EXTENSION_INSTALLATION_REQUIRED'), text(job.scope_id, 'EXTENSION_SCOPE_REQUIRED'), job.id, signal, deadline);
+    return this.monitor.check(text(payload.installation, 'EXTENSION_INSTALLATION_REQUIRED'), text(job.scope, 'EXTENSION_SCOPE_REQUIRED'), job.id, signal, deadline);
   }
 }
 

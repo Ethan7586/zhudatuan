@@ -1,8 +1,10 @@
 import type { AuthTarget } from '@shop/config/client';
 import type { FailureView } from '@shop/presentation';
-import type { Bootstrap, LoginMethod } from '../../bootstrap/model/Bootstrap';
-import type { EnrollmentState } from '../../invitation/model/Enrollment';
-import type { Membership } from '../../membership/model/Membership';
+import type { Bootstrap, LoginMethod } from '../../bootstrap';
+import type { EnrollmentState } from '../../enrollment';
+import type { Membership } from '../../membership';
+import type { LoginProofMethod } from './Login';
+import type { Challenge } from '../../challenge';
 
 interface BaseState {
   readonly target: AuthTarget;
@@ -25,7 +27,7 @@ export type LoginState =
   | Readonly<BootstrappedState & { phase: 'resolvinginvitation' }>
   | Readonly<BootstrappedState & { phase: 'exchangingticket'; redirectUrl: string }>
   | Readonly<BootstrappedState & { phase: 'enrollment'; enrollment: EnrollmentState; submitting: boolean }>
-  | Readonly<BootstrappedState & { phase: 'proof'; reference: string; methodKind: 'otp' | 'sso'; expiresAt: string }>
+  | Readonly<BootstrappedState & { phase: 'proof'; reference: string; methodKind: LoginProofMethod; expiresAt: string; challenge?: Challenge }>
   | Readonly<BootstrappedState & { phase: 'membershipselection'; memberships: readonly Membership[] }>
   | Readonly<BootstrappedState & { phase: 'redirecting'; redirectUrl: string }>
   | Readonly<BootstrappedState & { phase: 'recoverablefailure'; failure: FailureView }>
@@ -54,7 +56,7 @@ export type LoginEvent =
   | Readonly<{ type: 'ENROLLMENT_REQUIRED'; command: number; enrollment: EnrollmentState }>
   | Readonly<{ type: 'ENROLLMENT_SUBMIT_REQUESTED' }>
   | Readonly<{ type: 'ENROLLMENT_FAILED'; command: number; failure: FailureView }>
-  | Readonly<{ type: 'PROOF_REQUIRED'; command: number; reference: string; method: 'otp' | 'sso'; expiresAt: string }>
+  | Readonly<{ type: 'PROOF_REQUIRED'; command: number; reference: string; method: LoginProofMethod; expiresAt: string; challenge?: Challenge }>
   | Readonly<{ type: 'MEMBERSHIP_REQUIRED'; command: number; memberships: readonly Membership[] }>
   | Readonly<{ type: 'ENROLLMENT_COMPLETED'; command: number; notice: string }>
   | Readonly<{ type: 'RECOVERABLE_FAILED'; command: number; failure: FailureView }>

@@ -1,5 +1,8 @@
-export type SupportPriority = 'low' | 'normal' | 'high' | 'urgent';
-export type SupportState = 'open' | 'assigned' | 'waiting' | 'resolved' | 'closed';
+import type { OperationOutputFor } from '@shop/contract';
+
+type SupportCaseDto = OperationOutputFor<'support.cases.read'>['items'][number];
+export type SupportPriority = SupportCaseDto['priority'];
+export type SupportState = SupportCaseDto['state'];
 
 export interface SupportCase {
   readonly id: string;
@@ -14,7 +17,7 @@ export interface SupportCase {
   readonly updatedAt: string;
   readonly version: number;
   readonly unreadCount: number;
-  readonly slaRisk: 'normal' | 'risk' | 'overdue';
+  readonly slaRisk: SupportCaseDto['sla_risk'];
 }
 
 export interface SupportPage {

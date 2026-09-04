@@ -13,7 +13,8 @@ export class ReadNavigationTree {
     private readonly cache: NavigationCacheRepository,
     private readonly flights: Singleflight,
     private readonly secret: string,
-    private readonly catalogHash: string
+    private readonly catalogHash: string,
+    private readonly featureVersion: string
   ) {}
 
   async execute(transaction: ReadTransactionContext, access: AccessContext, requestedScope?: string, execution: Readonly<{ signal?: AbortSignal; deadline?: number }> = {}) {
@@ -27,6 +28,7 @@ export class ReadNavigationTree {
       scope,
       accessVersion: access.accessVersion,
       capabilityVersion: access.capabilityVersion,
+      featureVersion: this.featureVersion,
     });
     const cached = await this.cache.get(pointer);
     if (cached) return { status: 200, body: cached.toValue(), headers: { etag: cached.etag, 'x-navigation-catalog': cached.catalogVersion } };

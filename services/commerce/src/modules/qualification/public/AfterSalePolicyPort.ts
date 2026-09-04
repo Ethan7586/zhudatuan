@@ -20,7 +20,11 @@ export interface AfterSaleDecision {
   readonly windowDays: number;
   readonly deadline: string | null;
   readonly unavailableReason: string | null;
-  readonly policy: Readonly<Record<string, unknown>>;
+  readonly policy: Readonly<{
+    id: string;
+    policyVersion: number;
+    rule: Readonly<Record<string, unknown>>;
+  }>;
 }
 export interface AfterSalePolicyPort {
   evaluate(context: ReadTransactionContext, candidate: AfterSaleCandidate): Promise<AfterSaleDecision>;

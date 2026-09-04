@@ -14,7 +14,7 @@ const entry: StorefrontEntry = Object.freeze({
   version: 'version:one',
   tenant: 'tenant:one',
   contentHash: 'a'.repeat(64),
-  objectKey: 'experience/one.json',
+  objectKey: `experience/mall-one/${'a'.repeat(64)}.json`,
 });
 
 describe('EntryResolver', () => {

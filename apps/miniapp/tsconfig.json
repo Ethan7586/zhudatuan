@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": []
+  },
+  "include": ["miniprogram/**/*.ts", "scripts/**/*.ts", "test/**/*.ts", "vitest.config.ts"]
+}

@@ -1,6 +1,9 @@
-export type TicketState = 'open' | 'assigned' | 'waiting' | 'resolved' | 'closed';
-export type TicketPriority = 'low' | 'normal' | 'high' | 'urgent';
-export type TicketChannel = 'inapp' | 'wechat' | 'email' | 'sms';
+import type { OperationOutputFor } from '@shop/contract';
+
+type TicketDto = OperationOutputFor<'support.cases.read'>['items'][number];
+export type TicketState = TicketDto['state'];
+export type TicketPriority = TicketDto['priority'];
+export type TicketChannel = TicketDto['channel'];
 
 export interface Ticket {
   readonly id: string;
@@ -21,7 +24,7 @@ export interface Ticket {
   readonly referenceType: string | null;
   readonly referenceId: string | null;
   readonly unreadCount: number;
-  readonly slaRisk: 'normal' | 'risk' | 'overdue';
+  readonly slaRisk: TicketDto['sla_risk'];
 }
 
 export interface TicketPage {

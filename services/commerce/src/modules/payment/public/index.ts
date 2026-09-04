@@ -1,15 +1,11 @@
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-export type { PaymentTenderPlan } from './PaymentPlan';
+export type { PaymentIntentCommand, PaymentIntentReceipt, PaymentPort, PaymentRefundCommand, PaymentScene, PaymentTenderPlan } from './PaymentPort';
 
 import type { OperationRequest } from '../../../foundation/application/OperationHandler';
-import type { WechatScene } from '@shop/config/server';
+import type { PaymentIntentReceipt, PaymentScene, PaymentTenderPlan } from './PaymentPort';
 
-export interface PreparedPayment {
-  readonly intent: string;
-  readonly external: boolean;
-  readonly expiresAt: string;
-}
+export type PreparedPayment = PaymentIntentReceipt;
 
 export type CheckoutPaymentResult =
   | Readonly<{ paymentId: string; state: 'captured' }>
@@ -20,13 +16,13 @@ export type CheckoutPaymentResult =
 export interface CheckoutPaymentPort {
   prepare(
     context: WriteTransactionContext,
-    input: Readonly<{ order: string; orderNumber: string; scope: string; mall: string; member: string; currency: string; amountMinor: number; idempotency: string; tenders: readonly import('./PaymentPlan').PaymentTenderPlan[] }>
+    input: Readonly<{ order: string; orderNumber: string; scope: string; mall: string; member: string; currency: string; amountMinor: number; idempotency: string; tenders: readonly PaymentTenderPlan[] }>
   ): Promise<PreparedPayment>;
   capture(
     context: WriteTransactionContext,
     input: Readonly<{ payment: PreparedPayment; order: string; scope: string; mall: string; member: string; currency: string; amountMinor: number; snapshot: unknown }>
   ): Promise<CheckoutPaymentResult>;
-  continue(request: OperationRequest, input: Readonly<{ payment: PreparedPayment; order: string; scene: WechatScene }>): Promise<CheckoutPaymentResult>;
+  continue(request: OperationRequest, input: Readonly<{ payment: PreparedPayment; order: string; scene: PaymentScene }>): Promise<CheckoutPaymentResult>;
 }
 export interface OrderExpiryPaymentPort {
   expire(context: WriteTransactionContext, order: string | null): Promise<void>;
@@ -43,6 +39,10 @@ export interface PaymentHoldReleasePort {
 export interface FinancePaymentPort {
   externalAmount(context: ReadTransactionContext, kind: 'payment' | 'refund', reference: string): Promise<number>;
   reconciliation(context: ReadTransactionContext, references: readonly string[]): Promise<readonly FinancePaymentMatch[]>;
+  orders(context: ReadTransactionContext, payments: readonly string[]): Promise<readonly FinancePaymentOrder[]>;
+}
+export interface OrderImportPaymentPort {
+  verifyImportEvidence(context: ReadTransactionContext, reference: string, scope: string, amountMinor: number, currency: string): Promise<boolean>;
 }
 export interface FinancePaymentMatch {
   readonly reference: string;
@@ -50,7 +50,13 @@ export interface FinancePaymentMatch {
   readonly id: string;
   readonly amountMinor: number;
 }
+export interface FinancePaymentOrder {
+  readonly payment: string;
+  readonly order: string;
+}
 export const CHECKOUT_PAYMENT_PORT = publicPort<CheckoutPaymentPort>('payment', 'checkout');
+export const CHECKOUT_HOLD_PORT = publicPort<PaymentHoldReleasePort>('payment', 'checkoutrelease');
 export const FINANCE_PAYMENT_PORT = publicPort<FinancePaymentPort>('payment', 'finance');
+export const ORDER_IMPORT_PAYMENT_PORT = publicPort<OrderImportPaymentPort>('payment', 'orderimport');
 export const ORDER_EXPIRY_PAYMENT_PORT = publicPort<OrderExpiryPaymentPort>('payment', 'orderexpiry');
 export const ORDER_EXPIRY_HOLD_PORT = publicPort<PaymentHoldReleasePort>('payment', 'orderexpiryhold');

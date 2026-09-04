@@ -5,8 +5,8 @@ import type { OperationId } from '@shop/contract';
 
 import { reject } from '../../../../foundation/application/OperationRejection';
 import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
-import type { KmsClient, CipherEnvelope } from '../../../../foundation/infrastructure/KmsClient';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
+import type { KmsClient, CipherEnvelope } from '../../../../foundation/application/KmsPort';
 import type { IdentityMemberPort } from '../../../member/public';
 import type { ChallengePort } from '../port/ChallengePort';
 import type { AssuranceRepository } from '../port/AssuranceRepository';
@@ -79,9 +79,9 @@ export class ManageStepup {
         if (current.mobileFingerprint !== value.fingerprint) reject('STEPUP_REQUIRED');
         const approval = value.binding ? await this.actionProofs.validate(database, value.binding, value.checker) : null;
         await this.challenges.throttle(requireWriteTransaction(database), [
-          [this.digest(`${value.actor.actor.id}:${value.destination}`), 'stepup'],
-          [this.digest(request.input.headers['x-peer-address'] ?? 'unknown'), 'network:stepup'],
-          [this.digest(request.input.headers['x-device-id'] ?? 'unknown'), 'device:stepup'],
+          [this.digest(`${value.actor.actor.id}:${value.destination}`), 'send:stepup'],
+          [this.digest(request.input.headers['x-peer-address'] ?? 'unknown'), 'network:send:stepup'],
+          [this.digest(request.input.headers['x-device-id'] ?? 'unknown'), 'device:send:stepup'],
         ]);
         const started = await this.challenges.issue(requireWriteTransaction(database), {
           id: value.id,

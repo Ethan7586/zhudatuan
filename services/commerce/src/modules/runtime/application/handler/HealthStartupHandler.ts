@@ -1,13 +1,13 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
 import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { ReadinessCheckpoint } from '../service/ReadinessService';
-import { ReadinessService } from '../service/ReadinessService';
+import type { ReadinessCheckpoint } from '../service/EvaluateReadiness';
+import { EvaluateReadiness } from '../service/EvaluateReadiness';
 
 export class HealthStartupHandler implements DurableOperationHandler<'runtime.health.startup', null, ReadinessCheckpoint, 'read'> {
   readonly operation = 'runtime.health.startup' as const;
   readonly mode = 'read' as const;
-  constructor(private readonly readiness: ReadinessService) {}
+  constructor(private readonly readiness: EvaluateReadiness) {}
   prepare(_input: OperationInputFor<'runtime.health.startup'>, _context: PrepareContext<'runtime.health.startup'>): Promise<null> {
     return Promise.resolve(null);
   }

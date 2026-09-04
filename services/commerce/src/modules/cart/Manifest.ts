@@ -1,2 +1,4 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleRegistry';
-export const Manifest = defineModuleManifest('cart', ['access', 'catalog', 'experience', 'pricing']);
+import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { CART_READ_PORT, CHECKOUT_CART_PORT } from './public';
+
+export const Manifest = defineModuleManifest({ id: 'cart', dependencies: ['access', 'catalog', 'experience', 'inventory', 'pricing'], ports: [CHECKOUT_CART_PORT, CART_READ_PORT] });

@@ -1,81 +1,541 @@
+version: 1
+owner: extension
 generated: true
-source: docs/requirements/source.yml#providers
+source: docs/requirements/source.yml#providers+extensions/channel/*/Manifest.ts
 workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
 providers:
   - id: jdproduct
-    label: 京东
+    name: 京东
     priority: 1
     extension: extensions/channel/jdproduct
     package: '@shop/providerjdproduct'
     factory: JdproductProvider
     core: jdcore
+    version: 1.0.0
+    apiVersion: 2026-08-21
+    contractVersion: jdproduct.v1
+    dependencies: []
+    capabilities:
+      - Catalog
+      - Price
+      - Inventory
+      - Order
+      - Cancel
+      - Return
+      - Logistics
+      - Refund
+      - Statement
+      - Webhook
+    permissions:
+      - channel.jdproduct.operate
+    configSchema: provider.jdproduct.v1
+    secretRefs:
+      - credential
+    sandbox:
+      supported: true
+      mode: endpoint
+      endpointRef: provider.jdproduct.sandboxurl
+    health:
+      operation: health
+    rateLimit:
+      requestsPerSecond: 20
+      maxConcurrency: 8
+    timeout:
+      connectionMs: 1000
+      responseMs: 5000
+      totalMs: 15000
+    retry:
+      maxAttempts: 3
+    circuit:
+      failureThreshold: 5
+      recoveryMs: 30000
+    webhook:
+      contract: provider.jdproduct.webhook.v1
+      events:
+        - ProviderWebhookReceived
   - id: jdfresh
-    label: 京东生鲜
+    name: 京东生鲜
     priority: 1
     extension: extensions/channel/jdfresh
     package: '@shop/providerjdfresh'
     factory: JdfreshProvider
     core: jdcore
+    version: 1.0.0
+    apiVersion: 2026-08-21
+    contractVersion: jdfresh.v1
+    dependencies: []
+    capabilities:
+      - Catalog
+      - GeoStock
+      - TimeSlot
+      - Order
+      - Cancel
+      - Refund
+      - Delivery
+      - Statement
+      - Webhook
+    permissions:
+      - channel.jdfresh.operate
+    configSchema: provider.jdfresh.v1
+    secretRefs:
+      - credential
+    sandbox:
+      supported: true
+      mode: endpoint
+      endpointRef: provider.jdfresh.sandboxurl
+    health:
+      operation: health
+    rateLimit:
+      requestsPerSecond: 20
+      maxConcurrency: 8
+    timeout:
+      connectionMs: 1000
+      responseMs: 5000
+      totalMs: 15000
+    retry:
+      maxAttempts: 3
+    circuit:
+      failureThreshold: 5
+      recoveryMs: 30000
+    webhook:
+      contract: provider.jdfresh.webhook.v1
+      events:
+        - ProviderWebhookReceived
   - id: tmall
-    label: 天猫超市
+    name: 天猫超市
     priority: 1
     extension: extensions/channel/tmall
     package: '@shop/providertmall'
     factory: TmallProvider
-    core: tmallcore
+    core: self
+    version: 1.0.0
+    apiVersion: 2026-08-21
+    contractVersion: tmall.v1
+    dependencies: []
+    capabilities:
+      - Catalog
+      - Price
+      - Inventory
+      - Order
+      - Cancel
+      - Return
+      - Logistics
+      - Refund
+      - Statement
+      - Webhook
+    permissions:
+      - channel.tmall.operate
+    configSchema: provider.tmall.v1
+    secretRefs:
+      - credential
+    sandbox:
+      supported: true
+      mode: endpoint
+      endpointRef: provider.tmall.sandboxurl
+    health:
+      operation: health
+    rateLimit:
+      requestsPerSecond: 20
+      maxConcurrency: 8
+    timeout:
+      connectionMs: 1000
+      responseMs: 5000
+      totalMs: 15000
+    retry:
+      maxAttempts: 3
+    circuit:
+      failureThreshold: 5
+      recoveryMs: 30000
+    webhook:
+      contract: provider.tmall.webhook.v1
+      events:
+        - ProviderWebhookReceived
   - id: supplier
-    label: 自有供应商
+    name: 自有供应商
     priority: 1
     extension: extensions/channel/supplier
     package: '@shop/providersupplier'
     factory: SupplierProvider
     core: local
+    version: 1.0.0
+    apiVersion: 2026-08-21
+    contractVersion: supplier.v1
+    dependencies: []
+    capabilities:
+      - Catalog
+      - Price
+      - Inventory
+      - Order
+      - Shipment
+      - Return
+      - Refund
+      - Statement
+    permissions:
+      - channel.supplier.operate
+    configSchema: provider.supplier.v1
+    secretRefs: []
+    sandbox:
+      supported: true
+      mode: local
+      endpointRef: null
+    health:
+      operation: local
+    rateLimit:
+      requestsPerSecond: 20
+      maxConcurrency: 8
+    timeout:
+      connectionMs: 1000
+      responseMs: 5000
+      totalMs: 15000
+    retry:
+      maxAttempts: 3
+    circuit:
+      failureThreshold: 5
+      recoveryMs: 30000
+    webhook:
+      contract: null
+      events: []
   - id: cake
-    label: 蛋糕（元祖、幸福西饼、家有熊猫、帕瑞斯、窝夫小子、甜风集、味多美、味之初、维尔纳斯、窝家甜品、星期六、蜜时cake、诺心、米卡米卡、榴芒一刻、积慕cake、映悦、香缇蜜语、爱在此客、喜芙来、皇冠幸福里、焙福谷……）
+    name: 蛋糕（元祖、幸福西饼、家有熊猫、帕瑞斯、窝夫小子、甜风集、味多美、味之初、维尔纳斯、窝家甜品、星期六、蜜时cake、诺心、米卡米卡、榴芒一刻、积慕cake、映悦、香缇蜜语、爱在此客、喜芙来、皇冠幸福里、焙福谷……）
     priority: 1
     extension: extensions/channel/cake
     package: '@shop/providercake'
     factory: CakeProvider
     core: cakecore
+    version: 1.0.0
+    apiVersion: 2026-08-21
+    contractVersion: cake.v1
+    dependencies: []
+    capabilities:
+      - Catalog
+      - GeoStore
+      - TimeSlot
+      - Order
+      - Cancel
+      - Delivery
+      - Refund
+      - Statement
+      - Verify
+      - Webhook
+    permissions:
+      - channel.cake.operate
+    configSchema: provider.cake.v1
+    secretRefs:
+      - credential
+    sandbox:
+      supported: true
+      mode: endpoint
+      endpointRef: provider.cake.sandboxurl
+    health:
+      operation: health
+    rateLimit:
+      requestsPerSecond: 20
+      maxConcurrency: 8
+    timeout:
+      connectionMs: 1000
+      responseMs: 5000
+      totalMs: 15000
+    retry:
+      maxAttempts: 3
+    circuit:
+      failureThreshold: 5
+      recoveryMs: 30000
+    webhook:
+      contract: provider.cake.webhook.v1
+      events:
+        - ProviderWebhookReceived
   - id: flower
-    label: 鲜花（花千束、花映里、花礼甄选、爱在此刻鲜花）
+    name: 鲜花（花千束、花映里、花礼甄选、爱在此刻鲜花）
     priority: 1
     extension: extensions/channel/flower
     package: '@shop/providerflower'
     factory: FlowerProvider
     core: cakecore
+    version: 1.0.0
+    apiVersion: 2026-08-21
+    contractVersion: flower.v1
+    dependencies: []
+    capabilities:
+      - Catalog
+      - GeoDelivery
+      - TimeSlot
+      - Order
+      - Substitute
+      - Cancel
+      - Delivery
+      - Refund
+      - Statement
+      - Webhook
+    permissions:
+      - channel.flower.operate
+    configSchema: provider.flower.v1
+    secretRefs:
+      - credential
+    sandbox:
+      supported: true
+      mode: endpoint
+      endpointRef: provider.flower.sandboxurl
+    health:
+      operation: health
+    rateLimit:
+      requestsPerSecond: 20
+      maxConcurrency: 8
+    timeout:
+      connectionMs: 1000
+      responseMs: 5000
+      totalMs: 15000
+    retry:
+      maxAttempts: 3
+    circuit:
+      failureThreshold: 5
+      recoveryMs: 30000
+    webhook:
+      contract: provider.flower.webhook.v1
+      events:
+        - ProviderWebhookReceived
   - id: book
-    label: 图书
+    name: 图书
     priority: 1
     extension: extensions/channel/book
     package: '@shop/providerbook'
     factory: BookProvider
-    core: bookcore
+    core: self
+    version: 1.0.0
+    apiVersion: 2026-08-21
+    contractVersion: book.v1
+    dependencies: []
+    capabilities:
+      - Catalog
+      - Price
+      - Inventory
+      - Order
+      - Cancel
+      - Return
+      - Shipment
+      - Refund
+      - Statement
+      - Webhook
+    permissions:
+      - channel.book.operate
+    configSchema: provider.book.v1
+    secretRefs:
+      - credential
+    sandbox:
+      supported: true
+      mode: endpoint
+      endpointRef: provider.book.sandboxurl
+    health:
+      operation: health
+    rateLimit:
+      requestsPerSecond: 20
+      maxConcurrency: 8
+    timeout:
+      connectionMs: 1000
+      responseMs: 5000
+      totalMs: 15000
+    retry:
+      maxAttempts: 3
+    circuit:
+      failureThreshold: 5
+      recoveryMs: 30000
+    webhook:
+      contract: provider.book.webhook.v1
+      events:
+        - ProviderWebhookReceived
   - id: charge
-    label: 虚拟卡券/直充
+    name: 虚拟卡券/直充
     priority: 1
     extension: extensions/channel/charge
     package: '@shop/providercharge'
     factory: ChargeProvider
     core: wanliancore
+    version: 1.0.0
+    apiVersion: 2026-08-21
+    contractVersion: charge.v1
+    dependencies: []
+    capabilities:
+      - Catalog
+      - Issue
+      - DirectCharge
+      - Query
+      - Refund
+      - Statement
+      - Verify
+      - Webhook
+    permissions:
+      - channel.charge.operate
+    configSchema: provider.charge.v1
+    secretRefs:
+      - credential
+    sandbox:
+      supported: true
+      mode: endpoint
+      endpointRef: provider.charge.sandboxurl
+    health:
+      operation: health
+    rateLimit:
+      requestsPerSecond: 20
+      maxConcurrency: 8
+    timeout:
+      connectionMs: 1000
+      responseMs: 5000
+      totalMs: 15000
+    retry:
+      maxAttempts: 3
+    circuit:
+      failureThreshold: 5
+      recoveryMs: 30000
+    webhook:
+      contract: provider.charge.webhook.v1
+      events:
+        - ProviderWebhookReceived
   - id: foodvoucher
-    label: 虚拟食品提货券(元祖、仟吉、BONCAKE、蛋糕王国、囍甜、一鸣真鲜奶……）
+    name: 虚拟食品提货券(元祖、仟吉、BONCAKE、蛋糕王国、囍甜、一鸣真鲜奶……）
     priority: 1
     extension: extensions/channel/foodvoucher
     package: '@shop/providerfoodvoucher'
     factory: FoodvoucherProvider
     core: cakecore
+    version: 1.0.0
+    apiVersion: 2026-08-21
+    contractVersion: foodvoucher.v1
+    dependencies: []
+    capabilities:
+      - Catalog
+      - GeoStore
+      - Issue
+      - Bind
+      - Verify
+      - Void
+      - Extend
+      - Refund
+      - Statement
+      - Webhook
+    permissions:
+      - channel.foodvoucher.operate
+    configSchema: provider.foodvoucher.v1
+    secretRefs:
+      - credential
+    sandbox:
+      supported: true
+      mode: endpoint
+      endpointRef: provider.foodvoucher.sandboxurl
+    health:
+      operation: health
+    rateLimit:
+      requestsPerSecond: 20
+      maxConcurrency: 8
+    timeout:
+      connectionMs: 1000
+      responseMs: 5000
+      totalMs: 15000
+    retry:
+      maxAttempts: 3
+    circuit:
+      failureThreshold: 5
+      recoveryMs: 30000
+    webhook:
+      contract: provider.foodvoucher.webhook.v1
+      events:
+        - ProviderWebhookReceived
   - id: movie
-    label: 电影
+    name: 电影
     priority: 1
     extension: extensions/channel/movie
     package: '@shop/providermovie'
     factory: MovieProvider
     core: wanliancore
+    version: 1.0.0
+    apiVersion: 2026-08-21
+    contractVersion: movie.v1
+    dependencies: []
+    capabilities:
+      - Cinema
+      - Show
+      - SeatLock
+      - Order
+      - Issue
+      - Cancel
+      - Refund
+      - Statement
+      - Verify
+      - Webhook
+    permissions:
+      - channel.movie.operate
+    configSchema: provider.movie.v1
+    secretRefs:
+      - credential
+    sandbox:
+      supported: true
+      mode: endpoint
+      endpointRef: provider.movie.sandboxurl
+    health:
+      operation: health
+    rateLimit:
+      requestsPerSecond: 20
+      maxConcurrency: 8
+    timeout:
+      connectionMs: 1000
+      responseMs: 5000
+      totalMs: 15000
+    retry:
+      maxAttempts: 3
+    circuit:
+      failureThreshold: 5
+      recoveryMs: 30000
+    webhook:
+      contract: provider.movie.webhook.v1
+      events:
+        - ProviderWebhookReceived
   - id: meal
-    label: 在线点餐(肯德基、麦当劳、瑞幸、星巴克。 新增：库迪)
+    name: 在线点餐(肯德基、麦当劳、瑞幸、星巴克。 新增：库迪)
     priority: 1
     extension: extensions/channel/meal
     package: '@shop/providermeal'
     factory: MealProvider
     core: cakecore
+    version: 1.0.0
+    apiVersion: 2026-08-21
+    contractVersion: meal.v1
+    dependencies: []
+    capabilities:
+      - Brand
+      - Store
+      - Menu
+      - Option
+      - Price
+      - Inventory
+      - Order
+      - Pickup
+      - Cancel
+      - Refund
+      - Statement
+      - Verify
+      - Webhook
+    permissions:
+      - channel.meal.operate
+    configSchema: provider.meal.v1
+    secretRefs:
+      - credential
+    sandbox:
+      supported: true
+      mode: endpoint
+      endpointRef: provider.meal.sandboxurl
+    health:
+      operation: health
+    rateLimit:
+      requestsPerSecond: 20
+      maxConcurrency: 8
+    timeout:
+      connectionMs: 1000
+      responseMs: 5000
+      totalMs: 15000
+    retry:
+      maxAttempts: 3
+    circuit:
+      failureThreshold: 5
+      recoveryMs: 30000
+    webhook:
+      contract: provider.meal.webhook.v1
+      events:
+        - ProviderWebhookReceived

@@ -5,6 +5,10 @@ import type { ChallengeIssue, ChallengePort, IssuedChallenge, LoginGuardPort } f
 import { reject } from '../../../../foundation/application/OperationRejection';
 
 import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import { RUNTIME_LIMITS } from '@shop/config/runtime';
+
+const MAXIMUM_ATTEMPTS = RUNTIME_LIMITS.authentication.otp.maximumAttempts;
+
 export class PgChallenge implements ChallengePort {
   private readonly transactions = new PgTransactionAccess();
   async issue(context: WriteTransactionContext, value: ChallengeIssue): Promise<IssuedChallenge> {
@@ -61,10 +65,10 @@ export class PgChallenge implements ChallengePort {
       principal_id: string | null;
     }>(
       `update identity.challenge set consumed_at=clock_timestamp(),attempts=attempts+1
-      where id=$1 and code_hash=$2 and consumed_at is null and expires_at>clock_timestamp() and attempts<10
+      where id=$1 and code_hash=$2 and consumed_at is null and expires_at>clock_timestamp() and attempts<$6
       and ($3::text is null or principal_id=$3) and ($4::text is null or purpose=$4)
       and ($5::text is null or destination_hash=$5) returning principal_id`,
-      [challenge, digest(challenge, code), principal ?? null, expected.purpose ?? null, expected.destinationHash ?? null]
+      [challenge, digest(challenge, code), principal ?? null, expected.purpose ?? null, expected.destinationHash ?? null, MAXIMUM_ATTEMPTS]
     );
     if (!result.rows[0]) {
       await failChallenge(database, challenge);
@@ -89,9 +93,9 @@ export class PgChallenge implements ChallengePort {
       principal_id: string | null;
     }>(
       `select principal_id from identity.challenge
-      where id=$1 and code_hash=$2 and consumed_at is null and expires_at>clock_timestamp() and attempts<10
+      where id=$1 and code_hash=$2 and consumed_at is null and expires_at>clock_timestamp() and attempts<$5
       and purpose=$3 and destination_hash=$4 for update`,
-      [challenge, digest(challenge, code), expected.purpose, expected.destinationHash]
+      [challenge, digest(challenge, code), expected.purpose, expected.destinationHash, MAXIMUM_ATTEMPTS]
     );
     if (!result.rows[0]) {
       await failChallenge(database, challenge);
@@ -134,5 +138,5 @@ export class PgLoginGuard implements LoginGuardPort {
   }
 }
 async function failChallenge(database: SqlExecutor, challenge: string): Promise<void> {
-  await database.query('update identity.challenge set attempts=least(10,attempts+1) where id=$1 and consumed_at is null', [challenge]);
+  await database.query('update identity.challenge set attempts=least($2,attempts+1) where id=$1 and consumed_at is null', [challenge, MAXIMUM_ATTEMPTS]);
 }

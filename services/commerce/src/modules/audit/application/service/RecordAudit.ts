@@ -4,22 +4,29 @@ import type { WriteTransactionContext } from '../../../../foundation/persistence
 import { AccessRecord } from '../../domain/model/AccessRecord';
 import { AuditRecord } from '../../domain/model/AuditRecord';
 import { RedactionPolicy } from '../../domain/policy/RedactionPolicy';
-import type { AuditPort } from '../port/AuditPort';
+import type { AuditRepository } from '../port/AuditRepository';
 
 export class RecordAudit implements AuditSink {
   constructor(
-    private readonly repository: AuditPort,
+    private readonly repository: AuditRepository,
     private readonly redaction = new RedactionPolicy()
   ) {}
 
   async record(context: WriteTransactionContext, input: AuditWriteInput): Promise<void> {
     const previous = await this.repository.previous(context, input.scope);
     const evidence = this.redaction.redact(input.evidence);
-    await this.repository.appendRecord(context, new AuditRecord(`audit:${randomUUID()}`, { ...input, before: this.redaction.redact(input.before), after: this.redaction.redact(input.after) }, evidence, previous, new Date().toISOString()));
+    const normalized = Object.freeze({ ...input, reason: this.reason(input.reason), before: this.redaction.redact(input.before), after: this.redaction.redact(input.after), evidence });
+    await this.repository.appendRecord(context, new AuditRecord(`audit:${randomUUID()}`, normalized, evidence, previous, new Date().toISOString()));
   }
 
   async access(context: WriteTransactionContext, input: AuditAccessInput): Promise<void> {
     const previous = await this.repository.previous(context, input.scope);
-    await this.repository.appendAccess(context, new AccessRecord(`access:${randomUUID()}`, input, this.redaction.redact(input.fields), previous, new Date().toISOString()));
+    const fields = this.redaction.redact(input.fields);
+    await this.repository.appendAccess(context, new AccessRecord(`access:${randomUUID()}`, Object.freeze({ ...input, reason: this.reason(input.reason), fields }), fields, previous, new Date().toISOString()));
+  }
+
+  private reason(value: string): string {
+    const redacted = this.redaction.redact({ reason: value }) as Readonly<{ reason: string }>;
+    return redacted.reason;
   }
 }

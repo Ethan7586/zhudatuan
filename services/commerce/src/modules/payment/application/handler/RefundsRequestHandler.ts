@@ -2,10 +2,11 @@ import { randomUUID } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, integerField, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
 import { organizationScope } from '../../../../foundation/security/OrganizationScope';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { RefundRepository } from '../port/RefundRepository';
+import { DomainError } from '../../../../foundation/domain/DomainError';
 
 export class RefundsRequestHandler implements OperationHandler<'payment.refunds.request', 'write'> {
   readonly operation = 'payment.refunds.request' as const;
@@ -19,16 +20,22 @@ export class RefundsRequestHandler implements OperationHandler<'payment.refunds.
       id: `refund:${randomUUID()}`,
       payment: textField(body, 'payment'),
       amountMinor: integerField(body, 'amountMinor', 1),
-      idempotency: required(context.idempotencyKey, 'IDEMPOTENCY_KEY_REQUIRED'),
+      idempotency: required(context.idempotencyKey),
       reason: textField(body, 'reason', 500),
       scope: organizationScope(access.scope),
       actor: access.actor.id,
+      expectedVersion: requiredVersion(context.expectedVersion),
     });
     return { status: 202, body: refund as OperationOutputFor<'payment.refunds.request'> };
   }
 }
 
-function required(value: string | undefined, code: string): string {
-  if (!value) throw new Error(code);
+function requiredVersion(value: number | undefined): number {
+  if (!Number.isSafeInteger(value) || value! < 0) throw new DomainError('EXPECTED_VERSION_REQUIRED');
+  return value!;
+}
+
+function required(value: string | undefined): string {
+  if (!value) throw new DomainError('IDEMPOTENCY_KEY_REQUIRED');
   return value;
 }

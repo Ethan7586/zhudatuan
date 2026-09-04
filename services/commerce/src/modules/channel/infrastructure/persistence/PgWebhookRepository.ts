@@ -1,4 +1,5 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { WebhookRepository } from '../../application/port/WebhookRepository';
 export class PgWebhookRepository implements WebhookRepository {
@@ -20,8 +21,22 @@ export class PgWebhookRepository implements WebhookRepository {
       id: string;
       state: string;
       replayed: boolean;
-    }>(`select id,state,replayed from channel.accept_webhook($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9,$10,$11)`, [input.connection, input.external, 'pending', null, '{}', input.ciphertext, input.keyVersion, input.rawHash, input.signatureHash, input.receivedAt, input.trace]);
+    }>(`select id,state,replayed from channel.accept_webhook($1,$2,$3,$4,$5,$6,$7,$8)`, [input.connection, input.external,
+      input.ciphertext, input.keyVersion, input.rawHash, input.signatureHash, input.receivedAt, input.trace]);
     if (!result.rows[0]) throw new Error('CHANNEL_WEBHOOK_ACCEPT_FAILED');
-    return Object.freeze({ ...result.rows[0] });
+    const accepted = result.rows[0];
+    if (!accepted.replayed) {
+      await new PgRuntimeWriter(database).schedule({
+        id: `job:channelwebhook:${accepted.id}`,
+        kind: 'channelwebhook',
+        owner: 'channel',
+        scope: context.scope,
+        payload: { receipt: accepted.id },
+        priority: 10,
+        authorization: { kind: 'system', actor: context.actor, scope: context.scope, operation: context.operation,
+          source: 'provider', capturedAt: new Date().toISOString() },
+      });
+    }
+    return Object.freeze({ ...accepted });
   }
 }

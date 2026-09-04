@@ -1,11 +1,12 @@
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
 import { createHmac } from 'node:crypto';
+import { isOperationTarget, type OperationTarget } from '@shop/contract';
 
 import { reject } from '../../../../foundation/application/OperationRejection';
 
 import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
-import { textField } from '../../../../foundation/interface/Validation';
+import { textField } from '../../../../foundation/application/Validation';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';
 import type { SessionIssuer } from '../port/SessionIssuer';
 import type { ChallengePort } from '../port/ChallengePort';
@@ -78,7 +79,7 @@ export class OtpAuthenticator implements AuthenticationStrategy {
     return Object.freeze({ peer: request.input.headers['x-peer-address'] ?? 'unknown', agent: request.input.headers['user-agent'] ?? 'unknown', device: request.input.headers['x-device-id'] ?? 'browser' });
   }
 }
-function targetOf(value: unknown): 'console' | 'storefront' {
-  if (value !== 'console' && value !== 'storefront') throw new Error('AUTH_RETURN_TARGET_INVALID');
+function targetOf(value: unknown): OperationTarget {
+  if (!isOperationTarget(value)) throw new Error('AUTH_RETURN_TARGET_INVALID');
   return value;
 }

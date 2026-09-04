@@ -1,0 +1,59 @@
+.commerceactionform label {
+  display: grid;
+  gap: 7px;
+  color: var(--sw-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.commerceactionform input,
+.commerceactionform textarea,
+.commerceactionform select {
+  width: 100%;
+  border: 1px solid var(--sw-border);
+  border-radius: 10px;
+  background: var(--sw-surface);
+  padding: 10px 12px;
+  color: var(--sw-brand-ink);
+  font: inherit;
+}
+
+.commerceactionform textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.commerceactionerror {
+  margin: 0;
+}
+.commerceactionerror {
+  color: var(--sw-danger-strong);
+  font-size: 11px;
+}
+.commerceactionfooter {
+  gap: 10px;
+}
+
+.commercedrawer > footer,
+.commerceflowdialog > footer {
+  display: flex;
+  min-height: 66px;
+  align-items: center;
+  justify-content: flex-end;
+  border-top: 1px solid var(--sw-border);
+  padding: 12px 20px;
+}
+
+.commercedrawer > footer button,
+.commerceflowdialog > footer button {
+  min-height: 38px;
+  border: 1px solid var(--sw-brand);
+  border-radius: 10px;
+  background: var(--sw-brand);
+  padding: 0 18px;
+  color: var(--sw-surface);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}

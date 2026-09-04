@@ -38,6 +38,11 @@ export class RiskPolicy {
     const bucket = Number.parseInt(createHash('sha256').update(`${this.id}:${this.version}:${actor}`).digest('hex').slice(0, 8), 16) % 100;
     return bucket < this.rolloutPercent;
   }
+
+  complex(maximumScoreRules: number): boolean {
+    if (!Number.isSafeInteger(maximumScoreRules) || maximumScoreRules < 1) throw new Error('RISK_POLICY_COMPLEXITY_LIMIT_INVALID');
+    return this.rule.scores.length > maximumScoreRules;
+  }
 }
 
 function parseRule(value: unknown): RiskRule {

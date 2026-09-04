@@ -26,7 +26,8 @@ export class WebhooksWechatHandler implements DurableOperationHandler<'payment.w
 
   async prepare(_input: OperationInputFor<'payment.webhooks.wechat'>, context: PrepareContext<'payment.webhooks.wechat'>): Promise<PreparedWebhook> {
     if (!context.rawBody) throw new Error('WECHAT_PAY_NOTIFICATION_BODY_MISSING');
-    const notification = verified(await this.gateway.verifyNotification(context.headers, context.rawBody));
+    const notification = verified(await this.gateway.verifyNotification(context.headers, context.rawBody,
+      { requestId: context.requestId, traceId: context.traceId, signal: context.signal, deadline: context.deadline }));
     return Object.freeze({
       notification,
       raw: context.rawBody,

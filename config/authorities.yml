@@ -1,4 +1,5 @@
-version: 5
+version: 6
+owner: architecture
 requirements:
   logicalSource: RepositoryAuthority docs/福利商城功能清单.xlsx
   repositoryRelativePath: docs/福利商城功能清单.xlsx
@@ -28,24 +29,57 @@ architecture:
     repositoryRelativePath: docs/architecture/前端整体重构方案.md
     sha256: aad7b1fcfcf0afe8985af0a6614194d39ac7e93d6e1acc51fdd8b19cfe07827d
     version: 1
+  - logicalSource: RepositoryAuthority docs/architecture/福利商城理想方案20260904.md
+    repositoryRelativePath: docs/architecture/福利商城理想方案20260904.md
+    sha256: 8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9
+    version: 1
+  - logicalSource: RepositoryAuthority docs/architecture/福利商城代码修改清单20260904.md
+    repositoryRelativePath: docs/architecture/福利商城代码修改清单20260904.md
+    sha256: 968d249a8ebee43c9d580e228f1d8071052154b2ee21761c1134f45dc845f1ff
+    version: 1
+owners:
+  approval:
+    module: approval
+    authority: services/commerce/src/modules/approval/Manifest.ts
+  vouchercredential:
+    module: voucher
+    authority: services/commerce/src/modules/voucher/Manifest.ts
+  financeimport:
+    module: finance
+    authority: services/commerce/src/modules/finance/Manifest.ts
+  storeaudience:
+    module: identity
+    authority: packages/contract/src/Surface.ts
+  supplieraudience:
+    module: identity
+    authority: packages/contract/src/Surface.ts
 visuals:
   logicalSource: RepositoryAuthority config/visuals.yml
   repositoryRelativePath: config/visuals.yml
-  sha256: 1e9c81889858b89538286f119b0c5bdffc7ea7beaedefe862c97b4a2ed14099b
+  sha256: 370090534a906f50e59063b6d92914f13ccabc550220f7b7c125ceb1d6f52393
 navigation:
   logicalSource: RepositoryAuthority config/navigation.yml
   repositoryRelativePath: config/navigation.yml
-  version: 2
-  sha256: 34e186dc560bb7a88e310b21b20e38db3a899f4d893920b93833b2c8c1ce3f70
+  version: 3
+  sha256: bf892ccd70ea322b70de5dce9c71560bd5ccaf7221f6389ea894278aa03442ce
   generator: tools/navigationgen
   outputs:
     - services/commerce/src/modules/navigation/infrastructure/registry/NavigationCatalog.ts
     - packages/config/src/RouteCatalog.ts
+    - apps/auth/src/generated/NavigationBinding.ts
     - apps/auth/src/generated/RouteBinding.ts
     - apps/console/src/generated/NavigationBinding.ts
     - apps/console/src/generated/RouteBinding.ts
-    - apps/storefront/src/generated/NavigationBinding.ts
     - apps/storefront/src/generated/RouteBinding.ts
+    - apps/storefront/src/generated/NavigationBinding.ts
+    - apps/miniapp/miniprogram/generated/NavigationBinding.ts
+    - apps/miniapp/miniprogram/generated/PageBinding.ts
+    - apps/miniapp/miniprogram/generated/RouteBinding.ts
+    - apps/miniapp/miniprogram/app.json
+    - apps/store/src/generated/NavigationBinding.ts
+    - apps/store/src/generated/RouteBinding.ts
+    - apps/supplier/src/generated/NavigationBinding.ts
+    - apps/supplier/src/generated/RouteBinding.ts
     - evidence/navigation/catalog.json
 contract:
   logicalSource: RepositoryAuthority packages/contract/definitions
@@ -56,12 +90,15 @@ contract:
     - packages/contract/openapi.json
     - packages/contract/events.json
     - packages/contract/src/operations
+    - packages/contract/src/OperationIds.ts
+    - packages/contract/src/OperationPolicyCatalog.ts
     - packages/contract/src/events
     - packages/contract/src/EventSerializer.ts
     - packages/contract/src/ContractIdentity.ts
     - packages/contract/src/ErrorContract.ts
     - packages/presentation/src/generated/ErrorPolicy.ts
     - packages/authz/src/PermissionCatalog.ts
+    - packages/authz/src/PermissionIds.ts
     - packages/sdk/src/operations
     - services/commerce/src/generated
     - services/commerce/src/foundation/interface/OperationController.ts

@@ -1,5 +1,8 @@
-import type { JsonObject } from '@shop/contract';
+import type { JsonObject, ProviderCapability } from '@shop/contract';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ConnectionState } from '../../domain/model/Connection';
+import type { ChannelFailure } from '../../domain/model/Failure';
+import type { SyncProgress } from '../../domain/model/SyncRun';
 
 export type ChannelSyncKind = 'catalogsync' | 'pricesync' | 'inventorysync' | 'statementsync';
 
@@ -9,14 +12,20 @@ export interface ChannelSyncRun {
   readonly provider: string;
   readonly scope: string;
   readonly connectionVersion: number;
+  readonly runVersion: number;
+  readonly connectionState: ConnectionState;
+  readonly capabilities: readonly ProviderCapability[];
   readonly region: string;
   readonly kind: 'catalog' | 'price' | 'stock' | 'statement';
   readonly cursor: string | null;
+  readonly inputHash: string;
+  readonly progress: SyncProgress;
   readonly input: JsonObject;
 }
 
 export interface ChannelJobRepository {
-  claim(context: WriteTransactionContext, run: string): Promise<ChannelSyncRun | undefined>;
+  claim(context: WriteTransactionContext, run: string, scope: string): Promise<ChannelSyncRun | undefined>;
+  beginApply(context: WriteTransactionContext, run: ChannelSyncRun): Promise<ChannelSyncRun>;
   providerTenant(context: ReadTransactionContext, scope: string): Promise<string>;
   saveSource(context: WriteTransactionContext, input: Readonly<{ provider: string; scope: string; external: string; version: string; payload: JsonObject }>): Promise<void>;
   saveStatement(
@@ -49,30 +58,5 @@ export interface ChannelJobRepository {
       errors: readonly unknown[];
     }>
   ): Promise<void>;
-}
-
-export interface ChannelWebhookRecord {
-  readonly id: string;
-  readonly connection: string;
-  readonly provider: string;
-  readonly scope: string;
-  readonly external: string;
-  readonly attempts: number;
-  readonly ciphertext: string;
-  readonly rawHash: string;
-  readonly signatureHash: string;
-  readonly trace: string;
-}
-
-export interface ChannelWebhookRepository {
-  claim(context: WriteTransactionContext, webhook: string): Promise<ChannelWebhookRecord | null>;
-  apply(
-    context: WriteTransactionContext,
-    webhook: ChannelWebhookRecord,
-    normalized: Readonly<Record<string, unknown>>,
-    eventType: string,
-    reference: string | null,
-    kind: string,
-    state: 'processing' | 'succeeded' | 'failed' | 'unknown'
-  ): Promise<void>;
+  fail(context: WriteTransactionContext, run: string, scope: string, failure: ChannelFailure): Promise<void>;
 }

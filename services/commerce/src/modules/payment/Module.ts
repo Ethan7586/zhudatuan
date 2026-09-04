@@ -1,20 +1,20 @@
 import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
 import { PgTransactionManager } from '../../adapter/database/PgTransactionManager';
 import { defineModule } from '../../bootstrap/DefinedModule';
-import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
+import { KMS_CLIENT } from '../../foundation/application/KmsPort';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { writeDatabaseWorkload } from '../../foundation/persistence/Workload';
 import { MEMBER_ACCESS_PORT } from '../access/public';
 import { PAYMENT_BENEFIT_PORT } from '../benefit/public';
-import { PAYMENT_FULFILLMENT_PORT } from '../fulfillment/public';
 import { PAYMENT_IDENTITY_PORT } from '../identity/public';
 import { PAYMENT_INVENTORY_PORT } from '../inventory/public';
-import { PAYMENT_MARKETING_PORT } from '../marketing/public';
-import { PAYMENT_ORDER_PORT, PAYMENT_WEBHOOK_ORDER_PORT } from '../order/public';
+import { MARKETING_RESERVE_PORT } from '../marketing/public';
+import { ORDER_PAYMENT_PORT, ORDER_READ_PORT } from '../order/public';
 import { ORGANIZATION_READ_PORT } from '../organization/public';
 import { PAYMENT_VOUCHER_PORT } from '../voucher/public';
 import { PaymentHoldReleaser, PaymentSettlement } from './infrastructure/persistence/PaymentSettlement';
 import { IntentsReadHandler } from './application/handler/IntentsReadHandler';
+import { IntentsCreateHandler } from './application/handler/IntentsCreateHandler';
 import { RecoveriesReadHandler } from './application/handler/RecoveriesReadHandler';
 import { RecoveriesResolveHandler } from './application/handler/RecoveriesResolveHandler';
 import { RefundsRequestHandler } from './application/handler/RefundsRequestHandler';
@@ -29,24 +29,36 @@ import { PgWebhookInboxRepository } from './infrastructure/persistence/PgWebhook
 import { PgWebhookScopeReader } from './infrastructure/persistence/PgWebhookScopeReader';
 import { PgPaymentContinuation } from './infrastructure/persistence/PgPaymentContinuation';
 import { Manifest } from './Manifest';
-import { CHECKOUT_PAYMENT_PORT, FINANCE_PAYMENT_PORT, ORDER_EXPIRY_HOLD_PORT, ORDER_EXPIRY_PAYMENT_PORT } from './public/index';
+import { CHECKOUT_HOLD_PORT, CHECKOUT_PAYMENT_PORT, FINANCE_PAYMENT_PORT, ORDER_EXPIRY_HOLD_PORT, ORDER_EXPIRY_PAYMENT_PORT, ORDER_IMPORT_PAYMENT_PORT } from './public/index';
 import { createJobs } from './interface/job/JobFactory';
+import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
+import { PaymentGatewayRegistry } from './application/service/PaymentGatewayRegistry';
 
 export const PaymentModule = defineModule(Manifest, {
+  events: [{ handler: 'paymentcancel', events: EVENT_SUBSCRIPTIONS.paymentcancel }],
   jobs: createJobs,
   handlers: (context) => {
     const transactions = new PgTransactionAccess();
-    const orders = context.ports.get(PAYMENT_ORDER_PORT);
+    const orders = context.ports.get(ORDER_PAYMENT_PORT);
     const organizations = context.ports.get(ORGANIZATION_READ_PORT);
     const recoveries = new PgRecoveryRepository(transactions, organizations, orders);
+    const gateways = new PaymentGatewayRegistry([context.service(PAYMENT_GATEWAY)]);
+    const paymentPort = new PaymentPort();
+    const continuation = new PgPaymentContinuation(
+      context.service(DATABASE_POOL).workload(writeDatabaseWorkload(context.workload)), context.service(PAYMENT_GATEWAY), context.service(KMS_CLIENT),
+      new PaymentSettlement(context.ports.get(PAYMENT_BENEFIT_PORT), context.ports.get(PAYMENT_VOUCHER_PORT), context.ports.get(PAYMENT_INVENTORY_PORT), context.ports.get(MARKETING_RESERVE_PORT), orders),
+      orders, context.ports.get(MEMBER_ACCESS_PORT), context.ports.get(PAYMENT_IDENTITY_PORT),
+      new PaymentHoldReleaser(context.ports.get(PAYMENT_BENEFIT_PORT), context.ports.get(PAYMENT_VOUCHER_PORT), context.ports.get(PAYMENT_INVENTORY_PORT), context.ports.get(MARKETING_RESERVE_PORT))
+    );
     return [
+      new IntentsCreateHandler(context.ports.get(MEMBER_ACCESS_PORT), orders, paymentPort, gateways, continuation),
       new IntentsReadHandler(new PgPaymentRepository(transactions, context.ports.get(MEMBER_ACCESS_PORT), orders)),
       new RefundsRequestHandler(new PgRefundRepository(transactions, organizations, orders)),
       new RecoveriesReadHandler(recoveries),
       new RecoveriesResolveHandler(recoveries),
       new WebhooksWechatHandler(
         context.service(PAYMENT_GATEWAY),
-        new PgWebhookScopeReader(new PgTransactionManager(context.service(DATABASE_POOL)), context.ports.get(PAYMENT_WEBHOOK_ORDER_PORT)),
+        new PgWebhookScopeReader(new PgTransactionManager(context.service(DATABASE_POOL)), context.ports.get(ORDER_READ_PORT)),
         new PgWebhookInboxRepository(transactions, orders)
       ),
     ];
@@ -55,10 +67,9 @@ export const PaymentModule = defineModule(Manifest, {
     const benefit = context.ports.get(PAYMENT_BENEFIT_PORT);
     const voucher = context.ports.get(PAYMENT_VOUCHER_PORT);
     const inventory = context.ports.get(PAYMENT_INVENTORY_PORT);
-    const marketing = context.ports.get(PAYMENT_MARKETING_PORT);
-    const fulfillment = context.ports.get(PAYMENT_FULFILLMENT_PORT);
-    const orders = context.ports.get(PAYMENT_ORDER_PORT);
-    const settlement = new PaymentSettlement(benefit, voucher, inventory, marketing, fulfillment, orders);
+    const marketing = context.ports.get(MARKETING_RESERVE_PORT);
+    const orders = context.ports.get(ORDER_PAYMENT_PORT);
+    const settlement = new PaymentSettlement(benefit, voucher, inventory, marketing, orders);
     const holds = new PaymentHoldReleaser(benefit, voucher, inventory, marketing);
     const intents = new PgPaymentContinuation(
       context.service(DATABASE_POOL).workload(writeDatabaseWorkload(context.workload)),
@@ -73,6 +84,7 @@ export const PaymentModule = defineModule(Manifest, {
     const payments = new PaymentPort();
     return [
       { token: CHECKOUT_PAYMENT_PORT, value: new CheckoutPayment(payments, settlement, intents) },
+      { token: CHECKOUT_HOLD_PORT, value: holds },
       { token: FINANCE_PAYMENT_PORT, value: payments },
     ];
   },
@@ -80,10 +92,11 @@ export const PaymentModule = defineModule(Manifest, {
     const benefit = context.ports.get(PAYMENT_BENEFIT_PORT);
     const voucher = context.ports.get(PAYMENT_VOUCHER_PORT);
     const inventory = context.ports.get(PAYMENT_INVENTORY_PORT);
-    const marketing = context.ports.get(PAYMENT_MARKETING_PORT);
+    const marketing = context.ports.get(MARKETING_RESERVE_PORT);
     const holds = new PaymentHoldReleaser(benefit, voucher, inventory, marketing);
     return [
       { token: FINANCE_PAYMENT_PORT, value: new PaymentPort() },
+      { token: ORDER_IMPORT_PAYMENT_PORT, value: new PaymentPort() },
       { token: ORDER_EXPIRY_PAYMENT_PORT, value: new PaymentPort() },
       { token: ORDER_EXPIRY_HOLD_PORT, value: holds },
     ];

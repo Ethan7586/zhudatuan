@@ -6,14 +6,22 @@ export interface LinkGuidance {
 export interface IdentityLink {
   readonly id: string;
   readonly provider: string;
-  readonly principal: string;
-  readonly status: 'active' | 'revoked';
+  readonly status: LinkDto['status'];
   readonly version: number;
 }
 
-export interface LinkSnapshot { readonly links: readonly IdentityLink[] }
+export interface LinkSnapshot {
+  readonly links: readonly IdentityLink[];
+}
+
+export interface LinkRedirect {
+  readonly redirectUrl: string;
+}
 
 export const LINK_GUIDANCE: LinkGuidance = Object.freeze({
   title: '需要确认身份关联',
   detail: '检测到已有身份或绑定冲突。系统不会自动合并账号，请联系企业管理员完成强验证与人工确认。',
 });
+import type { OperationOutputFor } from '@shop/contract';
+
+type LinkDto = OperationOutputFor<'identity.links.read'>['items'][number];

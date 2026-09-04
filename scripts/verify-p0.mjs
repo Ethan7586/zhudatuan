@@ -15,8 +15,8 @@ const critical = [
   'payment.intents.read',
   'payment.refunds.request',
   'payment.webhooks.wechat',
-  'voucher.cardlibraries.create',
-  'voucher.redemptions.reverse',
+  'voucher.credentialpools.create',
+  'voucher.refunds.create',
   'finance.entries.read',
   'finance.reconciliations.manage',
 ];
@@ -58,7 +58,7 @@ for (const path of ['apps/console/.env.example', 'apps/storefront/.env.example',
 }
 const commerceExample = readFileSync(resolve(root, 'services/commerce/.env.example'), 'utf8');
 for (const port of [3000, 3002, 4173]) if (!commerceExample.includes(`:${port}`)) throw new Error(`P0_CORS_PORT_MISSING:${port}`);
-for (const path of ['services/commerce/src/foundation/infrastructure/SecretStore.ts', 'services/commerce/src/foundation/infrastructure/KmsClient.ts', 'services/commerce/src/foundation/infrastructure/ObjectStore.ts']) {
+for (const path of ['services/commerce/src/foundation/infrastructure/SecretStore.ts', 'services/commerce/src/foundation/infrastructure/KmsClient.ts', 'services/commerce/src/modules/runtime/infrastructure/storage/ObjectStore.ts']) {
   const source = readFileSync(resolve(root, path), 'utf8');
   if (/secrets\.local|LOCAL_(?:SECRETS|KMS|OBJECTS)|readFile|node:fs/.test(source)) throw new Error(`P0_PRODUCTION_CLIENT_LOCAL_BRANCH:${path}`);
 }

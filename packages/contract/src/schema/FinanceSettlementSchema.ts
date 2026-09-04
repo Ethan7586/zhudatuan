@@ -57,6 +57,10 @@ export const settlement = strictObject({
   gross_minor: integer,
   fee_minor: integer,
   invoice_basis: string(),
+  input_hash: string(),
+  input_count: unsigned,
+  input_minor: integer,
+  input_watermark: isoUtc,
 });
 
 export const settlementRead = strictObject({ ...settlement.shape, lines: array(settlementLine), splits: array(split), adjustments: array(adjustmentRead) });
@@ -74,6 +78,11 @@ export const withdrawal = strictObject({
   reason: string(),
   evidence: ContractJsonValueSchema,
   provider_reference: nullableText,
+  provider: nullableText,
+  provider_state: nullableText,
+  request_hash: nullableText,
+  input_watermark: nullableTime,
+  response_hash: nullableText,
   created_at: isoUtc,
   updated_at: isoUtc,
   paid_at: nullableTime,
@@ -145,7 +154,7 @@ export const backfill = strictObject({
   signed_at: nullableTime,
 });
 
-export const legacyPolicy = strictObject({ id: string(), scope_id: string(), kind: string(), rule: ContractJsonValueSchema, state: literal(['draft', 'active', 'retired']), version });
+export const financePolicy = strictObject({ id: string(), scope_id: string(), kind: string(), rule: ContractJsonValueSchema, state: literal(['draft', 'active', 'retired']), version });
 
 export const exportResult = strictObject({
   id: string(),

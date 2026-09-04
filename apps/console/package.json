@@ -16,6 +16,7 @@
     "@shop/config": "1.0.0",
     "@shop/contract": "1.0.0",
     "@shop/design": "1.0.0",
+    "@shop/kernel": "1.0.0",
     "@shop/presentation": "1.0.0",
     "@shop/sdk": "1.0.0",
     "@hookform/resolvers": "5.9.1",

@@ -1,0 +1,215 @@
+.malljourney {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(1160px, calc(100vw - 40px));
+  max-height: calc(100vh - 40px);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--sw-brand) 20%, var(--sw-border));
+  border-radius: 16px;
+  background: var(--sw-surface);
+  box-shadow: var(--sw-shadow-overlay);
+}
+.malljourneyhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--sw-border);
+  padding: 18px 24px;
+}
+.malljourneyhead p,
+.malljourneystep header p {
+  margin: 0 0 4px;
+  color: var(--sw-brand);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.malljourneyhead h2,
+.malljourneystep h3 {
+  margin: 0;
+  color: var(--sw-brand-ink);
+}
+.malljourneyhead > button {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--sw-muted);
+  font-size: 24px;
+  cursor: pointer;
+}
+.malljourneybody {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: 230px minmax(0, 1fr);
+}
+.malljourneybody > aside {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  border-right: 1px solid var(--sw-border);
+  background: color-mix(in srgb, var(--sw-brand-light) 38%, var(--sw-surface));
+  padding: 22px 18px;
+}
+.malljourneybody > aside > p {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: 11px;
+}
+.malljourneybody > aside > p strong {
+  float: right;
+  color: var(--sw-brand);
+}
+.malljourneybody ol {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.malljourneybody li button {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 30px 1fr;
+  gap: 10px;
+  align-items: center;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  padding: 10px;
+  color: var(--sw-muted);
+  text-align: left;
+  cursor: pointer;
+}
+.malljourneybody li[data-state='current'] button {
+  background: var(--sw-surface);
+  color: var(--sw-brand-ink);
+  box-shadow: var(--sw-shadow-card);
+}
+.malljourneybody li[data-state='complete'] button {
+  color: var(--sw-brand);
+}
+.malljourneybody li i {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--sw-border);
+  border-radius: 50%;
+  background: var(--sw-surface);
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 800;
+}
+.malljourneybody li[data-state='current'] i,
+.malljourneybody li[data-state='complete'] i {
+  border-color: var(--sw-brand);
+  background: var(--sw-brand);
+  color: white;
+}
+.malljourneybody li span {
+  display: grid;
+  gap: 2px;
+}
+.malljourneybody li strong {
+  font-size: 12px;
+}
+.malljourneybody li small {
+  font-size: 10px;
+  font-weight: 500;
+}
+.malljourneybody > aside > section {
+  display: grid;
+  gap: 4px;
+  border-radius: 12px;
+  background: var(--sw-brand-light);
+  padding: 12px;
+  color: var(--sw-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.malljourneybody > main {
+  min-height: 0;
+  overflow: auto;
+  padding: 28px 30px;
+}
+.malljourneystep {
+  display: grid;
+  gap: 22px;
+}
+.malljourneystep > header {
+  display: grid;
+  gap: 4px;
+}
+.malljourneystep > header h3 {
+  font-size: 20px;
+}
+.malljourneystep > header span {
+  color: var(--sw-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+@media (max-width: 900px) {
+  .malljourney {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
+  }
+  .malljourneybody {
+    grid-template-columns: 170px 1fr;
+  }
+  .mallthemecards {
+    grid-template-columns: 1fr;
+  }
+  .mallthemecards > button {
+    min-height: 150px;
+  }
+}
+@media (max-width: 680px) {
+  .malljourney {
+    width: 100vw;
+    height: 100dvh;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+  }
+  .malljourneybody {
+    display: block;
+  }
+  .malljourneybody > aside {
+    border: 0;
+    border-bottom: 1px solid var(--sw-border);
+    padding: 10px 14px;
+  }
+  .malljourneybody > aside ol {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .malljourneybody li button {
+    display: grid;
+    place-items: center;
+    padding: 5px;
+    text-align: center;
+  }
+  .malljourneybody li span small,
+  .malljourneybody > aside > section {
+    display: none;
+  }
+  .malljourneybody > main {
+    padding: 20px 16px;
+  }
+  .malljourneygrid,
+  .malljourneysummary,
+  .malljourneysuccess dl {
+    grid-template-columns: 1fr;
+  }
+  .malljourneyfooter {
+    padding: 10px 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mallthemecards > button {
+    transition: none;
+  }
+}

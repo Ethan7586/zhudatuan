@@ -3,10 +3,10 @@ import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
 import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
 
-import type { FederationCallbackInput, FederationService, LoadedFederationCallback, PreparedFederationCallback } from '../service/FederationService';
+import type { FederateIdentity, FederationCallbackInput, LoadedFederationCallback, PreparedFederationCallback } from '../service/FederateIdentity';
 import { requestContext } from './StartFederation';
 export class CompleteFederation {
-  constructor(private readonly federation: FederationService) {}
+  constructor(private readonly federation: FederateIdentity) {}
   lifecycle(): OperationLifecycle<PreparedFederationCallback, LoadedFederationCallback> {
     return operationLifecycle({
       load: (request, database) => this.federation.loadCallback(database, callback(request), requestContext(request)),

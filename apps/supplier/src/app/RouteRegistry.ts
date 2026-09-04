@@ -1,0 +1,20 @@
+import { accountManifest } from '../feature/account/public/Manifest';
+import { aftersaleManifest } from '../feature/aftersale/public/Manifest';
+import { catalogManifest } from '../feature/catalog/public/Manifest';
+import { connectionManifest } from '../feature/connection/public/Manifest';
+import { dashboardManifest } from '../feature/dashboard/public/Manifest';
+import { fulfillmentManifest } from '../feature/fulfillment/public/Manifest';
+import { inventoryManifest } from '../feature/inventory/public/Manifest';
+import { invoiceManifest } from '../feature/invoice/public/Manifest';
+import { orderManifest } from '../feature/order/public/Manifest';
+import { pricingManifest } from '../feature/pricing/public/Manifest';
+import { reconciliationManifest } from '../feature/reconciliation/public/Manifest';
+import { statementManifest } from '../feature/statement/public/Manifest';
+import { supportManifest } from '../feature/support/public/Manifest';
+import type { RouteId } from '../generated/RouteBinding';
+import type { SupplierFeatureRoute } from '../shared/FeatureManifest';
+
+const manifests = [accountManifest, aftersaleManifest, catalogManifest, connectionManifest, dashboardManifest, fulfillmentManifest, inventoryManifest, invoiceManifest, orderManifest, pricingManifest, reconciliationManifest, statementManifest, supportManifest] as const;
+const entries = manifests.flatMap((manifest) => manifest.routes.map((route) => [route.routeid, route] as const));
+if (new Set(entries.map(([route]) => route)).size !== entries.length) throw new Error('SUPPLIER_ROUTE_DUPLICATE');
+export const SUPPLIER_ROUTES = Object.freeze(Object.fromEntries(entries)) as Readonly<Record<RouteId, SupplierFeatureRoute>>;

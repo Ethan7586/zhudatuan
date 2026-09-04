@@ -1,4 +1,5 @@
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Button } from '@shop/design';
 import { chineseReference, type FailureView } from '@shop/presentation';
 import { useEffect, useRef, useState } from 'react';
 
@@ -19,14 +20,14 @@ export function Alert({ failure, notice, onAction }: Readonly<{ failure?: Failur
           {failure.requestId ? <small>{chineseReference('请求', failure.requestId)}</small> : null}
         </div>
         {failure.requestId ? (
-          <button type="button" aria-label="复制请求编号" onClick={() => void copy(failure.requestId ?? '').then(setCopied)}>
+          <Button tone="quiet" aria-label="复制请求编号" onPress={() => void copy(failure.requestId ?? '').then(setCopied)}>
             {copied ? '已复制' : '复制编号'}
-          </button>
+          </Button>
         ) : null}
         {onAction && failure.action.kind !== 'none' ? (
-          <button type="button" onClick={onAction}>
+          <Button tone="quiet" onPress={onAction}>
             {failure.action.label}
-          </button>
+          </Button>
         ) : null}
       </div>
     );

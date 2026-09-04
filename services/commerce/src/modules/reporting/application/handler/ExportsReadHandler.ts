@@ -2,7 +2,7 @@ import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import type { FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
 import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
+import type { ObjectStore } from '../../../runtime/public/ObjectPort';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import type { ExportJob } from '../../domain/model/ExportJob';
 import type { ReportRepository } from '../port/ReportRepository';

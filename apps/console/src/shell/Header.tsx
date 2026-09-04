@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { NavigationIcon } from '@shop/design';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import type { ShellDestination } from '../entity/session/viewmodel/ShellProjection';
 import { ShellIcon } from './ShellIcon';
 
 export interface HeaderProps {
@@ -12,18 +14,29 @@ export interface HeaderProps {
   readonly disablingStepup: boolean;
   readonly logoutError?: string;
   readonly stepupError?: string;
+  readonly taskCenter: ReactNode;
+  readonly destinations: readonly ShellDestination[];
+  readonly notification?: ShellDestination;
+  readonly support?: ShellDestination;
   readonly onStepup: () => void;
   readonly onDisableStepup: () => void;
   readonly onLogout: () => void;
+  readonly onNavigate: (route: string) => void;
   readonly onOpenNavigation: () => void;
 }
 
-type HeaderPanel = 'account' | 'command' | 'notices' | 'tasks' | null;
+type HeaderPanel = 'account' | 'command' | null;
 
 export function Header(props: HeaderProps) {
-  const { title, summary, scopeLabel, displayName, assuranceLevel, syncedAt, loggingOut, disablingStepup, logoutError, stepupError, onLogout, onStepup, onDisableStepup, onOpenNavigation } = props;
+  const { title, summary, scopeLabel, displayName, assuranceLevel, syncedAt, loggingOut, disablingStepup, logoutError, stepupError, taskCenter, destinations, notification, support, onLogout, onStepup, onDisableStepup, onNavigate, onOpenNavigation } = props;
   const [panel, setPanel] = useState<HeaderPanel>(null);
+  const [commandQuery, setCommandQuery] = useState('');
   const commandInput = useRef<HTMLInputElement>(null);
+  const commandResults = useMemo(() => {
+    const query = normalizeSearch(commandQuery);
+    const matches = query.length === 0 ? destinations : destinations.filter(({ title, detail }) => normalizeSearch(`${title} ${detail}`).includes(query));
+    return matches.slice(0, 8);
+  }, [commandQuery, destinations]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -39,10 +52,19 @@ export function Header(props: HeaderProps) {
   }, []);
 
   useEffect(() => {
-    if (panel === 'command') commandInput.current?.focus();
+    if (panel !== 'command') return;
+    commandInput.current?.focus();
+    commandInput.current?.select();
   }, [panel]);
 
-  const togglePanel = (next: Exclude<HeaderPanel, null>) => setPanel((current) => (current === next ? null : next));
+  const togglePanel = (next: Exclude<HeaderPanel, null>) => {
+    if (next === 'command') setCommandQuery('');
+    setPanel((current) => (current === next ? null : next));
+  };
+  const openDestination = (destination: ShellDestination) => {
+    setPanel(null);
+    onNavigate(destination.route);
+  };
 
   return (
     <header className="consoleheader">
@@ -56,40 +78,59 @@ export function Header(props: HeaderProps) {
       </div>
 
       <div className="commandarea">
-        <button className="commandtrigger" type="button" onClick={() => togglePanel('command')} aria-haspopup="dialog" aria-expanded={panel === 'command'}>
+        <button className="commandtrigger" type="button" onClick={() => togglePanel('command')} aria-label="搜索已授权页面" aria-haspopup="dialog" aria-expanded={panel === 'command'}>
           <ShellIcon name="search" />
-          <span>搜索工作台、任务或快捷命令…</span>
+          <span>搜索已授权页面…</span>
           <kbd>⌘ K</kbd>
         </button>
         {panel === 'command' ? (
-          <div className="headerpopup commandpopup" role="dialog" aria-label="快捷命令">
-            <label htmlFor="shellcommand">快捷搜索</label>
-            <input ref={commandInput} id="shellcommand" type="search" placeholder="输入工作台、订单或任务…" />
-            <p>{summary}</p>
-            <button type="button" onClick={() => setPanel(null)}>
-              打开「{title}」
-            </button>
+          <div className="headerpopup commandpopup" role="dialog" aria-label="页面搜索">
+            <label htmlFor="shellcommand">搜索当前范围内已授权的页面</label>
+            <input
+              ref={commandInput}
+              id="shellcommand"
+              type="search"
+              value={commandQuery}
+              placeholder="例如：订单、退款或成员"
+              autoComplete="off"
+              onChange={(event) => setCommandQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && commandResults[0] !== undefined) openDestination(commandResults[0]);
+              }}
+            />
+            <p role="status">{commandResults.length === 0 ? '没有匹配的已授权页面，请换个业务词。' : `找到 ${commandResults.length} 个页面`}</p>
+            <ul className="commandresults">
+              {commandResults.map((destination) => (
+                <li key={destination.key}>
+                  <button type="button" onClick={() => openDestination(destination)}>
+                    <NavigationIcon icon={destination.icon} />
+                    <span>
+                      <strong>{destination.title}</strong>
+                      <small>{destination.detail}</small>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : null}
       </div>
 
       <div className="consoleactions">
-        <div className="headeractionwrap">
-          <button className="taskbutton" type="button" onClick={() => togglePanel('tasks')} aria-haspopup="dialog" aria-expanded={panel === 'tasks'}>
-            任务
-            <span aria-label="任务状态待同步" />
-          </button>
-          {panel === 'tasks' ? <StatusPopup title="当前任务" detail="任务数据待服务端同步。" /> : null}
-        </div>
+        {taskCenter}
         <span className="languageindicator" aria-label="当前语言：中文">
           中文
         </span>
-        <div className="headeractionwrap">
-          <button className="iconbutton" type="button" onClick={() => togglePanel('notices')} aria-label="通知中心" aria-haspopup="dialog" aria-expanded={panel === 'notices'}>
+        {notification === undefined ? null : (
+          <button className="iconbutton" type="button" onClick={() => openDestination(notification)} aria-label={`打开${notification.title}`} title={notification.title}>
             <ShellIcon name="bell" />
           </button>
-          {panel === 'notices' ? <StatusPopup title="通知中心" detail="最新运行状态已同步。" /> : null}
-        </div>
+        )}
+        {support === undefined ? null : (
+          <button className="iconbutton" type="button" onClick={() => openDestination(support)} aria-label={`打开${support.title}`} title={support.title}>
+            <ShellIcon name="help" />
+          </button>
+        )}
         <div className="headeractionwrap operatorprofile">
           <button className="avatarbutton" type="button" onClick={() => togglePanel('account')} aria-label={`打开 ${displayName} 的账户菜单`} aria-haspopup="dialog" aria-expanded={panel === 'account'}>
             {avatarLetter(displayName)}
@@ -131,15 +172,6 @@ export function Header(props: HeaderProps) {
   );
 }
 
-function StatusPopup({ title, detail }: Readonly<{ title: string; detail: string }>) {
-  return (
-    <div className="headerpopup statuspopup" role="dialog" aria-label={title}>
-      <strong>{title}</strong>
-      <span>{detail}</span>
-    </div>
-  );
-}
-
 function avatarLetter(displayName: string): string {
   return displayName.match(/[A-Za-z]/)?.[0]?.toUpperCase() ?? (displayName.trim().slice(0, 1) || '智');
 }
@@ -147,4 +179,8 @@ function avatarLetter(displayName: string): string {
 function formatTime(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? '同步时间未知' : `同步于 ${date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`;
+}
+
+function normalizeSearch(value: string): string {
+  return value.trim().toLocaleLowerCase('zh-CN').replace(/\s+/gu, '');
 }

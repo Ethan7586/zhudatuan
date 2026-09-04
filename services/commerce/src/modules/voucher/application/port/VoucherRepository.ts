@@ -1,16 +1,15 @@
-import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-
+import type { VoucherCall, VoucherReply } from './VoucherCall';
+import type { ActivationLookup } from './ActivationRate';
 export interface VoucherRepository {
-  readBindings(transaction: ReadTransactionContext, input: OperationInputFor<'voucher.bindings.read'>, context: ExecutionContext<'voucher.bindings.read'>): Promise<OperationReply<OperationOutputFor<'voucher.bindings.read'>>>;
-  manageBinding(transaction: WriteTransactionContext, input: OperationInputFor<'voucher.bindings.manage'>, context: ExecutionContext<'voucher.bindings.manage'>): Promise<OperationReply<OperationOutputFor<'voucher.bindings.manage'>>>;
-  readRedemptions(transaction: ReadTransactionContext, input: OperationInputFor<'voucher.redemptions.read'>, context: ExecutionContext<'voucher.redemptions.read'>): Promise<OperationReply<OperationOutputFor<'voucher.redemptions.read'>>>;
-  reverseRedemption(
-    transaction: WriteTransactionContext,
-    input: OperationInputFor<'voucher.redemptions.reverse'>,
-    context: ExecutionContext<'voucher.redemptions.reverse'>
-  ): Promise<OperationReply<OperationOutputFor<'voucher.redemptions.reverse'>>>;
-  readHistory(transaction: ReadTransactionContext, input: OperationInputFor<'voucher.history.read'>, context: ExecutionContext<'voucher.history.read'>): Promise<OperationReply<OperationOutputFor<'voucher.history.read'>>>;
+  activateSecret(call: VoucherCall<'voucher.activations.secret'>, lookup: ActivationLookup): VoucherReply<'voucher.activations.secret'>;
+  activateNumber(call: VoucherCall<'voucher.activations.numbersecret'>, lookup: ActivationLookup): VoucherReply<'voucher.activations.numbersecret'>;
+  bind(call: VoucherCall<'voucher.vouchers.bind'>): VoucherReply<'voucher.vouchers.bind'>;
+  unbind(call: VoucherCall<'voucher.vouchers.unbind'>): VoucherReply<'voucher.vouchers.unbind'>;
+  get(call: VoucherCall<'voucher.vouchers.get'>): VoucherReply<'voucher.vouchers.get'>;
+  number(call: VoucherCall<'voucher.vouchers.getbynumber'>, fingerprint: string): VoucherReply<'voucher.vouchers.getbynumber'>;
+  timeline(call: VoucherCall<'voucher.vouchers.timeline'>): VoucherReply<'voucher.vouchers.timeline'>;
+  quote(call: VoucherCall<'voucher.redemptions.quote'>): VoucherReply<'voucher.redemptions.quote'>;
+  redeem(call: VoucherCall<'voucher.redemptions.create'>): VoucherReply<'voucher.redemptions.create'>;
+  refund(call: VoucherCall<'voucher.refunds.create'>): VoucherReply<'voucher.refunds.create'>;
+  redemption(call: VoucherCall<'voucher.redemptions.get'>): VoucherReply<'voucher.redemptions.get'>;
 }

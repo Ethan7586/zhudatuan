@@ -6,6 +6,7 @@ import { SecureOperationPolicy } from './OperationPolicy';
 const accessContext = {
   actor: { id: 'principal:1', session: 'session:1', membership: 'membership:1', credentialVersion: 1, accessVersion: 1, target: 'storefront', assurance: { level: 1 } },
   membership: { id: 'membership:1', active: true, accessVersion: 1, permissions: { allows: new Set(['member.profile.read']), denies: new Set() }, scopes: [] },
+  roles: [],
   organization: 'mall:1',
   scope: { kind: 'self', id: 'member:1', path: [] },
   accessVersion: 1,

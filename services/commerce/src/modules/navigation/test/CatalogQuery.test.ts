@@ -69,9 +69,16 @@ function createQuery(catalog: CatalogReadPort): CatalogQuery {
     published: async () => {
       throw new Error('NOT_USED');
     },
+    publishedFor: async () => null,
   };
-  const pricing: PricingReadPort = { prices: async () => Object.freeze([{ sku: 'sku:one', amountMinor: 8800, compareMinor: 9900, currency: 'CNY', version: 'price:1' }]) };
-  const inventory: InventoryReadPort = { availability: async () => Object.freeze([{ sku: 'sku:one', available: 6, state: 'available', version: 'stock:1' }]) };
+  const pricing: PricingReadPort = {
+    prices: async () => Object.freeze([{ sku: 'sku:one', amountMinor: 8800, compareMinor: 9900, currency: 'CNY', version: 'price:1' }]),
+    offers: async () => Object.freeze([]),
+  };
+  const inventory: InventoryReadPort = {
+    availability: async () => Object.freeze([{ sku: 'sku:one', available: 6, state: 'available', version: 'stock:1' }]),
+    details: async () => Object.freeze([]),
+  };
   return new CatalogQuery(experience, catalog, pricing, inventory, new CatalogMapper('catalog-query-test-secret-key-000001'));
 }
 

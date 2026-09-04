@@ -4,6 +4,7 @@ import type { OrderExpiryPort } from '../../../order/public';
 import type { OrderExpiryPaymentPort, PaymentHoldReleasePort } from '../../../payment/public';
 import type { OrderExpiryCheckoutPort } from '../../public';
 import type { OrderExpiryRepository } from '../port/OrderExpiryRepository';
+import { quoteHash } from '../../domain/service/QuoteSigner';
 
 export interface OrderExpiryDependencies {
   readonly payments: OrderExpiryPaymentPort;
@@ -43,6 +44,8 @@ export class ExpireOrders {
         deadline: request.deadline,
       },
       async (context) => {
+        const receipt = quoteHash({ checkout: request.checkout, order: request.order, trace: request.checkout === null && request.order === null ? request.trace : null, scope: request.scope });
+        if (!(await this.repository.claim(context, receipt, request.scope))) return;
         const expired = await this.dependencies.checkouts.expire(context, request.checkout);
         for (const item of expired) await this.dependencies.inventory.expireCheckout(context, item.id);
         const expirations = await this.dependencies.payments.expirations(context, request.order);

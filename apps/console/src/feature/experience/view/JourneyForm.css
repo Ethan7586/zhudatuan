@@ -1,0 +1,197 @@
+.malljourneygrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.malljourneygridcompact {
+  max-width: 560px;
+}
+.malljourneyfield {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  color: var(--sw-muted);
+  font-size: 11px;
+  font-weight: 750;
+}
+.malljourneyfield input,
+.malljourneyfield select,
+.malljourneyfield output {
+  min-height: 42px;
+  width: 100%;
+  border: 1px solid var(--sw-border);
+  border-radius: 10px;
+  background: var(--sw-surface);
+  padding: 9px 11px;
+  color: var(--sw-brand-ink);
+  font: inherit;
+  font-weight: 550;
+}
+.malljourneyfield input:focus,
+.malljourneyfield select:focus {
+  border-color: var(--sw-brand);
+  outline: 0;
+  box-shadow: var(--sw-shadow-focus);
+}
+.malljourneyfield output {
+  display: flex;
+  align-items: center;
+  background: var(--sw-brand-light);
+}
+.malljourneyfield small {
+  color: var(--sw-muted);
+  font-size: 10px;
+  font-weight: 500;
+}
+.malljourneysections {
+  display: flex;
+  gap: 7px;
+  border-bottom: 1px solid var(--sw-border);
+}
+.malljourneysections button {
+  display: grid;
+  gap: 2px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  padding: 10px 14px;
+  color: var(--sw-muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.malljourneysections button small {
+  color: var(--sw-muted);
+  font-size: 9px;
+  font-weight: 550;
+}
+.malljourneysections button[data-state='complete'] small {
+  color: var(--sw-success-strong);
+}
+.malljourneysections button[aria-pressed='true'] {
+  border-color: var(--sw-brand);
+  color: var(--sw-brand);
+}
+.malljourneysummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.malljourneysummary article {
+  display: grid;
+  gap: 5px;
+  border: 1px solid var(--sw-border);
+  border-radius: 12px;
+  padding: 14px;
+}
+.malljourneysummary small,
+.malljourneysummary span {
+  color: var(--sw-muted);
+  font-size: 10px;
+}
+.malljourneysummary strong {
+  color: var(--sw-brand-ink);
+  font-size: 13px;
+}
+.malljourneyconfirm {
+  display: flex;
+  gap: 12px;
+  align-items: start;
+  border-radius: 12px;
+  background: var(--sw-brand-light);
+  padding: 15px;
+  color: var(--sw-brand-ink);
+  cursor: pointer;
+}
+.malljourneyconfirm input {
+  margin-top: 3px;
+}
+.malljourneyconfirm span {
+  display: grid;
+  gap: 4px;
+}
+.malljourneyconfirm small {
+  color: var(--sw-muted);
+  font-size: 10px;
+}
+.malljourneynotice,
+.malljourneyerror {
+  margin: 16px 0 0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 11px;
+}
+.malljourneynotice {
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-ink);
+}
+.malljourneyerror {
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger-strong);
+}
+.malljourneyfooter,
+.malljourneysuccess footer {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  gap: 9px;
+  border-top: 1px solid var(--sw-border);
+  padding: 12px 24px;
+}
+.malljourneyfooter span {
+  flex: 1;
+}
+.malljourneyfooter button,
+.malljourneysuccess button {
+  min-height: 40px;
+  border: 1px solid var(--sw-border);
+  border-radius: 10px;
+  background: var(--sw-surface);
+  padding: 0 17px;
+  color: var(--sw-brand-ink);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.malljourneyfooter button.isprimary,
+.malljourneysuccess button.isprimary {
+  border-color: var(--sw-brand);
+  background: var(--sw-brand);
+  color: white;
+}
+.malljourneyfooter button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.malljourneysuccess {
+  min-height: 430px;
+  padding: 30px;
+  overflow: auto;
+}
+.malljourneysuccess dl {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 22px 0;
+}
+.malljourneysuccess dl div {
+  border: 1px solid var(--sw-border);
+  border-radius: 12px;
+  padding: 13px;
+}
+.malljourneysuccess dt {
+  color: var(--sw-muted);
+  font-size: 10px;
+}
+.malljourneysuccess dd {
+  margin: 5px 0 0;
+  color: var(--sw-brand-ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+.malljourneysuccess footer {
+  justify-content: flex-end;
+  margin: 0 -30px -30px;
+}

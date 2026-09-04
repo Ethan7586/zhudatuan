@@ -17,3 +17,4 @@ export interface ChannelCapabilityPort {
 }
 export const CHANNEL_CAPABILITY_PORT = publicPort<ChannelCapabilityPort>('capability', 'channel');
 export { NAVIGATION_CAPABILITY_PORT, type NavigationCapability, type NavigationCapabilityPort } from './NavigationCapabilityPort';
+export { CAPABILITY_READINESS_PORT, type CapabilityReadinessPort } from './ReadinessPort';

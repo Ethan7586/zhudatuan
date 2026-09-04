@@ -21,6 +21,7 @@ const shared = sharedStrings(xml('xl/sharedStrings.xml'));
 const operationDocument = parse(await readFile(resolve(root, 'packages/contract/definitions/operations.yml'), 'utf8'), { merge: true }) as {
   readonly operations: readonly OperationDefinition[];
 };
+const operationById = new Map(operationDocument.operations.map((operation) => [operation.id, operation] as const));
 const navigationDocument = parse(await readFile(resolve(root, 'config/navigation.yml'), 'utf8')) as {
   readonly routes: readonly NavigationRouteDefinition[];
   readonly nodes: readonly NavigationDefinition[];
@@ -111,7 +112,11 @@ const mvpRequirements = requirementSource.mvp.map((definition) => {
   const operations = operationDocument.operations.filter((operation) => operation.requirements.includes(id));
   const directOperations = [...new Set(definition.directOperations)].sort();
   const transitiveOperations = [...new Set([...definition.transitiveOperations, ...operations.map(({ id: operation }) => operation).filter((operation) => !directOperations.includes(operation))])].sort();
-  const navigation = navigationDocument.nodes.filter((node) => node.requirements.includes(id));
+  const navigation = navigationDocument.nodes.filter((node) => {
+    const operation = operationById.get(node.entry);
+    if (operation === undefined) throw new Error('NAVIGATION_OPERATION_UNKNOWN:' + node.id + ':' + node.entry);
+    return operation.requirements.includes(id);
+  });
   const routes = navigationDocument.routes.filter((route) => route.requirements.includes(id));
   const releaseBlockers = requirementSource.clarifications.filter(({ requirements, blocking }) => blocking && requirements.includes(id));
   return {
@@ -342,8 +347,7 @@ function contractType(requirementIds: readonly string[], mvpIds: readonly string
 
 interface NavigationDefinition {
   readonly id: string;
-  readonly routeid: string;
-  readonly requirements: readonly string[];
+  readonly entry: string;
 }
 
 interface NavigationRouteDefinition {

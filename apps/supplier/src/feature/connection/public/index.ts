@@ -1,0 +1,1 @@
+export { connectionManifest } from './Manifest';

@@ -12,8 +12,8 @@ export class RatePolicy {
     this.limiter = new RateLimiter(rate, capacity, now);
   }
 
-  acquire(deadline: number): Promise<void> {
-    const limit = Deadline.at(deadline, undefined, this.now);
+  acquire(deadline: number, signal?: AbortSignal): Promise<void> {
+    const limit = Deadline.at(deadline, signal, this.now);
     return this.limiter
       .acquire(limit)
       .catch((cause) => {

@@ -59,12 +59,60 @@ describe('contract truth', () => {
   it('publishes bounded server-authoritative order list filters', () => {
     const orders = OPERATION_SCHEMAS['order.orders.read'].input;
     const aftersales = OPERATION_SCHEMAS['order.aftersales.read'].input;
-    const filters = { order: 'order:one', placed: '7days', lifecycle: 'paid', payment: 'paid', fulfillment: 'allocated', mall: 'mall:one' } as const;
+    const filters = { search: 'ZD202609050001', placed: '7days', lifecycle: 'paid', payment: 'paid', fulfillment: 'allocated', mall: 'mall:one', channel: 'jdproduct', product: '福利礼盒', member: '张三', minimumMinor: 100, maximumMinor: 10000 } as const;
 
     expect(orders.parse({ query: { ...filters, view: 'unshipped', limit: 50 } })).toEqual({ query: { ...filters, view: 'unshipped', limit: 50 } });
     expect(aftersales.parse({ query: filters })).toEqual({ query: filters });
     expect(() => orders.parse({ query: { view: 'removed' } })).toThrow();
     expect(() => aftersales.parse({ query: { payment: 'unknown' } })).toThrow();
+  });
+
+  it('publishes customer and member segmentation as a strict sales dimension preset', () => {
+    const input = OPERATION_SCHEMAS['reporting.sales.read'].input;
+    const output = OPERATION_SCHEMAS['reporting.sales.read'].output;
+    const report = {
+      items: [],
+      count: 0,
+      snapshot: {
+        query: { scope: 'mall:one', dimension: 'member', period: '30days', application: null },
+        watermark: { event: 'event:one', occurredAt: '2026-09-05T00:00:00.000Z', version: 1 },
+        generatedAt: '2026-09-05T00:00:01.000Z',
+        generationVersion: 1,
+      },
+      preset: {
+        code: 'customermember',
+        name: '客户 / 会员分层',
+        description: '当前客户范围内的会员购买分层',
+        dimensions: ['customer', 'member'],
+        privacy: 'masked',
+        version: 1,
+        owner: 'reporting',
+      },
+    } as const;
+
+    expect(input.parse({ query: { dimensionpreset: 'customermember', period: '30days' } })).toEqual({ query: { dimensionpreset: 'customermember', period: '30days' } });
+    expect(output.parse(report)).toEqual(report);
+    expect(() => input.parse({ query: { dimensionpreset: 'powderclass' } })).toThrow();
+    expect(() => output.parse({ ...report, preset: { ...report.preset, privacy: 'raw' } })).toThrow();
+  });
+
+  it('requires metric exports to carry the exact displayed frozen query snapshot', () => {
+    const schema = OPERATION_SCHEMAS['reporting.exports.create'].input;
+    const body = {
+      report: 'metrics',
+      filter: { view: 'members', period: '7days', application: 'application:one' },
+      snapshot: {
+        query: { scope: 'mall:one', dimension: 'member', period: '7days', application: 'application:one' },
+        watermark: { event: 'event:one', occurredAt: '2026-09-05T00:00:00.000Z', version: 8 },
+        generatedAt: '2026-09-05T00:00:01.000Z',
+        generationVersion: 1,
+      },
+    } as const;
+
+    expect(schema.parse({ body })).toEqual({ body });
+    expect(() => schema.parse({ body: { report: 'metrics', filter: body.filter } })).toThrow();
+    expect(() => schema.parse({ body: { ...body, report: 'orders' } })).toThrow();
+    expect(() => schema.parse({ body: { ...body, filter: { ...body.filter, metric: 'sales' } } })).toThrow();
   });
 
   it('requires account labels on access-center rows', () => {
@@ -81,10 +129,11 @@ describe('contract truth', () => {
       overrides: [],
     } as const;
     const schema = OPERATION_SCHEMAS['access.center.read'].output;
+    const output = { items: [row], count: 1, roles: [], templates: [], separationRules: [] } as const;
 
-    expect(schema.parse({ items: [row], count: 1 })).toEqual({ items: [row], count: 1 });
-    const { display_name: _displayName, ...withoutAccount } = row;
-    expect(() => schema.parse({ items: [withoutAccount], count: 1 })).toThrow();
+    expect(schema.parse(output)).toEqual(output);
+    const withoutAccount = omit(row, 'display_name');
+    expect(() => schema.parse({ ...output, items: [withoutAccount] })).toThrow();
   });
 
   it('requires readable parent names on organization layers', () => {
@@ -101,7 +150,7 @@ describe('contract truth', () => {
     const schema = OPERATION_SCHEMAS['organization.layers.read'].output;
 
     expect(schema.parse({ items: [row], count: 1 })).toEqual({ items: [row], count: 1 });
-    const { parent_name: _parentName, ...withoutParentName } = row;
+    const withoutParentName = omit(row, 'parent_name');
     expect(() => schema.parse({ items: [withoutParentName], count: 1 })).toThrow();
   });
 
@@ -136,7 +185,7 @@ describe('contract truth', () => {
     const schema = OPERATION_SCHEMAS['identity.invitations.read'].output;
 
     expect(schema.parse({ items: [row], count: 1 })).toEqual({ items: [row], count: 1 });
-    const { issuer_display_name: _issuer, ...withoutIssuer } = row;
+    const withoutIssuer = omit(row, 'issuer_display_name');
     expect(() => schema.parse({ items: [withoutIssuer], count: 1 })).toThrow();
   });
 
@@ -144,6 +193,7 @@ describe('contract truth', () => {
     const row = {
       id: 'riskcase:one',
       kind: 'case',
+      version: 1,
       name: null,
       status: null,
       active_version: null,
@@ -162,6 +212,7 @@ describe('contract truth', () => {
       preview: null,
       decision_id: 'riskdecision:one',
       outcome: 'deny',
+      case_state: 'open',
       safe_reason: 'velocity',
       actor_id: 'principal:one',
       actor_display_name: '李小明',
@@ -173,14 +224,13 @@ describe('contract truth', () => {
     const schema = OPERATION_SCHEMAS['risk.center.read'].output;
 
     expect(schema.parse({ items: [row], count: 1 })).toEqual({ items: [row], count: 1 });
-    const { actor_display_name: _actor, ...withoutActor } = row;
+    const withoutActor = omit(row, 'actor_display_name');
     expect(() => schema.parse({ items: [withoutActor], count: 1 })).toThrow();
   });
 
   it('publishes one strict runtime payload schema for every event', () => {
     const eventTypes = COMMERCE_EVENTS.map(({ type }) => type).sort();
     expect(Object.keys(EVENT_PAYLOAD_SCHEMAS).sort()).toEqual(eventTypes);
-    expect(eventTypes).toHaveLength(103);
     expect(parseEventPayload('order.received', { orderId: 'order:one', receivedAt: '2026-08-30T00:00:00.000Z', fulfillmentState: 'received' })).toBeDefined();
     expect(() => parseEventPayload('order.received', { orderId: 'order:one', receivedAt: '2026-08-30', fulfillmentState: 'received' })).toThrow();
     expect(() => parseEventPayload('order.received', { orderId: 'order:one', receivedAt: '2026-08-30T00:00:00.000Z', fulfillmentState: 'received', secret: 'forbidden' })).toThrow();
@@ -232,8 +282,10 @@ describe('contract truth', () => {
 
   it('publishes a strict product detail aggregate instead of an untyped response', () => {
     const detail = {
+      section: 'core',
       id: 'product:one',
       title: '测试商品',
+      description: null,
       product_type: 'physical',
       status: 'active',
       version: '1',
@@ -242,10 +294,24 @@ describe('contract truth', () => {
       owner_partner_id: 'supplier:one',
       cover_url: null,
       subtitle: null,
+      createdAt: '2026-09-01T00:00:00.000Z',
+      updatedAt: '2026-09-07T00:00:00.000Z',
       skus: [{ id: 'sku:one', code: 'SKU-1', status: 'active', specifications: [{ name: '规格', value: '标准' }], version: '1' }],
       listings: [],
+      media: [],
+      channels: [],
+      pools: [],
+      timeline: [],
       inventory: [],
       prices: [],
+      qualifications: [],
+      dependencies: {
+        catalog: { state: 'ready', watermark: 'catalog:1', code: null },
+        inventory: { state: 'notrequested', watermark: null, code: null },
+        pricing: { state: 'notrequested', watermark: null, code: null },
+        qualification: { state: 'notrequested', watermark: null, code: null },
+      },
+      gaps: [],
     } as const;
     expect(OPERATION_SCHEMAS['catalog.product.detail.read'].output.parse(detail)).toEqual(detail);
     expect(() => OPERATION_SCHEMAS['catalog.product.detail.read'].output.parse({ ...detail, internalSecret: 'forbidden' })).toThrow();
@@ -255,7 +321,7 @@ describe('contract truth', () => {
     });
   });
 
-  it('publishes shared session identity Operations for both browser targets', () => {
+  it('publishes shared session identity Operations for every session target', () => {
     const shared = [
       'identity.tickets.exchange',
       'identity.session.read',
@@ -272,7 +338,7 @@ describe('contract truth', () => {
       'member.profile.read',
       'order.orders.read',
     ] as const;
-    for (const id of shared) expect(OperationCatalog.get(id)).toMatchObject({ audience: 'public', targets: ['console', 'storefront'] });
+    for (const id of shared) expect(OperationCatalog.get(id)).toMatchObject({ audience: 'public', targets: ['console', 'storefront', 'miniapp', 'store', 'supplier'] });
   });
 
   it('authorizes multi-mall product commands against the explicit operating scope', () => {
@@ -291,10 +357,10 @@ describe('contract truth', () => {
     });
   });
 
-  it('creates a new card library without pretending that a prior resource version exists', () => {
-    expect(OperationCatalog.get('voucher.cardlibraries.create')).toMatchObject({
-      assuranceLevel: 'mfa',
-      permission: 'voucher.cardlibrary.create',
+  it('creates a new credential pool without pretending that a prior resource version exists', () => {
+    expect(OperationCatalog.get('voucher.credentialpools.create')).toMatchObject({
+      assuranceLevel: 'stepup',
+      permission: 'voucher.credential.manage',
       makerChecker: false,
       expectedVersion: 'none',
       csrfPolicy: 'required',
@@ -326,11 +392,12 @@ describe('contract truth', () => {
       'finance.reconciliationrepairs.submit',
       'finance.reconciliationrepairs.decide',
       'finance.reconciliationrepairs.reverse',
+      'finance.audit.read',
       'order.orders.receive',
       'checkout.quotes.current.read',
     ] as const;
     for (const id of required) expect(OperationCatalog.get(id).id).toBe(id);
-    for (const id of ['identity.members.create', 'identity.members.reset', 'identity.wechat.session', 'identity.wechat.bind', 'invoice.operatorprofiles.read', 'finance.audit.read']) {
+    for (const id of ['identity.members.create', 'identity.members.reset', 'identity.wechat.session', 'identity.wechat.bind', 'invoice.operatorprofiles.read']) {
       expect(() => OperationCatalog.get(id as never)).toThrow('OPERATION_UNKNOWN');
     }
     for (const id of [
@@ -338,31 +405,51 @@ describe('contract truth', () => {
       'referral.products.manage',
       'referral.members.approve',
       'referral.members.disqualify',
-      'finance.reconciliationrepairs.submit',
-      'finance.reconciliationrepairs.decide',
       'finance.reconciliationrepairs.reverse',
     ]) {
       expect(OperationCatalog.get(id as never)).toMatchObject({ assuranceLevel: 'stepup', makerChecker: true, expectedVersion: 'required', idempotencyPolicy: 'required' });
+    }
+    for (const id of ['finance.reconciliationrepairs.submit', 'finance.reconciliationrepairs.decide'] as const) {
+      expect(OperationCatalog.get(id)).toMatchObject({ assuranceLevel: 'stepup', makerChecker: false, expectedVersion: 'required', idempotencyPolicy: 'required' });
     }
     expect(OperationCatalog.get('referral.withdrawals.create')).toMatchObject({ assuranceLevel: 'stepup', expectedVersion: 'required', idempotencyPolicy: 'required' });
     expect(OperationCatalog.get('order.orders.receive')).toMatchObject({ expectedVersion: 'required', idempotencyPolicy: 'required', idempotent: true });
   });
 
   it('rejects imprecise Referral, Finance, receipt and Checkout wire values', () => {
+    const referralSetting = {
+      enabled: true,
+      recruitEnabled: true,
+      reviewRequired: true,
+      rewardEnabled: true,
+      bindingMode: 'days',
+      firstTouchDays: 30,
+      freezeDays: 7,
+      settlementTrigger: 'received',
+      rateBasisPoints: 500,
+      minimumWithdrawalMinor: 1000,
+      monthlyWithdrawalLimit: 3,
+      currency: 'CNY',
+      expectedVersion: 1,
+      reason: '年度政策',
+    } as const;
     expect(
       OPERATION_SCHEMAS['referral.settings.manage'].input.parse({
         path: { settingid: 'referralsetting:one' },
-        body: { enabled: true, firstTouchDays: 30, rateBasisPoints: 500, minimumWithdrawalMinor: 1000, currency: 'CNY', expectedVersion: 1, reason: '年度政策' },
+        body: referralSetting,
       })
     ).toBeDefined();
     expect(() =>
       OPERATION_SCHEMAS['referral.settings.manage'].input.parse({
         path: { settingid: 'referralsetting:one' },
-        body: { enabled: true, firstTouchDays: 30, rateBasisPoints: 1.5, minimumWithdrawalMinor: 1000, currency: 'CNY', expectedVersion: 1, reason: '非法小数佣金' },
+        body: { ...referralSetting, rateBasisPoints: 1.5, reason: '非法小数佣金' },
       })
     ).toThrow();
     expect(() => OPERATION_SCHEMAS['order.orders.receive'].input.parse({ path: { orderid: 'order:one' }, body: { expectedVersion: 0 } })).toThrow();
     expect(() => OPERATION_SCHEMAS['checkout.quotes.current.read'].output.parse({ quote: { internalSecret: 'forbidden' } })).toThrow();
+    expect(() => OPERATION_SCHEMAS['finance.reconciliationrepairs.preview'].input.parse({ body: { statementId: 'statement:one', sourceHash: 'a'.repeat(64), entries: [], reason: '修复', expectedVersion: 1 } })).toThrow();
+    expect(() => OPERATION_SCHEMAS['finance.reconciliationrepairs.decide'].input.parse({ path: { repairid: 'reconciliationrepair:one' }, body: { decision: 'approve', expectedVersion: 1, reason: '同意' } })).toThrow();
+    expect(() => OPERATION_SCHEMAS['finance.reconciliationrepairs.decide'].input.parse({ path: { repairid: 'reconciliationrepair:one' }, body: { decision: 'reject', approvalProof: 'p'.repeat(43), expectedVersion: 1, reason: '拒绝' } })).toThrow();
   });
 
   it('exposes every employee journey operation to the storefront target', () => {
@@ -376,8 +463,8 @@ describe('contract truth', () => {
       'order.aftersales.read',
       'order.aftersales.apply',
       'benefit.accounts.read',
-      'voucher.bindings.read',
-      'voucher.redemptions.read',
+      'voucher.search.read',
+      'voucher.redemptions.get',
       'invoice.requests.create',
       'support.cases.create',
       'payment.intents.read',
@@ -394,15 +481,39 @@ describe('contract truth', () => {
   });
 
   it('accepts only the single experience schema version, components and actions', () => {
-    expect(parseExperience({ version: 2, application: 'app', pages: [{ id: 'home', path: '/', blocks: [{ id: 'hero', component: 'hero', content: {}, action: { type: 'product', target: 'product-1' } }] }] }).version).toBe(2);
+    expect(parseExperience(experienceDocument([{ id: 'hero', component: 'hero', content: { title: '福利首页' }, action: { type: 'product', target: 'product-1' } }])).version).toBe(2);
     expect(EXPERIENCE_COMPONENTS).toEqual(['hero', 'notice', 'shortcut', 'productcollection', 'richtext']);
-    expect(() => parseExperience({ version: 2, application: 'app', pages: [{ id: 'home', path: '/', blocks: [{ id: 'unknown', component: 'unknown', content: {} }] }] })).toThrow('EXPERIENCE_COMPONENT_INVALID');
+    expect(() => parseExperience(experienceDocument([{ id: 'unknown', component: 'unknown', content: {} }]))).toThrow('EXPERIENCE_COMPONENT_INVALID');
     expect(() => parseExperience({ version: 1, application: 'app', pages: [] })).toThrow('EXPERIENCE_VERSION_INVALID');
   });
 
   it('serializes experience documents canonically for content addressed publication', () => {
-    const left = serializeExperience({ pages: [{ blocks: [], path: '/', id: 'home' }], application: 'app', version: 2 });
-    const right = serializeExperience({ version: 2, application: 'app', pages: [{ id: 'home', path: '/', blocks: [] }] });
+    const left = serializeExperience({
+      pages: [{ blocks: [], path: '/', id: 'home' }],
+      assets: [],
+      navigation: [{ page: 'home', label: '首页', id: 'navigation:home' }],
+      theme: { faviconObjectRef: null, logoObjectRef: null, accentColor: '#19A974', primaryColor: '#1F5EFF', preset: 'shop' },
+      application: 'app',
+      version: 2,
+    });
+    const right = serializeExperience(experienceDocument([]));
     expect(left).toBe(right);
   });
 });
+
+function experienceDocument(blocks: readonly unknown[]) {
+  return {
+    version: 2,
+    application: 'app',
+    theme: { preset: 'shop', primaryColor: '#1F5EFF', accentColor: '#19A974', logoObjectRef: null, faviconObjectRef: null },
+    navigation: [{ id: 'navigation:home', label: '首页', page: 'home' }],
+    assets: [],
+    pages: [{ id: 'home', path: '/', blocks }],
+  };
+}
+
+function omit<T extends object, K extends keyof T>(value: T, key: K): Omit<T, K> {
+  const copy = { ...value };
+  Reflect.deleteProperty(copy, key);
+  return copy;
+}

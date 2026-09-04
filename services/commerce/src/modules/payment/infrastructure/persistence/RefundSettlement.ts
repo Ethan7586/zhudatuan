@@ -3,8 +3,10 @@ import { randomUUID } from 'node:crypto';
 import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { PaymentOrderPort } from '../../../order/public';
+import type { OrderPaymentPort } from '../../../order/public';
 import type { OrganizationReadPort } from '../../../organization/public';
+import type { MarketingReservePort } from '../../../marketing/public';
+import { Refund as RefundAggregate, type RefundState } from '../../domain/model/Refund';
 
 interface RefundBenefit {
   refund(context: WriteTransactionContext, input: Readonly<{ id: string; order: string; member: string; scope: string; account: string; amountMinor: number }>): Promise<void>;
@@ -12,7 +14,7 @@ interface RefundBenefit {
 interface RefundVoucher {
   refund(context: WriteTransactionContext, input: Readonly<{ refund: string; order: string; member: string; voucher: string; amountMinor: number }>): Promise<void>;
 }
-type RefundOrders = Pick<PaymentOrderPort, 'lockPayment' | 'aftersale' | 'markRefunded' | 'recordPaymentRefund' | 'recordRefund'>;
+type RefundOrders = Pick<OrderPaymentPort, 'lockPayment' | 'aftersale' | 'markRefunded' | 'recordPaymentRefund' | 'recordRefund'>;
 
 interface RefundRow {
   readonly id: string;
@@ -29,6 +31,7 @@ interface RefundRow {
   readonly mall_id: string;
   readonly member_id: string;
   readonly line_id: string | null;
+  readonly version: number;
 }
 
 interface RefundLeg {
@@ -43,6 +46,7 @@ export class RefundSettlement {
   constructor(
     private readonly benefit: RefundBenefit,
     private readonly voucher: RefundVoucher,
+    private readonly marketing: Pick<MarketingReservePort, 'refund'>,
     private readonly orders: RefundOrders,
     private readonly organizations: Pick<OrganizationReadPort, 'scope'>
   ) {}
@@ -62,7 +66,7 @@ export class RefundSettlement {
     const paymentRefund = (
       await database.query<Omit<RefundRow, 'scope_id' | 'mall_id' | 'member_id' | 'line_id'>>(
         `select refund.id,refund.payment_id,refund.amount_minor::float8 amount_minor,refund.currency,
-      refund.state,refund.provider,refund.provider_reference,refund.reason,refund.aftersale_id,intent.order_id from payment.refund refund
+      refund.state,refund.provider,refund.provider_reference,refund.reason,refund.aftersale_id,refund.version::float8 version,intent.order_id from payment.refund refund
       join payment.payment payment on payment.id=refund.payment_id join payment.intent intent on intent.id=payment.intent_id
       where refund.id=$1 for update of refund,payment`,
         [refundid]
@@ -77,7 +81,8 @@ export class RefundSettlement {
       member_id: order.member,
       line_id: sale?.line ?? null,
     });
-    if (!['requested', 'submitted', 'processing'].includes(refund.state)) throw new Error('PAYMENT_REFUND_STATE_INVALID');
+    const aggregate = new RefundAggregate({ id: refund.id, payment: refund.payment_id, amountMinor: refund.amount_minor,
+      currency: refund.currency, state: refund.state as RefundState, reason: refund.reason, version: refund.version }).transition('succeeded');
     const legs = (
       await database.query<RefundLeg>(
         `select sequence,kind,reference_id,amount_minor::float8 amount_minor
@@ -90,27 +95,33 @@ export class RefundSettlement {
       if (leg.kind === 'benefit') await this.restoreBenefit(context, refund, leg);
       if (leg.kind === 'voucher') await this.restoreVoucher(context, refund, leg);
     }
-    const payment = await database.query<{ refunded_minor: number; captured_minor: number }>(
+    const payment = await database.query<{ refunded_minor: number; captured_minor: number; version: number }>(
       `update payment.payment
       set refunded_minor=refunded_minor+$2,state=case when refunded_minor+$2=captured_minor then 'refunded' else 'partiallyrefunded' end,
-        version=version+1 where id=$1 and refunded_minor+$2<=captured_minor returning refunded_minor::float8 refunded_minor,captured_minor::float8 captured_minor`,
+        version=version+1 where id=$1 and refunded_minor+$2<=captured_minor
+        returning refunded_minor::float8 refunded_minor,captured_minor::float8 captured_minor,version::float8 version`,
       [refund.payment_id, refund.amount_minor]
     );
     const totals = payment.rows[0];
     if (!totals) throw new DomainError('PAYMENT_REFUND_EXCEEDS_AVAILABLE');
+    await database.query(`update payment.intent set state=case when $2=$3 then 'refunded' else 'partiallyrefunded' end,
+      updated_at=clock_timestamp(),version=version+1 where id=(select intent_id from payment.payment where id=$1) and state in('captured','partiallyrefunded')`,
+      [refund.payment_id, totals.refunded_minor, totals.captured_minor]);
+    await this.marketing.refund(context, { refund: refund.id, order: refund.order_id, refundedMinor: totals.refunded_minor, capturedMinor: totals.captured_minor });
     await database.query(
       `update payment.refundtender set state='succeeded',provider_reference=case when kind='wechat' then $2 else provider_reference end
       where refund_id=$1 and state in('planned','processing')`,
       [refundid, providerReference]
     );
-    await database.query(`update payment.refund set state='succeeded',external_transaction=$2,version=version+1 where id=$1`, [refundid, providerReference]);
+    await database.query(`update payment.refund set state=$3,external_transaction=$2,completed_at=clock_timestamp(),version=$4 where id=$1 and version=$5`,
+      [refundid, providerReference, aggregate.value.state, aggregate.value.version, refund.version]);
     await database.query(
-      `update payment.recoverycase set state='resolved',resolved_at=clock_timestamp()
+      `update payment.recoverycase set state='resolved',resolved_at=clock_timestamp(),version=version+1
       where state='open' and evidence->>'refund'=$1`,
       [refundid]
     );
     await this.orders.markRefunded(context, { order: refund.order_id, refundedMinor: totals.refunded_minor, capturedMinor: totals.captured_minor, aftersale: refund.aftersale_id });
-    await this.orders.recordPaymentRefund(context, refund.order_id, totals.refunded_minor, totals.captured_minor);
+    await this.orders.recordPaymentRefund(context, refund.order_id, totals.refunded_minor, totals.captured_minor, totals.version);
     await this.orders.recordRefund(context, {
       id: refund.id,
       order: refund.order_id,

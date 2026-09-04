@@ -3,7 +3,7 @@ import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } f
 import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
 import type { IdentityLifecycle } from '../model/IdentityAction';
 import { identityReply, identityRequest, type IdentityLifecycleCheckpoint, type PreparedIdentityLifecycle } from '../model/IdentityExecution';
-import type { LoadedFederationCallback, PreparedFederationCallback } from '../service/FederationService';
+import type { LoadedFederationCallback, PreparedFederationCallback } from '../service/FederateIdentity';
 
 export class FederationCallbackHandler
   implements DurableOperationHandler<'identity.federations.callback', PreparedIdentityLifecycle<PreparedFederationCallback>, IdentityLifecycleCheckpoint<PreparedFederationCallback>, 'write', LoadedFederationCallback>

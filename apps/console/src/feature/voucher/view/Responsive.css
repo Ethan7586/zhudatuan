@@ -23,6 +23,16 @@
 }
 
 @media (max-width: 720px) {
+  .voucherexact {
+    grid-template-columns: 1fr;
+  }
+  .voucherexactresult {
+    grid-column: 1;
+  }
+  .voucherfacets > small {
+    width: 100%;
+    margin-left: 0;
+  }
   .vouchercontent {
     padding: 12px;
   }

@@ -2,7 +2,7 @@ import type { QueryResultRow } from 'pg';
 import { retryDelay } from '../../foundation/performance/Retry';
 import type { DomainEvent } from '../../foundation/domain/DomainEvent';
 import type { OutboxMessage, OutboxWriter } from '../../foundation/messaging/Outbox';
-import type { DeadletterStore } from '../../foundation/infrastructure/DeadletterStore';
+import type { DeadletterStore } from '../../foundation/application/DeadletterStore';
 import { PgDeadletterStore } from './PgDeadletterStore';
 import { safeErrorCode } from '../../foundation/domain/SafeError';
 import { parseEventPayload } from '@shop/contract';

@@ -43,12 +43,12 @@ button {
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.58;
+  opacity: var(--sw-opacity-disabled);
 }
 
 :focus-visible {
-  outline: 0.1875rem solid var(--sw-brand);
-  outline-offset: 0.125rem;
+  outline: var(--sw-focus-width) solid var(--sw-brand);
+  outline-offset: var(--sw-focus-offset);
 }
 
 ::selection {

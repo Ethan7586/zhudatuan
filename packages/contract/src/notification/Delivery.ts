@@ -7,10 +7,16 @@ export type SecretPurpose = 'cache' | 'database' | 'finance' | 'identity' | 'ide
 export interface DeliveryRequest {
   readonly recipient: string;
   readonly providerTemplate: string | null;
+  readonly purpose: 'verification' | 'transactional' | 'marketing';
+  readonly authorization?: 'accepted';
   readonly variables: Readonly<Record<string, string | number | boolean>>;
   readonly subject: string | null;
   readonly body: string;
   readonly idempotency: string;
+  readonly requestId?: string;
+  readonly traceId?: string;
+  readonly deadline?: number;
+  readonly signal?: AbortSignal;
 }
 
 export interface DeliveryReceipt {
@@ -21,6 +27,10 @@ export interface DeliveryReceipt {
 export interface DeliveryChannel {
   readonly id: DeliveryChannelId;
   send(request: DeliveryRequest): Promise<DeliveryReceipt>;
+}
+
+export interface BatchDeliveryChannel extends DeliveryChannel {
+  sendBatch(requests: readonly DeliveryRequest[]): Promise<readonly DeliveryReceipt[]>;
 }
 
 export interface SecretReader {

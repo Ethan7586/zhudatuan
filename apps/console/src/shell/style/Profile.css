@@ -1,0 +1,47 @@
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofile {
+  display: flex;
+  min-height: var(--sw-layout-header);
+  align-items: center;
+  gap: var(--sw-control-gap-lg);
+  margin-top: auto;
+  border-top: var(--sw-border-width) solid color-mix(in srgb, var(--sw-surface) 10%, transparent);
+  background: color-mix(in srgb, var(--sw-brand-ink) 20%, transparent);
+  padding: var(--sw-space-1-5);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofileavatar {
+  display: grid;
+  width: var(--sw-icon-size-xl);
+  height: var(--sw-icon-size-xl);
+  flex: 0 0 var(--sw-icon-size-xl);
+  place-items: center;
+  border: var(--sw-border-width) solid color-mix(in srgb, var(--sw-surface) 20%, transparent);
+  border-radius: var(--sw-radius-full);
+  background: linear-gradient(135deg, var(--sw-brand), var(--sw-brand));
+  color: var(--sw-surface);
+  font-size: var(--sw-font-size-caption);
+  font-weight: var(--sw-font-weight-bold);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofilecopy {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofilecopy strong,
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofilecopy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofilecopy strong {
+  color: var(--sw-surface);
+  font-size: var(--sw-font-size-caption);
+  font-weight: var(--sw-font-weight-semibold);
+}
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofilecopy small {
+  color: var(--sw-disabled);
+  font-size: var(--sw-font-size-caption);
+}

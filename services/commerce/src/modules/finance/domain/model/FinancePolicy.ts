@@ -1,4 +1,5 @@
 import { DomainError } from '../../../../foundation/domain/DomainError';
+import { AccountCode } from '../value/AccountCode';
 
 export interface FinanceEntryTemplate {
   readonly account: string;
@@ -28,6 +29,7 @@ export class FinancePolicy {
 }
 
 export function validateEntry(entry: FinanceEntryTemplate): void {
+  AccountCode.of(entry.account, entry.debitMinor > 0 ? 'expense' : 'liability');
   if (
     !entry.account ||
     !entry.memo ||
@@ -38,6 +40,6 @@ export function validateEntry(entry: FinanceEntryTemplate): void {
     entry.currency !== 'CNY' ||
     (entry.debitMinor === 0) === (entry.creditMinor === 0)
   ) {
-    throw new Error('FINANCE_ENTRY_INVALID');
+    throw new DomainError('FINANCE_POLICY_INVALID');
   }
 }

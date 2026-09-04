@@ -1,7 +1,7 @@
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 
 export interface DirectoryLease {
-  run(resource: string, owner: string, seconds: number, work: (assertLease: () => Promise<void>) => Promise<void>): Promise<void>;
+  run(scope: string, resource: string, owner: string, seconds: number, work: (assertLease: () => Promise<void>) => Promise<void>): Promise<void>;
 }
 
 export interface DirectoryAnomaly {

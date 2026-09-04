@@ -2,6 +2,7 @@ const SECRET = /(?:password|passwd|secret|token|cookie|authorization|otp|verific
 const PHONE = /(?:phone|mobile)/i;
 const EMAIL = /email/i;
 const ADDRESS = /address/i;
+const SECRET_VALUE = /^(?:bearer|basic)\s+\S+|^-----BEGIN [A-Z ]+PRIVATE KEY-----|^[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}$|(?:password|passwd|secret|token)=([^&\s]{4,})/i;
 
 export class RedactionPolicy {
   redact(value: unknown): unknown {
@@ -24,6 +25,7 @@ function redact(value: unknown, key: string, depth: number): unknown {
 }
 
 function minimize(key: string, value: string): string {
+  if (SECRET_VALUE.test(value)) return '[REDACTED]';
   if (PHONE.test(key)) return value.length > 4 ? `${value.slice(0, 2)}***${value.slice(-2)}` : '***';
   if (EMAIL.test(key)) {
     const separator = value.lastIndexOf('@');

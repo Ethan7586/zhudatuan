@@ -30,6 +30,12 @@
   display: block;
 }
 
+.channelcontent td small.channelhealthfailure {
+  max-width: 260px;
+  color: var(--sw-warning-strong);
+  line-height: 1.45;
+}
+
 .channelcontent td small {
   margin-top: 3px;
   color: var(--sw-muted);

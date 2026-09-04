@@ -18,6 +18,10 @@ import { ProviderHttpClient } from '../../infrastructure/security/ProviderHttpCl
 import { ProviderHealthJob } from './ProviderHealthJob';
 import { FederationCleanupJob } from './FederationCleanupJob';
 import { InvitationCleanupJob } from './InvitationCleanupJob';
+import { PgInbox } from '../../../../adapter/database/PgInbox';
+import { RevokeStaleSessions } from '../../application/process/RevokeStaleSessions';
+import { PgSessionRevocationRepository } from '../../infrastructure/persistence/PgSessionRevocationRepository';
+import { SessionRevocationJob } from './SessionRevocationJob';
 
 export function createJobs(context: ModuleContext): readonly ModuleJob[] {
   const pool = context.service(DATABASE_POOL);
@@ -26,6 +30,7 @@ export function createJobs(context: ModuleContext): readonly ModuleJob[] {
   const key = context.service(IDENTITY_SECURITY_KEYS).identity;
   const resolver = new ProviderResolver(new PgProviderRepository(client, key), identityProviderRegistry(client, key));
   return Object.freeze([
+    { id: 'sessionrevocation', processor: new SessionRevocationJob(new RevokeStaleSessions(transactions, new PgInbox(), new PgSessionRevocationRepository())) },
     { id: 'federationcleanup', processor: new FederationCleanupJob(new CleanupFederation(transactions, new PgFederationCleanupRepository())) },
     {
       id: 'providerhealth',

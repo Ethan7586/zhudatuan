@@ -4,6 +4,7 @@ import { WECOM_PROVIDER_CONFIGURATION } from '@shop/config/server';
 import type { DirectoryProvider, DirectoryPage, ExternalDirectorySubject } from '../../../application/port/DirectoryProvider';
 import type { DirectoryConnection } from '../../../domain/model/DirectoryConnection';
 import type { WecomDirectoryClient, WecomDirectoryPayload } from './WecomDirectoryClient';
+import { invalidExternalResponse } from '../../../../../foundation/http/ExternalResponse';
 
 export class WecomDirectoryProvider implements DirectoryProvider {
   readonly type: 'wecomcorp' | 'wecomsuite';
@@ -27,7 +28,7 @@ export class WecomDirectoryProvider implements DirectoryProvider {
     const external = tag(payload, type.endsWith('party') ? 'Id' : 'UserID');
     const removed = type === 'delete_user' || type === 'delete_party';
     const subjecttype = type.endsWith('party') ? 'department' : 'user';
-    if (!['create_user', 'update_user', 'delete_user', 'create_party', 'update_party', 'delete_party'].includes(type)) throw new Error('DIRECTORY_EVENT_UNSUPPORTED');
+    if (!['create_user', 'update_user', 'delete_user', 'create_party', 'update_party', 'delete_party'].includes(type)) throw invalidExternalResponse('DIRECTORY_EVENT_UNSUPPORTED');
     const departments = subjecttype === 'user' ? optionalTag(payload, 'Department').split(/[|,]/).filter(Boolean) : [];
     const parent = subjecttype === 'department' ? optionalTag(payload, 'ParentId') || null : null;
     const name = optionalTag(payload, 'Name') || 'Directory subject';
@@ -89,12 +90,12 @@ function text(value: unknown, maximum: number): string {
   const result = String(value ?? '')
     .normalize('NFKC')
     .trim();
-  if (!result || result.length > maximum || /[\u0000-\u001f]/.test(result)) throw new Error('DIRECTORY_PROVIDER_RESPONSE_INVALID');
+  if (!result || result.length > maximum || /[\u0000-\u001f]/.test(result)) throw invalidExternalResponse('DIRECTORY_PROVIDER_RESPONSE_INVALID');
   return result;
 }
 function integer(value: unknown): number {
   const result = Number(value);
-  if (!Number.isSafeInteger(result) || result < 0) throw new Error('DIRECTORY_PROVIDER_RESPONSE_INVALID');
+  if (!Number.isSafeInteger(result) || result < 0) throw invalidExternalResponse('DIRECTORY_PROVIDER_RESPONSE_INVALID');
   return result;
 }
 function scalar(value: string | readonly string[] | undefined): string | undefined {
@@ -102,11 +103,11 @@ function scalar(value: string | readonly string[] | undefined): string | undefin
 }
 function tag(xml: string, name: string): string {
   const value = optionalTag(xml, name);
-  if (!value) throw new Error('DIRECTORY_PROVIDER_RESPONSE_INVALID');
+  if (!value) throw invalidExternalResponse('DIRECTORY_PROVIDER_RESPONSE_INVALID');
   return value;
 }
 function optionalTag(xml: string, name: string): string {
-  if (xml.length > 1_048_576 || !/^[A-Za-z][A-Za-z0-9]*$/.test(name)) throw new Error('DIRECTORY_PROVIDER_RESPONSE_INVALID');
+  if (xml.length > 1_048_576 || !/^[A-Za-z][A-Za-z0-9]*$/.test(name)) throw invalidExternalResponse('DIRECTORY_PROVIDER_RESPONSE_INVALID');
   const match = new RegExp(`<${name}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</${name}>`, 'i').exec(xml);
   return match?.[1]?.trim() ?? '';
 }

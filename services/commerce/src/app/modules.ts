@@ -2,6 +2,7 @@ import type { CommerceModule } from '../bootstrap/ModuleRegistry';
 import { RuntimeModule } from '../modules/runtime/Module';
 import { ObservabilityModule } from '../modules/observability/Module';
 import { AccessModule } from '../modules/access/Module';
+import { ApprovalModule } from '../modules/approval/Module';
 import { AuditModule } from '../modules/audit/Module';
 import { BenefitModule } from '../modules/benefit/Module';
 import { CapabilityModule } from '../modules/capability/Module';
@@ -36,6 +37,7 @@ export const BUSINESS_MODULES: readonly CommerceModule[] = Object.freeze([
   IdentityModule,
   OrganizationModule,
   AccessModule,
+  ApprovalModule,
   CapabilityModule,
   PartnerModule,
   MemberModule,
@@ -67,5 +69,5 @@ export const BUSINESS_MODULES: readonly CommerceModule[] = Object.freeze([
 export const SUPPORT_MODULES: readonly CommerceModule[] = Object.freeze([NavigationModule]);
 export const COMMERCE_MODULES: readonly CommerceModule[] = Object.freeze([RuntimeModule, ObservabilityModule, ...SUPPORT_MODULES, ...BUSINESS_MODULES]);
 
-if (BUSINESS_MODULES.length !== 29 || new Set(BUSINESS_MODULES.map(({ id }) => id)).size !== 29) throw new Error('BUSINESS_MODULE_CATALOG_INVALID');
+if (BUSINESS_MODULES.length !== 30 || new Set(BUSINESS_MODULES.map(({ id }) => id)).size !== 30) throw new Error('BUSINESS_MODULE_CATALOG_INVALID');
 if (SUPPORT_MODULES.length !== 1 || new Set(SUPPORT_MODULES.map(({ id }) => id)).size !== 1) throw new Error('SUPPORT_MODULE_CATALOG_INVALID');

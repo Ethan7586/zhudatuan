@@ -6,14 +6,21 @@ const setting = strictObject({
   id: id<'referralsetting'>(),
   scopeId: id<'scope'>(),
   enabled: boolean(),
+  recruitEnabled: boolean(),
+  reviewRequired: boolean(),
+  rewardEnabled: boolean(),
+  bindingMode: literal(['permanent', 'days']),
   firstTouchDays: unsigned,
+  freezeDays: unsigned,
+  settlementTrigger: literal(['paid', 'received']),
   rateBasisPoints: basisPoints,
   minimumWithdrawalMinor: unsigned,
+  monthlyWithdrawalLimit: union([unsigned, nullSchema()]),
   currency,
   version,
   updatedAt: isoUtc,
 });
-const product = strictObject({ id: id<'referralproduct'>(), productId: id<'product'>(), enabled: boolean(), rateBasisPoints: basisPoints, version, updatedAt: isoUtc });
+const product = strictObject({ id: id<'referralproduct'>(), productId: id<'product'>(), enabled: boolean(), rateBasisPoints: basisPoints, rewardBasisPoints: basisPoints, version, updatedAt: isoUtc });
 const member = strictObject({
   id: id<'referralmember'>(),
   memberId: id<'member'>(),
@@ -23,16 +30,35 @@ const member = strictObject({
   disqualifiedAt: union([isoUtc, nullSchema()]),
   version,
 });
-const binding = strictObject({ id: id<'referralbinding'>(), promoterId: id<'referralmember'>(), memberId: id<'member'>(), source: string(), boundAt: isoUtc, version });
+const binding = strictObject({
+  id: id<'referralbinding'>(),
+  promoterId: id<'referralmember'>(),
+  memberId: id<'member'>(),
+  source: literal(['storefront', 'miniapp', 'checkout']),
+  boundAt: isoUtc,
+  expiresAt: union([isoUtc, nullSchema()]),
+  status: literal(['active', 'superseded']),
+  version,
+});
 const commissionStatus = literal(['pending', 'available', 'settled', 'reversed']);
 const commission = strictObject({
   id: id<'referralcommission'>(),
   orderId: id<'order'>(),
+  orderLineId: id<'orderline'>(),
+  ruleId: id<'referralproduct'>(),
+  ruleVersion: version,
+  attributionId: id<'referralbinding'>(),
   promoterId: id<'referralmember'>(),
+  kind: literal(['commission', 'reward']),
   status: commissionStatus,
   amountMinor: integer,
+  baseMinor: unsigned,
+  refundedBaseMinor: unsigned,
+  reversedMinor: unsigned,
+  rateBasisPoints: basisPoints,
   currency,
   availableAt: union([isoUtc, nullSchema()]),
+  settlementJournalId: union([id<'journal'>(), nullSchema()]),
   version,
 });
 const withdrawalStatus = literal(['requested', 'processing', 'paid', 'failed']);
@@ -43,8 +69,11 @@ const withdrawal = strictObject({
   amountMinor: unsigned,
   currency,
   accountRef: string(),
+  approvalId: id<'approvalinstance'>(),
   requestedAt: isoUtc,
+  approvedAt: union([isoUtc, nullSchema()]),
   completedAt: union([isoUtc, nullSchema()]),
+  providerReference: union([string(), nullSchema()]),
   failureReason: union([string(), nullSchema()]),
   version,
 });
@@ -63,8 +92,8 @@ export const REFERRAL_QUERY_SCHEMAS = {
 } as const;
 
 export const REFERRAL_BODY_SCHEMAS = {
-  ReferralSettingsManageInput: strictObject({ enabled: boolean(), firstTouchDays: unsigned, rateBasisPoints: basisPoints, minimumWithdrawalMinor: unsigned, currency, ...expected }),
-  ReferralProductsManageInput: strictObject({ enabled: boolean(), rateBasisPoints: basisPoints, ...expected }),
+  ReferralSettingsManageInput: strictObject({ enabled: boolean(), recruitEnabled: boolean(), reviewRequired: boolean(), rewardEnabled: boolean(), bindingMode: literal(['permanent', 'days']), firstTouchDays: unsigned, freezeDays: unsigned, settlementTrigger: literal(['paid', 'received']), rateBasisPoints: basisPoints, minimumWithdrawalMinor: unsigned, monthlyWithdrawalLimit: union([unsigned, nullSchema()]), currency, ...expected }),
+  ReferralProductsManageInput: strictObject({ enabled: boolean(), rateBasisPoints: basisPoints, rewardBasisPoints: basisPoints, ...expected }),
   ReferralMembersApplyInput: strictObject({ displayName: string(), mobile: string(), reason: string() }),
   ReferralMembersApproveInput: strictObject(expected),
   ReferralMembersDisqualifyInput: strictObject(expected),

@@ -15,7 +15,7 @@ export class InvitationRedeemer {
     private readonly telemetry: Telemetry
   ) {}
 
-  validate(database: ReadTransactionContext, invitation: Invitation, target: 'console' | 'storefront'): Promise<void> {
+  validate(database: ReadTransactionContext, invitation: Invitation, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<void> {
     const state = invitation.state;
     if (!state.membership || state.kind === 'campaign') throw new Error('INVITATION_MEMBERSHIP_MISSING');
     return this.access.validate(database, {

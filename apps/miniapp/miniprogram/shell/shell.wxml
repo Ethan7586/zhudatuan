@@ -1,0 +1,61 @@
+<view class="shell">
+  <view class="brandbar">
+    <image class="brandmark" src="/assets/brandmark.svg" mode="aspectFit" />
+    <view class="brandcopy">
+      <text class="brandname">智慧翼</text>
+      <text class="brandsubtitle">企业福利商城</text>
+    </view>
+    <button wx:if="{{authenticated}}" class="quiet" bindtap="signOut">退出</button>
+  </view>
+
+  <view class="hero">
+    <text class="eyebrow">SMART WING · 为你精选</text>
+    <text class="title">{{title}}</text>
+    <text class="description">{{description}}</text>
+  </view>
+
+  <view wx:if="{{stale}}" class="notice">网络暂不可用，以下为最近一次成功加载的数据。</view>
+
+  <view class="content">
+    <view wx:if="{{state === 'loading'}}" class="panel loading" aria-label="正在加载">
+      <view class="skeleton wide"></view>
+      <view class="skeleton"></view>
+      <view class="skeleton short"></view>
+    </view>
+
+    <view wx:elif="{{state === 'error'}}" class="panel statepanel">
+      <text class="stateicon">!</text>
+      <text class="statetitle">暂时无法加载</text>
+      <text class="statecopy">{{error}}</text>
+      <view class="actions">
+        <button class="secondary" bindtap="retry">重新加载</button>
+        <button wx:if="{{!authenticated}}" class="primary" bindtap="signIn">微信登录</button>
+      </view>
+    </view>
+
+    <view wx:elif="{{state === 'selection'}}" class="panel statepanel">
+      <text class="statetitle">选择要进入的福利身份</text>
+      <text class="statecopy">你有多个可用身份，请确认本次使用哪一个。</text>
+      <button wx:for="{{memberships}}" wx:key="id" class="choice" data-id="{{item.id}}" bindtap="selectMembership">
+        <text class="choicetitle">{{item.title}}</text>
+        <text class="choicedetail">{{item.detail}}</text>
+      </button>
+    </view>
+
+    <view wx:elif="{{state === 'empty'}}" class="panel statepanel">
+      <text class="stateicon calm">✓</text>
+      <text class="statetitle">这里暂时没有记录</text>
+      <text class="statecopy">有新内容时会自动出现在这里，你也可以下拉刷新。</text>
+      <button wx:if="{{!authenticated}}" class="primary" bindtap="signIn">微信登录</button>
+    </view>
+
+    <records wx:else rows="{{rows}}" count="{{count}}" />
+  </view>
+
+  <view class="navigation" role="navigation" aria-label="主要导航">
+    <button wx:for="{{navigation}}" wx:key="route" class="navitem {{item.active ? 'active' : ''}}" data-path="{{item.path}}" bindtap="navigate">
+      <text class="navdot"></text>
+      <text>{{item.title}}</text>
+    </button>
+  </view>
+</view>

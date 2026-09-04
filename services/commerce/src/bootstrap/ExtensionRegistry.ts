@@ -1,4 +1,13 @@
-import type { ChannelProvider, ProviderCapability, ProviderHealth, ProviderHealthState, ProviderPortName, ProviderPorts } from '@shop/contract';
+import {
+  PROVIDER_PORT_BY_CAPABILITY,
+  type ChannelProvider,
+  type ProviderCapability,
+  type ProviderHealth,
+  type ProviderHealthState,
+  type ProviderPortForCapability,
+  type ProviderPortName,
+  type ProviderPorts,
+} from '@shop/contract';
 import type { ManifestVerifier } from './SignatureVerifier';
 import { assertInstalledProvider } from '@shop/providercore';
 import { token } from './Container';
@@ -10,9 +19,14 @@ interface Installation {
   readonly version: number;
   readonly scope: string;
   readonly extension: ChannelProvider;
+  readonly route: ProviderRoute;
 }
 
-interface CandidateInstallation extends Installation {
+interface CandidateInstallation {
+  readonly installation: string;
+  readonly version: number;
+  readonly scope: string;
+  readonly extension: ChannelProvider;
   readonly expected: Readonly<{ installation: string; version: number }> | null;
 }
 
@@ -48,10 +62,10 @@ export class ExtensionRegistry {
     await extension.start();
     const health = await extension.health();
     if (health.state !== 'healthy') {
-      await extension.stop();
+      await stopBefore(extension, Date.now() + extension.manifest.timeout.totalMs);
       throw new Error('EXTENSION_STARTUP_UNHEALTHY:' + extension.manifest.id);
     }
-    this.extensions.set(key, Object.freeze({ installation, version, scope, extension }));
+    this.extensions.set(key, Object.freeze({ installation, version, scope, extension, route: new ProviderRoute(extension) }));
   }
 
   async stage(installation: string, scope: string, version: number, extension: ChannelProvider): Promise<RegistryCandidate> {
@@ -87,25 +101,34 @@ export class ExtensionRegistry {
     if (candidate.expected === null ? previous !== undefined : previous?.installation !== candidate.expected.installation || previous.version !== candidate.expected.version) {
       throw new Error('EXTENSION_REGISTRY_CAS_FAILED');
     }
-    this.extensions.set(key, candidate);
+    const replacement = Object.freeze({ installation: candidate.installation, version: candidate.version, scope: candidate.scope, extension: candidate.extension, route: new ProviderRoute(candidate.extension) });
+    this.extensions.set(key, replacement);
     this.candidates.delete(token);
-    await previous?.extension.stop().catch(() => undefined);
+    if (previous) {
+      previous.route.close();
+      await previous.route.drain(Date.now() + previous.extension.manifest.timeout.totalMs);
+      await stopBefore(previous.extension, Date.now() + previous.extension.manifest.timeout.totalMs);
+    }
   }
 
   async discard(token: string): Promise<void> {
     const candidate = this.candidates.get(token);
     if (!candidate) return;
     this.candidates.delete(token);
-    await candidate.extension.stop();
+    await stopBefore(candidate.extension, Date.now() + candidate.extension.manifest.timeout.totalMs);
   }
 
-  async disable(provider: string, scope: string): Promise<void> {
+  async disable(provider: string, scope: string, deadline = Date.now() + 30_000): Promise<Readonly<{ drained: boolean; stopped: boolean; active: number; waited: number }>> {
+    const started = Date.now();
     const key = installationKey(provider, scope);
     const current = this.extensions.get(key);
     this.extensions.delete(key);
     const staged = [...this.candidates.entries()].filter(([, item]) => installationKey(item.extension.manifest.id, item.scope) === key);
     staged.forEach(([token]) => this.candidates.delete(token));
-    await mapParallel([current?.extension, ...staged.map(([, item]) => item.extension)].filter(Boolean), 8, (item) => item!.stop());
+    current?.route.close();
+    const drained = current ? await current.route.drain(deadline) : true;
+    const stops = await mapParallel([current?.extension, ...staged.map(([, item]) => item.extension)].filter(Boolean), 8, (item) => stopBefore(item!, deadline));
+    return Object.freeze({ drained, stopped: stops.every(Boolean), active: current?.route.active ?? 0, waited: Math.max(0, Date.now() - started) });
   }
 
   active(provider: string, scope: string, installation: string): boolean {
@@ -117,14 +140,17 @@ export class ExtensionRegistry {
     this.frozen = true;
   }
 
-  require<K extends ProviderPortName>(providerId: string, scope: string, capability: ProviderCapability, port: K): ProviderPorts[K] {
+  strategy<C extends ProviderCapability>(providerId: string, scope: string, capability: C | readonly C[]): ProviderPortForCapability<C> {
     if (!this.frozen) throw new Error('EXTENSION_REGISTRY_NOT_FROZEN');
     const installation = this.extensions.get(installationKey(providerId, scope));
     if (!installation) throw new Error('EXTENSION_MISSING:' + providerId);
-    if (!installation.extension.manifest.capabilities.includes(capability)) {
-      throw new Error('EXTENSION_CAPABILITY_MISSING:' + providerId + ':' + capability);
-    }
-    return installation.extension.require(port);
+    const requested: readonly C[] = typeof capability === 'string' ? [capability] : capability;
+    if (requested.length === 0 || new Set(requested).size !== requested.length) throw new Error('EXTENSION_STRATEGY_CAPABILITY_INVALID');
+    const ports = new Set(requested.map((item) => PROVIDER_PORT_BY_CAPABILITY[item]));
+    if (ports.size !== 1) throw new Error('EXTENSION_STRATEGY_PORT_AMBIGUOUS');
+    const selected = requested.find((item) => installation.extension.manifest.capabilities.includes(item));
+    if (!selected) throw new Error('EXTENSION_CAPABILITY_MISSING:' + providerId + ':' + requested.join(','));
+    return installation.route.strategy(PROVIDER_PORT_BY_CAPABILITY[selected]) as ProviderPortForCapability<C>;
   }
 
   async health(providerId: string, scope: string): Promise<ProviderHealth> {
@@ -166,9 +192,81 @@ export class ExtensionRegistry {
   }
 
   async stop(): Promise<void> {
-    await mapParallel([...this.extensions.values(), ...this.candidates.values()], 8, ({ extension }) => extension.stop());
+    for (const installation of this.extensions.values()) installation.route.close();
+    await Promise.all([...this.extensions.values()].map(({ route, extension }) => route.drain(Date.now() + extension.manifest.timeout.totalMs)));
+    await mapParallel([...this.extensions.values(), ...this.candidates.values()], 8, ({ extension }) => stopBefore(extension, Date.now() + extension.manifest.timeout.totalMs));
     this.extensions.clear();
     this.candidates.clear();
+  }
+}
+
+async function stopBefore(provider: ChannelProvider, deadline: number): Promise<boolean> {
+  const stop = Promise.resolve().then(() => provider.stop()).then(() => true, () => false);
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<boolean>((resolve) => {
+    timer = setTimeout(() => resolve(false), Math.max(1, deadline - Date.now()));
+    timer.unref?.();
+  });
+  const stopped = await Promise.race([stop, timeout]);
+  clearTimeout(timer!);
+  return stopped;
+}
+
+class ProviderRoute {
+  private accepting = true;
+  private running = 0;
+  private readonly waiters = new Set<() => void>();
+  private readonly ports = new Map<ProviderPortName, unknown>();
+
+  constructor(private readonly provider: ChannelProvider) {}
+
+  get active(): number {
+    return this.running;
+  }
+
+  strategy<K extends ProviderPortName>(name: K): ProviderPorts[K] {
+    const cached = this.ports.get(name);
+    if (cached) return cached as ProviderPorts[K];
+    const target = this.provider.require(name);
+    const routed = new Proxy(target as object, {
+      get: (value, property) => {
+        const member = Reflect.get(value, property);
+        return typeof member === 'function' ? (...arguments_: readonly unknown[]) => this.invoke(() => Reflect.apply(member, value, arguments_)) : member;
+      },
+    }) as ProviderPorts[K];
+    this.ports.set(name, routed);
+    return routed;
+  }
+
+  close(): void {
+    this.accepting = false;
+  }
+
+  async drain(deadline: number): Promise<boolean> {
+    if (this.running === 0) return true;
+    return new Promise<boolean>((resolve) => {
+      let timer: ReturnType<typeof setTimeout>;
+      const finish = (drained: boolean) => {
+        clearTimeout(timer);
+        this.waiters.delete(onDrain);
+        resolve(drained);
+      };
+      const onDrain = () => finish(true);
+      this.waiters.add(onDrain);
+      timer = setTimeout(() => finish(false), Math.max(1, deadline - Date.now()));
+      timer.unref?.();
+    });
+  }
+
+  private async invoke<T>(work: () => T | Promise<T>): Promise<T> {
+    if (!this.accepting) throw new Error('EXTENSION_DRAINING:' + this.provider.manifest.id);
+    this.running += 1;
+    try {
+      return await work();
+    } finally {
+      this.running -= 1;
+      if (this.running === 0) for (const waiter of [...this.waiters]) waiter();
+    }
   }
 }
 

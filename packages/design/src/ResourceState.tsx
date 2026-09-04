@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Empty } from './Empty';
 import { ErrorView } from './Error';
 
-export const resourceConditions = ['loading', 'empty', 'ready', 'refreshing', 'stale', 'denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry'] as const;
+export const resourceConditions = ['loading', 'empty', 'ready', 'refreshing', 'stale', 'forbidden', 'unavailable', 'notconfigured', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry'] as const;
 
 export type ResourceCondition = (typeof resourceConditions)[number];
 
@@ -39,8 +39,10 @@ export function ResourceState({ condition, error, retry, emptyTitle = '暂无数
       </StateWithContent>
     );
   }
-  const message = error ?? 'UNKNOWN_RESOURCE_ERROR';
-  if (condition === 'denied') return <ErrorView title="无权访问" message={message} />;
+  const message = error ?? '当前区域暂时无法显示，请重试。';
+  if (condition === 'forbidden') return <ErrorView title="无权访问" message={message} />;
+  if (condition === 'unavailable') return <ErrorView title="服务暂不可用" message={message} {...(retry === undefined ? {} : { retry })} />;
+  if (condition === 'notconfigured') return <ErrorView title="功能尚未配置" message={message} />;
   if (condition === 'notfound') return <ErrorView title="资源不存在" message={message} />;
   if (condition === 'conflict') return <ErrorView title="数据已被其他操作更新" message={message} {...(retry === undefined ? {} : { retry })} />;
   if (condition === 'ratelimited') return <ErrorView title="请求过于频繁" message={message} {...(retry === undefined ? {} : { retry })} />;

@@ -1,7 +1,8 @@
-import type { CipherEnvelope } from '../../../../foundation/infrastructure/KmsClient';
-import type { QueryPage } from '../../../../foundation/interface/Validation';
+import type { CipherEnvelope } from '../../../../foundation/application/KmsPort';
+import type { QueryPage } from '../../../../foundation/application/Validation';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { ChannelEntitlement } from '../../../capability/public';
+import type { BindingState } from '../../domain/model/Distributor';
 
 export interface DistributorRepository {
   create(
@@ -25,7 +26,7 @@ export interface DistributorRepository {
   disable(context: WriteTransactionContext, id: string, scope: string, expectedVersion: number | null): Promise<Readonly<Record<string, unknown>>>;
   manageBinding(
     context: WriteTransactionContext,
-    input: Readonly<{ id: string; root: string; distributor: string; tenant: string; state: string; evidence: Readonly<Record<string, unknown>>; effectiveAt: unknown; expiresAt: unknown; expectedVersion: number | null }>
+    input: Readonly<{ id: string; root: string; distributor: string; tenant: string; state: BindingState; evidence: Readonly<Record<string, unknown>>; effectiveAt: unknown; expiresAt: unknown; expectedVersion: number | null }>
   ): Promise<Readonly<Record<string, unknown>>>;
   manageQuota(
     context: WriteTransactionContext,

@@ -1,12 +1,13 @@
 import { CACHE_CATALOG } from '@shop/config/runtime';
 import type { Cache } from '../../../../foundation/cache/Cache';
 import { VersionedKey } from '../../../../foundation/cache/VersionedKey';
-import type { StoredObject } from '../../../../foundation/infrastructure/ObjectStore';
+import type { StoredObject } from '../../../runtime/public/ObjectPort';
 import { mapParallel } from '../../../../foundation/performance/Parallel';
 import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
 import type { ExperiencePublicationRepository, PublicationTarget } from '../port/ExperiencePublicationRepository';
 import type { ExperienceObserver } from '../port/ExperienceObserver';
 import { safeErrorCode } from '../../../../foundation/domain/SafeError';
+import type { ExperienceDocument } from '@shop/contract';
 
 export interface ExperiencePublisher {
   publish(path: string, document: unknown, expectedHash: string, signal: AbortSignal): Promise<StoredObject>;
@@ -26,12 +27,15 @@ export interface ExperiencePublishRequest {
 }
 
 interface PublishedExperience {
+  readonly application: string;
+  readonly mall: string;
+  readonly pool: string;
   readonly release: string;
   readonly version: string;
   readonly hash: string;
-  readonly document: unknown;
-  readonly effective_at: string;
-  readonly object_key: string;
+  readonly document: ExperienceDocument;
+  readonly effectiveAt: string;
+  readonly objectKey: string;
 }
 
 export class PublishExperience {
@@ -49,7 +53,9 @@ export class PublishExperience {
       await this.publish(request);
       this.observer.publication({ trace: request.trace, result: 'success', milliseconds: performance.now() - started });
     } catch (cause) {
-      this.observer.publication({ trace: request.trace, result: 'failure', milliseconds: performance.now() - started, errorCode: safeErrorCode(cause, 'EXPERIENCE_PUBLICATION_FAILED') });
+      const code = safeErrorCode(cause, 'EXPERIENCE_PUBLICATION_FAILED');
+      await this.recordFailure(request, code).catch(() => undefined);
+      this.observer.publication({ trace: request.trace, result: 'failure', milliseconds: performance.now() - started, errorCode: code });
       throw cause;
     }
   }
@@ -60,7 +66,7 @@ export class PublishExperience {
     if (target.application !== request.application || target.version !== request.version || target.hash !== request.hash) {
       throw new Error('EXPERIENCE_EVENT_RELEASE_MISMATCH');
     }
-    if (!['scheduled', 'active'].includes(target.state)) return this.complete(request);
+    if (!['scheduled', 'active', 'failed'].includes(target.state)) return this.complete(request);
     const stored = await this.publisher.publish(request.path, target.configuration, request.hash, request.signal);
     const publication = await this.transactions.write(this.options(request, 'activate'), (context) => this.repository.activate(context, request.event, target, request.path, stored));
     if (publication.active) {
@@ -74,20 +80,29 @@ export class PublishExperience {
     return this.transactions.write(this.options(request, 'complete'), (context) => this.repository.complete(context, request.event));
   }
 
+  private async recordFailure(request: ExperiencePublishRequest, code: string): Promise<void> {
+    const target = await this.transactions.read(this.options(request, 'failureselect'), (context) => this.repository.target(context, request.release));
+    if (!target || target.state === 'active' || target.state === 'retired') return;
+    await this.transactions.write(this.options(request, 'failure'), (context) => this.repository.fail(context, request.event, target, code));
+  }
+
   private async publishCache(malls: readonly string[], target: PublicationTarget, path: string): Promise<void> {
-    const value: PublishedExperience = Object.freeze({
-      release: target.release,
-      version: target.version,
-      hash: target.hash,
-      document: target.configuration,
-      effective_at: target.effectiveAt,
-      object_key: path,
-    });
     await mapParallel(malls, 16, async (mall) => {
-      const versionKey = VersionedKey.create('experience', { mall, version: target.version });
-      const activeKey = VersionedKey.create('experience', { mall, version: 'active' });
-      if (await this.cache.put(versionKey, value, CACHE_CATALOG.experience.maximumSeconds)) {
-        await this.cache.put(activeKey, target.version, Math.max(1, CACHE_CATALOG.experience.staleSeconds));
+      const value: PublishedExperience = Object.freeze({
+        application: target.application,
+        mall,
+        pool: target.pool,
+        release: target.release,
+        version: target.version,
+        hash: target.hash,
+        document: target.configuration,
+        effectiveAt: target.effectiveAt,
+        objectKey: path,
+      });
+      const versionKey = VersionedKey.create('publishedexperience', { mall, publicationversion: target.version });
+      const activeKey = VersionedKey.create('publishedexperience', { mall, publicationversion: 'active' });
+      if (await this.cache.put(versionKey, value, CACHE_CATALOG.publishedexperience.maximumSeconds)) {
+        await this.cache.put(activeKey, target.version, Math.max(1, CACHE_CATALOG.publishedexperience.staleSeconds));
       }
     });
   }

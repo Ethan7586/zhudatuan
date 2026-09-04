@@ -1,10 +1,10 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { FulfillmentOrderPort } from '../../../order/public';
+import type { OrderFulfillmentPort } from '../../../order/public';
 import type { InventoryReturnSnapshot, InventoryReturnPort } from '../../public/InventoryReturnPort';
 export class PgInventoryReturnPort implements InventoryReturnPort {
   private readonly transactions = new PgTransactionAccess();
-  constructor(private readonly orders: FulfillmentOrderPort) {}
+  constructor(private readonly orders: OrderFulfillmentPort) {}
   async restock(context: WriteTransactionContext, reference: string): Promise<InventoryReturnSnapshot | null> {
     const database = this.transactions.database(context);
     const result = await database.query<{
@@ -15,7 +15,7 @@ export class PgInventoryReturnPort implements InventoryReturnPort {
     }>(
       `select fulfillment.order_id "order",fulfillment.store_id location,line.order_line_id line,line.quantity::float8 quantity
       from fulfillment.returnrecord returned join fulfillment.fulfillmentorder fulfillment on fulfillment.id=returned.fulfillment_id
-      join fulfillment.line line on line.fulfillment_id=fulfillment.id
+      join fulfillment.returnline line on line.return_id=returned.id
       where returned.id=$1 and returned.state='accepted' order by line.order_line_id for update of returned`,
       [reference]
     );

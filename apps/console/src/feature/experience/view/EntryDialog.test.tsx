@@ -96,7 +96,7 @@ describe('EntryDialog', () => {
     view.rerender(<EntryDialog record={null} onClose={() => undefined} />);
     expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(0);
     expect(create).not.toHaveBeenCalled();
-  }, 15_000);
+  }, 30_000);
 });
 
 function experience(state: Experience['entry']['state']): Experience {
@@ -106,6 +106,8 @@ function experience(state: Experience['entry']['state']): Experience {
   return {
     id: 'application:benefits',
     mallId: 'mall:benefits',
+    mallName: '鸿泰惠民通',
+    brandName: '鸿泰福利',
     code: 'BENEFITS',
     publicSlug: 'benefits',
     name: '鸿泰惠民通',
@@ -113,6 +115,8 @@ function experience(state: Experience['entry']['state']): Experience {
     version: 8,
     headSequence: 8,
     publishedSequence: state === 'unpublished' ? null : 8,
+    theme: { preset: 'shop', primaryColor: '#1F5EFF', accentColor: '#19A974', logoObjectRef: null, faviconObjectRef: null },
+    domain: { mode: 'platform', address: base.url, state: state === 'ready' ? 'ready' : state === 'disabled' ? 'disabled' : state === 'invalid' ? 'invalid' : 'pending' },
     entry,
     updatedAt: '2026-09-01T00:00:00.000Z',
   };

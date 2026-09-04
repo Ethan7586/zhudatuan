@@ -31,7 +31,7 @@ describe('WeChat Pay APIv3 client', () => {
         payerOpenid: 'openidMember123456',
         expiresAt: '2026-08-14T10:30:00+08:00',
       },
-      { fetcher, nowMs: NOW_MS, nonce: 'merchantNonce123' }
+      { fetcher, nowMs: NOW_MS, nonce: 'merchantNonce123', requestId: 'payment:one', traceId: 'trace:one' }
     );
     expect(result).toEqual({ prepayId: 'wxPrepay1234567890', providerRequestId: 'wechat-provider-request-test' });
     expect(capturedUrl).toBe('https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi');
@@ -45,6 +45,8 @@ describe('WeChat Pay APIv3 client', () => {
     });
     const requestHeaders = new Headers(capturedInit?.headers);
     expect(requestHeaders.get('wechatpay-serial')).toBe(keys.config.platformKeys[0]!.id);
+    expect(requestHeaders.get('x-request-id')).toBe('payment:one');
+    expect(requestHeaders.get('x-trace-id')).toBe('trace:one');
     const authorization = requestHeaders.get('authorization') ?? '';
     const signature = authorization.match(/signature="([^"]+)"/)?.[1] ?? '';
     const timestamp = authorization.match(/timestamp="([^"]+)"/)?.[1] ?? '';

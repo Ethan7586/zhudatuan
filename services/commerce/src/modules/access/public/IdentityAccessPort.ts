@@ -4,7 +4,7 @@ import { publicPort } from '../../../bootstrap/ModuleRegistry';
 
 export interface IdentityMembership {
   readonly id: string;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly organization: string;
   readonly accessVersion: number;
   readonly displayName: string;
@@ -16,11 +16,12 @@ export interface IdentityMembership {
 }
 
 export interface IdentityAccessPort {
-  memberships(context: ReadTransactionContext, member: string, target: 'console' | 'storefront'): Promise<readonly IdentityMembership[]>;
-  session(context: WriteTransactionContext, membership: string, target: 'console' | 'storefront'): Promise<Readonly<{ accessVersion: number; client: 'console' | 'storefront' }>>;
+  memberships(context: ReadTransactionContext, member: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<readonly IdentityMembership[]>;
+  session(context: WriteTransactionContext, membership: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<Readonly<{ accessVersion: number; client: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier' }>>;
   directoryMemberships(context: ReadTransactionContext, memberships: readonly string[]): Promise<Readonly<{ principal: string | null; memberships: readonly IdentityMembership[]; conflict: boolean }>>;
   setEmployeeNumber(context: WriteTransactionContext, membership: string, employee: string | null): Promise<void>;
   memberForManagement(context: WriteTransactionContext, membership: string): Promise<Readonly<{ member: string; accessVersion: number }>>;
+  resetRegistrations(context: WriteTransactionContext, input: Readonly<{ member: string; actorMembership: string; trace: string }>): Promise<Readonly<{ memberships: readonly string[]; accessVersion: number }>>;
   changeStatus(context: WriteTransactionContext, membership: string, status: 'active' | 'suspended' | 'left'): Promise<Readonly<{ accessVersion: number }>>;
   replaceDepartment(context: WriteTransactionContext, input: Readonly<{ membership: string; department: string; path: string; grant: string }>): Promise<void>;
   applyDirectoryLifecycle(

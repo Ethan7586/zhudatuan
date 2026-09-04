@@ -1,12 +1,25 @@
-export interface Metric {
+export interface MetricDefinition {
+  readonly name: string;
+  readonly formula: string;
+  readonly dimensions: readonly string[];
+  readonly granularity: 'day';
+  readonly owner: 'reporting';
+}
+
+export interface MetricContribution {
   readonly code: string;
-  readonly version: number;
   readonly scope: string;
   readonly period: Readonly<{ from: string; to: string; timezone: string }>;
   readonly dimensions: Readonly<Record<string, string>>;
   readonly value: number;
   readonly unit: 'minor' | 'count' | 'ratio';
+  readonly currency: string | null;
   readonly watermark: string;
+}
+
+export interface Metric extends MetricContribution {
+  readonly version: number;
+  readonly definition: MetricDefinition;
   readonly projectionVersion: number;
 }
 
@@ -14,16 +27,28 @@ export type MetricUnit = Metric['unit'];
 
 export type ReportPeriod = 'realtime' | 'yesterday' | '7days' | '30days';
 
-export type ReportDimension = 'sales' | 'product' | 'mall' | 'category' | 'channel' | 'voucher';
+export type ReportDimension = 'sales' | 'product' | 'mall' | 'category' | 'channel' | 'voucher' | 'member';
 
 export interface MetricQuery {
   readonly scope: string;
   readonly period: ReportPeriod;
   readonly dimension: ReportDimension | null;
   readonly application: string | null;
+  readonly watermarkAt: string;
+  readonly watermarkVersion: number;
+  readonly snapshotAt: string;
   readonly cursorTime: string | null;
   readonly cursorId: string | null;
   readonly fetch: number;
+}
+
+export interface CockpitQuery {
+  readonly scope: string;
+  readonly period: ReportPeriod;
+  readonly application: string | null;
+  readonly watermarkAt: string;
+  readonly watermarkVersion: number;
+  readonly snapshotAt: string;
 }
 
 export interface MetricRow extends Metric {
@@ -59,7 +84,7 @@ export interface CockpitSummary {
     trend: readonly CockpitTrend[];
     weeklyTrend: readonly CockpitTrend[];
     categories: readonly Readonly<{ name: string; salesCents: number; share: number }>[];
-    topProducts: readonly never[];
+    topProducts: readonly CockpitProduct[];
     malls: readonly CockpitMall[];
     events: readonly CockpitEvent[];
     insights: readonly CockpitInsight[];
@@ -69,6 +94,14 @@ export interface CockpitSummary {
 export interface CockpitTrend {
   readonly date: string;
   readonly salesCents: number;
+  readonly orderCount: number;
+}
+
+export interface CockpitProduct {
+  readonly productId: string;
+  readonly name: string;
+  readonly salesCents: number;
+  readonly quantity: number;
   readonly orderCount: number;
 }
 

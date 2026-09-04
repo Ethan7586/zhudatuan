@@ -1,3 +1,7 @@
-import type { AuthTarget } from '@shop/config/client';
-import type { LinkSnapshot } from '../model/Link';
-export interface LinkPort { read(target: AuthTarget, signal: AbortSignal): Promise<LinkSnapshot> }
+import type { SessionRequest } from '../../../shared/security/ReturnTarget';
+import type { LinkRedirect, LinkSnapshot } from '../model/Link';
+export interface LinkPort {
+  read(session: SessionRequest, signal: AbortSignal): Promise<LinkSnapshot>;
+  create(provider: string, session: SessionRequest, signal: AbortSignal): Promise<LinkRedirect>;
+  revoke(link: string, session: SessionRequest, signal: AbortSignal): Promise<void>;
+}

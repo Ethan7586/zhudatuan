@@ -3,6 +3,20 @@ export type DeliveryChannelId = (typeof DELIVERY_CHANNELS)[number];
 export type VariableType = 'string' | 'number' | 'boolean' | 'date' | 'money';
 export type VariableSchema = Readonly<Record<string, VariableType>>;
 export type DeliveryVariables = Readonly<Record<string, string | number | boolean>>;
+export type NotificationPurpose = 'transactional' | 'marketing';
+
+export interface TemplateSnapshot {
+  readonly id: string;
+  readonly version: number;
+  readonly channel: DeliveryChannelId;
+  readonly event: string;
+  readonly variables: VariableSchema;
+  readonly providerTemplate: string | null;
+  readonly subject: string | null;
+  readonly body: string;
+  readonly purpose: NotificationPurpose;
+  readonly mandatory: boolean;
+}
 
 export class Template {
   readonly variables: VariableSchema;
@@ -17,7 +31,9 @@ export class Template {
     readonly providerTemplate: string | null,
     readonly subject: string | null,
     readonly body: string,
-    readonly state: 'draft' | 'active' | 'retired'
+    readonly state: 'draft' | 'active' | 'retired',
+    readonly purpose: NotificationPurpose = 'transactional',
+    readonly mandatory = false
   ) {
     if (!id || !scope || !DELIVERY_CHANNELS.includes(channel)) throw new Error('NOTIFICATION_TEMPLATE_INVALID');
     if (!/^[a-z][a-z0-9.]{1,127}$/.test(event) || !Number.isSafeInteger(version) || version < 1) {
@@ -25,6 +41,7 @@ export class Template {
     }
     if (!body.trim() || body.length > 10_000 || (subject !== null && subject.length > 500)) throw new Error('NOTIFICATION_TEMPLATE_INVALID');
     if (channel !== 'inapp' && !providerTemplate?.trim()) throw new Error('NOTIFICATION_PROVIDER_TEMPLATE_REQUIRED');
+    if (!['transactional', 'marketing'].includes(purpose) || (mandatory && purpose !== 'transactional')) throw new Error('NOTIFICATION_TEMPLATE_PURPOSE_INVALID');
     this.variables = variableSchema(variables);
     assertPlaceholders(subject ?? '', this.variables);
     assertPlaceholders(body, this.variables);
@@ -40,6 +57,21 @@ export class Template {
   render(value: string | null, variables: DeliveryVariables): string | null {
     if (value === null) return null;
     return value.replace(/\{\{([a-z][a-zA-Z0-9]{0,63})\}\}/g, (_match, key: string) => String(variables[key]));
+  }
+
+  snapshot(): TemplateSnapshot {
+    return Object.freeze({
+      id: this.id,
+      version: this.version,
+      channel: this.channel,
+      event: this.event,
+      variables: this.variables,
+      providerTemplate: this.providerTemplate,
+      subject: this.subject,
+      body: this.body,
+      purpose: this.purpose,
+      mandatory: this.mandatory,
+    });
   }
 }
 

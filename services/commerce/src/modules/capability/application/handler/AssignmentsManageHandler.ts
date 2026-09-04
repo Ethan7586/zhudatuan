@@ -2,26 +2,45 @@ import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/application/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import type { AssignmentRepository } from '../port/AssignmentRepository';
+import type { ManageEntitlement } from '../service/ManageEntitlement';
+
 export class AssignmentsManageHandler implements OperationHandler<'capability.assignments.manage', 'write'> {
   readonly operation = 'capability.assignments.manage' as const;
   readonly mode = 'write' as const;
-  constructor(private readonly assignments: AssignmentRepository) {}
+  constructor(private readonly manage: ManageEntitlement) {}
   async execute(input: OperationInputFor<'capability.assignments.manage'>, context: WriteHandlerContext<'capability.assignments.manage'>): Promise<OperationReply<OperationOutputFor<'capability.assignments.manage'>>> {
     const access = requireSession(context.security);
     const body = bodyRecord(input);
-    const changed = await this.assignments.save(context.transaction, {
+    if (context.expectedVersion === undefined) throw new DomainError('EXPECTED_VERSION_REQUIRED');
+    const changed = await this.manage.execute(context.transaction, {
       id: input.path.assignmentid,
       scope: access.scope.id,
       capability: textField(body, 'capability'),
       state: body.state === 'disabled' ? 'disabled' : 'enabled',
-      quota: typeof body.quota === 'number' ? body.quota : null,
-      expiresAt: typeof body.expiresAt === 'string' ? body.expiresAt : null,
-      expectedVersion: context.expectedVersion ?? null,
+      quota: optionalQuota(body.quota),
+      expiresAt: optionalFuture(body.expiresAt),
+      expectedVersion: context.expectedVersion,
+      actor: access.membership.id,
+      reason: textField(body, 'reason'),
+      trace: context.traceId,
+      now: new Date(),
     });
-    if (!changed) throw new DomainError('VERSION_CONFLICT');
-    return { status: 200, body: changed };
+    return { status: 200, body: { ...changed, dependencies: [...changed.dependencies] } };
   }
+}
+
+function optionalQuota(value: unknown): number | null {
+  if (value === undefined || value === null) return null;
+  if (!Number.isSafeInteger(value) || Number(value) < 0) throw new DomainError('VALIDATION_FAILED', { field: 'quota' });
+  return Number(value);
+}
+
+function optionalFuture(value: unknown): Date | null {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'string') throw new DomainError('VALIDATION_FAILED', { field: 'expiresAt' });
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) throw new DomainError('VALIDATION_FAILED', { field: 'expiresAt' });
+  return parsed;
 }

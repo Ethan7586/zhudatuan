@@ -1,0 +1,14 @@
+<view class="records">
+  <view class="summary">
+    <text class="summarytitle">共 {{count}} 条</text>
+    <text class="summarycopy">数据已按当前身份与商城范围过滤</text>
+  </view>
+  <view wx:for="{{rows}}" wx:key="key" class="record">
+    <view class="recordmain">
+      <text class="recordtitle">{{item.title}}</text>
+      <text class="recorddetail">{{item.detail}}</text>
+    </view>
+    <text class="status">{{item.status}}</text>
+    <text wx:if="{{item.timestamp}}" class="timestamp">{{item.timestamp}}</text>
+  </view>
+</view>

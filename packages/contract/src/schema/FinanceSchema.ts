@@ -1,7 +1,9 @@
-import { array, boolean, discriminatedUnion, literal, null as nullSchema, optional, record, strictObject, string, union } from 'zod/mini';
+import { array, boolean, discriminatedUnion, literal, maxLength, minLength, null as nullSchema, optional, record, strictObject, string, union } from 'zod/mini';
 import { ContractJsonValueSchema } from './JsonSchema';
 import { currency, decision, expectedVersion, id, integer, isoUtc, pageOutput, pageQuery, unsigned, version } from './Primitives';
-import { adjustment, backfill, exportResult, hold, legacyPolicy, period, periodClose, settlement, settlementRead, withdrawal } from './FinanceSettlementSchema';
+import { adjustment, backfill, exportResult, financePolicy, hold, period, periodClose, settlement, settlementRead, withdrawal } from './FinanceSettlementSchema';
+import { importCreated, importInput, importRead } from './ImportSchema';
+import { FINANCE_RECONCILIATION_STATES, FINANCE_REPAIR_DECISIONS } from '../Vocabulary';
 
 const entry = strictObject({ account: string(), debitMinor: unsigned, creditMinor: unsigned, currency, memo: string() });
 const policy = strictObject({
@@ -16,25 +18,80 @@ const policy = strictObject({
 });
 const difference = strictObject({ id: id<'reconciliationdifference'>(), kind: string(), expectedMinor: integer, actualMinor: integer, deltaMinor: integer, currency });
 const repairStatus = literal(['draft', 'submitted', 'approved', 'rejected', 'reversed']);
+const nullableText = union([string(), nullSchema()]);
+const nullableTime = union([isoUtc, nullSchema()]);
+const repairReason = string().check(minLength(2), maxLength(1_000));
+const repairHash = string().check(minLength(64), maxLength(64));
 const repair = strictObject({
   id: id<'reconciliationrepair'>(),
   statementId: id<'statement'>(),
   status: repairStatus,
-  sourceHash: string(),
-  previewHash: string(),
+  sourceHash: repairHash,
+  sourceJournalId: id<'journal'>(),
+  sourceJournalHash: repairHash,
+  previewHash: repairHash,
   differences: array(difference),
   entries: array(entry),
   makerId: id<'membership'>(),
   checkerId: union([id<'membership'>(), nullSchema()]),
-  reason: string(),
+  approvalInstanceId: union([id<'approvalinstance'>(), nullSchema()]),
+  approvalAmountMinor: union([unsigned, nullSchema()]),
+  sourceReversalJournalId: union([id<'journal'>(), nullSchema()]),
+  replacementJournalId: union([id<'journal'>(), nullSchema()]),
+  rollbackJournalId: union([id<'journal'>(), nullSchema()]),
+  reason: repairReason,
+  decisionReason: nullableText,
+  reverseReason: nullableText,
+  reversedBy: union([id<'membership'>(), nullSchema()]),
+  decidedAt: nullableTime,
+  reversedAt: nullableTime,
   version,
   createdAt: isoUtc,
   updatedAt: isoUtc,
 });
-const policyDraft = { name: string(), trigger: string(), entries: array(entry), effectiveAt: isoUtc, expiresAt: optional(union([isoUtc, nullSchema()])) } as const;
-const repairDraft = { statementId: id<'statement'>(), sourceHash: string(), entries: array(entry), reason: string(), expectedVersion } as const;
-const nullableText = union([string(), nullSchema()]);
-const nullableTime = union([isoUtc, nullSchema()]);
+const policyDraft = { policyId: optional(id<'financepolicy'>()), targetStatus: optional(literal(['active', 'retired'])), name: string(), trigger: string(), entries: array(entry), effectiveAt: isoUtc, expiresAt: optional(union([isoUtc, nullSchema()])) } as const;
+const repairDraft = { statementId: id<'statement'>(), sourceJournalId: id<'journal'>(), sourceHash: repairHash, entries: array(entry), reason: repairReason, expectedVersion } as const;
+const facet = strictObject({ value: string(), label: string(), count: unsigned });
+const providerFacet = strictObject({ ...facet.shape, available: boolean() });
+const facetGroup = strictObject({ items: array(facet), reason: nullableText });
+const providerFacetGroup = strictObject({ items: array(providerFacet), reason: nullableText });
+const auditReference = string().check(minLength(1), maxLength(200));
+const auditFact = strictObject({
+  id: string(),
+  kind: literal(['journal', 'entry', 'statement', 'reconciliation', 'settlement', 'withdrawal', 'invoice', 'repair']),
+  label: string(),
+  business_reference: string(),
+  state: nullableText,
+  amount_minor: union([integer, nullSchema()]),
+  currency: union([currency, nullSchema()]),
+  occurred_at: nullableTime,
+  version: union([version, nullSchema()]),
+});
+const auditEvent = strictObject({
+  id: string(),
+  type: string(),
+  event_version: version,
+  aggregate_type: string(),
+  aggregate_id: string(),
+  state: literal(['pending', 'published', 'failed']),
+  occurred_at: isoUtc,
+  trace_id: string(),
+});
+const auditEvidence = strictObject({
+  id: string(),
+  kind: literal(['command', 'access']),
+  action: string(),
+  resource_type: string(),
+  resource_id: nullableText,
+  actor_id: nullableText,
+  actor_type: string(),
+  before_hash: nullableText,
+  after_hash: nullableText,
+  record_hash: string(),
+  evidence: ContractJsonValueSchema,
+  occurred_at: isoUtc,
+  trace_id: string(),
+});
 const overview = strictObject({ currency, balance_minor: integer, liability_minor: integer, income_minor: integer, expense_minor: integer, cash_minor: integer, journal_count: unsigned, watermark: nullableTime });
 const ledgerEntry = strictObject({ id: string(), side: literal(['debit', 'credit']), amount_minor: unsigned, code: string(), currency, reference_type: string(), reference_id: string(), description: string(), posted_at: isoUtc });
 const statement = strictObject({
@@ -105,9 +162,19 @@ const resolvedItem = strictObject({
 });
 export const FINANCE_QUERY_SCHEMAS = {
   FinanceOverviewReadInput: strictObject({}),
+  FinanceFacetsReadInput: strictObject({}),
+  FinanceAuditReadInput: strictObject({ reference: auditReference }),
   FinanceEntriesReadInput: strictObject(pageQuery),
   FinanceStatementsReadInput: strictObject(pageQuery),
-  FinanceReconciliationsReadInput: strictObject(pageQuery),
+  FinanceStatementimportsReadInput: strictObject({}),
+  FinanceReconciliationsReadInput: strictObject({
+    ...pageQuery,
+    period: optional(string()),
+    provider: optional(string()),
+    mall: optional(string()),
+    state: optional(literal(FINANCE_RECONCILIATION_STATES)),
+    differenceType: optional(string()),
+  }),
   FinanceSettlementsReadInput: strictObject(pageQuery),
   FinanceWithdrawalsReadInput: strictObject(pageQuery),
   FinanceHoldsReadInput: strictObject(pageQuery),
@@ -118,6 +185,7 @@ export const FINANCE_QUERY_SCHEMAS = {
 } as const;
 
 export const FINANCE_BODY_SCHEMAS = {
+  FinanceStatementimportsCreateInput: strictObject({ ...importInput.shape, provider: string(), partnerId: string(), periodStart: string(), periodEnd: string(), currency, openingMinor: integer, closingMinor: integer }),
   FinanceStatementsExportInput: strictObject({ periodStart: optional(string()), periodEnd: optional(string()), currency: optional(currency), state: optional(literal(['draft', 'final'])) }),
   FinanceReconciliationsManageInput: discriminatedUnion('action', [
     strictObject({ action: literal('retry'), reason: string(), evidence: optional(ContractJsonValueSchema) }),
@@ -137,15 +205,22 @@ export const FINANCE_BODY_SCHEMAS = {
   FinancePoliciesManageInput: strictObject({ kind: string(), rule: ContractJsonValueSchema }),
   FinancePoliciesPreviewInput: strictObject({ ...policyDraft, expectedVersion, sampleFrom: isoUtc, sampleTo: isoUtc }),
   FinanceReconciliationrepairsPreviewInput: strictObject(repairDraft),
-  FinanceReconciliationrepairsSubmitInput: strictObject({ previewToken: string(), previewHash: string(), expectedVersion, reason: string() }),
-  FinanceReconciliationrepairsDecideInput: strictObject({ decision, expectedVersion, reason: string() }),
-  FinanceReconciliationrepairsReverseInput: strictObject({ expectedVersion, reason: string() }),
+  FinanceReconciliationrepairsSubmitInput: strictObject({ previewToken: string(), previewHash: string(), expectedVersion }),
+  FinanceReconciliationrepairsDecideInput: discriminatedUnion('decision', [
+    strictObject({ decision: literal(FINANCE_REPAIR_DECISIONS[0]), approvalProof: string().check(minLength(1)), expectedVersion, reason: repairReason }),
+    strictObject({ decision: literal(FINANCE_REPAIR_DECISIONS[1]), expectedVersion, reason: repairReason }),
+  ]),
+  FinanceReconciliationrepairsReverseInput: strictObject({ expectedVersion, reason: repairReason }),
 } as const;
 
 export const FINANCE_OUTPUT_SCHEMAS = {
   FinanceOverviewReadOutput: strictObject({ items: array(overview) }),
+  FinanceFacetsReadOutput: strictObject({ periods: facetGroup, providers: providerFacetGroup, malls: facetGroup, states: facetGroup, differenceTypes: facetGroup, watermark: nullableTime }),
+  FinanceAuditReadOutput: strictObject({ reference: auditReference, facts: array(auditFact), events: array(auditEvent), records: array(auditEvidence), watermark: nullableTime }),
   FinanceEntriesReadOutput: pageOutput(ledgerEntry),
   FinanceStatementsReadOutput: pageOutput(statement),
+  FinanceStatementimportsCreateOutput: importCreated,
+  FinanceStatementimportsReadOutput: importRead,
   FinanceStatementsExportOutput: exportResult,
   FinanceReconciliationsManageOutput: union([reconciliation, resolvedItem]),
   FinanceReconciliationsReadOutput: pageOutput(reconciliationRead),
@@ -161,7 +236,7 @@ export const FINANCE_OUTPUT_SCHEMAS = {
   FinancePeriodsManageOutput: periodClose,
   FinanceBackfillsReadOutput: pageOutput(backfill),
   FinanceBackfillsDecideOutput: backfill,
-  FinancePoliciesManageOutput: legacyPolicy,
+  FinancePoliciesManageOutput: financePolicy,
   FinancePoliciesReadOutput: pageOutput(policy),
   FinancePoliciesPreviewOutput: strictObject({ policy, balanced: boolean(), affectedCount: unsigned, sampleEntries: array(entry), previewToken: string(), previewHash: string(), expiresAt: isoUtc }),
   FinanceReconciliationrepairsReadOutput: pageOutput(repair),

@@ -8,9 +8,10 @@ export interface InstallationListItem extends Readonly<Record<string, unknown>> 
   readonly scope_id: string;
   readonly status: 'disabled' | 'testing' | 'enabled' | 'degraded';
   readonly manifest: ProviderManifest;
+  readonly configuration_version: number;
   readonly version: number;
   readonly installed_at: string;
-  readonly health_state: 'healthy' | 'degraded' | 'unhealthy' | null;
+  readonly health_state: 'healthy' | 'degraded' | 'unavailable' | null;
   readonly health_latency_ms: number | null;
   readonly health_reason: string | null;
   readonly checked_at: string | null;

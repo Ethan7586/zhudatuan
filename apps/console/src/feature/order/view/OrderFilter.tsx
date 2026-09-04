@@ -65,14 +65,15 @@ export function OrderFilterForm({ value, malls, onApply, onColumns, columnsOpen 
         void form.handleSubmit(onApply)(event);
       }}
     >
-      <TextField className="ordersearchfield">
+      <TextField className="ordersearchfield" aria-describedby="ordersearchhelp">
         <Label className="sr-only">订单搜索</Label>
         <OrderIcon name="search" />
-        <Input {...form.register('order')} placeholder="输入内部订单编号" />
+        <Input {...form.register('search')} placeholder="订单号、外部单号、商品或会员" />
         <button className="ordersearchsubmit" type="submit" aria-label="筛选订单">
           <OrderIcon name="arrowRight" />
         </button>
       </TextField>
+      <span id="ordersearchhelp" className="sr-only">优先使用业务订单号；技术编号仅用于高级排障，不会作为列表主标题。</span>
 
       <Select label="下单时间" name="placed" register={form.register} options={filters.placed} />
       <Select label="订单进度" name="lifecycle" register={form.register} options={filters.lifecycle} />
@@ -90,6 +91,19 @@ export function OrderFilterForm({ value, malls, onApply, onColumns, columnsOpen 
         </select>
         <OrderIcon name="chevron" />
       </label>
+
+      <details className="orderadvancedfilter">
+        <summary>更多条件</summary>
+        <div>
+          <label>起始时间<input type="datetime-local" {...form.register('from')} /></label>
+          <label>结束时间<input type="datetime-local" {...form.register('to')} /></label>
+          <label>来源渠道<input {...form.register('channel')} placeholder="输入渠道名称" /></label>
+          <label>商品<input {...form.register('product')} placeholder="商品名称或规格编号" /></label>
+          <label>成员<input {...form.register('member')} placeholder="姓名、工号、手机号或邮箱" /></label>
+          <label>最低金额（分）<input inputMode="numeric" {...form.register('minimumMinor')} /></label>
+          <label>最高金额（分）<input inputMode="numeric" {...form.register('maximumMinor')} /></label>
+        </div>
+      </details>
 
       <button className="orderreset" type="button" onClick={reset}>
         重置

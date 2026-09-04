@@ -9,7 +9,7 @@ export interface AuthorizationSnapshotRecord {
   readonly accessVersion: number;
   readonly credentialVersion: number;
   readonly organization: string;
-  readonly target: 'console' | 'storefront';
+  readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly roles: readonly AuthorizationRole[];
   readonly allows: readonly string[];
   readonly denies: readonly string[];
@@ -37,7 +37,7 @@ export interface EffectiveScopeRecord {
 }
 
 export interface AuthorizationRepository {
-  snapshot(context: ReadTransactionContext, input: Readonly<{ membership: string; target: 'console' | 'storefront'; operation: string; resource: string | null }>): Promise<AuthorizationSnapshotRecord | null>;
+  snapshot(context: ReadTransactionContext, input: Readonly<{ membership: string; target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'; operation: string; resource: string | null }>): Promise<AuthorizationSnapshotRecord | null>;
   navigation(context: ReadTransactionContext, memberships: readonly string[]): Promise<readonly NavigationAuthorizationRecord[]>;
   permissions(context: ReadTransactionContext, membership: string): Promise<readonly EffectivePermissionRecord[]>;
   scopes(context: ReadTransactionContext, membership: string): Promise<readonly EffectiveScopeRecord[]>;

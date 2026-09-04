@@ -8,11 +8,12 @@ export interface StoredCheckoutQuote {
   readonly applicationId: string;
   readonly quoteId: string;
   readonly quoteHash: string;
+  readonly expiresAt: Date | string;
   readonly input: Readonly<Record<string, unknown>>;
   readonly version: number;
 }
 
 export interface OrderCheckoutSessionPort {
-  lockQuote(context: WriteTransactionContext, quote: string, member: string, mall: string): Promise<StoredCheckoutQuote>;
+  lockQuote(context: WriteTransactionContext, quote: string, member: string, mall: string, confirmationDigest: string): Promise<StoredCheckoutQuote>;
   confirm(context: WriteTransactionContext, checkout: string): Promise<void>;
 }

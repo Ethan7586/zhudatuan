@@ -1,6 +1,7 @@
 import { array, discriminatedUnion, literal, null as nullSchema, number, optional, record, strictObject, string, union } from 'zod/mini';
 import { ContractJsonValueSchema } from './JsonSchema';
 import { isoUtc, pageOutput, pageQuery, unsigned, version } from './Primitives';
+import { RISK_CASE_ACTIONS, RISK_CASE_OUTCOMES, RISK_CASE_REASONS, RISK_CASE_STATES, RISK_POLICY_STATES, RISK_REPLAY_STATES } from '../Vocabulary';
 
 const nullableText = union([string(), nullSchema()]);
 const nullableTime = union([isoUtc, nullSchema()]);
@@ -8,6 +9,11 @@ const nullableNumber = union([number(), nullSchema()]);
 const nullableVersion = union([version, nullSchema()]);
 const jsonObject = record(string(), ContractJsonValueSchema);
 const nullableJson = union([ContractJsonValueSchema, nullSchema()]);
+const policyState = literal(RISK_POLICY_STATES);
+const replayState = literal(RISK_REPLAY_STATES);
+const caseState = literal(RISK_CASE_STATES);
+const caseOutcome = literal(RISK_CASE_OUTCOMES);
+const caseReason = literal(RISK_CASE_REASONS);
 const rule = strictObject({
   blockedActors: optional(array(string())),
   denyOperations: optional(array(string())),
@@ -22,8 +28,9 @@ const rule = strictObject({
 const center = strictObject({
   id: string(),
   kind: literal(['policy', 'case']),
+  version: nullableVersion,
   name: nullableText,
-  status: nullableText,
+  status: union([policyState, nullSchema()]),
   active_version: nullableVersion,
   baseline_version: nullableVersion,
   rollout_percent: nullableNumber,
@@ -33,14 +40,15 @@ const center = strictObject({
   candidate_rollout: nullableNumber,
   candidate_hash: nullableText,
   candidate_rule: nullableJson,
-  replay_state: nullableText,
+  replay_state: union([replayState, nullSchema()]),
   sample_count: nullableNumber,
   changed_count: nullableNumber,
   false_positive_rate: nullableNumber,
   preview: nullableJson,
   decision_id: nullableText,
-  outcome: nullableText,
-  safe_reason: nullableText,
+  outcome: union([caseOutcome, nullSchema()]),
+  case_state: union([caseState, nullSchema()]),
+  safe_reason: union([caseReason, nullSchema()]),
   actor_id: nullableText,
   actor_display_name: nullableText,
   actor_mobile_masked: nullableText,
@@ -58,6 +66,7 @@ const policySaved = strictObject({
   rule_hash: string(),
   rollout_percent: unsigned,
   replay_state: literal('queued'),
+  version,
 });
 const policyActivated = strictObject({
   id: string(),
@@ -70,23 +79,25 @@ const policyActivated = strictObject({
   next_version: version,
   rollout_percent: unsigned,
   rule_hash: string(),
+  version,
 });
-const policyRetired = strictObject({ id: string(), scope_id: string(), name: string(), active_version: nullableVersion, status: literal('retired'), baseline_version: nullableVersion, updated_at: isoUtc, next_version: version });
+const policyRetired = strictObject({ id: string(), scope_id: string(), name: string(), active_version: nullableVersion, status: literal('retired'), baseline_version: nullableVersion, updated_at: isoUtc, next_version: version, version });
 const reviewedCase = strictObject({
   id: string(),
   decision_id: string(),
-  state: literal(['open', 'reviewing', 'cleared', 'confirmed', 'closed']),
+  state: caseState,
   assigned_to: nullableText,
   created_at: isoUtc,
   closed_at: nullableTime,
   scope_id: string(),
-  outcome: literal(['review', 'deny']),
-  safe_reason: literal(['policy', 'amount', 'velocity', 'signal', 'list']),
+  outcome: caseOutcome,
+  safe_reason: caseReason,
   reviewed_by: string(),
   review_reason: string(),
   review_evidence: jsonObject,
   reviewed_at: isoUtc,
   resolution: union([literal(['cleared', 'confirmed']), nullSchema()]),
+  version,
 });
 
 export const RISK_BODY_SCHEMAS = {
@@ -95,7 +106,7 @@ export const RISK_BODY_SCHEMAS = {
     strictObject({ action: literal('activate'), version, rolloutPercent: optional(unsigned) }),
     strictObject({ action: literal('retire') }),
   ]),
-  RiskCasesReviewInput: strictObject({ action: literal(['accept', 'clear', 'confirm', 'close']), reason: string(), evidence: optional(jsonObject) }),
+  RiskCasesReviewInput: strictObject({ action: literal(RISK_CASE_ACTIONS), reason: string(), evidence: optional(jsonObject) }),
 } as const;
 export const RISK_QUERY_SCHEMAS = { RiskCenterReadInput: strictObject(pageQuery) } as const;
 export const RISK_OUTPUT_SCHEMAS = {

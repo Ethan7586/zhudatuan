@@ -1,26 +1,21 @@
-import { useRef } from 'react';
 import { useNavigate } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
+import { routePath } from '../../../generated/RouteBinding';
 import { useSession } from '../../../entity/session/viewmodel/SessionContext';
-import { StorefrontQuery } from '../../../shared/api/Query';
 import { pathForFeature, pathForPage } from '../../../shared/navigation/Route';
-import { useAccountIdentity } from '../../account/public/index';
-import { useCartCommand } from '../../cart/public/index';
-import { useCatalogState } from '../../catalog/public/index';
-import { useOrderState } from '../../order/public/index';
-import { ReadHome } from '../application/ReadHome';
-import { useDependencies } from '../../../app/DependencyContext';
+import { useAccountIdentity } from '../../account';
+import { useCartCommand } from '../../cart';
+import { useCatalogState } from '../../catalog';
+import { useOrderState } from '../../order';
+import { experienceActionPath } from '../../../shared/navigation/ExperiencePath';
+import type { ExperienceAction } from '@shop/contract';
 
 export function useHomeViewModel() {
   const session = useSession();
-  const dependencies = useDependencies();
   const navigate = useNavigate();
   const identity = useAccountIdentity();
   const catalog = useCatalogState();
   const cart = useCartCommand();
   const order = useOrderState(identity.currentMall);
-  const reader = useRef(new ReadHome());
-  const bootstrap = useQuery({ queryKey: StorefrontQuery.bootstrap(session.entry.handle), queryFn: ({ signal }) => dependencies.home.read(signal) });
   return Object.freeze({
     user: identity.user,
     currentMall: identity.currentMall,
@@ -31,14 +26,19 @@ export function useHomeViewModel() {
     addToCart: (product: Parameters<typeof cart.add>[0], quantity: Parameters<typeof cart.add>[1] = 1) => {
       void cart.add(product, quantity);
     },
-    homeExperience: reader.current.execute(bootstrap.data),
-    setLaptopPage: (page: Parameters<typeof pathForPage>[0]) => {
+    experience: session.experience,
+    navigateAction: (action: ExperienceAction) => {
+      const path = session.experience ? experienceActionPath(session.experience, action) : null;
+      if (path) void navigate(path);
+      else session.showToast('当前装修入口无效，请联系商城管理员修复后重试。', 'error');
+    },
+    navigatePage: (page: Parameters<typeof pathForPage>[0]) => {
       void navigate(pathForPage(page));
     },
     showToast: session.showToast,
     openFeature: (name: string) => {
       void navigate(pathForFeature(name));
     },
-    openProduct: (id: string) => void navigate(`/products/${encodeURIComponent(id)}`),
+    openProduct: (id: string) => void navigate(routePath('storeproduct', { productId: id })),
   });
 }

@@ -1,36 +1,11 @@
-export interface Message {
-  readonly id: string;
-  readonly clientMessageId: string;
-  readonly conversationId: string;
-  readonly authorType: 'member' | 'agent';
-  readonly authorId: string;
-  readonly body: string;
-  readonly sequence: number;
-  readonly version: number;
-  readonly createdAt: string;
-}
+import type { OperationOutputFor } from '@shop/contract';
+import type { DeepReadonly } from '../../../shared/model/Immutable';
 
-export interface Attachment {
-  readonly id: string;
-  readonly messageId: string | null;
-  readonly name: string;
-  readonly contentType: string;
-  readonly sizeBytes: number;
-  readonly state: 'pending' | 'clean' | 'rejected';
-  readonly download?: Readonly<{ url: string; expiresAt: string }>;
-  readonly createdAt: string;
-}
+type ConversationOutput = OperationOutputFor<'support.messages.read'>;
+export type Message = DeepReadonly<ConversationOutput['items'][number]>;
+export type Attachment = DeepReadonly<ConversationOutput['attachments'][number]>;
 
-export interface ConversationPage {
-  readonly items: readonly Message[];
-  readonly attachments: readonly Attachment[];
-  readonly context: import('./SupportContext').SupportContext;
-  readonly count: number;
-  readonly nextCursor?: string;
-  readonly conversationVersion: number;
-  readonly latestSequence: number;
-  readonly lastReadSequence: number;
-}
+export type ConversationPage = DeepReadonly<ConversationOutput>;
 
 export interface MessageDraft {
   readonly ticketId: string;
@@ -43,7 +18,7 @@ export interface MessageDraft {
 export interface UploadedAttachment {
   readonly id: string;
   readonly name: string;
-  readonly state: 'uploading' | 'pending' | 'clean' | 'rejected' | 'failed';
+  readonly state: Attachment['state'] | 'uploading' | 'failed';
   readonly error?: string;
 }
 

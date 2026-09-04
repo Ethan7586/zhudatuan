@@ -1,4 +1,4 @@
-import type { InvitationCreatedRecord, InvitationListRecord, InvitationRevokedRecord } from '../../application/port/InvitationRepository';
+import type { InvitationCreatedRecord, InvitationReadRecord, InvitationRevokedRecord } from '../../application/port/InvitationRepository';
 import { Invitation, type InvitationState } from '../../domain/model/Invitation';
 import { InvitationClaim } from '../../domain/model/InvitationClaim';
 
@@ -42,13 +42,7 @@ export interface CreatedRow {
   readonly version: number;
 }
 export interface ListRow extends CreatedRow {
-  readonly recipient_display_name: string | null;
-  readonly recipient_employee_no: string | null;
-  readonly recipient_mobile_masked: string | null;
   readonly issuer_membership_id: string;
-  readonly issuer_display_name: string;
-  readonly issuer_employee_no: string | null;
-  readonly issuer_mobile_masked: string | null;
   readonly issuer_access_version: number;
   readonly revoked_at: Date | null;
   readonly revoked_by: string | null;
@@ -70,7 +64,7 @@ export function claimOf(
     id: string;
     invitation_id: string;
     kind: InvitationState['kind'];
-    target: 'console' | 'storefront';
+    target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
     recipient_hash: Buffer | null;
     state: InvitationClaim['state'];
     proof_method: InvitationClaim['proof'];
@@ -120,7 +114,7 @@ export function invitationState(row: InvitationRow): Invitation {
     })
   );
 }
-export function invitationOf(row: InvitationRow, target: 'console' | 'storefront', now: Date): Invitation {
+export function invitationOf(row: InvitationRow, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier', now: Date): Invitation {
   const invitation = invitationState(row);
   invitation.assertResolvable(now, target);
   return invitation;
@@ -144,16 +138,10 @@ export function createdOf(row: CreatedRow): InvitationCreatedRecord {
     version: Number(row.version),
   });
 }
-export function listOf(row: ListRow): InvitationListRecord {
+export function listOf(row: ListRow): InvitationReadRecord {
   return Object.freeze({
     ...createdOf(row),
-    recipient_display_name: row.recipient_display_name,
-    recipient_employee_no: row.recipient_employee_no,
-    recipient_mobile_masked: row.recipient_mobile_masked,
     issuer_membership_id: row.issuer_membership_id,
-    issuer_display_name: row.issuer_display_name,
-    issuer_employee_no: row.issuer_employee_no,
-    issuer_mobile_masked: row.issuer_mobile_masked,
     issuer_access_version: Number(row.issuer_access_version),
     revoked_at: row.revoked_at?.toISOString() ?? null,
     revoked_by: row.revoked_by,
