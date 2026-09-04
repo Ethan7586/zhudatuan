@@ -4,8 +4,8 @@ import { bootstrapApi } from '../bootstrap/ApiBootstrap';
 import { createConsoleSupportRuntime } from '../bootstrap/ConsoleSupportRuntime';
 import { defineModule } from '../bootstrap/DefinedModule';
 import { listen } from '../foundation/interface/NodeServer';
-import { consoleSupportHealth } from '../modules/support/ConsoleSupportHealth';
-import { supportRoutes } from '../modules/support/interface/http/SupportRoutes';
+import { consoleSupportHealth } from '../modules/support/05_interface_jieru/ConsoleSupportHealth';
+import { supportRoutes } from '../modules/support/05_interface_jieru/http/SupportRoutes';
 
 export const CONSOLE_SUPPORT_OPERATIONS = Object.freeze([
   'runtime.health.live', 'runtime.health.ready', 'runtime.health.startup',

@@ -28,7 +28,7 @@ import { ProvisioningModule } from '../modules/provisioning/ProvisioningModule';
 import { QualificationModule } from '../modules/qualification/runtime';
 import { ReportingModule } from '../modules/reporting/ReportingModule';
 import { RiskModule } from '../modules/risk/RiskModule';
-import { SupportModule } from '../modules/support/SupportModule';
+import { SupportModule } from '../modules/support/05_interface_jieru/SupportModule';
 import { VerificationModule } from '../modules/verification/05_interface_jieru/VerificationModule';
 import { VoucherModule } from '../modules/voucher/VoucherModule';
 import { EVENT_SCHEMA_TYPES } from './events';

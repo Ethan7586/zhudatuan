@@ -3,8 +3,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
 import type { OperationDatabase, OperationLifecycle } from '../../../../foundation/application/ModuleOperations';
 import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
-import type { SupportPortFactory } from '../port/SupportPort';
-import { getConversationsOperations } from './GetConversations';
+import type { SupportPortFactory } from '../../01_public_gongkai/SupportPort';
+import { getConversationsOperations } from '../../03_application_yingyong/query/GetConversations';
 
 describe('support conversation queries', () => {
   let database: PGlite;

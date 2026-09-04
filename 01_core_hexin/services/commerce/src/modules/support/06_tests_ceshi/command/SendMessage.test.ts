@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
 import type { OperationDatabase, OperationLifecycle } from '../../../../foundation/application/ModuleOperations';
 import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
-import type { SupportPortFactory } from '../port/SupportPort';
-import { sendMessageOperations } from './SendMessage';
+import type { SupportPortFactory } from '../../01_public_gongkai/SupportPort';
+import { sendMessageOperations } from '../../03_application_yingyong/command/SendMessage';
 
 describe('support message command', () => {
   it('requires an expected ticket version before encryption or database work', async () => {
