@@ -24,7 +24,7 @@ import { OrganizationModule } from '../modules/organization/OrganizationModule';
 import { PartnerModule } from '../modules/partner/05_interface_jieru/PartnerModule';
 import { PaymentModule } from '../modules/payment_zhifu/05_interface_jieru/PaymentModule';
 import { PricingModule } from '../modules/pricing/PricingModule';
-import { ProvisioningModule } from '../modules/provisioning/ProvisioningModule';
+import { ProvisioningModule } from '../modules/provisioning/05_interface_jieru/ProvisioningModule';
 import { QualificationModule } from '../modules/qualification/runtime';
 import { ReportingModule } from '../modules/reporting/ReportingModule';
 import { RiskModule } from '../modules/risk/RiskModule';

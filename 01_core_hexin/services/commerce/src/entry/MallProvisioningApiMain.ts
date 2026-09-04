@@ -6,8 +6,8 @@ import {
 import { bootstrapApi } from '../bootstrap/ApiBootstrap';
 import { createMallProvisioningApiRuntime } from '../bootstrap/MallProvisioningApiRuntime';
 import { listen } from '../foundation/interface/NodeServer';
-import { MallProvisioningModule } from '../modules/provisioning/MallProvisioningModule';
-import { MALL_PROVISIONING_OPERATION_IDS } from '../modules/provisioning/ProvisioningOperations';
+import { MallProvisioningModule } from '../modules/provisioning/05_interface_jieru/MallProvisioningModule';
+import { MALL_PROVISIONING_OPERATION_IDS } from '../modules/provisioning/03_application_yingyong/ProvisioningOperations';
 import { MallProvisioningRuntimeModule } from '../modules/runtime/MallProvisioningRuntimeModule';
 import { MALL_PROVISIONING_RUNTIME_OPERATION_IDS } from '../modules/runtime/MallProvisioningRuntimeOperations';
 

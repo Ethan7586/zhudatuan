@@ -9,8 +9,8 @@ import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
-import { MallProvisioningModule } from '../modules/provisioning/MallProvisioningModule';
-import { MALL_PROVISIONING_OPERATION_IDS } from '../modules/provisioning/ProvisioningOperations';
+import { MallProvisioningModule } from '../modules/provisioning/05_interface_jieru/MallProvisioningModule';
+import { MALL_PROVISIONING_OPERATION_IDS } from '../modules/provisioning/03_application_yingyong/ProvisioningOperations';
 import { MallProvisioningRuntimeModule } from '../modules/runtime/MallProvisioningRuntimeModule';
 import { MALL_PROVISIONING_RUNTIME_OPERATION_IDS } from '../modules/runtime/MallProvisioningRuntimeOperations';
 
@@ -66,7 +66,7 @@ describe('mall provisioning API entrypoint', () => {
       '/modules/catalog/01_public_gongkai/CatalogProvisioningPort.ts',
       '/modules/experience/ExperienceProvisioningPort.ts',
       '/modules/organization/MallOrganizationProvisioningPort.ts',
-      '/modules/provisioning/MallOwnerProvisioningPort.ts',
+      '/modules/provisioning/01_public_gongkai/MallOwnerProvisioningPort.ts',
     ];
     for (const port of requiredPorts) expect([...closure].some((file) => file.endsWith(port))).toBe(true);
     const forbidden = [...closure].filter((file) => [

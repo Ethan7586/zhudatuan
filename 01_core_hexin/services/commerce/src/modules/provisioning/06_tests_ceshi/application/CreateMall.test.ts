@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { QueryResult, QueryResultRow } from 'pg';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import { CreateMall } from './CreateMall';
+import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { CreateMall } from '../../03_application_yingyong/CreateMall';
 
 describe('mall provisioning engine', () => {
   it('creates one independent mall root, empty product pool and valid storefront draft', async () => {

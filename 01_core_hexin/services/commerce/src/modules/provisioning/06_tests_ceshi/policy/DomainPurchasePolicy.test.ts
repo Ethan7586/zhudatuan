@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DomainPurchaseApproval, DomainPurchaseOwner, PurchasableDomainQuote } from '@shop/contract';
-import { DomainPurchasePolicy, type DomainPurchaseIntent } from './DomainPurchasePolicy';
+import { DomainPurchasePolicy, type DomainPurchaseIntent } from '../../02_domain_yewu/policy/DomainPurchasePolicy';
 
 const policy = new DomainPurchasePolicy(['zhudatuan.com', 'hbbtzn.com']);
 const owner: DomainPurchaseOwner = {

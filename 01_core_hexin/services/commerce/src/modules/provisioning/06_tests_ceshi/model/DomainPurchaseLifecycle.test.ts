@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DomainPurchaseLifecycle } from './DomainPurchaseLifecycle';
+import { DomainPurchaseLifecycle } from '../../02_domain_yewu/model/DomainPurchaseLifecycle';
 
 describe('DomainPurchaseLifecycle', () => {
   const lifecycle = new DomainPurchaseLifecycle();

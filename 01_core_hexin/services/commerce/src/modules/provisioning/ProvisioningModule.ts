@@ -1,4 +1,1 @@
-import { defineModule } from '../../bootstrap/DefinedModule';
-import { provisioningOperations } from './ProvisioningOperations';
-
-export const ProvisioningModule = defineModule('provisioning', ['organization', 'catalog', 'experience'], provisioningOperations);
+export * from './05_interface_jieru/ProvisioningModule';
