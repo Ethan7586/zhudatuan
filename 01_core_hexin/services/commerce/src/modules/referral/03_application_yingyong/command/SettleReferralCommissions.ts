@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { FinancePort } from '../../../finance/FinanceModule';
+import { FinancePort } from '../../../finance';
 
 const BATCH_SIZE = 100;
 

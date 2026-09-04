@@ -1,8 +1,8 @@
 import type { QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationRequest } from '../../foundation/application/OperationHandler';
-import type { OperationAction, OperationDatabase } from '../../foundation/application/ModuleOperations';
-import { allocateWithdrawal, referralOperationActions } from './ReferralOperations';
+import type { OperationRequest } from '../../../foundation/application/OperationHandler';
+import type { OperationAction, OperationDatabase } from '../../../foundation/application/ModuleOperations';
+import { allocateWithdrawal, referralOperationActions } from '../03_application_yingyong/ReferralOperations';
 
 describe('referral operations', () => {
   it('rejects rates above the shared basis-point ceiling before reading the catalog', async () => {

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { FinancePort } from '../../../finance/FinanceModule';
-import { commissionAmount, commissionableBases, commissionRecipients, cumulativeRefundBases, cumulativeReversalAmount, type CommissionState, type LineRefund, type SettleTrigger } from '../../domain/policy/ReferralCommissionPolicy';
+import { FinancePort } from '../../../finance';
+import { commissionAmount, commissionableBases, commissionRecipients, cumulativeRefundBases, cumulativeReversalAmount, type CommissionState, type LineRefund, type SettleTrigger } from '../../02_domain_yewu/policy/ReferralCommissionPolicy';
 
 const SUPPORTED_EVENTS = new Set(['order.placed', 'order.paid', 'order.received', 'order.cancelled', 'payment.refunded']);
 

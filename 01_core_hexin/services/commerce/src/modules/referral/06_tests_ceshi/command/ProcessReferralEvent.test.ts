@@ -1,7 +1,7 @@
 import type { QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { ProcessReferralEvent } from './ProcessReferralEvent';
+import { ProcessReferralEvent } from '../../03_application_yingyong/command/ProcessReferralEvent';
 
 describe('ProcessReferralEvent', () => {
   it('uses authoritative facts, creates one direct and one immediate reward, and makes replay a no-op', async () => {

@@ -1,7 +1,7 @@
 import type { QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { SettleReferralCommissions } from './SettleReferralCommissions';
+import { SettleReferralCommissions } from '../../03_application_yingyong/command/SettleReferralCommissions';
 
 describe('SettleReferralCommissions', () => {
   it('posts only the non-reversed amount and makes retry a no-op', async () => {

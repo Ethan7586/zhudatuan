@@ -7,7 +7,7 @@ import {
   cumulativeReversalAmount,
   entersSettling,
   stateAfterReversal,
-} from './ReferralCommissionPolicy';
+} from '../../02_domain_yewu/policy/ReferralCommissionPolicy';
 
 describe('ReferralCommissionPolicy', () => {
   it('produces no commission without an active direct binding', () => {
