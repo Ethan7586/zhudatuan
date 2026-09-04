@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import { BenefitPort } from '../../../benefit/BenefitModule';
-import { FinancePort } from '../../../finance/application/port/FinancePort';
+import { FinancePort } from '../../../finance';
 import { VoucherPort } from '../../../voucher/VoucherModule';
 import { orderPort } from '../../../order_dingdan';
 

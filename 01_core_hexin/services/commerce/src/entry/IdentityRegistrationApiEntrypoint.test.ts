@@ -257,7 +257,7 @@ describe('identity registration API entrypoint', () => {
           '/app/modules.ts',
           '/modules/payment_zhifu/',
           '/modules/finance/FinanceModule.ts',
-          '/modules/finance/interface/http/FinanceRoutes.ts',
+          '/modules/finance/05_interface_jieru/http/FinanceRoutes.ts',
           '/modules/channel/ChannelModule.ts',
           '/modules/channel/interface/http/ChannelRoutes.ts',
           '/modules/referral/ReferralModule.ts',

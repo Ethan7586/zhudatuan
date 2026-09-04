@@ -8,8 +8,8 @@ import type { OperationRequest } from '../../src/foundation/application/Operatio
 import type { OperationDatabase } from '../../src/foundation/application/ModuleOperations';
 import type { ObjectStore } from '../../src/foundation/infrastructure/ObjectStore';
 import type { DatabasePool } from '../../src/foundation/persistence/Pool';
-import { ReconcileStatement } from '../../src/modules/finance/application/command/ReconcileStatement';
-import { resolveDifferenceOperations } from '../../src/modules/finance/application/command/ResolveDifference';
+import { ReconcileStatement } from '../../src/modules/finance/03_application_yingyong/command/ReconcileStatement';
+import { resolveDifferenceOperations } from '../../src/modules/finance/03_application_yingyong/command/ResolveDifference';
 
 const migration = fileURLToPath(new URL('../../../../../02_platform_pingtai/database/supabase/migrations/20260828091000_finance_reconciliation_integrity.sql', import.meta.url));
 const period = Object.freeze({ start: '2026-08-28', end: '2026-08-28', timezone: 'Asia/Shanghai' });

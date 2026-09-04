@@ -9,10 +9,10 @@ import type { OperationRequest } from '../../src/foundation/application/Operatio
 import type { KmsClient } from '../../src/foundation/infrastructure/KmsClient';
 import type { ObjectStore } from '../../src/foundation/infrastructure/ObjectStore';
 import type { DatabasePool } from '../../src/foundation/persistence/Pool';
-import type { InvoiceIssuer } from '../../src/modules/finance/application/port/InvoiceIssuer';
-import { getInvoicesOperations } from '../../src/modules/finance/application/query/GetInvoices';
-import { FinanceDeadletter } from '../../src/modules/finance/interface/job/FinanceDeadletter';
-import { InvoiceJobProcessor } from '../../src/modules/finance/interface/job/InvoiceJob';
+import type { InvoiceIssuer } from '../../src/modules/finance/03_application_yingyong/port/InvoiceIssuer';
+import { getInvoicesOperations } from '../../src/modules/finance/03_application_yingyong/query/GetInvoices';
+import { FinanceDeadletter } from '../../src/modules/finance/05_interface_jieru/job/FinanceDeadletter';
+import { InvoiceJobProcessor } from '../../src/modules/finance/05_interface_jieru/job/InvoiceJob';
 
 const migration = fileURLToPath(new URL('../../../../../02_platform_pingtai/database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql', import.meta.url));
 const sha256 = 'a'.repeat(64);

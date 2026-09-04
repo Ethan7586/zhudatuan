@@ -33,10 +33,10 @@ import { parseDeliveryConfiguration } from '../modules/notification/infrastructu
 import { HttpObjectStore, OBJECT_STORE } from '../foundation/infrastructure/ObjectStore';
 import { WECHAT_IDENTITY } from '../modules/identity';
 import { WechatIdentityGateway, type WechatIdentityConfiguration } from '../modules/identity';
-import { INVOICE_ISSUER } from '../modules/finance/application/port/InvoiceIssuer';
-import { InvoiceGateway, type InvoiceConfiguration } from '../modules/finance/infrastructure/adapter/InvoiceGateway';
-import { PAYOUT_GATEWAY } from '../modules/finance/application/port/PayoutGateway';
-import { PayoutGateway, type PayoutConfiguration } from '../modules/finance/infrastructure/adapter/PayoutGateway';
+import { INVOICE_ISSUER } from '../modules/finance/03_application_yingyong/port/InvoiceIssuer';
+import { InvoiceGateway, type InvoiceConfiguration } from '../modules/finance/04_adapters_shixian/adapter/InvoiceGateway';
+import { PAYOUT_GATEWAY } from '../modules/finance/03_application_yingyong/port/PayoutGateway';
+import { PayoutGateway, type PayoutConfiguration } from '../modules/finance/04_adapters_shixian/adapter/PayoutGateway';
 import { CACHE } from '../foundation/cache/Cache';
 import { RedisCache } from '../foundation/cache/RedisCache';
 import { RETURN_TARGETS } from '../modules/identity';

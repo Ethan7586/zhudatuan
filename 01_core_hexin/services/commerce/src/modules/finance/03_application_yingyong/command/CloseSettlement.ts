@@ -1,0 +1,198 @@
+import { randomUUID } from 'node:crypto';
+import type { OperationActions, OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { requireAccess, rowResult } from '../../../../foundation/application/ModuleOperations';
+import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
+import { bodyRecord, integerField, textField } from '../../../../foundation/interface/Validation';
+import { FinancePort } from '../../FinancePort';
+import { SettlementPolicy } from '../../02_domain_yewu/policy/SettlementPolicy';
+import type { FinanceRepositoryFactory } from '../port/FinanceRepository';
+import { captureSettlementSnapshot, safeSettlementMinor, settlementRule, verifySettlementSnapshot, type SettlementSnapshotState } from './SettlementSnapshot';
+
+const policy = new SettlementPolicy();
+const finance = new FinancePort();
+
+export function closeSettlementOperations(repository: FinanceRepositoryFactory): OperationActions {
+  return {
+    'finance.settlements.decide': (request, database) => decide(request, database, repository),
+    'finance.settlements.adjust': (request, database) => adjust(request, database, repository),
+  };
+}
+
+async function decide(request: OperationRequest, database: OperationDatabase, repository: FinanceRepositoryFactory) {
+  const access = requireAccess(request);
+  const body = bodyRecord(request);
+  const approved = body.decision === 'approved';
+  if (!approved && body.decision !== 'rejected') throw new Error('FINANCE_SETTLEMENT_DECISION_INVALID');
+  const result = await database.query<DecisionRow>(
+    `select id,requested_by,amount_minor::text amount_minor from finance.settlement
+    where id=$1 and scope_id=$2 and state='draft' and requested_by<>$3 and version=$4 for update`,
+    [request.input.path.settlementid!, access.scope.id, access.actor.id, request.input.expectedVersion!]
+  );
+  const selected = result.rows[0];
+  if (!selected) throw new Error('FINANCE_SETTLEMENT_CONFLICT_OR_SEPARATION');
+  policy.assertDecision(selected.requested_by, access.actor.id, safeSettlementMinor(selected.amount_minor));
+  const authoritative = approved ? await verifySettlementSnapshot(database, selected.id, access.scope.id) : null;
+  if (authoritative) await postSettlement(database, authoritative);
+  const updated = await database.query(
+    `update finance.settlement set state=$2,approved_by=case when $2='payable' then $3 else null end,
+    approved_at=case when $2='payable' then clock_timestamp() else null end,evidence=evidence||$4::jsonb,version=version+1
+    where id=$1 returning *`,
+    [selected.id, approved ? 'payable' : 'cancelled', access.actor.id, JSON.stringify({ reason: textField(body, 'reason', 1000), evidence: object(body.evidence) })]
+  );
+  if (authoritative) {
+    await database.query('select finance.mark_platform_settlement_split_paid($1)', [selected.id]);
+    await repository(database).event('finance.settlement.approved', 'settlement', selected.id, authoritative.header.scope, {
+      settlement: selected.id,
+      partner: authoritative.header.partner,
+      amountMinor: authoritative.header.netMinor,
+      grossMinor: authoritative.header.grossMinor,
+      feeMinor: authoritative.header.feeMinor,
+      currency: authoritative.header.currency,
+      snapshotHash: authoritative.snapshot.snapshotHash,
+      snapshotVersion: authoritative.snapshot.version,
+    });
+  }
+  return rowResult(updated);
+}
+
+async function adjust(request: OperationRequest, database: OperationDatabase, repository: FinanceRepositoryFactory) {
+  const access = requireAccess(request);
+  const body = bodyRecord(request);
+  const action = textField(body, 'action', 16);
+  if (action === 'request') {
+    const direction = body.direction === 'increase' ? 'increase' : body.direction === 'decrease' ? 'decrease' : null;
+    if (!direction) throw new Error('FINANCE_SETTLEMENT_ADJUSTMENT_DIRECTION_INVALID');
+    const amount = integerField(body, 'amountMinor', 1);
+    const tax = body.taxMinor === undefined ? 0 : integerField(body, 'taxMinor');
+    const source = await database.query<RequestRow>(
+      `select line.id,settlement.gross_minor::text gross_minor from finance.settlement settlement
+      join finance.settlementline line on line.settlement_id=settlement.id
+      where settlement.id=$1 and settlement.scope_id=$2 and settlement.state='draft' and line.id=$3 and line.adjustment_of is null
+      and settlement.version=$4 and not exists(select 1 from finance.settlementadjustment adjustment
+        where adjustment.settlement_line_id=line.id and adjustment.state='pending') for update of settlement,line`,
+      [request.input.path.settlementid!, access.scope.id, textField(body, 'line'), request.input.expectedVersion!]
+    );
+    const line = source.rows[0];
+    if (!line) throw new Error('FINANCE_SETTLEMENT_LINE_NOT_ADJUSTABLE');
+    const rule = await settlementRule(database, access.scope.id);
+    policy.split(safeSettlementMinor(line.gross_minor) + (direction === 'increase' ? amount : -amount), rule.rule);
+    const id = `settlementadjustment:${randomUUID()}`;
+    const inserted = await database.query(
+      `insert into finance.settlementadjustment(id,settlement_id,settlement_line_id,scope_id,direction,
+      amount_minor,tax_minor,state,requested_by,reason,evidence,created_at,version)
+      values($1,$2,$3,$4,$5,$6,$7,'pending',$8,$9,$10::jsonb,clock_timestamp(),0) returning *`,
+      [id, request.input.path.settlementid!, line.id, access.scope.id, direction, amount, tax, access.actor.id, textField(body, 'reason', 1000), JSON.stringify(object(body.evidence))]
+    );
+    return rowResult(inserted, 201);
+  }
+  if (action !== 'approve' && action !== 'reject') throw new Error('FINANCE_SETTLEMENT_ADJUSTMENT_ACTION_INVALID');
+  return decideAdjustment(
+    database,
+    request.input.path.settlementid!,
+    textField(body, 'adjustment'),
+    action,
+    access.actor.id,
+    textField(body, 'reason', 1000),
+    object(body.evidence),
+    access.scope.id,
+    request.input.expectedVersion!,
+    repository
+  );
+}
+
+async function decideAdjustment(
+  database: OperationDatabase,
+  settlement: string,
+  adjustment: string,
+  action: 'approve' | 'reject',
+  actor: string,
+  reason: string,
+  evidence: Readonly<Record<string, unknown>>,
+  scope: string,
+  expectedVersion: number,
+  repository: FinanceRepositoryFactory
+) {
+  const result = await database.query<AdjustmentRow>(
+    `select adjustment.id,adjustment.direction,adjustment.amount_minor::text amount_minor,
+    settlement.gross_minor::text gross_minor
+    from finance.settlementadjustment adjustment join finance.settlement settlement on settlement.id=adjustment.settlement_id
+    join finance.settlementline line on line.id=adjustment.settlement_line_id
+    where adjustment.id=$1 and adjustment.settlement_id=$2 and adjustment.scope_id=$3 and adjustment.state='pending'
+      and adjustment.requested_by<>$4 and settlement.state='draft' and settlement.version=$5 for update of adjustment,settlement,line`,
+    [adjustment, settlement, scope, actor, expectedVersion]
+  );
+  const selected = result.rows[0];
+  if (!selected) throw new Error('FINANCE_SETTLEMENT_ADJUSTMENT_CONFLICT_OR_SEPARATION');
+  const updated = await database.query(
+    `update finance.settlementadjustment set state=$2,approved_by=$3,decided_at=clock_timestamp(),
+    reason=$4,evidence=evidence||$5::jsonb,version=version+1 where id=$1 returning *`,
+    [adjustment, action === 'approve' ? 'approved' : 'rejected', actor, reason, JSON.stringify({ decisionEvidence: evidence })]
+  );
+  if (action === 'reject') return rowResult(updated);
+  const amount = safeSettlementMinor(selected.amount_minor);
+  const priorGross = safeSettlementMinor(selected.gross_minor);
+  const gross = priorGross + (selected.direction === 'increase' ? amount : -amount);
+  const rule = await settlementRule(database, scope);
+  const split = policy.split(gross, rule.rule);
+  const changed = await database.query<{ version: number }>(
+    `update finance.settlement set gross_minor=$2,fee_minor=$3,amount_minor=$4,invoice_basis=$5,version=version+1,
+    evidence=evidence||jsonb_build_object('lastAdjustment',$6::text) where id=$1 and state='draft' and version=$7
+    returning version::float8 version`,
+    [settlement, gross, split.feeMinor, split.netMinor, split.invoiceBasis, adjustment, expectedVersion]
+  );
+  if (!changed.rows[0]) throw new Error('FINANCE_SETTLEMENT_ADJUSTMENT_CONFLICT_OR_SEPARATION');
+  await database.query('select finance.apply_settlement_adjustment_facts($1)', [adjustment]);
+  const authoritative = await captureSettlementSnapshot(database, settlement, scope);
+  if (authoritative.snapshot.version !== changed.rows[0].version) throw new Error('FINANCE_SETTLEMENT_SNAPSHOT_STALE');
+  await repository(database).event('finance.settlement.adjusted', 'settlement', settlement, scope, {
+    settlement,
+    adjustment,
+    direction: selected.direction,
+    amountMinor: amount,
+    grossMinor: authoritative.header.grossMinor,
+    netMinor: authoritative.header.netMinor,
+    feeMinor: authoritative.header.feeMinor,
+    snapshotHash: authoritative.snapshot.snapshotHash,
+    snapshotVersion: authoritative.snapshot.version,
+  });
+  return rowResult(updated);
+}
+
+async function postSettlement(database: OperationDatabase, state: SettlementSnapshotState): Promise<void> {
+  const value = state.header;
+  await finance.post(database, {
+    scope: value.scope,
+    referenceType: 'finance.settlement.approved',
+    referenceId: `${value.id}:partner`,
+    currency: value.currency,
+    description: 'Settlement liability accrual',
+    debit: { code: 'settlement.cost', kind: 'expense' },
+    credit: { code: `settlement.payable.${value.partner}`, kind: 'liability' },
+    amountMinor: value.netMinor,
+    occurredAt: value.recognitionAt,
+  });
+  if (value.feeMinor > 0)
+    await finance.post(database, {
+      scope: value.scope,
+      referenceType: 'finance.settlement.approved',
+      referenceId: `${value.id}:platform`,
+      currency: value.currency,
+      description: 'Settlement platform fee',
+      debit: { code: 'settlement.cost', kind: 'expense' },
+      credit: { code: 'platform.fee', kind: 'income' },
+      amountMinor: value.feeMinor,
+      occurredAt: value.recognitionAt,
+    });
+}
+
+function object(value: unknown): Readonly<Record<string, unknown>> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Readonly<Record<string, unknown>>) : {};
+}
+type DecisionRow = { id: string; requested_by: string; amount_minor: string };
+type RequestRow = { id: string; gross_minor: string };
+type AdjustmentRow = {
+  id: string;
+  direction: 'increase' | 'decrease';
+  amount_minor: string;
+  gross_minor: string;
+};

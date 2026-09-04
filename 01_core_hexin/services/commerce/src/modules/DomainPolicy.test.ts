@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Money } from '@shop/kernel';
 import { CheckoutPolicy } from './checkout_jiesuan/02_domain_yewu/policies_guize/CheckoutPolicy';
 import { PublishPolicy } from './experience/domain/policy/PublishPolicy';
-import { PostingPolicy } from './finance/domain/policy/PostingPolicy';
+import { PostingPolicy } from './finance/02_domain_yewu/policy/PostingPolicy';
 import { PasswordPolicy } from './identity';
 import { available, Reservation } from './inventory/domain/model/Reservation';
 import { Order } from './order_dingdan/02_domain_yewu/models_moxing/Order';
