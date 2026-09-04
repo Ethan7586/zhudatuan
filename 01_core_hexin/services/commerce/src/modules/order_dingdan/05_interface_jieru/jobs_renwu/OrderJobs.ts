@@ -4,7 +4,7 @@ import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { paymentPort } from '../../../payment_zhifu';
 import { releaseOrderHolds } from '../../../payment_zhifu/03_application_yingyong/services_fuwu/PaymentSettlement';
 import { checkoutSessionPort } from '../../../checkout_jiesuan';
-import { inventoryPort } from '../../../inventory/InventoryModule';
+import { inventoryPort } from '../../../inventory';
 import { orderPort } from '../../01_public_gongkai/ports_jiekou/OrderPort';
 
 export class OrderExpiryJobProcessor implements JobProcessor {

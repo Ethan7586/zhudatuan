@@ -6,7 +6,7 @@ import { domainEvent } from '../../../../foundation/domain/DomainEvent';
 import { appendOutbox } from '../../../../foundation/infrastructure/OutboxStore';
 import { CheckoutPort, type CheckoutQuote } from '../../../checkout_jiesuan';
 import { checkoutSessionPort } from '../../../checkout_jiesuan';
-import { InventoryPort } from '../../../inventory/InventoryPort';
+import { InventoryPort } from '../../../inventory';
 import { PaymentPort } from '../../../payment_zhifu';
 import type { BenefitGateway } from '../../../benefit/application/port/BenefitPort';
 import { marketingPort } from '../../../marketing/MarketingPort';

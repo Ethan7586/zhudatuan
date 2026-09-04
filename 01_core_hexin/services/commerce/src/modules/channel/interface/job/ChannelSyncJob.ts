@@ -7,7 +7,7 @@ import type { SecretStore } from '../../../../foundation/infrastructure/SecretSt
 import { ExternalMapping } from '../../domain/model/ExternalMapping';
 import { catalogSourcePort } from '../../../catalog/CatalogModule';
 import { pricingPort } from '../../../pricing/PricingModule';
-import { inventoryPort } from '../../../inventory/InventoryModule';
+import { inventoryPort } from '../../../inventory';
 import { FinancePort } from '../../../finance/FinanceModule';
 
 interface ConnectionRow {

@@ -4,8 +4,8 @@ import { importCode, importDetail, type ImportFailure } from '../../../../founda
 import type { StoredObject } from '../../../../foundation/infrastructure/ObjectStore';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { configureWorker, workerTransaction } from '../../../../foundation/infrastructure/WorkerDatabase';
-import { importStock } from '../../application/StockImport';
-import type { CatalogSku } from '../../../catalog/CatalogModule';
+import { importStock } from '../../03_application_yingyong/StockImport';
+import type { CatalogSku } from '../../../catalog';
 
 interface TargetRow { readonly id: string; readonly scope_id: string; readonly object_ref: string; readonly sha256: string; readonly state: ImportTarget['state'] }
 interface StagedRow { readonly row_number: number; readonly payload: Readonly<Record<string, string>> }

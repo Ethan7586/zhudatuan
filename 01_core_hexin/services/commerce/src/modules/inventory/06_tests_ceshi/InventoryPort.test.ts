@@ -1,11 +1,11 @@
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import type { QueryResult, QueryResultRow } from 'pg';
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import type { JobProcessor } from '../../foundation/application/JobRunner';
-import type { DatabasePool } from '../../foundation/persistence/Pool';
-import { InventorySyncJobProcessor } from './interface/job/InventorySyncJob';
-import { InventoryPort } from './InventoryPort';
+import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+import type { JobProcessor } from '../../../foundation/application/JobRunner';
+import type { DatabasePool } from '../../../foundation/persistence/Pool';
+import { InventorySyncJobProcessor } from '../05_interface_jieru/job/InventorySyncJob';
+import { InventoryPort } from '../01_public_gongkai/InventoryPort';
 
 describe('inventory reservation locking', () => {
   it('locks stock rows before aggregating reservations', async () => {
@@ -99,8 +99,8 @@ describe('inventory reservation locking', () => {
   });
 
   it('keeps import and availability writes explicitly mall-scoped', async () => {
-    const importSource = await readFile(new URL('./application/StockImport.ts', import.meta.url), 'utf8');
-    const operationSource = await readFile(new URL('./InventoryOperations.ts', import.meta.url), 'utf8');
+    const importSource = await readFile(new URL('../03_application_yingyong/StockImport.ts', import.meta.url), 'utf8');
+    const operationSource = await readFile(new URL('../03_application_yingyong/InventoryOperations.ts', import.meta.url), 'utf8');
     expect(importSource).toContain('inventory.movement(id,mall_id,stockitem_id');
     expect(importSource).toContain('where mall_id=$1 and stockitem_id=$2');
     expect(operationSource).toContain('where stock.scope_id=$1');

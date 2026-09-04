@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import type { CatalogSku } from '../../catalog/CatalogModule';
+import type { CatalogSku } from '../../catalog';
 
 export async function importStock(database: OperationDatabase, catalog: CatalogSku, scope: string, importid: string, rowNumber: number,
   row: Readonly<Record<string, string>>): Promise<void> {

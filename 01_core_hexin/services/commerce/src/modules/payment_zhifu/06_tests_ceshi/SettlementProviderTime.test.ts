@@ -27,7 +27,7 @@ vi.mock('../../voucher/VoucherModule', () => ({
     refund = dependencies.voucherRefund;
   },
 }));
-vi.mock('../../inventory/InventoryModule', () => ({ inventoryPort: { commit: dependencies.inventoryCommit } }));
+vi.mock('../../inventory', () => ({ inventoryPort: { commit: dependencies.inventoryCommit } }));
 vi.mock('../../marketing/MarketingModule', () => ({ marketingPort: { commit: dependencies.marketingCommit } }));
 vi.mock('../../fulfillment/FulfillmentModule', () => ({ fulfillmentPort: { create: dependencies.fulfillmentCreate } }));
 vi.mock('../../order_dingdan', () => ({

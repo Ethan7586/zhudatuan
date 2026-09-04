@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import { BenefitPort } from '../../../benefit/BenefitModule';
 import { VoucherPort } from '../../../voucher/VoucherModule';
-import { inventoryPort } from '../../../inventory/InventoryModule';
+import { inventoryPort } from '../../../inventory';
 import { marketingPort } from '../../../marketing/MarketingModule';
 import { fulfillmentPort } from '../../../fulfillment/FulfillmentModule';
 import { orderPort } from '../../../order_dingdan';

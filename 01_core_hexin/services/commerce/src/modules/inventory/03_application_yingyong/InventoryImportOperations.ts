@@ -22,7 +22,8 @@ export function inventoryImportOperations(context: ModuleContext): OperationActi
     }),
     'inventory.imports.read': operationLifecycle({
       execute: async (request, database) => {
-        const access = requireAccess(request); const id = queryValue(request.input.query.job);
+        const access = requireAccess(request);
+        const id = queryValue(request.input.query.job);
         if (!id) throw new Error('VALIDATION_FAILED:job');
         return rowResult(await database.query(`select job.id,job.state,job.total_count,job.cursor_value,job.success_count,job.failure_count,
           job.validation_summary,job.last_error,job.report_object_ref,job.report_sha256,job.report_size,job.created_at,job.updated_at,

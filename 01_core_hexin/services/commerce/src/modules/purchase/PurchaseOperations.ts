@@ -17,7 +17,7 @@ import { CheckoutPort } from '../checkout_jiesuan';
 import { QuoteReader } from '../checkout_jiesuan';
 import type { CheckoutQuote } from '../checkout_jiesuan';
 import { FulfillmentPort } from '../fulfillment/FulfillmentPort';
-import { InventoryPort } from '../inventory/InventoryPort';
+import { InventoryPort } from '../inventory';
 import { MarketingPort } from '../marketing/MarketingPort';
 import { OrderPort, PlaceOrder } from '../order_dingdan';
 import { PaymentSettlementCore } from '../payment_zhifu';
