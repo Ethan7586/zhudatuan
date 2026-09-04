@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RedactionPolicy } from './RedactionPolicy';
+import { RedactionPolicy } from '../../02_domain_yewu/policy/RedactionPolicy';
 
 describe('RedactionPolicy', () => {
   it('removes secrets and minimizes contact data without mutating safe codes', () => {

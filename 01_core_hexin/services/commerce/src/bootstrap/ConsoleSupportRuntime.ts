@@ -18,8 +18,8 @@ import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistenc
 import { RiskCheckAdapter } from '../modules/risk';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
-import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
-import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
+import { RecordAudit } from '../modules/audit/03_application_yingyong/command/RecordAudit';
+import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persistence/PgAuditRepository';
 import { commerceTelemetry, TELEMETRY } from '../foundation/telemetry/Telemetry';
 
 export const CONSOLE_SUPPORT_SCHEMA_VERSION = '20260902133000' as const;

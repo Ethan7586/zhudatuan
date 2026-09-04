@@ -14,8 +14,8 @@ import { PgGovernanceResolver } from '../foundation/security/GovernanceResolver'
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
-import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
-import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
+import { RecordAudit } from '../modules/audit/03_application_yingyong/command/RecordAudit';
+import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persistence/PgAuditRepository';
 import { RETURN_TARGETS } from '../modules/identity/04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
 import { RiskCheckAdapter } from '../modules/risk';
 import { WECHAT_IDENTITY } from '../modules/identity/01_public_gongkai/ports_jiekou/WechatIdentity';

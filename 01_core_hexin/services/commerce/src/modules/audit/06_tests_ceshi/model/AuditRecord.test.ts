@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { AccessRecord } from './AccessRecord';
-import { AuditRecord, canonical } from './AuditRecord';
+import { AccessRecord } from '../../02_domain_yewu/model/AccessRecord';
+import { AuditRecord, canonical } from '../../02_domain_yewu/model/AuditRecord';
 
 const write = { scope:'mall:1', actor:'principal:1', actorType:'console', action:'catalog.listings.publish', resourceType:'catalog',
   resource:'listing:1', before:{ status:'draft' }, after:{ status:'published' }, evidence:{ reason:'approved' }, trace:'trace:1' } as const;

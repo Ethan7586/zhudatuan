@@ -12,8 +12,8 @@ import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
-import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
-import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
+import { RecordAudit } from '../modules/audit/03_application_yingyong/command/RecordAudit';
+import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persistence/PgAuditRepository';
 import { PAYMENT_GATEWAY } from '../modules/payment_zhifu/01_public_gongkai/ports_jiekou/PaymentGateway';
 import { WechatGateway } from '../modules/payment_zhifu/04_adapters_shixian/providers_waibu/WechatGateway';
 
