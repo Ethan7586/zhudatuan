@@ -55,14 +55,14 @@
   min-height: 86px;
   align-items: flex-start;
   justify-content: space-between;
-  border-bottom: 1px solid var(--vi-line);
+  border-bottom: 1px solid var(--sw-border);
   padding: 18px 20px;
 }
 
 .voucherdrawer header p,
 .vouchercreatordialog header p {
   margin: 0 0 4px;
-  color: var(--vi-brand);
+  color: var(--sw-brand);
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -70,19 +70,19 @@
 .voucherdrawer h2,
 .vouchercreatordialog h2 {
   margin: 0;
-  color: var(--vi-ink);
+  color: var(--sw-brand-ink);
   font-size: 18px;
   line-height: 26px;
 }
 .voucherdrawer header code {
-  color: var(--sw-disabled);
+  color: var(--sw-muted);
   font-size: 9px;
 }
 .voucherdrawer header > button,
 .vouchercreatordialog header > button {
   width: 34px;
   height: 34px;
-  border: 1px solid var(--vi-line);
+  border: 1px solid var(--sw-border);
   border-radius: 9px;
   background: var(--sw-surface);
   color: var(--sw-muted);
@@ -115,7 +115,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   margin: 0;
-  border: 1px solid var(--vi-line);
+  border: 1px solid var(--sw-border);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -124,15 +124,15 @@
   min-height: 74px;
   align-content: center;
   gap: 4px;
-  border-right: 1px solid var(--vi-line);
-  border-bottom: 1px solid var(--vi-line);
+  border-right: 1px solid var(--sw-border);
+  border-bottom: 1px solid var(--sw-border);
   padding: 12px 14px;
 }
 .voucherfacts div:nth-child(2n) {
   border-right: 0;
 }
 .voucherfacts dt {
-  color: var(--sw-disabled);
+  color: var(--sw-muted);
   font-size: 9px;
 }
 .voucherfacts dd {
@@ -158,123 +158,4 @@
   color: var(--sw-warning-strong);
   font-size: 10px;
   line-height: 17px;
-}
-
-.vouchercreatornotice {
-  margin: 0;
-  color: var(--sw-muted);
-  font-size: 12px;
-  line-height: 20px;
-}
-.vouchercreatorfield {
-  display: grid;
-  gap: 7px;
-}
-.vouchercreatorfield > span {
-  color: var(--vi-ink);
-  font-size: 11px;
-  font-weight: 750;
-}
-.vouchercreatorfield > input {
-  width: 100%;
-  min-height: 42px;
-  border: 1px solid var(--vi-line);
-  border-radius: 10px;
-  outline: none;
-  background: var(--sw-surface);
-  padding: 0 12px;
-  color: var(--vi-ink);
-  font: inherit;
-  font-size: 12px;
-  transition:
-    border-color 120ms ease,
-    box-shadow 120ms ease,
-    background 120ms ease;
-}
-.vouchercreatorfield > input:hover {
-  border-color: var(--sw-border-strong);
-}
-.vouchercreatorfield > input:focus-visible {
-  border-color: var(--vi-brand);
-  box-shadow: 0 0 0 3px var(--vi-brand-soft);
-}
-.vouchercreatorfield > small,
-.vouchercreatorchoice small {
-  color: var(--sw-disabled);
-  font-size: 10px;
-  line-height: 16px;
-}
-.vouchercreatorgrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-.vouchercreatorchoice {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  border: 1px solid var(--vi-line);
-  border-radius: 11px;
-  background: var(--sw-surface-subtle);
-  padding: 12px 14px;
-  cursor: pointer;
-}
-.vouchercreatorchoice > input {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 auto;
-  margin: 1px 0 0;
-  accent-color: var(--vi-brand);
-}
-.vouchercreatorchoice > span {
-  display: grid;
-  gap: 3px;
-}
-.vouchercreatorchoice strong {
-  color: var(--vi-ink);
-  font-size: 11px;
-}
-.vouchercreatorbody ol {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.vouchercreatorbody li {
-  display: flex;
-  min-height: 82px;
-  align-items: center;
-  gap: 11px;
-  border: 1px solid var(--vi-line);
-  border-radius: 12px;
-  background: var(--sw-surface-subtle);
-  padding: 12px;
-}
-.vouchercreatorbody li > span {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: var(--vi-brand-soft);
-  color: var(--vi-brand);
-  font-size: 11px;
-  font-weight: 800;
-  place-items: center;
-}
-.vouchercreatorbody li div {
-  display: grid;
-  gap: 3px;
-}
-.vouchercreatorbody li strong {
-  color: var(--vi-ink);
-  font-size: 12px;
-}
-.vouchercreatorbody li p {
-  margin: 0;
-  color: var(--sw-disabled);
-  font-size: 10px;
-  line-height: 16px;
 }

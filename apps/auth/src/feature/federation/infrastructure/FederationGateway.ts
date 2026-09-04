@@ -9,15 +9,19 @@ import type { FederationPort } from '../public/FederationPort';
 import { mapFederationRedirect, mapProviders } from './FederationMapper';
 
 export class FederationGateway implements FederationPort {
-  constructor(private readonly sdk: IdentitySdk, private readonly environment: AuthEnvironment, private readonly bootstrap: BootstrapPort, private readonly authorizations: AuthorizationPort) {}
+  constructor(
+    private readonly sdk: IdentitySdk,
+    private readonly environment: AuthEnvironment,
+    private readonly bootstrap: BootstrapPort,
+    private readonly authorizations: AuthorizationPort
+  ) {}
   read(target: AuthTarget, signal?: AbortSignal) {
     return this.sdk.providersRead({}, queryContext(this.environment, target, signal)).then(mapProviders);
   }
   async start(provider: string, target: AuthTarget, returns: Omit<AuthRequest, 'target'>, signal?: AbortSignal) {
     const [authorization, bootstrap] = await Promise.all([this.authorizations.create(), this.bootstrap.read(target, returns, signal)]);
-    return this.sdk.federationsStart(
-      { body: { providerid: provider, returntarget: bootstrap.returnTarget, authorization: authorization.request } },
-      commandContext(this.environment, target, bootstrap.csrf, signal)
-    ).then(mapFederationRedirect);
+    return this.sdk
+      .federationsStart({ body: { providerid: provider, returntarget: bootstrap.returnTarget, authorization: authorization.request } }, commandContext(this.environment, target, bootstrap.csrf, signal))
+      .then(mapFederationRedirect);
   }
 }

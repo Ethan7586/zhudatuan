@@ -1,9 +1,9 @@
-import type { OperationOutputFor } from '@shop/contract';
+import type { StorefrontBootstrap } from '../../../entity/session';
 import type { Home } from '../model/Home';
-import { mapHome } from '../infrastructure/HomeMapper';
+import { projectHome } from '../model/HomeProjection';
 
 export class ReadHome {
-  execute(bootstrap: OperationOutputFor<'storefront.bootstrap.read'> | undefined): Home | null {
-    return mapHome(bootstrap);
+  execute(bootstrap: StorefrontBootstrap | undefined): Home | null {
+    return projectHome(bootstrap);
   }
 }

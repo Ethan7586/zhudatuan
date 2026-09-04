@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindEventOperation, bindOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 import { exactOperationInput, exactOperationOutput } from '@shop/contract/schema';
 import { defineOperation } from '../CatalogOperationDescriptor';
 

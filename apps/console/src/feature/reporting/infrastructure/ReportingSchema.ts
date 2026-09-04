@@ -15,10 +15,31 @@ export const ReportMetricSchema = z
   })
   .strict();
 export const ReportPageSchema = pageEnvelope(ReportMetricSchema);
-export const ReportExportSchema = z.object({
-  id: z.string().min(1), scope: z.string().min(1), report: z.enum(['metrics', 'orders', 'finance.statement']), filter: z.record(z.string(), z.unknown()),
-  state: z.enum(['queued', 'running', 'completed', 'failed', 'expired']), cursor: z.string().nullable(), recordCount: z.number().int().nonnegative(),
-  objectReference: z.string().nullable(), objectHash: z.string().nullable(), objectSize: z.number().int().nonnegative().nullable(),
-  scanState: z.enum(['pending', 'clean', 'rejected']).nullable(), expiresAt: z.string().nullable(), createdAt: z.string().min(1), generatedAt: z.string().nullable(),
-  download: z.object({ url: z.string().url().refine((value) => new URL(value).protocol === 'https:', '下载地址必须使用 HTTPS。'), expiresAt: z.string().min(1) }).strict().optional(),
-}).strict();
+export const ReportExportSchema = z
+  .object({
+    id: z.string().min(1),
+    scope: z.string().min(1),
+    report: z.enum(['metrics', 'orders', 'finance.statement']),
+    filter: z.record(z.string(), z.unknown()),
+    state: z.enum(['queued', 'running', 'completed', 'failed', 'expired']),
+    cursor: z.string().nullable(),
+    recordCount: z.number().int().nonnegative(),
+    objectReference: z.string().nullable(),
+    objectHash: z.string().nullable(),
+    objectSize: z.number().int().nonnegative().nullable(),
+    scanState: z.enum(['pending', 'clean', 'rejected']).nullable(),
+    expiresAt: z.string().nullable(),
+    createdAt: z.string().min(1),
+    generatedAt: z.string().nullable(),
+    download: z
+      .object({
+        url: z
+          .string()
+          .url()
+          .refine((value) => new URL(value).protocol === 'https:', '下载地址必须使用 HTTPS。'),
+        expiresAt: z.string().min(1),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();

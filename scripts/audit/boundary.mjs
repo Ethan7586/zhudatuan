@@ -271,10 +271,12 @@ function auditName(rel, add) {
 
 function handlerInstantiations(sources, sourceMap) {
   const counts = new Map();
-  for (const file of sources.filter((candidate) => path.basename(candidate) === 'Module.ts')) {
+  for (const file of sources) {
+    const rel = relative(file).split('/');
+    if (rel[0] !== 'services' || rel[1] !== 'commerce' || rel[2] !== 'src' || rel[3] !== 'modules' || !rel[4]) continue;
     const sourceFile = sourceMap.get(fs.realpathSync.native(file));
     if (!sourceFile) continue;
-    const owner = path.basename(path.dirname(file));
+    const owner = rel[4];
     const visit = (node) => {
       if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.text.endsWith('Handler')) {
         const key = `${owner}:${node.expression.text}`;

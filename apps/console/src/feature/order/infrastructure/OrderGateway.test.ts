@@ -29,7 +29,11 @@ afterAll(() => server.close());
 
 describe('Order query', () => {
   it('sends every bounded contract filter with scope and access version', async () => {
-    await gateway.orders(context(), query({ order: 'order:internal:42', view: 'active', placed: '7days', lifecycle: 'fulfilling', payment: 'paid', fulfillment: 'processing', mall: 'mall:1', cursor: 'cursor:50' }), new AbortController().signal);
+    await gateway.orders(
+      context(),
+      query({ order: 'order:internal:42', view: 'active', placed: '7days', lifecycle: 'fulfilling', payment: 'paid', fulfillment: 'processing', mall: 'mall:1', cursor: 'cursor:50' }),
+      new AbortController().signal
+    );
     expect(Object.fromEntries(requests[0]?.searchParams ?? [])).toEqual({
       limit: String(ORDER_PAGE_LIMIT),
       order: 'order:internal:42',
@@ -135,7 +139,14 @@ function order(id: string, orderNumber: string) {
     aftersale_state: 'none',
     lifecycle_state: 'paid',
     address: null,
-    payment: { paymentId: 'payment:1', capturedMinor: 31_500, refundedMinor: 0, refundableMinor: 31_500, updatedAt: '2026-08-26T00:01:00Z', tenders: [{ sequence: 1, kind: 'wechat', referenceMasked: null, amountMinor: 31_500, state: 'captured' }] },
+    payment: {
+      paymentId: 'payment:1',
+      capturedMinor: 31_500,
+      refundedMinor: 0,
+      refundableMinor: 31_500,
+      updatedAt: '2026-08-26T00:01:00Z',
+      tenders: [{ sequence: 1, kind: 'wechat', referenceMasked: null, amountMinor: 31_500, state: 'captured' }],
+    },
     fulfillments: [],
     refunds: [],
     timeline: [],

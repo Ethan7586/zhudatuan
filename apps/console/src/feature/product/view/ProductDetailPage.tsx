@@ -84,7 +84,7 @@ function ProductDetailContent({ data }: Readonly<{ data: ProductDetail }>) {
       <DetailTable id="productskus" title="商品规格" caption="商品规格与属性" rows={data.skus} columns={skuColumns} rowKey={(row) => row.id} />
       <DetailTable id="productlistings" title="商城与来源池" caption="商品商城上架与来源池" rows={data.listings} columns={listingColumns} rowKey={(row) => row.id} />
       <DetailTable id="productinventory" title="库存" caption="商品库存" rows={data.inventory} columns={stockColumns} rowKey={(row) => `${row.sku}:${row.scope}:${row.location}`} />
-      <DetailTable id="productprices" title="价格" caption="商品价格" rows={data.prices} columns={priceColumns} rowKey={(row) => `${row.sku}:${row.scope}:${row.bookVersion}`} />
+      <DetailTable id="productprices" title="价格" caption="商品价格" rows={data.prices} columns={priceColumns} rowKey={(row) => `${row.sku}:${row.scope}:${row.bookVersion}:${row.effectiveAt}`} />
     </div>
   );
 }

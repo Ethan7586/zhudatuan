@@ -3,7 +3,6 @@ import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionA
 import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-
 import type { CreateFederation, FederationCallbackRecord, FederationRepository, FederationResolution } from '../../application/port/FederationRepository';
 import type { FederatedSubject } from '../../domain/model/FederatedSubject';
 import { FederationTransaction } from '../../domain/model/FederationTransaction';

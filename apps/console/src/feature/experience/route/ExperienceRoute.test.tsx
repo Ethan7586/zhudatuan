@@ -78,13 +78,60 @@ describe('Experience governance workspace', () => {
     const user = userEvent.setup();
     let detailReads = 0;
     const operations: string[] = [];
-    const document = { version: 2, application: 'application:benefits', pages: [{ id: 'application:benefits:home', path: 'home', blocks: [{ id: 'hero', component: 'hero', content: { title: '鸿泰惠民通', subtitle: '企业福利，温暖抵达' } }, { id: 'notice', component: 'notice', content: { announcement: '欢迎进入企业福利商城' } }] }] };
-    const version = { id: 'version:new', application_id: 'application:benefits', sequence: 9, schema_version: '2', configuration: document, configuration_hash: 'b'.repeat(64), validation_state: 'valid', reason: '控制台商城装修发布', created_by: 'actor:commerce', created_at: '2026-09-03T00:01:00.000Z' };
+    const document = {
+      version: 2,
+      application: 'application:benefits',
+      pages: [
+        {
+          id: 'application:benefits:home',
+          path: 'home',
+          blocks: [
+            { id: 'hero', component: 'hero', content: { title: '鸿泰惠民通', subtitle: '企业福利，温暖抵达' } },
+            { id: 'notice', component: 'notice', content: { announcement: '欢迎进入企业福利商城' } },
+          ],
+        },
+      ],
+    };
+    const version = {
+      id: 'version:new',
+      application_id: 'application:benefits',
+      sequence: 9,
+      schema_version: '2',
+      configuration: document,
+      configuration_hash: 'b'.repeat(64),
+      validation_state: 'valid',
+      reason: '控制台商城装修发布',
+      created_by: 'actor:commerce',
+      created_at: '2026-09-03T00:01:00.000Z',
+    };
     server.use(
-      http.get('*/api/v1/experiences/applications/:applicationid', () => { detailReads += 1; return HttpResponse.json({ ...applications.items[0], head: version, published: version, history: [] }); }),
-      http.post('*/api/v1/experiences/applications/:applicationid/versions', () => { operations.push('save'); return HttpResponse.json(version); }),
-      http.post('*/api/v1/experiences/versions/:versionid/validation', () => { operations.push('validate'); return HttpResponse.json({ id: version.id, application_id: version.application_id, validation_state: 'valid' }); }),
-      http.put('*/api/v1/experiences/versions/:versionid/publication', ({ request }) => { operations.push('publish'); expect(request.headers.get('x-action-proof')).toBe('p'.repeat(43)); expect(request.headers.get('if-match')).toBe('"12"'); return HttpResponse.json({ id: 'release:new', application_id: version.application_id, version_id: version.id, pool_id: 'pool:benefits', state: 'active', effective_at: '2026-09-03T00:02:00.000Z', retired_at: null, published_by: 'actor:commerce' }); })
+      http.get('*/api/v1/experiences/applications/:applicationid', () => {
+        detailReads += 1;
+        return HttpResponse.json({ ...applications.items[0], head: version, published: version, history: [] });
+      }),
+      http.post('*/api/v1/experiences/applications/:applicationid/versions', () => {
+        operations.push('save');
+        return HttpResponse.json(version);
+      }),
+      http.post('*/api/v1/experiences/versions/:versionid/validation', () => {
+        operations.push('validate');
+        return HttpResponse.json({ id: version.id, application_id: version.application_id, validation_state: 'valid' });
+      }),
+      http.put('*/api/v1/experiences/versions/:versionid/publication', ({ request }) => {
+        operations.push('publish');
+        expect(request.headers.get('x-action-proof')).toBe('p'.repeat(43));
+        expect(request.headers.get('if-match')).toBe('"12"');
+        return HttpResponse.json({
+          id: 'release:new',
+          application_id: version.application_id,
+          version_id: version.id,
+          pool_id: 'pool:benefits',
+          state: 'active',
+          effective_at: '2026-09-03T00:02:00.000Z',
+          retired_at: null,
+          published_by: 'actor:commerce',
+        });
+      })
     );
     renderRoute('/applications', scope('mall', 'mall:hongtai-benefits', '鸿泰惠民通'), 3);
     await screen.findByRole('table', { name: '店铺装修应用' });
@@ -112,7 +159,14 @@ function renderRoute(entry: string, activeScope: ConsoleScope, assurance = 2) {
   return render(
     <MemoryRouter initialEntries={[entry]}>
       <QueryClientProvider client={client}>
-        <DependencyProvider value={createConsoleDependencies()}><ConsoleContextProvider value={contextFor(activeScope, assurance)}><StepupProvider controller={{ request: () => undefined }}><LocationProbe /><Component /></StepupProvider></ConsoleContextProvider></DependencyProvider>
+        <DependencyProvider value={createConsoleDependencies()}>
+          <ConsoleContextProvider value={contextFor(activeScope, assurance)}>
+            <StepupProvider controller={{ request: () => undefined }}>
+              <LocationProbe />
+              <Component />
+            </StepupProvider>
+          </ConsoleContextProvider>
+        </DependencyProvider>
       </QueryClientProvider>
     </MemoryRouter>
   );
@@ -129,7 +183,17 @@ function contextFor(activeScope: ConsoleScope, assurance = 2): ConsoleContext {
       membership: 'membership:commerce',
       accessVersion: 11,
       permissions: ['experience.application.read', 'experience.application.manage', 'experience.version.manage', 'experience.version.publish'],
-      capabilities: ['experience.applications.read', 'experience.applications.detail.read', 'experience.applications.create', 'experience.applications.copy', 'experience.applications.update', 'experience.versions.save', 'experience.versions.validate', 'experience.versions.publish', 'experience.versions.restore'],
+      capabilities: [
+        'experience.applications.read',
+        'experience.applications.detail.read',
+        'experience.applications.create',
+        'experience.applications.copy',
+        'experience.applications.update',
+        'experience.versions.save',
+        'experience.versions.validate',
+        'experience.versions.publish',
+        'experience.versions.restore',
+      ],
       target: 'console',
       scope: activeScope,
       scopes: [activeScope],

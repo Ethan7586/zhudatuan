@@ -62,7 +62,7 @@
     border-right: 0;
   }
   .commercefacts div:nth-last-child(-n + 2) {
-    border-bottom: 1px solid var(--vi-line);
+    border-bottom: 1px solid var(--sw-border);
   }
   .commercefacts div:last-child {
     border-bottom: 0;

@@ -38,7 +38,7 @@ export class PgAccessRepository extends PgAccessGovernanceRepository implements 
       coalesce(scopeitems.items,'[]'::jsonb) scopes,
       coalesce(overrideitems.items,'[]'::jsonb) overrides
       from access.membership membership
-      join member.profile profile on profile.id=membership.member_id
+      left join access.memberprofile profile on profile.member_id=membership.member_id
       left join lateral (
         select jsonb_agg(jsonb_build_object('role',assigned.id,'name',assigned.name,'kind',assigned.kind,'version',assigned.version,
           'allows',coalesce((select jsonb_agg(permission.code order by permission.code) from access.rolepermission mapping
@@ -72,7 +72,7 @@ export class PgAccessRepository extends PgAccessGovernanceRepository implements 
       result.rows.map((row) =>
         Object.freeze({
           id: row.id,
-          displayName: row.display_name,
+          displayName: row.display_name ?? row.id,
           employeeNo: row.employee_no,
           mobileMasked: row.mobile_masked,
           client: row.client === 'storefront' ? 'storefront' : 'console',

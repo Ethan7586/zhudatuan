@@ -1,8 +1,8 @@
 import type { StorefrontSession } from '../../../entity/session';
-import { NotificationGateway } from '../infrastructure/NotificationGateway';
+import type { NotificationPort } from '../public/NotificationPort';
 
 export class MarkNotification {
-  constructor(private readonly gateway: Pick<NotificationGateway, 'acknowledge'>) {}
+  constructor(private readonly gateway: Pick<NotificationPort, 'acknowledge'>) {}
   async execute(session: StorefrontSession, notificationId: string): Promise<string> {
     return this.gateway.acknowledge(session, notificationId, `notification:${notificationId}:ack`);
   }

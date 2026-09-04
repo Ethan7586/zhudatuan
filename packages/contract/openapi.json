@@ -20260,6 +20260,61 @@
         ],
         "type": "object"
       },
+      "IdentityProvidersCenterReadInput": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "additionalProperties": false,
+            "properties": {},
+            "type": "object"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "IdentityProvidersCenterReadOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "status": {
+                  "const": "enabled",
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "wechat",
+                    "wecomcorp",
+                    "wecomsuite",
+                    "oidc"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "status"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "type": "object"
+      },
       "IdentityProvidersManageInput": {
         "additionalProperties": false,
         "properties": {
@@ -23890,6 +23945,9 @@
                 "membership_status": {
                   "type": "string"
                 },
+                "organization_id": {
+                  "type": "string"
+                },
                 "status": {
                   "type": "string"
                 }
@@ -23899,6 +23957,7 @@
                 "display_name",
                 "status",
                 "membership_id",
+                "organization_id",
                 "employee_no",
                 "membership_status",
                 "access_version",
@@ -25350,6 +25409,15 @@
           "query": {
             "additionalProperties": false,
             "properties": {
+              "channel": {
+                "enum": [
+                  "sms",
+                  "email",
+                  "wechat",
+                  "inapp"
+                ],
+                "type": "string"
+              },
               "cursor": {
                 "type": "string"
               },
@@ -28290,17 +28358,62 @@
         "additionalProperties": false,
         "properties": {
           "body": {
-            "additionalProperties": false,
-            "properties": {
-              "mode": {
-                "enum": [
-                  "full",
-                  "incremental"
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "action": {
+                    "const": "start",
+                    "type": "string"
+                  },
+                  "mode": {
+                    "enum": [
+                      "full",
+                      "incremental"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "action"
                 ],
-                "type": "string"
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "action": {
+                    "const": "cancel",
+                    "type": "string"
+                  },
+                  "run": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "action",
+                  "run"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "action": {
+                    "const": "resume",
+                    "type": "string"
+                  },
+                  "run": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "action",
+                  "run"
+                ],
+                "type": "object"
               }
-            },
-            "type": "object"
+            ]
           },
           "path": {
             "additionalProperties": false,
@@ -28925,6 +29038,10 @@
             "additionalProperties": false,
             "properties": {
               "kind": {
+                "enum": [
+                  "supplier",
+                  "brand"
+                ],
                 "type": "string"
               },
               "name": {
@@ -28932,8 +29049,10 @@
               },
               "status": {
                 "enum": [
+                  "pending",
                   "active",
-                  "suspended"
+                  "suspended",
+                  "terminated"
                 ],
                 "type": "string"
               }
@@ -28975,15 +29094,62 @@
             "type": "string"
           },
           "kind": {
+            "enum": [
+              "supplier",
+              "brand",
+              "store"
+            ],
             "type": "string"
           },
           "name": {
             "type": "string"
           },
+          "qualification": {
+            "additionalProperties": false,
+            "properties": {
+              "expired": {
+                "type": "number"
+              },
+              "nearest_expiry": {
+                "anyOf": [
+                  {
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "pending": {
+                "type": "number"
+              },
+              "rejected": {
+                "type": "number"
+              },
+              "valid": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "valid",
+              "pending",
+              "rejected",
+              "expired",
+              "nearest_expiry"
+            ],
+            "type": "object"
+          },
           "scope_id": {
             "type": "string"
           },
           "status": {
+            "enum": [
+              "pending",
+              "active",
+              "suspended",
+              "terminated"
+            ],
             "type": "string"
           },
           "updated_at": {
@@ -29003,6 +29169,7 @@
           "name",
           "status",
           "version",
+          "qualification",
           "created_at",
           "updated_at"
         ],
@@ -29015,6 +29182,14 @@
             "additionalProperties": false,
             "properties": {
               "cursor": {
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "supplier",
+                  "brand",
+                  "store"
+                ],
                 "type": "string"
               },
               "limit": {
@@ -29057,15 +29232,62 @@
                   "type": "string"
                 },
                 "kind": {
+                  "enum": [
+                    "supplier",
+                    "brand",
+                    "store"
+                  ],
                   "type": "string"
                 },
                 "name": {
                   "type": "string"
                 },
+                "qualification": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "expired": {
+                      "type": "number"
+                    },
+                    "nearest_expiry": {
+                      "anyOf": [
+                        {
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "pending": {
+                      "type": "number"
+                    },
+                    "rejected": {
+                      "type": "number"
+                    },
+                    "valid": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "valid",
+                    "pending",
+                    "rejected",
+                    "expired",
+                    "nearest_expiry"
+                  ],
+                  "type": "object"
+                },
                 "scope_id": {
                   "type": "string"
                 },
                 "status": {
+                  "enum": [
+                    "pending",
+                    "active",
+                    "suspended",
+                    "terminated"
+                  ],
                   "type": "string"
                 },
                 "updated_at": {
@@ -29085,6 +29307,7 @@
                 "name",
                 "status",
                 "version",
+                "qualification",
                 "created_at",
                 "updated_at"
               ],
@@ -29976,9 +30199,16 @@
               "additionalProperties": false,
               "properties": {
                 "active_version": {
-                  "maximum": 9007199254740991,
-                  "minimum": 0,
-                  "type": "integer"
+                  "anyOf": [
+                    {
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 "id": {
                   "type": "string"
@@ -30007,12 +30237,64 @@
                     }
                   ]
                 },
+                "rule_hash": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "status": {
+                  "enum": [
+                    "draft",
+                    "published",
+                    "retired"
+                  ],
                   "type": "string"
                 },
                 "updated_at": {
                   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
                   "type": "string"
+                },
+                "versions": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "created_by": {
+                        "type": "string"
+                      },
+                      "published_at": {
+                        "anyOf": [
+                          {
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "rule_hash": {
+                        "type": "string"
+                      },
+                      "version": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "version",
+                      "rule_hash",
+                      "published_at",
+                      "created_by"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
                 }
               },
               "required": [
@@ -30022,7 +30304,9 @@
                 "active_version",
                 "updated_at",
                 "rule",
-                "published_at"
+                "rule_hash",
+                "published_at",
+                "versions"
               ],
               "type": "object"
             },
@@ -30042,20 +30326,110 @@
         "additionalProperties": false,
         "properties": {
           "body": {
-            "additionalProperties": false,
-            "properties": {
-              "member": {
-                "type": "string"
-              },
-              "resource": {
-                "type": "string"
+            "$defs": {
+              "__schema0": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "items": {
+                      "$ref": "#/$defs/__schema0"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "additionalProperties": {
+                      "$ref": "#/$defs/__schema0"
+                    },
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  }
+                ]
               }
             },
-            "required": [
-              "member",
-              "resource"
-            ],
-            "type": "object"
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "decision",
+                    "type": "string"
+                  },
+                  "member": {
+                    "type": "string"
+                  },
+                  "resource": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "member",
+                  "resource"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "publish",
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "policy": {
+                    "type": "string"
+                  },
+                  "rule": {
+                    "$ref": "#/$defs/__schema0"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "policy",
+                  "name",
+                  "rule"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "rollback",
+                    "type": "string"
+                  },
+                  "policy": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "policy",
+                  "version"
+                ],
+                "type": "object"
+              }
+            ]
           }
         },
         "required": [
@@ -30064,42 +30438,163 @@
         "type": "object"
       },
       "QualificationDecisionsPreviewOutput": {
-        "additionalProperties": false,
-        "properties": {
-          "decisions": {
-            "items": {
-              "additionalProperties": false,
-              "properties": {
-                "decision": {
-                  "enum": [
-                    "eligible",
-                    "ineligible"
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "decisions": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "decision": {
+                      "enum": [
+                        "eligible",
+                        "ineligible"
+                      ],
+                      "type": "string"
+                    },
+                    "policy_id": {
+                      "type": "string"
+                    },
+                    "policy_version": {
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "policy_id",
+                    "policy_version",
+                    "decision"
                   ],
-                  "type": "string"
+                  "type": "object"
                 },
-                "policy_id": {
-                  "type": "string"
-                },
-                "policy_version": {
-                  "maximum": 9007199254740991,
-                  "minimum": 0,
-                  "type": "integer"
-                }
+                "type": "array"
               },
-              "required": [
-                "policy_id",
-                "policy_version",
-                "decision"
-              ],
-              "type": "object"
+              "kind": {
+                "const": "decision",
+                "type": "string"
+              }
             },
-            "type": "array"
+            "required": [
+              "kind",
+              "decisions"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "impact": {
+                "additionalProperties": false,
+                "properties": {
+                  "action": {
+                    "enum": [
+                      "publish",
+                      "rollback"
+                    ],
+                    "type": "string"
+                  },
+                  "changed_fields": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "current_hash": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "current_version": {
+                    "anyOf": [
+                      {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "limit_count": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "next_version": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "policy_id": {
+                    "type": "string"
+                  },
+                  "potential_profiles": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "proposed_hash": {
+                    "type": "string"
+                  },
+                  "resource_count": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "source_version": {
+                    "anyOf": [
+                      {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "subject_count": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "action",
+                  "policy_id",
+                  "current_version",
+                  "next_version",
+                  "source_version",
+                  "current_hash",
+                  "proposed_hash",
+                  "changed_fields",
+                  "potential_profiles",
+                  "resource_count",
+                  "subject_count",
+                  "limit_count"
+                ],
+                "type": "object"
+              },
+              "kind": {
+                "const": "policy",
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "impact"
+            ],
+            "type": "object"
           }
-        },
-        "required": [
-          "decisions"
-        ],
-        "type": "object"
+        ]
       },
       "QualificationPoliciesManageInput": {
         "additionalProperties": false,
@@ -30138,20 +30633,48 @@
                 ]
               }
             },
-            "additionalProperties": false,
-            "properties": {
-              "name": {
-                "type": "string"
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "action": {
+                    "const": "publish",
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "rule": {
+                    "$ref": "#/$defs/__schema0"
+                  }
+                },
+                "required": [
+                  "action",
+                  "name",
+                  "rule"
+                ],
+                "type": "object"
               },
-              "rule": {
-                "$ref": "#/$defs/__schema0"
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "action": {
+                    "const": "rollback",
+                    "type": "string"
+                  },
+                  "version": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "action",
+                  "version"
+                ],
+                "type": "object"
               }
-            },
-            "required": [
-              "name",
-              "rule"
-            ],
-            "type": "object"
+            ]
           },
           "path": {
             "additionalProperties": false,
@@ -30176,6 +30699,13 @@
       "QualificationPoliciesManageOutput": {
         "additionalProperties": false,
         "properties": {
+          "action": {
+            "enum": [
+              "publish",
+              "rollback"
+            ],
+            "type": "string"
+          },
           "active_version": {
             "maximum": 9007199254740991,
             "minimum": 0,
@@ -30197,6 +30727,18 @@
           "scope_id": {
             "type": "string"
           },
+          "source_version": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "status": {
             "const": "published",
             "type": "string"
@@ -30214,7 +30756,9 @@
           "active_version",
           "created_at",
           "updated_at",
-          "rule_hash"
+          "rule_hash",
+          "action",
+          "source_version"
         ],
         "type": "object"
       },
@@ -32069,39 +32613,6 @@
         "type": "object"
       },
       "ReportingDashboardReadOutput": {
-        "$defs": {
-          "__schema0": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              },
-              {
-                "items": {
-                  "$ref": "#/$defs/__schema0"
-                },
-                "type": "array"
-              },
-              {
-                "additionalProperties": {
-                  "$ref": "#/$defs/__schema0"
-                },
-                "propertyNames": {
-                  "type": "string"
-                },
-                "type": "object"
-              }
-            ]
-          }
-        },
         "additionalProperties": false,
         "properties": {
           "count": {
@@ -32469,7 +32980,36 @@
                   },
                   "topProducts": {
                     "items": {
-                      "$ref": "#/$defs/__schema0"
+                      "additionalProperties": false,
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "orderCount": {
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "productId": {
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "salesCents": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "productId",
+                        "name",
+                        "salesCents",
+                        "quantity",
+                        "orderCount"
+                      ],
+                      "type": "object"
                     },
                     "type": "array"
                   },
@@ -33828,6 +34368,11 @@
               "closed"
             ],
             "type": "string"
+          },
+          "version": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
           }
         },
         "required": [
@@ -33844,7 +34389,8 @@
           "review_reason",
           "review_evidence",
           "reviewed_at",
-          "resolution"
+          "resolution",
+          "version"
         ],
         "type": "object"
       },
@@ -34012,6 +34558,16 @@
                       "maximum": 9007199254740991,
                       "minimum": 0,
                       "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "case_state": {
+                  "anyOf": [
+                    {
+                      "type": "string"
                     },
                     {
                       "type": "null"
@@ -34188,11 +34744,24 @@
                       "type": "null"
                     }
                   ]
+                },
+                "version": {
+                  "anyOf": [
+                    {
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               },
               "required": [
                 "id",
                 "kind",
+                "version",
                 "name",
                 "status",
                 "active_version",
@@ -34211,6 +34780,7 @@
                 "preview",
                 "decision_id",
                 "outcome",
+                "case_state",
                 "safe_reason",
                 "actor_id",
                 "actor_display_name",
@@ -34505,6 +35075,11 @@
                   "active"
                 ],
                 "type": "string"
+              },
+              "version": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
               }
             },
             "required": [
@@ -34516,7 +35091,8 @@
               "candidate_version",
               "rule_hash",
               "rollout_percent",
-              "replay_state"
+              "replay_state",
+              "version"
             ],
             "type": "object"
           },
@@ -34569,6 +35145,11 @@
               "updated_at": {
                 "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
                 "type": "string"
+              },
+              "version": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
               }
             },
             "required": [
@@ -34581,7 +35162,8 @@
               "updated_at",
               "next_version",
               "rollout_percent",
-              "rule_hash"
+              "rule_hash",
+              "version"
             ],
             "type": "object"
           },
@@ -34633,6 +35215,11 @@
               "updated_at": {
                 "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
                 "type": "string"
+              },
+              "version": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
               }
             },
             "required": [
@@ -34643,7 +35230,8 @@
               "status",
               "baseline_version",
               "updated_at",
-              "next_version"
+              "next_version",
+              "version"
             ],
             "type": "object"
           }
@@ -68901,6 +69489,146 @@
         "x-timeout-ms": 3000
       }
     },
+    "/api/v1/identity/providers/center": {
+      "get": {
+        "operationId": "identity.providers.center.read",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityProvidersCenterReadOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "426": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "tags": [
+          "identity"
+        ],
+        "x-assurance-level": "session",
+        "x-audience": "console",
+        "x-cache-policy": "private",
+        "x-capability": "identity.providers.center.read",
+        "x-csrf-policy": "none",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "CONTRACT_VERSION_UNSUPPORTED",
+          "DEADLINE_EXCEEDED",
+          "INTERNAL_ERROR",
+          "PERMISSION_DENIED",
+          "RATE_LIMITED",
+          "SCOPE_DENIED",
+          "URL_SENSITIVE_DATA_FORBIDDEN",
+          "VALIDATION_FAILED"
+        ],
+        "x-expected-version": "none",
+        "x-idempotency-policy": "none",
+        "x-idempotency-scope": "none",
+        "x-maker-checker": false,
+        "x-origin-policy": "none",
+        "x-permission": "identity.provider.manage",
+        "x-rate-class": "read",
+        "x-requirements": [
+          "MVPGROUPSETTING",
+          "MVPMALLSETTING",
+          "MVPIDENTITY"
+        ],
+        "x-resource-parameter": null,
+        "x-resource-resolver": "none",
+        "x-response-mode": "json",
+        "x-risk": "elevated",
+        "x-scope-kinds": [
+          "platform",
+          "enterprise",
+          "mall"
+        ],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "console"
+        ],
+        "x-timeout-ms": 300
+      }
+    },
     "/api/v1/identity/session": {
       "delete": {
         "operationId": "identity.session.delete",
@@ -76047,6 +76775,9 @@
         "x-capability": "notification.announcements.manage",
         "x-csrf-policy": "required",
         "x-error-union": [
+          "ACTION_PROOF_INVALID",
+          "ACTION_PROOF_REPLAYED",
+          "ACTION_PROOF_REQUIRED",
           "AUTHENTICATION_REQUIRED",
           "AUTHORIZATION_DENIED",
           "CAPABILITY_DENIED",
@@ -76059,6 +76790,7 @@
           "IDEMPOTENCY_CONFLICT",
           "IDEMPOTENCY_KEY_REQUIRED",
           "INTERNAL_ERROR",
+          "MAKER_CHECKER_SEPARATION_REQUIRED",
           "ORIGIN_REQUIRED",
           "PERMISSION_DENIED",
           "RATE_LIMITED",
@@ -76073,7 +76805,7 @@
         "x-expected-version": "required",
         "x-idempotency-policy": "required",
         "x-idempotency-scope": "actor-operation-scope",
-        "x-maker-checker": false,
+        "x-maker-checker": true,
         "x-origin-policy": "sameorigin",
         "x-permission": "notification.announcement.manage",
         "x-rate-class": "critical",
@@ -76792,6 +77524,20 @@
                 }
               ]
             }
+          },
+          {
+            "in": "query",
+            "name": "channel",
+            "required": false,
+            "schema": {
+              "enum": [
+                "sms",
+                "email",
+                "wechat",
+                "inapp"
+              ],
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -77186,6 +77932,9 @@
         "x-capability": "notification.templates.manage",
         "x-csrf-policy": "required",
         "x-error-union": [
+          "ACTION_PROOF_INVALID",
+          "ACTION_PROOF_REPLAYED",
+          "ACTION_PROOF_REQUIRED",
           "AUTHENTICATION_REQUIRED",
           "AUTHORIZATION_DENIED",
           "CAPABILITY_DENIED",
@@ -77198,6 +77947,7 @@
           "IDEMPOTENCY_CONFLICT",
           "IDEMPOTENCY_KEY_REQUIRED",
           "INTERNAL_ERROR",
+          "MAKER_CHECKER_SEPARATION_REQUIRED",
           "ORIGIN_REQUIRED",
           "PERMISSION_DENIED",
           "RATE_LIMITED",
@@ -77212,7 +77962,7 @@
         "x-expected-version": "required",
         "x-idempotency-policy": "required",
         "x-idempotency-scope": "actor-operation-scope",
-        "x-maker-checker": false,
+        "x-maker-checker": true,
         "x-origin-policy": "sameorigin",
         "x-permission": "notification.template.manage",
         "x-rate-class": "critical",
@@ -80452,17 +81202,62 @@
           "content": {
             "application/json": {
               "schema": {
-                "additionalProperties": false,
-                "properties": {
-                  "mode": {
-                    "enum": [
-                      "full",
-                      "incremental"
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "action": {
+                        "const": "start",
+                        "type": "string"
+                      },
+                      "mode": {
+                        "enum": [
+                          "full",
+                          "incremental"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "action"
                     ],
-                    "type": "string"
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "action": {
+                        "const": "cancel",
+                        "type": "string"
+                      },
+                      "run": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "action",
+                      "run"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "action": {
+                        "const": "resume",
+                        "type": "string"
+                      },
+                      "run": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "action",
+                      "run"
+                    ],
+                    "type": "object"
                   }
-                },
-                "type": "object"
+                ]
               }
             }
           },
@@ -81267,6 +82062,19 @@
                 }
               ]
             }
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "enum": [
+                "supplier",
+                "brand",
+                "store"
+              ],
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -81431,6 +82239,10 @@
                 "additionalProperties": false,
                 "properties": {
                   "kind": {
+                    "enum": [
+                      "supplier",
+                      "brand"
+                    ],
                     "type": "string"
                   },
                   "name": {
@@ -81438,8 +82250,10 @@
                   },
                   "status": {
                     "enum": [
+                      "pending",
                       "active",
-                      "suspended"
+                      "suspended",
+                      "terminated"
                     ],
                     "type": "string"
                   }
@@ -83083,20 +83897,110 @@
           "content": {
             "application/json": {
               "schema": {
-                "additionalProperties": false,
-                "properties": {
-                  "member": {
-                    "type": "string"
-                  },
-                  "resource": {
-                    "type": "string"
+                "$defs": {
+                  "__schema0": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "items": {
+                          "$ref": "#/$defs/__schema0"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "additionalProperties": {
+                          "$ref": "#/$defs/__schema0"
+                        },
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      }
+                    ]
                   }
                 },
-                "required": [
-                  "member",
-                  "resource"
-                ],
-                "type": "object"
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "kind": {
+                        "const": "decision",
+                        "type": "string"
+                      },
+                      "member": {
+                        "type": "string"
+                      },
+                      "resource": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "member",
+                      "resource"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "kind": {
+                        "const": "publish",
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "policy": {
+                        "type": "string"
+                      },
+                      "rule": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "policy",
+                      "name",
+                      "rule"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "kind": {
+                        "const": "rollback",
+                        "type": "string"
+                      },
+                      "policy": {
+                        "type": "string"
+                      },
+                      "version": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "policy",
+                      "version"
+                    ],
+                    "type": "object"
+                  }
+                ]
               }
             }
           },
@@ -83332,20 +84236,48 @@
                     ]
                   }
                 },
-                "additionalProperties": false,
-                "properties": {
-                  "name": {
-                    "type": "string"
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "action": {
+                        "const": "publish",
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "rule": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "required": [
+                      "action",
+                      "name",
+                      "rule"
+                    ],
+                    "type": "object"
                   },
-                  "rule": {
-                    "$ref": "#/$defs/__schema0"
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "action": {
+                        "const": "rollback",
+                        "type": "string"
+                      },
+                      "version": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "action",
+                      "version"
+                    ],
+                    "type": "object"
                   }
-                },
-                "required": [
-                  "name",
-                  "rule"
-                ],
-                "type": "object"
+                ]
               }
             }
           },
@@ -88587,6 +89519,9 @@
         "x-capability": "risk.cases.review",
         "x-csrf-policy": "required",
         "x-error-union": [
+          "ACTION_PROOF_INVALID",
+          "ACTION_PROOF_REPLAYED",
+          "ACTION_PROOF_REQUIRED",
           "AUTHENTICATION_REQUIRED",
           "AUTHORIZATION_DENIED",
           "CAPABILITY_DENIED",
@@ -88599,6 +89534,7 @@
           "IDEMPOTENCY_CONFLICT",
           "IDEMPOTENCY_KEY_REQUIRED",
           "INTERNAL_ERROR",
+          "MAKER_CHECKER_SEPARATION_REQUIRED",
           "ORIGIN_REQUIRED",
           "PERMISSION_DENIED",
           "RATE_LIMITED",
@@ -88613,7 +89549,7 @@
         "x-expected-version": "required",
         "x-idempotency-policy": "required",
         "x-idempotency-scope": "actor-operation-scope",
-        "x-maker-checker": false,
+        "x-maker-checker": true,
         "x-origin-policy": "sameorigin",
         "x-permission": "risk.manage",
         "x-rate-class": "critical",
@@ -88990,6 +89926,9 @@
         "x-capability": "risk.policies.manage",
         "x-csrf-policy": "required",
         "x-error-union": [
+          "ACTION_PROOF_INVALID",
+          "ACTION_PROOF_REPLAYED",
+          "ACTION_PROOF_REQUIRED",
           "AUTHENTICATION_REQUIRED",
           "AUTHORIZATION_DENIED",
           "CAPABILITY_DENIED",
@@ -89002,6 +89941,7 @@
           "IDEMPOTENCY_CONFLICT",
           "IDEMPOTENCY_KEY_REQUIRED",
           "INTERNAL_ERROR",
+          "MAKER_CHECKER_SEPARATION_REQUIRED",
           "ORIGIN_REQUIRED",
           "PERMISSION_DENIED",
           "RATE_LIMITED",
@@ -89016,7 +89956,7 @@
         "x-expected-version": "required",
         "x-idempotency-policy": "required",
         "x-idempotency-scope": "actor-operation-scope",
-        "x-maker-checker": false,
+        "x-maker-checker": true,
         "x-origin-policy": "sameorigin",
         "x-permission": "risk.manage",
         "x-rate-class": "critical",

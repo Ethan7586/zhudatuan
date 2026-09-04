@@ -19,20 +19,7 @@ import type { PgAgentRepository } from './PgAgentRepository';
 import type { PgMessageRepository } from './PgMessageRepository';
 import type { PgSupportConfigRepository } from './PgSupportConfigRepository';
 import type { PgSupportEventRepository } from './PgSupportEventRepository';
-
-interface PreparedCase {
-  readonly ticket: string;
-  readonly conversation: string;
-  readonly scope: string;
-  readonly subject: string;
-  readonly priority: TicketPriority;
-  readonly channel: ConversationChannel;
-  readonly order: string | null;
-  readonly referenceType: 'benefitlot' | null;
-  readonly reference: string | null;
-  readonly skill: string;
-  readonly message: null | Readonly<{ id: string; ciphertext: string; fingerprint: string; keyVersion: string }>;
-}
+import { supportBoolean as booleanValue, supportCaseDto as caseDto, supportChoice as choice, supportEventPayload as eventPayload, supportInstant as instant, supportMessageTargetSql as messageTargetSql, supportScalar as scalar, supportStringList as stringList, supportTicketDto as ticketDto, supportTicketPriority as ticketPriority, supportTicketState as ticketState, SUPPORT_CHANNELS as channels, SUPPORT_PRIORITIES as priorities, type PreparedSupportCase as PreparedCase, type SupportCaseReadRow as CaseReadRow, type SupportTargetRow as TargetRow, type SupportTicketOutputRow as TicketOutputRow } from './TicketRecord';
 
 export class PgTicketRepository implements CaseRepository, TicketMessageStore {
   private readonly transactions = new PgTransactionAccess();
@@ -250,28 +237,3 @@ export class PgTicketRepository implements CaseRepository, TicketMessageStore {
     if (!this.support || !this.agents || !this.configuration || !this.messages || !this.events) throw new Error('SUPPORT_TICKET_DEPENDENCIES_REQUIRED');
   }
 }
-
-interface TargetRow { readonly id: string; readonly conversation_id: string; readonly scope_id: string; readonly priority: TicketPriority; readonly state: TicketState; readonly version: number; readonly assigned_agent_id: string | null; readonly member_id: string | null; readonly conversation_version: number }
-interface TicketOutputRow { readonly id: string; readonly scope_id: string; readonly priority: TicketPriority; readonly state: TicketState; readonly assigned_agent_id: string | null; readonly response_due_at: string; readonly resolution_due_at: string; readonly created_at: string; readonly updated_at: string; readonly version: number; readonly conversation_id: string; readonly skill: string }
-interface CaseReadRow extends TicketOutputRow { readonly member_id: string | null; readonly order_id: string | null; readonly channel: ConversationChannel; readonly subject: string; readonly reference_type: string | null; readonly reference_id: string | null; readonly unread_count: number; readonly sla_risk: 'normal' | 'risk' | 'overdue' }
-
-function messageTargetSql(lock: boolean): string {
-  return `select ticket.id,ticket.conversation_id,ticket.scope_id,ticket.priority,ticket.state,ticket.version,
-  ticket.assigned_agent_id,conversation.member_id,conversation.version conversation_version
-  from support.ticket ticket join support.conversation conversation on conversation.id=ticket.conversation_id
-  where ticket.id=$1 and ticket.scope_id=any($2::text[]) and (not $4::boolean or conversation.member_id=$3)
-  ${lock ? 'for update of ticket,conversation' : ''}`;
-}
-function ticketDto(row: TicketOutputRow) { return { ...row, version: Number(row.version), response_due_at: instant(row.response_due_at), resolution_due_at: instant(row.resolution_due_at), created_at: instant(row.created_at), updated_at: instant(row.updated_at) }; }
-function caseDto(row: CaseReadRow) { return { ...ticketDto(row), member_id: row.member_id, order_id: row.order_id, channel: row.channel, subject: row.subject, reference_type: row.reference_type, reference_id: row.reference_id, unread_count: Number(row.unread_count), sla_risk: row.sla_risk }; }
-function instant(value: string | Date): string { return new Date(value).toISOString(); }
-function choice(value: unknown, values: readonly string[], code: string): string { if (typeof value !== 'string' || !values.includes(value)) throw new Error(code); return value; }
-function ticketState(value: unknown): TicketState { return choice(value, states, 'SUPPORT_STATE_INVALID') as TicketState; }
-function ticketPriority(value: unknown): TicketPriority { return choice(value, priorities, 'SUPPORT_PRIORITY_INVALID') as TicketPriority; }
-function scalar(value: unknown): string | null { return typeof value === 'string' && value.length > 0 ? value : null; }
-function stringList(value: unknown): string[] | null { if (value === undefined) return null; const values = Array.isArray(value) ? value : [value]; return values.map(String); }
-function booleanValue(value: unknown): boolean | null { if (value === undefined) return null; if (value === true || value === 'true') return true; if (value === false || value === 'false') return false; throw new DomainError('VALIDATION_FAILED'); }
-function eventPayload(ticketId: string, conversationId: string, memberId: string | null, extra: Readonly<Record<string, unknown>>) { return { ticketId, conversationId, memberId, ...extra }; }
-const priorities = ['low', 'normal', 'high', 'urgent'] as const;
-const states = ['open', 'assigned', 'waiting', 'resolved', 'closed'] as const;
-const channels = ['inapp', 'wechat', 'email', 'sms'] as const;

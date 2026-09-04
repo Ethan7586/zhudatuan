@@ -1,5 +1,6 @@
 import type { AuthTarget } from '@shop/config/client';
 import { ClientError } from '@shop/sdk';
+import { hasControlCharacter } from './TextSafety';
 
 export interface AuthRequest {
   readonly target: AuthTarget;
@@ -45,7 +46,7 @@ function single(query: URLSearchParams, key: string): string | undefined {
 function safeValue(value: string | undefined): string | undefined {
   const normalized = value?.trim();
   if (!normalized) return undefined;
-  if (normalized.length > 2048 || /[\u0000-\u001f\u007f]/.test(normalized)) throw new ClientError('RETURN_TARGET_INVALID');
+  if (normalized.length > 2048 || hasControlCharacter(normalized)) throw new ClientError('RETURN_TARGET_INVALID');
   return normalized;
 }
 

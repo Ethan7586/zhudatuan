@@ -1,0 +1,40 @@
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofile {
+  display: flex;
+  min-height: 57px;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  border-top: 1px solid color-mix(in srgb, var(--sw-surface) 10%, transparent);
+  background: color-mix(in srgb, var(--sw-brand-ink) 20%, transparent);
+  padding: 12px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofileavatar {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--sw-surface) 20%, transparent);
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sw-brand), var(--sw-brand));
+  color: var(--sw-surface);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofilecopy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofilecopy strong,
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofilecopy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofilecopy strong { color: var(--sw-surface); font-size: 12px; font-weight: 600; }
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofilecopy small { color: var(--sw-disabled); font-size: 10px; }

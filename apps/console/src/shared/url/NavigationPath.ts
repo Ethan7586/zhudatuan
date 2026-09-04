@@ -13,7 +13,7 @@ interface NavigationNode extends NavigationRoute {
 }
 
 export function navigationPath(node: NavigationRoute, scope: NavigationScope): string {
-  return node.route.replace(':scopeKind', encodeURIComponent(scope.kind)).replace(':scopeId', encodeURIComponent(scope.id));
+  return fillRouteTemplate(node.route, { scopeKind: scope.kind, scopeId: scope.id });
 }
 
 export function flattenNavigation(nodes: readonly NavigationNode[]): readonly NavigationNode[] {
@@ -23,3 +23,4 @@ export function flattenNavigation(nodes: readonly NavigationNode[]): readonly Na
 export function flattenEnabledNavigation(nodes: readonly NavigationNode[]): readonly NavigationNode[] {
   return Object.freeze(nodes.flatMap((node) => (node.disabled ? [] : [node, ...flattenEnabledNavigation(node.children)])));
 }
+import { fillRouteTemplate } from '../../generated/RouteBinding';

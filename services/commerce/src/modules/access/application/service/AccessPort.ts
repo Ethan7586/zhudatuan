@@ -3,7 +3,7 @@ import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { IdentityAccessPort, IdentityMembership } from '../../public/IdentityAccessPort';
 import type { ImportedMembership, MemberImportAccessPort } from '../../public/MemberImportAccessPort';
 import type { AccessVersionService } from './AccessVersionService';
-import type { AccessMember, MemberAccessPort } from '../../public/MemberAccessPort';
+import type { AccessMember, MemberAccessPort, MemberProfileProjection } from '../../public/MemberAccessPort';
 import type { AccessRepository, ActiveMembershipReference } from '../port/AccessRepository';
 export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberImportAccessPort {
   constructor(
@@ -74,6 +74,9 @@ export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberI
     const row = await this.repository.memberProfile(context, membership);
     if (!row) throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
     return mapAccessMember(row);
+  }
+  syncProfile(context: WriteTransactionContext, profile: MemberProfileProjection): Promise<void> {
+    return this.repository.upsertMemberProfile(context, profile);
   }
   async setEmployeeNumber(context: WriteTransactionContext, membership: string, employee: string | null): Promise<void> {
     if (!(await this.repository.setEmployeeNumber(context, membership, employee))) throw new Error('MEMBERSHIP_NOT_FOUND');

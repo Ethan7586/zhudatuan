@@ -1,8 +1,8 @@
 import type { AuthTarget } from '@shop/config/client';
 import type { FailureView } from '@shop/presentation';
-import type { Bootstrap, LoginMethod } from '../../bootstrap/model/Bootstrap';
-import type { EnrollmentState } from '../../invitation/model/Enrollment';
-import type { Membership } from '../../membership/model/Membership';
+import type { Bootstrap, LoginMethod } from '../../bootstrap';
+import type { EnrollmentState } from '../../invitation';
+import type { Membership } from '../../membership';
 
 interface BaseState {
   readonly target: AuthTarget;

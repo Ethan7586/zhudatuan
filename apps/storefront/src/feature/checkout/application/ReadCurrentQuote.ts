@@ -1,11 +1,9 @@
 import type { StorefrontSession } from '../../../entity/session';
-import { CheckoutGateway } from '../infrastructure/CheckoutGateway';
-import { mapQuote } from '../infrastructure/CheckoutMapper';
+import type { CheckoutPort } from '../public/CheckoutPort';
 
 export class ReadCurrentQuote {
-  constructor(private readonly gateway: Pick<CheckoutGateway, 'current'>) {}
+  constructor(private readonly gateway: Pick<CheckoutPort, 'current'>) {}
   async execute(session: StorefrontSession, signal?: AbortSignal) {
-    const value = await this.gateway.current(session, signal);
-    return value.quote ? mapQuote(value.quote) : null;
+    return this.gateway.current(session, signal);
   }
 }

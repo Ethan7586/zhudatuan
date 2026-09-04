@@ -1,6 +1,6 @@
 import type { ReportingPort } from '../../application/port/ReportingPort';
 import type { ExportJob, ExportReport } from '../../domain/model/ExportJob';
-import type { CockpitSummary, Metric, MetricQuery, MetricRow, ReportPeriod } from '../../domain/model/Metric';
+import type { CockpitProduct, CockpitSummary, Metric, MetricQuery, MetricRow, ReportPeriod } from '../../domain/model/Metric';
 import type { OrderProjection, ProjectionEvent } from '../../domain/model/Projection';
 import { PgReportingExportRepository } from './PgReportingExportRepository';
 import { cockpitSummary, exportJob, exportSelect, integer, metricRow, object, required, text, utcTime, type ExportRecord, type MetricRecord } from './ReportingRecord';
@@ -8,8 +8,12 @@ import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 
 export class PgReportingRepository extends PgReportingExportRepository implements ReportingPort {
   async cockpit(scope: string, period: ReportPeriod, application: string | null): Promise<CockpitSummary> {
-    const result = await this.database.query<{ summary: CockpitSummary }>('select reporting.cockpit($1,$2,$3) summary', [scope, period, application]);
-    return cockpitSummary(required(result.rows[0], 'REPORT_COCKPIT_FAILED').summary);
+    const result = await this.database.query<{ summary: CockpitSummary; products: readonly CockpitProduct[] }>(
+      'select reporting.cockpit($1,$2,$3) summary,reporting.cockpitproducts($1,$2,$3) products',
+      [scope, period, application]
+    );
+    const row = required(result.rows[0], 'REPORT_COCKPIT_FAILED');
+    return cockpitSummary(row.summary, row.products);
   }
 
   async metrics(query: MetricQuery): Promise<readonly MetricRow[]> {

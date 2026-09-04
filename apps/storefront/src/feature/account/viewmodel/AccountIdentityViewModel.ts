@@ -4,7 +4,7 @@ import { useSession } from '../../../entity/session/viewmodel/SessionContext';
 import { StorefrontQuery } from '../../../shared/api/Query';
 import { storefrontAuthHref } from '../../../config/storefrontAuth';
 import { benefitBalances } from '../../benefit/public/index';
-import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL, mapAddresses } from '../infrastructure/AccountMapper';
+import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from '../model/ProfileDefaults';
 import { ReadProfile } from '../application/ReadProfile';
 import { SwitchMembership } from '../application/SwitchMembership';
 import { ChangeFavorite } from '../application/ChangeFavorite';
@@ -16,13 +16,12 @@ export function useAccountIdentity() {
   const session = useSession();
   const dependencies = useDependencies();
   const client = useQueryClient();
-  const scope = session.scope || 'guest';
   const profileReader = useRef(new ReadProfile(dependencies.account));
   const membershipCommand = useRef(new SwitchMembership(dependencies.account));
   const favoriteCommand = useRef(new ChangeFavorite(dependencies.account));
   const addressCommand = useRef(new ChangeAddress(dependencies.account));
   const membershipQuery = useQuery({
-    queryKey: StorefrontQuery.memberships(scope),
+    queryKey: StorefrontQuery.memberships(session.query.scoped),
     queryFn: ({ signal }) => dependencies.account.memberships(session.session!, signal),
     enabled: session.status === 'authenticated',
   });
@@ -62,7 +61,7 @@ export function useAccountIdentity() {
     [membershipQuery.data]
   );
   const profileQuery = useQuery({
-    queryKey: StorefrontQuery.profile(scope),
+    queryKey: StorefrontQuery.profile(session.query.scoped),
     queryFn: async ({ signal }) => profileReader.current.execute(session.session!, benefitBalances(await dependencies.benefit.accounts(session.session!, signal)), signal),
     enabled: session.status === 'authenticated',
   });
@@ -79,12 +78,12 @@ export function useAccountIdentity() {
     [mall, profileQuery.data]
   );
   const addressQuery = useQuery({
-    queryKey: StorefrontQuery.addresses(scope),
-    queryFn: async ({ signal }) => mapAddresses(await dependencies.account.addresses(session.session!, signal)),
+    queryKey: StorefrontQuery.addresses(session.query.scoped),
+    queryFn: ({ signal }) => dependencies.account.addresses(session.session!, signal),
     enabled: session.status === 'authenticated',
   });
   const favoriteQuery = useQuery({
-    queryKey: StorefrontQuery.favorites(scope),
+    queryKey: StorefrontQuery.favorites(session.query.scoped),
     queryFn: ({ signal }) => dependencies.account.favorites(session.session!, signal),
     enabled: session.status === 'authenticated',
   });
@@ -104,18 +103,18 @@ export function useAccountIdentity() {
     if (!session.session) return void window.location.assign(storefrontAuthHref());
     void favoriteCommand.current
       .execute(session.session, listingId, !favorites.includes(listingId))
-      .then(() => client.invalidateQueries({ queryKey: StorefrontQuery.favorites(scope) }))
+      .then(() => client.invalidateQueries({ queryKey: StorefrontQuery.favorites(session.query.scoped) }))
       .catch(() => session.showToast('收藏状态保存失败，请稍后重试', 'error'));
   };
   const saveAddress = async (addressId: string | null, address: AddressDraft, expectedVersion = 0) => {
     if (!session.session) throw new Error('AUTHENTICATION_REQUIRED');
     await addressCommand.current.save(session.session, addressId ?? `address:${crypto.randomUUID()}`, address, expectedVersion);
-    await client.invalidateQueries({ queryKey: StorefrontQuery.addresses(scope) });
+    await client.invalidateQueries({ queryKey: StorefrontQuery.addresses(session.query.scoped) });
   };
   const removeAddress = async (addressId: string, expectedVersion: number) => {
     if (!session.session) throw new Error('AUTHENTICATION_REQUIRED');
     await addressCommand.current.remove(session.session, addressId, expectedVersion);
-    await client.invalidateQueries({ queryKey: StorefrontQuery.addresses(scope) });
+    await client.invalidateQueries({ queryKey: StorefrontQuery.addresses(session.query.scoped) });
   };
   return Object.freeze({
     user,

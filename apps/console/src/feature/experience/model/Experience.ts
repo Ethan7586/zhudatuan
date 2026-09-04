@@ -1,3 +1,14 @@
+import {
+  OP_EXPERIENCE_APPLICATIONS_COPY,
+  OP_EXPERIENCE_APPLICATIONS_CREATE,
+  OP_EXPERIENCE_APPLICATIONS_DETAIL_READ,
+  OP_EXPERIENCE_APPLICATIONS_READ,
+  OP_EXPERIENCE_APPLICATIONS_UPDATE,
+  OP_EXPERIENCE_VERSIONS_PUBLISH,
+  OP_EXPERIENCE_VERSIONS_RESTORE,
+  OP_EXPERIENCE_VERSIONS_SAVE,
+  OP_EXPERIENCE_VERSIONS_VALIDATE,
+} from '@shop/contract/ids';
 import type { OperationId } from '@shop/contract';
 import type { ContractJsonObject } from '@shop/contract/schema';
 
@@ -74,15 +85,46 @@ export interface ExperienceDetail extends Experience {
   readonly history: readonly ExperienceHistory[];
 }
 
-export interface ApplicationDraft { readonly code: string; readonly publicSlug: string; readonly name: string }
-export interface ApplicationUpdate { readonly name: string; readonly status: ExperienceStatus }
-export interface VersionDraft { readonly application: string; readonly configuration: ExperienceDocument; readonly reason: string }
+export interface ApplicationDraft {
+  readonly code: string;
+  readonly publicSlug: string;
+  readonly name: string;
+}
+export interface ApplicationUpdate {
+  readonly name: string;
+  readonly status: ExperienceStatus;
+}
+export interface VersionDraft {
+  readonly application: string;
+  readonly configuration: ExperienceDocument;
+  readonly reason: string;
+}
 
-export interface VersionValidation { readonly id: string; readonly application_id: string; readonly validation_state: 'valid' | 'invalid' }
-export interface PublicationReceipt { readonly id: string; readonly application_id: string; readonly version_id: string; readonly pool_id: string; readonly state: 'scheduled' | 'active' | 'retired' | 'failed'; readonly effective_at: string; readonly retired_at: string | null; readonly published_by: string }
+export interface VersionValidation {
+  readonly id: string;
+  readonly application_id: string;
+  readonly validation_state: 'valid' | 'invalid';
+}
+export interface PublicationReceipt {
+  readonly id: string;
+  readonly application_id: string;
+  readonly version_id: string;
+  readonly pool_id: string;
+  readonly state: 'scheduled' | 'active' | 'retired' | 'failed';
+  readonly effective_at: string;
+  readonly retired_at: string | null;
+  readonly published_by: string;
+}
 export type ExperienceAction = Readonly<{ kind: 'create' }> | Readonly<{ kind: 'copy' | 'manage' | 'design'; record: Experience }>;
 
 export const experienceOperations = Object.freeze({
-  create: 'experience.applications.create', copy: 'experience.applications.copy', readDetail: 'experience.applications.detail.read', read: 'experience.applications.read', update: 'experience.applications.update',
-  save: 'experience.versions.save', validate: 'experience.versions.validate', publish: 'experience.versions.publish', restore: 'experience.versions.restore',
+  create: OP_EXPERIENCE_APPLICATIONS_CREATE,
+  copy: OP_EXPERIENCE_APPLICATIONS_COPY,
+  readDetail: OP_EXPERIENCE_APPLICATIONS_DETAIL_READ,
+  read: OP_EXPERIENCE_APPLICATIONS_READ,
+  update: OP_EXPERIENCE_APPLICATIONS_UPDATE,
+  save: OP_EXPERIENCE_VERSIONS_SAVE,
+  validate: OP_EXPERIENCE_VERSIONS_VALIDATE,
+  publish: OP_EXPERIENCE_VERSIONS_PUBLISH,
+  restore: OP_EXPERIENCE_VERSIONS_RESTORE,
 } satisfies Readonly<Record<string, OperationId>>);

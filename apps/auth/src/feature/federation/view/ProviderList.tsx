@@ -21,19 +21,18 @@ export function ProviderList({
   failed: boolean;
   onSelect: (provider: Provider) => void;
 }>) {
-  if (loading) return <p className="providerstate" role="status">正在加载企业登录方式…</p>;
+  if (loading)
+    return (
+      <p className="providerstate" role="status">
+        正在加载企业登录方式…
+      </p>
+    );
   if (failed) return null;
   if (providers.length === 0) return <p className="providerstate">当前没有配置企业单点登录，可继续使用上方账号方式。</p>;
   return (
     <div className="providerlist" aria-label="企业登录方式">
       {providers.map((provider) => (
-        <button
-          key={provider.id}
-          type="button"
-          disabled={busy}
-          onClick={() => onSelect(provider)}
-          className="providerbutton"
-        >
+        <button key={provider.id} type="button" disabled={busy} onClick={() => onSelect(provider)} className="providerbutton">
           <Building2 aria-hidden="true" />
           {LABELS[provider.type]}
         </button>

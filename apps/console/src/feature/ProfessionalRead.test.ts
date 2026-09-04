@@ -3,15 +3,15 @@ import { HttpResponse, delay, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
-import { readAccess } from './settings/access/AccessQuery';
+import { AccessGateway } from './settings/access/infrastructure/AccessGateway';
 import { ExperienceGateway } from './experience/infrastructure/ExperienceGateway';
 import { ChannelGateway } from './channel/infrastructure/ChannelGateway';
 import { FinanceGateway } from './finance/infrastructure/FinanceGateway';
-import { readImport } from './product/importing/ImportQuery';
-import { readMembers } from './settings/member/MemberQuery';
-import { readNotificationRecords } from './settings/notification/NotificationQuery';
+import { TaskGateway } from './task/infrastructure/TaskGateway';
+import { MemberGateway } from './settings/member/infrastructure/MemberGateway';
+import { NotificationGateway } from './settings/notification/infrastructure/NotificationGateway';
 import { OrderGateway } from './order/infrastructure/OrderGateway';
-import { readQualifications } from './settings/qualification/QualificationQuery';
+import { QualificationGateway } from './settings/qualification/infrastructure/QualificationGateway';
 import { ReportingGateway } from './reporting/infrastructure/ReportingGateway';
 import { SupportGateway } from './support/infrastructure/SupportGateway';
 import { appConfig } from '../shared/config/AppConfig';
@@ -25,6 +25,11 @@ const channel = new ChannelGateway(appConfig.apiBaseUrl);
 const orders = new OrderGateway(appConfig.apiBaseUrl);
 const experience = new ExperienceGateway(appConfig.apiBaseUrl);
 const finance = new FinanceGateway(appConfig.apiBaseUrl);
+const access = new AccessGateway(appConfig.apiBaseUrl);
+const members = new MemberGateway(appConfig.apiBaseUrl);
+const tasks = new TaskGateway(appConfig.apiBaseUrl);
+const notifications = new NotificationGateway(appConfig.apiBaseUrl);
+const qualifications = new QualificationGateway(appConfig.apiBaseUrl);
 const empty = { items: [], count: 0 };
 const importJob = {
   id: 'job:1',
@@ -77,16 +82,16 @@ describe('Console professional named reads', () => {
       ...(['sales', 'products', 'malls', 'categories', 'channels', 'voucher'] as const).map((view) => reporting.read(context, { view, period: '30days' }, signal)),
       support.queue(context, { limit: 50 }, signal),
       support.conversation(context, 'case:1', undefined, signal),
-      readAccess(context, undefined, signal),
-      readMembers(context, undefined, signal),
-      readQualifications(context, undefined, signal),
-      readNotificationRecords(context, 'templates', undefined, signal),
-      readNotificationRecords(context, 'announcements', undefined, signal),
+      access.read(context, undefined, signal),
+      members.read(context, undefined, signal),
+      qualifications.read(context, undefined, signal),
+      notifications.readTemplates(context, undefined, undefined, signal),
+      notifications.readAnnouncements(context, undefined, signal),
       ...(['connections', 'syncs', 'operations'] as const).map((view) => channel.read(context, view, undefined, signal)),
       ...(['entries', 'statements', 'reconciliations', 'settlements', 'withdrawals', 'invoices'] as const).map((section) => finance.section(context, section, undefined, signal)),
-      readImport(context, 'member', 'job:1', signal),
-      readImport(context, 'catalog', 'job:1', signal),
-      readImport(context, 'voucher', 'job:1', signal),
+      tasks.read(context, 'member', 'job:1', signal),
+      tasks.read(context, 'catalog', 'job:1', signal),
+      tasks.read(context, 'voucher', 'job:1', signal),
       orders.order(context, 'order:1', signal),
     ]);
     expect([...requests].sort()).toEqual([...expectedPaths].sort());

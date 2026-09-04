@@ -9,13 +9,14 @@ import { CasesReviewHandler } from './application/handler/CasesReviewHandler';
 import { PgRiskAdministrationRepository } from './infrastructure/persistence/PgRiskAdministrationRepository';
 import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
 import { PgJobScheduler } from '../../adapter/database/PgJobScheduler';
+import { MEMBER_READ_PORT } from '../member/public';
 
 export const RiskModule = defineModule(Manifest, {
   jobs: createJobs,
-  handlers: () => {
+  handlers: (context) => {
     const transactions = new PgTransactionAccess();
     const risks = new PgRiskAdministrationRepository(transactions);
-    return [new CenterReadHandler(risks), new PoliciesManageHandler(risks, new PgJobScheduler(transactions)), new CasesReviewHandler(risks)];
+    return [new CenterReadHandler(risks, context.ports.get(MEMBER_READ_PORT)), new PoliciesManageHandler(risks, new PgJobScheduler(transactions)), new CasesReviewHandler(risks)];
   },
   ports: [{ token: CHECKOUT_RISK_PORT, value: new CheckoutRisk() }],
 });

@@ -5,10 +5,7 @@ import { mapMemberships } from './infrastructure/AccountMapper';
 describe('membership mapping', () => {
   it('keeps the server-selected membership and access version authoritative', () => {
     const input: OperationOutputFor<'identity.memberships.read'> = {
-      items: [
-        membership('membership:one', 'mall:one', '一号商城', true, 8),
-        membership('membership:two', 'mall:two', '二号商城', false, 3),
-      ],
+      items: [membership('membership:one', 'mall:one', '一号商城', true, 8), membership('membership:two', 'mall:two', '二号商城', false, 3)],
       count: 2,
     };
     const memberships = mapMemberships(input);

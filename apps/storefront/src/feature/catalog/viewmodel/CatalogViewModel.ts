@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useCartCommand } from '../../cart/public/index';
+import { routePath, ROUTES } from '../../../generated/RouteBinding';
+import { useCartCommand } from '../../cart';
 import { useCatalogState } from './CatalogState';
 import { useCatalogFilters } from './CatalogFilterViewModel';
 
@@ -35,8 +36,8 @@ export function useCatalogViewModel() {
     filterOpen,
     actions: Object.freeze({
       toggleFilters: () => setFilterOpen((value) => !value),
-      openProduct: (id: string) => void navigate(`/products/${encodeURIComponent(id)}`),
-      home: () => void navigate('/'),
+      openProduct: (id: string) => void navigate(routePath('storeproduct', { productId: id })),
+      home: () => void navigate(ROUTES.storehome),
     }),
   });
 }

@@ -31,7 +31,7 @@ export function useProductActionViewModel(action: ProductAction | null, context:
   const [status, setStatus] = useState<ProductStatus>(action?.kind === 'edit' ? action.status : 'active');
   const [amount, setAmount] = useState('99.00');
   const actionkey = action === null ? 'closed' : `${action.kind}:${listing?.id ?? 'new'}`;
-  const identity = useMemo(() => crypto.randomUUID(), [actionkey]);
+  const identity = useMemo(() => Object.freeze({ actionkey, value: crypto.randomUUID() }).value, [actionkey]);
   const mutation = useMutation({
     mutationKey: ['productaction', actionkey],
     mutationFn: async () => {
@@ -45,7 +45,25 @@ export function useProductActionViewModel(action: ProductAction | null, context:
     onSuccess: onDone,
   });
   const state = actionState({ pending: mutation.isPending, commandId: identity, ...(mutation.data === undefined ? {} : { result: mutation.data }), ...(mutation.error === null ? {} : { error: mutation.error }) });
-  return Object.freeze({ action, state, title, category, type, status, amount, submitting: mutation.isPending, ...(mutation.error === null ? {} : { error: presentError(mutation.error).message }), setTitle, setCategory, setType, setStatus, setAmount, submit: () => { if (!mutation.isPending) mutation.mutate(); } });
+  return Object.freeze({
+    action,
+    state,
+    title,
+    category,
+    type,
+    status,
+    amount,
+    submitting: mutation.isPending,
+    ...(mutation.error === null ? {} : { error: presentError(mutation.error).message }),
+    setTitle,
+    setCategory,
+    setType,
+    setStatus,
+    setAmount,
+    submit: () => {
+      if (!mutation.isPending) mutation.mutate();
+    },
+  });
 }
 
 export function command(context: ConsoleContext, identity = crypto.randomUUID()): ProductCommand {

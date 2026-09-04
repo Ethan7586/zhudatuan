@@ -12,5 +12,29 @@ const bindings = RouteRegistry.routes().map((route) => Object.freeze({ ...route,
 
 export function Router() {
   const shell = useShellViewModel();
-  return <StorefrontShell viewmodel={shell}><Scroll/><Suspense fallback={<RouteLoading/>}><Routes>{bindings.map(({ routeid, protected: guarded, Component }) => <Route key={routeid} path={ROUTES[routeid]} element={guarded ? <Guard><Component/></Guard> : <Component/>}/>) }<Route path="*" element={<Navigate replace to={ROUTES.storehome}/>} /></Routes></Suspense></StorefrontShell>;
+  return (
+    <StorefrontShell viewmodel={shell}>
+      <Scroll />
+      <Suspense fallback={<RouteLoading />}>
+        <Routes>
+          {bindings.map(({ routeid, protected: guarded, Component }) => (
+            <Route
+              key={routeid}
+              path={ROUTES[routeid]}
+              element={
+                guarded ? (
+                  <Guard>
+                    <Component />
+                  </Guard>
+                ) : (
+                  <Component />
+                )
+              }
+            />
+          ))}
+          <Route path="*" element={<Navigate replace to={ROUTES.storehome} />} />
+        </Routes>
+      </Suspense>
+    </StorefrontShell>
+  );
 }

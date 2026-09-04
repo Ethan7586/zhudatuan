@@ -2154,7 +2154,7 @@ export const PERMISSION_CATALOG = Object.freeze([
       "supplier",
       "brand"
     ],
-    "makerChecker": false,
+    "makerChecker": true,
     "description": "notification.announcement.manage"
   },
   {
@@ -2258,7 +2258,7 @@ export const PERMISSION_CATALOG = Object.freeze([
       "supplier",
       "brand"
     ],
-    "makerChecker": false,
+    "makerChecker": true,
     "description": "notification.template.manage"
   },
   {
@@ -3151,7 +3151,7 @@ export const PERMISSION_CATALOG = Object.freeze([
       "supplier",
       "brand"
     ],
-    "makerChecker": false,
+    "makerChecker": true,
     "description": "risk.manage"
   },
   {

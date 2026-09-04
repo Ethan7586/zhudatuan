@@ -27,14 +27,7 @@ export function MembershipList({
           const consoleTarget = membership.target === 'console';
           const initial = membership.organizationName.trim().slice(0, 1) || '福';
           return (
-            <button
-              key={membership.id}
-              type="button"
-              disabled={busy}
-              onClick={() => onSelect(membership)}
-              className="membershipchoice"
-              data-target={membership.target}
-            >
+            <button key={membership.id} type="button" disabled={busy} onClick={() => onSelect(membership)} className="membershipchoice" data-target={membership.target}>
               <span className="membershipidentity">
                 <span className="membershiplogo" aria-hidden="true">
                   {membership.logoUrl ? <img src={membership.logoUrl} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : initial}
@@ -45,7 +38,10 @@ export function MembershipList({
                     {consoleTarget ? <ShieldCheck aria-hidden="true" /> : <Store aria-hidden="true" />}
                     {membership.roleLabel} · {consoleTarget ? '运营后台' : '福利商城'}
                   </span>
-                  <span className="membershipperson"><Building2 aria-hidden="true" />{membership.displayName}</span>
+                  <span className="membershipperson">
+                    <Building2 aria-hidden="true" />
+                    {membership.displayName}
+                  </span>
                 </span>
               </span>
               <ArrowRight className="membershiparrow" aria-hidden="true" />

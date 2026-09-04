@@ -99,8 +99,19 @@ function ReconciliationRow({
       {visible.has('time') ? <td>{formatTime(row.updatedAt)}</td> : null}
       <td>
         {canOpen ? (
-          <button className="financeviewbutton" type="button" onClick={(event) => { event.stopPropagation(); onOpen(); }}>查看差异</button>
-        ) : <span className="financenodifference">无差异</span>}
+          <button
+            className="financeviewbutton"
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onOpen();
+            }}
+          >
+            查看差异
+          </button>
+        ) : (
+          <span className="financenodifference">无差异</span>
+        )}
       </td>
     </tr>
   );
@@ -141,9 +152,17 @@ export function FinancePagination({
         </select>
       </label>
       <div>
-        {hasCursor ? <button type="button" aria-label="返回第一页" onClick={() => onCursor()}><FinanceIcon name="arrowLeft" /></button> : null}
+        {hasCursor ? (
+          <button type="button" aria-label="返回第一页" onClick={() => onCursor()}>
+            <FinanceIcon name="arrowLeft" />
+          </button>
+        ) : null}
         <span>当前页</span>
-        {page.nextCursor === undefined ? null : <button type="button" aria-label="下一页" onClick={() => onCursor(page.nextCursor)}><FinanceIcon name="arrowRight" /></button>}
+        {page.nextCursor === undefined ? null : (
+          <button type="button" aria-label="下一页" onClick={() => onCursor(page.nextCursor)}>
+            <FinanceIcon name="arrowRight" />
+          </button>
+        )}
       </div>
     </footer>
   );

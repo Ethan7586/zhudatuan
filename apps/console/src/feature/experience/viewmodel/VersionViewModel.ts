@@ -20,8 +20,13 @@ export function useVersionViewModel(action: ExperienceAction | null, context: Co
   const actionId = record?.id ?? 'closed';
   useEffect(() => {
     const content = experienceContent(detail.data, record);
-    setTitle(content.title); setAnnouncement(content.announcement); setProof(''); setConfirmed(false); setIdentity(dependencies.createIdentity()); setReceipt(undefined);
-  }, [actionId, detail.data?.head?.id, dependencies, record]);
+    setTitle(content.title);
+    setAnnouncement(content.announcement);
+    setProof('');
+    setConfirmed(false);
+    setIdentity(dependencies.createIdentity());
+    setReceipt(undefined);
+  }, [actionId, dependencies, detail.data, record]);
   const mutation = useMutation({
     mutationFn: async (input: Readonly<{ record: Experience; title: string; announcement: string; proof: string; identity: string }>) => {
       const saved = await dependencies.save.execute(context, { application: input.record.id, configuration: createExperienceDocument(input.record.id, input.title, input.announcement), reason: '控制台商城装修发布' }, input.identity);
@@ -45,18 +50,50 @@ export function useVersionViewModel(action: ExperienceAction | null, context: Co
       await dependencies.readDetail.execute(context, input.record.id);
       return publication;
     },
-    onSuccess: async (publication, input) => { setReceipt(Object.freeze({ requestId: input.identity, reference: publication.id, occurredAt: publication.effective_at, message: '历史装修版本已恢复、重新发布并完成权威重读。' })); await refreshList(); },
+    onSuccess: async (publication, input) => {
+      setReceipt(Object.freeze({ requestId: input.identity, reference: publication.id, occurredAt: publication.effective_at, message: '历史装修版本已恢复、重新发布并完成权威重读。' }));
+      await refreshList();
+    },
   });
   const validation = useMemo(() => validate(record, title, announcement, proof, confirmed), [announcement, confirmed, proof, record, title]);
-  const reset = (setter: (value: string) => void) => (value: string) => { setter(value); setConfirmed(false); setIdentity(dependencies.createIdentity()); setReceipt(undefined); };
-  const ensureStepup = () => { if (context.session.assurance.level < 3) { requestStepup(); return false; } return true; };
-  const submit = () => { if (!record || validation || mutation.isPending || !ensureStepup()) return; mutation.mutate({ record, title, announcement, proof, identity }); };
+  const reset = (setter: (value: string) => void) => (value: string) => {
+    setter(value);
+    setConfirmed(false);
+    setIdentity(dependencies.createIdentity());
+    setReceipt(undefined);
+  };
+  const ensureStepup = () => {
+    if (context.session.assurance.level < 3) {
+      requestStepup();
+      return false;
+    }
+    return true;
+  };
+  const submit = () => {
+    if (!record || validation || mutation.isPending || !ensureStepup()) return;
+    mutation.mutate({ record, title, announcement, proof, identity });
+  };
   const restorePrevious = () => {
     const source = detail.data?.history.find((version) => version.id !== detail.data?.head?.id) ?? detail.data?.history[0];
     if (!record || !source || validation || restore.isPending || !ensureStepup()) return;
     restore.mutate({ record, source: source.id, proof, identity });
   };
-  return Object.freeze({ record, detail: detail.data, detailPending: detail.isPending, detailFailed: detail.isError, title, announcement, proof, confirmed, validation, assurance: context.session.assurance.level, busy: mutation.isPending || restore.isPending, error: mutation.error || restore.error ? presentError(mutation.error ?? restore.error).message : undefined, receipt, actions: Object.freeze({ title: reset(setTitle), announcement: reset(setAnnouncement), proof: reset(setProof), confirmed: setConfirmed, submit, restore: restorePrevious, stepup: requestStepup }) });
+  return Object.freeze({
+    record,
+    detail: detail.data,
+    detailPending: detail.isPending,
+    detailFailed: detail.isError,
+    title,
+    announcement,
+    proof,
+    confirmed,
+    validation,
+    assurance: context.session.assurance.level,
+    busy: mutation.isPending || restore.isPending,
+    error: mutation.error || restore.error ? presentError(mutation.error ?? restore.error).message : undefined,
+    receipt,
+    actions: Object.freeze({ title: reset(setTitle), announcement: reset(setAnnouncement), proof: reset(setProof), confirmed: setConfirmed, submit, restore: restorePrevious, stepup: requestStepup }),
+  });
 }
 
 function validate(record: Experience | undefined, title: string, announcement: string, proof: string, confirmed: boolean): string | undefined {
@@ -64,7 +101,7 @@ function validate(record: Experience | undefined, title: string, announcement: s
   if (!title.trim() || title.trim().length > 80) return '首页主标题须为 1 至 80 个字符。';
   if (!announcement.trim() || announcement.trim().length > 240) return '公告文案须为 1 至 240 个字符。';
   if (!confirmed) return '请先核对预览、发布范围和当前线上影响。';
-  if (!/^[A-Za-z0-9_-]{43,4096}$/.test(proof)) return '请输入 Step-up 后签发的一次性复核凭证。';
+  if (!/^[A-Za-z0-9_-]{43,128}$/.test(proof)) return '请输入 Step-up 后签发的一次性复核凭证。';
   return undefined;
 }
 

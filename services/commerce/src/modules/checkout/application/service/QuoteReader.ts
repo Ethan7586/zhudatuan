@@ -2,51 +2,16 @@ import { Money } from '@shop/kernel';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { allParallel } from '../../../../foundation/performance/Parallel';
-import type { MemberAccessPort } from '../../../access/public';
-import type { BenefitChoice, BenefitGateway } from '../../../benefit/public';
-import type { CartReadPort } from '../../../cart/public';
-import type { CheckoutCatalogPort } from '../../../catalog/public';
-import type { CheckoutExperiencePort } from '../../../experience/public';
-import type { CheckoutInvoicePort } from '../../../finance/public';
-import type { CheckoutInventoryPort } from '../../../inventory/public';
-import type { CheckoutMarketingPort } from '../../../marketing/public';
-import type { CheckoutOrderPort } from '../../../order/public';
-import type { CheckoutPricingPort } from '../../../pricing/public';
-import type { CheckoutQualificationPort } from '../../../qualification/public';
-import type { MemberAddressPort } from '../../../member/public';
+import type { BenefitChoice } from '../../../benefit/public';
 import type { CheckoutQuote } from '../../domain/model/CheckoutQuote';
 import type { CheckoutSelection } from '../../domain/model/CheckoutSelection';
 import { quoteConflict } from '../../domain/error/CheckoutError';
 import { CheckoutPolicy } from '../../domain/policy/CheckoutPolicy';
 import { allocateLineDiscount, campaignRule, quoteDigest, type CampaignRow, type CartRow, type LineRow, type PolicyRow, type PriceRuleRow, type PurchaseRow } from './QuoteCalculations';
 import { evaluateLine } from './QuoteLineFactory';
+import { quoteRecordNumber as numeric, quoteRecordText as textual, type QuoteReaderDependencies, type QuoteVoucherChoice } from './QuoteReaderContext';
 
 export { quoteDigest } from './QuoteCalculations';
-
-export interface QuoteVoucherChoice {
-  readonly id: string;
-  readonly remainingMinor: number;
-  readonly version: number;
-  readonly program: string;
-}
-export interface QuoteVoucherGateway {
-  preview(context: ReadTransactionContext, vouchers: readonly string[], member: string, scope: string): Promise<readonly QuoteVoucherChoice[]>;
-}
-export interface QuoteReaderDependencies {
-  readonly access: MemberAccessPort;
-  readonly address: MemberAddressPort;
-  readonly benefit: Pick<BenefitGateway, 'preview'>;
-  readonly cart: CartReadPort;
-  readonly catalog: CheckoutCatalogPort;
-  readonly experience: CheckoutExperiencePort;
-  readonly invoice: CheckoutInvoicePort;
-  readonly inventory: CheckoutInventoryPort;
-  readonly marketing: CheckoutMarketingPort;
-  readonly orders: CheckoutOrderPort;
-  readonly pricing: CheckoutPricingPort;
-  readonly qualification: CheckoutQualificationPort;
-  readonly voucher: QuoteVoucherGateway;
-}
 
 export class QuoteReader {
   constructor(
@@ -252,14 +217,4 @@ export class QuoteReader {
   }
 }
 
-function numeric(value: unknown, key: string): number | null {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return null;
-  const result = (value as Readonly<Record<string, unknown>>)[key];
-  return typeof result === 'number' && Number.isSafeInteger(result) ? result : null;
-}
-
-function textual(value: unknown, key: string): string | null {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return null;
-  const result = (value as Readonly<Record<string, unknown>>)[key];
-  return typeof result === 'string' ? result : null;
-}
+export type { QuoteReaderDependencies, QuoteVoucherChoice, QuoteVoucherGateway } from './QuoteReaderContext';

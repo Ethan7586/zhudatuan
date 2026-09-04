@@ -9,7 +9,7 @@ export const token = Object.freeze({
     warning: '#92400E',
     success: '#087A55',
     text: '#172033',
-    muted: '#64748B',
+    muted: '#5F6F82',
     surface: '#FFFFFF',
     canvas: '#F5F7FA',
   }),

@@ -315,6 +315,7 @@ export const SDK_OPERATION_IDS = Object.freeze([
   "identity.links.read",
   "identity.links.create",
   "identity.links.revoke",
+  "identity.providers.center.read",
   "identity.providers.manage",
   "identity.providers.test",
   "organization.directories.read",

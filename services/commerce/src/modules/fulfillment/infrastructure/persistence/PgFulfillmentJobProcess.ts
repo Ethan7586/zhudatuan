@@ -1,42 +1,14 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import type { JsonObject, ProviderCallContext } from '@shop/contract';
 import type { ExtensionRegistry } from '../../../../bootstrap/ExtensionRegistry';
 import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
-import type { ProviderOperationPort } from '../../../channel/public/index';
-import type { FulfillmentOrderPort } from '../../../order/public/index';
-import type { OrganizationReadPort } from '../../../organization/public';
 import { FulfillmentState } from '../../domain/model/FulfillmentState';
-import { PgRuntimeWriter, type RuntimeSql } from '../../../../adapter/database/PgRuntimeWriter';
+import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { FulfillmentJobExecution, FulfillmentJobProcess } from '../../application/port/FulfillmentJobProcess';
-
-interface FulfillmentRow {
-  readonly id: string;
-  readonly order_id: string;
-  readonly provider: string | null;
-  readonly scope_id: string;
-  readonly member_id: string;
-  readonly state: string;
-  readonly version: number;
-  readonly external_reference: string | null;
-  readonly lines: JsonObject[];
-}
-
-interface ReturnPlan {
-  readonly id: string;
-  readonly fulfillment: string;
-  readonly group: Readonly<{ provider: string | null; lines: readonly Readonly<{ line: string; quantity: number }>[] }>;
-  readonly providerReference: string | null;
-  readonly instruction: JsonObject;
-  readonly providerResponse: unknown;
-  readonly requestHash: string | null;
-}
-
-export interface FulfillmentJobDependencies {
-  readonly operations: Pick<ProviderOperationPort, 'record' | 'replayReference'>;
-  readonly orders: FulfillmentOrderPort;
-  readonly organizations: OrganizationReadPort;
-}
+import { enqueueFulfillment as enqueue, fulfillmentDigest as digest, providerSucceeded as success, requiredJobText as text } from './FulfillmentJobValue';
+import type { FulfillmentJobDependencies, FulfillmentRow, ReturnPlan } from './FulfillmentJobContext';
+import { projectFulfillment } from './FulfillmentProjection';
 
 export class PgFulfillmentJobProcess implements FulfillmentJobProcess {
   private readonly transactions = new PgTransactionAccess();
@@ -172,7 +144,7 @@ export class PgFulfillmentJobProcess implements FulfillmentJobProcess {
         requestHash: digest(serialized),
         response: receipt,
       });
-      await this.project(context, id, loaded.order_id);
+      await projectFulfillment(this.transactions, this.dependencies.orders, context, id, loaded.order_id);
       await enqueue(database, 'tracking', loaded.scope_id, { fulfillment: id }, 60);
     });
   }
@@ -206,7 +178,7 @@ export class PgFulfillmentJobProcess implements FulfillmentJobProcess {
         [id, next, loaded.state, loaded.version]
       );
       if (!changed.rows[0]) throw new Error('FULFILLMENT_STATE_CONFLICT');
-      await this.project(context, id, loaded.order_id);
+      await projectFulfillment(this.transactions, this.dependencies.orders, context, id, loaded.order_id);
       if (shipped) {
         await new PgRuntimeWriter(database).append({
           id: `event:fulfillment:shipped:${digest(id)}`,
@@ -226,31 +198,6 @@ export class PgFulfillmentJobProcess implements FulfillmentJobProcess {
         );
       else await enqueue(database, 'tracking', loaded.scope_id, { fulfillment: id }, 300);
     });
-  }
-
-  private async project(context: import('../../../../foundation/persistence/TransactionContext').WriteTransactionContext, id: string, order: string): Promise<void> {
-    const database = this.transactions.database(context);
-    const fulfillment = await database.query<{
-      id: string;
-      provider: string | null;
-      partner: string | null;
-      kind: 'shipment' | 'delivery' | 'pickup' | 'service' | 'digital';
-      state: string;
-      externalReference: string | null;
-    }>(
-      `select id,provider,partner_id partner,kind,state,external_reference "externalReference"
-      from fulfillment.fulfillmentorder where id=$1 and order_id=$2`,
-      [id, order]
-    );
-    const selected = fulfillment.rows[0];
-    if (!selected) throw new Error('FULFILLMENT_PROJECTION_SOURCE_MISSING');
-    await this.dependencies.orders.recordFulfillments(context, order, [selected]);
-    const milestones = await database.query<{ id: string; kind: string; state: string; tracking: string | null; occurredAt: string }>(
-      `select id,kind,state,external_id tracking,occurred_at "occurredAt"
-      from fulfillment.milestone where fulfillment_id=$1 order by occurred_at,id`,
-      [id]
-    );
-    await this.dependencies.orders.recordFulfillmentMilestones(context, order, id, milestones.rows);
   }
 
   private load(id: string, states: readonly string[], execution: FulfillmentJobExecution): Promise<FulfillmentRow> {
@@ -289,21 +236,4 @@ export class PgFulfillmentJobProcess implements FulfillmentJobProcess {
   }
 }
 
-async function enqueue(database: RuntimeSql, kind: string, scope: string, payload: unknown, delay: number) {
-  await new PgRuntimeWriter(database).schedule({ id: `job:${randomUUID()}`, kind, owner: 'fulfillment', scope, payload: object(payload), priority: 20, availableAt: new Date(Date.now() + delay * 1000).toISOString() });
-}
-
-function object(value: unknown): Record<string, unknown> {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('JOB_PAYLOAD_INVALID');
-  return value as Record<string, unknown>;
-}
-function text(value: unknown, code: string): string {
-  if (typeof value !== 'string' || !value) throw new Error(code);
-  return value;
-}
-function digest(value: string): string {
-  return createHash('sha256').update(value).digest('hex');
-}
-function success(value: string): boolean {
-  return ['accepted', 'submitted', 'succeeded'].includes(value.toLowerCase());
-}
+export type { FulfillmentJobDependencies } from './FulfillmentJobContext';

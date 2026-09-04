@@ -13,7 +13,9 @@ export function useOverviewViewModel(context: ConsoleContext, dependencies: Fina
     condition: queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: query.data?.items.length === 0 }),
     error: safeQueryError(query.error),
     fetching: query.isFetching,
-    refresh: () => { void query.refetch(); },
+    refresh: () => {
+      void query.refetch();
+    },
   });
 }
 

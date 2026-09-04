@@ -1,7 +1,11 @@
 import type { Listing, ProductDraft } from '../model/Product';
 import type { ProductCommand, ProductPort } from '../public';
 
-export type ProductEdit = Readonly<{ kind: 'create'; draft: ProductDraft }> | Readonly<{ kind: 'edit'; listing: Listing; title: string; category: string; status: string }> | Readonly<{ kind: 'archive' | 'publish' | 'unpublish'; listing: Listing }> | Readonly<{ kind: 'price'; listing: Listing; amountMinor: number }>;
+export type ProductEdit =
+  | Readonly<{ kind: 'create'; draft: ProductDraft }>
+  | Readonly<{ kind: 'edit'; listing: Listing; title: string; category: string; status: string }>
+  | Readonly<{ kind: 'archive' | 'publish' | 'unpublish'; listing: Listing }>
+  | Readonly<{ kind: 'price'; listing: Listing; amountMinor: number }>;
 
 export class ExecuteProductAction {
   constructor(private readonly port: ProductPort) {}

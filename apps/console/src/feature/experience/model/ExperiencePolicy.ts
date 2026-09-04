@@ -14,7 +14,7 @@ export function experienceContent(detail: ExperienceDetail | undefined, record: 
   const hero = blocks.find((block) => block.component === 'hero')?.content;
   const notice = blocks.find((block) => block.component === 'notice')?.content;
   return Object.freeze({
-    title: typeof hero?.title === 'string' ? hero.title : record?.name ?? '主打团福利商城',
+    title: typeof hero?.title === 'string' ? hero.title : (record?.name ?? '主打团福利商城'),
     announcement: typeof notice?.announcement === 'string' ? notice.announcement : '欢迎进入企业福利商城',
   });
 }
@@ -25,13 +25,15 @@ export function createExperienceDocument(application: string, title: string, ann
   return Object.freeze({
     version: 2,
     application,
-    pages: Object.freeze([Object.freeze({
-      id: `${application}:home`,
-      path: 'home',
-      blocks: Object.freeze([
-        Object.freeze({ id: `${application}:home:hero`, component: 'hero', content: Object.freeze({ title: title.trim(), subtitle: '企业福利，温暖抵达' }) }),
-        Object.freeze({ id: `${application}:home:notice`, component: 'notice', content: Object.freeze({ announcement: announcement.trim() }) }),
-      ]),
-    })]),
+    pages: Object.freeze([
+      Object.freeze({
+        id: `${application}:home`,
+        path: 'home',
+        blocks: Object.freeze([
+          Object.freeze({ id: `${application}:home:hero`, component: 'hero', content: Object.freeze({ title: title.trim(), subtitle: '企业福利，温暖抵达' }) }),
+          Object.freeze({ id: `${application}:home:notice`, component: 'notice', content: Object.freeze({ announcement: announcement.trim() }) }),
+        ]),
+      }),
+    ]),
   });
 }

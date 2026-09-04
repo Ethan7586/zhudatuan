@@ -1,6 +1,6 @@
 .voucherboard {
   overflow: hidden;
-  border: 1px solid var(--vi-line);
+  border: 1px solid var(--sw-border);
   border-radius: 12px;
   background: var(--sw-surface);
   box-shadow: 0 1px 3px color-mix(in srgb, var(--sw-brand-ink) 4%, transparent);
@@ -11,7 +11,7 @@
   min-height: 50px;
   align-items: stretch;
   overflow-x: auto;
-  border-bottom: 1px solid var(--vi-line);
+  border-bottom: 1px solid var(--sw-border);
   padding: 0 14px;
 }
 
@@ -38,13 +38,13 @@
   left: 14px;
   height: 2px;
   border-radius: 2px 2px 0 0;
-  background: var(--vi-brand);
+  background: var(--sw-brand);
   content: '';
   opacity: 0;
 }
 
 .vouchertabs button[aria-pressed='true'] {
-  color: var(--vi-brand);
+  color: var(--sw-brand);
   font-weight: 750;
 }
 .vouchertabs button[aria-pressed='true']::after {
@@ -52,7 +52,7 @@
 }
 .vouchertabs button span {
   border-radius: 999px;
-  background: var(--vi-brand-soft);
+  background: var(--sw-brand-light);
   padding: 2px 6px;
   font-size: 10px;
 }
@@ -73,11 +73,11 @@
   margin-right: auto;
 }
 .voucherfiltercopy strong {
-  color: var(--vi-ink);
+  color: var(--sw-brand-ink);
   font-size: 13px;
 }
 .voucherfiltercopy span {
-  color: var(--sw-disabled);
+  color: var(--sw-muted);
   font-size: 10px;
 }
 
@@ -106,8 +106,8 @@
 .vouchertabs button:focus-visible,
 .voucherboundarybanner button:focus-visible,
 .voucherrowaction:focus-visible {
-  border-color: var(--vi-brand);
-  box-shadow: var(--vi-shadow-focus);
+  border-color: var(--sw-brand);
+  box-shadow: var(--sw-shadow-focus);
 }
 
 .voucherfiltermeta {
@@ -115,7 +115,7 @@
   border-bottom: 1px solid var(--sw-brand-light);
   background: var(--sw-surface-subtle);
   padding: 7px 14px;
-  color: var(--sw-disabled);
+  color: var(--sw-muted);
   font-size: 10px;
   text-align: right;
 }
@@ -173,111 +173,7 @@
 }
 .voucheridentity code,
 .vouchercode {
-  color: var(--sw-disabled);
+  color: var(--sw-muted);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 9px;
-}
-
-.vouchermark {
-  display: grid;
-  width: 36px;
-  height: 36px;
-  flex: 0 0 auto;
-  border: 1px solid var(--sw-border);
-  border-radius: 10px;
-  background: var(--vi-brand-soft);
-  color: var(--vi-brand);
-  font-size: 10px;
-  font-weight: 800;
-  place-items: center;
-}
-
-.vouchermark.is-libraries {
-  border-color: var(--sw-border-strong);
-  background: var(--sw-success-surface);
-  color: var(--sw-success-strong);
-}
-.vouchermark.is-reserves {
-  border-color: var(--sw-border-strong);
-  background: var(--sw-warning-surface);
-  color: var(--sw-warning-strong);
-}
-.vouchermark.is-batches {
-  border-color: var(--sw-border);
-  background: var(--sw-background);
-  color: var(--sw-muted);
-}
-
-.voucherstate {
-  display: inline-flex;
-  width: max-content;
-  align-items: center;
-  gap: 6px;
-  border-radius: 999px;
-  background: var(--sw-background);
-  padding: 4px 8px;
-  color: var(--sw-muted);
-  font-size: 10px;
-  font-weight: 750;
-}
-
-.voucherstate i {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
-.voucherstate.is-success {
-  background: var(--sw-success-surface);
-  color: var(--sw-success-strong);
-}
-.voucherstate.is-warning {
-  background: var(--sw-warning-surface);
-  color: var(--sw-warning-strong);
-}
-.voucherstate.is-danger {
-  background: var(--sw-danger-surface);
-  color: var(--sw-danger);
-}
-.voucherstate.is-info {
-  background: var(--vi-brand-soft);
-  color: var(--vi-brand);
-}
-
-.voucherrowaction {
-  min-height: 28px;
-  border-color: transparent;
-  background: transparent;
-  padding: 0 5px;
-}
-
-.voucherfilteredempty {
-  display: grid;
-  min-height: 230px;
-  align-content: center;
-  justify-items: center;
-  gap: 7px;
-  padding: 28px;
-  text-align: center;
-}
-.voucherfilteredempty strong {
-  color: var(--vi-ink);
-  font-size: 14px;
-}
-.voucherfilteredempty p {
-  margin: 0 0 6px;
-  color: var(--sw-disabled);
-  font-size: 11px;
-}
-
-.voucherpagination {
-  display: flex;
-  min-height: 54px;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid var(--vi-line);
-  background: var(--sw-surface-subtle);
-  padding: 8px 12px 8px 16px;
-  color: var(--sw-muted);
-  font-size: 11px;
 }

@@ -4,5 +4,5 @@ export const MemberManifest = defineComponent({
   component: 'member',
   navigationids: ['groupmemberdata', 'mallmemberdata'],
   routes: [{ routeid: 'consolemembers' }],
-  load: () => import('./MemberRoute'),
+  load: () => import('./route/MemberRoute'),
 });

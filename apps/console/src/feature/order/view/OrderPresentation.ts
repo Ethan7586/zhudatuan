@@ -1,4 +1,4 @@
-import { chineseReference } from '@shop/presentation';
+import { chineseDomainLabel, chineseProviderLabel, chineseReference } from '@shop/presentation';
 import type { OrderRecord } from '../model/Order';
 
 export type OrderTone = 'brand' | 'success' | 'warning' | 'danger' | 'muted';
@@ -94,6 +94,22 @@ export function formatOrderTime(value: string): string {
   })
     .format(date)
     .replace('/', '-');
+}
+
+export function providerLabel(provider: string | null, partner: string | null): string {
+  return provider ? chineseProviderLabel(provider) : partner ? chineseReference('合作方', partner) : '平台自营';
+}
+
+export function tenderLabel(kind: 'wechat' | 'benefit' | 'voucher'): string {
+  return kind === 'wechat' ? '微信支付' : kind === 'benefit' ? '福利账户' : '福利券';
+}
+
+export function addressLabel(order: OrderRecord): string {
+  return order.address ? `${order.address.recipientMasked} · ${order.address.mobileMasked} · ${order.address.addressMasked}${order.address.regionCode ? `（${order.address.regionCode}）` : ''}` : '本单无需配送地址';
+}
+
+export function actionLabel(action: string): string {
+  return chineseDomainLabel(action.replaceAll('.', ' '));
 }
 
 export function productSummary(order: OrderRecord): Readonly<{ title: string; detail: string }> {

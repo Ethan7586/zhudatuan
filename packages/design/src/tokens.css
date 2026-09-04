@@ -22,7 +22,7 @@
   --sw-surface-subtle: #F8FAFC;
   --sw-text: #172033;
   --sw-text-secondary: #475569;
-  --sw-muted: #64748B;
+  --sw-muted: #5F6F82;
   --sw-disabled: #94A3B8;
   --sw-border: #E2E8F0;
   --sw-border-strong: #CBD5E1;
@@ -40,6 +40,11 @@
   --sw-price: #E1251B;
   --sw-promotion: #F04B3A;
   --sw-commerce-warm: #FFF4EE;
+  --sw-overlay: rgba(7, 24, 47, 0.92);
+  --sw-overlay-soft: rgba(20, 58, 143, 0.4);
+  --sw-inverse-border: rgba(255, 255, 255, 0.4);
+  --sw-inverse-tint: rgba(7, 24, 47, 0.24);
+  --sw-inverse-label: rgba(255, 255, 255, 0.86);
 
   /* Typography */
   --sw-font-sans: Inter, 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', Arial, sans-serif;
@@ -80,6 +85,7 @@
   --sw-radius: var(--sw-radius-sm);
   --sw-shadow-card: 0px 1px 4px rgba(7, 24, 47, 0.04);
   --sw-shadow-overlay: 0px -2px 12px rgba(7, 24, 47, 0.08);
+  --sw-shadow-focus: 0px 0px 0px 3px rgba(31, 94, 255, 0.12);
 
   /* Motion */
   --sw-duration-fast: 120ms;
@@ -115,7 +121,7 @@
     --sw-text: #F8FAFC;
     --sw-text-secondary: #E2E8F0;
     --sw-muted: #CBD5E1;
-    --sw-disabled: #64748B;
+    --sw-disabled: #5F6F82;
     --sw-border: #334155;
     --sw-border-strong: #475569;
   }
@@ -129,7 +135,7 @@
   --sw-text: #F8FAFC;
   --sw-text-secondary: #E2E8F0;
   --sw-muted: #CBD5E1;
-  --sw-disabled: #64748B;
+  --sw-disabled: #5F6F82;
   --sw-border: #334155;
   --sw-border-strong: #475569;
 }

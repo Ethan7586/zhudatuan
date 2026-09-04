@@ -67,14 +67,18 @@ routes:
       - MVPPLATFORM
       - MVPGROUPPOOL
       - MVPMALLPOOL
-  - id: consoleproductimport
+  - id: consoleimporttask
     surface: console
     path: /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
-    feature: product
+    feature: task
     requirements:
       - MVPPLATFORM
       - MVPGROUPPOOL
       - MVPMALLPOOL
+      - MVPGROUPVOUCHER
+      - MVPMALLVOUCHER
+      - MVPGROUPSETTING
+      - MVPMALLSETTING
   - id: consoleorders
     surface: console
     path: /scopes/:scopeKind/:scopeId/orders
@@ -937,12 +941,12 @@ nodes:
     title: 登录方式
     icon: identity
     order: 60
-    entry: identity.providers.read
+    entry: identity.providers.center.read
     permissions:
       - identity.provider.manage
     capabilities:
       - identity.federation
-      - identity.providers.read
+      - identity.providers.center.read
     requirements:
       - MVPGROUPSETTING
       - MVPIDENTITY
@@ -1084,12 +1088,12 @@ nodes:
     title: 登录方式
     icon: identity
     order: 60
-    entry: identity.providers.read
+    entry: identity.providers.center.read
     permissions:
       - identity.provider.manage
     capabilities:
       - identity.federation
-      - identity.providers.read
+      - identity.providers.center.read
     requirements:
       - MVPMALLSETTING
       - MVPIDENTITY

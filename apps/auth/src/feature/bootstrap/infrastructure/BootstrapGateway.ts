@@ -14,7 +14,10 @@ export class BootstrapGateway implements BootstrapPort {
   private readonly cache = new Map<string, Bootstrap>();
   private readonly pending = new Map<string, Promise<Bootstrap>>();
 
-  constructor(private readonly sdk: IdentitySdk, private readonly environment: AuthEnvironment) {}
+  constructor(
+    private readonly sdk: IdentitySdk,
+    private readonly environment: AuthEnvironment
+  ) {}
 
   read(target: AuthTarget, returns: Omit<AuthRequest, 'target'>, signal?: AbortSignal): Promise<Bootstrap> {
     const key = `${target}:${returns.returnTarget ?? ''}:${returns.returnPath ?? ''}`;
@@ -23,7 +26,8 @@ export class BootstrapGateway implements BootstrapPort {
     const active = this.pending.get(key);
     if (active) return consume(active, signal);
     const input = returns.returnTarget ? { query: { returntarget: returns.returnTarget } } : returns.returnPath ? { query: { returnpath: returns.returnPath } } : {};
-    const operation = this.sdk.bootstrapRead(input, queryContext(this.environment, target))
+    const operation = this.sdk
+      .bootstrapRead(input, queryContext(this.environment, target))
       .then(mapBootstrap)
       .then((value) => {
         if (value.target !== target) throw new ClientError('RETURN_TARGET_INVALID');
@@ -44,13 +48,23 @@ export class BootstrapGateway implements BootstrapPort {
 
 function consume<T>(operation: Promise<T>, signal?: AbortSignal): Promise<T> {
   if (!signal) return operation;
-  if (signal.aborted) return Promise.reject(signal.reason ?? new DOMException('Aborted', 'AbortError'));
+  if (signal.aborted) return Promise.reject(rejection(signal.reason, 'Aborted'));
   return new Promise<T>((resolve, reject) => {
-    const abort = () => reject(signal.reason ?? new DOMException('Aborted', 'AbortError'));
+    const abort = () => reject(rejection(signal.reason, 'Aborted'));
     signal.addEventListener('abort', abort, { once: true });
     void operation.then(
-      (value) => { signal.removeEventListener('abort', abort); resolve(value); },
-      (cause: unknown) => { signal.removeEventListener('abort', abort); reject(cause); }
+      (value) => {
+        signal.removeEventListener('abort', abort);
+        resolve(value);
+      },
+      (cause: unknown) => {
+        signal.removeEventListener('abort', abort);
+        reject(rejection(cause, 'Auth bootstrap failed'));
+      }
     );
   });
+}
+
+function rejection(cause: unknown, message: string): Error {
+  return cause instanceof Error ? cause : new Error(message, { cause });
 }

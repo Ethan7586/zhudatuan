@@ -6,4 +6,9 @@ import { ChannelPage } from '../view/ChannelPage';
 import { useChannelViewModel } from '../viewmodel/ChannelViewModel';
 import '../view/Channel.css';
 
-export function Component() { const context = useConsoleContext(); const dependencies = useDependencies(); const stepup = useStepup(); return <ChannelPage title={useRouteTitle('渠道管理')} model={useChannelViewModel(context, dependencies.channel, stepup.request)} />; }
+export function Component() {
+  const context = useConsoleContext();
+  const dependencies = useDependencies();
+  const stepup = useStepup();
+  return <ChannelPage title={useRouteTitle('渠道管理')} model={useChannelViewModel(context, dependencies.channel, stepup.request)} />;
+}

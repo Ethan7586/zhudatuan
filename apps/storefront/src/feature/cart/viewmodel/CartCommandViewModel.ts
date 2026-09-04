@@ -13,9 +13,8 @@ export function useCartCommand() {
   const client = useQueryClient();
   const command = useRef(new ChangeCart(dependencies.cart));
   const reader = useRef(new ReadCart(dependencies.cart));
-  const scope = session.scope || 'guest';
   const cart = useQuery({
-    queryKey: StorefrontQuery.cart(scope),
+    queryKey: StorefrontQuery.cart(session.query.scoped),
     queryFn: ({ signal }) => reader.current.execute(session.session!, signal),
     enabled: session.status === 'authenticated',
   });
@@ -28,7 +27,7 @@ export function useCartCommand() {
       lineVersion,
       cartVersion: Number(cart.data?.version ?? 0),
     });
-    await client.invalidateQueries({ queryKey: StorefrontQuery.cart(scope) });
+    await client.invalidateQueries({ queryKey: StorefrontQuery.cart(session.query.scoped) });
   };
 
   const add = (product: Product, quantity = 1, _selectedSpec: Readonly<Record<string, string>> = {}) => {

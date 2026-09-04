@@ -10,5 +10,9 @@ export function Component() {
   const dependencies = useDependencies();
   const navigate = useNavigate();
   const location = useLocation();
-  return <Guard route={ROUTES.authinvitation} rejected={<InvalidRoute />} >{(request) => <AuthRuntime dependencies={dependencies} request={request} invitation onTarget={(target) => navigate({ pathname: location.pathname, search: authTargetSearch(location.search, target) }, { replace: true })} />}</Guard>;
+  return (
+    <Guard route={ROUTES.authinvitation} rejected={<InvalidRoute />}>
+      {(request) => <AuthRuntime dependencies={dependencies} request={request} invitation onTarget={(target) => void navigate({ pathname: location.pathname, search: authTargetSearch(location.search, target) }, { replace: true })} />}
+    </Guard>
+  );
 }

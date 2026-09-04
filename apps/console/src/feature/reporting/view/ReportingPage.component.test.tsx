@@ -7,9 +7,52 @@ import { ReportingPage } from './ReportingPage';
 describe('ReportingPage', () => {
   it('renders authoritative freshness evidence and exposes only supplied actions', async () => {
     const openExport = vi.fn();
-    render(<ReportingPage title="数据报表" model={{
-      view: 'categories', period: '30days', applicationDraft: '', availableViews: ['categories'], rows: [{ code: 'category.amount', version: 1, scope: 'mall:one', period: { from: '2026-09-01T00:00:00.000Z', to: '2026-09-02T00:00:00.000Z', timezone: 'Asia/Shanghai' }, dimensions: { category: '生鲜' }, value: 3200, unit: 'minor', watermark: '2026-09-02T00:01:00.000Z', projectionVersion: 8 }], count: 1, watermark: '2026-09-02T00:01:00.000Z', timezone: 'Asia/Shanghai', projectionVersion: 8, stale: false, condition: 'ready', export: { open: false, allowed: true, pending: false }, actions: { refresh: vi.fn(), view: vi.fn(), period: vi.fn(), application: vi.fn(), applyApplication: vi.fn(), next: vi.fn(), openExport, closeExport: vi.fn(), submitExport: vi.fn(), retryExport: vi.fn(), dismissReceipt: vi.fn() },
-    } as unknown as ReportingViewModel} />);
+    render(
+      <ReportingPage
+        title="数据报表"
+        model={
+          {
+            view: 'categories',
+            period: '30days',
+            applicationDraft: '',
+            availableViews: ['categories'],
+            rows: [
+              {
+                code: 'category.amount',
+                version: 1,
+                scope: 'mall:one',
+                period: { from: '2026-09-01T00:00:00.000Z', to: '2026-09-02T00:00:00.000Z', timezone: 'Asia/Shanghai' },
+                dimensions: { category: '生鲜' },
+                value: 3200,
+                unit: 'minor',
+                watermark: '2026-09-02T00:01:00.000Z',
+                projectionVersion: 8,
+              },
+            ],
+            count: 1,
+            watermark: '2026-09-02T00:01:00.000Z',
+            timezone: 'Asia/Shanghai',
+            projectionVersion: 8,
+            stale: false,
+            condition: 'ready',
+            export: { open: false, allowed: true, pending: false },
+            actions: {
+              refresh: vi.fn(),
+              view: vi.fn(),
+              period: vi.fn(),
+              application: vi.fn(),
+              applyApplication: vi.fn(),
+              next: vi.fn(),
+              openExport,
+              closeExport: vi.fn(),
+              submitExport: vi.fn(),
+              retryExport: vi.fn(),
+              dismissReceipt: vi.fn(),
+            },
+          } as unknown as ReportingViewModel
+        }
+      />
+    );
     expect(screen.getByRole('heading', { level: 1, name: '数据报表' })).toBeTruthy();
     expect(screen.getByText(/投影版本 v8/)).toBeTruthy();
     expect(screen.getAllByText(/数据截至/)).toHaveLength(2);

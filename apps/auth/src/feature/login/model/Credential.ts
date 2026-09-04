@@ -6,6 +6,4 @@ interface CredentialContext {
   readonly returns: Omit<AuthRequest, 'target'>;
 }
 
-export type Credential =
-  | Readonly<CredentialContext & { kind: 'password'; subject: string; password: string }>
-  | Readonly<CredentialContext & { kind: 'otp'; subject: string; challenge: string; code: string }>;
+export type Credential = Readonly<CredentialContext & { kind: 'password'; subject: string; password: string }> | Readonly<CredentialContext & { kind: 'otp'; subject: string; challenge: string; code: string }>;

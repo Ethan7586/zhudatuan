@@ -22,6 +22,7 @@ const rule = strictObject({
 const center = strictObject({
   id: string(),
   kind: literal(['policy', 'case']),
+  version: nullableVersion,
   name: nullableText,
   status: nullableText,
   active_version: nullableVersion,
@@ -40,6 +41,7 @@ const center = strictObject({
   preview: nullableJson,
   decision_id: nullableText,
   outcome: nullableText,
+  case_state: nullableText,
   safe_reason: nullableText,
   actor_id: nullableText,
   actor_display_name: nullableText,
@@ -58,6 +60,7 @@ const policySaved = strictObject({
   rule_hash: string(),
   rollout_percent: unsigned,
   replay_state: literal('queued'),
+  version,
 });
 const policyActivated = strictObject({
   id: string(),
@@ -70,8 +73,9 @@ const policyActivated = strictObject({
   next_version: version,
   rollout_percent: unsigned,
   rule_hash: string(),
+  version,
 });
-const policyRetired = strictObject({ id: string(), scope_id: string(), name: string(), active_version: nullableVersion, status: literal('retired'), baseline_version: nullableVersion, updated_at: isoUtc, next_version: version });
+const policyRetired = strictObject({ id: string(), scope_id: string(), name: string(), active_version: nullableVersion, status: literal('retired'), baseline_version: nullableVersion, updated_at: isoUtc, next_version: version, version });
 const reviewedCase = strictObject({
   id: string(),
   decision_id: string(),
@@ -87,6 +91,7 @@ const reviewedCase = strictObject({
   review_evidence: jsonObject,
   reviewed_at: isoUtc,
   resolution: union([literal(['cleared', 'confirmed']), nullSchema()]),
+  version,
 });
 
 export const RISK_BODY_SCHEMAS = {

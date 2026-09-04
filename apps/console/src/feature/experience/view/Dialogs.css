@@ -47,13 +47,13 @@
   min-height: 86px;
   align-items: flex-start;
   justify-content: space-between;
-  border-bottom: 1px solid var(--vi-line);
+  border-bottom: 1px solid var(--sw-border);
   padding: 18px 20px;
 }
 .commercedrawer header p,
 .commerceflowdialog header p {
   margin: 0 0 4px;
-  color: var(--vi-brand);
+  color: var(--sw-brand);
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -61,7 +61,7 @@
 .commercedrawer h2,
 .commerceflowdialog h2 {
   margin: 0;
-  color: var(--vi-ink);
+  color: var(--sw-brand-ink);
   font-size: 18px;
   line-height: 26px;
 }
@@ -73,7 +73,7 @@
 .commerceflowdialog header > button {
   width: 34px;
   height: 34px;
-  border: 1px solid var(--vi-line);
+  border: 1px solid var(--sw-border);
   border-radius: 9px;
   background: var(--sw-surface);
   color: var(--sw-muted);
@@ -109,7 +109,7 @@
   grid-template-columns: 1fr 1fr;
   margin: 0;
   overflow: hidden;
-  border: 1px solid var(--vi-line);
+  border: 1px solid var(--sw-border);
   border-radius: 12px;
 }
 .commercefacts div {
@@ -117,8 +117,8 @@
   min-height: 72px;
   align-content: center;
   gap: 4px;
-  border-right: 1px solid var(--vi-line);
-  border-bottom: 1px solid var(--vi-line);
+  border-right: 1px solid var(--sw-border);
+  border-bottom: 1px solid var(--sw-border);
   padding: 12px 14px;
 }
 .commercefacts div:nth-child(2n) {
@@ -174,7 +174,7 @@
   min-height: 82px;
   align-items: center;
   gap: 11px;
-  border: 1px solid var(--vi-line);
+  border: 1px solid var(--sw-border);
   border-radius: 12px;
   background: var(--sw-surface-subtle);
   padding: 12px;
@@ -185,8 +185,8 @@
   height: 28px;
   flex: 0 0 auto;
   border-radius: 50%;
-  background: var(--vi-brand-soft);
-  color: var(--vi-brand);
+  background: var(--sw-brand-light);
+  color: var(--sw-brand);
   font-size: 11px;
   font-weight: 800;
   place-items: center;
@@ -196,7 +196,7 @@
   gap: 3px;
 }
 .commerceflowbody li strong {
-  color: var(--vi-ink);
+  color: var(--sw-brand-ink);
   font-size: 12px;
 }
 .commerceflowbody li p {
@@ -204,72 +204,4 @@
   color: var(--sw-disabled);
   font-size: 10px;
   line-height: 16px;
-}
-.commerceactionform label {
-  display: grid;
-  gap: 7px;
-  color: var(--sw-muted);
-  font-size: 11px;
-  font-weight: 700;
-}
-.commerceactionform input,
-.commerceactionform textarea,
-.commerceactionform select {
-  width: 100%;
-  border: 1px solid var(--vi-line);
-  border-radius: 10px;
-  background: var(--sw-surface);
-  padding: 10px 12px;
-  color: var(--vi-ink);
-  font: inherit;
-}
-.commerceactionform textarea {
-  min-height: 92px;
-  resize: vertical;
-}
-.commercepreview {
-  display: grid;
-  min-height: 130px;
-  align-content: center;
-  gap: 8px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--vi-brand-soft), var(--sw-commerce-warm));
-  padding: 22px;
-}
-.commercepreview strong {
-  color: var(--vi-ink);
-  font-size: 22px;
-}
-.commercepreview p,
-.commerceactionerror {
-  margin: 0;
-}
-.commerceactionerror {
-  color: var(--sw-danger-strong);
-  font-size: 11px;
-}
-.commerceactionfooter {
-  gap: 10px;
-}
-.commercedrawer > footer,
-.commerceflowdialog > footer {
-  display: flex;
-  min-height: 66px;
-  align-items: center;
-  justify-content: flex-end;
-  border-top: 1px solid var(--vi-line);
-  padding: 12px 20px;
-}
-.commercedrawer > footer button,
-.commerceflowdialog > footer button {
-  min-height: 38px;
-  border: 1px solid var(--vi-brand);
-  border-radius: 10px;
-  background: var(--vi-brand);
-  padding: 0 18px;
-  color: var(--sw-surface);
-  font: inherit;
-  font-size: 11px;
-  font-weight: 750;
-  cursor: pointer;
 }

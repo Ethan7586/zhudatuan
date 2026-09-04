@@ -26,13 +26,23 @@ const order = {
   lifecycle_state: 'paid',
   address: { recipientMasked: '张**', mobileMasked: '138****8000', addressMasked: '上海市浦东新区****路', regionCode: '310115' },
   payment: {
-    paymentId: 'payment:verified-1', capturedMinor: 12_800, refundedMinor: 0, refundableMinor: 12_800,
+    paymentId: 'payment:verified-1',
+    capturedMinor: 12_800,
+    refundedMinor: 0,
+    refundableMinor: 12_800,
     updatedAt: '2026-08-26T08:40:00.000Z',
-    tenders: [{ sequence: 1, kind: 'benefit', referenceMasked: '尾号 0001', amountMinor: 8_000, state: 'captured' }, { sequence: 2, kind: 'wechat', referenceMasked: null, amountMinor: 4_800, state: 'captured' }],
+    tenders: [
+      { sequence: 1, kind: 'benefit', referenceMasked: '尾号 0001', amountMinor: 8_000, state: 'captured' },
+      { sequence: 2, kind: 'wechat', referenceMasked: null, amountMinor: 4_800, state: 'captured' },
+    ],
   },
-  fulfillments: [{ id: 'fulfillment:verified-1', provider: null, partner: null, kind: 'shipment', state: 'processing', externalReferenceMasked: null, createdAt: '2026-08-26T08:41:00.000Z', updatedAt: '2026-08-26T08:42:00.000Z', milestones: [] }],
+  fulfillments: [
+    { id: 'fulfillment:verified-1', provider: null, partner: null, kind: 'shipment', state: 'processing', externalReferenceMasked: null, createdAt: '2026-08-26T08:41:00.000Z', updatedAt: '2026-08-26T08:42:00.000Z', milestones: [] },
+  ],
   refunds: [],
-  timeline: [{ id: 'audit:1', action: 'fulfillment.shipments.create', resourceType: 'fulfillment', resourceMasked: 'fulfillment ····ed-1', actorMasked: 'console ····or-1', occurredAt: '2026-08-26T08:42:00.000Z', traceMasked: '追踪 ····0001' }],
+  timeline: [
+    { id: 'audit:1', action: 'fulfillment.shipments.create', resourceType: 'fulfillment', resourceMasked: 'fulfillment ····ed-1', actorMasked: 'console ····or-1', occurredAt: '2026-08-26T08:42:00.000Z', traceMasked: '追踪 ····0001' },
+  ],
   receivedAt: null,
   created_at: '2026-08-26T08:30:00.000Z',
   updated_at: '2026-08-26T09:00:00.000Z',
@@ -393,7 +403,11 @@ function renderRoute(entry = '/orders', initialContext = context) {
     <MemoryRouter initialEntries={[entry]}>
       <LocationProbe />
       <QueryClientProvider client={client}>
-        <ConsoleContextProvider value={value}><DependencyProvider value={createConsoleDependencies()}><Component /></DependencyProvider></ConsoleContextProvider>
+        <ConsoleContextProvider value={value}>
+          <DependencyProvider value={createConsoleDependencies()}>
+            <Component />
+          </DependencyProvider>
+        </ConsoleContextProvider>
       </QueryClientProvider>
     </MemoryRouter>
   );

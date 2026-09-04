@@ -1,5 +1,5 @@
 import { Button } from '@shop/design';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Account, AccountChange } from '../model/SupportConfig';
 
 type Body = AccountChange;
@@ -21,7 +21,7 @@ export function AccountSettings({
   const [displayName, setDisplayName] = useState(row?.displayName ?? '');
   const [secretRef, setSecretRef] = useState('');
   const [state, setState] = useState<Body['state']>(row?.state ?? 'active');
-  const edit = (value: string) => {
+  const edit = useCallback((value: string) => {
     const found = rows.find((item) => item.id === value);
     setId(value);
     if (!found) return;
@@ -29,7 +29,7 @@ export function AccountSettings({
     setDisplayName(found.displayName);
     setSecretRef('');
     setState(found.state);
-  };
+  }, [rows]);
   const create = () => {
     setId(nextId());
     setProvider('inapp');
@@ -39,7 +39,7 @@ export function AccountSettings({
   };
   useEffect(() => {
     if (!row && rows[0] && displayName === '' && secretRef === '') edit(rows[0].id);
-  }, [rows]);
+  }, [displayName, edit, row, rows, secretRef]);
   const secretRequired = provider !== 'inapp' && !row;
   return (
     <section className="supportsettingsection">

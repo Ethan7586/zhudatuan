@@ -10,7 +10,7 @@ export function RouteError() {
   const error = useRouteError();
   const status = isRouteErrorResponse(error) ? error.status : error instanceof ApiError ? error.status : 500;
   const data: unknown = isRouteErrorResponse(error) ? (error.data as unknown) : undefined;
-  const code: string = error instanceof ApiError ? error.code : routeCode(data);
+  const code = apiErrorCode(error) ?? routeCode(data);
   const catalogMismatch = status === 409 || code === 'NAVIGATION_CATALOG_MISMATCH';
   useEffect(() => {
     if (!catalogMismatch) return;
@@ -34,6 +34,11 @@ export function RouteError() {
       </ResourcePanel>
     </main>
   );
+}
+
+function apiErrorCode(error: unknown): string | undefined {
+  if (!(error instanceof ApiError)) return undefined;
+  return typeof error.code === 'string' ? error.code : undefined;
 }
 
 function routeCode(data: unknown): string {

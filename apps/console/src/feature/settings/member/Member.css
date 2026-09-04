@@ -75,3 +75,20 @@
   border-top: 0.0625rem solid var(--sw-border);
   padding-top: var(--sw-space-2);
 }
+.membervalidation {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+.memberimportnote {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  border: 0.0625rem solid var(--sw-brand);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-brand-light);
+  padding: var(--sw-space-2);
+  color: var(--sw-brand-dark);
+}
+.memberimportnote p {
+  margin: 0;
+}

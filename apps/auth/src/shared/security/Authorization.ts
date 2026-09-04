@@ -13,7 +13,10 @@ export class AuthorizationFactory implements AuthorizationPort {
   private pending: Promise<Authorization | undefined> | undefined;
 
   prewarm(): void {
-    this.pending ??= createAuthorization().then((value) => value, () => undefined);
+    this.pending ??= createAuthorization().then(
+      (value) => value,
+      () => undefined
+    );
   }
 
   create(): Promise<Authorization> {

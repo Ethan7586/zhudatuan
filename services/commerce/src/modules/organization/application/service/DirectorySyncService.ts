@@ -33,12 +33,15 @@ export class DirectorySyncService {
       this.policy.validate(page, connection.successfulversion);
       const subjects = this.mapper.map(connection, page);
       await fence();
-      await this.transactions.write(this.options(connection.tenantid, connection.organizationid, trace, 'organization.directory.event.persist', signal, deadline), async (context) => {
+      const active = await this.transactions.write(this.options(connection.tenantid, connection.organizationid, trace, 'organization.directory.event.persist', signal, deadline), async (context) => {
+        if (!(await this.repository.active(context, run.id))) return false;
         const counts = await this.reconciler.reconcile(context, connection, subjects, trace);
-        await this.repository.advance(context, run.id, page, counts);
+        if (!(await this.repository.advance(context, run.id, page, counts))) throw new Error('DIRECTORY_SYNC_CANCELLED');
         await this.repository.complete(context, run.id, connection.id, page.version, connection.cursor);
         await this.repository.markEventProcessed(context, connection.id, page.eventid);
+        return true;
       });
+      if (!active) return;
       return;
     }
     let cursor = run.cursor === null ? null : await this.kms.decrypt('providerconfig', 'organization/directory', run.cursor, { connection: connection.id });
@@ -52,10 +55,11 @@ export class DirectorySyncService {
       const subjects = this.mapper.map(connection, page);
       const protectedcursor = page.cursor === null ? null : (await this.kms.encrypt('providerconfig', 'organization/directory', page.cursor, { connection: connection.id })).ciphertext;
       await fence();
-      await this.transactions.write(this.options(connection.tenantid, connection.organizationid, trace, 'organization.directory.page.persist', signal, deadline), async (context) => {
+      const active = await this.transactions.write(this.options(connection.tenantid, connection.organizationid, trace, 'organization.directory.page.persist', signal, deadline), async (context) => {
+        if (!(await this.repository.active(context, run.id))) return false;
         const staged = await this.repository.stage(context, run, page, subjects);
         const counts = staged ? await this.reconciler.reconcile(context, connection, subjects, trace) : { read: 0, applied: 0, conflicts: 0, ignored: 0 };
-        await this.repository.advance(context, run.id, { ...page, cursor: protectedcursor }, counts);
+        if (!(await this.repository.advance(context, run.id, { ...page, cursor: protectedcursor }, counts))) throw new Error('DIRECTORY_SYNC_CANCELLED');
         if (page.complete) {
           await this.repository.complete(context, run.id, connection.id, page.version, protectedcursor);
           for (const departure of await this.repository.departures(context, connection.id)) {
@@ -63,7 +67,9 @@ export class DirectorySyncService {
             await this.repository.freeze(context, connection.id, departure.subject);
           }
         }
+        return true;
       });
+      if (!active) return;
       cursor = page.cursor;
       if (page.complete) return;
     }

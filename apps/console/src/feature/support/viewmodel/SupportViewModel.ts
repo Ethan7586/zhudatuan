@@ -4,7 +4,7 @@ import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } f
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import type { SupportDependencies } from '../../../app/Dependencies';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import { scopePath } from '../../../shared/url/ScopePath';
+import { scopeRoutePath } from '../../../shared/url/ScopePath';
 import type { HistoryItem } from '../model/History';
 import type { SupportEvent } from '../model/SupportEvent';
 import type { Ticket, TicketPage } from '../model/Ticket';
@@ -27,7 +27,7 @@ export function useSupportViewModel(context: ConsoleContext, dependencies: Suppo
   const [connected, setConnected] = useState(false);
   const deferredKeyword = useDeferredValue(keyword);
   const filter = useMemo<TicketFilter>(() => readFilter(search, deferredKeyword), [deferredKeyword, search]);
-  const path = scopePath(context.scope, 'support');
+  const path = scopeRoutePath(context.scope, 'consolesupport');
   const settingsOpen = search.get('view') === 'settings';
   const queue = useInfiniteQuery({
     queryKey: queueKey(context, filter),
@@ -50,7 +50,7 @@ export function useSupportViewModel(context: ConsoleContext, dependencies: Suppo
   const refreshQueue = useCallback(() => queue.refetch(), [queue]);
   const conversation = useConversationViewModel(context, caseId, ticket, dependencies, refreshQueue);
   const conversationEvent = conversation.onEvent;
-  const activeQueuePrefix = useMemo(() => queuePrefix(context), [context.scope.kind, context.scope.id, context.session.accessVersion]);
+  const activeQueuePrefix = useMemo(() => queuePrefix(context), [context]);
   const agents = useQuery({ queryKey: agentsKey(context), queryFn: ({ signal }) => dependencies.port.agents(context, undefined, signal), enabled: !settingsOpen });
   const history = useInfiniteQuery({
     queryKey: historyKey(context, caseId ?? 'unselected'),
@@ -61,6 +61,8 @@ export function useSupportViewModel(context: ConsoleContext, dependencies: Suppo
   });
   const historyItems = useMemo<readonly HistoryItem[]>(() => history.data?.pages.flatMap((page) => page.items) ?? [], [history.data]);
   const settings = useSettingsViewModel(context, dependencies, settingsOpen);
+  const conversationRefresh = conversation.actions.refresh;
+  const queueRefetch = queue.refetch;
   const action = useMutation<void, Error, TicketAction>({
     mutationFn: async (value) => {
       if (!ticket) throw new Error('请先选择工单。');
@@ -68,7 +70,9 @@ export function useSupportViewModel(context: ConsoleContext, dependencies: Suppo
       else if (value.kind === 'reopen') await dependencies.reopenTicket.execute(context, ticket);
       else await dependencies.assignTicket.execute(context, ticket, value.agent, value.reason);
     },
-    onSuccess: async () => { await queue.refetch(); },
+    onSuccess: async () => {
+      await queue.refetch();
+    },
     onError: (cause) => {
       if (hasFailureCode(cause, 'VERSION_CONFLICT')) {
         void queue.refetch();
@@ -77,26 +81,29 @@ export function useSupportViewModel(context: ConsoleContext, dependencies: Suppo
     },
   });
   const ledger = useRef(emptyEventLedger());
-  const receive = useCallback((event: SupportEvent) => {
-    const result = acceptSupportEvent(ledger.current, event);
-    ledger.current = result.ledger;
-    if (!result.accepted) return;
-    setConnected(true);
-    cache.setQueriesData<InfiniteData<TicketPage, string | undefined>>({ queryKey: activeQueuePrefix }, (current) => reconcileQueue(current, event, caseId));
-    conversationEvent(event);
-  }, [activeQueuePrefix, cache, caseId, conversationEvent]);
+  const receive = useCallback(
+    (event: SupportEvent) => {
+      const result = acceptSupportEvent(ledger.current, event);
+      ledger.current = result.ledger;
+      if (!result.accepted) return;
+      setConnected(true);
+      cache.setQueriesData<InfiniteData<TicketPage, string | undefined>>({ queryKey: activeQueuePrefix }, (current) => reconcileQueue(current, event, caseId));
+      conversationEvent(event);
+    },
+    [activeQueuePrefix, cache, caseId, conversationEvent]
+  );
   useEffect(() => {
     const controller = new AbortController();
     setConnected(true);
     const resync = () => {
-      void queue.refetch();
-      if (caseId) conversation.actions.refresh();
+      void queueRefetch();
+      if (caseId) conversationRefresh();
     };
     void dependencies.port.listen(context, receive, resync, controller.signal).catch(() => {
       if (!controller.signal.aborted) setConnected(false);
     });
     return () => controller.abort();
-  }, [context.scope.id, context.scope.kind, context.session.accessVersion, dependencies.port, receive]);
+  }, [caseId, context, conversationRefresh, dependencies.port, queueRefetch, receive]);
   const previousScope = useRef(context.scope.id);
   useEffect(() => {
     if (previousScope.current !== context.scope.id) {
@@ -108,35 +115,58 @@ export function useSupportViewModel(context: ConsoleContext, dependencies: Suppo
     setContextOpen(false);
     ledger.current = emptyEventLedger();
   }, [context.scope.id, navigate, path]);
-  const updateFilter = useCallback(<K extends keyof TicketFilter>(key: K, value: TicketFilter[K] | undefined) => {
-    if (key === 'keyword') { setKeyword(typeof value === 'string' ? value : ''); return; }
-    const next = new URLSearchParams(search);
-    next.delete('cursor');
-    if (value === undefined || value === false || value === '') next.delete(key);
-    else next.set(key, Array.isArray(value) ? value.join(',') : String(value));
-    setSearch(next);
-  }, [search, setSearch]);
-  const actions = useMemo(() => Object.freeze({
-    refresh: () => { void queue.refetch(); if (caseId) conversation.actions.refresh(); },
-    settings: () => {
-      if (settingsOpen) void navigate(path);
-      else { const next = new URLSearchParams(); next.set('view', 'settings'); void navigate(`${path}?${next.toString()}`); }
+  const updateFilter = useCallback(
+    <K extends keyof TicketFilter>(key: K, value: TicketFilter[K] | undefined) => {
+      if (key === 'keyword') {
+        setKeyword(typeof value === 'string' ? value : '');
+        return;
+      }
+      const next = new URLSearchParams(search);
+      next.delete('cursor');
+      if (value === undefined || value === false || value === '') next.delete(key);
+      else next.set(key, Array.isArray(value) ? value.join(',') : String(value));
+      setSearch(next);
     },
-    filter: updateFilter,
-    next: () => void queue.fetchNextPage(),
-    retryQueue: () => void queue.refetch(),
-    select: (id: string) => void navigate(`${path}/${encodeURIComponent(id)}`),
-    back: () => void navigate(path),
-    openContext: () => setContextOpen(true),
-    closeContext: () => setContextOpen(false),
-    closeTicket: () => { if (!action.isPending) action.mutate({ kind: 'close' }); },
-    reopenTicket: () => { if (!action.isPending) action.mutate({ kind: 'reopen' }); },
-    assign: (agent: string, reason: string) => { if (!action.isPending) action.mutate({ kind: 'assign', agent, reason }); },
-    openHistory: () => setHistoryOpen(true),
-    closeHistory: () => setHistoryOpen(false),
-    nextHistory: () => void history.fetchNextPage(),
-    retryHistory: () => void history.refetch(),
-  }), [action, caseId, conversation.actions, history, navigate, path, queue, settingsOpen, updateFilter]);
+    [search, setSearch]
+  );
+  const actions = useMemo(
+    () =>
+      Object.freeze({
+        refresh: () => {
+          void queue.refetch();
+          if (caseId) conversation.actions.refresh();
+        },
+        settings: () => {
+          if (settingsOpen) void navigate(path);
+          else {
+            const next = new URLSearchParams();
+            next.set('view', 'settings');
+            void navigate(`${path}?${next.toString()}`);
+          }
+        },
+        filter: updateFilter,
+        next: () => void queue.fetchNextPage(),
+        retryQueue: () => void queue.refetch(),
+        select: (id: string) => void navigate(scopeRoutePath(context.scope, 'consolesupportcase', { caseId: id })),
+        back: () => void navigate(path),
+        openContext: () => setContextOpen(true),
+        closeContext: () => setContextOpen(false),
+        closeTicket: () => {
+          if (!action.isPending) action.mutate({ kind: 'close' });
+        },
+        reopenTicket: () => {
+          if (!action.isPending) action.mutate({ kind: 'reopen' });
+        },
+        assign: (agent: string, reason: string) => {
+          if (!action.isPending) action.mutate({ kind: 'assign', agent, reason });
+        },
+        openHistory: () => setHistoryOpen(true),
+        closeHistory: () => setHistoryOpen(false),
+        nextHistory: () => void history.fetchNextPage(),
+        retryHistory: () => void history.refetch(),
+      }),
+    [action, caseId, context.scope, conversation.actions, history, navigate, path, queue, settingsOpen, updateFilter]
+  );
   return Object.freeze({
     scope: context.scope.name ?? chineseReference('组织范围', context.scope.id),
     settingsOpen,

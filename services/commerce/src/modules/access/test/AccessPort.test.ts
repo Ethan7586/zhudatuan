@@ -20,7 +20,8 @@ describe('AccessPort directory membership resolution', () => {
     expect(query.mock.calls[0]?.[0]).toContain('access.scopegrant scopegrant');
     expect(query.mock.calls[0]?.[0]).toContain('access.membershipoverride override');
     expect(query.mock.calls[0]?.[0]).toContain('access.membership_visible_to($1,membership.id)');
-    expect(query.mock.calls[0]?.[0]).toContain('join member.profile profile on profile.id=membership.member_id');
+    expect(query.mock.calls[0]?.[0]).toContain('left join access.memberprofile profile on profile.member_id=membership.member_id');
+    expect(query.mock.calls[0]?.[0]).not.toContain('join member.profile profile');
     expect(query.mock.calls[0]?.[0]).not.toContain('organization.unitclosure');
     expect(query.mock.calls[0]?.[0]).not.toContain('access.scopegrant grant');
   });

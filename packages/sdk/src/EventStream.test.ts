@@ -17,7 +17,7 @@ afterEach(() => {
 describe('JsonEventStream', () => {
   it('parses heartbeats, split frames and multiple frames from one chunk', async () => {
     const source = new JsonEventStream(
-      async () => success(': heartbeat\n\nid: event:1\ndata: {"val', 'ue":1}\n\nid: event:2\nevent: support.message.sent\ndata: {"value":2}\n\n'),
+      () => Promise.resolve(success(': heartbeat\n\nid: event:1\ndata: {"val', 'ue":1}\n\nid: event:2\nevent: support.message.sent\ndata: {"value":2}\n\n')),
       schema,
       streamOperation,
       streamErrors
@@ -34,10 +34,10 @@ describe('JsonEventStream', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
     const cursors: Array<string | undefined> = [];
     let connection = 0;
-    const source = new JsonEventStream(async (cursor) => {
+    const source = new JsonEventStream((cursor) => {
       cursors.push(cursor);
       connection += 1;
-      return connection === 1 ? success('id: event:1\ndata: {"value":1}\n\n') : success('id: event:2\ndata: {"value":2}\n\n');
+      return Promise.resolve(connection === 1 ? success('id: event:1\ndata: {"value":1}\n\n') : success('id: event:2\ndata: {"value":2}\n\n'));
     }, schema, streamOperation, streamErrors);
     const iterator = source[Symbol.asyncIterator]();
 
@@ -58,15 +58,15 @@ describe('JsonEventStream', () => {
   });
 
   it('turns an expired cursor into an explicit authoritative-resync signal', async () => {
-    const iterator = new JsonEventStream(async () => error(410, 'SUPPORT_EVENT_CURSOR_EXPIRED'), schema, streamOperation, streamErrors, 'event:old')[Symbol.asyncIterator]();
+    const iterator = new JsonEventStream(() => Promise.resolve(error(410, 'SUPPORT_EVENT_CURSOR_EXPIRED')), schema, streamOperation, streamErrors, 'event:old')[Symbol.asyncIterator]();
     await expect(iterator.next()).rejects.toEqual(expect.objectContaining({ code: 'SUPPORT_EVENT_RESYNC_REQUIRED', cursor: 'event:old' }));
   });
 
   it('fails closed on invalid JSON and oversized frames', async () => {
-    const invalid = new JsonEventStream(async () => success('id: event:1\ndata: {\n\n'), schema, streamOperation, streamErrors)[Symbol.asyncIterator]();
+    const invalid = new JsonEventStream(() => Promise.resolve(success('id: event:1\ndata: {\n\n')), schema, streamOperation, streamErrors)[Symbol.asyncIterator]();
     await expect(invalid.next()).rejects.toMatchObject({ code: 'CONTRACT_INVALID' });
 
-    const oversized = new JsonEventStream(async () => success(`data: ${'x'.repeat(RUNTIME_LIMITS.stream.maximumEventBytes + 1)}\n\n`), schema, streamOperation, streamErrors)[Symbol.asyncIterator]();
+    const oversized = new JsonEventStream(() => Promise.resolve(success(`data: ${'x'.repeat(RUNTIME_LIMITS.stream.maximumEventBytes + 1)}\n\n`)), schema, streamOperation, streamErrors)[Symbol.asyncIterator]();
     await expect(oversized.next()).rejects.toMatchObject({ kind: 'transport', code: 'CONTRACT_INVALID' });
   });
 
@@ -74,7 +74,7 @@ describe('JsonEventStream', () => {
     const controller = new AbortController();
     let cancelled = false;
     const stream = new ReadableStream<Uint8Array>({ cancel: () => { cancelled = true; } });
-    const source = new JsonEventStream(async () => ({ status: 200, headers: {}, stream }), schema, streamOperation, streamErrors, undefined, controller.signal);
+    const source = new JsonEventStream(() => Promise.resolve({ status: 200, headers: {}, stream }), schema, streamOperation, streamErrors, undefined, controller.signal);
     const next = source[Symbol.asyncIterator]().next();
     await Promise.resolve();
     await Promise.resolve();

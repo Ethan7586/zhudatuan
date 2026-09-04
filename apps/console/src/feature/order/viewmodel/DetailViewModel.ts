@@ -14,10 +14,13 @@ export function useOrderDetailViewModel(context: ConsoleContext, dependencies: O
   });
   const copyNumber = () => {
     if (query.data === undefined || navigator.clipboard === undefined) return;
-    void navigator.clipboard.writeText(query.data.order_number).then(() => {
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1600);
-    }).catch(() => setCopied(false));
+    void navigator.clipboard
+      .writeText(query.data.order_number)
+      .then(() => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1600);
+      })
+      .catch(() => setCopied(false));
   };
   const condition = queryCondition({
     pending: query.isPending,

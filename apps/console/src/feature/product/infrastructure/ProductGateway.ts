@@ -5,7 +5,11 @@ import type { Listing, Pool, ProductDraft, ProductReceipt } from '../model/Produ
 import type { ProductCommand, ProductPort, ProductQuery, ProductRequest } from '../public';
 import { ProductMapper } from './ProductMapper';
 
-export interface ProductGatewayConfig { readonly apiBaseUrl: string; readonly clientVersion: string; readonly catalogVersion: string }
+export interface ProductGatewayConfig {
+  readonly apiBaseUrl: string;
+  readonly clientVersion: string;
+  readonly catalogVersion: string;
+}
 
 export class ProductGateway implements ProductPort {
   private readonly catalog;
@@ -14,7 +18,10 @@ export class ProductGateway implements ProductPort {
   private readonly detail;
   private readonly pools;
 
-  constructor(private readonly config: ProductGatewayConfig, private readonly mapper = new ProductMapper()) {
+  constructor(
+    private readonly config: ProductGatewayConfig,
+    private readonly mapper = new ProductMapper()
+  ) {
     this.catalog = createFetchCatalog(config.apiBaseUrl);
     this.pricing = createFetchPricing(config.apiBaseUrl);
     this.listings = createFetchCatalogListingsRead(config.apiBaseUrl);
@@ -23,7 +30,10 @@ export class ProductGateway implements ProductPort {
   }
 
   async readProducts(request: ProductRequest, query: ProductQuery, signal: AbortSignal) {
-    const value = await this.listings({ query: { limit: query.limit, ...(query.q === '' ? {} : { q: query.q }), ...(query.category === '' ? {} : { category: query.category }), ...(query.cursor === undefined ? {} : { cursor: query.cursor }) } }, this.context(request, signal));
+    const value = await this.listings(
+      { query: { limit: query.limit, ...(query.q === '' ? {} : { q: query.q }), ...(query.category === '' ? {} : { category: query.category }), ...(query.cursor === undefined ? {} : { cursor: query.cursor }) } },
+      this.context(request, signal)
+    );
     return this.mapper.page(value);
   }
 
@@ -60,7 +70,10 @@ export class ProductGateway implements ProductPort {
   }
 
   async publishPrice(request: ProductCommand, listing: Listing, amountMinor: number) {
-    const created = await this.pricing.rulesCreate({ body: { priority: 100, kind: 'fixed', condition: { listingId: listing.id, productId: listing.product_id, skuId: listing.sku_id }, effect: { amountMinor, currency: 'CNY', mode: 'fixed' } } }, this.command(request));
+    const created = await this.pricing.rulesCreate(
+      { body: { priority: 100, kind: 'fixed', condition: { listingId: listing.id, productId: listing.product_id, skuId: listing.sku_id }, effect: { amountMinor, currency: 'CNY', mode: 'fixed' } } },
+      this.command(request)
+    );
     return this.receipt(await this.pricing.rulesPublish({ path: { ruleid: created.id }, body: {} }, this.command(request, version(created.version))));
   }
 
@@ -78,10 +91,20 @@ export class ProductGateway implements ProductPort {
   }
 
   private command(request: ProductCommand, expectedVersion?: number) {
-    return createRequestContext(this.config.clientVersion, { target: 'console', catalogVersion: this.config.catalogVersion, scope: request.scope, accessVersion: request.accessVersion, idempotencyKey: request.identity, ...(request.csrf === undefined ? {} : { csrfToken: request.csrf }), ...(expectedVersion === undefined ? {} : { expectedVersion }) });
+    return createRequestContext(this.config.clientVersion, {
+      target: 'console',
+      catalogVersion: this.config.catalogVersion,
+      scope: request.scope,
+      accessVersion: request.accessVersion,
+      idempotencyKey: request.identity,
+      ...(request.csrf === undefined ? {} : { csrfToken: request.csrf }),
+      ...(expectedVersion === undefined ? {} : { expectedVersion }),
+    });
   }
 
-  private receipt(value: unknown): ProductReceipt { return this.mapper.receipt(value); }
+  private receipt(value: unknown): ProductReceipt {
+    return this.mapper.receipt(value);
+  }
 }
 
 function version(value: string | number): number {

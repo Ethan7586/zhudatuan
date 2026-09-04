@@ -144,6 +144,10 @@ export const IDENTITY_OUTPUT_SCHEMAS = {
   IdentityProvidersReadOutput: strictObject({
     items: array(strictObject({ id: string(), type: literal(['wechat', 'wecomcorp', 'wecomsuite', 'oidc']), status: literal('enabled') })),
   }),
+  IdentityProvidersCenterReadOutput: strictObject({
+    items: array(strictObject({ id: string(), type: literal(['wechat', 'wecomcorp', 'wecomsuite', 'oidc']), status: literal('enabled') })),
+    count: number(),
+  }),
   IdentityMembershipsReadOutput: strictObject({
     items: array(strictObject({ ...membershipShape, current: boolean(), accessVersion: number() })),
     count: number(),

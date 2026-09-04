@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { OperationCatalog, type OperationId } from '@shop/contract';
 import { SDK_OPERATION_IDS } from '@shop/sdk';
-import { ROUTE_KEYS } from '../../apps/storefront/src/generated/NavigationBinding';
+import { ROUTES } from '../../apps/storefront/src/generated/RouteBinding';
 
 export interface StorefrontEvidence {
   readonly operations: readonly OperationId[];
@@ -15,7 +15,7 @@ export interface StorefrontEvidence {
 
 const root = process.cwd();
 const sdk = new Set<OperationId>(SDK_OPERATION_IDS);
-const routeCatalog = new Set<string>(ROUTE_KEYS);
+const routeCatalog = new Set<string>(Object.values(ROUTES));
 
 export function storefrontJourney(name: string, evidence: StorefrontEvidence): void {
   test(`${name} uses only canonical named operations`, () => {

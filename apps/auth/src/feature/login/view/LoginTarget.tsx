@@ -21,7 +21,10 @@ export function LoginTarget({ target, focusTarget, busy, onTarget }: Readonly<{ 
           const selected = target === item.value;
           return (
             <button
-              ref={(control) => { if (control === null) controls.current.delete(item.value); else controls.current.set(item.value, control); }}
+              ref={(control) => {
+                if (control === null) controls.current.delete(item.value);
+                else controls.current.set(item.value, control);
+              }}
               key={item.value}
               type="button"
               role="radio"
@@ -49,7 +52,16 @@ export function LoginTarget({ target, focusTarget, busy, onTarget }: Readonly<{ 
 }
 
 function move(event: KeyboardEvent<HTMLButtonElement>, index: number, onTarget: (target: AuthTarget) => void): void {
-  const next = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? (index + 1) % targets.length : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? (index + targets.length - 1) % targets.length : event.key === 'Home' ? 0 : event.key === 'End' ? targets.length - 1 : undefined;
+  const next =
+    event.key === 'ArrowRight' || event.key === 'ArrowDown'
+      ? (index + 1) % targets.length
+      : event.key === 'ArrowLeft' || event.key === 'ArrowUp'
+        ? (index + targets.length - 1) % targets.length
+        : event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? targets.length - 1
+            : undefined;
   if (next === undefined) return;
   event.preventDefault();
   onTarget(targets[next]!.value);

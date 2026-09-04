@@ -1,1 +1,1 @@
-export { useCatalogState } from './CatalogReader';
+export type { CatalogPort } from './CatalogPort';

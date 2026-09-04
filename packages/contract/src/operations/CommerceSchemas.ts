@@ -246,6 +246,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "identity.links.read": Object.freeze({ input: exactOperationInput("IdentityLinksReadInput", [] as const, false), output: exactOperationOutput("IdentityLinksReadOutput") }),
   "identity.links.create": Object.freeze({ input: exactOperationInput("IdentityLinksCreateInput", [] as const, true), output: exactOperationOutput("IdentityLinksCreateOutput") }),
   "identity.links.revoke": Object.freeze({ input: exactOperationInput("IdentityLinksRevokeInput", ["linkid"] as const, true), output: exactOperationOutput("IdentityLinksRevokeOutput") }),
+  "identity.providers.center.read": Object.freeze({ input: exactOperationInput("IdentityProvidersCenterReadInput", [] as const, false), output: exactOperationOutput("IdentityProvidersCenterReadOutput") }),
   "identity.providers.manage": Object.freeze({ input: exactOperationInput("IdentityProvidersManageInput", ["providerid"] as const, true), output: exactOperationOutput("IdentityProvidersManageOutput") }),
   "identity.providers.test": Object.freeze({ input: exactOperationInput("IdentityProvidersTestInput", ["providerid"] as const, true), output: exactOperationOutput("IdentityProvidersTestOutput") }),
   "organization.directories.read": Object.freeze({ input: exactOperationInput("OrganizationDirectoriesReadInput", [] as const, false), output: exactOperationOutput("OrganizationDirectoriesReadOutput") }),

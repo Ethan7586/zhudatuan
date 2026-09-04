@@ -59,7 +59,7 @@ export interface CockpitSummary {
     trend: readonly CockpitTrend[];
     weeklyTrend: readonly CockpitTrend[];
     categories: readonly Readonly<{ name: string; salesCents: number; share: number }>[];
-    topProducts: readonly never[];
+    topProducts: readonly CockpitProduct[];
     malls: readonly CockpitMall[];
     events: readonly CockpitEvent[];
     insights: readonly CockpitInsight[];
@@ -69,6 +69,14 @@ export interface CockpitSummary {
 export interface CockpitTrend {
   readonly date: string;
   readonly salesCents: number;
+  readonly orderCount: number;
+}
+
+export interface CockpitProduct {
+  readonly productId: string;
+  readonly name: string;
+  readonly salesCents: number;
+  readonly quantity: number;
   readonly orderCount: number;
 }
 

@@ -1,33 +1,36 @@
-import type { StorefrontClient } from '../../../shared/api/Client';
+import type { CheckoutOperations } from '@shop/sdk/checkout';
+import type { OrderOperations } from '@shop/sdk/order';
+import type { RequestContextFactory } from '../../../shared/api/RequestContext';
 import type { StorefrontSession } from '../../../entity/session';
-import type { ContractJsonValue } from '@shop/contract';
+import type { CheckoutPort, CommittedOrder, QuoteRequest } from '../public/CheckoutPort';
+import type { Quote } from '../model/Quote';
+import { mapQuote } from './CheckoutMapper';
 
-export class CheckoutGateway {
+export class CheckoutGateway implements CheckoutPort {
   constructor(
-    private readonly checkout: StorefrontClient['commerce']['checkout'],
-    private readonly order: StorefrontClient['commerce']['order'],
-    private readonly context: StorefrontClient['context']
+    private readonly checkout: CheckoutOperations,
+    private readonly order: OrderOperations,
+    private readonly context: RequestContextFactory
   ) {}
-  quote(
-    session: StorefrontSession,
-    body: Readonly<{
-      cartVersion: number;
-      lines: readonly Readonly<{ listingId: string; quantity: number; lineVersion: number }>[];
-      addressId?: string;
-      invoiceId?: string;
-      delivery: ContractJsonValue;
-      voucherIds: readonly string[];
-      benefits: readonly Readonly<{ accountId: string; amountMinor: number }>[];
-      paymentScene: 'miniapp' | 'jsapi';
-    }>,
-    idempotencyKey: string
-  ) {
-    return this.checkout.quoteCreate({ body }, this.context(session, { write: true, idempotencyKey }));
+  async quote(session: StorefrontSession, body: QuoteRequest, idempotencyKey: string): Promise<Quote> {
+    const request = {
+      cartVersion: body.cartVersion,
+      lines: [...body.lines],
+      ...(body.addressId ? { addressId: body.addressId } : {}),
+      ...(body.invoiceId ? { invoiceId: body.invoiceId } : {}),
+      delivery: body.delivery,
+      voucherIds: [...body.voucherIds],
+      benefits: [...body.benefits],
+      paymentScene: body.paymentScene,
+    };
+    return mapQuote(await this.checkout.quoteCreate({ body: request }, this.context(session, { write: true, idempotencyKey })));
   }
-  current(session: StorefrontSession, signal?: AbortSignal) {
-    return this.checkout.quotesCurrentRead({}, this.context(session, { signal }));
+  async current(session: StorefrontSession, signal?: AbortSignal): Promise<Quote | null> {
+    const value = await this.checkout.quotesCurrentRead({}, this.context(session, { signal }));
+    return value.quote ? mapQuote(value.quote) : null;
   }
-  commit(session: StorefrontSession, quoteId: string, paymentScene: 'miniapp' | 'jsapi', idempotencyKey: string) {
-    return this.order.ordersCreate({ body: { quoteId, paymentScene } }, this.context(session, { write: true, idempotencyKey }));
+  async commit(session: StorefrontSession, quoteId: string, paymentScene: 'miniapp' | 'jsapi', idempotencyKey: string): Promise<CommittedOrder> {
+    const value = await this.order.ordersCreate({ body: { quoteId, paymentScene } }, this.context(session, { write: true, idempotencyKey }));
+    return Object.freeze({ orderId: value.order.id, payment: Object.freeze({ paymentId: value.payment.paymentId }) });
   }
 }

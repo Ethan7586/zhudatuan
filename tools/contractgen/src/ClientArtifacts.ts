@@ -200,7 +200,16 @@ function sdkDomainSource(domain: string, operations: readonly OperationDefinitio
     domain === 'identity'
       ? `import { identityClientSchema } from '@shop/contract/identityschema';\nimport { defineScopedOperation } from '../ScopedOperationDescriptor';`
       : `import { exactOperationInput, exactOperationOutput } from '@shop/contract/schema';\nimport { defineOperation } from '../CatalogOperationDescriptor';`;
-  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport { ApiClient } from '../ApiClient';\nimport { FetchTransport } from '../FetchTransport';\nimport { bindEventOperation, bindOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';\n${schemaImport}\n\nexport const ${domain.toUpperCase()}_OPERATION_IDS = Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface ${name}Operations {\n${methods}\n}\n\nexport function createFetch${name}(baseUrl: string): ${name}Operations { return create${name}Operations(new ApiClient(baseUrl, new FetchTransport())); }\n\nexport function create${name}Operations(client: OperationExecutor): ${name}Operations { return Object.freeze({\n${bindings}\n  }); }\n\n${factories}\n`;
+  const hasEvents = operations.some(({ responseMode }) => responseMode === 'stream');
+  const hasRequests = operations.some(({ responseMode }) => responseMode !== 'stream');
+  const descriptorImports = [
+    ...(hasEvents ? ['bindEventOperation'] : []),
+    ...(hasRequests ? ['bindOperation'] : []),
+    ...(hasEvents ? ['type EventOperationMethod'] : []),
+    'type OperationExecutor',
+    ...(hasRequests ? ['type OperationMethod'] : []),
+  ].join(', ');
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport { ApiClient } from '../ApiClient';\nimport { FetchTransport } from '../FetchTransport';\nimport { ${descriptorImports} } from '../OperationDescriptor';\n${schemaImport}\n\nexport const ${domain.toUpperCase()}_OPERATION_IDS = Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface ${name}Operations {\n${methods}\n}\n\nexport function createFetch${name}(baseUrl: string): ${name}Operations { return create${name}Operations(new ApiClient(baseUrl, new FetchTransport())); }\n\nexport function create${name}Operations(client: OperationExecutor): ${name}Operations { return Object.freeze({\n${bindings}\n  }); }\n\n${factories}\n`;
 }
 
 function requestSchema(operation: OperationDefinition): unknown {

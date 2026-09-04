@@ -1,13 +1,13 @@
 import { useRef, useState, type SetStateAction } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
+import { routePath, ROUTES } from '../../../generated/RouteBinding';
 import { useSession } from '../../../entity/session/viewmodel/SessionContext';
 import { StorefrontQuery } from '../../../shared/api/Query';
-import { pathForPage } from '../../../shared/navigation/Route';
 import { presentProduct } from '../../../entity/product';
 import type { Product } from '../../../entity/product';
-import { useAccountIdentity } from '../../account/public/index';
-import { useCartCommand } from '../../cart/public/index';
+import { useAccountIdentity } from '../../account';
+import { useCartCommand } from '../../cart';
 import { ReadProduct } from '../application/ReadProduct';
 import { ShareProduct } from '../application/ShareProduct';
 import { useDependencies } from '../../../app/DependencyContext';
@@ -27,7 +27,7 @@ export function useProductViewModel(routeId: string | null = null) {
   const [selectedSpec, setSelectedSpec] = useState('');
   const [tab, setTab] = useState<'detail' | 'spec' | 'aftersale'>('detail');
   const query = useQuery({
-    queryKey: StorefrontQuery.product(session.scope || 'guest', activeId ?? 'none'),
+    queryKey: StorefrontQuery.product(session.query.public, activeId ?? 'none'),
     queryFn: ({ signal }) => reader.current.execute(activeId!, signal),
     enabled: Boolean(session.scope && activeId),
   });
@@ -43,19 +43,16 @@ export function useProductViewModel(routeId: string | null = null) {
   return Object.freeze({
     user: identity.user,
     addresses: identity.addresses,
-    state: query.isPending ? 'loading' as const : query.isError ? 'failed' as const : current ? 'ready' as const : 'empty' as const,
+    state: query.isPending ? ('loading' as const) : query.isError ? ('failed' as const) : current ? ('ready' as const) : ('empty' as const),
     product: presented,
     presentationProducts: presented ? Object.freeze([presented]) : Object.freeze([]),
     quickViewProduct: quickId ? current : null,
     setQuickViewProduct,
     addToCart: cart.add,
-    setLaptopPage: (page: Parameters<typeof pathForPage>[0]) => {
-      void navigate(pathForPage(page));
-    },
     favorites: identity.favorites,
     toggleFavorite: identity.toggleFavorite,
     shareProduct: async (product: Product) => {
-      const result = await share.current.execute(product, `${window.location.origin}/products/${encodeURIComponent(product.id)}`);
+      const result = await share.current.execute(product, new URL(routePath('storeproduct', { productId: product.id }), window.location.origin).toString());
       session.showToast(result === 'shared' ? '商品已分享' : '商品链接已复制', 'success');
     },
     showToast: session.showToast,
@@ -66,8 +63,15 @@ export function useProductViewModel(routeId: string | null = null) {
       changeQuantity: (value: number) => setQuantity(Math.max(1, Math.min(current?.stock ?? 1, value))),
       selectSpec: setSelectedSpec,
       selectTab: setTab,
-      add: () => { if (current) void cart.add(current, quantity); },
-      buy: () => { if (current) { void cart.add(current, quantity); void navigate('/cart'); } },
+      add: () => {
+        if (current) void cart.add(current, quantity);
+      },
+      buy: () => {
+        if (current) {
+          void cart.add(current, quantity);
+          void navigate(ROUTES.storecart);
+        }
+      },
       closeQuickView: () => setQuickViewProduct(null),
       addQuickView: (quantity: number, specs: Readonly<Record<string, string>>) => {
         if (!current) return;
@@ -78,9 +82,9 @@ export function useProductViewModel(routeId: string | null = null) {
         if (!current) return;
         cart.add(current, quantity, specs);
         setQuickViewProduct(null);
-        void navigate('/cart');
+        void navigate(ROUTES.storecart);
       },
-      back: () => void navigate('/products'),
+      back: () => void navigate(ROUTES.storecatalog),
     }),
   });
 }

@@ -7,10 +7,11 @@ export function Drawer({ open, title, children, onClose }: Readonly<{ open: bool
   useEffect(() => {
     if (!open) return undefined;
     const active = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
+    const frame = requestAnimationFrame(() => panel.current?.focus());
     const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
     document.addEventListener('keydown', escape);
-    return () => { document.removeEventListener('keydown', escape); active?.focus(); };
+    return () => { cancelAnimationFrame(frame); document.removeEventListener('keydown', escape); active?.focus(); };
   }, [onClose, open]);
   if (!open) return null;
-  return <div className="drawerbackdrop" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}><aside ref={panel} className="drawerpanel" role="dialog" aria-modal="true" aria-labelledby={titleid}><header><h2 id={titleid}>{title}</h2><Button autoFocus aria-label="关闭" onPress={onClose}>×</Button></header><div className="drawerbody">{children}</div></aside></div>;
+  return <div className="drawerbackdrop" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}><aside ref={panel} tabIndex={-1} className="drawerpanel" role="dialog" aria-modal="true" aria-labelledby={titleid}><header><h2 id={titleid}>{title}</h2><Button aria-label="关闭" onPress={onClose}>×</Button></header><div className="drawerbody">{children}</div></aside></div>;
 }

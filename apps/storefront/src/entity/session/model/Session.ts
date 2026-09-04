@@ -1,8 +1,11 @@
-import type { RequestScope } from '@shop/sdk';
+export interface MallScope {
+  readonly kind: 'mall';
+  readonly id: string;
+}
 
 export interface StorefrontSession {
   readonly membership: string;
-  readonly scope: RequestScope;
+  readonly scope: MallScope;
   readonly accessVersion: number;
   readonly csrfToken: string | null;
 }

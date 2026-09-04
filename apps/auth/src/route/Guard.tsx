@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useLocation } from 'react-router';
 import { readAuthRequest } from '../shared/security/ReturnTarget';
 import { ROUTES, type RoutePath as AuthRoute } from '../generated/RouteBinding';
+import { hasControlCharacter } from '../shared/security/TextSafety';
 
 const ALLOWED: Readonly<Record<AuthRoute, ReadonlySet<string>>> = Object.freeze({
   [ROUTES.authlogin]: new Set(['target', 'returntarget', 'returnpath']),
@@ -26,7 +27,7 @@ function validate(search: string, allowed: ReadonlySet<string>): void {
   const query = new URLSearchParams(search);
   const seen = new Set<string>();
   for (const [key, value] of query) {
-    if (!allowed.has(key) || seen.has(key) || key.length > 32 || value.length > 2048 || /[\u0000-\u001f\u007f]/.test(value)) throw new Error('RETURN_TARGET_INVALID');
+    if (!allowed.has(key) || seen.has(key) || key.length > 32 || value.length > 2048 || hasControlCharacter(value)) throw new Error('RETURN_TARGET_INVALID');
     seen.add(key);
   }
   const target = query.get('target');

@@ -33,7 +33,7 @@ export class PgProviderRepository implements ProviderRepository {
       from identity.provider where status='enabled' and ($1::uuid is null or tenant_id=$1) order by type,id limit 64`,
       [tenant ?? null]
     );
-    return Object.freeze(result.rows.map((row) => Object.freeze({ id: row.id, type: row.type, status: row.status })));
+    return Object.freeze(result.rows.map((row) => Object.freeze({ id: row.id, type: row.type, status: 'enabled' as const })));
   }
   async require(context: ReadTransactionContext, id: string): Promise<ProviderInstance> {
     const database = this.transactions.database(context);

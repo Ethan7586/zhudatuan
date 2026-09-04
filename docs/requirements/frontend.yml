@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx
 workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
-navigationCatalogSha256: 5191a956ebfa896847411843c07115759b1e36c5b1943272798008172ea3f6d5
-contractSha256: 3e4d5a0dad5ad2742b167cd1a30486a56969a4dc4d78ba4c6d7dff44229fa7bb
+navigationCatalogSha256: 0e84f38d138c31f00281ada4d37972845428eea7270dcd2fed6fe5e5abc4dd99
+contractSha256: 5b1192c0219af4a211e6b4cddea11bfdaffa5935fb43c3a29329152c401ee869
 generated: true
 count: 296
 chain:
@@ -24,7 +24,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -46,7 +46,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -68,7 +68,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -90,7 +90,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -112,7 +112,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -134,7 +134,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -156,7 +156,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -178,7 +178,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -200,7 +200,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -222,7 +222,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -244,7 +244,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -266,7 +266,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -288,7 +288,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -310,7 +310,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -332,7 +332,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -354,7 +354,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -376,7 +376,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -398,7 +398,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -420,7 +420,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -442,7 +442,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -464,7 +464,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -486,7 +486,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -508,7 +508,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -530,7 +530,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -552,7 +552,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -574,7 +574,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -596,7 +596,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -618,7 +618,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -640,7 +640,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -662,7 +662,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -684,7 +684,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -706,7 +706,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -728,7 +728,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -750,7 +750,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -772,7 +772,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -794,7 +794,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -816,7 +816,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -838,7 +838,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -860,7 +860,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -882,7 +882,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -904,7 +904,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -926,7 +926,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -948,7 +948,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -970,7 +970,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -992,7 +992,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -1014,7 +1014,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -1036,7 +1036,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1058,7 +1058,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1080,7 +1080,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1102,7 +1102,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -1124,7 +1124,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -1146,7 +1146,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1168,7 +1168,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1190,7 +1190,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/support/Manifest.ts
-      viewmodel: apps/console/src/feature/support/viewmodel
+      viewmodel: apps/console/src/feature/support/viewmodel/SupportViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesupport
@@ -1212,7 +1212,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/support/Manifest.ts
-      viewmodel: apps/console/src/feature/support/viewmodel
+      viewmodel: apps/console/src/feature/support/viewmodel/SupportViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesupport
@@ -1234,7 +1234,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1256,7 +1256,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1278,7 +1278,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1300,7 +1300,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -1322,7 +1322,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1344,7 +1344,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1366,7 +1366,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -1388,7 +1388,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -1410,7 +1410,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1432,7 +1432,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1454,7 +1454,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1476,7 +1476,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1498,7 +1498,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1520,7 +1520,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -1542,7 +1542,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -1564,7 +1564,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -1586,7 +1586,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -1608,7 +1608,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -1630,7 +1630,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -1652,7 +1652,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -1674,7 +1674,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -1696,7 +1696,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -1718,7 +1718,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -1740,7 +1740,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -1762,7 +1762,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -1784,7 +1784,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -1806,7 +1806,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -1828,7 +1828,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -1850,7 +1850,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -1872,7 +1872,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -1894,7 +1894,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -1916,7 +1916,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -1938,7 +1938,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -1960,7 +1960,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -1982,7 +1982,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -2004,7 +2004,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -2026,7 +2026,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -2048,7 +2048,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -2070,7 +2070,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -2092,7 +2092,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -2114,7 +2114,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -2136,7 +2136,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -2158,7 +2158,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -2180,7 +2180,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -2202,7 +2202,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -2224,7 +2224,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -2246,7 +2246,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -2268,7 +2268,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -2290,7 +2290,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -2312,7 +2312,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -2334,7 +2334,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -2356,7 +2356,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -2378,7 +2378,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -2400,7 +2400,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -2422,7 +2422,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -2444,7 +2444,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/experience/Manifest.ts
-      viewmodel: apps/console/src/feature/experience/viewmodel
+      viewmodel: apps/console/src/feature/experience/viewmodel/ApplicationViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleexperience
@@ -2466,7 +2466,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -2488,7 +2488,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -2510,7 +2510,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -2532,7 +2532,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -2554,7 +2554,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -2576,7 +2576,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -2598,7 +2598,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -2620,7 +2620,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -2642,7 +2642,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -2664,7 +2664,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -2686,7 +2686,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -2708,7 +2708,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -2730,7 +2730,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -2752,7 +2752,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -2774,7 +2774,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -2796,7 +2796,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -2818,7 +2818,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -2840,7 +2840,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -2862,7 +2862,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -2884,7 +2884,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -2906,7 +2906,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -2928,7 +2928,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -2950,7 +2950,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -2972,7 +2972,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -2994,7 +2994,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/support/Manifest.ts
-      viewmodel: apps/console/src/feature/support/viewmodel
+      viewmodel: apps/console/src/feature/support/viewmodel/SupportViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesupport
@@ -3016,7 +3016,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/support/Manifest.ts
-      viewmodel: apps/console/src/feature/support/viewmodel
+      viewmodel: apps/console/src/feature/support/viewmodel/SupportViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesupport
@@ -3038,7 +3038,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/support/Manifest.ts
-      viewmodel: apps/console/src/feature/support/viewmodel
+      viewmodel: apps/console/src/feature/support/viewmodel/SupportViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesupport
@@ -3060,7 +3060,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/support/Manifest.ts
-      viewmodel: apps/console/src/feature/support/viewmodel
+      viewmodel: apps/console/src/feature/support/viewmodel/SupportViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesupport
@@ -3082,7 +3082,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -3104,7 +3104,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -3126,7 +3126,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -3148,7 +3148,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -3170,7 +3170,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -3192,7 +3192,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -3214,7 +3214,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -3236,7 +3236,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -3258,7 +3258,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -3280,7 +3280,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -3302,7 +3302,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/support/Manifest.ts
-      viewmodel: apps/console/src/feature/support/viewmodel
+      viewmodel: apps/console/src/feature/support/viewmodel/SupportViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesupport
@@ -3324,7 +3324,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/support/Manifest.ts
-      viewmodel: apps/console/src/feature/support/viewmodel
+      viewmodel: apps/console/src/feature/support/viewmodel/SupportViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesupport
@@ -3346,7 +3346,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -3368,7 +3368,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -3390,7 +3390,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -3412,7 +3412,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -3434,7 +3434,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -3456,7 +3456,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -3478,7 +3478,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -3500,7 +3500,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -3522,7 +3522,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -3544,7 +3544,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -3566,7 +3566,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -3588,7 +3588,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -3610,7 +3610,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -3632,7 +3632,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -3654,7 +3654,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -3676,7 +3676,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -3698,7 +3698,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -3720,7 +3720,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -3742,7 +3742,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -3764,7 +3764,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -3786,7 +3786,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -3808,7 +3808,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -3830,7 +3830,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -3852,7 +3852,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -3874,7 +3874,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -3896,7 +3896,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/support/Manifest.ts
-      viewmodel: apps/console/src/feature/support/viewmodel
+      viewmodel: apps/console/src/feature/support/viewmodel/SupportViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesupport
@@ -3918,7 +3918,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -3940,7 +3940,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -3962,7 +3962,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/experience/Manifest.ts
-      viewmodel: apps/console/src/feature/experience/viewmodel
+      viewmodel: apps/console/src/feature/experience/viewmodel/ApplicationViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleexperience
@@ -3984,7 +3984,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -4006,7 +4006,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -4028,7 +4028,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -4050,7 +4050,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -4072,7 +4072,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -4094,7 +4094,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -4116,7 +4116,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -4138,7 +4138,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -4160,7 +4160,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -4182,7 +4182,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -4204,7 +4204,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -4226,7 +4226,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -4248,7 +4248,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -4270,7 +4270,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -4292,7 +4292,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -4314,7 +4314,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -4336,7 +4336,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -4358,7 +4358,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -4380,7 +4380,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -4402,7 +4402,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -4424,7 +4424,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -4446,7 +4446,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/support/Manifest.ts
-      viewmodel: apps/console/src/feature/support/viewmodel
+      viewmodel: apps/console/src/feature/support/viewmodel/SupportViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesupport
@@ -4468,7 +4468,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -4490,7 +4490,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -4512,7 +4512,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -4534,7 +4534,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -4556,7 +4556,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -4578,7 +4578,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -4600,7 +4600,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -4622,7 +4622,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -4644,7 +4644,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -4666,7 +4666,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -4688,7 +4688,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -4710,7 +4710,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -4732,7 +4732,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -4754,7 +4754,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -4776,7 +4776,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -4798,7 +4798,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/control/Manifest.ts
-      viewmodel: apps/console/src/feature/control/viewmodel
+      viewmodel: apps/console/src/feature/control/viewmodel/ControlViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolecontrol
@@ -4820,7 +4820,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -4842,7 +4842,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -4864,7 +4864,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -4886,7 +4886,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -4908,7 +4908,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -4930,7 +4930,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -4952,7 +4952,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -4974,7 +4974,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -4996,7 +4996,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -5018,7 +5018,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -5040,7 +5040,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5062,7 +5062,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -5084,7 +5084,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5106,7 +5106,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5128,7 +5128,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5150,7 +5150,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -5172,7 +5172,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -5194,7 +5194,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -5216,7 +5216,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -5238,7 +5238,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -5260,7 +5260,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -5282,7 +5282,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/voucher/Manifest.ts
-      viewmodel: apps/console/src/feature/voucher/viewmodel
+      viewmodel: apps/console/src/feature/voucher/viewmodel/VoucherViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolevouchers
@@ -5304,7 +5304,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5326,7 +5326,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5348,7 +5348,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -5370,7 +5370,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -5392,7 +5392,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -5414,7 +5414,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -5436,7 +5436,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5458,7 +5458,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -5480,7 +5480,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5502,7 +5502,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/reporting/Manifest.ts
-      viewmodel: apps/console/src/feature/reporting/viewmodel
+      viewmodel: apps/console/src/feature/reporting/viewmodel/ReportingViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolereporting
@@ -5524,7 +5524,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5546,7 +5546,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5568,7 +5568,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5590,7 +5590,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -5612,7 +5612,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -5634,7 +5634,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -5656,7 +5656,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -5678,7 +5678,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5700,7 +5700,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5722,7 +5722,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -5744,7 +5744,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -5766,7 +5766,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -5788,7 +5788,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/finance/Manifest.ts
-      viewmodel: apps/console/src/feature/finance/viewmodel
+      viewmodel: apps/console/src/feature/finance/viewmodel/OverviewViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolefinance
@@ -5810,7 +5810,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5832,7 +5832,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -5854,7 +5854,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/order/Manifest.ts
-      viewmodel: apps/console/src/feature/order/viewmodel
+      viewmodel: apps/console/src/feature/order/viewmodel/ListViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleorders
@@ -5876,7 +5876,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -5898,7 +5898,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/product/Manifest.ts
-      viewmodel: apps/console/src/feature/product/viewmodel
+      viewmodel: apps/console/src/feature/product/viewmodel/ProductViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consoleproducts
@@ -5920,7 +5920,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/settings/Manifest.ts
-      viewmodel: apps/console/src/feature/settings/viewmodel
+      viewmodel: apps/console/src/feature/settings/viewmodel/SettingsViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolesettings
@@ -5942,7 +5942,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -5964,7 +5964,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -5986,7 +5986,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6008,7 +6008,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6030,7 +6030,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6052,7 +6052,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6074,7 +6074,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6096,7 +6096,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6118,7 +6118,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6140,7 +6140,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6162,7 +6162,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6184,7 +6184,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6206,7 +6206,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6228,7 +6228,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6250,7 +6250,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6272,7 +6272,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6294,7 +6294,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6316,7 +6316,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6338,7 +6338,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6360,7 +6360,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6382,7 +6382,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6404,7 +6404,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6426,7 +6426,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6448,7 +6448,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6470,7 +6470,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6492,7 +6492,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels
@@ -6514,7 +6514,7 @@ requirements:
     files:
       route: apps/console/src/route/Router.tsx
       manifest: apps/console/src/feature/channel/Manifest.ts
-      viewmodel: apps/console/src/feature/channel/viewmodel
+      viewmodel: apps/console/src/feature/channel/viewmodel/ChannelViewModel.ts
       sdk: packages/sdk/src/operations/CommerceClient.ts
     callers:
       - route:consolechannels

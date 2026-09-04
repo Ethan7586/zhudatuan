@@ -1,7 +1,7 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { InvitationCreatedRecord, InvitationFilter, InvitationListRecord, InvitationRepository, InvitationRevokedRecord, NewInvitation } from '../../application/port/InvitationRepository';
+import type { InvitationCreatedRecord, InvitationFilter, InvitationReadRecord, InvitationRepository, InvitationRevokedRecord, NewInvitation } from '../../application/port/InvitationRepository';
 import { Invitation, type InvitationState } from '../../domain/model/Invitation';
 import { InvitationClaim } from '../../domain/model/InvitationClaim';
 import type { InvitationDigest } from '../../application/port/InvitationSecurity';
@@ -161,29 +161,22 @@ export class PgInvitationRepository extends PgInvitationRedemption implements In
     if (!result.rows[0]) throw new Error('INVITATION_CREATE_FAILED');
     return createdOf(result.rows[0]);
   }
-  async read(context: ReadTransactionContext, filter: InvitationFilter): Promise<readonly InvitationListRecord[]> {
+  async read(context: ReadTransactionContext, filter: InvitationFilter): Promise<readonly InvitationReadRecord[]> {
     const database = this.transactions.database(context);
     const result = await database.query<ListRow>(
       `select invitation.id,invitation.kind,invitation.target,invitation.organization_id,invitation.membership_id,
-      recipientprofile.display_name recipient_display_name,recipientmembership.employee_no recipient_employee_no,
-      recipientprofile.mobile_masked recipient_mobile_masked,invitation.issuer_membership_id,
-      issuerprofile.display_name issuer_display_name,issuermembership.employee_no issuer_employee_no,
-      issuerprofile.mobile_masked issuer_mobile_masked,invitation.issuer_access_version,
+      invitation.issuer_membership_id,invitation.issuer_access_version,
       invitation.minimum_assurance,invitation.max_uses,invitation.use_count,invitation.not_before,invitation.expires_at,
       invitation.status,invitation.reason,invitation.created_at,invitation.revoked_at,invitation.revoked_by,
       invitation.revoke_reason,invitation.version
       from identity.invitation invitation
-      left join access.membership recipientmembership on recipientmembership.id=invitation.membership_id
-      left join member.profile recipientprofile on recipientprofile.id=recipientmembership.member_id
-      join access.membership issuermembership on issuermembership.id=invitation.issuer_membership_id
-      join member.profile issuerprofile on issuerprofile.id=issuermembership.member_id
       where $1=nullif(current_setting('app.scope_id',true),'')
-      and access.scope_allowed(invitation.organization_id)
+      and invitation.organization_id=$1
       and ($2::text is null or invitation.target=$2) and ($3::text is null or invitation.kind=$3)
       and ($4::text is null or invitation.status=$4)
       and ($5::text is null or (invitation.created_at,invitation.id)<(
         select cursor.created_at,cursor.id from identity.invitation cursor
-        where cursor.id=$5 and access.scope_allowed(cursor.organization_id)))
+        where cursor.id=$5 and cursor.organization_id=$1))
       order by invitation.created_at desc,invitation.id desc limit $6`,
       [filter.scope, filter.target, filter.kind, filter.status, filter.cursor, filter.limit]
     );

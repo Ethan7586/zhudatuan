@@ -52,7 +52,7 @@ describe('reporting persistence records', () => {
         trend: [],
         weeklyTrend: [],
         categories: [],
-        topProducts: [],
+        topProducts: [{ productId: 'product:1', name: '办公套装', salesCents: 12800, quantity: 2, orderCount: 1 }],
         malls: [],
         events: [{ id: 'event:1', kind: 'calendar', title: '订单支付', metric: '¥10.00', time: '2026-08-31T04:21:09.857981+00:00', date: '2026-08-31' }],
         insights: [],
@@ -61,6 +61,7 @@ describe('reporting persistence records', () => {
     const normalized = cockpitSummary(summary);
     expect(normalized.sales.asOf).toBe('2026-08-31T04:21:09.857Z');
     expect(normalized.sales.period.from).toBe('2026-08-01T00:00:00.000Z');
+    expect(normalized.sales.topProducts).toEqual([{ productId: 'product:1', name: '办公套装', salesCents: 12800, quantity: 2, orderCount: 1 }]);
     expect(normalized.sales.events[0]?.time).toBe('2026-08-31T04:21:09.857Z');
     expect(
       exportJob({

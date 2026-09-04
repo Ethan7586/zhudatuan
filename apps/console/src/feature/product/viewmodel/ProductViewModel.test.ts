@@ -52,6 +52,18 @@ describe('ProductViewModel state', () => {
 
 function context(id: string, accessVersion: number): ConsoleContext {
   const scope = { kind: 'mall', id, tenant: 'tenant:one' } as const;
-  const session: ConsoleContext['session'] = { actor: 'actor:one', membership: 'membership:one', scope, scopes: [scope], accessVersion, permissions: [], capabilities: [], assurance: { level: 1 }, security: { hasLocalCredential: true, phoneMasked: null, passwordChangedAt: null }, target: 'console', syncedAt: '2026-09-03T00:00:00.000Z' };
+  const session: ConsoleContext['session'] = {
+    actor: 'actor:one',
+    membership: 'membership:one',
+    scope,
+    scopes: [scope],
+    accessVersion,
+    permissions: [],
+    capabilities: [],
+    assurance: { level: 1 },
+    security: { hasLocalCredential: true, phoneMasked: null, passwordChangedAt: null },
+    target: 'console',
+    syncedAt: '2026-09-03T00:00:00.000Z',
+  };
   return { session, profile: { display_name: '测试用户', employee_no: null }, scopes: [scope], scope };
 }

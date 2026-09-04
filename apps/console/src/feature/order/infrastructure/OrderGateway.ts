@@ -1,6 +1,6 @@
 import { createFetchOrderAftersalesRead, createFetchOrderOrdersRead } from '@shop/sdk/order';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import { consoleRequest } from '../../../shared/api/Client';
+import { consoleRequest } from '../../../shared/api/RequestContext';
 import type { AfterSaleQuery } from '../model/AfterSale';
 import { ORDER_PAGE_LIMIT, type OrderQuery } from '../model/OrderQuery';
 import type { OrderPort } from '../public';

@@ -38,10 +38,20 @@ export function useSettingsViewModel(context: ConsoleContext, dependencies: Supp
       if (conflict) await cache.invalidateQueries({ queryKey: settingKey(context, change.kind) });
     },
   });
-  const actions = useMemo(() => Object.freeze({
-    select: (value: SupportSetting) => { setActive(value); mutation.reset(); setNotice(''); },
-    save: (change: SupportSettingChange) => { if (!mutation.isPending) mutation.mutate(change); },
-  }), [mutation]);
+  const actions = useMemo(
+    () =>
+      Object.freeze({
+        select: (value: SupportSetting) => {
+          setActive(value);
+          mutation.reset();
+          setNotice('');
+        },
+        save: (change: SupportSettingChange) => {
+          if (!mutation.isPending) mutation.mutate(change);
+        },
+      }),
+    [mutation]
+  );
   return Object.freeze({
     active,
     notice,

@@ -187,7 +187,8 @@ function transactionScope<TKey extends OperationId, TPrepared>(
   const operation = OperationCatalog.get(execution.operation);
   const webhook = operation.audience === 'webhook' && execution.security.kind === 'anonymous' && execution.security.channel === 'webhook';
   const publicFlow = operation.audience === 'public' && ((execution.security.kind === 'anonymous' && execution.security.channel === 'public') || execution.security.kind === 'preauth');
-  if (!webhook && !publicFlow) throw new Error('TRANSACTION_SCOPE_OVERRIDE_FORBIDDEN');
+  const anonymousStorefront = operation.audience === 'storefront' && operation.assuranceLevel === 'optional' && execution.security.kind === 'anonymous' && execution.security.target === 'storefront';
+  if (!webhook && !publicFlow && !anonymousStorefront) throw new Error('TRANSACTION_SCOPE_OVERRIDE_FORBIDDEN');
   if (!/^[A-Za-z0-9][A-Za-z0-9:.-]{0,255}$/.test(scope)) throw new Error('TRANSACTION_SCOPE_INVALID');
   return scope;
 }

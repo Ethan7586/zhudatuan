@@ -1,9 +1,13 @@
-import type { OperationOutputFor } from '@shop/contract';
-import type { StorefrontClient } from '../../../shared/api/Client';
+import type { StorefrontOperations } from '@shop/sdk/storefront';
+import type { RequestContextFactory } from '../../../shared/api/RequestContext';
+import type { StorefrontBootstrap } from '../../../entity/session';
 
 export class HomeGateway {
-  constructor(private readonly storefront: StorefrontClient['commerce']['storefront'], private readonly context: StorefrontClient['context']) {}
-  read(signal?: AbortSignal): Promise<OperationOutputFor<'storefront.bootstrap.read'>> {
+  constructor(
+    private readonly storefront: StorefrontOperations,
+    private readonly context: RequestContextFactory
+  ) {}
+  read(signal?: AbortSignal): Promise<StorefrontBootstrap> {
     return this.storefront.bootstrapRead({}, this.context(null, { signal }));
   }
 }

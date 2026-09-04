@@ -1,4 +1,4 @@
-import type { ContractJsonValue, OperationId, OperationInputFor, OperationOutputFor, OperationQuery, Schema } from '@shop/contract';
+import type { ContractJsonValue, OperationId, OperationInputFor, OperationOutputFor, OperationQuery } from '@shop/contract';
 import { HttpHeader } from '@shop/contract/http';
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';

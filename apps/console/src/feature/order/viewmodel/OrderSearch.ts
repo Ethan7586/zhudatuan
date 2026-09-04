@@ -29,5 +29,5 @@ export function readSelected(search: URLSearchParams): string | undefined {
 
 export function readDetailTab(search: URLSearchParams): OrderDetailTab {
   const value = search.get('tab') ?? 'overview';
-  return detailTabs.includes(value as OrderDetailTab) ? value as OrderDetailTab : 'overview';
+  return detailTabs.includes(value as OrderDetailTab) ? (value as OrderDetailTab) : 'overview';
 }

@@ -1,0 +1,123 @@
+.directoryactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sw-space-1);
+}
+.directorylink {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--sw-brand);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: left;
+}
+.directorysub {
+  display: block;
+  margin-top: var(--sw-space-0-5);
+  color: var(--sw-muted);
+}
+.directoryhistory {
+  display: grid;
+  gap: var(--sw-space-2);
+  margin-top: var(--sw-space-3);
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-surface);
+  padding: var(--sw-space-3);
+  box-shadow: var(--sw-shadow-sm);
+}
+.directoryhistory > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: var(--sw-space-2);
+}
+.directoryhistory h2,
+.directoryhistory p {
+  margin: 0;
+}
+.directoryform {
+  display: grid;
+  gap: var(--sw-space-2);
+}
+.directoryform label {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: 700;
+}
+.directoryform input {
+  min-height: 2.5rem;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  padding: var(--sw-space-1);
+}
+.directoryform fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sw-space-2);
+  border: 0;
+  padding: 0;
+}
+.directoryform fieldset label,
+.directoryconfirm {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-0-5);
+}
+.directoryform fieldset input,
+.directoryconfirm input {
+  min-height: auto;
+}
+.directoryform footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sw-space-1);
+  border-top: 0.0625rem solid var(--sw-border);
+  padding-top: var(--sw-space-2);
+}
+.directoryimpact {
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-brand-light);
+  padding: var(--sw-space-2);
+  color: var(--sw-brand-dark);
+}
+.directoryimpact p {
+  margin-bottom: 0;
+}
+.directoryerror {
+  margin: 0;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-danger-surface);
+  padding: var(--sw-space-1);
+  color: var(--sw-danger-strong);
+}
+.directoryvalidation {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+.directoryreceipt {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-2);
+  margin-top: var(--sw-space-2);
+  border: 0.0625rem solid var(--sw-success);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-success-surface);
+  padding: var(--sw-space-2);
+}
+.directoryreceipt span {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 44rem) {
+  .directoryhistory > header,
+  .directoryreceipt {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

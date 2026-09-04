@@ -1,5 +1,5 @@
 import { Button } from '@shop/design';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Rule, RuleChange } from '../model/SupportConfig';
 
 type Body = RuleChange;
@@ -11,7 +11,7 @@ export function RuleSettings({ rows, busy, disabled, onSave }: Readonly<{ rows: 
   const [priorities, setPriorities] = useState<Body['priorities']>(row?.priorities ?? ['normal']);
   const [weight, setWeight] = useState(row?.weight ?? 100);
   const [state, setState] = useState<Body['state']>(row?.state ?? 'active');
-  const edit = (value: string) => {
+  const edit = useCallback((value: string) => {
     const found = rows.find((item) => item.id === value);
     setId(value);
     if (found) {
@@ -21,7 +21,7 @@ export function RuleSettings({ rows, busy, disabled, onSave }: Readonly<{ rows: 
       setWeight(found.weight);
       setState(found.state);
     }
-  };
+  }, [rows]);
   const create = () => {
     setId(`rule:${crypto.randomUUID()}`);
     setName('');
@@ -32,7 +32,7 @@ export function RuleSettings({ rows, busy, disabled, onSave }: Readonly<{ rows: 
   };
   useEffect(() => {
     if (!row && rows[0] && name === '默认分配') edit(rows[0].id);
-  }, [rows]);
+  }, [edit, name, row, rows]);
   return (
     <section className="supportsettingsection">
       <header>

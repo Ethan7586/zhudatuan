@@ -67,11 +67,26 @@
 .businessinsights article > div { display: grid; gap: 3px; }
 .businessinsights span { color: var(--sw-muted); font-size: 12px; }
 .businessinsights button { width: fit-content; margin-top: 4px; padding: 0; border: 0; background: transparent; color: var(--sw-brand); cursor: pointer; }
+.productleaders { padding: 15px 16px; }
+.productleaderhead,
+.productleaders article { display: grid; grid-template-columns: 32px minmax(0, 1fr) 112px 64px 64px; align-items: center; gap: 10px; }
+.productleaderhead { margin-top: 13px; color: var(--sw-muted); font-size: 11px; }
+.productleaderhead span:first-child { grid-column: 2; }
+.productleaderhead span:not(:first-child),
+.productleaders article span { text-align: right; }
+.productleaders article { min-height: 48px; border-bottom: 1px solid var(--sw-border); font-size: 12px; }
+.productleaders article:last-child { border-bottom: 0; }
+.productleaders article > b { display: inline-grid; width: 24px; height: 24px; place-items: center; border-radius: var(--sw-radius-full); background: var(--sw-brand-light); color: var(--sw-brand); }
+.productleaders article > strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 980px) {
   .cockpitsecondarygrid,
   .cockpitlowergrid { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
+  .productleaderhead,
+  .productleaders article { grid-template-columns: 28px minmax(0, 1fr) 92px 48px; }
+  .productleaderhead span:last-child,
+  .productleaders article span:last-child { display: none; }
   .mallhead,
   .mallrow { grid-template-columns: minmax(0, 1fr) 84px 56px; }
   .mallhead span:nth-child(3),

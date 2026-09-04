@@ -3,6 +3,7 @@ import type { ReadTransactionContext, WriteTransactionContext } from '../../../.
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { IdentityMemberPort } from '../../public/IdentityMemberPort';
 import type { InvitationMemberPort, InvitationMobileOwner, PendingInvitationMember } from '../../public/InvitationMemberPort';
+import type { MemberAccessPort } from '../../../access/public';
 export interface MemberProfile {
   readonly member: string;
   readonly principal: string;
@@ -12,8 +13,15 @@ export interface MemberProfile {
   readonly mobileFingerprint?: string;
   readonly mobileMasked?: string;
 }
+interface ProfileProjectionRow {
+  readonly id: string;
+  readonly display_name: string;
+  readonly mobile_masked: string | null;
+  readonly version: number;
+}
 export class MemberPort implements IdentityMemberPort, InvitationMemberPort {
   private readonly transactions = new PgTransactionAccess();
+  constructor(private readonly access: Pick<MemberAccessPort, 'syncProfile'>) {}
   pending(context: ReadTransactionContext, member: string): Promise<PendingInvitationMember> {
     return this.pendingMember(this.transactions.database(context), member, false);
   }
@@ -83,10 +91,10 @@ export class MemberPort implements IdentityMemberPort, InvitationMemberPort {
   ): Promise<void> {
     const database = this.transactions.database(context);
     const created = await database
-      .query(
+      .query<ProfileProjectionRow>(
         `insert into member.profile(id,principal_id,display_name,status,mobile_ciphertext,mobile_token,
         mobile_masked,created_at,updated_at,version) values($1,$2,$3,'pending',$4,$5,$6,clock_timestamp(),clock_timestamp(),1)
-        returning id`,
+        returning id,display_name,mobile_masked,version`,
         [input.member, input.principal, input.display, input.mobileCiphertext, input.mobileFingerprint, input.mobileMasked]
       )
       .catch((cause: unknown) => {
@@ -94,6 +102,7 @@ export class MemberPort implements IdentityMemberPort, InvitationMemberPort {
         throw cause;
       });
     if (!created.rows[0]) throw new Error('MEMBER_PROFILE_CREATE_FAILED');
+    await this.sync(context, created.rows[0]);
   }
   async memberForPrincipal(context: ReadTransactionContext, principal: string): Promise<string> {
     const database = this.transactions.database(context);
@@ -115,12 +124,14 @@ export class MemberPort implements IdentityMemberPort, InvitationMemberPort {
     }>
   ): Promise<void> {
     const database = this.transactions.database(context);
-    const result = await database.query(
+    const result = await database.query<ProfileProjectionRow>(
       `update member.profile set display_name=$3,mobile_ciphertext=$4,mobile_token=$5,mobile_masked=$6,
-      status='active',version=version+1,updated_at=clock_timestamp() where id=$1 and principal_id=$2 and status='pending' returning id`,
+      status='active',version=version+1,updated_at=clock_timestamp() where id=$1 and principal_id=$2 and status='pending'
+      returning id,display_name,mobile_masked,version`,
       [input.member, input.principal, input.display, input.mobileCiphertext, input.mobileFingerprint, input.mobileMasked]
     );
     if (!result.rows[0]) throw new DomainError('MEMBERSHIP_NOT_INVITED');
+    await this.sync(context, result.rows[0]);
   }
   async securityProfile(
     context: ReadTransactionContext,
@@ -147,26 +158,30 @@ export class MemberPort implements IdentityMemberPort, InvitationMemberPort {
   }
   async updateDisplay(context: WriteTransactionContext, member: string, display: string): Promise<Readonly<Record<string, unknown>>> {
     const database = this.transactions.database(context);
-    const result = await database.query(
+    const result = await database.query<ProfileProjectionRow>(
       `update member.profile set display_name=$2,version=version+1,updated_at=clock_timestamp()
-      where id=$1 returning id,display_name,version`,
+      where id=$1 returning id,display_name,mobile_masked,version`,
       [member, display]
     );
     if (!result.rows[0]) throw new Error('MEMBER_PROFILE_NOT_FOUND');
-    return result.rows[0];
+    await this.sync(context, result.rows[0]);
+    return Object.freeze({ ...result.rows[0] });
   }
   async ensureImported(context: WriteTransactionContext, input: MemberProfile): Promise<void> {
     const database = this.transactions.database(context);
-    await database.query(
+    const result = await database.query<ProfileProjectionRow>(
       `insert into member.profile(id,principal_id,display_name,status,created_at,updated_at)
       values($1,$2,$3,$4,clock_timestamp(),clock_timestamp()) on conflict(id) do update set
-      display_name=excluded.display_name,updated_at=clock_timestamp(),version=member.profile.version+1`,
+      display_name=excluded.display_name,updated_at=clock_timestamp(),version=member.profile.version+1
+      returning id,display_name,mobile_masked,version`,
       [input.member, input.principal, input.display, input.status]
     );
+    if (!result.rows[0]) throw new Error('MEMBER_PROFILE_IMPORT_FAILED');
+    await this.sync(context, result.rows[0]);
   }
   async changeMobile(context: WriteTransactionContext, principal: string, ciphertext: string, fingerprint: string, masked: string): Promise<Readonly<Record<string, unknown>>> {
     const database = this.transactions.database(context);
-    const result = await database.query(
+    const result = await database.query<ProfileProjectionRow>(
       `update member.profile set mobile_ciphertext=$2,mobile_token=$3,mobile_masked=$4,
       version=version+1,updated_at=clock_timestamp()
       where principal_id=$1 returning id,display_name,mobile_masked,version`,
@@ -174,7 +189,17 @@ export class MemberPort implements IdentityMemberPort, InvitationMemberPort {
     );
     const row = result.rows[0];
     if (!row) throw new Error('MEMBER_PROFILE_NOT_FOUND');
-    return row;
+    await this.sync(context, row);
+    return Object.freeze({ ...row });
+  }
+
+  private sync(context: WriteTransactionContext, row: ProfileProjectionRow): Promise<void> {
+    return this.access.syncProfile(context, {
+      member: row.id,
+      displayName: row.display_name,
+      mobileMasked: row.mobile_masked,
+      sourceVersion: Number(row.version),
+    });
   }
 }
 

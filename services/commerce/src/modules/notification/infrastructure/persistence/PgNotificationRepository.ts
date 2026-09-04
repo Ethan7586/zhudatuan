@@ -123,16 +123,16 @@ export class PgNotificationRepository implements NotificationRepository {
     const row = result.rows[0];
     return row ? Object.freeze({ id: row.id, readAt: row.readAt.toISOString() }) : null;
   }
-  async templates(context: ReadTransactionContext, scope: string, cursor: string | null, fetch: number) {
+  async templates(context: ReadTransactionContext, scope: string, channel: DeliveryChannelId | null, cursor: string | null, fetch: number) {
     const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query<TemplateRow>(
       `select id,scope_id,channel,event_type,version,variable_schema,provider_template,subject,body,status,created_at
-      from notification.template where scope_id=$1 and($2::text is null or id>$2) order by id limit $3`,
-      [scope, cursor, fetch]
+      from notification.template where scope_id=$1 and($2::text is null or channel=$2) and($3::text is null or id>$3) order by id limit $4`,
+      [scope, channel, cursor, fetch]
     );
     return result.rows.map(template);
   }
-  async saveTemplate(context: WriteTransactionContext, input: Omit<NotificationTemplate, 'createdAt'>): Promise<SavedTemplate | null> {
+  async saveTemplate(context: WriteTransactionContext, input: Omit<NotificationTemplate, 'createdAt'> & Readonly<{ expectedVersion: number }>): Promise<SavedTemplate | null> {
     const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query<
       TemplateRow & {
@@ -143,9 +143,9 @@ export class PgNotificationRepository implements NotificationRepository {
       `with existing as materialized(select id,scope_id,channel,event_type,version,variable_schema,provider_template,subject,body,status,created_at
       from notification.template where id=$1), saved as(
       insert into notification.template(id,scope_id,channel,event_type,version,variable_schema,provider_template,subject,body,status,created_at)
-      values($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,clock_timestamp()) on conflict(id) do update set status=excluded.status
+      select $1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,clock_timestamp() where $11=0 on conflict(id) do update set status=excluded.status
       where notification.template.scope_id=$2 and notification.template.channel=$3 and notification.template.event_type=$4
-      and notification.template.version=$5 and notification.template.variable_schema=$6::jsonb
+      and notification.template.version=$5 and notification.template.version=$11 and notification.template.variable_schema=$6::jsonb
       and notification.template.provider_template is not distinct from $7 and notification.template.subject is not distinct from $8
       and notification.template.body=$9 and(notification.template.status=excluded.status or notification.template.status='draft'
       and excluded.status in('active','retired') or notification.template.status='active' and excluded.status='retired') returning *)
@@ -153,7 +153,7 @@ export class PgNotificationRepository implements NotificationRepository {
         saved.subject,saved.body,saved.status,saved.created_at,true matches,not exists(select 1 from existing) inserted from saved union all
       select existing.id,existing.scope_id,existing.channel,existing.event_type,existing.version,existing.variable_schema,existing.provider_template,
         existing.subject,existing.body,existing.status,existing.created_at,false matches,false inserted from existing where not exists(select 1 from saved)`,
-      [input.id, input.scopeId, input.channel, input.eventType, input.version, JSON.stringify(input.variableSchema), input.providerTemplate, input.subject, input.body, input.status]
+      [input.id, input.scopeId, input.channel, input.eventType, input.version, JSON.stringify(input.variableSchema), input.providerTemplate, input.subject, input.body, input.status, input.expectedVersion]
     );
     const row = result.rows[0];
     return row ? Object.freeze({ ...template(row), matches: row.matches, inserted: row.inserted }) : null;

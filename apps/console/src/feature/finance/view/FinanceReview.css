@@ -216,10 +216,3 @@
 .financedrawerfooter .financesubmitreview {
   min-width: 130px;
 }
-.financepreviewnotice {
-  display: block;
-  margin: 0 0 7px;
-  color: var(--sw-warning-strong);
-  font-size: 9px;
-  text-align: right;
-}

@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router';
 import { useSession } from '../entity/session/viewmodel/SessionContext';
-import { useAccountIdentity } from '../feature/account/public';
-import { useCartCommand } from '../feature/cart/public';
+import { useAccountIdentity } from '../feature/account';
+import { useCartCommand } from '../feature/cart';
+import { ROUTES } from '../generated/RouteBinding';
 import { pathForFeature } from '../shared/navigation/Route';
 
 export function useShellViewModel() {
@@ -19,7 +20,12 @@ export function useShellViewModel() {
     removeToast: session.removeToast,
     actions: Object.freeze({
       navigate: (path: string) => void navigate(path),
-      search: (value: string) => void navigate(value.trim() ? `/products?q=${encodeURIComponent(value.trim().slice(0, 200))}` : '/products'),
+      home: () => void navigate(ROUTES.storehome),
+      notifications: () => void navigate(ROUTES.storenotifications),
+      cart: () => void navigate(ROUTES.storecart),
+      profile: () => void navigate(ROUTES.storeprofile),
+      catalog: () => void navigate(ROUTES.storecatalog),
+      search: (value: string) => void navigate(value.trim() ? `${ROUTES.storecatalog}?q=${encodeURIComponent(value.trim().slice(0, 200))}` : ROUTES.storecatalog),
       feature: (name: string) => void navigate(pathForFeature(name)),
       switchMall: identity.switchMall,
       logout: identity.logout,

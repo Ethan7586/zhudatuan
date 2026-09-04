@@ -3,7 +3,7 @@ import { result, withReadTransaction } from '../../../../test/TransactionFixture
 import { PgInvitationRepository } from './PgInvitationRepository';
 
 describe('PgInvitationRepository', () => {
-  it('reads issuer and recipient account labels in the bounded invitation query', async () => {
+  it('reads only identity-owned invitation facts within the exact scope', async () => {
     let sql = '';
     const now = new Date('2026-09-03T00:00:00.000Z');
     const query = async (text: string) => {
@@ -41,8 +41,10 @@ describe('PgInvitationRepository', () => {
 
     const records = await withReadTransaction(query, (context) => new PgInvitationRepository().read(context, { scope: 'mall:one', target: null, kind: null, status: null, cursor: null, limit: 50 }));
 
-    expect(records[0]).toMatchObject({ recipient_display_name: '李小明', recipient_employee_no: 'E1002', issuer_display_name: '王主管', issuer_employee_no: 'E1001' });
-    expect(sql).toContain('left join access.membership recipientmembership');
-    expect(sql).toContain('join member.profile issuerprofile');
+    expect(records[0]).toMatchObject({ id: 'invitation:one', issuer_membership_id: 'membership:owner', issuer_access_version: 3 });
+    expect(records[0]).not.toHaveProperty('issuer_display_name');
+    expect(sql).toContain('invitation.organization_id=$1');
+    expect(sql).not.toContain('access.membership');
+    expect(sql).not.toContain('member.profile');
   });
 });

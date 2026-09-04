@@ -3,9 +3,9 @@ import { DomainError } from '../../../../foundation/domain/DomainError';
 import { createHash, randomBytes } from 'node:crypto';
 import { IDENTITY_PROVIDER_CONFIGURATION } from '@shop/config/server';
 
-import type { CipherEnvelope, KmsClient } from '../../../../foundation/infrastructure/KmsClient';
+import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
 import type { SessionIssuer } from '../port/SessionIssuer';
-import type { CreateFederation, FederationCallbackRecord, FederationRepository } from '../port/FederationRepository';
+import type { CreateFederation, FederationRepository } from '../port/FederationRepository';
 import type { LinkCaseRepository } from '../port/LinkCaseRepository';
 import type { ProviderResolver } from './ProviderResolver';
 import type { SubjectHasher } from '../../domain/service/SubjectHasher';
@@ -19,56 +19,8 @@ import { FederationPolicy } from '../../domain/policy/FederationPolicy';
 import { AuthTransaction } from '../../domain/model/AuthTransaction';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import type { IdentityLinkRepository } from '../port/IdentityLinkRepository';
-import type { FederatedSubject } from '../../domain/model/FederatedSubject';
 import { membershipCandidate } from '../model/MembershipCandidate';
-
-export interface FederationRequestContext {
-  readonly peer: string;
-  readonly agent: string;
-  readonly device: string;
-  readonly trace: string;
-  readonly signal?: AbortSignal;
-  readonly deadline?: number;
-}
-
-export interface FederationStartInput {
-  readonly provider: string;
-  readonly returntarget: string;
-  readonly authorization: unknown;
-  readonly purpose: 'signin' | 'link';
-  readonly principal: string | null;
-  readonly membership: string | null;
-}
-
-type ResolvedFederationProvider = Awaited<ReturnType<ProviderResolver['require']>>;
-
-export interface LoadedFederationStart {
-  readonly provider: ResolvedFederationProvider;
-}
-
-export interface PreparedFederationStart {
-  readonly creation: CreateFederation;
-  readonly redirect: string;
-}
-
-export interface FederationCallbackInput {
-  readonly provider: string;
-  readonly state: string;
-  readonly code: string;
-}
-
-export interface LoadedFederationCallback {
-  readonly accepted: FederationCallbackRecord;
-  readonly provider: ResolvedFederationProvider;
-}
-
-export interface PreparedFederationCallback {
-  readonly loaded: LoadedFederationCallback;
-  readonly subject: FederatedSubject;
-  readonly subjecthash: Buffer;
-  readonly envelope: CipherEnvelope;
-  readonly request: FederationRequestContext;
-}
+import type { FederationCallbackInput, FederationRequestContext, FederationStartInput, LoadedFederationCallback, LoadedFederationStart, PreparedFederationCallback, PreparedFederationStart } from './FederationFlow';
 
 export class FederationService {
   constructor(
@@ -254,3 +206,5 @@ export class FederationService {
     return Object.freeze({ status: 303, headers: Object.freeze({ location: location.toString(), ...(cookie ? { 'set-cookie': cookie } : {}), 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' }) });
   }
 }
+
+export type { FederationCallbackInput, FederationRequestContext, FederationStartInput, LoadedFederationCallback, LoadedFederationStart, PreparedFederationCallback, PreparedFederationStart } from './FederationFlow';

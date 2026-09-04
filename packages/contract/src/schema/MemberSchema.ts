@@ -7,6 +7,7 @@ const member = strictObject({
   display_name: string(),
   status: string(),
   membership_id: string(),
+  organization_id: string(),
   employee_no: union([string(), nullSchema()]),
   membership_status: string(),
   access_version: version,

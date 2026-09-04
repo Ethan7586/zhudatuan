@@ -1,0 +1,1 @@
+export { SupportManifest } from './Manifest';

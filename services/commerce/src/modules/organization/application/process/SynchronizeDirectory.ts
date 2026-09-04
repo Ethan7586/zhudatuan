@@ -21,6 +21,7 @@ export class SynchronizeDirectory {
       try {
         await this.service.execute(connection, run, execution.trace, execution.signal, execution.deadline, assertLease);
       } catch (cause) {
+        if (cause instanceof Error && cause.message === 'DIRECTORY_SYNC_CANCELLED') return;
         if (execution.attempts >= this.maximumAttempts && !execution.signal.aborted && execution.deadline > Date.now()) {
           await this.service.fail(run, cause, execution.trace, execution.signal, execution.deadline);
         }

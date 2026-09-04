@@ -1,6 +1,6 @@
 import { Button } from '@shop/design';
 import { chineseDomainLabel, chineseReference } from '@shop/presentation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Agent } from '../model/Agent';
 import type { AgentChange } from '../model/SupportConfig';
 
@@ -13,7 +13,7 @@ export function AgentSettings({ rows, busy, disabled, onSave }: Readonly<{ rows:
   const [capacity, setCapacity] = useState(10);
   const [state, setState] = useState<Body['state']>('available');
   const skillOptions = [...new Set(['general', ...rows.flatMap((item) => item.skills)])];
-  const edit = (id: string) => {
+  const edit = useCallback((id: string) => {
     const value = rows.find((item) => item.id === id);
     setSelected(id);
     if (value) {
@@ -22,10 +22,10 @@ export function AgentSettings({ rows, busy, disabled, onSave }: Readonly<{ rows:
       setCapacity(value.capacity);
       setState(value.state);
     }
-  };
+  }, [rows]);
   useEffect(() => {
     if (!selected && rows[0]) edit(rows[0].id);
-  }, [rows, selected]);
+  }, [edit, rows, selected]);
   return (
     <section className="supportsettingsection">
       <header>

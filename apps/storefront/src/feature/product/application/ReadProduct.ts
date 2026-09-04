@@ -1,11 +1,9 @@
 import type { Product } from '../../../entity/product';
-import { ProductGateway } from '../infrastructure/ProductGateway';
-import { mapProduct } from '../../../entity/product';
+import type { ProductPort } from '../public/ProductPort';
 
 export class ReadProduct {
-  constructor(private readonly gateway: Pick<ProductGateway, 'read'>) {}
+  constructor(private readonly gateway: Pick<ProductPort, 'read'>) {}
   async execute(productId: string, signal?: AbortSignal): Promise<Product | null> {
-    const value = await this.gateway.read(productId, signal);
-    return value ? mapProduct(value) : null;
+    return this.gateway.read(productId, signal);
   }
 }

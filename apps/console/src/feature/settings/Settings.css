@@ -130,8 +130,7 @@
   font-size: 13px;
   line-height: 1.65;
 }
-.settingscard > a,
-.settingsdisabled {
+.settingscard > a {
   grid-column: 1 / -1;
   display: inline-flex;
   align-items: center;
@@ -143,8 +142,27 @@
   font-weight: 750;
   text-decoration: none;
 }
-.settingsdisabled {
+.settingscard > a:focus-visible {
+  border-radius: 6px;
+  outline: 3px solid color-mix(in srgb, var(--sw-brand) 28%, transparent);
+  outline-offset: 4px;
+}
+.settingsempty {
+  display: grid;
+  gap: 7px;
+  border: 1px dashed color-mix(in srgb, var(--sw-brand) 34%, var(--sw-border));
+  border-radius: 16px;
+  background: var(--sw-surface-subtle);
+  padding: 28px;
+  text-align: center;
+}
+.settingsempty strong {
+  color: var(--sw-text);
+  font-size: 16px;
+}
+.settingsempty span {
   color: var(--sw-muted);
+  font-size: 13px;
 }
 .settingssecurity {
   display: grid;

@@ -12,7 +12,15 @@ export function mapEnrollment(result: OperationOutputFor<'identity.enrollments.r
     subjectMode: result.subjectMode,
     organization: Object.freeze(result.organization),
     ...(result.recipientMasked === undefined ? {} : { recipientMasked: result.recipientMasked }),
-    ...(result.employee === undefined ? {} : { employee: Object.freeze({ displayName: result.employee.displayName, ...(result.employee.employeeNo === undefined ? {} : { employeeNo: result.employee.employeeNo }), ...(result.employee.departmentName === undefined ? {} : { departmentName: result.employee.departmentName }) }) }),
+    ...(result.employee === undefined
+      ? {}
+      : {
+          employee: Object.freeze({
+            displayName: result.employee.displayName,
+            ...(result.employee.employeeNo === undefined ? {} : { employeeNo: result.employee.employeeNo }),
+            ...(result.employee.departmentName === undefined ? {} : { departmentName: result.employee.departmentName }),
+          }),
+        }),
     policy: Object.freeze({
       termsTitle: result.policy.terms_title,
       termsBody: result.policy.terms_body,

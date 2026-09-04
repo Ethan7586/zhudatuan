@@ -4,6 +4,7 @@ import type { Membership } from '../../domain/model/Membership';
 import type { Override } from '../../domain/model/Override';
 import type { PermissionEffect, Role } from '../../domain/model/Role';
 import type { Scope } from '../../domain/model/Scope';
+import type { MemberProfileProjection } from '../../public/MemberAccessPort';
 
 export interface AccessCenterRecord {
   readonly id: string;
@@ -160,6 +161,7 @@ export interface AccessRepository {
   activeMemberIn(context: ReadTransactionContext, member: string, organizations: readonly string[]): Promise<boolean>;
   memberPage(context: ReadTransactionContext, organization: string, after: string | null, limit: number): Promise<readonly MemberRecord[]>;
   memberProfile(context: ReadTransactionContext, membership: string): Promise<MemberRecord | null>;
+  upsertMemberProfile(context: WriteTransactionContext, profile: MemberProfileProjection): Promise<void>;
   setEmployeeNumber(context: WriteTransactionContext, membership: string, employee: string | null): Promise<boolean>;
   managementMember(context: WriteTransactionContext, membership: string): Promise<Readonly<{ member: string; accessVersion: number }> | null>;
   setMembershipStatus(context: WriteTransactionContext, membership: string, status: 'active' | 'suspended' | 'left'): Promise<boolean>;

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const output = join(root, 'docs/evidence/frontend/files.json');
 const sourceRoots = ['apps/console', 'apps/auth', 'apps/storefront', 'packages/design', 'packages/presentation', 'packages/sdk', 'packages/contract', 'packages/testing', 'packages/authz', 'packages/config', 'packages/telemetry'];
-const authorityFiles = ['config/visuals.yml', 'config/navigation.yml', 'docs/architecture/Auth前端代码结构统一.md', 'docs/architecture/Auth前端代码结构统一修改点清单.md'];
+const authorityFiles = ['config/visuals.yml', 'config/navigation.yml', 'docs/architecture/前端整体重构方案.md'];
 const excludedDirectories = new Set(['.next', '.vinext', '.wrangler', 'coverage', 'dist', 'node_modules', 'storybook-static']);
 
 const entries = [];
@@ -19,11 +19,13 @@ for (const authorityFile of authorityFiles) {
 entries.sort((left, right) => left.path.localeCompare(right.path));
 
 const canonical = entries.map((entry) => [entry.path, entry.sha256, entry.size, entry.mode].join('\0')).join('\n');
+const coverage = Object.freeze(Object.fromEntries(['manifest', 'viewmodel', 'view', 'route', 'test', 'binding'].map((kind) => [kind, entries.filter((entry) => entry.kind === kind).length])));
 const document = {
   version: 2,
   roots: sourceRoots,
   authorities: authorityFiles,
   count: entries.length,
+  coverage,
   treeSha256: sha256(Buffer.from(canonical)),
   entries,
 };
@@ -53,10 +55,21 @@ async function record(absolute) {
   const [bytes, metadata] = await Promise.all([readFile(absolute), stat(absolute)]);
   entries.push({
     path: relative(root, absolute).split(sep).join('/'),
+    kind: evidenceKind(relative(root, absolute).split(sep).join('/')),
     sha256: sha256(bytes),
     size: bytes.length,
     mode: (metadata.mode & 0o777).toString(8).padStart(4, '0'),
   });
+}
+
+function evidenceKind(path) {
+  if (/\/Manifest\.ts$/.test(path)) return 'manifest';
+  if (/\/generated\/(?:Route|Navigation)Binding\.ts$/.test(path)) return 'binding';
+  if (/\.(?:test|spec)\.[cm]?[jt]sx?$/.test(path)) return 'test';
+  if (path.includes('/viewmodel/')) return 'viewmodel';
+  if (path.includes('/view/')) return 'view';
+  if (path.includes('/route/')) return 'route';
+  return 'support';
 }
 
 function sha256(bytes) {

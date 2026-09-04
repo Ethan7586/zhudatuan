@@ -9,13 +9,14 @@ export interface RiskCaseRecord {
   readonly id: string;
   readonly state: 'open' | 'reviewing' | 'cleared' | 'confirmed' | 'closed';
   readonly actor: string | null;
+  readonly version: number;
 }
 
 export interface RiskAdministrationRepository {
   center(context: ReadTransactionContext, scope: string, cursor: string | null, fetch: number): Promise<readonly RiskCenterRecord[]>;
-  savePolicy(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; name: string; rule: ContractJsonValue; ruleHash: string; rolloutPercent: number; actor: string }>): Promise<Readonly<Record<string, unknown>>>;
-  activatePolicy(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; version: number; rolloutPercent: number; actor: string }>): Promise<Readonly<Record<string, unknown>>>;
-  retirePolicy(context: WriteTransactionContext, id: string, scope: string): Promise<Readonly<Record<string, unknown>>>;
+  savePolicy(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; name: string; rule: ContractJsonValue; ruleHash: string; rolloutPercent: number; actor: string; expectedVersion: number }>): Promise<Readonly<Record<string, unknown>> | null>;
+  activatePolicy(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; candidateVersion: number; rolloutPercent: number; actor: string; expectedVersion: number }>): Promise<Readonly<Record<string, unknown>> | null>;
+  retirePolicy(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; expectedVersion: number }>): Promise<Readonly<Record<string, unknown>> | null>;
   riskCase(context: WriteTransactionContext, id: string, scope: string): Promise<RiskCaseRecord | null>;
-  reviewCase(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; state: string; reviewer: string; reason: string; evidence: Readonly<Record<string, unknown>> }>): Promise<Readonly<Record<string, unknown>>>;
+  reviewCase(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; state: string; reviewer: string; reason: string; evidence: Readonly<Record<string, unknown>>; expectedVersion: number }>): Promise<Readonly<Record<string, unknown>> | null>;
 }

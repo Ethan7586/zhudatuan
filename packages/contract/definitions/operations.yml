@@ -9552,16 +9552,20 @@ operations:
     capability: notification.templates.manage
     scopeKinds: *a4
     assuranceLevel: stepup
-    makerChecker: false
+    makerChecker: true
     requestSchema: NotificationTemplatesManageInput
     responseSchema: NotificationTemplatesManageOutput
     errorUnion:
+      - ACTION_PROOF_INVALID
+      - ACTION_PROOF_REPLAYED
+      - ACTION_PROOF_REQUIRED
       - AUTHENTICATION_REQUIRED
       - AUTHORIZATION_DENIED
       - CAPABILITY_DENIED
       - CONTRACT_VERSION_UNSUPPORTED
       - IDEMPOTENCY_CONFLICT
       - INTERNAL_ERROR
+      - MAKER_CHECKER_SEPARATION_REQUIRED
       - RATE_LIMITED
       - SCOPE_DENIED
       - STEPUP_REQUIRED
@@ -9683,16 +9687,20 @@ operations:
     capability: notification.announcements.manage
     scopeKinds: *a4
     assuranceLevel: stepup
-    makerChecker: false
+    makerChecker: true
     requestSchema: NotificationAnnouncementsManageInput
     responseSchema: NotificationAnnouncementsManageOutput
     errorUnion:
+      - ACTION_PROOF_INVALID
+      - ACTION_PROOF_REPLAYED
+      - ACTION_PROOF_REQUIRED
       - AUTHENTICATION_REQUIRED
       - AUTHORIZATION_DENIED
       - CAPABILITY_DENIED
       - CONTRACT_VERSION_UNSUPPORTED
       - IDEMPOTENCY_CONFLICT
       - INTERNAL_ERROR
+      - MAKER_CHECKER_SEPARATION_REQUIRED
       - RATE_LIMITED
       - SCOPE_DENIED
       - STEPUP_REQUIRED
@@ -9771,16 +9779,20 @@ operations:
     capability: risk.policies.manage
     scopeKinds: *a4
     assuranceLevel: stepup
-    makerChecker: false
+    makerChecker: true
     requestSchema: RiskPoliciesManageInput
     responseSchema: RiskPoliciesManageOutput
     errorUnion:
+      - ACTION_PROOF_INVALID
+      - ACTION_PROOF_REPLAYED
+      - ACTION_PROOF_REQUIRED
       - AUTHENTICATION_REQUIRED
       - AUTHORIZATION_DENIED
       - CAPABILITY_DENIED
       - CONTRACT_VERSION_UNSUPPORTED
       - IDEMPOTENCY_CONFLICT
       - INTERNAL_ERROR
+      - MAKER_CHECKER_SEPARATION_REQUIRED
       - RATE_LIMITED
       - SCOPE_DENIED
       - STEPUP_REQUIRED
@@ -9816,16 +9828,20 @@ operations:
     capability: risk.cases.review
     scopeKinds: *a4
     assuranceLevel: stepup
-    makerChecker: false
+    makerChecker: true
     requestSchema: RiskCasesReviewInput
     responseSchema: RiskCasesReviewOutput
     errorUnion:
+      - ACTION_PROOF_INVALID
+      - ACTION_PROOF_REPLAYED
+      - ACTION_PROOF_REQUIRED
       - AUTHENTICATION_REQUIRED
       - AUTHORIZATION_DENIED
       - CAPABILITY_DENIED
       - CONTRACT_VERSION_UNSUPPORTED
       - IDEMPOTENCY_CONFLICT
       - INTERNAL_ERROR
+      - MAKER_CHECKER_SEPARATION_REQUIRED
       - RATE_LIMITED
       - SCOPE_DENIED
       - STEPUP_REQUIRED
@@ -10855,7 +10871,19 @@ operations:
     makerChecker: false
     requestSchema: IdentityFederationsCompleteInput
     responseSchema: IdentityFederationsCompleteOutput
-    errorUnion: [CONTRACT_VERSION_UNSUPPORTED, CSRF_TOKEN_INVALID, FEDERATION_TRANSACTION_CONSUMED, FEDERATION_TRANSACTION_EXPIRED, FEDERATION_TRANSACTION_INVALID, INTERNAL_ERROR, MEMBERSHIP_SELECTION_REQUIRED, ORIGIN_DENIED, RATE_LIMITED, VALIDATION_FAILED]
+    errorUnion:
+      [
+        CONTRACT_VERSION_UNSUPPORTED,
+        CSRF_TOKEN_INVALID,
+        FEDERATION_TRANSACTION_CONSUMED,
+        FEDERATION_TRANSACTION_EXPIRED,
+        FEDERATION_TRANSACTION_INVALID,
+        INTERNAL_ERROR,
+        MEMBERSHIP_SELECTION_REQUIRED,
+        ORIGIN_DENIED,
+        RATE_LIMITED,
+        VALIDATION_FAILED,
+      ]
     idempotencyScope: actor-operation-scope
     expectedVersion: none
     timeout: 1000
@@ -10985,6 +11013,49 @@ operations:
     cachePolicy: none
     targetPolicy: public
     idempotencyPolicy: required
+  - id: identity.providers.center.read
+    owner: identity
+    method: GET
+    path: /api/v1/identity/providers/center
+    audience: console
+    targets: [console]
+    permission: identity.provider.manage
+    capability: identity.providers.center.read
+    scopeKinds: [platform, enterprise, mall]
+    assuranceLevel: session
+    makerChecker: false
+    requestSchema: IdentityProvidersCenterReadInput
+    responseSchema: IdentityProvidersCenterReadOutput
+    errorUnion:
+      [
+        AUTHENTICATION_REQUIRED,
+        AUTHORIZATION_DENIED,
+        CAPABILITY_DENIED,
+        CONTRACT_VERSION_UNSUPPORTED,
+        INTERNAL_ERROR,
+        PERMISSION_DENIED,
+        RATE_LIMITED,
+        SCOPE_DENIED,
+        VALIDATION_FAILED,
+      ]
+    idempotencyScope: none
+    expectedVersion: none
+    timeout: 300
+    rateClass: read
+    risk: elevated
+    resourceResolver: none
+    idempotent: true
+    requirements: [MVPGROUPSETTING, MVPMALLSETTING, MVPIDENTITY]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/modules/identity/application/handler/ProvidersCenterReadHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+    resourceParameter: null
+    originPolicy: none
+    csrfPolicy: none
+    responseMode: json
+    cachePolicy: private
+    targetPolicy: exact
+    idempotencyPolicy: none
   - id: identity.providers.manage
     owner: identity
     method: PUT
@@ -11049,7 +11120,20 @@ operations:
     requestSchema: IdentityProvidersTestInput
     responseSchema: IdentityProvidersTestOutput
     errorUnion:
-      [AUTHENTICATION_REQUIRED, AUTHORIZATION_DENIED, CONTRACT_VERSION_UNSUPPORTED, CSRF_TOKEN_INVALID, IDENTITY_PROVIDER_CONFIGURATION_INVALID, IDENTITY_PROVIDER_UNAVAILABLE, INTERNAL_ERROR, ORIGIN_DENIED, RATE_LIMITED, SCOPE_DENIED, STEPUP_REQUIRED, VALIDATION_FAILED]
+      [
+        AUTHENTICATION_REQUIRED,
+        AUTHORIZATION_DENIED,
+        CONTRACT_VERSION_UNSUPPORTED,
+        CSRF_TOKEN_INVALID,
+        IDENTITY_PROVIDER_CONFIGURATION_INVALID,
+        IDENTITY_PROVIDER_UNAVAILABLE,
+        INTERNAL_ERROR,
+        ORIGIN_DENIED,
+        RATE_LIMITED,
+        SCOPE_DENIED,
+        STEPUP_REQUIRED,
+        VALIDATION_FAILED,
+      ]
     idempotencyScope: actor-operation-scope
     expectedVersion: none
     timeout: 3000
@@ -11475,7 +11559,21 @@ operations:
     requestSchema: OrderOrdersReceiveInput
     responseSchema: OrderOrdersReceiveOutput
     errorUnion:
-      [AUTHENTICATION_REQUIRED, AUTHORIZATION_DENIED, CAPABILITY_DENIED, CONTRACT_VERSION_UNSUPPORTED, CSRF_TOKEN_INVALID, IDEMPOTENCY_CONFLICT, INTERNAL_ERROR, ORDER_RECEIPT_STATE_INVALID, ORIGIN_DENIED, RATE_LIMITED, SCOPE_DENIED, VALIDATION_FAILED, VERSION_CONFLICT]
+      [
+        AUTHENTICATION_REQUIRED,
+        AUTHORIZATION_DENIED,
+        CAPABILITY_DENIED,
+        CONTRACT_VERSION_UNSUPPORTED,
+        CSRF_TOKEN_INVALID,
+        IDEMPOTENCY_CONFLICT,
+        INTERNAL_ERROR,
+        ORDER_RECEIPT_STATE_INVALID,
+        ORIGIN_DENIED,
+        RATE_LIMITED,
+        SCOPE_DENIED,
+        VALIDATION_FAILED,
+        VERSION_CONFLICT,
+      ]
     idempotencyScope: actor-operation-scope
     expectedVersion: required
     timeout: 800

@@ -10,7 +10,11 @@ import type { InvitationPort } from '../public/InvitationPort';
 import { mapEnrollment, mapInvitation } from './InvitationMapper';
 
 export class InvitationGateway implements InvitationPort {
-  constructor(private readonly sdk: IdentitySdk, private readonly environment: AuthEnvironment, private readonly bootstrap: BootstrapPort) {}
+  constructor(
+    private readonly sdk: IdentitySdk,
+    private readonly environment: AuthEnvironment,
+    private readonly bootstrap: BootstrapPort
+  ) {}
   async resolve(input: InvitationResolution) {
     const [authorization, bootstrap] = await Promise.all([createAuthorization(), this.bootstrap.read(input.target, input.returns, input.signal)]);
     const result = await this.sdk.invitationsResolve(
@@ -26,9 +30,29 @@ export class InvitationGateway implements InvitationPort {
   }
   async complete(input: EnrollmentCompletion, signal?: AbortSignal) {
     const [authorization, bootstrap] = await Promise.all([createAuthorization(), this.bootstrap.read('storefront', {}, signal)]);
-    const body = input.subjectMode === 'bound'
-      ? { mode: 'bound' as const, challenge: input.challenge, code: input.code.trim(), password: input.password, ...(input.displayName === undefined ? {} : { displayName: input.displayName.trim() }), termsAccepted: true as const, termsHash: input.termsHash, authorization: authorization.request }
-      : { mode: 'campaign' as const, subject: input.subject?.trim() ?? '', challenge: input.challenge, code: input.code.trim(), password: input.password, displayName: input.displayName?.trim() ?? '', termsAccepted: true as const, termsHash: input.termsHash, authorization: authorization.request };
+    const body =
+      input.subjectMode === 'bound'
+        ? {
+            mode: 'bound' as const,
+            challenge: input.challenge,
+            code: input.code.trim(),
+            password: input.password,
+            ...(input.displayName === undefined ? {} : { displayName: input.displayName.trim() }),
+            termsAccepted: true as const,
+            termsHash: input.termsHash,
+            authorization: authorization.request,
+          }
+        : {
+            mode: 'campaign' as const,
+            subject: input.subject?.trim() ?? '',
+            challenge: input.challenge,
+            code: input.code.trim(),
+            password: input.password,
+            displayName: input.displayName?.trim() ?? '',
+            termsAccepted: true as const,
+            termsHash: input.termsHash,
+            authorization: authorization.request,
+          };
     const result = await this.sdk.enrollmentsComplete({ path: { id: input.id }, body }, commandContext(this.environment, 'storefront', bootstrap.csrf, signal));
     if (result.kind === 'enrolled') return Object.freeze(result);
     const redirectUrl = await exchangeSession(this.sdk, this.environment, result, authorization, 'storefront', bootstrap.csrf, signal);

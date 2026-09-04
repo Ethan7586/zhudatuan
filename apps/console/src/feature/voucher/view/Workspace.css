@@ -1,8 +1,3 @@
-.consolelayout[data-route='vouchers'] {
-  --vi-route-accent: var(--sw-brand);
-  --vi-route-soft: var(--sw-brand-light);
-}
-
 .voucherworkspace {
   width: 100%;
   max-width: 1600px;
@@ -38,8 +33,8 @@
   height: 30px;
   flex: 0 0 auto;
   border-radius: 9px;
-  background: var(--vi-route-soft);
-  color: var(--vi-route-accent);
+  background: var(--sw-brand-light);
+  color: var(--sw-brand);
   font-size: 12px;
   font-weight: 800;
   place-items: center;
@@ -54,7 +49,7 @@
 .voucherownership strong,
 .voucherboundarybanner strong {
   display: block;
-  color: var(--vi-ink);
+  color: var(--sw-brand-ink);
   font-size: 12px;
   line-height: 19px;
 }
@@ -79,7 +74,7 @@
   min-height: 108px;
   align-content: center;
   overflow: hidden;
-  border: 1px solid var(--vi-line);
+  border: 1px solid var(--sw-border);
   border-radius: 14px;
   background: var(--sw-surface);
   padding: 14px 16px;
@@ -97,16 +92,16 @@
 }
 
 .vouchersummary article.is-success::before {
-  background: var(--vi-success);
+  background: var(--sw-success);
 }
 .vouchersummary article.is-warning::before {
-  background: var(--vi-warning);
+  background: var(--sw-warning);
 }
 .vouchersummary article.is-danger::before {
-  background: var(--vi-danger);
+  background: var(--sw-danger);
 }
 .vouchersummary article.is-info::before {
-  background: var(--vi-brand);
+  background: var(--sw-brand);
 }
 
 .vouchersummary span {
@@ -117,7 +112,7 @@
 
 .vouchersummary strong {
   margin-top: 6px;
-  color: var(--vi-ink);
+  color: var(--sw-brand-ink);
   font-size: clamp(21px, 1.7vw, 27px);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.025em;
@@ -127,7 +122,7 @@
 .vouchersummary small {
   margin-top: 7px;
   overflow: hidden;
-  color: var(--sw-disabled);
+  color: var(--sw-muted);
   font-size: 10px;
   line-height: 16px;
   text-overflow: ellipsis;
@@ -161,7 +156,7 @@
   outline: none;
   background: var(--sw-surface);
   padding: 0 11px;
-  color: var(--vi-brand);
+  color: var(--sw-brand);
   font: inherit;
   font-size: 11px;
   font-weight: 700;
@@ -170,95 +165,4 @@
 
 .voucherboundarybanner button {
   color: var(--sw-warning-strong);
-}
-
-.voucherlifecycle {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.voucherlifecycle li {
-  position: relative;
-  display: flex;
-  min-height: 68px;
-  align-items: center;
-  gap: 9px;
-  border: 1px solid var(--vi-line);
-  border-radius: 11px;
-  background: var(--sw-surface);
-  padding: 10px 11px;
-}
-
-.voucherlifecycle li:not(:last-child)::after {
-  position: absolute;
-  z-index: 1;
-  top: 50%;
-  right: -7px;
-  width: 5px;
-  height: 5px;
-  border-top: 1px solid var(--sw-disabled);
-  border-right: 1px solid var(--sw-disabled);
-  content: '';
-  transform: translateY(-50%) rotate(45deg);
-}
-
-.voucherlifecycle li > span {
-  display: grid;
-  width: 25px;
-  height: 25px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: var(--sw-brand-light);
-  color: var(--sw-muted);
-  font-size: 10px;
-  font-weight: 800;
-  place-items: center;
-}
-
-.voucherlifecycle li.is-review,
-.voucherlifecycle li.is-paused {
-  border-color: var(--sw-border-strong);
-  background: var(--sw-commerce-warm);
-}
-.voucherlifecycle li.is-review > span,
-.voucherlifecycle li.is-paused > span {
-  background: var(--sw-warning-surface);
-  color: var(--sw-warning-strong);
-}
-.voucherlifecycle li.is-scheduled {
-  border-color: var(--sw-border-strong);
-  background: var(--sw-surface-subtle);
-}
-.voucherlifecycle li.is-scheduled > span {
-  background: var(--sw-brand-light);
-  color: var(--vi-brand);
-}
-.voucherlifecycle li.is-active {
-  border-color: var(--sw-border-strong);
-  background: var(--sw-background);
-}
-.voucherlifecycle li.is-active > span {
-  background: var(--sw-border);
-  color: var(--sw-success-strong);
-}
-
-.voucherlifecycle div {
-  display: grid;
-  min-width: 0;
-  gap: 2px;
-}
-.voucherlifecycle strong {
-  color: var(--sw-sidebar-top);
-  font-size: 11px;
-}
-.voucherlifecycle small {
-  overflow: hidden;
-  color: var(--sw-disabled);
-  font-size: 9px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }

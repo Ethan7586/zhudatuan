@@ -38,7 +38,11 @@ export function ProductDrawer({ listing, tab, detail, pending, error, onTab, onC
     >
       <Modal className="productdrawer">
         <AriaDialog className="productdrawercontent" aria-label={listing?.title ?? '商品详情'}>
-          {({ close }) => (listing === undefined ? null : <ProductDrawerContent listing={listing} tab={tab} {...(detail === undefined ? {} : { detail })} pending={pending} {...(error === undefined ? {} : { error })} onTab={onTab} onClose={close} onAction={onAction} />)}
+          {({ close }) =>
+            listing === undefined ? null : (
+              <ProductDrawerContent listing={listing} tab={tab} {...(detail === undefined ? {} : { detail })} pending={pending} {...(error === undefined ? {} : { error })} onTab={onTab} onClose={close} onAction={onAction} />
+            )
+          }
         </AriaDialog>
       </Modal>
     </ModalOverlay>

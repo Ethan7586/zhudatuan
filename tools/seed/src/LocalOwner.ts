@@ -1,4 +1,5 @@
 import type { Client } from 'pg';
+import { syncMemberProjection } from './MemberProjection';
 
 export const LOCAL_OWNER = Object.freeze({
   principal: 'principal:zhudatuan:owner:ethan:v1',
@@ -22,6 +23,7 @@ export async function ensureLocalOwner(database: Client): Promise<void> {
       status='active',updated_at=clock_timestamp()`,
     [LOCAL_OWNER.member, LOCAL_OWNER.principal]
   );
+  await syncMemberProjection(database, LOCAL_OWNER.member);
   await database.query(
     `insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at,principal_id)
     values($1,$2,$3,'operator','active',1,clock_timestamp(),$4)

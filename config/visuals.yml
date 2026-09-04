@@ -178,7 +178,7 @@ surfaces:
       - routeid: consoleproductdetail
         baseline: consoleproductdetail
         states: *a1
-      - routeid: consoleproductimport
+      - routeid: consoleimporttask
         baseline: consoleproductimport
         states: *a1
       - routeid: consoleorders
@@ -326,4 +326,3 @@ surfaces:
         baseline: storefrontnotifications
         responsive: true
         states: *a1
-

@@ -48,9 +48,13 @@ export function AuthCard({
                     <ArrowLeft aria-hidden="true" />
                   </button>
                 )}
-                <span className="authstep" data-current={stage === 1}>{stage === 2 ? <CheckCircle2 aria-label="账号认证已完成" /> : '1'}</span>
+                <span className="authstep" data-current={stage === 1}>
+                  {stage === 2 ? <CheckCircle2 aria-label="账号认证已完成" /> : '1'}
+                </span>
                 <span className="authstepbar" data-complete={stage === 2} />
-                <span className="authstep" data-current={stage === 2}>2</span>
+                <span className="authstep" data-current={stage === 2}>
+                  2
+                </span>
               </div>
               <div className="authsurfacelabel">
                 <Brand variant="mark" />

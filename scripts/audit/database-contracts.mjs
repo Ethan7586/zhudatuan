@@ -176,6 +176,12 @@ const REPAIR_FILES = [
   '20260903108000_publish_shared_voucher_reads.sql',
   '20260903109000_complete_cockpit_projection.sql',
   '20260903110000_complete_order_read_projection.sql',
+  '20260903111000_enable_qualification_rollback.sql',
+  '20260903112000_version_risk_governance.sql',
+  '20260903113000_scope_federation_center.sql',
+  '20260903114000_access_member_projection.sql',
+  '20260903115000_restore_cockpit_products.sql',
+  '20260903116000_publish_contract_identity.sql',
 ];
 const HARD_CUT_CONTRACTS = [
   'contract_v5_catalog_contract.sql',

@@ -2,9 +2,10 @@
 import { describe, expect, it } from 'vitest';
 import { RouteRegistry } from '../app/RouteRegistry';
 import { COMPONENT_KEYS, NAVIGATION_IDS } from '../generated/NavigationBinding';
+import { relativeRoute } from '../generated/RouteBinding';
 import { SessionSchema, uniqueScopes } from '../entity/session/ConsoleSession';
 import { pageCursor } from '../shared/url/PageCursor';
-import { scopePath } from '../shared/url/ScopePath';
+import { scopeRoutePath } from '../shared/url/ScopePath';
 
 describe('Console Route Registry', () => {
   it('binds every generated navigation component and id exactly once without policy metadata', () => {
@@ -16,12 +17,14 @@ describe('Console Route Registry', () => {
       expect(Object.keys(manifest).sort()).toEqual(['component', 'load', 'navigationids', 'routes']);
     }
     expect(RouteRegistry.match('/scopes/enterprise/group%3A1/finance/settlements')?.component).toBe('finance');
-    expect(RouteRegistry.match('/scopes/mall/mall%3A1/imports/voucher/job%3A1')?.component).toBe('product');
+    expect(RouteRegistry.match('/scopes/mall/mall%3A1/imports/voucher/job%3A1')?.component).toBe('task');
     expect(RouteRegistry.match('/scopes/mall/mall%3A1/products/product%3A1')?.component).toBe('product');
+    expect(RouteRegistry.resolve('/scopes/mall/mall%3A1/products/product%3A1')).toEqual({ routeid: 'consoleproductdetail', parameters: { scopeKind: 'mall', scopeId: 'mall:1', productId: 'product:1' } });
+    expect(relativeRoute('consoleproductdetail')).toBe('products/:productId');
   });
 
   it('puts kind and id in a deep-linkable scope URL', () => {
-    expect(scopePath({ kind: 'enterprise', id: 'group/鸿泰' }, 'products')).toBe('/scopes/enterprise/group%2F%E9%B8%BF%E6%B3%B0/products');
+    expect(scopeRoutePath({ kind: 'enterprise', id: 'group/鸿泰' }, 'consoleproducts')).toBe('/scopes/enterprise/group%2F%E9%B8%BF%E6%B3%B0/products');
   });
 
   it('deduplicates scopes and normalizes access versions', () => {

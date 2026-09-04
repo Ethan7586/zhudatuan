@@ -42,7 +42,24 @@ const DocumentSchema = z
   .object({
     version: z.literal(2),
     application: z.string(),
-    pages: z.array(z.object({ id: z.string(), path: z.string(), blocks: z.array(z.object({ id: z.string(), component: z.enum(['hero', 'notice', 'shortcut', 'productcollection', 'richtext']), content: z.record(z.string(), ContractJsonValueSchema), action: z.optional(z.object({ type: z.enum(['link', 'product', 'category', 'collection', 'exchangeableproduct', 'micropage', 'marketingactivity']), target: z.string() }).strict()) }).strict()) }).strict()),
+    pages: z.array(
+      z
+        .object({
+          id: z.string(),
+          path: z.string(),
+          blocks: z.array(
+            z
+              .object({
+                id: z.string(),
+                component: z.enum(['hero', 'notice', 'shortcut', 'productcollection', 'richtext']),
+                content: z.record(z.string(), ContractJsonValueSchema),
+                action: z.optional(z.object({ type: z.enum(['link', 'product', 'category', 'collection', 'exchangeableproduct', 'micropage', 'marketingactivity']), target: z.string() }).strict()),
+              })
+              .strict()
+          ),
+        })
+        .strict()
+    ),
   })
   .strict();
 export const ExperienceVersionSchema = z
@@ -75,7 +92,15 @@ export const ExperienceDetailSchema = ExperienceSchema.extend({ head: Experience
 export const ExperiencePageSchema = pageEnvelope(ExperienceSchema);
 export const ExperienceCopySchema = ExperienceSchema.extend({ versionId: z.string().min(1) }).strict();
 export const ExperienceValidationSchema = z.object({ id: z.string(), application_id: z.string(), validation_state: z.enum(['valid', 'invalid']) }).strict();
-export const ExperiencePublicationSchema = z.object({
-  id: z.string(), application_id: z.string(), version_id: z.string(), pool_id: z.string(), state: z.enum(['scheduled', 'active', 'retired', 'failed']),
-  effective_at: z.string().datetime(), retired_at: z.string().datetime().nullable(), published_by: z.string(),
-}).strict();
+export const ExperiencePublicationSchema = z
+  .object({
+    id: z.string(),
+    application_id: z.string(),
+    version_id: z.string(),
+    pool_id: z.string(),
+    state: z.enum(['scheduled', 'active', 'retired', 'failed']),
+    effective_at: z.string().datetime(),
+    retired_at: z.string().datetime().nullable(),
+    published_by: z.string(),
+  })
+  .strict();

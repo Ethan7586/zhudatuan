@@ -16,6 +16,6 @@ export class CenterReadHandler implements OperationHandler<'qualification.center
     const page = queryPage(input, 200);
     const rows = await this.qualifications.policies(context.transaction, { scope: access.scope.id, ...page });
     const result = keysetPage(rows, page, 'updated_at');
-    return { status: 200, body: { ...result, items: [...result.items] } };
+    return { status: 200, body: { ...result, items: result.items.map((item) => ({ ...item, versions: [...item.versions] })) } };
   }
 }

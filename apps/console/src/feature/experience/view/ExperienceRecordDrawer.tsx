@@ -13,7 +13,12 @@ export function ExperienceRecordDrawer({ record, model, onClose }: Readonly<{ re
       {model.pending ? (
         <p role="status">正在读取装修与发布详情…</p>
       ) : model.failed || !detail ? (
-        <section role="alert"><p>详情读取失败：{model.error}</p><button type="button" onClick={model.refresh}>重试</button></section>
+        <section role="alert">
+          <p>详情读取失败：{model.error}</p>
+          <button type="button" onClick={model.refresh}>
+            重试
+          </button>
+        </section>
       ) : (
         <div className="commercedrawerbody">
           <section className="commercedrawerstatus">

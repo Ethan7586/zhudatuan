@@ -6,5 +6,9 @@ import { ErrorBoundary } from './ErrorBoundary';
 
 export default function App() {
   const dependencies = useMemo(() => createDependencies(environment), []);
-  return <ErrorBoundary><Router dependencies={dependencies} /></ErrorBoundary>;
+  return (
+    <ErrorBoundary>
+      <Router dependencies={dependencies} />
+    </ErrorBoundary>
+  );
 }

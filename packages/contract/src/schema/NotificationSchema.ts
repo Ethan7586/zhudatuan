@@ -57,7 +57,7 @@ export const NOTIFICATION_BODY_SCHEMAS = {
 export const NOTIFICATION_QUERY_SCHEMAS = {
   NotificationNotificationsReadInput: strictObject(pageQuery),
   NotificationPreferencesReadInput: strictObject(pageQuery),
-  NotificationTemplatesReadInput: strictObject(pageQuery),
+  NotificationTemplatesReadInput: strictObject({ ...pageQuery, channel: optional(channel) }),
   NotificationAnnouncementsReadInput: strictObject(pageQuery),
 } as const;
 

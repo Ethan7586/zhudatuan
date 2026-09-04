@@ -17,16 +17,19 @@ export function useMembershipViewModel(dependencies: Dependencies, target: AuthT
     controller.current = request;
     setBusy(true);
     setFailureView(undefined);
-    void dependencies.memberships.execute(target, request.signal).then(
-      (value) => {
-        if (!request.signal.aborted) setMemberships(value.memberships);
-      },
-      (cause: unknown) => {
-        if (!request.signal.aborted) setFailureView(presentError(cause));
-      }
-    ).finally(() => {
-      if (!request.signal.aborted) setBusy(false);
-    });
+    void dependencies.memberships
+      .execute(target, request.signal)
+      .then(
+        (value) => {
+          if (!request.signal.aborted) setMemberships(value.memberships);
+        },
+        (cause: unknown) => {
+          if (!request.signal.aborted) setFailureView(presentError(cause));
+        }
+      )
+      .finally(() => {
+        if (!request.signal.aborted) setBusy(false);
+      });
     return () => request.abort();
   }, [dependencies.memberships, target]);
 
@@ -37,16 +40,19 @@ export function useMembershipViewModel(dependencies: Dependencies, target: AuthT
     controller.current = request;
     setBusy(true);
     setFailureView(undefined);
-    void dependencies.selectMembership.execute(membership.id, target, request.signal).then(
-      ({ redirectUrl }) => {
-        if (!request.signal.aborted) dependencies.navigation.replace(redirectUrl);
-      },
-      (cause: unknown) => {
-        if (!request.signal.aborted) setFailureView(presentError(cause));
-      }
-    ).finally(() => {
-      if (!request.signal.aborted) setBusy(false);
-    });
+    void dependencies.selectMembership
+      .execute(membership.id, target, request.signal)
+      .then(
+        ({ redirectUrl }) => {
+          if (!request.signal.aborted) dependencies.navigation.replace(redirectUrl);
+        },
+        (cause: unknown) => {
+          if (!request.signal.aborted) setFailureView(presentError(cause));
+        }
+      )
+      .finally(() => {
+        if (!request.signal.aborted) setBusy(false);
+      });
   };
 
   return Object.freeze({ memberships, busy, ...(failureView === undefined ? {} : { failure: failureView }), select });

@@ -13,11 +13,12 @@ export interface DirectoryRepository {
   runs(context: ReadTransactionContext, connection: string, after: string | null, limit: number): Promise<readonly Readonly<Record<string, unknown>>[]>;
   createRun(context: WriteTransactionContext, connection: string, mode: SyncMode, key: string): Promise<SyncRun>;
   startRun(context: WriteTransactionContext, run: string): Promise<SyncRun>;
+  active(context: ReadTransactionContext, run: string): Promise<boolean>;
   event(context: ReadTransactionContext, run: string): Promise<Readonly<{ eventid: string; envelope: string }>>;
   stage(context: WriteTransactionContext, run: SyncRun, page: DirectoryPage, subjects: readonly StagedSubject[]): Promise<boolean>;
   current(context: ReadTransactionContext, connection: string, hashes: readonly Buffer[]): Promise<ReadonlyMap<string, CurrentDirectorySubject>>;
   apply(context: WriteTransactionContext, connection: DirectoryConnection, subject: StagedSubject, kind: DirectoryApplyKind): Promise<void>;
-  advance(context: WriteTransactionContext, run: string, page: DirectoryPage, counts: DirectoryCounts): Promise<void>;
+  advance(context: WriteTransactionContext, run: string, page: DirectoryPage, counts: DirectoryCounts): Promise<boolean>;
   complete(context: WriteTransactionContext, run: string, connection: string, version: number, cursor: string | null): Promise<void>;
   departures(context: ReadTransactionContext, connection: string): Promise<readonly DirectoryDeparture[]>;
   freeze(context: WriteTransactionContext, connection: string, subject: string): Promise<void>;

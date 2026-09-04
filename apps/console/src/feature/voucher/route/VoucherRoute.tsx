@@ -4,8 +4,11 @@ import { useRouteTitle } from '../../../shared/ui/RouteTitle';
 import { VoucherPage } from '../view/VoucherPage';
 import { useVoucherViewModel } from '../viewmodel/VoucherViewModel';
 import '../view/Workspace.css';
+import '../view/Lifecycle.css';
 import '../view/Table.css';
+import '../view/TableState.css';
 import '../view/Dialogs.css';
+import '../view/CreatorDialog.css';
 import '../view/DialogFooter.css';
 import '../view/Responsive.css';
 

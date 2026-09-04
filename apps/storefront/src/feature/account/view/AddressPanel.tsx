@@ -2,7 +2,7 @@ import { ArrowLeft, CircleAlert, MapPin, Pencil, Plus, Trash2 } from 'lucide-rea
 import { hasFailureCode, presentError } from '@shop/presentation';
 import { useState, type FormEvent } from 'react';
 import type { Address, AddressDraft } from '../model/Address';
-import { StorefrontStepup } from '../../security/public';
+import { StorefrontStepup } from '../../security';
 
 interface AddressPanelProps {
   readonly addresses: readonly Address[];
@@ -63,26 +63,26 @@ export function AddressPanel({ addresses, save, remove, notify, back }: AddressP
   }
 
   return (
-    <main className="mx-auto max-w-4xl space-y-3 p-3 sm:p-5">
+    <div className="mx-auto max-w-4xl space-y-3 p-3 sm:p-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <button type="button" onClick={back} className="inline-flex items-center gap-1 text-sm font-bold text-blue-700">
+        <button type="button" onClick={back} className="inline-flex items-center gap-1 text-sm font-bold text-brand">
           <ArrowLeft size={16} />
           返回个人中心
         </button>
-        <button type="button" onClick={() => start()} className="inline-flex items-center gap-1 rounded-xl bg-[var(--sw-brand)] px-4 py-2 text-xs font-bold text-white">
+        <button type="button" onClick={() => start()} className="inline-flex items-center gap-1 rounded-xl bg-[var(--sw-brand)] px-4 py-2 text-xs font-bold text-inverse">
           <Plus size={15} />
           新增收货地址
         </button>
       </header>
-      <section className="rounded-2xl bg-white p-4 shadow-sm">
+      <section className="rounded-2xl bg-surface p-4 shadow-sm">
         <h1 className="flex items-center gap-2 text-lg font-black">
           <MapPin size={19} />
           收货地址
         </h1>
-        <p className="mt-1 text-xs text-gray-500">敏感字段由服务端加密保存，列表仅返回脱敏信息。</p>
+        <p className="mt-1 text-xs text-muted">敏感字段由服务端加密保存，列表仅返回脱敏信息。</p>
       </section>
       {error ? (
-        <div role="alert" className="flex items-center gap-2 rounded-xl bg-red-50 p-3 text-xs font-bold text-red-700">
+        <div role="alert" className="flex items-center gap-2 rounded-xl bg-danger-surface p-3 text-xs font-bold text-danger-strong">
           <CircleAlert size={16} />
           {error}
         </div>
@@ -96,10 +96,10 @@ export function AddressPanel({ addresses, save, remove, notify, back }: AddressP
         }}
       />
       {editing ? (
-        <form onSubmit={(event) => void submit(event)} className="grid gap-3 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:grid-cols-2">
+        <form onSubmit={(event) => void submit(event)} className="grid gap-3 rounded-2xl border border-brand-light bg-surface p-4 shadow-sm sm:grid-cols-2">
           <div className="sm:col-span-2">
             <h2 className="font-black">{editing.id ? '更新收货地址' : '新增收货地址'}</h2>
-            {editing.id ? <p className="mt-1 text-xs text-gray-500">为避免泄露原始敏感信息，请重新填写全部字段。</p> : null}
+            {editing.id ? <p className="mt-1 text-xs text-muted">为避免泄露原始敏感信息，请重新填写全部字段。</p> : null}
           </div>
           <Field label="收货人" value={draft.recipient} onChange={(value) => change('recipient', value)} autoComplete="name" />
           <Field label="手机号" value={draft.mobile} onChange={(value) => change('mobile', value)} autoComplete="tel" />
@@ -111,7 +111,7 @@ export function AddressPanel({ addresses, save, remove, notify, back }: AddressP
             <button type="button" disabled={busy} onClick={() => setEditing(null)} className="rounded-lg border px-4 py-2 text-xs font-bold">
               取消
             </button>
-            <button disabled={busy} className="rounded-lg bg-[var(--sw-brand)] px-4 py-2 text-xs font-bold text-white disabled:opacity-50">
+            <button disabled={busy} className="rounded-lg bg-[var(--sw-brand)] px-4 py-2 text-xs font-bold text-inverse disabled:opacity-50">
               {busy ? '保存中…' : '安全保存'}
             </button>
           </div>
@@ -119,33 +119,33 @@ export function AddressPanel({ addresses, save, remove, notify, back }: AddressP
       ) : null}
       <section className="space-y-2">
         {addresses.map((item) => (
-          <article key={item.id} className="rounded-2xl border bg-white p-4 text-xs shadow-sm">
+          <article key={item.id} className="rounded-2xl border bg-surface p-4 text-xs shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <b className="text-sm">
                   {item.recipient} · {item.mobile}
                 </b>
-                <p className="mt-2 text-gray-600">
+                <p className="mt-2 text-secondary">
                   {item.province}
                   {item.city}
                   {item.district}
                   {item.detail}
                 </p>
-                <p className="mt-1 text-gray-400">
+                <p className="mt-1 text-muted">
                   {item.tag} · 版本 {item.version}
                 </p>
               </div>
               <div className="flex gap-2">
-                <button type="button" disabled={busy} onClick={() => start(item)} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 font-bold text-blue-700">
+                <button type="button" disabled={busy} onClick={() => start(item)} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 font-bold text-brand">
                   <Pencil size={14} />
                   更新
                 </button>
                 {confirming === item.id ? (
-                  <button type="button" disabled={busy} onClick={() => void erase(item)} className="rounded-lg bg-red-600 px-3 py-2 font-bold text-white">
+                  <button type="button" disabled={busy} onClick={() => void erase(item)} className="rounded-lg bg-danger px-3 py-2 font-bold text-inverse">
                     确认删除
                   </button>
                 ) : (
-                  <button type="button" disabled={busy} onClick={() => setConfirming(item.id)} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 font-bold text-red-600">
+                  <button type="button" disabled={busy} onClick={() => setConfirming(item.id)} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 font-bold text-danger">
                     <Trash2 size={14} />
                     删除
                   </button>
@@ -154,9 +154,9 @@ export function AddressPanel({ addresses, save, remove, notify, back }: AddressP
             </div>
           </article>
         ))}
-        {addresses.length === 0 ? <div className="grid min-h-40 place-items-center rounded-2xl border border-dashed bg-white text-sm text-gray-400">尚未维护收货地址</div> : null}
+        {addresses.length === 0 ? <div className="grid min-h-40 place-items-center rounded-2xl border border-dashed bg-surface text-sm text-muted">尚未维护收货地址</div> : null}
       </section>
-    </main>
+    </div>
   );
 }
 

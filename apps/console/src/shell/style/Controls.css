@@ -1,0 +1,204 @@
+/* Shared controls, focus treatment and overlays. */
+.consolelayout[data-visual-theme='console-v1'] .shopbutton {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  color: var(--sw-text-secondary);
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--sw-brand-ink) 4%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .shopbutton:hover:not(:disabled) {
+  border-color: var(--sw-disabled);
+  background: var(--sw-surface-subtle);
+  color: var(--sw-brand-hover);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--sw-brand-ink) 7%, transparent);
+  transform: translateY(-1px);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .shopbuttonprimary {
+  border-color: var(--sw-brand);
+  background: linear-gradient(135deg, var(--sw-brand) 0%, var(--sw-brand-dark) 100%);
+  color: var(--sw-surface);
+  box-shadow: 0 6px 15px color-mix(in srgb, var(--sw-brand) 20%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .shopbuttondanger {
+  border-color: var(--sw-border-strong);
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger);
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(button, input, select, textarea):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--sw-brand) 48%, transparent);
+  outline-offset: 2px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(input, select, textarea)::placeholder {
+  color: var(--sw-disabled);
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.ordercolumnsettings, .financecolumnsettings, .headerpopup) {
+  border-color: var(--sw-border);
+  border-radius: 12px;
+  box-shadow: var(--sw-shadow-overlay);
+}
+
+/* Generic professional workstations: turn API-first scaffolds into complete UI. */
+.consolelayout[data-visual-theme='console-v1'] .resourcepanel {
+  position: relative;
+  min-height: min(640px, calc(100vh - 180px));
+  overflow: hidden;
+  border: 1px solid var(--sw-border);
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-surface);
+  padding: 0;
+  box-shadow: var(--sw-shadow-card);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .resourcepanel::before {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--sw-brand), color-mix(in srgb, var(--sw-brand) 32%, white), transparent 82%);
+  content: '';
+}
+
+.consolelayout[data-visual-theme='console-v1'] .resourceheading {
+  position: relative;
+  min-height: 126px;
+  align-items: center;
+  padding: 22px 24px 20px;
+  background: radial-gradient(circle at 92% 18%, color-mix(in srgb, var(--sw-brand) 8%, transparent), transparent 15rem), linear-gradient(180deg, var(--sw-surface), var(--sw-surface));
+}
+
+.consolelayout[data-visual-theme='console-v1'] .resourceheading::after {
+  position: absolute;
+  right: 34px;
+  bottom: 18px;
+  width: 112px;
+  height: 52px;
+  border: 1px solid color-mix(in srgb, var(--sw-brand) 9%, transparent);
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 90px 0 0;
+  content: '';
+  pointer-events: none;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .resourceheading > div {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .resourceheading .eyebrow {
+  margin: 0 0 5px;
+  color: var(--sw-brand);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.095em;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .resourceheading h1 {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0 0 5px;
+  overflow: visible;
+  clip: auto;
+  color: var(--sw-brand-ink);
+  font-size: 28px;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 36px;
+  white-space: normal;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .resourceheading > div > p:last-child {
+  max-width: 760px;
+  color: var(--sw-muted);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .datasource {
+  position: relative;
+  z-index: 3;
+  min-height: 30px;
+  border-color: color-mix(in srgb, var(--sw-brand) 18%, var(--sw-border));
+  background: color-mix(in srgb, var(--sw-surface) 84%, transparent);
+  color: var(--sw-muted);
+  padding: 0 11px;
+  font-size: 12px;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--sw-brand-ink) 4%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .datasource i {
+  width: 7px;
+  height: 7px;
+  background: var(--sw-warning);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sw-warning) 9%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.datasource-ready, .datasource-empty, .datasource-refreshing) i {
+  background: var(--sw-success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sw-success) 9%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.datasource-denied, .datasource-notfound, .datasource-offline, .datasource-conflict, .datasource-ratelimited, .datasource-stale, .datasource-failure) i {
+  background: var(--sw-danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sw-promotion) 9%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .resourcepanel > .resourceactions {
+  min-height: 54px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0;
+  border-top: 1px solid var(--sw-brand-light);
+  border-bottom: 1px solid var(--sw-border);
+  background: var(--sw-surface-subtle);
+  padding: 8px 24px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .inlinefield {
+  gap: 8px;
+  color: var(--sw-muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .inlinefield select {
+  height: 36px;
+  min-width: 116px;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: var(--sw-radius-md);
+  outline: 0;
+  background: var(--sw-surface);
+  color: var(--sw-text-secondary);
+  padding: 0 28px 0 10px;
+  font-size: 12px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .inlinefield select:hover {
+  border-color: var(--sw-disabled);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .featurestack {
+  gap: 14px;
+  margin: 0;
+  padding: 16px 18px 18px;
+}

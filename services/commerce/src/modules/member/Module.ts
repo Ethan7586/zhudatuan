@@ -34,7 +34,8 @@ export const MemberModule = defineModule(Manifest, {
   jobs: createJobs,
   handlers: (context) => {
     const transactions = new PgTransactionAccess();
-    const members = new PgMemberRepository(transactions, context.ports.get(MEMBER_ACCESS_PORT), context.ports.get(MEMBER_CATALOG_PORT));
+    const access = context.ports.get(MEMBER_ACCESS_PORT);
+    const members = new PgMemberRepository(transactions, access, context.ports.get(MEMBER_CATALOG_PORT));
     const addresses = new PgAddressRepository(transactions);
     return [
       new MembersReadHandler(members),
@@ -48,11 +49,12 @@ export const MemberModule = defineModule(Manifest, {
     ];
   },
   ports: (context) => {
-    const member = new MemberPort();
+    const access = context.ports.get(MEMBER_ACCESS_PORT);
+    const member = new MemberPort(access);
     return [
       { token: IDENTITY_MEMBER_PORT, value: member },
       { token: INVITATION_MEMBER_PORT, value: member },
-      { token: REFERRAL_MEMBER_PORT, value: new PgReferralMemberPort(context.ports.get(MEMBER_ACCESS_PORT)) },
+      { token: REFERRAL_MEMBER_PORT, value: new PgReferralMemberPort(access) },
       { token: BENEFIT_MEMBER_PORT, value: new PgBenefitMemberPort() },
       { token: MEMBER_READ_PORT, value: new PgMemberReadPort() },
       { token: MEMBER_ADDRESS_PORT, value: new PgAddressRepository(new PgTransactionAccess()) },

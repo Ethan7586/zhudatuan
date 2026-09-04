@@ -30,7 +30,15 @@ describe('support mapping', () => {
       ],
       count: 1,
     });
-    const conversation = mapConversation({ items: [{ id: 'message:1', clientMessageId: 'client:1', conversationId: 'conversation:1', authorType: 'agent', authorId: 'agent:1', body: '已受理', sequence: 1, version: 1, createdAt: '2026-08-31T00:01:00Z' }], attachments: [], context: { member: { id: 'member:1', displayName: '测试员工', employeeNo: 'E1001', mobileMasked: '138****0000' }, organization: { id: 'mall:1' }, orders: [], benefits: [] }, count: 1, conversationVersion: 1, latestSequence: 1, lastReadSequence: 0 });
+    const conversation = mapConversation({
+      items: [{ id: 'message:1', clientMessageId: 'client:1', conversationId: 'conversation:1', authorType: 'agent', authorId: 'agent:1', body: '已受理', sequence: 1, version: 1, createdAt: '2026-08-31T00:01:00Z' }],
+      attachments: [],
+      context: { member: { id: 'member:1', displayName: '测试员工', employeeNo: 'E1001', mobileMasked: '138****0000' }, organization: { id: 'mall:1' }, orders: [], benefits: [] },
+      count: 1,
+      conversationVersion: 1,
+      latestSequence: 1,
+      lastReadSequence: 0,
+    });
     expect(page.items[0]?.subject).toBe('配送问题');
     expect(conversation.items[0]?.body).toBe('已受理');
   });

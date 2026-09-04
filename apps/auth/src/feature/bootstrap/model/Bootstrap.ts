@@ -1,5 +1,5 @@
 import type { AuthTarget } from '@shop/config/client';
-import type { RegistrationPolicy } from '../../invitation/model/RegistrationPolicy';
+import type { RegistrationPolicy } from '../../invitation';
 
 export type LoginMethod = 'password' | 'otp' | 'invitation';
 

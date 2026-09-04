@@ -1,4 +1,4 @@
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
 
 export interface MemberAccessPort {
@@ -6,6 +6,14 @@ export interface MemberAccessPort {
   activeIn(context: ReadTransactionContext, member: string, organizations: readonly string[]): Promise<boolean>;
   members(context: ReadTransactionContext, organization: string, after: string | null, limit: number): Promise<readonly AccessMember[]>;
   profile(context: ReadTransactionContext, membership: string): Promise<AccessMember>;
+  syncProfile(context: WriteTransactionContext, profile: MemberProfileProjection): Promise<void>;
+}
+
+export interface MemberProfileProjection {
+  readonly member: string;
+  readonly displayName: string;
+  readonly mobileMasked: string | null;
+  readonly sourceVersion: number;
 }
 
 export interface AccessMember {

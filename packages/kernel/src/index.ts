@@ -14,6 +14,7 @@ export * from './IdGenerator';
 export * from './Mobile';
 export * from './Money';
 export * from './Page';
+export * from './Parallel';
 export * from './Policy';
 export * from './Result';
 export * from './RateLimiter';

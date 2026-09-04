@@ -37,12 +37,14 @@ export function PagedResource<T extends RowData>({ title, eyebrow, description, 
           <Button onPress={retry}>刷新</Button>
         </>
       }
-      notice={boundary === undefined ? null : (
-        <section className="capabilitynote" aria-labelledby={`${safeId(routeTitle)}boundary`}>
-          <h2 id={`${safeId(routeTitle)}boundary`}>{boundary.title}</h2>
-          <p>{boundary.message}</p>
-        </section>
-      )}
+      notice={
+        boundary === undefined ? null : (
+          <section className="capabilitynote" aria-labelledby={`${safeId(routeTitle)}boundary`}>
+            <h2 id={`${safeId(routeTitle)}boundary`}>{boundary.title}</h2>
+            <p>{boundary.message}</p>
+          </section>
+        )
+      }
     >
       <div className="featurestack">
         <DataTable caption={routeTitle} columns={columns} rows={rows} rowKey={rowKey} />

@@ -28,6 +28,19 @@ const provider = strictObject({
 });
 const directoryStatus = literal(['draft', 'enabled', 'paused', 'disabled', 'revoked']);
 const directory = strictObject({ id: text, tenantid: text, organizationid: text, providerid: text, providertype: literal(['wecomcorp', 'wecomsuite']), status: directoryStatus, successfulversion: number(), version: number() });
+const directoryRun = strictObject({
+  id: text,
+  mode: literal(['full', 'incremental', 'event', 'reconcile']),
+  state: literal(['queued', 'running', 'completed', 'failed', 'cancelled']),
+  read_count: number(),
+  applied_count: number(),
+  conflict_count: number(),
+  ignored_count: number(),
+  watermark: nullableText,
+  started_at: nullableText,
+  completed_at: nullableText,
+  created_at: text,
+});
 
 const navigationNode: ZodMiniType = lazy(() => strictObject({ id: text, title: text, icon: text, route: text, component: text, order: number(), entry: text, disabled: boolean(), children: array(navigationNode) }));
 
@@ -117,20 +130,6 @@ export const SECURITY_OUTPUT_SCHEMAS = {
   ),
   OrganizationDirectoriesManageOutput: directory,
   OrganizationDirectoriesSyncOutput: strictObject({ id: text, state: literal(['queued', 'running', 'completed', 'failed', 'cancelled']), mode: literal(['full', 'incremental']) }),
-  OrganizationDirectoriesSyncrunsReadOutput: page(
-    strictObject({
-      id: text,
-      mode: literal(['full', 'incremental', 'event', 'reconcile']),
-      state: literal(['queued', 'running', 'completed', 'failed', 'cancelled']),
-      read_count: number(),
-      applied_count: number(),
-      conflict_count: number(),
-      ignored_count: number(),
-      watermark: nullableText,
-      started_at: nullableText,
-      completed_at: nullableText,
-      created_at: text,
-    })
-  ),
+  OrganizationDirectoriesSyncrunsReadOutput: page(directoryRun),
   OrganizationDirectoryeventsReceiveOutput: undefinedSchema(),
 } as const;

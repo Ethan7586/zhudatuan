@@ -9,18 +9,43 @@ import { FinanceGateway } from './FinanceGateway';
 const gateway = new FinanceGateway('http://localhost');
 
 const requests: URL[] = [];
+let command: Readonly<{ headers: Headers; body: unknown }> | undefined;
 const server = setupServer(
   http.get('*/api/v1/finance/reconciliations', ({ request }) => {
     requests.push(new URL(request.url));
     expect(request.headers.get('x-scope-hint')).toBe('enterprise:1');
     expect(request.headers.get('x-access-version')).toBe('7');
     return HttpResponse.json(page());
+  }),
+  http.put('*/api/v1/finance/reconciliations/:id', async ({ request }) => {
+    command = { headers: request.headers, body: await request.json() };
+    return HttpResponse.json({
+      id: 'reconciliationdifference:1',
+      reconciliation_id: 'reconciliation:1',
+      statement_line_id: 'statementline:1',
+      scope_id: 'enterprise:1',
+      internal_type: null,
+      internal_id: null,
+      external_minor: 31_500,
+      internal_minor: 43_400,
+      difference_minor: -11_900,
+      state: 'resolutionpending',
+      reason_code: 'JOURNAL_MISSING',
+      evidence: {},
+      resolution: { reason: '核对渠道回单后提交差异处理' },
+      resolved_by: 'actor:finance',
+      approved_by: null,
+      resolved_at: '2026-08-26T00:00:00Z',
+      approved_at: null,
+      version: 8,
+    });
   })
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
   requests.length = 0;
+  command = undefined;
   server.resetHandlers();
 });
 afterAll(() => server.close());
@@ -56,6 +81,16 @@ describe('Finance gateway', () => {
     server.use(http.get('*/api/v1/finance/reconciliations', () => HttpResponse.json({ ...page(), count: 2 })));
     await expect(gateway.reconciliations(context(), { limit: 50 }, new AbortController().signal)).rejects.toThrow('FINANCE_PAGE_COUNT_MISMATCH');
   });
+
+  it('binds reconciliation commands to scope, version, identity and action proof', async () => {
+    await gateway.manageReconciliation(context(), 'reconciliation:1', 7, { action: 'resolve', item: 'reconciliationdifference:1', reason: '核对渠道回单后提交差异处理' }, 'a'.repeat(43), 'command:finance:1');
+    expect(command?.body).toEqual({ action: 'resolve', item: 'reconciliationdifference:1', reason: '核对渠道回单后提交差异处理' });
+    expect(command?.headers.get('x-scope-hint')).toBe('enterprise:1');
+    expect(command?.headers.get('if-match')).toBe('"7"');
+    expect(command?.headers.get('idempotency-key')).toBe('command:finance:1');
+    expect(command?.headers.get('x-action-proof')).toBe('a'.repeat(43));
+    expect(command?.headers.get('x-csrf-token')).toBe('csrf:finance');
+  });
 });
 
 function context(): ConsoleContext {
@@ -73,6 +108,7 @@ function context(): ConsoleContext {
       assurance: { level: 3 },
       security: { hasLocalCredential: true, phoneMasked: '138****0000', passwordChangedAt: null },
       syncedAt: '2026-08-26T00:00:00Z',
+      csrf: 'csrf:finance',
     },
     profile: { display_name: '测试财务', employee_no: null },
     scope,

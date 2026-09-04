@@ -4,7 +4,10 @@ import type { Experience } from '../model/Experience';
 export function useEntryViewModel() {
   const [record, setRecord] = useState<Experience | null>(null);
   const trigger = useRef('');
-  const open = useCallback((next: Experience, triggerKey: string) => { trigger.current = triggerKey; setRecord(next); }, []);
+  const open = useCallback((next: Experience, triggerKey: string) => {
+    trigger.current = triggerKey;
+    setRecord(next);
+  }, []);
   const close = useCallback(() => {
     const key = trigger.current;
     trigger.current = '';

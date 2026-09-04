@@ -17,6 +17,7 @@ const metric = strictObject({
 });
 const metricPage = pageOutput(metric);
 const trend = strictObject({ date: string(), salesCents: number(), orderCount: number() });
+const topProduct = strictObject({ productId: string(), name: string(), salesCents: number(), quantity: unsigned, orderCount: unsigned });
 const nullableNumber = union([number(), nullSchema()]);
 const businessEvent = strictObject({
   id: string(),
@@ -54,7 +55,7 @@ const summary = strictObject({
     trend: array(trend),
     weeklyTrend: array(trend),
     categories: array(strictObject({ name: string(), salesCents: number(), share: number() })),
-    topProducts: array(ContractJsonValueSchema),
+    topProducts: array(topProduct),
     malls: array(strictObject({ id: string(), name: string(), salesCents: number(), paidOrderCount: unsigned, refundRate: number() })),
     events: array(businessEvent),
     insights: array(strictObject({

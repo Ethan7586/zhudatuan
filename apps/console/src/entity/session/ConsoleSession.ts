@@ -76,10 +76,10 @@ function mergeScope(current: ConsoleScope, candidate: ConsoleScope): ConsoleScop
   return Object.freeze({
     ...current,
     ...candidate,
-    ...(candidate.tenant ?? current.tenant ? { tenant: candidate.tenant ?? current.tenant } : {}),
-    ...(candidate.name ?? current.name ? { name: candidate.name ?? current.name } : {}),
+    ...((candidate.tenant ?? current.tenant) ? { tenant: candidate.tenant ?? current.tenant } : {}),
+    ...((candidate.name ?? current.name) ? { name: candidate.name ?? current.name } : {}),
     ...(candidate.parent_id !== undefined || current.parent_id !== undefined ? { parent_id: candidate.parent_id ?? current.parent_id ?? null } : {}),
-    ...(candidate.path ?? current.path ? { path: candidate.path ?? current.path } : {}),
+    ...((candidate.path ?? current.path) ? { path: candidate.path ?? current.path } : {}),
   });
 }
 

@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx#MVP上线功能清单!A3:F24
 workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
-navigationCatalogSha256: 5191a956ebfa896847411843c07115759b1e36c5b1943272798008172ea3f6d5
-contractSha256: 3e4d5a0dad5ad2742b167cd1a30486a56969a4dc4d78ba4c6d7dff44229fa7bb
+navigationCatalogSha256: 0e84f38d138c31f00281ada4d37972845428eea7270dcd2fed6fe5e5abc4dd99
+contractSha256: 5b1192c0219af4a211e6b4cddea11bfdaffa5935fb43c3a29329152c401ee869
 generated: true
 count: 22
 requirements:
@@ -37,8 +37,8 @@ requirements:
       - mallcontrol
     routeids:
       - consolecontrol
+      - consoleimporttask
       - consoleproductdetail
-      - consoleproductimport
       - consoleproducts
       - consolevouchers
     routes:
@@ -871,8 +871,8 @@ requirements:
     navigation:
       - groupproduct
     routeids:
+      - consoleimporttask
       - consoleproductdetail
-      - consoleproductimport
       - consoleproducts
     routes:
       - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
@@ -1295,8 +1295,10 @@ requirements:
     navigation:
       - groupvoucher
     routeids:
+      - consoleimporttask
       - consolevouchers
     routes:
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
       - /scopes/:scopeKind/:scopeId/vouchers
     directOperations:
       - voucher.cardlibraries.read
@@ -2223,6 +2225,7 @@ requirements:
       - consoleaccess
       - consoledirectory
       - consolefederation
+      - consoleimporttask
       - consoleinvitations
       - consolemembers
       - consolenotifications
@@ -2231,6 +2234,7 @@ requirements:
       - consolerisk
       - consolesettings
     routes:
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
       - /scopes/:scopeKind/:scopeId/settings/directory
@@ -2289,6 +2293,7 @@ requirements:
       - identity.password.change
       - identity.password.reset
       - identity.password.verify
+      - identity.providers.center.read
       - identity.providers.manage
       - identity.providers.read
       - identity.providers.test
@@ -2392,6 +2397,7 @@ requirements:
       - identity.password.change
       - identity.password.reset
       - identity.password.verify
+      - identity.providers.center.read
       - identity.providers.manage
       - identity.providers.read
       - identity.providers.test
@@ -2928,8 +2934,8 @@ requirements:
       - storecatalog
       - storeproduct
     routeids:
+      - consoleimporttask
       - consoleproductdetail
-      - consoleproductimport
       - consoleproducts
       - storecatalog
       - storeproduct
@@ -3398,9 +3404,11 @@ requirements:
       - mallvoucher
       - storevouchers
     routeids:
+      - consoleimporttask
       - consolevouchers
       - storevouchers
     routes:
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
       - /scopes/:scopeKind/:scopeId/vouchers
       - /vouchers
     directOperations:
@@ -4336,6 +4344,7 @@ requirements:
       - consoleaccess
       - consoledirectory
       - consolefederation
+      - consoleimporttask
       - consoleinvitations
       - consolemembers
       - consolenotifications
@@ -4350,6 +4359,7 @@ requirements:
       - /notifications
       - /profile
       - /profile/security
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
       - /scopes/:scopeKind/:scopeId/settings/directory
@@ -4408,6 +4418,7 @@ requirements:
       - identity.password.change
       - identity.password.reset
       - identity.password.verify
+      - identity.providers.center.read
       - identity.providers.manage
       - identity.providers.read
       - identity.providers.test
@@ -4514,6 +4525,7 @@ requirements:
       - identity.password.change
       - identity.password.reset
       - identity.password.verify
+      - identity.providers.center.read
       - identity.providers.manage
       - identity.providers.read
       - identity.providers.test
@@ -4705,6 +4717,7 @@ requirements:
       - identity.mobile.manage
       - identity.password.change
       - identity.password.reset
+      - identity.providers.center.read
       - identity.providers.read
       - identity.session.delete
       - identity.session.read
@@ -4760,6 +4773,7 @@ requirements:
       - identity.mobile.manage
       - identity.password.change
       - identity.password.reset
+      - identity.providers.center.read
       - identity.providers.read
       - identity.session.delete
       - identity.session.read

@@ -1,5 +1,4 @@
-import { createHash } from 'node:crypto';
-import type { JsonObject, ProviderCallContext, SourceSkuKey } from '@shop/contract';
+import type { ProviderCallContext, SourceSkuKey } from '@shop/contract';
 import type { ExtensionRegistry } from '../../../../bootstrap/ExtensionRegistry';
 import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
 import type { ChannelCatalogPort } from '../../../catalog/public';
@@ -8,6 +7,7 @@ import type { ChannelInventoryPort } from '../../../inventory/public';
 import type { ChannelPricingPort } from '../../../pricing/public';
 import { ExternalMapping } from '../../domain/model/ExternalMapping';
 import type { ChannelJobRepository, ChannelSyncKind, ChannelSyncRun } from '../port/ChannelJobRepository';
+import { channelDigest as digest, channelInteger as integer, channelObject as object, channelOwner as syncOwner, channelRequired as required, channelText as text } from './ChannelSyncValue';
 
 export interface ChannelSyncDependencies {
   readonly catalog?: ChannelCatalogPort;
@@ -218,35 +218,4 @@ export class SynchronizeChannel {
       workload: 'jobs',
     };
   }
-}
-
-function digest(value: string): string {
-  return createHash('sha256').update(value).digest('hex');
-}
-
-function object(value: unknown): JsonObject {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('JOB_PAYLOAD_INVALID');
-  return value as JsonObject;
-}
-
-function text(value: unknown, code: string): string {
-  if (typeof value !== 'string' || !value.trim()) throw new Error(code);
-  return value;
-}
-
-function integer(value: unknown, code: string): number {
-  if (!Number.isSafeInteger(value) || (value as number) < 0) throw new Error(code);
-  return value as number;
-}
-
-function required<T>(value: T | undefined, code: string): T {
-  if (!value) throw new Error(code);
-  return value;
-}
-
-function syncOwner(kind: ChannelSyncKind): 'catalog' | 'pricing' | 'inventory' | 'finance' {
-  if (kind === 'catalogsync') return 'catalog';
-  if (kind === 'pricesync') return 'pricing';
-  if (kind === 'inventorysync') return 'inventory';
-  return 'finance';
 }

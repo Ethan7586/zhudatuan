@@ -4,7 +4,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
 import { CockpitGateway } from './cockpit/infrastructure/CockpitGateway';
-import { readControl } from './control/ControlQuery';
+import { ControlGateway } from './control/infrastructure/ControlGateway';
 import { FinanceGateway } from './finance/infrastructure/FinanceGateway';
 import { OrderGateway } from './order/infrastructure/OrderGateway';
 import { EMPTY_ORDER_LIST_FILTER } from './order/model/OrderFilter';
@@ -16,6 +16,7 @@ const products = new ProductGateway({ apiBaseUrl: appConfig.apiBaseUrl, clientVe
 const cockpit = new CockpitGateway(appConfig.apiBaseUrl);
 const orders = new OrderGateway(appConfig.apiBaseUrl);
 const finance = new FinanceGateway(appConfig.apiBaseUrl);
+const control = new ControlGateway(appConfig.apiBaseUrl);
 
 const requests: URL[] = [];
 const empty = { items: [], count: 0 };
@@ -91,7 +92,7 @@ describe('Console named read Operations', () => {
     const signal = new AbortController().signal;
     await Promise.all([
       cockpit.read(context, { period: '30days' }, signal),
-      readControl(context, undefined, signal),
+      control.platform(context, undefined, signal),
       finance.overview(context, signal),
       orders.orders(context, { ...EMPTY_ORDER_LIST_FILTER, order: 'SW1', view: 'all' }, signal),
       products.readProducts(productRequest(), { q: '', category: '', limit: 50 }, signal),

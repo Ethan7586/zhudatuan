@@ -1,4 +1,4 @@
-import type { Address } from '../../account/model/Address';
+import type { Address } from '../../account';
 import type { OrderLine } from './OrderLine';
 import type { Timeline } from './Timeline';
 

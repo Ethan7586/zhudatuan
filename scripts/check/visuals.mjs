@@ -6,7 +6,7 @@ import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 const visuals = YAML.parse(readFileSync(join(repositoryRoot, 'config/visuals.yml'), 'utf8'));
 const navigation = YAML.parse(readFileSync(join(repositoryRoot, 'config/navigation.yml'), 'utf8'));
 
-assert(visuals.version === 1, 'VISUAL_AUTHORITY_VERSION_INVALID');
+assert(visuals.version === 2, 'VISUAL_AUTHORITY_VERSION_INVALID');
 assert(visuals.authority?.policy?.preserveLayout === true, 'VISUAL_LAYOUT_NOT_LOCKED');
 assert(visuals.authority?.policy?.preserveInteraction === true, 'VISUAL_INTERACTION_NOT_LOCKED');
 assert(visuals.authority?.policy?.preserveNavigationTitles === true, 'NAVIGATION_TITLES_NOT_LOCKED');
@@ -45,19 +45,21 @@ const routes = [];
 for (const [surface, contract] of Object.entries(visuals.surfaces)) {
   assert(Array.isArray(contract.routes) && contract.routes.length > 0, `VISUAL_ROUTE_SET_EMPTY:${surface}`);
   assert(typeof contract.source === 'string' && existsSync(join(repositoryRoot, contract.source)), `VISUAL_SOURCE_MISSING:${surface}`);
+  const catalog = routeCatalog(readFileSync(join(repositoryRoot, contract.source), 'utf8'));
   for (const entry of contract.routes) {
-    assert(typeof entry.route === 'string' && entry.route.startsWith('/'), `VISUAL_ROUTE_INVALID:${surface}`);
-    assert(typeof entry.baseline === 'string' && /^[a-z]+$/.test(entry.baseline), `VISUAL_BASELINE_INVALID:${surface}:${entry.route}`);
-    assert(!forbidden.test(entry.route), `VISUAL_FORBIDDEN_ROUTE:${surface}:${entry.route}`);
-    const identity = `${surface}:${entry.route}`;
+    assert(typeof entry.routeid === 'string' && /^[a-z][a-z0-9]*$/.test(entry.routeid), `VISUAL_ROUTE_INVALID:${surface}`);
+    const route = catalog.get(entry.routeid);
+    assert(typeof route === 'string' && route.startsWith('/'), `VISUAL_ROUTE_NOT_BOUND:${surface}:${entry.routeid}`);
+    assert(typeof entry.baseline === 'string' && /^[a-z]+$/.test(entry.baseline), `VISUAL_BASELINE_INVALID:${surface}:${entry.routeid}`);
+    assert(!forbidden.test(route), `VISUAL_FORBIDDEN_ROUTE:${surface}:${entry.routeid}`);
+    const identity = `${surface}:${entry.routeid}`;
     assert(!routes.includes(identity), `VISUAL_ROUTE_DUPLICATE:${identity}`);
     routes.push(identity);
   }
 }
 
-const authRoutesSource = readFileSync(join(repositoryRoot, 'apps/auth/src/route/Routes.ts'), 'utf8');
-const declaredAuthRoutes = [...authRoutesSource.matchAll(/:\s*'([^']+)'/g)].map((match) => match[1]).sort();
-const visualAuthRoutes = visuals.surfaces.auth.routes.map(({ route }) => route).sort();
+const declaredAuthRoutes = [...routeCatalog(readFileSync(join(repositoryRoot, visuals.surfaces.auth.source), 'utf8')).keys()].sort();
+const visualAuthRoutes = visuals.surfaces.auth.routes.map(({ routeid }) => routeid).sort();
 assert(JSON.stringify(visualAuthRoutes) === JSON.stringify(declaredAuthRoutes), 'AUTH_VISUAL_ROUTE_DRIFT');
 const coveredAuthStates = new Set(visuals.surfaces.auth.routes.flatMap(({ states = [] }) => states));
 assert(expectedStates.every((state) => coveredAuthStates.has(state)), 'AUTH_VISUAL_STATE_COVERAGE_MISSING');
@@ -101,6 +103,12 @@ function flattenStrings(value) {
   if (Array.isArray(value)) return value.flatMap(flattenStrings);
   if (value && typeof value === 'object') return Object.values(value).flatMap(flattenStrings);
   return [];
+}
+
+function routeCatalog(source) {
+  const block = source.match(/export const ROUTES\s*=\s*([\s\S]*?)\s+as const;/)?.[1];
+  assert(typeof block === 'string', 'VISUAL_ROUTE_CATALOG_INVALID');
+  return new Map([...block.matchAll(/(?:^|[{,])\s*([a-z][a-z0-9]*):\s*'([^']+)'/g)].map((match) => [match[1], match[2]]));
 }
 
 function assert(condition, code) {

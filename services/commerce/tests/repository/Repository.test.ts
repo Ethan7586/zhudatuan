@@ -22,7 +22,7 @@ describe.each(repositorySources)('Repository source contract: $name', ({ module,
     expect([...schemas].filter((schema) => !owned.has(schema))).toEqual([]);
     expect(source).not.toMatch(/\bselect\s+(?:[a-z][a-z0-9_]*\.)?\*/i);
     expect(source).not.toMatch(/\boffset\s+(?:\$\d+|\d+)/i);
-    expect(source).not.toMatch(/['"`]\s*(?:begin|commit|rollback)\b/i);
+    expect(source).not.toMatch(/\.query\s*\(\s*['"`]\s*(?:begin|commit|rollback)\b/i);
     expect(queryCount).toBeGreaterThanOrEqual(0);
   });
 

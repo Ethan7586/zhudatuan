@@ -30,17 +30,59 @@ export interface CockpitSales {
   readonly trend: readonly Trend[];
   readonly weeklyTrend: readonly Trend[];
   readonly categories: readonly CategoryPerformance[];
+  readonly topProducts: readonly TopProduct[];
   readonly malls: readonly MallPerformance[];
   readonly events: readonly BusinessEvent[];
   readonly insights: readonly BusinessInsight[];
 }
 
-export interface Trend { readonly date: string; readonly salesCents: number; readonly orderCount: number }
-export interface CategoryPerformance { readonly name: string; readonly salesCents: number; readonly share: number }
-export interface CockpitDeltas { readonly netSalesRatio: number | null; readonly paidOrdersRatio: number | null; readonly averageOrderRatio: number | null; readonly refundRate: number; readonly refundRateDeltaPoints: number | null }
-export interface MallPerformance { readonly id: string; readonly name: string; readonly salesCents: number; readonly paidOrderCount: number; readonly refundRate: number }
-export interface BusinessEvent { readonly id: string; readonly kind: 'calendar' | 'warning' | 'sync'; readonly title: string; readonly metric: string; readonly time: string; readonly date: string }
-export interface BusinessInsight { readonly id: string; readonly tone: 'warning' | 'positive'; readonly title: string; readonly detail: string; readonly action: string; readonly target: 'orders' | 'reports' }
+export interface Trend {
+  readonly date: string;
+  readonly salesCents: number;
+  readonly orderCount: number;
+}
+export interface CategoryPerformance {
+  readonly name: string;
+  readonly salesCents: number;
+  readonly share: number;
+}
+export interface TopProduct {
+  readonly productId: string;
+  readonly name: string;
+  readonly salesCents: number;
+  readonly quantity: number;
+  readonly orderCount: number;
+}
+export interface CockpitDeltas {
+  readonly netSalesRatio: number | null;
+  readonly paidOrdersRatio: number | null;
+  readonly averageOrderRatio: number | null;
+  readonly refundRate: number;
+  readonly refundRateDeltaPoints: number | null;
+}
+export interface MallPerformance {
+  readonly id: string;
+  readonly name: string;
+  readonly salesCents: number;
+  readonly paidOrderCount: number;
+  readonly refundRate: number;
+}
+export interface BusinessEvent {
+  readonly id: string;
+  readonly kind: 'calendar' | 'warning' | 'sync';
+  readonly title: string;
+  readonly metric: string;
+  readonly time: string;
+  readonly date: string;
+}
+export interface BusinessInsight {
+  readonly id: string;
+  readonly tone: 'warning' | 'positive';
+  readonly title: string;
+  readonly detail: string;
+  readonly action: string;
+  readonly target: 'orders' | 'reports';
+}
 export interface CockpitData {
   readonly items: readonly CockpitMetric[];
   readonly count: number;
@@ -48,4 +90,7 @@ export interface CockpitData {
   readonly summary: Readonly<{ catalogCount: number; availableStock: number; orderCount: number; afterSaleCount: number; sales: CockpitSales }>;
 }
 
-export interface CockpitFilter { readonly period: CockpitPeriod; readonly application?: string }
+export interface CockpitFilter {
+  readonly period: CockpitPeriod;
+  readonly application?: string;
+}

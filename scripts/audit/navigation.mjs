@@ -9,9 +9,7 @@ const registryFile = join(root, 'apps/console/src/app/RouteRegistry.ts');
 const routes = readFileSync(routerFile, 'utf8');
 const registry = readFileSync(registryFile, 'utf8');
 const violations = [];
-const routePaths = [...routes.matchAll(/\bpath:\s*'([^']+)'/g)].map((match) => match[1]);
-
-if (!routePaths.includes('/scopes/:scopeKind/:scopeId')) {
+if (!routes.includes('path: ROUTE_BASE') || !routes.includes("from '../generated/RouteBinding'")) {
   violations.push({ code: 'CONSOLE_SCOPE_ROUTE_MISSING', location: 'apps/console/src/route/Router.tsx', detail: 'URL scope root' });
 }
 if (!routes.includes('registry.routes()')) {

@@ -4,5 +4,5 @@ export const NotificationManifest = defineComponent({
   component: 'notification',
   navigationids: ['groupmessage', 'mallmessage'],
   routes: [{ routeid: 'consolenotifications' }],
-  load: () => import('./NotificationRoute'),
+  load: () => import('./route/NotificationRoute'),
 });

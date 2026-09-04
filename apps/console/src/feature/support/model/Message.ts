@@ -24,7 +24,7 @@ export interface Attachment {
 export interface ConversationPage {
   readonly items: readonly Message[];
   readonly attachments: readonly Attachment[];
-  readonly context: import('./SupportContext').SupportContext;
+  readonly context: SupportContext;
   readonly count: number;
   readonly nextCursor?: string;
   readonly conversationVersion: number;
@@ -52,3 +52,4 @@ export function mergeMessages(pages: readonly ConversationPage[]): readonly Mess
   for (const page of [...pages].reverse()) for (const message of page.items) values.set(message.sequence, message);
   return Object.freeze([...values.values()].sort((left, right) => left.sequence - right.sequence || left.id.localeCompare(right.id)));
 }
+import type { SupportContext } from './SupportContext';

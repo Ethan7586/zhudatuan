@@ -1,6 +1,7 @@
 @import '@shop/design/tokens.css';
 @import '@shop/design/base.css' layer(base);
 @import 'tailwindcss/index.css';
+@import '@shop/design/tailwind.css';
 
 * {
   box-sizing: border-box;

@@ -33,43 +33,78 @@ export function useOrderListViewModel(context: ConsoleContext, dependencies: Ord
     mutate(next);
     setSearch(next);
   };
-  const applyFilter = (value: OrderListFilter) => updateSearch((next) => {
-    for (const key of ['order', 'placed', 'lifecycle', 'payment', 'fulfillment', 'mall'] as const) value[key] === '' ? next.delete(key) : next.set(key, value[key]);
-    next.delete('cursor');
-  });
-  const selectView = (nextView: OrderView) => updateSearch((next) => {
-    nextView === 'all' ? next.delete('view') : next.set('view', nextView);
-    next.delete('cursor');
-  });
-  const open = (id: string, nextTab?: OrderDetailTab) => updateSearch((next) => {
-    next.set('selected', id);
-    nextTab === undefined ? next.delete('tab') : next.set('tab', nextTab);
-  });
-  const close = () => updateSearch((next) => { next.delete('selected'); next.delete('tab'); });
+  const applyFilter = (value: OrderListFilter) =>
+    updateSearch((next) => {
+      for (const key of ['order', 'placed', 'lifecycle', 'payment', 'fulfillment', 'mall'] as const) {
+        if (value[key] === '') next.delete(key);
+        else next.set(key, value[key]);
+      }
+      next.delete('cursor');
+    });
+  const selectView = (nextView: OrderView) =>
+    updateSearch((next) => {
+      if (nextView === 'all') next.delete('view');
+      else next.set('view', nextView);
+      next.delete('cursor');
+    });
+  const open = (id: string, nextTab?: OrderDetailTab) =>
+    updateSearch((next) => {
+      next.set('selected', id);
+      if (nextTab === undefined) next.delete('tab');
+      else next.set('tab', nextTab);
+    });
+  const close = () =>
+    updateSearch((next) => {
+      next.delete('selected');
+      next.delete('tab');
+    });
   const selectTab = (nextTab: OrderDetailTab) => updateSearch((next) => next.set('tab', nextTab));
-  const setCursor = (value?: string) => updateSearch((next) => {
-    value === undefined || value === 'start' ? next.delete('cursor') : next.set('cursor', value);
-  });
+  const setCursor = (value?: string) =>
+    updateSearch((next) => {
+      if (value === undefined || value === 'start') next.delete('cursor');
+      else next.set('cursor', value);
+    });
   const refresh = () => {
-    view === 'aftersale' ? aftersale.retry() : void query.refetch();
+    if (view === 'aftersale') aftersale.retry();
+    else void query.refetch();
     if (selected !== undefined) detail.refresh();
   };
-  const toggleColumn = (key: OrderColumnKey) => setColumns((current) => {
-    const next = new Set(current);
-    next.has(key) ? next.delete(key) : next.add(key);
-    return next;
-  });
+  const toggleColumn = (key: OrderColumnKey) =>
+    setColumns((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   const malls = context.scopes.filter((scope) => scope.kind === 'mall').map((scope) => Object.freeze({ id: scope.id, label: scope.name ?? chineseReference('商城', scope.id) }));
   return Object.freeze({
-    view, filter, selected, tab, cursor, columns, columnsopen, malls, detail, aftersale,
+    view,
+    filter,
+    selected,
+    tab,
+    cursor,
+    columns,
+    columnsopen,
+    malls,
+    detail,
+    aftersale,
     page: query.data,
     pending: query.isPending,
     fetching: view === 'aftersale' ? aftersale.fetching : query.isFetching,
     failed: query.isError,
     error: safeQueryError(query.error),
     actions: Object.freeze({
-      applyFilter, selectView, open, openAftersale: (id: string) => open(id, 'aftersale'), close, selectTab, setCursor, refresh,
-      toggleColumn, toggleColumns: () => setColumnsOpen((current) => !current), closeColumns: () => setColumnsOpen(false),
+      applyFilter,
+      selectView,
+      open,
+      openAftersale: (id: string) => open(id, 'aftersale'),
+      close,
+      selectTab,
+      setCursor,
+      refresh,
+      toggleColumn,
+      toggleColumns: () => setColumnsOpen((current) => !current),
+      closeColumns: () => setColumnsOpen(false),
     }),
   });
 }

@@ -78,3 +78,17 @@ export function mapRun(row: RunRow): SyncRun {
     ignored: Number(row.ignored_count),
   });
 }
+
+export function runSummary(row: RunSummaryRow): Readonly<Record<string, unknown>> {
+  return Object.freeze({
+    ...row,
+    read_count: Number(row.read_count),
+    applied_count: Number(row.applied_count),
+    conflict_count: Number(row.conflict_count),
+    ignored_count: Number(row.ignored_count),
+    watermark: row.watermark?.toISOString() ?? null,
+    started_at: row.started_at?.toISOString() ?? null,
+    completed_at: row.completed_at?.toISOString() ?? null,
+    created_at: row.created_at.toISOString(),
+  });
+}

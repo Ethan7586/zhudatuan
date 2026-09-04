@@ -6,7 +6,7 @@ import { importCode, importDetail } from '../../../../foundation/infrastructure/
 import type { StoredObject } from '../../../../foundation/infrastructure/ObjectStore';
 import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
 import type { IdentityPrincipal } from '../../../identity/public/index';
-import type { MemberImportAccessPort } from '../../../access/public/index';
+import type { MemberAccessPort, MemberImportAccessPort } from '../../../access/public/index';
 import { importMember } from '../../application/service/MemberProfileImport';
 import { MemberPort } from './MemberPort';
 
@@ -25,13 +25,16 @@ interface StagedRow {
 import type { ImportProcessPort } from '../../application/port/ImportProcessPort';
 
 export class PgImportProcess implements ImportProcessPort {
-  private readonly members = new MemberPort();
+  private readonly members: MemberPort;
   private readonly transactionAccess = new PgTransactionAccess();
   constructor(
     private readonly transactions: TransactionManager,
     private readonly identities: IdentityPrincipal,
-    private readonly access: MemberImportAccessPort
-  ) {}
+    private readonly access: MemberImportAccessPort,
+    profiles: Pick<MemberAccessPort, 'syncProfile'>
+  ) {
+    this.members = new MemberPort(profiles);
+  }
 
   async find(id: string, execution: ImportExecution): Promise<ImportTarget | null> {
     const result = await this.transactions.read(options({ id, scope: execution.scope }, execution.signal, execution.deadline), (context) =>

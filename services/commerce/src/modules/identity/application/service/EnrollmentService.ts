@@ -2,12 +2,10 @@ import type { ReadTransactionContext, WriteTransactionContext } from '../../../.
 import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
 import { createHmac, randomUUID } from 'node:crypto';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import { ApplicationError } from '../../../../foundation/domain/ApplicationError';
 
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
 import { textField } from '../../../../foundation/interface/Validation';
 import { requirePreauth } from '../../../../foundation/security/OperationSecurityContext';
-import type { CipherEnvelope } from '../../../../foundation/infrastructure/KmsClient';
 import type { InvitationAccessPort } from '../../../access/public';
 import type { InvitationMemberPort } from '../../../member/public';
 import type { InvitationRepository } from '../port/InvitationRepository';
@@ -21,34 +19,10 @@ import type { AssuranceRepository } from '../port/AssuranceRepository';
 import type { EnrollmentRepository } from '../port/EnrollmentRepository';
 import type { IdentityEventRepository } from '../port/IdentityEventRepository';
 import { EnrollmentPolicy } from '../../domain/policy/EnrollmentPolicy';
-import { AuthTransaction } from '../../domain/model/AuthTransaction';
 import type { InvitationRedeemer } from './InvitationRedeemer';
 import type { Telemetry } from '@shop/telemetry';
 import type { InvitationFailure } from './InvitationFailure';
-import type { IdentityEnrollmentsCompleteBody } from '@shop/contract';
-
-export interface EnrollmentDraft {
-  readonly invitation: string;
-  readonly scope: string;
-  readonly mode: 'bound' | 'campaign';
-  readonly body: IdentityEnrollmentsCompleteBody;
-  readonly subject: string;
-  readonly password: string;
-  readonly mobile: CipherEnvelope;
-  readonly principal: string;
-  readonly display: string;
-  readonly authorization: AuthTransaction;
-  readonly returnTarget: string;
-}
-
-export interface EnrollmentInvitationScope {
-  readonly invitation: string;
-  readonly scope: string;
-  readonly mode: 'bound' | 'campaign';
-  readonly principal: string | null;
-  readonly mobileCiphertext: string | null;
-  readonly displayName: string | null;
-}
+import { concealEnrollmentAccess as concealAccess, maskEnrollmentSubject as mask, type EnrollmentDraft, type EnrollmentInvitationScope } from './EnrollmentData';
 
 export class EnrollmentService {
   constructor(
@@ -257,15 +231,4 @@ export class EnrollmentService {
   }
 }
 
-function mask(value: string): string {
-  return `${value.slice(0, 3)}****${value.slice(-4)}`;
-}
-
-async function concealAccess<T>(operation: Promise<T>): Promise<T> {
-  try {
-    return await operation;
-  } catch (cause) {
-    if (cause instanceof ApplicationError) throw new DomainError('INVITATION_INVALID');
-    throw cause;
-  }
-}
+export type { EnrollmentDraft, EnrollmentInvitationScope } from './EnrollmentData';

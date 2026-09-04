@@ -4,7 +4,7 @@ export function assertVoucherAccess(context: ConsoleContext, permission: string,
   if (!context.session.permissions.includes(permission) || !context.session.capabilities.includes(capability)) throw new Error('当前账号没有执行这项卡券操作的权限。');
   if (context.session.csrf === undefined) throw new Error('安全会话已过期，请重新登录。');
   if (context.session.assurance.level < (critical ? 3 : 2)) throw new Error('STEPUP_REQUIRED');
-  if (critical && !/^[A-Za-z0-9_-]{43,4096}$/.test(proof ?? '')) throw new Error('ACTION_PROOF_REQUIRED');
+  if (critical && !/^[A-Za-z0-9_-]{43,128}$/.test(proof ?? '')) throw new Error('ACTION_PROOF_REQUIRED');
 }
 
 export function positiveInteger(value: number, field: string, maximum = 100_000): number {

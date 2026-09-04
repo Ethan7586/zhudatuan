@@ -33,6 +33,8 @@ const entryNames = new Set([
   'Verify.ts',
   'Migrate.ts',
   'Seed.ts',
+  'Visual.ts',
+  'Journey.ts',
   'Launch.mjs',
 ]);
 const operationPattern = /^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){2,}$/;
@@ -287,6 +289,8 @@ export function audit() {
     for (const reference of moduleReferences(sourceFile, packages)) {
       if (!reference.external && !reference.target) {
         values.push(violation('BROKEN_TEST_IMPORT', `${relative(test)}:${reference.line}`, reference.specifier));
+      } else if (!reference.external && reference.target) {
+        values.push(...bindingViolations(sourceFile, reference, reference.target, sourceFiles, packages, exportCache));
       }
     }
   }

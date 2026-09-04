@@ -1,4 +1,6 @@
-import { operationFingerprint, OperationCatalog, type OperationId } from '@shop/contract';
+import type { OperationId } from '@shop/contract';
+import { operationFingerprint } from '@shop/contract/fingerprint';
+import { operationPolicy } from '@shop/contract/policies';
 
 export interface ActionRequest {
   readonly version: 1;
@@ -44,7 +46,7 @@ export function readActionRequest(value: string): ActionRequest {
 }
 
 function assertAction(operation: OperationId, expectedVersion: number, makerMembership: string): void {
-  const definition = OperationCatalog.get(operation);
+  const definition = operationPolicy(operation);
   if (!definition.makerChecker || definition.expectedVersion !== 'required') throw new Error('ACTION_REQUEST_OPERATION_INVALID');
   if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 0 || !makerMembership) throw new Error('ACTION_REQUEST_INVALID');
 }

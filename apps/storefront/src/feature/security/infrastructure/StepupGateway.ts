@@ -1,8 +1,12 @@
-import type { StorefrontClient } from '../../../shared/api/Client';
+import type { IdentityOperations } from '@shop/sdk/identity';
+import type { RequestContextFactory } from '../../../shared/api/RequestContext';
 import type { StorefrontSession } from '../../../entity/session';
 
 export class StepupGateway {
-  constructor(private readonly identity: StorefrontClient['commerce']['identity'], private readonly context: StorefrontClient['context']) {}
+  constructor(
+    private readonly identity: IdentityOperations,
+    private readonly context: RequestContextFactory
+  ) {}
   async phoneMasked(session: StorefrontSession, signal?: AbortSignal) {
     const value = await this.identity.sessionRead({}, this.context(session, { signal, includeScope: false }));
     return value.security.phoneMasked;

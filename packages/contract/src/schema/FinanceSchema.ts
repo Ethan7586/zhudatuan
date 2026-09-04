@@ -1,7 +1,7 @@
 import { array, boolean, discriminatedUnion, literal, null as nullSchema, optional, record, strictObject, string, union } from 'zod/mini';
 import { ContractJsonValueSchema } from './JsonSchema';
 import { currency, decision, expectedVersion, id, integer, isoUtc, pageOutput, pageQuery, unsigned, version } from './Primitives';
-import { adjustment, backfill, exportResult, hold, legacyPolicy, period, periodClose, settlement, settlementRead, withdrawal } from './FinanceSettlementSchema';
+import { adjustment, backfill, exportResult, financePolicy, hold, period, periodClose, settlement, settlementRead, withdrawal } from './FinanceSettlementSchema';
 
 const entry = strictObject({ account: string(), debitMinor: unsigned, creditMinor: unsigned, currency, memo: string() });
 const policy = strictObject({
@@ -161,7 +161,7 @@ export const FINANCE_OUTPUT_SCHEMAS = {
   FinancePeriodsManageOutput: periodClose,
   FinanceBackfillsReadOutput: pageOutput(backfill),
   FinanceBackfillsDecideOutput: backfill,
-  FinancePoliciesManageOutput: legacyPolicy,
+  FinancePoliciesManageOutput: financePolicy,
   FinancePoliciesReadOutput: pageOutput(policy),
   FinancePoliciesPreviewOutput: strictObject({ policy, balanced: boolean(), affectedCount: unsigned, sampleEntries: array(entry), previewToken: string(), previewHash: string(), expiresAt: isoUtc }),
   FinanceReconciliationrepairsReadOutput: pageOutput(repair),

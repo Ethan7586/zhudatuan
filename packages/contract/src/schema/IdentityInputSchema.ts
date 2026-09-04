@@ -63,13 +63,15 @@ export const IDENTITY_QUERY_SCHEMAS = Object.freeze({
   IdentityEnrollmentsReadInput: empty,
   IdentityBootstrapReadInput: strictObject({ returntarget: optional(string()), returnpath: optional(string()) }),
   IdentityProvidersReadInput: strictObject({ returntarget: optional(string()) }),
+  IdentityProvidersCenterReadInput: empty,
   IdentityFederationsCallbackInput: strictObject({ state: string(), code: string() }),
   IdentityFederationsSelectionReadInput: empty,
   IdentityLinksReadInput: empty,
 } as const);
 
 export function identityInputSchema(schemaName: string, pathKeys: readonly string[], bodyRequired: boolean): ZodMiniType {
-  const schema = bodyRequired ? Reflect.get(IDENTITY_BODY_SCHEMAS, schemaName) : Reflect.get(IDENTITY_QUERY_SCHEMAS, schemaName);
+  const catalog = (bodyRequired ? IDENTITY_BODY_SCHEMAS : IDENTITY_QUERY_SCHEMAS) as unknown as Readonly<Record<string, unknown>>;
+  const schema: unknown = catalog[schemaName];
   if (!isSchema(schema)) throw new Error(`IDENTITY_INPUT_SCHEMA_MISSING:${schemaName}`);
   const shared = bodyRequired ? { body: schema } : { query: optional(schema) };
   return pathKeys.length === 0 ? strictObject(shared) : strictObject({ path: pathSchema(pathKeys), ...shared });
@@ -80,5 +82,7 @@ function isSchema(value: unknown): value is ZodMiniType<ContractJsonValue> {
 }
 
 function pathSchema(keys: readonly string[]): ZodMiniObject<Record<string, ZodMiniString>> {
-  return strictObject(Object.fromEntries(keys.map((key) => [key, string().check(minLength(1))])));
+  const shape: Record<string, ZodMiniString> = {};
+  for (const key of keys) shape[key] = string().check(minLength(1));
+  return strictObject(shape);
 }

@@ -1808,7 +1808,7 @@ permissions:
       - store
       - supplier
       - brand
-    makerChecker: false
+    makerChecker: true
     description: notification.announcement.manage
   - code: notification.announcement.read
     module: notification
@@ -1894,7 +1894,7 @@ permissions:
       - store
       - supplier
       - brand
-    makerChecker: false
+    makerChecker: true
     description: notification.template.manage
   - code: notification.template.read
     module: notification
@@ -2637,7 +2637,7 @@ permissions:
       - store
       - supplier
       - brand
-    makerChecker: false
+    makerChecker: true
     description: risk.manage
   - code: risk.read
     module: risk

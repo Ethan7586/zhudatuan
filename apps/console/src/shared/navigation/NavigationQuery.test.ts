@@ -5,7 +5,8 @@ import type { ConsoleScope, ConsoleSession } from '../../entity/session/ConsoleS
 
 const navigationTreeRead = vi.fn<(...arguments_: unknown[]) => Promise<unknown>>();
 const consoleRequest = vi.fn((_scope: ConsoleScope, _signal: AbortSignal, _accessVersion: number, cache: Readonly<{ ifNoneMatch: string; cachedResponse: unknown }> | undefined) => ({ cache }));
-vi.mock('../api/Client', () => ({ navigationTreeRead, consoleRequest }));
+vi.mock('../api/RequestContext', () => ({ consoleRequest }));
+vi.mock('./NavigationGateway', () => ({ navigationTreeRead }));
 
 const scope: ConsoleScope = { kind: 'mall', id: 'mall:one' };
 const session: ConsoleSession = {

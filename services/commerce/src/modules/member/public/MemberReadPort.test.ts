@@ -22,4 +22,12 @@ describe('PgMemberReadPort', () => {
     });
     expect(query).toHaveBeenCalledWith(expect.stringContaining('from member.profile_summary($1,$2)'), ['member:one', 'mall:one']);
   });
+
+  it('resolves risk actor presentation in one bounded batch', async () => {
+    const query = vi.fn(async () => ({ rows: [{ principal: 'principal:one', display_name: '测试员工', mobile_masked: '138****0000' }], rowCount: 1 }) as unknown as QueryResult);
+    await expect(withReadTransaction(query, (context) => new PgMemberReadPort().principals(context, ['principal:one', 'principal:one'], 'mall:one'))).resolves.toEqual([
+      { principal: 'principal:one', displayName: '测试员工', mobileMasked: '138****0000' },
+    ]);
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('member.profile_summary(profile.id,$2)'), [['principal:one'], 'mall:one']);
+  });
 });

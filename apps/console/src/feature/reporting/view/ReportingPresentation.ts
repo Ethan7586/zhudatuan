@@ -4,5 +4,9 @@ export const reportLabels = Object.freeze({ sales: '销售总览', products: '�
 export const periodLabels = Object.freeze({ realtime: '实时', yesterday: '昨日', '7days': '近 7 日', '30days': '近 30 日' } as const);
 
 export function dimensionText(dimensions: Readonly<Record<string, string>>): string {
-  return Object.entries(dimensions).map(([key, value]) => `${chineseDomainLabel(key, '数据维度')}：${/[\u3400-\u9fff]/.test(value) ? value : chineseDomainLabel(value, chineseReference('数据项', value))}`).join(' · ') || '全部';
+  return (
+    Object.entries(dimensions)
+      .map(([key, value]) => `${chineseDomainLabel(key, '数据维度')}：${/[\u3400-\u9fff]/.test(value) ? value : chineseDomainLabel(value, chineseReference('数据项', value))}`)
+      .join(' · ') || '全部'
+  );
 }

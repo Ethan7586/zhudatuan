@@ -60,7 +60,7 @@ const server = setupServer(
           trend: [{ date: '2026-08-26', salesCents: 31500, orderCount: 7 }],
           weeklyTrend: [{ date: '2026-08-24', salesCents: 31500, orderCount: 7 }],
           categories: [],
-          topProducts: [],
+          topProducts: [{ productId: 'product:1', name: '办公套装', salesCents: 12800, quantity: 2, orderCount: 1 }],
           malls: [{ id: 'mall:1', name: '测试商城', salesCents: 31500, paidOrderCount: 7, refundRate: 0 }],
           events: [{ id: 'event:1', kind: 'calendar', title: '订单支付', metric: '¥315.00', time: '2026-08-26T00:00:00Z', date: '2026-08-26' }],
           insights: [{ id: 'growth', tone: 'positive', title: '净成交额保持增长', detail: '较上一周期增长', action: '查看报表', target: 'reports' }],
@@ -83,7 +83,11 @@ describe('Cockpit route', () => {
     render(
       <MemoryRouter initialEntries={['/?period=30days']}>
         <QueryClientProvider client={client}>
-          <DependencyProvider value={createConsoleDependencies()}><ConsoleContextProvider value={context}><Component /></ConsoleContextProvider></DependencyProvider>
+          <DependencyProvider value={createConsoleDependencies()}>
+            <ConsoleContextProvider value={context}>
+              <Component />
+            </ConsoleContextProvider>
+          </DependencyProvider>
         </QueryClientProvider>
       </MemoryRouter>
     );
@@ -92,6 +96,8 @@ describe('Cockpit route', () => {
     expect(screen.getByText('环比 +10.0%')).toBeTruthy();
     expect(screen.getByRole('img', { name: '净成交额折线与支付订单柱形组合趋势' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: '分类销售占比' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '热销商品' })).toBeTruthy();
+    expect(screen.getByText('办公套装')).toBeTruthy();
     expect(screen.getByRole('heading', { name: '商城经营对比' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: '最近经营动态' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: '需要关注' })).toBeTruthy();
@@ -139,7 +145,11 @@ describe('Cockpit route', () => {
     render(
       <MemoryRouter initialEntries={['/?period=30days']}>
         <QueryClientProvider client={client}>
-          <DependencyProvider value={createConsoleDependencies()}><ConsoleContextProvider value={context}><Component /></ConsoleContextProvider></DependencyProvider>
+          <DependencyProvider value={createConsoleDependencies()}>
+            <ConsoleContextProvider value={context}>
+              <Component />
+            </ConsoleContextProvider>
+          </DependencyProvider>
         </QueryClientProvider>
       </MemoryRouter>
     );

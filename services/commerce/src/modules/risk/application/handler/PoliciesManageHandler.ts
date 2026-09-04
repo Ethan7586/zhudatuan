@@ -4,6 +4,7 @@ import { domainEvent } from '@shop/kernel';
 import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
 import type { JobScheduler } from '../../../../foundation/application/JobScheduler';
 import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import { DomainError } from '../../../../foundation/domain/DomainError';
 import { bodyRecord, integerField, textField } from '../../../../foundation/interface/Validation';
 import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
 import { RiskPolicy } from '../../domain/model/RiskPolicy';
@@ -23,18 +24,23 @@ export class PoliciesManageHandler implements OperationHandler<'risk.policies.ma
     const body = bodyRecord(input);
     const action = body.action;
     const id = input.path.policyid;
+    if (context.expectedVersion === undefined) throw new DomainError('EXPECTED_VERSION_REQUIRED');
     if (action === 'activate') {
-      const version = integerField(body, 'version', 1);
+      const candidateVersion = integerField(body, 'version', 1);
       const rollout = percent(body.rolloutPercent, 100);
-      const policy = await this.risks.activatePolicy(context.transaction, { id, scope: access.scope.id, version, rolloutPercent: rollout, actor: access.actor.id });
+      const policy = await this.risks.activatePolicy(context.transaction, { id, scope: access.scope.id, candidateVersion, rolloutPercent: rollout, actor: access.actor.id, expectedVersion: context.expectedVersion });
+      if (!policy) throw new DomainError('VERSION_CONFLICT');
+      const aggregateVersion = Reflect.get(policy, 'version');
+      if (!Number.isSafeInteger(aggregateVersion)) throw new Error('RISK_POLICY_AGGREGATE_VERSION_MISSING');
       return {
         status: 200,
         body: policy as OperationOutputFor<'risk.policies.manage'>,
-        events: [event('risk.policy.activated', id, version, access, context.traceId, { policy: id, version, rolloutPercent: rollout })],
+        events: [event('risk.policy.activated', id, aggregateVersion as number, access, context.traceId, { policy: id, version: candidateVersion, rolloutPercent: rollout })],
       };
     }
     if (action === 'retire') {
-      const policy = await this.risks.retirePolicy(context.transaction, id, access.scope.id);
+      const policy = await this.risks.retirePolicy(context.transaction, { id, scope: access.scope.id, expectedVersion: context.expectedVersion });
+      if (!policy) throw new DomainError('VERSION_CONFLICT');
       return { status: 200, body: policy as OperationOutputFor<'risk.policies.manage'> };
     }
     if (action !== 'save') throw new Error('RISK_POLICY_ACTION_INVALID');
@@ -48,7 +54,9 @@ export class PoliciesManageHandler implements OperationHandler<'risk.policies.ma
       ruleHash: policy.hash,
       rolloutPercent: rollout,
       actor: access.actor.id,
+      expectedVersion: context.expectedVersion,
     });
+    if (!saved) throw new DomainError('VERSION_CONFLICT');
     const candidate = Reflect.get(saved, 'candidate_version');
     if (!Number.isSafeInteger(candidate)) throw new Error('RISK_POLICY_VERSION_MISSING');
     await this.jobs.schedule(context.transaction, {

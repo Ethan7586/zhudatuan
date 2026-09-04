@@ -18,7 +18,7 @@ describe('transitionConsoleRoute', () => {
       order.push('navigated');
     });
 
-    const transition = transitionConsoleRoute({ cancelQueries } as never, navigate as never, '/scopes/mall/one/experience');
+    const transition = transitionConsoleRoute({ cancelQueries } as never, navigate, '/scopes/mall/one/experience');
 
     expect(navigate).not.toHaveBeenCalled();
     finishCancellation?.();

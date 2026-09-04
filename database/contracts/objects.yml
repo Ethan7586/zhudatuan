@@ -503,6 +503,13 @@ objects:
     callers:
       - services/commerce/src/modules/reporting/infrastructure/persistence/PgReportRepository.ts
       - services/commerce/src/modules/reporting/infrastructure/persistence/PgReportingRepository.ts
+  - id: reporting.cockpitproducts
+    kind: function
+    owner: reporting
+    source: database/migrations/20260903115000_restore_cockpit_products.sql
+    callers:
+      - services/commerce/src/modules/reporting/infrastructure/persistence/PgReportRepository.ts
+      - services/commerce/src/modules/reporting/infrastructure/persistence/PgReportingRepository.ts
   - id: reporting.enforce_watermark
     kind: function
     owner: reporting
@@ -1003,6 +1010,14 @@ objects:
     objectType: function
     target: reporting.cockpit(text,text,text)
     privilege: execute
+  - id: shopapp:function:reporting.cockpitproducts(text,text,text):execute
+    kind: grant
+    owner: reporting
+    source: database/migrations/20260903115000_restore_cockpit_products.sql
+    role: shopapp
+    objectType: function
+    target: reporting.cockpitproducts(text,text,text)
+    privilege: execute
   - id: shopapp:function:risk.scope_allowed(text):execute
     kind: grant
     owner: risk
@@ -1370,6 +1385,30 @@ objects:
     role: shopapp
     objectType: table
     target: access.membership
+    privilege: update
+  - id: shopapp:table:access.memberprofile:insert
+    kind: grant
+    owner: access
+    source: database/migrations/20260903114000_access_member_projection.sql
+    role: shopapp
+    objectType: table
+    target: access.memberprofile
+    privilege: insert
+  - id: shopapp:table:access.memberprofile:select
+    kind: grant
+    owner: access
+    source: database/migrations/20260903114000_access_member_projection.sql
+    role: shopapp
+    objectType: table
+    target: access.memberprofile
+    privilege: select
+  - id: shopapp:table:access.memberprofile:update
+    kind: grant
+    owner: access
+    source: database/migrations/20260903114000_access_member_projection.sql
+    role: shopapp
+    objectType: table
+    target: access.memberprofile
     privilege: update
   - id: shopapp:table:access.membershipoverride:delete
     kind: grant
@@ -10139,6 +10178,14 @@ objects:
     objectType: function
     target: reporting.cockpit(text,text,text)
     privilege: execute
+  - id: shopjob:function:reporting.cockpitproducts(text,text,text):execute
+    kind: grant
+    owner: reporting
+    source: database/migrations/20260903115000_restore_cockpit_products.sql
+    role: shopjob
+    objectType: function
+    target: reporting.cockpitproducts(text,text,text)
+    privilege: execute
   - id: shopjob:function:runtime.accept_inbox(text,text,text,text,integer,text,jsonb):execute
     kind: grant
     owner: runtime
@@ -10506,6 +10553,30 @@ objects:
     role: shopjob
     objectType: table
     target: access.membership
+    privilege: update
+  - id: shopjob:table:access.memberprofile:insert
+    kind: grant
+    owner: access
+    source: database/migrations/20260903114000_access_member_projection.sql
+    role: shopjob
+    objectType: table
+    target: access.memberprofile
+    privilege: insert
+  - id: shopjob:table:access.memberprofile:select
+    kind: grant
+    owner: access
+    source: database/migrations/20260903114000_access_member_projection.sql
+    role: shopjob
+    objectType: table
+    target: access.memberprofile
+    privilege: select
+  - id: shopjob:table:access.memberprofile:update
+    kind: grant
+    owner: access
+    source: database/migrations/20260903114000_access_member_projection.sql
+    role: shopjob
+    objectType: table
+    target: access.memberprofile
     privilege: update
   - id: shopjob:table:access.membershipoverride:delete
     kind: grant
@@ -19367,6 +19438,14 @@ objects:
     kind: policy
     owner: access
     source: database/migrations/20260821030000_revoke_public_access.sql
+  - id: access.memberprofile.memberprofileapp
+    kind: policy
+    owner: access
+    source: database/migrations/20260903114000_access_member_projection.sql
+  - id: access.memberprofile.memberprofilejob
+    kind: policy
+    owner: access
+    source: database/migrations/20260903114000_access_member_projection.sql
   - id: access.membershipoverride.appscope
     kind: policy
     owner: access
@@ -22437,6 +22516,11 @@ objects:
     kind: table
     owner: access
     source: database/migrations/20260821054000_move_membership_owner.sql
+    rls: true
+  - id: access.memberprofile
+    kind: table
+    owner: access
+    source: database/migrations/20260903114000_access_member_projection.sql
     rls: true
   - id: access.membershipoverride
     kind: table

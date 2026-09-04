@@ -21,6 +21,10 @@ export class ProductMapper {
   receipt(value: unknown): ProductReceipt {
     if (typeof value !== 'object' || value === null) return Object.freeze({});
     const candidate = value as { id?: unknown; count?: unknown; version?: unknown };
-    return Object.freeze({ ...(typeof candidate.id === 'string' ? { id: candidate.id } : {}), ...(typeof candidate.count === 'number' ? { count: candidate.count } : {}), ...(typeof candidate.version === 'string' || typeof candidate.version === 'number' ? { version: Number(candidate.version) } : {}) });
+    return Object.freeze({
+      ...(typeof candidate.id === 'string' ? { id: candidate.id } : {}),
+      ...(typeof candidate.count === 'number' ? { count: candidate.count } : {}),
+      ...(typeof candidate.version === 'string' || typeof candidate.version === 'number' ? { version: Number(candidate.version) } : {}),
+    });
   }
 }

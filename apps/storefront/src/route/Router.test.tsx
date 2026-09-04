@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RouteRegistry } from '../app/RouteRegistry';
-import { ROUTES } from '../generated/RouteBinding';
-import { routePath } from '../shared/navigation/Route';
+import { resolveRoutePath, routePath, ROUTES } from '../generated/RouteBinding';
 
 describe('storefront router', () => {
   it('registers every generated route exactly once through feature manifests', () => {
@@ -13,6 +12,7 @@ describe('storefront router', () => {
   it('encodes valid route parameters and rejects missing values', () => {
     expect(routePath('storeproduct', { productId: 'listing:one' })).toBe('/products/listing%3Aone');
     expect(routePath('storeorder', { orderId: 'order:one' })).toBe('/orders/order%3Aone');
-    expect(() => routePath('storeproduct', {})).toThrow('ROUTE_PARAMETER_INVALID');
+    expect(() => resolveRoutePath('storeproduct', {})).toThrow('ROUTE_PARAMETER_INVALID');
+    expect(() => resolveRoutePath('storeproduct', { productId: 'one', unexpected: 'value' })).toThrow('ROUTE_PARAMETER_UNKNOWN');
   });
 });

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "hash": "5191a956ebfa896847411843c07115759b1e36c5b1943272798008172ea3f6d5",
+  "hash": "0e84f38d138c31f00281ada4d37972845428eea7270dcd2fed6fe5e5abc4dd99",
   "routes": [
     {
       "id": "authlogin",
@@ -157,14 +157,18 @@
       ]
     },
     {
-      "id": "consoleproductimport",
+      "id": "consoleimporttask",
       "surface": "console",
       "path": "/scopes/:scopeKind/:scopeId/imports/:kind/:jobId",
-      "feature": "product",
+      "feature": "task",
       "requirements": [
         "MVPPLATFORM",
         "MVPGROUPPOOL",
-        "MVPMALLPOOL"
+        "MVPMALLPOOL",
+        "MVPGROUPVOUCHER",
+        "MVPMALLVOUCHER",
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
       ]
     },
     {
@@ -893,13 +897,13 @@
       "icon": "identity",
       "routeid": "consolefederation",
       "order": 60,
-      "entry": "identity.providers.read",
+      "entry": "identity.providers.center.read",
       "permissions": [
         "identity.provider.manage"
       ],
       "capabilities": [
         "identity.federation",
-        "identity.providers.read"
+        "identity.providers.center.read"
       ],
       "requirements": [
         "MVPGROUPSETTING",
@@ -1379,13 +1383,13 @@
       "icon": "identity",
       "routeid": "consolefederation",
       "order": 60,
-      "entry": "identity.providers.read",
+      "entry": "identity.providers.center.read",
       "permissions": [
         "identity.provider.manage"
       ],
       "capabilities": [
         "identity.federation",
-        "identity.providers.read"
+        "identity.providers.center.read"
       ],
       "requirements": [
         "MVPMALLSETTING",

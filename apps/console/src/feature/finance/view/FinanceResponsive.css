@@ -22,12 +22,7 @@
     flex-direction: column;
     padding: 18px 15px;
   }
-  .financepageactions {
-    width: 100%;
-  }
-  .financepageactions button {
-    flex: 1;
-  }
+  .financerefreshbutton { width: 100%; }
   .financestatusrail {
     align-items: flex-start;
     flex-direction: column;
@@ -44,7 +39,7 @@
   .financetabs {
     padding-inline: 7px;
   }
-  .financetoolbararea {
+  .financecolumnbar {
     padding-inline: 10px;
   }
   .financesearchfield {

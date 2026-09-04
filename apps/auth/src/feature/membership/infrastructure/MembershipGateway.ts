@@ -9,7 +9,11 @@ import type { MembershipPort } from '../public/MembershipPort';
 import { mapMemberships } from './MembershipMapper';
 
 export class MembershipGateway implements MembershipPort {
-  constructor(private readonly sdk: IdentitySdk, private readonly environment: AuthEnvironment, private readonly bootstrap: BootstrapPort) {}
+  constructor(
+    private readonly sdk: IdentitySdk,
+    private readonly environment: AuthEnvironment,
+    private readonly bootstrap: BootstrapPort
+  ) {}
   async read(target: AuthTarget, signal?: AbortSignal) {
     const result = await this.sdk.federationsSelectionRead({}, queryContext(this.environment, target, signal));
     if (result.target !== target) throw new ClientError('RETURN_TARGET_INVALID');

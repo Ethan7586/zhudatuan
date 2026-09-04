@@ -16,7 +16,20 @@ export class SupportMapper {
   conversation(value: OperationOutputFor<'support.messages.read'>): ConversationPage {
     return Object.freeze({
       items: Object.freeze(value.items.map((item) => Object.freeze({ ...item }))),
-      attachments: Object.freeze(value.attachments.map((item) => Object.freeze({ id: item.id, messageId: item.messageId, name: item.name, contentType: item.contentType, sizeBytes: item.sizeBytes, state: item.state, createdAt: item.createdAt, ...(item.download ? { download: Object.freeze({ ...item.download }) } : {}) }))),
+      attachments: Object.freeze(
+        value.attachments.map((item) =>
+          Object.freeze({
+            id: item.id,
+            messageId: item.messageId,
+            name: item.name,
+            contentType: item.contentType,
+            sizeBytes: item.sizeBytes,
+            state: item.state,
+            createdAt: item.createdAt,
+            ...(item.download ? { download: Object.freeze({ ...item.download }) } : {}),
+          })
+        )
+      ),
       context: Object.freeze({
         member: Object.freeze({ ...value.context.member }),
         organization: Object.freeze({ ...value.context.organization }),
@@ -40,11 +53,24 @@ export class SupportMapper {
   }
 
   accounts(value: OperationOutputFor<'support.accounts.read'>): ConfigPage<Account> {
-    return freezePage(value, (item) => Object.freeze({ id: item.id, provider: item.provider, displayName: item.display_name, state: item.state, validationState: item.validation_state, validationCode: item.validation_code, validatedAt: item.validated_at, version: item.version }));
+    return freezePage(value, (item) =>
+      Object.freeze({
+        id: item.id,
+        provider: item.provider,
+        displayName: item.display_name,
+        state: item.state,
+        validationState: item.validation_state,
+        validationCode: item.validation_code,
+        validatedAt: item.validated_at,
+        version: item.version,
+      })
+    );
   }
 
   rules(value: OperationOutputFor<'support.rules.read'>): ConfigPage<Rule> {
-    return freezePage(value, (item) => Object.freeze({ id: item.id, name: item.name, skill: item.skill, priorities: Object.freeze([...item.priorities]), weight: item.weight, state: item.state, version: item.version, updatedAt: item.updated_at }));
+    return freezePage(value, (item) =>
+      Object.freeze({ id: item.id, name: item.name, skill: item.skill, priorities: Object.freeze([...item.priorities]), weight: item.weight, state: item.state, version: item.version, updatedAt: item.updated_at })
+    );
   }
 
   slas(value: OperationOutputFor<'support.slas.read'>): ConfigPage<Sla> {

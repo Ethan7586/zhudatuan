@@ -1,0 +1,31 @@
+.riskempty {
+  display: flex;
+  gap: 0.9rem;
+  align-items: start;
+  min-height: 11.5rem;
+  padding: 2rem 1.2rem;
+}
+
+.riskempty > span {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: var(--sw-success-surface);
+  color: var(--sw-success-strong);
+  font-weight: 900;
+}
+
+.riskempty strong {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.riskempty p {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--sw-text-secondary);
+  line-height: 1.65;
+}

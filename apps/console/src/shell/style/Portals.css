@@ -1,0 +1,123 @@
+/* Portalled drawers live outside .consolelayout, so they inherit the console tokens via :has(). */
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdraweroverlay, .orderdraweroverlay, .financedraweroverlay) {
+  inset: var(--console-header-height, 56px) 0 0;
+  background: color-mix(in srgb, var(--sw-brand-ink) 50%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawer, .orderdrawer, .financedrawer) {
+  border-left-color: var(--sw-border);
+  background: var(--sw-surface);
+  box-shadow: -16px 0 42px color-mix(in srgb, var(--sw-brand-ink) 22%, transparent);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawerheader, .orderdrawerheader, .financedrawerheader) {
+  border-bottom-color: var(--sw-text);
+  background: var(--sw-brand-ink);
+  color: var(--sw-surface);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawerheader h2, .productdrawerheader strong, .orderdrawerheader h2, .orderdrawerheader strong, .financedrawerheader h2, .financedrawerheader strong) {
+  color: var(--sw-surface);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawerheader p, .productdrawerheader small, .orderdrawerheader p, .orderdrawerheader small, .financedrawerheader p, .financedrawerheader small, .financedrawerback) {
+  color: var(--sw-disabled);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawerclose, .orderdrawerclose, .financedrawerclose) {
+  border-radius: 8px;
+  color: var(--sw-border-strong);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawerclose:hover, .orderdrawerclose:hover, .financedrawerclose:hover) {
+  background: var(--sw-text);
+  color: var(--sw-surface);
+}
+
+@media (max-width: 1220px) {
+  .consolelayout[data-visual-theme='console-v1'] .consoleheader {
+    grid-template-columns: minmax(150px, 1fr) minmax(220px, 256px) auto;
+    gap: 10px;
+    padding-inline: 16px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .consoleheadersummary,
+  .consolelayout[data-visual-theme='console-v1'] .operatorcopy,
+  .consolelayout[data-visual-theme='console-v1'] .languageindicator {
+    display: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .consolelayout[data-visual-theme='console-v1'] .cockpitmetricband {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .cockpitmetricband article:nth-child(n) {
+    border: 1px solid var(--sw-border);
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .consolelayout[data-visual-theme='console-v1'],
+  .consolelayout[data-visual-theme='console-v1'][data-sidebar='collapsed'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .consolelayout[data-visual-theme='console-v1'][data-mobile-nav] .consolesidebar,
+  .consolelayout[data-visual-theme='console-v1'][data-mobile-nav] .consolesidebar.iscollapsed {
+    position: fixed;
+    width: 220px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .consoleheader {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding-inline: 12px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .workspacebody {
+    padding: 16px 12px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .consolefooter {
+    padding-inline: 12px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .consolefooter > span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .consolefooter code {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .consolelayout[data-visual-theme='console-v1'] .cockpitmetricband {
+    grid-template-columns: 1fr;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .cockpitmetricband article:nth-child(n) {
+    min-height: 92px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .consolefooterstatus {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .consolelayout[data-visual-theme='console-v1'],
+  .consolelayout[data-visual-theme='console-v1'] *,
+  .consolelayout[data-visual-theme='console-v1'] *::before,
+  .consolelayout[data-visual-theme='console-v1'] *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

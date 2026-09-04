@@ -10,13 +10,19 @@ import type { LoginPort } from '../public/LoginPort';
 import { mapLogin } from './LoginMapper';
 
 export class LoginGateway implements LoginPort {
-  constructor(private readonly sdk: IdentitySdk, private readonly environment: AuthEnvironment, private readonly bootstrap: BootstrapPort, private readonly authorizations: AuthorizationPort) {}
+  constructor(
+    private readonly sdk: IdentitySdk,
+    private readonly environment: AuthEnvironment,
+    private readonly bootstrap: BootstrapPort,
+    private readonly authorizations: AuthorizationPort
+  ) {}
 
   async authenticate(credential: Credential, signal?: AbortSignal): Promise<LoginOutcome> {
     const [authorization, bootstrap] = await Promise.all([this.authorizations.create(), this.bootstrap.read(credential.target, credential.returns, signal)]);
-    const body = credential.kind === 'password'
-      ? { method: 'password' as const, subject: credential.subject.trim(), password: credential.password, target: credential.target, returnTarget: bootstrap.returnTarget, authorization: authorization.request }
-      : { method: 'otp' as const, subject: credential.subject.trim(), challenge: credential.challenge, code: credential.code.trim(), target: credential.target, returnTarget: bootstrap.returnTarget, authorization: authorization.request };
+    const body =
+      credential.kind === 'password'
+        ? { method: 'password' as const, subject: credential.subject.trim(), password: credential.password, target: credential.target, returnTarget: bootstrap.returnTarget, authorization: authorization.request }
+        : { method: 'otp' as const, subject: credential.subject.trim(), challenge: credential.challenge, code: credential.code.trim(), target: credential.target, returnTarget: bootstrap.returnTarget, authorization: authorization.request };
     const result = await this.sdk.sessionsCreate({ body }, commandContext(this.environment, credential.target, bootstrap.csrf, signal));
     if (result.kind !== 'session') return mapLogin(result);
     const redirectUrl = await exchangeSession(this.sdk, this.environment, result, authorization, credential.target, bootstrap.csrf, signal);

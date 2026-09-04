@@ -25,6 +25,7 @@ export class MembersReadHandler implements OperationHandler<'member.members.read
               display_name: profile.displayName,
               status: profile.status,
               membership_id: membership.id,
+              organization_id: membership.organization,
               employee_no: membership.employee,
               membership_status: membership.status,
               access_version: membership.accessVersion,

@@ -130,8 +130,8 @@ export async function verifyMvpKernel(database) {
   const pricingPort = new PricingPort();
   const inventoryPort = new InventoryPort();
   const marketingPort = new MarketingPort();
-  const fulfillmentPort = new FulfillmentPort();
   const orderPort = new OrderPort();
+  const fulfillmentPort = new FulfillmentPort(orderPort);
   const transactionAccess = new PgTransactionAccess();
   const accessRepository = new PgAccessRepository();
   const memberAccessPort = new AccessPort(accessRepository, new AccessVersionService(accessRepository));
@@ -428,7 +428,7 @@ function paymentJobDependencies() {
   const inventory = new InventoryPort();
   const marketing = new MarketingPort();
   return Object.freeze({
-    settlement: new PaymentSettlement(benefit, voucher, inventory, marketing, new FulfillmentPort(), orders),
+    settlement: new PaymentSettlement(benefit, voucher, inventory, marketing, new FulfillmentPort(orders), orders),
     refundSettlement: new RefundSettlement(benefit, voucher, orders, new PgOrganizationReadPort()),
     orders,
     operations: new ChannelOperationPort(),
@@ -474,7 +474,7 @@ async function runReconciliation(database, jobPool) {
       new PgReconciliationProcess(new PgTransactionManager(jobPool), unavailableObjects(), {
         channel: new PgFinanceChannelPort(),
         payments: new PaymentPort(),
-        fulfillments: new FulfillmentPort(),
+        fulfillments: new FulfillmentPort(new OrderPort()),
       })
     )
   );

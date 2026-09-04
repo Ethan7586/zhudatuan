@@ -1,6 +1,6 @@
 import { createFetchReporting } from '@shop/sdk/reporting';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import { consoleCommand, consoleRequest } from '../../../shared/api/Client';
+import { consoleCommand, consoleRequest } from '../../../shared/api/RequestContext';
 import type { ReportFilter } from '../model/Report';
 import type { ReportingPort } from '../public';
 import { ReportingMapper } from './ReportingMapper';
@@ -8,7 +8,10 @@ import { ReportingMapper } from './ReportingMapper';
 export class ReportingGateway implements ReportingPort {
   private readonly client;
 
-  constructor(baseUrl: string, private readonly mapper = new ReportingMapper()) {
+  constructor(
+    baseUrl: string,
+    private readonly mapper = new ReportingMapper()
+  ) {
     this.client = createFetchReporting(baseUrl);
   }
 

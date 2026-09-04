@@ -25,11 +25,29 @@ export class FinanceMapper {
     switch (section) {
       case 'entries': {
         const page = EntryPageSchema.parse(value);
-        return this.page(page, (row) => ({ id: row.id, label: row.code, reference: `${row.reference_type}:${row.reference_id}`, amountMinor: row.amount_minor, currency: row.currency, state: row.side, occurredAt: row.posted_at ?? null, version: null }));
+        return this.page(page, (row) => ({
+          id: row.id,
+          label: row.code,
+          reference: `${row.reference_type}:${row.reference_id}`,
+          amountMinor: row.amount_minor,
+          currency: row.currency,
+          state: row.side,
+          occurredAt: row.posted_at ?? null,
+          version: null,
+        }));
       }
       case 'statements': {
         const page = StatementPageSchema.parse(value);
-        return this.page(page, (row) => ({ id: row.id, label: `${row.period_start} – ${row.period_end}`, reference: row.id, amountMinor: row.closing_minor, currency: row.currency, state: row.state, occurredAt: row.generated_at, version: null }));
+        return this.page(page, (row) => ({
+          id: row.id,
+          label: `${row.period_start} – ${row.period_end}`,
+          reference: row.id,
+          amountMinor: row.closing_minor,
+          currency: row.currency,
+          state: row.state,
+          occurredAt: row.generated_at,
+          version: null,
+        }));
       }
       case 'reconciliations': {
         const page = ReconciliationPageSchema.parse(value);
@@ -37,7 +55,16 @@ export class FinanceMapper {
       }
       case 'settlements': {
         const page = SettlementPageSchema.parse(value);
-        return this.page(page, (row) => ({ id: row.id, label: `${row.partner_id} · ${row.period}`, reference: row.reconciliation_id, amountMinor: row.amount_minor, currency: row.currency, state: row.state, occurredAt: null, version: row.version }));
+        return this.page(page, (row) => ({
+          id: row.id,
+          label: `${row.partner_id} · ${row.period}`,
+          reference: row.reconciliation_id,
+          amountMinor: row.amount_minor,
+          currency: row.currency,
+          state: row.state,
+          occurredAt: null,
+          version: row.version,
+        }));
       }
       case 'withdrawals': {
         const page = WithdrawalPageSchema.parse(value);
@@ -45,7 +72,16 @@ export class FinanceMapper {
       }
       case 'invoices': {
         const page = InvoicePageSchema.parse(value);
-        return this.page(page, (row) => ({ id: row.id, label: row.id, reference: row.settlement_id ?? row.profile_id, amountMinor: row.amount_minor, currency: row.currency, state: row.state, occurredAt: row.issued_at ?? row.created_at, version: row.version }));
+        return this.page(page, (row) => ({
+          id: row.id,
+          label: row.id,
+          reference: row.settlement_id ?? row.profile_id,
+          amountMinor: row.amount_minor,
+          currency: row.currency,
+          state: row.state,
+          occurredAt: row.issued_at ?? row.created_at,
+          version: row.version,
+        }));
       }
     }
   }

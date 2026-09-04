@@ -1,0 +1,55 @@
+.consolelayout[data-visual-theme='console-v1'] .taskbutton {
+  border-color: color-mix(in srgb, var(--sw-warning) 24%, transparent);
+  background: var(--sw-commerce-warm);
+  color: var(--sw-warning-strong);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .taskbutton span { width: 6px; height: 6px; background: var(--sw-warning-strong); }
+.consolelayout[data-visual-theme='console-v1'] .taskbutton span::after { content: none; }
+
+.consolelayout[data-visual-theme='console-v1'] .avatarbutton {
+  border-color: color-mix(in srgb, var(--sw-brand) 25%, transparent);
+  background: linear-gradient(145deg, var(--sw-background), var(--sw-brand-light));
+  box-shadow: 0 3px 9px color-mix(in srgb, var(--sw-brand) 12%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .operatorcopy strong { line-height: 16px; }
+.consolelayout[data-visual-theme='console-v1'] .operatorcopy em,
+.consolelayout[data-visual-theme='console-v1'] .operatorcopy small { line-height: 14px; }
+
+.consolelayout[data-visual-theme='console-v1'] .scopebar {
+  border-bottom-color: var(--sw-border);
+  background: color-mix(in srgb, var(--sw-surface) 88%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopecontext select:hover { background: var(--sw-brand-light); color: var(--sw-brand-hover); }
+.consolelayout[data-visual-theme='console-v1'] .scopecontext select:focus-visible { outline: 2px solid color-mix(in srgb, var(--sw-brand) 38%, transparent); outline-offset: 1px; }
+
+.consolelayout[data-visual-theme='console-v1'] .workspacebody {
+  background: radial-gradient(circle at 92% 0, color-mix(in srgb, var(--sw-brand) 4%, transparent), transparent 24rem), var(--sw-background);
+  scrollbar-color: var(--sw-border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolefooter {
+  border-top-color: var(--sw-border);
+  background: color-mix(in srgb, var(--sw-surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolefooterstatus i { box-shadow: 0 0 0 3px color-mix(in srgb, var(--sw-success) 10%, transparent); }
+
+.consolelayout[data-visual-theme='console-v1'] :where(.cockpitpage, .controlpage) > p[role='status'],
+.consolelayout[data-visual-theme='console-v1'] :where(.cockpitpage, .controlpage) > section[role='alert'] {
+  display: grid;
+  min-height: 220px;
+  align-content: center;
+  justify-items: center;
+  border: 1px solid var(--sw-border);
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-surface);
+  color: var(--sw-muted);
+  padding: 32px;
+  text-align: center;
+  box-shadow: var(--sw-shadow-card);
+}

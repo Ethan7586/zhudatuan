@@ -1,5 +1,5 @@
 import type { AuthTarget } from '@shop/config/client';
-import type { Membership } from '../../membership/model/Membership';
+import type { Membership } from '../../membership';
 
 export type LoginOutcome =
   | Readonly<{ kind: 'authenticated'; redirectUrl: string }>

@@ -245,6 +245,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('identity.links.read','identity','GET','/api/v1/identity/links','5.0.0'),
   ('identity.links.create','identity','POST','/api/v1/identity/links','5.0.0'),
   ('identity.links.revoke','identity','DELETE','/api/v1/identity/links/{linkid}','5.0.0'),
+  ('identity.providers.center.read','identity','GET','/api/v1/identity/providers/center','5.0.0'),
   ('identity.providers.manage','identity','PUT','/api/v1/identity/providers/{providerid}','5.0.0'),
   ('identity.providers.test','identity','POST','/api/v1/identity/providers/{providerid}/tests','5.0.0'),
   ('organization.directories.read','organization','GET','/api/v1/organization/directories','5.0.0'),
@@ -850,6 +851,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('identity.links.read','operation','identity.links.read',3,'active'),
   ('identity.links.create','operation','identity.links.create',3,'active'),
   ('identity.links.revoke','operation','identity.links.revoke',3,'active'),
+  ('identity.providers.center.read','operation','identity.providers.center.read',3,'active'),
   ('identity.providers.manage','operation','identity.providers.manage',3,'active'),
   ('identity.providers.test','operation','identity.providers.test',3,'active'),
   ('organization.directories.read','operation','organization.directories.read',3,'active'),
@@ -1127,6 +1129,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('identity.links.read','identity.links.read','identity.link.read','public'),
   ('identity.links.create','identity.links.create','identity.link.manage','public'),
   ('identity.links.revoke','identity.links.revoke','identity.link.manage','public'),
+  ('identity.providers.center.read','identity.providers.center.read','identity.provider.manage','console'),
   ('identity.providers.manage','identity.providers.manage','identity.provider.manage','console'),
   ('identity.providers.test','identity.providers.test','identity.provider.test','console'),
   ('organization.directories.read','organization.directories.read','organization.directory.read','console'),
@@ -1545,6 +1548,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='supplier' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','d21463e1526a44a08445f3a629bb41b2bb0bf0a03c6802a3d0137e592a12dead');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','f43f53b4befd83bf6944f60c48ec823d5ecf113ed42de69613e3ba599a0d2782');
 
 commit;

@@ -22,15 +22,13 @@ export interface RouteRegistryContract {
     load: () => Promise<{ Component: ComponentType }>;
   }>[];
   match(pathname: string): ComponentManifest | undefined;
+  resolve(pathname: string): Readonly<{ routeid: RouteId; parameters: Readonly<Record<string, string>> }> | undefined;
   hasComponent(component: string): component is ComponentKey;
 }
 
 export function defineComponent(definition: ComponentManifest): ComponentManifest {
   if (!COMPONENT_KEYS.includes(definition.component)) {
     throw new Error(`COMPONENT_KEY_INVALID:${definition.component}`);
-  }
-  if (definition.navigationids.length === 0) {
-    throw new Error(`COMPONENT_NAVIGATION_MISSING:${definition.component}`);
   }
   for (const id of definition.navigationids) {
     if (!NAVIGATION_IDS.includes(id)) throw new Error(`COMPONENT_NAVIGATION_INVALID:${id}`);

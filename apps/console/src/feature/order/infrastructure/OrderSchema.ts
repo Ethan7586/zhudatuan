@@ -89,22 +89,22 @@ export const OrderSchema = z.object({
   updated_at: z.string().check(z.minLength(1)),
   version: DatabaseIntegerSchema,
   lines: z.array(
-      z.object({
-        id: z.string().check(z.minLength(1)),
-        sku: z.string().check(z.minLength(1)),
-        listing: z.string().check(z.minLength(1)),
-        title: z.string().check(z.minLength(1)),
-        quantity: DatabaseIntegerSchema,
-        unitMinor: DatabaseIntegerSchema,
-        totalMinor: DatabaseIntegerSchema,
-        discountMinor: DatabaseIntegerSchema,
-        payableMinor: DatabaseIntegerSchema,
-        productType: z.string().check(z.minLength(1)),
-        category: z.string().check(z.minLength(1)),
-        provider: z.optional(z.nullable(z.string())),
-        partner: z.optional(z.nullable(z.string())),
-      })
-    ),
+    z.object({
+      id: z.string().check(z.minLength(1)),
+      sku: z.string().check(z.minLength(1)),
+      listing: z.string().check(z.minLength(1)),
+      title: z.string().check(z.minLength(1)),
+      quantity: DatabaseIntegerSchema,
+      unitMinor: DatabaseIntegerSchema,
+      totalMinor: DatabaseIntegerSchema,
+      discountMinor: DatabaseIntegerSchema,
+      payableMinor: DatabaseIntegerSchema,
+      productType: z.string().check(z.minLength(1)),
+      category: z.string().check(z.minLength(1)),
+      provider: z.optional(z.nullable(z.string())),
+      partner: z.optional(z.nullable(z.string())),
+    })
+  ),
 });
 
 export const OrderPageSchema = z

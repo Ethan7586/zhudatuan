@@ -29,23 +29,10 @@ import { organizationScope } from '../../../../foundation/security/OrganizationS
 import { LockOrderGuard } from '../../domain/policy/LockOrderGuard';
 import { assertTenderTotal, byReference, experienceVersion, integer, object, paymentScene, text } from '../../domain/policy/ConfirmQuotePolicy';
 import { appendCheckoutEvents } from './CheckoutEvents';
+import { checkoutOperationRequest } from './CheckoutConfirmation';
 
 export interface VoucherHoldPort {
   reserve(context: WriteTransactionContext, order: string, member: string, scope: string, tenders: readonly Readonly<{ reference: string; amountMinor: number }>[]): Promise<void>;
-}
-
-interface StoredQuote {
-  readonly checkout: string;
-  readonly cartId: string;
-  readonly memberId: string;
-  readonly mallId: string;
-  readonly applicationId: string;
-  readonly quoteId: string;
-  readonly quoteHash: string;
-  readonly input: Readonly<Record<string, unknown>>;
-  readonly version: number;
-  readonly signedPayload: CheckoutQuote;
-  readonly signature: string;
 }
 
 export class CheckoutConfirmationService {
@@ -167,7 +154,7 @@ export class CheckoutConfirmationService {
   }
 
   finalizeRequest(input: OperationInputFor<'order.orders.create'>, context: FinalizeContext<'order.orders.create'>, result: OperationReply<OperationOutputFor<'order.orders.create'>>) {
-    return this.finalize(operationRequest(input, context), result) as Promise<OperationReply<OperationOutputFor<'order.orders.create'>>>;
+    return this.finalize(checkoutOperationRequest(input, context), result) as Promise<OperationReply<OperationOutputFor<'order.orders.create'>>>;
   }
 
   async finalize(request: OperationRequest, result: OperationResult): Promise<OperationResult> {
@@ -254,23 +241,4 @@ export class CheckoutConfirmationService {
       })),
     });
   }
-}
-
-function operationRequest(input: OperationInputFor<'order.orders.create'>, context: FinalizeContext<'order.orders.create'>): OperationRequest {
-  return {
-    type: 'order.orders.create',
-    input: {
-      path: input.path ?? {},
-      query: Object.fromEntries(Object.entries(input.query ?? {}).filter((entry) => entry[1] !== undefined)) as Readonly<Record<string, string | readonly string[]>>,
-      headers: context.headers,
-      body: input.body,
-      rawBody: context.rawBody,
-      deadline: context.deadline,
-      signal: context.signal,
-      ...(context.publicActor === undefined ? {} : { publicActor: context.publicActor }),
-      ...(context.idempotencyKey === undefined ? {} : { idempotency: context.idempotencyKey }),
-      ...(context.expectedVersion === undefined ? {} : { expectedVersion: context.expectedVersion }),
-    },
-    security: context.security,
-  };
 }

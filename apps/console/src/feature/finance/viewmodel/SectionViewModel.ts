@@ -17,7 +17,14 @@ export function useSectionViewModel(context: ConsoleContext, dependencies: Finan
   useEffect(() => {
     if (previousScope.current === scope) return;
     previousScope.current = scope;
-    setSearch((current) => { const next = new URLSearchParams(current); next.delete('cursor'); return next; }, { replace: true });
+    setSearch(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.delete('cursor');
+        return next;
+      },
+      { replace: true }
+    );
   }, [scope, setSearch]);
   const data = query.data;
   return Object.freeze({
@@ -26,8 +33,15 @@ export function useSectionViewModel(context: ConsoleContext, dependencies: Finan
     data,
     condition: queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0 }),
     error: safeQueryError(query.error),
-    refresh: () => { void query.refetch(); },
-    next: (nextCursor: string) => setSearch((current) => { const next = new URLSearchParams(current); next.set('cursor', nextCursor); return next; }),
+    refresh: () => {
+      void query.refetch();
+    },
+    next: (nextCursor: string) =>
+      setSearch((current) => {
+        const next = new URLSearchParams(current);
+        next.set('cursor', nextCursor);
+        return next;
+      }),
   });
 }
 

@@ -1,0 +1,90 @@
+.voucherlifecycle {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.voucherlifecycle li {
+  position: relative;
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--sw-border);
+  border-radius: 11px;
+  background: var(--sw-surface);
+  padding: 10px 11px;
+}
+
+.voucherlifecycle li:not(:last-child)::after {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: -7px;
+  width: 5px;
+  height: 5px;
+  border-top: 1px solid var(--sw-disabled);
+  border-right: 1px solid var(--sw-disabled);
+  content: '';
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.voucherlifecycle li > span {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--sw-brand-light);
+  color: var(--sw-muted);
+  font-size: 10px;
+  font-weight: 800;
+  place-items: center;
+}
+
+.voucherlifecycle li.is-review,
+.voucherlifecycle li.is-paused {
+  border-color: var(--sw-border-strong);
+  background: var(--sw-commerce-warm);
+}
+.voucherlifecycle li.is-review > span,
+.voucherlifecycle li.is-paused > span {
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+.voucherlifecycle li.is-scheduled {
+  border-color: var(--sw-border-strong);
+  background: var(--sw-surface-subtle);
+}
+.voucherlifecycle li.is-scheduled > span {
+  background: var(--sw-brand-light);
+  color: var(--sw-brand);
+}
+.voucherlifecycle li.is-active {
+  border-color: var(--sw-border-strong);
+  background: var(--sw-background);
+}
+.voucherlifecycle li.is-active > span {
+  background: var(--sw-border);
+  color: var(--sw-success-strong);
+}
+
+.voucherlifecycle div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.voucherlifecycle strong {
+  color: var(--sw-sidebar-top);
+  font-size: 11px;
+}
+.voucherlifecycle small {
+  overflow: hidden;
+  color: var(--sw-muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

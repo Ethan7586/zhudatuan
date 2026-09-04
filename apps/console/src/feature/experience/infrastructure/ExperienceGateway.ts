@@ -1,6 +1,6 @@
 import { createFetchExperience, type ExperienceOperations } from '@shop/sdk/experience';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import { consoleCommand, consoleRequest } from '../../../shared/api/Client';
+import { consoleCommand, consoleRequest } from '../../../shared/api/RequestContext';
 import { EXPERIENCE_PAGE_LIMIT, type ApplicationDraft, type ApplicationUpdate, type VersionDraft } from '../model/Experience';
 import type { ExperiencePort } from '../public';
 import { ExperienceMapper } from './ExperienceMapper';
@@ -9,7 +9,9 @@ export class ExperienceGateway implements ExperiencePort {
   private readonly mapper = new ExperienceMapper();
   private readonly client: ExperienceOperations;
 
-  constructor(baseUrl: string) { this.client = createFetchExperience(baseUrl); }
+  constructor(baseUrl: string) {
+    this.client = createFetchExperience(baseUrl);
+  }
 
   async applications(context: ConsoleContext, cursor?: string, signal?: AbortSignal) {
     const value = await this.client.applicationsRead({ query: { limit: EXPERIENCE_PAGE_LIMIT, ...(cursor === undefined ? {} : { cursor }) } }, consoleRequest(context.scope, signal, context.session.accessVersion));
@@ -25,15 +27,27 @@ export class ExperienceGateway implements ExperiencePort {
   }
 
   async copy(context: ConsoleContext, application: string, draft: ApplicationDraft, reason: string, identity: string, signal?: AbortSignal) {
-    return this.mapper.copied(await this.client.applicationsCopy({ path: { applicationid: application }, body: { code: draft.code, publicSlug: draft.publicSlug, name: draft.name, reason } }, command(context, identity, { ...(signal ? { signal } : {}) })));
+    return this.mapper.copied(
+      await this.client.applicationsCopy({ path: { applicationid: application }, body: { code: draft.code, publicSlug: draft.publicSlug, name: draft.name, reason } }, command(context, identity, { ...(signal ? { signal } : {}) }))
+    );
   }
 
   async update(context: ConsoleContext, application: string, version: number, change: ApplicationUpdate, identity: string, signal?: AbortSignal) {
-    return this.mapper.application(await this.client.applicationsUpdate({ path: { applicationid: application }, body: { name: change.name, status: change.status } }, command(context, identity, { expectedVersion: version, ...(signal ? { signal } : {}) })));
+    return this.mapper.application(
+      await this.client.applicationsUpdate({ path: { applicationid: application }, body: { name: change.name, status: change.status } }, command(context, identity, { expectedVersion: version, ...(signal ? { signal } : {}) }))
+    );
   }
 
   async saveVersion(context: ConsoleContext, draft: VersionDraft, identity: string, signal?: AbortSignal) {
-    const configuration = { version: 2 as const, application: draft.configuration.application, pages: draft.configuration.pages.map((page) => ({ id: page.id, path: page.path, blocks: page.blocks.map((block) => ({ id: block.id, component: block.component, content: { ...block.content }, ...(block.action === undefined ? {} : { action: { ...block.action } }) })) })) };
+    const configuration = {
+      version: 2 as const,
+      application: draft.configuration.application,
+      pages: draft.configuration.pages.map((page) => ({
+        id: page.id,
+        path: page.path,
+        blocks: page.blocks.map((block) => ({ id: block.id, component: block.component, content: { ...block.content }, ...(block.action === undefined ? {} : { action: { ...block.action } }) })),
+      })),
+    };
     return this.mapper.version(await this.client.versionsSave({ path: { applicationid: draft.application }, body: { schemaVersion: 2, configuration, reason: draft.reason } }, command(context, identity, { ...(signal ? { signal } : {}) })));
   }
 

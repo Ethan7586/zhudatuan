@@ -26,16 +26,20 @@ export function OrderDetailPage({ title, viewmodel }: Readonly<{ title: string; 
       retry={viewmodel.refresh}
       actions={<Button onPress={viewmodel.refresh}>刷新订单</Button>}
     >
-      {data === undefined ? <span /> : (
+      {data === undefined ? (
+        <span />
+      ) : (
         <div className="featurestack">
-          <MetricGrid items={[
-            { label: '订单号', value: data.order_number },
-            { label: '服务端应付', value: formatMinor(data.total_minor, data.currency) },
-            { label: '支付状态', value: chineseDomainLabel(data.payment_state) },
-            { label: '履约状态', value: chineseDomainLabel(data.fulfillment_state) },
-            { label: '售后状态', value: chineseDomainLabel(data.aftersale_state) },
-            { label: '版本', value: `第 ${data.version} 版`, detail: formatDate(data.updated_at) },
-          ]} />
+          <MetricGrid
+            items={[
+              { label: '订单号', value: data.order_number },
+              { label: '服务端应付', value: formatMinor(data.total_minor, data.currency) },
+              { label: '支付状态', value: chineseDomainLabel(data.payment_state) },
+              { label: '履约状态', value: chineseDomainLabel(data.fulfillment_state) },
+              { label: '售后状态', value: chineseDomainLabel(data.aftersale_state) },
+              { label: '版本', value: `第 ${data.version} 版`, detail: formatDate(data.updated_at) },
+            ]}
+          />
           <OrderDrawerPanel order={data} tab="overview" />
           <DataTable caption="订单商品明细" columns={columns} rows={data.lines} rowKey={(row) => row.id} />
         </div>

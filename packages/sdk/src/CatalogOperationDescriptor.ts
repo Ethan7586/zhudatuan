@@ -9,5 +9,5 @@ export function defineOperation<TKey extends OperationId>(definition: Readonly<D
     ...definition,
     targets: Object.freeze([...definition.targets]),
     errorUnion: Object.freeze([...definition.errorUnion]),
-  }) as unknown as OperationDescriptor<TKey>;
+  });
 }

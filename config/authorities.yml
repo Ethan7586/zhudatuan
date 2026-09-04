@@ -31,12 +31,12 @@ architecture:
 visuals:
   logicalSource: RepositoryAuthority config/visuals.yml
   repositoryRelativePath: config/visuals.yml
-  sha256: 1e9c81889858b89538286f119b0c5bdffc7ea7beaedefe862c97b4a2ed14099b
+  sha256: b262212536aff1664af6aec6a97bc851fbe428b78571ac6af4e343fa3176555d
 navigation:
   logicalSource: RepositoryAuthority config/navigation.yml
   repositoryRelativePath: config/navigation.yml
   version: 2
-  sha256: 34e186dc560bb7a88e310b21b20e38db3a899f4d893920b93833b2c8c1ce3f70
+  sha256: 25435202fab9c282ed3c7cbd3a740fc44e2cab75525f7046afa713c839d04142
   generator: tools/navigationgen
   outputs:
     - services/commerce/src/modules/navigation/infrastructure/registry/NavigationCatalog.ts
@@ -56,12 +56,15 @@ contract:
     - packages/contract/openapi.json
     - packages/contract/events.json
     - packages/contract/src/operations
+    - packages/contract/src/OperationIds.ts
+    - packages/contract/src/OperationPolicyCatalog.ts
     - packages/contract/src/events
     - packages/contract/src/EventSerializer.ts
     - packages/contract/src/ContractIdentity.ts
     - packages/contract/src/ErrorContract.ts
     - packages/presentation/src/generated/ErrorPolicy.ts
     - packages/authz/src/PermissionCatalog.ts
+    - packages/authz/src/PermissionIds.ts
     - packages/sdk/src/operations
     - services/commerce/src/generated
     - services/commerce/src/foundation/interface/OperationController.ts

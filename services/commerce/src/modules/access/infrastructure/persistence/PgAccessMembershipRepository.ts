@@ -1,6 +1,7 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { ActiveMembershipReference, DirectoryMembershipReference, MemberRecord } from '../../application/port/AccessRepository';
+import type { MemberProfileProjection } from '../../public/MemberAccessPort';
 interface MemberRow {
   readonly id: string;
   readonly member_id: string;
@@ -107,6 +108,17 @@ export class PgAccessMembershipRepository {
       [membership]
     );
     return result.rows[0] ? memberRecord(result.rows[0]) : null;
+  }
+  async upsertMemberProfile(context: WriteTransactionContext, profile: MemberProfileProjection): Promise<void> {
+    const database = this.transactions.database(context);
+    await database.query(
+      `insert into access.memberprofile(member_id,display_name,mobile_masked,source_version,updated_at)
+      values($1,$2,$3,$4,clock_timestamp()) on conflict(member_id) do update set
+      display_name=excluded.display_name,mobile_masked=excluded.mobile_masked,
+      source_version=excluded.source_version,updated_at=excluded.updated_at
+      where access.memberprofile.source_version<=excluded.source_version`,
+      [profile.member, profile.displayName, profile.mobileMasked, profile.sourceVersion]
+    );
   }
   async setEmployeeNumber(context: WriteTransactionContext, membership: string, employee: string | null): Promise<boolean> {
     const database = this.transactions.database(context);

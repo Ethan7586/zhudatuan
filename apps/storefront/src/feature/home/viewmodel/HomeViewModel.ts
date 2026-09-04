@@ -1,13 +1,14 @@
 import { useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
+import { routePath } from '../../../generated/RouteBinding';
 import { useSession } from '../../../entity/session/viewmodel/SessionContext';
 import { StorefrontQuery } from '../../../shared/api/Query';
 import { pathForFeature, pathForPage } from '../../../shared/navigation/Route';
-import { useAccountIdentity } from '../../account/public/index';
-import { useCartCommand } from '../../cart/public/index';
-import { useCatalogState } from '../../catalog/public/index';
-import { useOrderState } from '../../order/public/index';
+import { useAccountIdentity } from '../../account';
+import { useCartCommand } from '../../cart';
+import { useCatalogState } from '../../catalog';
+import { useOrderState } from '../../order';
 import { ReadHome } from '../application/ReadHome';
 import { useDependencies } from '../../../app/DependencyContext';
 
@@ -32,13 +33,13 @@ export function useHomeViewModel() {
       void cart.add(product, quantity);
     },
     homeExperience: reader.current.execute(bootstrap.data),
-    setLaptopPage: (page: Parameters<typeof pathForPage>[0]) => {
+    navigatePage: (page: Parameters<typeof pathForPage>[0]) => {
       void navigate(pathForPage(page));
     },
     showToast: session.showToast,
     openFeature: (name: string) => {
       void navigate(pathForFeature(name));
     },
-    openProduct: (id: string) => void navigate(`/products/${encodeURIComponent(id)}`),
+    openProduct: (id: string) => void navigate(routePath('storeproduct', { productId: id })),
   });
 }

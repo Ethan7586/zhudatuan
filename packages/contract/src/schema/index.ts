@@ -1,4 +1,4 @@
-import { array, boolean, discriminatedUnion, literal, minLength, null as nullSchema, number, optional, strictObject, string, union, type ZodMiniObject, type ZodMiniString, type ZodMiniType } from 'zod/mini';
+import { array, discriminatedUnion, literal, minLength, null as nullSchema, number, optional, strictObject, string, union, type ZodMiniObject, type ZodMiniString, type ZodMiniType } from 'zod/mini';
 import { OPERATION_BODY_SCHEMAS, OPERATION_OUTPUT_SCHEMAS, OPERATION_QUERY_SCHEMAS } from './SchemaCatalog';
 import { IDENTITY_BODY_SCHEMAS, IDENTITY_QUERY_SCHEMAS } from './IdentityInputSchema';
 
@@ -54,7 +54,11 @@ export function definedOperationBodySchema(schemaName: string): Schema<ContractJ
       secretref: string(),
       organizationid: string(),
     }),
-    OrganizationDirectoriesSyncInput: strictObject({ mode: optional(literal(['full', 'incremental'])) }) as Schema<ContractJsonValue>,
+    OrganizationDirectoriesSyncInput: discriminatedUnion('action', [
+      strictObject({ action: literal('start'), mode: optional(literal(['full', 'incremental'])) }),
+      strictObject({ action: literal('cancel'), run: string() }),
+      strictObject({ action: literal('resume'), run: string() }),
+    ]) as Schema<ContractJsonValue>,
     OrganizationDirectoryeventsReceiveInput: empty,
     VoucherCardlibrariesCreateInput: discriminatedUnion('mode', [
       strictObject({ mode: literal('generated'), prefix: string(), provider: optional(union([string(), nullSchema()])) }),

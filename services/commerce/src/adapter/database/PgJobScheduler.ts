@@ -14,4 +14,13 @@ export class PgJobScheduler implements JobScheduler {
       [job.id, job.kind, job.owner, job.scope, JSON.stringify(job.payload), job.priority, job.availableAt ?? null]
     );
   }
+
+  async cancel(context: WriteTransactionContext, kind: string, resource: string): Promise<void> {
+    if (!kind || !resource) throw new Error('JOB_CANCEL_INVALID');
+    await this.transactions.database(context).query(
+      `update runtime.job set state='cancelled',updated_at=clock_timestamp()
+      where kind=$1 and payload->>'run'=$2 and state='queued'`,
+      [kind, resource]
+    );
+  }
 }

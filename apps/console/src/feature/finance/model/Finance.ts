@@ -1,3 +1,7 @@
+import { OP_FINANCE_RECONCILIATIONS_MANAGE } from '@shop/contract/ids';
+import type { OperationId } from '@shop/contract';
+import type { ContractJsonObject } from '@shop/contract/schema';
+
 export type FinanceSection = 'entries' | 'statements' | 'reconciliations' | 'settlements' | 'withdrawals' | 'invoices';
 export const FINANCE_PAGE_LIMIT = 50;
 
@@ -12,7 +16,9 @@ export interface FinanceCurrency {
   readonly watermark: string | null;
 }
 
-export interface FinanceOverview { readonly items: readonly FinanceCurrency[] }
+export interface FinanceOverview {
+  readonly items: readonly FinanceCurrency[];
+}
 
 export interface FinanceRecord {
   readonly id: string;
@@ -25,7 +31,11 @@ export interface FinanceRecord {
   readonly version: number | null;
 }
 
-export interface FinanceRecordPage { readonly items: readonly FinanceRecord[]; readonly count: number; readonly nextCursor?: string }
+export interface FinanceRecordPage {
+  readonly items: readonly FinanceRecord[];
+  readonly count: number;
+  readonly nextCursor?: string;
+}
 
 export interface FinanceReconciliationItem {
   readonly id: string;
@@ -60,18 +70,24 @@ export interface FinanceReconciliation {
   readonly items: readonly FinanceReconciliationItem[];
 }
 
-export interface FinanceReconciliationPage { readonly items: readonly FinanceReconciliation[]; readonly count: number; readonly nextCursor?: string }
-export interface FinanceReconciliationQuery { readonly cursor?: string; readonly limit: 20 | 50 }
+export interface FinanceReconciliationPage {
+  readonly items: readonly FinanceReconciliation[];
+  readonly count: number;
+  readonly nextCursor?: string;
+}
+export interface FinanceReconciliationQuery {
+  readonly cursor?: string;
+  readonly limit: 20 | 50;
+}
+export type FinanceReconciliationAction = 'retry' | 'resolve' | 'approveitem' | 'approve';
+export interface FinanceReconciliationChange {
+  readonly action: FinanceReconciliationAction;
+  readonly item?: string;
+  readonly reason: string;
+  readonly evidence?: ContractJsonObject;
+}
+
+export const financeOperations = Object.freeze({ manageReconciliation: OP_FINANCE_RECONCILIATIONS_MANAGE } satisfies Readonly<Record<string, OperationId>>);
 
 export type FinanceColumnKey = 'channel' | 'scope' | 'matched' | 'differences' | 'channelAmount' | 'ledgerAmount' | 'differenceAmount' | 'state' | 'time';
 export const defaultFinanceColumns: ReadonlySet<FinanceColumnKey> = new Set(['channel', 'scope', 'matched', 'differences', 'channelAmount', 'ledgerAmount', 'differenceAmount', 'state', 'time']);
-
-export const financeSections: readonly Readonly<{ key: 'overview' | FinanceSection; label: string; suffix: string }>[] = Object.freeze([
-  { key: 'overview', label: '财务总览', suffix: 'finance' },
-  { key: 'entries', label: '账本分录', suffix: 'finance/entries' },
-  { key: 'statements', label: '账单', suffix: 'finance/statements' },
-  { key: 'reconciliations', label: '对账', suffix: 'finance/reconciliations' },
-  { key: 'settlements', label: '结算单', suffix: 'finance/settlements' },
-  { key: 'withdrawals', label: '提现', suffix: 'finance/withdrawals' },
-  { key: 'invoices', label: '发票', suffix: 'finance/invoices' },
-]);

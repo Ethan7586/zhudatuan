@@ -1,3 +1,34 @@
+import {
+  OP_VOUCHER_BATCHES_ISSUE,
+  OP_VOUCHER_BATCHES_READ,
+  OP_VOUCHER_BATCHES_RETRY,
+  OP_VOUCHER_BINDINGS_MANAGE,
+  OP_VOUCHER_BINDINGS_READ,
+  OP_VOUCHER_CARDLIBRARIES_ALLOCATE,
+  OP_VOUCHER_CARDLIBRARIES_CREATE,
+  OP_VOUCHER_CARDLIBRARIES_READ,
+  OP_VOUCHER_HISTORY_READ,
+  OP_VOUCHER_PROGRAMS_MANAGE,
+  OP_VOUCHER_PROGRAMS_READ,
+  OP_VOUCHER_REDEMPTIONS_READ,
+  OP_VOUCHER_REDEMPTIONS_REVERSE,
+  OP_VOUCHER_RESERVES_DECIDE,
+  OP_VOUCHER_RESERVES_READ,
+  OP_VOUCHER_RESERVES_REQUEST,
+  OP_VOUCHER_STATUSBATCHES_READ,
+  OP_VOUCHER_STATUS_BATCH,
+} from '@shop/contract/ids';
+import {
+  PERM_VOUCHER_BINDING_MANAGE,
+  PERM_VOUCHER_CARDLIBRARY_ALLOCATE,
+  PERM_VOUCHER_CARDLIBRARY_CREATE,
+  PERM_VOUCHER_ISSUE,
+  PERM_VOUCHER_PROGRAM_MANAGE,
+  PERM_VOUCHER_REDEMPTION_REVERSE,
+  PERM_VOUCHER_RESERVE_DECIDE,
+  PERM_VOUCHER_RESERVE_REQUEST,
+  PERM_VOUCHER_STATUS_MANAGE,
+} from '@shop/authz/ids';
 import { chineseReference, queryCondition, safeQueryError } from '@shop/presentation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
@@ -11,10 +42,17 @@ import { voucherViews, type VoucherRecord, type VoucherView } from '../model/Vou
 import { voucherSummary } from '../view/VoucherPresentation';
 import { useVoucherActionViewModel } from './VoucherActionViewModel';
 import { voucherKey, voucherPrefix } from './VoucherQueryKey';
+import { allowed, readView, receiptText, targetView } from './VoucherViewState';
 
 const viewOperation: Readonly<Record<VoucherView, string>> = Object.freeze({
-  programs: 'voucher.programs.read', libraries: 'voucher.cardlibraries.read', reserves: 'voucher.reserves.read', batches: 'voucher.batches.read',
-  statusbatches: 'voucher.statusbatches.read', bindings: 'voucher.bindings.read', redemptions: 'voucher.redemptions.read', history: 'voucher.history.read',
+  programs: OP_VOUCHER_PROGRAMS_READ,
+  libraries: OP_VOUCHER_CARDLIBRARIES_READ,
+  reserves: OP_VOUCHER_RESERVES_READ,
+  batches: OP_VOUCHER_BATCHES_READ,
+  statusbatches: OP_VOUCHER_STATUSBATCHES_READ,
+  bindings: OP_VOUCHER_BINDINGS_READ,
+  redemptions: OP_VOUCHER_REDEMPTIONS_READ,
+  history: OP_VOUCHER_HISTORY_READ,
 });
 
 export function useVoucherViewModel(context: ConsoleContext, dependencies: VoucherDependencies) {
@@ -35,55 +73,129 @@ export function useVoucherViewModel(context: ConsoleContext, dependencies: Vouch
   const rows = useMemo(() => (data?.items ?? []).filter((record) => (q === '' || `${record.name} ${record.id} ${record.detail}`.toLowerCase().includes(q)) && (status === 'all' || record.state === status)), [data?.items, q, status]);
   const states = useMemo(() => Object.freeze([...new Set((data?.items ?? []).map((row) => row.state))].sort()), [data?.items]);
   const summary = useMemo(() => voucherSummary(view, data?.items ?? []), [data?.items, view]);
-  const updateSearch = useCallback((mutate: (next: URLSearchParams) => void) => { const next = new URLSearchParams(search); mutate(next); setSearch(next); }, [search, setSearch]);
-  const done = useCallback((command: VoucherCommand) => {
-    setAction(null); setSelected(new Set()); setReceipt(receiptText(command));
-    const target = targetView(command);
-    const next = new URLSearchParams(); next.set('view', target); setSearch(next);
-    void cache.invalidateQueries({ queryKey: voucherPrefix(context) });
-  }, [cache, context, setSearch]);
+  const updateSearch = useCallback(
+    (mutate: (next: URLSearchParams) => void) => {
+      const next = new URLSearchParams(search);
+      mutate(next);
+      setSearch(next);
+    },
+    [search, setSearch]
+  );
+  const done = useCallback(
+    (command: VoucherCommand) => {
+      setAction(null);
+      setSelected(new Set());
+      setReceipt(receiptText(command));
+      const target = targetView(command);
+      const next = new URLSearchParams();
+      next.set('view', target);
+      setSearch(next);
+      void cache.invalidateQueries({ queryKey: voucherPrefix(context) });
+    },
+    [cache, context, setSearch]
+  );
   const actionModel = useVoucherActionViewModel(action, context, dependencies, done);
-  const permissions = useMemo(() => Object.freeze({
-    createLibrary: allowed(context, 'voucher.cardlibrary.create', 'voucher.cardlibraries.create'),
-    allocateLibrary: allowed(context, 'voucher.cardlibrary.allocate', 'voucher.cardlibraries.allocate'),
-    saveProgram: allowed(context, 'voucher.program.manage', 'voucher.programs.manage'),
-    requestReserve: allowed(context, 'voucher.reserve.request', 'voucher.reserves.request'),
-    decideReserve: allowed(context, 'voucher.reserve.decide', 'voucher.reserves.decide'),
-    issueBatch: allowed(context, 'voucher.issue', 'voucher.batches.issue'),
-    retryBatch: allowed(context, 'voucher.issue', 'voucher.batches.retry'),
-    changeStatus: allowed(context, 'voucher.status.manage', 'voucher.status.batch'),
-    bind: allowed(context, 'voucher.binding.manage', 'voucher.bindings.manage'),
-    reverse: allowed(context, 'voucher.redemption.reverse', 'voucher.redemptions.reverse'),
-  }), [context]);
+  const permissions = useMemo(
+    () =>
+      Object.freeze({
+        createLibrary: allowed(context, PERM_VOUCHER_CARDLIBRARY_CREATE, OP_VOUCHER_CARDLIBRARIES_CREATE),
+        allocateLibrary: allowed(context, PERM_VOUCHER_CARDLIBRARY_ALLOCATE, OP_VOUCHER_CARDLIBRARIES_ALLOCATE),
+        saveProgram: allowed(context, PERM_VOUCHER_PROGRAM_MANAGE, OP_VOUCHER_PROGRAMS_MANAGE),
+        requestReserve: allowed(context, PERM_VOUCHER_RESERVE_REQUEST, OP_VOUCHER_RESERVES_REQUEST),
+        decideReserve: allowed(context, PERM_VOUCHER_RESERVE_DECIDE, OP_VOUCHER_RESERVES_DECIDE),
+        issueBatch: allowed(context, PERM_VOUCHER_ISSUE, OP_VOUCHER_BATCHES_ISSUE),
+        retryBatch: allowed(context, PERM_VOUCHER_ISSUE, OP_VOUCHER_BATCHES_RETRY),
+        changeStatus: allowed(context, PERM_VOUCHER_STATUS_MANAGE, OP_VOUCHER_STATUS_BATCH),
+        bind: allowed(context, PERM_VOUCHER_BINDING_MANAGE, OP_VOUCHER_BINDINGS_MANAGE),
+        reverse: allowed(context, PERM_VOUCHER_REDEMPTION_REVERSE, OP_VOUCHER_REDEMPTIONS_REVERSE),
+      }),
+    [context]
+  );
   const selectedRows = useMemo(() => rows.filter((row) => selected.has(row.id)), [rows, selected]);
-  const actions = useMemo(() => Object.freeze({
-    refresh: () => void query.refetch(),
-    selectView: (candidate: VoucherView) => updateSearch((next) => { next.set('view', candidate); next.delete('cursor'); next.delete('q'); next.delete('status'); next.delete('selected'); setSelected(new Set()); }),
-    filter: (key: 'q' | 'status', value: string) => updateSearch((next) => { if (!value || value === 'all') next.delete(key); else next.set(key, value); next.delete('cursor'); next.delete('selected'); }),
-    clearFilters: () => updateSearch((next) => { next.delete('q'); next.delete('status'); next.delete('cursor'); next.delete('selected'); }),
-    next: () => { if (data?.nextCursor) setSearch(pageCursor(search, data.nextCursor)); },
-    open: (record: VoucherRecord) => { setAction(null); updateSearch((next) => next.set('selected', record.id)); },
-    close: () => updateSearch((next) => next.delete('selected')),
-    choose: (id: string) => setSelected((current) => { const next = new Set(current); next.has(id) ? next.delete(id) : next.add(id); return next; }),
-    choosePage: () => setSelected((current) => { const next = new Set(current); const remove = rows.length > 0 && rows.every((row) => next.has(row.id)); for (const row of rows) remove ? next.delete(row.id) : next.add(row.id); return next; }),
-    start: (next: VoucherAction) => { updateSearch((value) => value.delete('selected')); setAction(next); },
-    closeAction: () => setAction(null),
-    changeSelected: () => { if (selectedRows.length) setAction({ kind: 'statusbatch', records: selectedRows }); },
-    dismissReceipt: () => setReceipt(undefined),
-  }), [data?.nextCursor, query, rows, search, selectedRows, setSearch, updateSearch]);
+  const actions = useMemo(
+    () =>
+      Object.freeze({
+        refresh: () => void query.refetch(),
+        selectView: (candidate: VoucherView) =>
+          updateSearch((next) => {
+            next.set('view', candidate);
+            next.delete('cursor');
+            next.delete('q');
+            next.delete('status');
+            next.delete('selected');
+            setSelected(new Set());
+          }),
+        filter: (key: 'q' | 'status', value: string) =>
+          updateSearch((next) => {
+            if (!value || value === 'all') next.delete(key);
+            else next.set(key, value);
+            next.delete('cursor');
+            next.delete('selected');
+          }),
+        clearFilters: () =>
+          updateSearch((next) => {
+            next.delete('q');
+            next.delete('status');
+            next.delete('cursor');
+            next.delete('selected');
+          }),
+        next: () => {
+          if (data?.nextCursor) setSearch(pageCursor(search, data.nextCursor));
+        },
+        open: (record: VoucherRecord) => {
+          setAction(null);
+          updateSearch((next) => next.set('selected', record.id));
+        },
+        close: () => updateSearch((next) => next.delete('selected')),
+        choose: (id: string) =>
+          setSelected((current) => {
+            const next = new Set(current);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+          }),
+        choosePage: () =>
+          setSelected((current) => {
+            const next = new Set(current);
+            const remove = rows.length > 0 && rows.every((row) => next.has(row.id));
+            for (const row of rows) {
+              if (remove) next.delete(row.id);
+              else next.add(row.id);
+            }
+            return next;
+          }),
+        start: (next: VoucherAction) => {
+          updateSearch((value) => value.delete('selected'));
+          setAction(next);
+        },
+        closeAction: () => setAction(null),
+        changeSelected: () => {
+          if (selectedRows.length) setAction({ kind: 'statusbatch', records: selectedRows });
+        },
+        dismissReceipt: () => setReceipt(undefined),
+      }),
+    [data?.nextCursor, query, rows, search, selectedRows, setSearch, updateSearch]
+  );
   return Object.freeze({
-    scopeName: context.scope.name ?? chineseReference('组织范围', context.scope.id), view, availableViews, data, rows, states, status, queryText: search.get('q') ?? '', selectedRecord,
-    selected, selectedRows, summary, condition: queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: false }),
-    error: safeQueryError(query.error), permissions, action: actionModel, receipt, actions,
+    scopeName: context.scope.name ?? chineseReference('组织范围', context.scope.id),
+    view,
+    availableViews,
+    data,
+    rows,
+    states,
+    status,
+    queryText: search.get('q') ?? '',
+    selectedRecord,
+    selected,
+    selectedRows,
+    summary,
+    condition: queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: false }),
+    error: safeQueryError(query.error),
+    permissions,
+    action: actionModel,
+    receipt,
+    actions,
   });
 }
 
 export type VoucherViewModel = ReturnType<typeof useVoucherViewModel>;
-
-function readView(search: URLSearchParams, available: readonly VoucherView[]): VoucherView {
-  const selected = search.get('view') as VoucherView | null;
-  return selected && available.includes(selected) ? selected : available[0] ?? 'programs';
-}
-function allowed(context: ConsoleContext, permission: string, capability: string): boolean { return context.session.permissions.includes(permission) && context.session.capabilities.includes(capability); }
-function targetView(command: VoucherCommand): VoucherView { return command.kind === 'createlibrary' || command.kind === 'allocatelibrary' ? 'libraries' : command.kind === 'saveprogram' ? 'programs' : command.kind === 'requestreserve' || command.kind === 'decidereserve' ? 'reserves' : command.kind === 'issuebatch' || command.kind === 'retrybatch' ? 'batches' : command.kind === 'statusbatch' ? 'statusbatches' : command.kind === 'bind' ? 'bindings' : 'redemptions'; }
-function receiptText(command: VoucherCommand): string { return command.kind === 'statusbatch' ? `已提交 ${command.ids.length} 张卡券的批量任务，请在“操作批次”查看进度。` : '操作已提交并完成权威重读；若为异步任务，可在对应列表查看最新进度。'; }

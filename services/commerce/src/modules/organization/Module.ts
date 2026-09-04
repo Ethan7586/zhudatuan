@@ -36,11 +36,12 @@ export const OrganizationModule = defineModule(Manifest, {
     const organizations = new PgOrganizationRepository(transactions);
     const client = new WecomDirectoryClient(context.service(SECRET_STORE));
     const providers = new DirectoryProviderRegistry([new WecomDirectoryProvider('wecomcorp', client), new WecomDirectoryProvider('wecomsuite', client)]);
+    const jobs = new PgJobScheduler(transactions);
     return [
       new LayersReadHandler(organizations),
       new DirectoriesReadHandler(organizations),
       new DirectoriesManageHandler(organizations),
-      new DirectoriesSyncHandler(organizations, new PgJobScheduler(transactions)),
+      new DirectoriesSyncHandler(organizations, jobs),
       new DirectorySyncRunsReadHandler(organizations),
       new DirectoryEventsReceiveHandler(organizations, providers, context.service(KMS_CLIENT)),
     ];

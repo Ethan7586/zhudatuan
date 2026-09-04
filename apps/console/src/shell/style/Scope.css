@@ -1,0 +1,59 @@
+.consolelayout[data-visual-theme='console-v1'] .scopebar {
+  height: 40px;
+  min-height: 40px;
+  border-bottom-color: color-mix(in srgb, var(--sw-border) 80%, transparent);
+  padding: 0 24px;
+  color: var(--sw-muted);
+  font-size: 11px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopecontext select {
+  min-height: 26px;
+  border-radius: 7px;
+  color: var(--sw-text-secondary);
+  font-size: 11px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .workspacebody {
+  width: min(100%, 1600px);
+  min-height: 0;
+  flex: 1;
+  margin: 0 auto;
+  overflow-y: auto;
+  padding: 24px;
+  scrollbar-gutter: stable;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .workspacebody h1[tabindex='-1']:focus { outline: none; }
+
+.consolelayout[data-visual-theme='console-v1'] .consolefooter {
+  display: flex;
+  height: 36px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid color-mix(in srgb, var(--sw-border) 80%, transparent);
+  background: var(--sw-surface);
+  color: var(--sw-text-secondary);
+  padding: 0 24px;
+  font-size: 11px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolefooterstatus { display: inline-flex; align-items: center; gap: 6px; }
+
+.consolelayout[data-visual-theme='console-v1'] .consolefooterstatus i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sw-success);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolefooter code {
+  border-radius: 4px;
+  background: var(--sw-background);
+  color: var(--sw-text-secondary);
+  padding: 2px 8px;
+  font-family: var(--sw-font-mono, ui-monospace, monospace);
+  font-size: 11px;
+}

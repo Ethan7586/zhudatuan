@@ -5,9 +5,13 @@ import { ProductPage } from '../view/ProductPage';
 import { useProductViewModel } from '../viewmodel/ProductViewModel';
 import '../view/Layout.css';
 import '../view/Table.css';
+import '../view/Pagination.css';
 import '../view/Dialogs.css';
 import '../view/Drawer.css';
+import '../view/DrawerBlocker.css';
 import '../view/DrawerPanels.css';
+import '../view/DetailPanels.css';
+import '../view/Toolbar.css';
 import '../view/Responsive.css';
 
 export function Component() {

@@ -40,6 +40,12 @@ export class PgOrganizationRepository implements OrganizationRepository {
   createRun(context: WriteTransactionContext, connection: string, mode: Parameters<OrganizationRepository['createRun']>[2], key: string) {
     return this.directoryStore.createRun(context, connection, mode, key);
   }
+  resumeRun(context: WriteTransactionContext, connection: string, run: string, key: string) {
+    return this.directoryStore.resumeRun(context, connection, run, key);
+  }
+  cancelRun(context: WriteTransactionContext, connection: string, run: string) {
+    return this.directoryStore.cancelRun(context, connection, run);
+  }
   receive(context: WriteTransactionContext, input: Parameters<OrganizationRepository['receive']>[1]) {
     return this.inbox.receive(context, input);
   }

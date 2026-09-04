@@ -11,5 +11,7 @@ export interface OrganizationRepository {
   saveDirectory(context: WriteTransactionContext, value: DirectoryConnectionValue, expectedVersion: number): Promise<DirectoryConnection>;
   runs(context: ReadTransactionContext, connection: string, after: string | null, fetch: number): Promise<readonly Readonly<Record<string, unknown>>[]>;
   createRun(context: WriteTransactionContext, connection: string, mode: SyncMode, key: string): Promise<SyncRun>;
+  resumeRun(context: WriteTransactionContext, connection: string, run: string, key: string): Promise<SyncRun | null>;
+  cancelRun(context: WriteTransactionContext, connection: string, run: string): Promise<Readonly<Record<string, unknown>> | null>;
   receive(context: WriteTransactionContext, input: Readonly<{ connection: string; eventid: string; version: number; bodyhash: string; payload: string }>): Promise<'accepted' | 'duplicate' | 'stale'>;
 }

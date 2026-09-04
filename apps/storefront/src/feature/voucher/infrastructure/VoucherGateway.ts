@@ -1,11 +1,16 @@
-import type { StorefrontClient } from '../../../shared/api/Client';
+import type { VoucherOperations } from '@shop/sdk/voucher';
+import type { RequestContextFactory } from '../../../shared/api/RequestContext';
 import type { StorefrontSession } from '../../../entity/session';
 import type { Redemption } from '../model/Redemption';
 import type { Voucher } from '../model/Voucher';
 import { mapVoucherCenter } from './VoucherMapper';
+import type { VoucherPort } from '../public/VoucherPort';
 
-export class VoucherGateway {
-  constructor(private readonly voucher: StorefrontClient['commerce']['voucher'], private readonly context: StorefrontClient['context']) {}
+export class VoucherGateway implements VoucherPort {
+  constructor(
+    private readonly voucher: VoucherOperations,
+    private readonly context: RequestContextFactory
+  ) {}
   async vouchers(session: StorefrontSession, signal?: AbortSignal): Promise<readonly Voucher[]> {
     const value = await this.voucher.bindingsRead({ query: { limit: 100 } }, this.context(session, { signal }));
     return mapVoucherCenter(value.items, []).vouchers;

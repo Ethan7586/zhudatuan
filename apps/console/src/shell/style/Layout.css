@@ -1,0 +1,235 @@
+@import '../Navigation.css';
+@import '../Header.css';
+
+.consolelayout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--sw-surface-subtle);
+  transition: grid-template-columns var(--sw-duration-standard) var(--sw-ease-standard);
+}
+
+.consolelayout[data-sidebar='collapsed'] {
+  grid-template-columns: 64px minmax(0, 1fr);
+}
+
+.consoleworkspace {
+  min-width: 0;
+  background: var(--sw-surface-subtle);
+}
+
+.scopebar {
+  display: flex;
+  height: 34px;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--sw-border);
+  background: var(--sw-surface);
+  padding: 0 17px;
+  color: var(--sw-muted);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.scopecontext,
+.scopestatus {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.scopecontext select {
+  field-sizing: content;
+  width: auto;
+  max-width: 18rem;
+  min-height: 24px;
+  border: 0;
+  border-radius: 4px;
+  outline-offset: 0;
+  background: transparent;
+  padding: 0 2px;
+  color: var(--sw-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.scopecontext select:hover {
+  background: var(--sw-background);
+}
+.scopedivider {
+  color: var(--sw-border-strong);
+  font-style: normal;
+}
+.scopestatus {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+.scopestatus i {
+  color: var(--sw-border-strong);
+  font-style: normal;
+}
+
+.workspacebody {
+  width: min(100%, 100rem);
+  margin: 0 auto;
+  padding: 10px 14px 28px;
+}
+
+.mobilebackdrop {
+  display: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 68rem) {
+  .consolelayout .consoleheader {
+    align-items: center;
+  }
+  .consoleheader .commandtrigger span {
+    max-width: 12rem;
+  }
+}
+
+@media (max-width: 54rem) {
+  .consoleheader .commandarea {
+    justify-self: stretch;
+  }
+  .consoleheader .commandtrigger {
+    width: 100%;
+  }
+  .consoleheader .taskbutton {
+    width: 38px;
+    font-size: 0;
+  }
+  .consoleheader .taskbutton span {
+    margin: 0;
+  }
+  .scopebar .scopestatus {
+    display: none;
+  }
+}
+
+@media (max-width: 48rem) {
+  .consolelayout,
+  .consolelayout[data-sidebar='collapsed'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .consolelayout[data-mobile-nav] .consolesidebar,
+  .consolelayout[data-mobile-nav] .consolesidebar.iscollapsed {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 60;
+    display: flex;
+    width: 200px;
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform var(--sw-duration-standard) var(--sw-ease-standard);
+  }
+
+  .consolelayout[data-mobile-nav='open'] .consolesidebar {
+    transform: translateX(0);
+  }
+  .consolelayout[data-mobile-nav] .consolesidebar .sidebarbrand {
+    display: flex;
+  }
+  .consolelayout[data-mobile-nav] .consolesidebar .sidebarbrandcopy,
+  .consolelayout[data-mobile-nav] .consolesidebar .sidebarlabel {
+    display: grid;
+  }
+
+  .consolelayout[data-mobile-nav] .consolesidebar .sidebarnavigation {
+    display: grid;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 8px 6px;
+  }
+
+  .consolelayout[data-mobile-nav] .consolesidebar .sidebarnavigation button {
+    justify-content: flex-start;
+    padding: 0 11px;
+  }
+
+  .consolelayout[data-mobile-nav='open'] .mobilebackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: block;
+    min-height: 0;
+    border: 0;
+    background: color-mix(in srgb, var(--sw-brand-ink) 48%, transparent);
+  }
+
+  .consolelayout .consoleheader {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding-inline: 12px;
+  }
+
+  .consoleheader .mobilemenubutton {
+    display: grid;
+  }
+  .consolebreadcrumb > span,
+  .consolebreadcrumb > i {
+    display: none;
+  }
+  .consoleheader .commandarea {
+    grid-column: 2;
+  }
+  .consoleheader .consoleactions {
+    grid-column: 3;
+  }
+  .consoleheader .taskbutton {
+    display: none;
+  }
+  .consoleworkspace .scopebar {
+    flex-direction: row;
+    padding-inline: 12px;
+  }
+  .scopecontext > span,
+  .scopecontext > i {
+    display: none;
+  }
+  .consoleworkspace .workspacebody {
+    padding-inline: 12px;
+  }
+}
+
+@media (max-width: 36rem) {
+  .consoleheader .commandarea {
+    display: none;
+  }
+  .consolelayout .consoleheader {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .consoleheader .consolebreadcrumb {
+    grid-column: 1;
+  }
+  .consoleheader .consoleactions {
+    grid-column: 2;
+  }
+  .consoleworkspace .scopebar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .consolelayout,
+  .consolelayout .consolesidebar {
+    transition: none;
+  }
+}

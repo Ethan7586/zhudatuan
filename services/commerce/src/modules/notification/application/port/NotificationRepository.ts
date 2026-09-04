@@ -37,8 +37,8 @@ export interface NotificationRepository {
   saveEndpoint(context: WriteTransactionContext, member: string, channel: DeliveryChannelId, envelope: CipherEnvelope): Promise<Readonly<Record<string, unknown>>>;
   notifications(context: ReadTransactionContext, membership: string, includeScope: boolean, cursorTime: string | null, cursorId: string | null, fetch: number): Promise<readonly Readonly<Record<string, unknown>>[]>;
   acknowledge(context: WriteTransactionContext, membership: string, notification: string): Promise<Readonly<Record<string, unknown>> | null>;
-  templates(context: ReadTransactionContext, scope: string, cursor: string | null, fetch: number): Promise<readonly NotificationTemplate[]>;
-  saveTemplate(context: WriteTransactionContext, input: Omit<NotificationTemplate, 'createdAt'>): Promise<SavedTemplate | null>;
+  templates(context: ReadTransactionContext, scope: string, channel: DeliveryChannelId | null, cursor: string | null, fetch: number): Promise<readonly NotificationTemplate[]>;
+  saveTemplate(context: WriteTransactionContext, input: Omit<NotificationTemplate, 'createdAt'> & Readonly<{ expectedVersion: number }>): Promise<SavedTemplate | null>;
   announcements(context: ReadTransactionContext, scope: string, cursor: string | null, fetch: number): Promise<readonly Readonly<Record<string, unknown>>[]>;
   saveAnnouncement(
     context: WriteTransactionContext,

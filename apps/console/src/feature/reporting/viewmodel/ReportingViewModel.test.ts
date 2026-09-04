@@ -14,7 +14,22 @@ describe('ReportingViewModel boundaries', () => {
 
   it('rejects DTO extensions and non-HTTPS download links at the mapper boundary', () => {
     const mapper = new ReportingMapper();
-    const job = { id: 'export:one', scope: 'mall:one', report: 'metrics', filter: {}, state: 'completed', cursor: null, recordCount: 1, objectReference: 'reports/one.csv', objectHash: 'a'.repeat(64), objectSize: 10, scanState: 'clean', expiresAt: null, createdAt: '2026-09-03T00:00:00.000Z', generatedAt: '2026-09-03T00:01:00.000Z' } as const;
+    const job = {
+      id: 'export:one',
+      scope: 'mall:one',
+      report: 'metrics',
+      filter: {},
+      state: 'completed',
+      cursor: null,
+      recordCount: 1,
+      objectReference: 'reports/one.csv',
+      objectHash: 'a'.repeat(64),
+      objectSize: 10,
+      scanState: 'clean',
+      expiresAt: null,
+      createdAt: '2026-09-03T00:00:00.000Z',
+      generatedAt: '2026-09-03T00:01:00.000Z',
+    } as const;
     expect(() => mapper.export({ ...job, unexpected: true })).toThrow();
     expect(() => mapper.export({ ...job, download: { url: 'http://objects.example/report.csv', expiresAt: '2026-09-03T00:05:00.000Z' } })).toThrow();
   });

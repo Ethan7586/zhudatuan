@@ -1,0 +1,201 @@
+/*
+ * Canonical console visual foundation.
+ *
+ * This file intentionally changes presentation only. Route components, data
+ * queries, permissions and mutations continue to come from the current Console.
+ */
+
+body:has(.consolelayout[data-visual-theme='console-v1']) {
+  overflow: hidden;
+  background: var(--sw-surface-subtle);
+  color: var(--sw-text-secondary);
+  font-family: var(--sw-font-sans);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.consolelayout[data-visual-theme='console-v1'] {
+  --console-header-height: 56px;
+  display: grid;
+  width: 100vw;
+  height: 100vh;
+  min-height: 0;
+  grid-template-columns: 220px minmax(0, 1fr);
+  overflow: hidden;
+  background: var(--sw-background);
+  color: var(--sw-text-secondary);
+  font-size: 13px;
+}
+
+.consolelayout[data-visual-theme='console-v1'][data-sidebar='collapsed'] {
+  grid-template-columns: 64px minmax(0, 1fr);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consoleworkspace {
+  display: flex;
+  min-width: 0;
+  height: 100vh;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--sw-background);
+}
+
+/* Sidebar */
+.consolelayout[data-visual-theme='console-v1'] .consolesidebar {
+  position: relative;
+  top: auto;
+  z-index: 40;
+  height: 100vh;
+  border-right: 1px solid color-mix(in srgb, var(--sw-surface) 10%, transparent);
+  background: linear-gradient(180deg, var(--sw-sidebar-top) 0%, var(--sw-brand-ink) 100%);
+  color: var(--sw-border-strong);
+  box-shadow: 8px 0 24px color-mix(in srgb, var(--sw-brand-ink) 10%, transparent);
+  user-select: none;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarbrand {
+  height: 72px;
+  min-height: 72px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--sw-surface) 10%, transparent);
+  padding: 16px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarbrand .swbrand {
+  min-width: 32px;
+  flex-basis: 32px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarbrand .swbrand-mark img {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  filter: drop-shadow(0 4px 8px color-mix(in srgb, var(--sw-brand) 30%, transparent));
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarbrandcopy {
+  gap: 2px;
+  margin-top: 0;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarbrandcopy strong {
+  color: var(--sw-surface);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarbrandcopy small {
+  color: var(--sw-disabled);
+  font-size: 10px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebartoggle {
+  top: 21px;
+  right: 8px;
+  width: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  border: 0;
+  border-radius: 6px;
+  opacity: 1;
+  background: transparent;
+  color: var(--sw-disabled);
+  transform: none;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebartoggle:hover {
+  background: color-mix(in srgb, var(--sw-surface) 10%, transparent);
+  color: var(--sw-surface);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavtitle {
+  padding: 0 18px 8px;
+  color: color-mix(in srgb, var(--sw-disabled) 80%, transparent);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation {
+  flex: 1;
+  gap: 4px;
+  padding: 0 10px 10px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation.sidebarsupport {
+  flex: 0 0 auto;
+  padding-top: 8px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button {
+  height: 36px;
+  min-height: 36px;
+  gap: 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--sw-border-strong);
+  padding: 0 9px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button > svg {
+  width: 16px;
+  height: 16px;
+  flex-basis: 16px;
+  color: currentColor;
+  opacity: 0.72;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarlabel {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button:hover {
+  background: color-mix(in srgb, var(--sw-surface) 5%, transparent);
+  color: var(--sw-surface);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button[aria-current='page'] {
+  border-color: color-mix(in srgb, var(--sw-brand) 40%, transparent);
+  background: color-mix(in srgb, var(--sw-brand) 20%, transparent);
+  color: var(--sw-surface);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--sw-brand-ink) 14%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button[aria-current='page']::before {
+  display: none;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button[aria-current='page'] > svg {
+  color: var(--sw-brand);
+  opacity: 1;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolesidebar.iscollapsed .sidebarbrand {
+  justify-content: center;
+  padding-inline: 8px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolesidebar.iscollapsed .sidebartoggle {
+  top: 68px;
+  right: 19px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolesidebar.iscollapsed .sidebarnavtitle,
+.consolelayout[data-visual-theme='console-v1'] .consolesidebar.iscollapsed .sidebarprofilecopy {
+  display: none;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolesidebar.iscollapsed .sidebarnavigation {
+  padding: 28px 8px 10px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolesidebar.iscollapsed .sidebarprofile {
+  justify-content: center;
+  padding-inline: 8px;
+}

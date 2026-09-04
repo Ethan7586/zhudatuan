@@ -7,19 +7,18 @@ import type { ReadTransactionContext, WriteTransactionContext } from '../../../.
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
 import { bodyRecord } from '../../../../foundation/interface/Validation';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { CipherEnvelope, KmsClient } from '../../../../foundation/infrastructure/KmsClient';
+import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
 import type { InvitationAccessPort } from '../../../access/public';
 import type { InvitationMemberPort } from '../../../member/public';
 import type { IdentityOrganizationPort } from '../../../organization/public/IdentityOrganizationPort';
-import type { Invitation } from '../../domain/model/Invitation';
 import { AuthTransaction } from '../../domain/model/AuthTransaction';
 import type { FederationProtector } from '../../domain/service/FederationProtector';
 import type { AuthTicketPort } from '../port/AuthTicketPort';
 import type { ChallengePort } from '../port/ChallengePort';
 import type { InvitationRepository } from '../port/InvitationRepository';
 import type { InvitationHashPort } from '../port/InvitationSecurity';
-import type { RegistrationPolicyRecord, RegistrationPolicyRepository } from '../port/RegistrationPolicyRepository';
-import type { ReturnTargetPort, SignedReturnTarget } from '../port/ReturnTargetPort';
+import type { RegistrationPolicyRepository } from '../port/RegistrationPolicyRepository';
+import type { ReturnTargetPort } from '../port/ReturnTargetPort';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import type { SessionIssuer } from '../port/SessionIssuer';
 import type { InvitationFailure } from './InvitationFailure';
@@ -27,33 +26,7 @@ import type { InvitationGuard } from './InvitationGuard';
 import type { InvitationLookup } from './InvitationLookup';
 import type { InvitationRedeemer } from './InvitationRedeemer';
 import { returnDestination } from './ReturnDestination';
-
-export interface LoadedInvitationResolution {
-  readonly invitation: Invitation;
-  readonly target: 'console' | 'storefront';
-  readonly principal: string | null;
-  readonly mobileCiphertext: string | null;
-  readonly organizationName: string;
-  readonly policy: RegistrationPolicyRecord | null;
-}
-
-interface PreparedInvitationProof {
-  readonly challenge: string;
-  readonly code: string;
-  readonly codeEnvelope: CipherEnvelope;
-  readonly destinationEnvelope: CipherEnvelope;
-}
-
-export interface PreparedInvitationResolution {
-  readonly loaded: LoadedInvitationResolution;
-  readonly token: string;
-  readonly claim: string;
-  readonly browser: Buffer;
-  readonly device: Buffer;
-  readonly destination: SignedReturnTarget;
-  readonly authorization: Readonly<{ transaction: AuthTransaction; stateHash: string; nonceHash: string; challenge: string }>;
-  readonly proof?: PreparedInvitationProof;
-}
+import type { LoadedInvitationResolution, PreparedInvitationResolution } from './InvitationResolution';
 
 export class ResolveInvitation {
   constructor(
@@ -248,6 +221,8 @@ export class ResolveInvitation {
     this.telemetry.metrics.count('identity_invitation_failure_total', 1, { ...base, result: 'failure', errorCode });
   }
 }
+
+export type { LoadedInvitationResolution, PreparedInvitationResolution } from './InvitationResolution';
 
 function invitationInput(request: OperationRequest): IdentityInvitationsResolveBody {
   return bodyRecord(request.input) as IdentityInvitationsResolveBody;

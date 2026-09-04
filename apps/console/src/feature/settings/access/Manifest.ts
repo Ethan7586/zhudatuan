@@ -4,5 +4,5 @@ export const AccessManifest = defineComponent({
   component: 'access',
   navigationids: ['groupadmin', 'malladmin'],
   routes: [{ routeid: 'consoleaccess' }],
-  load: () => import('./AccessRoute'),
+  load: () => import('./route/AccessRoute'),
 });

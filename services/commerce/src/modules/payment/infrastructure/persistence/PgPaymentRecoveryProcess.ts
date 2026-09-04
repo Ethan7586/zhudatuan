@@ -4,7 +4,7 @@ import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/datab
 import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
 import type { PaymentGateway } from '../../application/port/PaymentGateway';
 import { PaymentReference } from '../../domain/model/PaymentReference';
-import { PaymentSettlement, type PaymentHoldReleaser } from './PaymentSettlement';
+import { PaymentSettlement } from './PaymentSettlement';
 import { RefundPlanner } from '../../infrastructure/persistence/RefundPlanner';
 import { RefundSettlement } from './RefundSettlement';
 import { PaymentLifecycle } from '../../domain/policy/PaymentLifecycle';
@@ -20,18 +20,9 @@ import {
   type IntentTarget,
   type ProviderObservation,
 } from './PaymentRecoveryPersistence';
-import type { PaymentJobOrderPort, PaymentOrderPort } from '../../../order/public/index';
-import type { ProviderOperationPort } from '../../../channel/public/index';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { PaymentRecoveryExecution, PaymentRecoveryProcess } from '../../application/port/PaymentRecoveryProcess';
-
-export interface PaymentRecoveryDependencies {
-  readonly settlement: PaymentSettlement;
-  readonly refundSettlement: RefundSettlement;
-  readonly orders: PaymentJobOrderPort & PaymentOrderPort;
-  readonly operations: Pick<ProviderOperationPort, 'record' | 'update'>;
-  readonly holds: Pick<PaymentHoldReleaser, 'release'>;
-}
+import { paymentRecoveryOptions as options, type PaymentRecoveryDependencies } from './PaymentRecoveryContext';
 export class PgPaymentRecoveryProcess implements PaymentRecoveryProcess {
   private readonly refunds: RefundPlanner;
   private readonly lifecycle = new PaymentLifecycle();
@@ -254,6 +245,4 @@ export class PgPaymentRecoveryProcess implements PaymentRecoveryProcess {
   }
 }
 
-function options(execution: PaymentRecoveryExecution) {
-  return { tenant: execution.scope, membership: '', scope: execution.scope, actor: 'job:payment', trace: execution.trace, operation: 'job.payment', workload: 'jobs' as const, signal: execution.signal, deadline: execution.deadline };
-}
+export type { PaymentRecoveryDependencies } from './PaymentRecoveryContext';

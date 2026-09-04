@@ -35,7 +35,7 @@ describe('Dialog', () => {
 
     await user.click(screen.getByRole('button', { name: '打开确认框' }));
     expect(await screen.findByRole('dialog', { name: '确认操作' })).toBeTruthy();
-    expect((screen.getByRole('button', { name: '关闭' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: '关闭' }).disabled).toBe(true);
 
     await user.keyboard('{Escape}');
     expect(screen.getByRole('dialog', { name: '确认操作' })).toBeTruthy();

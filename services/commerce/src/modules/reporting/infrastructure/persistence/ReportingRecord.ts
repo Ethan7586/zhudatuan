@@ -1,5 +1,5 @@
 import type { ExportFilterValue, ExportJob, ExportReport } from '../../domain/model/ExportJob';
-import type { CockpitSummary, Metric, MetricRow } from '../../domain/model/Metric';
+import type { CockpitProduct, CockpitSummary, Metric, MetricRow } from '../../domain/model/Metric';
 
 type DatabaseTime = string | Date;
 
@@ -59,7 +59,7 @@ export function metricRow(row: MetricRecord): MetricRow {
   });
 }
 
-export function cockpitSummary(summary: CockpitSummary): CockpitSummary {
+export function cockpitSummary(summary: CockpitSummary, products: readonly CockpitProduct[] = summary.sales.topProducts): CockpitSummary {
   return Object.freeze({
     ...summary,
     sales: Object.freeze({
@@ -70,7 +70,7 @@ export function cockpitSummary(summary: CockpitSummary): CockpitSummary {
       trend: Object.freeze(summary.sales.trend.map((row) => Object.freeze({ ...row }))),
       weeklyTrend: Object.freeze(summary.sales.weeklyTrend.map((row) => Object.freeze({ ...row }))),
       categories: Object.freeze(summary.sales.categories.map((row) => Object.freeze({ ...row }))),
-      topProducts: Object.freeze([...summary.sales.topProducts]),
+      topProducts: Object.freeze(products.map((row) => Object.freeze({ ...row }))),
       malls: Object.freeze(summary.sales.malls.map((row) => Object.freeze({ ...row }))),
       events: Object.freeze(summary.sales.events.map((event) => Object.freeze({ ...event, time: utcTime(event.time) }))),
       insights: Object.freeze(summary.sales.insights.map((insight) => Object.freeze({ ...insight }))),

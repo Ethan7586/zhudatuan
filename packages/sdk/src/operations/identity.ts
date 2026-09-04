@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindEventOperation, bindOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 import { identityClientSchema } from '@shop/contract/identityschema';
 import { defineScopedOperation } from '../ScopedOperationDescriptor';
 
@@ -41,6 +41,7 @@ export const IDENTITY_OPERATION_IDS = Object.freeze([
   "identity.links.read",
   "identity.links.create",
   "identity.links.revoke",
+  "identity.providers.center.read",
   "identity.providers.manage",
   "identity.providers.test",
 ] as const satisfies readonly OperationId[]);
@@ -80,6 +81,7 @@ export interface IdentityOperations {
   readonly linksRead: OperationMethod<"identity.links.read">;
   readonly linksCreate: OperationMethod<"identity.links.create">;
   readonly linksRevoke: OperationMethod<"identity.links.revoke">;
+  readonly providersCenterRead: OperationMethod<"identity.providers.center.read">;
   readonly providersManage: OperationMethod<"identity.providers.manage">;
   readonly providersTest: OperationMethod<"identity.providers.test">;
 }
@@ -121,6 +123,7 @@ export function createIdentityOperations(client: OperationExecutor): IdentityOpe
     linksRead: bindLinksRead(client),
     linksCreate: bindLinksCreate(client),
     linksRevoke: bindLinksRevoke(client),
+    providersCenterRead: bindProvidersCenterRead(client),
     providersManage: bindProvidersManage(client),
     providersTest: bindProvidersTest(client),
   }); }
@@ -260,6 +263,10 @@ function bindLinksCreate(client: OperationExecutor): OperationMethod<"identity.l
 export function createFetchIdentityLinksRevoke(baseUrl: string): OperationMethod<"identity.links.revoke"> { return bindLinksRevoke(new ApiClient(baseUrl, new FetchTransport())); }
 
 function bindLinksRevoke(client: OperationExecutor): OperationMethod<"identity.links.revoke"> { return bindOperation(client, defineScopedOperation({ ...{"id":"identity.links.revoke","method":"DELETE","path":"/api/v1/identity/links/{linkid}","audience":"public","targets":["console","storefront"],"responseMode":"empty","idempotent":false,"timeout":800,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CONTENT_TYPE_UNSUPPORTED","CONTRACT_VERSION_UNSUPPORTED","CSRF_TOKEN_INVALID","DEADLINE_EXCEEDED","FEDERATION_LINK_REQUIRED","IDEMPOTENCY_CONFLICT","IDEMPOTENCY_KEY_REQUIRED","INTERNAL_ERROR","ORIGIN_DENIED","ORIGIN_REQUIRED","PERMISSION_DENIED","RATE_LIMITED","REQUEST_BODY_TOO_LARGE","REQUEST_JSON_INVALID","SCOPE_DENIED","STEPUP_REQUIRED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, ...identityClientSchema("identity.links.revoke") })); }
+
+export function createFetchIdentityProvidersCenterRead(baseUrl: string): OperationMethod<"identity.providers.center.read"> { return bindProvidersCenterRead(new ApiClient(baseUrl, new FetchTransport())); }
+
+function bindProvidersCenterRead(client: OperationExecutor): OperationMethod<"identity.providers.center.read"> { return bindOperation(client, defineScopedOperation({ ...{"id":"identity.providers.center.read","method":"GET","path":"/api/v1/identity/providers/center","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":300,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CAPABILITY_DENIED","CONTRACT_VERSION_UNSUPPORTED","DEADLINE_EXCEEDED","INTERNAL_ERROR","PERMISSION_DENIED","RATE_LIMITED","SCOPE_DENIED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, ...identityClientSchema("identity.providers.center.read") })); }
 
 export function createFetchIdentityProvidersManage(baseUrl: string): OperationMethod<"identity.providers.manage"> { return bindProvidersManage(new ApiClient(baseUrl, new FetchTransport())); }
 

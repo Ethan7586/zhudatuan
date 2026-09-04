@@ -5,7 +5,7 @@ import type { ProviderInstance, ProviderInstanceValue } from '../../domain/model
 export interface ProviderSummary {
   readonly id: string;
   readonly type: ProviderInstanceValue['type'];
-  readonly status: ProviderInstanceValue['status'];
+  readonly status: 'enabled';
 }
 
 export interface ProviderRepository {

@@ -111,6 +111,15 @@ const contractChecksum = hash(JSON.stringify({ openapi, events: eventArtifact, p
 await emit(resolve(root, 'packages/contract/openapi.json'), `${JSON.stringify(openapi, null, 2)}\n`);
 await emit(resolve(root, 'packages/contract/events.json'), `${JSON.stringify(eventArtifact, null, 2)}\n`);
 await emit(resolve(root, 'packages/contract/src/operations/CommerceCatalog.ts'), operationSource(operations));
+await emit(resolve(root, 'packages/contract/src/OperationPolicyCatalog.ts'), operationPolicySource(operations));
+await emit(
+  resolve(root, 'packages/contract/src/OperationIds.ts'),
+  identifierSource(
+    'OP',
+    operations.map(({ id }) => id),
+    'definitions/operations.yml'
+  )
+);
 await emit(resolve(root, 'packages/contract/src/operations/CommerceSchemas.ts'), schemaSource(operations));
 await emit(resolve(root, 'packages/contract/src/operations/IdentityClientSchemas.ts'), identityClientSchemaSource(operations));
 await emit(resolve(root, 'packages/contract/src/events/CommerceEvents.ts'), eventSource(events));
@@ -119,6 +128,14 @@ await emit(resolve(root, 'packages/contract/src/ContractIdentity.ts'), contractI
 await emit(resolve(root, 'packages/contract/src/ErrorContract.ts'), errorSource(errorCatalog));
 await emit(resolve(root, 'packages/presentation/src/generated/ErrorPolicy.ts'), errorPolicySource(errorCatalog));
 await emit(resolve(root, 'packages/authz/src/PermissionCatalog.ts'), permissionSource(permissions));
+await emit(
+  resolve(root, 'packages/authz/src/PermissionIds.ts'),
+  identifierSource(
+    'PERM',
+    permissions.map(({ code }) => code),
+    'packages/contract/definitions/permissions.yml'
+  )
+);
 await emit(resolve(root, 'packages/sdk/src/operations/CommerceClient.ts'), sdkSource(operations));
 for (const [domain, source] of sdkDomainSources(operations)) await emit(resolve(root, `packages/sdk/src/operations/${domain}.ts`), source);
 await emit(resolve(root, 'services/commerce/src/foundation/interface/OperationController.ts'), operationControllerSource(operations));
@@ -401,6 +418,24 @@ function permissionSource(values: readonly PermissionDefinition[]): string {
   return `// Generated from packages/contract/definitions/permissions.yml. Do not edit.\nimport type { PermissionDefinition } from './Permission';\n\nexport const PERMISSION_CATALOG = Object.freeze(${JSON.stringify(values, null, 2)} as const satisfies readonly PermissionDefinition[]);\nconst byCode: ReadonlyMap<string, PermissionDefinition> = new Map(PERMISSION_CATALOG.map((permission) => [permission.code, permission]));\nexport function permissionDefinition(code: string): PermissionDefinition { const permission=byCode.get(code); if(!permission) throw new Error('PERMISSION_UNKNOWN'); return permission; }\n`;
 }
 
+function identifierSource(prefix: 'OP' | 'PERM', values: readonly string[], source: string): string {
+  const declarations = values.map((value) => `export const ${prefix}_${value.toUpperCase().replace(/[^A-Z0-9]+/g, '_')} = ${JSON.stringify(value)} as const;`).join('\n');
+  return `// Generated from ${source}. Do not edit.\n${declarations}\n`;
+}
+
+function operationPolicySource(values: readonly OperationDefinition[]): string {
+  const policies = values.map(({ id, capability, permission, assuranceLevel, makerChecker, expectedVersion, errorUnion }) => ({
+    id,
+    capability,
+    permission,
+    assuranceLevel,
+    makerChecker,
+    expectedVersion,
+    actionProof: errorUnion.includes('ACTION_PROOF_REQUIRED'),
+  }));
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from './OperationCatalog';\n\nconst POLICIES = ${JSON.stringify(policies, null, 2)} as const;\nexport type ClientOperationPolicy = typeof POLICIES[number];\nconst BY_ID: ReadonlyMap<string, ClientOperationPolicy> = new Map(POLICIES.map((policy) => [policy.id, policy]));\nexport function operationPolicy(id: OperationId): ClientOperationPolicy { const policy = BY_ID.get(id); if (!policy) throw new Error('OPERATION_UNKNOWN'); return policy; }\n`;
+}
+
 function errorSource(catalog: ErrorCatalogDefinition): string {
   const rows = catalog.api.map((value) => `  ${JSON.stringify(value)},`).join('\n');
   const apiCodes = JSON.stringify(catalog.api.map(({ code }) => code));
@@ -501,4 +536,3 @@ function authorityVersion(value: unknown): string {
   if (typeof value !== 'string' || !/^\d+\.\d+\.\d+$/.test(value)) throw new Error('CONTRACT_AUTHORITY_VERSION_INVALID');
   return value;
 }
-

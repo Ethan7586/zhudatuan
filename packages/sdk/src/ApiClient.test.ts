@@ -145,7 +145,17 @@ describe('ApiClient contract identity', () => {
     vi.unstubAllGlobals();
     vi.useFakeTimers();
     const timeout = new ApiClient('https://shop.example', {
-      send: (request) => new Promise((_resolve, reject) => request.signal?.addEventListener('abort', () => reject(request.signal?.reason), { once: true })),
+      send: (request) =>
+        new Promise((_resolve, reject) =>
+          request.signal?.addEventListener(
+            'abort',
+            () => {
+              const reason: unknown = request.signal?.reason;
+              reject(reason instanceof Error ? reason : new Error('REQUEST_ABORTED', { cause: reason }));
+            },
+            { once: true }
+          )
+        ),
     });
     const pending = createRuntimeOperations(timeout).healthLive({}, context());
     const timedOut = expect(pending).rejects.toMatchObject({ kind: 'transport', code: 'TIMEOUT', requestId: 'trace:1', retryable: true, operation: 'runtime.health.live' });

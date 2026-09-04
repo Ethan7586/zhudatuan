@@ -1,3 +1,5 @@
+import { OP_SUPPORT_MESSAGES_SEND } from '@shop/contract/ids';
+import { PERM_SUPPORT_MESSAGE_SEND } from '@shop/authz/ids';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
 import type { MessageDraft } from '../model/Message';
 import type { Ticket } from '../model/Ticket';
@@ -19,5 +21,5 @@ export class SendMessage {
 }
 
 export function canSendMessage(context: ConsoleContext, ticket: Ticket): boolean {
-  return ticket.state !== 'closed' && context.session.csrf !== undefined && context.session.permissions.includes('support.message.send') && context.session.capabilities.includes('support.messages.send');
+  return ticket.state !== 'closed' && context.session.csrf !== undefined && context.session.permissions.includes(PERM_SUPPORT_MESSAGE_SEND) && context.session.capabilities.includes(OP_SUPPORT_MESSAGES_SEND);
 }

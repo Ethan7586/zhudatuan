@@ -65,6 +65,14 @@ export interface InvitationListRecord extends InvitationCreatedRecord {
   readonly revoke_reason: string | null;
 }
 
+export interface InvitationReadRecord extends InvitationCreatedRecord {
+  readonly issuer_membership_id: string;
+  readonly issuer_access_version: number;
+  readonly revoked_at: string | null;
+  readonly revoked_by: string | null;
+  readonly revoke_reason: string | null;
+}
+
 export interface InvitationRevokedRecord {
   readonly id: string;
   readonly kind: InvitationKind;
@@ -84,7 +92,7 @@ export interface InvitationRepository {
   claim(context: WriteTransactionContext, id: string): Promise<InvitationClaim>;
   bindRecipient(context: WriteTransactionContext, id: string, recipient: Buffer): Promise<InvitationClaim>;
   create(context: WriteTransactionContext, invitation: NewInvitation): Promise<InvitationCreatedRecord>;
-  read(context: ReadTransactionContext, filter: InvitationFilter): Promise<readonly InvitationListRecord[]>;
+  read(context: ReadTransactionContext, filter: InvitationFilter): Promise<readonly InvitationReadRecord[]>;
   revoke(context: WriteTransactionContext, id: string, actor: string, reason: string, version: number): Promise<InvitationRevokedRecord>;
   reserve(
     context: WriteTransactionContext,

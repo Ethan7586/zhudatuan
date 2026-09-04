@@ -50,8 +50,9 @@ describe('single-use-case Handler contract', () => {
       expect(source).not.toMatch(/PgTransactionAccess|DatabasePool|QueryResult|PoolClient/);
     });
 
-    it('is assembled exactly once by its owning module', () => {
-      const module = readFileSync(modulePath, 'utf8');
+    it('is assembled exactly once inside its owning module composition boundary', () => {
+      const assemblyPath = join(root, 'services/commerce/src/modules', operation.owner, 'application/service/OperationAssembly.ts');
+      const module = [modulePath, assemblyPath].filter(existsSync).map((path) => readFileSync(path, 'utf8')).join('\n');
       expect(module.match(new RegExp(`new ${handlerName}\\s*\\(`, 'g'))).toHaveLength(1);
       expect(module).toMatch(new RegExp(`from ['\"][^'\"]*${handlerName}['\"]`));
     });

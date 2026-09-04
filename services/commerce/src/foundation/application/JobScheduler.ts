@@ -12,4 +12,5 @@ export interface ScheduledJob {
 
 export interface JobScheduler {
   schedule(context: WriteTransactionContext, job: ScheduledJob): Promise<void>;
+  cancel(context: WriteTransactionContext, kind: string, resource: string): Promise<void>;
 }

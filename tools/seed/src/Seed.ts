@@ -7,6 +7,7 @@ import { localSecret } from './LocalSecrets';
 import { assertLocalOwnership, ensureLocalOwner, LOCAL_OWNER } from './LocalOwner';
 import { ensureLocalChecker } from './LocalChecker';
 import { assertLocalBenefitLedger, ensureLocalBenefits } from './LocalBenefits';
+import { syncMemberProjection } from './MemberProjection';
 
 const environment = localSeedEnvironment();
 const [connectionString, password, identityKey] = await Promise.all([localSecret(environment.adminDatabaseConnectionRef), localSecret(environment.ethanPasswordRef), localSecret(environment.identityKeyRef)]);
@@ -46,6 +47,7 @@ try {
     where id=$1 and principal_id=$4`,
     [LOCAL_OWNER.member, mobileEnvelope.ciphertext, mobileEnvelope.fingerprint, principalId]
   );
+  await syncMemberProjection(client, LOCAL_OWNER.member);
   await client.query("delete from identity.credential where principal_id=$1 and provider in('password','otp')", [principalId]);
   await client.query(
     `insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,rotated_at,created_at)

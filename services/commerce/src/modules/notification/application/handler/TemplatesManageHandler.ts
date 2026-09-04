@@ -36,6 +36,7 @@ export class TemplatesManageHandler implements OperationHandler<'notification.te
       subject: template.subject,
       body: template.body,
       status: template.state,
+      expectedVersion: context.expectedVersion ?? 0,
     });
     if (!saved) throw new Error('NOTIFICATION_TEMPLATE_ID_CONFLICT');
     if (!saved.matches) throw new Error('NOTIFICATION_TEMPLATE_IMMUTABLE_OR_TRANSITION_INVALID');

@@ -6,7 +6,9 @@ import { ExperiencePage } from '../view/ExperiencePage';
 import { useApplicationViewModel } from '../viewmodel/ApplicationViewModel';
 import '../view/Workspace.css';
 import '../view/Table.css';
+import '../view/TableActions.css';
 import '../view/Dialogs.css';
+import '../view/ActionDialog.css';
 import '../view/Responsive.css';
 
 export function Component() {

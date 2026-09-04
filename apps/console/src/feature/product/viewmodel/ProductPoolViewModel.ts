@@ -42,13 +42,39 @@ export function useProductPoolViewModel(open: boolean, context: ConsoleContext, 
   const [operation, setOperation] = useState<ProductPoolViewModel['operation']>('allocate');
   const selected = pools.find((pool) => pool.id === selectedid) ?? pools[0];
   const target = targetscope || malls[0]?.id || context.scope.id;
-  const mutation = useMutation({ mutationFn: () => {
-    if (selected === undefined) throw new Error('请先选择来源商品池');
-    const change = operation === 'allocate' ? { kind: operation, target, poolkind: kind, name } as const : { kind: operation, target } as const;
-    return dependencies.changePool.execute(command(context), selected, change);
-  }, onSuccess: () => { void query.refetch(); onDone(); } });
+  const mutation = useMutation({
+    mutationFn: () => {
+      if (selected === undefined) throw new Error('请先选择来源商品池');
+      const change = operation === 'allocate' ? ({ kind: operation, target, poolkind: kind, name } as const) : ({ kind: operation, target } as const);
+      return dependencies.changePool.execute(command(context), selected, change);
+    },
+    onSuccess: () => {
+      void query.refetch();
+      onDone();
+    },
+  });
   const failure = mutation.error ?? query.error;
-  return Object.freeze({ open, pools, malls, ...(selected === undefined ? {} : { selected }), target, kind, name, operation, loading: query.isPending, submitting: mutation.isPending, ...(failure === null ? {} : { error: presentError(failure).message }), select, setTarget, setKind, setName, setOperation, submit: () => { if (!mutation.isPending) mutation.mutate(); } });
+  return Object.freeze({
+    open,
+    pools,
+    malls,
+    ...(selected === undefined ? {} : { selected }),
+    target,
+    kind,
+    name,
+    operation,
+    loading: query.isPending,
+    submitting: mutation.isPending,
+    ...(failure === null ? {} : { error: presentError(failure).message }),
+    select,
+    setTarget,
+    setKind,
+    setName,
+    setOperation,
+    submit: () => {
+      if (!mutation.isPending) mutation.mutate();
+    },
+  });
 }
 
 function visibleMall(context: ConsoleContext, scope: ConsoleContext['scopes'][number]): boolean {

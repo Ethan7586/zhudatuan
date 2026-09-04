@@ -68,6 +68,11 @@ capabilities:
     owner: identity
     permission: identity.link.manage
     audience: public
+  - code: identity.providers.center.read
+    kind: operation
+    owner: identity
+    permission: identity.provider.manage
+    audience: console
   - code: identity.providers.manage
     kind: operation
     owner: identity

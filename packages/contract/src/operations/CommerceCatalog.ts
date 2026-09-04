@@ -13979,7 +13979,7 @@ const definitions = [
       "brand"
     ],
     "assuranceLevel": "stepup",
-    "makerChecker": false,
+    "makerChecker": true,
     "originPolicy": "sameorigin",
     "csrfPolicy": "required",
     "responseMode": "json",
@@ -13989,6 +13989,9 @@ const definitions = [
     "requestSchema": "NotificationTemplatesManageInput",
     "responseSchema": "NotificationTemplatesManageOutput",
     "errorUnion": [
+      "ACTION_PROOF_INVALID",
+      "ACTION_PROOF_REPLAYED",
+      "ACTION_PROOF_REQUIRED",
       "AUTHENTICATION_REQUIRED",
       "AUTHORIZATION_DENIED",
       "CAPABILITY_DENIED",
@@ -14001,6 +14004,7 @@ const definitions = [
       "IDEMPOTENCY_CONFLICT",
       "IDEMPOTENCY_KEY_REQUIRED",
       "INTERNAL_ERROR",
+      "MAKER_CHECKER_SEPARATION_REQUIRED",
       "ORIGIN_REQUIRED",
       "PERMISSION_DENIED",
       "RATE_LIMITED",
@@ -14166,7 +14170,7 @@ const definitions = [
       "brand"
     ],
     "assuranceLevel": "stepup",
-    "makerChecker": false,
+    "makerChecker": true,
     "originPolicy": "sameorigin",
     "csrfPolicy": "required",
     "responseMode": "json",
@@ -14176,6 +14180,9 @@ const definitions = [
     "requestSchema": "NotificationAnnouncementsManageInput",
     "responseSchema": "NotificationAnnouncementsManageOutput",
     "errorUnion": [
+      "ACTION_PROOF_INVALID",
+      "ACTION_PROOF_REPLAYED",
+      "ACTION_PROOF_REQUIRED",
       "AUTHENTICATION_REQUIRED",
       "AUTHORIZATION_DENIED",
       "CAPABILITY_DENIED",
@@ -14188,6 +14195,7 @@ const definitions = [
       "IDEMPOTENCY_CONFLICT",
       "IDEMPOTENCY_KEY_REQUIRED",
       "INTERNAL_ERROR",
+      "MAKER_CHECKER_SEPARATION_REQUIRED",
       "ORIGIN_REQUIRED",
       "PERMISSION_DENIED",
       "RATE_LIMITED",
@@ -14294,7 +14302,7 @@ const definitions = [
       "brand"
     ],
     "assuranceLevel": "stepup",
-    "makerChecker": false,
+    "makerChecker": true,
     "originPolicy": "sameorigin",
     "csrfPolicy": "required",
     "responseMode": "json",
@@ -14304,6 +14312,9 @@ const definitions = [
     "requestSchema": "RiskPoliciesManageInput",
     "responseSchema": "RiskPoliciesManageOutput",
     "errorUnion": [
+      "ACTION_PROOF_INVALID",
+      "ACTION_PROOF_REPLAYED",
+      "ACTION_PROOF_REQUIRED",
       "AUTHENTICATION_REQUIRED",
       "AUTHORIZATION_DENIED",
       "CAPABILITY_DENIED",
@@ -14316,6 +14327,7 @@ const definitions = [
       "IDEMPOTENCY_CONFLICT",
       "IDEMPOTENCY_KEY_REQUIRED",
       "INTERNAL_ERROR",
+      "MAKER_CHECKER_SEPARATION_REQUIRED",
       "ORIGIN_REQUIRED",
       "PERMISSION_DENIED",
       "RATE_LIMITED",
@@ -14363,7 +14375,7 @@ const definitions = [
       "brand"
     ],
     "assuranceLevel": "stepup",
-    "makerChecker": false,
+    "makerChecker": true,
     "originPolicy": "sameorigin",
     "csrfPolicy": "required",
     "responseMode": "json",
@@ -14373,6 +14385,9 @@ const definitions = [
     "requestSchema": "RiskCasesReviewInput",
     "responseSchema": "RiskCasesReviewOutput",
     "errorUnion": [
+      "ACTION_PROOF_INVALID",
+      "ACTION_PROOF_REPLAYED",
+      "ACTION_PROOF_REQUIRED",
       "AUTHENTICATION_REQUIRED",
       "AUTHORIZATION_DENIED",
       "CAPABILITY_DENIED",
@@ -14385,6 +14400,7 @@ const definitions = [
       "IDEMPOTENCY_CONFLICT",
       "IDEMPOTENCY_KEY_REQUIRED",
       "INTERNAL_ERROR",
+      "MAKER_CHECKER_SEPARATION_REQUIRED",
       "ORIGIN_REQUIRED",
       "PERMISSION_DENIED",
       "RATE_LIMITED",
@@ -16022,6 +16038,59 @@ const definitions = [
     "requirements": [
       "MVPGROUPSETTING",
       "MVPMALLSETTING"
+    ]
+  },
+  {
+    "id": "identity.providers.center.read",
+    "method": "GET",
+    "path": "/api/v1/identity/providers/center",
+    "module": "identity",
+    "audience": "console",
+    "targets": [
+      "console"
+    ],
+    "permission": "identity.provider.manage",
+    "capability": "identity.providers.center.read",
+    "scopeKinds": [
+      "platform",
+      "enterprise",
+      "mall"
+    ],
+    "assuranceLevel": "session",
+    "makerChecker": false,
+    "originPolicy": "none",
+    "csrfPolicy": "none",
+    "responseMode": "json",
+    "cachePolicy": "private",
+    "targetPolicy": "exact",
+    "idempotencyPolicy": "none",
+    "requestSchema": "IdentityProvidersCenterReadInput",
+    "responseSchema": "IdentityProvidersCenterReadOutput",
+    "errorUnion": [
+      "AUTHENTICATION_REQUIRED",
+      "AUTHORIZATION_DENIED",
+      "CAPABILITY_DENIED",
+      "CONTRACT_VERSION_UNSUPPORTED",
+      "DEADLINE_EXCEEDED",
+      "INTERNAL_ERROR",
+      "PERMISSION_DENIED",
+      "RATE_LIMITED",
+      "SCOPE_DENIED",
+      "URL_SENSITIVE_DATA_FORBIDDEN",
+      "VALIDATION_FAILED"
+    ],
+    "idempotencyScope": "none",
+    "expectedVersion": "none",
+    "timeout": 300,
+    "rateClass": "read",
+    "risk": "elevated",
+    "resourceResolver": "none",
+    "resourceParameter": null,
+    "idempotent": true,
+    "requirements": [
+      "MVPGROUPSETTING",
+      "MVPMALLSETTING",
+      "MVPIDENTITY"
     ]
   },
   {

@@ -1,5 +1,20 @@
 import type { StorefrontHandle } from '@shop/contract';
-import { StorefrontClient } from '../shared/api/Client';
+import { storefrontClientEnvironment } from '@shop/config/client';
+import { createFetchBenefit } from '@shop/sdk/benefit';
+import { createFetchCart } from '@shop/sdk/cart';
+import { createFetchCheckout } from '@shop/sdk/checkout';
+import { createFetchFinance } from '@shop/sdk/finance';
+import { createFetchFulfillment } from '@shop/sdk/fulfillment';
+import { createFetchIdentity } from '@shop/sdk/identity';
+import { createFetchMember } from '@shop/sdk/member';
+import { createFetchNotification } from '@shop/sdk/notification';
+import { createFetchOrder } from '@shop/sdk/order';
+import { createFetchPayment } from '@shop/sdk/payment';
+import { createFetchReferral } from '@shop/sdk/referral';
+import { createFetchStorefront } from '@shop/sdk/storefront';
+import { createFetchSupport } from '@shop/sdk/support';
+import { createFetchVoucher } from '@shop/sdk/voucher';
+import { createStorefrontContext } from '../shared/api/RequestContext';
 import { SessionGateway } from '../entity/session';
 import { AccountGateway } from '../feature/account/infrastructure/AccountGateway';
 import { AfterSaleGateway } from '../feature/aftersale/infrastructure/AfterSaleGateway';
@@ -41,19 +56,43 @@ export interface Dependencies {
 }
 
 export function createDependencies(handle: StorefrontHandle): Dependencies {
-  const client = new StorefrontClient(handle);
-  const context = client.context.bind(client);
-  const api = client.commerce;
+  const environment = storefrontClientEnvironment();
+  const origin = environment.apiOrigin;
+  const context = createStorefrontContext(environment.clientVersion, handle);
+  const api = Object.freeze({
+    benefit: createFetchBenefit(origin),
+    cart: createFetchCart(origin),
+    checkout: createFetchCheckout(origin),
+    finance: createFetchFinance(origin),
+    fulfillment: createFetchFulfillment(origin),
+    identity: createFetchIdentity(origin),
+    member: createFetchMember(origin),
+    notification: createFetchNotification(origin),
+    order: createFetchOrder(origin),
+    payment: createFetchPayment(origin),
+    referral: createFetchReferral(origin),
+    storefront: createFetchStorefront(origin),
+    support: createFetchSupport(origin),
+    voucher: createFetchVoucher(origin),
+  });
   return Object.freeze({
     session: new SessionGateway(api.identity, context),
     account: new AccountGateway(api.member, api.identity, context),
-    aftersale: new AfterSaleGateway(api.order, context), benefit: new BenefitGateway(api.benefit, context),
-    cart: new CartGateway(api.cart, context), catalog: new CatalogGateway(api.storefront, context),
-    checkout: new CheckoutGateway(api.checkout, api.order, context), home: new HomeGateway(api.storefront, context),
-    notification: new NotificationGateway(api.notification, context), invoice: new InvoiceGateway(api.finance, context),
-    order: new OrderGateway(api.order, api.fulfillment, context), payment: new PaymentGateway(api.payment, context),
-    product: new ProductGateway(api.storefront, context), referral: new ReferralGateway(api.referral, context),
-    security: new SecurityGateway(api.identity, context), stepup: new StepupGateway(api.identity, context),
-    support: new SupportGateway(api.support, context), voucher: new VoucherGateway(api.voucher, context),
+    aftersale: new AfterSaleGateway(api.order, context),
+    benefit: new BenefitGateway(api.benefit, context),
+    cart: new CartGateway(api.cart, context),
+    catalog: new CatalogGateway(api.storefront, context),
+    checkout: new CheckoutGateway(api.checkout, api.order, context),
+    home: new HomeGateway(api.storefront, context),
+    notification: new NotificationGateway(api.notification, context),
+    invoice: new InvoiceGateway(api.finance, context),
+    order: new OrderGateway(api.order, api.fulfillment, context),
+    payment: new PaymentGateway(api.payment, context),
+    product: new ProductGateway(api.storefront, context),
+    referral: new ReferralGateway(api.referral, context),
+    security: new SecurityGateway(api.identity, context),
+    stepup: new StepupGateway(api.identity, context),
+    support: new SupportGateway(api.support, context),
+    voucher: new VoucherGateway(api.voucher, context),
   });
 }

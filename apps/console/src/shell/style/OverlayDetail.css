@@ -1,0 +1,124 @@
+/* Drawers, dialogs and review surfaces. Portals live outside the console root. */
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdraweroverlay, .orderdraweroverlay, .financedraweroverlay, .dialogbackdrop) {
+  background: color-mix(in srgb, var(--sw-brand-ink) 48%, transparent);
+  backdrop-filter: blur(3px) saturate(110%);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdraweroverlay, .orderdraweroverlay, .financedraweroverlay) {
+  z-index: 60;
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawer, .orderdrawer, .financedrawer, .dialogpanel) {
+  border-color: var(--sw-border);
+  box-shadow: -22px 0 55px color-mix(in srgb, var(--sw-brand-ink) 24%, transparent);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawerheader, .orderdrawerheader, .financedrawerheader) {
+  position: relative;
+  overflow: hidden;
+  border-bottom-color: var(--sw-sidebar-top);
+  background: radial-gradient(circle at 80% 120%, color-mix(in srgb, var(--sw-brand) 28%, transparent), transparent 13rem), linear-gradient(135deg, var(--sw-brand-dark) 0%, var(--sw-brand-ink) 100%);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawerheader, .orderdrawerheader, .financedrawerheader)::after {
+  position: absolute;
+  right: -28px;
+  bottom: -60px;
+  width: 155px;
+  height: 155px;
+  border: 1px solid color-mix(in srgb, var(--sw-disabled) 14%, transparent);
+  border-radius: 50%;
+  content: '';
+  pointer-events: none;
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawerbody, .orderdrawerbody, .financedrawerbody) {
+  scrollbar-color: var(--sw-border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawerfooter, .orderdrawerfooter, .financedrawerfooter) {
+  border-top-color: var(--sw-border);
+  background: color-mix(in srgb, var(--sw-surface) 94%, transparent);
+  box-shadow: 0 -8px 22px color-mix(in srgb, var(--sw-brand-ink) 5%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawertabs, .orderdrawertabs) {
+  background: var(--sw-surface);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productblocker, .ordersummarynote, .financeimmutablealert, .financeproductionboundary) {
+  border-radius: 9px;
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--sw-warning) 70%, transparent);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) .dialogpanel {
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 28px 80px color-mix(in srgb, var(--sw-brand-ink) 30%, transparent);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) .dialogcontent > header {
+  border-bottom-color: var(--sw-border);
+  background: color-mix(in srgb, var(--sw-surface) 95%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) .dialogcontent > header h2 {
+  color: var(--sw-brand-ink, var(--sw-brand-ink));
+  letter-spacing: -0.02em;
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) .commandhint {
+  border-left-color: var(--sw-brand);
+  border-radius: 0 8px 8px 0;
+  background: var(--sw-brand-light);
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) .dialogpanel:has(.productcolumnpanel) {
+  width: min(30rem, calc(100vw - 24px));
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) .dialogpanel:has(.productbatchpreview) {
+  width: min(36rem, calc(100vw - 24px));
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1'])
+  :where(
+    .financedetailgrid dt,
+    .financedetailgrid dd,
+    .financeevidence dt,
+    .financeevidence dd,
+    .financeentrypreview,
+    .financeresultgrid dt,
+    .financeresultgrid dd,
+    .financechecklist strong,
+    .financechecklist small,
+    .financedrawerfooter > p
+  ) {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawerfooter button, .orderdrawerfooter button, .financedrawerfooter button):disabled {
+  border-color: var(--sw-border);
+  background: var(--sw-background);
+  color: var(--sw-muted);
+  box-shadow: none;
+  opacity: 0.68;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .consolelayout[data-visual-theme='console-v1'] .measuretabs button {
+    min-height: 28px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .grainbuttons button {
+    min-height: 30px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] :where(.businessinsights button, .auditlink) {
+    min-height: 24px;
+  }
+}

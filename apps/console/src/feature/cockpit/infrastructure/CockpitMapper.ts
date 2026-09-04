@@ -31,6 +31,7 @@ export class CockpitMapper {
           trend: Object.freeze(sales.trend.map((row) => Object.freeze(row))),
           weeklyTrend: Object.freeze(sales.weeklyTrend.map((row) => Object.freeze(row))),
           categories: Object.freeze(sales.categories.map((row) => Object.freeze(row))),
+          topProducts: Object.freeze(sales.topProducts.map((row) => Object.freeze(row))),
           malls: Object.freeze(sales.malls.map((row) => Object.freeze(row))),
           events: Object.freeze(sales.events.map((row) => Object.freeze(row))),
           insights: Object.freeze(sales.insights.map((row) => Object.freeze(row))),

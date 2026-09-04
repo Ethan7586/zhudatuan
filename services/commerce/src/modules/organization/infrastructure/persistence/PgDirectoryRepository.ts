@@ -5,12 +5,10 @@ import type { DirectoryRepository, DirectoryCounts, StagedSubject, CurrentDirect
 import type { DirectoryPage } from '../../application/port/DirectoryProvider';
 import { DirectoryConnection, type DirectoryConnectionValue } from '../../domain/model/DirectoryConnection';
 import type { SyncRun, SyncMode } from '../../domain/model/SyncRun';
-import { DirectorySubject } from '../../domain/model/DirectorySubject';
-import { DirectoryMembership } from '../../domain/model/DirectoryMembership';
-import { mapConnection, mapRun, type ConnectionRow, type ConnectionSummaryRow, type RunRow, type RunSummaryRow } from './DirectoryRecord';
-import { writeDirectoryOrganization } from './DirectoryOrganizationWriter';
-export class PgDirectoryRepository implements DirectoryRepository {
-  private readonly transactions = new PgTransactionAccess();
+import { mapConnection, mapRun, runSummary, type ConnectionRow, type ConnectionSummaryRow, type RunRow, type RunSummaryRow } from './DirectoryRecord';
+import { PgDirectorySubjectStore } from './PgDirectorySubjectStore';
+export class PgDirectoryRepository implements DirectoryRepository { private readonly transactions = new PgTransactionAccess();
+  private readonly subjects = new PgDirectorySubjectStore();
   async list(context: ReadTransactionContext, scope: string, after: string | null, limit: number) {
     const database = this.transactions.database(context);
     const result = await database.query<ConnectionSummaryRow>(
@@ -81,21 +79,7 @@ export class PgDirectoryRepository implements DirectoryRepository {
       from organization.syncrun where connection_id=$1 and ($2::uuid is null or id<$2) order by created_at desc,id desc limit $3`,
       [connection, after, limit]
     );
-    return Object.freeze(
-      result.rows.map((row) =>
-        Object.freeze({
-          ...row,
-          read_count: Number(row.read_count),
-          applied_count: Number(row.applied_count),
-          conflict_count: Number(row.conflict_count),
-          ignored_count: Number(row.ignored_count),
-          watermark: row.watermark?.toISOString() ?? null,
-          started_at: row.started_at?.toISOString() ?? null,
-          completed_at: row.completed_at?.toISOString() ?? null,
-          created_at: row.created_at.toISOString(),
-        })
-      )
-    );
+    return Object.freeze(result.rows.map(runSummary));
   }
   async createRun(context: WriteTransactionContext, connection: string, mode: SyncMode, key: string): Promise<SyncRun> {
     const database = this.transactions.database(context);
@@ -112,6 +96,35 @@ export class PgDirectoryRepository implements DirectoryRepository {
     if (!row) throw new Error('DIRECTORY_SYNC_CREATE_FAILED');
     return mapRun(row);
   }
+  async resumeRun(context: WriteTransactionContext, connection: string, source: string, key: string): Promise<SyncRun | null> {
+    const id = randomUUID();
+    const result = await this.transactions.database(context).query<RunRow>(
+      `insert into organization.syncrun(id,connection_id,provider_run_id,mode,state,cursor_ciphertext,created_at)
+      select $1,original.connection_id,$4,original.mode,'queued',case when original.mode='incremental' then connection.cursor_ciphertext else null end,clock_timestamp()
+      from organization.syncrun original join organization.directoryconnection connection on connection.id=original.connection_id
+      where original.id=$2 and original.connection_id=$3 and original.state in('failed','cancelled') and original.mode in('full','incremental')
+      on conflict(connection_id,provider_run_id) do update set provider_run_id=excluded.provider_run_id
+      returning id,connection_id,provider_run_id,mode,state,cursor_ciphertext,read_count,applied_count,conflict_count,ignored_count`,
+      [id, source, connection, key]
+    );
+    const row = result.rows[0];
+    return row ? mapRun(row) : null;
+  }
+  async cancelRun(context: WriteTransactionContext, connection: string, run: string): Promise<Readonly<Record<string, unknown>> | null> {
+    const result = await this.transactions.database(context).query<RunSummaryRow>(
+      `with changed as(update organization.syncrun set state='cancelled',completed_at=clock_timestamp()
+      where id=$1 and connection_id=$2 and state in('queued','running')
+      returning id,mode,state,read_count,applied_count,conflict_count,ignored_count,watermark,started_at,completed_at,created_at), selected as(
+      select id,mode,state,read_count,applied_count,conflict_count,ignored_count,watermark,started_at,completed_at,created_at from changed union all
+      select current.id,current.mode,current.state,current.read_count,current.applied_count,current.conflict_count,current.ignored_count,
+      current.watermark,current.started_at,current.completed_at,current.created_at from organization.syncrun current where current.id=$1
+      and current.connection_id=$2 and current.state='cancelled' and not exists(select 1 from changed))
+      select id,mode,state,read_count,applied_count,conflict_count,ignored_count,watermark,started_at,completed_at,created_at from selected`,
+      [run, connection]
+    );
+    const row = result.rows[0];
+    return row ? runSummary(row) : null;
+  }
   async startRun(context: WriteTransactionContext, run: string): Promise<SyncRun> {
     const database = this.transactions.database(context);
     const result = await database.query<RunRow>(
@@ -120,9 +133,14 @@ export class PgDirectoryRepository implements DirectoryRepository {
       [run]
     );
     const row = result.rows[0];
-    if (!row) throw new Error('DIRECTORY_SYNC_STATE_INVALID');
+    if (!row) {
+      const current = await database.query<{ state: string }>('select state from organization.syncrun where id=$1', [run]);
+      if (current.rows[0]?.state === 'cancelled') throw new Error('DIRECTORY_SYNC_CANCELLED');
+      throw new Error('DIRECTORY_SYNC_STATE_INVALID');
+    }
     return mapRun(row);
   }
+  async active(context: ReadTransactionContext, run: string): Promise<boolean> { return (await this.transactions.database(context).query("select 1 from organization.syncrun where id=$1 and state in('queued','running')", [run])).rowCount === 1; }
   async event(
     context: ReadTransactionContext,
     run: string
@@ -158,71 +176,20 @@ export class PgDirectoryRepository implements DirectoryRepository {
     return result.rowCount === 1;
   }
   async current(context: ReadTransactionContext, connection: string, hashes: readonly Buffer[]): Promise<ReadonlyMap<string, CurrentDirectorySubject>> {
-    const database = this.transactions.database(context);
-    if (hashes.length === 0) return new Map();
-    const result = await database.query<{
-      hash: string;
-      id: string;
-      status: string;
-      sourceversion: number;
-      missingcount: number;
-      membership: string | null;
-    }>(
-      `select encode(subject.subject_hash,'hex') hash,subject.id,subject.status,subject.source_version sourceversion,subject.missing_count missingcount,
-        (select membership.membership_id from organization.directorymembership membership where membership.subject_id=subject.id and membership.membership_id is not null order by membership.version desc limit 1) membership
-       from organization.directorysubject subject where subject.connection_id=$1 and subject.subject_hash=any($2::bytea[])`,
-      [connection, hashes]
-    );
-    return new Map(result.rows.map((row) => [row.hash, Object.freeze(row)]));
+    return this.subjects.current(context, connection, hashes);
   }
   async apply(context: WriteTransactionContext, connection: DirectoryConnection, subject: StagedSubject, kind: DirectoryApplyKind): Promise<void> {
-    const database = this.transactions.database(context);
-    if (subject.type === 'department') await writeDirectoryOrganization(database, connection, subject);
-    const stored = kind === 'conflict' ? 'conflict' : subject.status;
-    const entity = new DirectorySubject({ id: subject.id, connectionid: connection.id, hash: subject.hash, type: subject.type, status: stored, attributes: subject.attributes, sourceversion: subject.sourceversion, version: 0 });
-    await database.query(
-      `insert into organization.directorysubject(id,connection_id,subject_hash,type,status,attributes_ciphertext,source_version,missing_count,version)
-      values($1,$2,$3,$4,$5,$6,$7,0,0) on conflict(connection_id,subject_hash) do update set status=excluded.status,
-      attributes_ciphertext=excluded.attributes_ciphertext,source_version=excluded.source_version,missing_count=0,version=organization.directorysubject.version+1,
-      last_seen_at=clock_timestamp() where organization.directorysubject.source_version<=excluded.source_version`,
-      [entity.id, entity.connectionid, entity.hash, entity.type, entity.status, entity.attributes, entity.sourceversion]
-    );
-    if (subject.type === 'user') {
-      await database.query(
-        `update organization.directorymembership set status='inactive',version=version+1
-        where connection_id=$1 and subject_id=$2 and organization_id<>$3 and status='active'`,
-        [connection.id, subject.id, subject.organization]
-      );
-      const membership = new DirectoryMembership({
-        id: subject.id,
-        connectionid: connection.id,
-        subjectid: subject.id,
-        organizationid: subject.organization,
-        membershipid: subject.membership,
-        status: kind === 'conflict' ? 'conflict' : subject.membership === null ? 'pending' : subject.status === 'active' ? 'active' : 'inactive',
-        effectiveat: new Date().toISOString(),
-        expiresat: null,
-        sourceversion: subject.sourceversion,
-        version: 0,
-      });
-      await database.query(
-        `insert into organization.directorymembership(id,connection_id,subject_id,organization_id,membership_id,status,effective_at,source_version,version)
-        values($1,$2,$3,$4,$5,$6,clock_timestamp(),$7,0) on conflict(connection_id,subject_id,organization_id) do update set
-        membership_id=coalesce(organization.directorymembership.membership_id,excluded.membership_id),status=excluded.status,
-        source_version=excluded.source_version,version=organization.directorymembership.version+1
-        where organization.directorymembership.source_version<=excluded.source_version`,
-        [membership.id, membership.connectionid, membership.subjectid, membership.organizationid, membership.membershipid, membership.status, membership.sourceversion]
-      );
-    }
+    return this.subjects.apply(context, connection, subject, kind);
   }
-  async advance(context: WriteTransactionContext, run: string, page: DirectoryPage, counts: DirectoryCounts): Promise<void> {
+  async advance(context: WriteTransactionContext, run: string, page: DirectoryPage, counts: DirectoryCounts): Promise<boolean> {
     const database = this.transactions.database(context);
-    await database.query(
+    const result = await database.query(
       `update organization.syncrun set cursor_ciphertext=$2,read_count=read_count+$3,applied_count=applied_count+$4,
       conflict_count=conflict_count+$5,ignored_count=ignored_count+$6,watermark=clock_timestamp(),
       checksum=encode(public.digest(coalesce(checksum,'')||$7||':'||$8::text,'sha256'),'hex') where id=$1 and state='running'`,
       [run, page.cursor, counts.read, counts.applied, counts.conflicts, counts.ignored, page.eventid, page.version]
     );
+    return result.rowCount === 1;
   }
   async complete(context: WriteTransactionContext, run: string, connection: string, version: number, cursor: string | null): Promise<void> {
     const database = this.transactions.database(context);
@@ -249,20 +216,10 @@ export class PgDirectoryRepository implements DirectoryRepository {
     );
   }
   async departures(context: ReadTransactionContext, connection: string): Promise<readonly DirectoryDeparture[]> {
-    const database = this.transactions.database(context);
-    const result = await database.query<DirectoryDeparture>(
-      `select subject.id subject,membership.membership_id membership,membership.organization_id organization
-      from organization.directorysubject subject join organization.directorymembership membership on membership.subject_id=subject.id
-      where subject.connection_id=$1 and subject.type='user' and subject.missing_count>=2 and subject.status='active'
-        and membership.membership_id is not null and membership.status='active' order by subject.id limit 1000`,
-      [connection]
-    );
-    return Object.freeze(result.rows.map((row) => Object.freeze(row)));
+    return this.subjects.departures(context, connection);
   }
   async freeze(context: WriteTransactionContext, connection: string, subject: string): Promise<void> {
-    const database = this.transactions.database(context);
-    await database.query(`update organization.directorysubject set status='inactive',version=version+1 where id=$1 and connection_id=$2 and status='active'`, [subject, connection]);
-    await database.query(`update organization.directorymembership set status='inactive',version=version+1 where subject_id=$1 and connection_id=$2 and status='active'`, [subject, connection]);
+    return this.subjects.freeze(context, connection, subject);
   }
   async fail(context: WriteTransactionContext, run: string, code: string): Promise<void> {
     const database = this.transactions.database(context);

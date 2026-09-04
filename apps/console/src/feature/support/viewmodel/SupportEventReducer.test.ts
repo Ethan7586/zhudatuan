@@ -4,17 +4,38 @@ import type { Ticket } from '../model/Ticket';
 import { acceptSupportEvent, emptyEventLedger, reconcileQueue } from './SupportEventReducer';
 
 const ticket: Ticket = Object.freeze({
-  id: 'case:1', priority: 'normal', state: 'open', assignedAgentId: null,
-  responseDueAt: '2026-08-26T01:00:00Z', resolutionDueAt: '2026-08-27T00:00:00Z',
-  createdAt: '2026-08-26T00:00:00Z', updatedAt: '2026-08-26T00:00:00Z', version: 2,
-  conversationId: 'conversation:1', skill: 'general', memberId: 'member:1', orderId: null,
-  channel: 'inapp', subject: '配送咨询', referenceType: null, referenceId: null, unreadCount: 0, slaRisk: 'normal',
+  id: 'case:1',
+  priority: 'normal',
+  state: 'open',
+  assignedAgentId: null,
+  responseDueAt: '2026-08-26T01:00:00Z',
+  resolutionDueAt: '2026-08-27T00:00:00Z',
+  createdAt: '2026-08-26T00:00:00Z',
+  updatedAt: '2026-08-26T00:00:00Z',
+  version: 2,
+  conversationId: 'conversation:1',
+  skill: 'general',
+  memberId: 'member:1',
+  orderId: null,
+  channel: 'inapp',
+  subject: '配送咨询',
+  referenceType: null,
+  referenceId: null,
+  unreadCount: 0,
+  slaRisk: 'normal',
 });
 
-const event = (overrides: Partial<SupportEvent> = {}): SupportEvent => Object.freeze({
-  id: 'event:1', type: 'support.ticket.closed', scopeId: 'mall:1', ticketId: ticket.id,
-  conversationId: ticket.conversationId, version: 3, occurredAt: '2026-08-26T00:01:00Z', ...overrides,
-});
+const event = (overrides: Partial<SupportEvent> = {}): SupportEvent =>
+  Object.freeze({
+    id: 'event:1',
+    type: 'support.ticket.closed',
+    scopeId: 'mall:1',
+    ticketId: ticket.id,
+    conversationId: ticket.conversationId,
+    version: 3,
+    occurredAt: '2026-08-26T00:01:00Z',
+    ...overrides,
+  });
 
 describe('SupportEventReducer', () => {
   it('deduplicates event ids and rejects aggregate version rollback', () => {

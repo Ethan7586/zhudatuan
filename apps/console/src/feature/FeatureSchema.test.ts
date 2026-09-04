@@ -3,7 +3,7 @@ import { queryCondition } from '@shop/presentation';
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@shop/sdk';
 import { CockpitSchema } from './cockpit/infrastructure/CockpitSchema';
-import { DistributorPageSchema, LayerPageSchema } from './control/ControlSchema';
+import { DistributionPageSchema, PlatformPageSchema } from './control/infrastructure/ControlSchema';
 import { FinanceOverviewSchema } from './finance/infrastructure/OverviewSchema';
 import { EMPTY_ORDER_LIST_FILTER } from './order/model/OrderFilter';
 import { OrderPageSchema } from './order/infrastructure/OrderSchema';
@@ -59,8 +59,8 @@ describe('Console feature-owned response schemas', () => {
 
   it('rejects partial dashboard, control and finance payloads', () => {
     expect(() => CockpitSchema.parse({ items: [], count: 0 })).toThrow();
-    expect(() => LayerPageSchema.parse({ items: [{ id: 'platform:1' }], count: 1 })).toThrow();
-    expect(() => DistributorPageSchema.parse({ items: [{ id: 'distributor:1' }], count: 1 })).toThrow();
+    expect(() => PlatformPageSchema.parse({ items: [{ id: 'platform:1' }], count: 1 })).toThrow();
+    expect(() => DistributionPageSchema.parse({ items: [{ id: 'distributor:1' }], count: 1 })).toThrow();
     expect(() => FinanceOverviewSchema.parse({ items: [{ currency: 'CNY' }] })).toThrow();
   });
 

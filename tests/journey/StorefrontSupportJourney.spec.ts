@@ -13,7 +13,7 @@ storefrontJourney('storefront support journey', {
   sources: [
     'services/commerce/src/modules/support/infrastructure/persistence/PgConversationRepository.ts',
     'apps/storefront/src/feature/support/infrastructure/SupportGateway.ts',
-    'apps/storefront/src/feature/support/infrastructure/SupportEventSource.ts',
+    'apps/storefront/src/feature/support/application/ListenSupportEvents.ts',
   ],
   markers: [/attachment/, /conversation/, /member/, /Last-Event-ID|lastEventId/, /readstate/i],
 });

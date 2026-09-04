@@ -9,4 +9,5 @@ export type ChannelCommand = (
   | Readonly<{ kind: 'startsync'; draft: SyncDraft }>
   | Readonly<{ kind: 'cancelsync'; sync: string; version: number }>
   | Readonly<{ kind: 'replay'; operation: string; proof: string }>
-) & Readonly<{ identity: string }>;
+) &
+  Readonly<{ identity: string }>;

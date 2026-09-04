@@ -10,8 +10,8 @@ import { IDENTITY_SECURITY_KEYS, SECRET_STORE } from '../../foundation/infrastru
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { CSRF_PROTECTOR } from '../../foundation/security/CsrfProtector';
 import { RISK_GATE } from '../../foundation/security/RiskGate';
-import { ACTION_PROOF_PORT, IDENTITY_ACCESS_PORT, INVITATION_ACCESS_PORT } from '../access/public';
-import { IDENTITY_MEMBER_PORT, INVITATION_MEMBER_PORT } from '../member/public';
+import { ACTION_PROOF_PORT, IDENTITY_ACCESS_PORT, INVITATION_ACCESS_PORT, MEMBERSHIP_READ_PORT } from '../access/public';
+import { IDENTITY_MEMBER_PORT, INVITATION_MEMBER_PORT, MEMBER_READ_PORT } from '../member/public';
 import { IDENTITY_ORGANIZATION_PORT } from '../organization/public';
 import { AuthenticationService } from './application/service/AuthenticationService';
 import { OtpAuthenticator } from './application/service/OtpAuthenticator';
@@ -98,42 +98,7 @@ import { PgIdentityReadiness } from './infrastructure/persistence/PgIdentityRead
 import { PgIdentityPrincipal } from './infrastructure/persistence/PgIdentityPrincipal';
 import { PgIdentityRetention } from './infrastructure/persistence/PgIdentityRetention';
 import { MEMBER_IMPORT_IDENTITY_PORT, RUNTIME_IDENTITY_PORT } from './public';
-import { SessionsCreateHandler } from './application/handler/SessionsCreateHandler';
-import { SessionsCompleteHandler } from './application/handler/SessionsCompleteHandler';
-import { TicketsExchangeHandler } from './application/handler/TicketsExchangeHandler';
-import { SessionReadHandler } from './application/handler/SessionReadHandler';
-import { SessionDeleteHandler } from './application/handler/SessionDeleteHandler';
-import { SessionsReadHandler } from './application/handler/SessionsReadHandler';
-import { SessionsRevokeHandler } from './application/handler/SessionsRevokeHandler';
-import { MembershipsReadHandler } from './application/handler/MembershipsReadHandler';
-import { MembershipsSwitchHandler } from './application/handler/MembershipsSwitchHandler';
-import { ChallengesCreateHandler } from './application/handler/ChallengesCreateHandler';
-import { MobileChallengesCreateHandler } from './application/handler/MobileChallengesCreateHandler';
-import { InvitationsResolveHandler } from './application/handler/InvitationsResolveHandler';
-import { InvitationsReadHandler } from './application/handler/InvitationsReadHandler';
-import { InvitationsCreateHandler } from './application/handler/InvitationsCreateHandler';
-import { InvitationsRevokeHandler } from './application/handler/InvitationsRevokeHandler';
-import { EnrollmentsReadHandler } from './application/handler/EnrollmentsReadHandler';
-import { EnrollmentsCompleteHandler } from './application/handler/EnrollmentsCompleteHandler';
-import { MembersManageHandler } from './application/handler/MembersManageHandler';
-import { PasswordChangeHandler } from './application/handler/PasswordChangeHandler';
-import { PasswordVerifyHandler } from './application/handler/PasswordVerifyHandler';
-import { PasswordResetHandler } from './application/handler/PasswordResetHandler';
-import { MobileManageHandler } from './application/handler/MobileManageHandler';
-import { StepUpStartHandler } from './application/handler/StepUpStartHandler';
-import { StepUpCompleteHandler } from './application/handler/StepUpCompleteHandler';
-import { StepUpDisableHandler } from './application/handler/StepUpDisableHandler';
-import { BootstrapReadHandler } from './application/handler/BootstrapReadHandler';
-import { ProvidersReadHandler } from './application/handler/ProvidersReadHandler';
-import { FederationStartHandler } from './application/handler/FederationStartHandler';
-import { FederationCallbackHandler } from './application/handler/FederationCallbackHandler';
-import { MembershipSelectionReadHandler } from './application/handler/MembershipSelectionReadHandler';
-import { FederationCompleteHandler } from './application/handler/FederationCompleteHandler';
-import { LinksReadHandler } from './application/handler/LinksReadHandler';
-import { LinksCreateHandler } from './application/handler/LinksCreateHandler';
-import { LinksRevokeHandler } from './application/handler/LinksRevokeHandler';
-import { ProvidersManageHandler } from './application/handler/ProvidersManageHandler';
-import { ProvidersTestHandler } from './application/handler/ProvidersTestHandler';
+import { assembleOperations } from './application/service/OperationAssembly';
 import { createJobs } from './interface/job/JobFactory';
 
 export const IdentityModule = defineModule(Manifest, {
@@ -215,78 +180,43 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
   const stepup = new ManageStepup(members, kms, challenges, keys.identity, keys.session, assurances, sessionRepository, events, context.ports.get(ACTION_PROOF_PORT), new PgStepupRequestRepository());
   const revocation = new RevokeSession(sessionRepository, cookies, events);
   const linker = new IdentityLinker(linkRepository);
-  return [
-    new SessionsCreateHandler(authentication.action(), new StartFederation(federation).lifecycle()),
-    new SessionsCompleteHandler(new CompleteSession(repository, redeemer, sessions, returns, keys.session, tickets, challenges, cookies, assurances, invitationFailures).lifecycle()),
-    new TicketsExchangeHandler(new ExchangeTicket(tickets, returns, csrf, cookies).action()),
-    new SessionReadHandler(new ReadSession(members, kms, cookies, credentials).lifecycle()),
-    new SessionDeleteHandler(revocation.current()),
-    new SessionsReadHandler(new ReadSessions(sessionRepository).action()),
-    new SessionsRevokeHandler(revocation.selected()),
-    new MembershipsReadHandler(new ReadMemberships(members, identityAccess).action()),
-    new MembershipsSwitchHandler(new SwitchMembership(members, identityAccess, sessions, sessionRepository, events).action()),
-    new ChallengesCreateHandler(challengeCommands.lifecycle()),
-    new MobileChallengesCreateHandler(challengeCommands.mobile()),
-    new InvitationsResolveHandler(
-      new ResolveInvitation(
-        repository,
-        invitationAccess,
-        invited,
-        organizations,
-        invitationLookup,
-        invitationGuard,
-        protector,
-        kms,
-        hasher,
-        keys.session,
-        sessions,
-        tickets,
-        returns,
-        cookies,
-        challenges,
-        redeemer,
-        invitationFailures,
-        registrations,
-        telemetry
-      )
-    ),
-    new InvitationsReadHandler(new ReadInvitations(repository).action()),
-    new InvitationsCreateHandler(
-      new CreateInvitation(
-        repository,
-        invitationAccess,
-        invited,
-        enrollmentRepository,
-        new PrepareEmployeeInvitation(kms, invitationGenerator, hasher),
-        kms,
-        invitationGenerator,
-        hasher,
-        registrations,
-        events,
-        telemetry
-      ).lifecycle()
-    ),
-    new InvitationsRevokeHandler(new RevokeInvitation(repository, events).action()),
-    new EnrollmentsReadHandler(new ReadEnrollment(repository, registrations, invitationAccess, invited, organizations).action()),
-    new EnrollmentsCompleteHandler(new CompleteEnrollment(kms, enrollments).lifecycle()),
-    new MembersManageHandler(new ManageMember(identityAccess, members).action()),
-    new PasswordChangeHandler(credentialCommands.change()),
-    new PasswordVerifyHandler(credentialCommands.verify()),
-    new PasswordResetHandler(credentialCommands.reset()),
-    new MobileManageHandler(credentialCommands.mobile()),
-    new StepUpStartHandler(stepup.start()),
-    new StepUpCompleteHandler(stepup.complete()),
-    new StepUpDisableHandler(stepup.disable()),
-    new BootstrapReadHandler(new ReadIdentityBootstrap(returns, registrations).action()),
-    new ProvidersReadHandler(new ReadIdentityProviders(providers, returns).action()),
-    new FederationStartHandler(new StartFederation(federation).lifecycle()),
-    new FederationCallbackHandler(new CompleteFederation(federation).lifecycle()),
-    new MembershipSelectionReadHandler(new ReadMembershipSelection(selector).action()),
-    new FederationCompleteHandler(new SelectMembership(selector, cookies).action()),
-    new LinksReadHandler(new ReadIdentityLinks(linker).action()),
-    new LinksCreateHandler(new CreateIdentityLink(federation).lifecycle()),
-    new LinksRevokeHandler(new RevokeIdentityLink(linker).action()),
-    new ProvidersManageHandler(new ManageIdentityProvider(providers, kms).action()),
-    new ProvidersTestHandler(new TestIdentityProvider(resolver).lifecycle()),
-  ];
+  return assembleOperations({
+    sessionsCreate: [authentication.action(), new StartFederation(federation).lifecycle()],
+    sessionsComplete: [new CompleteSession(repository, redeemer, sessions, returns, keys.session, tickets, challenges, cookies, assurances, invitationFailures).lifecycle()],
+    ticketsExchange: [new ExchangeTicket(tickets, returns, csrf, cookies).action()],
+    sessionRead: [new ReadSession(members, kms, cookies, credentials).lifecycle()],
+    sessionDelete: [revocation.current()],
+    sessionsRead: [new ReadSessions(sessionRepository).action()],
+    sessionsRevoke: [revocation.selected()],
+    membershipsRead: [new ReadMemberships(members, identityAccess).action()],
+    membershipsSwitch: [new SwitchMembership(members, identityAccess, sessions, sessionRepository, events).action()],
+    challengesCreate: [challengeCommands.lifecycle()],
+    mobileChallengesCreate: [challengeCommands.mobile()],
+    invitationsResolve: [new ResolveInvitation(repository, invitationAccess, invited, organizations, invitationLookup, invitationGuard, protector, kms, hasher, keys.session, sessions, tickets, returns, cookies, challenges, redeemer, invitationFailures, registrations, telemetry)],
+    invitationsRead: [new ReadInvitations(repository, context.ports.get(MEMBERSHIP_READ_PORT), context.ports.get(MEMBER_READ_PORT)).action()],
+    invitationsCreate: [new CreateInvitation(repository, invitationAccess, invited, enrollmentRepository, new PrepareEmployeeInvitation(kms, invitationGenerator, hasher), kms, invitationGenerator, hasher, registrations, events, telemetry).lifecycle()],
+    invitationsRevoke: [new RevokeInvitation(repository, events).action()],
+    enrollmentsRead: [new ReadEnrollment(repository, registrations, invitationAccess, invited, organizations).action()],
+    enrollmentsComplete: [new CompleteEnrollment(kms, enrollments).lifecycle()],
+    membersManage: [new ManageMember(identityAccess, members).action()],
+    passwordChange: [credentialCommands.change()],
+    passwordVerify: [credentialCommands.verify()],
+    passwordReset: [credentialCommands.reset()],
+    mobileManage: [credentialCommands.mobile()],
+    stepUpStart: [stepup.start()],
+    stepUpComplete: [stepup.complete()],
+    stepUpDisable: [stepup.disable()],
+    bootstrapRead: [new ReadIdentityBootstrap(returns, registrations).action()],
+    providersRead: [new ReadIdentityProviders(providers, returns).action()],
+    providersCenterRead: [providers],
+    federationStart: [new StartFederation(federation).lifecycle()],
+    federationCallback: [new CompleteFederation(federation).lifecycle()],
+    membershipSelectionRead: [new ReadMembershipSelection(selector).action()],
+    federationComplete: [new SelectMembership(selector, cookies).action()],
+    linksRead: [new ReadIdentityLinks(linker).action()],
+    linksCreate: [new CreateIdentityLink(federation).lifecycle()],
+    linksRevoke: [new RevokeIdentityLink(linker).action()],
+    providersManage: [new ManageIdentityProvider(providers, kms).action()],
+    providersTest: [new TestIdentityProvider(resolver).lifecycle()],
+  });
 }

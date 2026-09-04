@@ -9,8 +9,16 @@ export type LinkState = Readonly<{ kind: 'loading' }> | Readonly<{ kind: 'ready'
 export function useLinkViewModel(reader: ReadLink, target: AuthTarget) {
   const [state, setState] = useState<LinkState>({ kind: 'loading' });
   useEffect(() => {
-    const request = new AbortController(); setState({ kind: 'loading' });
-    void reader.execute(target, request.signal).then((snapshot) => { if (!request.signal.aborted) setState(snapshot.links.length === 0 ? { kind: 'empty' } : { kind: 'ready', snapshot }); }, (cause: unknown) => { if (!request.signal.aborted) setState({ kind: 'failed', failure: presentError(cause) }); });
+    const request = new AbortController();
+    setState({ kind: 'loading' });
+    void reader.execute(target, request.signal).then(
+      (snapshot) => {
+        if (!request.signal.aborted) setState(snapshot.links.length === 0 ? { kind: 'empty' } : { kind: 'ready', snapshot });
+      },
+      (cause: unknown) => {
+        if (!request.signal.aborted) setState({ kind: 'failed', failure: presentError(cause) });
+      }
+    );
     return () => request.abort();
   }, [reader, target]);
   return state;

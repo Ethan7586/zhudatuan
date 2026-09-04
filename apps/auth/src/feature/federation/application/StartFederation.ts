@@ -4,5 +4,7 @@ import type { FederationPort } from '../public/FederationPort';
 
 export class StartFederation {
   constructor(private readonly port: FederationPort) {}
-  execute(provider: string, target: AuthTarget, returns: Omit<AuthRequest, 'target'>, signal?: AbortSignal) { return this.port.start(provider, target, returns, signal); }
+  execute(provider: string, target: AuthTarget, returns: Omit<AuthRequest, 'target'>, signal?: AbortSignal) {
+    return this.port.start(provider, target, returns, signal);
+  }
 }

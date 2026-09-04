@@ -1,0 +1,11 @@
+.controlworkspace { min-width: 0; }
+.controlpanel { min-width: 0; }
+.controlpanel > footer { display: flex; align-items: center; justify-content: space-between; gap: var(--sw-space-1); margin-top: var(--sw-space-2); border-top: 1px solid var(--sw-border); padding-top: var(--sw-space-1-5); color: var(--sw-text-secondary); }
+.controlpanel > footer div { display: flex; gap: var(--sw-space-1); }
+.controlstate { display: inline-flex; min-height: 1.6rem; align-items: center; border-radius: 999px; background: var(--sw-warning-surface); color: var(--sw-warning-strong); padding: 0 var(--sw-space-1); font-size: var(--sw-font-size-caption); font-weight: 750; }
+.controlstate[data-healthy='true'] { background: var(--sw-success-surface); color: var(--sw-success-strong); }
+.controlassurance { display: grid; grid-template-columns: auto minmax(0, 38rem); justify-content: center; gap: var(--sw-space-2); margin: clamp(2rem, 10vh, 7rem) auto; border: 1px solid var(--sw-border); border-radius: var(--sw-radius-lg); background: linear-gradient(135deg, var(--sw-surface), var(--sw-surface-subtle)); padding: clamp(1.5rem, 5vw, 3.5rem); box-shadow: var(--sw-shadow-lg); }
+.controlassurance > span { display: grid; width: 3rem; height: 3rem; place-items: center; border-radius: 50%; background: var(--sw-brand-light); color: var(--sw-brand-dark); font-size: 1.5rem; }
+.controlassurance h1 { margin-block: var(--sw-space-0-5) var(--sw-space-1); }
+.controlassurance ul { display: grid; gap: var(--sw-space-0-5); margin-block: var(--sw-space-1-5); padding-left: 1.2rem; color: var(--sw-text-secondary); }
+@media (max-width: 640px) { .controlassurance { grid-template-columns: 1fr; margin-top: var(--sw-space-2); } .controlpanel > footer { align-items: stretch; flex-direction: column; } }

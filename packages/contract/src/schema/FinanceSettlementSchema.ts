@@ -145,7 +145,7 @@ export const backfill = strictObject({
   signed_at: nullableTime,
 });
 
-export const legacyPolicy = strictObject({ id: string(), scope_id: string(), kind: string(), rule: ContractJsonValueSchema, state: literal(['draft', 'active', 'retired']), version });
+export const financePolicy = strictObject({ id: string(), scope_id: string(), kind: string(), rule: ContractJsonValueSchema, state: literal(['draft', 'active', 'retired']), version });
 
 export const exportResult = strictObject({
   id: string(),

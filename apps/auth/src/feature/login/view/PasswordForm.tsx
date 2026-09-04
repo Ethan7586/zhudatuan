@@ -65,21 +65,13 @@ export function PasswordForm({
         <button type="button" onClick={onReset} className="authtextbutton">
           忘记密码？
         </button>
-        <button
-          type="button"
-          onClick={onInvitation}
-          className="authregister"
-        >
+        <button type="button" onClick={onInvitation} className="authregister">
           <UserCheck aria-hidden="true" />
           新用户注册
         </button>
       </div>
       <p className="authregisterhint">持企业邀请码创建员工商城账号</p>
-      <button
-        type="submit"
-        disabled={busy}
-        className="authprimary"
-      >
+      <button type="submit" disabled={busy} className="authprimary">
         {busy ? <RefreshCw className="authspin" aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
         {busy ? '验证中...' : '登录'}
       </button>

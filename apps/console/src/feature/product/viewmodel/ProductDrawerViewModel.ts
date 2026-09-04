@@ -10,6 +10,11 @@ import { productDetailKey } from './ProductQueryKey';
 export function useProductDrawerViewModel(listing: Listing | undefined, context: ConsoleContext, dependencies: ProductDependencies) {
   const [tab, selectTab] = useState<ProductDrawerTab>('overview');
   const request = { scope: { kind: context.scope.kind, id: context.scope.id }, accessVersion: context.session.accessVersion, ...(context.session.csrf === undefined ? {} : { csrf: context.session.csrf }) } as const;
-  const query = useQuery({ queryKey: productDetailKey(context, listing?.product_id ?? 'closed'), queryFn: ({ signal }) => dependencies.readProduct.execute(request, listing!.product_id, signal), enabled: listing !== undefined, staleTime: 60_000 });
+  const query = useQuery({
+    queryKey: productDetailKey(context, listing?.product_id ?? 'closed'),
+    queryFn: ({ signal }) => dependencies.readProduct.execute(request, listing!.product_id, signal),
+    enabled: listing !== undefined,
+    staleTime: 60_000,
+  });
   return Object.freeze({ listing, tab, selectTab, detail: query.data, pending: query.isPending, ...(query.error === null ? {} : { error: presentError(query.error).message }) });
 }

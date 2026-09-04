@@ -2,8 +2,9 @@ import { useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { hasFailureCode, presentError } from '@shop/presentation';
+import { routePath, ROUTES } from '../../../generated/RouteBinding';
 import { useSession } from '../../../entity/session/viewmodel/SessionContext';
-import { useCartCommand, useCartViewModel } from '../../cart/public/index';
+import { useCartCommand, useCartViewModel } from '../../cart';
 import { CreateQuote } from '../application/CreateQuote';
 import { CommitOrder } from '../application/CommitOrder';
 import { useDependencies } from '../../../app/DependencyContext';
@@ -39,7 +40,7 @@ export function useCheckoutViewModel() {
       });
       if (quote.rejections.length > 0) throw new Error('CHECKOUT_REJECTED');
       const result = await orderCommand.current.execute(session.session, quote.quoteId, 'jsapi');
-      void navigate(`/payments/${encodeURIComponent(result.payment.paymentId)}/result`);
+      void navigate(routePath('storepayment', { paymentId: result.payment.paymentId }));
       await client.invalidateQueries({ queryKey: ['storefront', session.scope] });
       return true;
     } finally {
@@ -50,8 +51,12 @@ export function useCheckoutViewModel() {
   const selected = cart.cart.filter(({ selected: chosen }) => chosen);
   const submit = async () => {
     if (!selectedAddress && selected.some(({ product }) => product.itemType === 'physical')) return session.showToast('实体商品结算前必须选择收货地址', 'error');
-    try { await checkoutSelectedCart(selectedAddress?.id); }
-    catch (cause) { if (hasFailureCode(cause, 'STEPUP_REQUIRED')) setVerification(true); else session.showToast(presentError(cause).message, 'error'); }
+    try {
+      await checkoutSelectedCart(selectedAddress?.id);
+    } catch (cause) {
+      if (hasFailureCode(cause, 'STEPUP_REQUIRED')) setVerification(true);
+      else session.showToast(presentError(cause).message, 'error');
+    }
   };
   return Object.freeze({
     ...cart,
@@ -65,12 +70,19 @@ export function useCheckoutViewModel() {
     showToast: session.showToast,
     actions: Object.freeze({
       submit,
-      chooseAddress: (id: string) => { const next = new URLSearchParams(search); next.set('address', id); setSearch(next); },
-      manageAddresses: () => void navigate('/profile?section=addresses'),
-      manageInvoices: () => void navigate('/orders?view=invoices'),
-      browse: () => void navigate('/products'),
+      chooseAddress: (id: string) => {
+        const next = new URLSearchParams(search);
+        next.set('address', id);
+        setSearch(next);
+      },
+      manageAddresses: () => void navigate(`${ROUTES.storeprofile}?section=addresses`),
+      manageInvoices: () => void navigate(`${ROUTES.storeorders}?view=invoices`),
+      browse: () => void navigate(ROUTES.storecatalog),
       closeVerification: () => setVerification(false),
-      verified: () => { setVerification(false); session.showToast('二次验证已完成，请再次确认提交订单', 'success'); },
+      verified: () => {
+        setVerification(false);
+        session.showToast('二次验证已完成，请再次确认提交订单', 'success');
+      },
     }),
   });
 }

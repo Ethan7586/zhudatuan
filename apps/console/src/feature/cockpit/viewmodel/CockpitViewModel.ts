@@ -21,16 +21,47 @@ export function useCockpitViewModel(context: ConsoleContext, dependencies: Cockp
   const projectionVersion = data?.items.reduce((maximum, item) => Math.max(maximum, item.projectionVersion), 0) ?? 0;
   const stale = watermark === undefined ? false : Date.now() - new Date(watermark).getTime() > (period === 'realtime' ? 15 * 60_000 : 36 * 60 * 60_000);
   const searchValue = search.toString();
-  const update = useCallback((key: 'period' | 'application', value: string) => { const next = new URLSearchParams(searchValue); value ? next.set(key, value) : next.delete(key); setSearch(next); }, [searchValue, setSearch]);
+  const update = useCallback(
+    (key: 'period' | 'application', value: string) => {
+      const next = new URLSearchParams(searchValue);
+      if (value) next.set(key, value);
+      else next.delete(key);
+      setSearch(next);
+    },
+    [searchValue, setSearch]
+  );
   const refresh = query.refetch;
-  const actions = useMemo(() => Object.freeze({ refresh: () => void refresh(), period: (value: CockpitPeriod) => update('period', value), application: setApplicationDraft, applyApplication: () => update('application', applicationDraft.trim()), openInsight: (insight: BusinessInsight) => navigate(insight.target) }), [applicationDraft, navigate, refresh, update]);
+  const actions = useMemo(
+    () =>
+      Object.freeze({
+        refresh: () => void refresh(),
+        period: (value: CockpitPeriod) => update('period', value),
+        application: setApplicationDraft,
+        applyApplication: () => update('application', applicationDraft.trim()),
+        openInsight: (insight: BusinessInsight) => navigate(insight.target),
+      }),
+    [applicationDraft, navigate, refresh, update]
+  );
   return Object.freeze({
-    scope: context.scope.name ?? context.scope.id, period, application, applicationDraft, data, watermark, timezone, projectionVersion, stale,
+    scope: context.scope.name ?? context.scope.id,
+    period,
+    application,
+    applicationDraft,
+    data,
+    watermark,
+    timezone,
+    projectionVersion,
+    stale,
     condition: queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: false }),
-    error: query.error ? presentError(query.error).message : undefined, actions,
+    error: query.error ? presentError(query.error).message : undefined,
+    actions,
   });
 }
 
 export type CockpitViewModel = ReturnType<typeof useCockpitViewModel>;
-function readPeriod(value: string | null): CockpitPeriod { return cockpitPeriods.includes(value as CockpitPeriod) ? value as CockpitPeriod : '30days'; }
-function latest(values: readonly string[]): string | undefined { return values.length === 0 ? undefined : [...values].sort().at(-1); }
+function readPeriod(value: string | null): CockpitPeriod {
+  return cockpitPeriods.includes(value as CockpitPeriod) ? (value as CockpitPeriod) : '30days';
+}
+function latest(values: readonly string[]): string | undefined {
+  return values.length === 0 ? undefined : [...values].sort().at(-1);
+}

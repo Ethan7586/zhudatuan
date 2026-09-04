@@ -65,7 +65,7 @@ export class BootstrapQuery {
       orders,
       experience: this.mapper.section(experience.value.document, experience.value.version, experience.value.asOf),
     });
-    return { status: 200, body, headers: { 'cache-control': identity.state === 'anonymous' ? 'public,max-age=30' : 'private,no-store' } };
+    return { status: 200, body, headers: { 'cache-control': 'private,no-store' } };
   }
 }
 

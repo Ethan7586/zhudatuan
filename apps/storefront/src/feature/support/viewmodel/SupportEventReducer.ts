@@ -1,4 +1,4 @@
-import type { SupportEvent } from '../infrastructure/SupportGateway';
+import type { SupportEvent } from '../model/SupportEvent';
 
 export interface SupportEventState {
   readonly cursor?: string;

@@ -17,8 +17,12 @@ export class ConversationDraftStore {
     else this.values.set(caseId, Object.freeze({ message: value.message, attachments: Object.freeze([...value.attachments]) }));
   }
 
-  clear(caseId: string): void { this.values.delete(caseId); }
-  hasUnsent(): boolean { return [...this.values.values()].some((value) => value.message.trim() || value.attachments.length > 0); }
+  clear(caseId: string): void {
+    this.values.delete(caseId);
+  }
+  hasUnsent(): boolean {
+    return [...this.values.values()].some((value) => value.message.trim() || value.attachments.length > 0);
+  }
 }
 
 export const conversationDrafts = new ConversationDraftStore();

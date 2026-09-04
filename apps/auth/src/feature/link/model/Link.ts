@@ -11,7 +11,9 @@ export interface IdentityLink {
   readonly version: number;
 }
 
-export interface LinkSnapshot { readonly links: readonly IdentityLink[] }
+export interface LinkSnapshot {
+  readonly links: readonly IdentityLink[];
+}
 
 export const LINK_GUIDANCE: LinkGuidance = Object.freeze({
   title: '需要确认身份关联',

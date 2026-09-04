@@ -2,6 +2,7 @@ import { createHmac } from 'node:crypto';
 import type { Client } from 'pg';
 import type { KmsClient } from '../../../services/commerce/src/foundation/infrastructure/KmsClient';
 import { LOCAL_OWNER } from './LocalOwner';
+import { syncMemberProjection } from './MemberProjection';
 
 export const LOCAL_CHECKER = Object.freeze({
   principal: 'principal:zhudatuan:checker:alice:v1',
@@ -29,6 +30,7 @@ export async function ensureLocalChecker(database: Client, input: Readonly<{ pas
       mobile_token=excluded.mobile_token,mobile_masked=excluded.mobile_masked,status='active',updated_at=clock_timestamp(),version=member.profile.version+1`,
     [LOCAL_CHECKER.member, LOCAL_CHECKER.principal, envelope.ciphertext, envelope.fingerprint]
   );
+  await syncMemberProjection(database, LOCAL_CHECKER.member);
   await database.query("delete from identity.credential where principal_id=$1 and provider in('password','otp')", [LOCAL_CHECKER.principal]);
   await database.query(
     `insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,rotated_at,created_at) values

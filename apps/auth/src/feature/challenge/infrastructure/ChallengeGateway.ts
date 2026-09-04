@@ -10,7 +10,11 @@ import type { Challenge, ChallengeRequest } from '../model/Challenge';
 import type { ChallengePort } from '../public/ChallengePort';
 
 export class ChallengeGateway implements ChallengePort {
-  constructor(private readonly sdk: IdentitySdk, private readonly environment: AuthEnvironment, private readonly bootstrap: BootstrapPort) {}
+  constructor(
+    private readonly sdk: IdentitySdk,
+    private readonly environment: AuthEnvironment,
+    private readonly bootstrap: BootstrapPort
+  ) {}
 
   async create(request: ChallengeRequest, target: AuthTarget, returns: Omit<AuthRequest, 'target'>, signal?: AbortSignal): Promise<Challenge> {
     const state = await this.bootstrap.read(target, returns, signal);

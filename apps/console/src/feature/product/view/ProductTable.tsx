@@ -72,16 +72,8 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                     </button>
                   </div>
                 </td>
-                {visibleColumns.has('category') ? (
-                  <td>
-                    {productType(row.product_type)}
-                  </td>
-                ) : null}
-                {visibleColumns.has('sku') ? (
-                  <td>
-                    {chineseReference('规格', row.sku_id)}
-                  </td>
-                ) : null}
+                {visibleColumns.has('category') ? <td>{productType(row.product_type)}</td> : null}
+                {visibleColumns.has('sku') ? <td>{chineseReference('规格', row.sku_id)}</td> : null}
                 {visibleColumns.has('status') ? (
                   <td>
                     <StatusBadge status={row.status} />

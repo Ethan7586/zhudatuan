@@ -83,7 +83,7 @@ describe('contract truth', () => {
     const schema = OPERATION_SCHEMAS['access.center.read'].output;
 
     expect(schema.parse({ items: [row], count: 1 })).toEqual({ items: [row], count: 1 });
-    const { display_name: _displayName, ...withoutAccount } = row;
+    const withoutAccount = omit(row, 'display_name');
     expect(() => schema.parse({ items: [withoutAccount], count: 1 })).toThrow();
   });
 
@@ -101,7 +101,7 @@ describe('contract truth', () => {
     const schema = OPERATION_SCHEMAS['organization.layers.read'].output;
 
     expect(schema.parse({ items: [row], count: 1 })).toEqual({ items: [row], count: 1 });
-    const { parent_name: _parentName, ...withoutParentName } = row;
+    const withoutParentName = omit(row, 'parent_name');
     expect(() => schema.parse({ items: [withoutParentName], count: 1 })).toThrow();
   });
 
@@ -136,7 +136,7 @@ describe('contract truth', () => {
     const schema = OPERATION_SCHEMAS['identity.invitations.read'].output;
 
     expect(schema.parse({ items: [row], count: 1 })).toEqual({ items: [row], count: 1 });
-    const { issuer_display_name: _issuer, ...withoutIssuer } = row;
+    const withoutIssuer = omit(row, 'issuer_display_name');
     expect(() => schema.parse({ items: [withoutIssuer], count: 1 })).toThrow();
   });
 
@@ -144,6 +144,7 @@ describe('contract truth', () => {
     const row = {
       id: 'riskcase:one',
       kind: 'case',
+      version: 1,
       name: null,
       status: null,
       active_version: null,
@@ -162,6 +163,7 @@ describe('contract truth', () => {
       preview: null,
       decision_id: 'riskdecision:one',
       outcome: 'deny',
+      case_state: 'open',
       safe_reason: 'velocity',
       actor_id: 'principal:one',
       actor_display_name: '李小明',
@@ -173,7 +175,7 @@ describe('contract truth', () => {
     const schema = OPERATION_SCHEMAS['risk.center.read'].output;
 
     expect(schema.parse({ items: [row], count: 1 })).toEqual({ items: [row], count: 1 });
-    const { actor_display_name: _actor, ...withoutActor } = row;
+    const withoutActor = omit(row, 'actor_display_name');
     expect(() => schema.parse({ items: [withoutActor], count: 1 })).toThrow();
   });
 
@@ -406,3 +408,9 @@ describe('contract truth', () => {
     expect(left).toBe(right);
   });
 });
+
+function omit<T extends object, K extends keyof T>(value: T, key: K): Omit<T, K> {
+  const copy = { ...value };
+  Reflect.deleteProperty(copy, key);
+  return copy;
+}

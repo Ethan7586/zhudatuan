@@ -6,5 +6,9 @@ import { CallbackPage } from '../view/CallbackPage';
 
 export function Component() {
   const navigate = useNavigate();
-  return <Guard route={ROUTES.authcallback} rejected={<InvalidRoute />}>{() => <CallbackPage onBack={() => navigate(ROUTES.authlogin, { replace: true })} />}</Guard>;
+  return (
+    <Guard route={ROUTES.authcallback} rejected={<InvalidRoute />}>
+      {() => <CallbackPage onBack={() => void navigate(ROUTES.authlogin, { replace: true })} />}
+    </Guard>
+  );
 }

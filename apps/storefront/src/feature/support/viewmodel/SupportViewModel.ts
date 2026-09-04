@@ -2,12 +2,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { presentError } from '@shop/presentation';
 import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
+import { routePath } from '../../../generated/RouteBinding';
 import { useDependencies } from '../../../app/DependencyContext';
 import { useSession } from '../../../entity/session/viewmodel/SessionContext';
-import type { StorefrontSession } from '../../../entity/session';
+import { requireSession } from '../../../entity/session';
 import { CreateCase } from '../application/CreateCase';
 import { ReadCases } from '../application/ReadCases';
-import { supportQuery } from '../application/SupportQuery';
+import { supportQuery } from './SupportQueryKey';
 import type { SupportPriority } from '../model/SupportCase';
 
 const topics: Readonly<Record<string, Readonly<{ subject: string; message: string }>>> = Object.freeze({
@@ -33,11 +34,10 @@ export function useSupportViewModel() {
   const [priority, setPriority] = useState<SupportPriority>('normal');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const scope = runtime.scope || 'guest';
-  const key = useMemo(() => supportQuery(scope), [scope]);
+  const key = useMemo(() => supportQuery(runtime.query.scoped), [runtime.query.scoped]);
   const query = useQuery({
     queryKey: key,
-    queryFn: ({ signal }) => reader.current.list(required(runtime.session), signal),
+    queryFn: ({ signal }) => reader.current.list(requireSession(runtime.session), signal),
     enabled: runtime.status === 'authenticated',
   });
 
@@ -49,7 +49,7 @@ export function useSupportViewModel() {
     try {
       const id = await creator.current.execute(runtime.session, subject, message, priority);
       await cache.invalidateQueries({ queryKey: key, exact: true });
-      void navigate(`/support/${encodeURIComponent(id)}`);
+      void navigate(routePath('storesupportcase', { caseId: id }));
     } catch (cause) {
       setError(presentError(cause).message);
     } finally {
@@ -70,13 +70,8 @@ export function useSupportViewModel() {
       changeSubject: setSubject,
       changeMessage: setMessage,
       changePriority: setPriority,
-      open: (id: string) => void navigate(`/support/${encodeURIComponent(id)}`),
+      open: (id: string) => void navigate(routePath('storesupportcase', { caseId: id })),
       refresh: () => void query.refetch(),
     }),
   });
-}
-
-function required(value: StorefrontSession | null): StorefrontSession {
-  if (!value) throw new Error('AUTHENTICATION_REQUIRED');
-  return value;
 }

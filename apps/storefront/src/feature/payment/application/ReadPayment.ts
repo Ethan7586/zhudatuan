@@ -1,10 +1,9 @@
 import type { StorefrontSession } from '../../../entity/session';
-import { PaymentGateway } from '../infrastructure/PaymentGateway';
-import { mapPayment } from '../infrastructure/PaymentMapper';
+import type { PaymentPort } from '../public/PaymentPort';
 
 export class ReadPayment {
-  constructor(private readonly gateway: Pick<PaymentGateway, 'read'>) {}
+  constructor(private readonly gateway: Pick<PaymentPort, 'read'>) {}
   async execute(session: StorefrontSession, paymentId: string, signal?: AbortSignal) {
-    return mapPayment(await this.gateway.read(session, paymentId, signal));
+    return this.gateway.read(session, paymentId, signal);
   }
 }
