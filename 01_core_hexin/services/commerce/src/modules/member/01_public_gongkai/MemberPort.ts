@@ -1,4 +1,4 @@
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
+import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 
 export interface MemberInvite {
   readonly id: string;

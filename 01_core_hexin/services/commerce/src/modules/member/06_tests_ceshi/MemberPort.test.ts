@@ -1,7 +1,7 @@
 import type { QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import { MemberPort } from './MemberPort';
+import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+import { MemberPort } from '../01_public_gongkai/MemberPort';
 
 describe('MemberPort invitation constraints', () => {
   it('resolves a published storefront and its active registration policy without an invite', async () => {

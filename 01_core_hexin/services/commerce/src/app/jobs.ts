@@ -22,7 +22,7 @@ import { FulfillmentJobProcessor } from '../modules/fulfillment/FulfillmentJobs'
 import { ExperienceJobProcessor } from '../modules/experience/ExperienceJobs';
 import { CACHE } from '../foundation/cache/Cache';
 import { NotificationJobProcessor } from '../modules/notification/interface/job/NotificationJob';
-import { MemberImportProcessor } from '../modules/member/interface/job/MemberImportJob';
+import { MemberImportProcessor } from '../modules/member/05_interface_jieru/jobs_renwu/MemberImportJob';
 import { identityPrincipal } from '../modules/identity';
 import { InventoryImportProcessor } from '../modules/inventory/interface/job/InventoryImportJob';
 import { InventorySyncJobProcessor } from '../modules/inventory/interface/job/InventorySyncJob';

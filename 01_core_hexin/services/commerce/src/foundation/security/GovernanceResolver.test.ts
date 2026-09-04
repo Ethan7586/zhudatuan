@@ -66,7 +66,7 @@ describe('governance identity inference audit', () => {
   it('keeps identity and member business code free of duplicate Owner inference', async () => {
     const files = [
       'src/modules/identity/05_interface_jieru/http/IdentityOperations.ts',
-      'src/modules/member/MemberReadOperations.ts',
+      'src/modules/member/03_application_yingyong/MemberReadOperations.ts',
     ];
     for (const file of files) {
       const source = await readFile(join(process.cwd(), file), 'utf8');

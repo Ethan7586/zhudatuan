@@ -17,7 +17,7 @@ import { IdentityModule } from '../modules/identity';
 import { InventoryModule } from '../modules/inventory/InventoryModule';
 import { MarketingModule } from '../modules/marketing/MarketingModule';
 import { ReferralModule } from '../modules/referral/ReferralModule';
-import { MemberModule } from '../modules/member/MemberModule';
+import { MemberModule } from '../modules/member/05_interface_jieru/MemberModule';
 import { NotificationModule } from '../modules/notification/NotificationModule';
 import { OrderModule } from '../modules/order_dingdan/05_interface_jieru/OrderModule';
 import { OrganizationModule } from '../modules/organization/OrganizationModule';

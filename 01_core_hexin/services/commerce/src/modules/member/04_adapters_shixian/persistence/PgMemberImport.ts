@@ -6,7 +6,7 @@ import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { configureWorker, workerTransaction } from '../../../../foundation/infrastructure/WorkerDatabase';
 import type { IdentityPrincipal } from '../../../identity';
 import { accessPort } from '../../../access';
-import { importMember } from '../../application/MemberProfileImport';
+import { importMember } from '../../03_application_yingyong/MemberProfileImport';
 
 interface TargetRow { readonly id: string; readonly organization_id: string; readonly object_ref: string; readonly sha256: string; readonly state: ImportTarget['state'] }
 interface StagedRow { readonly row_number: number; readonly payload: Readonly<Record<string, string>> }

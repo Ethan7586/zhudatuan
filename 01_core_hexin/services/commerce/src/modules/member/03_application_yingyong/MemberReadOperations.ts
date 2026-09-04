@@ -1,10 +1,10 @@
 import type { OperationId } from '@shop/contract';
-import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
-import { AUDIT_SINK } from '../../foundation/application/AuditSink';
-import { ModuleOperations, requireAccess, rowResult, type OperationActions } from '../../foundation/application/ModuleOperations';
-import { keysetResult, queryPage } from '../../foundation/interface/Validation';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
-import { requireGovernanceContext } from '../../foundation/security/AccessContext';
+import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
+import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
+import { ModuleOperations, requireAccess, rowResult, type OperationActions } from '../../../foundation/application/ModuleOperations';
+import { keysetResult, queryPage } from '../../../foundation/interface/Validation';
+import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
+import { requireGovernanceContext } from '../../../foundation/security/AccessContext';
 
 export const MEMBER_OPERATOR_READ_OPERATION_IDS = Object.freeze([
   'member.members.read',

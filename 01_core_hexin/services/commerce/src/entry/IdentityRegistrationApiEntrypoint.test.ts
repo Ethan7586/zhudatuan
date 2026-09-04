@@ -24,8 +24,8 @@ import { IDENTITY_REGISTRATION_OPERATION_IDS } from '../modules/identity';
 import { IdentityRegistrationModule } from '../modules/identity';
 import { FINANCE_OPERATOR_READ_OPERATION_IDS } from '../modules/finance/FinanceReadOperations';
 import { IdentityOperatorFinanceModule } from '../modules/finance/IdentityOperatorFinanceModule';
-import { IdentityOperatorMemberModule } from '../modules/member/IdentityOperatorMemberModule';
-import { MEMBER_OPERATOR_READ_OPERATION_IDS } from '../modules/member/MemberReadOperations';
+import { MEMBER_OPERATOR_READ_OPERATION_IDS } from '../modules/member/03_application_yingyong/MemberReadOperations';
+import { IdentityOperatorMemberModule } from '../modules/member/05_interface_jieru/IdentityOperatorMemberModule';
 import { IdentityOperatorNotificationModule } from '../modules/notification/IdentityOperatorNotificationModule';
 import { NOTIFICATION_OPERATOR_READ_OPERATION_IDS } from '../modules/notification/NotificationReadOperations';
 import {

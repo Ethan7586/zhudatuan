@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import type { IdentityPrincipal } from '../../identity';
 import type { AccessPort } from '../../access';
-import { memberPort } from '../MemberPort';
+import { memberPort } from '../01_public_gongkai/MemberPort';
 
 export async function importMember(database: OperationDatabase, identities: IdentityPrincipal, access: AccessPort, organization: string,
   row: Readonly<Record<string, string>>): Promise<void> {

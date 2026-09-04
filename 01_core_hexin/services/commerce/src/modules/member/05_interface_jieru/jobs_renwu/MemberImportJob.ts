@@ -2,7 +2,7 @@ import { BatchImportProcessor } from '../../../../foundation/application/BatchIm
 import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import type { IdentityPrincipal } from '../../../identity';
-import { PgMemberImport } from '../../infrastructure/persistence/PgMemberImport';
+import { PgMemberImport } from '../../04_adapters_shixian/persistence/PgMemberImport';
 
 export class MemberImportProcessor extends BatchImportProcessor {
   constructor(pool: DatabasePool, objects: ObjectStore, identities: IdentityPrincipal) {

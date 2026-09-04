@@ -1,8 +1,8 @@
 import type { QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import type { OperationRequest } from '../../foundation/application/OperationHandler';
-import { memberOperatorReadActions } from './MemberReadOperations';
+import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+import type { OperationRequest } from '../../../foundation/application/OperationHandler';
+import { memberOperatorReadActions } from '../03_application_yingyong/MemberReadOperations';
 
 describe('member directory scope boundary', () => {
   it('reads only the actor governance subtree while preserving organization scope and keyset pagination', async () => {
