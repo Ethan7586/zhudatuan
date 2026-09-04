@@ -7,7 +7,8 @@ import type { OperationDatabase } from '../../../../foundation/application/Modul
 import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
 import { SECURITY_KEYS } from '../../../../foundation/infrastructure/SecretStore';
 import { fullCheckoutPort } from '../../../checkout_jiesuan/04_adapters_shixian/providers_waibu/FullCheckoutPort';
-import { BenefitPort } from '../../../benefit/BenefitPort';
+import { BenefitPort } from '../../../benefit';
+import { FinancePort } from '../../../finance';
 import { VoucherPort } from '../../../voucher/application/port/VoucherPort';
 import { Order, type AftersaleState, type CommerceState, type FulfillmentState, type PaymentState } from '../../02_domain_yewu/models_moxing/Order';
 import { PlaceOrder } from '../commands_xieru/PlaceOrder';
@@ -19,7 +20,7 @@ export function orderOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
   const place = new PlaceOrder(
     fullCheckoutPort(context.container.get(SECURITY_KEYS).quote),
-    new BenefitPort(),
+    new BenefitPort(new FinancePort()),
     new VoucherPort(),
   );
   return new ModuleOperations('order', pool, context.container.get(AUDIT_SINK), {

@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
-import { BenefitPort } from '../../../benefit/BenefitModule';
+import { BenefitPort } from '../../../benefit';
+import { FinancePort } from '../../../finance';
 import { VoucherPort } from '../../../voucher/VoucherModule';
 import { inventoryPort } from '../../../inventory';
 import { marketingPort } from '../../../marketing/MarketingModule';
@@ -8,7 +9,7 @@ import { fulfillmentPort } from '../../../fulfillment/FulfillmentModule';
 import { orderPort } from '../../../order_dingdan';
 import { providerOccurredAt as requireProviderOccurredAt } from '../../01_public_gongkai/ports_jiekou/PaymentGateway';
 
-const benefit = new BenefitPort();
+const benefit = new BenefitPort(new FinancePort());
 const voucher = new VoucherPort();
 
 export interface SettlementTarget {

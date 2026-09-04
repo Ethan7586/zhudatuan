@@ -8,7 +8,7 @@ import { CheckoutPort, type CheckoutQuote } from '../../../checkout_jiesuan';
 import { checkoutSessionPort } from '../../../checkout_jiesuan';
 import { InventoryPort } from '../../../inventory';
 import { PaymentPort } from '../../../payment_zhifu';
-import type { BenefitGateway } from '../../../benefit/application/port/BenefitPort';
+import type { BenefitGateway } from '../../../benefit';
 import { marketingPort } from '../../../marketing/MarketingPort';
 import { cartPort } from '../../../cart/CartPort';
 import type { OrderQuoteStore, StoredQuote } from '../../01_public_gongkai/contracts_qiyue/OrderContractModule';

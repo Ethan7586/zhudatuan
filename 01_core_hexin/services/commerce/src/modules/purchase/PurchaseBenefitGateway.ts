@@ -4,7 +4,7 @@ import type {
   BenefitGateway,
   BenefitRefund,
   BenefitTender,
-} from '../benefit/application/port/BenefitPort';
+} from '../benefit';
 
 export class PurchaseBenefitGateway implements BenefitGateway {
   constructor(

@@ -15,7 +15,7 @@ const dependencies = vi.hoisted(() => ({
   markRefunded: vi.fn(),
 }));
 
-vi.mock('../../benefit/BenefitModule', () => ({
+vi.mock('../../benefit', () => ({
   BenefitPort: class {
     consume = dependencies.benefitConsume;
     refund = dependencies.benefitRefund;

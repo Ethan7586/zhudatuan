@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GrantPolicy } from './GrantPolicy';
+import { GrantPolicy } from '../../02_domain_yewu/policy/GrantPolicy';
 
 const policy = new GrantPolicy();
 
