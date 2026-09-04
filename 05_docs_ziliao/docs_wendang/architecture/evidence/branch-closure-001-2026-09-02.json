@@ -1,0 +1,78 @@
+{
+  "schema": "zdt.branch-closure-evidence.v1",
+  "sequence": 1,
+  "completedAt": "2026-09-02T00:26:18+08:00",
+  "repository": "https://github.com/Ethan7586/zhudatuan.git",
+  "branch": {
+    "name": "codex/canonical-registration-release",
+    "ref": "refs/heads/codex/canonical-registration-release",
+    "tip": "71280439c562e483081fb3412a50ca3eb31f341b",
+    "subject": "test(security): remove secret-like fixture literals"
+  },
+  "preconditions": {
+    "remoteBranchCount": 32,
+    "uniqueCommitsVersusSurvivors": 0,
+    "containedBy": [
+      "codex/full-production-20260830",
+      "backend-reconstruction",
+      "main"
+    ]
+  },
+  "productionProtection": {
+    "sourceCommit": "443cdb06d4724ae799e29ee61e97a336d322ec5d",
+    "tag": "prod-evidence/2026-09-02/web-business-api-443cdb0",
+    "tagObject": "88c15060be2db630c767d97895ff98bac21b8052",
+    "peeledCommitVerified": true
+  },
+  "action": {
+    "type": "delete-remote-branch",
+    "completed": true,
+    "localCleanupCompleted": true
+  },
+  "localCleanup": {
+    "completedAt": "2026-09-02T00:34:13+08:00",
+    "finalVerifiedAt": "2026-09-02T00:36:35+08:00",
+    "repositoriesChecked": [
+      "/Users/Ethan/Desktop/zdt-next",
+      "/Users/Ethan/Desktop/Projects/zhudatuan/main"
+    ],
+    "localBranchRefMatchesAfter": 0,
+    "remoteTrackingRefMatchesAfter": 0,
+    "worktreeRegistrationsAfter": 0,
+    "prunableWorktreeRegistrationsAfter": 0,
+    "staleAdminEntryPruned": ".git/worktrees/zhudatuan-auth-registration.MeOwKt",
+    "residualDirectory": {
+      "sourcePath": "/private/tmp/zhudatuan-auth-registration.MeOwKt",
+      "measuredSize": "272M",
+      "trackedFilesVerifiedEqual": 166,
+      "missingTrackedFiles": 1912,
+      "nonMissingTrackedDifferences": 0,
+      "untrackedGeneratedFiles": 208,
+      "disposition": "removed-from-source-and-trash",
+      "trashPath": "/Users/Ethan/.Trash/zhudatuan-auth-registration.MeOwKt",
+      "sourcePathExistsAfter": false,
+      "trashPathExistsAfter": false,
+      "otherTrashItemsTouched": false
+    }
+  },
+  "postconditions": {
+    "remoteBranchRefMatches": 0,
+    "remoteBranchCount": 31,
+    "localBranchRefMatches": 0,
+    "remoteTrackingRefMatches": 0,
+    "worktreeRegistrations": 0,
+    "recoverableFromAllSurvivors": true,
+    "uniqueCommitsVersusSurvivors": 0,
+    "productionTagPeeledCommit": "443cdb06d4724ae799e29ee61e97a336d322ec5d"
+  },
+  "recovery": {
+    "sourceCommit": "71280439c562e483081fb3412a50ca3eb31f341b",
+    "ref": "refs/heads/codex/canonical-registration-release"
+  },
+  "safety": {
+    "aliyunMutated": false,
+    "servicesRestarted": false,
+    "routesChanged": false,
+    "zdtNextMergedWithLegacyHistory": false
+  }
+}

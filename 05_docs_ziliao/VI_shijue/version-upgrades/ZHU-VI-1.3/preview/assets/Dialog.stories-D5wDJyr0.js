@@ -1,0 +1,15 @@
+import{i as e,s as t}from"./preload-helper-BdFrVu1K.js";import{t as n}from"./iframe-BGc-A4eD.js";import{a as r,d as i,i as a,l as o,o as s,r as c,s as l,t as u}from"./Button-Bv_u6xej.js";function d({open:e,title:t,children:n,onClose:r,dismissable:a=!0,eyebrow:c}){return(0,f.jsx)(l,{className:`dialogbackdrop`,isDismissable:a,isKeyboardDismissDisabled:!a,isOpen:e,onOpenChange:e=>{e||r()},children:(0,f.jsx)(s,{className:`dialogpanel`,children:(0,f.jsx)(o,{className:`dialogcontent`,children:({close:e})=>(0,f.jsxs)(f.Fragment,{children:[(0,f.jsxs)(`header`,{children:[(0,f.jsxs)(`div`,{children:[c===void 0?null:(0,f.jsx)(`p`,{children:c}),(0,f.jsx)(i,{slot:`title`,children:t})]}),(0,f.jsx)(u,{"aria-label":`关闭`,onPress:e,children:(0,f.jsx)(`span`,{"aria-hidden":`true`,children:`×`})})]}),(0,f.jsx)(`div`,{className:`dialogbody`,children:n})]})})})})}var f,p=e((()=>{r(),c(),f=a(),d.__docgenInfo={description:``,methods:[],displayName:`Dialog`,props:{open:{required:!0,tsType:{name:`boolean`},description:``},title:{required:!0,tsType:{name:`string`},description:``},children:{required:!0,tsType:{name:`ReactNode`},description:``},onClose:{required:!0,tsType:{name:`signature`,type:`function`,raw:`() => void`,signature:{arguments:[],return:{name:`void`}}},description:``},dismissable:{required:!1,tsType:{name:`boolean`},description:``,defaultValue:{value:`true`,computed:!1}},eyebrow:{required:!1,tsType:{name:`string`},description:``}}}}));function m(){let[e,t]=(0,h.useState)(!1);return(0,g.jsxs)(g.Fragment,{children:[(0,g.jsx)(u,{tone:`primary`,onPress:()=>t(!0),children:`打开确认框`}),(0,g.jsx)(d,{open:e,title:`确认业务操作`,onClose:()=>t(!1),children:(0,g.jsx)(`p`,{children:`提交前请核对当前范围与业务编号。`})})]})}var h,g,_,v,y,b,x,S;e((()=>{h=t(n(),1),c(),p(),g=a(),{expect:_,screen:v,userEvent:y}=__STORYBOOK_MODULE_TEST__,b={title:`交互原语/Dialog`,component:d,args:{open:!1,title:`确认业务操作`,children:null,onClose:()=>void 0},parameters:{layout:`centered`}},x={render:()=>(0,g.jsx)(m,{}),play:async()=>{await y.click(v.getByRole(`button`,{name:`打开确认框`})),await _(v.getByRole(`dialog`,{name:`确认业务操作`})).toBeInTheDocument(),await y.click(v.getByRole(`button`,{name:`关闭`})),await _(v.queryByRole(`dialog`)).not.toBeInTheDocument()}},x.parameters={...x.parameters,docs:{...x.parameters?.docs,source:{originalSource:`{
+  render: () => <DialogExample />,
+  play: async () => {
+    await userEvent.click(screen.getByRole('button', {
+      name: '打开确认框'
+    }));
+    await expect(screen.getByRole('dialog', {
+      name: '确认业务操作'
+    })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', {
+      name: '关闭'
+    }));
+    await expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  }
+}`,...x.parameters?.docs?.source}}},S=[`Controlled`]}))();export{x as Controlled,S as __namedExportsOrder,b as default};

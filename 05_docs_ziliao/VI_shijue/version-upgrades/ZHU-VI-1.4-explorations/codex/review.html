@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>zhudatuan 主打团 · Logo 精选与 Codex 新方案</title>
+  <style>
+    :root { --ink:#111; --paper:#f2f2f0; --line:#d8d8d4; --muted:#6b6b68; --navy:#143a8f; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--paper); font-family:"Noto Sans SC",system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+    main { width:min(1280px,calc(100% - 64px)); margin:0 auto; padding:52px 0 96px; }
+    header { display:flex; justify-content:space-between; align-items:flex-end; gap:32px; padding-bottom:22px; border-bottom:2px solid var(--ink); }
+    .eyebrow { margin-bottom:9px; color:var(--muted); font:500 11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.14em; text-transform:uppercase; }
+    h1 { margin:0; font-size:clamp(28px,4vw,48px); line-height:1.08; letter-spacing:-.03em; }
+    .verdict { max-width:390px; margin:0; color:#444; font-size:14px; line-height:1.7; text-align:right; }
+    section { margin-top:34px; border:1px solid var(--line); background:#fff; }
+    .section-head { display:flex; justify-content:space-between; gap:24px; padding:18px 22px; border-bottom:1px solid #e8e8e5; }
+    .section-head strong { font-size:18px; }
+    .section-head span { color:var(--muted); font-size:13px; }
+    .approved { min-height:285px; display:flex; align-items:center; justify-content:center; padding:54px; }
+    .approved img { width:min(920px,100%); height:auto; }
+    .reason { display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid #e8e8e5; }
+    .reason div { padding:20px 22px; font-size:13px; line-height:1.65; color:#444; }
+    .reason div + div { border-left:1px solid #e8e8e5; }
+    .reason b { display:block; margin-bottom:5px; color:var(--ink); }
+    .hero { display:grid; grid-template-columns:1.35fr .65fr; min-height:570px; }
+    .hero-main { display:flex; align-items:center; justify-content:center; padding:70px; }
+    .hero-main img { width:min(700px,100%); height:auto; }
+    .hero-copy { display:flex; flex-direction:column; justify-content:flex-end; gap:18px; padding:34px; border-left:1px solid #e8e8e5; background:#fafaf8; }
+    .hero-copy h2 { margin:0; font-size:25px; letter-spacing:-.02em; }
+    .hero-copy p { margin:0; color:#444; font-size:14px; line-height:1.75; }
+    .specs { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid #e8e8e5; }
+    .spec { min-height:190px; display:flex; flex-direction:column; justify-content:space-between; gap:24px; padding:22px; }
+    .spec + .spec { border-left:1px solid #e8e8e5; }
+    .spec-label { color:var(--muted); font:500 10px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.12em; text-transform:uppercase; }
+    .mask-primary { width:100%; aspect-ratio:216/125; background:var(--ink); -webkit-mask:url("zhudatuan-主打团-codex-primary.svg") center/contain no-repeat; mask:url("zhudatuan-主打团-codex-primary.svg") center/contain no-repeat; }
+    .navy .mask-primary { background:var(--navy); }
+    .reverse { background:var(--ink); }
+    .reverse .spec-label { color:#aaa; }
+    .reverse .mask-primary { background:#fff; }
+    .small-test { display:flex; flex-direction:column; gap:17px; align-items:flex-start; }
+    .small-test img:nth-child(1) { width:212px; }
+    .small-test img:nth-child(2) { width:142px; }
+    .small-test img:nth-child(3) { width:94px; }
+    .icon-grid { display:grid; grid-template-columns:1fr 1fr 1fr; min-height:360px; }
+    .icon-cell { display:flex; flex-direction:column; justify-content:space-between; gap:28px; padding:34px; }
+    .icon-cell + .icon-cell { border-left:1px solid #e8e8e5; }
+    .icon-cell > img { align-self:center; width:min(230px,80%); }
+    .icon-cell.app > img { border-radius:22%; }
+    .icon-copy { margin:0; color:#444; font-size:13px; line-height:1.7; }
+    .size-row { display:flex; align-items:flex-end; justify-content:center; gap:24px; min-height:230px; }
+    .size-row div { display:flex; flex-direction:column; align-items:center; gap:10px; color:var(--muted); font:500 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    footer { margin-top:24px; color:var(--muted); font-size:12px; line-height:1.7; }
+    @media (max-width:800px) {
+      main { width:min(100% - 32px,1280px); padding-top:28px; }
+      header { display:block; }
+      .verdict { margin-top:16px; text-align:left; }
+      .reason,.specs,.hero,.icon-grid { grid-template-columns:1fr; }
+      .reason div + div,.spec + .spec,.hero-copy,.icon-cell + .icon-cell { border-left:0; border-top:1px solid #e8e8e5; }
+      .hero-main { padding:44px 28px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <div class="eyebrow">100 files reviewed · 1 retained · 1 new proposal</div>
+      <h1>zhudatuan 主打团</h1>
+    </div>
+    <p class="verdict">不硬凑三个。现有探索只保留已经被明确认可的标题字形；其余图形标、改字方案和替代字体全部退出决选。</p>
+  </header>
+
+  <section>
+    <div class="section-head"><strong>保留 01 · H0 原始字形</strong><span>Noto Sans SC 700 · 不再改字</span></div>
+    <div class="approved"><img src="reference/approved-wordmark-outlined.svg" alt="zhudatuan 主打团获批横排字形"></div>
+    <div class="reason">
+      <div><b>为什么留</b>中英文骨架完全一致，冷静、稳定、没有符号负担。</div>
+      <div><b>为什么只留一个</b>其他候选都在为“创意”牺牲可读性，没有一个比原字形更好。</div>
+      <div><b>锁定规则</b>不换字体、不改笔画、不加切角；后续只设计组合关系。</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><strong>Codex 新方案 · Equal-Width Lockup</strong><span>同宽上下组合 · 纯字标</span></div>
+    <div class="hero">
+      <div class="hero-main"><img src="zhudatuan-主打团-codex-primary.svg" alt="Codex 设计的 zhudatuan 主打团上下组合 Logo"></div>
+      <div class="hero-copy">
+        <div class="eyebrow">Design idea</div>
+        <h2>不造符号，只建立秩序</h2>
+        <p>英文缩小到与三个中文字同宽。两行形成稳定、紧凑的矩形，但没有任何外框。中文承担识别，英文提供正式名称与数字平台气质。</p>
+        <p>字形沿用获批母版，所有字符均已转为矢量轮廓，不依赖字体安装。</p>
+      </div>
+    </div>
+    <div class="specs">
+      <div class="spec"><span class="spec-label">Primary · Ink</span><div class="mask-primary"></div></div>
+      <div class="spec navy"><span class="spec-label">Primary · #143A8F</span><div class="mask-primary"></div></div>
+      <div class="spec reverse"><span class="spec-label">Reverse</span><div class="mask-primary"></div></div>
+      <div class="spec"><span class="spec-label">Small · Horizontal</span><div class="small-test"><img src="zhudatuan-主打团-codex-horizontal.svg" alt="212px"><img src="zhudatuan-主打团-codex-horizontal.svg" alt="142px"><img src="zhudatuan-主打团-codex-horizontal.svg" alt="94px"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><strong>推荐主图标 · Z</strong><span>zhǔ / zhudatuan 的共同首字母</span></div>
+    <div class="icon-grid">
+      <div class="icon-cell">
+        <span class="spec-label">Frameless Z mark</span>
+        <img src="icons-z/zhudatuan-z-mark.svg" alt="zhudatuan Z 无框图标">
+        <p class="icon-copy">网站、折叠侧栏与品牌署名使用。折带结构延续旧图标的张力，但字母语义已改正。</p>
+      </div>
+      <div class="icon-cell app">
+        <span class="spec-label">Recommended app icon</span>
+        <img src="icons-z/zhudatuan-z-app-icon.svg" alt="zhudatuan Z 应用图标">
+        <p class="icon-copy">保留蓝色层次、圆角容器和白色强轮廓；核心明确读作 Z。</p>
+      </div>
+      <div class="icon-cell">
+        <span class="spec-label">64 / 32 / 24 / 16px</span>
+        <div class="size-row">
+          <div><img src="icons-z/zhudatuan-z-app-icon-64.png" width="64" height="64" alt="64px"><span>64</span></div>
+          <div><img src="icons-z/zhudatuan-z-app-icon-32.png" width="32" height="32" alt="32px"><span>32</span></div>
+          <div><img src="icons-z/zhudatuan-z-app-icon-24.png" width="24" height="24" alt="24px"><span>24</span></div>
+          <div><img src="icons-z/zhudatuan-z-app-icon-16.png" width="16" height="16" alt="16px"><span>16</span></div>
+        </div>
+        <p class="icon-copy">小尺寸仍然是一眼可辨的 Z，不会退化成闪电、箭头或随机几何块。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><strong>中文场景备选 ·「主」</strong><span>只作为中文简称，不再承担全局主图标</span></div>
+    <div class="icon-grid">
+      <div class="icon-cell">
+        <span class="spec-label">Frameless brand mark</span>
+        <img src="icons/zhudatuan-主打团-icon.svg" alt="无框主图标">
+        <p class="icon-copy">网页 favicon、折叠侧栏、账号头像直接使用，无框、透明背景。</p>
+      </div>
+      <div class="icon-cell app">
+        <span class="spec-label">App container</span>
+        <img src="icons/zhudatuan-主打团-app-icon.svg" alt="深蓝 App 图标">
+        <p class="icon-copy">蓝色圆角方块只用于操作系统和应用商店容器，不属于 Logo 本体。</p>
+      </div>
+      <div class="icon-cell">
+        <span class="spec-label">64 / 32 / 24 / 16px</span>
+        <div class="size-row">
+          <div><img src="icons/zhudatuan-主打团-icon-64.png" width="64" height="64" alt="64px"><span>64</span></div>
+          <div><img src="icons/zhudatuan-主打团-icon-32.png" width="32" height="32" alt="32px"><span>32</span></div>
+          <div><img src="icons/zhudatuan-主打团-icon-24.png" width="24" height="24" alt="24px"><span>24</span></div>
+          <div><img src="icons/zhudatuan-主打团-icon-16.png" width="16" height="16" alt="16px"><span>16</span></div>
+        </div>
+        <p class="icon-copy">小尺寸仍然直接读作「主」，不需要学习一套抽象符号。</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>完整字标用于品牌页、合同封面和门头；Z 为推荐主图标；单字「主」只在明确的中文场景中作为备选。</footer>
+</main>
+</body>
+</html>

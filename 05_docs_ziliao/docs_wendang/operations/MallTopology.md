@@ -1,0 +1,33 @@
+# 总商城与分商城仓库拓扑
+
+状态：Accepted
+日期：2026-08-26
+决策来源：项目负责人确认
+
+## 决策
+
+`zhudatuan` 是未来总商城的独立仓库。它当前为空是有意状态，不是需要恢复的工作树。
+
+`smart-wing` 是 `zhudatuan` 体系下的独立分商城。本仓库根目录就是 `smart-wing` 的唯一代码、需求输入、构建、测试和发布边界，不是待移动到 `Shop` 的嵌套候选目录。
+
+## 强制边界
+
+- 本仓库不得读取 `../` 或 `../../` 下的需求、源码、配置、构建输入或发布输入。
+- 不得把本仓库移动、复制或嵌套进 `zhudatuan`，也不得删除或覆盖未来总商城的空仓库。
+- 总商城不得通过文件系统相对导入、Git 子模块或嵌套 `.git` 消费分商城源码。
+- 总商城与分商城只通过版本化 Contract、Operation API、身份与 Scope 协议、Deep Link、事件和签名发布清单协作。
+- 每个分商城独立提交、构建、部署和回滚；共享能力必须发布为带版本和内容 Hash 的制品，不能依赖某台机器的目录布局。
+- `05_docs_ziliao/docs_wendang/福利商城功能清单260821.xlsx`、架构、VI、开发规范、生成器和审计输入必须在本仓库内可达并受版本控制。
+
+## 历史迁移章节
+
+`05_docs_ziliao/docs_wendang/福利商城全系统根治方案.md`、`05_docs_ziliao/docs_wendang/福利商城代码修改清单.md` 与 `05_docs_ziliao/docs_wendang/福利商城架构和补齐修改清单.md` 中关于 `outerShop`、`nestedCandidate`、`Shop1`、同级 Smart 副本、删除嵌套 `.git`、跨仓 move/copy/archive 或将 `smart-wing` 收束到外层 `Shop` 的内容，仅保留为 2026-08-25 迁移调查历史，不再是活动执行授权。
+
+若这些历史章节与本 ADR 冲突，以本 ADR 和项目负责人 2026-08-26 的确认优先。其余前后端分离、Operation API、领域边界、VI、测试、性能和发布质量要求继续有效。
+
+## 验收
+
+- clean clone 只包含一个 Git 根，且可独立运行生成、类型检查、测试和构建。
+- 生产源码、Workspace 依赖和质量脚本不存在越出仓库的输入路径。
+- Requirement Authority Loader 拒绝绝对路径、父目录穿越和解析到仓外的符号链接。
+- `zhudatuan` 的状态不影响本分商城构建、测试、部署或回滚。

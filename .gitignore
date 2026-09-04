@@ -11,10 +11,10 @@ storybook-static/
 .env*
 !.env.example
 !**/.env.example
-!services/commerce/.env.jobs.example
+!01_core_hexin/services/commerce/.env.jobs.example
 secrets.local.json
-infrastructure/local/.tls/
-infrastructure/local/data/
+02_platform_pingtai/infrastructure/local/.tls/
+02_platform_pingtai/infrastructure/local/data/
 
 .vercel
 
@@ -41,4 +41,4 @@ gitpointer.broken.txt
 .codex-xlsx/
 
 # Payment certificates and private keys belong in Secret Manager, never the workspace.
-config/payment/
+02_platform_pingtai/config/payment/

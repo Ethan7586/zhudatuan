@@ -1,0 +1,110 @@
+version: 1
+profile: full
+state: inventory-only-not-provisioning-evidence
+buildCommand: npm run build:commerce
+digestPolicy: sha256-required-from-clean-release-before-copy
+
+releaseArtifacts:
+  - id: internalRuntime
+    artifact: 01_core_hexin/services/commerce/dist/InternalRuntimeMain.js
+    source: 04_tools/tools/localinfra/src/Run.ts
+    capability: secret-store-kms-and-object-store
+  - id: internalRuntimeReadiness
+    artifact: 01_core_hexin/services/commerce/dist/InternalRuntimeReadyMain.js
+    source: 04_tools/tools/localinfra/src/RegistrationReady.ts
+  - id: internalSecretStore
+    artifact: 01_core_hexin/services/commerce/dist/LocalSecretsMain.js
+    source: 04_tools/tools/localsecrets/src/Main.ts
+  - id: internalKms
+    artifact: 01_core_hexin/services/commerce/dist/LocalKmsMain.js
+    source: 04_tools/tools/localkms/src/Main.ts
+  - id: internalObjectStore
+    artifact: 01_core_hexin/services/commerce/dist/LocalObjectsMain.js
+    source: 04_tools/tools/localobjects/src/Main.ts
+  - id: postgresTlsProxy
+    artifact: 01_core_hexin/services/commerce/dist/PostgresTlsProxyMain.js
+    source: 04_tools/tools/localinfra/src/PostgresTlsProxyMain.ts
+  - id: identityApi
+    artifact: 01_core_hexin/services/commerce/dist/IdentityRegistrationApiMain.js
+    source: 01_core_hexin/services/commerce/src/entry/IdentityRegistrationApiMain.ts
+  - id: identityApiReadiness
+    artifact: 01_core_hexin/services/commerce/dist/IdentityRegistrationApiReadyMain.js
+    source: 01_core_hexin/services/commerce/src/entry/IdentityRegistrationApiReadyMain.ts
+  - id: identityNotificationJobs
+    artifact: 01_core_hexin/services/commerce/dist/IdentityNotificationJobsOnlyMain.js
+    source: 01_core_hexin/services/commerce/src/entry/IdentityNotificationJobsOnlyMain.ts
+  - id: identityNotificationJobsReadiness
+    artifact: 01_core_hexin/services/commerce/dist/IdentityNotificationJobsReadyMain.js
+    source: 01_core_hexin/services/commerce/src/entry/IdentityNotificationJobsReadyMain.ts
+  - id: fullJobs
+    artifact: 01_core_hexin/services/commerce/dist/JobsMain.js
+    source: 01_core_hexin/services/commerce/src/entry/JobsMain.ts
+    bundledImplementation: 01_core_hexin/services/commerce/src/entry/FullJobsMain.ts
+    requiredMarker: JOB_RUNTIME_CATALOG_DRIFT
+  - id: migration
+    artifact: 01_core_hexin/services/commerce/dist/MigrationMain.js
+    source: 01_core_hexin/services/commerce/src/entry/MigrationMain.ts
+  - id: stagingOwnerBootstrap
+    artifact: 01_core_hexin/services/commerce/dist/BootstrapStagingOwner.js
+    source: 04_tools/tools/seed/src/BootstrapStagingOwner.ts
+  - id: stagingReadiness
+    artifact: 01_core_hexin/services/commerce/dist/StagingReadinessMain.js
+    source: 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/verify-readiness.mjs
+    requiredMarker: example:validation-only
+  - id: migrations
+    artifact: 02_platform_pingtai/database/supabase/migrations
+    kind: immutable-directory
+  - id: authWeb
+    artifact: 01_core_hexin/apps/auth-web/dist
+    kind: static-directory
+  - id: console
+    artifact: 01_core_hexin/apps/console/dist
+    kind: static-directory
+
+deploymentArtifacts:
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/postgres-init-registration.sh
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/postgres-reconcile-registration-boundary.sql
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/postgres-retire-registration-bootstrap.sql
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/Caddyfile.full
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/caddy-zhudatuan-staging-full.conf
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-caddy.env.example
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-identity-registration-api.env.example
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-identity-notification-jobs.env.example
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-database-retire.env.example
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-jobs.env.example
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-internal-runtime.env.example
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-internal-access.bootstrap.example.json
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-internal-access.example.json
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-secrets.bootstrap.example.json
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-secrets.example.json
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-migration.env.example
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-owner-bootstrap.env.example
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-postgres-proxy.env.example
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/full-rds-init.env.example
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/prepare-internal-tls.mjs
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/prepare-release.mjs
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/validate-cost-approval.mjs
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/install-caddy-candidate.sh
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-identity-api.service
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-identity-notification-jobs.service
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-database-retire.service
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-internal-runtime.service
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-jobs.service
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-migration.service
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-owner-bootstrap.service
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-postgres-proxy.service
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-rds-init.service
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/PREPARE.md
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/STAGING-INFRASTRUCTURE-SPEC-20260829.md
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/readiness.evidence.example.yml
+  - 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/staging-cost-approval.example.yml
+
+explicitExclusions:
+  - artifact: 01_core_hexin/services/commerce/dist/RegistrationMigrationMain.js
+    reason: registration-only runner pins non-staging paths and references; full uses MigrationMain.js
+  - artifact: 01_core_hexin/services/commerce/dist/FullJobsMain.js
+    reason: no standalone build artifact; FullJobsMain.ts is bundled into JobsMain.js
+  - artifact: 01_core_hexin/services/commerce/dist/BootstrapOwner.js
+    reason: formal acceptance bootstrap is forbidden; full staging uses BootstrapStagingOwner.js
+  - artifact: 01_core_hexin/services/commerce/dist/BootstrapRegistration.js
+    reason: authenticated Owner invitation API replaces static registration invitation bootstrap

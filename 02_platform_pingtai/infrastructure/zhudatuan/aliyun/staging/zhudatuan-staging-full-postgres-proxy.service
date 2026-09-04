@@ -1,0 +1,46 @@
+[Unit]
+Description=Zhudatuan full staging PostgreSQL TLS boundary
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/opt/zhudatuan-staging-full/current/services/commerce/dist/PostgresTlsProxyMain.js
+ConditionPathExists=/opt/zhudatuan-staging-full/shared/full-postgres-proxy.env
+ConditionPathExists=/opt/zhudatuan-staging-full/shared/tls/aliyun-rds-ca.pem
+
+[Service]
+Type=simple
+User=zhudatuan-stg-pgproxy
+DynamicUser=yes
+WorkingDirectory=/opt/zhudatuan-staging-full/current
+Environment=NODE_ENV=production
+Environment=APP_ENV=production
+EnvironmentFile=/opt/zhudatuan-staging-full/shared/full-postgres-proxy.env
+LoadCredential=rds-ca-certificate:/opt/zhudatuan-staging-full/shared/tls/aliyun-rds-ca.pem
+ExecStart=/usr/bin/env ZHUDATUAN_POSTGRES_PROXY_CA_FILE=%d/rds-ca-certificate /usr/bin/node 01_core_hexin/services/commerce/dist/PostgresTlsProxyMain.js
+ExecStartPost=/usr/bin/pg_isready --host=127.0.0.1 --port=55442 --dbname=zhudatuan_registration --timeout=5
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=20
+TimeoutStopSec=15
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+PrivateDevices=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadOnlyPaths=/opt/zhudatuan-staging-full/current
+InaccessiblePaths=/opt/zhudatuan-staging-full/shared -/opt/zhudatuan -/opt/smart-wing -/opt/smart-wiston -/opt/shop-test
+
+[Install]
+WantedBy=multi-user.target

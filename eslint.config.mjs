@@ -5,25 +5,25 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-const webSource = ['apps/{auth,console,store,supplier,storefront}/src/**/*.{ts,tsx}'];
+const webSource = ['01_core_hexin/apps/{auth,console,store,supplier,storefront}/src/**/*.{ts,tsx}'];
 const sharedSource = [
-  'packages/{authz,config,contract,design,kernel,sdk,telemetry}/src/**/*.{ts,tsx}',
-  'packages/testing/src/browser/**/*.{ts,tsx}',
+  '01_core_hexin/packages/{authz,config,contract,design,kernel,sdk,telemetry}/src/**/*.{ts,tsx}',
+  '01_core_hexin/packages/testing/src/browser/**/*.{ts,tsx}',
 ];
-const browserTests = ['tests/browser/**/*.ts', 'playwright.config.ts'];
+const browserTests = ['03_quality_ceshi/tests/browser/**/*.ts', 'playwright.config.ts'];
 const typedSource = [...webSource, ...sharedSource, ...browserTests];
 const reactSource = [
   ...webSource,
-  'packages/design/src/**/*.{ts,tsx}',
-  'packages/testing/src/browser/**/*.{ts,tsx}',
+  '01_core_hexin/packages/design/src/**/*.{ts,tsx}',
+  '01_core_hexin/packages/testing/src/browser/**/*.{ts,tsx}',
 ];
 const jsxSource = [
-  'apps/{auth,console,store,supplier,storefront}/src/**/*.tsx',
-  'packages/design/src/**/*.tsx',
-  'packages/testing/src/browser/**/*.tsx',
+  '01_core_hexin/apps/{auth,console,store,supplier,storefront}/src/**/*.tsx',
+  '01_core_hexin/packages/design/src/**/*.tsx',
+  '01_core_hexin/packages/testing/src/browser/**/*.tsx',
 ];
-const miniappSource = ['apps/miniapp/miniprogram/**/*.js'];
-const nodeTests = ['apps/miniapp/tests/**/*.cjs', 'tests/browser/**/*.mjs', 'eslint.config.mjs'];
+const miniappSource = ['01_core_hexin/apps/miniapp/miniprogram/**/*.js'];
+const nodeTests = ['01_core_hexin/apps/miniapp/tests/**/*.cjs', '03_quality_ceshi/tests/browser/**/*.mjs', 'eslint.config.mjs'];
 
 const typeAwareRules = Object.assign({}, ...tseslint.configs.recommendedTypeChecked.map((config) => config.rules ?? {}));
 const reactHookRules = {
@@ -40,11 +40,11 @@ export default defineConfig([
     '**/storybook-static/**',
     '**/tmp/**',
     '**/*.generated.ts',
-    'packages/contract/src/RequirementCatalog.generated.ts',
-    'packages/contract/src/events/CommerceEvents.ts',
-    'packages/contract/src/operations/CommerceOperations.ts',
-    'packages/contract/src/operations/CommerceSchemas.ts',
-    'apps/miniapp/miniprogram/api/operations.js',
+    '01_core_hexin/packages/contract/src/RequirementCatalog.generated.ts',
+    '01_core_hexin/packages/contract/src/events/CommerceEvents.ts',
+    '01_core_hexin/packages/contract/src/operations/CommerceOperations.ts',
+    '01_core_hexin/packages/contract/src/operations/CommerceSchemas.ts',
+    '01_core_hexin/apps/miniapp/miniprogram/api/operations.js',
   ]),
   {
     name: 'typed frontend correctness',
@@ -105,7 +105,7 @@ export default defineConfig([
   },
   {
     name: 'miniapp node tests',
-    files: ['apps/miniapp/tests/**/*.cjs'],
+    files: ['01_core_hexin/apps/miniapp/tests/**/*.cjs'],
     languageOptions: { ecmaVersion: 'latest', sourceType: 'commonjs', globals: { ...globals.node, wx: 'writable' } },
     rules: eslint.configs.recommended.rules,
   },

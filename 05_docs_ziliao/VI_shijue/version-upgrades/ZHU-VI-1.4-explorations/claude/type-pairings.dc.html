@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@600;700;900&family=ZCOOL+XiaoWei&family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=Jost:wght@400;500&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+body { margin:0; background:#f2f2f0; -webkit-font-smoothing:antialiased; }
+a { color:#111; } a:hover { color:#555; }
+</style>
+</helmet>
+<div style="font-family:'Noto Sans SC',system-ui,sans-serif; color:#111; padding:56px 48px 110px; max-width:1180px; margin:0 auto">
+
+  <div style="display:flex; flex-direction:column; gap:12px; border-bottom:2px solid #111; padding-bottom:24px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#666">Round 07 · 字体配对 · 5 pairings</div>
+    <h1 style="margin:0; font-size:36px; font-weight:700; letter-spacing:-.01em">zhudatuan 主打团 — 现成字体配对比较</h1>
+    <p style="margin:0; max-width:66ch; font-size:15px; line-height:1.7; color:#3a3a3a; text-wrap:pretty">五套都用现成字体、不做任何字形改造，只决定中西文的配对、字重、字距与对齐关系。每套给出横排锁版、上下排、20px 页头与反白四种状态，便于直接判断商业气质。</p>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#666"><a href="refined-board.dc.html">← R06 三方向评审板</a></div>
+  </div>
+
+  <sc-for list="{{ items }}" as="p">
+    <div style="margin-top:36px; background:#fff; border:1px solid #d8d8d4">
+      <div style="display:flex; align-items:baseline; gap:16px; padding:20px 26px; border-bottom:1px solid #e8e8e4; flex-wrap:wrap">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#666">{{ p.id }}</div>
+        <div style="font-size:19px; font-weight:700">{{ p.name }}</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.06em; color:#888">{{ p.stack }}</div>
+      </div>
+
+      <div style="padding:40px 26px 34px; border-bottom:1px solid #e8e8e4">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#bbb; margin-bottom:26px">横排锁版</div>
+        <div style="display:flex; align-items:baseline; gap:{{ p.gap }}; white-space:nowrap">
+          <span style="{{ p.latinStyle }}">zhudatuan</span>
+          <span style="{{ p.cjkStyle }}">主打团</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+        <div style="padding:28px 26px; display:flex; flex-direction:column; gap:18px">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#bbb">上下排</div>
+          <div style="display:flex; flex-direction:column; gap:{{ p.stackGap }}">
+            <span style="{{ p.cjkStyleSm }}">主打团</span>
+            <span style="{{ p.latinStyleSm }}">zhudatuan</span>
+          </div>
+        </div>
+        <div style="padding:28px 26px; border-left:1px solid #e8e8e4; display:flex; flex-direction:column; gap:18px">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#bbb">商城页头 · 20px</div>
+          <div style="border:1px solid #eee; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:16px; overflow:hidden">
+            <div style="display:flex; align-items:baseline; gap:{{ p.gapSm }}; flex:none; white-space:nowrap">
+              <span style="{{ p.latinStyleXs }}">zhudatuan</span>
+              <span style="{{ p.cjkStyleXs }}">主打团</span>
+            </div>
+            <div style="display:flex; gap:10px; font-size:11px; color:#aaa; flex:none; white-space:nowrap"><span>开团</span></div>
+          </div>
+        </div>
+        <div style="padding:28px 26px; border-left:1px solid #e8e8e4; display:flex; flex-direction:column; gap:18px">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#bbb">反白</div>
+          <div style="background:#171717; padding:22px 20px; display:flex; align-items:baseline; gap:{{ p.gapSm }}; white-space:nowrap; overflow:hidden">
+            <span style="{{ p.latinStyleInv }}">zhudatuan</span>
+            <span style="{{ p.cjkStyleInv }}">主打团</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:22px 26px; border-top:1px solid #e8e8e4">
+        <p style="margin:0; font-size:13px; line-height:1.7; color:#333; max-width:80ch; text-wrap:pretty">{{ p.desc }}</p>
+      </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const P = (id, name, stack, latin, cjk, o) => {
+      const L = (size, color) => `font-family:${latin.ff}; font-weight:${latin.w}; font-size:${size}px; letter-spacing:${latin.ls}; color:${color}; ${latin.extra || ""}`;
+      const C = (size, color) => `font-family:${cjk.ff}; font-weight:${cjk.w}; font-size:${size}px; letter-spacing:${cjk.ls}; color:${color}; ${cjk.extra || ""}`;
+      return {
+        id, name, stack, ...o,
+        latinStyle: L(o.lBig, "#111"), cjkStyle: C(o.cBig, "#111"),
+        latinStyleSm: L(o.lBig * 0.42, "#111"), cjkStyleSm: C(o.cBig * 0.46, "#111"),
+        latinStyleXs: L(o.lXs || 15, "#171717"), cjkStyleXs: C(20, "#171717"),
+        latinStyleInv: L(o.lBig * 0.34, "#fff"), cjkStyleInv: C(o.cBig * 0.36, "#fff"),
+      };
+    };
+    return { items: [
+      P("T1", "现代黑体 · 紧凑", "Noto Sans SC 900 / Archivo 700",
+        { ff: "'Archivo',sans-serif", w: 700, ls: "-.02em", extra: "text-transform:none" },
+        { ff: "'Noto Sans SC',sans-serif", w: 900, ls: ".02em" },
+        { lXs: 17, lBig: 52, cBig: 60, gap: "18px", gapSm: "10px", stackGap: "8px",
+          desc: "最直接的数字平台写法。Archivo 的方正骨架与 Noto Sans SC 900 的横竖比例接近，两组重量感一致，横排时不会一头轻一头重。缺点是缺少独占性，需要靠间距与色彩体系补。" }),
+      P("T2", "黑体 + 等宽", "Noto Sans SC 700 / IBM Plex Mono 500",
+        { ff: "'IBM Plex Mono',monospace", w: 500, ls: ".08em" },
+        { ff: "'Noto Sans SC',sans-serif", w: 700, ls: ".04em" },
+        { lXs: 13, lBig: 34, cBig: 58, gap: "22px", gapSm: "12px", stackGap: "10px",
+          desc: "等宽拉丁把 zhudatuan 处理成系统标识而不是英文名，后台与开发文档场景最贴合。字重降到 700 后中文更克制，可信度高，但零售促销场景会显得偏冷。" }),
+      P("T3", "宋体 · 商业正式", "Noto Serif SC 900 / Source Serif 4 700",
+        { ff: "'Source Serif 4',serif", w: 700, ls: "0" },
+        { ff: "'Noto Serif SC',serif", w: 900, ls: ".03em" },
+        { lXs: 15, lBig: 44, cBig: 60, gap: "20px", gapSm: "11px", stackGap: "8px",
+          desc: "适合合同封面、发票与门头。衬线的横细竖粗与中文宋体同源，是五套里最耐看、也最像十年品牌的一套。代价是 20px 页头细节会丢，界面里需要换黑体备用版。" }),
+      P("T4", "宋黑混合 · 中国气质", "ZCOOL XiaoWei / Jost 500",
+        { ff: "'Jost',sans-serif", w: 500, ls: ".14em", extra: "text-transform:uppercase" },
+        { ff: "'ZCOOL XiaoWei',serif", w: 400, ls: ".08em" },
+        { lXs: 12.5, lBig: 30, cBig: 60, gap: "24px", gapSm: "13px", stackGap: "12px",
+          desc: "站酷小薇是宋黑混合骨架，横竖等粗但保留宋体的收笔转折，中国品牌气质来自结构而不是纹样。Jost 的几何小写大写化后重量刚好压住。单字重是它唯一的限制。" }),
+      P("T5", "轻黑体 · 留白", "Noto Sans SC 500 / Manrope 800",
+        { ff: "'Manrope',sans-serif", w: 800, ls: "-.03em" },
+        { ff: "'Noto Sans SC',sans-serif", w: 500, ls: ".16em" },
+        { lXs: 16, lBig: 40, cBig: 52, gap: "26px", gapSm: "14px", stackGap: "14px",
+          desc: "反向配重：拉丁重、中文轻并拉开字距，视觉重心落在 zhudatuan 上。适合国际化与品牌页大标题，但 20px 以下中文字距会散，页头必须收紧到 .06em。" }),
+    ]};
+  }
+}
+</script>
+</body>
+</html>

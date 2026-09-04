@@ -1,0 +1,324 @@
+import { MetricCard, MetricGrid, Surface } from '@shop/design';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
+import { useConsoleContext } from '../../entity/session/ConsoleContext';
+import { safeQueryError } from '../../shared/api/QueryState';
+import { formatOrderTime } from './OrderPresentation';
+import { OrderColumnSettings } from './OrderColumnSettings';
+import { orderDetailKey } from './OrderDetailQuery';
+import { OrderDrawer } from './OrderDrawer';
+import { OrderExceptionWorkbench } from './OrderExceptionWorkbench';
+import { emptyOrderFilter, OrderFilterForm } from './OrderFilter';
+import { OrderIcon } from './OrderIcon';
+import { OrderPageHeader } from './OrderPageHeader';
+import { isOrderPreviewContext, orderKey, readOrders, type OrderQuery } from './OrderQuery';
+import { defaultOrderColumns, OrderTable, type OrderColumnKey } from './OrderTable';
+import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, OrderViewSchema, type OrderDetailTab, type OrderListFilter, type OrderView } from './OrderSchema';
+import { OrderStatusTabs } from './OrderStatusTabs';
+import './order-layout.css';
+import './order-controls.css';
+import './order-table.css';
+import './order-drawer.css';
+import './order-drawer-panels.css';
+import './order-preview-actions.css';
+import './order-exception-shell.css';
+import './order-exception-list.css';
+import './order-exception-timeline.css';
+import './order-exception-action.css';
+import './order-exception-responsive.css';
+
+const previewOnlySearchKeys = ['placed', 'lifecycle', 'payment', 'fulfillment', 'mall', 'view'] as const;
+const emptyChecked: ReadonlySet<string> = new Set();
+
+export function Component() {
+  const context = useConsoleContext();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [search, setSearch] = useSearchParams();
+  const previewEnabled = isOrderPreviewContext(context);
+  const filter = readFilter(search, previewEnabled);
+  const view = readView(search, previewEnabled);
+  const selected = readSelected(search);
+  const detailTab = readDetailTab(search);
+  const cursor = search.get('cursor') ?? undefined;
+  const queryFilter: OrderQuery = { ...filter, view, ...(cursor === undefined ? {} : { cursor }) };
+  const query = useQuery({ queryKey: orderKey(context, queryFilter), queryFn: ({ signal }) => readOrders(context, queryFilter, signal) });
+  const page = query.data;
+  const pageIds = useMemo(() => page?.items.map((order) => order.id) ?? [], [page?.items]);
+  const selectionBoundary = `${context.scope.kind}\u0000${context.scope.id}\u0000${context.session.accessVersion}`;
+  const [checkedState, setCheckedState] = useState<Readonly<{ boundary: string; ids: ReadonlySet<string> }>>(() => ({ boundary: selectionBoundary, ids: new Set() }));
+  const checked = useMemo(() => {
+    if (checkedState.boundary !== selectionBoundary || checkedState.ids.size === 0) return emptyChecked;
+    const pageIdSet = new Set(pageIds);
+    const retained = new Set([...checkedState.ids].filter((id) => pageIdSet.has(id)));
+    return retained.size === checkedState.ids.size ? checkedState.ids : retained;
+  }, [checkedState, pageIds, selectionBoundary]);
+  const [columnsOpen, setColumnsOpen] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<OrderColumnKey>>(() => new Set(defaultOrderColumns));
+  const previewPage = previewEnabled && page?.preview?.source === 'local-preview' ? page.preview : undefined;
+  const pageOrders = page?.items ?? [];
+  const paidCount = pageOrders.filter((order) => order.payment_state === 'paid').length;
+  const fulfillmentCount = pageOrders.filter((order) => !['delivered', 'completed'].includes(order.fulfillment_state)).length;
+  const attentionCount = pageOrders.filter((order) => order.aftersale_state !== 'none' || order.lifecycle_state === 'cancelled').length;
+  const error = safeQueryError(query.error);
+
+  useEffect(() => {
+    if (previewEnabled || !previewOnlySearchKeys.some((key) => search.has(key))) return;
+    const next = new URLSearchParams(search);
+    previewOnlySearchKeys.forEach((key) => next.delete(key));
+    setSearch(next, { replace: true });
+  }, [previewEnabled, search, setSearch]);
+  useEffect(() => {
+    setCheckedState((current) => (current.boundary === selectionBoundary ? current : { boundary: selectionBoundary, ids: new Set() }));
+  }, [selectionBoundary]);
+  useEffect(() => {
+    setCheckedState((current) => {
+      if (current.boundary !== selectionBoundary || current.ids.size === 0) return current;
+      const pageIdSet = new Set(pageIds);
+      const retained = new Set([...current.ids].filter((id) => pageIdSet.has(id)));
+      return retained.size === current.ids.size ? current : { boundary: selectionBoundary, ids: retained };
+    });
+  }, [pageIds, selectionBoundary]);
+
+  const updateSearch = (mutate: (next: URLSearchParams) => void) => {
+    const next = new URLSearchParams(search);
+    mutate(next);
+    setSearch(next);
+  };
+  const resetChecked = () => setCheckedState({ boundary: selectionBoundary, ids: new Set() });
+  const applyFilter = (value: OrderListFilter) =>
+    updateSearch((next) => {
+      for (const key of ['order', 'placed', 'lifecycle', 'payment', 'fulfillment', 'mall'] as const) {
+        if (value[key] === '') next.delete(key);
+        else next.set(key, value[key]);
+      }
+      next.delete('cursor');
+      resetChecked();
+    });
+  const selectView = (nextView: OrderView) =>
+    updateSearch((next) => {
+      if (nextView === 'all') next.delete('view');
+      else next.set('view', nextView);
+      next.delete('cursor');
+      resetChecked();
+    });
+  const openOrder = (id: string) =>
+    updateSearch((next) => {
+      next.set('selected', id);
+      next.delete('tab');
+    });
+  const closeOrder = () =>
+    updateSearch((next) => {
+      next.delete('selected');
+      next.delete('tab');
+    });
+  const selectTab = (tab: OrderDetailTab) => updateSearch((next) => next.set('tab', tab));
+  const setCursor = (value?: string) =>
+    updateSearch((next) => {
+      if (value === undefined || value === 'start') next.delete('cursor');
+      else next.set('cursor', value);
+      resetChecked();
+    });
+  const refresh = () => {
+    void query.refetch();
+    if (selected !== undefined) void queryClient.refetchQueries({ queryKey: orderDetailKey(context, selected), exact: true });
+  };
+  const toggleColumn = (key: OrderColumnKey) =>
+    setVisibleColumns((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  const toggleChecked = (id: string) =>
+    setCheckedState((current) => {
+      const next = new Set<string>(current.boundary === selectionBoundary ? current.ids : emptyChecked);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return { boundary: selectionBoundary, ids: next };
+    });
+  const togglePage = () =>
+    setCheckedState((current) => {
+      const next = new Set<string>(current.boundary === selectionBoundary ? current.ids : emptyChecked);
+      if (pageIds.every((id) => next.has(id))) pageIds.forEach((id) => next.delete(id));
+      else pageIds.forEach((id) => next.add(id));
+      return { boundary: selectionBoundary, ids: next };
+    });
+
+  if (previewEnabled && view === 'exception') {
+    return <>
+      <OrderExceptionWorkbench page={page} isPending={query.isPending} isFetching={query.isFetching} error={error}
+        onBack={() => selectView('all')} onRefresh={refresh} onOpenOrder={openOrder} onOpenSystem={(route) => navigate(route)} />
+      {selected === undefined ? null : <OrderDrawer orderId={selected} tab={detailTab} previewEnabled onTab={selectTab} onClose={closeOrder} />}
+    </>;
+  }
+
+  return (
+    <section className="orderworkspace" aria-labelledby="ordermanagementtitle">
+      <OrderPageHeader previewEnabled={previewEnabled} isFetching={query.isFetching} pageCount={page?.items.length ?? 0} onRefresh={refresh} />
+
+      <section className="ordervi12section" aria-labelledby="ordermetricstitle">
+            <header className="ordervi12sectionhead">
+              <p className="swoverline">订单概览</p>
+              <h2 id="ordermetricstitle">当前页订单态势</h2>
+            </header>
+            <MetricGrid columns="four">
+              <MetricCard label="当前页订单" value={page === undefined ? '—' : pageOrders.length} trend={query.isFetching ? '同步中' : '已同步'} description="当前筛选结果" tone="info" icon={<OrderIcon name="order" />} />
+              <MetricCard label="已支付" value={page === undefined ? '—' : paidCount} trend="当前页" description="支付状态" tone="success" icon={<OrderIcon name="check" />} />
+              <MetricCard label="待履约" value={page === undefined ? '—' : fulfillmentCount} trend="需跟进" description="当前页未完成履约" tone="warning" icon={<OrderIcon name="truck" />} />
+              <MetricCard
+                label="售后或取消"
+                value={page === undefined ? '—' : attentionCount}
+                trend={attentionCount === 0 ? '稳定' : '需关注'}
+                description="售后和取消订单"
+                tone={attentionCount === 0 ? 'neutral' : 'danger'}
+                icon={<OrderIcon name="clock" />}
+              />
+            </MetricGrid>
+          </section>
+
+          <section className="ordervi12section" aria-labelledby="orderworkspacetitle">
+            <header className="ordervi12sectionhead">
+              <p className="swoverline">订单管理</p>
+              <h2 id="orderworkspacetitle">订单列表</h2>
+            </header>
+            <Surface className="ordervi12listsurface" depth="raised" padding="none" radius="extraLarge">
+              <div className="ordervi12statusbar">
+                <OrderStatusTabs active={view} previewEnabled={previewEnabled} page={page} onChange={selectView} />
+              </div>
+
+              <p id="orderwriteboundary" className="ordercontractnote" role="note">
+                当前生产读合同仅保证已加载订单；当前页导出不补造全量数据，发货、退款和售后操作暂未开放。
+              </p>
+
+              <div className="orderfilterarea">
+                <OrderFilterForm value={filter} previewEnabled={previewEnabled} onApply={applyFilter} onColumns={() => setColumnsOpen((open) => !open)} columnsOpen={columnsOpen} />
+                <OrderColumnSettings open={columnsOpen} visible={visibleColumns} onToggle={toggleColumn} onClose={() => setColumnsOpen(false)} />
+                <div className="orderfiltermeta">
+                  <span>{previewPage === undefined ? '服务端筛选 · 更新时间未提供' : `服务端实时筛选 · ${formatOrderTime(previewPage.updatedAt)}`}</span>
+                </div>
+              </div>
+
+              {checked.size === 0 ? null : (
+                <p className="orderselectionnote" role="status">
+                  已选择 {checked.size} 条当前页订单；跨页动作等待 Filter Snapshot 与 Preview 证明。
+                </p>
+              )}
+              <div id="orderlistpanel" className="orderlistpanel" aria-busy={query.isFetching}>
+                {query.isPending ? (
+                  <p className="orderliststate" role="status">
+                    正在读取订单…
+                  </p>
+                ) : null}
+                {query.isError && page === undefined ? (
+                  <section className="orderliststate" role="alert">
+                    <strong>订单读取失败</strong>
+                    <p>{error}</p>
+                    <button type="button" onClick={refresh}>
+                      重试
+                    </button>
+                  </section>
+                ) : null}
+                {query.isError && page !== undefined ? (
+                  <p className="orderstalebanner" role="status">
+                    刷新失败，当前保留最近一次已验证数据：{error}
+                  </p>
+                ) : null}
+                {page?.items.length === 0 ? (
+                  <section className="orderliststate" role="status">
+                    <OrderIcon name="order" />
+                    <strong>暂无符合条件的订单</strong>
+                    <p>请调整服务端筛选条件后重试。</p>
+                  </section>
+                ) : null}
+                {page === undefined || page.items.length === 0 ? null : (
+                  <OrderTable
+                    rows={page.items}
+                    previewEnabled={previewEnabled}
+                    visible={visibleColumns}
+                    checked={checked}
+                    {...(selected === undefined ? {} : { activeOrder: selected })}
+                    onCheck={toggleChecked}
+                    onCheckAll={togglePage}
+                    onOpen={openOrder}
+                  />
+                )}
+              </div>
+
+              {page === undefined ? null : <OrderPagination count={page.count} total={previewPage?.total} page={previewPage?.page} previousCursor={previewPage?.previousCursor} nextCursor={page.nextCursor} onCursor={setCursor} />}
+            </Surface>
+          </section>
+      {selected === undefined ? null : <OrderDrawer orderId={selected} tab={detailTab} previewEnabled={previewEnabled} onTab={selectTab} onClose={closeOrder} />}
+    </section>
+  );
+}
+
+function OrderPagination({
+  count,
+  total,
+  page,
+  previousCursor,
+  nextCursor,
+  onCursor,
+}: Readonly<{
+  count: number;
+  total: number | undefined;
+  page: number | undefined;
+  previousCursor: string | undefined;
+  nextCursor: string | undefined;
+  onCursor: (cursor?: string) => void;
+}>) {
+  const start = page === undefined ? undefined : (page - 1) * 50 + (count === 0 ? 0 : 1);
+  const end = start === undefined ? undefined : start + Math.max(0, count - 1);
+  return (
+    <footer className="orderpagination">
+      <span>{total === undefined ? `本页 ${count} 条 · 全量总数不可用` : `${start}–${end} / 共 ${total} 笔`}</span>
+      <label>
+        每页{' '}
+        <select aria-label="每页数量" value="50" disabled>
+          <option value="50">50</option>
+        </select>
+      </label>
+      <div>
+        <button type="button" onClick={() => onCursor(previousCursor)} disabled={previousCursor === undefined} aria-label="上一页">
+          <OrderIcon name="arrowLeft" />
+        </button>
+        {page === undefined ? null : <span aria-current="page">{page}</span>}
+        <button type="button" onClick={() => onCursor(nextCursor)} disabled={nextCursor === undefined} aria-label="下一页">
+          <OrderIcon name="arrowRight" />
+        </button>
+      </div>
+    </footer>
+  );
+}
+
+function readFilter(search: URLSearchParams, previewEnabled: boolean): OrderListFilter {
+  const parsed = OrderListFilterSchema.safeParse({
+    order: search.get('order') ?? '',
+    placed: previewEnabled ? (search.get('placed') ?? '') : '',
+    lifecycle: previewEnabled ? (search.get('lifecycle') ?? '') : '',
+    payment: previewEnabled ? (search.get('payment') ?? '') : '',
+    fulfillment: previewEnabled ? (search.get('fulfillment') ?? '') : '',
+    mall: previewEnabled ? (search.get('mall') ?? '') : '',
+  });
+  return parsed.success ? parsed.data : emptyOrderFilter;
+}
+
+function readView(search: URLSearchParams, previewEnabled: boolean): OrderView {
+  if (!previewEnabled) return 'all';
+  const parsed = OrderViewSchema.safeParse(search.get('view') ?? 'all');
+  return parsed.success ? parsed.data : 'all';
+}
+
+function readSelected(search: URLSearchParams): string | undefined {
+  const value = search.get('selected');
+  if (value === null) return undefined;
+  const parsed = OrderFilterSchema.safeParse({ order: value });
+  return parsed.success && parsed.data.order !== '' ? parsed.data.order : undefined;
+}
+
+function readDetailTab(search: URLSearchParams): OrderDetailTab {
+  const parsed = OrderDetailTabSchema.safeParse(search.get('tab') ?? 'overview');
+  return parsed.success ? parsed.data : 'overview';
+}

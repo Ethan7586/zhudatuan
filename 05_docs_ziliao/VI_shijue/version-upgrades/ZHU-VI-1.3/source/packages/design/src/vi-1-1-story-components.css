@@ -1,0 +1,115 @@
+.v11icons {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+  min-height: 84px;
+}
+.v11icons div {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  color: var(--sw-text-secondary);
+}
+.v11icons code {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+.v11dividers > span {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+.v11dividers .swdivider {
+  margin: 6px 0 12px;
+}
+.v11inverse {
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-brand-ink);
+  color: var(--sw-text-inverse);
+  padding: var(--sw-space-1-5);
+}
+.v11inverse .swdivider {
+  margin-bottom: 0;
+}
+.v11buttonmatrix {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sw-space-2);
+}
+.v11buttonmatrix > div {
+  display: flex;
+  min-height: 112px;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: center;
+  gap: var(--sw-space-1);
+  border: 1px solid var(--sw-border-subtle);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-2);
+}
+.v11buttonmatrix > div > span {
+  width: 100%;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  font-weight: 600;
+}
+.v11fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sw-space-2);
+}
+.v11badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sw-space-1);
+}
+.v11section .swtabs {
+  margin-bottom: var(--sw-space-2);
+}
+.v11feedback {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.7fr;
+  gap: var(--sw-space-2);
+}
+.v11loading {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-content: center;
+  align-items: center;
+  gap: var(--sw-space-1);
+  border: 1px solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  padding: var(--sw-space-2);
+}
+.v11loading .swskeleton {
+  height: 12px;
+}
+.v11loading .swskeleton:last-child {
+  grid-column: 2;
+  width: 68%;
+}
+.v11footer {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+  padding: var(--sw-space-2) var(--sw-space-1);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-caption);
+}
+@media (max-width: 72rem) {
+  .v11buttonmatrix {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 48rem) {
+  .v11buttonmatrix,
+  .v11feedback,
+  .v11fields {
+    grid-template-columns: 1fr;
+  }
+  .v11footer {
+    flex-direction: column;
+  }
+}

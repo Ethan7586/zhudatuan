@@ -1,0 +1,33 @@
+schema: zhudatuan.project.v1
+id: hbbtzn
+parent: zhudatuan
+kind: tenant-deployment
+status: preserved
+owner: Ethan
+
+source:
+  mode: shared-platform
+  artifactManifest: ../../../config/artifacts.json
+  artifactTracks:
+    - canonical
+    - compatibility
+  forkAllowed: false
+
+deployment:
+  releaseEligible: false
+  isolation: dedicated
+  profile: deployment/aliyun.yml
+
+data:
+  isolation: dedicated-database
+  crossProjectMigration: forbidden
+
+approval:
+  requiredFor:
+    - add
+    - change
+    - delete
+    - deploy
+    - migrate
+    - cutover
+    - rollback

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body { margin:0; background:#f6f6f4; -webkit-font-smoothing:antialiased; }
+a { color:#111; } a:hover { color:#555; }
+</style>
+</helmet>
+<sc-if value="{{ invert }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed; inset:0; background:#fff; mix-blend-mode:difference; pointer-events:none; z-index:99"></div>
+</sc-if>
+<div style="font-family:'Noto Sans SC',system-ui,sans-serif; color:#111; padding:64px 56px 120px; max-width:1360px; margin:0 auto">
+
+  <div style="display:flex; flex-direction:column; gap:14px; border-bottom:2px solid #111; padding-bottom:28px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#666">Round 01 · 纯黑白结构探索 · 20 draft marks</div>
+    <h1 style="margin:0; font-size:40px; font-weight:700; letter-spacing:-.01em">zhudatuan 主打团 — 图形标发散稿</h1>
+    <p style="margin:0; max-width:64ch; font-size:15px; line-height:1.7; color:#3a3a3a; text-wrap:pretty">第一轮只解决造型结构：无颜色、无渐变、无阴影、无立体、无包围框与 App 底板。全部草案为封闭几何路径，可直接导出为无冗余节点的商标级 SVG。以下按六组方向排列，每组不少于 3 个真正不同的结构（非线条粗细变体）。</p>
+    <div style="display:flex; gap:28px; flex-wrap:wrap; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#666; margin-top:4px">
+      <span>评分 10 分制</span><span>独特性 / 识别度 / 延展性 / 商标安全（10 = 风险最低）</span>
+    </div>
+  </div>
+
+  <div style="margin-top:56px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#666; margin-bottom:20px">编号总览板</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:1px; background:#111; border:1px solid #111">
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/A1.svg" width="66" height="66" alt="A1"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">A1</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/A2.svg" width="66" height="66" alt="A2"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">A2</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/A3.svg" width="66" height="66" alt="A3"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">A3</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/B1.svg" width="66" height="66" alt="B1"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">B1</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/B2.svg" width="66" height="66" alt="B2"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">B2</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/B3.svg" width="66" height="66" alt="B3"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">B3</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/B4.svg" width="66" height="66" alt="B4"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">B4</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/C1.svg" width="66" height="66" alt="C1"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">C1</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/C2.svg" width="66" height="66" alt="C2"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">C2</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/C3.svg" width="66" height="66" alt="C3"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">C3</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/D1.svg" width="66" height="66" alt="D1"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">D1</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/D2.svg" width="66" height="66" alt="D2"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">D2</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/D3.svg" width="66" height="66" alt="D3"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">D3</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/E1.svg" width="66" height="66" alt="E1"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">E1</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/E2.svg" width="66" height="66" alt="E2"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">E2</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/E3.svg" width="66" height="66" alt="E3"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">E3</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/F1.svg" width="66" height="66" alt="F1"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">F1</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/F2.svg" width="66" height="66" alt="F2"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">F2</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/F3.svg" width="66" height="66" alt="F3"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">F3</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/F4.svg" width="66" height="66" alt="F4"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">F4</span></div>
+    </div>
+    <div style="margin-top:14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#777">A 主字抽象 · B 聚合成团 · C 主轴连接 · D 主打动作 · E zdt 字母 · F 原创几何</div>
+  </div>
+
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="6">
+    <div style="margin-top:72px">
+      <div style="display:flex; align-items:baseline; gap:16px; border-bottom:1px solid #111; padding-bottom:12px; margin-bottom:28px">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500">{{ g.key }}</div>
+        <div style="font-size:22px; font-weight:700">{{ g.title }}</div>
+        <div style="font-size:13px; color:#666">{{ g.note }}</div>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px,1fr)); gap:24px">
+        <sc-for list="{{ g.items }}" as="m">
+          <div style="background:#fff; border:1px solid #ddd; padding:24px; display:flex; flex-direction:column; gap:18px">
+            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; letter-spacing:.08em">{{ m.id }}</div>
+              <div style="font-size:14px; font-weight:500">{{ m.name }}</div>
+            </div>
+            <div style="display:flex; align-items:flex-end; gap:26px; padding:8px 0 4px">
+              <div style="display:flex; flex-direction:column; align-items:center; gap:8px">
+                <img src="{{ m.src }}" width="128" height="128" alt="{{ m.id }}">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">128</span>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:8px">
+                <img src="{{ m.src }}" width="48" height="48" alt="{{ m.id }}">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">48</span>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:8px">
+                <img src="{{ m.src }}" width="24" height="24" alt="{{ m.id }}">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">24</span>
+              </div>
+            </div>
+            <p style="margin:0; font-size:13.5px; line-height:1.65; color:#333; text-wrap:pretty">{{ m.logic }}</p>
+            <sc-if value="{{ showScores }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 20px; border-top:1px solid #eee; padding-top:14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#444">
+                <div style="display:flex; justify-content:space-between"><span>独特性</span><span>{{ m.s1 }}</span></div>
+                <div style="display:flex; justify-content:space-between"><span>识别度</span><span>{{ m.s2 }}</span></div>
+                <div style="display:flex; justify-content:space-between"><span>延展性</span><span>{{ m.s3 }}</span></div>
+                <div style="display:flex; justify-content:space-between"><span>商标安全</span><span>{{ m.s4 }}</span></div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+
+  <div style="margin-top:88px; border-top:2px solid #111; padding-top:32px; display:flex; flex-direction:column; gap:20px">
+    <div style="font-size:22px; font-weight:700">字标方向（待图形定稿后细化）</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px">
+      <div style="background:#fff; border:1px solid #ddd; padding:22px; display:flex; flex-direction:column; gap:10px">
+        <div style="font-size:34px; font-weight:700; letter-spacing:.02em">主打团</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.16em; color:#555">ZHUDATUAN</div>
+        <p style="margin:6px 0 0; font-size:13px; line-height:1.6; color:#444">方向一：几何黑体，三字等宽、竖向骨架对齐，与 A/C 组主轴结构同源；拉丁小写作为副行。</p>
+      </div>
+      <div style="background:#fff; border:1px solid #ddd; padding:22px; display:flex; flex-direction:column; gap:10px">
+        <div style="font-size:34px; font-weight:500; letter-spacing:.12em">主 打 团</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.16em; color:#555">zhudatuan</div>
+        <p style="margin:6px 0 0; font-size:13px; line-height:1.6: color:#444">方向二：宽字距、细中黑，压低促销感，偏向平台与后台系统气质。</p>
+      </div>
+      <div style="background:#fff; border:1px solid #ddd; padding:22px; display:flex; flex-direction:column; gap:10px">
+        <div style="font-size:34px; font-weight:700">主打团<span style="font-weight:400; color:#888"> / zhudatuan</span></div>
+        <p style="margin:6px 0 0; font-size:13px; line-height:1.6; color:#444">方向三：中英同行锁定，用于商城 H5 顶栏与合同印刷；正式名称固定写作「zhudatuan 主打团」。</p>
+      </div>
+    </div>
+    <p style="margin:8px 0 0; font-size:13px; line-height:1.7; color:#666; max-width:70ch; text-wrap:pretty">失败案例的三个结构性问题（供对照）：旧标依赖翼形装饰承担全部意义，缩至 24px 后细节糊成一团；造型依赖颜色与立体效果，单色印刷即失效；符号语义指向「飞翔」，与聚合、主轴、交易效率无关。本轮全部草案均以单色封闭路径为唯一表达手段。</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showScores&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;评审&quot;},&quot;invert&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;评审&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const M = (id, name, logic, s) => ({ id, name, logic, src: `marks/${id}.svg`, s1: s[0], s2: s[1], s3: s[2], s4: s[3] });
+    const groups = [
+      { key: "A", title: "「主」字抽象", note: "以主字骨架为结构来源", items: [
+        M("A1", "主·骨架镂空", "保留「主」的三横一竖与顶点，横画长度递变形成节奏，顶点独立成方点，24px 下仍读作汉字骨架。", [7,9,8,6]),
+        M("A2", "主·阶梯横画", "去掉竖轴，只留递进内缩的三条横画加顶点，读作层层成团的账目与批次结构。", [8,6,8,8]),
+        M("A3", "主·横向轴", "把「主」旋转 90°，竖轴变主轴、三横变递降节点，直接过渡成 C 组的连接语言。", [8,7,7,8]),
+      ]},
+      { key: "B", title: "聚合与成团", note: "多个单位收拢为一个整体", items: [
+        M("B1", "三楔聚合", "三个等角楔形向中心收拢并留出气口，中心空位即「团」，无需画人或购物车。", [6,8,8,5]),
+        M("B2", "收敛开弧", "两段同心开口弧向中心点逐级收缩，表达从松散流量到成交的收敛过程。", [7,7,6,6]),
+        M("B3", "蜂巢成团", "六个等距节点围绕一个加粗主节点，主次关系明确，但需注意点阵图形的近似商标较多。", [5,8,7,4]),
+        M("B4", "双弧互扣", "上下两段半环错位互扣成链节，读作双方达成、可继续串联的交易关系。", [6,7,8,5]),
+      ]},
+      { key: "C", title: "主轴与连接", note: "一条主干分发多条支线", items: [
+        M("C1", "主脊分发", "一条重竖轴向右分出三条不等长支臂，是平台把货、单、人分发下去的直译。", [7,8,9,7]),
+        M("C2", "轴与端节点", "主轴两端各挂一个实心方节点，形成对角张力，既像连接线路也像交易两端。", [8,7,8,8]),
+        M("C3", "横轴主节点", "横向主轴上三个节点，中间实心为「主」，两侧空心为分销端，可延展为流程图形语言。", [7,7,8,7]),
+      ]},
+      { key: "D", title: "「主打」动作感", note: "落点、击中、推进", items: [
+        M("D1", "斜击", "一道斜向粗楔落到底线上，纯几何表达「打」的方向与力度，无卡通化拟物。", [8,8,7,8]),
+        M("D2", "落点断轴", "倒三角落在断开的基线中间，断口即落点，是本轮语义最独有的一个结构。", [9,7,7,9]),
+        M("D3", "驱动楔", "实心楔推动一条竖轴，读作主推、上新、开团动作；结构最简，24px 极稳。", [6,8,8,6]),
+      ]},
+      { key: "E", title: "zdt 字母组合", note: "拉丁缩写连体", items: [
+        M("E1", "z / t 连体", "Z 的底横同时充当 t 的横画，一笔两用，节点数极少，适合小尺寸与刻印。", [8,7,8,8]),
+        M("E2", "d / t 连体", "d 的方形碗与 t 的横画共用竖干，方形碗呼应商城栅格，避免圆体的小程序感。", [7,6,7,8]),
+        M("E3", "Z 轴双梁", "Z 的斜画作为主轴，上下两横作为聚合梁，加一个方点标记「主」，与 A 组同源。", [8,7,8,7]),
+      ]},
+      { key: "F", title: "纯原创几何符号", note: "不依赖字形与具象", items: [
+        M("F1", "支点棱", "菱形轮廓被一条通贯竖轴穿过，读作平台作为支点与主轴，几何最干净、延展性最好。", [8,8,9,7]),
+        M("F2", "三叶推转", "三片等角三角叶绕中心排布，表达持续转动的交易循环，但同类风车形商标密度高。", [6,7,8,4]),
+        M("F3", "升序尖角", "一个方点加两级尖角，向上收束，读作规模递增与共识收拢，可做成系统里的层级图标。", [7,7,8,6]),
+        M("F4", "阶梯柱", "三根递增立柱加一个独立方点，直白表达增长与聚量，但接近通用数据图形，独特性偏低。", [5,6,8,5]),
+      ]},
+    ];
+    return {
+      groups,
+      showScores: this.props.showScores ?? true,
+      invert: this.props.invert ?? false,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+[Unit]
+Description=Zhudatuan isolated Secret Store and KMS
+Requires=docker.service
+After=network-online.target docker.service
+ConditionPathExists=/opt/zhudatuan/current/01_core_hexin/services/commerce/dist/InternalRuntimeMain.js
+ConditionPathExists=/opt/zhudatuan/current/01_core_hexin/services/commerce/dist/InternalRuntimeReadyMain.js
+ConditionPathExists=/opt/zhudatuan/shared/runtime.env
+
+[Service]
+Type=simple
+User=zhudatuan
+Group=zhudatuan
+WorkingDirectory=/opt/zhudatuan/current
+Environment=NODE_ENV=production
+Environment=APP_ENV=production
+Environment=LOCAL_RUNTIME_PROFILE=registration-only
+EnvironmentFile=/opt/zhudatuan/shared/runtime.env
+ExecStart=/usr/bin/node 01_core_hexin/services/commerce/dist/InternalRuntimeMain.js
+ExecStartPost=/usr/bin/node 01_core_hexin/services/commerce/dist/InternalRuntimeReadyMain.js
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+PrivateDevices=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadOnlyPaths=/opt/zhudatuan/current /opt/zhudatuan/shared
+InaccessiblePaths=-/opt/smart-wing -/opt/smart-wiston -/opt/shop-test
+
+[Install]
+WantedBy=multi-user.target

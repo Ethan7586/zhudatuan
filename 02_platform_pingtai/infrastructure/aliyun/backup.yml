@@ -1,0 +1,21 @@
+version: 1
+owner: reliability
+database:
+  engine: apsaradb-rds-postgresql
+  automatedFullBackup: daily
+  continuousWalArchive: true
+  pointInTimeRecovery: true
+  crossRegionReplica: true
+  encryption: customer-managed-kms
+  immutableRetentionDays: 35
+  rpoMinutes: 5
+  rtoMinutes: 30
+objectStorage:
+  versioning: true
+  retentionMode: compliance
+  crossRegionReplication: true
+verification:
+  restoreDrill: monthly
+  integrityCheck: sha256
+  evidenceRetentionDays: 400
+  runbook: 05_docs_ziliao/docs_wendang/runbooks_yunwei/databasefailover.md

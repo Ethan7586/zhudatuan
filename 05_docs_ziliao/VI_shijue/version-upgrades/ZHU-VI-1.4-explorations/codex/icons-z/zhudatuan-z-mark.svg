@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">zhudatuan 主打团 Z mark</title>
+  <desc id="desc">A compact folded-ribbon Z mark derived from the first letter of zhudatuan.</desc>
+  <path d="M11 14H54V22L26 43H53V51H10V43L38 22H11Z" fill="#143A8F"/>
+  <path d="M11 14H24L27 22H14Z" fill="#2B72FF"/>
+  <path d="M39 43H53V51H33Z" fill="#2B72FF"/>
+</svg>

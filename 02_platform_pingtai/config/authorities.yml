@@ -1,0 +1,17 @@
+version: 1
+requirements:
+  logicalSource: RepositoryAuthority 05_docs_ziliao/docs_wendang/福利商城功能清单260821.xlsx
+  repositoryRelativePath: 05_docs_ziliao/docs_wendang/福利商城功能清单260821.xlsx
+  sha256: 78cfc3b350ced633afd6bfc951f2d2a94991780fa1d4b6d571e9f1d3df322942
+  sheets:
+    requirements: 296
+    mvp: 21
+    providers: 20
+orderRequirements:
+  logicalSource: RepositoryAuthority 05_docs_ziliao/docs_wendang/订单需求20260430.xlsx
+  repositoryRelativePath: 05_docs_ziliao/docs_wendang/订单需求20260430.xlsx
+  sha256: 2d26811cd4fe3fca65f126432a71f176628d12ff262cd0844498abc3fec9e79e
+  profile: Smart Wing OMS 2.0 / WCHS-MCBS Order Profile 1.0
+  sheets:
+    20250416需求汇总: 16
+    20260430需求汇总: 274

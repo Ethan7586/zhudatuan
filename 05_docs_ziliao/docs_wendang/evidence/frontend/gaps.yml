@@ -1,0 +1,248 @@
+version: 1
+gaps:
+  - id: FRONTCONTRACT002
+    severity: P0
+    owner: commerce
+    operation: identity.stepup.complete
+    evidence:
+      - services/commerce/src/modules/identity/IdentityOperations.ts
+    conflict: completion raises session assurance but returns no action-bound proof
+    impact:
+      - Preview to Confirm to Step-up to Execute cannot bind proof to the approved action
+    requiredChange: return a short-lived proof bound to operation, preview token, actor, scope and expiry
+    frontendPolicy: do not execute a high-risk final action without proof
+  - id: FRONTCONTRACT003
+    severity: P0
+    owner: commerce
+    operation: request headers
+    evidence:
+      - packages/sdk/src/ApiClient.ts
+      - services/commerce/src/foundation/interface/HttpApp.ts
+    conflict: SDK emits x-access-version and x-action-proof but CORS and access pipeline do not accept both headers
+    impact:
+      - scoped or proof-bound browser requests fail preflight or lose their concurrency/security binding
+    requiredChange: accept, validate and consume both headers in the Commerce HTTP boundary
+    frontendPolicy: keep the typed headers; do not remove them to bypass the server gap
+  - id: FRONTCONTRACT004
+    severity: P1
+    owner: commerce
+    operation: all structural operations
+    evidence:
+      - packages/contract/definitions/operations.yml
+      - packages/contract/src/operations/CommerceSchemas.ts
+    conflict: all active Operations expose structural JSON schemas instead of business-field exact schemas
+    impact:
+      - feature adapters must apply narrower response schemas and cannot derive all forms from Contract
+    requiredChange: publish exact request and response schemas per Operation from the owning domain
+    frontendPolicy: validate every consumed response in the feature adapter and label structural gaps explicitly
+  - id: FRONTCONTRACT005
+    severity: P0
+    owner: commerce
+    operation: catalog.storefront.read and catalog.product.detail.read
+    evidence:
+      - apps/console/src/feature/product/ProductDetailRoute.tsx
+      - apps/storefront/src/feature/catalog/route/CategoryRoute.tsx
+      - apps/storefront/src/feature/catalog/route/SearchRoute.tsx
+      - apps/storefront/src/feature/product/route/ProductRoute.tsx
+      - apps/miniapp/miniprogram/application/catalog.js
+    conflict: catalog.storefront.read is page-shaped; no exact productId detail Operation exists for Console, Storefront or Miniapp, and no consumer card/detail Operation returns one authoritative mall-scoped eligibility, offer and inventory projection
+    impact:
+      - Console cannot render an authoritative single-product detail and consumer purchase journeys cannot render full product truth without client-side cross-domain aggregation
+    requiredChange: publish catalog.product.detail.read plus server-paginated consumer card/detail Operations with exact path schemas, mall scope, eligibility, offer, inventory and snapshot version
+    frontendPolicy: fail closed for exact detail; never select the first list row or join catalog, pricing, inventory and qualification responses in a client
+  - id: FRONTCONTRACT006
+    severity: P0
+    owner: commerce
+    operation: checkout.context.read
+    evidence:
+      - apps/storefront/src/feature/checkout/route/CheckoutRoute.tsx
+      - apps/miniapp/miniprogram/application/checkout.js
+    conflict: checkout.quote.create exists but no read Operation returns the complete cart, address, voucher, benefit, invoice and eligibility context
+    impact:
+      - Storefront and Miniapp cannot safely start checkout or prove that the displayed context belongs to one server version
+    requiredChange: publish one mall/owner-scoped Checkout Context Operation with exact schema, expiry and expectedVersion
+    frontendPolicy: render an explicit unavailable state; do not assemble checkout truth from domain reads
+  - id: FRONTCONTRACT007
+    severity: P0
+    owner: commerce
+    operation: verification.memberchallenge.issue
+    evidence:
+      - apps/storefront/src/feature/wingcode/route/WingCodeRoute.tsx
+      - apps/miniapp/miniprogram/page/membercode/index.js
+    conflict: the current challenge issuer is an operator verification boundary and does not return consumer-safe QR/barcode media bound to member, mall, purpose and expiry
+    impact:
+      - the frozen central Wing Code journey cannot expose a safe 45-second code
+    requiredChange: issue server-rendered QR and barcode media plus status without exposing nonce or reusable secrets
+    frontendPolicy: show no locally generated or reusable code and never expose a raw nonce
+  - id: FRONTCONTRACT008
+    severity: P0
+    owner: identity
+    operation: identity.authorization.begin
+    evidence:
+      - apps/auth/src/features/session/ReturnTarget.ts
+      - apps/storefront/src/shared/config/AppConfig.ts
+    conflict: clients have no Operation that exchanges a requested deep link for a signed, allowlisted and expiring ReturnTarget before login
+    impact:
+      - protected clients can redirect safely only to Auth home and cannot restore the original deep link
+    requiredChange: add a begin-authorization Operation that validates client origin and signs the return target before credentials are submitted
+    frontendPolicy: never trust a raw returnTo query and never reconstruct a post-login destination in the browser
+  - id: FRONTCONTRACT009
+    severity: P0
+    owner: access
+    operation: scoped professional reads
+    evidence:
+      - packages/authz/src/PermissionCatalog.ts
+      - apps/store/src/app/routes.tsx
+      - apps/supplier/src/app/routes.tsx
+    conflict: reporting dashboard and finance statement/export permissions omit store and supplier; organization layer read omits supplier
+    impact:
+      - documented Store/Supplier dashboard, finance and Supplier organization routes will be denied for their URL scope
+    requiredChange: decide the authoritative scope policy and publish server-owned projections for store and supplier where the workbook requires them
+    frontendPolicy: preserve the explicit URL/RequestContext scope and render Denied; never widen or substitute scope in the client
+  - id: FRONTCONTRACT010
+    severity: P0
+    owner: commerce
+    operation: supplier.import.preview
+    evidence:
+      - apps/supplier/src/features/importing/index.tsx
+    conflict: catalog, inventory and member import Operations accept an object reference but no upload-sign and preview Operations exist
+    impact:
+      - a browser cannot upload, validate or preview a real supplier file without credentials or an invented object reference
+    requiredChange: add scoped signed-upload, checksum-bound preview and submit Operations with a readable job/error report
+    frontendPolicy: accept a real local file but keep submit disabled; never request storage credentials or allow a hand-written objectRef
+  - id: FRONTCONTRACT011
+    severity: P1
+    owner: order
+    operation: order.aftersales.detail.read
+    evidence:
+      - apps/store/src/features/exception/index.tsx
+    conflict: order.aftersales.read is list-shaped and no exact aftersaleId read Operation exists
+    impact:
+      - Store cannot render a trustworthy return detail or bind a receive/inspect preview to one case
+    requiredChange: publish an exact scoped after-sale detail Operation including version and authoritative timeline
+    frontendPolicy: do not use the first list record as a detail substitute
+  - id: FRONTCONTRACT012
+    severity: P1
+    owner: runtime
+    operation: runtime.control.read
+    evidence:
+      - apps/console/src/feature/control/ControlRoute.tsx
+    conflict: dependency health exists but no consolidated server contract defines throughput, latency, backlog, failure and recovery metrics
+    impact:
+      - the Console control center cannot fully represent system efficiency and processing capacity
+    requiredChange: publish one exact runtime control read model with metric definitions, timestamps and freshness
+    frontendPolicy: display only existing dependency health and label the missing control projection; do not calculate operational truth in the browser
+  - id: FRONTCONTRACT013
+    severity: P0
+    owner: commerce
+    operation: filter snapshot and high-risk preview family
+    evidence:
+      - apps/console/src/feature/product/ProductRoute.tsx
+      - apps/console/src/feature/order/OrderRoute.tsx
+      - apps/store/src/features/catalog/index.tsx
+      - apps/store/src/features/fulfillment/index.tsx
+      - apps/store/src/features/verification/index.tsx
+    conflict: bulk catalog, shipment, verification, refund, settlement and withdrawal final Operations lack a complete FilterSnapshot or Preview contract that can be bound to action proof
+    impact:
+      - high-risk writes cannot complete Preview to Confirm to Step-up to Execute to Reread to Receipt
+    requiredChange: add exact Preview and Receipt Operations with previewToken, expectedVersion, affected-count/sample and proof binding
+    frontendPolicy: keep final actions disabled; never infer the affected set from the current browser page or call Execute directly
+  - id: FRONTCONTRACT014
+    severity: P1
+    owner: catalog
+    operation: store.brandrelations.read and store.brandrelations.manage
+    evidence:
+      - apps/store/src/app/routes.tsx
+      - apps/store/src/features/brand/index.tsx
+      - apps/store/src/shared/ui/StoreOperationGap.test.tsx
+    conflict: the workbook requires Store brand management but no scoped Operation exposes the authoritative Store-to-brand authorization relationship or its version
+    impact:
+      - the Store brand route cannot display or modify its real authorized brands without inventing a relationship from catalog listings
+    requiredChange: publish exact store-scoped brand relationship read/manage Operations with relationship status, version and server authorization result
+    frontendPolicy: keep the route visible as an explicit contract gap; do not infer brand authorization from products or use a neighboring partner/catalog Operation
+  - id: FRONTCONTRACT015
+    severity: P1
+    owner: supplier
+    operation: supplier brand, operating-address, tax-profile and agency-price read/manage family
+    evidence:
+      - apps/supplier/src/app/routes.tsx
+      - apps/supplier/src/features/brand/index.tsx
+      - apps/supplier/src/features/address/index.tsx
+      - apps/supplier/src/features/tax/index.tsx
+      - apps/supplier/src/features/agencyprice/index.tsx
+      - apps/supplier/src/shared/ui/SupplierContractGap.test.tsx
+    conflict: four workbook Supplier pages have no dedicated scoped Operations; member.addresses represents consumer delivery addresses and pricing.offers represents member offers, so neither is a valid substitute
+    impact:
+      - Supplier cannot render or manage its brand authorization, operating addresses, tax identity or agency-price versions from authoritative server projections
+    requiredChange: publish separate exact supplier-scoped read/manage Operations for brand relationships, operating addresses, tax profile and agency prices, each with version and permission semantics
+    frontendPolicy: render one explicit contract-gap state per route and do not reuse member, partner, catalog or consumer pricing Operations as semantic substitutes
+  - id: FRONTCONTRACT016
+    severity: P1
+    owner: observability
+    operation: observability.webvitals.create
+    evidence:
+      - packages/telemetry/src/browser.ts
+      - packages/telemetry/src/Metrics.ts
+      - packages/contract/definitions/operations.yml
+    conflict: the browser telemetry package has a generic beacon writer and the Contract only publishes client-error Operations; no exact Web Vitals ingest Operation or field aggregation contract exists
+    impact:
+      - local lab timing cannot establish production p75 LCP, INP and CLS by client, route, release and device class
+    requiredChange: publish a bounded Web Vitals ingest Operation with exact metric names, value, delta, rating, route template, navigation type, client version and release ID plus an aggregated read model
+    frontendPolicy: do not send untyped metrics to an arbitrary endpoint or reuse observability.clienterrors.create; retain Web Vitals as an explicit release-evidence gap until real traffic aggregation exists
+  - id: FRONTRELEASE001
+    severity: P0
+    owner: release
+    operation: immutable Web candidate configuration
+    evidence:
+      - .github/workflows/quality.yml
+      - 04_tools/scripts/release/candidate.mjs
+      - apps/auth/.env.example
+      - apps/console/.env.example
+      - apps/store/.env.example
+      - apps/supplier/.env.example
+      - apps/storefront/.env.example
+    conflict: the candidate workflow builds five Web clients without an explicit production VITE_API_BASE_URL, VITE_AUTH_BASE_URL and VITE_CLIENT_VERSION contract, while local examples resolve to loopback addresses and version 0.0.0
+    impact:
+      - a type-correct and signed candidate can still contain an unreachable API, an incorrect Auth origin or a non-release client identity
+    requiredChange: define one fail-closed public runtime configuration authority, bind its values and hash to the candidate, reject loopback or placeholder values for release candidates, and verify the embedded values before signing
+    frontendPolicy: local loopback builds remain development evidence only and must never be promoted or described as deployable
+  - id: FRONTRELEASE002
+    severity: P0
+    owner: release
+    operation: Miniapp publish and rollback
+    evidence:
+      - .github/workflows/quality.yml
+      - infrastructure/aliyun/deploy.sh
+      - apps/miniapp/project.config.json
+    conflict: the release bundle uploads the native Miniapp directory to OSS but has no miniprogram-ci or Developer Tools upload, review, publish, releaseId binding, device acceptance or version rollback path
+    impact:
+      - the six-client release cannot publish or recover the Miniapp as the same releaseId
+    requiredChange: add a credential-isolated WeChat candidate upload and preview, signed acceptance evidence, explicit publish approval, production extConfig binding and tested rollback to the previous releaseId
+    frontendPolicy: treat the generated Miniapp directory as a local build artifact only; do not claim WeChat publication or rollback
+  - id: FRONTRELEASE003
+    severity: P0
+    owner: release
+    operation: atomic five-Web cutover and rollback
+    evidence:
+      - infrastructure/aliyun/deploy.sh
+      - 04_tools/scripts/release/promote.mjs
+      - 04_tools/scripts/release/validate.mjs
+    conflict: only Storefront is staged explicitly; Auth, Console, Store and Supplier edge pointers are implicit in an external controller, and rollback.pointerSha256 is format-checked but is not consumed to restore and verify the previous pointer
+    impact:
+      - a failed release cannot yet prove atomic five-Web restoration, SPA deep links, CDN state and database snapshot all return to one previous releaseId
+    requiredChange: publish and verify one signed multi-client pointer, make the cutover adapter consume its expected previous hash with CAS, verify all five domains and deep links after cutover and rollback, and archive the resulting evidence
+    frontendPolicy: retain release and rollback as blocked until the real controller, domains and same-release drill are verified
+  - id: FRONTRELEASE004
+    severity: P0
+    owner: contract/database
+    operation: shared Error Contract publication
+    evidence:
+      - packages/contract/definitions/errors.yml
+      - packages/contract/src/ContractIdentity.generated.ts
+      - database/contracts/current.sql
+      - services/commerce/src/bootstrap/RuntimeCompatibility.ts
+    conflict: the frontend hardening work adds client and adapter error codes and therefore changes CONTRACT_CHECKSUM, while the generated current schema rewrites the checksum for contract head 20260821032000 and no new production migration publishes that transition
+    impact:
+      - an existing database retains the previous checksum and Commerce RuntimeCompatibility fails closed even though a fresh generated schema passes
+    requiredChange: decide the Error Contract ownership boundary; either remove local-only client/build errors from the server compatibility checksum or publish the intentional shared-contract change through a new immutable migration and target schema head with fresh and upgrade replay evidence
+    frontendPolicy: keep this checkpoint non-releasable and do not rewrite historical migrations or bypass RuntimeCompatibility

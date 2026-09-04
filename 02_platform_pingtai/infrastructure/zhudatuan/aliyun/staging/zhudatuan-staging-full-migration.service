@@ -1,0 +1,66 @@
+[Unit]
+Description=Zhudatuan full staging one-shot database migration
+Wants=network-online.target
+Requires=zhudatuan-staging-full-postgres-proxy.service zhudatuan-staging-full-internal-runtime.service
+After=network-online.target zhudatuan-staging-full-postgres-proxy.service zhudatuan-staging-full-internal-runtime.service zhudatuan-staging-full-rds-init.service
+Before=zhudatuan-staging-full-owner-bootstrap.service zhudatuan-staging-full-identity-api.service zhudatuan-staging-full-identity-notification-jobs.service zhudatuan-staging-full-jobs.service
+ConditionPathExists=/opt/zhudatuan-staging-full/current/services/commerce/dist/MigrationMain.js
+ConditionPathExists=/opt/zhudatuan-staging-full/current/database/supabase/migrations
+ConditionPathExists=/opt/zhudatuan-staging-full/shared/full-migration.env
+ConditionPathExists=/opt/zhudatuan-staging-full/shared/tls/internal-ca.crt
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+DynamicUser=yes
+User=zdt-stg-full-migrate
+WorkingDirectory=/opt/zhudatuan-staging-full/current
+EnvironmentFile=/opt/zhudatuan-staging-full/shared/full-migration.env
+LoadCredential=internal-ca.crt:/opt/zhudatuan-staging-full/shared/tls/internal-ca.crt
+ExecStart=/usr/bin/env NODE_ENV=production APP_ENV=production \
+  MIGRATION_DIRECTORY=/opt/zhudatuan-staging-full/current/database/supabase/migrations \
+  MIGRATION_DATABASE_CONNECTION_REF=zhudatuan/staging/full/database/migration \
+  MIGRATION_DISTRIBUTOR_KEY_REF=channel/distributor MIGRATION_IDENTITY_KEY_REF=identity/wechat \
+  MIGRATION_PARTNER_KEY_REF=partner/address MIGRATION_VOUCHER_KEY_REF=voucher/code \
+  SECRET_STORE_ENDPOINT=https://127.0.0.1:8643 KMS_ENDPOINT=https://127.0.0.1:8644 \
+  NODE_EXTRA_CA_CERTS=%d/internal-ca.crt \
+  /usr/bin/node 01_core_hexin/services/commerce/dist/MigrationMain.js
+TimeoutStartSec=900
+RuntimeDirectory=zdt-stg-full-migrate
+RuntimeDirectoryMode=0700
+UMask=0077
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=zhudatuan-staging-full-migration
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateIPC=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProcSubset=pid
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RemoveIPC=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+DevicePolicy=closed
+KeyringMode=private
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SocketBindDeny=any
+IPAddressDeny=any
+IPAddressAllow=localhost
+ReadOnlyPaths=/opt/zhudatuan-staging-full/current /opt/zhudatuan-staging-full/shared
+InaccessiblePaths=-/opt/zhudatuan -/opt/smart-wing -/opt/smart-wiston -/opt/shop-test
+
+# Manual one-shot only; there is intentionally no [Install] section.

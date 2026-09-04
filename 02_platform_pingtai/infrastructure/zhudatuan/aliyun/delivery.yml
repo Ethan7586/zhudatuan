@@ -1,0 +1,51 @@
+version: 1
+owner: zhudatuan
+sourceOfTruth: 02_platform_pingtai/config/owner-approved-ui.json
+runtime:
+  releaseRoot: /opt/zhudatuan/current
+  sharedRoot: /opt/zhudatuan/shared
+  processConfig: 02_platform_pingtai/infrastructure/zhudatuan/aliyun/ecosystem.config.cjs
+  proxyConfig: 02_platform_pingtai/infrastructure/zhudatuan/aliyun/Caddyfile
+routes:
+  storefront:
+    host: zhudatuan.com
+    workspace: 01_core_hexin/apps/storefront-web
+    artifact: 01_core_hexin/apps/storefront-web/dist
+    process: zhudatuan-storefront
+  accounts:
+    host: accounts.zhudatuan.com
+    workspace: 01_core_hexin/apps/auth-web
+    artifact: 01_core_hexin/apps/auth-web/dist
+    server: caddy-static
+  console:
+    host: console.zhudatuan.com
+    workspace: 01_core_hexin/apps/console
+    artifact: 01_core_hexin/apps/console/dist
+    server: caddy-static
+  api:
+    host: api.zhudatuan.com
+    workspace: 01_core_hexin/services/commerce
+    artifact: 01_core_hexin/services/commerce/dist
+    process: zhudatuan-api
+  media:
+    host: media.zhudatuan.com
+    root: /opt/zhudatuan/media
+  labs:
+    host: labs.zhudatuan.com
+    transactionApi: disabled
+  chat:
+    host: chat.zhudatuan.com
+    status: pending
+forbiddenInputs:
+  - ../archives
+  - 02_platform_pingtai/infrastructure/aliyun/delivery.yml
+  - 02_platform_pingtai/infrastructure/storefront-compatibility/aliyun
+  - 01_core_hexin/apps/auth
+  - 01_core_hexin/apps/storefront
+  - 01_core_hexin/services/commerce-api/dist/admin-server.cjs
+release:
+  buildFromCleanCheckout: true
+  ownerManifestMustPass: true
+  compatibilityMigrationBeforeRuntime: 20260828060000_auth_membership_selection_boundary.sql
+  mediaMigrationBeforeWriteback: 20260828061000_catalog_media_domain_boundary.sql
+  caddyValidateBeforeReload: true

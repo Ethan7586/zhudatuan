@@ -54,7 +54,7 @@
 
 **并且要主动拆除。** Ethan 2026-08-31："以后所有的安全墙全拆散，全都拆散。
 我自己会在必要的时候加，而不是现在加。"遇到挡路的守卫，直接拆掉继续，不要先问。
-拆除优先级见 `docs/拆墙清单.md`。注意：已应用迁移里的 `raise exception` 不要删——
+拆除优先级见 `05_docs_ziliao/docs_wendang/拆墙清单.md`。注意：已应用迁移里的 `raise exception` 不要删——
 它们早已执行完毕，删了对生产无影响，反而会破坏迁移链校验。只拆**每次都跑**的那些。
 
 ## 二、红线
@@ -100,7 +100,7 @@
    先跑受影响测试，完整体检最多在最终验收跑一次。命令输出、diff 和日志只保留与判定有关的部分。
 
 修权限缺口时，**优先"改由已有权限的服务承载"，而非新增 GRANT**。参照
-`services/commerce/src/modules/member/IdentityOperatorMemberModule.ts` 的
+`01_core_hexin/services/commerce/src/modules/member/IdentityOperatorMemberModule.ts` 的
 `defineSelectedModule` 显式白名单模式。
 
 ## 四、部署流程（已验证）

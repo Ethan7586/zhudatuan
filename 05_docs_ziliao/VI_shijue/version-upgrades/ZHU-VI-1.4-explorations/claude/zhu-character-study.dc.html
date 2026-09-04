@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body { margin:0; background:#f6f6f4; -webkit-font-smoothing:antialiased; }
+a { color:#111; } a:hover { color:#555; }
+</style>
+</helmet>
+<sc-if value="{{ invert }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed; inset:0; background:#fff; mix-blend-mode:difference; pointer-events:none; z-index:99"></div>
+</sc-if>
+<div style="font-family:'Noto Sans SC',system-ui,sans-serif; color:#111; padding:64px 56px 120px; max-width:1360px; margin:0 auto">
+
+  <div style="display:flex; flex-direction:column; gap:14px; border-bottom:2px solid #111; padding-bottom:28px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#666">Round 02 · 「主」字专项 · 12 constructions</div>
+    <h1 style="margin:0; font-size:40px; font-weight:700; letter-spacing:-.01em">zhudatuan 主打团 — 「主」字几何拆解</h1>
+    <p style="margin:0; max-width:66ch; font-size:15px; line-height:1.7; color:#3a3a3a; text-wrap:pretty">把「主」还原为四个可操作的要素：顶点（点）、三横（层）、竖轴（主轴）、以及三者形成的重心与聚合关系。12 个方案各自采用一种不同的构造逻辑——不是同一个字形改笔画粗细。全部纯黑白、无外框、无渐变；未使用完整皇冠形，凡保留「三峰」概念的一稿只把它抽象为顶部节奏与重心指示。</p>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#666">上一轮：<a href="zdt-logo-explorations.dc.html">20 draft marks（六组发散）</a></div>
+  </div>
+
+  <div style="margin-top:56px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#666; margin-bottom:20px">编号总览板</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); gap:1px; background:#111; border:1px solid #111">
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/G1.svg" width="72" height="72" alt="G1"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">G1</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/G2.svg" width="72" height="72" alt="G2"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">G2</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/G3.svg" width="72" height="72" alt="G3"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">G3</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/G4.svg" width="72" height="72" alt="G4"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">G4</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/G5.svg" width="72" height="72" alt="G5"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">G5</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/G6.svg" width="72" height="72" alt="G6"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">G6</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/G7.svg" width="72" height="72" alt="G7"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">G7</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/G8.svg" width="72" height="72" alt="G8"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">G8</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/G9.svg" width="72" height="72" alt="G9"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">G9</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/G10.svg" width="72" height="72" alt="G10"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">G10</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/G11.svg" width="72" height="72" alt="G11"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">G11</span></div>
+      <div style="background:#fff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative"><img src="marks/G12.svg" width="72" height="72" alt="G12"><span style="position:absolute; top:8px; left:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">G12</span></div>
+    </div>
+  </div>
+
+  <div style="margin-top:64px; display:grid; grid-template-columns:repeat(auto-fill, minmax(330px,1fr)); gap:24px">
+    <sc-for list="{{ items }}" as="m">
+      <div style="background:#fff; border:1px solid #ddd; padding:24px; display:flex; flex-direction:column; gap:16px">
+        <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; letter-spacing:.08em">{{ m.id }}</div>
+          <div style="font-size:14px; font-weight:500">{{ m.name }}</div>
+        </div>
+        <div style="display:flex; align-items:flex-end; gap:26px; padding:6px 0 2px">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px">
+            <img src="{{ m.src }}" width="128" height="128" alt="{{ m.id }}">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">128</span>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px">
+            <img src="{{ m.src }}" width="48" height="48" alt="{{ m.id }}">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">48</span>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px">
+            <img src="{{ m.src }}" width="24" height="24" alt="{{ m.id }}">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#999">24</span>
+          </div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#888">构造逻辑 · {{ m.logic }}</div>
+        <p style="margin:0; font-size:13.5px; line-height:1.65; color:#333; text-wrap:pretty">{{ m.desc }}</p>
+        <sc-if value="{{ showScores }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 20px; border-top:1px solid #eee; padding-top:14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#444">
+            <div style="display:flex; justify-content:space-between"><span>汉字可感</span><span>{{ m.s1 }}</span></div>
+            <div style="display:flex; justify-content:space-between"><span>非字体感</span><span>{{ m.s2 }}</span></div>
+            <div style="display:flex; justify-content:space-between"><span>24px 可辨</span><span>{{ m.s3 }}</span></div>
+            <div style="display:flex; justify-content:space-between"><span>重心稳定</span><span>{{ m.s4 }}</span></div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="margin-top:80px; border-top:2px solid #111; padding-top:32px">
+    <div style="font-size:22px; font-weight:700; margin-bottom:8px">最不像模板 Logo 的三个方案</div>
+    <p style="margin:0 0 24px; font-size:14px; line-height:1.7; color:#555; max-width:70ch">判断依据：结构在市面上没有可直接对位的近似标；离开「输入一个字」的路径最远；同时仍能被读成「主」。</p>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:24px">
+      <div style="background:#111; color:#fff; padding:28px; display:flex; flex-direction:column; gap:16px">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.1em">01 · G8 断轴</div>
+        <div style="background:#fff; padding:20px; display:flex; justify-content:center"><img src="marks/G8.svg" width="120" height="120" alt="G8"></div>
+        <p style="margin:0; font-size:13.5px; line-height:1.65; color:#ddd">三横在竖轴两侧全部断开，轴与横之间留出等宽气口，交点从不落笔。字由眼睛补全而不是被写出来，这种正负关系在同类平台标里几乎没有。</p>
+      </div>
+      <div style="background:#111; color:#fff; padding:28px; display:flex; flex-direction:column; gap:16px">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.1em">02 · G3 折线连写</div>
+        <div style="background:#fff; padding:20px; display:flex; justify-content:center"><img src="marks/G3.svg" width="120" height="120" alt="G3"></div>
+        <p style="margin:0; font-size:13.5px; line-height:1.65; color:#ddd">三横由一条不断头的折线连成，转折段代替竖轴。单一路径、节点极少，是最容易做成统一图形语言（线宽=系统栅格）的一稿。</p>
+      </div>
+      <div style="background:#111; color:#fff; padding:28px; display:flex; flex-direction:column; gap:16px">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.1em">03 · G12 对折</div>
+        <div style="background:#fff; padding:20px; display:flex; justify-content:center"><img src="marks/G12.svg" width="120" height="120" alt="G12"></div>
+        <p style="margin:0; font-size:13.5px; line-height:1.65; color:#ddd">把「主」沿重心对折上下镜像，顶点落到正中成为唯一的聚合点。完全脱离字形轮廓，却保留了层级递进的读法，轮廓最紧凑。</p>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showScores&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;评审&quot;},&quot;invert&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;评审&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const M = (id, name, logic, desc, s) => ({ id, name, logic, desc, src: `marks/${id}.svg`, s1: s[0], s2: s[1], s3: s[2], s4: s[3] });
+    return {
+      showScores: this.props.showScores ?? true,
+      invert: this.props.invert ?? false,
+      items: [
+        M("G1", "错位三横", "模块位移", "三横分别只占左半、右半与通宽，沿竖轴左右错位。字保持可读，但节奏被打乱，读起来是分发而不是书写。", [8,7,8,7]),
+        M("G2", "面与线", "重量层级", "底横加厚成一块面，上两横保持线宽，重心被压到最下。用重量差建立主次，而不是靠装饰。", [8,6,9,9]),
+        M("G3", "折线连写", "单一路径", "三横由一条连续折线写成，两段折返充当竖轴。节点数最少，可直接作为系统图标语言的母型。", [7,9,8,7]),
+        M("G4", "无轴重心", "轴线隐含", "删掉竖轴，只留三条居中对齐的横与一个顶点。竖轴由对齐关系产生，图形因此变得极安静。", [7,8,7,8]),
+        M("G5", "顶部节奏", "三峰抽象", "顶点拆成三根不等高的短竖，中间最高。这是三峰概念的唯一保留形式：它是节奏与重心指示，不构成王冠轮廓。", [8,7,8,8]),
+        M("G6", "光学渐窄", "透视收分", "三横做轻微收分，向右上抬升，形成书写的力度而非字体的均匀。竖轴保持正矩以稳住重心。", [9,7,8,7]),
+        M("G7", "绕心旋转", "四向旋转对称", "三横一竖被拆成四条臂，绕中心方点错位旋转排布。字被彻底解构，只留下重心与放射关系。", [4,9,8,8]),
+        M("G8", "断轴", "交点留白", "三横在竖轴两侧断开，留出等宽气口，交点位置永不落笔。正负形最清楚，字靠对齐关系被补全。", [7,9,8,8]),
+        M("G9", "斜切", "统一切变", "整字做 10° 切变，形成前倾姿态。竖轴仍垂直落在重心上，所以倾斜不影响稳定感。", [9,7,8,6]),
+        M("G10", "模块聚合", "单元阵列", "每一横由 3、2、4 个方块组成，块数向下增加。直接把「成团」写进字的内部结构。", [6,8,6,7]),
+        M("G11", "交点方块", "节点强化", "两个交点放大成方块，横画退成短接头。读法接近后台系统里的层级节点图。", [6,8,7,7]),
+        M("G12", "对折", "镜像折叠", "沿重心把「主」上下对折镜像，顶点落到正中。轮廓最紧凑，也最不像字。", [5,9,9,9]),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

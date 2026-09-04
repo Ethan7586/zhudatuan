@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # zhudatuan 核心工作规则
 
 ## 一、凭据处理（最高优先级）
@@ -96,7 +95,7 @@
    先跑受影响测试，完整体检最多在最终验收跑一次。命令输出、diff 和日志只保留与判定有关的部分。
 
 修权限缺口时，**优先"改由已有权限的服务承载"，而非新增 GRANT**。参照
-`services/commerce/src/modules/member/IdentityOperatorMemberModule.ts` 的
+`01_core_hexin/services/commerce/src/modules/member/IdentityOperatorMemberModule.ts` 的
 `defineSelectedModule` 显式白名单模式。
 
 ## 四、部署流程（已验证）
@@ -132,7 +131,7 @@ printf 'GET %s HTTP/1.1\r\nHost: %s\r\nx-contract-version: 1.0.0\r\nConnection: 
 ```
 
 部署前对全部 15 个域名打基线快照，部署后逐行 diff，只有刻意改动的那行允许变化。
-=======
+---
 # zdt-next · Codex 工作规则
 
 本文件约束 Codex 在 `zdt-next` 中的分析、开发、Git 分支和交付行为。
@@ -214,10 +213,10 @@ printf 'GET %s HTTP/1.1\r\nHost: %s\r\nx-contract-version: 1.0.0\r\nConnection: 
 
 1. Ethan 在当前任务中的明确决定，是本次工作的产品依据。
 2. 本 `AGENTS.md` 规定执行纪律和 Git 规则。
-3. 经 Ethan 确认后的 `docs/zdt.md` 将作为新系统的产品与架构基线；未确认内容不得自行补成事实。
-4. `docs/architecture/00-zhudatuan-架构审计.md` 是旧系统分析材料，不是新系统实现指令。
-5. `ZHU-VI-1.3/` 是视觉基线资料；未经 Ethan 确认，不得擅自简化、替换或改变其定义。
-6. 项目级文档统一放入 `docs/`；提示词放入 `docs/prompts/`。只有 Codex 必须自动发现的 `AGENTS.md` 和组件内部随源码维护的说明文件可以留在各自目录。
+3. 经 Ethan 确认后的 `05_docs_ziliao/docs_wendang/zdt.md` 将作为新系统的产品与架构基线；未确认内容不得自行补成事实。
+4. `05_docs_ziliao/docs_wendang/architecture/00-zhudatuan-架构审计.md` 是旧系统分析材料，不是新系统实现指令。
+5. `05_docs_ziliao/VI_shijue/current/ZHU-VI-1.5/` 是当前正式视觉标准；未经 Ethan 确认，不得擅自简化、替换或改变其定义。旧版与探索资料统一保留在 `05_docs_ziliao/VI_shijue/version-upgrades/`。
+6. 项目级文档统一放入 `05_docs_ziliao/docs_wendang/`；提示词放入 `05_docs_ziliao/docs_wendang/prompts/`。只有 Codex 必须自动发现的 `AGENTS.md` 和组件内部随源码维护的说明文件可以留在各自目录。
 
 ## 八、必须停止并汇报的情况
 
@@ -240,4 +239,3 @@ printf 'GET %s HTTP/1.1\r\nHost: %s\r\nx-contract-version: 1.0.0\r\nConnection: 
 4. 提交 SHA（如有）；
 5. 当前远程分支总数；
 6. 待 Ethan 决定的事项。
->>>>>>> 320899d4 (chore(zdt-next): establish rebuild baseline)

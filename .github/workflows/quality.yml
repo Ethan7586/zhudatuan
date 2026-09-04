@@ -87,7 +87,7 @@ jobs:
       - name: Build locked applications and services
         run: |
           npm run build
-          docker build --file infrastructure/aliyun/Dockerfile --tag zhudatuan-commerce:${{ github.sha }} .
+          docker build --file 02_platform_pingtai/infrastructure/aliyun/Dockerfile --tag zhudatuan-commerce:${{ github.sha }} .
           npm audit --omit=dev --audit-level=high
 
       - name: Ensure verification produced no source drift

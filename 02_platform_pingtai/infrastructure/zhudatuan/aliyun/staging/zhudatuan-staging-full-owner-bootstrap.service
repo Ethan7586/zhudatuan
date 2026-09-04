@@ -1,0 +1,65 @@
+[Unit]
+Description=Zhudatuan full staging one-shot Console Owner bootstrap
+Wants=network-online.target
+Requires=zhudatuan-staging-full-postgres-proxy.service zhudatuan-staging-full-internal-runtime.service
+After=network-online.target zhudatuan-staging-full-postgres-proxy.service zhudatuan-staging-full-internal-runtime.service zhudatuan-staging-full-migration.service
+Before=zhudatuan-staging-full-database-retire.service zhudatuan-staging-full-identity-api.service zhudatuan-staging-full-identity-notification-jobs.service zhudatuan-staging-full-jobs.service
+ConditionPathExists=/opt/zhudatuan-staging-full/current/services/commerce/dist/BootstrapStagingOwner.js
+ConditionPathExists=/opt/zhudatuan-staging-full/shared/full-owner-bootstrap.env
+ConditionPathExists=/opt/zhudatuan-staging-full/shared/tls/internal-ca.crt
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+DynamicUser=yes
+User=zdt-stg-full-owner
+WorkingDirectory=/opt/zhudatuan-staging-full/current
+EnvironmentFile=/opt/zhudatuan-staging-full/shared/full-owner-bootstrap.env
+LoadCredential=internal-ca.crt:/opt/zhudatuan-staging-full/shared/tls/internal-ca.crt
+ExecStart=/usr/bin/env NODE_ENV=production APP_ENV=staging \
+  ZHUDATUAN_OWNER_BOOTSTRAP_DATABASE_NAME=zhudatuan_registration \
+  ZHUDATUAN_OWNER_PASSWORD_REF=zhudatuan/staging/full/registration/owner/password \
+  ZHUDATUAN_OWNER_BOOTSTRAP_RECEIPT_REF=zhudatuan/staging/full/registration/owner/bootstrap-receipt \
+  IDENTITY_KEY_REF=zhudatuan/staging/full/identity/index SECRET_STORE_ENDPOINT=https://127.0.0.1:8643 \
+  NODE_EXTRA_CA_CERTS=%d/internal-ca.crt \
+  /usr/bin/node 01_core_hexin/services/commerce/dist/BootstrapStagingOwner.js
+TimeoutStartSec=90
+RuntimeDirectory=zdt-stg-full-owner
+RuntimeDirectoryMode=0700
+UMask=0077
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=zhudatuan-staging-full-owner-bootstrap
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateIPC=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProcSubset=pid
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RemoveIPC=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+DevicePolicy=closed
+KeyringMode=private
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SocketBindDeny=any
+IPAddressDeny=any
+IPAddressAllow=localhost
+ReadOnlyPaths=/opt/zhudatuan-staging-full/current /opt/zhudatuan-staging-full/shared
+InaccessiblePaths=-/opt/zhudatuan -/opt/smart-wing -/opt/smart-wiston -/opt/shop-test
+
+# Run boundary reconciliation after Migration and before this manual one-shot.
+# There is intentionally no [Install] section.

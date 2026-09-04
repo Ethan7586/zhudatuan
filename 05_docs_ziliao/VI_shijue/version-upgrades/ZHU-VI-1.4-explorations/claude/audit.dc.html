@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body { margin:0; background:#f6f6f4; -webkit-font-smoothing:antialiased; }
+a { color:#111; } a:hover { color:#555; }
+</style>
+</helmet>
+<div style="font-family:'Noto Sans SC',system-ui,sans-serif; color:#111; padding:64px 56px 120px; max-width:1180px; margin:0 auto">
+
+  <div style="display:flex; flex-direction:column; gap:14px; border-bottom:2px solid #111; padding-bottom:28px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#666">Round 05 · 评审与淘汰 · 55 in / 3 out</div>
+    <h1 style="margin:0; font-size:40px; font-weight:700; letter-spacing:-.01em">淘汰 52 个，保留 3 个</h1>
+    <p style="margin:0; max-width:68ch; font-size:15px; line-height:1.7; color:#3a3a3a; text-wrap:pretty">判定原则：踩到「第一眼像模板」「必须讲解才懂」「24px 糊死」「像政府 / 银行 / 物流 / 公会 / 微商 / 团购小程序」中任意一条，直接淘汰，不做加权平均。</p>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#666; display:flex; gap:20px; flex-wrap:wrap"><a href="zdt-logo-explorations.dc.html">R01</a><a href="zhu-character-study.dc.html">R02</a><a href="wordmark-study.dc.html">R04</a><a href="refined-board.dc.html">R06 精修评审板</a></div>
+  </div>
+
+  <div style="margin-top:44px; background:#111; color:#fff; padding:32px 34px; display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:26px">
+    <div style="display:flex; flex-direction:column; gap:8px">
+      <div style="font-size:15px; font-weight:700">死因一 · 「主」写得太老实</div>
+      <p style="margin:0; font-size:13.5px; line-height:1.65; color:#ccc">R02 有一半是黑体「主」的排版微调。顶点做成方块后多数稿子读成「王」，皇权味不是不画皇冠就能躲开的。</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px">
+      <div style="font-size:15px; font-weight:700">死因二 · 几何撞车太狠</div>
+      <p style="margin:0; font-size:13.5px; line-height:1.65; color:#ccc">向心楔形、点阵围心、风车、菱形穿轴、柱状递增，是商标库里最拥挤的五个区域，独占性从起点就是零。</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px">
+      <div style="font-size:15px; font-weight:700">死因三 · 字标的字根画错了</div>
+      <p style="margin:0; font-size:13.5px; line-height:1.65; color:#ccc">W1–W8 共同缺陷：「打」的提手旁被画成向右的平脚，第一眼读作「土」；「团」内的「才」在 20px 打结成一团黑。八套都要重画字根。</p>
+    </div>
+  </div>
+
+  <div style="margin-top:56px">
+    <div style="display:flex; align-items:baseline; gap:14px; border-bottom:1px solid #111; padding-bottom:12px">
+      <div style="font-size:22px; font-weight:700">淘汰名单</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#888">52 items · 94%</div>
+    </div>
+    <sc-for list="{{ cut }}" as="c">
+      <div style="display:flex; align-items:center; gap:18px; padding:11px 4px; border-bottom:1px solid #e6e6e2">
+        <div style="width:34px; height:34px; background:#fff; border:1px solid #e0e0e0; display:flex; align-items:center; justify-content:center; flex:none"><img src="{{ c.src }}" width="24" height="24" alt="{{ c.id }}"></div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; width:40px; flex:none; color:#666">{{ c.id }}</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.06em; color:#b00; width:82px; flex:none">{{ c.tag }}</div>
+        <div style="font-size:13.5px; line-height:1.55; color:#222">{{ c.why }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="margin-top:72px">
+    <div style="display:flex; align-items:baseline; gap:14px; border-bottom:1px solid #111; padding-bottom:12px">
+      <div style="font-size:22px; font-weight:700">保留三个</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#888">必须被一起改成同一套负形语言</div>
+    </div>
+    <sc-for list="{{ keep }}" as="k">
+      <div style="margin-top:28px; background:#fff; border:1px solid #ddd; padding:30px 32px; display:flex; flex-direction:column; gap:24px">
+        <div style="display:flex; align-items:flex-start; gap:32px; flex-wrap:wrap">
+          <div style="display:flex; align-items:flex-end; gap:22px">
+            <img src="{{ k.src }}" height="104" alt="{{ k.id }}">
+            <img src="{{ k.src }}" height="44" alt="{{ k.id }}">
+            <img src="{{ k.src }}" height="24" alt="{{ k.id }}">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px; min-width:280px; flex:1">
+            <div style="display:flex; align-items:baseline; gap:12px"><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#666">{{ k.id }}</span><span style="font-size:20px; font-weight:700">{{ k.name }}</span></div>
+            <p style="margin:0; font-size:13.5px; line-height:1.7; color:#333">{{ k.why }}</p>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:26px; border-top:1px solid #f0f0f0; padding-top:22px">
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#b00">仍然丑在哪</div>
+            <p style="margin:0; font-size:13.5px; line-height:1.7; color:#333">{{ k.ugly }}</p>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#999">下一轮具体要改什么</div>
+            <p style="margin:0; font-size:13.5px; line-height:1.7; color:#333">{{ k.next }}</p>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="margin-top:64px; border-top:2px solid #111; padding-top:30px; display:flex; flex-direction:column; gap:14px">
+    <div style="font-size:22px; font-weight:700">下一轮唯一的作业</div>
+    <p style="margin:0; max-width:74ch; font-size:14.5px; line-height:1.75; color:#333; text-wrap:pretty">不再发散。把 G8 的断口、L3 的块面、W7 的气口收敛成同一个参数：一条固定宽度的负形气口（主笔画的 0.6 倍）。它在图形标里切断交点，在块面里划出主轴，在字标里横穿三字。同一条气口贯穿符号、字标与纹样，才是这套识别能被注册、也能被记住的东西。同时重画「打」的提手旁与「团」的「才」。</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const src = (id) => id[0] === 'W' ? `type/${id}.svg` : `marks/${id}.svg`;
+    const C = (id, tag, why) => ({ id, tag, why, src: src(id) });
+    return {
+      cut: [
+        C("A1","字体样本","直接输入的黑体「主」，第一眼是字库样张，没有设计动作。"),
+        C("A2","通用图标","三条递减横线等于列表 / 菜单控件，任何行业都能拿走。"),
+        C("A3","读不出","「主」横放后不再是字，只剩一排杂乱栅栏。"),
+        C("B1","商标拥挤","三楔向心是最泛滥的聚合套路，近似商标风险最高的一档。"),
+        C("B2","小尺寸糊","开口同心弧等于 wifi 信号，24px 糊成一个灰点。"),
+        C("B3","独占性零","六点围一点是社群与区块链的默认写法。"),
+        C("B4","气质错位","双弧互扣是保险与银行替代握手的图形，与交易平台无关。"),
+        C("C1","像组织图","主脊分发是组织架构图，不是品牌符号。"),
+        C("C2","像物流","轴加两个方块直接读成物流节点，左右重心互相拉扯。"),
+        C("C3","像控件","横轴三节点是流程图组件，放大缩小都没有性格。"),
+        C("D1","微商感","斜粗楔压在底线上，读作促销划线价，廉价感最强。"),
+        C("D2","语义误读","倒三角落在断线上，第一眼是播放键掉进进度条。"),
+        C("D3","像按钮","实心楔推竖线就是快进键，24px 只剩一个三角。"),
+        C("E1","撞车","z/t 连体是通用科技缩写写法，与本品牌无关联。"),
+        C("E2","读不出","d/t 连体没人读得出 zdt，方碗还带小程序感。"),
+        C("E3","装饰多余","Z 加双梁再加方点，三个语言互相打架。"),
+        C("F1","公会感","菱形穿轴是游戏公会与电竞队标的标准配置。"),
+        C("F2","商标拥挤","三叶风车的近似商标密度极高，注册风险不可接受。"),
+        C("F3","通用箭头","方点加双尖角就是「上传 / 提升」图标。"),
+        C("F4","数据图","三根递增柱是图表控件，不是标识。"),
+        C("G1","字体微调","错位三横仍是黑体「主」的排版处理，结构没变。"),
+        C("G2","字体微调","加粗底横只是重量调整，第一眼仍是字库字。"),
+        C("G3","像迷宫","折线连写读作蛇形管路，且失去汉字重心。"),
+        C("G4","读成王","去掉竖轴后三横加点直接读「王」，皇权味最重。"),
+        C("G5","王冠贴纸","三峰即使抽象成短竖，顶部轮廓仍是冠形，违反本轮禁令。"),
+        C("G6","字体微调","光学收分是字体级修饰，24px 完全看不出。"),
+        C("G7","读不出","四臂旋转后与「主」无关，且像加载动画。"),
+        C("G9","物流感","整体切变的前倾姿态正是物流品牌的通用手法。"),
+        C("G10","小尺寸糊","块间距在 24px 下并块，糊成三条实线。"),
+        C("G11","像流程图","交点方块化后成为节点图，字消失了。"),
+        C("G12","读不出","镜像折叠后既不是字也不是符号，需要讲解。"),
+        C("H1","商标拥挤","四楔向心，同上，聚合套路的重复。"),
+        C("H2","像加载图","放射短棒是 loading spinner 的标准形。"),
+        C("H3","读不出","三组双棒无语义落点，24px 变一团碎点。"),
+        C("J1","像图表","轴上方块递增是柱状图与「增长」图标的通用写法。"),
+        C("J2","像物流","轴挂交错节点直接读运输路径。"),
+        C("J3","像区块链","轴中挖三个方孔是链式结构的常见比喻，风险高。"),
+        C("K1","公会感","开口三角是队标与电竞标的默认外形。"),
+        C("K2","像取景框","三个 L 角就是相机取景与「扫描」图标。"),
+        C("K3","像图表","长短竖立在基线上仍是数据图。"),
+        C("L1","政府感","三角加中缝像徽记与政务平台标志。"),
+        C("L2","像四宫格","四块加十字白缝是窗口 / 应用网格图标。"),
+        C("M1","像图案砖","方块加四分圆是通用平面构成练习，无品牌属性。"),
+        C("M2","风车重复","四三角风车与 F2 同族，撞车风险相同。"),
+        C("M3","符号风险","双阶梯互扣在小尺寸下接近禁忌符号，不可用。"),
+        C("W1","字根错误","「打」读成「土」，「团」四角断开后在 20px 散架。"),
+        C("W2","物流感","统一斜切让整组字前倾，正是要避免的物流气质。"),
+        C("W3","小尺寸糊","8u 细横在 20px 消失，字变成一堆竖条。"),
+        C("W4","装饰多余","三个方点是贴上去的记号，与骨架无结构关系。"),
+        C("W5","小程序感","圆角端头把商业可信度直接拉低。"),
+        C("W6","字距把戏","压缩加中横延长，本质是字距与比例调整，不构成原创结构。"),
+        C("W8","比例失衡","底横外扩后「团」比另外两字重一倍，重心塌向右下。"),
+      ],
+      keep: [
+        { id:"G8", name:"断轴 · 交点留白", src:"marks/G8.svg",
+          why:"三横在竖轴两侧全部断开，交点从不落笔。它同时满足两件难以兼得的事：能被读成「主」，又不是任何字库里的字。负形是结构本身，不是装饰。",
+          ugly:"顶部方点是外挂的，与断口语言无关；三横的断口宽度、长度递变全靠手感，没有栅格依据；左右两半长度不等造成轻微右倾；断口 6u 在 24px 只剩 1.5px，印刷缩放会糊。",
+          next:"把断口定为唯一参数 g = 0.6×笔画，并统一到三处交点；顶点改为轴本身向上出头，取消外挂方点；三横长度按 88 / 62 / 96 的固定比例重排并做光学居中；24px 版单独加粗断口到 2px 整数像素。" },
+        { id:"L3", name:"块面 · 负形主轴", src:"marks/L3.svg",
+          why:"三块实体，白色通道自己长成主轴与横梁。没有一根多余笔画，24px 下最硬朗，反白后同样成立，天然可以平铺成纹样。",
+          ugly:"目前三块的比例太接近，读起来像四宫格缺一块；下块居中过于对称，缺少主次；通道宽度上下不一致；边缘全是 90°，气质偏冷硬，缺少中国品牌的呼吸。",
+          next:"把下块收窄并右移半个通道，制造主轴偏移；通道统一为 g，且横通道比竖通道宽 1.5g 以拉开层级；三块面积按 3:3:4 重排，让重心落在下块；上块外边缘留 2u 光学补偿。" },
+        { id:"W7", name:"气口 · 贯通字标", src:"type/W7.svg",
+          why:"一条水平气口横穿三字，同一节奏切断所有竖画。这是唯一能把图形标与中文字标绑在同一条规则上的方案，也是最容易延展成纹样与转场动效的一稿。",
+          ugly:"「打」的提手旁收笔向右，第一眼读「土」；「团」内的「才」三笔在气口下方挤成黑块；气口高度与位置目前是试出来的，没有和字面网格对齐；三字重心还没真正对齐，「团」偏重。",
+          next:"重画提手旁：竖到底后改为上扬的提；「才」去掉竖钩的钩、加大内白；气口高度锁定 g，位置锁定在字面 60% 处并落在整数像素；「团」外框改为断角以与 G8 同语言，重量降到与另两字一致。" },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

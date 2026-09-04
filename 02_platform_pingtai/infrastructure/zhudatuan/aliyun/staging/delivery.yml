@@ -1,0 +1,56 @@
+version: 1
+owner: zhudatuan
+environment: staging
+sourceOfTruth: 02_platform_pingtai/config/owner-approved-ui.json
+isolation:
+  releaseBase: /opt/zhudatuan-staging/releases
+  releaseRoot: /opt/zhudatuan-staging/current
+  sharedRoot: /opt/zhudatuan-staging/shared
+  logRoot: /var/log/zhudatuan-staging
+  environmentFile: /opt/zhudatuan-staging/shared/.env.staging
+  productionTrafficPercent: 0
+  productionDataAccess: forbidden
+runtime:
+  processConfig: 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/ecosystem.config.cjs
+  proxyConfig: 02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/Caddyfile
+  apiPort: 3101
+routes:
+  accounts:
+    hostEnv: ZHUDATUAN_STAGING_ACCOUNTS_HOST
+    workspace: 01_core_hexin/apps/auth-web
+    artifact: 01_core_hexin/apps/auth-web/dist
+    server: caddy-static
+  console:
+    hostEnv: ZHUDATUAN_STAGING_CONSOLE_HOST
+    workspace: 01_core_hexin/apps/console
+    artifact: 01_core_hexin/apps/console/dist
+    server: caddy-static
+  api:
+    hostEnv: ZHUDATUAN_STAGING_API_HOST
+    workspace: 01_core_hexin/services/commerce
+    artifact: 01_core_hexin/services/commerce/dist
+    process: zhudatuan-staging-api
+  jobs:
+    workspace: 01_core_hexin/services/commerce
+    artifact: 01_core_hexin/services/commerce/dist
+    entrypoint: 01_core_hexin/services/commerce/dist/JobsMain.js
+    process: zhudatuan-staging-jobs
+dependencies:
+  database:
+    apiConnectionRefEnv: DATABASE_API_CONNECTION_REF
+    jobsConnectionRefEnv: DATABASE_JOB_CONNECTION_REF
+    isolatedRoles: [shopapp, shopjob]
+  redis:
+    connectionRefEnv: REDIS_CONNECTION_REF
+  secretStore:
+    endpointEnv: SECRET_STORE_ENDPOINT
+  kms:
+    endpointEnv: KMS_ENDPOINT
+  aliyunSms:
+    configurationRefEnv: NOTIFICATION_CONFIG_REF
+    credentialMode: ram-role
+guards:
+  edgeAccessRequired: true
+  robotsIndexing: disabled
+  migrationsMustTargetIsolatedDatabase: true
+  secretValuesInRepository: forbidden

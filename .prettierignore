@@ -13,10 +13,10 @@ scripts/create-wechat-review-compliance-doc.mjs
 supabase/migrations/
 drizzle/
 package-lock.json
-apps/wechat-miniapp/miniprogram/data/assets.generated.js
-apps/wechat-miniapp/miniprogram/data/catalog-seed.generated.js
-apps/wechat-miniapp/miniprogram/data/catalog-seed-critical.generated.js
-apps/wechat-miniapp/miniprogram/data/catalog-taxonomy.generated.js
-apps/wechat-miniapp/miniprogram/styles/icons.wxss
-apps/wechat-miniapp/miniprogram/styles/tokens.wxss
-packages/design-system/src/tokens.css
+01_core_hexin/apps/wechat-miniapp/miniprogram/data/assets.generated.js
+01_core_hexin/apps/wechat-miniapp/miniprogram/data/catalog-seed.generated.js
+01_core_hexin/apps/wechat-miniapp/miniprogram/data/catalog-seed-critical.generated.js
+01_core_hexin/apps/wechat-miniapp/miniprogram/data/catalog-taxonomy.generated.js
+01_core_hexin/apps/wechat-miniapp/miniprogram/styles/icons.wxss
+01_core_hexin/apps/wechat-miniapp/miniprogram/styles/tokens.wxss
+01_core_hexin/packages/design-system/src/tokens.css

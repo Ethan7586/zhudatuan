@@ -1,0 +1,229 @@
+source: RepositoryAuthority 05_docs_ziliao/docs_wendang/福利商城功能清单260821.xlsx#接口!A2:D21
+workbookSha256: 78cfc3b350ced633afd6bfc951f2d2a94991780fa1d4b6d571e9f1d3df322942
+generated: true
+count: 20
+priorities:
+  "1": 11
+  "3": 5
+  "4": 4
+providers:
+  - requirement: INTEG001
+    row: 2
+    id: jdproduct
+    label: 京东
+    priority: 1
+    delivery: required
+    available: true
+    status: Designed
+    evidence: []
+    extension: 01_core_hexin/extensions/providers/jdproduct
+    vendor: jd
+  - requirement: INTEG002
+    row: 3
+    id: jdfresh
+    label: 京东生鲜
+    priority: 1
+    delivery: required
+    available: true
+    status: Designed
+    evidence: []
+    extension: 01_core_hexin/extensions/providers/jdfresh
+    vendor: jd
+  - requirement: INTEG003
+    row: 4
+    id: tmallmarket
+    label: 天猫超市
+    priority: 1
+    delivery: required
+    available: true
+    status: Designed
+    evidence: []
+    extension: 01_core_hexin/extensions/providers/tmallmarket
+    vendor: tmall
+  - requirement: INTEG004
+    row: 5
+    id: private
+    label: 自有供应商
+    priority: 1
+    delivery: required
+    available: true
+    status: Designed
+    evidence: []
+    extension: 01_core_hexin/extensions/providers/private
+    vendor: null
+  - requirement: INTEG005
+    row: 6
+    id: cake
+    label: 蛋糕
+    priority: 1
+    delivery: required
+    available: true
+    status: Designed
+    evidence: []
+    extension: 01_core_hexin/extensions/providers/cake
+    vendor: cakeuncle
+  - requirement: INTEG006
+    row: 7
+    id: flower
+    label: 鲜花
+    priority: 1
+    delivery: required
+    available: true
+    status: Designed
+    evidence: []
+    extension: 01_core_hexin/extensions/providers/flower
+    vendor: cakeuncle
+  - requirement: INTEG007
+    row: 8
+    id: book
+    label: 图书
+    priority: 1
+    delivery: required
+    available: true
+    status: Designed
+    evidence: []
+    extension: 01_core_hexin/extensions/providers/book
+    vendor: wenxuan
+  - requirement: INTEG008
+    row: 9
+    id: directcharge
+    label: 虚拟卡券/直充
+    priority: 1
+    delivery: required
+    available: true
+    status: Designed
+    evidence: []
+    extension: 01_core_hexin/extensions/providers/directcharge
+    vendor: wanlian
+  - requirement: INTEG009
+    row: 10
+    id: foodvoucher
+    label: 虚拟食品提货券
+    priority: 1
+    delivery: required
+    available: true
+    status: Designed
+    evidence: []
+    extension: 01_core_hexin/extensions/providers/foodvoucher
+    vendor: cakeuncle
+  - requirement: INTEG010
+    row: 11
+    id: movie
+    label: 电影
+    priority: 1
+    delivery: required
+    available: true
+    status: Designed
+    evidence: []
+    extension: 01_core_hexin/extensions/providers/movie
+    vendor: wanlian
+  - requirement: INTEG011
+    row: 12
+    id: meal
+    label: 在线点餐
+    priority: 1
+    delivery: required
+    available: true
+    status: Designed
+    evidence: []
+    extension: 01_core_hexin/extensions/providers/meal
+    vendor: cakeuncle
+  - requirement: INTEG012
+    row: 13
+    id: taobaonow
+    label: 淘宝闪购
+    priority: 3
+    delivery: deferred-contract
+    available: false
+    status: Designed
+    evidence: []
+    extension: null
+    vendor: null
+  - requirement: INTEG013
+    row: 14
+    id: elephantmarket
+    label: 小象超市
+    priority: 3
+    delivery: deferred-contract
+    available: false
+    status: Designed
+    evidence: []
+    extension: null
+    vendor: null
+  - requirement: INTEG014
+    row: 15
+    id: meituan
+    label: 美团
+    priority: 3
+    delivery: deferred-contract
+    available: false
+    status: Designed
+    evidence: []
+    extension: null
+    vendor: null
+  - requirement: INTEG015
+    row: 16
+    id: privatehome
+    label: 自营家政
+    priority: 3
+    delivery: deferred-contract
+    available: false
+    status: Designed
+    evidence: []
+    extension: null
+    vendor: null
+  - requirement: INTEG016
+    row: 17
+    id: jdhome
+    label: 京东家政
+    priority: 3
+    delivery: deferred-contract
+    available: false
+    status: Designed
+    evidence: []
+    extension: null
+    vendor: null
+  - requirement: INTEG017
+    row: 18
+    id: laundry
+    label: 干洗
+    priority: 4
+    delivery: deferred-contract
+    available: false
+    status: Designed
+    evidence: []
+    extension: null
+    vendor: null
+  - requirement: INTEG018
+    row: 19
+    id: errand
+    label: 配送跑腿
+    priority: 4
+    delivery: deferred-contract
+    available: false
+    status: Designed
+    evidence: []
+    extension: null
+    vendor: null
+  - requirement: INTEG019
+    row: 20
+    id: carservice
+    label: 车咖汽车服务
+    priority: 4
+    delivery: deferred-contract
+    available: false
+    status: Designed
+    evidence: []
+    extension: null
+    vendor: null
+  - requirement: INTEG020
+    row: 21
+    id: show
+    label: 大麦演出
+    priority: 4
+    delivery: deferred-contract
+    available: false
+    status: Designed
+    evidence: []
+    extension: null
+    vendor: null

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Smart Wing VI 1.3 · 简体中文排版模板</title>
+    <link rel="stylesheet" href="/source/packages/design/src/fonts.css" />
+    <link rel="stylesheet" href="/source/packages/design/src/tokens.css" />
+    <link rel="stylesheet" href="/source/packages/design/src/base.css" />
+    <link rel="stylesheet" href="/source/packages/design/src/typography.css" />
+    <link rel="stylesheet" href="/preview/vi-1-3-han-template.css" />
+  </head>
+  <body>
+    <main class="han-specimen">
+      <header class="han-hero">
+        <div>
+          <p class="han-brandline">SMART WING VI 1.3 · 简体中文排版标准</p>
+          <h1>汉字不是系统回退项，<br />而是界面的正式骨架。</h1>
+          <p class="han-hero-copy">同一套字体、字号、字重和混排规则，覆盖 macOS、Windows、Web 与静态导出。</p>
+        </div>
+        <div class="font-status" id="font-status" data-ready="false">
+          <span class="font-status-dot"></span>
+          <div><strong>正在验证字体</strong><small>SW Noto Sans SC</small></div>
+        </div>
+      </header>
+
+      <section class="han-intro-card">
+        <div class="han-intro-mark">汉</div>
+        <div>
+          <p class="swtype-han-kicker">标准目标</p>
+          <h2 class="swtype-h2">Windows 不再使用宋体，macOS 不再成为唯一标准</h2>
+          <p class="swtype-body">正常状态下两端统一加载自托管思源系简体中文字体；资源失败时，Windows 回退微软雅黑 UI，macOS 回退苹方。</p>
+        </div>
+        <div class="han-version"><span>VERSION</span><strong>1.3.0</strong></div>
+      </section>
+
+      <section class="han-section" aria-labelledby="scale-title">
+        <header class="han-section-header">
+          <div><p class="swtype-han-kicker">01 · 中文字号模板</p><h2 id="scale-title">一套稳定层级，不靠随手调字号</h2></div>
+          <p>最小中文字号 12px · 正文字距 0 · 严格换行</p>
+        </header>
+        <div class="type-scale">
+          <article class="type-row"><span>Display<br />32 / 40 · 700</span><p class="swtype-display">订单管理系统</p></article>
+          <article class="type-row"><span>H1<br />28 / 36 · 700</span><p class="swtype-h1">订单、履约、售后与异常</p></article>
+          <article class="type-row"><span>H2<br />20 / 28 · 600</span><p class="swtype-h2">当前需要关注的订单</p></article>
+          <article class="type-row"><span>H3<br />17 / 24 · 600</span><p class="swtype-h3">渠道采购状态未知</p></article>
+          <article class="type-row"><span>Body<br />16 / 24 · 400</span><p class="swtype-body">清晰呈现订单事实、责任方、等待对象和下一步动作。</p></article>
+          <article class="type-row"><span>Body Small<br />14 / 20 · 400</span><p class="swtype-body-sm">当前范围：主打团平台 / 全部商城 · 数据已处理至16:52:10</p></article>
+          <article class="type-row"><span>Caption<br />12 / 18 · 400</span><p class="swtype-caption">来源：订单服务 · 更新于2026-09-01 16:52</p></article>
+        </div>
+      </section>
+
+      <section class="han-grid-two">
+        <article class="han-panel">
+          <p class="swtype-han-kicker">02 · 字重</p>
+          <h2>四个字重，各有职责</h2>
+          <div class="weight-list">
+            <p style="font-weight:400"><span>400</span>订单详情与阅读正文</p>
+            <p style="font-weight:500"><span>500</span>交互标签与工程标识</p>
+            <p style="font-weight:600"><span>600</span>区块标题与主要按钮</p>
+            <p style="font-weight:700"><span>700</span>关键指标与页面主标题</p>
+          </div>
+        </article>
+        <article class="han-panel">
+          <p class="swtype-han-kicker">03 · 标点与语言</p>
+          <h2>使用简体中文全角标点</h2>
+          <p class="punctuation">，。！？；：“”‘’<br />（）【】《》—…</p>
+          <p class="swtype-body-sm muted-copy">不拉开汉字字距，不把中文栏目名套用英文大写规则。</p>
+        </article>
+      </section>
+
+      <section class="han-section" aria-labelledby="mixed-title">
+        <header class="han-section-header">
+          <div><p class="swtype-han-kicker">04 · 中英文与业务数据混排</p><h2 id="mixed-title">信息清楚，工程标识保持原值</h2></div>
+        </header>
+        <div class="mixed-card">
+          <div class="mixed-order"><p class="swtype-caption">订单号</p><strong>OMS-20260901-1827</strong></div>
+          <div><p class="swtype-caption">当前状态</p><strong>已支付 · 待履约</strong></div>
+          <div><p class="swtype-caption">履约时限</p><strong class="warning-text">SLA 剩余12分钟</strong></div>
+          <div><p class="swtype-caption">订单金额</p><strong class="swtype-amount">¥2,180.00</strong></div>
+        </div>
+        <div class="reason-row"><span>异常原因</span><code>PROVIDER_PURCHASE_UNKNOWN</code><b>渠道采购状态未知</b></div>
+      </section>
+
+      <section class="han-grid-two platform-grid">
+        <article class="han-panel platform-card">
+          <p class="swtype-han-kicker">05 · 平台策略</p>
+          <h2>正常加载：跨平台同字形</h2>
+          <ul>
+            <li><b>Web / macOS</b><span>SW Inter + SW Noto Sans SC</span></li>
+            <li><b>Web / Windows</b><span>SW Inter + SW Noto Sans SC</span></li>
+            <li><b>静态导出</b><span>等待字体加载完成后再截图</span></li>
+          </ul>
+        </article>
+        <article class="han-panel rules-card">
+          <p class="swtype-han-kicker">06 · 禁止事项</p>
+          <h2>任何一项出现都不能交付</h2>
+          <div class="rule-pills"><span>宋体回退</span><span>伪粗体</span><span>11px 中文</span><span>中文强制字距</span><span>未加载即截图</span></div>
+        </article>
+      </section>
+
+      <footer>
+        <span>Smart Wing VI 1.3 · 简体中文排版权威样张</span>
+        <span>自托管字体 · OFL 1.1 · 2026-09-01</span>
+      </footer>
+    </main>
+    <script>
+      document.fonts.ready.then(() => {
+        const status = document.querySelector('#font-status');
+        const loaded = document.fonts.check('16px "SW Noto Sans SC"') && document.fonts.check('16px "SW Inter"');
+        document.documentElement.dataset.fontsReady = String(loaded);
+        document.documentElement.dataset.horizontalOverflow = String(document.documentElement.scrollWidth > window.innerWidth + 1);
+        status.dataset.ready = String(loaded);
+        status.querySelector('strong').textContent = loaded ? '标准字体已载入' : '字体加载失败';
+      });
+    </script>
+  </body>
+</html>

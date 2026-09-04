@@ -12,21 +12,21 @@
 
 | 域名                    | 制品／服務            | 當前合同                             |
 | ----------------------- | --------------------- | ------------------------------------ |
-| `www.zhudatuan.com`     | `apps/storefront-web` | 消費端 REST/RPC 相容層，同源提供 API |
-| `auth.zhudatuan.com`    | `apps/auth-web`       | 消費端相容身份流程                   |
-| `console.zhudatuan.com` | `apps/console`        | Canonical Operation SDK              |
-| `api.zhudatuan.com`     | `services/commerce`   | 217 個 Canonical Operations          |
+| `www.zhudatuan.com`     | `01_core_hexin/apps/storefront-web` | 消費端 REST/RPC 相容層，同源提供 API |
+| `auth.zhudatuan.com`    | `01_core_hexin/apps/auth-web`       | 消費端相容身份流程                   |
+| `console.zhudatuan.com` | `01_core_hexin/apps/console`        | Canonical Operation SDK              |
+| `api.zhudatuan.com`     | `01_core_hexin/services/commerce`   | 217 個 Canonical Operations          |
 | `chat.zhudatuan.com`    | 客服系統              | 尚未納入本次代碼基線                 |
 
 ## 部署軌道
 
 ### 核心營運軌道
 
-`apps/console`、`services/commerce` 與 `database/supabase` 必須使用同一提交與合同 Hash。阿里雲正式拓撲和不可變 Release Bundle 規範見 [`infrastructure/aliyun/DEPLOY-阿里云.md`](./infrastructure/aliyun/DEPLOY-%E9%98%BF%E9%87%8C%E4%BA%91.md)。在真資料庫 E2E、權限負例和 Provider 沙箱證據完成前，只允許部署到隔離測試環境。
+`01_core_hexin/apps/console`、`01_core_hexin/services/commerce` 與 `02_platform_pingtai/database/supabase` 必須使用同一提交與合同 Hash。阿里雲正式拓撲和不可變 Release Bundle 規範見 [`02_platform_pingtai/infrastructure/aliyun/DEPLOY-阿里云.md`](./02_platform_pingtai/infrastructure/aliyun/DEPLOY-%E9%98%BF%E9%87%8C%E4%BA%91.md)。在真資料庫 E2E、權限負例和 Provider 沙箱證據完成前，只允許部署到隔離測試環境。
 
 ### 消費端相容軌道
 
-`apps/storefront-web` 的 Worker 會同源嵌入 `services/commerce-api/src/api/router`；它與 `database/storefront-compatibility/supabase` 成套驗證。根命令 `build:commerce-api` 目前只生成歷史管理 AI 服務，不是完整消費 REST 服務，不能單獨當作正式 API 制品。
+`01_core_hexin/apps/storefront-web` 的 Worker 會同源嵌入 `01_core_hexin/services/commerce-api/src/api/router`；它與 `02_platform_pingtai/database/storefront-compatibility/supabase` 成套驗證。根命令 `build:commerce-api` 目前只生成歷史管理 AI 服務，不是完整消費 REST 服務，不能單獨當作正式 API 制品。
 
 相容軌道完成 Adapter/BFF、真資料庫驗收與域名改造前，不使用歷史 `hbbtzn`／`/opt/smart-wing` 腳本部署。
 

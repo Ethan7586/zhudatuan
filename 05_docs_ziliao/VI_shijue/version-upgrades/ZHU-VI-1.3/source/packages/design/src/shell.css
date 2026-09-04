@@ -1,0 +1,178 @@
+.workspacelayout {
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--sw-background);
+}
+
+.workspacesidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sw-space-2);
+  height: 100vh;
+  overflow: hidden;
+  background: var(--sw-sidebar-gradient);
+  color: var(--sw-surface);
+  padding: var(--sw-space-3) var(--sw-space-2);
+}
+
+.workspacescope {
+  margin: 0;
+  border: 0.0625rem solid color-mix(in srgb, var(--sw-surface) 20%, transparent);
+  border-radius: var(--sw-radius-sm);
+  background: color-mix(in srgb, var(--sw-brand) 18%, transparent);
+  color: var(--sw-border-strong);
+  padding: var(--sw-space-1) var(--sw-space-1-5);
+  font-size: var(--sw-font-size-body-sm);
+}
+
+.workspacesidebar nav {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  overflow-y: auto;
+}
+
+.workspacesidebar nav button {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  align-items: center;
+  min-height: var(--sw-min-touch-target);
+  border: 0.0625rem solid transparent;
+  border-radius: var(--sw-radius-sm);
+  background: transparent;
+  color: var(--sw-border-strong);
+  padding: var(--sw-space-1);
+  text-align: left;
+  transition:
+    background var(--sw-duration-fast) var(--sw-ease-standard),
+    color var(--sw-duration-fast) var(--sw-ease-standard);
+}
+
+.workspacesidebar nav button > span {
+  font-family: var(--sw-font-mono);
+  font-size: var(--sw-font-size-caption);
+  opacity: 0.7;
+}
+
+.workspacesidebar nav button:hover,
+.workspacesidebar nav button[aria-current='page'] {
+  border-color: color-mix(in srgb, var(--sw-brand) 70%, transparent);
+  background: color-mix(in srgb, var(--sw-brand) 24%, transparent);
+  color: var(--sw-surface);
+}
+
+.workspaceassurance {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-1);
+  margin: auto 0 0;
+  color: var(--sw-border-strong);
+  font-size: var(--sw-font-size-caption);
+}
+
+.workspaceassurance > span {
+  width: var(--sw-space-1);
+  height: var(--sw-space-1);
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-success);
+}
+
+.workspacebody {
+  min-width: 0;
+}
+
+.workspaceheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+  min-height: 4.5rem;
+  border-bottom: 0.0625rem solid var(--sw-border);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1-5) var(--sw-space-4);
+}
+
+.workspaceheader p,
+.workspaceheader strong {
+  display: block;
+  margin: 0;
+}
+
+.workspaceheader p,
+.workspaceheader > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sw-space-1);
+  color: var(--sw-success-strong);
+  font-size: var(--sw-font-size-caption);
+  font-weight: 700;
+}
+
+.workspaceheader > span::before {
+  width: var(--sw-space-1);
+  height: var(--sw-space-1);
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-success);
+  content: '';
+}
+
+.workspacebody > main,
+.workspacebody > .workspaceerror {
+  width: min(100%, 90rem);
+  margin: 0 auto;
+  padding: var(--sw-space-4);
+}
+
+.workspaceerror > section {
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  padding: var(--sw-space-4);
+  box-shadow: var(--sw-shadow-card);
+}
+
+@media (max-width: 48rem) {
+  .workspacelayout {
+    grid-template-columns: 1fr;
+  }
+
+  .workspacesidebar {
+    position: sticky;
+    z-index: 3;
+    height: auto;
+    gap: var(--sw-space-1);
+    padding: var(--sw-space-1-5) var(--sw-space-2);
+  }
+
+  .workspacescope,
+  .workspaceassurance {
+    display: none;
+  }
+
+  .workspacesidebar nav {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .workspacesidebar nav button {
+    flex: 0 0 auto;
+    grid-template-columns: 1fr;
+    white-space: nowrap;
+  }
+
+  .workspacesidebar nav button > span {
+    display: none;
+  }
+
+  .workspaceheader {
+    min-height: 3.5rem;
+    padding: var(--sw-space-1) var(--sw-space-2);
+  }
+
+  .workspacebody > main,
+  .workspacebody > .workspaceerror {
+    padding: var(--sw-space-2);
+  }
+}

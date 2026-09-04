@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body { margin:0; background:#f6f6f4; -webkit-font-smoothing:antialiased; }
+a { color:#111; } a:hover { color:#555; }
+</style>
+</helmet>
+<div style="font-family:'Noto Sans SC',system-ui,sans-serif; color:#111; padding:64px 56px 120px; max-width:1240px; margin:0 auto">
+
+  <div style="display:flex; flex-direction:column; gap:14px; border-bottom:2px solid #111; padding-bottom:28px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#666">Round 04 · 中文标准字 · 8 structures</div>
+    <h1 style="margin:0; font-size:40px; font-weight:700; letter-spacing:-.01em">主打团 — 定制标准字结构</h1>
+    <p style="margin:0; max-width:66ch; font-size:15px; line-height:1.7; color:#3a3a3a; text-wrap:pretty">八套字形按同一骨架从零构建：字面 100×100，横画 12u、竖画 13u，三字重心统一，顶端与底端共用基准。每套只引入一处结构语言，并把它同时贯彻到「主」「打」「团」三字。「团」的外框在每套里都被削弱一次——断角、缺边、细横、开口或外扩——避免笨重方框。</p>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#666; display:flex; gap:20px; flex-wrap:wrap"><a href="zdt-logo-explorations.dc.html">R01 图形发散</a><a href="zhu-character-study.dc.html">R02 「主」字</a><a href="audit.dc.html">R05 评审淘汰</a></div>
+  </div>
+
+  <sc-for list="{{ items }}" as="w">
+    <div style="margin-top:40px; background:#fff; border:1px solid #ddd">
+      <div style="display:flex; align-items:baseline; gap:16px; padding:20px 28px; border-bottom:1px solid #eee; flex-wrap:wrap">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; letter-spacing:.08em">{{ w.id }}</div>
+        <div style="font-size:19px; font-weight:700">{{ w.name }}</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#888">{{ w.tag }}</div>
+      </div>
+      <div style="padding:32px 28px; display:flex; flex-direction:column; gap:30px">
+        <div style="display:flex; flex-direction:column; gap:12px">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#999">标准横排</div>
+          <img src="{{ w.src }}" width="420" alt="{{ w.id }}">
+        </div>
+        <div style="display:flex; gap:48px; flex-wrap:wrap; border-top:1px solid #f0f0f0; padding-top:26px">
+          <div style="display:flex; flex-direction:column; gap:12px">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#999">页头小尺寸 · 字高 20px</div>
+            <div style="border:1px solid #eee; padding:14px 18px; display:flex; align-items:center; gap:14px">
+              <img src="{{ w.src }}" height="20" alt="{{ w.id }}">
+              <div style="width:1px; height:18px; background:#ddd"></div>
+              <span style="font-size:12px; color:#666">商城首页 / 后台顶栏</span>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:12px">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#999">与抽象符号组合</div>
+            <div style="border:1px solid #eee; padding:14px 18px; display:flex; align-items:center; gap:14px">
+              <img src="{{ w.sym }}" width="26" height="26" alt="symbol">
+              <div style="width:1px; height:22px; background:#ddd"></div>
+              <img src="{{ w.src }}" height="26" alt="{{ w.id }}">
+            </div>
+          </div>
+        </div>
+        <div style="border-top:1px solid #f0f0f0; padding-top:22px; display:flex; flex-direction:column; gap:8px">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#999">字形改造说明</div>
+          <p style="margin:0; font-size:13.5px; line-height:1.7; color:#333; max-width:78ch; text-wrap:pretty">{{ w.desc }}</p>
+        </div>
+      </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const W = (id, name, tag, sym, desc) => ({ id, name, tag, desc, src: `type/${id}.svg`, sym: `marks/${sym}.svg` });
+    return { items: [
+      W("W1","断角骨架","corner gaps","K2","每一处直角转折都留 6u 缺口：「打」的提手收笔、「团」外框四角全部断开。缺口宽度等于横画的一半，成为三字共用的结构语言。「团」因此从闭合方框变成四段互相指向的边。"),
+      W("W2","右下切角","45° bevel","M3","所有竖画的右下角做 45° 等量斜切，形成统一的收笔方向；「团」外框去掉右下角，右边只保留上半段。整组字获得单向的推进感，但不靠倾斜。"),
+      W("W3","横细竖粗","two-axis weight","J1","横画 8u、竖画 15u 的双轴重量。「团」外框的上下横随之变细，方框的重量被抽掉一半，内部「才」在轻横重竖的对比中被推到前面。"),
+      W("W4","方点记号","dot token","H1","每字植入一个同尺寸实心方点作为共同记号：「主」的顶点、「打」的提手起笔、「才」的心。「团」外框顶边在中间断开 20u 让方点透气，框不再密闭。"),
+      W("W5","圆角端头","5u terminals","M1","仅端头做 5u 圆角，骨架仍为直角，避免圆体的小程序感。「团」外框改为左上、右下两个 L 形互扣，对角两处开口，是全套里最开放的一稿。"),
+      W("W6","中横贯通","shared midline","J2","三字的中横统一到同一高度并延长至等长，横向压缩 94%。速度感来自这条贯穿的水平线，而不是斜体。「团」内部「才」的横也并入这条基准。"),
+      W("W7","气口贯通","negative band","J3","一条 7u 宽的水平气口横穿三字，把所有竖画在同一节奏位切断。字标本身携带负形语言，可直接延展成纹样与转场动效。"),
+      W("W8","底部外扩","extended base","K3","顶端三字平齐，「团」的底横越出字面延伸到 100u 全宽，成为整组字的底座。外框上下不再等长，方框感被底座吸收。"),
+    ]};
+  }
+}
+</script>
+</body>
+</html>
