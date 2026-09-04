@@ -16,15 +16,15 @@ import { assertRiskAllowed, RISK_GATE, type RiskGate } from '../../foundation/se
 import { CheckoutPort } from '../checkout_jiesuan';
 import { QuoteReader } from '../checkout_jiesuan';
 import type { CheckoutQuote } from '../checkout_jiesuan';
-import { FulfillmentPort } from '../fulfillment/FulfillmentPort';
+import { FulfillmentPort } from '../fulfillment';
 import { InventoryPort } from '../inventory';
-import { MarketingPort } from '../marketing/MarketingPort';
+import { MarketingPort } from '../marketing';
 import { OrderPort, PlaceOrder } from '../order_dingdan';
 import { PaymentSettlementCore } from '../payment_zhifu';
 import { ExternalPaymentIntentOperations } from '../payment_zhifu';
 import { PAYMENT_GATEWAY } from '../payment_zhifu';
 import type { PaymentGateway } from '../payment_zhifu';
-import { pricingPort } from '../pricing/PricingPort';
+import { pricingPort } from '../pricing';
 import { PurchaseBenefitGateway } from './PurchaseBenefitGateway';
 import { DisabledPurchaseVoucherGateway } from './DisabledPurchaseVoucherGateway';
 import { PurchaseCheckoutContext } from './PurchaseCheckoutContext';

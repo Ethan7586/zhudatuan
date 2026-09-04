@@ -8,3 +8,4 @@ export {
   type MallOrganizationIdentity,
 } from './05_interface_jieru/MallOrganizationProvisioningPort';
 export { OrganizationPort, organizationPort } from './OrganizationPort';
+export { organizationOperations } from './OrganizationOperations';

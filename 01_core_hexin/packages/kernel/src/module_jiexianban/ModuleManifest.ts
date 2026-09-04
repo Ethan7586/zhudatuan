@@ -1,7 +1,7 @@
 export type ModuleId = string;
 export type CapabilityId = string;
 
-export type ModuleKind = 'business' | 'platform' | 'extension';
+export type ModuleKind = 'business' | 'platform' | 'extension' | 'composition';
 export type ModuleLayer = 'public' | 'domain' | 'application' | 'adapters' | 'interface' | 'tests';
 
 export interface ModuleEntrypoints {

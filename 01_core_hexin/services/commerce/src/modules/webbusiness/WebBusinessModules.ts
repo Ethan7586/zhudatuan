@@ -1,6 +1,6 @@
 import { defineSelectedModule } from '../../bootstrap/DefinedModule';
-import { cartOperations } from '../cart/CartOperations';
-import { organizationOperations } from '../organization/OrganizationOperations';
+import { cartOperations } from '../cart';
+import { organizationOperations } from '../organization';
 import { webBenefitOperations } from './WebBenefitOperations';
 import { webCatalogOperations } from './WebCatalogOperations';
 import { webInventoryOperations } from './WebInventoryOperations';

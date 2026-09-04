@@ -2,7 +2,7 @@ import type { ClaimedJob, JobProcessor } from '../../foundation/application/JobR
 import type { DatabasePool } from '../../foundation/persistence/Pool';
 import { identityRetentionPort } from '../identity';
 import { checkoutSessionPort } from '../checkout_jiesuan';
-import { pricingPort } from '../pricing/PricingModule';
+import { pricingPort } from '../pricing';
 
 export class RuntimeJobProcessor implements JobProcessor {
   constructor(private readonly pool: DatabasePool) {}
