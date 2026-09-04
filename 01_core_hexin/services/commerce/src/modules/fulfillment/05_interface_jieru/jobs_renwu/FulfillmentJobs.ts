@@ -4,7 +4,7 @@ import type { ExtensionRegistry } from '../../../../bootstrap/ExtensionRegistry'
 import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import type { SecretStore } from '../../../../foundation/infrastructure/SecretStore';
-import { channelOperationPort } from '../../../channel/ChannelModule';
+import { channelOperationPort } from '../../../channel';
 import { orderPort } from '../../../order_dingdan';
 
 interface FulfillmentRow {

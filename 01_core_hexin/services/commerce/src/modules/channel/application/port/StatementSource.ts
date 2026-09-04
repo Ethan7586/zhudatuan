@@ -1,1 +1,1 @@
-export type { StatementSource } from '@shop/contract';
+export * from '../../01_public_gongkai/StatementSource';

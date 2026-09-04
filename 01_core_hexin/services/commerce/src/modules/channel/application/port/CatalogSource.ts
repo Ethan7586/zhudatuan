@@ -1,1 +1,1 @@
-export type { CatalogSource } from '@shop/contract';
+export * from '../../01_public_gongkai/CatalogSource';

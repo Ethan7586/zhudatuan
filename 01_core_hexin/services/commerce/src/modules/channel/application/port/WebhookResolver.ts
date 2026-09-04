@@ -1,5 +1,1 @@
-import type { ProviderWebhookVerifier } from '@shop/contract';
-
-export interface WebhookResolver {
-  resolve(provider: string, scope: string): ProviderWebhookVerifier;
-}
+export * from '../../03_application_yingyong/port/WebhookResolver';

@@ -1,1 +1,1 @@
-export type { RemoteRefundProvider } from '@shop/contract';
+export * from '../../01_public_gongkai/RemoteRefundProvider';

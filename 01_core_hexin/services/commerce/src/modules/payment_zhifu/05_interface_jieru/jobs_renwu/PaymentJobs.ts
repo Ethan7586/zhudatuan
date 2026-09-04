@@ -11,7 +11,7 @@ import { PaymentLifecycle } from '../../02_domain_yewu/policies_guize/PaymentLif
 import { assertProviderAmount, enqueuePaymentJob as enqueue, intentExpired, jobPayload as object, jobText as text, paymentDigest as digest,
   paymentApplication, providerError as error, recordProviderObservation, type IntentTarget, type ProviderObservation } from '../../03_application_yingyong/services_fuwu/PaymentJobSupport';
 import { orderPort } from '../../../order_dingdan';
-import { channelOperationPort } from '../../../channel/ChannelModule';
+import { channelOperationPort } from '../../../channel';
 
 export class PaymentJobProcessor implements JobProcessor {
   private readonly settlement = new PaymentSettlement();

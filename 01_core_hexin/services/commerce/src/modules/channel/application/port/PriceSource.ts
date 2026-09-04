@@ -1,1 +1,1 @@
-export type { PriceSource } from '@shop/contract';
+export * from '../../01_public_gongkai/PriceSource';
