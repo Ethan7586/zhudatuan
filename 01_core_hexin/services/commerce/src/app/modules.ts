@@ -8,7 +8,7 @@ import { CapabilityModule } from '../modules/capability/CapabilityModule';
 import { CartModule } from '../modules/cart/CartModule';
 import { CatalogModule } from '../modules/catalog/CatalogModule';
 import { ChannelModule } from '../modules/channel/ChannelModule';
-import { CheckoutModule } from '../modules/checkout/CheckoutModule';
+import { CheckoutModule } from '../modules/checkout_jiesuan/05_interface_jieru/CheckoutModule';
 import { ExperienceModule } from '../modules/experience/ExperienceModule';
 import { ExtensionModule } from '../modules/extension/ExtensionModule';
 import { FinanceModule } from '../modules/finance/FinanceModule';

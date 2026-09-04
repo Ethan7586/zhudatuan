@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { CheckoutQuote } from '../checkout/domain/model/CheckoutQuote';
+import type { CheckoutQuote } from '../checkout_jiesuan';
 import { assertInternalBenefitQuote, assertInternalIntent, assertPurchaseAssurance, assertPurchaseQuote, assertPurchaseTarget } from './PurchasePolicy';
 
 describe('purchase policy', () => {

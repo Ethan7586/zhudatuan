@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { QueryResult, QueryResultRow } from 'pg';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import type { CheckoutSelection } from '../domain/model/CheckoutQuote';
+import type { CheckoutSelection } from '../02_domain_yewu/models_moxing/CheckoutQuote';
 import { BenefitPort } from '../../benefit/BenefitPort';
 import { VoucherPort } from '../../voucher/application/port/VoucherPort';
-import { QuoteReader } from './QuoteReader';
+import { QuoteReader } from '../03_application_yingyong/queries_duqu/QuoteReader';
 
 const selection: CheckoutSelection = Object.freeze({
   address: null,

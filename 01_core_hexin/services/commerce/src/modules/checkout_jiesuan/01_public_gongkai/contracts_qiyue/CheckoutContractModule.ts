@@ -1,5 +1,5 @@
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import type { CheckoutQuote, CheckoutSelection } from './domain/model/CheckoutQuote';
+import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { CheckoutQuote, CheckoutSelection } from '../../02_domain_yewu/models_moxing/CheckoutQuote';
 
 export type { CheckoutQuote, CheckoutSelection };
 

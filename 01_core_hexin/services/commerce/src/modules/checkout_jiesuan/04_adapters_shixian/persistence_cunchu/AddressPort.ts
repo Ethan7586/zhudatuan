@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import type { CipherEnvelope } from '../../foundation/infrastructure/KmsClient';
+import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { CipherEnvelope } from '../../../../foundation/infrastructure/KmsClient';
 
 export interface AddressInput {
   readonly id: string;

@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import type { CheckoutQuote, CheckoutSelection, QuoteLine } from '../domain/model/CheckoutQuote';
-import { CheckoutPolicy, type CampaignRule } from '../domain/policy/CheckoutPolicy';
-import type { BenefitChoice, BenefitGateway } from '../../benefit/application/port/BenefitPort';
-import type { QuoteCartContext, QuoteContextReader } from '../CheckoutContractModule';
+import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { CheckoutQuote, CheckoutSelection, QuoteLine } from '../../02_domain_yewu/models_moxing/CheckoutQuote';
+import { CheckoutPolicy, type CampaignRule } from '../../02_domain_yewu/policies_guize/CheckoutPolicy';
+import type { BenefitChoice, BenefitGateway } from '../../../benefit/application/port/BenefitPort';
+import type { QuoteCartContext, QuoteContextReader } from '../../01_public_gongkai/contracts_qiyue/CheckoutContractModule';
 
 export interface QuoteVoucherChoice {
   readonly id: string;

@@ -24,6 +24,7 @@ const BACKEND_LAYER_NAME = {
 };
 
 const BACKEND_FORBIDDEN = {
+  public: ['application', 'infrastructure', 'interface'],
   domain: ['application', 'infrastructure', 'interface'],
   application: ['infrastructure', 'interface'],
   infrastructure: ['interface'],

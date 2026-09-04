@@ -1,5 +1,5 @@
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import type { CheckoutSelection, QuoteCartContext, QuoteContextReader } from '../checkout/CheckoutContractModule';
+import type { CheckoutSelection, QuoteCartContext, QuoteContextReader } from '../checkout_jiesuan';
 
 export class PurchaseCheckoutContext implements QuoteContextReader {
   constructor(private readonly session: string) {}

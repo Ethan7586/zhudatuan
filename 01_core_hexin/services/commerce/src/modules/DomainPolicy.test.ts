@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Money } from '@shop/kernel';
-import { CheckoutPolicy } from './checkout/domain/policy/CheckoutPolicy';
+import { CheckoutPolicy } from './checkout_jiesuan/02_domain_yewu/policies_guize/CheckoutPolicy';
 import { PublishPolicy } from './experience/domain/policy/PublishPolicy';
 import { PostingPolicy } from './finance/domain/policy/PostingPolicy';
 import { PasswordPolicy } from './identity/domain/policy/PasswordPolicy';

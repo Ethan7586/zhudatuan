@@ -1,7 +1,7 @@
 import type { ClaimedJob, JobProcessor } from '../../foundation/application/JobRunner';
 import type { DatabasePool } from '../../foundation/persistence/Pool';
 import { identityRetentionPort } from '../identity/IdentityModule';
-import { checkoutSessionPort } from '../checkout/CheckoutModule';
+import { checkoutSessionPort } from '../checkout_jiesuan';
 import { pricingPort } from '../pricing/PricingModule';
 
 export class RuntimeJobProcessor implements JobProcessor {

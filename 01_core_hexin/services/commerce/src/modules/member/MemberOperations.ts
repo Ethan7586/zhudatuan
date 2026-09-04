@@ -6,7 +6,7 @@ import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { memberImportOperations } from './application/MemberImportOperations';
 import { accessPort } from '../access/AccessModule';
-import { addressPort } from '../checkout/CheckoutModule';
+import { addressPort } from '../checkout_jiesuan';
 import { memberOperatorReadActions } from './MemberReadOperations';
 
 export function memberOperations(context: ModuleContext): ModuleOperations {

@@ -1,4 +1,4 @@
-import type { CheckoutQuote } from '../checkout/domain/model/CheckoutQuote';
+import type { CheckoutQuote } from '../checkout_jiesuan';
 
 export interface InternalIntent {
   readonly amount_minor: number;

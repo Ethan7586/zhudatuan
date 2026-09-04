@@ -6,7 +6,7 @@ import { bodyRecord, keysetResult, queryPage, textField } from '../../../../foun
 import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
 import { SECURITY_KEYS } from '../../../../foundation/infrastructure/SecretStore';
-import { fullCheckoutPort } from '../../../checkout/FullCheckoutPort';
+import { fullCheckoutPort } from '../../../checkout_jiesuan/04_adapters_shixian/providers_waibu/FullCheckoutPort';
 import { BenefitPort } from '../../../benefit/BenefitPort';
 import { VoucherPort } from '../../../voucher/application/port/VoucherPort';
 import { Order, type AftersaleState, type CommerceState, type FulfillmentState, type PaymentState } from '../../02_domain_yewu/models_moxing/Order';

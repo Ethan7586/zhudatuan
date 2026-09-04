@@ -4,7 +4,7 @@ import { ModuleOperations, operationLifecycle, requireAccess, rowResult } from '
 import { bodyRecord, keysetResult, queryPage, textField } from '../../foundation/interface/Validation';
 import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
-import { AddressPort } from '../checkout/AddressPort';
+import { AddressPort } from '../checkout_jiesuan';
 import { WEB_MEMBER_OPERATION_IDS } from './WebBusinessOperationIds';
 
 export function webMemberOperations(context: ModuleContext): ModuleOperations {

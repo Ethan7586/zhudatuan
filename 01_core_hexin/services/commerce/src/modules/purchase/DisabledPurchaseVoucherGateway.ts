@@ -1,5 +1,5 @@
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import type { QuoteVoucherGateway } from '../checkout/application/QuoteReader';
+import type { QuoteVoucherGateway } from '../checkout_jiesuan';
 import type { OrderVoucherGateway } from '../order_dingdan';
 import type { SettlementVoucher } from '../payment/application/PaymentSettlementCore';
 

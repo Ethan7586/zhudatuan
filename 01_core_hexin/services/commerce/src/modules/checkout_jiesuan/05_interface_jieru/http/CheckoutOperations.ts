@@ -1,15 +1,15 @@
 import { randomUUID } from 'node:crypto';
-import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
-import { AUDIT_SINK } from '../../foundation/application/AuditSink';
-import { ModuleOperations, requireAccess } from '../../foundation/application/ModuleOperations';
-import { bodyRecord } from '../../foundation/interface/Validation';
-import { domainEvent } from '../../foundation/domain/DomainEvent';
-import { appendOutbox } from '../../foundation/infrastructure/OutboxStore';
-import { SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
-import type { CheckoutPort } from './CheckoutPort';
-import { fullCheckoutPort } from './FullCheckoutPort';
-import { pricingPort } from '../pricing/PricingModule';
+import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
+import { AUDIT_SINK } from '../../../../foundation/application/AuditSink';
+import { ModuleOperations, requireAccess } from '../../../../foundation/application/ModuleOperations';
+import { bodyRecord } from '../../../../foundation/interface/Validation';
+import { domainEvent } from '../../../../foundation/domain/DomainEvent';
+import { appendOutbox } from '../../../../foundation/infrastructure/OutboxStore';
+import { SECURITY_KEYS } from '../../../../foundation/infrastructure/SecretStore';
+import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import type { CheckoutPort } from '../../04_adapters_shixian/providers_waibu/CheckoutPort';
+import { fullCheckoutPort } from '../../04_adapters_shixian/providers_waibu/FullCheckoutPort';
+import { pricingPort } from '../../../pricing/PricingModule';
 
 export function checkoutOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);

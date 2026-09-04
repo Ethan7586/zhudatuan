@@ -1,4 +1,4 @@
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
+import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 
 export class CheckoutSessionPort {
   async confirm(database: OperationDatabase, checkout: string): Promise<void> {
