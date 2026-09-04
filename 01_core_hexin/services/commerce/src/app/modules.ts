@@ -4,7 +4,7 @@ import { ObservabilityModule } from '../modules/observability/ObservabilityModul
 import { AccessModule } from '../modules/access/AccessModule';
 import { AuditModule } from '../modules/audit/AuditModule';
 import { BenefitModule } from '../modules/benefit/BenefitModule';
-import { CapabilityModule } from '../modules/capability/CapabilityModule';
+import { CapabilityModule } from '../modules/capability/05_interface_jieru/CapabilityModule';
 import { CartModule } from '../modules/cart/CartModule';
 import { CatalogModule } from '../modules/catalog/CatalogModule';
 import { ChannelModule } from '../modules/channel/ChannelModule';

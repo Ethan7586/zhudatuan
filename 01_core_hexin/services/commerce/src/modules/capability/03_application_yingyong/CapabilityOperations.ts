@@ -1,8 +1,8 @@
-import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
-import { AUDIT_SINK } from '../../foundation/application/AuditSink';
-import { ModuleOperations, requireAccess, rowResult } from '../../foundation/application/ModuleOperations';
-import { bodyRecord, keysetResult, queryPage, textField } from '../../foundation/interface/Validation';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
+import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
+import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
+import { ModuleOperations, requireAccess, rowResult } from '../../../foundation/application/ModuleOperations';
+import { bodyRecord, keysetResult, queryPage, textField } from '../../../foundation/interface/Validation';
+import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
 
 export function capabilityOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);

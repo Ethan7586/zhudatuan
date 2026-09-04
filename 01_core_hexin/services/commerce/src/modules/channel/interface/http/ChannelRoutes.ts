@@ -18,7 +18,7 @@ import { channelWebhook } from './ChannelWebhook';
 import { MANIFEST_VERIFIER } from '../../../../bootstrap/SignatureVerifier';
 import { ContractPolicy,DisableExtension,EnableExtension,EXTENSION_LOADER,extensionRepository,InstallExtension } from '../../../extension/ExtensionModule';
 import { organizationPort } from '../../../organization/OrganizationModule';
-import { capabilityPort } from '../../../capability/CapabilityModule';
+import { capabilityPort } from '../../../capability';
 
 export function channelRoutes(context: ModuleContext): OperationUsecase {
   const pool = context.container.get(DATABASE_POOL);
