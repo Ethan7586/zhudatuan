@@ -39,8 +39,8 @@ import { REPORTING_OPERATOR_READ_OPERATION_IDS } from '../modules/reporting/Repo
 import { RETURN_TARGETS } from '../modules/identity';
 import { IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS } from '../modules/runtime/IdentityRegistrationRuntimeOperations';
 import { IdentityRegistrationRuntimeModule } from '../modules/runtime/IdentityRegistrationRuntimeModule';
-import { IdentityOperatorVoucherModule } from '../modules/voucher/IdentityOperatorVoucherModule';
-import { VOUCHER_OPERATOR_READ_OPERATION_IDS } from '../modules/voucher/VoucherReadOperations';
+import { IdentityOperatorVoucherModule } from '../modules/voucher/05_interface_jieru/IdentityOperatorVoucherModule';
+import { VOUCHER_OPERATOR_READ_OPERATION_IDS } from '../modules/voucher/03_application_yingyong/VoucherReadOperations';
 import { WECHAT_IDENTITY } from '../modules/identity';
 
 describe('identity registration API entrypoint', () => {

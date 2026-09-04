@@ -30,7 +30,7 @@ import { ReportingModule } from '../modules/reporting/ReportingModule';
 import { RiskModule } from '../modules/risk/RiskModule';
 import { SupportModule } from '../modules/support/05_interface_jieru/SupportModule';
 import { VerificationModule } from '../modules/verification/05_interface_jieru/VerificationModule';
-import { VoucherModule } from '../modules/voucher/VoucherModule';
+import { VoucherModule } from '../modules/voucher/05_interface_jieru/VoucherModule';
 import { EVENT_SCHEMA_TYPES } from './events';
 
 export const BUSINESS_MODULES: readonly CommerceModule[] = Object.freeze([

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { VoucherPolicy, type VoucherState } from './VoucherPolicy';
+import { VoucherPolicy, type VoucherState } from '../../02_domain_yewu/policy/VoucherPolicy';
 
 describe('VoucherPolicy', () => {
   const policy = new VoucherPolicy();

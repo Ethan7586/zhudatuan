@@ -3,7 +3,7 @@ import type { QueryResult, QueryResultRow } from 'pg';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import type { CheckoutSelection } from '../02_domain_yewu/models_moxing/CheckoutQuote';
 import { BenefitPort } from '../../benefit/BenefitPort';
-import { VoucherPort } from '../../voucher/application/port/VoucherPort';
+import { VoucherPort } from '../../voucher/VoucherPort';
 import { QuoteReader } from '../03_application_yingyong/queries_duqu/QuoteReader';
 
 const selection: CheckoutSelection = Object.freeze({

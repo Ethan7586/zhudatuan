@@ -12,7 +12,7 @@ import { AssignmentPolicy, AssignmentRule, Ticket } from './support';
 import { Template } from './notification/domain/model/Template';
 import { Announcement } from './notification/domain/model/Announcement';
 import { Preference } from './notification/domain/model/Preference';
-import { VoucherPolicy } from './voucher/domain/policy/VoucherPolicy';
+import { VoucherPolicy } from './voucher';
 
 describe('high-risk domain invariants', () => {
   it('rejects stale checkout evidence and invalid publication evidence', () => {

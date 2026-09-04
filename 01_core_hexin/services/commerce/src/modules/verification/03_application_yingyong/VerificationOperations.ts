@@ -5,11 +5,12 @@ import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
 import { ModuleOperations, reject, requireAccess, rowResult } from '../../../foundation/application/ModuleOperations';
 import { bodyRecord, keysetResult, queryPage, textField } from '../../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
-import { VoucherPort } from '../../voucher/VoucherModule';
+import { FinancePort } from '../../finance';
+import { VoucherPort } from '../../voucher';
 
 export function verificationOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
-  const vouchers = new VoucherPort();
+  const vouchers = new VoucherPort(new FinancePort());
   return new ModuleOperations('verification', pool, context.container.get(AUDIT_SINK), {
     'verification.sessions.read': async (request, database) => {
       const access = requireAccess(request);

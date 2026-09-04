@@ -21,7 +21,7 @@ vi.mock('../../benefit', () => ({
     refund = dependencies.benefitRefund;
   },
 }));
-vi.mock('../../voucher/VoucherModule', () => ({
+vi.mock('../../voucher', () => ({
   VoucherPort: class {
     consume = dependencies.voucherConsume;
     refund = dependencies.voucherRefund;

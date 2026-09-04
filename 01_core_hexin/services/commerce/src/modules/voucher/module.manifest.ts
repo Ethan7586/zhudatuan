@@ -1,0 +1,45 @@
+import { defineModuleManifest } from '@shop/kernel';
+import { VOUCHER_CAPABILITIES } from './01_public_gongkai/VoucherCapabilities';
+
+export const voucherManifest = defineModuleManifest({
+  id: 'voucher',
+  version: '1.0.0',
+  kind: 'business',
+  provides: [VOUCHER_CAPABILITIES.read, VOUCHER_CAPABILITIES.manage],
+  requires: ['member', 'finance'],
+  operations: [
+    'voucher.cardlibraries.read',
+    'voucher.cardlibraries.allocate',
+    'voucher.cardlibraries.create',
+    'voucher.programs.manage',
+    'voucher.programs.read',
+    'voucher.reserves.request',
+    'voucher.reserves.decide',
+    'voucher.reserves.read',
+    'voucher.batches.issue',
+    'voucher.batches.read',
+    'voucher.batches.retry',
+    'voucher.imports.read',
+    'voucher.status.batch',
+    'voucher.statusbatches.read',
+    'voucher.bindings.manage',
+    'voucher.bindings.read',
+    'voucher.redemptions.reverse',
+    'voucher.redemptions.read',
+    'voucher.history.read',
+  ],
+  publishes: [
+    'voucher.issued',
+    'voucher.issue.failed',
+    'voucher.import.failed',
+    'voucher.status.failed',
+    'voucher.redeemed',
+  ],
+  consumes: [],
+  publicEntry: './index.ts',
+  layers: ['public', 'domain', 'application', 'adapters', 'interface', 'tests'],
+  entrypoints: {
+    http: ['voucherOperations', 'voucherOperatorReadOperations'],
+    jobs: ['voucherissue', 'voucherstatus', 'voucherexpiry', 'voucherimport'],
+  },
+});

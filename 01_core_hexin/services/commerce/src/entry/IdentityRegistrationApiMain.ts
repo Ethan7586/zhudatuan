@@ -28,8 +28,8 @@ import { IdentityOperatorReportingModule } from '../modules/reporting/IdentityOp
 import { REPORTING_OPERATOR_READ_OPERATION_IDS } from '../modules/reporting/ReportingReadOperations';
 import { IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS } from '../modules/runtime/IdentityRegistrationRuntimeOperations';
 import { IdentityRegistrationRuntimeModule } from '../modules/runtime/IdentityRegistrationRuntimeModule';
-import { IdentityOperatorVoucherModule } from '../modules/voucher/IdentityOperatorVoucherModule';
-import { VOUCHER_OPERATOR_READ_OPERATION_IDS } from '../modules/voucher/VoucherReadOperations';
+import { IdentityOperatorVoucherModule } from '../modules/voucher/05_interface_jieru/IdentityOperatorVoucherModule';
+import { VOUCHER_OPERATOR_READ_OPERATION_IDS } from '../modules/voucher/03_application_yingyong/VoucherReadOperations';
 
 const environment = identityRegistrationApiEnvironment();
 const runtime = await createIdentityRegistrationApiRuntime(environment);

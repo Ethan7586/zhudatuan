@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import { BenefitPort } from '../../../benefit';
 import { FinancePort } from '../../../finance';
-import { VoucherPort } from '../../../voucher/VoucherModule';
+import { VoucherPort } from '../../../voucher';
 import { orderPort } from '../../../order_dingdan';
 
 const benefit = new BenefitPort(new FinancePort());
