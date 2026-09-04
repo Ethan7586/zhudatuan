@@ -102,8 +102,9 @@ export class WechatGateway implements PaymentGateway {
   }
 
   private execute<T>(operation: (options: WechatPayClientOptions) => Promise<T>, mode: 'none' | 'read'): Promise<T> {
+    const isInfrastructureFailure = (cause: unknown) => cause instanceof WechatPayProtocolError && cause.retryable;
     return this.executor.run((deadline) => operation({ signal: deadline.signal, deadline: deadline.expiresAt }), {
-      mode, retryable: (cause) => cause instanceof WechatPayProtocolError && cause.retryable,
+      mode, retryable: isInfrastructureFailure, circuitFailure: isInfrastructureFailure,
     });
   }
 

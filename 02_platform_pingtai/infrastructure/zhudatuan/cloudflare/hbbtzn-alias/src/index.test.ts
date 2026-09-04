@@ -28,6 +28,19 @@ describe('hbbtzn H5 alias worker', () => {
     expect((fetchMock.mock.calls[0][0] as Request).url).toBe('https://zhudatuan.com/h5?source=desktop');
   });
 
+  it('publishes storefront HTML metadata on the public H5 hostname', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(
+      '<meta property="og:url" content="https://zhudatuan.com/"/><meta property="og:image" content="https://h5.zhudatuan.com/opengraph-image.png"/>',
+      { headers: { 'content-type': 'text/html; charset=utf-8', etag: 'canonical-etag' } },
+    ));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await worker.fetch(new Request('https://hbbtzn.com/h5'));
+
+    await expect(response.text()).resolves.toContain('https://hbbtzn.com/');
+    expect(response.headers.get('etag')).toBeNull();
+  });
+
   it('keeps assets intact and sends API paths to the canonical API', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('ok'));
     vi.stubGlobal('fetch', fetchMock);
@@ -39,7 +52,7 @@ describe('hbbtzn H5 alias worker', () => {
     expect((fetchMock.mock.calls[1][0] as Request).url).toBe('https://api.zhudatuan.com/api/v1/catalog/listings');
   });
 
-  it('keeps the H5 storefront proxy on the canonical zhudatuan upstream', async () => {
+  it('sends public API paths to the canonical API while preserving the public request origin', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}'));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -48,7 +61,7 @@ describe('hbbtzn H5 alias worker', () => {
     }));
 
     const upstreamRequest = fetchMock.mock.calls[0][0] as Request;
-    expect(upstreamRequest.url).toBe('https://zhudatuan.com/api/v1/catalog/listings');
+    expect(upstreamRequest.url).toBe('https://api.zhudatuan.com/api/v1/catalog/listings');
     expect(upstreamRequest.headers.get('origin')).toBe('https://zhudatuan.com');
   });
 
@@ -62,7 +75,7 @@ describe('hbbtzn H5 alias worker', () => {
     expect(response.headers.get('location')).toBe(destination);
   });
 
-  it('preserves the canonical account origin when it calls the aliased API', async () => {
+  it('preserves a canonical account origin for public API preflight', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (request) => {
       expect((request as Request).headers.get('origin')).toBe('https://accounts.zhudatuan.com');
       return new Response(null, { status: 204,
@@ -70,26 +83,26 @@ describe('hbbtzn H5 alias worker', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    const response = await worker.fetch(new Request('https://api.hbbtzn.com/api/v1/identity/sessions', {
+    const response = await worker.fetch(new Request('https://hbbtzn.com/api/v1/identity/sessions', {
       method: 'OPTIONS', headers: { origin: 'https://accounts.zhudatuan.com' },
     }));
 
     expect(response.headers.get('access-control-allow-origin')).toBe('https://accounts.zhudatuan.com');
   });
 
-  it('restores the aliased account origin after canonical upstream approval', async () => {
+  it('restores the public root origin after canonical API approval', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (request) => {
-      expect((request as Request).headers.get('origin')).toBe('https://accounts.zhudatuan.com');
+      expect((request as Request).headers.get('origin')).toBe('https://zhudatuan.com');
       return new Response(null, { status: 204,
-        headers: { 'access-control-allow-origin': 'https://accounts.zhudatuan.com' } });
+        headers: { 'access-control-allow-origin': 'https://zhudatuan.com' } });
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    const response = await worker.fetch(new Request('https://api.hbbtzn.com/api/v1/identity/sessions', {
-      method: 'OPTIONS', headers: { origin: 'https://accounts.hbbtzn.com' },
+    const response = await worker.fetch(new Request('https://hbbtzn.com/api/v1/identity/sessions', {
+      method: 'OPTIONS', headers: { origin: 'https://hbbtzn.com' },
     }));
 
-    expect(response.headers.get('access-control-allow-origin')).toBe('https://accounts.hbbtzn.com');
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://hbbtzn.com');
   });
 
   it('moves the old mall hostname to the one H5 storefront hostname', async () => {

@@ -26,6 +26,13 @@ describe('resilience primitives', () => {
     expect(circuit.snapshot()).toBe('closed');
   });
 
+  it('does not count an explicitly non-infrastructure failure toward the circuit', async () => {
+    const circuit = new CircuitBreaker(1, 100);
+    await expect(circuit.run(() => Promise.reject(new Error('invalid request')), () => false)).rejects.toThrow('invalid request');
+    expect(circuit.snapshot()).toBe('closed');
+    await expect(circuit.run(() => Promise.resolve('healthy'))).resolves.toBe('healthy');
+  });
+
   it('retries only within the declared safe mode and total deadline', async () => {
     const work = vi.fn().mockRejectedValueOnce(new Error('temporary')).mockResolvedValue('done');
     const deadline = Deadline.after(1_000);

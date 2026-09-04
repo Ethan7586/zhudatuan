@@ -12,6 +12,7 @@ export interface ExecutionContext {
   readonly signal?: AbortSignal;
   readonly deadline?: number;
   readonly retryable?: (cause: unknown) => boolean;
+  readonly circuitFailure?: (cause: unknown) => boolean;
 }
 
 export class Executor {
@@ -31,7 +32,7 @@ export class Executor {
         maximumDelayMilliseconds: RUNTIME_LIMITS.external.retryMaximumMilliseconds,
         deadline,
         retryable: context.retryable ?? (() => false),
-      })), deadline.signal);
+      }), context.circuitFailure), deadline.signal);
     } finally {
       deadline.dispose();
     }

@@ -12,14 +12,15 @@ export class CircuitBreaker {
     }
   }
 
-  async run<T>(operation: () => Promise<T>): Promise<T> {
+  async run<T>(operation: () => Promise<T>, countsAsFailure: (cause: unknown) => boolean = () => true): Promise<T> {
     this.before();
     try {
       const result = await operation();
       this.succeed();
       return result;
     } catch (cause) {
-      this.fail();
+      if (countsAsFailure(cause)) this.fail();
+      else this.succeed();
       throw cause;
     }
   }

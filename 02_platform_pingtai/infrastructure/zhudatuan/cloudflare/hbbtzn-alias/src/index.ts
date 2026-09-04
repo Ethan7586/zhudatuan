@@ -87,7 +87,7 @@ function upstreamRequest(request: Request, target: URL): Request {
   });
 }
 
-function publicResponse(request: Request, upstream: Response): Response {
+async function publicResponse(request: Request, upstream: Response): Promise<Response> {
   const headers = new Headers(upstream.headers);
   const requestOrigin = request.headers.get('origin');
   const upstreamAllowedOrigin = headers.get('access-control-allow-origin');
@@ -101,11 +101,25 @@ function publicResponse(request: Request, upstream: Response): Response {
     const value = headers.get(header);
     if (value) headers.set(header, rewriteOrigins(value, PUBLIC_ORIGINS));
   }
-  return new Response(upstream.body, {
+  const html = headers.get('content-type')?.toLowerCase().startsWith('text/html') === true;
+  const body = html ? publicHtml(request, await upstream.text()) : upstream.body;
+  if (html) {
+    headers.delete('content-encoding');
+    headers.delete('content-length');
+    headers.delete('etag');
+  }
+  return new Response(body, {
     status: upstream.status,
     statusText: upstream.statusText,
     headers,
   });
+}
+
+function publicHtml(request: Request, source: string): string {
+  const publicOrigin = new URL(request.url).origin;
+  return source
+    .replaceAll('https://h5.zhudatuan.com', publicOrigin)
+    .replaceAll('https://zhudatuan.com', publicOrigin);
 }
 
 const worker = {
@@ -134,12 +148,12 @@ const worker = {
 
     if (incoming.hostname === ROOT_STOREFRONT_HOST && isConsumerAccountPath(incoming.pathname)) {
       const target = new URL(`${consumerAccountUpstreamPath(incoming.pathname)}${incoming.search}`, ACCOUNTS_UPSTREAM_ORIGIN);
-      return publicResponse(request, await fetch(upstreamRequest(request, target), { redirect: 'manual' }));
+      return await publicResponse(request, await fetch(upstreamRequest(request, target), { redirect: 'manual' }));
     }
 
     const path = storefrontPath(request, incoming);
     const target = new URL(`${path}${incoming.search}`, isApiPath(path) ? API_UPSTREAM_ORIGIN : upstreamOrigin);
-    return publicResponse(request, await fetch(upstreamRequest(request, target), { redirect: 'manual' }));
+    return await publicResponse(request, await fetch(upstreamRequest(request, target), { redirect: 'manual' }));
   },
 };
 
