@@ -156,6 +156,20 @@ describe('hbbtzn H5 alias worker', () => {
     expect(target.searchParams.get('admin_origin')).toBe('https://console.hbbtzn.com');
   });
 
+  it('routes the Hongtai consumer account page through canonical identity with its own application', async () => {
+    const response = await worker.fetch(new Request(
+      'https://hbbtzn.com/accounts/?target=storefront&surface=web&application=zhudatuan-storefront',
+    ));
+
+    expect(response.status).toBe(308);
+    const target = new URL(response.headers.get('location')!);
+    expect(target.origin).toBe('https://accounts.zhudatuan.com');
+    expect(target.pathname).toBe('/');
+    expect(target.searchParams.get('target')).toBe('storefront');
+    expect(target.searchParams.get('surface')).toBe('web');
+    expect(target.searchParams.get('application')).toBe('zdt-l1-verify');
+  });
+
   it('preserves a canonical account origin for public API preflight', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (request) => {
       expect((request as Request).headers.get('origin')).toBe('https://accounts.zhudatuan.com');

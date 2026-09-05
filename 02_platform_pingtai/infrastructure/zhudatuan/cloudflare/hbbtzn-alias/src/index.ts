@@ -7,6 +7,7 @@ const HONGTAI_CONSOLE_ORIGIN = `https://${HONGTAI_CONSOLE_HOST}`;
 const HONGTAI_CONSOLE_SCOPE = '/scopes/mall/mall%3Ad1708f04df2dd8a61736852c4900fb43/cockpit';
 const HONGTAI_CONTROL_ASSET_PREFIX = '/__hbbtzn-v1/assets/';
 const CONSUMER_ACCOUNT_PATH = '/accounts';
+const HONGTAI_CONSUMER_APPLICATION = 'zdt-l1-verify';
 const WECHAT_VERIFICATION_FILES = Object.freeze({
   '/MP_verify_5ebC4TM1ep4hKgu3.txt': '5ebC4TM1ep4hKgu3',
 } as const);
@@ -205,14 +206,12 @@ const worker = {
     const upstreamOrigin = UPSTREAM_ORIGINS[incoming.hostname as keyof typeof UPSTREAM_ORIGINS];
     if (!upstreamOrigin) return new Response('Not Found', { status: 404 });
 
-    if (incoming.hostname === ROOT_STOREFRONT_HOST && incoming.pathname === CONSUMER_ACCOUNT_PATH) {
-      incoming.pathname = `${CONSUMER_ACCOUNT_PATH}/`;
-      return Response.redirect(incoming, 308);
-    }
-
     if (incoming.hostname === ROOT_STOREFRONT_HOST && isConsumerAccountPath(incoming.pathname)) {
       const target = new URL(`${consumerAccountUpstreamPath(incoming.pathname)}${incoming.search}`, ACCOUNTS_UPSTREAM_ORIGIN);
-      return await publicResponse(request, await fetch(upstreamRequest(request, target), { redirect: 'manual' }));
+      target.searchParams.set('target', 'storefront');
+      target.searchParams.set('surface', 'web');
+      target.searchParams.set('application', HONGTAI_CONSUMER_APPLICATION);
+      return Response.redirect(target, request.method === 'GET' || request.method === 'HEAD' ? 308 : 307);
     }
 
     const path = controlAssetUpstreamPath(incoming) ?? storefrontPath(request, incoming);
