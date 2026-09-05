@@ -5,3 +5,4 @@ export * from './01_public_gongkai/ports_jiekou/PaymentGateway';
 export * from './01_public_gongkai/ports_jiekou/PaymentPort';
 export { PaymentSettlementCore, type SettlementVoucher } from './03_application_yingyong/services_fuwu/PaymentSettlementCore';
 export { AllocationPolicy } from './02_domain_yewu/policies_guize/AllocationPolicy';
+export { paymentIntentReadOperations } from './05_interface_jieru/http/PaymentIntentReadOperations';

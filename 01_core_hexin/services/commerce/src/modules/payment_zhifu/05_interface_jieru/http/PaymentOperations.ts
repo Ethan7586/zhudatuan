@@ -9,14 +9,13 @@ import { DATABASE_POOL, type DatabasePool } from '../../../../foundation/persist
 import { PAYMENT_GATEWAY, type PaymentGateway } from '../../01_public_gongkai/ports_jiekou/PaymentGateway';
 import { PaymentSettlement } from '../../03_application_yingyong/services_fuwu/PaymentSettlement';
 import { RefundPlanner } from '../../03_application_yingyong/services_fuwu/RefundPlanner';
-import { ReadPaymentIntent } from '../../03_application_yingyong/queries_duqu/ReadPaymentIntent';
-import { PgPaymentIntentReader } from '../../04_adapters_shixian/persistence_cunchu/PgPaymentIntentReader';
 import { PaymentReference } from '../../02_domain_yewu/models_moxing/PaymentReference';
 import { orderPort } from '../../../order_dingdan';
 import { claimPaymentRequest as claimRequest, completePaymentRequest as completeRequest, enqueuePaymentRecovery as enqueueRecovery,
   isPaymentOutcomeUnknown as providerOutcomeUnknown, paymentTransaction as transaction, setPaymentContext as setContext } from '../../03_application_yingyong/services_fuwu/PaymentOperationSupport';
 import type { WechatScene } from '@shop/config/server';
 import { PaymentWebhook } from './PaymentWebhook';
+import { readPaymentIntent } from './PaymentIntentReadOperations';
 
 interface IntentState { readonly intent: string; readonly attempt: string | null; readonly order_id: string; readonly order_number: string;
   readonly scope_id: string; readonly mall_id: string; readonly member_id: string; readonly total_minor: number; readonly amount_minor: number;
@@ -48,16 +47,7 @@ class PaymentOperations implements OperationUsecase {
   }
 
   private async readIntent(request: OperationRequest): Promise<OperationResult> {
-    const access = requireAccess(request);
-    const mall = access.mall_id;
-    if (!mall) throw new Error('SCOPE_DENIED');
-    const payment = request.input.path.paymentid;
-    if (!payment) throw new Error('VALIDATION_FAILED:paymentid');
-    return transaction(this.pool, request, async (database) => ({
-      status: 200,
-      body: await new ReadPaymentIntent(new PgPaymentIntentReader(database))
-        .execute({ payment, membership: access.membership.id, mall }),
-    }));
+    return readPaymentIntent(this.pool, request);
   }
 
   private async create(request: OperationRequest): Promise<OperationResult> {

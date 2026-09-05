@@ -23,17 +23,18 @@ const APPROVED_PURCHASE_OPERATIONS = [
   'checkout.quote.create',
   'order.orders.create',
   'payment.intents.create',
+  'payment.intents.read',
 ] as const satisfies readonly OperationId[];
 
 describe('purchase API entrypoint', () => {
-  it('contains only health and the three purchase commands', () => {
+  it('contains only health, the three purchase commands, and payment result read', () => {
     expect(PURCHASE_OPERATION_IDS).toEqual(APPROVED_PURCHASE_OPERATIONS);
     expect([...PURCHASE_RUNTIME_OPERATION_IDS, ...PURCHASE_OPERATION_IDS]).toEqual([
       'runtime.health.live', 'runtime.health.ready', 'runtime.health.startup', ...APPROVED_PURCHASE_OPERATIONS,
     ]);
   });
 
-  it('freezes exact routes with no read, refund, webhook, recovery, or admin surface', async () => {
+  it('freezes exact routes with payment result read but no refund, webhook, recovery, or admin surface', async () => {
     const operationIds = [...PURCHASE_RUNTIME_OPERATION_IDS, ...PURCHASE_OPERATION_IDS];
     const pool = { workload: () => pool } as unknown as DatabasePool;
     const bootstrapped = await bootstrapApi({
@@ -58,6 +59,7 @@ describe('purchase API entrypoint', () => {
     expect(bootstrapped.routes.match('POST', '/api/v1/checkouts/quotes')?.operation).toBe('checkout.quote.create');
     expect(bootstrapped.routes.match('POST', '/api/v1/orders')?.operation).toBe('order.orders.create');
     expect(bootstrapped.routes.match('POST', '/api/v1/payments/intents')?.operation).toBe('payment.intents.create');
+    expect(bootstrapped.routes.match('GET', '/api/v1/payments/intents/payment-one')?.operation).toBe('payment.intents.read');
     for (const [method, path] of [
       ['GET', '/api/v1/orders'],
       ['POST', '/api/v1/payments/refunds'],
@@ -67,13 +69,16 @@ describe('purchase API entrypoint', () => {
     ]) expect(bootstrapped.routes.match(method!, path!)).toBeNull();
   });
 
-  it('contains only the exact WeChat gateway and no full runtime, refund, webhook, finance, or payment administration', () => {
+  it('contains only the exact WeChat gateway and payment reader with no full payment administration', () => {
     const closure = sourceClosure(join(import.meta.dirname, 'PurchaseApiMain.ts'));
     const providerInfrastructure = [...closure]
       .filter((file) => file.includes('/modules/payment_zhifu/04_adapters_shixian/'))
       .map((file) => file.slice(file.indexOf('/modules/payment_zhifu/04_adapters_shixian/')))
       .sort();
-    expect(providerInfrastructure).toEqual(['/modules/payment_zhifu/04_adapters_shixian/providers_waibu/WechatGateway.ts']);
+    expect(providerInfrastructure).toEqual([
+      '/modules/payment_zhifu/04_adapters_shixian/persistence_cunchu/PgPaymentIntentReader.ts',
+      '/modules/payment_zhifu/04_adapters_shixian/providers_waibu/WechatGateway.ts',
+    ]);
     const forbidden = [...closure].filter((file) => [
       '/bootstrap/CommerceRuntime.ts', '/bootstrap/ProviderLoader.ts', '/app/modules.ts',
       '/modules/payment_zhifu/05_interface_jieru/PaymentModule.ts', '/modules/payment_zhifu/05_interface_jieru/http/PaymentOperations.ts', '/modules/payment_zhifu/05_interface_jieru/jobs_renwu/PaymentJobs.ts',

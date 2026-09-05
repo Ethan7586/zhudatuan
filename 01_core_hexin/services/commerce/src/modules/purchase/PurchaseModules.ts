@@ -12,7 +12,7 @@ export const PurchaseOrderModule = defineSelectedModule(
   'order', ['order.orders.create'], purchaseOrderOperations,
 );
 export const PurchasePaymentModule = defineSelectedModule(
-  'payment', ['payment.intents.create'], purchasePaymentOperations,
+  'payment', ['payment.intents.create', 'payment.intents.read'], purchasePaymentOperations,
 );
 
 export const PURCHASE_MODULES = Object.freeze([

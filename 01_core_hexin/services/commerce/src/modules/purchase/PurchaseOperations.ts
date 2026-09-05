@@ -22,6 +22,7 @@ import { MarketingPort } from '../marketing';
 import { OrderPort, PlaceOrder } from '../order_dingdan';
 import { PaymentSettlementCore } from '../payment_zhifu';
 import { ExternalPaymentIntentOperations } from '../payment_zhifu';
+import { paymentIntentReadOperations } from '../payment_zhifu';
 import { PAYMENT_GATEWAY } from '../payment_zhifu';
 import type { PaymentGateway } from '../payment_zhifu';
 import { pricingPort } from '../pricing';
@@ -43,6 +44,7 @@ export const PURCHASE_OPERATION_IDS = Object.freeze([
   'checkout.quote.create',
   'order.orders.create',
   'payment.intents.create',
+  'payment.intents.read',
 ] as const satisfies readonly OperationId[]);
 
 export const PURCHASE_QUOTE_KEY = token<string>('purchase.quote-key');
@@ -113,10 +115,12 @@ export function purchasePaymentOperations(context: ModuleContext,
   const internal = new ModuleOperations('payment', pool, audit, {
     'payment.intents.create': purchasePaymentAction(gateway, risk, decisions, settlementFactory),
   }, ['payment.intents.create']);
+  const read = paymentIntentReadOperations(context);
   const external = new ExternalPaymentIntentOperations(pool.workload('command'), gateway, context.container.get(KMS_CLIENT), audit,
     new PurchasePaymentIntentContext(), new PurchasePaymentRecoveryQueue());
   return {
     async invoke(request) {
+      if (request.type === 'payment.intents.read') return read.invoke(request);
       try {
         return await external.invoke(request);
       } catch (cause) {
