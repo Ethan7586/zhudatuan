@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-import { registrationMigrationExecution } from './RegistrationMigrationPlan';
+import { registrationMigrationExecution, registrationMigrationLedgerMatches } from './RegistrationMigrationPlan';
 
 const migration = (file: string) => fileURLToPath(new URL(`../../../../../../02_platform_pingtai/database/supabase/migrations/${file}`, import.meta.url));
 
@@ -85,5 +85,13 @@ describe('registration migration execution plan', () => {
     expect(registrationMigrationExecution('20260820133000_inventory_single_source_cutover.sql', source)).toEqual({
       kind: 'original', ledgerName: '20260820133000_inventory_single_source_cutover.sql', ledgerStatements: [], sql: source,
     });
+  });
+
+  it('accepts the one documented legacy generic ledger row without weakening other rows', () => {
+    const file = '20260831150000_identity_experience_application_commands.sql';
+    const execution = registrationMigrationExecution(file, 'begin; select 1; commit;');
+    expect(registrationMigrationLedgerMatches(file, execution.ledgerName, [], execution)).toBe(true);
+    expect(registrationMigrationLedgerMatches('20260831140000_other.sql', execution.ledgerName, [], execution)).toBe(false);
+    expect(registrationMigrationLedgerMatches(file, 'wrong-name.sql', [], execution)).toBe(false);
   });
 });

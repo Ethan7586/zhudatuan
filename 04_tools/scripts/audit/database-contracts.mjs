@@ -152,6 +152,8 @@ const REPAIR_FILES = [
   '20260905013000_registration_invite_role_projection.sql',
   '20260905014000_bind_storefront_browse_scope.sql',
   '20260905203000_provision_zhudatuan_storefront_application.sql',
+  '20260906010000_add_l1_owner_role_and_named_scope.sql',
+  '20260906011000_complete_l1_owner_runtime_head.sql',
 ];
 
 const mode = process.argv[2];

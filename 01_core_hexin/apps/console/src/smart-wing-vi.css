@@ -109,6 +109,18 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   height: 34px;
 }
 
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrandinitial {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #1856cb 0%, #0e3a91 100%);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+}
+
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrand .swbrand-mark img {
   box-shadow: 0 0 0 1px rgb(255 255 255 / 10%), 0 8px 20px rgb(0 61 183 / 34%);
 }

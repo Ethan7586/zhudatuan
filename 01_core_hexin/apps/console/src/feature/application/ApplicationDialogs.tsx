@@ -13,6 +13,7 @@ export function ApplicationRecordDrawer({
   record,
   canEdit,
   canCopy,
+  onEnter,
   onEdit,
   onCopy,
   onDisable,
@@ -21,6 +22,7 @@ export function ApplicationRecordDrawer({
   record: Application | undefined;
   canEdit: boolean;
   canCopy: boolean;
+  onEnter: (record: Application) => void;
   onEdit: (record: Application) => void;
   onCopy: (record: Application) => void;
   onDisable: (record: Application) => void;
@@ -95,6 +97,11 @@ export function ApplicationRecordDrawer({
           </section>
         </div>
         <footer>
+          {record.mall_id === null || record.mall_id === undefined ? null : (
+            <button type="button" onClick={() => onEnter(record)}>
+              进入后台
+            </button>
+          )}
           {canEdit ? (
             <button type="button" onClick={() => onEdit(record)}>
               编辑

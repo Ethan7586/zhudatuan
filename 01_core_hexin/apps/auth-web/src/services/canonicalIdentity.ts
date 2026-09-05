@@ -11,7 +11,7 @@ const MembershipSelectionSchema = z.strictObject({
   principal: z.string().min(1),
   memberships: z.array(z.strictObject({
     id: z.string().min(1),
-    client: z.enum(['console', 'storefront', 'store', 'supplier']),
+    client: z.enum(['console', 'console-hbbtzn', 'storefront', 'store', 'supplier']),
   })),
 });
 
@@ -20,7 +20,7 @@ const SessionCreatedSchema = z.strictObject({
   csrf: z.string().min(16),
   expiresIn: z.number().int().positive(),
   membership: z.string().min(1),
-  target: z.enum(['console', 'storefront', 'store', 'supplier']),
+  target: z.enum(['console', 'console-hbbtzn', 'storefront', 'store', 'supplier']),
   callback: z.strictObject({
     ticket: z.string().min(64).max(128),
     state: z.string().min(32).max(128),
@@ -120,10 +120,16 @@ export async function loginCanonicalConsole(
   password: string,
   membership?: string,
   signal?: AbortSignal,
+  options: CanonicalConsoleLoginOptions = {},
 ): Promise<CanonicalConsoleLoginResult> {
   return loginCanonicalConsoleWithCredential(
-    { provider: 'password', subject: canonicalPasswordSubject(subject), password }, membership, signal,
+    { provider: 'password', subject: canonicalPasswordSubject(subject), password }, membership, signal, options,
   );
+}
+
+export interface CanonicalConsoleLoginOptions {
+  readonly target?: 'console' | 'console-hbbtzn';
+  readonly expectedOrigin?: string;
 }
 
 export async function loginCanonicalStorefront(
@@ -210,8 +216,9 @@ async function loginCanonicalConsoleWithCredential(
   credential: LoginCredential,
   membership?: string,
   signal?: AbortSignal,
+  options: CanonicalConsoleLoginOptions = {},
 ): Promise<CanonicalConsoleLoginResult> {
-  const result = await authorizeCanonicalCredential(credential, 'console', membership, signal);
+  const result = await authorizeCanonicalCredential(credential, options.target ?? 'console', membership, signal);
   if (result.kind === 'selection') {
     const context: PreAuthContext = {
       identifier: credential.subject,
@@ -224,7 +231,7 @@ async function loginCanonicalConsoleWithCredential(
     });
   }
 
-  const redirectUrl = approvedConsoleDestination(result.exchange.returnTarget);
+  const redirectUrl = approvedConsoleDestination(result.exchange.returnTarget, options.expectedOrigin);
   return Object.freeze({ kind: 'authenticated', membership: result.session.membership, redirectUrl });
 }
 
@@ -253,7 +260,7 @@ async function authorizeCanonicalCredential(
   }, signal));
   if ('memberships' in output) return Object.freeze({ kind: 'selection', selection: output });
   if (output.target !== target) {
-    throw new Error(target === 'console' ? '登录身份不属于运营后台' : '登录身份不属于消费者商城');
+    throw new Error(target === 'storefront' ? '登录身份不属于消费者商城' : '登录身份不属于运营后台');
   }
   const exchange = TicketExchangeSchema.parse(await identityRequest('/api/v1/identity/tickets/exchange', {
     ticket: output.callback.ticket,
@@ -342,7 +349,7 @@ export async function beginCanonicalAuthorization(): Promise<CanonicalAuthorizat
   });
 }
 
-function approvedConsoleDestination(value: z.infer<typeof TicketExchangeSchema>['returnTarget']): string {
+function approvedConsoleDestination(value: z.infer<typeof TicketExchangeSchema>['returnTarget'], expectedOrigin?: string): string {
   const expiry = Date.parse(value.expiresAt);
   if (!Number.isFinite(expiry) || expiry <= Date.now()) throw new Error('登录回跳授权已经过期');
   let destination: URL;
@@ -351,12 +358,22 @@ function approvedConsoleDestination(value: z.infer<typeof TicketExchangeSchema>[
   } catch {
     throw new Error('登录回跳地址无效');
   }
-  const configured = import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined);
-  const approvedOrigin = resolveAdminLoginOrigin(configured, import.meta.env.DEV);
+  const configured = expectedOrigin ?? (import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined));
+  const approvedOrigin = expectedOrigin === undefined
+    ? resolveAdminLoginOrigin(configured, import.meta.env.DEV)
+    : exactHttpsOrigin(expectedOrigin);
   if (destination.origin !== approvedOrigin || destination.username || destination.password || destination.hash) {
     throw new Error('登录回跳地址不在后台允许清单');
   }
   return destination.toString();
+}
+
+function exactHttpsOrigin(value: string): string {
+  let parsed: URL;
+  try { parsed = new URL(value); } catch { throw new Error('后台登录目标配置无效'); }
+  if (parsed.protocol !== 'https:' || parsed.origin !== value || parsed.pathname !== '/' || parsed.search || parsed.hash
+    || parsed.username || parsed.password) throw new Error('后台登录目标配置无效');
+  return parsed.origin;
 }
 
 function approvedStorefrontDestination(value: z.infer<typeof TicketExchangeSchema>['returnTarget']): string {
@@ -377,7 +394,11 @@ function approvedStorefrontDestination(value: z.infer<typeof TicketExchangeSchem
 }
 
 function apiOrigin(): string {
-  const configured = import.meta.env.VITE_API_BASE_URL?.trim() || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
+  let configured = import.meta.env.VITE_API_BASE_URL?.trim() || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
+  if (typeof window !== 'undefined' && window.location.hostname.startsWith('accounts.')
+    && window.location.hostname !== 'accounts.zhudatuan.com') {
+    configured = `https://api.${window.location.hostname.slice('accounts.'.length)}`;
+  }
   const parsed = new URL(configured);
   const local = import.meta.env.DEV && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
   if ((!local && parsed.origin !== CANONICAL_API_ORIGIN && parsed.origin !== LEGACY_API_ORIGIN)

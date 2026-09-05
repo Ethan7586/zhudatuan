@@ -179,6 +179,7 @@ describe('identity registration API entrypoint', () => {
         });
         container.bind(RETURN_TARGETS, {
           console: 'https://console.zhudatuan.com',
+          'console-hbbtzn': 'https://console.hbbtzn.com',
           storefront: 'https://zhudatuan.com',
           store: 'https://console.zhudatuan.com/entrances/store',
           supplier: 'https://console.zhudatuan.com/entrances/supplier',

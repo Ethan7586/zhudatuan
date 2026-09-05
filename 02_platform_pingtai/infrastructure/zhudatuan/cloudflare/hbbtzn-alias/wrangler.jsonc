@@ -5,9 +5,12 @@
   "compatibility_date": "2026-09-03",
   "workers_dev": false,
   "routes": [
+    { "pattern": "hbbtzn.zhudatuan.com", "custom_domain": true },
+    { "pattern": "console-hbbtzn.zhudatuan.com", "custom_domain": true },
     { "pattern": "hbbtzn.com/*", "zone_name": "hbbtzn.com" },
     { "pattern": "accounts.hbbtzn.com", "custom_domain": true },
     { "pattern": "api.hbbtzn.com", "custom_domain": true },
+    { "pattern": "console.hbbtzn.com", "custom_domain": true },
     { "pattern": "mall.hbbtzn.com", "custom_domain": true }
   ]
 }

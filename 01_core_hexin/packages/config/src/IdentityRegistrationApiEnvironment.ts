@@ -8,9 +8,7 @@ const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([
   'https://console.zhudatuan.com',
   'https://h5.zhudatuan.com',
   'https://hbbtzn.com',
-  'https://mall.hbbtzn.com',
   'https://mini.zhudatuan.com',
-  'https://www.hbbtzn.com',
   'https://zhudatuan.com',
 ] as const);
 const INTERNAL_STOREFRONT_ORIGIN = 'https://internal.zhudatuan.com';
@@ -18,6 +16,7 @@ const INTERNAL_ALLOWED_ORIGINS = Object.freeze([...PRODUCTION_ALLOWED_ORIGINS, I
 
 const PRODUCTION_RETURN_TARGETS = Object.freeze({
   console: 'https://console.zhudatuan.com',
+  'console-hbbtzn': 'https://console.hbbtzn.com',
   storefront: 'https://zhudatuan.com',
   store: 'https://console.zhudatuan.com/entrances/store',
   supplier: 'https://console.zhudatuan.com/entrances/supplier',

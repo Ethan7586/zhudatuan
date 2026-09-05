@@ -1,10 +1,11 @@
 import { Button, ResourcePanel, ResourceState } from '@shop/design';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 import { pageCursor } from '../../shared/url/PageCursor';
+import { scopePath } from '../../shared/url/ScopePath';
 import { applicationCommandAvailable } from './ApplicationCommand';
 import { ApplicationCopyDialog, ApplicationCreateDialog, ApplicationDisableDialog, ApplicationEditDialog, ApplicationRecordDrawer, CommerceFlowPreview } from './ApplicationDialogs';
 import { applicationSummary, commerceFlow, needsAttention } from './ApplicationPresentation';
@@ -52,6 +53,7 @@ const views: readonly Readonly<{ key: CommerceView; label: string }>[] = Object.
 export function Component() {
   const context = useConsoleContext();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [search, setSearch] = useSearchParams();
   const [flowOpen, setFlowOpen] = useState(false);
   const [solutionOpen, setSolutionOpen] = useState(false);
@@ -146,6 +148,10 @@ export function Component() {
   const openEdit = useCallback((record: Application) => openCommand({ kind: 'edit', record }), [openCommand]);
   const openCopy = useCallback((record: Application) => openCommand({ kind: 'copy', record }), [openCommand]);
   const openDisable = useCallback((record: Application) => openCommand({ kind: 'disable', record }), [openCommand]);
+  const openWorkspace = useCallback((record: Application) => {
+    if (record.mall_id === null || record.mall_id === undefined) return;
+    navigate(scopePath({ kind: 'mall', id: record.mall_id }, 'cockpit'));
+  }, [navigate]);
   const closeCommand = useCallback(() => setCommand(undefined), []);
   const completeCommand = useCallback(
     async (notice: string) => {
@@ -419,7 +425,7 @@ export function Component() {
                 </button>
               </section>
             ) : null}
-            {rows.length > 0 ? <ApplicationTable rows={rows} mode={presentation.mode} canEdit={canUpdate} canCopy={canCopy} onOpen={openRecord} onEdit={openEdit} onCopy={openCopy} onDisable={openDisable} /> : null}
+            {rows.length > 0 ? <ApplicationTable rows={rows} mode={presentation.mode} canEdit={canUpdate} canCopy={canCopy} onEnter={openWorkspace} onOpen={openRecord} onEdit={openEdit} onCopy={openCopy} onDisable={openDisable} /> : null}
             <footer className="commercepagination">
               <span>当前页 {records.length} 家商城 · 游标分页</span>
               <Button
@@ -434,7 +440,7 @@ export function Component() {
           </section>
         </div>
       </ResourcePanel>
-      <ApplicationRecordDrawer record={selected} canEdit={canUpdate} canCopy={canCopy} onEdit={openEdit} onCopy={openCopy} onDisable={openDisable} onClose={closeRecord} />
+      <ApplicationRecordDrawer record={selected} canEdit={canUpdate} canCopy={canCopy} onEnter={openWorkspace} onEdit={openEdit} onCopy={openCopy} onDisable={openDisable} onClose={closeRecord} />
       {command?.kind === 'create' ? <ApplicationCreateDialog context={context} onClose={closeCommand} onSuccess={completeCommand} /> : null}
       {command?.kind === 'edit' ? <ApplicationEditDialog context={context} record={command.record} onClose={closeCommand} onSuccess={completeCommand} /> : null}
       {command?.kind === 'copy' ? <ApplicationCopyDialog context={context} record={command.record} onClose={closeCommand} onSuccess={completeCommand} /> : null}

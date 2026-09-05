@@ -19,7 +19,7 @@ export function requestCookie(value: string | undefined, name: string): string |
 
 export function authTarget(value: string): AuthTarget {
   const target = value === 'operator' ? 'console' : value;
-  if (!['console', 'storefront', 'store', 'supplier'].includes(target)) throw new Error('AUTH_RETURN_TARGET_INVALID');
+  if (!['console', 'console-hbbtzn', 'storefront', 'store', 'supplier'].includes(target)) throw new Error('AUTH_RETURN_TARGET_INVALID');
   return target as AuthTarget;
 }
 

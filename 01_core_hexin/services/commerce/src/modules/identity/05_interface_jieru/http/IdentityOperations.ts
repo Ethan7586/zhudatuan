@@ -150,7 +150,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             [found.principal_id]
           );
           const requestedTarget = typeof body.target === 'string' ? authTarget(body.target) : undefined;
-          const candidates = requestedTarget === undefined ? memberships.rows : memberships.rows.filter((item) => authTarget(item.client) === requestedTarget);
+          const membershipTarget = requestedTarget === 'console-hbbtzn' ? 'console' : requestedTarget;
+          const candidates = membershipTarget === undefined ? memberships.rows : memberships.rows.filter((item) => authTarget(item.client) === membershipTarget);
           const requested = typeof body.membership === 'string' ? body.membership : undefined;
           const membership = requested ? candidates.find((item) => item.id === requested) : candidates.length === 1 ? candidates[0] : undefined;
           if (requested !== undefined && membership === undefined) reject(403, 'MEMBERSHIP_INACTIVE');
@@ -206,7 +207,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             loginMethod: provider,
           });
           const csrf = randomBytes(32).toString('base64url');
-          const target = authTarget(membership.client);
+          const target = requestedTarget ?? authTarget(membership.client);
           const callback = await tickets.issue(database, id, target, authorization);
           return { status: 201, body: { session: id, csrf, expiresIn: 43_200, membership: membership.id, target, callback }, headers: sessionCookies(token, csrf, 43_200) };
         },

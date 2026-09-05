@@ -1,12 +1,26 @@
 .dialogpanel:has(.mallcreatewizard) {
   width: min(74rem, calc(100vw - 2rem));
+  height: min(52rem, calc(100dvh - 2rem));
+  overflow: hidden;
+}
+
+.dialogcontent:has(.mallcreatewizard) {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
 }
 
 .dialogbody:has(.mallcreatewizard) {
+  min-height: 0;
+  overflow: hidden;
   padding: 0;
 }
 
 .mallcreatewizard {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100%;
+  min-height: 0;
   color: #14233a;
 }
 
@@ -50,10 +64,12 @@
 .mallcreateworkspace {
   display: grid;
   grid-template-columns: 13rem minmax(0, 1fr);
-  min-height: 31rem;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .mallcreatesteps {
+  overflow-y: auto;
   border-right: 1px solid #dbe5f2;
   background: linear-gradient(180deg, #f6f9ff 0%, #edf3ff 100%);
   padding: 1.1rem 0.85rem;
@@ -165,6 +181,7 @@
 
 .mallcreatestage {
   min-width: 0;
+  overflow-y: auto;
   padding: 1.15rem 1.3rem 1.3rem;
 }
 

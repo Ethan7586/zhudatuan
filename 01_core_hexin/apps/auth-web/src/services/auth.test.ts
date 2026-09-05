@@ -36,7 +36,7 @@ describe('public test authentication fixtures', () => {
   });
 
   it('only permits the canonical storefront origin plus explicit local development', () => {
-    expect(resolveStorefrontLoginOrigin()).toBe('https://mall.hbbtzn.com');
+    expect(resolveStorefrontLoginOrigin()).toBe('https://hbbtzn.com');
     expect(resolveStorefrontLoginOrigin('https://zhudatuan.com')).toBe('https://zhudatuan.com');
     expect(resolveStorefrontLoginOrigin('http://127.0.0.1:3000', true)).toBe('http://127.0.0.1:3000');
     expect(() => resolveStorefrontLoginOrigin('https://example.com')).toThrow('不在允许清单');
@@ -46,7 +46,7 @@ describe('public test authentication fixtures', () => {
   it('builds a credential-free login URL for top-level POST', () => {
     const action = buildCredentialLoginAction(resolveStorefrontLoginOrigin());
 
-    expect(action).toBe('https://mall.hbbtzn.com/api/v1/auth/login?redirect=%2F');
+    expect(action).toBe('https://hbbtzn.com/api/v1/auth/login?redirect=%2F');
     expect(action).not.toContain('username');
     expect(action).not.toContain('password');
   });

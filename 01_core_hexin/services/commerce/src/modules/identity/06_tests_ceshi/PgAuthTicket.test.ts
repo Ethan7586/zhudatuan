@@ -24,6 +24,7 @@ describe('PgAuthTicket exchange', () => {
       new ReturnTargetSigner(
         {
           console: 'https://console.zhudatuan.com',
+          'console-hbbtzn': 'https://console.hbbtzn.com',
           storefront: 'https://zhudatuan.com',
           store: 'https://store.zhudatuan.com',
           supplier: 'https://supplier.zhudatuan.com',

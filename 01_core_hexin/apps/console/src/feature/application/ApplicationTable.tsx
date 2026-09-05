@@ -11,6 +11,7 @@ export function ApplicationTable({
   mode,
   canEdit,
   canCopy,
+  onEnter,
   onOpen,
   onEdit,
   onCopy,
@@ -20,18 +21,20 @@ export function ApplicationTable({
   mode: CommerceWorkspaceMode;
   canEdit: boolean;
   canCopy: boolean;
+  onEnter: (record: Application) => void;
   onOpen: (record: Application) => void;
   onEdit: (record: Application) => void;
   onCopy: (record: Application) => void;
   onDisable: (record: Application) => void;
 }>) {
-  const columns = useMemo(() => applicationColumns(mode, { canEdit, canCopy, onOpen, onEdit, onCopy, onDisable }), [canCopy, canEdit, mode, onCopy, onDisable, onEdit, onOpen]);
+  const columns = useMemo(() => applicationColumns(mode, { canEdit, canCopy, onEnter, onOpen, onEdit, onCopy, onDisable }), [canCopy, canEdit, mode, onCopy, onDisable, onEdit, onEnter, onOpen]);
   return <DataTable caption={tableCaption(mode)} columns={columns} rows={rows} rowKey={(row) => row.id} />;
 }
 
 interface ApplicationActions {
   readonly canEdit: boolean;
   readonly canCopy: boolean;
+  readonly onEnter: (record: Application) => void;
   readonly onOpen: (record: Application) => void;
   readonly onEdit: (record: Application) => void;
   readonly onCopy: (record: Application) => void;
@@ -106,6 +109,11 @@ function applicationColumns(mode: CommerceWorkspaceMode, actions: ApplicationAct
       label: '操作',
       render: (row) => (
         <div className="commercebinding">
+          {row.mall_id === null || row.mall_id === undefined ? null : (
+            <button className="commercerowaction" type="button" onClick={() => actions.onEnter(row)} aria-label={`进入${row.name}后台`}>
+              进入后台
+            </button>
+          )}
           <button className="commercerowaction" type="button" onClick={() => actions.onOpen(row)} aria-label={`查看${row.name}`}>
             查看
           </button>

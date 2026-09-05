@@ -66,13 +66,94 @@ describe('hbbtzn H5 alias worker', () => {
   });
 
   it.each([
-    ['https://accounts.hbbtzn.com/login?client=console', 'https://accounts.zhudatuan.com/login?client=console'],
+    ['https://accounts.hbbtzn.com/assets/auth.js', 'https://accounts.zhudatuan.com/assets/auth.js'],
     ['https://api.hbbtzn.com/api/v1/identity/sessions', 'https://api.zhudatuan.com/api/v1/identity/sessions'],
-  ])('redirects control-plane alias %s to %s', async (source, destination) => {
+    ['https://console.hbbtzn.com/assets/console.js', 'https://console.zhudatuan.com/assets/console.js'],
+  ])('proxies tenant control-plane alias %s to %s', async (source, destination) => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('ok'));
+    vi.stubGlobal('fetch', fetchMock);
+
     const response = await worker.fetch(new Request(source));
 
+    expect(response.status).toBe(200);
+    expect((fetchMock.mock.calls[0][0] as Request).url).toBe(destination);
+  });
+
+  it('rewrites canonical control origins inside JavaScript bundles', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(
+      "const api='https://api.zhudatuan.com';const auth='https://accounts.zhudatuan.com';",
+      { headers: {
+        'content-type': 'application/javascript; charset=utf-8',
+        'content-encoding': 'gzip',
+        etag: 'canonical-script-etag',
+      } },
+    ));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await worker.fetch(new Request('https://console.hbbtzn.com/assets/AppConfig.js'));
+
+    await expect(response.text()).resolves.toBe(
+      "const api='https://api.hbbtzn.com';const auth='https://accounts.hbbtzn.com';",
+    );
+    expect(response.headers.get('content-encoding')).toBeNull();
+    expect(response.headers.get('etag')).toBeNull();
+  });
+
+  it('gives Hongtai control assets an independent browser cache path', async () => {
+    const fetchMock = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(
+        '<script src="/assets/index.js"></script><link href="/assets/index.css" rel="stylesheet">',
+        { headers: { 'content-type': 'text/html; charset=utf-8' } },
+      ))
+      .mockResolvedValueOnce(new Response('console bundle'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const documentResponse = await worker.fetch(new Request('https://console.hbbtzn.com/cockpit', {
+      headers: { accept: 'text/html', 'if-none-match': 'old-console-etag' },
+    }));
+    await expect(documentResponse.text()).resolves.toContain('src="/__hbbtzn-v1/assets/index.js"');
+    expect((fetchMock.mock.calls[0][0] as Request).headers.get('if-none-match')).toBeNull();
+    await expect(worker.fetch(new Request('https://console.hbbtzn.com/__hbbtzn-v1/assets/index.js')))
+      .resolves.toMatchObject({ status: 200 });
+    expect((fetchMock.mock.calls[1][0] as Request).url).toBe('https://console.zhudatuan.com/assets/index.js');
+  });
+
+  it('rewrites only the identity ticket return target to the Hongtai console', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({
+      returnTarget: {
+        url: 'https://console.zhudatuan.com/scopes/mall/mall%3Ahongtai/cockpit',
+        proof: 'signed-proof',
+        expiresAt: '2026-09-06T03:00:00.000Z',
+      },
+    }), { headers: { 'content-type': 'application/json; charset=utf-8' } }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await worker.fetch(new Request('https://api.hbbtzn.com/api/v1/identity/tickets/exchange', {
+      method: 'POST',
+    }));
+
+    await expect(response.json()).resolves.toMatchObject({
+      returnTarget: { url: 'https://console.hbbtzn.com/scopes/mall/mall%3Ahongtai/cockpit' },
+    });
+  });
+
+  it('opens the Hongtai console at its fixed mall scope', async () => {
+    const response = await worker.fetch(new Request('https://console.hbbtzn.com/'));
+
     expect(response.status).toBe(308);
-    expect(response.headers.get('location')).toBe(destination);
+    expect(response.headers.get('location')).toBe(
+      'https://console.hbbtzn.com/scopes/mall/mall%3Ad1708f04df2dd8a61736852c4900fb43/cockpit',
+    );
+  });
+
+  it('routes Hongtai console login through its own accounts and admin origins', async () => {
+    const response = await worker.fetch(new Request('https://accounts.hbbtzn.com/login?client=console'));
+
+    expect(response.status).toBe(308);
+    const target = new URL(response.headers.get('location')!);
+    expect(target.origin).toBe('https://accounts.hbbtzn.com');
+    expect(target.searchParams.get('client')).toBe('console-hbbtzn');
+    expect(target.searchParams.get('admin_origin')).toBe('https://console.hbbtzn.com');
   });
 
   it('preserves a canonical account origin for public API preflight', async () => {
@@ -110,5 +191,15 @@ describe('hbbtzn H5 alias worker', () => {
 
     expect(response.status).toBe(308);
     expect(response.headers.get('location')).toBe('https://hbbtzn.com/orders?from=qr');
+  });
+
+  it.each([
+    ['https://hbbtzn.zhudatuan.com/products/sku-1', 'https://hbbtzn.com/products/sku-1'],
+    ['https://console-hbbtzn.zhudatuan.com/orders', 'https://console.hbbtzn.com/orders'],
+  ])('upgrades the platform domain %s to the brand domain %s', async (source, destination) => {
+    const response = await worker.fetch(new Request(source));
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get('location')).toBe(destination);
   });
 });

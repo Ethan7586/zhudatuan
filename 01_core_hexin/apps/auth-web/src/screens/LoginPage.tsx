@@ -9,6 +9,7 @@ import { ShieldCheck, Lock, QrCode, Globe, Building2, CheckCircle2, AlertCircle,
 import { useMallContext } from '../context/MallContext';
 import { Membership, PreAuthContext } from '../types';
 import { defaultTermsAccepted } from '../services/termsAcceptance';
+import { loginCanonicalConsole } from '../services/canonicalIdentity';
 import {
   loginWithPassword,
   getLockoutState,
@@ -26,6 +27,8 @@ export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const searchParams = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search);
   const isStorefrontEmbed = searchParams?.get('embed') === 'storefront';
+  const isTenantConsoleLogin = searchParams?.get('client') === 'console-hbbtzn';
+  const tenantConsoleOrigin = searchParams?.get('admin_origin')?.trim() || undefined;
   const registrationDeepLink = searchParams?.get('invite')?.trim() ?? '';
 
   // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
@@ -213,6 +216,19 @@ export const LoginPage: React.FC = () => {
     setFormError('');
 
     try {
+      if (isTenantConsoleLogin) {
+        const result = await loginCanonicalConsole(identifier, password, undefined, undefined, {
+          target: 'console-hbbtzn',
+          ...(tenantConsoleOrigin === undefined ? {} : { expectedOrigin: tenantConsoleOrigin }),
+        });
+        if (result.kind === 'selection') {
+          setPreAuthContext(result.context);
+          setStage(2);
+        } else {
+          window.location.assign(result.redirectUrl);
+        }
+        return;
+      }
       const context: PreAuthContext = await loginWithPassword(identifier, password);
 
       // 如果需要重置密码
@@ -365,6 +381,23 @@ export const LoginPage: React.FC = () => {
 
   // 2. 选中并确认某条会员关系
   const handleSelectMembership = async (mem: Membership) => {
+    if (isTenantConsoleLogin && mem.target === 'admin') {
+      setLoading(true);
+      setFormError('');
+      try {
+        const result = await loginCanonicalConsole(identifier, password, mem.id, undefined, {
+          target: 'console-hbbtzn',
+          ...(tenantConsoleOrigin === undefined ? {} : { expectedOrigin: tenantConsoleOrigin }),
+        });
+        if (result.kind !== 'authenticated') throw new Error('后台身份选择未完成');
+        window.location.assign(result.redirectUrl);
+      } catch (error: any) {
+        setFormError(error.message || '后台身份登录失败');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
     if (preAuthContext && requiresAuthoritativeMembershipSelection(preAuthContext.memberships)) {
       setFormError('多身份选择尚未获得服务端授权，已停止建立会话。');
       return;

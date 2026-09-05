@@ -6,6 +6,8 @@ export interface SidebarProps {
   readonly collapsed: boolean;
   readonly displayName: string;
   readonly roleLabel: string;
+  readonly brandName?: string;
+  readonly brandSubtitle?: string;
   readonly mainItems: readonly NavigationItem[];
   readonly bottomItems: readonly NavigationItem[];
   readonly onNavigate: (suffix: string) => void;
@@ -13,13 +15,16 @@ export interface SidebarProps {
   readonly onToggle: () => void;
 }
 
-export function Sidebar({ active, collapsed, displayName, roleLabel, mainItems, bottomItems, onNavigate, onOpenProfile, onToggle }: SidebarProps) {
+export function Sidebar({ active, collapsed, displayName, roleLabel, brandName = 'zdt-next', brandSubtitle = '经营与权限管理',
+  mainItems, bottomItems, onNavigate, onOpenProfile, onToggle }: SidebarProps) {
 
   return (
     <aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-label="主导航">
       <div className="sidebarbrand">
-        <span className="sidebarproductmark" aria-hidden="true"><img src="/brand/zhudatuan-mark-blue.svg" alt="" /></span>
-        <span className="sidebarbrandcopy"><strong>主打团</strong><small>经营与权限管理</small></span>
+        <span className="sidebarproductmark" aria-hidden="true">
+          <span className="sidebarbrandinitial">{Array.from(brandName.trim())[0] ?? '商'}</span>
+        </span>
+        <span className="sidebarbrandcopy"><strong>{brandName}</strong><small>{brandSubtitle}</small></span>
         <button className="sidebartoggle" type="button" onClick={onToggle}
           aria-label={collapsed ? '展开导航' : '收起导航'} aria-expanded={!collapsed}>
           <ShellIcon name={collapsed ? 'chevron' : 'collapse'} />

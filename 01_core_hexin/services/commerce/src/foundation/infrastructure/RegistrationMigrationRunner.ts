@@ -6,7 +6,11 @@ import type { PoolClient } from 'pg';
 import { Semaphore } from '../performance/Semaphore';
 import type { DatabasePool } from '../persistence/Pool';
 import type { KmsClient } from './KmsClient';
-import { registrationMigrationExecution, type RegistrationMigrationExecution } from './RegistrationMigrationPlan';
+import {
+  registrationMigrationExecution,
+  registrationMigrationLedgerMatches,
+  type RegistrationMigrationExecution,
+} from './RegistrationMigrationPlan';
 
 interface HistoryContract {
   readonly algorithm: 'sha256';
@@ -39,8 +43,9 @@ interface LedgerRecord {
 }
 
 const BACKFILL = '20260821026000_backfill_domain_data.sql';
-const REGISTRATION_TARGET_VERSION = '20260904010000';
-const REGISTRATION_TARGET_CHECKSUM = '4fb39b3499024c958f16a5bf15563c56f44506fd25cf92a3efc645b36c9e1bbb';
+const REGISTRATION_TARGET_VERSION = '20260906011000';
+const REGISTRATION_TARGET_CHECKSUM = '61e0eeb3593192e5e75b9ff4bf4df82678521d2d01f7e7d4177b56106ef5b51c';
+const REGISTRATION_TARGET_FILE = '20260906011000_complete_l1_owner_runtime_head.sql';
 const REGISTRATION_DATABASE = 'zhudatuan_registration';
 const REGISTRATION_MIGRATION_ROLE = 'shopmigration';
 const MIGRATION_FILE = /^\d{14}_[a-z0-9_]+\.sql$/;
@@ -141,8 +146,7 @@ export class RegistrationMigrationRunner {
   }
 
   private assertLedgerRecord(record: LedgerRecord, execution: RegistrationMigrationExecution, file: string): void {
-    if (record.name !== execution.ledgerName
-      || JSON.stringify(record.statements ?? []) !== JSON.stringify(execution.ledgerStatements)) {
+    if (!registrationMigrationLedgerMatches(file, record.name ?? '', record.statements, execution)) {
       throw new Error(`REGISTRATION_MIGRATION_LEDGER_DRIFT:${file}`);
     }
   }
@@ -167,9 +171,8 @@ export class RegistrationMigrationRunner {
       exists(select 1 from runtime.schemaversion where version=$1 and checksum=$2)
       and not exists(select 1 from runtime.schemaversion where version>$1)
       and not exists(select 1 from pg_tables where schemaname='public')
-      and exists(select 1 from supabase_migrations.schema_migrations where version=$1
-        and name='20260904010000_allow_platform_owner_l6_registration.sql') valid`,
-    [REGISTRATION_TARGET_VERSION, REGISTRATION_TARGET_CHECKSUM]);
+      and exists(select 1 from supabase_migrations.schema_migrations where version=$1 and name=$3) valid`,
+    [REGISTRATION_TARGET_VERSION, REGISTRATION_TARGET_CHECKSUM, REGISTRATION_TARGET_FILE]);
     if (result.rows[0]?.valid !== true) throw new Error('REGISTRATION_MIGRATION_TARGET_INVALID');
   }
 

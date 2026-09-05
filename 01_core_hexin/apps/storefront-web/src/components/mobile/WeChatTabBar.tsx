@@ -14,7 +14,7 @@ export const WeChatTabBar: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white border-t border-gray-200/80 sticky bottom-0 z-40 px-2 py-1.5 flex items-center justify-around select-none shadow-lg font-sans">
+    <div className="bg-white border-t border-gray-200/80 sticky bottom-0 z-40 grid h-[58px] grid-cols-5 px-2 py-1.5 select-none shadow-lg font-sans">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = mpPage === tab.id;
@@ -23,18 +23,18 @@ export const WeChatTabBar: React.FC = () => {
           <button
             key={tab.id}
             onClick={() => setMpPage(tab.id)}
-            className={`flex flex-col items-center justify-center flex-1 py-1 relative cursor-pointer transition-colors ${isActive ? 'text-[var(--sw-brand)]' : 'text-gray-500 hover:text-gray-800'}`}
+            className={`relative flex h-full min-w-0 cursor-pointer flex-col items-center justify-center py-1 transition-colors ${isActive ? 'text-[var(--sw-brand)]' : 'text-gray-500 hover:text-gray-800'}`}
           >
-            <div className="relative">
-              <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110 stroke-[2.5]' : 'stroke-2'}`} />
+            <div className="relative flex h-5 items-center justify-center">
+              <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
               {tab.id === 'cart' && cartCount > 0 && (
                 <span className="absolute -top-1.5 -right-2 bg-[#E5484D] text-white font-bold text-[9px] min-w-[15px] h-[15px] rounded-full flex items-center justify-center px-1 shadow-xs animate-in zoom-in-50">
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
               )}
             </div>
-            <span className={`text-[10px] mt-0.5 tracking-tight ${isActive ? 'font-bold' : 'font-normal'}`}>{tab.label}</span>
-            {isActive && <span className="w-1 h-1 bg-[var(--sw-brand)] rounded-full mt-0.5 animate-pulse" />}
+            <span className={`mt-0.5 h-4 text-[10px] leading-4 tracking-tight ${isActive ? 'font-bold' : 'font-normal'}`}>{tab.label}</span>
+            <span aria-hidden="true" className={`mt-0.5 h-1 w-1 rounded-full ${isActive ? 'bg-[var(--sw-brand)]' : 'bg-transparent'}`} />
           </button>
         );
       })}

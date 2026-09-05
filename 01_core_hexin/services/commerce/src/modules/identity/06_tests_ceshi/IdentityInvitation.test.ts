@@ -418,7 +418,7 @@ function context(pool: DatabasePool): ModuleContext {
   container.bind(KMS_CLIENT, { encrypt: async () => ({ ciphertext: 'ciphertext', fingerprint: 'f'.repeat(64), keyVersion: 'v1' }) } as unknown as KmsClient);
   container.bind(RISK_GATE, { evaluate: async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) });
   container.bind(RETURN_TARGETS, {
-    console: 'https://console.example.test', storefront: 'https://storefront.example.test',
+    console: 'https://console.example.test', 'console-hbbtzn': 'https://console-hbbtzn.example.test', storefront: 'https://storefront.example.test',
     store: 'https://store.example.test', supplier: 'https://supplier.example.test',
   });
   return { container } as unknown as ModuleContext;

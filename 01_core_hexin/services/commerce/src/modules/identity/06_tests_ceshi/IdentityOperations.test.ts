@@ -324,6 +324,7 @@ function context(pool: DatabasePool): ModuleContext {
   });
   container.bind(RETURN_TARGETS, {
     console: 'https://console.example.test',
+    'console-hbbtzn': 'https://console-hbbtzn.example.test',
     storefront: 'https://storefront.example.test',
     store: 'https://store.example.test',
     supplier: 'https://supplier.example.test',

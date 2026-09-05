@@ -175,9 +175,9 @@ describe('canonical member registration security boundary', () => {
     expect(response.status).toBe(200);
     const assurance = harness.queries.find(({ text }) => text.includes("'otp',3"));
     expect(assurance?.values).toEqual([
-      expect.stringMatching(/^assurance:/), 'principal:stepup', sessionEvidenceDigest('session:stepup'),
+      expect.stringMatching(/^assurance:/), 'principal:stepup', 'session:stepup', sessionEvidenceDigest('session:stepup'),
     ]);
-    expect(assurance?.values[2]).not.toBe(subjectDigest('challenge:stepup'));
+    expect(assurance?.values[3]).not.toBe(subjectDigest('challenge:stepup'));
   });
 
   it('routes current Owner password change through the atomic rotation boundary', async () => {
@@ -895,6 +895,7 @@ function context(pool: DatabasePool, kms: KmsClient = {
   });
   container.bind(RETURN_TARGETS, {
     console: 'https://console.example.test',
+    'console-hbbtzn': 'https://console-hbbtzn.example.test',
     storefront: 'https://storefront.example.test',
     store: 'https://store.example.test',
     supplier: 'https://supplier.example.test',

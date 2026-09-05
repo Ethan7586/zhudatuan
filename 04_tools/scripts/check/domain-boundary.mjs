@@ -35,7 +35,7 @@ const sourceExtensions = new Set(['.cjs', '.html', '.js', '.json', '.jsx', '.mjs
 const builtExtensions = new Set(['.html', '.js', '.json', '.map', '.mjs']);
 const testFile = /(?:^|\/)(?:__tests__\/|[^/]+\.(?:spec|test)\.[cm]?[jt]sx?$)/;
 const inertDesignReference = /(?:^|\/)design-references\//;
-const hbbtznSubdomain = /(?:[a-z0-9-]+\.)+hbbtzn\.com/i;
+const hbbtznSubdomain = /(?:[a-z0-9-]+\.)+hbbtzn\.com/ig;
 
 function fail(code, detail = '') {
   throw new Error(detail ? `${code}:${detail}` : code);
@@ -83,12 +83,20 @@ export function validateDomainContract(contract) {
   const canonicalOrigins = requiredObject(contract.canonicalOrigins, 'PRODUCTION_DOMAIN_CANONICAL_ORIGINS_MISSING');
   const identityApi = requiredObject(contract.identityApi, 'PRODUCTION_DOMAIN_IDENTITY_API_MISSING');
   const aliases = requiredObject(contract.redirectOnlyAliases, 'PRODUCTION_DOMAIN_REDIRECT_ALIASES_MISSING');
+  const proxyAliases = requiredObject(contract.proxyAliases, 'PRODUCTION_DOMAIN_PROXY_ALIASES_MISSING');
+  const tenantControlPlanes = requiredObject(contract.tenantControlPlanes, 'PRODUCTION_DOMAIN_TENANT_CONTROL_PLANES_MISSING');
+  const hongtai = requiredObject(tenantControlPlanes.hongtai, 'PRODUCTION_DOMAIN_HONGTAI_CONTROL_PLANE_MISSING');
 
   const h5Origin = exactOrigin(h5.publicOrigin, 'PRODUCTION_DOMAIN_H5_ORIGIN_INVALID');
   const accountsOrigin = exactOrigin(controlPlane.accountsOrigin, 'PRODUCTION_DOMAIN_ACCOUNTS_ORIGIN_INVALID');
   const consoleOrigin = exactOrigin(controlPlane.consoleOrigin, 'PRODUCTION_DOMAIN_CONSOLE_ORIGIN_INVALID');
   const apiOrigin = exactOrigin(controlPlane.apiOrigin, 'PRODUCTION_DOMAIN_API_ORIGIN_INVALID');
   const storefrontOrigin = exactOrigin(canonicalOrigins.storefrontOrigin, 'PRODUCTION_DOMAIN_STOREFRONT_ORIGIN_INVALID');
+  const hongtaiAccountsOrigin = exactOrigin(hongtai.accountsOrigin, 'PRODUCTION_DOMAIN_HONGTAI_ACCOUNTS_ORIGIN_INVALID');
+  const hongtaiConsoleOrigin = exactOrigin(hongtai.consoleOrigin, 'PRODUCTION_DOMAIN_HONGTAI_CONSOLE_ORIGIN_INVALID');
+  const hongtaiApiOrigin = exactOrigin(hongtai.apiOrigin, 'PRODUCTION_DOMAIN_HONGTAI_API_ORIGIN_INVALID');
+  const hongtaiPlatformStorefrontOrigin = exactOrigin(hongtai.platformStorefrontOrigin, 'PRODUCTION_DOMAIN_HONGTAI_PLATFORM_STOREFRONT_ORIGIN_INVALID');
+  const hongtaiPlatformConsoleOrigin = exactOrigin(hongtai.platformConsoleOrigin, 'PRODUCTION_DOMAIN_HONGTAI_PLATFORM_CONSOLE_ORIGIN_INVALID');
 
   if (new URL(h5Origin).hostname !== 'hbbtzn.com' || miniProgram.publicDomain !== 'hbbtzn.com') {
     fail('PRODUCTION_DOMAIN_CONSUMER_FRONTEND_INVALID');
@@ -109,6 +117,7 @@ export function validateDomainContract(contract) {
   }
   const expectedTargets = {
     console: consoleOrigin,
+    'console-hbbtzn': hongtaiConsoleOrigin,
     storefront: h5Origin,
     store: `${consoleOrigin}/entrances/store`,
     supplier: `${consoleOrigin}/entrances/supplier`,
@@ -117,25 +126,46 @@ export function validateDomainContract(contract) {
     fail('PRODUCTION_DOMAIN_RETURN_TARGETS_DRIFT');
   }
 
-  const approvedAliasTargets = new Set([accountsOrigin, apiOrigin, h5Origin]);
+  const approvedRedirectAliases = {
+    [hongtaiPlatformStorefrontOrigin]: h5Origin,
+    [hongtaiPlatformConsoleOrigin]: hongtaiConsoleOrigin,
+    'https://mall.hbbtzn.com': h5Origin,
+  };
   for (const [alias, target] of Object.entries(aliases)) {
     exactOrigin(alias, 'PRODUCTION_DOMAIN_ALIAS_INVALID');
     exactOrigin(target, 'PRODUCTION_DOMAIN_ALIAS_TARGET_INVALID');
-    if (!new URL(alias).hostname.endsWith('.hbbtzn.com') || !approvedAliasTargets.has(target)) {
+    if (approvedRedirectAliases[alias] !== target) {
       fail('PRODUCTION_DOMAIN_ALIAS_BOUNDARY_INVALID', `${alias}->${target}`);
     }
   }
+  if (JSON.stringify(aliases) !== JSON.stringify(approvedRedirectAliases)) {
+    fail('PRODUCTION_DOMAIN_REDIRECT_ALIASES_DRIFT');
+  }
+  const expectedProxyAliases = {
+    [hongtaiAccountsOrigin]: accountsOrigin,
+    [hongtaiApiOrigin]: apiOrigin,
+    [hongtaiConsoleOrigin]: consoleOrigin,
+  };
+  if (JSON.stringify(proxyAliases) !== JSON.stringify(expectedProxyAliases)
+    || hongtai.scopeKind !== 'mall' || typeof hongtai.scopeId !== 'string' || !hongtai.scopeId.startsWith('mall:')) {
+    fail('PRODUCTION_DOMAIN_PROXY_ALIASES_DRIFT');
+  }
   if (contract.changePolicy?.ownerApprovalRequired !== true
     || contract.changePolicy?.frontendDomainChangeDoesNotAuthorizeControlPlaneChange !== true
+    || contract.changePolicy?.tenantControlPlaneAliasesAllowed !== true
     || contract.changePolicy?.globalDomainReplacementForbidden !== true) {
     fail('PRODUCTION_DOMAIN_CHANGE_POLICY_INVALID');
   }
   return contract;
 }
 
-export function assertNoHbbtznSubdomain(file, source) {
-  const match = source.match(hbbtznSubdomain);
-  if (match) fail('HBBTZN_SUBDOMAIN_RUNTIME_FORBIDDEN', `${file}:${match[0]}`);
+export function assertNoHbbtznSubdomain(file, source, approvedOrigins = []) {
+  const approvedHosts = new Set(approvedOrigins.map((origin) => new URL(origin).hostname));
+  for (const match of source.matchAll(hbbtznSubdomain)) {
+    if (!approvedHosts.has(match[0].toLowerCase())) {
+      fail('HBBTZN_SUBDOMAIN_RUNTIME_FORBIDDEN', `${file}:${match[0]}`);
+    }
+  }
 }
 
 function parseEnvironment(source) {
@@ -182,8 +212,12 @@ export function validateEdgeRedirects(source, contract) {
   if (!upstreamBlock.includes(`[ROOT_STOREFRONT_HOST]: '${contract.canonicalOrigins.storefrontOrigin}'`)) {
     fail('PRODUCTION_DOMAIN_EDGE_H5_UPSTREAM_DRIFT');
   }
-  const upstreamAlias = upstreamBlock.match(hbbtznSubdomain);
-  if (upstreamAlias) fail('PRODUCTION_DOMAIN_EDGE_ALIAS_PROXY_FORBIDDEN', upstreamAlias[0]);
+  for (const alias of Object.keys(contract.proxyAliases)) {
+    const hostname = new URL(alias).hostname;
+    if (!upstreamBlock.includes(`'${hostname}'`) && !upstreamBlock.includes(`[HONGTAI_CONSOLE_HOST]`)) {
+      fail('PRODUCTION_DOMAIN_EDGE_PROXY_MISSING', hostname);
+    }
+  }
 
   const redirectBlock = block(source, 'CANONICAL_REDIRECT_HOSTS');
   const actual = Object.fromEntries([...redirectBlock.matchAll(/'([^']+)':\s*(?:'([^']+)'|(ROOT_STOREFRONT_HOST))/g)]
@@ -240,13 +274,17 @@ function validateOwnerManifest(contract) {
 
 function validateWranglerRoutes(contract) {
   const config = JSON.parse(readFileSync(resolve(repositoryRoot, '02_platform_pingtai/infrastructure/zhudatuan/cloudflare/hbbtzn-alias/wrangler.jsonc'), 'utf8'));
-  const expected = [
-    new URL(contract.frontends.h5.publicOrigin).hostname,
+  const h5Host = new URL(contract.frontends.h5.publicOrigin).hostname;
+  const expectedCustomDomains = [
     ...Object.keys(contract.redirectOnlyAliases).map((origin) => new URL(origin).hostname),
+    ...Object.keys(contract.proxyAliases).map((origin) => new URL(origin).hostname),
   ];
   const routes = config.routes ?? [];
-  if (!sameValues(routes.map((route) => route.pattern), expected)
-    || routes.some((route) => route.custom_domain !== true)) {
+  const h5Route = routes.find((route) => route.pattern === `${h5Host}/*`);
+  const customDomains = routes.filter((route) => route !== h5Route);
+  if (h5Route?.zone_name !== h5Host || h5Route.custom_domain === true
+    || !sameValues(customDomains.map((route) => route.pattern), expectedCustomDomains)
+    || customDomains.some((route) => route.custom_domain !== true)) {
     fail('PRODUCTION_DOMAIN_EDGE_ROUTES_DRIFT');
   }
 }
@@ -257,22 +295,31 @@ function validateRequiredBindings(contract) {
   requireTokens('01_core_hexin/apps/auth-web/src/services/canonicalIdentity.ts', [apiOrigin]);
   requireTokens('01_core_hexin/apps/auth-web/src/services/canonicalRegistration.ts', [apiOrigin]);
   requireTokens('01_core_hexin/apps/auth-web/src/services/auth.ts', [consoleOrigin, h5Origin]);
-  requireTokens('01_core_hexin/apps/auth-web/src/buildEnvironment.ts', [apiOrigin, consoleOrigin, h5Origin]);
+  requireTokens('01_core_hexin/apps/auth-web/src/buildEnvironment.ts', [
+    'VITE_API_BASE_URL',
+    'VITE_ADMIN_ORIGIN',
+    'VITE_STOREFRONT_ORIGIN',
+  ]);
   requireTokens('01_core_hexin/apps/auth-web/index.html', [accountsOrigin]);
   requireTokens('01_core_hexin/apps/storefront-web/src/services/canonicalApiClient.ts', [apiOrigin]);
   requireTokens('01_core_hexin/apps/storefront-web/src/config/storefrontAuth.ts', [accountsOrigin]);
-  requireTokens('01_core_hexin/apps/console/vite.config.ts', [apiOrigin, accountsOrigin]);
+  requireTokens('01_core_hexin/apps/console/src/shared/config/AppConfig.ts', [
+    'clientEnvironment()',
+    'apiBaseUrl',
+    'authBaseUrl',
+  ]);
   requireTokens('01_core_hexin/packages/config/src/IdentityRegistrationApiEnvironment.ts', [accountsOrigin, consoleOrigin, h5Origin]);
 }
 
 function validateRuntimeSources(contract) {
+  const approvedTenantOrigins = Object.keys(contract.proxyAliases);
   for (const entry of runtimeEntries) {
     const files = filesFor(entry, sourceExtensions);
     if (files.length === 0) fail('PRODUCTION_DOMAIN_RUNTIME_ENTRY_MISSING', entry);
     for (const file of files) {
       const relativeFile = file.slice(repositoryRoot.length + 1);
       if (testFile.test(relativeFile)) continue;
-      assertNoHbbtznSubdomain(relativeFile, readFileSync(file, 'utf8'));
+      assertNoHbbtznSubdomain(relativeFile, readFileSync(file, 'utf8'), approvedTenantOrigins);
     }
   }
   validateRequiredBindings(contract);

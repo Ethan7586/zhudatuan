@@ -183,6 +183,7 @@ function commerceEnvironment(values: Readonly<Record<string, string>>): string {
     API_ALLOWED_ORIGINS: 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3002,http://127.0.0.1:3002,http://localhost:5173,http://127.0.0.1:5173',
     AUTH_RETURN_TARGETS: JSON.stringify({
       console: 'http://localhost:5173',
+      'console-hbbtzn': 'http://localhost:5173',
       storefront: 'http://localhost:3000',
       store: 'http://localhost:5173/entrances/store',
       supplier: 'http://localhost:5173/entrances/supplier',

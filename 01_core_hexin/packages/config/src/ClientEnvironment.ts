@@ -1,7 +1,7 @@
 import { browserEnvironment, pickEnvironment, requiredValue, type EnvironmentSource } from './Environment';
 
 export const CLIENT_ENVIRONMENT_KEYS = ['VITE_API_BASE_URL', 'VITE_AUTH_BASE_URL', 'VITE_CLIENT_VERSION'] as const;
-export type AuthTarget = 'console' | 'storefront' | 'store' | 'supplier';
+export type AuthTarget = 'console' | 'console-hbbtzn' | 'storefront' | 'store' | 'supplier';
 
 export interface ClientEnvironment {
   readonly apiBaseUrl: string;

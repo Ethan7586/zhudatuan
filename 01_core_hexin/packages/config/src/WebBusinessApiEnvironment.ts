@@ -13,8 +13,6 @@ export const WEB_BUSINESS_API_PROFILE = 'web-business-only' as const;
 const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([
   'https://console.zhudatuan.com',
   'https://hbbtzn.com',
-  'https://mall.hbbtzn.com',
-  'https://www.hbbtzn.com',
   'https://zhudatuan.com',
 ]);
 const INTERNAL_ALLOWED_ORIGINS = Object.freeze([...PRODUCTION_ALLOWED_ORIGINS, 'https://internal.zhudatuan.com']);
