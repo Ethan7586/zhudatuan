@@ -163,7 +163,7 @@ describe('hbbtzn H5 alias worker', () => {
 
     expect(response.status).toBe(308);
     const target = new URL(response.headers.get('location')!);
-    expect(target.origin).toBe('https://accounts.zhudatuan.com');
+    expect(target.origin).toBe('https://accounts.hbbtzn.com');
     expect(target.pathname).toBe('/');
     expect(target.searchParams.get('target')).toBe('storefront');
     expect(target.searchParams.get('surface')).toBe('web');

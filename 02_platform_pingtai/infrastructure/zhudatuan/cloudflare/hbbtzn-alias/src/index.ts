@@ -4,6 +4,7 @@ const ACCOUNTS_UPSTREAM_ORIGIN = 'https://accounts.zhudatuan.com';
 const CONSOLE_UPSTREAM_ORIGIN = 'https://console.zhudatuan.com';
 const HONGTAI_CONSOLE_HOST = 'console.hbbtzn.com';
 const HONGTAI_CONSOLE_ORIGIN = `https://${HONGTAI_CONSOLE_HOST}`;
+const HONGTAI_ACCOUNTS_ORIGIN = 'https://accounts.hbbtzn.com';
 const HONGTAI_CONSOLE_SCOPE = '/scopes/mall/mall%3Ad1708f04df2dd8a61736852c4900fb43/cockpit';
 const HONGTAI_CONTROL_ASSET_PREFIX = '/__hbbtzn-v1/assets/';
 const CONSUMER_ACCOUNT_PATH = '/accounts';
@@ -207,7 +208,7 @@ const worker = {
     if (!upstreamOrigin) return new Response('Not Found', { status: 404 });
 
     if (incoming.hostname === ROOT_STOREFRONT_HOST && isConsumerAccountPath(incoming.pathname)) {
-      const target = new URL(`${consumerAccountUpstreamPath(incoming.pathname)}${incoming.search}`, ACCOUNTS_UPSTREAM_ORIGIN);
+      const target = new URL(`${consumerAccountUpstreamPath(incoming.pathname)}${incoming.search}`, HONGTAI_ACCOUNTS_ORIGIN);
       target.searchParams.set('target', 'storefront');
       target.searchParams.set('surface', 'web');
       target.searchParams.set('application', HONGTAI_CONSUMER_APPLICATION);
