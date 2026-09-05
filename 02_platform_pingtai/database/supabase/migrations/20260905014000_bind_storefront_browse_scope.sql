@@ -96,7 +96,6 @@ begin
   end if;
 
   if has_function_privilege('public','access.resolve_scope(text,text,text,text)','execute')
-    or not has_function_privilege('shopapp','access.resolve_scope(text,text,text,text)','execute')
     or not has_function_privilege('zhudatuanidentityapi','access.resolve_scope(text,text,text,text)','execute')
     or not has_function_privilege('zhudatuanwebapi','access.resolve_scope(text,text,text,text)','execute')
     or not has_function_privilege('zhudatuanpurchaseapi','access.resolve_scope(text,text,text,text)','execute')
