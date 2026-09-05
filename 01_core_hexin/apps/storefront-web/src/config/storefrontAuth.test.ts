@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CANONICAL_STOREFRONT_AUTH_ORIGIN, LOCAL_STOREFRONT_AUTH_ORIGIN, resolveStorefrontAuthOrigin, storefrontAuthHref } from './storefrontAuth';
+import { HONGTAI_STOREFRONT_APPLICATION, resolveStorefrontApplication, ZHUDATUAN_STOREFRONT_APPLICATION } from './storefrontIdentity';
 
 describe('storefront auth origin boundary', () => {
   it('always uses the canonical account center in production', () => {
@@ -16,6 +17,16 @@ describe('storefront auth origin boundary', () => {
   });
 
   it('opens the account center in consumer mode', () => {
-    expect(storefrontAuthHref()).toContain('?target=storefront');
+    const target = new URL(storefrontAuthHref('internal.zhudatuan.com'));
+    expect(target.searchParams.get('target')).toBe('storefront');
+    expect(target.searchParams.get('surface')).toBe('web');
+    expect(target.searchParams.get('application')).toBe(ZHUDATUAN_STOREFRONT_APPLICATION);
+  });
+
+  it('keeps zhudatuan and hongtai storefront identities separate', () => {
+    expect(resolveStorefrontApplication('zhudatuan.com')).toBe(ZHUDATUAN_STOREFRONT_APPLICATION);
+    expect(resolveStorefrontApplication('internal.zhudatuan.com')).toBe(ZHUDATUAN_STOREFRONT_APPLICATION);
+    expect(resolveStorefrontApplication('beta.zhudatuan.com')).toBe(ZHUDATUAN_STOREFRONT_APPLICATION);
+    expect(resolveStorefrontApplication('mall.hbbtzn.com')).toBe(HONGTAI_STOREFRONT_APPLICATION);
   });
 });

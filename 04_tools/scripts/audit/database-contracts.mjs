@@ -151,6 +151,7 @@ const REPAIR_FILES = [
   '20260905012000_honor_invitation_scope_hint.sql',
   '20260905013000_registration_invite_role_projection.sql',
   '20260905014000_bind_storefront_browse_scope.sql',
+  '20260905203000_provision_zhudatuan_storefront_application.sql',
 ];
 
 const mode = process.argv[2];

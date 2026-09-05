@@ -13,7 +13,6 @@ export type { ApiAccount, ApiAccountLedger, ApiActor, ApiAfterSale, ApiBootstrap
 
 type CatalogOptions = { category?: string; cursor?: string; limit?: number };
 
-const DEFAULT_STOREFRONT_APPLICATION = 'zdt-l1-verify';
 
 interface StorefrontAuthorization {
   request: Readonly<{ state: string; nonce: string; challenge: string }>;
@@ -154,7 +153,7 @@ async function publicCatalog(options: CatalogOptions): Promise<{ items: ApiProdu
 
 async function publicStorefront(): Promise<{ id: string; name: string }> {
   const value = await canonicalCall(() => canonicalClient().identity.storefrontsRead({
-    body: { application: DEFAULT_STOREFRONT_APPLICATION },
+    body: { application: resolveStorefrontApplication() },
   }, anonymousIdempotentContext()));
   const payload = record(value, 'identity.storefront');
   return {
@@ -324,3 +323,4 @@ export const productionApi = {
   checkout: checkoutWithCanonicalPayment,
   readPaymentResult: readCanonicalPaymentResult,
 };
+import { resolveStorefrontApplication } from '../config/storefrontIdentity';

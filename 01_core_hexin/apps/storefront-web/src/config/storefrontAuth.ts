@@ -1,3 +1,5 @@
+import { resolveStorefrontApplication } from './storefrontIdentity';
+
 export const CANONICAL_STOREFRONT_AUTH_ORIGIN = 'https://accounts.hbbtzn.com';
 export const LOCAL_STOREFRONT_AUTH_ORIGIN = 'http://127.0.0.1:3002';
 
@@ -17,8 +19,10 @@ export function resolveStorefrontAuthOrigin(candidate: string | undefined, envir
   return LOCAL_STOREFRONT_AUTH_ORIGIN;
 }
 
-export function storefrontAuthHref(): string {
+export function storefrontAuthHref(hostname?: string): string {
   const target = new URL('/', resolveStorefrontAuthOrigin(process.env.NEXT_PUBLIC_AUTH_ORIGIN, process.env.NODE_ENV));
   target.searchParams.set('target', 'storefront');
+  target.searchParams.set('surface', 'web');
+  target.searchParams.set('application', resolveStorefrontApplication(hostname));
   return target.toString();
 }
