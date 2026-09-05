@@ -33,6 +33,11 @@ interface SourceSecret {
 }
 
 const BACKFILL = '20260821026000_backfill_domain_data.sql';
+const APPLIED_VERSION_ALIASES: Readonly<Record<string, string>> = Object.freeze({
+  '20260901220000': '20260901190000',
+  '20260901221000': '20260901191000',
+  '20260901222000': '20260901192000',
+});
 
 export class MigrationRunner {
   constructor(
@@ -93,7 +98,11 @@ export class MigrationRunner {
 
   private async applied(client: PoolClient): Promise<Set<string>> {
     const result = await client.query<{ readonly version: string }>('select version from supabase_migrations.schema_migrations');
-    return new Set(result.rows.map((row) => row.version));
+    const applied = new Set(result.rows.map((row) => row.version));
+    for (const [recorded, current] of Object.entries(APPLIED_VERSION_ALIASES)) {
+      if (applied.has(recorded)) applied.add(current);
+    }
+    return applied;
   }
 
   private async stageSecrets(client: PoolClient): Promise<void> {
