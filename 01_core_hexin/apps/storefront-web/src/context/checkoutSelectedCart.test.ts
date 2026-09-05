@@ -1,7 +1,12 @@
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MOCK_ADDRESSES, MOCK_USER } from '../mock/base';
 import type { CartItem } from '../types';
-import { checkoutSelectedCartRequest } from './checkoutSelectedCart';
+import { checkoutSelectedCartRequest, PaymentPhoneVerificationRequired } from './checkoutSelectedCart';
+
+const contextRoot = dirname(fileURLToPath(import.meta.url));
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -43,14 +48,22 @@ describe('checkout identity assurance', () => {
       },
     ];
 
-    await expect(
-      checkoutSelectedCartRequest(cart, MOCK_ADDRESSES, {
+    const checkout = checkoutSelectedCartRequest(cart, MOCK_ADDRESSES, {
         ...MOCK_USER,
         assuranceLevel: 'account',
         phoneVerified: false,
         paymentEligible: false,
-      })
-    ).rejects.toThrow('手机尚未验证');
+      });
+
+    await expect(checkout).rejects.toBeInstanceOf(PaymentPhoneVerificationRequired);
     expect(network).not.toHaveBeenCalled();
+  });
+
+  it('routes payment verification through the existing OTP modal before retrying checkout', () => {
+    const context = readFileSync(resolve(contextRoot, 'MallContext.tsx'), 'utf8');
+
+    expect(context).toContain('error instanceof PaymentPhoneVerificationRequired');
+    expect(context).toContain('<PaymentPhoneVerificationModal');
+    expect(context).toContain('await submitSelectedCart(verifiedUser)');
   });
 });

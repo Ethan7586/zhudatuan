@@ -4,12 +4,13 @@ import { productionApi, ProductionApiError } from '../services/productionApi';
 import { toFrontendCategories, toFrontendOrders, toFrontendProducts } from '../adapters/frontendData';
 import type { AndroidAppPage, AppMode, LaptopPage, LoginCredentials, MallContextType, MiniProgramPage, PageRoute, PendingFeatureInfo, RouteParams, SessionStatus, TabletOrientation, TabletPage, ViewportMode } from './MallContext.types';
 import { useDeviceNavigation } from './useDeviceNavigation';
-import { checkoutSelectedCartRequest } from './checkoutSelectedCart';
+import { checkoutSelectedCartRequest, PaymentPhoneVerificationRequired } from './checkoutSelectedCart';
 import { useProductionSync } from './useProductionSync';
 import { useToasts } from './useToasts';
 import { mapApiCartItems } from './mallMappers';
 import { guestStorefrontProfile } from './guestStorefrontProfile';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
+import { PaymentPhoneVerificationModal } from '../components/mobile/PaymentPhoneVerificationModal';
 export type * from './MallContext.types';
 const MallContext = createContext<MallContextType | undefined>(undefined);
 
@@ -56,6 +57,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const [catalogSyncStatus, setCatalogSyncStatus] = useState<'idle' | 'syncing' | 'ready' | 'error'>(isShowcase ? 'ready' : 'idle');
   const [sessionError, setSessionError] = useState<string | null>(null);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const [paymentPhoneVerificationOpen, setPaymentPhoneVerificationOpen] = useState(false);
   const [activePaymentId, setActivePaymentId] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>(() => (showcaseService ? showcaseService.getFavorites() : []));
   const [addresses, setAddresses] = useState<DeliveryAddress[]>(() => (showcaseService ? showcaseService.getAddresses() : []));
@@ -277,14 +279,14 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     }
   };
 
-  const checkoutSelectedCart = async (): Promise<boolean> => {
+  const submitSelectedCart = async (checkoutUser: UserProfile): Promise<boolean> => {
     if (sessionStatus !== 'authenticated') {
       showToast('请先登录账户，再提交订单', 'warning');
       return false;
     }
     setIsSubmittingOrder(true);
     try {
-      const checkout = await checkoutSelectedCartRequest(cart, addresses, user);
+      const checkout = await checkoutSelectedCartRequest(cart, addresses, checkoutUser);
       const { selectedItems } = checkout;
       setActivePaymentId(checkout.paymentId);
       await Promise.all(selectedItems.map((item) => productionApi.deleteCartItem(item.id)));
@@ -295,12 +297,30 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       else showToast('微信支付已提交，订单正在确认到账', 'info');
       return true;
     } catch (error) {
+      if (error instanceof PaymentPhoneVerificationRequired) {
+        setPaymentPhoneVerificationOpen(true);
+        return false;
+      }
       const message = error instanceof ProductionApiError ? error.message : '订单服务暂时不可用';
       showToast(`订单提交失败：${message}`, 'error');
       return false;
     } finally {
       setIsSubmittingOrder(false);
     }
+  };
+
+  const checkoutSelectedCart = (): Promise<boolean> => submitSelectedCart(user);
+
+  const completePaymentPhoneVerification = async (): Promise<void> => {
+    const verifiedUser: UserProfile = {
+      ...user,
+      assuranceLevel: 'phone',
+      phoneVerified: true,
+      paymentEligible: true,
+    };
+    setUser(verifiedUser);
+    setPaymentPhoneVerificationOpen(false);
+    await submitSelectedCart(verifiedUser);
   };
 
   const handleToggleFavorite = (productId: string) => {
@@ -377,6 +397,13 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       }}
     >
       {children}
+      {paymentPhoneVerificationOpen && sessionStatus === 'authenticated' && (
+        <PaymentPhoneVerificationModal
+          phone={user.phone}
+          onClose={() => setPaymentPhoneVerificationOpen(false)}
+          onVerified={completePaymentPhoneVerification}
+        />
+      )}
     </MallContext.Provider>
   );
 };
