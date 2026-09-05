@@ -272,6 +272,7 @@ insert into runtime.event(type,version,owner,schema_ref) values
   ('checkout.quote.confirmed',1,'checkout','contract://events/checkout.quote.confirmed/v1'),
   ('order.placed',1,'order','contract://events/order.placed/v1'),
   ('order.paid',1,'order','contract://events/order.paid/v1'),
+  ('order.received',1,'order','contract://events/order.received/v1'),
   ('order.cancelled',1,'order','contract://events/order.cancelled/v1'),
   ('payment.succeeded',1,'payment','contract://events/payment.succeeded/v1'),
   ('payment.refunded',1,'payment','contract://events/payment.refunded/v1'),
@@ -1344,6 +1345,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='private' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','36eef1658ad526aa97e1c6accf7191eea06e5ba2d84f777e2b840f3934d043e3');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','de0778654f4144bbaafc351c252c5679cf9dcf214fed4b10331419aa2b64a539');
 
 commit;

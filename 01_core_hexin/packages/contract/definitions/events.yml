@@ -83,21 +83,28 @@ events:
     schema: contract://events/order.placed/v1
     serializer: 01_core_hexin/packages/contract/src/EventSerializer.ts
     schemaRegistry: 01_core_hexin/services/commerce/src/app/events.ts
-    handlers: [projection]
+    handlers: [projection, referral]
   - id: order.paid
     owner: order
     version: 1
     schema: contract://events/order.paid/v1
     serializer: 01_core_hexin/packages/contract/src/EventSerializer.ts
     schemaRegistry: 01_core_hexin/services/commerce/src/app/events.ts
-    handlers: [projection]
+    handlers: [projection, referral]
+  - id: order.received
+    owner: order
+    version: 1
+    schema: contract://events/order.received/v1
+    serializer: 01_core_hexin/packages/contract/src/EventSerializer.ts
+    schemaRegistry: 01_core_hexin/services/commerce/src/app/events.ts
+    handlers: [referral]
   - id: order.cancelled
     owner: order
     version: 1
     schema: contract://events/order.cancelled/v1
     serializer: 01_core_hexin/packages/contract/src/EventSerializer.ts
     schemaRegistry: 01_core_hexin/services/commerce/src/app/events.ts
-    handlers: [projection]
+    handlers: [projection, referral]
   - id: payment.succeeded
     owner: payment
     version: 1
@@ -111,7 +118,7 @@ events:
     schema: contract://events/payment.refunded/v1
     serializer: 01_core_hexin/packages/contract/src/EventSerializer.ts
     schemaRegistry: 01_core_hexin/services/commerce/src/app/events.ts
-    handlers: [projection, notification, reconciliation]
+    handlers: [projection, notification, reconciliation, referral]
   - id: payment.late.detected
     owner: payment
     version: 1

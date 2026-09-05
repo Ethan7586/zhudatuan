@@ -18,6 +18,7 @@ import { ReconciliationJobProcessor } from '../modules/finance/05_interface_jier
 import { SettlementJobProcessor } from '../modules/finance/05_interface_jieru/job/SettlementJob';
 import { InvoiceJobProcessor } from '../modules/finance/05_interface_jieru/job/InvoiceJob';
 import { FinanceDeadletter } from '../modules/finance/05_interface_jieru/job/FinanceDeadletter';
+import { ReferralEventJobProcessor } from '../modules/referral/05_interface_jieru/job/ReferralEventJob';
 import { FulfillmentJobProcessor } from '../modules/fulfillment/FulfillmentJobs';
 import { ExperienceJobProcessor } from '../modules/experience/ExperienceJobs';
 import { CACHE } from '../foundation/cache/Cache';
@@ -90,6 +91,7 @@ export const JOB_CATALOG = Object.freeze([
   registerJob({ id: 'voucherstatus', owner: 'voucher', queue: 'benefit', concurrency: 16, timeout: 30_000, retry, lease: 60, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: '05_docs_ziliao/docs_wendang/operations/voucherstatus.md', worker }),
   registerJob({ id: 'voucherexpiry', owner: 'voucher', queue: 'benefit', concurrency: 8, timeout: 30_000, retry, lease: 60, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: '05_docs_ziliao/docs_wendang/operations/voucherexpiry.md', worker }),
   registerJob({ id: 'reconciliation', owner: 'finance', queue: 'finance', concurrency: 4, timeout: 120_000, retry, lease: 180, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: '05_docs_ziliao/docs_wendang/operations/reconciliation.md', worker }),
+  registerJob({ id: 'referral', owner: 'referral', queue: 'finance', concurrency: 8, timeout: 30_000, retry, lease: 60, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: '05_docs_ziliao/docs_wendang/operations/referral.md', worker }),
   registerJob({ id: 'settlement', owner: 'finance', queue: 'finance', concurrency: 4, timeout: 120_000, retry, lease: 180, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: '05_docs_ziliao/docs_wendang/operations/settlement.md', worker }),
   registerJob({ id: 'invoice', owner: 'finance', queue: 'finance', concurrency: 4, timeout: 60_000, retry, lease: 90, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: '05_docs_ziliao/docs_wendang/operations/invoice.md', worker }),
   registerJob({ id: 'notification', owner: 'notification', queue: 'notification', concurrency: 32, timeout: 15_000, retry, lease: 30, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: '05_docs_ziliao/docs_wendang/operations/notification.md', worker }),
@@ -145,6 +147,7 @@ export function registerJobs(registry: JobRegistry, container: Container, extens
     voucherstatus: new VoucherJobProcessor(pool, kms, 'voucherstatus'),
     voucherexpiry: new VoucherJobProcessor(pool, kms, 'voucherexpiry'),
     reconciliation: new ReconciliationJobProcessor(pool, objects),
+    referral: new ReferralEventJobProcessor(pool),
     settlement: new SettlementJobProcessor(pool, payouts),
     invoice: new InvoiceJobProcessor(pool, objects, kms, invoices),
     notification: new NotificationJobProcessor(new DispatchNotification(new PgNotificationRepository(pool), kms, deliveries)),

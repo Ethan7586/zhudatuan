@@ -26,7 +26,7 @@ export const orderManifest = defineModuleManifest({
     'order.aftersales.approve',
     'order.aftersales.reject',
   ],
-  publishes: ['checkout.quote.confirmed', 'inventory.stock.reserved', 'order.placed'],
+  publishes: ['checkout.quote.confirmed', 'inventory.stock.reserved', 'order.placed', 'order.received'],
   consumes: [],
   publicEntry: './index.ts',
   layers: ['public', 'domain', 'application', 'interface', 'tests'],

@@ -15,6 +15,7 @@ export const SERIALIZED_EVENT_TYPES = Object.freeze([
   'checkout.quote.confirmed',
   'order.placed',
   'order.paid',
+  'order.received',
   'order.cancelled',
   'payment.succeeded',
   'payment.refunded',

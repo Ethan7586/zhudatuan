@@ -67,6 +67,11 @@
     },
     {
       "module": "order",
+      "type": "order.received",
+      "version": 1
+    },
+    {
+      "module": "order",
       "type": "order.cancelled",
       "version": 1
     },

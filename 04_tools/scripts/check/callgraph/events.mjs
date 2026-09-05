@@ -5,7 +5,8 @@ const handlerTargets = Object.freeze({
   experiencepublish: '01_core_hexin/services/commerce/src/modules/experience/ExperienceJobs.ts',
   notification: '01_core_hexin/services/commerce/src/modules/notification/interface/job/NotificationJob.ts',
   projection: '01_core_hexin/services/commerce/src/modules/reporting/interface/job/ProjectionJob.ts',
-  reconciliation: '01_core_hexin/services/commerce/src/modules/finance/interface/job/ReconciliationJob.ts',
+  reconciliation: '01_core_hexin/services/commerce/src/modules/finance/05_interface_jieru/job/ReconciliationJob.ts',
+  referral: '01_core_hexin/services/commerce/src/modules/referral/05_interface_jieru/job/ReferralEventJob.ts',
 });
 const handlerRegistry = '01_core_hexin/services/commerce/src/app/events.ts';
 

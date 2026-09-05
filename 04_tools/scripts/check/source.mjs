@@ -5,8 +5,14 @@ import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-export const sourceRoots = ['apps', 'services', 'packages', 'extensions', 'tools'].map((name) => path.join(root, name));
-export const testRoots = [...sourceRoots, path.join(root, 'tests')];
+export const sourceRoots = [
+  '01_core_hexin/apps',
+  '01_core_hexin/services',
+  '01_core_hexin/packages',
+  '01_core_hexin/extensions',
+  '04_tools/tools',
+].map((name) => path.join(root, name));
+export const testRoots = [...sourceRoots, path.join(root, '03_quality_ceshi/tests')];
 export const sourceExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs']);
 export const assetExtensions = new Set(['.css', '.gif', '.ico', '.jpeg', '.jpg', '.png', '.scss', '.svg', '.webp', '.wxss']);
 export const ignoredParts = new Set(['.git', '.next', '.open-next', '.turbo', 'build', 'coverage', 'dist', 'node_modules', 'out', 'storybook-static']);

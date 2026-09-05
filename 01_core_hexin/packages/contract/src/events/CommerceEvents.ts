@@ -15,6 +15,7 @@ export const COMMERCE_EVENTS = Object.freeze([
   eventContract({"type":"checkout.quote.confirmed","version":1,"module":"checkout"}),
   eventContract({"type":"order.placed","version":1,"module":"order"}),
   eventContract({"type":"order.paid","version":1,"module":"order"}),
+  eventContract({"type":"order.received","version":1,"module":"order"}),
   eventContract({"type":"order.cancelled","version":1,"module":"order"}),
   eventContract({"type":"payment.succeeded","version":1,"module":"payment"}),
   eventContract({"type":"payment.refunded","version":1,"module":"payment"}),
