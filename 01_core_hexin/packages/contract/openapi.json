@@ -27048,6 +27048,162 @@
         "x-stepup": false
       }
     },
+    "/api/v1/payments/intents/{paymentid}": {
+      "get": {
+        "operationId": "payment.intents.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "paymentid",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "204": {
+            "description": "Success without content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "payment.intents.read",
+        "tags": [
+          "payment"
+        ],
+        "x-audience": "member",
+        "x-availability": "runtime",
+        "x-execution": "sync",
+        "x-expected-version": "none",
+        "x-idempotency": "none",
+        "x-idempotent": true,
+        "x-permission": "payment.create",
+        "x-requirements": [
+          "MVP03",
+          "MVP04",
+          "MVP05",
+          "MVP06",
+          "MVP07",
+          "MVP08",
+          "MVP09",
+          "MVP10",
+          "MVP11",
+          "MVP12",
+          "MVP13",
+          "MVP14",
+          "MVP15",
+          "MVP16",
+          "MVP17",
+          "MVP18",
+          "MVP19",
+          "MVP20",
+          "MVP21",
+          "MVP22",
+          "MVP23"
+        ],
+        "x-risk": "high",
+        "x-schema-fidelity": "structural",
+        "x-scope-kinds": [
+          "owner"
+        ],
+        "x-stepup": false
+      }
+    },
     "/api/v1/payments/recoveries": {
       "get": {
         "operationId": "payment.recoveries.read",

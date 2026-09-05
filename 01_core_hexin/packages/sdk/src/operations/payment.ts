@@ -6,6 +6,7 @@ import { bindOperation, defineStructuralOperation, type OperationExecutor, type 
 
 export const PAYMENT_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "payment.intents.create",
+  "payment.intents.read",
   "payment.refunds.request",
   "payment.recoveries.read",
   "payment.recoveries.resolve",
@@ -14,6 +15,7 @@ export const PAYMENT_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
 
 export interface PaymentOperations {
   readonly intentsCreate: OperationMethod<"payment.intents.create">;
+  readonly intentsRead: OperationMethod<"payment.intents.read">;
   readonly refundsRequest: OperationMethod<"payment.refunds.request">;
   readonly recoveriesRead: OperationMethod<"payment.recoveries.read">;
   readonly recoveriesResolve: OperationMethod<"payment.recoveries.resolve">;
@@ -27,6 +29,7 @@ export function createFetchPayment(baseUrl: string): PaymentOperations {
 export function createPaymentOperations(client: OperationExecutor): PaymentOperations {
   return Object.freeze({
     intentsCreate: bindIntentsCreate(client),
+    intentsRead: bindIntentsRead(client),
     refundsRequest: bindRefundsRequest(client),
     recoveriesRead: bindRecoveriesRead(client),
     recoveriesResolve: bindRecoveriesResolve(client),
@@ -40,6 +43,14 @@ export function createFetchPaymentIntentsCreate(baseUrl: string): OperationMetho
 
 function bindIntentsCreate(client: OperationExecutor): OperationMethod<"payment.intents.create"> {
   return bindOperation(client, defineStructuralOperation({"id":"payment.intents.create","method":"POST","path":"/api/v1/payments/intents","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+}
+
+export function createFetchPaymentIntentsRead(baseUrl: string): OperationMethod<"payment.intents.read"> {
+  return bindIntentsRead(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindIntentsRead(client: OperationExecutor): OperationMethod<"payment.intents.read"> {
+  return bindOperation(client, defineStructuralOperation({"id":"payment.intents.read","method":"GET","path":"/api/v1/payments/intents/{paymentid}","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":["paymentid"]}));
 }
 
 export function createFetchPaymentRefundsRequest(baseUrl: string): OperationMethod<"payment.refunds.request"> {

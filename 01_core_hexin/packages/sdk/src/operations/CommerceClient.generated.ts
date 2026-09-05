@@ -182,6 +182,7 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "fulfillment.returns.receive",
   "fulfillment.returns.inspect",
   "payment.intents.create",
+  "payment.intents.read",
   "verification.challenges.issue",
   "verification.sessions.read",
   "verification.challenges.verify",

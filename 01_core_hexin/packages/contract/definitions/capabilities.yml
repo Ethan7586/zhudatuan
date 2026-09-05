@@ -490,6 +490,11 @@ capabilities:
     owner: payment
     permission: payment.create
     audience: member
+  - code: payment.intents.read
+    kind: operation
+    owner: payment
+    permission: payment.create
+    audience: member
   - code: verification.challenges.issue
     kind: operation
     owner: verification

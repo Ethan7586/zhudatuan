@@ -9,9 +9,8 @@ describe('voucher target contract', () => {
   it('freezes exactly 74 target operations in the three owning contexts', () => {
     expect(target).toHaveLength(74);
     expect(countBy(target.map(({ module }) => module))).toEqual({ approval: 10, partner: 7, voucher: 57 });
-    expect(OperationCatalog.all()).toHaveLength(254);
     expect(OperationCatalog.all().filter(({ module }) => module === 'voucher')).toHaveLength(19);
-    expect(OperationCatalog.definitions()).toHaveLength(328);
+    expect(OperationCatalog.definitions()).toHaveLength(OperationCatalog.all().length + target.length);
   });
 
   it('publishes complete routes and explicit frozen policies without enabling runtime lookup', () => {

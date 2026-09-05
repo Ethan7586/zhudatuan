@@ -9,6 +9,8 @@ import { DATABASE_POOL, type DatabasePool } from '../../../../foundation/persist
 import { PAYMENT_GATEWAY, type PaymentGateway } from '../../01_public_gongkai/ports_jiekou/PaymentGateway';
 import { PaymentSettlement } from '../../03_application_yingyong/services_fuwu/PaymentSettlement';
 import { RefundPlanner } from '../../03_application_yingyong/services_fuwu/RefundPlanner';
+import { ReadPaymentIntent } from '../../03_application_yingyong/queries_duqu/ReadPaymentIntent';
+import { PgPaymentIntentReader } from '../../04_adapters_shixian/persistence_cunchu/PgPaymentIntentReader';
 import { PaymentReference } from '../../02_domain_yewu/models_moxing/PaymentReference';
 import { orderPort } from '../../../order_dingdan';
 import { claimPaymentRequest as claimRequest, completePaymentRequest as completeRequest, enqueuePaymentRecovery as enqueueRecovery,
@@ -29,17 +31,31 @@ export function paymentOperations(context: ModuleContext): OperationUsecase {
 class PaymentOperations implements OperationUsecase {
   private readonly settlement = new PaymentSettlement();
   private readonly refunds = new RefundPlanner();
+  private readonly intentQuery: ReadPaymentIntent;
   private readonly webhook: PaymentWebhook;
   constructor(private readonly pool: DatabasePool, private readonly gateway: PaymentGateway, private readonly kms: KmsClient,
-    private readonly audit: AuditSink) { this.webhook = new PaymentWebhook(pool, gateway, audit); }
+    private readonly audit: AuditSink) {
+    this.intentQuery = new ReadPaymentIntent(new PgPaymentIntentReader(pool.workload('query')));
+    this.webhook = new PaymentWebhook(pool, gateway, audit);
+  }
 
   async invoke(request: OperationRequest): Promise<OperationResult> {
     if (request.type === 'payment.intents.create') return this.create(request);
+    if (request.type === 'payment.intents.read') return this.readIntent(request);
     if (request.type === 'payment.refunds.request') return this.refund(request);
     if (request.type === 'payment.recoveries.read') return this.readRecoveries(request);
     if (request.type === 'payment.recoveries.resolve') return this.resolveRecovery(request);
     if (request.type === 'payment.webhooks.wechat') return this.webhook.handle(request);
     throw new Error(`OPERATION_ACTION_MISSING:${request.type}`);
+  }
+
+  private async readIntent(request: OperationRequest): Promise<OperationResult> {
+    const access = requireAccess(request);
+    const mall = access.mall_id;
+    if (!mall) throw new Error('SCOPE_DENIED');
+    const payment = request.input.path.paymentid;
+    if (!payment) throw new Error('VALIDATION_FAILED:paymentid');
+    return { status: 200, body: await this.intentQuery.execute({ payment, membership: access.membership.id, mall }) };
   }
 
   private async create(request: OperationRequest): Promise<OperationResult> {

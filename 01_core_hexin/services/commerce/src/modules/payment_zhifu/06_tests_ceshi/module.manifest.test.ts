@@ -11,6 +11,7 @@ describe('payment module manifest', () => {
 
   it('declares the implemented payment operations and entrypoints', () => {
     expect(paymentManifest.operations).toContain('payment.intents.create');
+    expect(paymentManifest.operations).toContain('payment.intents.read');
     expect(paymentManifest.operations).toContain('payment.webhooks.wechat');
     expect(paymentManifest.entrypoints.jobs).toEqual(['PaymentJobProcessor']);
   });

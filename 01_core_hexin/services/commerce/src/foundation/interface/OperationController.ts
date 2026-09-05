@@ -117,6 +117,7 @@ export const CONTROLLER_OPERATION_IDS = Object.freeze([
   'fulfillment.returns.receive',
   'fulfillment.returns.inspect',
   'payment.intents.create',
+  'payment.intents.read',
   'verification.challenges.issue',
   'verification.sessions.read',
   'verification.challenges.verify',

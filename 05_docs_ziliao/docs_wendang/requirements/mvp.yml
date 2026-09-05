@@ -51,6 +51,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -189,6 +190,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -330,6 +332,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -454,6 +457,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -588,6 +592,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -712,6 +717,7 @@ requirements:
       - fulfillment.returns.receive
       - fulfillment.returns.inspect
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -832,6 +838,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -1048,6 +1055,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -1209,6 +1217,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -1325,6 +1334,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -1486,6 +1496,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -1628,6 +1639,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -1752,6 +1764,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -1886,6 +1899,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -2009,6 +2023,7 @@ requirements:
       - fulfillment.returns.receive
       - fulfillment.returns.inspect
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -2132,6 +2147,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -2347,6 +2363,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -2507,6 +2524,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -2625,6 +2643,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -2787,6 +2806,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify
@@ -2932,6 +2952,7 @@ requirements:
       - order.reminders.create
       - fulfillment.tracking.read
       - payment.intents.create
+      - payment.intents.read
       - verification.challenges.issue
       - verification.sessions.read
       - verification.challenges.verify

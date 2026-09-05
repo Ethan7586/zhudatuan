@@ -1485,6 +1485,18 @@ operations:
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
     sdk: 01_core_hexin/packages/sdk/src/operations/payment.ts
+  - id: payment.intents.read
+    owner: payment
+    method: GET
+    path: /api/v1/payments/intents/{paymentid}
+    audience: member
+    permission: payment.create
+    idempotent: true
+    schema: structural
+    requirements: *a1
+    controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
+    handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: 01_core_hexin/packages/sdk/src/operations/payment.ts
   - id: verification.challenges.issue
     owner: verification
     method: POST

@@ -18,6 +18,7 @@ export const paymentManifest = defineModuleManifest({
   ],
   operations: [
     'payment.intents.create',
+    'payment.intents.read',
     'payment.refunds.request',
     'payment.recoveries.read',
     'payment.recoveries.resolve',
