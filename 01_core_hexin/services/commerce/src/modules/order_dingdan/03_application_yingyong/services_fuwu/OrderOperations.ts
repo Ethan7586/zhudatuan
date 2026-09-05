@@ -11,6 +11,7 @@ import { BenefitPort } from '../../../benefit';
 import { FinancePort } from '../../../finance';
 import { VoucherPort } from '../../../voucher';
 import { Order, type AftersaleState, type CommerceState, type FulfillmentState, type PaymentState } from '../../02_domain_yewu/models_moxing/Order';
+import { confirmOrderReceiptOperations } from '../commands_xieru/ConfirmOrderReceipt';
 import { PlaceOrder } from '../commands_xieru/PlaceOrder';
 import { createReportingExport } from '../../../reporting';
 
@@ -43,6 +44,7 @@ export function orderOperations(context: ModuleContext): ModuleOperations {
         group by orders.id order by orders.created_at desc,orders.id desc limit $8`, [owner, access.scope.id, supplier, store, order, page.sort, page.id, page.fetch]);
       return keysetResult(result, page, 'created_at');
     },
+    ...confirmOrderReceiptOperations(),
     'order.reminders.create': async (request, database) => {
       const access = requireAccess(request);
       const result = await database.query(`insert into ordering.reminder(id,order_id,member_id,kind,state,created_at)

@@ -19,6 +19,7 @@ export const orderManifest = defineModuleManifest({
   operations: [
     'order.orders.create',
     'order.orders.read',
+    'order.orders.receive',
     'order.reminders.create',
     'order.orders.export',
     'order.aftersales.read',

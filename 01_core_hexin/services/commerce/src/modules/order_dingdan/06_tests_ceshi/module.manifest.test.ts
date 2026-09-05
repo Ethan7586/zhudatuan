@@ -12,6 +12,7 @@ describe('order module manifest', () => {
     expect(orderManifest.operations).toEqual([
       'order.orders.create',
       'order.orders.read',
+      'order.orders.receive',
       'order.reminders.create',
       'order.orders.export',
       'order.aftersales.read',

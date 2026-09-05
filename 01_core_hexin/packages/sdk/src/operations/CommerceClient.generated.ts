@@ -170,6 +170,7 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "checkout.quote.create",
   "order.orders.create",
   "order.orders.read",
+  "order.orders.receive",
   "order.reminders.create",
   "order.orders.export",
   "order.aftersales.read",

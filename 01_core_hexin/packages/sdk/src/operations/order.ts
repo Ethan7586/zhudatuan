@@ -7,6 +7,7 @@ import { bindOperation, defineStructuralOperation, type OperationExecutor, type 
 export const ORDER_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "order.orders.create",
   "order.orders.read",
+  "order.orders.receive",
   "order.reminders.create",
   "order.orders.export",
   "order.aftersales.read",
@@ -18,6 +19,7 @@ export const ORDER_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
 export interface OrderOperations {
   readonly ordersCreate: OperationMethod<"order.orders.create">;
   readonly ordersRead: OperationMethod<"order.orders.read">;
+  readonly ordersReceive: OperationMethod<"order.orders.receive">;
   readonly remindersCreate: OperationMethod<"order.reminders.create">;
   readonly ordersExport: OperationMethod<"order.orders.export">;
   readonly aftersalesRead: OperationMethod<"order.aftersales.read">;
@@ -34,6 +36,7 @@ export function createOrderOperations(client: OperationExecutor): OrderOperation
   return Object.freeze({
     ordersCreate: bindOrdersCreate(client),
     ordersRead: bindOrdersRead(client),
+    ordersReceive: bindOrdersReceive(client),
     remindersCreate: bindRemindersCreate(client),
     ordersExport: bindOrdersExport(client),
     aftersalesRead: bindAftersalesRead(client),
@@ -57,6 +60,14 @@ export function createFetchOrderOrdersRead(baseUrl: string): OperationMethod<"or
 
 function bindOrdersRead(client: OperationExecutor): OperationMethod<"order.orders.read"> {
   return bindOperation(client, defineStructuralOperation({"id":"order.orders.read","method":"GET","path":"/api/v1/orders","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+}
+
+export function createFetchOrderOrdersReceive(baseUrl: string): OperationMethod<"order.orders.receive"> {
+  return bindOrdersReceive(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindOrdersReceive(client: OperationExecutor): OperationMethod<"order.orders.receive"> {
+  return bindOperation(client, defineStructuralOperation({"id":"order.orders.receive","method":"POST","path":"/api/v1/orders/{orderid}/receive","audience":"member","idempotent":true,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime","pathKeys":["orderid"]}));
 }
 
 export function createFetchOrderRemindersCreate(baseUrl: string): OperationMethod<"order.reminders.create"> {

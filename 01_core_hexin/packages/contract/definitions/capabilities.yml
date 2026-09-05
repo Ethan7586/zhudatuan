@@ -430,6 +430,11 @@ capabilities:
     owner: order
     permission: order.read
     audience: member
+  - code: order.orders.receive
+    kind: operation
+    owner: order
+    permission: order.read
+    audience: member
   - code: order.reminders.create
     kind: operation
     owner: order

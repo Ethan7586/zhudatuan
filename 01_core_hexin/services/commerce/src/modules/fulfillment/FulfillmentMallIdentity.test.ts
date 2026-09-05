@@ -61,13 +61,11 @@ describe('Fulfillment mall identity', () => {
     expect(source).toContain("enqueue(database, target.mall, fulfillment)");
   });
 
-  it('publishes one idempotent order.received event after fulfillment completes the order', async () => {
+  it('delegates completed fulfillment to the canonical order receipt publisher', async () => {
     const source = await readFile(new URL('./05_interface_jieru/jobs_renwu/FulfillmentJobs.ts', import.meta.url), 'utf8');
     expect(source).toContain('if (await orderPort.completeFulfillment(client, loaded.order_id))');
-    expect(source).toContain("'order.received'");
-    expect(source).toContain('event:order:received:${digest(loaded.order_id)}');
-    expect(source).toContain("jsonb_build_object('mall',$3,'order',$2,'member',$4)");
-    expect(source).toContain('on conflict(id) do nothing');
+    expect(source).toContain('await publishOrderReceived(client');
+    expect(source).toContain("source: 'fulfillment'");
   });
 });
 

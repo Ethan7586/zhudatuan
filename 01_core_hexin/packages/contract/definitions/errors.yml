@@ -1556,6 +1556,8 @@ errors:
     status: 500
   - code: ORDER_PAYMENT_STATE_CONFLICT
     status: 409
+  - code: ORDER_RECEIPT_STATE_INVALID
+    status: 409
   - code: ORDER_REMINDER_NOT_ALLOWED_OR_RATE_LIMITED
     status: 429
   - code: ORDER_REMINDER_TABLE_MISSING

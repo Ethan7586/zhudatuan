@@ -100,6 +100,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('checkout.quote.create','checkout','POST','/api/v1/checkouts/quotes','1.0.0'),
   ('order.orders.create','order','POST','/api/v1/orders','1.0.0'),
   ('order.orders.read','order','GET','/api/v1/orders','1.0.0'),
+  ('order.orders.receive','order','POST','/api/v1/orders/{orderid}/receive','1.0.0'),
   ('order.reminders.create','order','POST','/api/v1/orders/{orderid}/reminders','1.0.0'),
   ('order.orders.export','order','POST','/api/v1/orders/exports','1.0.0'),
   ('order.aftersales.read','order','GET','/api/v1/orders/aftersales','1.0.0'),
@@ -617,6 +618,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('checkout.quote.create','operation','checkout.quote.create',1,'active'),
   ('order.orders.create','operation','order.orders.create',1,'active'),
   ('order.orders.read','operation','order.orders.read',1,'active'),
+  ('order.orders.receive','operation','order.orders.receive',1,'active'),
   ('order.reminders.create','operation','order.reminders.create',1,'active'),
   ('order.orders.export','operation','order.orders.export',1,'active'),
   ('order.aftersales.read','operation','order.aftersales.read',1,'active'),
@@ -873,6 +875,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('checkout.quote.create','checkout.quote.create','checkout.create','member'),
   ('order.orders.create','order.orders.create','order.create','member'),
   ('order.orders.read','order.orders.read','order.read','member'),
+  ('order.orders.receive','order.orders.receive','order.read','member'),
   ('order.reminders.create','order.reminders.create','order.reminder.create','member'),
   ('order.orders.export','order.orders.export','order.export','operator'),
   ('order.aftersales.read','order.aftersales.read','order.aftersale.read','member'),
@@ -1345,6 +1348,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='private' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','de0778654f4144bbaafc351c252c5679cf9dcf214fed4b10331419aa2b64a539');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','5e58edee76d614a579f6630081c0935831c759af3270d03922716d58e984f953');
 
 commit;

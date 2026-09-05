@@ -5,7 +5,7 @@ import type { ClaimedJob, JobProcessor } from '../../../../foundation/applicatio
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import type { SecretStore } from '../../../../foundation/infrastructure/SecretStore';
 import { channelOperationPort } from '../../../channel';
-import { orderPort } from '../../../order_dingdan';
+import { orderPort, publishOrderReceived } from '../../../order_dingdan';
 
 interface FulfillmentRow {
   readonly id: string;
@@ -88,14 +88,13 @@ export class FulfillmentJobProcessor implements JobProcessor {
         on conflict(id) do nothing`, [`event:fulfillment:shipped:${digest(id)}`, id, loaded.mall_id, loaded.order_id, loaded.member_id, completed ? 'delivered' : 'shipped', job.id]);
       if (completed) {
         if (await orderPort.completeFulfillment(client, loaded.order_id)) {
-          await client.query(
-            `insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,correlation_id,occurred_at,created_at)
-            values($1,'order.received',1,'order',$2,$3,
-              jsonb_build_object('mall',$3,'order',$2,'member',$4),
-              $5,clock_timestamp(),clock_timestamp())
-            on conflict(id) do nothing`,
-            [`event:order:received:${digest(loaded.order_id)}`, loaded.order_id, loaded.mall_id, loaded.member_id, job.id]
-          );
+          await publishOrderReceived(client, {
+            order: loaded.order_id,
+            mall: loaded.mall_id,
+            member: loaded.member_id,
+            source: 'fulfillment',
+            correlation: job.id,
+          });
         }
       } else await enqueue(client, 'tracking', loaded.mall_id, { fulfillment: id }, 300);
       await client.query('commit');

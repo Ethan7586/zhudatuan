@@ -24244,6 +24244,164 @@
         "x-stepup": false
       }
     },
+    "/api/v1/orders/{orderid}/receive": {
+      "post": {
+        "operationId": "order.orders.receive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orderid",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "204": {
+            "description": "Success without content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Confirm receipt after every fulfillment has shipped",
+        "tags": [
+          "order"
+        ],
+        "x-audience": "member",
+        "x-availability": "runtime",
+        "x-execution": "sync",
+        "x-expected-version": "required",
+        "x-idempotency": "required",
+        "x-idempotent": true,
+        "x-permission": "order.read",
+        "x-requirements": [
+          "MVP08",
+          "MVP17",
+          "OMS-004"
+        ],
+        "x-risk": "low",
+        "x-schema-fidelity": "structural",
+        "x-scope-kinds": [
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department",
+          "supplier",
+          "brand",
+          "store",
+          "owner",
+          "self"
+        ],
+        "x-stepup": false
+      }
+    },
     "/api/v1/orders/{orderid}/reminders": {
       "post": {
         "operationId": "order.reminders.create",
