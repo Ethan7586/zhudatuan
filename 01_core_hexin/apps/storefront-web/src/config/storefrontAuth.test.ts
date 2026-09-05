@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CANONICAL_STOREFRONT_AUTH_ORIGIN, LOCAL_STOREFRONT_AUTH_ORIGIN, resolveStorefrontAuthOrigin, storefrontAuthHref } from './storefrontAuth';
 import { HONGTAI_STOREFRONT_APPLICATION, resolveStorefrontApplication, ZHUDATUAN_STOREFRONT_APPLICATION } from './storefrontIdentity';
 
 describe('storefront auth origin boundary', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
   it('always uses the canonical account center in production', () => {
     expect(resolveStorefrontAuthOrigin(undefined, 'production')).toBe(CANONICAL_STOREFRONT_AUTH_ORIGIN);
     expect(resolveStorefrontAuthOrigin('https://accounts.zhudatuan.com', 'production')).toBe('https://accounts.zhudatuan.com');
@@ -24,9 +26,13 @@ describe('storefront auth origin boundary', () => {
   });
 
   it('keeps zhudatuan and hongtai storefront identities separate', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('NEXT_PUBLIC_AUTH_ORIGIN', 'https://accounts.zhudatuan.com');
     expect(resolveStorefrontApplication('zhudatuan.com')).toBe(ZHUDATUAN_STOREFRONT_APPLICATION);
     expect(resolveStorefrontApplication('internal.zhudatuan.com')).toBe(ZHUDATUAN_STOREFRONT_APPLICATION);
     expect(resolveStorefrontApplication('beta.zhudatuan.com')).toBe(ZHUDATUAN_STOREFRONT_APPLICATION);
     expect(resolveStorefrontApplication('mall.hbbtzn.com')).toBe(HONGTAI_STOREFRONT_APPLICATION);
+    expect(new URL(storefrontAuthHref('zhudatuan.com')).origin).toBe('https://accounts.zhudatuan.com');
+    expect(new URL(storefrontAuthHref('hbbtzn.com')).origin).toBe('https://accounts.hbbtzn.com');
   });
 });

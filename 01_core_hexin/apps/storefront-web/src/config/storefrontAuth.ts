@@ -1,10 +1,15 @@
-import { resolveStorefrontApplication } from './storefrontIdentity';
+import {
+  HONGTAI_STOREFRONT_APPLICATION,
+  resolveStorefrontApplication,
+  ZHUDATUAN_STOREFRONT_APPLICATION,
+} from './storefrontIdentity';
 
 export const CANONICAL_STOREFRONT_AUTH_ORIGIN = 'https://accounts.hbbtzn.com';
+export const ZHUDATUAN_STOREFRONT_AUTH_ORIGIN = 'https://accounts.zhudatuan.com';
 export const LOCAL_STOREFRONT_AUTH_ORIGIN = 'http://127.0.0.1:3002';
 
 const LOCAL_AUTH_ORIGINS = new Set([LOCAL_STOREFRONT_AUTH_ORIGIN, 'http://localhost:3002']);
-const PRODUCTION_AUTH_ORIGINS = new Set([CANONICAL_STOREFRONT_AUTH_ORIGIN, 'https://accounts.zhudatuan.com']);
+const PRODUCTION_AUTH_ORIGINS = new Set([CANONICAL_STOREFRONT_AUTH_ORIGIN, ZHUDATUAN_STOREFRONT_AUTH_ORIGIN]);
 
 /**
  * Resolve the consumer sign-in origin without allowing an environment value
@@ -20,9 +25,18 @@ export function resolveStorefrontAuthOrigin(candidate: string | undefined, envir
 }
 
 export function storefrontAuthHref(hostname?: string): string {
-  const target = new URL('/', resolveStorefrontAuthOrigin(process.env.NEXT_PUBLIC_AUTH_ORIGIN, process.env.NODE_ENV));
+  const application = resolveStorefrontApplication(hostname);
+  const configuredOrigin = resolveStorefrontAuthOrigin(process.env.NEXT_PUBLIC_AUTH_ORIGIN, process.env.NODE_ENV);
+  const authOrigin = process.env.NODE_ENV === 'production'
+    ? application === HONGTAI_STOREFRONT_APPLICATION
+      ? CANONICAL_STOREFRONT_AUTH_ORIGIN
+      : application === ZHUDATUAN_STOREFRONT_APPLICATION
+        ? ZHUDATUAN_STOREFRONT_AUTH_ORIGIN
+        : configuredOrigin
+    : configuredOrigin;
+  const target = new URL('/', authOrigin);
   target.searchParams.set('target', 'storefront');
   target.searchParams.set('surface', 'web');
-  target.searchParams.set('application', resolveStorefrontApplication(hostname));
+  target.searchParams.set('application', application);
   return target.toString();
 }
