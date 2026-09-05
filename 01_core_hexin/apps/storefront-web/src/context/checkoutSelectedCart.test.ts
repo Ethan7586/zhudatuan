@@ -66,4 +66,16 @@ describe('checkout identity assurance', () => {
     expect(context).toContain('<PaymentPhoneVerificationModal');
     expect(context).toContain('await submitSelectedCart(verifiedUser)');
   });
+
+  it('routes a missing delivery address into the real server-backed address flow', () => {
+    const cartPage = readFileSync(resolve(contextRoot, '../features/miniprogram/MPCartPage.tsx'), 'utf8');
+    const addressPage = readFileSync(resolve(contextRoot, '../features/miniprogram/MPAddressPage.tsx'), 'utf8');
+    const profilePage = readFileSync(resolve(contextRoot, '../features/miniprogram/MPProfilePage.tsx'), 'utf8');
+
+    expect(cartPage).toContain("if (addresses.length === 0)");
+    expect(cartPage).toContain("setMpPage('address')");
+    expect(addressPage).toContain('const saved = await addAddress');
+    expect(addressPage).toContain("if (saved) setMpPage('cart')");
+    expect(profilePage).toContain("onClick={() => setMpPage('address')}");
+  });
 });

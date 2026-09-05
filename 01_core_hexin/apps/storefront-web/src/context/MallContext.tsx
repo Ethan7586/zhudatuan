@@ -301,7 +301,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
         setPaymentPhoneVerificationOpen(true);
         return false;
       }
-      const message = error instanceof ProductionApiError ? error.message : '订单服务暂时不可用';
+      const message = error instanceof Error ? error.message : '订单服务暂时不可用';
       showToast(`订单提交失败：${message}`, 'error');
       return false;
     } finally {
@@ -334,21 +334,25 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     showToast('请先登录后再使用收藏功能', 'warning');
   };
 
-  const handleAddAddress = (address: Omit<DeliveryAddress, 'id'>) => {
+  const handleAddAddress = async (address: Omit<DeliveryAddress, 'id'>): Promise<boolean> => {
     if (sessionStatus === 'authenticated') {
-      void productionApi
-        .upsertAddress({ ...address, id: '' })
-        .then(refreshServerAddresses)
-        .then(() => showToast('收货地址已加密保存', 'success'))
-        .catch((error) => showToast(error instanceof ProductionApiError ? error.message : '地址簿保存失败，请稍后重试', 'error'));
-      return;
+      try {
+        await productionApi.upsertAddress({ ...address, id: '' });
+        await refreshServerAddresses();
+        showToast('收货地址已加密保存', 'success');
+        return true;
+      } catch (error) {
+        showToast(error instanceof ProductionApiError ? error.message : '地址簿保存失败，请稍后重试', 'error');
+        return false;
+      }
     }
     if (showcaseService) {
       setAddresses(showcaseService.addAddress(address));
       showToast('新增展示收货地址成功', 'success');
-      return;
+      return true;
     }
     showToast('请先登录后再管理收货地址', 'warning');
+    return false;
   };
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);

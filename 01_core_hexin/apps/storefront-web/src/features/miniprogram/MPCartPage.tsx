@@ -2,10 +2,10 @@ import React from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { WeChatTabBar } from '../../components/mobile/WeChatTabBar';
-import { Trash2, ShoppingBag, CreditCard, ShieldCheck, ChevronRight, CheckSquare, Square } from 'lucide-react';
+import { Trash2, ShoppingBag, CreditCard, ShieldCheck, ChevronRight, CheckSquare, Square, MapPin } from 'lucide-react';
 
 export const MPCartPage: React.FC = () => {
-  const { cart, user, updateCartQuantity, toggleCartItemSelected, toggleSelectAllCart, removeCartItem, setMpPage, triggerPendingFeature, checkoutSelectedCart, isSubmittingOrder } = useMall();
+  const { cart, user, addresses, updateCartQuantity, toggleCartItemSelected, toggleSelectAllCart, removeCartItem, setMpPage, triggerPendingFeature, checkoutSelectedCart, isSubmittingOrder } = useMall();
 
   const selectedItems = cart.filter((i) => i.selected);
   const isAllSelected = cart.length > 0 && cart.every((i) => i.selected);
@@ -15,6 +15,10 @@ export const MPCartPage: React.FC = () => {
 
   const handleCheckout = async () => {
     if (selectedItems.length === 0) return;
+    if (addresses.length === 0) {
+      setMpPage('address');
+      return;
+    }
     if (await checkoutSelectedCart()) {
       setMpPage('profile');
     }
@@ -103,6 +107,17 @@ export const MPCartPage: React.FC = () => {
               ))}
             </div>
           </div>
+
+          <button onClick={() => setMpPage('address')} className="flex w-full items-center gap-2 rounded-2xl border border-gray-100 bg-white p-3 text-left shadow-xs">
+            <MapPin className="h-4 w-4 flex-shrink-0 text-[var(--sw-brand)]" />
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-bold text-gray-800">{addresses[0] ? `${addresses[0].name} ${addresses[0].phone}` : '新增收货地址'}</div>
+              <div className="mt-0.5 truncate text-[10px] text-gray-400">
+                {addresses[0] ? [addresses[0].province, addresses[0].city, addresses[0].district, addresses[0].detail].filter(Boolean).join(' ') : '结账前请先填写真实配送信息'}
+              </div>
+            </div>
+            <ChevronRight className="h-3.5 w-3.5 flex-shrink-0 text-gray-300" />
+          </button>
 
           {/* Coupon & Invoice Banner */}
           <div className="bg-white rounded-2xl p-3 shadow-xs border border-gray-100 space-y-2 text-xs">

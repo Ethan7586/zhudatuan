@@ -130,7 +130,7 @@ export const MPProfilePage: React.FC = () => {
               </span>
             </button>
 
-            <button onClick={() => triggerPendingFeature('常用企采收货地址', '管理员工宿舍与企业大楼配送地址。')} className="w-full py-2.5 flex items-center justify-between hover:bg-gray-50 px-1 rounded-lg transition-colors cursor-pointer">
+            <button onClick={() => setMpPage('address')} className="w-full py-2.5 flex items-center justify-between hover:bg-gray-50 px-1 rounded-lg transition-colors cursor-pointer">
               <div className="flex items-center gap-2 font-medium">
                 <MapPin className="w-4 h-4 text-blue-500" />
                 <span>收货地址管理</span>
