@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMall } from '../../context/MallContext';
 import type { LaptopPage } from '../../context/MallContext.types';
 import { Search, ShoppingCart, Building2, ChevronDown, User, CreditCard, Headphones, FileText, MapPin, Ticket, Zap, Gift, Menu, ShieldCheck } from 'lucide-react';
@@ -19,6 +19,11 @@ export const LaptopHeader: React.FC<LaptopHeaderProps> = ({ activeTab, onSelectT
 
   const [searchKw, setSearchKw] = useState('');
   const [showMallMenu, setShowMallMenu] = useState(false);
+  const [authHref, setAuthHref] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    setAuthHref(storefrontAuthHref(window.location.hostname));
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +90,7 @@ export const LaptopHeader: React.FC<LaptopHeaderProps> = ({ activeTab, onSelectT
             </button>
             <span className="text-blue-400/60">|</span>
             {isGuest ? (
-              <a href={storefrontAuthHref()} className="flex items-center gap-1 text-yellow-300 font-medium hover:text-yellow-200 transition-colors" aria-label="登录或注册智慧翼账户">
+              <a href={authHref} className="flex items-center gap-1 text-yellow-300 font-medium hover:text-yellow-200 transition-colors" aria-label="登录或注册智慧翼账户">
                 <User className="w-3 h-3" />
                 <span>登录 / 注册</span>
               </a>

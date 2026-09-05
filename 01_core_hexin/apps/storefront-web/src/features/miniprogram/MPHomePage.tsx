@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { WeChatTabBar } from '../../components/mobile/WeChatTabBar';
@@ -10,6 +10,11 @@ export const MPHomePage: React.FC = () => {
   const { user, currentMall, sessionStatus, setMpPage, addToCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
   const [activeBanner, setActiveBanner] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [authHref, setAuthHref] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    setAuthHref(storefrontAuthHref(window.location.hostname));
+  }, []);
 
   const banners = [
     {
@@ -55,7 +60,7 @@ export const MPHomePage: React.FC = () => {
       {sessionStatus !== 'authenticated' && (
         <div className="bg-[var(--sw-brand-dark)] px-3 pb-3">
           <a
-            href={storefrontAuthHref()}
+            href={authHref}
             aria-label="使用手机号登录智慧翼账户"
             className="flex w-full items-center justify-between rounded-xl border border-white/20 bg-white px-3.5 py-3 text-left shadow-sm active:scale-[0.99]"
           >
