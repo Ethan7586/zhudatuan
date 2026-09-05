@@ -6,12 +6,14 @@ import { KMS_CLIENT } from '../../../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
 import { financeLifecycleOperations } from '../../FinanceLifecycleOperations';
 import { resolveDifferenceOperations } from '../../03_application_yingyong/command/ResolveDifference';
+import { reconciliationRepairOperations } from '../../03_application_yingyong/command/ReconciliationRepair';
 import { requestInvoiceOperations } from '../../03_application_yingyong/command/RequestInvoice';
 import { closeSettlementOperations } from '../../03_application_yingyong/command/CloseSettlement';
 import { requestWithdrawalOperations } from '../../03_application_yingyong/command/RequestWithdrawal';
 import { getFinanceOverviewOperations } from '../../03_application_yingyong/query/GetFinanceOverview';
 import { getBillsOperations } from '../../03_application_yingyong/query/GetBills';
 import { getInvoicesOperations } from '../../03_application_yingyong/query/GetInvoices';
+import { getReconciliationRepairOperations } from '../../03_application_yingyong/query/GetReconciliationRepair';
 import { SettlementPolicy } from '../../02_domain_yewu/policy/SettlementPolicy';
 import { PgFinanceRepository } from '../../04_adapters_shixian/persistence/PgFinanceRepository';
 
@@ -23,12 +25,14 @@ export function financeRoutes(context: ModuleContext): ModuleOperations {
   return new ModuleOperations('finance', pool, context.container.get(AUDIT_SINK), {
     ...financeLifecycleOperations(),
     ...resolveDifferenceOperations(),
+    ...reconciliationRepairOperations(),
     ...requestInvoiceOperations((database) => new PgFinanceRepository(database)),
     ...closeSettlementOperations((database) => new PgFinanceRepository(database)),
     ...requestWithdrawalOperations((database) => new PgFinanceRepository(database)),
     ...getFinanceOverviewOperations(),
     ...getBillsOperations(),
     ...getInvoicesOperations(),
+    ...getReconciliationRepairOperations(),
     'finance.policies.manage': async (request, database) => {
       const access = requireAccess(request);
       const body = bodyRecord(request);
