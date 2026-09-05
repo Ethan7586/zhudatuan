@@ -11,6 +11,13 @@ export function getInvoicesOperations(): OperationActions {
         and ($2::text is null or profile.id>$2) order by profile.id limit $3`, [access.membership.id, page.id, page.fetch]);
       return keysetResult(result, page, 'id');
     },
+    'invoice.operatorprofiles.read': async (request, database) => {
+      const access = requireAccess(request); const page = queryPage(request);
+      const result = await database.query(`select profile.id,profile.status,profile.version from invoice.profile profile
+        where profile.owner_id=$1 and profile.status='active' and ($2::text is null or profile.id>$2)
+        order by profile.id limit $3`, [access.scope.id, page.id, page.fetch]);
+      return keysetResult(result, page, 'id');
+    },
     'invoice.requests.read': async (request, database) => {
       const access = requireAccess(request); const page = queryPage(request);
       const result = await database.query(`select request.*,document.object_ref,document.sha256,document.issued_at,

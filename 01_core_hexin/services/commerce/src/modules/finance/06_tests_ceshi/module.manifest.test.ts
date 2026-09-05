@@ -17,12 +17,15 @@ describe('finance module manifest', () => {
 
   it('declares finance operation list', () => {
     expect(financeManifest.operations).toEqual([
+      'finance.audit.read',
       'finance.backfills.decide',
       'finance.backfills.read',
       'finance.entries.read',
       'finance.holds.read',
       'finance.overview.read',
       'finance.policies.manage',
+      'finance.policies.preview',
+      'finance.policies.read',
       'finance.periods.manage',
       'finance.periods.read',
       'finance.reconciliationrepairs.decide',
@@ -41,6 +44,7 @@ describe('finance module manifest', () => {
       'finance.withdrawals.decide',
       'finance.withdrawals.read',
       'finance.withdrawals.recover',
+      'invoice.operatorprofiles.read',
       'invoice.profiles.manage',
       'invoice.profiles.read',
       'invoice.requests.cancel',
