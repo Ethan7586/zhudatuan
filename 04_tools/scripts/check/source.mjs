@@ -81,7 +81,7 @@ export function productionSources() {
 export function testSources() {
   const values = [];
   for (const directory of testRoots) walk(directory, values, true);
-  return [...new Set(values.filter((value) => isTest(value) || value.startsWith(`${path.join(root, 'tests')}${path.sep}`)))].sort();
+  return [...new Set(values.filter((value) => isTest(value) || value.startsWith(`${path.join(root, '03_quality_ceshi/tests')}${path.sep}`)))].sort();
 }
 
 function manifestsUnder(directory, values) {

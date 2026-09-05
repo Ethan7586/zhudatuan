@@ -9,11 +9,11 @@ begin
     raise exception 'ACCESS_IDENTITY_SCOPE_ASSIGNMENTS_CONTEXT_INVALID';
   end if;
   if not exists(select 1 from runtime.schemaversion
-    where version='20260831150000'
-      and checksum='0ff4aba32aa64206955513760655589f9d0537598f1e47b174b49ae98fd7b074') then
+    where version='20260901070000'
+      and checksum='f00c95f5eb787b621b6ef72468611ba6827523aaf622beae06935b3f9af9059f') then
     raise exception 'ACCESS_IDENTITY_SCOPE_ASSIGNMENTS_PREDECESSOR_INVALID';
   end if;
-  if exists(select 1 from runtime.schemaversion where version>'20260831150000') then
+  if exists(select 1 from runtime.schemaversion where version>'20260901070000') then
     raise exception 'ACCESS_IDENTITY_SCOPE_ASSIGNMENTS_FUTURE_HEAD_INVALID';
   end if;
   if to_regclass('access.membershiprole') is null
@@ -146,7 +146,7 @@ $function$;
 grant execute on function access.resolve_membership(text) to shopapp,zhudatuanidentityapi;
 
 insert into runtime.schemaversion(version,checksum)
-values('20260901100000','7ea94d6bca99599e88ce2f3579c69e76d1e2840e0756523b8313ec6143bd0ce4');
+values('20260901100000','78d8bc0b3efd7f2207d89e72ca9bd5021f3dc5a53ffac0ef337a2aea248a23a6');
 
 do $assert$
 begin
@@ -164,7 +164,7 @@ begin
   end if;
   if not exists(select 1 from runtime.schemaversion
     where version='20260901100000'
-      and checksum='7ea94d6bca99599e88ce2f3579c69e76d1e2840e0756523b8313ec6143bd0ce4') then
+      and checksum='78d8bc0b3efd7f2207d89e72ca9bd5021f3dc5a53ffac0ef337a2aea248a23a6') then
     raise exception 'ACCESS_IDENTITY_SCOPE_ASSIGNMENTS_LEDGER_MISSING';
   end if;
 end

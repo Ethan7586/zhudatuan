@@ -14,12 +14,12 @@ for (const layer of requiredCommerceLayers) {
   if (files.length === 0) failures.push(`COMMERCE_TEST_LAYER_MISSING:${layer}`);
 }
 
-const journeys = readdirSync(join(root, 'tests/journeys')).filter((name) => /^mvp\d{2}_.+\.spec\.ts$/.test(name)).sort();
+const journeys = readdirSync(join(root, '03_quality_ceshi/tests/journeys')).filter((name) => /^mvp\d{2}_.+\.spec\.ts$/.test(name)).sort();
 if (journeys.length !== 21) failures.push(`MVP_JOURNEY_COUNT_INVALID:${journeys.length}`);
 for (const id of journeyNames) {
   const matches = journeys.filter((name) => name.startsWith(`${id}_`));
   if (matches.length !== 1) failures.push(`MVP_JOURNEY_ENTRY_INVALID:${id}:${matches.length}`);
-  else if (!readFileSync(join(root, 'tests/journeys', matches[0]), 'utf8').includes(`journey('MVP${id.slice(3)}`)) failures.push(`MVP_JOURNEY_HARNESS_MISSING:${matches[0]}`);
+  else if (!readFileSync(join(root, '03_quality_ceshi/tests/journeys', matches[0]), 'utf8').includes(`journey('MVP${id.slice(3)}`)) failures.push(`MVP_JOURNEY_HARNESS_MISSING:${matches[0]}`);
 }
 const harness = readFileSync(join(root, '03_quality_ceshi/tests/journeys/JourneyHarness.ts'), 'utf8');
 for (const evidence of ['main path', 'forbidden path', 'retry and concurrency path', 'downstream failure', 'audit and telemetry evidence', 'final database owners and invariants']) {
@@ -35,22 +35,29 @@ for (const provider of providers) {
   if (!existsSync(test)) failures.push(`PROVIDER_CONTRACT_TEST_MISSING:${provider}`);
 }
 
-for (const app of ['auth', 'console', 'store', 'storefront', 'supplier', 'miniapp']) {
-  const manifest = JSON.parse(readFileSync(join(root, 'apps', app, 'package.json'), 'utf8'));
-  if (typeof manifest.scripts?.['test:component'] !== 'string') failures.push(`APP_COMPONENT_SCRIPT_MISSING:${app}`);
-  if (app !== 'miniapp' && !allFiles(join(root, 'apps', app, 'src')).some((name) => name.endsWith('.test.tsx'))) failures.push(`APP_COMPONENT_TEST_MISSING:${app}`);
+for (const [app, directory] of [
+  ['auth', '01_core_hexin/apps/auth-web'],
+  ['console', '01_core_hexin/apps/console'],
+  ['storefront', '01_core_hexin/apps/storefront-web'],
+]) {
+  const manifest = JSON.parse(readFileSync(join(root, directory, 'package.json'), 'utf8'));
+  if (typeof manifest.scripts?.test !== 'string' && typeof manifest.scripts?.['test:component'] !== 'string') {
+    failures.push(`APP_TEST_SCRIPT_MISSING:${app}`);
+  }
+  if (!allFiles(join(root, directory, 'src')).some((name) => /\.(test|spec)\.tsx?$/.test(name))) failures.push(`APP_TEST_MISSING:${app}`);
 }
+if (!existsSync(join(root, '01_core_hexin/apps/miniapp/miniprogram/app.js'))) failures.push('MINIAPP_ENTRY_MISSING');
 const matrix = join(root, '01_core_hexin/packages/design/src/ResourceState.component.test.tsx');
 if (!existsSync(matrix)) failures.push('COMPONENT_STATE_MATRIX_MISSING');
 else for (const state of ['loading', 'empty', 'denied', 'offline', 'conflict', 'stale', 'failure']) {
   if (!readFileSync(matrix, 'utf8').includes(`'${state}'`)) failures.push(`COMPONENT_STATE_MISSING:${state}`);
 }
 
-for (const manifest of manifests(join(root, 'apps')).concat(manifests(join(root, 'services')), manifests(join(root, 'packages')), manifests(join(root, 'extensions')))) {
+for (const manifest of manifests(join(root, '01_core_hexin/apps')).concat(manifests(join(root, '01_core_hexin/services')), manifests(join(root, '01_core_hexin/packages')), manifests(join(root, '01_core_hexin/extensions')))) {
   const value = JSON.parse(readFileSync(manifest, 'utf8'));
   if (value.name !== '@shop/testing' && value.dependencies?.['@shop/testing']) failures.push(`PRODUCTION_TESTING_DEPENDENCY:${short(manifest)}`);
 }
-for (const source of productionFiles(join(root, 'apps')).concat(productionFiles(join(root, 'services')), productionFiles(join(root, 'packages')), productionFiles(join(root, 'extensions')))) {
+for (const source of productionFiles(join(root, '01_core_hexin/apps')).concat(productionFiles(join(root, '01_core_hexin/services')), productionFiles(join(root, '01_core_hexin/packages')), productionFiles(join(root, '01_core_hexin/extensions')))) {
   if (readFileSync(source, 'utf8').includes("from '@shop/testing'")) failures.push(`PRODUCTION_TESTING_IMPORT:${short(source)}`);
 }
 

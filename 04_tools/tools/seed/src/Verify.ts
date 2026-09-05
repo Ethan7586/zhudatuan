@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto';
 import { Client } from 'pg';
 import { localSeedEnvironment } from '@shop/config/server';
 import { COMMERCE_OPERATIONS, CONTRACT_VERSION } from '@shop/contract';
@@ -11,10 +11,11 @@ const CURRENT_SCHEMA_RELATIONS = 246;
 const CURRENT_MIGRATIONS = 142;
 
 const environment = localSeedEnvironment();
-const [connectionString, objectToken, ethanPassword] = await Promise.all([
+const [connectionString, objectToken, ethanPassword, identityKey] = await Promise.all([
   localSecret(environment.adminDatabaseConnectionRef),
   localSecret(environment.objectStoreTokenRef),
   localSecret(environment.ethanPasswordRef),
+  localSecret(environment.identityKeyRef),
 ]);
 await Promise.all([
   expectReady('https://127.0.0.1:8443/health/ready'),
@@ -50,7 +51,7 @@ const challenge = await localFetch('http://127.0.0.1:3001/api/v1/identity/challe
     'x-device-id': `local-${randomUUID()}`,
     'x-request-id': randomUUID(),
   },
-  body: JSON.stringify({ destination: 'ethan', purpose: 'password_reset' }),
+  body: JSON.stringify({ destination: '13800138000', purpose: 'password_reset' }),
 });
 if (challenge.status !== 202) throw new Error(`LOCAL_CHALLENGE_HTTP_${challenge.status}:${await challenge.text()}`);
 if (await challengeSecretCount(connectionString) <= challengeBefore) throw new Error('LOCAL_CHALLENGE_ENVELOPE_MISSING');
@@ -94,12 +95,44 @@ async function verifyEncryptedStore(connectionString: string, store: string, pla
   }
 }
 
+async function verifyInvitationToken(connectionString: string, invitation: string, code: string, key: string): Promise<void> {
+  const database = new Client({ connectionString });
+  await database.connect();
+  try {
+    const result = await database.query<{ token_hash: string }>('select token_hash from member.invite where id=$1', [invitation]);
+    const stored = result.rows[0]?.token_hash;
+    const expected = createHmac('sha256', key).update(code.trim().toLowerCase()).digest('hex');
+    if (stored !== expected) throw new Error('LOCAL_INVITATION_TOKEN_DRIFT');
+  } finally {
+    await database.end();
+  }
+}
+
 async function challengeSecretCount(connectionString: string): Promise<number> {
   const database = new Client({ connectionString });
   await database.connect();
   try {
     const result = await database.query<{ count: string }>('select count(*) count from identity.challengesecret');
     return Number(result.rows[0]?.count ?? 0);
+  } finally {
+    await database.end();
+  }
+}
+
+async function localOwnerScope(connectionString: string): Promise<Readonly<{ mall: string; tenant: string }>> {
+  const database = new Client({ connectionString });
+  await database.connect();
+  try {
+    const result = await database.query<{ mall: string; tenant: string }>(`select mall.id mall,membership.organization_id tenant
+      from access.platformowner owner
+      join access.membership membership on membership.id=owner.membership_id and membership.status='active'
+      join organization.unitclosure closure on closure.ancestor_id=membership.organization_id
+      join organization.organization mall on mall.id=closure.descendant_id and mall.kind='mall' and mall.status='active'
+      where owner.singleton=true and owner.state='active'
+      order by mall.id limit 1`);
+    const scope = result.rows[0];
+    if (!scope) throw new Error('LOCAL_OWNER_SCOPE_MISSING');
+    return scope;
   } finally {
     await database.end();
   }
@@ -170,6 +203,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   const operatorCookie = operatorLogin.headers.get('set-cookie')?.split(';', 1)[0];
   if (operatorLogin.status !== 201 || !operatorCookie) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
   const operatorBearer = operatorCookie.slice(operatorCookie.indexOf('=') + 1);
+  const ownerScope = await localOwnerScope(connectionString);
   const errors = await localFetch('http://127.0.0.1:3001/api/v1/telemetry/clienterrors?limit=20', { headers:{ authorization:`Bearer ${operatorBearer}`,
     'x-client-version':'0.0.0', 'x-contract-version':CONTRACT_VERSION, 'x-request-id':randomUUID() } });
   if (errors.status !== 200 || !(await errors.text()).includes(faultCode)) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
@@ -180,7 +214,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
       ...(etag === undefined ? {} : { 'if-match':etag }), 'x-client-version':'0.0.0', 'x-contract-version':CONTRACT_VERSION, 'x-request-id':randomUUID() },
     body:JSON.stringify(body),
   });
-  const createdStore = await saveStore({ name:storeName, status:'active', mall:'mall-demo', regionCode:'310000',
+  const createdStore = await saveStore({ name:storeName, status:'active', mall:ownerScope.mall, regionCode:'310000',
     serviceRadiusMeters:3000, address:'上海市测试路88号' });
   const storeEtag = createdStore.headers.get('etag');
   const storePayload: unknown = await createdStore.json();
@@ -190,20 +224,21 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   const stores = await localFetch('http://127.0.0.1:3001/api/v1/organizations/stores?limit=100', { headers:{ authorization:`Bearer ${operatorBearer}`,
     'x-client-version':'0.0.0', 'x-contract-version':CONTRACT_VERSION, 'x-request-id':randomUUID() } });
   if (stores.status !== 200 || !(await stores.text()).includes(storeId)) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
-  const updatedStore = await saveStore({ name:storeName, status:'suspended', mall:'mall-demo', regionCode:'310000',
+  const updatedStore = await saveStore({ name:storeName, status:'suspended', mall:ownerScope.mall, regionCode:'310000',
     serviceRadiusMeters:5000, address:null }, storeEtag);
   const updatedStorePayload: unknown = await updatedStore.json();
   if (updatedStore.status !== 200 || updatedStorePayload === null || typeof updatedStorePayload !== 'object' || Array.isArray(updatedStorePayload)
     || (updatedStorePayload as Readonly<Record<string, unknown>>).addressConfigured !== false
     || Number((updatedStorePayload as Readonly<Record<string, unknown>>).version) !== 1) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
-  const staleStore = await saveStore({ name:'过期版本不应生效', status:'active', mall:'mall-demo', regionCode:'310000',
+  const staleStore = await saveStore({ name:'过期版本不应生效', status:'active', mall:ownerScope.mall, regionCode:'310000',
     serviceRadiusMeters:5000, address:null }, storeEtag);
   if (staleStore.status !== 409) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
   const invitation = await localFetch('http://127.0.0.1:3001/api/v1/identity/invitations', { method:'POST', headers:{
     authorization:`Bearer ${operatorBearer}`, 'content-type':'application/json', 'idempotency-key':randomUUID(),
     'x-client-version':'0.0.0', 'x-contract-version':CONTRACT_VERSION, 'x-request-id':randomUUID(),
-    'x-scope-hint':'tenant-smart-wing',
-  }, body:JSON.stringify({ label:'本地邀请验证', maxUses:2, expiresAt:new Date(Date.now()+24*60*60_000).toISOString() }) });
+    'x-scope-hint':ownerScope.tenant,
+  }, body:JSON.stringify({ label:'本地邀请验证', targetClient:'operator', destination:'13800138001', maxUses:1,
+    storefrontOrganization:ownerScope.mall, expiresAt:new Date(Date.now()+24*60*60_000).toISOString() }) });
   if (invitation.status !== 201) throw new Error(`LOCAL_INVITATION_CREATE_HTTP_${invitation.status}`);
   const invitationEtag = invitation.headers.get('etag');
   const created: unknown = await invitation.json();
@@ -214,6 +249,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   const invitationVersion = (created as Readonly<Record<string, unknown>>).version;
   if (typeof invitationId !== 'string' || typeof invitationCode !== 'string' || invitationTarget !== 'console' || invitationEtag === null
     || !['number','string'].includes(typeof invitationVersion)) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
+  await verifyInvitationToken(connectionString, invitationId, invitationCode, identityKey);
   const resolveInvitation = () => localFetch('http://127.0.0.1:3001/api/v1/identity/invitations/resolve', { method:'POST', headers:{
     'content-type':'application/json', 'idempotency-key':randomUUID(), origin:'http://127.0.0.1:3000', 'x-client-version':'0.0.0',
     'x-contract-version':CONTRACT_VERSION, 'x-request-id':randomUUID(),

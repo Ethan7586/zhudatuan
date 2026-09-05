@@ -3,6 +3,8 @@ import { productionApi } from '../services/productionApi';
 
 export interface CheckoutResult {
   selectedItems: CartItem[];
+  orderId: string;
+  paymentId: string;
   paymentState: 'captured' | 'authorizing' | 'reconciling';
 }
 
@@ -18,31 +20,10 @@ export async function checkoutSelectedCartRequest(cart: CartItem[], addresses: D
     throw new Error('购物车中的商品信息已失效，请从在线商品目录重新加入');
   }
 
-  const payableCents = selectedItems.reduce((sum, item) => sum + Math.round(item.product.priceWelfare * 100) * item.quantity, 0);
-  const welfareCents = Math.min(payableCents, Math.round(user.welfareBalance * 100));
-  const mealCents = Math.min(payableCents - welfareCents, Math.round(user.mealBalance * 100));
-  if (welfareCents + mealCents !== payableCents) {
-    throw new Error('福利账户余额不足，外部支付接口尚未接入');
-  }
-
-  const requestId = crypto.randomUUID();
-  const created = await productionApi.createOrder(
-    {
-      items: selectedItems.map((item) => ({
-        skuId: item.product.skuId!,
-        quantity: item.quantity,
-      })),
-      recipient: {
-        name: address.name,
-        mobile: address.phone,
-        province: address.province,
-        city: address.city,
-        district: address.district,
-        address: address.detail,
-      },
-    },
-    `order-${requestId}`
-  );
-  await productionApi.payWithInternalAccounts(created.order.id, { welfareCents, mealCents }, `payment-${requestId}`);
-  return { selectedItems };
+  const checkout = await productionApi.checkout({
+    addressId: address.id,
+    items: selectedItems.map((item) => ({ listingId: item.product.id, quantity: item.quantity })),
+    idempotencyKey: `checkout-${crypto.randomUUID()}`,
+  });
+  return { selectedItems, ...checkout };
 }

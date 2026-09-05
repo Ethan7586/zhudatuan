@@ -265,7 +265,12 @@ insert into runtime.event(type,version,owner,schema_ref) values
   ('identity.session.revoked',1,'identity','contract://events/identity.session.revoked/v1'),
   ('identity.challenge.started',1,'identity','contract://events/identity.challenge.started/v1'),
   ('identity.member.registered',1,'identity','contract://events/identity.member.registered/v1'),
+  ('identity.member.reset',1,'identity','contract://events/identity.member.reset/v1'),
   ('access.version.changed',1,'access','contract://events/access.version.changed/v1'),
+  ('access.owner.bootstrapped',1,'access','contract://events/access.owner.bootstrapped/v1'),
+  ('access.owner.transfer.initiated',1,'access','contract://events/access.owner.transfer.initiated/v1'),
+  ('access.owner.transferred',1,'access','contract://events/access.owner.transferred/v1'),
+  ('access.owner.transfer.cancelled',1,'access','contract://events/access.owner.transfer.cancelled/v1'),
   ('catalog.listing.published',1,'catalog','contract://events/catalog.listing.published/v1'),
   ('inventory.stock.changed',1,'inventory','contract://events/inventory.stock.changed/v1'),
   ('inventory.stock.reserved',1,'inventory','contract://events/inventory.stock.reserved/v1'),
@@ -1351,6 +1356,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='private' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','33d016baf0ee4b733d893884fa3144babf47210464d6803eb0d86afff5ad962d');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','feef2164a1dceb684accd09114a147fc61e2ca45cddd1949c7a188765048add4');
 
 commit;

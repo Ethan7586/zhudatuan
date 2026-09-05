@@ -4,9 +4,10 @@ import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { WeChatTabBar } from '../../components/mobile/WeChatTabBar';
 import { MPProductFeed } from './MPProductFeed';
 import { CreditCard, Utensils, Search, ChevronRight, Flame, Store, Ticket, ShoppingBag, Gift, Tv, Coffee, Sparkles, Plus, ShieldCheck, Building2, Tag, LogIn } from 'lucide-react';
+import { storefrontAuthHref } from '../../config/storefrontAuth';
 
 export const MPHomePage: React.FC = () => {
-  const { user, currentMall, sessionStatus, login, setMpPage, addToCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
+  const { user, currentMall, sessionStatus, setMpPage, addToCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
   const [activeBanner, setActiveBanner] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState('');
 
@@ -53,9 +54,9 @@ export const MPHomePage: React.FC = () => {
 
       {sessionStatus !== 'authenticated' && (
         <div className="bg-[var(--sw-brand-dark)] px-3 pb-3">
-          <button
-            type="button"
-            onClick={() => void login({})}
+          <a
+            href={storefrontAuthHref()}
+            aria-label="使用手机号登录智慧翼账户"
             className="flex w-full items-center justify-between rounded-xl border border-white/20 bg-white px-3.5 py-3 text-left shadow-sm active:scale-[0.99]"
           >
             <span className="flex items-center gap-2.5">
@@ -68,7 +69,7 @@ export const MPHomePage: React.FC = () => {
               </span>
             </span>
             <span className="rounded-full bg-[var(--sw-brand)] px-3 py-1.5 text-xs font-bold text-white">登录</span>
-          </button>
+          </a>
         </div>
       )}
 

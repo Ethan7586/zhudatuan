@@ -11,6 +11,7 @@ export interface CanonicalCheckoutInput {
 
 export interface CanonicalCheckoutResult {
   readonly orderId: string;
+  readonly paymentId: string;
   readonly paymentState: 'captured' | 'authorizing' | 'reconciling';
 }
 
@@ -49,13 +50,14 @@ export async function checkoutWithCanonicalPayment(input: CanonicalCheckoutInput
     idempotencyKey: `${input.idempotencyKey}:payment`,
   })));
   const payment = record(paymentValue, 'payment.intent');
-  if (payment.state === 'captured') return Object.freeze({ orderId, paymentState: 'captured' });
+  const paymentId = text(payment.intent, 'payment.intent.id');
+  if (payment.state === 'captured') return Object.freeze({ orderId, paymentId, paymentState: 'captured' });
   if (payment.parameters !== undefined) {
     await requestWechatJsapiPayment(payment.parameters);
-    return Object.freeze({ orderId, paymentState: 'authorizing' });
+    return Object.freeze({ orderId, paymentId, paymentState: 'authorizing' });
   }
   if (payment.state === 'authorizing' || payment.state === 'reconciling') {
-    return Object.freeze({ orderId, paymentState: payment.state });
+    return Object.freeze({ orderId, paymentId, paymentState: payment.state });
   }
   const state = typeof payment.state === 'string' ? payment.state : 'unknown';
   throw new ProductionApiError(`支付未完成，服务端状态为 ${state}`, 409, 'PAYMENT_NOT_STARTED');

@@ -16,7 +16,7 @@ function webServer(workspace: string, port: number) {
 }
 
 export default defineConfig({
-  testDir: './tests/browser',
+  testDir: './03_quality_ceshi/tests/browser',
   testMatch: '**/*.spec.ts',
   fullyParallel: true,
   forbidOnly: true,

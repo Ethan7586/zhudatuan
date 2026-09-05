@@ -31,11 +31,9 @@ export function paymentOperations(context: ModuleContext): OperationUsecase {
 class PaymentOperations implements OperationUsecase {
   private readonly settlement = new PaymentSettlement();
   private readonly refunds = new RefundPlanner();
-  private readonly intentQuery: ReadPaymentIntent;
   private readonly webhook: PaymentWebhook;
   constructor(private readonly pool: DatabasePool, private readonly gateway: PaymentGateway, private readonly kms: KmsClient,
     private readonly audit: AuditSink) {
-    this.intentQuery = new ReadPaymentIntent(new PgPaymentIntentReader(pool.workload('query')));
     this.webhook = new PaymentWebhook(pool, gateway, audit);
   }
 
@@ -55,7 +53,11 @@ class PaymentOperations implements OperationUsecase {
     if (!mall) throw new Error('SCOPE_DENIED');
     const payment = request.input.path.paymentid;
     if (!payment) throw new Error('VALIDATION_FAILED:paymentid');
-    return { status: 200, body: await this.intentQuery.execute({ payment, membership: access.membership.id, mall }) };
+    return transaction(this.pool, request, async (database) => ({
+      status: 200,
+      body: await new ReadPaymentIntent(new PgPaymentIntentReader(database))
+        .execute({ payment, membership: access.membership.id, mall }),
+    }));
   }
 
   private async create(request: OperationRequest): Promise<OperationResult> {

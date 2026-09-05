@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { TARGET_SCHEMA_HEAD } from '@shop/config/server';
 
-const root = resolve(import.meta.dirname, '../..');
+const root = resolve(import.meta.dirname, '../../..');
 const validator = resolve(root, '04_tools/scripts/release/validate.mjs');
 const sha = 'a'.repeat(64);
 
@@ -16,7 +16,7 @@ function release() {
     commerce: { image: `registry.example/shop@sha256:${sha}`, artifactSha256: sha },
     sbom: { path: 'sbom.cdx.json', sha256: sha }, provenance: { path: 'stage.json', sha256: sha },
     static: { bucket: 'shop-production' },
-    clients: Object.fromEntries(['auth', 'console', 'miniapp', 'store', 'storefront', 'supplier'].map((client) => [client, { path: `clients/${client}`, sha256: sha }])),
+    clients: Object.fromEntries(['auth', 'console', 'miniapp', 'storefront'].map((client) => [client, { path: `clients/${client}`, sha256: sha }])),
     evidence: { databaseSnapshot: 'oss://shop-evidence/snapshot', releaseApproval: sha, providerSandboxAccepted: true, stagePassed: true },
     rollback: { releaseId: 'release122', databaseSnapshot: 'oss://shop-evidence/previous', pointerSha256: sha },
   };
@@ -33,7 +33,7 @@ function validate(value: unknown) {
   }
 }
 
-test('release validator accepts only the six signed runtime artifacts and rollback evidence', () => {
+test('release validator accepts only the four current signed client artifacts and rollback evidence', () => {
   const result = validate(release());
   assert.equal(result.status, 0, result.stderr);
 });

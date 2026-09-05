@@ -44,6 +44,20 @@ export interface ApiOrder {
   items?: Array<{ productId: string; productTitle: string; productImage: string | null; priceCents: number; quantity: number; specs: Record<string, string>; itemType: string }>;
 }
 
+export type ApiPaymentResultState = 'preparing' | 'pending' | 'recovery' | 'captured' | 'failed' | 'expired';
+export interface ApiPaymentResult {
+  intentId: string;
+  orderId: string;
+  paymentId: string;
+  state: ApiPaymentResultState;
+  paymentState: string | null;
+  amountMinor: number;
+  currency: string;
+  action: Readonly<Record<string, string>> | null;
+  expiresAt: string;
+  retryAfter: 0 | 5;
+}
+
 export interface ApiAccount {
   id: string;
   type: 'welfare' | 'meal';
@@ -82,6 +96,7 @@ export interface ApiDeliveryAddress {
   detail: string;
   tag?: string;
   isDefault: boolean;
+  version?: number;
 }
 export interface ApiAfterSale {
   id: string;

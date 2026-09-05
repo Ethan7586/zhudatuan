@@ -8,11 +8,12 @@ import { parse } from 'yaml';
 import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 
 const ROOT = repositoryRoot;
-const MIGRATIONS = join(ROOT, 'database', 'supabase', 'migrations');
-const HISTORY = join(ROOT, 'database', 'contracts', 'history.json');
-const OBJECTS = join(ROOT, 'database', 'contracts', 'objects.yml');
+const MIGRATIONS = join(ROOT, '02_platform_pingtai', 'database', 'supabase', 'migrations');
+const HISTORY = join(ROOT, '02_platform_pingtai', 'database', 'contracts', 'history.json');
+const OBJECTS = join(ROOT, '02_platform_pingtai', 'database', 'contracts', 'objects.yml');
 const BOOTSTRAP = '20260817191000_bootstrap_ethan_platform_owner.sql';
 const OWNER_RECONCILIATION = '20260820132000_platform_owner_reconciliation.sql';
+const OWNER_FIXTURE_BOUNDARY = '20260829060000_zhudatuan_operator_invitation_registration.sql';
 const INVITATION_SCOPE = '20260821066000_resolve_invitation_scope.sql';
 const REGISTRATION_ASSERTION_OMISSIONS = new Map([
   [INVITATION_SCOPE, /\ndo \$assert\$ begin\n  if access\.resource_scope\('identity\.invitations\.create',[\s\S]*?\nend \$assert\$;\n/],
@@ -75,9 +76,50 @@ const REPAIR_FILES = [
   '20260821078000_complete_experience_application.sql',
   '20260821079000_resolve_experience_version_scope.sql',
   '20260821080000_restore_member_scope_authorization.sql',
+  '20260828091000_finance_reconciliation_integrity.sql',
+  '20260828092000_finance_security_boundaries.sql',
+  '20260828093000_finance_accounting_integrity.sql',
+  '20260828094000_finance_invoice_issue_integrity.sql',
+  '20260828095000_payment_provider_time_evidence.sql',
+  '20260828100000_finance_reconciliation_repair_workflow.sql',
+  '20260828170000_zhudatuan_registration_baseline.sql',
+  '20260828173000_zhudatuan_web_business_access.sql',
+  '20260828180000_zhudatuan_purchase_access.sql',
+  '20260828183000_zhudatuan_runtime_readiness_repair.sql',
+  '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql',
+  '20260829054500_zhudatuan_identity_login_acl_repair.sql',
+  '20260829060000_zhudatuan_operator_invitation_registration.sql',
+  '20260829105000_create_referral_foundation.sql',
+  '20260829190000_reconcile_runtime_contract_head.sql',
+  '20260829200000_owner_identity_reset_foundation.sql',
+  '20260829201000_reconcile_current_contract_checksum.sql',
+  '20260829210000_owner_operator_coverage.sql',
+  '20260829211000_platform_owner_transfer.sql',
+  '20260829212000_owner_runtime_boundary_hardening.sql',
+  '20260829213000_reconcile_contract_identity_checksum.sql',
+  '20260829214000_owner_personal_scope_and_invoice_scope.sql',
+  '20260829215000_restore_invoice_request_operator_boundary.sql',
+  '20260829216000_owner_capability_exactness.sql',
+  '20260829217000_scope_hint_resource_precedence.sql',
+  '20260830100000_finance_configurable_policy_workflow.sql',
+  '20260830101000_console_support_boundary.sql',
+  '20260830102000_grant_runtime_digest.sql',
+  '20260830103000_identity_runtime_contract_visibility.sql',
+  '20260830104000_business_runtime_role_matrix.sql',
+  '20260830105000_business_runtime_schema_visibility.sql',
+  '20260831100000_identity_finance_read_boundary.sql',
+  '20260831110000_identity_distribution_channel_voucher_read_boundary.sql',
+  '20260831120000_identity_reporting_read_boundary.sql',
+  '20260831130000_identity_console_tail_read_boundary.sql',
+  '20260831140000_identity_registration_profile_acl_repair.sql',
+  '20260831150000_identity_experience_application_commands.sql',
+  '20260901060000_zhudatuan_brand_display_names.sql',
+  '20260901070000_identity_notification_challenge_jobs.sql',
+  '20260901100000_access_identity_scope_assignments.sql',
   '20260901190000_add_payment_mall_identity.sql',
   '20260901191000_add_fulfillment_mall_identity.sql',
   '20260901192000_add_inventory_mall_identity.sql',
+  '20260901210000_restore_platform_owner_personal_scope_projection.sql',
   '20260901223000_publish_mall_provisioning.sql',
   '20260902010000_restore_public_mall_role_contracts.sql',
   '20260902011000_enable_public_mall_external_payment.sql',
@@ -94,6 +136,21 @@ const REPAIR_FILES = [
   '20260903100000_separate_operator_business_scope.sql',
   '20260903101000_allow_platform_owner_invitation_history.sql',
   '20260903102000_invitation_record_target_and_creator_scope.sql',
+  '20260903103000_provision_l1_mall_owner.sql',
+  '20260903104000_enable_provisioned_mall_registration.sql',
+  '20260903105000_initialize_storefront_qualification.sql',
+  '20260903106000_governance_invitation_tree_visibility.sql',
+  '20260903107000_merge_storefront_and_governance_invitation_visibility.sql',
+  '20260903108000_allow_existing_consumer_identity_registration.sql',
+  '20260903110000_zhudatuan_payment_webhook_access.sql',
+  '20260903111000_publish_canonical_guest_catalog.sql',
+  '20260903112000_enable_l6_storefront_self_registration.sql',
+  '20260904010000_allow_platform_owner_l6_registration.sql',
+  '20260905010000_publish_runtime_catalog_alignment.sql',
+  '20260905011000_expand_governance_store_scope.sql',
+  '20260905012000_honor_invitation_scope_hint.sql',
+  '20260905013000_registration_invite_role_projection.sql',
+  '20260905014000_bind_storefront_browse_scope.sql',
 ];
 
 const mode = process.argv[2];
@@ -127,7 +184,9 @@ if (mode === '--registration-boundary-postgres') {
 const database = await openDatabase();
 try {
   await execute(database, `
-    create role anon nologin; create role authenticated nologin; create role service_role nologin;
+    create role anon nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role authenticated nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role service_role nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
   `, 'database role bootstrap');
   if (replayRole !== undefined) await execute(database, `set role "${replayRole}"`, 'database migration role');
   await execute(database, `
@@ -145,6 +204,7 @@ try {
       continue;
     }
     if (name === BOOTSTRAP) await seedBootstrapPrecondition(database);
+    if (name === OWNER_FIXTURE_BOUNDARY) await seedOwnerGuardPrecondition(database);
     if (mode === '--inventory-cutover-unsafe' && name === INVENTORY_CUTOVER) {
       await seedUnsafeInventoryCutover(database);
       await assertUnsafeInventoryCutoverRejected(database, await readFile(join(MIGRATIONS,name),'utf8'));
@@ -232,6 +292,49 @@ async function seedBootstrapPrecondition(database) {
     insert into public.member_login_aliases(provider,subject,member_id) values('local_username','ethan','member-fresh-replay-ethan');`,'bootstrap precondition');
 }
 
+async function seedOwnerGuardPrecondition(database) {
+  await execute(database, `do $fixture$
+  begin
+    if not exists(
+      select 1 from access.membership membership
+      join access.membershiprole assignment on assignment.membership_id=membership.id
+      where membership.id='membership-platform-owner-ethan-v1'
+        and assignment.role_id='role-platform-owner-v2' and membership.status='active'
+        and assignment.effective_at<=clock_timestamp()
+        and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
+    ) then
+      insert into identity.principal(id,status,credential_version,created_at,updated_at,version)
+      values('principal:zhudatuan:owner:ethan:v1','active',1,clock_timestamp(),clock_timestamp(),0)
+      on conflict(id) do update set status='active',updated_at=excluded.updated_at;
+      insert into member.profile(id,principal_id,display_name,status,created_at,updated_at,version)
+      values('member:zhudatuan:owner:ethan:v1','principal:zhudatuan:owner:ethan:v1','Database Replay Owner','active',clock_timestamp(),clock_timestamp(),0)
+      on conflict(id) do update set principal_id=excluded.principal_id,status='active',updated_at=excluded.updated_at;
+      insert into identity.credential(
+        id,principal_id,provider,subject_hash,subject_ciphertext,subject_key_version,secret_hash,encrypted_secret,
+        status,rotated_at,created_at
+      ) values(
+        'credential:password:zhudatuan-owner-ethan:v1','principal:zhudatuan:owner:ethan:v1','password',repeat('a',64),null,null,
+        'scrypt$v1$32768$8$1$AAAAAAAAAAAAAAAAAAAAAA$BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB',
+        null,'active',clock_timestamp(),clock_timestamp()
+      ) on conflict(id) do update set principal_id=excluded.principal_id,status='active';
+      insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
+      values('membership-platform-owner-ethan-v1','member:zhudatuan:owner:ethan:v1','tenant-zhudatuan','operator','active',1,clock_timestamp())
+      on conflict(id) do update set member_id=excluded.member_id,organization_id=excluded.organization_id,
+        client='operator',status='active',access_version=greatest(access.membership.access_version,1),left_at=null;
+      delete from access.membershiprole where membership_id='membership-platform-owner-ethan-v1';
+      insert into access.membershiprole(membership_id,role_id,effective_at) values
+        ('membership-platform-owner-ethan-v1','role-platform-owner-v2','1970-01-01T00:00:00Z'),
+        ('membership-platform-owner-ethan-v1','role:self','1970-01-01T00:00:00Z');
+      delete from access.scopegrant where membership_id='membership-platform-owner-ethan-v1';
+      insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values
+        ('scope:database-replay-owner:v1:platform','membership-platform-owner-ethan-v1','platform','organization-platform-root','organization-platform-root','allow','1970-01-01T00:00:00Z',1),
+        ('scope:database-replay-owner:v1:tenant','membership-platform-owner-ethan-v1','tenant','tenant-zhudatuan','tenant-zhudatuan','allow','1970-01-01T00:00:00Z',1),
+        ('scope:database-replay-owner:v1:self','membership-platform-owner-ethan-v1','self','self:principal:zhudatuan:owner:ethan:v1','self:principal:zhudatuan:owner:ethan:v1','allow','1970-01-01T00:00:00Z',1);
+    end if;
+  end
+  $fixture$;`,'owner guard precondition');
+}
+
 async function stageFreshReplaySecrets(database) {
   await execute(database, `insert into runtime.vouchersecretstage(voucher_id,code_ciphertext,code_fingerprint,key_version,staged_at)
     select id,'fixturekms:v1:'||encode(digest(voucher_code,'sha256'),'base64'),encode(digest(lower(voucher_code),'sha256'),'hex'),'fixture-v1',created_at
@@ -259,9 +362,11 @@ async function assertUnsafeInventoryCutoverRejected(database,sql) {
 }
 
 async function verifyTarget(database) {
-  const operationContract = parse(await readFile(join(ROOT,'packages','contract','definitions','operations.yml'),'utf8'));
-  const eventContract = parse(await readFile(join(ROOT,'packages','contract','definitions','events.yml'),'utf8'));
-  const expectedOperations = Array.isArray(operationContract?.operations) ? operationContract.operations.length : -1;
+  const operationContract = parse(await readFile(join(ROOT,'01_core_hexin','packages','contract','definitions','operations.yml'),'utf8'));
+  const eventContract = parse(await readFile(join(ROOT,'01_core_hexin','packages','contract','definitions','events.yml'),'utf8'));
+  const expectedOperations = Array.isArray(operationContract?.operations)
+    ? operationContract.operations.filter((operation) => operation.availability !== 'frozen').length
+    : -1;
   const expectedEvents = Array.isArray(eventContract?.events) ? eventContract.events.length : -1;
   const result = await database.query(`select
     (select count(*)::integer from runtime.operation) operations,
@@ -380,6 +485,7 @@ async function verifyObjectContract(database) {
   const contract = parse(await readFile(OBJECTS, 'utf8'));
   const entries = Array.isArray(contract?.objects) ? contract.objects : [];
   const schemas = entries.filter((entry) => entry.kind === 'schema').map((entry) => entry.id).sort();
+  const grantRoles = [...new Set(entries.filter((entry) => entry.kind === 'grant').map((entry) => entry.role))].sort();
   const expected = new Map([
     ['schema', new Set(schemas)],
     ['table', new Set(entries.filter((entry) => entry.kind === 'table').map((entry) => entry.id))],
@@ -418,7 +524,7 @@ async function verifyObjectContract(database) {
   compareSet('policy', expected.get('policy'), policyRows.rows.map((row) => row.id));
   if (tableRows.rows.some((row) => !row.rls)) throw new Error('DATABASE_OBJECT_RLS_DRIFT');
 
-  const roleRows = await database.query(`with roles(role) as (values('shopapp'),('shopjob'),('shopmigration'),('shopread')),
+  const roleRows = await database.query(`with roles(role) as (select unnest($2::text[])),
     table_privilege(privilege) as (values('SELECT'),('INSERT'),('UPDATE'),('DELETE'),('TRUNCATE'),('REFERENCES'),('TRIGGER')),
     schema_privilege(privilege) as (values('USAGE'),('CREATE')),
     schemas as (select namespace.nspname schema,namespace.nspowner::regrole::text owner
@@ -437,7 +543,7 @@ async function verifyObjectContract(database) {
       where role<>owner and has_table_privilege(role,schemaname||'.'||viewname,privilege)
     union all
     select role||':function:'||replace(signature,' ','')||':execute' from roles cross join functions
-      where role<>owner and has_function_privilege(role,oid,'EXECUTE')`, [schemas]);
+      where role<>owner and has_function_privilege(role,oid,'EXECUTE')`, [schemas,grantRoles]);
   compareSet('grant', expected.get('grant'), roleRows.rows.map((row) => row.id));
 }
 

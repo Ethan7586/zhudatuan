@@ -18,9 +18,9 @@ export const MPAddressPage: React.FC = () => {
     event.preventDefault();
     if (!valid || saving) return;
     setSaving(true);
-    const saved = await addAddress({ ...form, isDefault: addresses.length === 0, tag: '收货地址' });
+    addAddress({ ...form, isDefault: addresses.length === 0, tag: '收货地址' });
     setSaving(false);
-    if (saved) setMpPage('cart');
+    setMpPage('cart');
   };
 
   return (

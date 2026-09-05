@@ -157,7 +157,7 @@ describe('canonical storefront production API', () => {
       addressId: 'address:one',
       items: [{ listingId: 'listing:one', quantity: 1 }],
       idempotencyKey: 'checkout:test',
-    })).resolves.toEqual({ orderId: 'order:one', paymentState: 'captured' });
+    })).resolves.toEqual({ orderId: 'order:one', paymentId: 'intent:one', paymentState: 'captured' });
     const writes = fetcher.mock.calls.filter(([, init]) => init?.method === 'POST').map(([url]) => new URL(String(url)).pathname);
     expect(writes).toEqual(['/api/v1/checkouts/quotes', '/api/v1/orders', '/api/v1/payments/intents']);
     for (const [, init] of fetcher.mock.calls.filter(([, value]) => value?.method === 'POST')) {
@@ -178,7 +178,7 @@ describe('canonical storefront production API', () => {
       addressId: 'address:one',
       items: [{ listingId: 'listing:one', quantity: 1 }],
       idempotencyKey: 'checkout:external',
-    })).resolves.toEqual({ orderId: 'order:one', paymentState: 'authorizing' });
+    })).resolves.toEqual({ orderId: 'order:one', paymentId: 'intent:one', paymentState: 'authorizing' });
     const postOrder = fetcher.mock.calls.find(([url, init]) => new URL(String(url)).pathname === '/api/v1/orders' && init?.method === 'POST');
     expect(postOrder).toBeTruthy();
     expect(invoke).toHaveBeenCalledOnce();
@@ -197,7 +197,19 @@ describe('canonical storefront production API', () => {
       addressId: 'address:one',
       items: [{ listingId: 'listing:one', quantity: 1 }],
       idempotencyKey: 'checkout:pending',
-    })).resolves.toEqual({ orderId: 'order:one', paymentState: 'reconciling' });
+    })).resolves.toEqual({ orderId: 'order:one', paymentId: 'intent:one', paymentState: 'reconciling' });
+  });
+
+  it('reads the payment result only from the canonical payment query', async () => {
+    const fetcher = apiFetch();
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+    await productionApi.getHomeSnapshot();
+
+    await expect(productionApi.readPaymentResult('intent:one')).resolves.toEqual({
+      intentId: 'intent:one', orderId: 'order:one', paymentId: 'payment:one', state: 'captured', paymentState: 'captured',
+      amountMinor: 100, currency: 'CNY', action: null, expiresAt: '2026-09-05T12:00:00.000Z', retryAfter: 0,
+    });
   });
 
   it('preserves the created order and reports an explicit cancellation when the user closes WeChat Pay', async () => {
@@ -254,6 +266,10 @@ function apiFetch(options: { personalMinor?: number; paymentState?: string } = {
       }, 201);
       return json({ intent: 'intent:one', state: options.paymentState ?? 'captured', payment: 'payment:one' });
     }
+    if (path === '/api/v1/payments/intents/intent%3Aone' && method === 'GET') return json({
+      intentId: 'intent:one', orderId: 'order:one', paymentId: 'payment:one', state: 'captured', paymentState: 'captured',
+      amountMinor: 100, currency: 'CNY', action: null, expiresAt: '2026-09-05T12:00:00.000Z', retryAfter: 0,
+    });
     return json({ code: 'NOT_FOUND', message: 'NOT_FOUND', requestId: 'request:not-found' }, 404);
   });
 }

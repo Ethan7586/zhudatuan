@@ -16,7 +16,7 @@ const controller = new AbortController();
 const registeredJobs = registry.all().map(({ id }) => id).sort();
 const catalogJobs = JOB_CATALOG.map(({ id }) => id).sort();
 if (registeredJobs.join(',') !== catalogJobs.join(',')) throw new Error('JOB_RUNTIME_CATALOG_DRIFT');
-await assertRuntimeCompatibility(runtime.pool, runtime.extensions, 'jobs');
+await assertRuntimeCompatibility(runtime.pool, runtime.extensions, 'jobs', runtime.cache.state());
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, () => controller.abort(signal));
 const relay = new OutboxRelay(runtime.pool, new RuntimeEventPublisher(runtime.pool), environment.JOB_WORKER_ID!);

@@ -7,7 +7,7 @@ export type CatalogSyncStatus = 'idle' | 'syncing' | 'ready' | 'error';
 export type ViewportMode = 'auto' | 'laptop-1366' | 'desktop-1440' | 'side-by-side';
 export type AppMode = 'pc' | 'mini-program' | 'android-app' | 'tablet-app' | 'laptop-web';
 export type AppModeSwitchOptions = { preservePath?: boolean };
-export type MiniProgramPage = 'home' | 'category' | 'detail' | 'cart' | 'orders' | 'profile';
+export type MiniProgramPage = 'home' | 'category' | 'detail' | 'cart' | 'orders' | 'profile' | 'address';
 export type AndroidAppPage = 'home' | 'search' | 'detail' | 'checkout' | 'orders' | 'profile';
 export type TabletPage = 'home' | 'category' | 'detail' | 'cart' | 'orders' | 'profile';
 export type TabletOrientation = 'landscape' | 'portrait';
@@ -85,6 +85,8 @@ export interface MallContextType {
   logout: () => Promise<void>;
   refreshProductionData: () => Promise<void>;
   isSubmittingOrder: boolean;
+  activePaymentId: string | null;
+  closePaymentResult: () => void;
   checkoutSelectedCart: () => Promise<boolean>;
   cart: CartItem[];
   cartCount: number;

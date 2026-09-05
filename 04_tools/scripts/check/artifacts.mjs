@@ -2,13 +2,13 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 
-const manifest = JSON.parse(readFileSync(join(repositoryRoot, 'config', 'artifacts.json'), 'utf8'));
+const manifest = JSON.parse(readFileSync(join(repositoryRoot, '02_platform_pingtai', 'config', 'artifacts.json'), 'utf8'));
 if (manifest.schema !== 'zhudatuan.artifacts.v1') throw new Error('ARTIFACT_MANIFEST_SCHEMA_INVALID');
 
 const selectedApplications = [...manifest.canonical.applications, ...manifest.compatibility.applications].sort();
 const selectedServices = [...manifest.canonical.services, ...manifest.compatibility.services].sort();
-assertExact('APPLICATION', selectedApplications, workspaceDirectories('apps'));
-assertExact('SERVICE', selectedServices, workspaceDirectories('services'));
+assertExact('APPLICATION', selectedApplications, workspaceDirectories('01_core_hexin/apps'));
+assertExact('SERVICE', selectedServices, workspaceDirectories('01_core_hexin/services'));
 
 for (const path of [...selectedApplications, ...selectedServices, manifest.canonical.database, manifest.compatibility.database]) {
   if (!existsSync(join(repositoryRoot, path))) throw new Error(`SELECTED_ARTIFACT_MISSING:${path}`);

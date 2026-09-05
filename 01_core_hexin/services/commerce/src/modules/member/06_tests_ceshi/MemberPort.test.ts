@@ -43,7 +43,7 @@ describe('MemberPort invitation constraints', () => {
 
     const [sql, values = []] = query.mock.calls[0]!;
     expect(sql).toContain('invite.target_client');
-    expect(sql).toContain("invite.role_id='role-senior-administrator-v1:'||invite.organization_id");
+    expect(sql).toContain('access.registration_invite_role_allowed(invite.role_id,invite.organization_id,invite.target_client)');
     expect(sql).toContain("invite.status='active'");
     expect(sql).toContain('invite.effective_at<=clock_timestamp()');
     expect(sql).toContain('invite.expires_at>clock_timestamp()');

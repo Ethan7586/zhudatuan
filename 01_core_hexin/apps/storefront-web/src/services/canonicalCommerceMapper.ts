@@ -10,6 +10,7 @@ export function mapCanonicalAccounts(value: unknown): ApiAccount[] {
       type: kind,
       balanceCents: nonNegativeInteger(item.available_minor, 'benefit.account.available_minor'),
       status: optionalText(item.status) ?? 'available',
+      updatedAt: optionalText(item.updated_at) ?? '',
     }];
   });
 }

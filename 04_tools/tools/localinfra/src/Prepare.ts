@@ -8,13 +8,13 @@ import { LOCAL_ENVIRONMENT_KEYS } from '@shop/config/server';
 
 const execute = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
-const local = join(root, 'infrastructure', 'local');
+const local = join(root, '02_platform_pingtai', 'infrastructure', 'local');
 const tls = join(local, '.tls');
 const certificate = join(tls, 'local.crt');
 const privateKey = join(tls, 'local.key');
 const secretsFile = join(local, 'secrets.local.json');
 const infrastructureEnvironmentFile = join(local, '.env.local');
-const commerceEnvironmentFile = join(root, 'services', 'commerce', '.env.local');
+const commerceEnvironmentFile = join(root, '01_core_hexin', 'services', 'commerce', '.env.local');
 
 await Promise.all([
   mkdir(tls, { recursive: true }),
@@ -23,18 +23,16 @@ await Promise.all([
 await prepareCertificate();
 const values = await loadOrCreateSecrets();
 await writePrivate(infrastructureEnvironmentFile, infrastructureEnvironment(values));
-await writePrivate(commerceEnvironmentFile, commerceEnvironment());
+await writePrivate(commerceEnvironmentFile, commerceEnvironment(values));
 const clientEnvironments: ReadonlyArray<readonly [string, string]> = [
   ['console', viteEnvironment(5173)],
-  ['store', viteEnvironment(5174)],
-  ['supplier', viteEnvironment(5175)],
-  ['auth', viteEnvironment(5176)],
-  ['storefront', viteEnvironment(3000)],
+  ['auth-web', viteEnvironment(3002)],
+  ['storefront-web', viteEnvironment(3000, true)],
   ['miniapp', miniappEnvironment()],
 ];
 const clientEnvironmentWrites: Array<Promise<void>> = [];
 for (const [application, environment] of clientEnvironments) {
-  const applicationRoot = join(root, 'apps', application);
+  const applicationRoot = join(root, '01_core_hexin', 'apps', application);
   if (await exists(join(applicationRoot, 'package.json'))) {
     clientEnvironmentWrites.push(writePrivate(join(applicationRoot, '.env.local'), environment));
   }
@@ -61,12 +59,29 @@ async function loadOrCreateSecrets(): Promise<Readonly<Record<string, string>>> 
   if (await exists(secretsFile)) {
     const parsed: unknown = JSON.parse(await readFile(secretsFile, 'utf8'));
     if (!validSecretMap(parsed)) throw new Error('LOCAL_SECRETS_INVALID');
-    return parsed;
+    const bootstrapPassword = parsed['local/postgres/bootstrap-password'] ?? secret();
+    const ethanPassword = validLocalPassword(parsed['local/ethan/password']) ? parsed['local/ethan/password'] : localPassword();
+    const values: Readonly<Record<string, string>> = Object.freeze({
+      ...parsed,
+      'local/kms/bearer-token': parsed['local/kms/bearer-token'] ?? secret(),
+      'local/secret-store/bearer-token': parsed['local/secret-store/bearer-token'] ?? secret(),
+      'local/postgres/bootstrap-password': bootstrapPassword,
+      'local/database/sentinel': parsed['local/database/sentinel'] ?? secret(48),
+      'local/ethan/password': ethanPassword,
+      'shop/local/database/admin': postgresUrl('shopadmin', required(parsed, 'local/postgres/admin-password')),
+      'shop/local/database/api': postgresUrl('shopapp', required(parsed, 'local/postgres/api-password')),
+      'shop/local/database/jobs': postgresUrl('shopjob', required(parsed, 'local/postgres/jobs-password')),
+      'shop/local/database/migration': postgresUrl('shopmigration', required(parsed, 'local/postgres/migration-password')),
+      'shop/local/database/bootstrap': postgresUrl('zhudatuanbootstrap', bootstrapPassword),
+    });
+    await writePrivate(secretsFile, `${JSON.stringify(values, null, 2)}\n`);
+    return values;
   }
   const postgresAdmin = secret();
   const postgresApi = secret();
   const postgresJobs = secret();
   const postgresMigration = secret();
+  const postgresBootstrap = secret();
   const redisPassword = secret();
   const objectToken = secret();
   const paymentKeys = generateKeyPairSync('rsa', {
@@ -95,12 +110,15 @@ async function loadOrCreateSecrets(): Promise<Readonly<Record<string, string>>> 
     'local/postgres/api-password': postgresApi,
     'local/postgres/jobs-password': postgresJobs,
     'local/postgres/migration-password': postgresMigration,
+    'local/postgres/bootstrap-password': postgresBootstrap,
+    'local/database/sentinel': secret(48),
     'local/redis/password': redisPassword,
-    'local/ethan/password': secret(18),
+    'local/ethan/password': localPassword(),
     'shop/local/database/admin': postgresUrl('shopadmin', postgresAdmin),
     'shop/local/database/api': postgresUrl('shopapp', postgresApi),
     'shop/local/database/jobs': postgresUrl('shopjob', postgresJobs),
     'shop/local/database/migration': postgresUrl('shopmigration', postgresMigration),
+    'shop/local/database/bootstrap': postgresUrl('zhudatuanbootstrap', postgresBootstrap),
     'shop/local/redis/query': `redis://default:${encodeURIComponent(redisPassword)}@127.0.0.1:6379`,
     'shop/local/identity/session': secret(),
     'shop/local/identity/index': secret(),
@@ -123,6 +141,8 @@ async function loadOrCreateSecrets(): Promise<Readonly<Record<string, string>>> 
       wechat: { appId: 'wxLocalMiniapp0001', appSecret: secret(), page: 'pages/home/index', state: 'developer' },
     }),
     'shop/local/kms/master': randomBytes(32).toString('base64url'),
+    'local/kms/bearer-token': secret(),
+    'local/secret-store/bearer-token': secret(),
   });
   await writePrivate(secretsFile, `${JSON.stringify(values, null, 2)}\n`);
   return values;
@@ -136,28 +156,37 @@ function infrastructureEnvironment(values: Readonly<Record<string, string>>): st
     [LOCAL_ENVIRONMENT_KEYS.secretsPort]: '8443',
     [LOCAL_ENVIRONMENT_KEYS.kmsPort]: '8444',
     [LOCAL_ENVIRONMENT_KEYS.kmsMasterKey]: required(values, 'shop/local/kms/master'),
+    [LOCAL_ENVIRONMENT_KEYS.kmsBearerToken]: required(values, 'local/kms/bearer-token'),
+    [LOCAL_ENVIRONMENT_KEYS.secretStoreBearerToken]: required(values, 'local/secret-store/bearer-token'),
     [LOCAL_ENVIRONMENT_KEYS.objectsPort]: '8445',
     [LOCAL_ENVIRONMENT_KEYS.objectsDirectory]: join(local, 'data', 'objects'),
     [LOCAL_ENVIRONMENT_KEYS.objectsToken]: required(values, 'shop/local/objects/api'),
-    [LOCAL_ENVIRONMENT_KEYS.postgresDatabase]: 'shop',
+    [LOCAL_ENVIRONMENT_KEYS.postgresDatabase]: 'zhudatuan_registration',
     [LOCAL_ENVIRONMENT_KEYS.postgresUser]: 'shopadmin',
     [LOCAL_ENVIRONMENT_KEYS.postgresPassword]: required(values, 'local/postgres/admin-password'),
     [LOCAL_ENVIRONMENT_KEYS.postgresApiPassword]: required(values, 'local/postgres/api-password'),
     [LOCAL_ENVIRONMENT_KEYS.postgresJobsPassword]: required(values, 'local/postgres/jobs-password'),
     [LOCAL_ENVIRONMENT_KEYS.postgresMigrationPassword]: required(values, 'local/postgres/migration-password'),
+    ZHUDATUANBOOTSTRAP_PASSWORD: required(values, 'local/postgres/bootstrap-password'),
+    DATABASE_SENTINEL: required(values, 'local/database/sentinel'),
     [LOCAL_ENVIRONMENT_KEYS.redisPassword]: required(values, 'local/redis/password'),
     [LOCAL_ENVIRONMENT_KEYS.nodeExtraCaCertificates]: certificate,
   });
 }
 
-function commerceEnvironment(): string {
+function commerceEnvironment(values: Readonly<Record<string, string>>): string {
   return lines({
     APP_ENV: 'development',
     SERVICE_VERSION: 'local',
     AUTH_MODE: 'membership',
     API_PORT: '3001',
-    API_ALLOWED_ORIGINS: 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175,http://localhost:5176,http://127.0.0.1:5176',
-    AUTH_RETURN_TARGETS: JSON.stringify({ console: 'http://localhost:5173', storefront: 'http://localhost:3000', store: 'http://localhost:5174', supplier: 'http://localhost:5175' }),
+    API_ALLOWED_ORIGINS: 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3002,http://127.0.0.1:3002,http://localhost:5173,http://127.0.0.1:5173',
+    AUTH_RETURN_TARGETS: JSON.stringify({
+      console: 'http://localhost:5173',
+      storefront: 'http://localhost:3000',
+      store: 'http://localhost:5173/entrances/store',
+      supplier: 'http://localhost:5173/entrances/supplier',
+    }),
     DATABASE_API_CONNECTION_REF: 'shop/local/database/api',
     DATABASE_JOB_CONNECTION_REF: 'shop/local/database/jobs',
     REDIS_CONNECTION_REF: 'shop/local/redis/query',
@@ -166,6 +195,7 @@ function commerceEnvironment(): string {
     QUOTE_KEY_REF: 'shop/local/checkout/quote',
     PII_KEY_REF: 'shop/local/pii',
     KMS_ENDPOINT: 'https://127.0.0.1:8444',
+    KMS_BEARER_TOKEN: required(values, 'local/kms/bearer-token'),
     WECHAT_APPLICATION_CONFIG_REF: 'shop/local/wechat/applications',
     WECHAT_PAYMENT_CONFIG_REF: 'shop/local/payment/wechat',
     WECHAT_IDENTITY_CONFIG_REF: 'shop/local/identity/wechat',
@@ -176,12 +206,13 @@ function commerceEnvironment(): string {
     OBJECT_STORE_TOKEN_REF: 'shop/local/objects/api',
     EXTENSION_MANIFEST_KEY_REF: 'shop/local/extensions/manifest',
     SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8443',
+    SECRET_STORE_BEARER_TOKEN: required(values, 'local/secret-store/bearer-token'),
     PUBLIC_MEDIA_BASE_URL: 'https://127.0.0.1:8445',
     PUBLIC_MALL_SLUG: 'local',
     JOB_WORKER_ID: 'local-worker-1',
     MIGRATION_APPROVAL: 'hard-cut-20260821054000',
     MIGRATION_DATABASE_CONNECTION_REF: 'shop/local/database/migration',
-    MIGRATION_DIRECTORY: join(root, 'database', 'supabase', 'migrations'),
+    MIGRATION_DIRECTORY: join(root, '02_platform_pingtai', 'database', 'supabase', 'migrations'),
     MIGRATION_DISTRIBUTOR_KEY_REF: 'channel/distributor',
     MIGRATION_IDENTITY_KEY_REF: 'identity/wechat',
     MIGRATION_PARTNER_KEY_REF: 'partner/address',
@@ -193,8 +224,14 @@ function commerceEnvironment(): string {
   });
 }
 
-function viteEnvironment(port: number): string {
-  return lines({ VITE_API_BASE_URL: 'http://127.0.0.1:3001', VITE_AUTH_BASE_URL: 'http://127.0.0.1:5176', VITE_CLIENT_VERSION: '0.0.0', PORT: String(port) });
+function viteEnvironment(port: number, storefrontRuntime = false): string {
+  return lines({
+    ...(storefrontRuntime ? { APP_ENV: 'development' } : {}),
+    VITE_API_BASE_URL: 'http://127.0.0.1:3001',
+    VITE_AUTH_BASE_URL: 'http://127.0.0.1:3002',
+    VITE_CLIENT_VERSION: '0.0.0',
+    PORT: String(port),
+  });
 }
 
 function miniappEnvironment(): string {
@@ -202,10 +239,16 @@ function miniappEnvironment(): string {
 }
 
 function postgresUrl(user: string, password: string): string {
-  return `postgres://${user}:${encodeURIComponent(password)}@127.0.0.1:5432/shop`;
+  return `postgres://${user}:${encodeURIComponent(password)}@127.0.0.1:5432/zhudatuan_registration`;
 }
 
 function secret(bytes = 32): string { return randomBytes(bytes).toString('base64url'); }
+function localPassword(): string { return `Aa7-${secret(18)}z`; }
+function validLocalPassword(value: string | undefined): value is string {
+  return typeof value === 'string' && value.length >= 12 && value.length <= 128
+    && /^[A-Za-z].*[A-Za-z]$/.test(value) && /[A-Z]/.test(value) && /[a-z]/.test(value)
+    && /\d/.test(value) && /[^A-Za-z0-9]/.test(value);
+}
 function required(values: Readonly<Record<string, string>>, name: string): string {
   const value = values[name];
   if (!value) throw new Error(`LOCAL_SECRET_MISSING:${name}`);

@@ -1,4 +1,4 @@
-name: smart-wing-local
+name: zdt-next-local
 
 services:
   postgres:
@@ -11,6 +11,8 @@ services:
       SHOPAPP_PASSWORD: ${SHOPAPP_PASSWORD}
       SHOPJOB_PASSWORD: ${SHOPJOB_PASSWORD}
       SHOPMIGRATION_PASSWORD: ${SHOPMIGRATION_PASSWORD}
+      ZHUDATUANBOOTSTRAP_PASSWORD: ${ZHUDATUANBOOTSTRAP_PASSWORD}
+      DATABASE_SENTINEL: ${DATABASE_SENTINEL}
     ports:
       - "127.0.0.1:5432:5432"
     volumes:

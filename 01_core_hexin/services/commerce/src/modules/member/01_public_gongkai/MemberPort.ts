@@ -80,7 +80,6 @@ export class MemberPort {
           then 'senior_administrator' when invite.target_client='operator' then 'administrator' end governance_level
       from member.invite invite join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
       join organization.organization organization on organization.id=invite.organization_id
-      join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
       where invite.token_hash=$1 and invite.status='active' and invite.effective_at<=clock_timestamp()
         and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
         and ${registrationInviteBoundary()}
@@ -94,7 +93,6 @@ export class MemberPort {
     const result = await database.query<{ id: string }>(`select invite.id from member.invite invite
       join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
       join organization.organization organization on organization.id=invite.organization_id
-      join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
       where invite.token_hash=$1 and invite.status='active' and invite.effective_at<=clock_timestamp()
         and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
         and (invite.allowed_destination_hash is null or invite.allowed_destination_hash=$2)
@@ -113,7 +111,6 @@ export class MemberPort {
       from member.invite invite
       join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
       join organization.organization organization on organization.id=invite.organization_id
-      join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
       where invite.token_hash=$1 and invite.status='active' and invite.effective_at<=clock_timestamp()
         and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
         and (invite.allowed_destination_hash is null or invite.allowed_destination_hash=$2)
@@ -161,15 +158,13 @@ export class MemberPort {
 export const memberPort = new MemberPort();
 
 function registrationInviteBoundary(): string {
-  return `(role.status='active' and organization.status='active' and (
+  return `(access.registration_invite_role_allowed(invite.role_id,invite.organization_id,invite.target_client)
+    and organization.status='active' and (
     (invite.target_client='storefront' and invite.role_id=case when invite.organization_id='mall-zhudatuan'
         then 'role-zhudatuan-storefront-member' else 'role-zhudatuan-storefront-member:'||invite.organization_id end
       and invite.storefront_organization_id is null and organization.kind='mall')
     or (invite.target_client='operator'
       and invite.storefront_organization_id is not null and organization.kind='tenant'
-      and ((invite.role_id='role-zhudatuan-pending-operator'
-          and not exists(select 1 from access.rolepermission pendingpermission where pendingpermission.role_id=role.id))
-        or invite.role_id='role-senior-administrator-v1:'||invite.organization_id)
       and exists(select 1 from organization.organization storefront
         join organization.unitclosure closure on closure.descendant_id=storefront.id
         where storefront.id=invite.storefront_organization_id and storefront.kind='mall' and storefront.status='active'

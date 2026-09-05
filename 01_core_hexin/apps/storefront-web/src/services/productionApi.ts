@@ -1,18 +1,80 @@
 import { canonicalCall, canonicalClient, anonymousContext, anonymousIdempotentContext, clearCanonicalSession, rememberCanonicalSession, sessionContext } from './canonicalApiClient';
 import { checkoutWithCanonicalPayment } from './canonicalCheckout';
+import { readCanonicalPaymentResult } from './canonicalPaymentResult';
 import { mapCanonicalProductPage } from './canonicalCatalogMapper';
 import { mapCanonicalAccounts, mapCanonicalCart, mapCanonicalLedgers, mapCanonicalOrders } from './canonicalCommerceMapper';
 import { mapCanonicalAddresses, mapCanonicalBootstrap, mapCanonicalSession } from './canonicalIdentityMapper';
-import { nextCursor, pageItems, record, text } from './canonicalShape';
+import { boolean, nextCursor, nonNegativeInteger, optionalText, pageItems, record, text } from './canonicalShape';
 import { ProductionApiError } from './productionApi.error';
-import type { ApiAccount, ApiAccountLedger, ApiActor, ApiBootstrap, ApiCartItem, ApiDeliveryAddress, ApiHomeSnapshot, ApiOrder, ApiProduct } from './productionApi.types';
+import type { ApiAccount, ApiAccountLedger, ApiActor, ApiBootstrap, ApiCartItem, ApiDeliveryAddress, ApiHomeSnapshot, ApiOrder, ApiProduct, LoginRequest } from './productionApi.types';
 
 export { ProductionApiError } from './productionApi.error';
-export type { ApiAccount, ApiAccountLedger, ApiActor, ApiAfterSale, ApiBootstrap, ApiCartItem, ApiDeliveryAddress, ApiHomeSnapshot, ApiOrder, ApiProduct, ApiSecurityCenter, CreateOrderRequest, LoginRequest } from './productionApi.types';
+export type { ApiAccount, ApiAccountLedger, ApiActor, ApiAfterSale, ApiBootstrap, ApiCartItem, ApiDeliveryAddress, ApiHomeSnapshot, ApiOrder, ApiPaymentResult, ApiPaymentResultState, ApiProduct, ApiSecurityCenter, CreateOrderRequest, LoginRequest } from './productionApi.types';
 
 type CatalogOptions = { category?: string; cursor?: string; limit?: number };
 
 const DEFAULT_STOREFRONT_APPLICATION = 'zdt-l1-verify';
+
+interface StorefrontAuthorization {
+  request: Readonly<{ state: string; nonce: string; challenge: string }>;
+  secret: Readonly<{ nonce: string; verifier: string }>;
+}
+
+async function beginStorefrontAuthorization(): Promise<StorefrontAuthorization> {
+  const state = randomAuthorizationToken(32);
+  const nonce = randomAuthorizationToken(32);
+  const verifier = randomAuthorizationToken(64);
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  return Object.freeze({
+    request: Object.freeze({ state, nonce, challenge: authorizationBase64url(new Uint8Array(digest)) }),
+    secret: Object.freeze({ nonce, verifier }),
+  });
+}
+
+function randomAuthorizationToken(bytes: number): string {
+  const value = new Uint8Array(bytes);
+  crypto.getRandomValues(value);
+  return authorizationBase64url(value);
+}
+
+function authorizationBase64url(value: Uint8Array): string {
+  let binary = '';
+  value.forEach((byte) => { binary += String.fromCharCode(byte); });
+  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/u, '');
+}
+
+async function createStorefrontSession(input: LoginRequest, membership?: string): Promise<void> {
+  const subject = (input.username ?? input.accessCode)?.trim();
+  const password = input.password ?? input.accessCode;
+  if (!subject || !password) throw new Error('请输入账号和密码');
+
+  const authorization = await beginStorefrontAuthorization();
+  const value = record(await canonicalCall(() => canonicalClient().identity.sessionsCreate({ body: {
+    provider: 'password',
+    subject,
+    password,
+    target: 'storefront',
+    ...(membership ? { membership } : {}),
+    authorization: authorization.request,
+  } }, anonymousIdempotentContext())), 'identity.sessions.create');
+
+  if (Array.isArray(value.memberships)) {
+    const memberships = value.memberships.map((item, index) => record(item, `identity.sessions.create.memberships[${index}]`));
+    const candidate = memberships.find((item) => optionalText(item.client) === 'storefront') ?? memberships[0];
+    if (!candidate) throw new Error('该账号没有可用的商城身份');
+    await createStorefrontSession(input, text(candidate.id, 'identity.sessions.create.membership.id'));
+    return;
+  }
+
+  if (text(value.target, 'identity.sessions.create.target') !== 'storefront') throw new Error('登录身份不属于消费者商城');
+  const callback = record(value.callback, 'identity.sessions.create.callback');
+  await canonicalCall(() => canonicalClient().identity.ticketsExchange({ body: {
+    ticket: text(callback.ticket, 'identity.sessions.create.callback.ticket'),
+    state: text(callback.state, 'identity.sessions.create.callback.state'),
+    nonce: authorization.secret.nonce,
+    verifier: authorization.secret.verifier,
+  } }, anonymousIdempotentContext()));
+}
 
 async function sessionBootstrap(): Promise<ApiBootstrap> {
   const client = canonicalClient();
@@ -139,6 +201,10 @@ async function qualifiedCatalog(options: CatalogOptions): Promise<{ items: ApiPr
 }
 
 export const productionApi = {
+  async login(input: LoginRequest): Promise<void> {
+    await createStorefrontSession(input);
+  },
+
   async getSession(): Promise<{ authenticated: true; actor: ApiActor }> {
     const bootstrap = await sessionBootstrap();
     return { authenticated: true, actor: bootstrap.actor };
@@ -256,4 +322,5 @@ export const productionApi = {
   },
 
   checkout: checkoutWithCanonicalPayment,
+  readPaymentResult: readCanonicalPaymentResult,
 };

@@ -7,7 +7,7 @@ import { productionSources, relative, root, ts } from './source.mjs';
 const externalMethods = new Set([
   'decrypt', 'deliver', 'download', 'encrypt', 'evaluate', 'exchange', 'prepay', 'publish', 'refund', 'request', 'send', 'upload', 'verifyNotification',
 ]);
-const moduleRoot = path.join(root, 'services', 'commerce', 'src', 'modules');
+const moduleRoot = path.join(root, '01_core_hexin', 'services', 'commerce', 'src', 'modules');
 
 function propertyName(node) {
   if (ts.isIdentifier(node)) return node.text;

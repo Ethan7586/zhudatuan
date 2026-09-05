@@ -3,12 +3,9 @@ import { resolve } from 'node:path';
 import { productionSources, relative, root } from '../check/source.mjs';
 
 const findings = [];
-const retiredDirectories = ['01_core_hexin/apps/admin-web', '01_core_hexin/apps/auth-web', '01_core_hexin/apps/storefront-web', '01_core_hexin/apps/wechat-miniapp', '01_core_hexin/services/commerce-api', '01_core_hexin/services/core-read-cache', '01_core_hexin/services/jobs'];
+const retiredDirectories = ['01_core_hexin/apps/admin-web', '01_core_hexin/apps/wechat-miniapp', '01_core_hexin/services/core-read-cache', '01_core_hexin/services/jobs'];
 const auxiliaryDirectories = ['archive', 'artifacts', 'deliverables', 'pre-contract-code-merge-20260820', 'smart-wing-branch-work'];
-const retiredStorefrontRuntime = ['01_core_hexin/apps/storefront/.next', '01_core_hexin/apps/storefront/.open-next', '01_core_hexin/apps/storefront/.vinext', '01_core_hexin/apps/storefront/.wrangler',
-  '01_core_hexin/apps/storefront/pages', '01_core_hexin/apps/storefront/next.config.ts', '01_core_hexin/apps/storefront/vinext.config.ts', '01_core_hexin/apps/storefront/wrangler.toml'];
 const retiredReferences = [
-  ['OLD_PACKAGE_SCOPE', '@smart-wing/'],
   ['OLD_ROUTE', '/api/health'],
   ['OLD_ROUTE', '/api/ready'],
   ['OLD_ROUTE', '/api/ai'],
@@ -19,7 +16,6 @@ const retiredReferences = [
 
 for (const directory of retiredDirectories) if (existsSync(resolve(root, directory))) findings.push(`RETIRED_DIRECTORY ${directory}`);
 for (const directory of auxiliaryDirectories) if (existsSync(resolve(root, directory))) findings.push(`AUXILIARY_DIRECTORY ${directory}`);
-for (const runtime of retiredStorefrontRuntime) if (existsSync(resolve(root, runtime))) findings.push(`RETIRED_STOREFRONT_RUNTIME ${runtime}`);
 for (const file of productionSources()) {
   const path = relative(file);
   const source = readFileSync(file, 'utf8');

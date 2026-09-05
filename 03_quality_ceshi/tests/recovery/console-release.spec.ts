@@ -7,7 +7,7 @@ import test from 'node:test';
 
 import { readConsoleArtifact, validateConsoleArtifactManifest } from '../../../04_tools/scripts/release/console-artifact.mjs';
 
-const root = resolve(import.meta.dirname, '../..');
+const root = resolve(import.meta.dirname, '../../..');
 const commit = 'a'.repeat(40);
 
 function manifest(sourceTree = 'clean') {

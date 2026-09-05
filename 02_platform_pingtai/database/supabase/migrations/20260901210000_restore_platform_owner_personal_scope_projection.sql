@@ -11,11 +11,11 @@ begin
     raise exception 'PLATFORM_OWNER_PERSONAL_SCOPE_BOUNDARY_INVALID';
   end if;
   if not exists(select 1 from runtime.schemaversion
-    where version='20260901100000'
-      and checksum='78d8bc0b3efd7f2207d89e72ca9bd5021f3dc5a53ffac0ef337a2aea248a23a6') then
+    where version='20260901192000'
+      and checksum='5bd759d92eb31802cd1d26c3de9fb8c0c6c8fc283db2a058bfff775dfd64a7bd') then
     raise exception 'PLATFORM_OWNER_PERSONAL_SCOPE_PREDECESSOR_INVALID';
   end if;
-  if exists(select 1 from runtime.schemaversion where version>'20260901100000') then
+  if exists(select 1 from runtime.schemaversion where version>'20260901192000') then
     raise exception 'PLATFORM_OWNER_PERSONAL_SCOPE_FUTURE_HEAD_INVALID';
   end if;
 end

@@ -17,12 +17,10 @@ if (!/^oci-layout@sha256:[0-9a-f]{64}$/.test(image ?? '')) throw new Error('CAND
 if (!ociSource || !existsSync(ociSource) || !sbomSource || !existsSync(sbomSource)) throw new Error('CANDIDATE_EVIDENCE_SOURCE_MISSING');
 
 const sources = Object.freeze({
-  auth: '01_core_hexin/apps/auth/dist',
+  auth: '01_core_hexin/apps/auth-web/dist',
   console: '01_core_hexin/apps/console/dist',
   miniapp: '01_core_hexin/apps/miniapp/miniprogram',
-  store: '01_core_hexin/apps/store/dist',
-  storefront: '01_core_hexin/apps/storefront/dist',
-  supplier: '01_core_hexin/apps/supplier/dist',
+  storefront: '01_core_hexin/apps/storefront-web/dist',
 });
 mkdirSync(join(output, 'clients'), { recursive: true });
 cpSync(ociSource, join(output, 'commerce.oci.tar'), { errorOnExist: true });

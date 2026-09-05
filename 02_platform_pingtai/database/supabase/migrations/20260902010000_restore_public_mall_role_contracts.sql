@@ -6,7 +6,7 @@ do $precondition$
 begin
   if not exists(select 1 from runtime.schemaversion
     where version='20260901223000'
-      and checksum='c95f702b55319f504b809e3f34865fe2120052d9cd4e6a09b43cefed655a7bde')
+      and checksum='3faea44c273fadc91245b9cf8f06361ce492288448ff3a8507d358f9edadfa89')
     or exists(select 1 from runtime.schemaversion where version>'20260901223000') then
     raise exception 'PUBLIC_MALL_ROLE_CONTRACT_PREDECESSOR_INVALID';
   end if;

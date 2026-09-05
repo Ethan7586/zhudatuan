@@ -9,7 +9,7 @@ import { readSession } from './api/session';
 import type { WorkerEnv } from './api/types';
 
 const repositoryRoot = process.cwd();
-const adminWebRoot = path.join(repositoryRoot, 'apps', 'admin-web');
+const adminWebRoot = path.join(repositoryRoot, '01_core_hexin', 'apps', 'console');
 dotenv.config({ path: process.env.ENV_FILE ?? path.join(repositoryRoot, '.env.production') });
 
 const app = express();

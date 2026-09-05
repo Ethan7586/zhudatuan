@@ -1084,9 +1084,9 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         const assurance = `assurance:${randomUUID()}`;
         if (action === null) {
           await database.query(
-            `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
-          values($1,$2,'otp',3,$3,clock_timestamp(),clock_timestamp()+interval '15 minutes')`,
-            [assurance, access.actor.id, sessionDigest(access.actor.session)]
+            `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
+          values($1,$2,$3,'otp',3,$4,clock_timestamp(),clock_timestamp()+interval '15 minutes')`,
+            [assurance, access.actor.id, access.actor.session, sessionDigest(access.actor.session)]
           );
         } else {
           await database.query(

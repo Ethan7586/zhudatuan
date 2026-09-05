@@ -4,7 +4,7 @@ import { TARGET_SCHEMA_HEAD } from '@shop/config/server';
 const source = process.argv[2];
 if (!source) throw new Error('RELEASE_MANIFEST_REQUIRED');
 const value = JSON.parse(readFileSync(source, 'utf8'));
-const requiredClients = ['auth', 'console', 'miniapp', 'store', 'storefront', 'supplier'];
+const requiredClients = ['auth', 'console', 'miniapp', 'storefront'];
 const digest = /^.+@sha256:[0-9a-f]{64}$/;
 const sha = /^[0-9a-f]{64}$/;
 

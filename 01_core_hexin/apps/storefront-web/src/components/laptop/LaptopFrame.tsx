@@ -13,6 +13,7 @@ import { QuickViewModal } from '../common/QuickViewModal';
 import { ToastContainer } from '../common/ToastContainer';
 import { Footer } from '../common/Footer';
 import { STOREFRONT_WEB_STANDARD_ID, type StorefrontWebNavigationBoundary, type StorefrontWebSurface } from './StorefrontWebStandard';
+import { PaymentResultPage } from '../common/PaymentResultPage';
 
 type StorefrontWebFrameProps = {
   surface?: StorefrontWebSurface;
@@ -20,7 +21,7 @@ type StorefrontWebFrameProps = {
 };
 
 export const StorefrontWebFrame: React.FC<StorefrontWebFrameProps> = ({ surface = 'laptop', navigationBoundary = 'showcase' }) => {
-  const { laptopPage, setLaptopPage } = useMall();
+  const { laptopPage, setLaptopPage, activePaymentId } = useMall();
 
   const handleSelectTab = (tab: LaptopPage) => {
     setLaptopPage(tab);
@@ -28,6 +29,7 @@ export const StorefrontWebFrame: React.FC<StorefrontWebFrameProps> = ({ surface 
   };
 
   const renderLaptopContent = () => {
+    if (activePaymentId) return <PaymentResultPage paymentId={activePaymentId} />;
     switch (laptopPage) {
       case 'home-1366':
         return <LaptopHomePage1366 onSelectTab={handleSelectTab} />;

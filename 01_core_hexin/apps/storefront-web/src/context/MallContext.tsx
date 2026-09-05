@@ -56,6 +56,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const [catalogSyncStatus, setCatalogSyncStatus] = useState<'idle' | 'syncing' | 'ready' | 'error'>(isShowcase ? 'ready' : 'idle');
   const [sessionError, setSessionError] = useState<string | null>(null);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const [activePaymentId, setActivePaymentId] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>(() => (showcaseService ? showcaseService.getFavorites() : []));
   const [addresses, setAddresses] = useState<DeliveryAddress[]>(() => (showcaseService ? showcaseService.getAddresses() : []));
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
@@ -203,7 +204,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     }
     if (sessionStatus === 'authenticated' && product.skuId) {
       try {
-        await productionApi.upsertCartItem({ skuId: product.skuId, quantity, selected: true });
+        await productionApi.upsertCartItem({ listingId: product.id, quantity });
         await refreshServerCart();
         showToast(`已将“${product.title.slice(0, 16)}...”加入购物车`, 'success');
       } catch {
@@ -234,7 +235,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
           .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
       } else {
         void productionApi
-          .upsertCartItem({ skuId: item.product.skuId, quantity, selected: item.selected })
+          .upsertCartItem({ listingId: item.product.id, quantity })
           .then(refreshServerCart)
           .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
       }
@@ -245,12 +246,9 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
 
   const handleToggleCartItemSelected = (cartItemId: string) => {
     if (sessionStatus === 'authenticated') {
-      const item = cart.find((candidate) => candidate.id === cartItemId);
-      if (!item?.product.skuId) return;
-      void productionApi
-        .upsertCartItem({ skuId: item.product.skuId, quantity: item.quantity, selected: !item.selected })
-        .then(refreshServerCart)
-        .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
+      setCart((current) => current.map((item) => (
+        item.id === cartItemId ? { ...item, selected: !item.selected } : item
+      )));
       return;
     }
     if (showcaseService) setCart(showcaseService.toggleCartItemSelected(cartItemId));
@@ -258,10 +256,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
 
   const handleToggleSelectAllCart = (selected: boolean) => {
     if (sessionStatus === 'authenticated') {
-      const updates = cart.filter((item) => item.product.skuId).map((item) => productionApi.upsertCartItem({ skuId: item.product.skuId!, quantity: item.quantity, selected }));
-      void Promise.all(updates)
-        .then(refreshServerCart)
-        .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
+      setCart((current) => current.map((item) => ({ ...item, selected })));
       return;
     }
     if (showcaseService) setCart(showcaseService.toggleSelectAllCart(selected));
@@ -289,7 +284,9 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     }
     setIsSubmittingOrder(true);
     try {
-      const { selectedItems } = await checkoutSelectedCartRequest(cart, addresses, user);
+      const checkout = await checkoutSelectedCartRequest(cart, addresses, user);
+      const { selectedItems } = checkout;
+      setActivePaymentId(checkout.paymentId);
       await Promise.all(selectedItems.map((item) => productionApi.deleteCartItem(item.id)));
       await refreshServerCart();
       await refreshProductionData();
@@ -358,6 +355,8 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
         logout,
         refreshProductionData,
         isSubmittingOrder,
+        activePaymentId,
+        closePaymentResult: () => setActivePaymentId(null),
         checkoutSelectedCart,
         cart,
         cartCount,

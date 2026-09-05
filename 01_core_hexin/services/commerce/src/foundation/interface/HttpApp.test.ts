@@ -36,6 +36,15 @@ describe('HttpApp contract handshake', () => {
     expect(response.headers.get('access-control-allow-credentials')).toBe('true');
   });
 
+  it('allows the canonical session version header during browser preflight', async () => {
+    const response = await new HttpApp(routes(), ['https://shop.example']).handle(new Request('https://api.example/api/v1/members/me', {
+      method: 'OPTIONS',
+      headers: { origin: 'https://shop.example', 'access-control-request-method': 'GET', 'access-control-request-headers': 'x-access-version' },
+    }));
+    expect(response.status).toBe(204);
+    expect(response.headers.get('access-control-allow-headers')).toContain('x-access-version');
+  });
+
   it('ends a request when its total deadline is exhausted', async () => {
     const slow = { match: () => ({ operation: 'identity.sessions.create', parameters: {}, handler: async () => new Promise(() => undefined) }) } as unknown as RouteRegistry;
     const response = await new HttpApp(slow, [], undefined, 5).handle(new Request('https://api.example/api/v1/identity/sessions', {

@@ -19,7 +19,7 @@ interface PaymentIntentRow {
 }
 
 export class PgPaymentIntentReader implements PaymentIntentReader {
-  constructor(private readonly database: DatabasePool) {}
+  constructor(private readonly database: Pick<DatabasePool, 'query'>) {}
 
   async read(input: PaymentIntentReadInput): Promise<PaymentIntentSnapshot | undefined> {
     const result = await this.database.query<PaymentIntentRow>(

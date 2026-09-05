@@ -24,7 +24,9 @@ type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
 
 export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
-  const isStorefrontEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === 'storefront';
+  const searchParams = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search);
+  const isStorefrontEmbed = searchParams?.get('embed') === 'storefront';
+  const registrationDeepLink = searchParams?.get('invite')?.trim() ?? '';
 
   // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
   const [stage, setStage] = useState<1 | 2 | 3>(1);
@@ -80,26 +82,10 @@ export const LoginPage: React.FC = () => {
 
   useEffect(() => {
     if (!registrationDeepLink) return;
-    let active = true;
-    setRegistrationBusy('invite');
+    setRegistration((current) => ({ ...current, inviteCode: registrationDeepLink.toUpperCase() }));
+    setRegistrationOpen(true);
+    setRegistrationNotice('已从邀请链接带入企业邀请码，请继续完成注册。');
     setFormError('');
-    void resolveCanonicalInvite(registrationDeepLink)
-      .then((invitation) => {
-        if (!active) return;
-        setRegistrationInvite(invitation);
-        setRegistrationTermsAccepted(defaultTermsAccepted('invitation-resolved'));
-      setRegistrationNotice(`已进入【${invitation.organizationName}】L6 消费者通道`);
-      })
-      .catch((error) => {
-        if (!active) return;
-        setRegistrationInvite(null);
-        setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
-        setFormError(error instanceof Error ? error.message : '邀请码验证失败');
-      })
-      .finally(() => {
-        if (active) setRegistrationBusy(null);
-      });
-    return () => { active = false; };
   }, [registrationDeepLink]);
 
   const handleIdentifierChange = (val: string) => {

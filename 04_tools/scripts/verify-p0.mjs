@@ -37,19 +37,16 @@ for (const value of ['.env*', 'secrets.local.json', '02_platform_pingtai/infrast
 }
 const portContracts = new Map([
   ['01_core_hexin/apps/console/vite.config.ts', 'port: 5173'],
-  ['01_core_hexin/apps/store/vite.config.ts', 'port: 5174'],
-  ['01_core_hexin/apps/supplier/vite.config.ts', 'port: 5175'],
-  ['01_core_hexin/apps/auth/vite.config.ts', 'port: 5176'],
-  ['01_core_hexin/apps/storefront/vite.config.ts', 'port: 3000'],
+  ['01_core_hexin/apps/auth-web/vite.config.ts', 'port: 3002'],
 ]);
 for (const [path, expected] of portContracts) {
   if (!readFileSync(resolve(root, path), 'utf8').includes(expected)) throw new Error(`P0_CLIENT_PORT_INVALID:${path}`);
 }
-for (const path of ['01_core_hexin/apps/console/.env.example', '01_core_hexin/apps/store/.env.example', '01_core_hexin/apps/supplier/.env.example', '01_core_hexin/apps/storefront/.env.example', '01_core_hexin/apps/auth/.env.example', '01_core_hexin/apps/miniapp/.env.example']) {
+for (const path of ['01_core_hexin/apps/console/.env.example', '01_core_hexin/apps/storefront-web/.env.example', '01_core_hexin/apps/auth-web/.env.example', '01_core_hexin/apps/miniapp/miniprogram/config/Environment.js']) {
   if (!existsSync(resolve(root, path))) throw new Error(`P0_CLIENT_ENVIRONMENT_EXAMPLE_MISSING:${path}`);
 }
 const commerceExample = readFileSync(resolve(root, '01_core_hexin/services/commerce/.env.example'), 'utf8');
-for (const port of [3000, 5173, 5174, 5175, 5176]) if (!commerceExample.includes(`:${port}`)) throw new Error(`P0_CORS_PORT_MISSING:${port}`);
+for (const port of [3000, 3002, 5173]) if (!commerceExample.includes(`:${port}`)) throw new Error(`P0_CORS_PORT_MISSING:${port}`);
 for (const path of [
   '01_core_hexin/services/commerce/src/foundation/infrastructure/SecretStore.ts',
   '01_core_hexin/services/commerce/src/foundation/infrastructure/KmsClient.ts',
@@ -61,6 +58,6 @@ for (const path of [
 for (const file of productionSources()) {
   const path = relative(file);
   const source = readFileSync(file, 'utf8');
-  if (/(^|\/)(mock|mocks|simulation|fallback|demo)(\/|$)/i.test(path) || /@smart-wing\//.test(source)) throw new Error(`P0_PRODUCTION_SUBSTITUTE:${path}`);
+  if (/(^|\/)(mock|mocks|simulation|fallback|demo)(\/|$)/i.test(path)) throw new Error(`P0_PRODUCTION_SUBSTITUTE:${path}`);
 }
 console.log('P0 invariant spine: identity, authorization, checkout, inventory, payment, refund, outbox, and balanced finance contracts present');

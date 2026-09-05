@@ -9,12 +9,13 @@ import { MPAddressPage } from '../../features/miniprogram/MPAddressPage';
 import { ToastContainer } from '../common/ToastContainer';
 import { MobileOrdersPage } from './MobileOrdersPage';
 import { PendingInterfaceModal } from './PendingInterfaceModal';
+import { PaymentResultPage } from '../common/PaymentResultPage';
 
 /** Production phone storefront shown after an L6 consumer opens the mall. */
 export function ProductionMobileFrame() {
-  const { mpPage } = useMall();
+  const { mpPage, activePaymentId } = useMall();
 
-  const page = (() => {
+  const page = activePaymentId ? <PaymentResultPage paymentId={activePaymentId} /> : (() => {
     switch (mpPage) {
       case 'category':
         return <MPCategoryPage />;

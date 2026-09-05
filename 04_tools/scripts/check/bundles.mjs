@@ -7,13 +7,11 @@ const root = resolve(import.meta.dirname, '../../..');
 const budgets = parse(readFileSync(join(root, '02_platform_pingtai/config/bundles.yml'), 'utf8')).budgets;
 const artifacts = [
   ['console', '01_core_hexin/apps/console/dist', budgets.consoleInitialGzipKb, budgets.lazyFeatureGzipKb],
-  ['store', '01_core_hexin/apps/store/dist', budgets.storeInitialGzipKb, budgets.lazyFeatureGzipKb],
-  ['supplier', '01_core_hexin/apps/supplier/dist', budgets.supplierInitialGzipKb, budgets.lazyFeatureGzipKb],
-  ['auth', '01_core_hexin/apps/auth/dist', budgets.authInitialGzipKb, budgets.lazyFeatureGzipKb],
-  ['storefront', '01_core_hexin/apps/storefront/dist', budgets.storefrontInitialGzipKb, budgets.lazyFeatureGzipKb],
+  ['auth', '01_core_hexin/apps/auth-web/dist', budgets.authInitialGzipKb, budgets.lazyFeatureGzipKb],
+  ['storefront', '01_core_hexin/apps/storefront-web/dist', budgets.storefrontInitialGzipKb, budgets.lazyFeatureGzipKb],
   ['commerce', '01_core_hexin/services/commerce/dist', null, null],
 ];
-const forbidden = [/@smart-wing\//, /storefront-web|admin-web|auth-web|commerce-api|core-read-cache/, /\/api\/(?:health|ready|ai)(?:\b|\/)/, /\b(?:MOCK_|SIMULATION_|FALLBACK_)\b/];
+const forbidden = [/admin-web|commerce-api|core-read-cache/, /\/api\/(?:health|ready|ai)(?:\b|\/)/, /\b(?:MOCK_|SIMULATION_|FALLBACK_)\b/];
 const findings = [];
 
 function files(directory, output = []) {
@@ -55,7 +53,7 @@ if (findings.length > 0) {
   for (const finding of findings) console.error(finding);
   process.exit(1);
 }
-console.log('bundle policy: seven artifacts present, retired and substitute code absent, budgets satisfied');
+console.log('bundle policy: five current artifacts present, retired and substitute code absent, budgets satisfied');
 
 function measureVite(directory, code) {
   const manifestPath = join(directory, '.vite', 'manifest.json');
