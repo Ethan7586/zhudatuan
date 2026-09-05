@@ -13,12 +13,18 @@ const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([
   'https://www.hbbtzn.com',
   'https://zhudatuan.com',
 ] as const);
+const INTERNAL_STOREFRONT_ORIGIN = 'https://internal.zhudatuan.com';
+const INTERNAL_ALLOWED_ORIGINS = Object.freeze([...PRODUCTION_ALLOWED_ORIGINS, INTERNAL_STOREFRONT_ORIGIN]);
 
 const PRODUCTION_RETURN_TARGETS = Object.freeze({
   console: 'https://console.zhudatuan.com',
   storefront: 'https://zhudatuan.com',
   store: 'https://console.zhudatuan.com/entrances/store',
   supplier: 'https://console.zhudatuan.com/entrances/supplier',
+} satisfies AuthReturnTargets);
+const INTERNAL_RETURN_TARGETS = Object.freeze({
+  ...PRODUCTION_RETURN_TARGETS,
+  storefront: INTERNAL_STOREFRONT_ORIGIN,
 } satisfies AuthReturnTargets);
 
 export const IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS = Object.freeze([
@@ -84,11 +90,13 @@ export function validateIdentityRegistrationApiEnvironment(source: EnvironmentSo
   distinctValues(kmsBearer, secretStoreBearer, 'WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
   const origins = apiAllowedOrigins(source);
   const returnTargets = apiReturnTargets(source);
-  if (app === 'production' && [...origins].sort().join(',') !== [...PRODUCTION_ALLOWED_ORIGINS].sort().join(',')) {
+  const normalizedOrigins = [...origins].sort().join(',');
+  if (app === 'production' && ![PRODUCTION_ALLOWED_ORIGINS, INTERNAL_ALLOWED_ORIGINS]
+    .some((allowed) => normalizedOrigins === [...allowed].sort().join(','))) {
     throw new Error('IDENTITY_REGISTRATION_API_ORIGINS_INVALID');
   }
-  if (app === 'production' && Object.keys(PRODUCTION_RETURN_TARGETS).some((target) =>
-    returnTargets[target as keyof AuthReturnTargets] !== PRODUCTION_RETURN_TARGETS[target as keyof AuthReturnTargets])) {
+  if (app === 'production' && ![PRODUCTION_RETURN_TARGETS, INTERNAL_RETURN_TARGETS].some((allowed) =>
+    Object.keys(allowed).every((target) => returnTargets[target as keyof AuthReturnTargets] === allowed[target as keyof AuthReturnTargets]))) {
     throw new Error('IDENTITY_REGISTRATION_API_RETURN_TARGETS_INVALID');
   }
   identityRegistrationApiPort(source);

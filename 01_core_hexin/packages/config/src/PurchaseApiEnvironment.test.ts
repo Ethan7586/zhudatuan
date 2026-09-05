@@ -54,6 +54,16 @@ describe('purchase API environment', () => {
       .toThrow('PURCHASE_PAYMENT_CONFIGURATION_PARTIAL');
   });
 
+  it('accepts the isolated internal storefront slot', () => {
+    const environment = purchaseApiEnvironment({
+      ...valid(),
+      API_PORT: '4423',
+      API_ALLOWED_ORIGINS: `${valid().API_ALLOWED_ORIGINS},https://internal.zhudatuan.com`,
+    });
+    expect(purchaseApiPort(environment)).toBe(4423);
+    expect(purchaseApiAllowedOrigins(environment)).toContain('https://internal.zhudatuan.com');
+  });
+
   it('fails closed on full-runtime dependencies, public binds, and non-purchase origins', () => {
     for (const [key, value] of [
       ['PAYMENT_CONFIG_REF', 'legacy/payment'],

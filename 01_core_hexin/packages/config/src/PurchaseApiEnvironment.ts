@@ -9,6 +9,13 @@ import {
 import { apiAllowedOrigins } from './ApiEnvironment';
 
 export const PURCHASE_API_PROFILE = 'purchase-only' as const;
+const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([
+  'https://hbbtzn.com',
+  'https://mall.hbbtzn.com',
+  'https://www.hbbtzn.com',
+  'https://zhudatuan.com',
+]);
+const INTERNAL_ALLOWED_ORIGINS = Object.freeze([...PRODUCTION_ALLOWED_ORIGINS, 'https://internal.zhudatuan.com']);
 
 const PURCHASE_PAYMENT_PROVIDER_KEYS = Object.freeze([
   'KMS_ENDPOINT',
@@ -75,15 +82,12 @@ export function validatePurchaseApiEnvironment(source: EnvironmentSource): void 
   bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
   if (paymentProviderEnabled) bearerToken(source.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_INVALID');
   const origins = apiAllowedOrigins(source);
-  if (app === 'production' && origins.join(',') !== [
-    'https://hbbtzn.com',
-    'https://mall.hbbtzn.com',
-    'https://www.hbbtzn.com',
-    'https://zhudatuan.com',
-  ].join(',')) {
+  const normalizedOrigins = [...origins].sort().join(',');
+  if (app === 'production' && ![PRODUCTION_ALLOWED_ORIGINS, INTERNAL_ALLOWED_ORIGINS]
+    .some((allowed) => normalizedOrigins === [...allowed].sort().join(','))) {
     throw new Error('PURCHASE_API_ORIGINS_INVALID');
   }
-  if (purchaseApiPort(source) !== 4323) throw new Error('PURCHASE_API_PORT_INVALID');
+  if (![4323, 4423].includes(purchaseApiPort(source))) throw new Error('PURCHASE_API_PORT_INVALID');
 }
 
 export function purchasePaymentProviderEnabled(source: EnvironmentSource): boolean {

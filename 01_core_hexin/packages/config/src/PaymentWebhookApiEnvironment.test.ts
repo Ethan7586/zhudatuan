@@ -26,6 +26,11 @@ describe('payment webhook API environment', () => {
     expect(environment).not.toHaveProperty('NODE_ENV');
   });
 
+  it('accepts the isolated internal webhook slot', () => {
+    const environment = paymentWebhookApiEnvironment({ ...valid(), API_PORT: '4426' });
+    expect(paymentWebhookApiPort(environment)).toBe(4426);
+  });
+
   it('rejects foreign service configuration and partial configuration', () => {
     expect(() => paymentWebhookApiEnvironment({ ...valid(), QUOTE_KEY_REF: 'foreign' }))
       .toThrow('PAYMENT_WEBHOOK_API_KEY_FORBIDDEN:QUOTE_KEY_REF');

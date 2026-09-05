@@ -4,6 +4,7 @@ import { ProductionApiError, productionError } from './productionApi.error';
 
 export const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
 const LEGACY_API_ORIGIN = 'https://api.zhudatuan.com';
+const INTERNAL_API_ORIGIN = 'https://internal.zhudatuan.com';
 const LOCAL_API_ORIGINS = new Set(['http://127.0.0.1:3001', 'http://localhost:3001']);
 
 export interface CanonicalSessionContext {
@@ -31,6 +32,7 @@ export function resolveProductionApiOrigin(candidate: string | undefined, enviro
   const parsed = new URL(candidate?.trim() || fallback);
   const approved = parsed.origin === CANONICAL_API_ORIGIN
     || parsed.origin === LEGACY_API_ORIGIN
+    || parsed.origin === INTERNAL_API_ORIGIN
     || (environment !== 'production' && LOCAL_API_ORIGINS.has(parsed.origin));
   if (!approved || parsed.username || parsed.password || parsed.hash || (parsed.pathname !== '/' && parsed.pathname !== '')) {
     throw new ProductionApiError('平台 API 地址不在允许清单', 0, 'API_ORIGIN_DENIED');

@@ -44,6 +44,16 @@ describe('web business API environment', () => {
     expect(new Set(WEB_BUSINESS_API_ENVIRONMENT_KEYS).size).toBe(WEB_BUSINESS_API_ENVIRONMENT_KEYS.length);
   });
 
+  it('accepts the isolated internal storefront slot', () => {
+    const environment = webBusinessApiEnvironment({
+      ...valid(),
+      API_PORT: '4422',
+      API_ALLOWED_ORIGINS: `${valid().API_ALLOWED_ORIGINS},https://internal.zhudatuan.com`,
+    });
+    expect(webBusinessApiPort(environment)).toBe(4422);
+    expect(webBusinessApiAllowedOrigins(environment)).toContain('https://internal.zhudatuan.com');
+  });
+
   it('fails closed on full-commerce secrets, public binds, and reused bearer credentials', () => {
     expect(() => webBusinessApiEnvironment({ ...valid(), PAYMENT_CONFIG_REF: 'legacy/payment' }))
       .toThrow('WEB_BUSINESS_API_KEY_FORBIDDEN:PAYMENT_CONFIG_REF');

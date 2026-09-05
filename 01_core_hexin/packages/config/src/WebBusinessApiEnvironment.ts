@@ -10,6 +10,14 @@ import {
 import { apiAllowedOrigins } from './ApiEnvironment';
 
 export const WEB_BUSINESS_API_PROFILE = 'web-business-only' as const;
+const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([
+  'https://console.zhudatuan.com',
+  'https://hbbtzn.com',
+  'https://mall.hbbtzn.com',
+  'https://www.hbbtzn.com',
+  'https://zhudatuan.com',
+]);
+const INTERNAL_ALLOWED_ORIGINS = Object.freeze([...PRODUCTION_ALLOWED_ORIGINS, 'https://internal.zhudatuan.com']);
 
 export const WEB_BUSINESS_API_ENVIRONMENT_KEYS = Object.freeze([
   'WEB_BUSINESS_API_PROFILE',
@@ -65,14 +73,10 @@ export function validateWebBusinessApiEnvironment(source: EnvironmentSource): vo
   const secretStoreBearer = bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
   distinctValues(kmsBearer, secretStoreBearer, 'WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
   const origins = apiAllowedOrigins(source);
-  if (app === 'production' && [...origins].sort().join(',') !== [
-    'https://console.zhudatuan.com',
-    'https://hbbtzn.com',
-    'https://mall.hbbtzn.com',
-    'https://www.hbbtzn.com',
-    'https://zhudatuan.com',
-  ].sort().join(',')) throw new Error('WEB_BUSINESS_API_ORIGINS_INVALID');
-  if (webBusinessApiPort(source) !== 4322) throw new Error('WEB_BUSINESS_API_PORT_INVALID');
+  const normalizedOrigins = [...origins].sort().join(',');
+  if (app === 'production' && ![PRODUCTION_ALLOWED_ORIGINS, INTERNAL_ALLOWED_ORIGINS]
+    .some((allowed) => normalizedOrigins === [...allowed].sort().join(','))) throw new Error('WEB_BUSINESS_API_ORIGINS_INVALID');
+  if (![4322, 4422].includes(webBusinessApiPort(source))) throw new Error('WEB_BUSINESS_API_PORT_INVALID');
   if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(source.PUBLIC_MALL_SLUG!)) throw new Error('PUBLIC_MALL_SLUG_INVALID');
 }
 
