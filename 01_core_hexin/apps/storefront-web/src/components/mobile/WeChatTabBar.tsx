@@ -14,7 +14,7 @@ export const WeChatTabBar: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white border-t border-gray-200/80 sticky bottom-0 z-40 grid h-[58px] grid-cols-5 px-2 py-1.5 select-none shadow-lg font-sans">
+    <div data-storefront-mobile-tabbar className="z-40 grid h-[58px] w-full shrink-0 grid-cols-5 border-t border-gray-200/80 bg-white px-2 py-1.5 font-sans shadow-lg select-none">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = mpPage === tab.id;

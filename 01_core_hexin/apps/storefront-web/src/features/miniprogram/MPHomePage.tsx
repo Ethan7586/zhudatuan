@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
-import { WeChatTabBar } from '../../components/mobile/WeChatTabBar';
 import { MPProductFeed } from './MPProductFeed';
 import { CreditCard, Utensils, Search, ChevronRight, Flame, Store, Ticket, ShoppingBag, Gift, Tv, Coffee, Sparkles, Plus, ShieldCheck, Building2, Tag, LogIn } from 'lucide-react';
 import { storefrontAuthHref } from '../../config/storefrontAuth';
@@ -242,8 +241,6 @@ export const MPHomePage: React.FC = () => {
 
       <MPProductFeed />
 
-      {/* 固定 Bottom TabBar */}
-      <WeChatTabBar />
     </div>
   );
 };

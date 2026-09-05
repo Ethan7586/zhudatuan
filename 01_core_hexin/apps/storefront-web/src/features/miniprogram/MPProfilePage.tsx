@@ -1,7 +1,6 @@
 import React from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
-import { WeChatTabBar } from '../../components/mobile/WeChatTabBar';
 import { CreditCard, Utensils, Package, Clock, Truck, CheckCircle, HelpCircle, Ticket, MapPin, FileText, BellRing, Headphones, ShieldCheck, ChevronRight, Building2, Smartphone } from 'lucide-react';
 
 export const MPProfilePage: React.FC = () => {
@@ -194,7 +193,6 @@ export const MPProfilePage: React.FC = () => {
         </div>
       </div>
 
-      <WeChatTabBar />
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
-import { WeChatTabBar } from '../../components/mobile/WeChatTabBar';
 import { Search, Plus, Filter, Tag, ArrowUpDown } from 'lucide-react';
 
 export const MPCategoryPage: React.FC = () => {
@@ -147,7 +146,6 @@ export const MPCategoryPage: React.FC = () => {
         </div>
       </div>
 
-      <WeChatTabBar />
     </div>
   );
 };

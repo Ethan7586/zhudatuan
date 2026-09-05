@@ -10,6 +10,7 @@ import { ToastContainer } from '../common/ToastContainer';
 import { MobileOrdersPage } from './MobileOrdersPage';
 import { PendingInterfaceModal } from './PendingInterfaceModal';
 import { PaymentResultPage } from '../common/PaymentResultPage';
+import { WeChatTabBar } from './WeChatTabBar';
 
 /** Production phone storefront shown after an L6 consumer opens the mall. */
 export function ProductionMobileFrame() {
@@ -35,8 +36,11 @@ export function ProductionMobileFrame() {
   })();
 
   return (
-    <div data-storefront-surface="h5" className="min-h-[100dvh] bg-[#F5F7FA] text-gray-800">
-      <div className="mx-auto min-h-[100dvh] max-w-[430px] overflow-x-hidden bg-[#F5F7FA] shadow-xl">{page}</div>
+    <div data-storefront-surface="h5" className="h-[100dvh] overflow-hidden bg-[#F5F7FA] text-gray-800">
+      <div className="mx-auto flex h-[100dvh] max-w-[430px] flex-col overflow-hidden bg-[#F5F7FA] shadow-xl">
+        <div data-storefront-mobile-scroll className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">{page}</div>
+        <WeChatTabBar />
+      </div>
       <PendingInterfaceModal />
       <ToastContainer />
     </div>

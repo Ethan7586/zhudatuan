@@ -207,10 +207,15 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     if (sessionStatus === 'authenticated' && product.skuId) {
       try {
         await productionApi.upsertCartItem({ listingId: product.id, quantity });
+      } catch {
+        showToast('购物车保存失败，请稍后重试', 'error');
+        return;
+      }
+      try {
         await refreshServerCart();
         showToast(`已将“${product.title.slice(0, 16)}...”加入购物车`, 'success');
       } catch {
-        showToast('购物车保存失败，请稍后重试', 'error');
+        showToast('商品已加入，但购物车读取失败，请刷新后重试', 'error');
       }
       return;
     }
