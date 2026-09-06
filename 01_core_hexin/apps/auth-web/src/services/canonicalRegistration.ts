@@ -62,6 +62,7 @@ const MembershipSchema = z.strictObject({
   access_version: transportInteger.pipe(z.number().positive()),
   joined_at: z.iso.datetime(),
   left_at: z.iso.datetime().nullable(),
+  governance_parent_membership_id: z.string().nullable(),
   authentication: RegistrationAuthenticationSchema.optional(),
 });
 

@@ -401,6 +401,7 @@ function membership(): Readonly<Record<string, unknown>> {
     access_version: 1,
     joined_at: '2026-08-28T01:00:00.000Z',
     left_at: null,
+    governance_parent_membership_id: null,
   };
 }
 
