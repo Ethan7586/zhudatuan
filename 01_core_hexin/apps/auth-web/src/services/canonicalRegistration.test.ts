@@ -6,6 +6,7 @@ const TERMS_HASH = 'a'.repeat(64);
 beforeEach(() => {
   const values = new Map<string, string>();
   vi.stubGlobal('window', {
+    location: { hostname: 'accounts.zhudatuan.com' },
     sessionStorage: {
       getItem: (key: string) => values.get(key) ?? null,
       setItem: (key: string, value: string) => values.set(key, value),
@@ -184,6 +185,48 @@ describe('canonical registration', () => {
     });
     expect(String(fetchMock.mock.calls[1]?.[0])).toBe('http://127.0.0.1:3001/api/v1/identity/tickets/exchange');
     expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({ credentials: 'include' });
+  });
+
+  it('recovers once from a stale-session CSRF rejection before direct registration', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse({ code: 'CSRF_TOKEN_INVALID' }, 403))
+      .mockResolvedValueOnce(jsonResponse({
+        ...membership(),
+        authentication: {
+          session: 'session:registration-retry',
+          csrf: 'csrf-token-at-least-sixteen-characters',
+          expiresIn: 43_200,
+          membership: 'membership:storefront-one',
+          target: 'storefront',
+          callback: { ticket: 't'.repeat(64), state: 's'.repeat(32) },
+        },
+      }, 201))
+      .mockResolvedValueOnce(jsonResponse({
+        returnTarget: {
+          url: 'http://127.0.0.1:3000/',
+          proof: 'signed-return-target-proof',
+          expiresAt: '2099-01-01T00:00:00.000Z',
+        },
+        expiresIn: 43_200,
+      }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createCanonicalMember({
+      subject: '15871798268',
+      password: 'Generated!Password2',
+      displayName: 'L6消费者8268',
+      inviteCode: 'invitation-secret',
+      challengeId: 'challenge:registration-retry',
+      code: '483921',
+      termsAccepted: true,
+      termsHash: TERMS_HASH,
+      directLogin: true,
+    })).resolves.toMatchObject({ redirectUrl: 'http://127.0.0.1:3000/' });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/api/v1/identity/members');
+    expect(String(fetchMock.mock.calls[1]?.[0])).toContain('/api/v1/identity/members');
+    expect(String(fetchMock.mock.calls[2]?.[0])).toContain('/api/v1/identity/tickets/exchange');
   });
 
   it('defers L6 phone verification to checkout while creating a password account', async () => {

@@ -8,6 +8,15 @@ import type { OperationMetrics } from '../telemetry/OperationMetrics';
 import { ErrorMapper } from './ErrorMapper';
 
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
+const STALE_IDENTITY_COOKIE_RECOVERY = new Set([
+  'identity.sessions.create',
+  'identity.challenges.create',
+  'identity.members.create',
+]);
+const EXPIRED_IDENTITY_COOKIES = Object.freeze({
+  'set-cookie': 'shop_session=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
+  'x-set-cookie': 'shop_csrf=; Path=/; Max-Age=0; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
+});
 
 export class HttpApp {
   private readonly origins: ReadonlySet<string>;
@@ -53,7 +62,10 @@ export class HttpApp {
       const mapped = this.errors.map(cause, requestId);
       observedStatus = mapped.status;
       observedError = internalErrorCode(cause) ?? bodyCode(mapped.body);
-      return secure(mapped.status, mapped.body, requestId, origin, mapped.headers);
+      const recoverStaleIdentityCookie = observedError === 'CSRF_TOKEN_INVALID'
+        && observedOperation !== undefined && STALE_IDENTITY_COOKIE_RECOVERY.has(observedOperation);
+      return secure(mapped.status, mapped.body, requestId, origin,
+        recoverStaleIdentityCookie ? { ...mapped.headers, ...EXPIRED_IDENTITY_COOKIES } : mapped.headers);
     } finally {
       if (observedOperation) this.metrics?.observe({ requestId, traceId,
         operation: observedOperation, version: CONTRACT_VERSION }, observedStatus, performance.now()-started, observedError);

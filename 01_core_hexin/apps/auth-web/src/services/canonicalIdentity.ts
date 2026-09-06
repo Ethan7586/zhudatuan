@@ -307,7 +307,7 @@ async function identityRequest(
 ): Promise<unknown> {
   const credentials = options.credentials ?? 'include';
   const csrf = credentials === 'include' ? csrfToken() : null;
-  const response = await fetch(new URL(path, apiOrigin()), {
+  const request = () => fetch(new URL(path, apiOrigin()), {
     method: 'POST',
     credentials,
     headers: {
@@ -322,7 +322,12 @@ async function identityRequest(
     body: JSON.stringify(body),
     signal,
   });
-  const payload = await response.json().catch(() => null);
+  let response = await request();
+  let payload = await response.json().catch(() => null);
+  if (credentials === 'include' && responseCode(payload, response.status) === 'CSRF_TOKEN_INVALID') {
+    response = await request();
+    payload = await response.json().catch(() => null);
+  }
   if (!response.ok) throw new Error(identityError(payload, response.status, options.action ?? '登录'));
   return payload;
 }
@@ -435,9 +440,7 @@ function base64url(value: Uint8Array): string {
 }
 
 function identityError(value: unknown, status: number, action: string): string {
-  const code = value !== null && typeof value === 'object' && !Array.isArray(value) && typeof Reflect.get(value, 'code') === 'string'
-    ? String(Reflect.get(value, 'code'))
-    : `HTTP_${status}`;
+  const code = responseCode(value, status);
   return {
     CREDENTIAL_INVALID: '账号或密码不正确',
     MEMBERSHIP_INACTIVE: '该账号没有可用的后台会员身份',
@@ -449,4 +452,9 @@ function identityError(value: unknown, status: number, action: string): string {
     CHALLENGE_PRINCIPAL_MISSING: '该手机号没有可重置的账号',
     PASSWORD_POLICY_REJECTED: '密码须为 12–128 位，并同时包含大小写字母、数字和符号',
   }[code] ?? `统一身份服务暂时无法完成${action}（${code}）`;
+}
+
+function responseCode(value: unknown, status: number): string {
+  return value !== null && typeof value === 'object' && !Array.isArray(value) && typeof Reflect.get(value, 'code') === 'string'
+    ? String(Reflect.get(value, 'code')) : `HTTP_${status}`;
 }

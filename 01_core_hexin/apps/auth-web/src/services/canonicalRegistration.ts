@@ -185,12 +185,13 @@ async function identityRequest(
   signal?: AbortSignal,
   options: Readonly<{ credentials?: RequestCredentials }> = {},
 ): Promise<unknown> {
-  const response = await fetch(new URL(path, apiOrigin()), {
+  const credentials = options.credentials ?? 'omit';
+  const request = () => fetch(new URL(path, apiOrigin()), {
     method: 'POST',
     // Public registration never consumes an existing authenticated session.
     // Omitting cookies prevents a stale API-host session from influencing the
     // anonymous invitation, OTP, or member-creation transaction.
-    credentials: options.credentials ?? 'omit',
+    credentials,
     headers: {
       'content-type': 'application/json',
       'idempotency-key': crypto.randomUUID(),
@@ -202,7 +203,12 @@ async function identityRequest(
     body: JSON.stringify(body),
     signal,
   });
-  const payload = await response.json().catch(() => null);
+  let response = await request();
+  let payload = await response.json().catch(() => null);
+  if (credentials === 'include' && responseCode(payload, response.status) === 'CSRF_TOKEN_INVALID') {
+    response = await request();
+    payload = await response.json().catch(() => null);
+  }
   if (!response.ok) throw new Error(registrationError(payload, response.status));
   return payload;
 }
@@ -287,7 +293,7 @@ function requiredMobile(value: string): string {
 }
 
 function registrationError(value: unknown, status: number): string {
-  const code = value !== null && typeof value === 'object' && !Array.isArray(value) && typeof Reflect.get(value, 'code') === 'string' ? String(Reflect.get(value, 'code')) : `HTTP_${status}`;
+  const code = responseCode(value, status);
   return (
     {
       INVITE_INVALID: '邀请码无效、已过期或已被使用',
@@ -301,4 +307,9 @@ function registrationError(value: unknown, status: number): string {
       TERMS_ACCEPTANCE_REQUIRED: '注册条款已更新，请重新阅读并同意',
     }[code] ?? `统一身份服务暂时无法完成注册（${code}）`
   );
+}
+
+function responseCode(value: unknown, status: number): string {
+  return value !== null && typeof value === 'object' && !Array.isArray(value) && typeof Reflect.get(value, 'code') === 'string'
+    ? String(Reflect.get(value, 'code')) : `HTTP_${status}`;
 }

@@ -44,6 +44,9 @@ describe('HTTP boundary contract', () => {
     }));
     expect(response.status).toBe(403);
     expect(await response.json()).toMatchObject({ code: 'CSRF_TOKEN_INVALID' });
+    expect(response.headers.get('set-cookie')).toContain('shop_session=');
+    expect(response.headers.get('set-cookie')).toContain('shop_csrf=');
+    expect(response.headers.get('set-cookie')).toContain('Max-Age=0');
     expect(handler).not.toHaveBeenCalled();
   });
 

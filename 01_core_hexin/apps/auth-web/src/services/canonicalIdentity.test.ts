@@ -19,6 +19,7 @@ const STOREFRONT_DESTINATION = 'http://127.0.0.1:3000/';
 beforeEach(() => {
   const values = new Map<string, string>();
   vi.stubGlobal('window', {
+    location: { hostname: 'accounts.zhudatuan.com' },
     sessionStorage: {
       getItem: (key: string) => values.get(key) ?? null,
       setItem: (key: string, value: string) => values.set(key, value),
@@ -199,6 +200,24 @@ describe('canonical console identity', () => {
       verifier: expect.any(String),
     });
     expect(exchangeBody.verifier).not.toBe(sessionBody.authorization.challenge);
+  });
+
+  it('recovers once from a stale-session CSRF rejection before password login', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse({ code: 'CSRF_TOKEN_INVALID' }, 403))
+      .mockResolvedValueOnce(jsonResponse(sessionCreated()))
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged(CONSOLE_DESTINATION)));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loginCanonicalConsole('ethan', 'Original!Password1')).resolves.toMatchObject({
+      kind: 'authenticated',
+      redirectUrl: CONSOLE_DESTINATION,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/api/v1/identity/sessions');
+    expect(String(fetchMock.mock.calls[1]?.[0])).toContain('/api/v1/identity/sessions');
+    expect(String(fetchMock.mock.calls[2]?.[0])).toContain('/api/v1/identity/tickets/exchange');
   });
 
   it('logs a newly registered consumer into its exact storefront membership before redirecting', async () => {
