@@ -136,7 +136,7 @@ function preflight(request: Request, requestId: string, origin: string | null): 
   const method = request.headers.get('access-control-request-method');
   if (!method || !['GET','POST','PUT','PATCH','DELETE'].includes(method)) return secure(405, { code: 'METHOD_NOT_ALLOWED', requestId }, requestId, origin);
   return secure(204, undefined, requestId, origin, { 'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-    'access-control-allow-headers': 'authorization,content-type,idempotency-key,if-match,x-access-version,x-contract-version,x-csrf-token,x-request-id,x-trace-id,x-client-version,x-scope-hint',
+    'access-control-allow-headers': 'authorization,content-type,idempotency-key,if-match,x-access-version,x-contract-version,x-csrf-token,x-request-id,x-trace-id,x-client-version,x-device-id,x-scope-hint',
     'access-control-max-age': '600', 'access-control-allow-credentials': 'true' });
 }
 
