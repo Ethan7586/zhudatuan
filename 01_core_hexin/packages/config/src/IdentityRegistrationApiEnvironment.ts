@@ -5,10 +5,14 @@ export const IDENTITY_REGISTRATION_API_PROFILE = 'registration-only' as const;
 
 const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([
   'https://accounts.zhudatuan.com',
+  'https://console.hbbtzn.com',
   'https://console.zhudatuan.com',
+  'https://h5.hbbtzn.com',
   'https://h5.zhudatuan.com',
   'https://hbbtzn.com',
+  'https://mall.hbbtzn.com',
   'https://mini.zhudatuan.com',
+  'https://www.hbbtzn.com',
   'https://zhudatuan.com',
 ] as const);
 const INTERNAL_STOREFRONT_ORIGIN = 'https://internal.zhudatuan.com';
