@@ -1,5 +1,6 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { transportInteger } from '@shop/contract/client';
+import { createSecureId } from '@shop/sdk/context';
 import { z } from 'zod';
 import { beginCanonicalAuthorization, exchangeCanonicalStorefrontSession } from './canonicalIdentity';
 
@@ -242,11 +243,11 @@ async function identityRequest(
     credentials,
     headers: {
       'content-type': 'application/json',
-      'idempotency-key': crypto.randomUUID(),
+      'idempotency-key': createSecureId(),
       'x-client-version': clientVersion(),
       'x-contract-version': CONTRACT_VERSION,
       'x-device-id': deviceId(),
-      'x-request-id': crypto.randomUUID(),
+      'x-request-id': createSecureId(),
     },
     body: JSON.stringify(body),
     signal,
@@ -262,9 +263,24 @@ async function identityRequest(
 }
 
 function apiOrigin(): string {
-  const configured = import.meta.env.VITE_API_BASE_URL?.trim() || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
-  const parsed = new URL(configured);
-  const local = import.meta.env.DEV && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
+  return resolveCanonicalRegistrationApiOrigin(
+    import.meta.env.VITE_API_BASE_URL,
+    import.meta.env.DEV,
+    typeof window === 'undefined' ? undefined : window.location.hostname,
+  );
+}
+
+export function resolveCanonicalRegistrationApiOrigin(
+  configured: string | undefined,
+  development: boolean,
+  hostname?: string,
+): string {
+  let candidate = configured?.trim() || (development ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
+  if (hostname?.startsWith('accounts.') && hostname !== 'accounts.zhudatuan.com') {
+    candidate = `https://api.${hostname.slice('accounts.'.length)}`;
+  }
+  const parsed = new URL(candidate);
+  const local = development && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
   if ((!local && parsed.origin !== CANONICAL_API_ORIGIN && parsed.origin !== LEGACY_API_ORIGIN)
     || parsed.username || parsed.password || parsed.hash) {
     throw new Error('统一身份 API 不在允许清单');

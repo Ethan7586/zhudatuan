@@ -1,4 +1,4 @@
-import { createFetchCommerce, createRequestContext } from '@shop/sdk';
+import { createFetchCommerce, createRequestContext, createSecureId } from '@shop/sdk';
 import type { CommerceClient, RequestContext, RequestScope } from '@shop/sdk';
 import { ProductionApiError, productionError } from './productionApi.error';
 
@@ -52,7 +52,7 @@ export function anonymousContext(): RequestContext {
 }
 
 export function anonymousIdempotentContext(): RequestContext {
-  return createRequestContext(clientVersion(), { idempotencyKey: crypto.randomUUID() });
+  return createRequestContext(clientVersion(), { idempotencyKey: createSecureId() });
 }
 
 export function sessionContext(options: ContextOptions = {}): RequestContext {

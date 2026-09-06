@@ -1,5 +1,6 @@
 import { anonymousIdempotentContext, canonicalCall, canonicalClient, sessionContext } from './canonicalApiClient';
 import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
+import { createSecureId } from '@shop/sdk/context';
 import { record, text } from './canonicalShape';
 
 export interface H5WechatAuthorization {
@@ -51,12 +52,12 @@ export async function completeH5WechatSession(callback: Readonly<{ ticket: strin
 export async function bindH5WechatIdentity(bindingToken: string): Promise<void> {
   await canonicalCall(() => canonicalClient().identity.wechatBind({ body: { bindingToken } }, sessionContext({
     write: true,
-    idempotencyKey: crypto.randomUUID(),
+    idempotencyKey: createSecureId(),
   })));
 }
 
 function wechatSessionContext(mode: H5WechatSessionMode) {
   return mode === 'authenticated'
-    ? sessionContext({ write: true, idempotencyKey: crypto.randomUUID(), includeScope: false })
+    ? sessionContext({ write: true, idempotencyKey: createSecureId(), includeScope: false })
     : anonymousIdempotentContext();
 }

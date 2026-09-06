@@ -1,5 +1,6 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
+import { createSecureId } from '@shop/sdk/context';
 import { z } from 'zod';
 import type { Membership, PreAuthContext } from '../types';
 import { resolveAdminLoginOrigin, resolveStorefrontLoginOrigin } from './originPolicy';
@@ -95,7 +96,7 @@ export async function currentCanonicalStorefrontOrganization(signal?: AbortSigna
       'x-client-version': clientVersion(),
       'x-contract-version': CONTRACT_VERSION,
       'x-device-id': deviceId(),
-      'x-request-id': crypto.randomUUID(),
+      'x-request-id': createSecureId(),
     },
     signal,
   });
@@ -346,11 +347,11 @@ async function identityRequest(
     credentials,
     headers: {
       'content-type': 'application/json',
-      'idempotency-key': crypto.randomUUID(),
+      'idempotency-key': createSecureId(),
       'x-client-version': clientVersion(),
       'x-contract-version': CONTRACT_VERSION,
       'x-device-id': deviceId(),
-      'x-request-id': crypto.randomUUID(),
+      'x-request-id': createSecureId(),
       ...(csrf === null ? {} : { 'x-csrf-token': csrf }),
     },
     body: JSON.stringify(body),

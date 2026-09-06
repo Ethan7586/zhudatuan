@@ -1,5 +1,6 @@
 import { canonicalCall, canonicalClient, anonymousContext, anonymousIdempotentContext, clearCanonicalSession, rememberCanonicalSession, sessionContext } from './canonicalApiClient';
 import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
+import { createSecureId } from '@shop/sdk/context';
 import { checkoutWithCanonicalPayment } from './canonicalCheckout';
 import { readCanonicalPaymentResult } from './canonicalPaymentResult';
 import { mapCanonicalProductPage } from './canonicalCatalogMapper';
@@ -194,7 +195,7 @@ export const productionApi = {
 
   async logout(): Promise<{ authenticated: false }> {
     try {
-      await canonicalCall(() => canonicalClient().identity.sessionDelete({}, sessionContext({ write: true, idempotencyKey: crypto.randomUUID(), includeScope: false })));
+      await canonicalCall(() => canonicalClient().identity.sessionDelete({}, sessionContext({ write: true, idempotencyKey: createSecureId(), includeScope: false })));
       return { authenticated: false };
     } finally {
       clearCanonicalSession();
@@ -249,7 +250,7 @@ export const productionApi = {
   async upsertCartItem(input: { listingId: string; quantity: number }): Promise<{ saved: true }> {
     await canonicalCall(() => canonicalClient().cart.itemsPut({ path: { listingid: input.listingId }, body: { quantity: input.quantity } }, sessionContext({
       write: true,
-      idempotencyKey: crypto.randomUUID(),
+      idempotencyKey: createSecureId(),
     })));
     return { saved: true };
   },
@@ -265,11 +266,11 @@ export const productionApi = {
   },
 
   async upsertAddress(input: ApiDeliveryAddress): Promise<{ id: string }> {
-    const id = input.id || `address:${crypto.randomUUID()}`;
+    const id = input.id || `address:${createSecureId()}`;
     const body = { recipient: input.name, mobile: input.phone, address: input.detail, region: [input.province, input.city, input.district].filter(Boolean).join('/'), status: 'active' };
     const value = await canonicalCall(() => canonicalClient().member.addressesManage({ path: { addressid: id }, body }, sessionContext({
       write: true,
-      idempotencyKey: crypto.randomUUID(),
+      idempotencyKey: createSecureId(),
       ...(input.version === undefined ? {} : { expectedVersion: input.version }),
     })));
     return { id: text(record(value, 'member.address.manage').id, 'member.address.manage.id') };
@@ -278,7 +279,7 @@ export const productionApi = {
   async deleteAddress(addressId: string, expectedVersion?: number): Promise<{ removed: true }> {
     await canonicalCall(() => canonicalClient().member.addressesManage({ path: { addressid: addressId }, body: { status: 'deleted' } }, sessionContext({
       write: true,
-      idempotencyKey: crypto.randomUUID(),
+      idempotencyKey: createSecureId(),
       ...(expectedVersion === undefined ? {} : { expectedVersion }),
     })));
     return { removed: true };
@@ -287,7 +288,7 @@ export const productionApi = {
   async startPaymentPhoneVerification(): Promise<{ challengeId: string; expiresAt: string }> {
     const value = record(await canonicalCall(() => canonicalClient().identity.stepupStart({ body: {} }, sessionContext({
       write: true,
-      idempotencyKey: crypto.randomUUID(),
+      idempotencyKey: createSecureId(),
     }))), 'identity.stepup.start');
     return {
       challengeId: text(value.id, 'identity.stepup.start.id'),
@@ -298,7 +299,7 @@ export const productionApi = {
   async completePaymentPhoneVerification(challengeId: string, code: string): Promise<{ verified: true }> {
     await canonicalCall(() => canonicalClient().identity.stepupComplete({ body: { challenge: challengeId, code } }, sessionContext({
       write: true,
-      idempotencyKey: crypto.randomUUID(),
+      idempotencyKey: createSecureId(),
     })));
     return { verified: true };
   },

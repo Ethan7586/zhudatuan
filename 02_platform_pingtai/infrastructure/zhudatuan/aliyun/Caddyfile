@@ -104,6 +104,17 @@ api.zhudatuan.com {
 		X-Frame-Options "DENY"
 	}
 
+	# L1 storefront reads the result of the payment intent it just created.
+	@paymentResultApi {
+		method GET OPTIONS
+		path /api/v1/payments/intents/*
+	}
+	handle @paymentResultApi {
+		reverse_proxy 127.0.0.1:4323 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
 	reverse_proxy localhost:3001 {
 		header_up X-Real-IP {client_ip}
 	}

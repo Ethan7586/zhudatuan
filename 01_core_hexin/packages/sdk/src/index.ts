@@ -1,7 +1,7 @@
 export { ApiError } from './error';
 export { createCommerce, createFetchCommerce, createWechatCommerce } from './ClientFactory';
 export { createFetchIdentity } from './operations/identity';
-export { createIdempotencyKey, createRequestContext } from './RequestContextFactory';
+export { createIdempotencyKey, createRequestContext, createSecureId } from './RequestContextFactory';
 export type { RequestContextOptions } from './RequestContextFactory';
 export { FetchTransport } from './FetchTransport';
 export type { RequestContext, RequestScope } from './RequestContext';

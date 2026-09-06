@@ -1,4 +1,5 @@
 import type { CartItem, DeliveryAddress, UserProfile } from '../types';
+import { createSecureId } from '@shop/sdk/context';
 import { productionApi } from '../services/productionApi';
 
 export class PaymentPhoneVerificationRequired extends Error {
@@ -30,7 +31,7 @@ export async function checkoutSelectedCartRequest(cart: CartItem[], addresses: D
   const checkout = await productionApi.checkout({
     addressId: address.id,
     items: selectedItems.map((item) => ({ listingId: item.product.id, quantity: item.quantity })),
-    idempotencyKey: `checkout-${crypto.randomUUID()}`,
+    idempotencyKey: `checkout-${createSecureId()}`,
   });
   return { selectedItems, ...checkout };
 }
