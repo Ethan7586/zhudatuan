@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMall } from '../../context/MallContext';
 import { productionApi, ProductionApiError } from '../../services/productionApi';
+import { PaymentPhoneVerificationModal } from './PaymentPhoneVerificationModal';
 import {
   beginH5WechatAuthorization,
   bindH5WechatIdentity,
@@ -18,6 +19,7 @@ const ATTEMPT_KEY = 'zdt.h5.wechat.attempted';
 export function H5WechatIdentityBridge() {
   const { sessionStatus, user, showToast } = useMall();
   const running = useRef(false);
+  const [verificationBindingToken, setVerificationBindingToken] = useState<string | null>(null);
 
   useEffect(() => {
     if (running.current || !isWechatBrowser() || sessionStatus === 'checking') return;
@@ -54,7 +56,15 @@ export function H5WechatIdentityBridge() {
             return;
           }
           await productionApi.getSession();
-          await bindH5WechatIdentity(exchanged.bindingToken);
+          try {
+            await bindH5WechatIdentity(exchanged.bindingToken);
+          } catch (cause) {
+            if (cause instanceof ProductionApiError && cause.code === 'STEPUP_REQUIRED') {
+              setVerificationBindingToken(exchanged.bindingToken);
+              return;
+            }
+            throw cause;
+          }
           sessionStorage.removeItem(BINDING_KEY);
           localStorage.setItem(BOUND_USER_KEY, user.id);
           window.location.replace('/');
@@ -66,7 +76,15 @@ export function H5WechatIdentityBridge() {
 
       const pendingBinding = sessionStorage.getItem(BINDING_KEY);
       if (pendingBinding && sessionStatus === 'authenticated') {
-        await bindH5WechatIdentity(pendingBinding);
+        try {
+          await bindH5WechatIdentity(pendingBinding);
+        } catch (cause) {
+          if (cause instanceof ProductionApiError && cause.code === 'STEPUP_REQUIRED') {
+            setVerificationBindingToken(pendingBinding);
+            return;
+          }
+          throw cause;
+        }
         sessionStorage.removeItem(BINDING_KEY);
         localStorage.setItem(BOUND_USER_KEY, user.id);
         showToast('微信绑定成功，以后可直接从微信进入商城', 'success');
@@ -93,7 +111,27 @@ export function H5WechatIdentityBridge() {
     });
   }, [sessionStatus, showToast, user.id]);
 
-  return null;
+  if (!verificationBindingToken) return null;
+  return (
+    <PaymentPhoneVerificationModal
+      phone={user.phone}
+      purpose="wechat-binding"
+      onClose={() => {
+        sessionStorage.removeItem(BINDING_KEY);
+        setVerificationBindingToken(null);
+        showToast('已取消微信改绑，当前手机号账号保持登录', 'info');
+      }}
+      onVerified={async () => {
+        await productionApi.getSession();
+        await bindH5WechatIdentity(verificationBindingToken);
+        sessionStorage.removeItem(BINDING_KEY);
+        localStorage.setItem(BOUND_USER_KEY, user.id);
+        setVerificationBindingToken(null);
+        showToast('微信绑定成功，以后可直接从微信进入商城', 'success');
+        window.location.replace('/');
+      }}
+    />
+  );
 }
 
 function isWechatBrowser(): boolean {

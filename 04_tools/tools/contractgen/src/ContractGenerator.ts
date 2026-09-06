@@ -352,8 +352,8 @@ function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, con
       `async function operationAccess(operation: ReturnType<typeof OperationCatalog.get>, request: HttpRequest, resource: string | undefined,
   authorizer: OperationAuthorizer): Promise<AccessContext | null> {
   if (operation.id === 'identity.wechat.session' && authenticatedWechatMode(request.body)) {
-    const binding = OperationCatalog.get('identity.wechat.bind');
-    return authorizer.authorize(request.headers, binding.id, binding.permission ?? binding.id, resource);
+    const currentSession = OperationCatalog.get('identity.session.read');
+    return authorizer.authorize(request.headers, currentSession.id, currentSession.permission ?? currentSession.id, resource);
   }
   if (operation.audience === 'public' || operation.audience === 'provider') return null;
   return authorizer.authorize(request.headers, operation.id, operation.permission ?? operation.id, resource);
