@@ -289,11 +289,25 @@ function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, con
     if (!handler) throw new Error(`OPERATION_HANDLER_MISSING:${operation.id}`);
     context.routes.register({ operation: operation.id, handler: async (request) => {
       const resource = operationResource(operation.id, request);
-      const access = operation.audience === 'public' || operation.audience === 'provider' ? null : await authorizer.authorize(request.headers, operation.id, operation.permission ?? operation.id, resource);
+      const access = await operationAccess(operation, request, resource, authorizer);
       const result: OperationResult = await handler.handle({ type: operation.id, input: operationInput(operation.id, request, resource), access });
       return json(result.status, result.body, result.headers);
     } });
   }
+}
+
+async function operationAccess(operation: ReturnType<typeof OperationCatalog.get>, request: HttpRequest, resource: string | undefined,
+  authorizer: OperationAuthorizer): Promise<AccessContext | null> {
+  if (operation.id === 'identity.wechat.session' && authenticatedWechatMode(request.body)) {
+    const binding = OperationCatalog.get('identity.wechat.bind');
+    return authorizer.authorize(request.headers, binding.id, binding.permission ?? binding.id, resource);
+  }
+  if (operation.audience === 'public' || operation.audience === 'provider') return null;
+  return authorizer.authorize(request.headers, operation.id, operation.permission ?? operation.id, resource);
+}
+
+function authenticatedWechatMode(body: unknown): boolean {
+  return body !== null && typeof body === 'object' && !Array.isArray(body) && Reflect.get(body, 'mode') === 'authenticated';
 }
 
 function operationInput(operation: string, request: HttpRequest, resource: string | undefined): OperationInput {

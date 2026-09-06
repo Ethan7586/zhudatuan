@@ -164,6 +164,7 @@ describe('canonical storefront production API', () => {
     for (const [, init] of sessions) {
       expect(new Headers(init?.headers).get('x-csrf-token')).toBe('csrf-token-for-storefront');
       expect(new Headers(init?.headers).get('idempotency-key')).toBeTruthy();
+      expect(JSON.parse(String(init?.body))).toMatchObject({ mode: 'authenticated' });
     }
   });
 

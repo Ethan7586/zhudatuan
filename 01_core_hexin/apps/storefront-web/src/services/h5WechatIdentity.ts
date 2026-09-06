@@ -19,14 +19,14 @@ export async function beginH5WechatAuthorization(): Promise<H5WechatAuthorizatio
 
 export async function requestH5WechatAuthorization(authorization: H5WechatAuthorization, mode: H5WechatSessionMode = 'anonymous'): Promise<string> {
   const value = record(await canonicalCall(() => canonicalClient().identity.wechatSession({
-    body: { scene: 'jsapi', action: 'authorize', authorization: authorization.request },
+    body: { scene: 'jsapi', action: 'authorize', mode, authorization: authorization.request },
   }, wechatSessionContext(mode))), 'identity.wechat.authorize');
   return text(value.authorizationUrl, 'identity.wechat.authorizationUrl');
 }
 
 export async function exchangeH5WechatCode(code: string, authorization: H5WechatAuthorization, mode: H5WechatSessionMode = 'anonymous'): Promise<H5WechatExchange> {
   const value = record(await canonicalCall(() => canonicalClient().identity.wechatSession({
-    body: { scene: 'jsapi', action: 'exchange', code, authorization: authorization.request },
+    body: { scene: 'jsapi', action: 'exchange', mode, code, authorization: authorization.request },
   }, wechatSessionContext(mode))), 'identity.wechat.exchange');
   if (typeof value.bindingToken === 'string' && value.bindingToken.length > 0) {
     return Object.freeze({ kind: 'binding', bindingToken: value.bindingToken,

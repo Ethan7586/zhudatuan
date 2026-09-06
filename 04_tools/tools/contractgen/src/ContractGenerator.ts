@@ -342,10 +342,28 @@ function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, con
     .replace("operation.audience === 'public' ? null", "operation.audience === 'public' || operation.audience === 'provider' ? null")
     .replace('const access = operation.audience', 'const resource = operationResource(operation.id, request);\n      const access = operation.audience')
     .replace('Object.values(request.parameters)[0]);', 'resource);')
+    .replace(
+      "const access = operation.audience === 'public' || operation.audience === 'provider' ? null : await authorizer.authorize(request.headers, operation.id, operation.permission ?? operation.id, resource);",
+      'const access = await operationAccess(operation, request, resource, authorizer);'
+    )
     .replace('operationInput(operation.method, request)', 'operationInput(operation.id, request, resource)')
     .replace(
       'function operationInput(method: string, request: HttpRequest): OperationInput {',
-      'function operationInput(operation: string, request: HttpRequest, resource: string | undefined): OperationInput {'
+      `async function operationAccess(operation: ReturnType<typeof OperationCatalog.get>, request: HttpRequest, resource: string | undefined,
+  authorizer: OperationAuthorizer): Promise<AccessContext | null> {
+  if (operation.id === 'identity.wechat.session' && authenticatedWechatMode(request.body)) {
+    const binding = OperationCatalog.get('identity.wechat.bind');
+    return authorizer.authorize(request.headers, binding.id, binding.permission ?? binding.id, resource);
+  }
+  if (operation.audience === 'public' || operation.audience === 'provider') return null;
+  return authorizer.authorize(request.headers, operation.id, operation.permission ?? operation.id, resource);
+}
+
+function authenticatedWechatMode(body: unknown): boolean {
+  return body !== null && typeof body === 'object' && !Array.isArray(body) && Reflect.get(body, 'mode') === 'authenticated';
+}
+
+function operationInput(operation: string, request: HttpRequest, resource: string | undefined): OperationInput {`
     )
     .replace("if (method !== 'GET' && idempotency === undefined)", "if (OperationCatalog.get(operation as OperationId).idempotency === 'required' && idempotency === undefined)")
     .replace('const normalized = header?.replace(/^W\\/"|"$/g, \'\');', "const normalized = header?.replace(/^W\\//, '').replace(/^\"|\"$/g, '');")
