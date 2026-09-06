@@ -32,7 +32,7 @@ export class PaymentWebhook {
           join lateral(select payer_hash,scene,application_hash from payment.attempt where mall_id=intent.mall_id
             and intent_id=intent.id and provider='wechat'
             order by requested_at desc,id desc limit 1) attempt on true
-          where intent.mall_id=$1 and intent.provider_reference=$2 for update of intent`, [scope, observed.providerReference]);
+          where intent.mall_id=$1 and intent.provider_reference=$2`, [scope, observed.providerReference]);
         const intent = target.rows[0];
         if (!intent || intent.amount_minor !== observed.amountMinor || intent.currency !== observed.currency || intent.payer_hash !== observed.payerHash
           || intent.scene !== observed.application.scene || intent.application_hash !== observed.application.applicationHash) {
@@ -49,7 +49,7 @@ export class PaymentWebhook {
           refund.mall_id scope_id from payment.refund refund
           join payment.payment payment on payment.mall_id=refund.mall_id and payment.id=refund.payment_id
           join payment.intent intent on intent.mall_id=payment.mall_id and intent.id=payment.intent_id
-          where refund.mall_id=$1 and refund.provider_reference=$2 for update of refund`, [scope, observed.providerReference]);
+          where refund.mall_id=$1 and refund.provider_reference=$2`, [scope, observed.providerReference]);
         const refund = target.rows[0];
         if (!refund || refund.amount_minor !== observed.amountMinor || refund.total_minor !== observed.totalMinor) {
           throw new Error('REFUND_WEBHOOK_INTEGRITY_MISMATCH');
