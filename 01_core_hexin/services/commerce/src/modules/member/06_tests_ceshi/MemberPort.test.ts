@@ -35,6 +35,19 @@ describe('MemberPort invitation constraints', () => {
     expect(values).toEqual(['principal:one']);
   });
 
+  it('persists the mobile mask together with the encrypted mobile', async () => {
+    const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) =>
+      result([{ id: 'member:one', display_name: '张三', mobile_masked: '+86****4716', version: '1' }]));
+    const port = new MemberPort();
+
+    await expect(port.changeMobile({ query } as unknown as OperationDatabase, 'principal:one', 'ciphertext:new', 'fingerprint:new', '+86****4716'))
+      .resolves.toMatchObject({ mobile_masked: '+86****4716' });
+    const [sql, values = []] = query.mock.calls[0]!;
+    expect(sql).toContain('mobile_masked=$4');
+    expect(sql).toContain('returning id,display_name,mobile_masked,version');
+    expect(values).toEqual(['principal:one', 'ciphertext:new', 'fingerprint:new', '+86****4716']);
+  });
+
   it('resolves only invitations that are effective, active, unexpired and not exhausted', async () => {
     const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) => result([{ target_client: 'operator', terms_hash: 'f'.repeat(64) }]));
     const port = new MemberPort();

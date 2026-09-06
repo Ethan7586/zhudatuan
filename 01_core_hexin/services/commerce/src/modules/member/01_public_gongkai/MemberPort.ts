@@ -145,8 +145,8 @@ export class MemberPort {
 
   async changeMobile(database: OperationDatabase, principal: string, ciphertext: string, fingerprint: string, masked: string): Promise<Readonly<Record<string, unknown>>> {
     const result = await database.query(
-      `update member.profile set mobile_ciphertext=$2,mobile_token=$3,version=version+1,updated_at=clock_timestamp()
-      where principal_id=$1 returning id,display_name,$4::text mobile_masked,version`,
+      `update member.profile set mobile_ciphertext=$2,mobile_token=$3,mobile_masked=$4,version=version+1,updated_at=clock_timestamp()
+      where principal_id=$1 returning id,display_name,mobile_masked,version`,
       [principal, ciphertext, fingerprint, masked]
     );
     const row = result.rows[0];
