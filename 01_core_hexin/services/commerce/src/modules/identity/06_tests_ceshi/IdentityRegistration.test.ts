@@ -291,6 +291,26 @@ describe('canonical member registration security boundary', () => {
     expect(credential?.values).toEqual([subjectDigest(SUBJECT), 'principal:mobile-login']);
   });
 
+  it('limits storefront login memberships to the requested application organization', async () => {
+    const password = 'Current!Password1';
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false, storefrontAvailable: true,
+      boundMobilePrincipal: 'principal:storefront-login', credentialSecret: await new PasswordPolicy().hash(password),
+      loginMembershipRows: [
+        { id: 'membership:hongtai:one', access_version: 1, client: 'storefront', organization_id: 'mall:l1-hongtai' },
+        { id: 'membership:other', access_version: 1, client: 'storefront', organization_id: 'mall:l1-other' },
+        { id: 'membership:hongtai:two', access_version: 1, client: 'storefront', organization_id: 'mall:l1-hongtai' },
+      ] });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
+      target: 'storefront', application: 'zdt-l1-verify',
+    }));
+
+    expect(response).toMatchObject({ status: 200, body: { memberships: [
+      { id: 'membership:hongtai:one', client: 'storefront' },
+      { id: 'membership:hongtai:two', client: 'storefront' },
+    ] } });
+  });
+
   it('resolves an active storefront as the public L6 self-registration context', async () => {
     const harness = registrationHarness({ challengeAccepted: false, subjectExists: false, storefrontAvailable: true });
 
@@ -659,13 +679,14 @@ function challengeRequest(body: Readonly<Record<string, unknown>>): OperationReq
   };
 }
 
-function passwordLoginRequest(subject: string, password: string): OperationRequest {
+function passwordLoginRequest(subject: string, password: string,
+  entry: Readonly<{ target: string; application?: string }> = { target: 'console' }): OperationRequest {
   return {
     type: 'identity.sessions.create',
     access: null,
     input: {
       path: {}, query: {}, headers: { 'x-device-id': 'device:password-login-test' },
-      body: { provider: 'password', subject, password, target: 'console', authorization: authorizationRequest() },
+      body: { provider: 'password', subject, password, ...entry, authorization: authorizationRequest() },
       rawBody: '', deadline: Date.now() + 5_000, signal: new AbortController().signal,
       idempotency: 'password:mobile-login',
     },
@@ -752,7 +773,9 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
   storefrontAvailable?: boolean;
   mobileCiphertext?: string | null; passwordEvidence?: boolean; exactOwner?: boolean;
   challengePrincipal?: string | null; boundMobilePrincipal?: string | null;
-  credentialSecret?: string; ownerPasswordRotation?: boolean; loginMemberships?: boolean; existingMembership?: boolean }>): Readonly<{
+  credentialSecret?: string; ownerPasswordRotation?: boolean; loginMemberships?: boolean;
+  loginMembershipRows?: ReadonlyArray<Readonly<{ id: string; access_version: number; client: string; organization_id: string }>>;
+  existingMembership?: boolean }>): Readonly<{
   pool: DatabasePool;
   queries: ReadonlyArray<Readonly<{ text: string; values: readonly unknown[] }>>;
 }> {
@@ -797,10 +820,10 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           secret_hash: input.credentialSecret, credential_version: 2 }] : []);
       }
       if (text.includes('select membership.id,membership.access_version,membership.client')) {
-        return result(input.loginMemberships ? [
-          { id: 'membership:console:one', access_version: 1, client: 'operator' },
-          { id: 'membership:console:two', access_version: 1, client: 'operator' },
-        ] : []);
+        return result(input.loginMembershipRows ?? (input.loginMemberships ? [
+          { id: 'membership:console:one', access_version: 1, client: 'operator', organization_id: 'platform:l0' },
+          { id: 'membership:console:two', access_version: 1, client: 'operator', organization_id: 'platform:l0' },
+        ] : []));
       }
       if (text.includes('with challenge as') && text.includes('identity.challengesecret')) {
         return result([{ id: String(values[0]), purpose: String(values[2]), expires_at: '2099-01-01T00:00:00.000Z' }]);

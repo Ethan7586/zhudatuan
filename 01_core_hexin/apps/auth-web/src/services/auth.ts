@@ -5,6 +5,7 @@
  */
 
 import { Membership, PreAuthContext, LockoutState } from '../types';
+export { resolveAdminLoginOrigin, resolveStorefrontLoginOrigin } from './originPolicy';
 
 // 内存中维护的登录失败记录（模拟服务端 Redis / DB 锁定策略）
 interface FailureRecord {
@@ -14,43 +15,8 @@ interface FailureRecord {
 
 const failureMap: Record<string, FailureRecord> = {};
 export const MAX_LOGIN_FAILURES = 10;
-const CANONICAL_ADMIN_ORIGIN = 'https://console.zhudatuan.com';
-const CANONICAL_STOREFRONT_ORIGIN = 'https://hbbtzn.com';
-const LEGACY_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
-
 // 模拟审计日志
 const auditLogs: Array<{ timestamp: string; identifier: string; reason: string }> = [];
-
-function resolveCredentialTargetOrigin(
-  configuredOrigin: string | undefined,
-  canonicalOrigin: string,
-  targetLabel: string,
-  allowLocalDevelopment: boolean,
-  compatibleOrigins: readonly string[] = []
-): string {
-  let parsed: URL;
-  try {
-    parsed = new URL(configuredOrigin?.trim() || canonicalOrigin);
-  } catch {
-    throw new Error(`${targetLabel}登录目标配置无效，已停止提交账号凭证`);
-  }
-
-  const isCanonical = parsed.origin === canonicalOrigin || compatibleOrigins.includes(parsed.origin);
-  const isLocalDevelopment = allowLocalDevelopment && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
-  if ((!isCanonical && !isLocalDevelopment) || parsed.username || parsed.password) {
-    throw new Error(`${targetLabel}登录目标不在允许清单，已停止提交账号凭证`);
-  }
-
-  return parsed.origin;
-}
-
-export function resolveAdminLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false): string {
-  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_ADMIN_ORIGIN, '后台', allowLocalDevelopment);
-}
-
-export function resolveStorefrontLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false): string {
-  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_STOREFRONT_ORIGIN, '商城', allowLocalDevelopment, [LEGACY_STOREFRONT_ORIGIN]);
-}
 
 export function buildCredentialLoginAction(targetOrigin: string): string {
   const action = new URL('/api/v1/auth/login', targetOrigin);

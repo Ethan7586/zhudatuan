@@ -144,14 +144,20 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             }
           }
           if (!found) reject(401, 'CREDENTIAL_INVALID');
-          const memberships = await database.query<{ id: string; access_version: number; client: string }>(
-            `select membership.id,membership.access_version,membership.client from member.profile profile
+          const memberships = await database.query<{ id: string; access_version: number; client: string; organization_id: string }>(
+            `select membership.id,membership.access_version,membership.client,membership.organization_id from member.profile profile
           join access.membership membership on membership.member_id=profile.id where profile.principal_id=$1 and membership.status='active' order by membership.id`,
             [found.principal_id]
           );
           const requestedTarget = typeof body.target === 'string' ? authTarget(body.target) : undefined;
           const membershipTarget = requestedTarget === 'console-hbbtzn' ? 'console' : requestedTarget;
-          const candidates = membershipTarget === undefined ? memberships.rows : memberships.rows.filter((item) => authTarget(item.client) === membershipTarget);
+          const targetCandidates = membershipTarget === undefined ? memberships.rows : memberships.rows.filter((item) => authTarget(item.client) === membershipTarget);
+          const storefront = body.application === undefined
+            ? undefined
+            : await requireValidStorefront(memberPort.storefrontRegistration(database, storefrontSlug(body)));
+          const candidates = storefront === undefined
+            ? targetCandidates
+            : targetCandidates.filter((item) => item.organization_id === storefront.organization_id);
           const requested = typeof body.membership === 'string' ? body.membership : undefined;
           const membership = requested ? candidates.find((item) => item.id === requested) : candidates.length === 1 ? candidates[0] : undefined;
           if (requested !== undefined && membership === undefined) reject(403, 'MEMBERSHIP_INACTIVE');

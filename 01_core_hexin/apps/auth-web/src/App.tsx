@@ -6,12 +6,17 @@
 
 import React from 'react';
 import { MallProvider } from './context/MallContext';
-import { LoginPage } from './screens/LoginPage';
+import { ConsumerIdentityPage } from './screens/ConsumerIdentityPage';
+import { OperatorIdentityPage } from './screens/OperatorIdentityPage';
+import { resolveConsumerIdentityEntry } from './services/consumerIdentityEntry';
 
 export default function App() {
+  const consumerEntry = resolveConsumerIdentityEntry(typeof window === 'undefined' ? '' : window.location.search);
   return (
     <MallProvider>
-      <LoginPage />
+      {consumerEntry === null
+        ? <OperatorIdentityPage />
+        : <ConsumerIdentityPage application={consumerEntry.application} />}
     </MallProvider>
   );
 }

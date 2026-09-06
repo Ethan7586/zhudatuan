@@ -6,6 +6,7 @@ import {
   loginCanonicalConsole,
   loginCanonicalConsoleWithOtp,
   loginCanonicalStorefront,
+  loginCanonicalStorefrontEntry,
   resetCanonicalPassword,
 } from './canonicalIdentity';
 
@@ -243,6 +244,32 @@ describe('canonical console identity', () => {
       membership: 'membership:storefront-one',
       target: 'storefront',
     });
+  });
+
+  it('binds a storefront entry login to the requested application', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:hongtai')))
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged(STOREFRONT_DESTINATION)));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loginCanonicalStorefrontEntry(
+      '13800138000',
+      'Generated!Password2',
+      'zdt-l1-verify',
+    )).resolves.toEqual({
+      membership: 'membership:hongtai',
+      redirectUrl: STOREFRONT_DESTINATION,
+    });
+
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body).toMatchObject({
+      provider: 'password',
+      subject: '+8613800138000',
+      target: 'storefront',
+      application: 'zdt-l1-verify',
+    });
+    expect(body).not.toHaveProperty('membership');
   });
 
   it('maps a canonical console membership selection to the approved admin UI model', async () => {

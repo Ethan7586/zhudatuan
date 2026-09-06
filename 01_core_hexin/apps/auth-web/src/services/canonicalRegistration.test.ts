@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCanonicalMember, createCanonicalRegistrationChallenge, resolveCanonicalInvite } from './canonicalRegistration';
+import {
+  createCanonicalMember,
+  createCanonicalRegistrationChallenge,
+  resolveCanonicalInvite,
+  resolveCanonicalStorefrontRegistration,
+} from './canonicalRegistration';
 
 const TERMS_HASH = 'a'.repeat(64);
 
@@ -20,6 +25,26 @@ afterEach(() => {
 });
 
 describe('canonical registration', () => {
+  it('resolves a storefront application into its authoritative organization and terms', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse(storefrontRegistration()));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(resolveCanonicalStorefrontRegistration('zdt-l1-verify')).resolves.toEqual({
+      termsTitle: '主打团用户服务协议',
+      termsBody: '服务协议正文',
+      privacyTitle: '主打团隐私政策',
+      privacyBody: '隐私政策正文',
+      termsHash: TERMS_HASH,
+      applicationId: 'application:zdt-l1-verify',
+      applicationSlug: 'zdt-l1-verify',
+      organizationId: 'mall:l1-hongtai',
+      organizationName: '宏泰甄选',
+      target: 'storefront',
+    });
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('http://127.0.0.1:3001/api/v1/identity/storefronts/resolve');
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({ application: 'zdt-l1-verify' });
+  });
+
   it('resolves an invitation and maps the authoritative terms without leaking the invite into the URL', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse(invitation()));
     vi.stubGlobal('fetch', fetchMock);
@@ -347,6 +372,21 @@ function invitation(): Readonly<Record<string, unknown>> {
     governance_level: 'administrator',
     effective_at: '2026-08-28T00:00:00.000Z',
     expires_at: '2026-09-28T00:00:00.000Z',
+  };
+}
+
+function storefrontRegistration(): Readonly<Record<string, unknown>> {
+  return {
+    terms_title: '主打团用户服务协议',
+    terms_body: '服务协议正文',
+    privacy_title: '主打团隐私政策',
+    privacy_body: '隐私政策正文',
+    terms_hash: TERMS_HASH,
+    application_id: 'application:zdt-l1-verify',
+    application_slug: 'zdt-l1-verify',
+    organization_id: 'mall:l1-hongtai',
+    organization_name: '宏泰甄选',
+    target_client: 'storefront',
   };
 }
 

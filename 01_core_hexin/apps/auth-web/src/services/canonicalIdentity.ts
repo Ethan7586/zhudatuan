@@ -1,7 +1,7 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { z } from 'zod';
 import type { Membership, PreAuthContext } from '../types';
-import { resolveAdminLoginOrigin, resolveStorefrontLoginOrigin } from './auth';
+import { resolveAdminLoginOrigin, resolveStorefrontLoginOrigin } from './originPolicy';
 
 const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
 const LEGACY_API_ORIGIN = 'https://api.zhudatuan.com';
@@ -151,6 +151,29 @@ export async function loginCanonicalStorefront(
   });
 }
 
+export async function loginCanonicalStorefrontEntry(
+  subject: string,
+  password: string,
+  application: string,
+  signal?: AbortSignal,
+): Promise<CanonicalStorefrontLoginResult> {
+  const result = await authorizeCanonicalCredential(
+    { provider: 'password', subject: canonicalPasswordSubject(subject), password },
+    'storefront',
+    undefined,
+    signal,
+    { application: canonicalApplication(application) },
+  );
+  if (result.kind === 'selection') {
+    if (result.selection.memberships.length === 0) throw new Error('该手机号尚未开通当前商城，请先注册');
+    throw new Error('当前商城存在多个消费者身份，暂时无法自动选择');
+  }
+  return Object.freeze({
+    membership: result.session.membership,
+    redirectUrl: approvedStorefrontDestination(result.exchange.returnTarget),
+  });
+}
+
 export async function exchangeCanonicalStorefrontSession(
   callback: CanonicalSessionCallback,
   secret: CanonicalAuthorization['secret'],
@@ -250,12 +273,14 @@ async function authorizeCanonicalCredential(
   target: CanonicalTarget,
   membership?: string,
   signal?: AbortSignal,
+  context: Readonly<{ application?: string }> = {},
 ): Promise<AuthorizedCredential> {
   const authorization = await beginCanonicalAuthorization();
   const output = LoginResultSchema.parse(await identityRequest('/api/v1/identity/sessions', {
     ...credential,
     target,
     ...(membership === undefined ? {} : { membership }),
+    ...(context.application === undefined ? {} : { application: context.application }),
     authorization: authorization.request,
   }, signal));
   if ('memberships' in output) return Object.freeze({ kind: 'selection', selection: output });
@@ -269,6 +294,12 @@ async function authorizeCanonicalCredential(
     verifier: authorization.secret.verifier,
   }, signal));
   return Object.freeze({ kind: 'authenticated', session: output, exchange });
+}
+
+function canonicalApplication(value: string): string {
+  const application = value.trim();
+  if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(application)) throw new Error('商城登录入口无效');
+  return application;
 }
 
 function canonicalMobile(value: string): string {

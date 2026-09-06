@@ -7,6 +7,24 @@ interface OriginPolicy {
   readonly stagingOrigin?: string;
 }
 
+const CANONICAL_ADMIN_LOGIN_ORIGIN = 'https://console.zhudatuan.com';
+const CANONICAL_STOREFRONT_LOGIN_ORIGIN = 'https://hbbtzn.com';
+const LEGACY_STOREFRONT_LOGIN_ORIGIN = 'https://zhudatuan.com';
+
+export function resolveAdminLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false): string {
+  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_ADMIN_LOGIN_ORIGIN, '后台', allowLocalDevelopment);
+}
+
+export function resolveStorefrontLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false): string {
+  return resolveCredentialTargetOrigin(
+    configuredOrigin,
+    CANONICAL_STOREFRONT_LOGIN_ORIGIN,
+    '商城',
+    allowLocalDevelopment,
+    [LEGACY_STOREFRONT_LOGIN_ORIGIN],
+  );
+}
+
 export function resolveBuildTimeOrigin(policy: OriginPolicy): string {
   const canonical = exactHttpsOrigin(policy.canonicalOrigin, policy.invalidMessage);
   const staging = optionalStagingOrigin(policy.stagingOrigin, policy.invalidMessage);
@@ -18,6 +36,31 @@ export function resolveBuildTimeOrigin(policy: OriginPolicy): string {
   if (!local && selected.protocol !== 'https:') throw new Error(policy.deniedMessage);
   if (!local && selected.origin !== canonical && selected.origin !== staging) throw new Error(policy.deniedMessage);
   return selected.origin;
+}
+
+function resolveCredentialTargetOrigin(
+  configuredOrigin: string | undefined,
+  canonicalOrigin: string,
+  targetLabel: string,
+  allowLocalDevelopment: boolean,
+  compatibleOrigins: readonly string[] = [],
+): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(configuredOrigin?.trim() || canonicalOrigin);
+  } catch {
+    throw new Error(`${targetLabel}登录目标配置无效，已停止提交账号凭证`);
+  }
+
+  const isCanonical = parsed.origin === canonicalOrigin || compatibleOrigins.includes(parsed.origin);
+  const isLocalDevelopment = allowLocalDevelopment
+    && parsed.protocol === 'http:'
+    && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
+  if ((!isCanonical && !isLocalDevelopment) || parsed.username || parsed.password) {
+    throw new Error(`${targetLabel}登录目标不在允许清单，已停止提交账号凭证`);
+  }
+
+  return parsed.origin;
 }
 
 function optionalStagingOrigin(value: string | undefined, message: string): string | undefined {

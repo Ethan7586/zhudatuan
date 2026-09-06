@@ -53,6 +53,7 @@ async function createStorefrontSession(input: LoginRequest, membership?: string)
     subject,
     password,
     target: 'storefront',
+    application: resolveStorefrontApplication(),
     ...(membership ? { membership } : {}),
     authorization: authorization.request,
   } }, anonymousIdempotentContext())), 'identity.sessions.create');

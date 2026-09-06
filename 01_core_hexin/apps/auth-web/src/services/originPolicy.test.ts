@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { resolveBuildTimeOrigin } from './originPolicy';
+import { resolveAdminLoginOrigin, resolveBuildTimeOrigin, resolveStorefrontLoginOrigin } from './originPolicy';
 
 const policy = (configuredOrigin?: string, stagingOrigin?: string, allowLocalDevelopment = false) => ({
   canonicalOrigin: 'https://api.zhudatuan.com',
@@ -34,5 +35,19 @@ describe('Auth build-time origin policy', () => {
   it('keeps loopback HTTP available only when the development flag is explicit', () => {
     expect(resolveBuildTimeOrigin(policy('http://127.0.0.1:3001', undefined, true))).toBe('http://127.0.0.1:3001');
     expect(() => resolveBuildTimeOrigin(policy('http://127.0.0.1:3001'))).toThrow('ORIGIN_DENIED');
+  });
+});
+
+describe('canonical identity return origin policy', () => {
+  it('preserves the approved admin and storefront origins after leaving the legacy auth module', () => {
+    expect(resolveAdminLoginOrigin()).toBe('https://console.zhudatuan.com');
+    expect(resolveStorefrontLoginOrigin()).toBe('https://hbbtzn.com');
+    expect(resolveStorefrontLoginOrigin('https://zhudatuan.com')).toBe('https://zhudatuan.com');
+  });
+
+  it('keeps canonical identity physically disconnected from the legacy auth module', () => {
+    const source = readFileSync(new URL('./canonicalIdentity.ts', import.meta.url), 'utf8');
+    expect(source).toContain("from './originPolicy'");
+    expect(source).not.toContain("from './auth'");
   });
 });

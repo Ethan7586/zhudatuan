@@ -77,6 +77,20 @@ describe('canonical storefront production API', () => {
     expect(new Headers(logout.headers).get('x-csrf-token')).toBe('csrf-token-for-storefront');
   });
 
+  it('binds password login to the current storefront application', async () => {
+    vi.stubEnv('NEXT_PUBLIC_STOREFRONT_APPLICATION', 'zdt-l1-verify');
+    const fetcher = apiFetch();
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+
+    await productionApi.login({ username: '13800138000', password: 'CurrentPasswordA' });
+
+    const request = requestInit(fetcher, '/api/v1/identity/sessions', 'POST');
+    expect(JSON.parse(String(request.body))).toMatchObject({
+      provider: 'password', target: 'storefront', application: 'zdt-l1-verify', subject: '13800138000',
+    });
+  });
+
   it('aggregates canonical listings with authoritative offers and inventory', async () => {
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);
@@ -232,6 +246,10 @@ function apiFetch(options: { personalMinor?: number; paymentState?: string } = {
   return vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
     const path = new URL(String(input)).pathname;
     const method = init?.method ?? 'GET';
+    if (path === '/api/v1/identity/sessions' && method === 'POST') return json({
+      target: 'storefront', callback: { ticket: 'ticket:one', state: 's'.repeat(43) },
+    }, 201);
+    if (path === '/api/v1/identity/tickets/exchange' && method === 'POST') return json({ session: 'session:one' });
     if (path === '/api/v1/identity/session') return json(SESSION);
     if (path === '/api/v1/members/me') return json(PROFILE);
     if (path === '/api/v1/benefits/accounts') return json(ACCOUNTS);

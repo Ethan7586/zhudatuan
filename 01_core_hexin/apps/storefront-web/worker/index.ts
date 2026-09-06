@@ -1,5 +1,5 @@
 import handler from 'vinext/server/app-router-entry';
-import { routeApi } from '../../../services/commerce-api/src/api/router';
+import { routePublicRequest } from '../../../services/commerce-api/src/api/routes/publicRouter';
 import type { WorkerEnv } from '../../../services/commerce-api/src/api/types';
 import { isLabsApiPathBlocked, isShowcaseHostAllowed, isShowcasePath, isStorefrontRuntimeConfigurationAllowed } from '../src/config/showcaseAccess';
 
@@ -49,7 +49,8 @@ const worker = {
         },
       });
     }
-    const apiResponse = await routeApi(request, resolvedEnv);
+    const requestId = request.headers.get('cf-ray') ?? crypto.randomUUID();
+    const apiResponse = await routePublicRequest(request, resolvedEnv, requestId);
     if (apiResponse) {
       return apiResponse;
     }

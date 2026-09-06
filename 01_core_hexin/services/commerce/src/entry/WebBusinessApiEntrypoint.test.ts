@@ -73,6 +73,13 @@ describe('web business API entrypoint', () => {
     expect(bootstrapped.routes.match('POST', '/api/v1/payments/intents')).toBeNull();
   });
 
+  it('places the public catalog adapter before the canonical HTTP application', () => {
+    const source = readFileSync(join(import.meta.dirname, 'WebBusinessApiMain.ts'), 'utf8');
+    expect(source).toContain('new PublicCatalogHttpHandler(');
+    expect(source).toContain('webBusinessApiPublicMallSlug(environment)');
+    expect(source).toContain('listen(app,');
+  });
+
   it('has no static dependency path to full Commerce, checkout orchestration, payment, finance, providers, storage, or Redis', () => {
     const closure = sourceClosure(join(import.meta.dirname, 'WebBusinessApiMain.ts'));
     const forbidden = [...closure].filter((file) => [

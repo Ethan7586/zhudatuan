@@ -11,8 +11,15 @@ async function errorCode(response: Response | null): Promise<string | undefined>
 }
 
 describe('WeChat route authentication boundaries', () => {
-  it.each(['/api/v1/auth/wechat/session', '/api/v1/auth/wechat/bind', '/api/v1/auth/wechat/register', '/api/v1/payments/wechat/notify'])('dispatches public endpoint %s before user authentication', async (pathname) => {
+  it.each(['/api/v1/auth/wechat/session', '/api/v1/auth/wechat/bind', '/api/v1/auth/wechat/register'])('keeps retired endpoint %s outside session resolution', async (pathname) => {
     const response = await routeApi(new Request(`https://zhudatuan.com${pathname}`), env);
+
+    expect(response?.status).toBe(404);
+    await expect(errorCode(response)).resolves.toBe('API_NOT_FOUND');
+  });
+
+  it('keeps the WeChat payment notification public', async () => {
+    const response = await routeApi(new Request('https://zhudatuan.com/api/v1/payments/wechat/notify'), env);
 
     expect(response?.status).toBe(405);
     expect(response?.headers.get('allow')).toBe('POST');

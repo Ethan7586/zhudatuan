@@ -55,13 +55,15 @@ describe('authenticated target routing', () => {
     expect(routes.storefront).not.toHaveBeenCalled();
   });
 
-  it.each(['storefront', 'admin'] as const)('keeps shared authenticated routes outside the %s business router', async (target) => {
+  it.each(['storefront', 'admin'] as const)('keeps retired auth routes outside the %s session chain', async (target) => {
     routes.resolveAuthorizationContext.mockResolvedValue(authorization(target));
     routes.authenticated.mockResolvedValue(new Response(null, { status: 204 }));
 
     const response = await routeApi(new Request(`https://${target === 'admin' ? 'console.zhudatuan.com' : 'zhudatuan.com'}/api/v1/auth/session`), env);
 
-    expect(response?.status).toBe(204);
+    expect(response?.status).toBe(404);
+    expect(routes.resolveAuthorizationContext).not.toHaveBeenCalled();
+    expect(routes.authenticated).not.toHaveBeenCalled();
     expect(routes.storefront).not.toHaveBeenCalled();
     expect(routes.admin).not.toHaveBeenCalled();
     expect(routes.simulation).not.toHaveBeenCalled();

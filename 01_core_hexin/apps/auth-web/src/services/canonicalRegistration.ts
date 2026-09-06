@@ -21,6 +21,19 @@ const InvitationSchema = z.strictObject({
   expires_at: z.iso.datetime(),
 });
 
+const StorefrontRegistrationSchema = z.strictObject({
+  terms_title: z.string().min(1),
+  terms_body: z.string().min(1),
+  privacy_title: z.string().min(1),
+  privacy_body: z.string().min(1),
+  terms_hash: z.string().regex(/^[a-f0-9]{64}$/i),
+  application_id: z.string().min(1),
+  application_slug: z.string().min(1),
+  organization_id: z.string().min(1),
+  organization_name: z.string().min(1),
+  target_client: z.literal('storefront'),
+});
+
 const ChallengeSchema = z.strictObject({
   id: z.string().min(1),
   purpose: z.literal('registration'),
@@ -72,6 +85,19 @@ export interface CanonicalRegistrationChallenge {
   readonly expiresAt: string;
 }
 
+export interface CanonicalStorefrontRegistration {
+  readonly termsTitle: string;
+  readonly termsBody: string;
+  readonly privacyTitle: string;
+  readonly privacyBody: string;
+  readonly termsHash: string;
+  readonly applicationId: string;
+  readonly applicationSlug: string;
+  readonly organizationId: string;
+  readonly organizationName: string;
+  readonly target: 'storefront';
+}
+
 export interface CanonicalMemberRegistrationInput {
   readonly subject: string;
   readonly password: string;
@@ -114,6 +140,27 @@ export async function resolveCanonicalInvite(inviteCode: string, signal?: AbortS
     ...(output.governance_level == null ? {} : { governanceLevel: output.governance_level }),
     effectiveAt: output.effective_at,
     expiresAt: output.expires_at,
+  });
+}
+
+export async function resolveCanonicalStorefrontRegistration(
+  applicationSlug: string,
+  signal?: AbortSignal,
+): Promise<CanonicalStorefrontRegistration> {
+  const output = StorefrontRegistrationSchema.parse(await identityRequest('/api/v1/identity/storefronts/resolve', {
+    application: requiredApplicationSlug(applicationSlug),
+  }, signal));
+  return Object.freeze({
+    termsTitle: output.terms_title,
+    termsBody: output.terms_body,
+    privacyTitle: output.privacy_title,
+    privacyBody: output.privacy_body,
+    termsHash: output.terms_hash,
+    applicationId: output.application_id,
+    applicationSlug: output.application_slug,
+    organizationId: output.organization_id,
+    organizationName: output.organization_name,
+    target: 'storefront',
   });
 }
 

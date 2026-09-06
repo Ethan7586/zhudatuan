@@ -17,6 +17,9 @@ export async function routeApi(request: Request, env: WorkerEnv): Promise<Respon
   const requestId = request.headers.get('cf-ray') ?? crypto.randomUUID();
 
   try {
+    if (pathname === `${API_PREFIX}/auth` || pathname.startsWith(`${API_PREFIX}/auth/`)) {
+      return apiError(404, 'API_NOT_FOUND', '接口不存在', requestId);
+    }
     const publicResponse = await routePublicRequest(request, env, requestId);
     if (publicResponse) return publicResponse;
 
