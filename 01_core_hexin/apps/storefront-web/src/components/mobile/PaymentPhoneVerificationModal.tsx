@@ -76,21 +76,21 @@ export function PaymentPhoneVerificationModal({ phone, onClose, onVerified, purp
       <form onSubmit={verify} className="w-full max-w-[400px] rounded-3xl bg-white p-5 shadow-2xl">
         <div className="flex items-start justify-between">
           <div className="flex gap-3"><div className="rounded-2xl bg-blue-50 p-2 text-[var(--sw-brand)]"><ShieldCheck className="h-6 w-6" /></div>
-            <div><h2 className="text-base font-black">{isWechatBinding ? '微信改绑验证' : '支付前验证手机号'}</h2><p className="mt-1 text-[11px] text-gray-500">验证码已发送至 {phone}</p></div></div>
+            <div><h2 className="text-base font-black">{isWechatBinding ? '微信改绑验证' : '支付前验证手机号'}</h2><p className="mt-1 text-[11px] text-gray-500">{sending ? '验证码正在发送至' : '验证码已发送至'} {phone}</p></div></div>
           <button type="button" onClick={onClose} aria-label="关闭" className="rounded-full p-1 text-gray-400"><X className="h-5 w-5" /></button>
         </div>
         <div className="mt-4 flex gap-2">
           <input value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="输入 6 位验证码"
             className="min-w-0 flex-1 rounded-xl border border-gray-200 px-3 py-3 text-base font-bold tracking-[0.3em] outline-none focus:border-blue-400" />
           <button type="button" onClick={requestCode} disabled={sending || seconds > 0} className="w-28 rounded-xl border border-blue-200 bg-blue-50 px-2 text-xs font-bold text-[var(--sw-brand)] disabled:text-gray-400">
-            {sending ? '发送中…' : seconds > 0 ? `${seconds}s` : '重新获取'}
+            {sending ? '发送中…' : seconds > 0 ? `重发 ${seconds}s` : '重新获取'}
           </button>
         </div>
         {error && <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-[11px] text-amber-700">{error}</p>}
         <button type="submit" disabled={!challengeId || code.length !== 6 || verifying} className="mt-4 w-full rounded-xl bg-[var(--sw-brand)] py-3 text-sm font-black text-white disabled:bg-gray-300">
           {verifying ? '正在验证…' : isWechatBinding ? '验证并完成微信改绑' : '验证并继续支付'}
         </button>
-        <p className="mt-3 text-center text-[10px] text-gray-400">45 秒后可重新获取验证码</p>
+        <p className="mt-3 text-center text-[10px] text-gray-400">收到短信即可立即验证，无需等待倒计时</p>
       </form>
     </div>
   );

@@ -11,7 +11,17 @@ const ERROR_MESSAGES: Readonly<Record<string, string>> = Object.freeze({
   WECHAT_IDENTITY_REQUIRED: '该订单需要微信支付，但当前账号未绑定微信',
   CHALLENGE_INVALID: '验证码不正确、已过期或已经使用',
   STEP_UP_DESTINATION_MISSING: '当前账号没有可验证的手机号',
+  NOT_FOUND: '请求的内容仍在同步，请稍后重试',
+  CONTRACT_RESPONSE_INVALID: '商城服务响应异常，请稍后重试',
 });
+
+function fallbackMessage(status: number): string {
+  if (status === 404) return '请求的内容仍在同步，请稍后重试';
+  if (status === 409) return '数据已发生变化，请稍后重试';
+  if (status === 429) return '请求较多，请稍后重试';
+  if (status >= 500) return '商城服务暂时繁忙，请稍后重试';
+  return '请求未完成，请稍后重试';
+}
 
 export class ProductionApiError extends Error {
   constructor(
@@ -28,11 +38,11 @@ export class ProductionApiError extends Error {
 export function productionError(cause: unknown): ProductionApiError {
   if (cause instanceof ProductionApiError) return cause;
   if (cause instanceof ApiError) {
-    return new ProductionApiError(ERROR_MESSAGES[cause.code] ?? cause.message ?? cause.code, cause.status, cause.code, cause.requestId);
+    return new ProductionApiError(ERROR_MESSAGES[cause.code] ?? fallbackMessage(cause.status), cause.status, cause.code, cause.requestId);
   }
   if (cause instanceof TypeError && /failed to fetch|load failed|network request failed/i.test(cause.message)) {
-    return new ProductionApiError('商城网络连接失败，请刷新页面后重试', 0, 'NETWORK_OR_CLIENT_ERROR');
+    return new ProductionApiError('网络连接已中断，恢复后将自动重试', 0, 'NETWORK_OR_CLIENT_ERROR');
   }
-  const message = cause instanceof Error ? cause.message : '平台 API 请求失败';
+  const message = cause instanceof Error && /[\u3400-\u9fff]/u.test(cause.message) ? cause.message : '商城服务暂时不可用，请稍后重试';
   return new ProductionApiError(message, 0, 'NETWORK_OR_CLIENT_ERROR');
 }

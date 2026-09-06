@@ -11,6 +11,7 @@ import { mapApiCartItems } from './mallMappers';
 import { guestStorefrontProfile } from './guestStorefrontProfile';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
 import { PaymentPhoneVerificationModal } from '../components/mobile/PaymentPhoneVerificationModal';
+import { createCartQuantitySync, type CartQuantitySync } from './cartQuantitySync';
 export type * from './MallContext.types';
 const MallContext = createContext<MallContextType | undefined>(undefined);
 
@@ -64,6 +65,12 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const sessionGenerationRef = useRef(0);
   const { toasts, showToast, removeToast } = useToasts();
+  const showToastRef = useRef(showToast);
+  const refreshServerCartRef = useRef<() => Promise<void>>(async () => undefined);
+  const cartQuantitySyncRef = useRef<CartQuantitySync | null>(null);
+  const productsRef = useRef(products);
+  showToastRef.current = showToast;
+  productsRef.current = products;
   const presentationProducts = useMemo(() => toFrontendProducts(products), [products]);
   const presentationOrders = useMemo(() => toFrontendOrders(orders, presentationProducts), [orders, presentationProducts]);
   const presentationCategories = useMemo(() => toFrontendCategories(products), [products]);
@@ -72,8 +79,20 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     const sessionGeneration = sessionGenerationRef.current;
     const response = await productionApi.listCart();
     if (sessionGeneration !== sessionGenerationRef.current) return;
-    setCart(mapApiCartItems(response.items, products));
-  }, [products]);
+    setCart(mapApiCartItems(response.items, productsRef.current));
+  }, []);
+  refreshServerCartRef.current = refreshServerCart;
+  if (!cartQuantitySyncRef.current) {
+    cartQuantitySyncRef.current = createCartQuantitySync(
+      async ({ listingId, quantity }) => {
+        await productionApi.upsertCartItem({ listingId, quantity });
+      },
+      () => {
+        showToastRef.current('购物车更新失败，请稍后重试', 'error');
+      }
+    );
+  }
+  useEffect(() => () => cartQuantitySyncRef.current?.cancel(), []);
   const refreshServerAddresses = useCallback(async () => {
     const sessionGeneration = sessionGenerationRef.current;
     const response = await productionApi.listAddresses();
@@ -97,7 +116,10 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     !isShowcase
   );
   useEffect(() => {
-    if (sessionStatus !== 'authenticated') return;
+    if (sessionStatus !== 'authenticated') {
+      cartQuantitySyncRef.current?.cancel();
+      return;
+    }
     setFavorites([]);
     // Cart and addresses are non-critical for the first view. Defer their
     // network work until the storefront is interactive instead of delaying a
@@ -146,6 +168,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   };
   const logout = async () => {
     const revokeRequest = productionApi.logout();
+    cartQuantitySyncRef.current?.cancel();
     sessionGenerationRef.current += 1;
     cancelProductionSync();
     setSessionStatus('guest');
@@ -234,18 +257,16 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const handleUpdateCartQuantity = (cartItemId: string, quantity: number) => {
     if (sessionStatus === 'authenticated') {
       const item = cart.find((candidate) => candidate.id === cartItemId);
-      if (!item?.product.skuId) return;
-      if (quantity <= 0) {
-        void productionApi
-          .deleteCartItem(cartItemId)
-          .then(refreshServerCart)
-          .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
-      } else {
-        void productionApi
-          .upsertCartItem({ listingId: item.product.id, quantity })
-          .then(refreshServerCart)
-          .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
-      }
+      if (!item?.product.skuId || !Number.isSafeInteger(quantity)) return;
+      const nextQuantity = Math.max(0, quantity);
+      setCart((current) => nextQuantity === 0
+        ? current.filter((candidate) => candidate.id !== cartItemId)
+        : current.map((candidate) => candidate.id === cartItemId ? { ...candidate, quantity: nextQuantity } : candidate));
+      cartQuantitySyncRef.current?.schedule({
+        cartItemId,
+        listingId: item.product.id,
+        quantity: nextQuantity,
+      });
       return;
     }
     if (showcaseService) setCart(showcaseService.updateCartQuantity(cartItemId, quantity));
@@ -271,11 +292,13 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
 
   const handleRemoveCartItem = async (cartItemId: string) => {
     if (sessionStatus === 'authenticated') {
-      await productionApi
-        .deleteCartItem(cartItemId)
-        .then(refreshServerCart)
+      const item = cart.find((candidate) => candidate.id === cartItemId);
+      if (!item?.product.skuId) return;
+      setCart((current) => current.filter((candidate) => candidate.id !== cartItemId));
+      cartQuantitySyncRef.current?.schedule({ cartItemId, listingId: item.product.id, quantity: 0 });
+      await cartQuantitySyncRef.current?.flush()
         .then(() => showToast('已从购物车移除该商品', 'info'))
-        .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
+        .catch(() => refreshServerCartRef.current().catch(() => undefined));
       return;
     }
     if (showcaseService) {
@@ -291,6 +314,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     }
     setIsSubmittingOrder(true);
     try {
+      await cartQuantitySyncRef.current?.flush();
       const checkout = await checkoutSelectedCartRequest(cart, addresses, checkoutUser);
       const { selectedItems } = checkout;
       setActivePaymentId(checkout.paymentId);

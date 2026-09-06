@@ -9,14 +9,42 @@ interface PaymentResultPageProps {
   readonly paymentId: string;
 }
 
-const COPY: Readonly<Record<ApiPaymentResultState, Readonly<{ title: string; detail: string }>>> = Object.freeze({
-  preparing: { title: '正在准备支付结果', detail: '订单已经建立，系统正在确认支付渠道状态。' },
-  pending: { title: '支付正在确认', detail: '支付请求已经提交，请不要重复付款。' },
-  recovery: { title: '正在核验渠道结果', detail: '渠道结果暂时不确定，系统会持续查询，不会猜测成功或失败。' },
-  captured: { title: '支付成功', detail: '服务端已经确认到账，订单可以继续履约。' },
-  failed: { title: '本次支付未完成', detail: '服务端确认本次支付失败，可返回订单重新发起。' },
-  expired: { title: '支付意图已过期', detail: '本次支付窗口已经结束，可返回订单重新发起。' },
+const COPY: Readonly<Record<ApiPaymentResultState, Readonly<{ title: string; detail: string; label: string }>>> = Object.freeze({
+  preparing: { title: '正在准备支付结果', detail: '订单已经建立，系统正在确认支付渠道状态。', label: '准备中' },
+  pending: { title: '支付正在确认', detail: '支付请求已经提交，请不要重复付款。', label: '确认中' },
+  recovery: { title: '正在核验渠道结果', detail: '渠道结果暂时不确定，系统会持续查询，不会猜测成功或失败。', label: '核验中' },
+  captured: { title: '支付成功', detail: '服务端已经确认到账，订单可以继续履约。', label: '支付成功' },
+  failed: { title: '本次支付未完成', detail: '服务端确认本次支付失败，可返回订单重新发起。', label: '支付失败' },
+  expired: { title: '支付意图已过期', detail: '本次支付窗口已经结束，可返回订单重新发起。', label: '已过期' },
 });
+
+export function paymentResultReadFailure(cause: unknown): Readonly<{ message: string | null; retryAfterMs: number }> {
+  if (cause instanceof ProductionApiError && (cause.status === 404 || cause.code === 'NOT_FOUND')) {
+    return { message: null, retryAfterMs: 1_000 };
+  }
+  if (cause instanceof ProductionApiError && cause.status === 0) {
+    return { message: cause.message, retryAfterMs: 1_000 };
+  }
+  return {
+    message: cause instanceof ProductionApiError ? cause.message : '支付结果暂时无法读取，系统将自动重试',
+    retryAfterMs: 3_000,
+  };
+}
+
+const PAYMENT_PROGRESS: Readonly<Record<ApiPaymentResultState, number>> = Object.freeze({
+  preparing: 0,
+  pending: 1,
+  recovery: 2,
+  captured: 3,
+  failed: 3,
+  expired: 3,
+});
+
+export function selectPaymentResult(previous: ApiPaymentResult | null, next: ApiPaymentResult): ApiPaymentResult {
+  if (!previous) return next;
+  if (PAYMENT_PROGRESS[previous.state] === 3) return previous;
+  return PAYMENT_PROGRESS[next.state] < PAYMENT_PROGRESS[previous.state] ? previous : next;
+}
 
 export function PaymentResultPage({ paymentId }: PaymentResultPageProps) {
   const { closePaymentResult, navigateTo, setAndroidPage, setLaptopPage, setMpPage, setTabletPage } = useMall();
@@ -31,15 +59,16 @@ export function PaymentResultPage({ paymentId }: PaymentResultPageProps) {
     setRefreshing(true);
     void productionApi.readPaymentResult(paymentId).then((next) => {
       if (!active) return;
-      setResult(next);
+      setResult((previous) => selectPaymentResult(previous, next));
       setError(null);
       setRefreshing(false);
       if (next.retryAfter > 0) timer = window.setTimeout(() => setCycle((value) => value + 1), next.retryAfter * 1000);
     }).catch((cause: unknown) => {
       if (!active) return;
-      setError(cause instanceof ProductionApiError ? cause.message : '暂时无法读取支付结果');
+      const failure = paymentResultReadFailure(cause);
+      setError(failure.message);
       setRefreshing(false);
-      timer = window.setTimeout(() => setCycle((value) => value + 1), 5000);
+      timer = window.setTimeout(() => setCycle((value) => value + 1), failure.retryAfterMs);
     });
     return () => {
       active = false;
@@ -78,7 +107,7 @@ export function PaymentResultPage({ paymentId }: PaymentResultPageProps) {
             <ResultRow label="订单" value={result?.orderId ?? '正在读取'} />
             <ResultRow label="支付标识" value={result?.paymentId ?? paymentId} />
             <ResultRow label="金额" value={result ? `${result.currency} ${(result.amountMinor / 100).toFixed(2)}` : '--'} />
-            <ResultRow label="权威状态" value={error ? '等待重新查询' : state} strong />
+            <ResultRow label="权威状态" value={error ? '等待重新查询' : copy.label} strong />
           </div>
 
           {state === 'recovery' && !error ? (

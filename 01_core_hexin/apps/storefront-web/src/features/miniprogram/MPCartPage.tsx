@@ -72,7 +72,7 @@ export const MPCartPage: React.FC = () => {
                     {item.selected ? <CheckSquare className="w-4 h-4 text-[var(--sw-brand)]" /> : <Square className="w-4 h-4 text-gray-300" />}
                   </button>
 
-                  <img src={item.product.images[0]} alt={item.product.title} className="w-16 h-16 object-cover rounded-xl border border-gray-100 flex-shrink-0" />
+                  <img src={item.product.images[0]} alt={item.product.title} width={64} height={64} loading="lazy" decoding="async" className="w-16 h-16 object-cover rounded-xl border border-gray-100 flex-shrink-0" />
 
                   <div className="flex-1 overflow-hidden space-y-1">
                     <div className="flex items-start justify-between gap-1">
@@ -92,11 +92,11 @@ export const MPCartPage: React.FC = () => {
 
                       {/* Quantity Stepper */}
                       <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden text-xs">
-                        <button onClick={() => updateCartQuantity(item.id, item.quantity - 1)} className="px-2 py-0.5 bg-gray-50 font-bold hover:bg-gray-100">
+                        <button type="button" onClick={() => updateCartQuantity(item.id, item.quantity - 1)} className="min-h-8 min-w-8 bg-gray-50 font-bold hover:bg-gray-100 active:bg-gray-200">
                           -
                         </button>
-                        <span className="px-2.5 py-0.5 font-bold font-mono">{item.quantity}</span>
-                        <button onClick={() => updateCartQuantity(item.id, item.quantity + 1)} className="px-2 py-0.5 bg-gray-50 font-bold hover:bg-gray-100">
+                        <CartQuantityInput value={item.quantity} onChange={(quantity) => updateCartQuantity(item.id, quantity)} />
+                        <button type="button" onClick={() => updateCartQuantity(item.id, item.quantity + 1)} className="min-h-8 min-w-8 bg-gray-50 font-bold hover:bg-gray-100 active:bg-gray-200">
                           +
                         </button>
                       </div>
@@ -170,3 +170,46 @@ export const MPCartPage: React.FC = () => {
     </div>
   );
 };
+
+function CartQuantityInput({ value, onChange }: Readonly<{ value: number; onChange: (quantity: number) => void }>) {
+  const [draft, setDraft] = React.useState(String(value));
+  const [editing, setEditing] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!editing) setDraft(String(value));
+  }, [editing, value]);
+
+  const updateDraft = (nextDraft: string) => {
+    const digits = nextDraft.replace(/\D/g, '');
+    setDraft(digits);
+    const quantity = Number(digits);
+    if (digits && Number.isSafeInteger(quantity) && quantity >= 1) onChange(quantity);
+  };
+
+  const finishEditing = () => {
+    setEditing(false);
+    const quantity = Number(draft);
+    if (!draft || !Number.isSafeInteger(quantity) || quantity < 1) setDraft(String(value));
+  };
+
+  return (
+    <input
+      aria-label="商品数量"
+      value={draft}
+      type="text"
+      inputMode="numeric"
+      pattern="[0-9]*"
+      enterKeyHint="done"
+      onFocus={(event) => {
+        setEditing(true);
+        event.currentTarget.select();
+      }}
+      onChange={(event) => updateDraft(event.target.value)}
+      onBlur={finishEditing}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') event.currentTarget.blur();
+      }}
+      className="h-8 w-12 border-x border-gray-200 bg-white px-1 text-center font-mono font-bold outline-none focus:bg-blue-50"
+    />
+  );
+}

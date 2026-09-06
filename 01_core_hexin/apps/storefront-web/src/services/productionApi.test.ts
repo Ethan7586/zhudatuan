@@ -103,6 +103,24 @@ describe('canonical storefront production API', () => {
     expect(requestPaths(fetcher)).toEqual(expect.arrayContaining(['/api/v1/catalog/listings', '/api/v1/pricing/offers', '/api/v1/inventory/availability']));
   });
 
+  it('loads the public catalog without waiting for an authenticated session', async () => {
+    const fetcher = vi.fn(async () => json({
+      items: [{
+        id: 'listing:public', skuId: 'sku:public', name: '宏泰甄选礼包', subtitle: '企业福利', categoryCode: 'gift', coverUrl: null,
+        priceCents: 9_900, marketPriceCents: 10_900, availableStock: 20, supplierName: '宏泰甄选', isTest: false, purchasable: true,
+        qualification: { visible: true, purchasable: true, visibilityReason: 'PUBLIC_CATALOG', purchaseReason: 'QUALIFIED' },
+      }],
+      pagination: { nextCursor: null },
+    }));
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+
+    const page = await productionApi.listPublicProducts();
+
+    expect(page.items).toMatchObject([{ id: 'listing:public', skuId: 'sku:public', name: '宏泰甄选礼包' }]);
+    expect(fetcher).toHaveBeenCalledWith('/api/v1/catalog/public/products?limit=100', expect.objectContaining({ credentials: 'omit', method: 'GET' }));
+  });
+
   it('writes cart and encrypted addresses with CSRF, access version and idempotency', async () => {
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);

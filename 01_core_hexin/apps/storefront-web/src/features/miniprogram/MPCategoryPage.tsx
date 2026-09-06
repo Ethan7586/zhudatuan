@@ -5,10 +5,23 @@ import { Search, Plus, Filter, Tag, ArrowUpDown } from 'lucide-react';
 
 export const MPCategoryPage: React.FC = () => {
   const { setMpPage, addToCart, presentationProducts: MOCK_PRODUCTS, presentationCategories: MOCK_CATEGORIES } = useMall();
-  const [activeCategoryId, setActiveCategoryId] = useState(MOCK_CATEGORIES[0].id);
+  const [activeCategoryId, setActiveCategoryId] = useState(() => MOCK_CATEGORIES[0]?.id ?? 'cat_all');
   const [keyword, setKeyword] = useState('');
 
   const currentCategory = MOCK_CATEGORIES.find((c) => c.id === activeCategoryId) || MOCK_CATEGORIES[0];
+
+  if (!currentCategory) {
+    return (
+      <div className="flex min-h-full flex-col bg-[#F5F7FA] font-sans text-gray-800">
+        <WeChatCapsule title="全品类福利兑换" />
+        <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
+          <div className="h-12 w-12 animate-pulse rounded-2xl bg-blue-100" />
+          <h1 className="mt-4 text-sm font-bold text-gray-800">商品分类正在同步</h1>
+          <p className="mt-1 text-xs leading-5 text-gray-500">网络恢复后会自动加载，无需刷新整个页面。</p>
+        </div>
+      </div>
+    );
+  }
 
   const filteredProducts = MOCK_PRODUCTS.filter((p) => {
     const matchCat = activeCategoryId === 'cat_all' || p.categoryId === activeCategoryId;
@@ -107,7 +120,7 @@ export const MPCategoryPage: React.FC = () => {
             <div className="space-y-2.5 pb-8">
               {filteredProducts.map((p) => (
                 <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-white rounded-xl p-2 flex gap-2.5 border border-gray-100 shadow-2xs hover:border-blue-200 transition-all cursor-pointer active:bg-gray-50">
-                  <img src={p.imageUrl} alt={p.title} className="w-20 h-20 object-cover rounded-lg flex-shrink-0 bg-gray-50" />
+                  <img src={p.imageUrl} alt={p.title} width={80} height={80} loading="lazy" decoding="async" className="w-20 h-20 object-cover rounded-lg flex-shrink-0 bg-gray-50" />
                   <div className="flex-1 overflow-hidden flex flex-col justify-between">
                     <div>
                       <div className="text-xs font-bold text-gray-900 line-clamp-2 leading-tight">{p.title}</div>

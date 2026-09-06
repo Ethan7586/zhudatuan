@@ -15,7 +15,7 @@ export const MPProfilePage: React.FC = () => {
         {/* User Card */}
         <div className="flex items-center gap-3">
           {user.avatar ? (
-            <img src={user.avatar} alt={user.name} className="w-14 h-14 rounded-full object-cover border-2 border-white/80 shadow-md flex-shrink-0" />
+            <img src={user.avatar} alt={user.name} width={56} height={56} decoding="async" className="w-14 h-14 rounded-full object-cover border-2 border-white/80 shadow-md flex-shrink-0" />
           ) : (
             <div className="w-14 h-14 rounded-full bg-white/20 text-white flex items-center justify-center text-xl font-black border-2 border-white/80 shadow-md flex-shrink-0">{user.name.slice(0, 1)}</div>
           )}

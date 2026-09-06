@@ -13,6 +13,22 @@ export const MPDetailPage: React.FC = () => {
 
   const product = MOCK_PRODUCTS.find((p) => p.id === mobileProductId) || MOCK_PRODUCTS[0];
 
+  if (!product) {
+    return (
+      <div className="flex min-h-full flex-col bg-[#F5F7FA] font-sans text-gray-800">
+        <WeChatCapsule title="企业福利" showBack={true} onBack={() => setMpPage('home')} />
+        <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
+          <div className="h-12 w-12 animate-pulse rounded-2xl bg-blue-100" />
+          <h1 className="mt-4 text-sm font-bold text-gray-800">企业福利商品正在同步</h1>
+          <p className="mt-1 text-xs leading-5 text-gray-500">页面会保留当前位置，网络恢复后商品将自动出现。</p>
+          <button type="button" onClick={() => setMpPage('home')} className="mt-5 min-h-11 touch-manipulation rounded-xl bg-[var(--sw-brand)] px-6 text-xs font-bold text-white active:opacity-70">
+            返回首页
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const images = [product.imageUrl, ...(product.gallery || [])];
 
   const handleBuyNow = () => {
@@ -26,7 +42,7 @@ export const MPDetailPage: React.FC = () => {
 
       {/* Main Image Gallery */}
       <div className="relative bg-white aspect-square w-full">
-        <img src={images[selectedImageIndex] || product.imageUrl} alt={product.title} className="w-full h-full object-cover" />
+        <img src={images[selectedImageIndex] || product.imageUrl} alt={product.title} width={640} height={640} decoding="async" fetchPriority="high" className="w-full h-full object-cover" />
 
         {/* Floating image index badge */}
         <div className="absolute bottom-3 right-3 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-xs">
@@ -35,6 +51,8 @@ export const MPDetailPage: React.FC = () => {
 
         {/* Floating Share button */}
         <button
+          type="button"
+          aria-label={`分享商品：${product.title}`}
           onClick={() => triggerPendingFeature('微信小程序页面卡片与朋友圈分享', '调起微信原生 ShareSheet 分享商品口令或海报卡片。')}
           className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-xs hover:bg-black/60 cursor-pointer"
         >
@@ -66,7 +84,13 @@ export const MPDetailPage: React.FC = () => {
       <div className="bg-white p-3.5 space-y-2 border-b border-gray-200/80">
         <div className="flex items-start justify-between gap-2">
           <h1 className="text-sm font-bold text-gray-900 leading-snug">{product.title}</h1>
-          <button onClick={() => setIsFav(!isFav)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 cursor-pointer">
+          <button
+            type="button"
+            aria-label={isFav ? `取消收藏：${product.title}` : `收藏：${product.title}`}
+            aria-pressed={isFav}
+            onClick={() => setIsFav(!isFav)}
+            className="p-1.5 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 cursor-pointer"
+          >
             <Heart className={`w-5 h-5 ${isFav ? 'fill-red-500 text-red-500' : ''}`} />
           </button>
         </div>

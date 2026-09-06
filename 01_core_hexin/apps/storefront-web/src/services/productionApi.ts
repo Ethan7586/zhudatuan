@@ -127,7 +127,7 @@ async function publicCatalog(options: CatalogOptions): Promise<{ items: ApiProdu
   if (!response.ok) {
     const error = value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
     const code = typeof error.code === 'string' ? error.code : 'PUBLIC_CATALOG_FAILED';
-    throw new ProductionApiError(code, response.status, code, response.headers.get('x-request-id') ?? undefined);
+    throw new ProductionApiError('公开商品目录暂时不可用，请稍后重试', response.status, code, response.headers.get('x-request-id') ?? undefined);
   }
   const payload = record(value, 'catalog.public');
   const items = pageItems(payload, 'catalog.public').map(publicProduct);
@@ -218,16 +218,12 @@ export const productionApi = {
     return { items: await ledgers(accountItems) };
   },
 
+  async listPublicProducts(options: CatalogOptions = {}): Promise<{ items: ApiProduct[]; pagination: { nextCursor: string | null } }> {
+    return publicCatalog(options);
+  },
+
   async listProducts(options: CatalogOptions = {}): Promise<{ items: ApiProduct[]; pagination: { nextCursor: string | null } }> {
-    const query = { limit: options.limit ?? 100, ...(options.cursor ? { cursor: options.cursor } : {}), ...(options.category ? { category: options.category } : {}) };
-    const listings = await canonicalCall(() => canonicalClient().catalog.listingsRead({ query }, sessionContext()));
-    const skus = pageItems(listings, 'catalog.listings').map((item) => text(item.sku_id, 'catalog.listing.sku_id'));
-    if (skus.length === 0) return { items: [], pagination: { nextCursor: nextCursor(listings) } };
-    const [offerValue, inventoryValue] = await Promise.all([
-      canonicalCall(() => canonicalClient().pricing.offersRead({ query: { sku: skus } }, sessionContext())),
-      inventory(skus),
-    ]);
-    return mapCanonicalProductPage(listings, offerValue, inventoryValue);
+    return qualifiedCatalog(options);
   },
 
   async getPublicStorefront(): Promise<{ id: string; name: string }> {
@@ -235,7 +231,7 @@ export const productionApi = {
   },
 
   async listQualifiedProducts(options: CatalogOptions = {}) {
-    return productionApi.listProducts(options);
+    return qualifiedCatalog(options);
   },
 
   async listOrders(): Promise<{ items: ApiOrder[] }> {

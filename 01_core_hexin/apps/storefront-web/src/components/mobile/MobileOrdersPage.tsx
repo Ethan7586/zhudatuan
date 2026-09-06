@@ -47,7 +47,7 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
               <div className="space-y-2 py-2">
                 {order.items.slice(0, 3).map((item) => (
                   <div key={`${order.id}-${item.productId}`} className="flex items-center gap-2">
-                    <img src={item.product.imageUrl} alt={item.productTitle} className="h-12 w-12 rounded-xl border border-gray-100 object-cover" />
+                    <img src={item.product.imageUrl} alt={item.productTitle} width={48} height={48} loading="lazy" decoding="async" className="h-12 w-12 rounded-xl border border-gray-100 object-cover" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-bold">{item.productTitle}</p>
                       <p className="text-[10px] text-gray-500">

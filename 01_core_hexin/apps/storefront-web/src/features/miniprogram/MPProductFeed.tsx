@@ -21,7 +21,7 @@ export const MPProductFeed: React.FC = () => {
           {feedProducts.map((p) => (
             <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-white rounded-2xl overflow-hidden shadow-xs border border-gray-100 flex flex-col justify-between cursor-pointer active:scale-98 transition-transform">
               <div className="relative aspect-square bg-gray-50">
-                <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover" />
+                <img src={p.imageUrl} alt={p.title} width={320} height={320} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 <span className="absolute top-1.5 left-1.5 bg-[var(--sw-brand-dark)]/90 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">
                   {p.itemType === 'virtual_coupon' ? '电子券' : p.itemType === 'nearby_store' ? '到店核销' : '企采实物'}
                 </span>
@@ -45,6 +45,8 @@ export const MPProductFeed: React.FC = () => {
                     </div>
 
                     <button
+                      type="button"
+                      aria-label={`加入购物车：${p.title}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         addToCart(p, 1);

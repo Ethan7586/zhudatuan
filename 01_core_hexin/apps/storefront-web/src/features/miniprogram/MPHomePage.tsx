@@ -136,8 +136,15 @@ export const MPHomePage: React.FC = () => {
             </button>
 
             <div className="flex items-center gap-1">
-              {banners.map((_, i) => (
-                <button key={i} onClick={() => setActiveBanner(i)} className={`h-1 rounded-full transition-all cursor-pointer ${activeBanner === i ? 'w-4 bg-yellow-300' : 'w-1 bg-white/40'}`} />
+              {banners.map((banner, i) => (
+                <button
+                  key={banner.id}
+                  type="button"
+                  aria-label={`切换到活动：${banner.title}`}
+                  aria-pressed={activeBanner === i}
+                  onClick={() => setActiveBanner(i)}
+                  className={`h-1 rounded-full transition-all cursor-pointer ${activeBanner === i ? 'w-4 bg-yellow-300' : 'w-1 bg-white/40'}`}
+                />
               ))}
             </div>
           </div>
@@ -178,7 +185,7 @@ export const MPHomePage: React.FC = () => {
           <div className="grid grid-cols-2 gap-2">
             {enterpriseExclusives.map((p) => (
               <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-gray-50/80 rounded-xl p-2 flex gap-2 border border-gray-100 cursor-pointer active:bg-blue-50/50 transition-colors">
-                <img src={p.imageUrl} alt={p.title} className="w-14 h-14 object-cover rounded-lg flex-shrink-0" />
+                <img src={p.imageUrl} alt={p.title} width={56} height={56} loading="lazy" decoding="async" className="w-14 h-14 object-cover rounded-lg flex-shrink-0" />
                 <div className="overflow-hidden flex flex-col justify-between flex-1">
                   <div className="text-[11px] font-bold text-gray-800 truncate">{p.title}</div>
                   <div>
@@ -210,7 +217,7 @@ export const MPHomePage: React.FC = () => {
             {nearbyServices.map((p) => (
               <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-white rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-xs border border-gray-100 cursor-pointer">
                 <div className="flex items-center gap-2.5 overflow-hidden">
-                  <img src={p.imageUrl} alt={p.title} className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
+                  <img src={p.imageUrl} alt={p.title} width={48} height={48} loading="lazy" decoding="async" className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
                   <div className="overflow-hidden">
                     <div className="text-xs font-bold text-gray-900 truncate">{p.title}</div>
                     <div className="text-[10px] text-gray-500 truncate mt-0.5">{p.applicableStoreName || '包含朝阳区国贸店、三里屯店等28家门店'}</div>

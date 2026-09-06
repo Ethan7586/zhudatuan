@@ -55,7 +55,6 @@ export function useDeviceNavigation(initialPath = '/') {
   const setMpPage = (page: MiniProgramPage, productId?: string) => {
     setMpPageState(page);
     if (productId) setMobileProductId(productId);
-    scrollTop();
   };
   const setAndroidPage = (page: AndroidAppPage, productId?: string) => {
     setAndroidPageState(page);

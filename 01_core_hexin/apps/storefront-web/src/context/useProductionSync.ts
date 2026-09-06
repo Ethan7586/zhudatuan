@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { AccountLog, CartItem, DeliveryAddress, EnterpriseMall, Order, Product, UserProfile } from '../types';
-import { productionApi, type ApiProduct } from '../services/productionApi';
+import { productionApi, ProductionApiError, type ApiProduct } from '../services/productionApi';
 import { mapApiOrder, mapApiProduct } from './mallMappers';
 import type { CatalogSyncStatus, SessionStatus } from './MallContext.types';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
@@ -23,7 +23,7 @@ interface ProductionSyncSetters {
   setCatalogSyncStatus: Dispatch<SetStateAction<CatalogSyncStatus>>;
 }
 
-type CatalogPageLoader = typeof productionApi.listProducts;
+type CatalogPageLoader = typeof productionApi.listPublicProducts;
 
 async function loadCompleteCatalog(loadPage: CatalogPageLoader): Promise<ApiProduct[]> {
   const items = new Map<string, ApiProduct>();
@@ -41,8 +41,13 @@ async function loadCompleteCatalog(loadPage: CatalogPageLoader): Promise<ApiProd
   return [...items.values()];
 }
 
+export function shouldRetainProductionSnapshot(error: unknown): boolean {
+  return error instanceof ProductionApiError && error.status === 0;
+}
+
 export function useProductionSync(setters: ProductionSyncSetters, enabled = true) {
   const syncVersionRef = useRef(0);
+  const productionRefreshRef = useRef<Promise<void> | null>(null);
 
   const closeMemberData = () => {
     setters.setUser({ ...EMPTY_GUEST_PROFILE });
@@ -63,10 +68,9 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
 
   const refreshPublicCatalog = async () => {
     const syncVersion = ++syncVersionRef.current;
-    setters.setProducts([]);
     setters.setCatalogSyncStatus('syncing');
     try {
-      const items = await loadCompleteCatalog(productionApi.listProducts);
+      const items = await loadCompleteCatalog(productionApi.listPublicProducts);
       if (syncVersion === syncVersionRef.current) publishCatalog(items);
     } catch (error) {
       if (syncVersion === syncVersionRef.current) setters.setCatalogSyncStatus('error');
@@ -74,23 +78,24 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     }
   };
 
-  const refreshProductionData = async () => {
+  const runProductionRefresh = async () => {
     if (!enabled) return;
     const syncVersion = ++syncVersionRef.current;
     // Public products are available to every visitor. Authentication only
     // upgrades this snapshot with member pricing and purchase qualification.
-    setters.setProducts([]);
     setters.setCatalogSyncStatus('syncing');
     const publisher = createCatalogPublisher(() => syncVersion === syncVersionRef.current, publishCatalog);
-    const publicCatalogRequest = loadCompleteCatalog(productionApi.listProducts);
+    const publicCatalogRequest = loadCompleteCatalog(productionApi.listPublicProducts);
     void publicCatalogRequest.then(publisher.commitPublic).catch(() => undefined);
     let snapshot: Awaited<ReturnType<typeof productionApi.getHomeSnapshot>>;
     try {
       snapshot = await productionApi.getHomeSnapshot();
     } catch (error) {
       if (syncVersion !== syncVersionRef.current) return;
-      closeMemberData();
-      setters.setSessionStatus('guest');
+      if (!shouldRetainProductionSnapshot(error)) {
+        closeMemberData();
+        setters.setSessionStatus('guest');
+      }
       try {
         publisher.commitPublic(await publicCatalogRequest);
       } catch {
@@ -151,6 +156,23 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
       });
   };
 
+  const refreshProductionData = (): Promise<void> => {
+    if (!enabled) return Promise.resolve();
+    const activeRefresh = productionRefreshRef.current;
+    if (activeRefresh) return activeRefresh;
+    const refresh = runProductionRefresh();
+    productionRefreshRef.current = refresh;
+    refresh.then(
+      () => {
+        if (productionRefreshRef.current === refresh) productionRefreshRef.current = null;
+      },
+      () => {
+        if (productionRefreshRef.current === refresh) productionRefreshRef.current = null;
+      }
+    );
+    return refresh;
+  };
+
   const cancelProductionSync = () => {
     syncVersionRef.current += 1;
     setters.setCatalogSyncStatus('idle');
@@ -164,9 +186,15 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     void refreshProductionData().catch(() => {
       if (active) setters.setSessionStatus('guest');
     });
+    const handleOnline = () => {
+      void refreshProductionData().catch(() => undefined);
+    };
+    window.addEventListener('online', handleOnline);
     return () => {
       active = false;
+      window.removeEventListener('online', handleOnline);
       syncVersionRef.current += 1;
+      productionRefreshRef.current = null;
     };
   }, [enabled]);
 

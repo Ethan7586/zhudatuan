@@ -22,8 +22,10 @@ export const WeChatTabBar: React.FC = () => {
         return (
           <button
             key={tab.id}
+            type="button"
             onClick={() => setMpPage(tab.id)}
-            className={`relative flex h-full min-w-0 cursor-pointer flex-col items-center justify-center py-1 transition-colors ${isActive ? 'text-[var(--sw-brand)]' : 'text-gray-500 hover:text-gray-800'}`}
+            aria-current={isActive ? 'page' : undefined}
+            className={`relative flex h-full min-w-0 touch-manipulation cursor-pointer flex-col items-center justify-center py-1 transition-[color,transform,opacity] duration-75 active:scale-95 active:opacity-70 ${isActive ? 'text-[var(--sw-brand)]' : 'text-gray-500 hover:text-gray-800'}`}
           >
             <div className="relative flex h-5 items-center justify-center">
               <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
