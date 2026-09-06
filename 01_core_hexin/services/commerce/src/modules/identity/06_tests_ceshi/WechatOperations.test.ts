@@ -58,18 +58,87 @@ describe('wechat identity session', () => {
     expect(membershipQuery).toContain('for update of profile,principal');
     expect(membershipQuery).not.toContain('for update of membership');
   });
+
+  it('keeps the authenticated account and requests confirmation when WeChat belongs to another principal', async () => {
+    const queries: string[] = [];
+    let requestHash = '';
+    let ticketIssued = false;
+    const client = {
+      query: async (text: string, values?: readonly unknown[]) => {
+        queries.push(text);
+        if (text.includes('insert into runtime.idempotency')) requestHash = String(values?.[3]);
+        if (text.includes('select request_hash,state,response from runtime.idempotency')) {
+          return result([{ request_hash: requestHash, state: 'started', response: null }]);
+        }
+        if (text.includes("from identity.federatedidentity where provider='wechat'")) {
+          return result([{ id: 'wechat:one', principal_id: 'principal:previous', membership_id: 'membership:previous', status: 'active' }]);
+        }
+        if (text.includes('from access.membership membership join member.profile profile')) {
+          throw new Error('must not create a session for the previous account');
+        }
+        return result([]);
+      },
+      release: () => undefined,
+    } as unknown as PoolClient;
+    const pool: DatabasePool = {
+      connect: async () => client,
+      query: async () => result([]),
+      workload: () => pool,
+      end: async () => undefined,
+    };
+    const gateway: WechatIdentity = {
+      application: () => ({ applicationHash: 'application-hash' }),
+      authorize: () => 'https://example.test',
+      exchange: async () => ({ subject: 'openid-one' }),
+    };
+    const kms = {
+      encrypt: async () => ({ ciphertext: 'ciphertext', keyVersion: 'key:v1', fingerprint: 'fingerprint' }),
+    } as unknown as KmsClient;
+    const audit: AuditSink = { record: async () => undefined, access: async () => undefined };
+    const tickets = {
+      issue: async () => {
+        ticketIssued = true;
+        return { ticket: 't'.repeat(64), state: 's'.repeat(32) };
+      },
+    } as unknown as PgAuthTicket;
+    const operation = new WechatOperations({ invoke: async () => ({ status: 404, body: {} }) }, pool, gateway, kms, audit,
+      'identity-key', 'session-key', tickets);
+
+    const response = await operation.invoke(request(authenticatedAccess()));
+
+    expect(response).toMatchObject({ status: 202, body: { state: 'account_confirmation_required' } });
+    expect(ticketIssued).toBe(false);
+    expect(queries.some((text) => text.includes('insert into identity.wechatgrant'))).toBe(true);
+    expect(queries.some((text) => text.includes('insert into identity.session'))).toBe(false);
+  });
 });
 
-function request(): OperationRequest {
+function request(access: OperationRequest['access'] = null): OperationRequest {
   return {
     type: 'identity.wechat.session',
-    access: null,
+    access,
     input: {
       path: {}, query: {}, headers: { 'x-device-id': 'device:one', 'user-agent': 'wechat', 'x-peer-address': '127.0.0.1' },
       body: { scene: 'jsapi', action: 'exchange', code: 'wechat-code',
         authorization: { state: 's'.repeat(32), nonce: 'n'.repeat(32), challenge: 'c'.repeat(43) } },
       rawBody: '', deadline: Date.now() + 1_000, signal: new AbortController().signal, idempotency: 'wechat-session:one',
     },
+  };
+}
+
+function authenticatedAccess(): NonNullable<OperationRequest['access']> {
+  return {
+    actor: { id: 'principal:current', session: 'session:current', membership: 'membership:current', credentialVersion: 1,
+      accessVersion: 1, target: 'storefront', assurance: { level: 1 } },
+    membership: { id: 'membership:current', active: true, accessVersion: 1, denies: [], grants: [] },
+    scope: { kind: 'mall', id: 'mall:one', path: [] },
+    governance: { governanceLevel: 'member', isExactOwner: false, actorMembershipId: 'membership:current',
+      actorPrincipalId: 'principal:current', organizationId: 'mall:one',
+      scope: { kind: 'mall', semanticId: 'mall:one', storageId: 'mall:one' }, resolvedAt: new Date('2026-09-06T00:00:00.000Z') },
+    accessVersion: 1,
+    capabilities: ['identity.credential.manage'],
+    assurance: { level: 1 },
+    trace: 'trace:current',
   };
 }
 

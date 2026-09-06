@@ -153,7 +153,7 @@ describe('canonical storefront production API', () => {
     const authorization = await beginH5WechatAuthorization();
     await expect(requestH5WechatAuthorization(authorization, 'authenticated')).resolves.toBe('https://open.weixin.qq.com/connect/oauth2/authorize');
     const exchanged = await exchangeH5WechatCode('wechatCode123', authorization, 'authenticated');
-    expect(exchanged).toEqual({ kind: 'binding', bindingToken: 'wechat-binding-token' });
+    expect(exchanged).toEqual({ kind: 'binding', bindingToken: 'wechat-binding-token', confirmationRequired: false });
     if (exchanged.kind === 'binding') await bindH5WechatIdentity(exchanged.bindingToken);
 
     const binding = requestInit(fetcher, '/api/v1/identity/wechat/bindings', 'POST');

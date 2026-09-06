@@ -8,7 +8,7 @@ export interface H5WechatAuthorization {
 }
 
 export type H5WechatExchange =
-  | Readonly<{ kind: 'binding'; bindingToken: string }>
+  | Readonly<{ kind: 'binding'; bindingToken: string; confirmationRequired: boolean }>
   | Readonly<{ kind: 'authenticated'; callback: Readonly<{ ticket: string; state: string }> }>;
 
 export type H5WechatSessionMode = 'anonymous' | 'authenticated';
@@ -29,7 +29,8 @@ export async function exchangeH5WechatCode(code: string, authorization: H5Wechat
     body: { scene: 'jsapi', action: 'exchange', code, authorization: authorization.request },
   }, wechatSessionContext(mode))), 'identity.wechat.exchange');
   if (typeof value.bindingToken === 'string' && value.bindingToken.length > 0) {
-    return Object.freeze({ kind: 'binding', bindingToken: value.bindingToken });
+    return Object.freeze({ kind: 'binding', bindingToken: value.bindingToken,
+      confirmationRequired: value.state === 'account_confirmation_required' });
   }
   const callback = record(value.callback, 'identity.wechat.exchange.callback');
   return Object.freeze({ kind: 'authenticated', callback: Object.freeze({

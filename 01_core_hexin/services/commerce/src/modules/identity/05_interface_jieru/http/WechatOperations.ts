@@ -62,7 +62,11 @@ export class WechatOperations implements OperationUsecase {
         from identity.federatedidentity where provider='wechat' and application_hash=$1 and subject_hash=$2 for update`, [applicationHash, envelope.fingerprint]);
       const current = found.rows[0];
       if (!current || current.status === 'revoked') reject(403, 'WECHAT_IDENTITY_REVOKED');
-      const result = current.status === 'active' && current.principal_id && current.membership_id
+      const accountConfirmationRequired = request.access !== null && current.status === 'active'
+        && current.principal_id !== request.access.actor.id;
+      const result = accountConfirmationRequired
+        ? await this.createGrant(database, current.id, 'account_confirmation_required')
+        : current.status === 'active' && current.principal_id && current.membership_id
         ? await this.createSession(database, request, body, current.principal_id, current.membership_id, scene, authorization)
         : await this.createGrant(database, current.id);
       const hash = operationRequestHash(request);
@@ -100,12 +104,13 @@ export class WechatOperations implements OperationUsecase {
     return { status: 201, body: { token, session, expiresIn: 43_200, membership: membershipid } };
   }
 
-  private async createGrant(database: import('../../../../foundation/application/ModuleOperations').OperationDatabase, identity: string): Promise<OperationResult> {
+  private async createGrant(database: import('../../../../foundation/application/ModuleOperations').OperationDatabase, identity: string,
+    state: 'registration_required' | 'account_confirmation_required' = 'registration_required'): Promise<OperationResult> {
     await database.query('update identity.wechatgrant set consumed_at=clock_timestamp() where identity_id=$1 and consumed_at is null', [identity]);
     const token = randomBytes(48).toString('base64url');
     await database.query(`insert into identity.wechatgrant(id,identity_id,token_hash,expires_at,created_at)
       values($1,$2,$3,clock_timestamp()+interval '10 minutes',clock_timestamp())`, [`wechatgrant:${randomUUID()}`, identity, tokenHash(token)]);
-    return { status: 202, body: { bindingToken: token, expiresIn: 600, state: 'registration_required' } };
+    return { status: 202, body: { bindingToken: token, expiresIn: 600, state } };
   }
 
   private async bind(request: OperationRequest): Promise<OperationResult> {

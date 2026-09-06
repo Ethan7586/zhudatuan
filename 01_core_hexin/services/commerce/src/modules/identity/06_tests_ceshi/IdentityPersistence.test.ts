@@ -19,6 +19,9 @@ describe('identity persistence SQL', () => {
     await expect(bindWechat(database, 'hash:token', 'principal:owner', 'membership:owner')).resolves.toBe('identity:wechat');
     expect(queries[0]).toContain('identity.wechatgrant bindinggrant');
     expect(queries[0]).not.toMatch(/\bidentity\.wechatgrant\s+grant\b/);
+    expect(queries[0]).toContain("identity.status in('unbound','active')");
+    expect(queries.find((text) => text.startsWith('update identity.federatedidentity')))
+      .toContain("status in('unbound','active')");
   });
 });
 

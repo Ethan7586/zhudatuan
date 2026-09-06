@@ -46,6 +46,13 @@ export function H5WechatIdentityBridge() {
         sessionStorage.setItem(BINDING_KEY, exchanged.bindingToken);
         window.history.replaceState({}, '', '/');
         if (sessionStatus === 'authenticated') {
+          if (exchanged.confirmationRequired && !window.confirm(
+            '这只微信已绑定另一个账号。改绑后，原账号不能再用该微信登录，两个账号的数据不会合并。是否绑定到当前手机号账号？'
+          )) {
+            sessionStorage.removeItem(BINDING_KEY);
+            showToast('已取消微信改绑，当前手机号账号保持登录', 'info');
+            return;
+          }
           await productionApi.getSession();
           await bindH5WechatIdentity(exchanged.bindingToken);
           sessionStorage.removeItem(BINDING_KEY);
