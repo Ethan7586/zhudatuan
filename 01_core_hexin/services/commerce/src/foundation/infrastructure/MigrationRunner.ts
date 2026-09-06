@@ -6,6 +6,7 @@ import { TARGET_SCHEMA_HEAD } from '@shop/config/server';
 
 import { Semaphore } from '../performance/Semaphore';
 import type { KmsClient } from './KmsClient';
+import { genericMigrationSql } from './MigrationExecutionPlan';
 import type { DatabasePool } from '../persistence/Pool';
 
 interface HistoryContract {
@@ -59,7 +60,7 @@ export class MigrationRunner {
         const version = file.slice(0, 14);
         if (applied.has(version)) continue;
         if (file === BACKFILL) await this.stageSecrets(client);
-        const sql = await readFile(join(this.directory, file), 'utf8');
+        const sql = genericMigrationSql(file, await readFile(join(this.directory, file), 'utf8'));
         await client.query(sql);
         await client.query(
           'insert into supabase_migrations.schema_migrations(version,statements,name) values($1,$2,$3)',
