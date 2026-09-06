@@ -27,7 +27,7 @@ export const catalogManifest = defineModuleManifest({
   publicEntry: './index.ts',
   layers: ['public', 'application', 'adapters', 'interface', 'tests'],
   entrypoints: {
-    http: ['catalogOperations', 'catalogOperatorReadOperations'],
+    http: ['catalogOperations', 'catalogOperatorReadOperations', 'catalogOperatorOperations'],
     jobs: ['catalogimport'],
   },
 });

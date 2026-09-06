@@ -154,6 +154,7 @@ const REPAIR_FILES = [
   '20260905203000_provision_zhudatuan_storefront_application.sql',
   '20260906010000_add_l1_owner_role_and_named_scope.sql',
   '20260906011000_complete_l1_owner_runtime_head.sql',
+  '20260907010000_enable_identity_catalog_commands.sql',
 ];
 
 const mode = process.argv[2];

@@ -1,5 +1,6 @@
 import type { KeyboardEvent, MouseEvent } from 'react';
 import { ProductIcon } from './ProductIcon';
+import type { ListingPublicationAction } from './ProductPublicationCommand';
 import type { Listing } from './ProductSchema';
 
 export type ProductColumnKey = 'category' | 'sku' | 'malls' | 'price' | 'stock' | 'status' | 'updated';
@@ -14,9 +15,14 @@ interface ProductTableProps {
   readonly onToggleAll: () => void;
   readonly onOpen: (row: Listing) => void;
   readonly onBatchPreview: () => void;
+  readonly canPublish: boolean;
+  readonly canUnpublish: boolean;
+  readonly publicationPending?: string;
+  readonly onPublication: (row: Listing, action: ListingPublicationAction) => void;
 }
 
-export function ProductTable({ rows, previewEnabled, visibleColumns, selected, activeId, onToggle, onToggleAll, onOpen, onBatchPreview }: ProductTableProps) {
+export function ProductTable({ rows, previewEnabled, visibleColumns, selected, activeId, onToggle, onToggleAll, onOpen,
+  onBatchPreview, canPublish, canUnpublish, publicationPending, onPublication }: ProductTableProps) {
   const allSelected = rows.length > 0 && rows.every((row) => selected.has(row.id));
   return (
     <section className="producttablecard" aria-labelledby="productlisttitle">
@@ -58,6 +64,8 @@ export function ProductTable({ rows, previewEnabled, visibleColumns, selected, a
           <tbody>
             {rows.map((row) => {
               const preview = previewEnabled && row.preview?.kind === 'console-product-v1' ? row.preview : undefined;
+              const publicationAction: ListingPublicationAction = row.status === 'published' ? 'unpublish' : 'publish';
+              const publicationEnabled = publicationAction === 'publish' ? canPublish : canUnpublish;
               return (
                 <tr key={row.id} data-active={activeId === row.id ? 'true' : undefined} onClick={() => onOpen(row)}>
                   <td className="productcheckcell">
@@ -105,8 +113,12 @@ export function ProductTable({ rows, previewEnabled, visibleColumns, selected, a
                         <ProductIcon name="eye" />
                         查看
                       </button>
-                      <button type="button" aria-label={`${row.title}更多操作`} disabled title="商品写操作尚未闭合" onClick={stopClick}>
-                        <ProductIcon name="more" />
+                      <button type="button" aria-label={`${publicationAction === 'publish' ? '上架' : '下架'} ${row.title}`}
+                        disabled={!publicationEnabled || publicationPending !== undefined}
+                        title={publicationEnabled ? `${publicationAction === 'publish' ? '上架' : '下架'}当前商城货架` : '当前商城范围没有货架写权限'}
+                        onClick={(event) => { event.stopPropagation(); onPublication(row, publicationAction); }}>
+                        <ProductIcon name={publicationAction === 'publish' ? 'store' : 'archive'} />
+                        {publicationPending === row.id ? '处理中' : publicationAction === 'publish' ? '上架' : '下架'}
                       </button>
                     </div>
                   </td>

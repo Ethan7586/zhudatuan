@@ -1,14 +1,21 @@
 import { randomUUID } from 'node:crypto';
 import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
-import { ModuleOperations, requireAccess, rowResult } from '../../../foundation/application/ModuleOperations';
+import { ModuleOperations, requireAccess, rowResult, type OperationActions } from '../../../foundation/application/ModuleOperations';
 import { bodyRecord, keysetResult, queryPage, textField } from '../../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
 import { catalogImportOperations } from './CatalogImportOperations';
+import { setListingPublication } from './CatalogListingPublication';
+
+export { setListingPublication } from './CatalogListingPublication';
 
 export function catalogOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
-  return new ModuleOperations('catalog', pool, context.container.get(AUDIT_SINK), {
+  return new ModuleOperations('catalog', pool, context.container.get(AUDIT_SINK), catalogActions(context));
+}
+
+export function catalogActions(context: ModuleContext): OperationActions {
+  return {
     ...catalogImportOperations(context),
     'catalog.pools.read': async (request, database) => {
       const access = requireAccess(request);
@@ -108,33 +115,18 @@ export function catalogOperations(context: ModuleContext): ModuleOperations {
         `select listing.id,listing.pool_id,listing.sku_id,listing.title,listing.status,listing.effective_at,listing.expires_at,listing.version,listing.updated_at cursor_sort,
         sku.code,product.id product_id,product.product_type,product.attributes->>'coverUrl' cover_url,
         product.attributes->>'subtitle' subtitle from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id
-        join catalog.product product on product.id=sku.product_id where (exists(select 1 from organization.unitclosure where ancestor_id=$1 and descendant_id=listing.scope_id)
-          or ($10 and exists(select 1 from organization.unitclosure where ancestor_id=listing.scope_id and descendant_id=$1)))
+        join catalog.product product on product.id=sku.product_id where listing.scope_id=$1
         and ($2='' or listing.title ilike '%'||$2||'%' or sku.code ilike '%'||$2||'%') and ($3='' or product.category_id=$3) and ($4='' or product.id=$4)
         and ($5='' or listing.pool_id=$5) and (not $6 or (listing.status='published' and (listing.effective_at is null or listing.effective_at<=clock_timestamp())
           and (listing.expires_at is null or listing.expires_at>clock_timestamp())))
         and ($7::timestamptz is null or (listing.updated_at,listing.id)<($7::timestamptz,$8))
         order by listing.updated_at desc,listing.id desc limit $9`,
-        [access.scope.id, query, category, product, pool, storefront, page.sort, page.id, page.fetch, access.scope.kind === 'store']
+        [access.scope.id, query, category, product, pool, storefront, page.sort, page.id, page.fetch]
       );
       return keysetResult(result, page, 'cursor_sort');
     },
-    'catalog.listings.publish': async (request, database) =>
-      rowResult(
-        await database.query(
-          `update catalog.listing set status='published',effective_at=clock_timestamp(),expires_at=null,
-      version=version+1,updated_at=clock_timestamp() where id=$1 and ($2::bigint is null or version=$2) returning *`,
-          [request.input.path.listingid!, request.input.expectedVersion ?? null]
-        )
-      ),
-    'catalog.listings.unpublish': async (request, database) =>
-      rowResult(
-        await database.query(
-          `update catalog.listing set status='unpublished',expires_at=clock_timestamp(),
-      version=version+1,updated_at=clock_timestamp() where id=$1 and ($2::bigint is null or version=$2) returning *`,
-          [request.input.path.listingid!, request.input.expectedVersion ?? null]
-        )
-      ),
+    'catalog.listings.publish': async (request, database) => setListingPublication(request, database, 'published'),
+    'catalog.listings.unpublish': async (request, database) => setListingPublication(request, database, 'unpublished'),
     'catalog.listings.batch': async (request, database) => {
       const access = requireAccess(request);
       const body = bodyRecord(request);
@@ -148,7 +140,7 @@ export function catalogOperations(context: ModuleContext): ModuleOperations {
       );
       return { status: 200, body: { items: result.rows, count: result.rowCount } };
     },
-  });
+  };
 }
 
 function queryValue(value: string | readonly string[] | undefined): string {

@@ -5,6 +5,7 @@ import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD, We
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
+import { HttpObjectStore, OBJECT_STORE } from '../foundation/infrastructure/ObjectStore';
 import { IDENTITY_SECURITY_KEYS, SECRET_STORE, WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { createPool, DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
@@ -34,6 +35,7 @@ interface CompatibilityRow {
   readonly operator_invitation: boolean;
   readonly relations: boolean;
   readonly functions: boolean;
+  readonly catalog_writes: boolean;
 }
 
 export interface IdentityRegistrationApiRuntime {
@@ -62,9 +64,14 @@ export async function createIdentityRegistrationApiRuntime(
   const wechatIdentity = new WechatIdentityGateway(applications,
     parseSecret(wechatIdentitySource, 'WECHAT_IDENTITY_CONFIG_INVALID') as unknown as WechatIdentityConfiguration);
   const pool = createPool(connection, 'api');
+  const objects = new HttpObjectStore(
+    required(environment.OBJECT_STORE_ENDPOINT, 'OBJECT_STORE_ENDPOINT_MISSING'),
+    required(environment.OBJECT_STORE_BEARER_TOKEN, 'OBJECT_STORE_BEARER_TOKEN_MISSING'),
+  );
   try {
     await assertIdentityRegistrationRuntimeCompatibility(pool)
       .catch((cause: unknown) => console.warn('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_WARNING', cause));
+    await objects.find('catalog/readiness-probe');
   } catch (cause) {
     await pool.end();
     throw cause;
@@ -103,6 +110,7 @@ export async function createIdentityRegistrationApiRuntime(
         required(environment.KMS_ENDPOINT, 'KMS_ENDPOINT_MISSING'),
         required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'),
       ));
+      container.bind(OBJECT_STORE, objects);
       container.bind(WECHAT_IDENTITY, wechatIdentity);
       container.bind(RETURN_TARGETS, identityRegistrationApiReturnTargets(environment));
     },
@@ -130,10 +138,20 @@ export async function identityRegistrationRuntimeCompatibility(pool: DatabasePoo
       to_regclass('identity.registrationpolicy'),to_regclass('member.invite'),to_regclass('member.profile'),
       to_regclass('access.membership'),to_regclass('access.membershiprole'),to_regclass('access.scopegrant'),
       to_regclass('organization.organization'),to_regclass('audit.record'),to_regclass('audit.accessrecord')
-    ],null) is null relations`, [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
+      ,to_regclass('catalog.importjob'),to_regclass('catalog.importrow'),to_regclass('catalog.importerror'),
+      to_regclass('catalog.listing')
+    ],null) is null relations,
+    has_table_privilege(current_user,'catalog.importjob','SELECT')
+      and has_table_privilege(current_user,'catalog.importjob','INSERT')
+      and has_table_privilege(current_user,'catalog.importjob','UPDATE')
+      and has_table_privilege(current_user,'catalog.importrow','SELECT')
+      and has_table_privilege(current_user,'catalog.importerror','SELECT')
+      and has_table_privilege(current_user,'catalog.listing','SELECT')
+      and has_table_privilege(current_user,'catalog.listing','UPDATE') catalog_writes`,
+  [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== 'zhudatuanidentityapi' || !state.writable || !state.schema || !state.contract
-    || !state.registration || !state.operator_invitation || !state.relations || !state.functions) {
+    || !state.registration || !state.operator_invitation || !state.relations || !state.functions || !state.catalog_writes) {
     throw new Error(`IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
   }
   return Object.freeze(state);

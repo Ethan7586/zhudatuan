@@ -1,0 +1,79 @@
+{
+  "schema": "catalog-package/v1",
+  "packageId": "mockpool-feasibility-20260907",
+  "compiledAt": "2026-09-07T00:00:00.000Z",
+  "source": {
+    "name": "模拟综合货盘",
+    "file": "货盘-源数据.json",
+    "dataSource": "simulated",
+    "isMock": true,
+    "compiler": "manual-fixture/v1"
+  },
+  "validation": {
+    "status": "passed",
+    "errors": []
+  },
+  "items": [
+    {
+      "source": {
+        "row": 1,
+        "productRef": "MOCKPOOL-SPU-0001",
+        "skuRef": "MOCKPOOL-SKU-0001-01"
+      },
+      "product": {
+        "title": "高露洁牙膏4支装 企业装 升级款",
+        "description": "个护清洁·口腔护理｜高露洁牙膏4支装。模拟综合货盘测试数据，非真实商品。",
+        "category": "personal",
+        "type": "physical",
+        "attributes": {
+          "subtitle": "个护清洁 / 口腔护理",
+          "brand": "高露洁",
+          "unit": "组",
+          "isTest": true,
+          "sourceStatus": "active",
+          "sourceTaxonomy": {
+            "l1": "personalcare",
+            "l2": "personalcare_口腔护理",
+            "l3": "personalcare_口腔护理_std"
+          },
+          "sourceDetail": {
+            "描述": "个护清洁·口腔护理｜高露洁牙膏4支装。模拟综合货盘测试数据，非真实商品。",
+            "品牌": "高露洁",
+            "产地": "浙江",
+            "质保": "7天无理由",
+            "发货": "72小时内"
+          },
+          "originalCoverUrl": "https://picsum.photos/seed/MOCKPOOL-SKU-0001-01/800/800"
+        },
+        "media": [
+          {
+            "kind": "image",
+            "reference": "fixture:mockpool/MOCKPOOL-SKU-0001-01"
+          }
+        ]
+      },
+      "sku": {
+        "code": "MOCKPOOL-SKU-0001-01",
+        "specifications": {
+          "规格": "企业装",
+          "功效": "升级款"
+        }
+      },
+      "offer": {
+        "currency": "CNY",
+        "amountMinor": 3021,
+        "compareMinor": 4017
+      },
+      "inventory": {
+        "available": 3123
+      },
+      "publication": {
+        "state": "draft"
+      },
+      "validation": {
+        "status": "valid",
+        "errors": []
+      }
+    }
+  ]
+}

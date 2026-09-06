@@ -8,6 +8,7 @@ import type { OperationHandler } from '../foundation/application/OperationHandle
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { IDENTITY_SECURITY_KEYS } from '../foundation/infrastructure/SecretStore';
 import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
+import { OBJECT_STORE } from '../foundation/infrastructure/ObjectStore';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { RISK_GATE } from '../foundation/security/RiskGate';
@@ -16,7 +17,7 @@ import { ACCESS_OPERATOR_READ_OPERATION_IDS } from '../modules/access/03_applica
 import { IdentityOperatorAccessModule } from '../modules/access/05_interface_jieru/IdentityOperatorAccessModule';
 import { CHANNEL_OPERATOR_READ_OPERATION_IDS } from '../modules/channel/ChannelReadOperations';
 import { IdentityOperatorChannelModule } from '../modules/channel/IdentityOperatorChannelModule';
-import { CATALOG_OPERATOR_READ_OPERATION_IDS } from '../modules/catalog/CatalogReadOperations';
+import { CATALOG_OPERATOR_OPERATION_IDS } from '../modules/catalog/03_application_yingyong/CatalogOperatorOperations';
 import { IdentityOperatorCatalogModule } from '../modules/catalog/IdentityOperatorCatalogModule';
 import { EXPERIENCE_OPERATOR_OPERATION_IDS } from '../modules/experience/ExperienceOperatorOperations';
 import { IdentityOperatorExperienceModule } from '../modules/experience/IdentityOperatorExperienceModule';
@@ -55,7 +56,7 @@ describe('identity registration API entrypoint', () => {
       ...CHANNEL_OPERATOR_READ_OPERATION_IDS,
       ...VOUCHER_OPERATOR_READ_OPERATION_IDS,
       ...REPORTING_OPERATOR_READ_OPERATION_IDS,
-      ...CATALOG_OPERATOR_READ_OPERATION_IDS,
+      ...CATALOG_OPERATOR_OPERATION_IDS,
       ...EXPERIENCE_OPERATOR_OPERATION_IDS,
       ...NOTIFICATION_OPERATOR_READ_OPERATION_IDS,
       ...QUALIFICATION_OPERATOR_READ_OPERATION_IDS,
@@ -111,7 +112,10 @@ describe('identity registration API entrypoint', () => {
       'reporting.products.read',
       'reporting.sales.read',
       'reporting.voucherconsumption.read',
+      'catalog.imports.create',
       'catalog.imports.read',
+      'catalog.listings.publish',
+      'catalog.listings.unpublish',
       'experience.applications.create',
       'experience.applications.read',
       'experience.applications.update',
@@ -133,7 +137,7 @@ describe('identity registration API entrypoint', () => {
       ...CHANNEL_OPERATOR_READ_OPERATION_IDS,
       ...VOUCHER_OPERATOR_READ_OPERATION_IDS,
       ...REPORTING_OPERATOR_READ_OPERATION_IDS,
-      ...CATALOG_OPERATOR_READ_OPERATION_IDS,
+      ...CATALOG_OPERATOR_OPERATION_IDS,
       ...EXPERIENCE_OPERATOR_OPERATION_IDS,
       ...NOTIFICATION_OPERATOR_READ_OPERATION_IDS,
       ...QUALIFICATION_OPERATOR_READ_OPERATION_IDS,
@@ -172,6 +176,13 @@ describe('identity registration API entrypoint', () => {
         container.bind(RISK_GATE, {} as never);
         container.bind(IDENTITY_SECURITY_KEYS, { identity: 'identity-test-key', session: 'session-test-key' });
         container.bind(KMS_CLIENT, new KmsClient('https://kms.internal', 'k'.repeat(43)));
+        container.bind(OBJECT_STORE, {
+          create: async () => { throw new Error('OBJECT_UPLOAD_NOT_CALLED'); },
+          find: async () => null,
+          read: async () => new Uint8Array(),
+          inspect: async () => { throw new Error('OBJECT_INSPECT_NOT_CALLED'); },
+          authorize: async () => { throw new Error('OBJECT_AUTHORIZE_NOT_CALLED'); },
+        });
         container.bind(WECHAT_IDENTITY, {
           application: () => ({ applicationHash: 'application:test' }),
           authorize: () => 'https://wechat.example.test/authorize',
@@ -227,6 +238,9 @@ describe('identity registration API entrypoint', () => {
     expect(bootstrapped.routes.match('GET', '/api/v1/reports/sales')?.operation).toBe('reporting.sales.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/reports/voucherconsumption')?.operation).toBe('reporting.voucherconsumption.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/catalog/imports/x')?.operation).toBe('catalog.imports.read');
+    expect(bootstrapped.routes.match('POST', '/api/v1/catalog/imports')?.operation).toBe('catalog.imports.create');
+    expect(bootstrapped.routes.match('PUT', '/api/v1/catalog/listings/listing:test/publication')?.operation).toBe('catalog.listings.publish');
+    expect(bootstrapped.routes.match('DELETE', '/api/v1/catalog/listings/listing:test/publication')?.operation).toBe('catalog.listings.unpublish');
     expect(bootstrapped.routes.match('POST', '/api/v1/experiences/applications')?.operation).toBe('experience.applications.create');
     expect(bootstrapped.routes.match('GET', '/api/v1/experiences/applications')?.operation).toBe('experience.applications.read');
     expect(bootstrapped.routes.match('PATCH', '/api/v1/experiences/applications/application:test')?.operation).toBe('experience.applications.update');
@@ -248,7 +262,7 @@ describe('identity registration API entrypoint', () => {
     expect(bootstrapped.routes.match('PUT', '/api/v1/access/memberships/membership:test/scopes')).toBeNull();
   });
 
-  it('has no static dependency path to full Commerce, payment, providers, full finance, object storage, or cache', () => {
+  it('has no static dependency path to full Commerce, payment, providers, full finance, or cache', () => {
     const closure = sourceClosure(join(import.meta.dirname, 'IdentityRegistrationApiMain.ts'));
     expect(
       [...closure].filter((file) =>
@@ -275,7 +289,6 @@ describe('identity registration API entrypoint', () => {
           '/modules/qualification/03_application_yingyong/QualificationOperations.ts',
           '/modules/access/05_interface_jieru/AccessModule.ts',
           '/modules/access/03_application_yingyong/AccessOperations.ts',
-          '/foundation/infrastructure/ObjectStore.ts',
           '/foundation/cache/',
         ].some((forbidden) => file.includes(forbidden))
       )

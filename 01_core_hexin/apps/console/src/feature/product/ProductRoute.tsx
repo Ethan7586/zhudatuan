@@ -1,17 +1,20 @@
 import { ResourceState } from '@shop/design';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 import { downloadCurrentPageCsv, timestampedCsvFilename, type CsvColumn } from '../../shared/export/CurrentPageCsv';
-import { LocalImportDialog } from '../../shared/ui/LocalImportDialog';
 import { ProductBatchPreview } from './ProductBatchPreview';
 import { ProductCatalogHeader } from './ProductCatalogHeader';
 import { ProductColumnSettings } from './ProductColumnSettings';
+import { ProductCreateDialog } from './ProductCreateDialog';
 import { ProductDrawer } from './ProductDrawer';
 import { ProductFilterForm } from './ProductFilter';
+import { canCreateCatalogImport } from './ProductImportCommand';
+import { ProductImportDialog } from './ProductImportDialog';
 import { ProductPagination } from './ProductPagination';
+import { canManageListing, setListingPublication, type ListingPublicationAction } from './ProductPublicationCommand';
 import { productKey, readProducts, type ProductQuery } from './ProductQuery';
 import type { Listing, ProductFilter } from './ProductSchema';
 import { ProductTable, type ProductColumnKey } from './ProductTable';
@@ -40,6 +43,8 @@ const productCsvColumns: readonly CsvColumn<Listing>[] = Object.freeze([
 
 export function Component() {
   const context = useConsoleContext();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useSearchParams();
   const previewScope = context.scope.kind === 'platform' && context.scope.id === 'platform:preview';
   const limitValue = Number(search.get('limit') ?? 50);
@@ -77,10 +82,22 @@ export function Component() {
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [batchOpen, setBatchOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<ProductColumnKey>>(() => new Set(allColumns));
   const cursorTrail = useRef(new Map<number, string | undefined>([[1, undefined]]));
   const visibleSelected = useMemo(() => new Set(query.data?.items.filter((row) => selected.has(row.id)).map((row) => row.id) ?? []), [query.data?.items, selected]);
   const selectedRows = query.data?.items.filter((row) => visibleSelected.has(row.id)) ?? [];
+  const publication = useMutation({
+    mutationFn: ({ listing, action }: Readonly<{ listing: Listing; action: ListingPublicationAction }>) =>
+      setListingPublication(context, listing, action),
+    onSuccess: () => { void queryClient.invalidateQueries({ queryKey: productKey(context, filter) }); },
+  });
+  const writeEnabled = canCreateCatalogImport(context);
+  const openImportResult = (jobId: string) => {
+    setImportOpen(false);
+    setCreateOpen(false);
+    void navigate(`/imports/catalog/${encodeURIComponent(jobId)}`);
+  };
 
   const apply = (value: ProductFilter) => {
     const next = new URLSearchParams();
@@ -178,7 +195,9 @@ export function Component() {
         previewEnabled={previewEnabled}
         status={filter.status ?? ''}
         exportReady={query.data !== undefined}
+        writeEnabled={writeEnabled}
         onImport={() => setImportOpen(true)}
+        onCreate={() => setCreateOpen(true)}
         onExport={() => downloadCurrentPageCsv({ rows: query.data?.items ?? [], columns: productCsvColumns,
           filename: timestampedCsvFilename('products-current-page') })}
         onStatus={(status) => apply({ q: filter.q, category: filter.category, supplier: filter.supplier ?? '', mall: filter.mall ?? '', status })}
@@ -216,6 +235,11 @@ export function Component() {
               onToggleAll={toggleAll}
               onOpen={openDrawer}
               onBatchPreview={() => setBatchOpen(true)}
+              canPublish={canManageListing(context, 'publish')}
+              canUnpublish={canManageListing(context, 'unpublish')}
+              {...(publication.isPending && publication.variables !== undefined
+                ? { publicationPending: publication.variables.listing.id } : {})}
+              onPublication={(listing, action) => publication.mutate({ listing, action })}
             />
             <ProductPagination
               count={query.data.count}
@@ -231,10 +255,14 @@ export function Component() {
           </div>
         )}
       </ResourceState>
+      {publication.error === null ? null : <p className="productcommanderror" role="alert">
+        {publication.error instanceof Error ? publication.error.message : '货架状态更新失败'}
+      </p>}
       <ProductDrawer {...(selectedListing === undefined ? {} : { listing: selectedListing })} previewEnabled={previewEnabled} onClose={closeDrawer} />
       <ProductColumnSettings open={columnsOpen} visible={visibleColumns} onChange={toggleColumn} onClose={() => setColumnsOpen(false)} />
       <ProductBatchPreview open={batchOpen} rows={selectedRows} onClose={() => setBatchOpen(false)} />
-      <LocalImportDialog open={importOpen} title="导入商品" resourceLabel="商品" onClose={() => setImportOpen(false)} />
+      <ProductImportDialog context={context} open={importOpen} onClose={() => setImportOpen(false)} onCreated={openImportResult} />
+      <ProductCreateDialog context={context} open={createOpen} onClose={() => setCreateOpen(false)} onCreated={openImportResult} />
     </section>
   );
 }

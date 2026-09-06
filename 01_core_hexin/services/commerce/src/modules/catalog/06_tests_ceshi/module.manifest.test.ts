@@ -11,7 +11,11 @@ describe('catalog module manifest', () => {
   it('declares catalog dependencies, layers, and entrypoints', () => {
     expect(catalogManifest.requires).toEqual(['partner']);
     expect(catalogManifest.layers).toEqual(['public', 'application', 'adapters', 'interface', 'tests']);
-    expect(catalogManifest.entrypoints.http).toEqual(['catalogOperations', 'catalogOperatorReadOperations']);
+    expect(catalogManifest.entrypoints.http).toEqual([
+      'catalogOperations',
+      'catalogOperatorReadOperations',
+      'catalogOperatorOperations',
+    ]);
     expect(catalogManifest.entrypoints.jobs).toEqual(['catalogimport']);
   });
 

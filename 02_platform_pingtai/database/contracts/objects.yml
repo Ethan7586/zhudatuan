@@ -18106,6 +18106,14 @@ objects:
     objectType: table
     target: catalog.importerror
     privilege: select
+  - id: zhudatuanidentityapi:table:catalog.importjob:insert
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260907010000_enable_identity_catalog_commands.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: catalog.importjob
+    privilege: insert
   - id: zhudatuanidentityapi:table:catalog.importjob:select
     kind: grant
     owner: catalog
@@ -18113,6 +18121,22 @@ objects:
     role: zhudatuanidentityapi
     objectType: table
     target: catalog.importjob
+    privilege: select
+  - id: zhudatuanidentityapi:table:catalog.importjob:update
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260907010000_enable_identity_catalog_commands.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: catalog.importjob
+    privilege: update
+  - id: zhudatuanidentityapi:table:catalog.importrow:select
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260907010000_enable_identity_catalog_commands.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: catalog.importrow
     privilege: select
   - id: zhudatuanidentityapi:table:catalog.listing:select
     kind: grant
@@ -18122,6 +18146,14 @@ objects:
     objectType: table
     target: catalog.listing
     privilege: select
+  - id: zhudatuanidentityapi:table:catalog.listing:update
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260907010000_enable_identity_catalog_commands.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: catalog.listing
+    privilege: update
   - id: zhudatuanidentityapi:table:catalog.product:select
     kind: grant
     owner: catalog
@@ -22258,14 +22290,26 @@ objects:
     kind: policy
     owner: catalog
     source: 02_platform_pingtai/database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: catalog.importjob.identityapiinsert
+    kind: policy
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260907010000_enable_identity_catalog_commands.sql
   - id: catalog.importjob.identityapiread
     kind: policy
     owner: catalog
     source: 02_platform_pingtai/database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: catalog.importjob.identityapiupdate
+    kind: policy
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260907010000_enable_identity_catalog_commands.sql
   - id: catalog.importjob.jobscope
     kind: policy
     owner: catalog
     source: 02_platform_pingtai/database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: catalog.importrow.identityapiread
+    kind: policy
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260907010000_enable_identity_catalog_commands.sql
   - id: catalog.importrow.jobscope
     kind: policy
     owner: catalog
@@ -22278,6 +22322,10 @@ objects:
     kind: policy
     owner: catalog
     source: 02_platform_pingtai/database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: catalog.listing.identityapiupdate
+    kind: policy
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260907010000_enable_identity_catalog_commands.sql
   - id: catalog.listing.jobscope
     kind: policy
     owner: catalog

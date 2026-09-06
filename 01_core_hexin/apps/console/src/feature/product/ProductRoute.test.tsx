@@ -66,7 +66,7 @@ describe('Product governance workspace', () => {
     expect(screen.queryByRole('button', { name: '新建商品' })).toBeNull();
   });
 
-  it('opens local import and downloads exactly the loaded page without another request', async () => {
+  it('exports exactly the loaded page and keeps writes unavailable outside an authorized mall', async () => {
     const user = userEvent.setup();
     const download = captureDownload();
     renderProductRoute();
@@ -83,10 +83,31 @@ describe('Product governance workspace', () => {
     expect(requests).toHaveLength(1);
     expect(writes).toHaveLength(0);
     expect(screen.getByRole<HTMLButtonElement>('button', { name: '新建商品' }).disabled).toBe(true);
-
-    await user.click(screen.getByRole('button', { name: '导入' }));
-    expect(await screen.findByRole('dialog', { name: '导入商品' })).toBeTruthy();
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: '批量导入' }).disabled).toBe(true);
     expect(requests).toHaveLength(1);
+  });
+
+  it('enables manual creation, standard-package import and publication in an authorized mall', async () => {
+    const user = userEvent.setup();
+    server.use(http.delete('*/api/v1/catalog/listings/listing%3A1/publication', () => {
+      writes.push('DELETE');
+      return HttpResponse.json({ ...productPage.items[0], status: 'unpublished', version: 4 });
+    }));
+    renderProductRoute(mallContext);
+    await screen.findByRole('table', { name: '商品列表' });
+
+    const create = screen.getByRole<HTMLButtonElement>('button', { name: '新建商品' });
+    const importing = screen.getByRole<HTMLButtonElement>('button', { name: '批量导入' });
+    expect(create.disabled).toBe(false);
+    expect(importing.disabled).toBe(false);
+    await user.click(create);
+    expect(await screen.findByRole('dialog', { name: '新建商品' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '取消' }));
+    await user.click(importing);
+    expect(await screen.findByRole('dialog', { name: '批量导入商品' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '取消' }));
+    await user.click(screen.getByRole('button', { name: '下架 核心商品' }));
+    await waitFor(() => expect(writes).toContain('DELETE'));
   });
 
   it('downloads an empty loaded page with only the fixed header', async () => {
@@ -105,12 +126,12 @@ describe('Product governance workspace', () => {
   });
 });
 
-function renderProductRoute() {
+function renderProductRoute(value: ConsoleContext = context) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
   return render(
     <MemoryRouter initialEntries={['/products']}>
       <QueryClientProvider client={client}>
-        <ConsoleContextProvider value={context}>
+        <ConsoleContextProvider value={value}>
           <Component />
         </ConsoleContextProvider>
       </QueryClientProvider>
@@ -138,8 +159,9 @@ function captureDownload() {
 async function readBlob(blob: Blob): Promise<string> {
   return await new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.addEventListener('load', () => resolve(String(reader.result)));
-    reader.addEventListener('error', () => reject(reader.error));
+    reader.addEventListener('load', () => typeof reader.result === 'string'
+      ? resolve(reader.result) : reject(new Error('BLOB_TEXT_RESULT_REQUIRED')));
+    reader.addEventListener('error', () => reject(reader.error ?? new Error('BLOB_READ_FAILED')));
     reader.readAsText(blob);
   });
 }
@@ -177,4 +199,20 @@ const context: ConsoleContext = {
   profile: { display_name: '测试商品运营', employee_no: null },
   scope,
   scopes: [scope],
+};
+
+const mallScope = { kind: 'mall' as const, id: 'mall:hongtai', name: '宏泰甄选' };
+const mallContext: ConsoleContext = {
+  ...context,
+  session: {
+    ...context.session,
+    csrf: 'csrf:catalog',
+    permissions: ['catalog.import.manage', 'catalog.import.read', 'catalog.listing.manage'],
+    capabilities: ['catalog.listings.read', 'catalog.imports.create', 'catalog.imports.read',
+      'catalog.listings.publish', 'catalog.listings.unpublish'],
+    scope: mallScope,
+    scopes: [mallScope],
+  },
+  scope: mallScope,
+  scopes: [mallScope],
 };

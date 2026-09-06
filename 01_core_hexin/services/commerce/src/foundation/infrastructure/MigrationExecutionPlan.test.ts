@@ -16,7 +16,7 @@ describe('generic migration execution plan', () => {
   });
 
   it('leaves unrelated migrations byte-for-byte unchanged', () => {
-    expect(genericMigrationSql('20260906011000_complete_l1_owner_runtime_head.sql', 'select 1;')).toBe('select 1;');
+    expect(genericMigrationSql('20260907010000_enable_identity_catalog_commands.sql', 'select 1;')).toBe('select 1;');
   });
 
   it('fails when the immutable statement no longer has the expected shape', () => {

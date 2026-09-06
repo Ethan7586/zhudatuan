@@ -74,6 +74,8 @@ describe('runtime configuration schema', () => {
       WECHAT_IDENTITY_CONFIG_REF: 'zhudatuan/wechat/identity',
       KMS_ENDPOINT: 'https://127.0.0.1:8544',
       KMS_BEARER_TOKEN: kmsBearerToken,
+      OBJECT_STORE_ENDPOINT: 'https://127.0.0.1:8545',
+      OBJECT_STORE_BEARER_TOKEN: 'o'.repeat(43),
       SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8543',
       SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
     };

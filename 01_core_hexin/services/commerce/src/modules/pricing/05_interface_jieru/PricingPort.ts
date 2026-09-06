@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 
 export interface ProviderPrice {
@@ -9,6 +9,14 @@ export interface ProviderPrice {
   readonly compareMinor: unknown;
   readonly effectiveAt: string;
   readonly expiresAt: unknown;
+}
+
+export interface CatalogPackageOffer {
+  readonly scope: string;
+  readonly sku: string;
+  readonly amountMinor: number;
+  readonly compareMinor: number | null;
+  readonly sourceVersion: string;
 }
 
 export class PricingPort {
@@ -22,6 +30,17 @@ export class PricingPort {
       values($1,$2,$3,$4,$5,$6,$7) on conflict(book_id,sku_id,effective_at) do update
       set amount_minor=excluded.amount_minor,compare_minor=excluded.compare_minor,expires_at=excluded.expires_at`,
     [input.id, input.book, input.sku, input.amountMinor, input.compareMinor, input.effectiveAt, input.expiresAt]);
+  }
+
+  async upsertCatalogPackageOffer(database: OperationDatabase, input: CatalogPackageOffer): Promise<void> {
+    const book = `pricebook:catalog-package:${digest(input.scope)}`;
+    const price = `price:catalog-package:${digest(`${input.scope}:${input.sku}:${input.sourceVersion}`)}`;
+    await this.ensureProviderBook(database, book, input.scope, 'catalog-package/v1');
+    await database.query(`insert into pricing.price(id,book_id,sku_id,amount_minor,compare_minor,effective_at,expires_at)
+      values($1,$2,$3,$4,$5,'2000-01-01T00:00:00.000Z',null)
+      on conflict(book_id,sku_id,effective_at) do update set id=excluded.id,amount_minor=excluded.amount_minor,
+      compare_minor=excluded.compare_minor,expires_at=null`,
+    [price, book, input.sku, input.amountMinor, input.compareMinor]);
   }
 
   async saveQuote(database: OperationDatabase, input: Readonly<{ id: string; member: string; mall: string; currency: string;
@@ -41,3 +60,7 @@ export class PricingPort {
 }
 
 export const pricingPort = new PricingPort();
+
+function digest(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
+}

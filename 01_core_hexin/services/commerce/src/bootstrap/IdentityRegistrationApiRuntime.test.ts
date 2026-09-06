@@ -5,7 +5,7 @@ import { assertIdentityRegistrationRuntimeCompatibility } from './IdentityRegist
 describe('identity registration API runtime', () => {
   it('requires the dedicated writable registration database role and registration relations', async () => {
     const healthy = { current_user: 'zhudatuanidentityapi', writable: true, schema: true, contract: true,
-      registration: true, operator_invitation: true, relations: true, functions: true };
+      registration: true, operator_invitation: true, relations: true, functions: true, catalog_writes: true };
     let compatibilityStatement = '';
     const pool = (state: typeof healthy) => ({ query: async (statement: string) => {
       if (statement.includes('deployment.runtime_database_boundary')) return result([databaseBoundary('zhudatuanidentityapi')], 1);
@@ -24,6 +24,8 @@ describe('identity registration API runtime', () => {
     await expect(assertIdentityRegistrationRuntimeCompatibility(pool({ ...healthy, operator_invitation: false })))
       .rejects.toThrow('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED');
     await expect(assertIdentityRegistrationRuntimeCompatibility(pool({ ...healthy, functions: false })))
+      .rejects.toThrow('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED');
+    await expect(assertIdentityRegistrationRuntimeCompatibility(pool({ ...healthy, catalog_writes: false })))
       .rejects.toThrow('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED');
     const migrationActive = { query: async (statement: string) => statement.includes('deployment.runtime_database_boundary')
       ? result([{ ...databaseBoundary('zhudatuanidentityapi'), retired_roles_valid: false }], 1)

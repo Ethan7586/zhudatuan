@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import { Reservation, available } from '../02_domain_yewu/model/Reservation';
 
@@ -10,6 +10,13 @@ export interface StockDemand {
   readonly accepted: boolean;
 }
 
+export interface CatalogPackageStock {
+  readonly scope: string;
+  readonly sku: string;
+  readonly available: number;
+  readonly sourceVersion: string;
+}
+
 export class InventoryPort {
   async observe(database: OperationDatabase, input: Readonly<{ id: string; scope: string; sku: string; location: string;
     onhand: number; safety: number; provider: string; version: string }>): Promise<void> {
@@ -19,6 +26,21 @@ export class InventoryPort {
     [input.id, input.scope, input.sku, input.location, input.onhand, input.safety]);
     await database.query(`insert into inventory.snapshot(stockitem_id,observed_at,source,onhand,source_version)
       values($1,clock_timestamp(),$2,$3,$4)`, [input.id, input.provider, input.onhand, input.version]);
+  }
+
+  async upsertCatalogPackageStock(database: OperationDatabase, input: CatalogPackageStock): Promise<void> {
+    const proposed = `stock:catalog-package:${digest(`${input.scope}:${input.sku}`)}`;
+    const saved = await database.query<{ id: string }>(`insert into inventory.stockitem(id,scope_id,sku_id,location_id,onhand,safety,version,status,updated_at)
+      values($1,$2,$3,'catalog-package', $4,0,0,'active',clock_timestamp())
+      on conflict(scope_id,sku_id,location_id) do update set onhand=excluded.onhand,safety=0,
+      version=inventory.stockitem.version+1,status='active',updated_at=clock_timestamp() returning id`,
+    [proposed, input.scope, input.sku, input.available]);
+    const stock = saved.rows[0]?.id;
+    if (!stock) throw new Error('INVENTORY_STOCK_WRITE_FAILED');
+    await database.query(`insert into inventory.snapshot(stockitem_id,observed_at,source,onhand,source_version)
+      select $1,clock_timestamp(),'catalog-package/v1',$2,$3 where not exists(
+        select 1 from inventory.snapshot where stockitem_id=$1 and source='catalog-package/v1' and source_version=$3)`,
+    [stock, input.available, input.sourceVersion]);
   }
 
   async reserve(database: OperationDatabase, order: string, mall: string, demand: readonly StockDemand[]): Promise<void> {
@@ -80,3 +102,7 @@ export class InventoryPort {
 }
 
 export const inventoryPort = new InventoryPort();
+
+function digest(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
+}

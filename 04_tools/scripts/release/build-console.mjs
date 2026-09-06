@@ -1,10 +1,10 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { cpSync, existsSync } from 'node:fs';
-import { isAbsolute, relative, resolve } from 'node:path';
+import { cpSync, existsSync, writeFileSync } from 'node:fs';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 
 import { clientEnvironment } from '@shop/config/client';
 import { loadEnv } from 'vite';
-import { readConsoleArtifact } from './console-artifact.mjs';
+import { CONSOLE_ARTIFACT_SCHEMA, readConsoleArtifact } from './console-artifact.mjs';
 
 const root = resolve(import.meta.dirname, '../../..');
 const consoleRoot = resolve(root, '01_core_hexin/apps/console');
@@ -23,7 +23,7 @@ const environment = {
   SHOP_BUILD_COMMIT: commit,
   SHOP_SOURCE_TREE: 'clean',
 };
-clientEnvironment(environment);
+const client = clientEnvironment(environment);
 
 const build = spawnSync(npmCommand(), ['run', 'build', '--workspace', '@shop/console'], {
   cwd: root,
@@ -34,6 +34,14 @@ if (build.status !== 0) throw new Error(`CONSOLE_RELEASE_BUILD_FAILED:${build.st
 assertCleanWorkspace();
 
 const dist = resolve(consoleRoot, 'dist');
+writeFileSync(join(dist, 'console-build.json'), `${JSON.stringify({
+  schema: CONSOLE_ARTIFACT_SCHEMA,
+  commit,
+  sourceTree: 'clean',
+  apiBaseUrl: client.apiBaseUrl,
+  authBaseUrl: client.authBaseUrl,
+  clientVersion: client.clientVersion,
+}, null, 2)}\n`, { encoding: 'utf8', mode: 0o644 });
 readConsoleArtifact(dist, { expectedCommit: commit, requireClean: true });
 cpSync(dist, output, { recursive: true, errorOnExist: true, dereference: true });
 

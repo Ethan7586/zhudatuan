@@ -7,7 +7,9 @@ interface ProductCatalogHeaderProps {
   readonly status: string;
   readonly onStatus: (status: string) => void;
   readonly exportReady: boolean;
+  readonly writeEnabled: boolean;
   readonly onImport: () => void;
+  readonly onCreate: () => void;
   readonly onExport: () => void;
 }
 
@@ -18,7 +20,7 @@ const tabs = Object.freeze([
   { key: 'unpublished', label: '已下架' },
 ] as const);
 
-export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, exportReady, onImport, onExport }: ProductCatalogHeaderProps) {
+export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, exportReady, writeEnabled, onImport, onCreate, onExport }: ProductCatalogHeaderProps) {
   const preview = previewEnabled && page?.preview?.kind === 'console-product-v1' ? page.preview : undefined;
   const coreTotal = preview === undefined ? undefined : preview.facets.statuses.reduce((total, facet) => total + facet.count, 0) || preview.totalCount;
   const description = preview === undefined ? '当前范围商品按服务端过滤与游标分页读取；总量尚未由列表合同返回。' : `当前范围内共 ${formatCount(coreTotal ?? preview.totalCount)} 件核心商品`;
@@ -32,15 +34,21 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
           <p>{description}</p>
         </div>
         <div className="productheroactions" role="group" aria-label="商品管理操作">
-          <button className="productaction" type="button" onClick={onImport}><ProductIcon name="upload" />导入</button>
+          <button className="productaction" type="button" disabled={!writeEnabled} onClick={onImport}
+            title={writeEnabled ? '上传 catalog-package/v1 标准货盘包' : '请切换到有商品导入权限的商城范围'}>
+            <ProductIcon name="upload" />批量导入
+          </button>
           <button className="productaction" type="button" disabled={!exportReady} onClick={onExport}
             title={exportReady ? '仅导出当前已加载页，不包含其他分页' : '等待当前页加载完成'}>
             <ProductIcon name="download" />导出当前页
           </button>
-          <UnavailableAction primary icon="plus" label="新建商品" reason="商品创建表单与操作回执尚未闭合" />
+          <button className="productaction productactionprimary" type="button" disabled={!writeEnabled} onClick={onCreate}
+            title={writeEnabled ? '手工录入单个商品并保存为草稿' : '请切换到有商品导入权限的商城范围'}>
+            <ProductIcon name="plus" />新建商品
+          </button>
         </div>
         <p id="productcontractnotice" className="sr-only">
-          这些写操作保持不可用，直到服务端 Operation、权限、版本校验和回执合同全部就绪。
+          商品写操作只在当前 Access Pipeline 已授权的商城范围内可用。
         </p>
       </header>
       <nav className="producttabs" aria-label="商品状态">
@@ -56,25 +64,6 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
         })}
       </nav>
     </>
-  );
-}
-
-function UnavailableAction({
-  icon,
-  label,
-  reason,
-  primary = false,
-}: Readonly<{
-  icon: 'upload' | 'download' | 'plus';
-  label: string;
-  reason: string;
-  primary?: boolean;
-}>) {
-  return (
-    <button className={primary ? 'productaction productactionprimary' : 'productaction'} type="button" disabled title={reason} aria-describedby="productcontractnotice">
-      <ProductIcon name={icon} />
-      {label}
-    </button>
   );
 }
 

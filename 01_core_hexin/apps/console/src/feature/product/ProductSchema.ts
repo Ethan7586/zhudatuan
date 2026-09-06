@@ -71,6 +71,42 @@ export const ListingSchema = z.object({
   preview: z.optional(ProductListingPreviewSchema),
 });
 
+export const ListingPublicationReceiptSchema = z.object({
+  id: z.string().check(z.minLength(1)),
+  status: z.string().check(z.minLength(1)),
+  version: DatabaseIntegerSchema,
+});
+
+export const CatalogImportCreateSchema = z.object({
+  id: z.string().check(z.minLength(1)),
+  state: z.string().check(z.minLength(1)),
+  total_count: z.optional(z.nullable(DatabaseIntegerSchema)),
+  cursor_value: z.optional(z.nullable(DatabaseIntegerSchema)),
+  success_count: z.optional(z.nullable(DatabaseIntegerSchema)),
+  failure_count: z.optional(z.nullable(DatabaseIntegerSchema)),
+  duplicate: z.optional(z.boolean()),
+  confirmed: z.optional(z.boolean()),
+});
+
+export const CatalogImportValidationSummarySchema = z.object({
+  format: z.optional(z.string()),
+  packageId: z.optional(z.string()),
+  source: z.optional(z.unknown()),
+  rows: z.optional(DatabaseIntegerSchema),
+  validCount: z.optional(DatabaseIntegerSchema),
+  errorCount: z.optional(DatabaseIntegerSchema),
+});
+
+export const CatalogImportPreviewRowsSchema = z.array(z.object({
+  rowNumber: DatabaseIntegerSchema,
+  title: z.optional(z.nullable(z.string())),
+  sku: z.optional(z.nullable(z.string())),
+  category: z.optional(z.nullable(z.string())),
+  priceMinor: z.optional(z.nullable(z.string())),
+  stock: z.optional(z.nullable(z.string())),
+  status: z.optional(z.nullable(z.string())),
+}));
+
 const ProductPreviewFacetSchema = z.object({
   value: z.string().check(z.minLength(1)),
   label: z.string().check(z.minLength(1)),
