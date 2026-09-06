@@ -71,6 +71,15 @@ describe('Console navigation selector', () => {
 
     expect(items.map(({ moduleId }) => moduleId)).toEqual(['products', 'support']);
   });
+
+  it('shows the independent storefront member entry only for mall scopes with its read capability', () => {
+    expect(selectConsoleNavigationItems(consoleModules, 'mall', ['member.storefront.members.read'])
+      .find(({ moduleId }) => moduleId === 'storefront-members')).toMatchObject({
+      label: '商城会员', suffix: 'storefront-members', order: 95,
+    });
+    expect(selectConsoleNavigationItems(consoleModules, 'enterprise', ['member.storefront.members.read'])
+      .find(({ moduleId }) => moduleId === 'storefront-members')).toBeUndefined();
+  });
 });
 
 function withStatus(

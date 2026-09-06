@@ -6,6 +6,7 @@ import { bindOperation, defineStructuralOperation, type OperationExecutor, type 
 
 export const MEMBER_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "member.members.read",
+  "member.storefront.members.read",
   "member.invitations.read",
   "member.profile.read",
   "member.addresses.read",
@@ -16,6 +17,7 @@ export const MEMBER_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
 
 export interface MemberOperations {
   readonly membersRead: OperationMethod<"member.members.read">;
+  readonly storefrontMembersRead: OperationMethod<"member.storefront.members.read">;
   readonly invitationsRead: OperationMethod<"member.invitations.read">;
   readonly profileRead: OperationMethod<"member.profile.read">;
   readonly addressesRead: OperationMethod<"member.addresses.read">;
@@ -31,6 +33,7 @@ export function createFetchMember(baseUrl: string): MemberOperations {
 export function createMemberOperations(client: OperationExecutor): MemberOperations {
   return Object.freeze({
     membersRead: bindMembersRead(client),
+    storefrontMembersRead: bindStorefrontMembersRead(client),
     invitationsRead: bindInvitationsRead(client),
     profileRead: bindProfileRead(client),
     addressesRead: bindAddressesRead(client),
@@ -46,6 +49,14 @@ export function createFetchMemberMembersRead(baseUrl: string): OperationMethod<"
 
 function bindMembersRead(client: OperationExecutor): OperationMethod<"member.members.read"> {
   return bindOperation(client, defineStructuralOperation({"id":"member.members.read","method":"GET","path":"/api/v1/members","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+}
+
+export function createFetchMemberStorefrontMembersRead(baseUrl: string): OperationMethod<"member.storefront.members.read"> {
+  return bindStorefrontMembersRead(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindStorefrontMembersRead(client: OperationExecutor): OperationMethod<"member.storefront.members.read"> {
+  return bindOperation(client, defineStructuralOperation({"id":"member.storefront.members.read","method":"GET","path":"/api/v1/member/storefront-members","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchMemberInvitationsRead(baseUrl: string): OperationMethod<"member.invitations.read"> {

@@ -43,9 +43,9 @@ interface LedgerRecord {
 }
 
 const BACKFILL = '20260821026000_backfill_domain_data.sql';
-const REGISTRATION_TARGET_VERSION = '20260907010000';
-const REGISTRATION_TARGET_CHECKSUM = '89fb0fcf3fd865a1e3076be775690536375b6e4a11bab251df3e9c262e1d1ac3';
-const REGISTRATION_TARGET_FILE = '20260907010000_enable_identity_catalog_commands.sql';
+const REGISTRATION_TARGET_VERSION = '20260907110000';
+const REGISTRATION_TARGET_CHECKSUM = 'db19bf4098a3758b6831fdfee624c2260daf70c7757c34c729d0bb4025cad554';
+const REGISTRATION_TARGET_FILE = '20260907110000_publish_storefront_member_directory.sql';
 const REGISTRATION_DATABASE = 'zhudatuan_registration';
 const REGISTRATION_MIGRATION_ROLE = 'shopmigration';
 const MIGRATION_FILE = /^\d{14}_[a-z0-9_]+\.sql$/;

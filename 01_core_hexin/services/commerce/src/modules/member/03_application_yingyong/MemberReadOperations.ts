@@ -1,4 +1,4 @@
-import type { OperationId } from '@shop/contract';
+import { StorefrontMemberPageSchema, type OperationId } from '@shop/contract';
 import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
 import { ModuleOperations, requireAccess, rowResult, type OperationActions } from '../../../foundation/application/ModuleOperations';
@@ -8,6 +8,7 @@ import { requireGovernanceContext } from '../../../foundation/security/AccessCon
 
 export const MEMBER_OPERATOR_READ_OPERATION_IDS = Object.freeze([
   'member.members.read',
+  'member.storefront.members.read',
   'member.invitations.read',
   'member.imports.read',
 ] as const satisfies readonly OperationId[]);
@@ -84,6 +85,30 @@ export function memberOperatorReadActions(): OperationActions {
         governance.isExactOwner, governance.actorMembershipId]);
       return keysetResult(result, page, 'directory_sort', 'id');
     },
+    'member.storefront.members.read': async (request, database) => {
+      const access = requireAccess(request);
+      if (access.scope.kind !== 'mall') throw new Error('SCOPE_NOT_ALLOWED_FOR_OPERATION');
+      const page = queryPage(request);
+      const query = queryValue(request.input.query.q);
+      const result = await database.query(`select membership.id membership_id,profile.display_name,profile.mobile_masked,
+        case membership.client when 'storefront' then 'L6' end identity_level,
+        case membership.client when 'storefront' then 'consumer' end identity_kind,
+        membership.status membership_status,profile.mobile_token is not null mobile_bound,
+        exists(select 1 from identity.federatedidentity identity
+          where identity.membership_id=membership.id and identity.provider='wechat' and identity.status='active') wechat_bound,
+        case when membership.joined_at is null then null else to_char(membership.joined_at at time zone 'UTC',
+          'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') end joined_at
+        from access.membership membership
+        join member.profile profile on profile.id=membership.member_id
+        where membership.organization_id=$1 and membership.client='storefront'
+          and ($2='' or profile.display_name ilike '%'||$2||'%' or membership.id ilike '%'||$2||'%'
+            or profile.mobile_masked ilike '%'||$2||'%')
+          and ($3::text is null or membership.id<$3)
+        order by membership.id desc limit $4`,
+      [access.scope.id, query, page.sort, page.fetch]);
+      const response = keysetResult(result, page, 'membership_id', 'membership_id');
+      return { ...response, body: StorefrontMemberPageSchema.parse(response.body) };
+    },
     'member.invitations.read': async (request, database) => {
       const access = requireAccess(request);
       const page = queryPage(request);
@@ -135,4 +160,8 @@ export function memberOperatorReadActions(): OperationActions {
 export function memberOperatorReadOperations(context: ModuleContext): ModuleOperations {
   return new ModuleOperations('member', context.container.get(DATABASE_POOL), context.container.get(AUDIT_SINK),
     memberOperatorReadActions(), MEMBER_OPERATOR_READ_OPERATION_IDS);
+}
+
+function queryValue(value: string | readonly string[] | undefined): string {
+  return (Array.isArray(value) ? value[0] : value)?.trim().slice(0, 100) ?? '';
 }

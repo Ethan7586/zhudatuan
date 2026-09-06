@@ -12,6 +12,7 @@ export const memberManifest = defineModuleManifest({
     'member.addresses.read',
     'member.addresses.manage',
     'member.members.read',
+    'member.storefront.members.read',
     'member.invitations.read',
     'member.imports.read',
     'member.imports.create',

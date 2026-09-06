@@ -40,6 +40,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('organization.stores.read','partner','GET','/api/v1/organizations/stores','1.0.0'),
   ('organization.stores.manage','partner','PUT','/api/v1/organizations/stores/{storeid}','1.0.0'),
   ('member.members.read','member','GET','/api/v1/members','1.0.0'),
+  ('member.storefront.members.read','member','GET','/api/v1/member/storefront-members','1.0.0'),
   ('member.invitations.read','member','GET','/api/v1/member/invitations','1.0.0'),
   ('member.profile.read','member','GET','/api/v1/members/me','1.0.0'),
   ('member.addresses.read','member','GET','/api/v1/members/me/addresses','1.0.0'),
@@ -564,6 +565,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('organization.stores.read','operation','organization.stores.read',1,'active'),
   ('organization.stores.manage','operation','organization.stores.manage',1,'active'),
   ('member.members.read','operation','member.members.read',1,'active'),
+  ('member.storefront.members.read','operation','member.storefront.members.read',1,'active'),
   ('member.invitations.read','operation','member.invitations.read',1,'active'),
   ('member.profile.read','operation','member.profile.read',1,'active'),
   ('member.addresses.read','operation','member.addresses.read',1,'active'),
@@ -822,6 +824,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('organization.stores.read','organization.stores.read','partner.read','operator'),
   ('organization.stores.manage','organization.stores.manage','partner.manage','operator'),
   ('member.members.read','member.members.read','member.read','operator'),
+  ('member.storefront.members.read','member.storefront.members.read','member.read','operator'),
   ('member.invitations.read','member.invitations.read','identity.invitation.manage','operator'),
   ('member.profile.read','member.profile.read','member.profile.read','member'),
   ('member.addresses.read','member.addresses.read','member.address.read','member'),
@@ -1356,6 +1359,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='private' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','feef2164a1dceb684accd09114a147fc61e2ca45cddd1949c7a188765048add4');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','09a9332cc8d8b3c2c0de4bea15b4295d9268dbd6c1357c3692bdbfad0da23687');
 
 commit;

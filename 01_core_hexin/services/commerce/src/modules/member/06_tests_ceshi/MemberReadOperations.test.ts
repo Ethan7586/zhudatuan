@@ -1,3 +1,5 @@
+import { PGlite } from '@electric-sql/pglite';
+import { StorefrontMemberPageSchema } from '@shop/contract';
 import type { QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
@@ -62,6 +64,85 @@ describe('member directory scope boundary', () => {
   });
 });
 
+describe('storefront member directory boundary', () => {
+  it('returns only exact-mall storefront Membership rows with masked and membership-bound identity facts', async () => {
+    const database = new PGlite();
+    try {
+      await database.exec(`create schema access; create schema member; create schema identity;
+        create table member.profile(
+          id text primary key,principal_id text not null,display_name text not null,mobile_ciphertext text,
+          mobile_token text,mobile_masked text not null
+        );
+        create table access.membership(
+          id text primary key,member_id text not null,organization_id text not null,client text not null,
+          status text not null,joined_at timestamptz
+        );
+        create table identity.federatedidentity(
+          id text primary key,principal_id text,membership_id text,provider text not null,status text not null
+        );
+        insert into member.profile values
+          ('member:shared','principal:shared','测试消费者甲','18800008866','token:8866','188****8866'),
+          ('member:wechat','principal:wechat','测试消费者乙','17700007755','token:7755','177****7755'),
+          ('member:foreign','principal:foreign','范围外记录','16600006644','token:6644','166****6644');
+        insert into access.membership values
+          ('membership:storefront:one','member:shared','mall:one','storefront','active','2026-09-06T08:00:00Z'),
+          ('membership:operator:same-principal','member:shared','mall:one','operator','active','2026-09-06T08:00:00Z'),
+          ('membership:storefront:two','member:wechat','mall:one','storefront','invited',null),
+          ('membership:store:one','member:foreign','mall:one','store','active','2026-09-05T08:00:00Z'),
+          ('membership:supplier:one','member:foreign','mall:one','supplier','active','2026-09-05T08:00:00Z'),
+          ('membership:storefront:other-mall','member:foreign','mall:two','storefront','active','2026-09-05T08:00:00Z'),
+          ('membership:storefront:l0','member:foreign','organization-platform-root','storefront','active','2026-09-05T08:00:00Z');
+        insert into identity.federatedidentity values
+          ('identity:operator','principal:shared','membership:operator:same-principal','wechat','active'),
+          ('identity:revoked','principal:shared','membership:storefront:one','wechat','revoked'),
+          ('identity:storefront','principal:wechat','membership:storefront:two','wechat','active');`);
+
+      const action = memberOperatorReadActions()['member.storefront.members.read'];
+      if (typeof action !== 'function') throw new Error('STOREFRONT_MEMBER_READ_ACTION_MISSING');
+      const response = await action(storefrontRequest('mall:one'), database as unknown as OperationDatabase);
+      const page = StorefrontMemberPageSchema.parse(response.body);
+
+      expect(page.items.map(({ membership_id }) => membership_id)).toEqual([
+        'membership:storefront:two', 'membership:storefront:one',
+      ]);
+      expect(page.items[0]).toMatchObject({ identity_level: 'L6', identity_kind: 'consumer', wechat_bound: true });
+      expect(page.items[1]).toMatchObject({
+        display_name: '测试消费者甲', mobile_masked: '188****8866', mobile_bound: true, wechat_bound: false,
+      });
+      expect(JSON.stringify(response.body)).not.toContain('18800008866');
+      expect(JSON.stringify(response.body)).not.toContain('token:8866');
+
+      const searched = StorefrontMemberPageSchema.parse((await action(
+        storefrontRequest('mall:one', { q: '8866' }), database as unknown as OperationDatabase,
+      )).body);
+      expect(searched.items.map(({ membership_id }) => membership_id)).toEqual(['membership:storefront:one']);
+
+      const first = StorefrontMemberPageSchema.parse((await action(
+        storefrontRequest('mall:one', { limit: '1' }), database as unknown as OperationDatabase,
+      )).body);
+      expect(first).toMatchObject({ count: 1, items: [{ membership_id: 'membership:storefront:two' }] });
+      expect(first.nextCursor).toBeDefined();
+      const second = StorefrontMemberPageSchema.parse((await action(
+        storefrontRequest('mall:one', { limit: '1', cursor: first.nextCursor! }), database as unknown as OperationDatabase,
+      )).body);
+      expect(second.items.map(({ membership_id }) => membership_id)).toEqual(['membership:storefront:one']);
+    } finally {
+      await database.close();
+    }
+  });
+
+  it('rejects non-mall scopes before querying', async () => {
+    const query = vi.fn();
+    const action = memberOperatorReadActions()['member.storefront.members.read'];
+    if (typeof action !== 'function') throw new Error('STOREFRONT_MEMBER_READ_ACTION_MISSING');
+
+    await expect(action(storefrontRequest('organization-platform-root', {}, 'platform'), {
+      query,
+    } as unknown as OperationDatabase)).rejects.toThrow('SCOPE_NOT_ALLOWED_FOR_OPERATION');
+    expect(query).not.toHaveBeenCalled();
+  });
+});
+
 function request(): OperationRequest {
   return {
     type: 'member.members.read',
@@ -83,6 +164,21 @@ function invitationRequest(): OperationRequest {
     access: { scope: { id: 'organization-platform-root' } },
     input: {
       path: {}, query: {}, headers: {}, body: null, rawBody: '',
+      deadline: Date.now() + 5_000, signal: new AbortController().signal,
+    },
+  } as unknown as OperationRequest;
+}
+
+function storefrontRequest(
+  scope: string,
+  query: Readonly<Record<string, string>> = {},
+  kind: 'mall' | 'platform' = 'mall',
+): OperationRequest {
+  return {
+    type: 'member.storefront.members.read',
+    access: { scope: { id: scope, kind } },
+    input: {
+      path: {}, query, headers: {}, body: null, rawBody: '',
       deadline: Date.now() + 5_000, signal: new AbortController().signal,
     },
   } as unknown as OperationRequest;

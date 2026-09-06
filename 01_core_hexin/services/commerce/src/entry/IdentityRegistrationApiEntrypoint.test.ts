@@ -83,6 +83,7 @@ describe('identity registration API entrypoint', () => {
       'identity.wechat.session',
       'identity.wechat.bind',
       'member.members.read',
+      'member.storefront.members.read',
       'member.invitations.read',
       'member.imports.read',
       'access.center.read',

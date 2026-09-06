@@ -83,12 +83,12 @@ describe('ConsoleModuleRegistry', () => {
 });
 
 describe('registered Console modules', () => {
-  it('registers the 13 approved owners in order with one entry each', () => {
+  it('registers the 14 approved owners in order with one entry each', () => {
     expect(consoleModules.map(({ id }) => id)).toEqual([
       'cockpit', 'control', 'applications', 'products', 'orders', 'referral', 'channels',
-      'vouchers', 'finance', 'access', 'qualification', 'reports', 'support',
+      'vouchers', 'finance', 'storefront-members', 'access', 'qualification', 'reports', 'support',
     ]);
-    expect(consoleModuleById.size).toBe(13);
+    expect(consoleModuleById.size).toBe(14);
     expect(consoleModuleRegistryIssues(consoleModules)).toEqual([]);
     for (const module of consoleModules) {
       expect(module.routes.filter(({ kind }) => kind === 'entry'), module.id).toHaveLength(1);
@@ -104,7 +104,7 @@ describe('registered Console modules', () => {
     const paths = routes.map(({ path }) => path);
 
     expect(routes.filter(({ kind }) => kind === 'redirect')).toHaveLength(0);
-    expect(routes.filter(({ kind }) => kind !== 'redirect')).toHaveLength(32);
+    expect(routes.filter(({ kind }) => kind !== 'redirect')).toHaveLength(33);
     expect(new Set(routeIds).size).toBe(routeIds.length);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -113,7 +113,7 @@ describe('registered Console modules', () => {
     expect(consoleModules.every(({ status }) => status === 'enabled')).toBe(true);
     expect(consoleModules.filter(({ navigation }) => navigation.placement === 'main').map(({ id }) => id)).toEqual([
       'cockpit', 'control', 'applications', 'products', 'orders', 'referral', 'channels',
-      'vouchers', 'finance', 'access', 'qualification', 'reports',
+      'vouchers', 'finance', 'storefront-members', 'access', 'qualification', 'reports',
     ]);
     expect(consoleModuleById.get('reports')?.navigation).toMatchObject({
       placement: 'main', group: 'overview', order: 15, icon: 'trend',
@@ -125,7 +125,7 @@ describe('registered Console modules', () => {
     expect(consoleModuleById.get('referral')?.navigation).toMatchObject({ preferredScopeKind: 'mall' });
   });
 
-  it('keeps exactly the five approved literal transition edges', () => {
+  it('keeps exactly the four approved literal transition edges', () => {
     const manifestSources = [
       'src/feature/cockpit/manifest.ts',
       'src/feature/control/manifest.ts',
@@ -136,6 +136,7 @@ describe('registered Console modules', () => {
       'src/feature/channel/manifest.ts',
       'src/feature/voucher/manifest.ts',
       'src/feature/finance/manifest.ts',
+      'src/feature/storefront-member/manifest.ts',
       'src/feature/access/manifest.ts',
       'src/feature/qualification/manifest.ts',
       'src/feature/report/manifest.ts',
@@ -149,11 +150,10 @@ describe('registered Console modules', () => {
     const transitionEdges = literalEdges.filter(({ target }) => target?.startsWith('../'))
       .sort((left, right) => `${left.source}:${left.target}`.localeCompare(`${right.source}:${right.target}`));
 
-    expect(literalEdges).toHaveLength(31);
+    expect(literalEdges).toHaveLength(32);
     expect(transitionEdges).toEqual([
       { source: 'src/feature/access/manifest.ts', target: '../importing/ImportRoute' },
       { source: 'src/feature/access/manifest.ts', target: '../member/MemberRoute' },
-      { source: 'src/feature/product/manifest.ts', target: '../importing/ImportRoute' },
       { source: 'src/feature/qualification/manifest.ts', target: '../notification/NotificationRoute' },
       { source: 'src/feature/voucher/manifest.ts', target: '../importing/ImportRoute' },
     ]);

@@ -12,6 +12,7 @@ export const consoleModuleIds = [
   'channels',
   'vouchers',
   'finance',
+  'storefront-members',
   'access',
   'qualification',
   'reports',

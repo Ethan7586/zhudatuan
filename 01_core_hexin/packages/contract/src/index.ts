@@ -1,5 +1,6 @@
 export * from './Contract';
 export * from './ContractIdentity.generated';
+export * from './StorefrontMemberContract';
 export * from './DeepLinkContract';
 export * from './ErrorContract.generated';
 export * from './EventContract';

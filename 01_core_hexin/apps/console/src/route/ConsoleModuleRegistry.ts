@@ -10,6 +10,7 @@ import { productsModule } from '../feature/product/manifest';
 import { qualificationModule } from '../feature/qualification/manifest';
 import { referralModule } from '../feature/referral/manifest';
 import { reportsModule } from '../feature/report/manifest';
+import { storefrontMembersModule } from '../feature/storefront-member/manifest';
 import { supportModule } from '../feature/support/manifest';
 import { vouchersModule } from '../feature/voucher/manifest';
 
@@ -89,6 +90,7 @@ export const consoleModuleRegistry = defineConsoleModuleRegistry([
   channelsModule,
   vouchersModule,
   financeModule,
+  storefrontMembersModule,
   accessModule,
   qualificationModule,
   reportsModule,
