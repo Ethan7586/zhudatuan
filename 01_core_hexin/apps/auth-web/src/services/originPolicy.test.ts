@@ -41,6 +41,7 @@ describe('Auth build-time origin policy', () => {
 describe('canonical identity return origin policy', () => {
   it('preserves the approved admin and storefront origins after leaving the legacy auth module', () => {
     expect(resolveAdminLoginOrigin()).toBe('https://console.zhudatuan.com');
+    expect(resolveAdminLoginOrigin('https://console.hbbtzn.com')).toBe('https://console.hbbtzn.com');
     expect(resolveStorefrontLoginOrigin()).toBe('https://hbbtzn.com');
     expect(resolveStorefrontLoginOrigin('https://zhudatuan.com')).toBe('https://zhudatuan.com');
   });

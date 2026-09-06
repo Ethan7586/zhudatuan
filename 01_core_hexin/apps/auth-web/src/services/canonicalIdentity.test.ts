@@ -203,6 +203,23 @@ describe('canonical console identity', () => {
     expect(exchangeBody.verifier).not.toBe(sessionBody.authorization.challenge);
   });
 
+  it('keeps the Hongtai brand alias outside canonical identity and returns to its Console origin', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(sessionCreated('console', 'membership:hongtai:operator')))
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://console.zhudatuan.com/')));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await loginCanonicalConsole('13424327586', 'Original!Password1', undefined, undefined, {
+      target: 'console-hbbtzn', expectedOrigin: 'https://console.hbbtzn.com',
+    });
+
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({ target: 'console' });
+    expect(result).toMatchObject({
+      kind: 'authenticated', membership: 'membership:hongtai:operator', redirectUrl: 'https://console.hbbtzn.com/',
+    });
+  });
+
   it('recovers once from a stale-session CSRF rejection before password login', async () => {
     const fetchMock = vi
       .fn<typeof fetch>()

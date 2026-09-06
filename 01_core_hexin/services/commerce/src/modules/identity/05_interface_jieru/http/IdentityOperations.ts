@@ -213,7 +213,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             loginMethod: provider,
           });
           const csrf = randomBytes(32).toString('base64url');
-          const target = requestedTarget ?? authTarget(membership.client);
+          const target = membershipTarget ?? authTarget(membership.client);
           const callback = await tickets.issue(database, id, target, authorization);
           return { status: 201, body: { session: id, csrf, expiresIn: 43_200, membership: membership.id, target, callback }, headers: sessionCookies(token, csrf, 43_200) };
         },

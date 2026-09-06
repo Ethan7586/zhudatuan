@@ -242,7 +242,9 @@ async function loginCanonicalConsoleWithCredential(
   signal?: AbortSignal,
   options: CanonicalConsoleLoginOptions = {},
 ): Promise<CanonicalConsoleLoginResult> {
-  const result = await authorizeCanonicalCredential(credential, options.target ?? 'console', membership, signal);
+  const entryTarget = options.target ?? 'console';
+  const identityTarget = entryTarget === 'console-hbbtzn' ? 'console' : entryTarget;
+  const result = await authorizeCanonicalCredential(credential, identityTarget, membership, signal);
   if (result.kind === 'selection') {
     const context: PreAuthContext = {
       identifier: credential.subject,
@@ -389,21 +391,13 @@ function approvedConsoleDestination(value: z.infer<typeof TicketExchangeSchema>[
     throw new Error('登录回跳地址无效');
   }
   const configured = expectedOrigin ?? (import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined));
-  const approvedOrigin = expectedOrigin === undefined
-    ? resolveAdminLoginOrigin(configured, import.meta.env.DEV)
-    : exactHttpsOrigin(expectedOrigin);
-  if (destination.origin !== approvedOrigin || destination.username || destination.password || destination.hash) {
+  const approvedOrigin = resolveAdminLoginOrigin(configured, import.meta.env.DEV);
+  const signedOrigin = expectedOrigin === undefined ? approvedOrigin : resolveAdminLoginOrigin();
+  if (destination.origin !== signedOrigin || destination.username || destination.password || destination.hash) {
     throw new Error('登录回跳地址不在后台允许清单');
   }
-  return destination.toString();
-}
-
-function exactHttpsOrigin(value: string): string {
-  let parsed: URL;
-  try { parsed = new URL(value); } catch { throw new Error('后台登录目标配置无效'); }
-  if (parsed.protocol !== 'https:' || parsed.origin !== value || parsed.pathname !== '/' || parsed.search || parsed.hash
-    || parsed.username || parsed.password) throw new Error('后台登录目标配置无效');
-  return parsed.origin;
+  if (destination.origin === approvedOrigin) return destination.toString();
+  return new URL(`${destination.pathname}${destination.search}`, `${approvedOrigin}/`).toString();
 }
 
 function approvedStorefrontDestination(value: z.infer<typeof TicketExchangeSchema>['returnTarget']): string {

@@ -291,6 +291,23 @@ describe('canonical member registration security boundary', () => {
     expect(credential?.values).toEqual([subjectDigest(SUBJECT), 'principal:mobile-login']);
   });
 
+  it('normalizes the Hongtai Console alias before issuing the canonical auth ticket', async () => {
+    const password = 'Current!Password1';
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false,
+      boundMobilePrincipal: 'principal:hongtai-operator', credentialSecret: await new PasswordPolicy().hash(password),
+      loginMembershipRows: [
+        { id: 'membership:hongtai:operator', access_version: 1, client: 'operator', organization_id: 'mall:l1-hongtai' },
+      ] });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
+      target: 'console-hbbtzn',
+    }));
+
+    expect(response).toMatchObject({ status: 201, body: { membership: 'membership:hongtai:operator', target: 'console' } });
+    const ticket = harness.queries.find(({ text }) => text.includes('insert into identity.authticket'));
+    expect(ticket?.values[6]).toBe('console');
+  });
+
   it('limits storefront login memberships to the requested application organization', async () => {
     const password = 'Current!Password1';
     const harness = registrationHarness({ challengeAccepted: false, subjectExists: false, storefrontAvailable: true,

@@ -8,11 +8,18 @@ interface OriginPolicy {
 }
 
 const CANONICAL_ADMIN_LOGIN_ORIGIN = 'https://console.zhudatuan.com';
+const HONGTAI_ADMIN_LOGIN_ORIGIN = 'https://console.hbbtzn.com';
 const CANONICAL_STOREFRONT_LOGIN_ORIGIN = 'https://hbbtzn.com';
 const LEGACY_STOREFRONT_LOGIN_ORIGIN = 'https://zhudatuan.com';
 
 export function resolveAdminLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false): string {
-  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_ADMIN_LOGIN_ORIGIN, '后台', allowLocalDevelopment);
+  return resolveCredentialTargetOrigin(
+    configuredOrigin,
+    CANONICAL_ADMIN_LOGIN_ORIGIN,
+    '后台',
+    allowLocalDevelopment,
+    [HONGTAI_ADMIN_LOGIN_ORIGIN],
+  );
 }
 
 export function resolveStorefrontLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false): string {
