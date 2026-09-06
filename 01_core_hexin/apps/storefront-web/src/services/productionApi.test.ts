@@ -151,14 +151,20 @@ describe('canonical storefront production API', () => {
     await productionApi.getHomeSnapshot();
 
     const authorization = await beginH5WechatAuthorization();
-    await expect(requestH5WechatAuthorization(authorization)).resolves.toBe('https://open.weixin.qq.com/connect/oauth2/authorize');
-    const exchanged = await exchangeH5WechatCode('wechatCode123', authorization);
+    await expect(requestH5WechatAuthorization(authorization, 'authenticated')).resolves.toBe('https://open.weixin.qq.com/connect/oauth2/authorize');
+    const exchanged = await exchangeH5WechatCode('wechatCode123', authorization, 'authenticated');
     expect(exchanged).toEqual({ kind: 'binding', bindingToken: 'wechat-binding-token' });
     if (exchanged.kind === 'binding') await bindH5WechatIdentity(exchanged.bindingToken);
 
     const binding = requestInit(fetcher, '/api/v1/identity/wechat/bindings', 'POST');
     expect(new Headers(binding.headers).get('x-csrf-token')).toBe('csrf-token-for-storefront');
     expect(JSON.parse(String(binding.body))).toEqual({ bindingToken: 'wechat-binding-token' });
+    const sessions = fetcher.mock.calls.filter(([url]) => new URL(String(url)).pathname === '/api/v1/identity/wechat/sessions');
+    expect(sessions).toHaveLength(2);
+    for (const [, init] of sessions) {
+      expect(new Headers(init?.headers).get('x-csrf-token')).toBe('csrf-token-for-storefront');
+      expect(new Headers(init?.headers).get('idempotency-key')).toBeTruthy();
+    }
   });
 
   it('completes quote to order to payment only when the server captures an internal-benefit payment', async () => {

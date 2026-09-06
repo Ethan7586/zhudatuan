@@ -10,6 +10,8 @@ export type H5WechatExchange =
   | Readonly<{ kind: 'binding'; bindingToken: string }>
   | Readonly<{ kind: 'authenticated'; callback: Readonly<{ ticket: string; state: string }> }>;
 
+export type H5WechatSessionMode = 'anonymous' | 'authenticated';
+
 export async function beginH5WechatAuthorization(): Promise<H5WechatAuthorization> {
   const state = randomToken(32);
   const nonce = randomToken(32);
@@ -21,17 +23,17 @@ export async function beginH5WechatAuthorization(): Promise<H5WechatAuthorizatio
   });
 }
 
-export async function requestH5WechatAuthorization(authorization: H5WechatAuthorization): Promise<string> {
+export async function requestH5WechatAuthorization(authorization: H5WechatAuthorization, mode: H5WechatSessionMode = 'anonymous'): Promise<string> {
   const value = record(await canonicalCall(() => canonicalClient().identity.wechatSession({
     body: { scene: 'jsapi', action: 'authorize', authorization: authorization.request },
-  }, anonymousIdempotentContext())), 'identity.wechat.authorize');
+  }, wechatSessionContext(mode))), 'identity.wechat.authorize');
   return text(value.authorizationUrl, 'identity.wechat.authorizationUrl');
 }
 
-export async function exchangeH5WechatCode(code: string, authorization: H5WechatAuthorization): Promise<H5WechatExchange> {
+export async function exchangeH5WechatCode(code: string, authorization: H5WechatAuthorization, mode: H5WechatSessionMode = 'anonymous'): Promise<H5WechatExchange> {
   const value = record(await canonicalCall(() => canonicalClient().identity.wechatSession({
     body: { scene: 'jsapi', action: 'exchange', code, authorization: authorization.request },
-  }, anonymousIdempotentContext())), 'identity.wechat.exchange');
+  }, wechatSessionContext(mode))), 'identity.wechat.exchange');
   if (typeof value.bindingToken === 'string' && value.bindingToken.length > 0) {
     return Object.freeze({ kind: 'binding', bindingToken: value.bindingToken });
   }
@@ -56,6 +58,12 @@ export async function bindH5WechatIdentity(bindingToken: string): Promise<void> 
     write: true,
     idempotencyKey: crypto.randomUUID(),
   })));
+}
+
+function wechatSessionContext(mode: H5WechatSessionMode) {
+  return mode === 'authenticated'
+    ? sessionContext({ write: true, idempotencyKey: crypto.randomUUID(), includeScope: false })
+    : anonymousIdempotentContext();
 }
 
 function randomToken(bytes: number): string {

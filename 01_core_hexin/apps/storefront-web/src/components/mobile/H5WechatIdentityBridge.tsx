@@ -28,10 +28,12 @@ export function H5WechatIdentityBridge() {
       const code = incoming.pathname === '/wechat/callback' ? incoming.searchParams.get('code') : null;
       const state = incoming.pathname === '/wechat/callback' ? incoming.searchParams.get('state') : null;
       const authorization = readAuthorization();
+      const identityMode = sessionStatus === 'authenticated' ? 'authenticated' : 'anonymous';
+      if (identityMode === 'authenticated') await productionApi.getSession();
 
       if (code) {
         if (!authorization || state !== authorization.request.state) throw new Error('微信登录状态已失效，请重新打开商城');
-        const exchanged = await exchangeH5WechatCode(code, authorization);
+        const exchanged = await exchangeH5WechatCode(code, authorization, identityMode);
         sessionStorage.removeItem(AUTHORIZATION_KEY);
         sessionStorage.removeItem(ATTEMPT_KEY);
         if (exchanged.kind === 'authenticated') {
@@ -68,7 +70,7 @@ export function H5WechatIdentityBridge() {
       const next = await beginH5WechatAuthorization();
       sessionStorage.setItem(AUTHORIZATION_KEY, JSON.stringify(next));
       sessionStorage.setItem(ATTEMPT_KEY, 'yes');
-      window.location.assign(await requestH5WechatAuthorization(next));
+      window.location.assign(await requestH5WechatAuthorization(next, identityMode));
     };
 
     void run().catch((cause) => {
