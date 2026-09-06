@@ -198,7 +198,7 @@ revoke all on function payment.webhook_scope(text,text,text) from public,anon,au
 grant execute on function payment.webhook_scope(text,text,text) to shopapp;
 
 insert into runtime.schemaversion(version,checksum)
-values('20260901190000',encode(public.digest('payment-mall-identity:v1','sha256'),'hex'));
+values('20260901220000',encode(public.digest('payment-mall-identity:v1','sha256'),'hex'));
 
 do $assert$
 begin
@@ -207,7 +207,7 @@ begin
       'intent','attempt','prepay','observation','providerattempt','effect','payment','allocation','refund','refundcommand',
       'deadletterreview','recoverycase','recoveryrequest','intenttender','refundtender') and column_name='mall_id' and is_nullable='NO')<>15
   then raise exception 'PAYMENT_MALL_COLUMN_INCOMPLETE'; end if;
-  if not exists(select 1 from runtime.schemaversion where version='20260901190000') then raise exception 'TARGET_SCHEMA_VERSION_MISSING'; end if;
+  if not exists(select 1 from runtime.schemaversion where version='20260901220000') then raise exception 'TARGET_SCHEMA_VERSION_MISSING'; end if;
 end $assert$;
 
 commit;

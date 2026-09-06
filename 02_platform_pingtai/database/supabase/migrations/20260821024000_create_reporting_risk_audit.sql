@@ -11,17 +11,17 @@ create table reporting.metric(
   primary key(id,version)
 );
 insert into reporting.metric(id,version,name,unit,definition,definition_link,dimensions) values
-  ('sales.amount',1,'成交金额','minor','支付成功订单的应付金额','05_docs_ziliao/docs_wendang/metrics/salesamount.md','["mall"]'),
-  ('sales.orders',1,'成交订单数','count','支付成功的去重订单数','05_docs_ziliao/docs_wendang/metrics/salesorders.md','["mall"]'),
-  ('refund.amount',1,'退款金额','minor','退款成功的原路退款金额','05_docs_ziliao/docs_wendang/metrics/refundamount.md','["mall"]'),
-  ('refund.orders',1,'退款单数','count','退款成功的去重退款单数','05_docs_ziliao/docs_wendang/metrics/refundorders.md','["mall"]'),
-  ('voucher.amount',1,'卡券消费金额','minor','核销成功的卡券消费金额','05_docs_ziliao/docs_wendang/metrics/voucheramount.md','["mall","store"]'),
-  ('voucher.redemptions',1,'卡券消费次数','count','核销成功的卡券次数','05_docs_ziliao/docs_wendang/metrics/voucherredemptions.md','["mall","store"]'),
-  ('product.amount',1,'商品成交金额','minor','订单行成交金额','05_docs_ziliao/docs_wendang/metrics/productamount.md','["product"]'),
-  ('mall.amount',1,'商城成交金额','minor','按商城归集的成交金额','05_docs_ziliao/docs_wendang/metrics/mallamount.md','["mall"]'),
-  ('category.amount',1,'分类成交金额','minor','按商品分类归集的订单行金额','05_docs_ziliao/docs_wendang/metrics/categoryamount.md','["category"]'),
-  ('channel.amount',1,'供应渠道成交金额','minor','按供应Provider归集的订单行金额','05_docs_ziliao/docs_wendang/metrics/channelamount.md','["channel"]'),
-  ('powderclass.amount',1,'粉类成交金额','minor','按工作簿原文粉类维度归集的订单行金额','05_docs_ziliao/docs_wendang/metrics/powderclassamount.md','["powderclass"]');
+  ('sales.amount',1,'成交金额','minor','支付成功订单的应付金额','docs/metrics/salesamount.md','["mall"]'),
+  ('sales.orders',1,'成交订单数','count','支付成功的去重订单数','docs/metrics/salesorders.md','["mall"]'),
+  ('refund.amount',1,'退款金额','minor','退款成功的原路退款金额','docs/metrics/refundamount.md','["mall"]'),
+  ('refund.orders',1,'退款单数','count','退款成功的去重退款单数','docs/metrics/refundorders.md','["mall"]'),
+  ('voucher.amount',1,'卡券消费金额','minor','核销成功的卡券消费金额','docs/metrics/voucheramount.md','["mall","store"]'),
+  ('voucher.redemptions',1,'卡券消费次数','count','核销成功的卡券次数','docs/metrics/voucherredemptions.md','["mall","store"]'),
+  ('product.amount',1,'商品成交金额','minor','订单行成交金额','docs/metrics/productamount.md','["product"]'),
+  ('mall.amount',1,'商城成交金额','minor','按商城归集的成交金额','docs/metrics/mallamount.md','["mall"]'),
+  ('category.amount',1,'分类成交金额','minor','按商品分类归集的订单行金额','docs/metrics/categoryamount.md','["category"]'),
+  ('channel.amount',1,'供应渠道成交金额','minor','按供应Provider归集的订单行金额','docs/metrics/channelamount.md','["channel"]'),
+  ('powderclass.amount',1,'粉类成交金额','minor','按工作簿原文粉类维度归集的订单行金额','docs/metrics/powderclassamount.md','["powderclass"]');
 create table reporting.fact(
   metric_id text not null,
   metric_version integer not null,

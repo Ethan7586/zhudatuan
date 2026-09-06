@@ -83,7 +83,7 @@ create index inventory_reservation_mall_owner_state on inventory.reservation(mal
 create index inventory_movement_mall_reference on inventory.movement(mall_id,reference_type,reference_id,kind,id);
 
 insert into runtime.schemaversion(version,checksum)
-values('20260901192000',encode(public.digest('inventory-mall-identity:v1','sha256'),'hex'));
+values('20260901222000',encode(public.digest('inventory-mall-identity:v1','sha256'),'hex'));
 
 do $assert$
 begin
@@ -93,7 +93,7 @@ begin
   if not exists(select 1 from pg_constraint where conname='inventory_reservation_mall_stock_fkey')
     or not exists(select 1 from pg_constraint where conname='inventory_movement_mall_stock_fkey')
   then raise exception 'INVENTORY_MALL_COMPOSITE_FK_INCOMPLETE'; end if;
-  if not exists(select 1 from runtime.schemaversion where version='20260901192000')
+  if not exists(select 1 from runtime.schemaversion where version='20260901222000')
   then raise exception 'TARGET_SCHEMA_VERSION_MISSING'; end if;
 end $assert$;
 

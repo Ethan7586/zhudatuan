@@ -1461,7 +1461,7 @@ objects:
   - id: shopapp:function:payment.webhook_scope(text,text,text):execute
     kind: grant
     owner: payment
-    source: 02_platform_pingtai/database/supabase/migrations/20260901190000_add_payment_mall_identity.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260901220000_add_payment_mall_identity.sql
     role: shopapp
     objectType: function
     target: payment.webhook_scope(text,text,text)

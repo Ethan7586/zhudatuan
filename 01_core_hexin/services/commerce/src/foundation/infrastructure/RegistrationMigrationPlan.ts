@@ -14,8 +14,14 @@ interface Transformation {
 
 const PROFILE = 'registration-only/v1';
 const HISTORY_HEAD = '20260820133000';
-const LEGACY_GENERIC_LEDGER_FILES = new Set([
-  '20260831150000_identity_experience_application_commands.sql',
+const LEGACY_GENERIC_LEDGER_SOURCES = new Map<string, string>([
+  ['20260831150000_identity_experience_application_commands.sql', '4810ba8bc5cb49b67a648e788f70f5c0cc2b10910fb3d168a797a37806b0e3c7'],
+  ['20260905010000_publish_runtime_catalog_alignment.sql', '8a463fab4e676ada72750ff449e66971e9ef095db64a1f7e23ba2d27002f739d'],
+  ['20260905011000_expand_governance_store_scope.sql', 'ce286f1fbc37b2804cae61418ff9fb7854fc0b0688c847429cc62f840d179e0b'],
+  ['20260905012000_honor_invitation_scope_hint.sql', '0dc53b18e12bd5a1478d339c21314a7d6a6db2c64e2a68172f47f716e5880860'],
+  ['20260905013000_registration_invite_role_projection.sql', 'ab03873df52391ea3abb2b2376705166b9742471d3087a09bd144a6d2ec852d7'],
+  ['20260905014000_bind_storefront_browse_scope.sql', '591b42a51455418e8c9224972453fc05e523fde7132e565aedfca4fe03a0dacf'],
+  ['20260905203000_provision_zhudatuan_storefront_application.sql', 'eccaa52b4f52f7f66d6c5f64a7e8ad9541bd1781dcae55f176e2214e19af3da6'],
 ]);
 const OMITTED_MIGRATIONS = new Map<string, string>([
   ['20260817191000_bootstrap_ethan_platform_owner.sql', 'environment-specific Ethan platform owner fixture'],
@@ -108,7 +114,13 @@ export function registrationMigrationLedgerMatches(
   if (existingName !== execution.ledgerName) return false;
   const statements = existingStatements ?? [];
   if (JSON.stringify(statements) === JSON.stringify(execution.ledgerStatements)) return true;
-  return LEGACY_GENERIC_LEDGER_FILES.has(file) && statements.length === 0;
+  const legacySourceDigest = LEGACY_GENERIC_LEDGER_SOURCES.get(file);
+  return statements.length === 0 && legacySourceDigest !== undefined && execution.kind === 'original'
+    && JSON.stringify(execution.ledgerStatements) === JSON.stringify(metadata(
+      legacySourceDigest,
+      legacySourceDigest,
+      'append-only post-history migration executed byte-for-byte',
+    ));
 }
 
 function metadata(sourceDigest: string, executedDigest: string, reason: string): string[] {

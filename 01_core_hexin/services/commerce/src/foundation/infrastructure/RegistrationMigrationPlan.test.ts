@@ -80,6 +80,25 @@ describe('registration migration execution plan', () => {
     expect(execution.ledgerStatements[1]?.replace('source_', '')).toBe(execution.ledgerStatements[2]?.replace('executed_', ''));
   });
 
+  it.each([
+    ['20260821024000_create_reporting_risk_audit.sql', '00183e44ff0a117d39517c817e9e1026d7082ea6299045d03dd8e0ca30e8c319'],
+    ['20260901210000_restore_platform_owner_personal_scope_projection.sql', 'a495fc44da027afcecb41909a7de00fe60089afec62ca44ddf701478ee6484f6'],
+    ['20260901220000_add_payment_mall_identity.sql', '1e7a0b0841a37bd3723ddc3bac4230c2e3882366f34f71d1fe144b4aa8067ee9'],
+    ['20260901221000_add_fulfillment_mall_identity.sql', '41c73d6cb3b2fc92f9bcb2251be31fbbca0658a233b9d24c13db95fc79b80ef2'],
+    ['20260901222000_add_inventory_mall_identity.sql', 'de979916659055a7880c8c5abb361ba196a7a113446ea2d464d9bb43e001d563'],
+    ['20260901223000_publish_mall_provisioning.sql', '0fc9672ada080c8936a0122d2fa1a9ed1d1b5bcd7a241955da38e6cb1795434c'],
+    ['20260902010000_restore_public_mall_role_contracts.sql', 'b940b13ee960dd4468436f14a0a04a896e0df18b18bf066ef74cf784e5e3c276'],
+  ])('keeps restored production ledger source %s byte-for-byte', async (file, sourceDigest) => {
+    const execution = registrationMigrationExecution(file, await readFile(migration(file), 'utf8'));
+    expect(execution.kind).toBe('original');
+    expect(execution.ledgerStatements).toEqual([
+      'profile=registration-only/v1',
+      `source_sha256=${sourceDigest}`,
+      `executed_sha256=${sourceDigest}`,
+      'reason=append-only post-history migration executed byte-for-byte',
+    ]);
+  });
+
   it('keeps immutable historical originals in their legacy empty-statement ledger shape', () => {
     const source = 'begin; select 1; commit;';
     expect(registrationMigrationExecution('20260820133000_inventory_single_source_cutover.sql', source)).toEqual({
@@ -87,11 +106,27 @@ describe('registration migration execution plan', () => {
     });
   });
 
-  it('accepts the one documented legacy generic ledger row without weakening other rows', () => {
-    const file = '20260831150000_identity_experience_application_commands.sql';
-    const execution = registrationMigrationExecution(file, 'begin; select 1; commit;');
+  it.each([
+    ['20260831150000_identity_experience_application_commands.sql', '4810ba8bc5cb49b67a648e788f70f5c0cc2b10910fb3d168a797a37806b0e3c7'],
+    ['20260905010000_publish_runtime_catalog_alignment.sql', '8a463fab4e676ada72750ff449e66971e9ef095db64a1f7e23ba2d27002f739d'],
+    ['20260905011000_expand_governance_store_scope.sql', 'ce286f1fbc37b2804cae61418ff9fb7854fc0b0688c847429cc62f840d179e0b'],
+    ['20260905012000_honor_invitation_scope_hint.sql', '0dc53b18e12bd5a1478d339c21314a7d6a6db2c64e2a68172f47f716e5880860'],
+    ['20260905013000_registration_invite_role_projection.sql', 'ab03873df52391ea3abb2b2376705166b9742471d3087a09bd144a6d2ec852d7'],
+    ['20260905014000_bind_storefront_browse_scope.sql', '591b42a51455418e8c9224972453fc05e523fde7132e565aedfca4fe03a0dacf'],
+    ['20260905203000_provision_zhudatuan_storefront_application.sql', 'eccaa52b4f52f7f66d6c5f64a7e8ad9541bd1781dcae55f176e2214e19af3da6'],
+  ])('accepts legacy generic ledger row %s only for its immutable source', async (file, sourceDigest) => {
+    const source = await readFile(migration(file), 'utf8');
+    const execution = registrationMigrationExecution(file, source);
+    expect(execution.ledgerStatements[1]).toBe(`source_sha256=${sourceDigest}`);
     expect(registrationMigrationLedgerMatches(file, execution.ledgerName, [], execution)).toBe(true);
-    expect(registrationMigrationLedgerMatches('20260831140000_other.sql', execution.ledgerName, [], execution)).toBe(false);
+    const drifted = registrationMigrationExecution(file, `${source}\n-- drift`);
+    expect(registrationMigrationLedgerMatches(file, drifted.ledgerName, [], drifted)).toBe(false);
     expect(registrationMigrationLedgerMatches(file, 'wrong-name.sql', [], execution)).toBe(false);
+  });
+
+  it('rejects an unlisted empty-statement ledger row', () => {
+    const file = '20260831140000_identity_registration_profile_acl_repair.sql';
+    const execution = registrationMigrationExecution(file, 'begin; select 1; commit;');
+    expect(registrationMigrationLedgerMatches(file, execution.ledgerName, [], execution)).toBe(false);
   });
 });

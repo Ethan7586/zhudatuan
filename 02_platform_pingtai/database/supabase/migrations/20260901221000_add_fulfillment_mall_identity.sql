@@ -187,7 +187,7 @@ begin
 end $function$;
 
 insert into runtime.schemaversion(version,checksum)
-values('20260901191000',encode(public.digest('fulfillment-mall-identity:v1','sha256'),'hex'));
+values('20260901221000',encode(public.digest('fulfillment-mall-identity:v1','sha256'),'hex'));
 
 do $assert$
 begin
@@ -200,7 +200,7 @@ begin
   if position('join ordering.orderrecord' in lower(pg_get_functiondef('access.resource_scope(text,text,text)'::regprocedure)))>0
       and position('fulfillment.fulfillmentorder fulfillment join ordering.orderrecord' in lower(pg_get_functiondef('access.resource_scope(text,text,text)'::regprocedure)))>0
   then raise exception 'FULFILLMENT_RESOURCE_SCOPE_ORDER_DEPENDENCY'; end if;
-  if not exists(select 1 from runtime.schemaversion where version='20260901191000') then raise exception 'TARGET_SCHEMA_VERSION_MISSING'; end if;
+  if not exists(select 1 from runtime.schemaversion where version='20260901221000') then raise exception 'TARGET_SCHEMA_VERSION_MISSING'; end if;
 end $assert$;
 
 commit;
