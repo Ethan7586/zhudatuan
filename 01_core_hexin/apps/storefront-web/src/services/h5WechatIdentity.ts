@@ -2,6 +2,7 @@ import { anonymousIdempotentContext, canonicalCall, canonicalClient, sessionCont
 import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
 import { createSecureId } from '@shop/sdk/context';
 import { record, text } from './canonicalShape';
+import { ProductionApiError } from './productionApi.error';
 
 export interface H5WechatAuthorization {
   readonly request: Readonly<{ state: string; nonce: string; challenge: string }>;
@@ -14,21 +15,25 @@ export type H5WechatExchange =
 
 export type H5WechatSessionMode = 'anonymous' | 'authenticated';
 
+const WECHAT_NETWORK_RETRY_DELAYS = [600, 1_400] as const;
+
 export async function beginH5WechatAuthorization(): Promise<H5WechatAuthorization> {
   return beginBrowserAuthorization();
 }
 
 export async function requestH5WechatAuthorization(authorization: H5WechatAuthorization, mode: H5WechatSessionMode = 'anonymous'): Promise<string> {
-  const value = record(await canonicalCall(() => canonicalClient().identity.wechatSession({
+  const context = wechatSessionContext(mode);
+  const value = record(await retryH5WechatNetworkRequest(() => canonicalCall(() => canonicalClient().identity.wechatSession({
     body: { scene: 'jsapi', action: 'authorize', mode, authorization: authorization.request },
-  }, wechatSessionContext(mode))), 'identity.wechat.authorize');
+  }, context))), 'identity.wechat.authorize');
   return text(value.authorizationUrl, 'identity.wechat.authorizationUrl');
 }
 
 export async function exchangeH5WechatCode(code: string, authorization: H5WechatAuthorization, mode: H5WechatSessionMode = 'anonymous'): Promise<H5WechatExchange> {
-  const value = record(await canonicalCall(() => canonicalClient().identity.wechatSession({
+  const context = wechatSessionContext(mode);
+  const value = record(await retryH5WechatNetworkRequest(() => canonicalCall(() => canonicalClient().identity.wechatSession({
     body: { scene: 'jsapi', action: 'exchange', mode, code, authorization: authorization.request },
-  }, wechatSessionContext(mode))), 'identity.wechat.exchange');
+  }, context))), 'identity.wechat.exchange');
   if (typeof value.bindingToken === 'string' && value.bindingToken.length > 0) {
     return Object.freeze({ kind: 'binding', bindingToken: value.bindingToken,
       confirmationRequired: value.state === 'account_confirmation_required' });
@@ -41,23 +46,44 @@ export async function exchangeH5WechatCode(code: string, authorization: H5Wechat
 }
 
 export async function completeH5WechatSession(callback: Readonly<{ ticket: string; state: string }>, authorization: H5WechatAuthorization): Promise<void> {
-  await canonicalCall(() => canonicalClient().identity.ticketsExchange({ body: {
+  const context = anonymousIdempotentContext();
+  await retryH5WechatNetworkRequest(() => canonicalCall(() => canonicalClient().identity.ticketsExchange({ body: {
     ticket: callback.ticket,
     state: callback.state,
     nonce: authorization.secret.nonce,
     verifier: authorization.secret.verifier,
-  } }, anonymousIdempotentContext()));
+  } }, context)));
 }
 
 export async function bindH5WechatIdentity(bindingToken: string): Promise<void> {
-  await canonicalCall(() => canonicalClient().identity.wechatBind({ body: { bindingToken } }, sessionContext({
+  const context = sessionContext({
     write: true,
     idempotencyKey: createSecureId(),
-  })));
+  });
+  await retryH5WechatNetworkRequest(() => canonicalCall(() => canonicalClient().identity.wechatBind({ body: { bindingToken } }, context)));
+}
+
+export async function retryH5WechatNetworkRequest<T>(
+  request: () => Promise<T>,
+  wait: (milliseconds: number) => Promise<void> = waitFor,
+): Promise<T> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await request();
+    } catch (cause) {
+      const delay = WECHAT_NETWORK_RETRY_DELAYS[attempt];
+      if (!(cause instanceof ProductionApiError) || cause.code !== 'NETWORK_OR_CLIENT_ERROR' || delay === undefined) throw cause;
+      await wait(delay);
+    }
+  }
 }
 
 function wechatSessionContext(mode: H5WechatSessionMode) {
   return mode === 'authenticated'
     ? sessionContext({ write: true, idempotencyKey: createSecureId(), includeScope: false })
     : anonymousIdempotentContext();
+}
+
+function waitFor(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }

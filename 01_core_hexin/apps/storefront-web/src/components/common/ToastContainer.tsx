@@ -13,7 +13,7 @@ export const ToastContainer: React.FC = () => {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed top-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm pointer-events-none">
+    <div className="fixed left-3 right-3 top-14 z-50 flex max-w-[calc(100vw-1.5rem)] flex-col gap-2.5 pointer-events-none sm:left-auto sm:right-5 sm:top-5 sm:max-w-sm">
       {toasts.map((toast) => {
         const isSuccess = toast.type === 'success';
         const isError = toast.type === 'error';
