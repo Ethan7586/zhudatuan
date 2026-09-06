@@ -119,6 +119,7 @@ export class ExternalPaymentIntentOperations implements OperationUsecase {
         where mall_id=$1 and id=$2 and state in('started','unknown','pending')`, [state.mall_id, state.attempt!, payerHash]));
       providerStarted = true;
       const parameters = await this.gateway.prepay({
+        scope: state.mall_id,
         description: `主打团福利商城-${state.order_number}`,
         orderNumber: PaymentReference.payment(state.order_number).text,
         amountMinor: state.amount_minor,

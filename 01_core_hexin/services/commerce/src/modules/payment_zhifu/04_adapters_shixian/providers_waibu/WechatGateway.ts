@@ -1,4 +1,5 @@
 import { applyWechatPayRefund, closeWechatPayTransaction, createJsapiPrepay, createMiniappPaymentParameters, loadWechatPayConfig, queryWechatPayRefund, queryWechatPayTransaction,
+  resolveWechatPayNotifyUrl,
   readWechatPayNotificationKind, verifyAndDecryptWechatPayNotification, verifyAndDecryptWechatRefundNotification, WechatPayProtocolError,
   type WechatPayClientOptions, type WechatPayConfigSource } from '@shop/wechatpayment';
 import { providerOccurredAt, type PaymentGateway, type PrepayInput, type ProviderReceiptEvidence } from '../../01_public_gongkai/ports_jiekou/PaymentGateway';
@@ -28,6 +29,7 @@ export class WechatGateway implements PaymentGateway {
       totalCents: input.amountMinor,
       payerOpenid: input.payer,
       expiresAt: input.expiresAt,
+      notifyUrl: resolveWechatPayNotifyUrl(this.configuration, input.scope),
     }, options), 'none');
     const parameters = await createMiniappPaymentParameters(this.configuration, application.appId, response.prepayId);
     return Object.freeze({ ...parameters, appId: application.appId, providerRequestId: response.providerRequestId ?? '' });
@@ -62,13 +64,14 @@ export class WechatGateway implements PaymentGateway {
     await this.execute((options) => closeWechatPayTransaction(this.configuration, orderNumber, options), 'none');
   }
 
-  async refund(input: Readonly<{ refundNumber: string; transaction: string; refundMinor: number; totalMinor: number; reason: string }>) {
+  async refund(input: Readonly<{ scope: string; refundNumber: string; transaction: string; refundMinor: number; totalMinor: number; reason: string }>) {
     let refund;
     let providerRequestId: string | null = null;
     let source = 'wechat.refund.apply';
     try {
       ({ refund, providerRequestId } = await this.execute((options) => applyWechatPayRefund(this.configuration, { outRefundNo: input.refundNumber,
-        transactionId: input.transaction, refundCents: input.refundMinor, totalCents: input.totalMinor, reason: input.reason }, options), 'none'));
+        transactionId: input.transaction, refundCents: input.refundMinor, totalCents: input.totalMinor, reason: input.reason,
+        notifyUrl: resolveWechatPayNotifyUrl(this.configuration, input.scope) }, options), 'none'));
     } catch (cause) {
       if (!(cause instanceof WechatPayProtocolError) || !cause.retryable) throw cause;
       source = 'wechat.refund.query-after-apply';

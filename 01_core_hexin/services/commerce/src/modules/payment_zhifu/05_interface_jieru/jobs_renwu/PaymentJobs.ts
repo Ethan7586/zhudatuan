@@ -269,7 +269,7 @@ export class PaymentJobProcessor implements JobProcessor {
     let result: Readonly<ProviderRefundObservation>;
     try {
       result = selected.state === 'requested'
-        ? await this.gateway.refund({ refundNumber: PaymentReference.refund(refundid).text, transaction: selected.transaction,
+        ? await this.gateway.refund({ scope: mall, refundNumber: PaymentReference.refund(refundid).text, transaction: selected.transaction,
           refundMinor: selected.external_minor, totalMinor: selected.external_total, reason: selected.reason })
         : await this.gateway.queryRefund(PaymentReference.refund(refundid).text);
       const occurredAt = result.state === 'succeeded'
@@ -339,7 +339,8 @@ export class PaymentJobProcessor implements JobProcessor {
           where intent.mall_id=$8 and intent.provider_reference=$9 and attempt.state='succeeded' and attempt.external_transaction=$10
             and attempt.provider_occurred_at=$6::timestamptz and capture.provider_occurred_at=$6::timestamptz
           order by attempt.requested_at desc limit 1 on conflict(mall_id,provider_event_id) do nothing returning id`,
-        [`observation:${digest(`${mall}:${eventid}`)}`, eventid, payload.tradeState, payload.totalCents, digest(JSON.stringify(payload)),
+        [`observation:${digest(`${mall}:${eventid}`)}`, eventid, payload.tradeState === 'SUCCESS' ? 'succeeded' : payload.tradeState,
+          payload.totalCents, digest(JSON.stringify(payload)),
           occurredAt, effect, mall, payload.outTradeNo, payload.transactionId]);
         if (!accepted.rows[0]) throw new Error('PAYMENT_PROVIDER_EVENT_EFFECT_MISMATCH');
       } else if (typeof payload.refundStatus === 'string' && payload.refundStatus === 'SUCCESS') {

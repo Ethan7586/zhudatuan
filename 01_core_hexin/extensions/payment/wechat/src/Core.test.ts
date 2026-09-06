@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { loadWechatPayConfig, WechatPayConfigurationError } from './Config';
+import { loadWechatPayConfig, resolveWechatPayNotifyUrl, WechatPayConfigurationError } from './Config';
 import { createMerchantAuthorization, createMiniappPaymentParameters, merchantSignatureMessage, miniappSignatureMessage, verifyRsaSha256 } from './Crypto';
 import { createWechatPayDescription, mapWechatPayTradeState } from './Models';
 import { createWechatPayTestKeys, type WechatPayTestKeys } from '../test/TestKeys';
@@ -66,6 +66,20 @@ describe('WeChat Pay configuration', () => {
   it('rejects a public URL that does not match the canonical webhook contract', () => {
     expect(() => loadWechatPayConfig({ ...keys.config, notifyUrl: 'https://hbbtzn.com/api/v1/payments/wechat/notify' }))
       .toThrowError(expect.objectContaining({ code: 'WECHAT_PAY_NOTIFY_URL_INVALID' }));
+  });
+
+  it('selects the callback owned by the payment scope without falling back to another node', () => {
+    const config = loadWechatPayConfig({
+      ...keys.config,
+      notifyUrlsByScope: {
+        'mall-zhudatuan': 'https://api.zhudatuan.com/api/v1/webhooks/wechat/payment',
+        'mall:hongtai': 'https://api.hbbtzn.com/api/v1/webhooks/wechat/payment',
+      },
+    });
+    expect(resolveWechatPayNotifyUrl(config, 'mall-zhudatuan')).toBe('https://api.zhudatuan.com/api/v1/webhooks/wechat/payment');
+    expect(resolveWechatPayNotifyUrl(config, 'mall:hongtai')).toBe('https://api.hbbtzn.com/api/v1/webhooks/wechat/payment');
+    expect(() => resolveWechatPayNotifyUrl(config, 'mall:unconfigured'))
+      .toThrowError(expect.objectContaining({ code: 'WECHAT_PAY_NOTIFY_URL_SCOPE_MISSING' }));
   });
 });
 

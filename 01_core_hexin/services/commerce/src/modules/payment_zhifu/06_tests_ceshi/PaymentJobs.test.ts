@@ -86,6 +86,35 @@ describe('PaymentJobProcessor provider accounting time', () => {
     const persisted = calls.find((call) => call.sql.includes("update payment.providerattempt set outcome='succeeded'"));
     expect(persisted?.values[3]).toBe(monthEnd);
     expect(String(persisted?.values[4])).toContain('"kind":"payment.refund"');
+    expect(provider.refund).toHaveBeenCalledWith(expect.objectContaining({ scope: 'mall:one' }));
+  });
+
+  it('records a verified payment webhook observation with the canonical succeeded state', async () => {
+    const calls: Array<Readonly<{ sql: string; values: readonly unknown[] }>> = [];
+    const client = transactionalClient((sql, values) => {
+      calls.push({ sql, values });
+      if (sql.includes('from payment.intent intent join payment.attempt') && sql.includes('for update of intent,attempt')) {
+        return rows([{ intent_state: 'captured', payment: 'payment:intent:one' }]);
+      }
+      if (sql.includes('update payment.attempt set state=')) return rows([{ id: 'attempt:one' }]);
+      if (sql.includes('update payment.capture set completed_at=')) return rows([{ id: 'capture:intent:one' }]);
+      if (sql.includes('select payload from runtime.inbox')) return rows([{ payload: {
+        tradeState: 'SUCCESS', successTime: monthEnd, transactionId: 'wechat-transaction:one',
+        outTradeNo: 'SWPAY202608280001', totalCents: 400,
+      } }]);
+      if (sql.includes('insert into payment.observation')) return rows([{ id: 'observation:webhook:one' }]);
+      if (sql.includes('update runtime.inbox set processed_at=')) return rows([]);
+      return rows([]);
+    });
+    const pool = paymentPool(client);
+
+    await new PaymentJobProcessor(pool, gateway({ payment: paymentObservation(monthEnd) }), 'paymentquery')
+      .process(job('paymentquery', { intent: 'intent:one', providerEvent: 'wechatpayment:event-one' }), new AbortController().signal);
+
+    const webhook = calls.find((call) => call.sql.includes('insert into payment.observation'));
+    expect(webhook?.values[1]).toBe('wechatpayment:event-one');
+    expect(webhook?.values[2]).toBe('succeeded');
+    expect(webhook?.values[3]).toBe(400);
   });
 
   it.each([undefined, 'not-a-provider-time'])('does not seal or complete a successful refund without valid provider time (%s)', async (occurredAt) => {

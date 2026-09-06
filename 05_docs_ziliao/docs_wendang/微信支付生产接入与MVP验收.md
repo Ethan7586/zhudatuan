@@ -266,6 +266,10 @@ WECHAT_PAYMENT_CONFIG_REF=secret://commerce/wechat/payment/current
   "merchantPrivateKeyPem": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----",
   "apiV3Key": "0123456789abcdef0123456789abcdef",
   "notifyUrl": "https://api.example.com/api/v1/webhooks/wechat/payment",
+  "notifyUrlsByScope": {
+    "mall-zhudatuan": "https://api.zhudatuan.com/api/v1/webhooks/wechat/payment",
+    "mall:d1708f04df2dd8a61736852c4900fb43": "https://api.hbbtzn.com/api/v1/webhooks/wechat/payment"
+  },
   "platformKeys": [
     {
       "id": "PUB_KEY_ID_0000000000000001",
@@ -280,6 +284,8 @@ WECHAT_PAYMENT_CONFIG_REF=secret://commerce/wechat/payment/current
   ]
 }
 ```
+
+`notifyUrlsByScope`一旦配置即进入节点隔离模式：每个发起预支付或退款的商城都必须命中自己的回调地址，未登记节点不得回落到其他节点的`notifyUrl`。`notifyUrl`仅保留用于旧配置兼容与无节点路由的本地环境。
 
 ### 5.2 启动即失败规则
 

@@ -12,6 +12,7 @@ export interface WechatPayConfigSource {
   readonly merchantPrivateKeyPem?: string;
   readonly apiV3Key?: string;
   readonly notifyUrl?: string;
+  readonly notifyUrlsByScope?: Readonly<Record<string, string>>;
   readonly platformKeys?: readonly WechatPayPlatformKeySource[];
 }
 
@@ -27,6 +28,7 @@ export interface WechatPayConfig {
   readonly merchantPrivateKeyPem: string;
   readonly apiV3Key: string;
   readonly notifyUrl: string;
+  readonly notifyUrlsByScope: Readonly<Record<string, string>>;
   readonly platformKeys: readonly WechatPayPlatformKey[];
 }
 
@@ -41,12 +43,14 @@ export class WechatPayConfigurationError extends Error {
 }
 
 export function loadWechatPayConfig(source: WechatPayConfigSource): WechatPayConfig {
-  exactKeys(source, ['apiV3Key', 'mchId', 'merchantPrivateKeyPem', 'merchantSerialNo', 'notifyUrl', 'platformKeys']);
+  exactKeys(source, ['apiV3Key', 'mchId', 'merchantPrivateKeyPem', 'merchantSerialNo', 'notifyUrl', 'platformKeys',
+    ...(source.notifyUrlsByScope === undefined ? [] : ['notifyUrlsByScope'])]);
   const mchId = required(source.mchId, 'WECHAT_PAY_MCH_ID_MISSING');
   const merchantSerialNo = required(source.merchantSerialNo, 'WECHAT_PAY_MERCHANT_SERIAL_NO_MISSING');
   const merchantPrivateKeyPem = normalizePem(required(source.merchantPrivateKeyPem, 'WECHAT_PAY_MERCHANT_PRIVATE_KEY_MISSING'));
   const apiV3Key = source.apiV3Key;
   const notifyUrl = required(source.notifyUrl, 'WECHAT_PAY_NOTIFY_URL_MISSING');
+  const notifyUrlsByScope = parseNotifyUrlsByScope(source.notifyUrlsByScope);
   if (!/^\d{6,32}$/.test(mchId)) fail('WECHAT_PAY_MCH_ID_INVALID');
   if (!/^[A-Fa-f0-9]{16,64}$/.test(merchantSerialNo)) fail('WECHAT_PAY_MERCHANT_SERIAL_NO_INVALID');
   if (!isPkcs8PrivateKey(merchantPrivateKeyPem)) fail('WECHAT_PAY_MERCHANT_PRIVATE_KEY_FORMAT_UNSUPPORTED');
@@ -64,8 +68,17 @@ export function loadWechatPayConfig(source: WechatPayConfigSource): WechatPayCon
     merchantPrivateKeyPem,
     apiV3Key,
     notifyUrl: validateNotifyUrl(notifyUrl),
+    notifyUrlsByScope,
     platformKeys: Object.freeze(platformKeys),
   });
+}
+
+export function resolveWechatPayNotifyUrl(config: WechatPayConfig, scope: string): string {
+  const routes = Object.entries(config.notifyUrlsByScope);
+  if (routes.length === 0) return config.notifyUrl;
+  const route = routes.find(([candidate]) => candidate === scope);
+  if (!route) fail('WECHAT_PAY_NOTIFY_URL_SCOPE_MISSING');
+  return route[1];
 }
 
 export function activeWechatPayPlatformKey(config: WechatPayConfig): WechatPayPlatformKey {
@@ -86,6 +99,14 @@ function parsePlatformKey(source: WechatPayPlatformKeySource): WechatPayPlatform
   if (!isSpkiPublicKey(publicKeyPem)) fail('WECHAT_PAY_PLATFORM_PUBLIC_KEY_FORMAT_UNSUPPORTED');
   if (typeof source.active !== 'boolean') fail('WECHAT_PAY_PLATFORM_KEYS_INVALID');
   return Object.freeze({ id, publicKeyPem, active: source.active });
+}
+
+function parseNotifyUrlsByScope(source: Readonly<Record<string, string>> | undefined): Readonly<Record<string, string>> {
+  if (source === undefined) return Object.freeze({});
+  if (source === null || typeof source !== 'object' || Array.isArray(source)) fail('WECHAT_PAY_NOTIFY_URL_SCOPES_INVALID');
+  const routes = Object.entries(source);
+  if (routes.some(([scope, url]) => scope.trim().length === 0 || typeof url !== 'string')) fail('WECHAT_PAY_NOTIFY_URL_SCOPES_INVALID');
+  return Object.freeze(Object.fromEntries(routes.map(([scope, url]) => [scope, validateNotifyUrl(url)])));
 }
 
 function required(value: string | undefined, code: string): string {

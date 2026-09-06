@@ -42,6 +42,7 @@ describe('external payment intent operation', () => {
       body: { intent: 'intent:one', state: 'reconciling' },
     });
     expect(fixture.gateway.prepay).toHaveBeenCalledOnce();
+    expect(fixture.gateway.prepay).toHaveBeenCalledWith(expect.objectContaining({ scope: 'mall:one' }));
     expect(fixture.recovery.enqueue).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
       intent: 'intent:one', priority: 1, delaySeconds: 0,
     }));

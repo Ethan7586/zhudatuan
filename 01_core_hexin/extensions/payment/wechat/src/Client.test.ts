@@ -30,6 +30,7 @@ describe('WeChat Pay APIv3 client', () => {
         totalCents: 2590,
         payerOpenid: 'openidMember123456',
         expiresAt: '2026-08-14T10:30:00+08:00',
+        notifyUrl: 'https://api.hbbtzn.com/api/v1/webhooks/wechat/payment',
       },
       { fetcher, nowMs: NOW_MS, nonce: 'merchantNonce123' }
     );
@@ -40,6 +41,7 @@ describe('WeChat Pay APIv3 client', () => {
       appid: keys.appId,
       mchid: keys.config.mchId,
       out_trade_no: 'SW202608140001',
+      notify_url: 'https://api.hbbtzn.com/api/v1/webhooks/wechat/payment',
       amount: { total: 2590, currency: 'CNY' },
       payer: { openid: 'openidMember123456' },
     });

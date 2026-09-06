@@ -11,7 +11,7 @@ describe('disabled external payment gateway', () => {
   it('fails closed on every provider interaction', async () => {
     const gateway = new DisabledExternalPaymentGateway();
     const application = gateway.application('jsapi');
-    await expect(gateway.prepay({ description: 'order', orderNumber: 'SW1', amountMinor: 1, payer: 'payer',
+    await expect(gateway.prepay({ scope: 'mall:one', description: 'order', orderNumber: 'SW1', amountMinor: 1, payer: 'payer',
       application, expiresAt: new Date().toISOString() })).rejects.toThrow('EXTERNAL_PAYMENT_DISABLED');
     await expect(gateway.query('SW1', application)).rejects.toThrow('EXTERNAL_PAYMENT_DISABLED');
     await expect(gateway.close('SW1', application)).rejects.toThrow('EXTERNAL_PAYMENT_DISABLED');

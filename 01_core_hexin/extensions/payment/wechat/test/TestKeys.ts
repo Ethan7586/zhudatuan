@@ -18,6 +18,7 @@ export async function createWechatPayTestKeys(): Promise<WechatPayTestKeys> {
       merchantPrivateKeyPem: merchant.privateKeyPem,
       apiV3Key: '0123456789abcdef0123456789abcdef',
       notifyUrl: 'https://hbbtzn.com/api/v1/webhooks/wechat/payment',
+      notifyUrlsByScope: Object.freeze({}),
       platformKeys: [{ id: 'PUB_KEY_ID_TEST_PLATFORM_2026', publicKeyPem: platform.publicKeyPem, active: true }],
     },
     merchantPublicKeyPem: merchant.publicKeyPem,

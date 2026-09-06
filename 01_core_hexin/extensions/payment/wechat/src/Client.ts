@@ -10,6 +10,7 @@ export interface WechatPayPrepayInput {
   totalCents: number;
   payerOpenid: string;
   expiresAt: string;
+  notifyUrl?: string;
 }
 
 export interface WechatPayPrepayResult {
@@ -28,6 +29,7 @@ export interface WechatPayRefundInput {
   refundCents: number;
   totalCents: number;
   reason: string;
+  notifyUrl?: string;
 }
 
 export interface WechatPayRefundResult {
@@ -42,7 +44,7 @@ export async function createJsapiPrepay(config: WechatPayConfig, input: WechatPa
     mchid: config.mchId,
     description: input.description,
     out_trade_no: input.outTradeNo,
-    notify_url: config.notifyUrl,
+    notify_url: input.notifyUrl ?? config.notifyUrl,
     time_expire: input.expiresAt,
     amount: { total: input.totalCents, currency: 'CNY' },
     payer: { openid: input.payerOpenid },
@@ -69,7 +71,7 @@ export async function applyWechatPayRefund(config: WechatPayConfig, input: Wecha
     transaction_id: input.transactionId,
     out_refund_no: input.outRefundNo,
     reason: normalizeRefundReason(input.reason),
-    notify_url: config.notifyUrl,
+    notify_url: input.notifyUrl ?? config.notifyUrl,
     amount: { refund: input.refundCents, total: input.totalCents, currency: 'CNY' },
   });
   const result = await requestWechatPayJson(config, '/v3/refund/domestic/refunds', 'POST', body, options);

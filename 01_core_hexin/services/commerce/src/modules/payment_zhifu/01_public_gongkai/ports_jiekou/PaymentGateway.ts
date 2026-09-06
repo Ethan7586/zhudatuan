@@ -8,6 +8,7 @@ export interface PaymentApplication {
 }
 
 export interface PrepayInput {
+  readonly scope: string;
   readonly description: string;
   readonly orderNumber: string;
   readonly amountMinor: number;
@@ -38,7 +39,7 @@ export interface PaymentGateway {
   prepay(input: PrepayInput): Promise<Readonly<Record<string, string>>>;
   query(orderNumber: string, application: PaymentApplication): Promise<Readonly<ProviderPaymentObservation>>;
   close(orderNumber: string, application: PaymentApplication): Promise<void>;
-  refund(input: Readonly<{ refundNumber: string; transaction: string; refundMinor: number; totalMinor: number; reason: string }>): Promise<Readonly<ProviderRefundObservation>>;
+  refund(input: Readonly<{ scope: string; refundNumber: string; transaction: string; refundMinor: number; totalMinor: number; reason: string }>): Promise<Readonly<ProviderRefundObservation>>;
   queryRefund(refundNumber: string): Promise<Readonly<ProviderRefundObservation>>;
   verifyNotification(headers: Readonly<Record<string, string>>, body: string): Promise<PaymentNotification>;
 }
