@@ -1,4 +1,5 @@
 import { canonicalCall, canonicalClient, anonymousContext, anonymousIdempotentContext, clearCanonicalSession, rememberCanonicalSession, sessionContext } from './canonicalApiClient';
+import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
 import { checkoutWithCanonicalPayment } from './canonicalCheckout';
 import { readCanonicalPaymentResult } from './canonicalPaymentResult';
 import { mapCanonicalProductPage } from './canonicalCatalogMapper';
@@ -20,26 +21,7 @@ interface StorefrontAuthorization {
 }
 
 async function beginStorefrontAuthorization(): Promise<StorefrontAuthorization> {
-  const state = randomAuthorizationToken(32);
-  const nonce = randomAuthorizationToken(32);
-  const verifier = randomAuthorizationToken(64);
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
-  return Object.freeze({
-    request: Object.freeze({ state, nonce, challenge: authorizationBase64url(new Uint8Array(digest)) }),
-    secret: Object.freeze({ nonce, verifier }),
-  });
-}
-
-function randomAuthorizationToken(bytes: number): string {
-  const value = new Uint8Array(bytes);
-  crypto.getRandomValues(value);
-  return authorizationBase64url(value);
-}
-
-function authorizationBase64url(value: Uint8Array): string {
-  let binary = '';
-  value.forEach((byte) => { binary += String.fromCharCode(byte); });
-  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/u, '');
+  return beginBrowserAuthorization();
 }
 
 async function createStorefrontSession(input: LoginRequest, membership?: string): Promise<void> {

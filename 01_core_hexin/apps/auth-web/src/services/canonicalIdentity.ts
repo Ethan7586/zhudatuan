@@ -1,4 +1,5 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
+import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
 import { z } from 'zod';
 import type { Membership, PreAuthContext } from '../types';
 import { resolveAdminLoginOrigin, resolveStorefrontLoginOrigin } from './originPolicy';
@@ -375,14 +376,7 @@ function csrfToken(): string | null {
 }
 
 export async function beginCanonicalAuthorization(): Promise<CanonicalAuthorization> {
-  const state = randomToken(32);
-  const nonce = randomToken(32);
-  const verifier = randomToken(64);
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
-  return Object.freeze({
-    request: Object.freeze({ state, nonce, challenge: base64url(new Uint8Array(digest)) }),
-    secret: Object.freeze({ nonce, verifier }),
-  });
+  return beginBrowserAuthorization();
 }
 
 function approvedConsoleDestination(value: z.infer<typeof TicketExchangeSchema>['returnTarget'], expectedOrigin?: string): string {

@@ -30,7 +30,7 @@ export const MPProfilePage: React.FC = () => {
             </div>
             <div className="text-[10px] text-emerald-200 flex items-center gap-1">
               <Smartphone className="w-3 h-3 text-emerald-300" />
-              <span>微信手机号已安全绑定 (138****8888)</span>
+              <span>登录手机号：{user.phone}</span>
             </div>
           </div>
         </div>

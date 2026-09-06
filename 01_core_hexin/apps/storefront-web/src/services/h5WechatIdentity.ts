@@ -1,4 +1,5 @@
 import { anonymousIdempotentContext, canonicalCall, canonicalClient, sessionContext } from './canonicalApiClient';
+import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
 import { record, text } from './canonicalShape';
 
 export interface H5WechatAuthorization {
@@ -13,14 +14,7 @@ export type H5WechatExchange =
 export type H5WechatSessionMode = 'anonymous' | 'authenticated';
 
 export async function beginH5WechatAuthorization(): Promise<H5WechatAuthorization> {
-  const state = randomToken(32);
-  const nonce = randomToken(32);
-  const verifier = randomToken(64);
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
-  return Object.freeze({
-    request: Object.freeze({ state, nonce, challenge: base64url(new Uint8Array(digest)) }),
-    secret: Object.freeze({ nonce, verifier }),
-  });
+  return beginBrowserAuthorization();
 }
 
 export async function requestH5WechatAuthorization(authorization: H5WechatAuthorization, mode: H5WechatSessionMode = 'anonymous'): Promise<string> {
@@ -64,16 +58,4 @@ function wechatSessionContext(mode: H5WechatSessionMode) {
   return mode === 'authenticated'
     ? sessionContext({ write: true, idempotencyKey: crypto.randomUUID(), includeScope: false })
     : anonymousIdempotentContext();
-}
-
-function randomToken(bytes: number): string {
-  const value = new Uint8Array(bytes);
-  crypto.getRandomValues(value);
-  return base64url(value);
-}
-
-function base64url(value: Uint8Array): string {
-  let binary = '';
-  for (const byte of value) binary += String.fromCharCode(byte);
-  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
 }

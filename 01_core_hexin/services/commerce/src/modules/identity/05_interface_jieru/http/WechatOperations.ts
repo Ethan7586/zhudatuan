@@ -78,7 +78,7 @@ export class WechatOperations implements OperationUsecase {
     authorization: AuthTransaction | null): Promise<OperationResult> {
     const membership = await database.query<{ access_version: number; client: string; credential_version: number }>(`select membership.access_version,membership.client,principal.credential_version
       from access.membership membership join member.profile profile on profile.id=membership.member_id join identity.principal principal on principal.id=profile.principal_id
-      where membership.id=$1 and principal.id=$2 and membership.status='active' and principal.status='active' for update`, [membershipid, principal]);
+      where membership.id=$1 and principal.id=$2 and membership.status='active' and principal.status='active' for update of profile,principal`, [membershipid, principal]);
     const active = membership.rows[0];
     if (!active) reject(403, 'WECHAT_MEMBERSHIP_INACTIVE');
     const token = randomBytes(48).toString('base64url');
