@@ -6,5 +6,6 @@ describe('payment webhook database boundary', () => {
   it('validates provider facts without requesting write locks on protected payment tables', () => {
     const source = readFileSync(join(import.meta.dirname, '../05_interface_jieru/http/PaymentWebhook.ts'), 'utf8');
     expect(source).not.toMatch(/for update of (?:intent|refund)/i);
+    expect(source).not.toMatch(/insert into runtime\.job[\s\S]*?on conflict/i);
   });
 });

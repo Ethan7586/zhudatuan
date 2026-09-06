@@ -62,7 +62,7 @@ export class PaymentWebhook {
         request.input.rawBody, trace, JSON.stringify(observed.evidence)]);
       if (accepted.rows[0]?.status !== 'accepted') return;
       await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-        values($1,$2,'payment',$3,$4::jsonb,'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp()) on conflict(id) do nothing`,
+        values($1,$2,'payment',$3,$4::jsonb,'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
       [`job:webhook:${observed.id}`, observed.kind === 'payment' ? 'paymentquery' : 'paymentrefund', scope, JSON.stringify(payload)]);
       await appendOperationAudit(this.audit, database, request, 'payment', { status: 204 }, 'provider:wechat', scope, operationRequestHash(request));
     });
