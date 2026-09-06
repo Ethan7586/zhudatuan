@@ -10,7 +10,10 @@ import { apiAllowedOrigins } from './ApiEnvironment';
 
 export const PURCHASE_API_PROFILE = 'purchase-only' as const;
 const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([
+  'https://h5.hbbtzn.com',
   'https://hbbtzn.com',
+  'https://mall.hbbtzn.com',
+  'https://www.hbbtzn.com',
   'https://zhudatuan.com',
 ]);
 const INTERNAL_ALLOWED_ORIGINS = Object.freeze([...PRODUCTION_ALLOWED_ORIGINS, 'https://internal.zhudatuan.com']);
