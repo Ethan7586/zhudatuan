@@ -1,8 +1,8 @@
-import { localInfrastructureEnvironment } from '@shop/config/server';
+import { localIdentityInfrastructureEnvironment } from '@shop/config/server';
 import { LocalHttpError, jsonBody, jsonResponse, startLocalHttps, type LocalHandler } from '../../localinfra/src/Http';
 import { LocalKms } from './LocalKms';
 
-const environment = localInfrastructureEnvironment();
+const environment = localIdentityInfrastructureEnvironment();
 const kms = new LocalKms(environment.kmsMasterKey);
 
 const handler: LocalHandler = async request => {

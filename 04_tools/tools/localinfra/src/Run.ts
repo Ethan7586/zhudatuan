@@ -1,10 +1,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
+import { localRuntimeEntries } from './RuntimeEntries';
 
-const children = [
-  '04_tools/tools/localsecrets/src/Main.ts',
-  '04_tools/tools/localkms/src/Main.ts',
-  '04_tools/tools/localobjects/src/Main.ts',
-].map(start);
+const children = localRuntimeEntries(process.env.LOCAL_RUNTIME_PROFILE).map(start);
 
 let stopping = false;
 for (const child of children) child.once('exit', (code, signal) => {

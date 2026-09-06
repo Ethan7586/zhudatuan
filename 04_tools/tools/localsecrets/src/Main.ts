@@ -1,8 +1,8 @@
-import { localInfrastructureEnvironment } from '@shop/config/server';
+import { localIdentityInfrastructureEnvironment } from '@shop/config/server';
 import { jsonResponse, startLocalHttps, type LocalHandler } from '../../localinfra/src/Http';
 import { SecretCatalog } from './SecretCatalog';
 
-const environment = localInfrastructureEnvironment();
+const environment = localIdentityInfrastructureEnvironment();
 const catalog = await SecretCatalog.load(environment.secretsFile);
 
 const handler: LocalHandler = async request => {
