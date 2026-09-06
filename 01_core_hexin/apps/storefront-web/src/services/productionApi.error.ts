@@ -30,6 +30,9 @@ export function productionError(cause: unknown): ProductionApiError {
   if (cause instanceof ApiError) {
     return new ProductionApiError(ERROR_MESSAGES[cause.code] ?? cause.message ?? cause.code, cause.status, cause.code, cause.requestId);
   }
+  if (cause instanceof TypeError && /failed to fetch|load failed|network request failed/i.test(cause.message)) {
+    return new ProductionApiError('商城网络连接失败，请刷新页面后重试', 0, 'NETWORK_OR_CLIENT_ERROR');
+  }
   const message = cause instanceof Error ? cause.message : '平台 API 请求失败';
   return new ProductionApiError(message, 0, 'NETWORK_OR_CLIENT_ERROR');
 }
