@@ -161,6 +161,22 @@ describe('canonical storefront production API', () => {
     expect(JSON.parse(String(complete.body))).toEqual({ challenge: 'challenge:payment-stepup', code: '123456' });
   });
 
+  it('submits WeChat binding with phone verification as one operation', async () => {
+    const fetcher = apiFetch();
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+    await productionApi.getHomeSnapshot();
+
+    await expect(productionApi.completePaymentPhoneVerification(
+      'challenge:wechat-stepup', '654321', 'wechat-binding-token'
+    )).resolves.toEqual({ verified: true });
+
+    const complete = requestInit(fetcher, '/api/v1/identity/stepup/verifications', 'POST');
+    expect(JSON.parse(String(complete.body))).toEqual({
+      challenge: 'challenge:wechat-stepup', code: '654321', bindingToken: 'wechat-binding-token',
+    });
+  });
+
   it('obtains and binds a WeChat identity grant to the authenticated L6 membership', async () => {
     vi.stubEnv('NEXT_PUBLIC_STOREFRONT_APPLICATION', 'zdt-l1-verify');
     const fetcher = apiFetch();

@@ -4,7 +4,9 @@ import type { OperationRequest, OperationResult } from '../../../../foundation/a
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { applyApiDatabaseContext } from '../../../../foundation/infrastructure/DatabaseContext';
 
-export async function bindWechat(database: OperationDatabase, hash: string, principal: string, membership: string): Promise<string> {
+export type PreparedWechatBinding = Readonly<{ identity: string }>;
+
+export async function prepareWechatBinding(database: OperationDatabase, hash: string, principal: string): Promise<PreparedWechatBinding> {
   const grant = await database.query<{ identity_id: string; application_hash: string }>(`select bindinggrant.identity_id,identity.application_hash from identity.wechatgrant bindinggrant
     join identity.federatedidentity identity on identity.id=bindinggrant.identity_id
     where bindinggrant.token_hash=$1 and bindinggrant.consumed_at is null and bindinggrant.expires_at>clock_timestamp()
@@ -14,11 +16,21 @@ export async function bindWechat(database: OperationDatabase, hash: string, prin
   const conflicting = await database.query(`select 1 from identity.federatedidentity where provider='wechat' and application_hash=$1 and principal_id=$2 and status='active' and id<>$3`,
     [found.application_hash, principal, found.identity_id]);
   if (conflicting.rows[0]) reject(409, 'WECHAT_IDENTITY_ALREADY_BOUND');
+  return { identity: found.identity_id };
+}
+
+export async function completeWechatBinding(database: OperationDatabase, binding: PreparedWechatBinding,
+  principal: string, membership: string): Promise<string> {
   const updated = await database.query<{ id: string }>(`update identity.federatedidentity set principal_id=$2,membership_id=$3,status='active',bound_at=clock_timestamp(),updated_at=clock_timestamp()
-    where id=$1 and status in('unbound','active') returning id`, [found.identity_id, principal, membership]);
-  if (!updated.rows[0]) reject(409, 'WECHAT_IDENTITY_BIND_CONFLICT');
-  await database.query('update identity.wechatgrant set consumed_at=clock_timestamp() where identity_id=$1 and consumed_at is null', [found.identity_id]);
-  return found.identity_id;
+    where id=$1 and status in('unbound','active') returning id`, [binding.identity, principal, membership]);
+  if (!updated.rows[0]) throw new Error('WECHAT_IDENTITY_BIND_CONFLICT');
+  await database.query('update identity.wechatgrant set consumed_at=clock_timestamp() where identity_id=$1 and consumed_at is null', [binding.identity]);
+  return binding.identity;
+}
+
+export async function bindWechat(database: OperationDatabase, hash: string, principal: string, membership: string): Promise<string> {
+  const binding = await prepareWechatBinding(database, hash, principal);
+  return completeWechatBinding(database, binding, principal, membership);
 }
 
 export async function identityTransaction<T>(pool: DatabasePool, request: OperationRequest, action: (database: OperationDatabase) => Promise<T>): Promise<T> {

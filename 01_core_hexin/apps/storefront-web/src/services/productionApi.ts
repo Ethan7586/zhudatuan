@@ -294,8 +294,10 @@ export const productionApi = {
     };
   },
 
-  async completePaymentPhoneVerification(challengeId: string, code: string): Promise<{ verified: true }> {
-    await canonicalCall(() => canonicalClient().identity.stepupComplete({ body: { challenge: challengeId, code } }, sessionContext({
+  async completePaymentPhoneVerification(challengeId: string, code: string, bindingToken?: string): Promise<{ verified: true }> {
+    await canonicalCall(() => canonicalClient().identity.stepupComplete({
+      body: { challenge: challengeId, code, ...(bindingToken === undefined ? {} : { bindingToken }) },
+    }, sessionContext({
       write: true,
       idempotencyKey: createSecureId(),
     })));

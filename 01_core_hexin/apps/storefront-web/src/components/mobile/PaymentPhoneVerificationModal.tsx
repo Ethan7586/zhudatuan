@@ -4,12 +4,15 @@ import { productionApi, ProductionApiError } from '../../services/productionApi'
 
 const RESEND_SECONDS = 45;
 
-export function PaymentPhoneVerificationModal({ phone, onClose, onVerified, purpose = 'payment' }: Readonly<{
+type PaymentPhoneVerificationModalProps = Readonly<{
   phone: string;
   onClose: () => void;
   onVerified: () => Promise<void>;
-  purpose?: 'payment' | 'wechat-binding';
-}>) {
+} & ({ purpose?: 'payment'; bindingToken?: never } | { purpose: 'wechat-binding'; bindingToken: string })>;
+
+export function PaymentPhoneVerificationModal(props: PaymentPhoneVerificationModalProps) {
+  const { phone, onClose, onVerified, purpose = 'payment' } = props;
+  const bindingToken = props.purpose === 'wechat-binding' ? props.bindingToken : undefined;
   const isWechatBinding = purpose === 'wechat-binding';
   const [challengeId, setChallengeId] = useState('');
   const [code, setCode] = useState('');
@@ -62,7 +65,7 @@ export function PaymentPhoneVerificationModal({ phone, onClose, onVerified, purp
     setVerifying(true);
     setError('');
     try {
-      await productionApi.completePaymentPhoneVerification(challengeId, code);
+      await productionApi.completePaymentPhoneVerification(challengeId, code, bindingToken);
       await onVerified();
     } catch (cause) {
       setError(cause instanceof ProductionApiError ? cause.message : '手机验证失败，请重试');

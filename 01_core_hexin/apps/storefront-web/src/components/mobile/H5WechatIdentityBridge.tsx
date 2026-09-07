@@ -116,14 +116,13 @@ export function H5WechatIdentityBridge() {
     <PaymentPhoneVerificationModal
       phone={user.phone}
       purpose="wechat-binding"
+      bindingToken={verificationBindingToken}
       onClose={() => {
         sessionStorage.removeItem(BINDING_KEY);
         setVerificationBindingToken(null);
         showToast('已取消微信改绑，当前手机号账号保持登录', 'info');
       }}
       onVerified={async () => {
-        await productionApi.getSession();
-        await bindH5WechatIdentity(verificationBindingToken);
         sessionStorage.removeItem(BINDING_KEY);
         localStorage.setItem(BOUND_USER_KEY, user.id);
         setVerificationBindingToken(null);

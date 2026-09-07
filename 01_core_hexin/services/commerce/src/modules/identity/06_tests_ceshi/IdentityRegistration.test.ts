@@ -173,11 +173,48 @@ describe('canonical member registration security boundary', () => {
       .invoke(stepupCompleteRequest());
 
     expect(response.status).toBe(200);
+    const phoneAssurance = harness.queries.find(({ text }) => text.includes("'phone_otp',2"));
+    expect(phoneAssurance?.values).toEqual([
+      expect.stringMatching(/^assurance:/), 'principal:stepup', subjectDigest(SUBJECT),
+    ]);
     const assurance = harness.queries.find(({ text }) => text.includes("'otp',3"));
     expect(assurance?.values).toEqual([
       expect.stringMatching(/^assurance:/), 'principal:stepup', 'session:stepup', sessionEvidenceDigest('session:stepup'),
     ]);
     expect(assurance?.values[3]).not.toBe(subjectDigest('challenge:stepup'));
+  });
+
+  it('verifies the profile mobile and completes WeChat binding in one transaction', async () => {
+    const harness = registrationHarness({ challengeAccepted: true, subjectExists: false,
+      mobileCiphertext: 'ciphertext:verified-mobile', wechatGrant: true });
+    const decrypt = vi.fn(async () => SUBJECT);
+
+    const response = await identityOperations(context(harness.pool, { decrypt } as unknown as KmsClient))
+      .invoke(stepupCompleteRequest('wechat-binding-token'));
+
+    expect(response).toMatchObject({
+      status: 200,
+      body: { id: 'session:stepup', assurance_level: 3,
+        wechat: { identity: 'identity:wechat', status: 'active' } },
+    });
+    const grant = harness.queries.find(({ text }) => text.includes('from identity.wechatgrant bindinggrant'));
+    expect(grant?.values).toEqual([createHash('sha256').update('wechat-binding-token').digest('hex')]);
+    const grantIndex = harness.queries.findIndex(({ text }) => text.includes('from identity.wechatgrant bindinggrant'));
+    const challengeIndex = harness.queries.findIndex(({ text }) => text.includes('update identity.challenge set consumed_at'));
+    const bindingIndex = harness.queries.findIndex(({ text }) => text.startsWith('update identity.federatedidentity'));
+    expect(grantIndex).toBeLessThan(challengeIndex);
+    expect(challengeIndex).toBeLessThan(bindingIndex);
+  });
+
+  it('does not consume phone verification when the WeChat binding token is invalid', async () => {
+    const harness = registrationHarness({ challengeAccepted: true, subjectExists: false,
+      mobileCiphertext: 'ciphertext:verified-mobile' });
+
+    const response = await identityOperations(context(harness.pool)).invoke(stepupCompleteRequest('invalid-token'));
+
+    expect(response).toEqual({ status: 400, body: { code: 'WECHAT_BINDING_TOKEN_INVALID' } });
+    expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.assurance'))).toBe(false);
   });
 
   it('routes current Owner password change through the atomic rotation boundary', async () => {
@@ -762,9 +799,9 @@ function mobileManageRequest(isExactOwner = false): OperationRequest {
   }, 'mobile:manage', isExactOwner);
 }
 
-function stepupCompleteRequest(): OperationRequest {
+function stepupCompleteRequest(bindingToken?: string): OperationRequest {
   return authenticatedRequest('identity.stepup.complete', {
-    challenge: 'challenge:stepup', code: '123456',
+    challenge: 'challenge:stepup', code: '123456', ...(bindingToken === undefined ? {} : { bindingToken }),
   }, 'stepup:complete');
 }
 
@@ -810,7 +847,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
   challengePrincipal?: string | null; boundMobilePrincipal?: string | null;
   credentialSecret?: string; ownerPasswordRotation?: boolean; loginMemberships?: boolean;
   loginMembershipRows?: ReadonlyArray<Readonly<{ id: string; access_version: number; client: string; organization_id: string }>>;
-  existingMembership?: boolean }>): Readonly<{
+  existingMembership?: boolean; wechatGrant?: boolean; wechatConflict?: boolean; wechatUpdate?: boolean }>): Readonly<{
   pool: DatabasePool;
   queries: ReadonlyArray<Readonly<{ text: string; values: readonly unknown[] }>>;
 }> {
@@ -879,6 +916,13 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       }
       if (text.includes('select mobile_ciphertext from member.profile')) {
         return result(input.mobileCiphertext === undefined ? [] : [{ mobile_ciphertext: input.mobileCiphertext }]);
+      }
+      if (text.includes('from identity.wechatgrant bindinggrant')) {
+        return result(input.wechatGrant ? [{ identity_id: 'identity:wechat', application_hash: 'hash:application' }] : []);
+      }
+      if (text.includes("status='active' and id<>")) return result(input.wechatConflict ? [{ exists: 1 }] : []);
+      if (text.startsWith('update identity.federatedidentity')) {
+        return result(input.wechatUpdate === false ? [] : [{ id: 'identity:wechat' }]);
       }
       if (text.includes("values($1,$2,'stepup'")) return result([{ id: String(values[0]), purpose: 'stepup' }]);
       if (text.includes("values($1,$2,'phone_change'")) return result([{ id: String(values[0]), purpose: 'phone_change' }]);

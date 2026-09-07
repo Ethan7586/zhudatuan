@@ -11,7 +11,7 @@ import { requireGovernanceContext } from '../../../../foundation/security/Access
 import { StepupPolicy } from '../../../../foundation/security/StepupPolicy';
 import { IDENTITY_SECURITY_KEYS } from '../../../../foundation/infrastructure/SecretStore';
 import { PasswordPolicy } from '../../02_domain_yewu/policies_guize/PasswordPolicy';
-import { bindWechat, publishIdentityEvent, tokenHash } from '../../04_adapters_shixian/persistence_cunchu/IdentityPersistence';
+import { bindWechat, completeWechatBinding, prepareWechatBinding, publishIdentityEvent, tokenHash } from '../../04_adapters_shixian/persistence_cunchu/IdentityPersistence';
 import { AuthTransaction } from '../../02_domain_yewu/models_moxing/AuthTransaction';
 import { PgAuthTicket } from '../../04_adapters_shixian/persistence_cunchu/PgAuthTicket';
 import { RETURN_TARGETS } from '../../04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
@@ -1094,14 +1094,23 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         const access = requireAccess(request);
         const body = bodyRecord(request);
         const action = financialActionRequest(body.action);
+        const bindingToken = body.bindingToken === undefined ? null : textField(body, 'bindingToken', 1024);
+        if (action !== null && bindingToken !== null) reject(400, 'OPERATION_INPUT_INVALID');
+        const wechatBinding = bindingToken === null ? null
+          : await prepareWechatBinding(database, tokenHash(bindingToken), access.actor.id);
         const challenge = textField(body, 'challenge');
         const profile = await database.query<{ mobile_ciphertext: string | null }>(
-          `select mobile_ciphertext from member.profile where principal_id=$1 and status='active'`, [access.actor.id]);
+          `select mobile_ciphertext from member.profile where principal_id=$1 and status='active' for update`, [access.actor.id]);
         const ciphertext = profile.rows[0]?.mobile_ciphertext;
         if (!ciphertext) throw new Error('STEP_UP_DESTINATION_MISSING');
         const destination = await kms.decrypt('identity/mobile', ciphertext, { principal: access.actor.id });
         await consumeChallenge(database, challenge, textField(body, 'code'), codeDigest, access.actor.id,
           { purpose: 'stepup', destinationHash: digest(destination), sessionHash: sessionDigest(access.actor.session) });
+        await database.query(
+          `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
+          values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
+          [`assurance:${randomUUID()}`, access.actor.id, digest(destination)]
+        );
         const assurance = `assurance:${randomUUID()}`;
         if (action === null) {
           await database.query(
@@ -1123,6 +1132,10 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         );
         const session = result.rows[0];
         if (!session) throw new Error('AUTHENTICATION_REQUIRED');
+        if (wechatBinding !== null) {
+          const identity = await completeWechatBinding(database, wechatBinding, access.actor.id, access.membership.id);
+          return { status: 200, body: { ...session, wechat: { identity, status: 'active' } } };
+        }
         if (action === null) return rowResult(result);
         const proof = randomBytes(48).toString('base64url');
         const issued = await database.query<{ scope_id: string; resource_id: string; expires_at: Date }>('select scope_id,resource_id,expires_at from access.issue_action_proof($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)', [

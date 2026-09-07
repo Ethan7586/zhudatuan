@@ -99,6 +99,7 @@ describe('identity financial action proof issuance', () => {
     let storedHash = '';
     let assuranceId = '';
     let assuranceSession = '';
+    let phoneEvidence = '';
     let issueValues: readonly unknown[] | undefined;
     let persisted = '';
     const client = {
@@ -113,7 +114,8 @@ describe('identity financial action proof issuance', () => {
         if (text.includes('select mobile_ciphertext from member.profile')) {
           return { rows: [{ mobile_ciphertext: 'ciphertext:verified-mobile' }], rowCount: 1 } as unknown as QueryResult;
         }
-        if (text.includes('insert into identity.assurance')) {
+        if (text.includes("'phone_otp',2")) phoneEvidence = String(values[2]);
+        if (text.includes("'otp',3")) {
           assuranceId = String(values[0]);
           assuranceSession = String(values[2]);
         }
@@ -177,6 +179,7 @@ describe('identity financial action proof issuance', () => {
     expect(result).toMatchObject({ status: 200, body: { actionProof: { requestHash } } });
     expect(assuranceId).toMatch(/^assurance:/);
     expect(assuranceSession).toBe('session:one');
+    expect(phoneEvidence).toMatch(/^[0-9a-f]{64}$/);
     expect(issueValues).toEqual([expect.stringMatching(/^[0-9a-f]{64}$/), 'actor:one', 'session:one', 'membership:one', assuranceId, 'finance.settlements.decide', 'settlement:one', 'decision:one', 7, requestHash]);
     expect(persisted).not.toContain(String((result.body as { actionProof: { proof: string } }).actionProof.proof));
   });
