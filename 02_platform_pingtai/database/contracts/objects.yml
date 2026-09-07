@@ -4378,6 +4378,38 @@ objects:
     objectType: table
     target: fulfillment.returnrecord
     privilege: update
+  - id: shopapp:table:identity.account:delete
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopapp
+    objectType: table
+    target: identity.account
+    privilege: delete
+  - id: shopapp:table:identity.account:insert
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopapp
+    objectType: table
+    target: identity.account
+    privilege: insert
+  - id: shopapp:table:identity.account:select
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopapp
+    objectType: table
+    target: identity.account
+    privilege: select
+  - id: shopapp:table:identity.account:update
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopapp
+    objectType: table
+    target: identity.account
+    privilege: update
   - id: shopapp:table:identity.assurance:delete
     kind: grant
     owner: identity
@@ -4666,6 +4698,30 @@ objects:
     objectType: table
     target: identity.principal
     privilege: update
+  - id: shopapp:table:identity.realm:select
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopapp
+    objectType: table
+    target: identity.realm
+    privilege: select
+  - id: shopapp:table:identity.realmentry:select
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopapp
+    objectType: table
+    target: identity.realmentry
+    privilege: select
+  - id: shopapp:table:identity.realmtarget:select
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopapp
+    objectType: table
+    target: identity.realmtarget
+    privilege: select
   - id: shopapp:table:identity.registrationpolicy:delete
     kind: grant
     owner: identity
@@ -12690,6 +12746,38 @@ objects:
     objectType: table
     target: fulfillment.returnrecord
     privilege: update
+  - id: shopjob:table:identity.account:delete
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopjob
+    objectType: table
+    target: identity.account
+    privilege: delete
+  - id: shopjob:table:identity.account:insert
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopjob
+    objectType: table
+    target: identity.account
+    privilege: insert
+  - id: shopjob:table:identity.account:select
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopjob
+    objectType: table
+    target: identity.account
+    privilege: select
+  - id: shopjob:table:identity.account:update
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopjob
+    objectType: table
+    target: identity.account
+    privilege: update
   - id: shopjob:table:identity.authticket:delete
     kind: grant
     owner: identity
@@ -12834,6 +12922,30 @@ objects:
     objectType: table
     target: identity.loginattempt
     privilege: update
+  - id: shopjob:table:identity.realm:select
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopjob
+    objectType: table
+    target: identity.realm
+    privilege: select
+  - id: shopjob:table:identity.realmentry:select
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopjob
+    objectType: table
+    target: identity.realmentry
+    privilege: select
+  - id: shopjob:table:identity.realmtarget:select
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: shopjob
+    objectType: table
+    target: identity.realmtarget
+    privilege: select
   - id: shopjob:table:identity.registrationpolicy:delete
     kind: grant
     owner: identity
@@ -18362,6 +18474,38 @@ objects:
     objectType: table
     target: finance.withdrawal
     privilege: select
+  - id: zhudatuanidentityapi:table:identity.account:delete
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: identity.account
+    privilege: delete
+  - id: zhudatuanidentityapi:table:identity.account:insert
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: identity.account
+    privilege: insert
+  - id: zhudatuanidentityapi:table:identity.account:select
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: identity.account
+    privilege: select
+  - id: zhudatuanidentityapi:table:identity.account:update
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: identity.account
+    privilege: update
   - id: zhudatuanidentityapi:table:identity.assurance:insert
     kind: grant
     owner: identity
@@ -18562,6 +18706,30 @@ objects:
     objectType: table
     target: identity.principal
     privilege: update
+  - id: zhudatuanidentityapi:table:identity.realm:select
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: identity.realm
+    privilege: select
+  - id: zhudatuanidentityapi:table:identity.realmentry:select
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: identity.realmentry
+    privilege: select
+  - id: zhudatuanidentityapi:table:identity.realmtarget:select
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: identity.realmtarget
+    privilege: select
   - id: zhudatuanidentityapi:table:identity.registrationpolicy:select
     kind: grant
     owner: identity
@@ -23106,6 +23274,18 @@ objects:
     kind: policy
     owner: fulfillment
     source: 02_platform_pingtai/database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: identity.account.appscope
+    kind: policy
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+  - id: identity.account.identityapi
+    kind: policy
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+  - id: identity.account.jobscope
+    kind: policy
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
   - id: identity.assurance.appscope
     kind: policy
     owner: identity
@@ -23222,6 +23402,42 @@ objects:
     kind: policy
     owner: identity
     source: 02_platform_pingtai/database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.realm.appread
+    kind: policy
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+  - id: identity.realm.identityapi
+    kind: policy
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+  - id: identity.realm.jobread
+    kind: policy
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+  - id: identity.realmentry.appread
+    kind: policy
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+  - id: identity.realmentry.identityapi
+    kind: policy
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+  - id: identity.realmentry.jobread
+    kind: policy
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+  - id: identity.realmtarget.appread
+    kind: policy
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+  - id: identity.realmtarget.identityapi
+    kind: policy
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+  - id: identity.realmtarget.jobread
+    kind: policy
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
   - id: identity.registrationpolicy.appscope
     kind: policy
     owner: identity
@@ -25927,6 +26143,11 @@ objects:
     owner: fulfillment
     source: 02_platform_pingtai/database/supabase/migrations/20260821020000_create_fulfillment_verification.sql
     rls: true
+  - id: identity.account
+    kind: table
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    rls: true
   - id: identity.assurance
     kind: table
     owner: identity
@@ -25971,6 +26192,21 @@ objects:
     kind: table
     owner: identity
     source: 02_platform_pingtai/database/supabase/migrations/20260821013000_create_identity_access.sql
+    rls: true
+  - id: identity.realm
+    kind: table
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    rls: true
+  - id: identity.realmentry
+    kind: table
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
+    rls: true
+  - id: identity.realmtarget
+    kind: table
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql
     rls: true
   - id: identity.registrationpolicy
     kind: table

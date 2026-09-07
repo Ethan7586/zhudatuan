@@ -22,3 +22,11 @@
 本批关闭的是当前入口与 membership 串域风险，尤其是 `console-hbbtzn → console` 折叠后误选 L0 operator membership 的风险。它没有改变全局 principal、credential 唯一键、credential_version 或账号生命周期，因此尚不能宣称节点账号模型已经完成。
 
 后续批次依次落地节点 realm registry 与 realm account、节点级凭据/验证生命周期、显式 realm/account session 与授权，以及生产迁移和扩展性验收。跨节点访问只能使用 Ethan 明确定义的显式授权或委派记录，不能自动查找其他节点的可用账号。
+
+## 第 2 批数据模型
+
+- `identity.realm` 是节点身份域注册表；`identity.realmentry` 登记可信 Host，`identity.realmtarget` 登记 surface、target、membership client/organization、application 与固定返回 origin。新增 L2–L11 通过插入登记数据完成，不增加节点枚举列。
+- `identity.account` 是节点账号生命周期所有者，独立保存 `status`、`credential_version`、`assurance_level` 与版本时间。`legacy_principal_id` 仅用于迁移关联，不能作为跨节点授权依据。
+- `identity.credential` 通过 `account_id + realm_id` 归属节点账号，唯一性改为 `realm_id + provider + subject_hash`；同一登录名可以跨 realm 共存。
+- `access.membership` 与 `identity.federatedidentity` 增加 account/realm 归属。迁移只回填由 L0/L1 已确认 organization 可以确定的数据，未确认历史数据保持未归类，不伪造节点。
+- 本批建立模型与确定性回填，运行时注册、改密、重置、短信和微信生命周期切换留在第 3 批。
