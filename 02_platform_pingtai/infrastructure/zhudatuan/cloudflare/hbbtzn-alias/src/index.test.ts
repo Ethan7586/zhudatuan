@@ -126,6 +126,7 @@ describe('hbbtzn H5 alias worker', () => {
     await worker.fetch(new Request('https://hbbtzn.com/catalog-media/mockpool-test-product.svg'));
 
     const upstreamRequest = fetchMock.mock.calls[0][0] as Request;
+    expect(upstreamRequest.url).toBe('https://zhudatuan.com/catalog-media/mockpool-test-product.svg');
     expect(upstreamRequest.headers.get('x-sfl-node-id')).toBe('node:hbbtzn:l1');
     expect(upstreamRequest.headers.get('x-sfl-node-surface')).toBe('web-business');
   });
