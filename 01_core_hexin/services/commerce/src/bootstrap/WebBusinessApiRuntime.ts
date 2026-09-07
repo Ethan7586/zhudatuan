@@ -7,7 +7,6 @@ import {
   TARGET_SCHEMA_HEAD,
   loadNodeManifest,
   webBusinessApiAllowedOrigins,
-  webBusinessApiPublicMallSlug,
   type NodeManifest,
   type WebBusinessApiEnvironment,
 } from '@shop/config/server';
@@ -88,7 +87,6 @@ export async function createWebBusinessApiRuntime(
   try {
     await assertWebBusinessRuntimeCompatibility(pool, required(environment.DATABASE_API_ROLE, 'DATABASE_API_ROLE_MISSING'))
       .catch((cause: unknown) => console.warn('WEB_BUSINESS_RUNTIME_COMPATIBILITY_WARNING', cause));
-    await assertWebBusinessApplicationBinding(pool, webBusinessApiPublicMallSlug(environment), manifest.data_scope_ref);
   } catch (cause) {
     await pool.end();
     throw cause;
@@ -233,22 +231,14 @@ export function assertWebBusinessNodeManifest(
   if (manifest.node_profile !== 'operating_mall') throw new Error('WEB_BUSINESS_NODE_PROFILE_INVALID');
   if (!manifest.enabled_features.includes('catalog') || !manifest.surfaces.includes('storefront')
     || !manifest.surfaces.includes('api')) throw new Error('WEB_BUSINESS_NODE_FEATURE_INVALID');
+  if (manifest.applications.length !== 1 || !manifest.applications[0]?.startsWith('application:')) {
+    throw new Error('WEB_BUSINESS_NODE_APPLICATION_INVALID');
+  }
   const boundOrigins = new Set(manifest.domain_bindings.map(({ origin }) => origin));
   if (allowedOrigins.length === 0 || allowedOrigins.some((origin) => !boundOrigins.has(origin))) {
     throw new Error('WEB_BUSINESS_NODE_ORIGIN_MISMATCH');
   }
   if (appEnvironment === 'production' && manifest.lifecycle_status !== 'active') throw new Error('WEB_BUSINESS_NODE_NOT_ACTIVE');
-}
-
-export async function assertWebBusinessApplicationBinding(
-  pool: DatabasePool,
-  publicSlug: string,
-  scope: string,
-): Promise<void> {
-  const result = await pool.query<{ readonly bound: boolean }>(`select exists(
-    select 1 from experience.application where public_slug=$1 and scope_id=$2 and status='active'
-  ) bound`, [publicSlug, scope]);
-  if (result.rows[0]?.bound !== true) throw new Error('WEB_BUSINESS_APPLICATION_SCOPE_MISMATCH');
 }
 
 function required(value: string | undefined, code: string): string {

@@ -29,7 +29,6 @@ export class PublicCatalogHttpHandler implements HttpRequestHandler {
     private readonly pool: DatabasePool,
     private readonly defaultApplicationSlug: string,
     allowedOrigins: readonly string[],
-    private readonly expectedScope?: string,
   ) {
     this.origins = new Set(allowedOrigins);
   }
@@ -48,12 +47,6 @@ export class PublicCatalogHttpHandler implements HttpRequestHandler {
     }
     if (requestedApplicationSlug && requestedApplicationSlug !== this.defaultApplicationSlug) {
       return response(404, { code: 'PUBLIC_MALL_NOT_FOUND', requestId }, requestId, origin);
-    }
-    if (this.expectedScope) {
-      const binding = await this.pool.workload('query').query<{ readonly bound: boolean }>(`select exists(
-        select 1 from experience.application where public_slug=$1 and scope_id=$2 and status='active'
-      ) bound`, [applicationSlug, this.expectedScope]);
-      if (binding.rows[0]?.bound !== true) return response(404, { code: 'PUBLIC_MALL_NOT_FOUND', requestId }, requestId, origin);
     }
     const limit = integer(url.searchParams.get('limit'), 24, 1, 100);
     const offset = integer(url.searchParams.get('cursor'), 0, 0, Number.MAX_SAFE_INTEGER);

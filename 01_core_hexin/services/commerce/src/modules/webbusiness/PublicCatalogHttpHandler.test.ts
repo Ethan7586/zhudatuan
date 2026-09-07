@@ -35,16 +35,13 @@ describe('public catalog HTTP handler', () => {
     expect(next.handle).toHaveBeenCalledOnce();
   });
 
-  it('binds the public catalog to one application and one mall scope', async () => {
-    const query = vi.fn(async (text: string) => text.includes('select exists')
-      ? result([{ bound: true }])
-      : result([]));
+  it('binds the public catalog to one configured application', async () => {
+    const query = vi.fn(async () => result([]));
     const handler = new PublicCatalogHttpHandler(
       { handle: vi.fn(async () => new Response(null, { status: 404 })) },
       pool(query),
       'zdt-l1-verify',
       ['https://hbbtzn.com'],
-      'mall:hongtai',
     );
 
     const crossNode = await handler.handle(new Request(
@@ -58,8 +55,9 @@ describe('public catalog HTTP handler', () => {
       headers: { origin: 'https://hbbtzn.com' },
     }));
     expect(ownNode.status).toBe(200);
-    expect(query).toHaveBeenNthCalledWith(1, expect.stringContaining('public_slug=$1 and scope_id=$2'),
-      ['zdt-l1-verify', 'mall:hongtai']);
+    expect(query).toHaveBeenCalledOnce();
+    expect(query).toHaveBeenCalledWith('select * from catalog.public_storefront_catalog($1,$2,$3,$4)',
+      ['zdt-l1-verify', 24, 0, null]);
   });
 });
 
