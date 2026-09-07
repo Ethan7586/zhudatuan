@@ -49,7 +49,7 @@ export class HttpApp {
       assertCsrf(request, origin, operation.id);
       const version = request.headers.get('x-contract-version');
       if (!route.operation.startsWith('runtime.health.') && operation.audience !== 'provider' && version !== CONTRACT_VERSION) {
-        return secure(426, { code: 'CONTRACT_VERSION_UNSUPPORTED', message: 'CONTRACT_VERSION_UNSUPPORTED', requestId,
+        return secure(426, { code: 'CONTRACT_VERSION_UNSUPPORTED', message: '客户端版本不兼容，请刷新页面后重试', requestId,
           required: CONTRACT_VERSION }, requestId, origin, { 'x-contract-version': CONTRACT_VERSION });
       }
       const nodeContext = route.operation.startsWith('runtime.health.')

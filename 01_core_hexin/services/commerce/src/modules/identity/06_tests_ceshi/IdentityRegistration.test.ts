@@ -404,6 +404,7 @@ describe('canonical member registration security boundary', () => {
       target, ...(application === undefined ? {} : { application }),
     }, host))).rejects.toThrow('AUTH_REALM_MISMATCH');
     expect(harness.queries.some(({ text }) => text.includes('identity.credential'))).toBe(false);
+    expect(harness.queries.some(({ text }) => /^\s*(insert|update|delete)\s+(identity|member|access)\./i.test(text))).toBe(false);
   });
 
   it('fails explicitly when the current realm has no membership and never falls back to another node', async () => {

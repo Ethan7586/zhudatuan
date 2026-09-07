@@ -2,6 +2,7 @@ import { ApiError } from '@shop/sdk/error';
 
 const ERROR_MESSAGES: Readonly<Record<string, string>> = Object.freeze({
   AUTHENTICATION_REQUIRED: '登录会话已失效，请重新登录',
+  CONTRACT_VERSION_UNSUPPORTED: '商城服务已升级，请刷新页面后重试',
   MOBILE_ASSURANCE_REQUIRED: '手机尚未验证，暂不能提交订单',
   CSRF_TOKEN_INVALID: '安全会话已更新，请刷新页面后重试',
   LISTING_NOT_PURCHASABLE: '该商品当前不可购买',

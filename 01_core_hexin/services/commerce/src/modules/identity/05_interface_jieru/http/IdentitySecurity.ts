@@ -45,7 +45,15 @@ export async function consumeChallenge(database: OperationDatabase, challenge: s
     returning principal_id,realm_id,account_id`, [challenge, digest(challenge, code), principal ?? null, expected.purpose ?? null,
     expected.destinationHash ?? null, expected.sessionHash ?? null, expected.realmId ?? null, expected.accountId ?? null]);
   if (!result.rows[0]) {
-    await database.query('update identity.challenge set attempts=attempts+1 where id=$1 and consumed_at is null', [challenge]);
+    await database.query(`update identity.challenge set attempts=attempts+1
+      where id=$1 and consumed_at is null
+        and ($2::text is null or principal_id=$2)
+        and ($3::text is null or purpose=$3)
+        and ($4::text is null or destination_hash=$4)
+        and ($5::text is null or session_hash=$5)
+        and ($6::text is null or realm_id=$6)
+        and ($7::text is null or account_id=$7)`, [challenge, principal ?? null, expected.purpose ?? null,
+      expected.destinationHash ?? null, expected.sessionHash ?? null, expected.realmId ?? null, expected.accountId ?? null]);
     reject(400, 'CHALLENGE_INVALID');
   }
   return result.rows[0]!;

@@ -11,6 +11,8 @@ describe('production API error', () => {
 
   it('never exposes a raw API code or an English fallback message', () => {
     expect(productionError(new ApiError('NOT_FOUND', 404, 'request:one')).message).toBe('请求的内容仍在同步，请稍后重试');
+    expect(productionError(new ApiError('CONTRACT_VERSION_UNSUPPORTED', 426, 'request:version')).message)
+      .toBe('商城服务已升级，请刷新页面后重试');
     expect(productionError(new ApiError('UPSTREAM_BROKEN', 502, 'request:two', false, undefined, 'Bad Gateway')).message).toBe('商城服务暂时繁忙，请稍后重试');
     expect(productionError(new Error('Unexpected token')).message).toBe('商城服务暂时不可用，请稍后重试');
   });

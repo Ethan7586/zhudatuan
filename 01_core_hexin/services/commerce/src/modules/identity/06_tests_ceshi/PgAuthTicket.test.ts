@@ -28,13 +28,18 @@ describe('PgAuthTicket exchange', () => {
     const currentSessionToken = 'current-session-token';
     const sessionExpiresAt = new Date('2026-08-28T16:00:00.000Z');
     const queries: Array<Readonly<{ text: string; values: readonly unknown[] }>> = [];
+    let consumed = false;
+    let successfulConsumes = 0;
     const database = {
       query: async (text: string, values: readonly unknown[] = []) => {
         queries.push({ text, values });
-        const accepted = values[4] === hash(currentSessionToken);
+        const accepted = values[4] === hash(currentSessionToken) && values[5] === 'realm:l0' && !consumed;
+        if (accepted) {
+          consumed = true;
+          successfulConsumes += 1;
+        }
         return {
-          rows: accepted && values[5] === 'realm:l0'
-            ? [{ target: 'console', return_origin: 'https://console.registry.example', expires_at: sessionExpiresAt }] : [],
+          rows: accepted ? [{ target: 'console', return_origin: 'https://console.registry.example', expires_at: sessionExpiresAt }] : [],
           rowCount: accepted ? 1 : 0,
         } as unknown as QueryResult;
       },
@@ -65,8 +70,11 @@ describe('PgAuthTicket exchange', () => {
       returnTarget: { url: 'https://console.registry.example' },
       sessionExpiresAt,
     });
+    await expect(tickets.consume(database, exchange, currentSessionToken, 'realm:l0'))
+      .rejects.toThrow('AUTH_TICKET_EXCHANGE_REJECTED');
 
-    expect(queries).toHaveLength(3);
+    expect(queries).toHaveLength(4);
+    expect(successfulConsumes).toBe(1);
     const accepted = queries[2]!;
     expect(accepted.values[4]).toBe(hash(currentSessionToken));
     expect(accepted.values).toHaveLength(6);
@@ -76,6 +84,7 @@ describe('PgAuthTicket exchange', () => {
     expect(accepted.text).toContain('for update of ticket');
     expect(accepted.text).toContain('update identity.authticket ticket set consumed_at=clock_timestamp()');
     expect(accepted.text).not.toContain('update identity.session');
+    expect(queries[3]?.values).toEqual(accepted.values);
   });
 });
 

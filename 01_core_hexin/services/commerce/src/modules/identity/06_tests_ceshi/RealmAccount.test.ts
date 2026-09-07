@@ -25,6 +25,22 @@ describe('realm registry boundary', () => {
     expect(calls[0]?.values).toEqual(['accounts.l11.example.com']);
     expect(calls[1]?.values).toEqual(['realm:l11', 'storefront']);
   });
+
+  it('rejects an unregistered Host after a read-only lookup', async () => {
+    const calls: Array<Readonly<{ text: string; values: readonly unknown[] }>> = [];
+    const database = {
+      query: async (text: string, values: readonly unknown[] = []) => {
+        calls.push({ text, values });
+        return result([]);
+      },
+    } as unknown as OperationDatabase;
+
+    await expect(resolveRealmContext(database, 'forged.identity.example', 'console', undefined))
+      .rejects.toThrow('AUTH_REALM_ENTRY_INVALID');
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.values).toEqual(['forged.identity.example']);
+    expect(calls.every(({ text }) => text.trimStart().startsWith('select '))).toBe(true);
+  });
 });
 
 function result(rows: readonly Record<string, unknown>[]): QueryResult {

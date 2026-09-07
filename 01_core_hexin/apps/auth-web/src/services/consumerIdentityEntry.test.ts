@@ -95,6 +95,21 @@ describe('node-bound identity entry', () => {
     expect(recoverLocalIdentitySearch('?target=console', 'untrusted.example.com')).toBeNull();
   });
 
+  it('normalizes an old cross-node link once and never leaves the current accounts origin', () => {
+    const currentOrigin = 'https://accounts.zhudatuan.com';
+    const recovered = recoverLocalIdentitySearch(
+      '?target=storefront-hbbtzn&surface=web&application=zdt-l1-verify&v=old',
+      'accounts.zhudatuan.com',
+    );
+
+    expect(recovered).toBe('?target=storefront&surface=web&application=zhudatuan-storefront&v=old');
+    expect(new URL(recovered!, currentOrigin).origin).toBe(currentOrigin);
+    expect(recoverLocalIdentitySearch(recovered!, 'accounts.zhudatuan.com')).toBeNull();
+    expect(resolveIdentityEntry(recovered!, 'accounts.zhudatuan.com')).toMatchObject({
+      kind: 'consumer', nodeId: 'l0', application: 'zhudatuan-storefront', target: 'storefront',
+    });
+  });
+
   it('accepts an L11 consumer node but never exposes an operator entry', () => {
     const l11Registry = parseIdentityNodeRegistry(JSON.stringify({
       version: 2,

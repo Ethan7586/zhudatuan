@@ -94,11 +94,23 @@ describe('PgSessionResolver realm account projection', () => {
       .rejects.toThrow('AUTH_REALM_CONTEXT_MISSING');
   });
 
-  it('keeps an unknown, expired, or cross-host session on the authentication-required path', async () => {
-    const resolver = new PgSessionResolver({ query: vi.fn().mockResolvedValue({ rows: [] }) } as never);
+  it('rejects an L0 cookie on L1 without a write and still accepts it on L0', async () => {
+    const query = vi.fn(async (text: string, values: readonly unknown[]) => ({
+      rows: values[1] === 'api.zhudatuan.com' ? [{
+        actor_id: 'principal:shared', account_id: 'account:l0', realm_id: 'realm:l0',
+        session_id: 'session:l0', membership_id: 'membership:l0', credential_version: 1,
+        access_version: 1, target: 'console', assurance_level: 1, assurance_verified_at: null,
+      }] : [],
+    }));
+    const resolver = new PgSessionResolver({ query } as never);
+    const cookie = `shop_session=${'t'.repeat(32)}`;
 
-    await expect(resolver.resolve({ authorization: `Bearer ${'t'.repeat(32)}`, host: 'api.example.com' }))
+    await expect(resolver.resolve({ cookie, host: 'api.hbbtzn.com' }))
       .rejects.toThrow('AUTHENTICATION_REQUIRED');
+    await expect(resolver.resolve({ cookie, host: 'api.zhudatuan.com' }))
+      .resolves.toMatchObject({ account: 'account:l0', realm: 'realm:l0', session: 'session:l0' });
+    expect(query.mock.calls.map((call) => call[1]?.[1])).toEqual(['api.hbbtzn.com', 'api.zhudatuan.com']);
+    expect(query.mock.calls.every((call) => call[0].trimStart().startsWith('select '))).toBe(true);
   });
 });
 

@@ -83,7 +83,32 @@ describe('HttpApp contract handshake', () => {
     }));
     expect(response.status).toBe(426);
     expect(response.headers.get('x-contract-version')).toBe(CONTRACT_VERSION);
-    expect(await response.json()).toMatchObject({ code: 'CONTRACT_VERSION_UNSUPPORTED', required: CONTRACT_VERSION });
+    expect(response.headers.get('location')).toBeNull();
+    expect(await response.json()).toMatchObject({
+      code: 'CONTRACT_VERSION_UNSUPPORTED',
+      message: '客户端版本不兼容，请刷新页面后重试',
+      required: CONTRACT_VERSION,
+    });
+  });
+
+  it('clears stale identity cookies without redirecting or retrying server-side', async () => {
+    const response = await new HttpApp(routes(), ['https://accounts.zhudatuan.com']).handle(new Request('https://api.zhudatuan.com/api/v1/identity/sessions', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        cookie: 'shop_session=old-session; shop_csrf=old-csrf',
+        origin: 'https://accounts.zhudatuan.com',
+        'x-contract-version': CONTRACT_VERSION,
+      },
+      body: '{}',
+    }));
+
+    expect(response.status).toBe(403);
+    expect(response.headers.get('location')).toBeNull();
+    expect(response.headers.get('set-cookie')).toContain('shop_session=;');
+    expect(response.headers.get('set-cookie')).toContain('Max-Age=0');
+    expect(response.headers.get('set-cookie')).toContain('shop_csrf=;');
+    expect(await response.json()).toMatchObject({ code: 'CSRF_TOKEN_INVALID' });
   });
 
   it('allows the exact generated contract version', async () => {

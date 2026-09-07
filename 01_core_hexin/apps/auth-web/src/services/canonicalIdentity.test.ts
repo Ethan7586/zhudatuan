@@ -259,6 +259,41 @@ describe('canonical console identity', () => {
     expect(String(fetchMock.mock.calls[2]?.[0])).toContain('/api/v1/identity/tickets/exchange');
   });
 
+  it('stops after one stale-cookie retry and returns a Chinese error without redirecting', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse({ code: 'CSRF_TOKEN_INVALID' }, 403))
+      .mockResolvedValueOnce(jsonResponse({ code: 'CSRF_TOKEN_INVALID' }, 403));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loginCanonicalConsole('ethan', 'Original!Password1'))
+      .rejects.toThrow('统一身份服务暂时无法完成登录（CSRF_TOKEN_INVALID）');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('reports a frontend-backend contract mismatch in Chinese without retrying', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse({ code: 'CONTRACT_VERSION_UNSUPPORTED' }, 426));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loginCanonicalConsole('ethan', 'Original!Password1'))
+      .rejects.toThrow('统一身份服务暂时无法完成登录（CONTRACT_VERSION_UNSUPPORTED）');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('turns an old or replayed ticket into a Chinese error before any redirect', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(sessionCreated()))
+      .mockResolvedValueOnce(jsonResponse({ code: 'AUTH_TICKET_EXCHANGE_REJECTED' }, 401));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loginCanonicalConsole('ethan', 'Original!Password1'))
+      .rejects.toThrow('一次性登录授权无效或已经使用');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it('logs a newly registered consumer into its exact storefront membership before redirecting', async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
