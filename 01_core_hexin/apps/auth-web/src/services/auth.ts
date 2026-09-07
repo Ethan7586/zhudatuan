@@ -376,9 +376,8 @@ export async function loginWithOtp(phone: string, code: string): Promise<PreAuth
  */
 export async function loginWithPassword(identifier: string, password: string): Promise<PreAuthContext> {
   const cleanId = identifier.trim();
-  const cleanPw = password.trim();
 
-  if (!cleanId || !cleanPw) {
+  if (!cleanId || password.length === 0) {
     throw new Error('请输入账号与密码');
   }
 
@@ -392,7 +391,7 @@ export async function loginWithPassword(identifier: string, password: string): P
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ username: cleanId, password: cleanPw }),
+    body: JSON.stringify({ username: cleanId, password }),
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok) {

@@ -12,6 +12,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@shop/contract": "1.0.0",
     "@shop/sdk": "1.0.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^6.0.2",

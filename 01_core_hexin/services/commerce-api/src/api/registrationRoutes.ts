@@ -1,7 +1,7 @@
 import { encryptJson, sha256 } from './crypto';
 import { apiError, json, methodNotAllowed } from './http';
 import { readTrustedClientIp } from './loginRateLimitBypass';
-import { generateOtp, hashPassword, maskMobile, normalizeChineseMobile, normalizeLocalUsername, phoneLookupSubject, validRegistrationPassword, verificationCodeHash } from './registrationSecurity';
+import { generateOtp, hashPassword, maskMobile, normalizeChineseMobile, normalizeLocalUsername, PASSWORD_POLICY_MESSAGE, phoneLookupSubject, validRegistrationPassword, verificationCodeHash } from './registrationSecurity';
 import { readJsonBody } from './routerSupport';
 import { deliverOtp, otpDeliveryAvailable } from './otpDelivery';
 import { SmsDeliveryError } from './smsProvider';
@@ -55,7 +55,7 @@ export async function handleRegistration(request: Request, env: WorkerEnv, reque
   if (!mobile || !challengeId || !/^\d{6}$/.test(code ?? '') || !displayName || !inviteCode) {
     return apiError(422, 'INVALID_REGISTRATION_INPUT', '请完整填写手机号、验证码、姓名和企业邀请码', requestId);
   }
-  if (!validRegistrationPassword(password)) return apiError(422, 'WEAK_PASSWORD', '密码至少10位，并同时包含字母和数字', requestId);
+  if (!validRegistrationPassword(password)) return apiError(422, 'WEAK_PASSWORD', PASSWORD_POLICY_MESSAGE, requestId);
   if (!env.IDENTITY_LOOKUP_KEY || !env.PII_ENCRYPTION_KEY) return apiError(503, 'REGISTRATION_SECURITY_NOT_CONFIGURED', '注册安全配置尚未完成', requestId);
 
   const subject = await phoneLookupSubject(mobile, env.IDENTITY_LOOKUP_KEY);
@@ -87,7 +87,7 @@ export async function handleUsernameRegistration(request: Request, env: WorkerEn
   if (!username || !displayName || !inviteCode || body.value.acceptedTerms !== true) {
     return apiError(422, 'INVALID_REGISTRATION_INPUT', '请填写有效用户名、姓名和企业邀请码，并同意服务协议', requestId);
   }
-  if (!validRegistrationPassword(password)) return apiError(422, 'WEAK_PASSWORD', '密码至少10位，并同时包含字母和数字', requestId);
+  if (!validRegistrationPassword(password)) return apiError(422, 'WEAK_PASSWORD', PASSWORD_POLICY_MESSAGE, requestId);
   if (!env.SESSION_SIGNING_KEY) return apiError(503, 'REGISTRATION_SECURITY_NOT_CONFIGURED', '注册安全配置尚未完成', requestId);
   const clientIp = readTrustedClientIp(request);
   const ipHash = await sha256(`${clientIp ?? 'unknown'}:${env.SESSION_SIGNING_KEY}`);

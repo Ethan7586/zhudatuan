@@ -63,7 +63,7 @@ describe('member registration routes', () => {
         code: '123456',
         displayName: '新员工',
         inviteCode: 'SW-DEMO-EMPLOYEE-2026',
-        password: 'SmartWing2026',
+        password: '654321',
       }),
       env,
       'register-request'

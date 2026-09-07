@@ -1,3 +1,7 @@
+import { PASSWORD_POLICY_MESSAGE, passwordMeetsPolicy } from '@shop/contract/password-policy';
+
+export { PASSWORD_POLICY_MESSAGE };
+
 const PASSWORD_ITERATIONS = 310_000;
 const PASSWORD_BYTES = 32;
 
@@ -42,9 +46,7 @@ export async function verifyPassword(password: string, encoded: string): Promise
 }
 
 export function validRegistrationPassword(value: string): boolean {
-  if (value.length < 10 || value.length > 128) return false;
-  if (value !== value.trim()) return false;
-  return /[A-Za-z]/.test(value) && /\d/.test(value);
+  return passwordMeetsPolicy(value);
 }
 
 export function normalizeChineseMobile(value: unknown): string | null {

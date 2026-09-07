@@ -1,18 +1,10 @@
 import { randomBytes, scrypt as derive, timingSafeEqual } from 'node:crypto';
-import type { Specification } from '../../../../foundation/domain/Specification';
+import { passwordMeetsPolicy } from '@shop/contract/password-policy';
 const VERSION = 'v1';
 const COST = 32_768;
 const BLOCK = 8;
 const PARALLEL = 1;
 const MAX_MEMORY = 64 * 1024 * 1024;
-const PASSWORD_RULES: readonly Specification<string>[] = Object.freeze([
-  { satisfiedBy: (password) => password.length >= 12 && password.length <= 128 },
-  { satisfiedBy: (password) => /[A-Z]/.test(password) },
-  { satisfiedBy: (password) => /[a-z]/.test(password) },
-  { satisfiedBy: (password) => /\d/.test(password) },
-  { satisfiedBy: (password) => /[^A-Za-z0-9]/.test(password) },
-]);
-
 function scrypt(password: string, salt: Buffer, length: number): Promise<Buffer> {
   return new Promise((resolve, reject) => derive(password, salt, length, { N: COST, r: BLOCK, p: PARALLEL, maxmem: MAX_MEMORY },
     (cause, result) => cause ? reject(cause) : resolve(result)));
@@ -20,7 +12,7 @@ function scrypt(password: string, salt: Buffer, length: number): Promise<Buffer>
 
 export class PasswordPolicy {
   validate(password: string): void {
-    if (!PASSWORD_RULES.every((rule) => rule.satisfiedBy(password))) {
+    if (!passwordMeetsPolicy(password)) {
       throw new Error('PASSWORD_POLICY_REJECTED');
     }
   }

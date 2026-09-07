@@ -3,7 +3,7 @@ import { canonicalFinancialActionRequest, requiresFinancialActionProof, requires
 import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../../../foundation/application/AuditSink';
 import { ModuleOperations, operationLifecycle, pageResult, reject, requireAccess, rowResult, type OperationActions, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
-import { bodyRecord, integerField, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, integerField, secretField, textField } from '../../../../foundation/interface/Validation';
 import type { OperationRequest, OperationUsecase } from '../../../../foundation/application/OperationHandler';
 import { KMS_CLIENT } from '../../../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
@@ -126,7 +126,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           if (provider === 'password') {
             const credentialFound = await resolvePasswordLoginCredential(database,
               mobileTokens === undefined ? { subjectHash: subject } : { subjectHash: subject, mobileTokens });
-            if (!(await passwords.verify(textField(body, 'password', 128), credentialFound?.secret_hash ?? null))) {
+            if (!(await passwords.verify(secretField(body, 'password', 128), credentialFound?.secret_hash ?? null))) {
               reject(401, 'CREDENTIAL_INVALID');
             }
             if (credentialFound) found = credentialFound;
@@ -507,7 +507,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const subject = canonicalMobile(textField(body, 'subject'));
           const principal = `principal:${randomUUID()}`;
           const [password, mobile] = await Promise.all([
-            passwords.hash(textField(body, 'password', 128)),
+            passwords.hash(secretField(body, 'password', 128)),
             kms.encrypt('identity/mobile', subject, { principal }),
           ]);
           return {
@@ -723,7 +723,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         if (reason.trim().length < 4) throw new Error('CHANGE_REASON_REQUIRED');
         if (action === 'create') {
           const username = textField(body, 'username', 128).trim();
-          const password = await passwords.hash(textField(body, 'password', 128));
+          const password = await passwords.hash(secretField(body, 'password', 128));
           const principal = `principal:${randomUUID()}`;
           const member = `member:${randomUUID()}`;
           const membership = membershipId === 'new' ? `membership:${randomUUID()}` : membershipId;
@@ -905,8 +905,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         prepare: async (request) => {
           const access = requireAccess(request);
           const body = bodyRecord(request);
-          const currentPassword = textField(body, 'currentPassword', 128);
-          const hash = await passwords.hash(textField(body, 'newPassword', 128));
+          const currentPassword = secretField(body, 'currentPassword', 128);
+          const hash = await passwords.hash(secretField(body, 'newPassword', 128));
           return { access, currentPassword, hash };
         },
         execute: async (_request, database, { access, currentPassword, hash }) => {
@@ -932,7 +932,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
       }),
       'identity.password.verify': async (request, database) => {
         const access = requireAccess(request);
-        const password = textField(bodyRecord(request), 'password', 128);
+        const password = secretField(bodyRecord(request), 'password', 128);
         const credential = await database.query<{ secret_hash: string | null }>(
           `select secret_hash from identity.credential
         where principal_id=$1 and provider='password' and status='active'`,
@@ -956,7 +956,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         prepare: async (request) => {
           const body = bodyRecord(request);
           const challenge = textField(body, 'challenge');
-          const hash = await passwords.hash(textField(body, 'newPassword', 128));
+          const hash = await passwords.hash(secretField(body, 'newPassword', 128));
           return { body, challenge, hash };
         },
         execute: async (_request, database, { body, challenge, hash }) => {

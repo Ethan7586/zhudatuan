@@ -3,7 +3,7 @@ import { apiError, json, methodNotAllowed } from './http';
 import { isTestLoginRateLimitBypassed, readTrustedClientIp } from './loginRateLimitBypass';
 import { resolveMembershipRuntimeByIds, type MembershipRuntime } from './membershipContext';
 import { authenticateLocalMember } from './publicRoutes';
-import { hashPassword, normalizeLocalUsername, validRegistrationPassword } from './registrationSecurity';
+import { hashPassword, normalizeLocalUsername, PASSWORD_POLICY_MESSAGE, validRegistrationPassword } from './registrationSecurity';
 import { readJsonBody } from './routerSupport';
 import { createTrackedMiniappSessionToken } from './session';
 import { callRpc, isSupabaseConfigured } from './supabase';
@@ -118,7 +118,7 @@ export async function handleWechatRegistration(request: Request, env: WorkerEnv,
   if (!isUuid(bindingChallenge) || !username || !displayName || !inviteCode || input?.acceptedTerms !== true) {
     return apiError(422, 'INVALID_WECHAT_REGISTRATION', '请完整填写用户名、姓名和企业邀请码，并同意服务协议', requestId);
   }
-  if (!validRegistrationPassword(password)) return apiError(422, 'WEAK_PASSWORD', '密码至少10位，并同时包含字母和数字', requestId);
+  if (!validRegistrationPassword(password)) return apiError(422, 'WEAK_PASSWORD', PASSWORD_POLICY_MESSAGE, requestId);
   const ipHash = await sha256(`${readTrustedClientIp(request) ?? 'unknown'}:${env.MINIAPP_SESSION_SIGNING_KEY}`);
   if (!(await callRpc<boolean>(env, 'api_username_registration_allowed', { p_ip_hash: ipHash }))) {
     return apiError(429, 'REGISTRATION_RATE_LIMITED', '注册尝试过多，请1小时后重试', requestId);

@@ -3,7 +3,7 @@ import { verifyMemberPassword } from './credentialAuth';
 import { apiError, json, methodNotAllowed } from './http';
 import { readTrustedClientIp } from './loginRateLimitBypass';
 import { resolveMembershipRuntime } from './membershipContext';
-import { generateOtp, hashPassword, maskMobile, normalizeChineseMobile, phoneLookupSubject, validRegistrationPassword, verificationCodeHash } from './registrationSecurity';
+import { generateOtp, hashPassword, maskMobile, normalizeChineseMobile, PASSWORD_POLICY_MESSAGE, phoneLookupSubject, validRegistrationPassword, verificationCodeHash } from './registrationSecurity';
 import { readJsonBody } from './routerSupport';
 import { deliverOtp, otpDeliveryAvailable } from './otpDelivery';
 import { SmsDeliveryError } from './smsProvider';
@@ -26,7 +26,7 @@ export async function handleChangePassword(request: Request, env: WorkerEnv, aut
   const input = await objectBody(request);
   const currentPassword = stringValue(input?.currentPassword, 128);
   const newPassword = typeof input?.newPassword === 'string' ? input.newPassword : '';
-  if (!currentPassword || !validRegistrationPassword(newPassword)) return apiError(422, 'INVALID_PASSWORD_CHANGE', '新密码至少10位，并同时包含字母和数字', requestId);
+  if (!currentPassword || !validRegistrationPassword(newPassword)) return apiError(422, 'INVALID_PASSWORD_CHANGE', PASSWORD_POLICY_MESSAGE, requestId);
   if (!(await verifyMemberPassword(env, auth.membership.memberId, currentPassword))) return apiError(401, 'CURRENT_PASSWORD_INVALID', '当前密码不正确', requestId);
   if (await verifyMemberPassword(env, auth.membership.memberId, newPassword)) return apiError(422, 'PASSWORD_REUSE_FORBIDDEN', '新密码不能与当前密码相同', requestId);
   const session = await readSession(request, env);

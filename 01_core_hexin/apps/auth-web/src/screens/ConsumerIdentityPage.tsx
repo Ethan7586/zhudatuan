@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, PASSWORD_POLICY_HINT, PASSWORD_POLICY_MESSAGE, passwordMeetsPolicy } from '@shop/contract/password-policy';
 import { AlertCircle, Eye, EyeOff, FileText, LoaderCircle, LogIn, ShieldCheck, UserPlus, X } from 'lucide-react';
 import { automaticL6DisplayName } from '../services/consumerRegistration';
 import { loginCanonicalStorefrontEntry } from '../services/canonicalIdentity';
@@ -61,6 +62,7 @@ export const ConsumerIdentityPage: React.FC<{ application: string }> = ({ applic
   const submitRegistration = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (context === null) return setFormError(contextError || '商城注册入口正在读取，请稍后重试');
+    if (!passwordMeetsPolicy(password)) return setFormError(PASSWORD_POLICY_MESSAGE);
     if (password !== confirmPassword) return setFormError('两次输入的密码不一致');
     if (!acceptedTerms) return setFormError('请先阅读并同意服务协议与隐私政策');
     setSubmitting(true);
@@ -139,7 +141,7 @@ export const ConsumerIdentityPage: React.FC<{ application: string }> = ({ applic
             <label className="block space-y-1.5 text-xs font-semibold text-slate-700">
               {mode === 'register' ? '设置密码' : '密码'}
               <span className="relative block">
-                <input type={showPassword ? 'text' : 'password'} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} required minLength={mode === 'register' ? 12 : undefined} maxLength={128} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={mode === 'register' ? '12–128 位，含大小写、数字和符号' : '请输入密码'} className="w-full rounded-xl border border-slate-200 px-3.5 py-3 pr-11 text-sm outline-none transition focus:border-[var(--sw-brand)] focus:ring-2 focus:ring-blue-100" />
+                <input type={showPassword ? 'text' : 'password'} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} required minLength={mode === 'register' ? PASSWORD_MIN_LENGTH : undefined} maxLength={PASSWORD_MAX_LENGTH} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={mode === 'register' ? PASSWORD_POLICY_HINT : '请输入密码'} className="w-full rounded-xl border border-slate-200 px-3.5 py-3 pr-11 text-sm outline-none transition focus:border-[var(--sw-brand)] focus:ring-2 focus:ring-blue-100" />
                 <button type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? '隐藏密码' : '显示密码'} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 hover:text-slate-700">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
               </span>
             </label>
@@ -148,7 +150,7 @@ export const ConsumerIdentityPage: React.FC<{ application: string }> = ({ applic
               <>
                 <label className="block space-y-1.5 text-xs font-semibold text-slate-700">
                   确认密码
-                  <input type={showPassword ? 'text' : 'password'} autoComplete="new-password" required minLength={12} maxLength={128} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="再次输入密码" className="w-full rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none transition focus:border-[var(--sw-brand)] focus:ring-2 focus:ring-blue-100" />
+                  <input type={showPassword ? 'text' : 'password'} autoComplete="new-password" required minLength={PASSWORD_MIN_LENGTH} maxLength={PASSWORD_MAX_LENGTH} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="再次输入密码" className="w-full rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none transition focus:border-[var(--sw-brand)] focus:ring-2 focus:ring-blue-100" />
                 </label>
                 <p className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs leading-5 text-blue-700">本步不发送验证码；首次付款时验证该手机号。</p>
                 <label className="flex cursor-pointer items-start gap-2 text-xs leading-5 text-slate-500">

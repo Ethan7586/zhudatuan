@@ -9,6 +9,7 @@ export * from './ExperienceContract';
 export * from './FinancialActionPolicy';
 export * from './Operation';
 export * from './OperationCatalog';
+export * from './PasswordPolicyContract';
 export * from './RequirementCatalog.generated';
 export * from './schema';
 export * from './VerificationContract';

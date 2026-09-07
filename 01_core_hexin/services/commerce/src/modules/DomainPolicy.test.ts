@@ -68,10 +68,15 @@ describe('high-risk domain invariants', () => {
 
   it('hashes passwords with a versioned strong KDF and constant-work missing-user verification', async () => {
     const policy = new PasswordPolicy();
-    const encoded = await policy.hash('Strong-Password-2026');
+    expect(() => policy.validate('12345')).toThrow('PASSWORD_POLICY_REJECTED');
+    expect(() => policy.validate('123456')).toThrow('PASSWORD_POLICY_REJECTED');
+    expect(() => policy.validate('abc 123')).toThrow('PASSWORD_POLICY_REJECTED');
+    expect(() => policy.validate('654321')).not.toThrow();
+    expect(() => policy.validate('abcdef')).not.toThrow();
+    const encoded = await policy.hash('654321');
     expect(encoded).toMatch(/^scrypt\$v1\$32768\$8\$1\$/);
-    await expect(policy.verify('Strong-Password-2026', encoded)).resolves.toBe(true);
-    await expect(policy.verify('Wrong-Password-2026', encoded)).resolves.toBe(false);
+    await expect(policy.verify('654321', encoded)).resolves.toBe(true);
+    await expect(policy.verify('654322', encoded)).resolves.toBe(false);
     await expect(policy.verify('Any-Password-2026', null)).resolves.toBe(false);
   });
 });

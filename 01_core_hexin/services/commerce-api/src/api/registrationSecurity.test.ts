@@ -13,11 +13,13 @@ describe('registration credentials', () => {
 
   it('enforces the public registration password baseline', () => {
     expect(validRegistrationPassword('SmartWing2026')).toBe(true);
-    expect(validRegistrationPassword('1234567890')).toBe(false);
-    expect(validRegistrationPassword('OnlyLetters')).toBe(false);
-    expect(validRegistrationPassword('S1short')).toBe(false);
-    expect(validRegistrationPassword(' SmartWing2026')).toBe(false);
-    expect(validRegistrationPassword('SmartWing2026 ')).toBe(false);
+    expect(validRegistrationPassword('12345')).toBe(false);
+    expect(validRegistrationPassword('123456')).toBe(false);
+    expect(validRegistrationPassword('654321')).toBe(true);
+    expect(validRegistrationPassword('1234567890')).toBe(true);
+    expect(validRegistrationPassword('abcdef')).toBe(true);
+    expect(validRegistrationPassword('      ')).toBe(false);
+    expect(validRegistrationPassword('abc 123')).toBe(false);
   });
 
   it('normalizes and masks only supported mobile identifiers', () => {

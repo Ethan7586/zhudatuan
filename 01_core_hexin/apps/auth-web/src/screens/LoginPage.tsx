@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, PASSWORD_POLICY_HINT, PASSWORD_POLICY_MESSAGE, passwordMeetsPolicy } from '@shop/contract/password-policy';
 import { ShieldCheck, Lock, QrCode, Globe, Building2, CheckCircle2, AlertCircle, Eye, EyeOff, ArrowRight, ArrowLeft, RefreshCw, UserCheck, ChevronRight, ShieldAlert, Info, Clock, Store, CreditCard, UserX, FileText, X } from 'lucide-react';
 import { useMallContext } from '../context/MallContext';
 import { Membership, PreAuthContext } from '../types';
@@ -122,7 +123,7 @@ export const LoginPage: React.FC = () => {
     if (!identifier.trim()) {
       errors.identifier = '请输入登录账号或已绑定手机号';
     }
-    if (!password.trim()) {
+    if (password.length === 0) {
       errors.password = '请输入密码';
     }
 
@@ -138,6 +139,7 @@ export const LoginPage: React.FC = () => {
   const handleRegistrationSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!acceptedTerms) return setFormError('请先阅读并同意用户协议和隐私政策');
+    if (!passwordMeetsPolicy(registration.password)) return setFormError(PASSWORD_POLICY_MESSAGE);
     if (registration.password !== registration.confirmPassword) return setFormError('两次输入的密码不一致');
     setLoading(true);
     setFormError('');
@@ -180,6 +182,7 @@ export const LoginPage: React.FC = () => {
 
   const submitPasswordReset = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!passwordMeetsPolicy(resetForm.password)) return setFormError(PASSWORD_POLICY_MESSAGE);
     if (resetForm.password !== resetForm.confirm) return setFormError('两次输入的新密码不一致');
     setLoading(true);
     setFormError('');
@@ -1124,10 +1127,10 @@ export const LoginPage: React.FC = () => {
                   type="password"
                   value={registration.password}
                   onChange={(e) => updateRegistration('password', e.target.value)}
-                  minLength={10}
-                  maxLength={128}
+                  minLength={PASSWORD_MIN_LENGTH}
+                  maxLength={PASSWORD_MAX_LENGTH}
                   required
-                  placeholder="至少10位，含字母和数字"
+                  placeholder={PASSWORD_POLICY_HINT}
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
                 />
               </label>
@@ -1137,8 +1140,8 @@ export const LoginPage: React.FC = () => {
                   type="password"
                   value={registration.confirmPassword}
                   onChange={(e) => updateRegistration('confirmPassword', e.target.value)}
-                  minLength={10}
-                  maxLength={128}
+                  minLength={PASSWORD_MIN_LENGTH}
+                  maxLength={PASSWORD_MAX_LENGTH}
                   required
                   placeholder="再次输入密码"
                   aria-invalid={registration.confirmPassword.length > 0 && registration.password !== registration.confirmPassword}
@@ -1193,7 +1196,9 @@ export const LoginPage: React.FC = () => {
               type="password"
               value={resetForm.password}
               onChange={(e) => setResetForm({ ...resetForm, password: e.target.value })}
-              placeholder="新密码（至少10位，含字母和数字）"
+              minLength={PASSWORD_MIN_LENGTH}
+              maxLength={PASSWORD_MAX_LENGTH}
+              placeholder={`新密码（${PASSWORD_POLICY_HINT}）`}
               className="w-full rounded-xl border px-3.5 py-2.5 text-sm"
             />
             <input type="password" value={resetForm.confirm} onChange={(e) => setResetForm({ ...resetForm, confirm: e.target.value })} placeholder="确认新密码" className="w-full rounded-xl border px-3.5 py-2.5 text-sm" />
@@ -1222,12 +1227,14 @@ export const LoginPage: React.FC = () => {
 
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">新密码（不少于8位）</label>
+                <label className="text-xs font-medium text-slate-700">新密码（{PASSWORD_POLICY_HINT}）</label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="请输入符合复杂度的安全新密码"
+                  minLength={PASSWORD_MIN_LENGTH}
+                  maxLength={PASSWORD_MAX_LENGTH}
+                  placeholder={PASSWORD_POLICY_HINT}
                   className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-[var(--sw-brand)]"
                 />
               </div>
@@ -1239,8 +1246,8 @@ export const LoginPage: React.FC = () => {
               </button>
               <button
                 onClick={async () => {
-                  if (newPassword.length < 10 || !/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
-                    setFormError('新密码至少10位，并同时包含字母和数字');
+                  if (!passwordMeetsPolicy(newPassword)) {
+                    setFormError(PASSWORD_POLICY_MESSAGE);
                     return;
                   }
                   setLoading(true);

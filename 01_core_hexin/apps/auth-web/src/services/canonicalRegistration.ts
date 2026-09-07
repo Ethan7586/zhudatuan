@@ -1,5 +1,6 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { transportInteger } from '@shop/contract/client';
+import { PASSWORD_POLICY_MESSAGE } from '@shop/contract/password-policy';
 import { createSecureId } from '@shop/sdk/context';
 import { z } from 'zod';
 import { beginCanonicalAuthorization, canonicalStorefrontAuthTarget, exchangeCanonicalStorefrontSession } from './canonicalIdentity';
@@ -378,7 +379,7 @@ function registrationError(value: unknown, status: number): string {
       RISK_REVIEW_REQUIRED: '本次注册需要人工安全复核',
       RISK_DENIED: '本次注册未通过安全检查',
       IDENTITY_SUBJECT_EXISTS: '该手机号已注册，请直接登录或找回密码',
-      PASSWORD_POLICY_REJECTED: '密码须为 12–128 位，并同时包含大小写字母、数字和符号',
+      PASSWORD_POLICY_REJECTED: PASSWORD_POLICY_MESSAGE,
       TERMS_ACCEPTANCE_REQUIRED: '注册条款已更新，请重新阅读并同意',
     }[code] ?? `统一身份服务暂时无法完成注册（${code}）`
   );

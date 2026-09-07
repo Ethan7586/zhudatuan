@@ -1,4 +1,5 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
+import { PASSWORD_POLICY_MESSAGE } from '@shop/contract/password-policy';
 import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
 import { createSecureId } from '@shop/sdk/context';
 import { z } from 'zod';
@@ -502,7 +503,7 @@ function identityError(value: unknown, status: number, action: string): string {
     AUTH_TICKET_EXCHANGE_REJECTED: '一次性登录授权无效或已经使用',
     CHALLENGE_INVALID: '验证码错误或已经失效',
     CHALLENGE_PRINCIPAL_MISSING: '该手机号没有可重置的账号',
-    PASSWORD_POLICY_REJECTED: '密码须为 12–128 位，并同时包含大小写字母、数字和符号',
+    PASSWORD_POLICY_REJECTED: PASSWORD_POLICY_MESSAGE,
   }[code] ?? `统一身份服务暂时无法完成${action}（${code}）`;
 }
 

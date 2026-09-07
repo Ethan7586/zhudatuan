@@ -4,7 +4,7 @@ import { apiError, json, methodNotAllowed } from './http';
 import { isTestLoginRateLimitBypassed, readTrustedClientIp } from './loginRateLimitBypass';
 import { resolveMembershipRuntimeByIds, type MembershipRuntime } from './membershipContext';
 import { localPhoneSubject } from './registrationRoutes';
-import { hashPassword, normalizeChineseMobile, normalizeLocalUsername, validRegistrationPassword, verifyPassword } from './registrationSecurity';
+import { hashPassword, normalizeChineseMobile, normalizeLocalUsername, PASSWORD_POLICY_MESSAGE, validRegistrationPassword, verifyPassword } from './registrationSecurity';
 import { readJsonBody } from './routerSupport';
 import { clearSessionCookie, createTrackedSessionCookie, readSession, targetForRequest } from './session';
 import { callRpc, isSupabaseConfigured } from './supabase';
@@ -91,7 +91,7 @@ export async function handleLogin(request: Request, env: WorkerEnv, requestId: s
     }
   }
 
-  if (username.trim() === '' || password.trim() === '') {
+  if (username.trim() === '' || password.length === 0) {
     return apiError(400, 'INVALID_LOGIN_INPUT', '账号或密码缺失', requestId);
   }
   const target = targetForRequest(request);
@@ -181,7 +181,7 @@ export async function handleInitialPasswordChange(request: Request, env: WorkerE
   const username = typeof input?.username === 'string' ? input.username : '';
   const currentPassword = typeof input?.password === 'string' ? input.password : '';
   const newPassword = typeof input?.newPassword === 'string' ? input.newPassword : '';
-  if (!username || !currentPassword || !validRegistrationPassword(newPassword)) return apiError(422, 'INVALID_PASSWORD_CHANGE', '新密码至少10位，并同时包含字母和数字', requestId);
+  if (!username || !currentPassword || !validRegistrationPassword(newPassword)) return apiError(422, 'INVALID_PASSWORD_CHANGE', PASSWORD_POLICY_MESSAGE, requestId);
   const clientIp = readTrustedClientIp(request);
   const ipHash = await sha256(`${clientIp ?? 'unknown'}:${env.SESSION_SIGNING_KEY ?? ''}`);
   if (!(await callRpc<boolean>(env, 'api_login_allowed', { p_ip_hash: ipHash }))) return apiError(429, 'LOGIN_RATE_LIMITED', '登录尝试过多，请15分钟后重试', requestId);

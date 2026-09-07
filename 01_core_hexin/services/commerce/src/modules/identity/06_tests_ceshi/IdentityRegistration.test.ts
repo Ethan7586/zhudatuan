@@ -640,7 +640,7 @@ function storefrontRegistrationRequest(idempotency: string): OperationRequest {
       headers: { 'x-device-id': 'device:storefront-registration-test' },
       body: {
         subject: SUBJECT,
-        password: 'Automatic!Password1',
+        password: '654321',
         displayName: 'L6消费者8000',
         challenge: 'challenge:registration',
         code: '123456',

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, PASSWORD_POLICY_MESSAGE, passwordMeetsPolicy } from '@shop/contract/password-policy';
 import { AlertCircle, Building2, Eye, EyeOff, FileText, KeyRound, LoaderCircle, LogIn, Send, UserPlus, X } from 'lucide-react';
 import type { Membership } from '../types';
 import {
@@ -126,6 +127,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{ target: 'console' | 'cons
     event.preventDefault();
     if (invite === null || resolvedInviteCode !== inviteCode.trim().toUpperCase()) return setError('请先验证当前邀请码');
     if (!registrationChallenge) return setError('请先获取验证码');
+    if (!passwordMeetsPolicy(password)) return setError(PASSWORD_POLICY_MESSAGE);
     if (password !== confirmPassword) return setError('两次输入的密码不一致');
     if (!acceptedTerms) return setError('请先阅读并同意服务协议与隐私政策');
     setBusy(true);
@@ -171,6 +173,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{ target: 'console' | 'cons
   const resetPassword = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!resetChallenge) return setError('请先获取验证码');
+    if (!passwordMeetsPolicy(password)) return setError(PASSWORD_POLICY_MESSAGE);
     if (password !== resetConfirm) return setError('两次输入的密码不一致');
     setBusy(true);
     setError('');
@@ -295,7 +298,7 @@ const TextField: React.FC<{ label: string; value: string; onChange: (value: stri
 );
 
 const PasswordField: React.FC<{ label: string; value: string; onChange: (value: string) => void; visible: boolean; onToggle: () => void; autoComplete: string }> = ({ label, value, onChange, visible, onToggle, autoComplete }) => (
-  <label className="block space-y-1.5 text-xs font-semibold text-slate-700">{label}<span className="relative block"><input type={visible ? 'text' : 'password'} required minLength={12} maxLength={128} value={value} onChange={(event) => onChange(event.target.value)} autoComplete={autoComplete} className="w-full rounded-xl border border-slate-200 px-3.5 py-3 pr-11 text-sm outline-none focus:border-[var(--sw-brand)] focus:ring-2 focus:ring-blue-100" /><button type="button" onClick={onToggle} aria-label={visible ? '隐藏密码' : '显示密码'} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400">{visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></span></label>
+  <label className="block space-y-1.5 text-xs font-semibold text-slate-700">{label}<span className="relative block"><input type={visible ? 'text' : 'password'} required minLength={PASSWORD_MIN_LENGTH} maxLength={PASSWORD_MAX_LENGTH} value={value} onChange={(event) => onChange(event.target.value)} autoComplete={autoComplete} className="w-full rounded-xl border border-slate-200 px-3.5 py-3 pr-11 text-sm outline-none focus:border-[var(--sw-brand)] focus:ring-2 focus:ring-blue-100" /><button type="button" onClick={onToggle} aria-label={visible ? '隐藏密码' : '显示密码'} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400">{visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></span></label>
 );
 
 const SubmitButton: React.FC<{ busy: boolean; disabled?: boolean; icon: React.ReactNode; children: React.ReactNode }> = ({ busy, disabled, icon, children }) => (

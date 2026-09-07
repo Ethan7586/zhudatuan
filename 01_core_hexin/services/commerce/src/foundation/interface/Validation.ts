@@ -17,6 +17,12 @@ export function textField(body: Readonly<Record<string, unknown>>, field: string
   return value.trim();
 }
 
+export function secretField(body: Readonly<Record<string, unknown>>, field: string, maximum = 255): string {
+  const value = body[field];
+  if (typeof value !== 'string' || value.length === 0 || value.length > maximum) throw new Error(`VALIDATION_FAILED:${field}`);
+  return value;
+}
+
 export function optionalText(body: Readonly<Record<string, unknown>>, field: string, maximum = 255): string | null {
   const value = body[field];
   if (value === undefined || value === null) return null;
