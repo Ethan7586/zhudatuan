@@ -12,6 +12,7 @@ vi.mock('../../context/MallContext', () => ({
     cart: [{
       id: 'cart:one',
       product: {
+        id: 'product:one',
         images: ['https://images.unsplash.com/photo-one?w=600'],
         priceMall: 80,
         priceMarket: 100,
@@ -42,10 +43,13 @@ describe('mini-program cart experience', () => {
     const html = renderToStaticMarkup(React.createElement(MPCartPage));
 
     expect(html).toContain('宏泰甄选');
-    expect(html).toContain('添加配送地址');
-    expect(html).toContain('更多结算服务');
-    expect(html).toContain('去结算 (1)');
+    expect(html).toContain('福利卡可用额度');
+    expect(html).toContain('管理');
+    expect(html).toContain('配送与发票等特殊需求');
+    expect(html).toContain('配送地址将在结算时确认');
+    expect(html).toContain('结算 (1)');
     expect(html).toContain('data-cart-settlement-bar="true"');
+    expect(html).not.toContain('添加配送地址');
     expect(html).not.toContain('中国建筑集团企采直供仓');
     expect(html).not.toContain('电子发票');
     expect(html).not.toContain('真实账户扣减');

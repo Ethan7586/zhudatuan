@@ -16,8 +16,8 @@ describe('mini-program cart invoice disclosure', () => {
     const html = render(false);
 
     expect(html).toContain('aria-expanded="false"');
-    expect(html).toContain('更多结算服务');
-    expect(html).toContain('有特殊要求时再设置');
+    expect(html).toContain('配送与发票等特殊需求');
+    expect(html).toContain('选填');
     expect(html).not.toContain('电子发票');
   });
 
