@@ -28,8 +28,13 @@ beforeEach(() => {
   });
 });
 
+function setWindowHostname(hostname: string): void {
+  (window.location as unknown as { hostname: string }).hostname = hostname;
+}
+
 describe('canonical storefront session', () => {
   it('recognizes the already signed-in L1 before reopening consumer registration', async () => {
+    setWindowHostname('accounts.hbbtzn.com');
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
       target: 'storefront',
       governance: { organization: 'mall:l1-hongtai' },
@@ -40,7 +45,7 @@ describe('canonical storefront session', () => {
     await expect(currentCanonicalStorefrontOrganization()).resolves.toBe('mall:l1-hongtai');
 
     const [url, init] = fetchMock.mock.calls[0];
-    expect(String(url)).toBe('http://127.0.0.1:3001/api/v1/identity/session');
+    expect(String(url)).toBe('https://hbbtzn.com/api/v1/identity/session');
     expect(init).toMatchObject({ method: 'GET', credentials: 'include', redirect: 'error' });
   });
 
@@ -204,6 +209,7 @@ describe('canonical console identity', () => {
   });
 
   it('keeps the Hongtai brand alias outside canonical identity and returns to its Console origin', async () => {
+    setWindowHostname('accounts.hbbtzn.com');
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('console', 'membership:hongtai:operator')))
@@ -215,6 +221,8 @@ describe('canonical console identity', () => {
     });
 
     expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({ target: 'console' });
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/sessions');
+    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/tickets/exchange');
     expect(result).toMatchObject({
       kind: 'authenticated', membership: 'membership:hongtai:operator', redirectUrl: 'https://console.hbbtzn.com/',
     });
@@ -264,6 +272,7 @@ describe('canonical console identity', () => {
   });
 
   it('binds a storefront entry login to the requested application', async () => {
+    setWindowHostname('accounts.hbbtzn.com');
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:hongtai')))
@@ -287,6 +296,8 @@ describe('canonical console identity', () => {
       application: 'zdt-l1-verify',
     });
     expect(body).not.toHaveProperty('membership');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://hbbtzn.com/api/v1/identity/sessions');
+    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://hbbtzn.com/api/v1/identity/tickets/exchange');
   });
 
   it('maps a canonical console membership selection to the approved admin UI model', async () => {

@@ -6,6 +6,7 @@ import type { Membership, PreAuthContext } from '../types';
 import { resolveAdminLoginOrigin, resolveStorefrontLoginOrigin } from './originPolicy';
 
 const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
+const L1_STOREFRONT_API_ORIGIN = 'https://hbbtzn.com';
 const LEGACY_API_ORIGIN = 'https://api.zhudatuan.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
 
@@ -87,7 +88,7 @@ export interface CanonicalPasswordResetChallenge {
 }
 
 export async function currentCanonicalStorefrontOrganization(signal?: AbortSignal): Promise<string | null> {
-  const response = await fetch(new URL('/api/v1/identity/session', apiOrigin()), {
+  const response = await fetch(new URL('/api/v1/identity/session', storefrontApiOrigin()), {
     method: 'GET',
     credentials: 'include',
     redirect: 'error',
@@ -186,7 +187,7 @@ export async function exchangeCanonicalStorefrontSession(
     state: callback.state,
     nonce: secret.nonce,
     verifier: secret.verifier,
-  }, signal));
+  }, signal, { origin: storefrontApiOrigin() }));
   return approvedStorefrontDestination(exchanged.returnTarget);
 }
 
@@ -280,13 +281,14 @@ async function authorizeCanonicalCredential(
   context: Readonly<{ application?: string }> = {},
 ): Promise<AuthorizedCredential> {
   const authorization = await beginCanonicalAuthorization();
+  const origin = target === 'storefront' ? storefrontApiOrigin() : apiOrigin();
   const output = LoginResultSchema.parse(await identityRequest('/api/v1/identity/sessions', {
     ...credential,
     target,
     ...(membership === undefined ? {} : { membership }),
     ...(context.application === undefined ? {} : { application: context.application }),
     authorization: authorization.request,
-  }, signal));
+  }, signal, { origin }));
   if ('memberships' in output) return Object.freeze({ kind: 'selection', selection: output });
   if (output.target !== target) {
     throw new Error(target === 'storefront' ? '登录身份不属于消费者商城' : '登录身份不属于运营后台');
@@ -296,7 +298,7 @@ async function authorizeCanonicalCredential(
     state: output.callback.state,
     nonce: authorization.secret.nonce,
     verifier: authorization.secret.verifier,
-  }, signal));
+  }, signal, { origin }));
   return Object.freeze({ kind: 'authenticated', session: output, exchange });
 }
 
@@ -338,11 +340,11 @@ async function identityRequest(
   path: string,
   body: Readonly<Record<string, unknown>>,
   signal?: AbortSignal,
-  options: Readonly<{ credentials?: RequestCredentials; action?: string }> = {},
+  options: Readonly<{ credentials?: RequestCredentials; action?: string; origin?: string }> = {},
 ): Promise<unknown> {
   const credentials = options.credentials ?? 'include';
   const csrf = credentials === 'include' ? csrfToken() : null;
-  const request = () => fetch(new URL(path, apiOrigin()), {
+  const request = () => fetch(new URL(path, options.origin ?? apiOrigin()), {
     method: 'POST',
     credentials,
     headers: {
@@ -431,6 +433,13 @@ function apiOrigin(): string {
     throw new Error('统一身份 API 不在允许清单');
   }
   return parsed.origin;
+}
+
+function storefrontApiOrigin(): string {
+  if (typeof window !== 'undefined' && window.location.hostname === 'accounts.hbbtzn.com') {
+    return L1_STOREFRONT_API_ORIGIN;
+  }
+  return apiOrigin();
 }
 
 function clientVersion(): string {

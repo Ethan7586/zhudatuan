@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { beginCanonicalAuthorization, exchangeCanonicalStorefrontSession } from './canonicalIdentity';
 
 const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
+const L1_STOREFRONT_API_ORIGIN = 'https://hbbtzn.com';
 const LEGACY_API_ORIGIN = 'https://api.zhudatuan.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
 
@@ -151,7 +152,7 @@ export async function resolveCanonicalStorefrontRegistration(
 ): Promise<CanonicalStorefrontRegistration> {
   const output = StorefrontRegistrationSchema.parse(await identityRequest('/api/v1/identity/storefronts/resolve', {
     application: requiredApplicationSlug(applicationSlug),
-  }, signal));
+  }, signal, { origin: storefrontApiOrigin() }));
   return Object.freeze({
     termsTitle: output.terms_title,
     termsBody: output.terms_body,
@@ -184,6 +185,7 @@ export async function createCanonicalRegistrationChallenge(destination: string, 
 export async function createCanonicalMember(input: CanonicalMemberRegistrationInput, signal?: AbortSignal): Promise<CanonicalRegisteredMember> {
   if (input.termsAccepted !== true) throw new Error('请先阅读并同意当前注册条款与隐私政策');
   const authorization = input.directLogin === true ? await beginCanonicalAuthorization() : undefined;
+  const origin = input.directLogin === true ? storefrontApiOrigin() : apiOrigin();
   const verification = input.deferPhoneVerification === true
     ? { phoneVerification: 'checkout' }
     : {
@@ -205,7 +207,7 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
         ...(input.wechatToken === undefined ? {} : { wechatToken: requiredText(input.wechatToken, '微信授权无效') }),
       },
       signal,
-      { credentials: authorization === undefined ? 'omit' : 'include' },
+      { credentials: authorization === undefined ? 'omit' : 'include', origin },
     )
   );
   let redirectUrl: string | undefined;
@@ -232,10 +234,10 @@ async function identityRequest(
   path: string,
   body: Readonly<Record<string, unknown>>,
   signal?: AbortSignal,
-  options: Readonly<{ credentials?: RequestCredentials }> = {},
+  options: Readonly<{ credentials?: RequestCredentials; origin?: string }> = {},
 ): Promise<unknown> {
   const credentials = options.credentials ?? 'omit';
-  const request = () => fetch(new URL(path, apiOrigin()), {
+  const request = () => fetch(new URL(path, options.origin ?? apiOrigin()), {
     method: 'POST',
     // Public registration never consumes an existing authenticated session.
     // Omitting cookies prevents a stale API-host session from influencing the
@@ -268,6 +270,13 @@ function apiOrigin(): string {
     import.meta.env.DEV,
     typeof window === 'undefined' ? undefined : window.location.hostname,
   );
+}
+
+function storefrontApiOrigin(): string {
+  if (typeof window !== 'undefined' && window.location.hostname === 'accounts.hbbtzn.com') {
+    return L1_STOREFRONT_API_ORIGIN;
+  }
+  return apiOrigin();
 }
 
 export function resolveCanonicalRegistrationApiOrigin(

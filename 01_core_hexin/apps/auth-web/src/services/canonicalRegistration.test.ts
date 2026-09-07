@@ -20,6 +20,10 @@ beforeEach(() => {
   });
 });
 
+function setWindowHostname(hostname: string): void {
+  (window.location as unknown as { hostname: string }).hostname = hostname;
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -162,6 +166,7 @@ describe('canonical registration', () => {
   });
 
   it('uses the registration OTP to establish and exchange the new storefront session immediately', async () => {
+    setWindowHostname('accounts.hbbtzn.com');
     const fetchMock = vi.fn<typeof fetch>(async (input, init) => {
       const path = new URL(String(input)).pathname;
       if (path === '/api/v1/identity/members') {
@@ -207,6 +212,7 @@ describe('canonical registration', () => {
       redirectUrl: 'http://127.0.0.1:3000/',
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://hbbtzn.com/api/v1/identity/members');
     expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ credentials: 'include' });
     expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
       subject: '+8613800138000',
@@ -214,7 +220,7 @@ describe('canonical registration', () => {
       code: '483921',
       authorization: { state: expect.any(String), nonce: expect.any(String), challenge: expect.any(String) },
     });
-    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('http://127.0.0.1:3001/api/v1/identity/tickets/exchange');
+    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://hbbtzn.com/api/v1/identity/tickets/exchange');
     expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({ credentials: 'include' });
   });
 
