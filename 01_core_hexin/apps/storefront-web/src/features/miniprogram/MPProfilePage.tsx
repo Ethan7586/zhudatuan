@@ -1,10 +1,21 @@
 import React from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
-import { CreditCard, Utensils, Package, Clock, Truck, CheckCircle, HelpCircle, Ticket, MapPin, FileText, BellRing, Headphones, ShieldCheck, ChevronRight, Building2, Smartphone, LogOut } from 'lucide-react';
+import { CreditCard, Utensils, Clock, Truck, CheckCircle, HelpCircle, Ticket, MapPin, FileText, BellRing, Headphones, ShieldCheck, ChevronRight, Building2, Smartphone, LogOut } from 'lucide-react';
+import { OrderFlowIcon } from '../../components/mobile/OrderFlowIcon';
+import { matchesMobileOrderFilter, type MobileOrderFilter } from '../../components/mobile/mobileOrderFilters';
 
 export const MPProfilePage: React.FC = () => {
-  const { user, currentMall, sessionStatus, logout, triggerPendingFeature, setMpPage } = useMall();
+  const { user, currentMall, sessionStatus, logout, presentationOrders, triggerPendingFeature, setMpPage, navigateTo } = useMall();
+
+  const openOrders = (statusFilter: MobileOrderFilter) => {
+    setMpPage('orders');
+    navigateTo('orders', { statusFilter });
+  };
+
+  const orderCount = (statusFilter: MobileOrderFilter) => presentationOrders.filter((order) => (
+    matchesMobileOrderFilter(order.status, statusFilter)
+  )).length;
 
   return (
     <div className="bg-[#F5F7FA] min-h-full flex flex-col font-sans text-gray-800 pb-16">
@@ -69,42 +80,45 @@ export const MPProfilePage: React.FC = () => {
         <div className="bg-white rounded-2xl p-3 shadow-xs border border-gray-100 space-y-3">
           <div className="flex items-center justify-between border-b border-gray-100 pb-2 text-xs">
             <h3 className="font-bold text-gray-900 flex items-center gap-1.5">
-              <Package className="w-4 h-4 text-[var(--sw-brand)]" />
-              <span>我的福利订单</span>
+              <OrderFlowIcon className="h-6 w-6 text-[var(--sw-brand)]" />
+              <span>订单管理</span>
             </h3>
-            <button onClick={() => setMpPage('orders')} className="text-[10px] text-gray-400 hover:text-[var(--sw-brand)] flex items-center">
+            <button onClick={() => openOrders('all')} className="text-[10px] text-gray-400 hover:text-[var(--sw-brand)] flex items-center">
               <span>全部订单</span>
               <ChevronRight className="w-3 h-3" />
             </button>
           </div>
 
           <div className="grid grid-cols-4 gap-2 text-center text-xs">
-            <button onClick={() => triggerPendingFeature('待付款订单', '查看待付款或待补额的企采订单。')} className="p-1 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
+            <button onClick={() => openOrders('pending_payment')} className="relative rounded-xl p-1 transition-colors hover:bg-gray-50 active:bg-blue-50 cursor-pointer">
               <div className="w-8 h-8 mx-auto rounded-full bg-blue-50 text-[var(--sw-brand)] flex items-center justify-center font-bold">
                 <Clock className="w-4 h-4" />
               </div>
+              {orderCount('pending_payment') > 0 && <OrderCountBadge count={orderCount('pending_payment')} tone="muted" />}
               <div className="text-[10px] text-gray-600 mt-1 font-medium">待付款</div>
             </button>
 
-            <button onClick={() => triggerPendingFeature('待发货订单', '查看待供应商仓储理货发货的订单。')} className="p-1 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer relative">
+            <button onClick={() => openOrders('pending_shipment')} className="relative rounded-xl p-1 transition-colors hover:bg-gray-50 active:bg-blue-50 cursor-pointer">
               <div className="w-8 h-8 mx-auto rounded-full bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
                 <Truck className="w-4 h-4" />
-                <span className="absolute top-0 right-2 bg-red-500 text-white font-bold text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center">2</span>
               </div>
+              {orderCount('pending_shipment') > 0 && <OrderCountBadge count={orderCount('pending_shipment')} />}
               <div className="text-[10px] text-gray-600 mt-1 font-medium">待处理</div>
             </button>
 
-            <button onClick={() => triggerPendingFeature('待收货订单', '查看物流派件轨迹。')} className="p-1 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
+            <button onClick={() => openOrders('completed')} className="relative rounded-xl p-1 transition-colors hover:bg-gray-50 active:bg-blue-50 cursor-pointer">
               <div className="w-8 h-8 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
                 <CheckCircle className="w-4 h-4" />
               </div>
+              {orderCount('completed') > 0 && <OrderCountBadge count={orderCount('completed')} tone="muted" />}
               <div className="text-[10px] text-gray-600 mt-1 font-medium">已完成</div>
             </button>
 
-            <button onClick={() => triggerPendingFeature('售后退款记录', '提交商品质保与发票退换。')} className="p-1 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
+            <button onClick={() => openOrders('after_sale')} className="relative rounded-xl p-1 transition-colors hover:bg-gray-50 active:bg-blue-50 cursor-pointer">
               <div className="w-8 h-8 mx-auto rounded-full bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
                 <HelpCircle className="w-4 h-4" />
               </div>
+              {orderCount('after_sale') > 0 && <OrderCountBadge count={orderCount('after_sale')} tone="muted" />}
               <div className="text-[10px] text-gray-600 mt-1 font-medium">售后服务</div>
             </button>
           </div>
@@ -208,3 +222,11 @@ export const MPProfilePage: React.FC = () => {
     </div>
   );
 };
+
+function OrderCountBadge({ count, tone = 'active' }: Readonly<{ count: number; tone?: 'active' | 'muted' }>) {
+  return (
+    <span className={`absolute right-2 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[8px] font-bold text-white ${tone === 'active' ? 'bg-[#E5484D]' : 'bg-slate-400'}`}>
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
