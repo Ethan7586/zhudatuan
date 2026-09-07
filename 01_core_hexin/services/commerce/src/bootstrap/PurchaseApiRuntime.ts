@@ -32,6 +32,7 @@ import { PurchaseSessionResolver } from '../modules/purchase/PurchaseSessionReso
 import { WebBusinessScopeResolver } from '../modules/webbusiness/WebBusinessScopeResolver';
 import { WebRiskCheckAdapter } from '../modules/webbusiness/WebRiskCheckAdapter';
 import type { Container } from './Container';
+import { bindServerNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
 
 export const PURCHASE_SCHEMA_VERSION = '20260902011000' as const;
@@ -113,6 +114,7 @@ export async function createPurchaseApiRuntime(environment: PurchaseApiEnvironme
     extensions,
     telemetry,
     configure(container: Container) {
+      bindServerNodeManifestRegistry(container);
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);

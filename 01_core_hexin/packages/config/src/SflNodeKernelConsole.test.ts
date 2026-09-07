@@ -7,6 +7,11 @@ import {
   resolveConsoleAppConfig,
   type SflConsoleArtifact,
 } from './SflNodeKernelConsole';
+import {
+  createNodeContextResolver,
+  materializeNodeManifestRegistryDeclaration,
+  type NodeManifestRegistryDeclaration,
+} from './SflNodeKernel';
 
 const sourceSha = 'a'.repeat(40);
 const artifactDigest = `sha256:${'b'.repeat(64)}` as const;
@@ -23,6 +28,54 @@ beforeAll(async () => {
 });
 
 describe('SFL Console runtime adapter', () => {
+  it('resolves Console and API Hosts to one authoritative context per node', () => {
+    const resolver = createNodeContextResolver(artifact.node_manifest_registry);
+    const l0Console = resolver.resolve('console.zhudatuan.com');
+    const l0Api = resolver.resolve('api.zhudatuan.com');
+    const l1Console = resolver.resolve('console.hbbtzn.com');
+    const l1Api = resolver.resolve('api.hbbtzn.com');
+
+    expect(l0Console).toMatchObject({
+      line_id: 'line:zhudatuan:commerce:v1',
+      node_id: 'node:zhudatuan:l0',
+      signed_level: 'L0',
+      mall_id: 'mall-zhudatuan',
+      host: 'console.zhudatuan.com',
+      surface: 'surface:console',
+      scope: { ref: 'organization-platform-root', version: '1' },
+    });
+    expect(l1Console).toMatchObject({
+      line_id: 'line:zhudatuan:commerce:v1',
+      node_id: 'node:hbbtzn:l1',
+      parent_node_id: 'node:zhudatuan:l0',
+      signed_level: 'L1',
+      mall_id: 'mall:d1708f04df2dd8a61736852c4900fb43',
+      host: 'console.hbbtzn.com',
+      surface: 'surface:console',
+      scope: { ref: 'mall:d1708f04df2dd8a61736852c4900fb43', version: '1' },
+    });
+    expect(l0Api.manifest).toBe(l0Console.manifest);
+    expect(l0Api.manifest_digest).toBe(l0Console.manifest_digest);
+    expect(l0Api.surface).toBe('surface:api');
+    expect(l1Api.manifest).toBe(l1Console.manifest);
+    expect(l1Api.manifest_digest).toBe(l1Console.manifest_digest);
+    expect(l1Api.surface).toBe('surface:api');
+    expect(l1Api.manifest_digest).not.toBe(l0Api.manifest_digest);
+    expect(() => resolver.resolve('api.hbbtzn.com.evil')).toThrow('SFL_NODE_MANIFEST_HOST_UNKNOWN');
+    expect(() => resolver.resolve('api.hbbtzn.com:443')).toThrow('SFL_NODE_MANIFEST_HOST_INVALID');
+  });
+
+  it('materializes a deterministic verified server registry from the shared declaration', async () => {
+    const declaration = consoleReleaseDeclaration as unknown as NodeManifestRegistryDeclaration;
+    const first = await materializeNodeManifestRegistryDeclaration(declaration);
+    const second = await materializeNodeManifestRegistryDeclaration(declaration);
+
+    expect(first).toEqual(second);
+    expect(first.manifests).toHaveLength(2);
+    expect(first.manifests[0]!.release_pointer_ref).toMatchObject({ build_count: 1 });
+    expect(first.manifests[0]!.release_pointer_ref.source_sha).toMatch(/^[0-9a-f]{64}$/);
+  });
+
   it('materializes two complete generic NodeManifests from one source and artifact', () => {
     expect(artifact.node_manifest_registry.manifests).toHaveLength(2);
     for (const manifest of artifact.node_manifest_registry.manifests) {

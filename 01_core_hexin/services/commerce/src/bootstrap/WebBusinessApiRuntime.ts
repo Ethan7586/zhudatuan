@@ -26,6 +26,7 @@ import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persiste
 import { WebRiskCheckAdapter } from '../modules/webbusiness/WebRiskCheckAdapter';
 import { WebBusinessScopeResolver } from '../modules/webbusiness/WebBusinessScopeResolver';
 import type { Container } from './Container';
+import { bindServerNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
 
 export const WEB_BUSINESS_SCHEMA_VERSION = '20260828180000' as const;
@@ -102,6 +103,7 @@ export async function createWebBusinessApiRuntime(
     telemetry,
     gateEngine,
     configure(container: Container) {
+      bindServerNodeManifestRegistry(container);
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);

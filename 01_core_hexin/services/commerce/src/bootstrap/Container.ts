@@ -19,6 +19,10 @@ export class Container {
     return this.values.get(key.key) as T;
   }
 
+  has<T>(key: Token<T>): boolean {
+    return this.values.has(key.key);
+  }
+
   freeze(): void {
     this.frozen = true;
   }

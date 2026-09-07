@@ -30,6 +30,7 @@ import { RecordAudit } from '../modules/audit/03_application_yingyong/command/Re
 import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persistence/PgAuditRepository';
 import { RiskCheckAdapter } from '../modules/risk';
 import type { Container } from './Container';
+import { bindServerNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
 
 export const MALL_PROVISIONING_SCHEMA_VERSION = '20260903105000' as const;
@@ -98,6 +99,7 @@ export async function createMallProvisioningApiRuntime(
     extensions,
     telemetry,
     configure(container: Container) {
+      bindServerNodeManifestRegistry(container);
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);

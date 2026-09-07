@@ -1,8 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { CONTRACT_VERSION, OperationCatalog, type OperationGateDeclaration } from '@shop/contract';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
+import type { NodeContextResolver } from '@shop/config/sfl-node-kernel';
 import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { Deadline } from '../performance/Deadline';
+import { bindRequestNodeContext, requestNodeContext } from '../security/AccessContext';
 import type { GateEngine } from '../security/gate_menjin';
 import type { OperationMetrics } from '../telemetry/OperationMetrics';
 import { ErrorMapper } from './ErrorMapper';
@@ -22,7 +24,7 @@ export class HttpApp {
   private readonly origins: ReadonlySet<string>;
   constructor(private readonly routes: RouteRegistry, origins: readonly string[], private readonly errors = new ErrorMapper(),
     private readonly deadlineMilliseconds: number = RUNTIME_LIMITS.http.totalDeadlineMilliseconds, private readonly metrics?: OperationMetrics,
-    private readonly gateEngine?: GateEngine) {
+    private readonly gateEngine?: GateEngine, private readonly nodeContexts?: NodeContextResolver) {
     if (!Number.isSafeInteger(deadlineMilliseconds) || deadlineMilliseconds < 1) throw new Error('HTTP_DEADLINE_INVALID');
     this.origins = new Set(origins);
   }
@@ -50,9 +52,13 @@ export class HttpApp {
         return secure(426, { code: 'CONTRACT_VERSION_UNSUPPORTED', message: 'CONTRACT_VERSION_UNSUPPORTED', requestId,
           required: CONTRACT_VERSION }, requestId, origin, { 'x-contract-version': CONTRACT_VERSION });
       }
+      const nodeContext = route.operation.startsWith('runtime.health.')
+        ? undefined
+        : requestNodeContext(request.headers) ?? this.nodeContexts?.resolve(request.headers.get('host') ?? url.host);
       const payload = await parseBody(request);
       deadline.throwIfExpired();
-      const headers = Object.freeze(Object.fromEntries(request.headers.entries()));
+      const requestHeaders = Object.freeze(Object.fromEntries(request.headers.entries()));
+      const headers = nodeContext === undefined ? requestHeaders : bindRequestNodeContext(requestHeaders, nodeContext);
       await observeOperationGates(this.gateEngine, operation.id, operation.gates, requestId, traceId);
       const result = await deadline.run((signal) => route.handler({ method: request.method, path: url.pathname, headers, parameters: route.parameters,
         query: url.searchParams, body: payload.body, rawBody: payload.raw, deadline: deadline.expiresAt, signal }));

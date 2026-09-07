@@ -1,19 +1,37 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { isIP } from 'node:net';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
+import type { NodeContextResolver } from '@shop/config/sfl-node-kernel';
+import { bindRequestNodeContext } from '../security/AccessContext';
 import type { HttpApp } from './HttpApp';
 
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
 
 type HttpRequestHandler = Pick<HttpApp, 'handle'>;
 
-export function listen(app: HttpRequestHandler, port: number, host: '127.0.0.1' | '0.0.0.0' = '127.0.0.1'): Readonly<{ close: () => Promise<void> }> {
+export interface NodeServerHandle {
+  readonly ready: Promise<void>;
+  port(): number;
+  close(): Promise<void>;
+}
+
+export function listen(
+  app: HttpRequestHandler,
+  port: number,
+  host: '127.0.0.1' | '0.0.0.0' = '127.0.0.1',
+  nodeContexts?: NodeContextResolver,
+): NodeServerHandle {
   const server = createServer(async (request, response) => {
     const controller = new AbortController();
     request.once('aborted', () => controller.abort(new Error('REQUEST_ABORTED')));
     response.once('close', () => { if (!response.writableEnded) controller.abort(new Error('REQUEST_ABORTED')); });
     try {
-      await write(await app.handle(await convert(request, controller.signal)), response);
+      const converted = await convert(request, controller.signal);
+      const url = new URL(converted.url);
+      if (nodeContexts !== undefined && !url.pathname.startsWith('/health/')) {
+        bindRequestNodeContext(converted.headers, nodeContexts.resolve(converted.headers.get('host') ?? url.host));
+      }
+      await write(await app.handle(converted), response);
     } catch (cause) {
       const code = cause instanceof Error ? cause.message : 'INTERNAL_ERROR';
       response.writeHead(code === 'REQUEST_BODY_TOO_LARGE' ? 413 : 500, { 'content-type': 'application/json; charset=utf-8', 'x-content-type-options': 'nosniff' });
@@ -24,8 +42,23 @@ export function listen(app: HttpRequestHandler, port: number, host: '127.0.0.1' 
   server.headersTimeout = RUNTIME_LIMITS.http.headersTimeoutMilliseconds;
   server.keepAliveTimeout = RUNTIME_LIMITS.http.keepAliveTimeoutMilliseconds;
   server.maxRequestsPerSocket = RUNTIME_LIMITS.http.maximumRequestsPerSocket;
-  server.listen(port, host);
-  return { close: () => new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())) };
+  const ready = new Promise<void>((resolve, reject) => {
+    const failed = (error: Error) => reject(error);
+    server.once('error', failed);
+    server.listen(port, host, () => {
+      server.off('error', failed);
+      resolve();
+    });
+  });
+  return {
+    ready,
+    port: () => {
+      const address = server.address();
+      if (address === null || typeof address === 'string') throw new Error('NODE_SERVER_NOT_READY');
+      return address.port;
+    },
+    close: () => new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())),
+  };
 }
 
 async function convert(request: IncomingMessage, signal: AbortSignal): Promise<Request> {

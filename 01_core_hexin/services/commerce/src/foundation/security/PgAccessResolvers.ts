@@ -2,9 +2,14 @@ import { createHash } from 'node:crypto';
 import type { MembershipAccess, Scope, ScopeGrant } from '@shop/authz';
 import type { DatabasePool } from '../persistence/Pool';
 import type { AccessVersionResolver, CapabilityResolver, MembershipResolver, MembershipSnapshot } from './AccessPipeline';
-import type { Actor } from './AccessContext';
+import {
+  bindScopeNodeContext,
+  requireActorNodeContext,
+  type Actor,
+  type NodeContextActor,
+} from './AccessContext';
 import type { ScopeResolver } from './ScopeResolver';
-import type { SessionResolver } from './SessionResolver';
+import { sessionNodeContext, type RuntimeSessionResolver } from './SessionResolver';
 
 interface SessionRow {
   readonly actor_id: string;
@@ -26,17 +31,20 @@ interface MembershipRow {
 }
 interface ScopeRow { readonly scope: Scope }
 
-export class PgSessionResolver implements SessionResolver {
+export class PgSessionResolver implements RuntimeSessionResolver {
   constructor(private readonly pool: DatabasePool) {}
 
-  async resolve(headers: Readonly<Record<string, string>>): Promise<Actor> {
+  async resolve(headers: Readonly<Record<string, string>>): Promise<NodeContextActor> {
     const token = bearer(headers.authorization) ?? cookie(headers.cookie, 'shop_session');
     if (!token) throw new Error('AUTHENTICATION_REQUIRED');
+    const nodeContext = sessionNodeContext(headers);
     const result = await this.pool.query<SessionRow>('select actor_id,session_id,membership_id,credential_version,access_version,target,assurance_level,assurance_verified_at from identity.resolve_session($1)', [createHash('sha256').update(token).digest('hex')]);
     const row = result.rows[0];
     if (!row) throw new Error('AUTHENTICATION_REQUIRED');
     return {
       id: row.actor_id,
+      realm: nodeContext.realm.ref,
+      nodeContext,
       session: row.session_id,
       membership: row.membership_id,
       credentialVersion: row.credential_version,
@@ -88,7 +96,7 @@ export class PgScopeResolver implements ScopeResolver {
       [actor.membership, operation, resource ?? null, scopeHint ?? null]);
     const row = result.rows[0];
     if (!row?.scope) throw new Error('SCOPE_DENIED');
-    return row.scope;
+    return actor.nodeContext === undefined ? row.scope : bindScopeNodeContext(row.scope, requireActorNodeContext(actor));
   }
 }
 

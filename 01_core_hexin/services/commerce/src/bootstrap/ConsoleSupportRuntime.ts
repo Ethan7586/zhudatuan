@@ -14,6 +14,7 @@ import { QUERY_METRICS, QueryMetrics } from '../foundation/persistence/QueryMetr
 import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
 import { ExtensionRegistry } from './ExtensionRegistry';
 import type { Container } from './Container';
+import { bindServerNodeManifestRegistry } from './ApiBootstrap';
 import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
 import { RiskCheckAdapter } from '../modules/risk';
 import { RISK_GATE } from '../foundation/security/RiskGate';
@@ -74,6 +75,7 @@ export async function createConsoleSupportRuntime(environment: ApiEnvironment): 
   return {
     pool, extensions, telemetry,
     configure(container) {
+      bindServerNodeManifestRegistry(container);
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);

@@ -1,5 +1,125 @@
+import { request as httpRequest } from 'node:http';
+import { CONTRACT_VERSION } from '@shop/contract';
+import { resolveNodeContextByHost, type NodeContextResolver, type ResolvedNodeContext } from '@shop/config/sfl-node-kernel';
 import { describe, expect, it } from 'vitest';
-import { trustedPeerAddress } from './NodeServer';
+import { SERVER_NODE_MANIFEST_REGISTRY } from '../../bootstrap/ApiBootstrap';
+import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
+import { requireRequestNodeContext } from '../security/AccessContext';
+import { HttpApp } from './HttpApp';
+import { listen, trustedPeerAddress } from './NodeServer';
+
+describe('NodeServer NodeContext ingress', () => {
+  it('resolves once before an outer handler and shares the exact context with HttpApp', async () => {
+    let resolveCount = 0;
+    let ingress: ResolvedNodeContext | undefined;
+    let observed: ResolvedNodeContext | undefined;
+    const resolver: NodeContextResolver = {
+      registry: SERVER_NODE_MANIFEST_REGISTRY,
+      resolve(host) {
+        resolveCount += 1;
+        return resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, host);
+      },
+    };
+    const routes = {
+      match: () => ({
+        operation: 'identity.sessions.create',
+        parameters: {},
+        handler: async (input: { readonly headers: Readonly<Record<string, string>> }) => {
+          observed = requireRequestNodeContext(input.headers);
+          return { status: 200, body: { node: observed.node_id } };
+        },
+      }),
+    } as unknown as RouteRegistry;
+    const httpApp = new HttpApp(routes, [], undefined, undefined, undefined, undefined, resolver);
+    const outerHandler = {
+      handle(request: Request) {
+        ingress = requireRequestNodeContext(request.headers);
+        return httpApp.handle(request);
+      },
+    };
+    const server = listen(outerHandler, 0, '127.0.0.1', resolver);
+    await server.ready;
+    try {
+      const response = await nodeRequest(server.port(), 'api.zhudatuan.com');
+      expect(response.status).toBe(200);
+      expect(resolveCount).toBe(1);
+      expect(observed).toMatchObject({ node_id: 'node:zhudatuan:l0', surface: 'surface:api' });
+      expect(observed).toBe(ingress);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('rejects an unknown ingress Host before an outer handler runs', async () => {
+    let handled = false;
+    const resolver: NodeContextResolver = {
+      registry: SERVER_NODE_MANIFEST_REGISTRY,
+      resolve: (host) => resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, host),
+    };
+    const server = listen({
+      async handle() {
+        handled = true;
+        return new Response(null, { status: 204 });
+      },
+    }, 0, '127.0.0.1', resolver);
+    await server.ready;
+    try {
+      const response = await nodeRequest(server.port(), 'unknown.example');
+      expect(response.status).toBe(500);
+      expect(handled).toBe(false);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('keeps local health probes node-neutral', async () => {
+    let resolveCount = 0;
+    const resolver: NodeContextResolver = {
+      registry: SERVER_NODE_MANIFEST_REGISTRY,
+      resolve(host) {
+        resolveCount += 1;
+        return resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, host);
+      },
+    };
+    const server = listen({ handle: async () => new Response(null, { status: 204 }) }, 0, '127.0.0.1', resolver);
+    await server.ready;
+    try {
+      const response = await nodeRequest(server.port(), '127.0.0.1', '/health/ready', 'GET');
+      expect(response.status).toBe(204);
+      expect(resolveCount).toBe(0);
+    } finally {
+      await server.close();
+    }
+  });
+});
+
+function nodeRequest(
+  port: number,
+  host: string,
+  path = '/api/v1/identity/sessions',
+  method: 'GET' | 'POST' = 'POST',
+): Promise<Readonly<{ status: number; body: string }>> {
+  return new Promise((resolve, reject) => {
+    const request = httpRequest({
+      hostname: '127.0.0.1',
+      port,
+      path,
+      method,
+      headers: method === 'POST' ? {
+        host,
+        'content-type': 'application/json',
+        'content-length': '2',
+        'x-contract-version': CONTRACT_VERSION,
+      } : { host },
+    }, (response) => {
+      const chunks: Buffer[] = [];
+      response.on('data', (chunk: Buffer) => chunks.push(chunk));
+      response.on('end', () => resolve({ status: response.statusCode ?? 0, body: Buffer.concat(chunks).toString('utf8') }));
+    });
+    request.once('error', reject);
+    request.end(method === 'POST' ? '{}' : undefined);
+  });
+}
 
 describe('trusted peer address', () => {
   it('accepts Caddy client identity only from the local reverse proxy', () => {

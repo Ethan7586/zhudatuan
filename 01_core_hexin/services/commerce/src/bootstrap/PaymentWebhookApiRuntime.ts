@@ -18,6 +18,7 @@ import { PAYMENT_GATEWAY } from '../modules/payment_zhifu/01_public_gongkai/port
 import { WechatGateway } from '../modules/payment_zhifu/04_adapters_shixian/providers_waibu/WechatGateway';
 import { PaymentWebhook } from '../modules/payment_zhifu/05_interface_jieru/http/PaymentWebhook';
 import type { Container } from './Container';
+import { bindServerNodeManifestRegistry } from './ApiBootstrap';
 import { defineSelectedModule } from './DefinedModule';
 import { ExtensionRegistry } from './ExtensionRegistry';
 import type { ModuleContext } from './ModuleRegistry';
@@ -85,6 +86,7 @@ export async function createPaymentWebhookApiRuntime(
     extensions,
     telemetry,
     configure(container: Container) {
+      bindServerNodeManifestRegistry(container);
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, {
         authorize: async () => { throw new Error('PAYMENT_WEBHOOK_AUTHORIZATION_FORBIDDEN'); },

@@ -1,19 +1,80 @@
 import { CONTRACT_VERSION } from '@shop/contract';
+import { resolveNodeContextByHost, type NodeContextResolver, type ResolvedNodeContext } from '@shop/config/sfl-node-kernel';
 import { describe, expect, it } from 'vitest';
-import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
+import { SERVER_NODE_MANIFEST_REGISTRY } from '../../bootstrap/ApiBootstrap';
+import type { RouteHandler, RouteRegistry } from '../../bootstrap/RouteRegistry';
+import { requireRequestNodeContext } from '../security/AccessContext';
 import { HttpApp } from './HttpApp';
 
-function routes(): RouteRegistry {
+function routes(handler: RouteHandler = async () => ({ status: 200, body: { accepted: true } })): RouteRegistry {
   return {
     match: () => ({
       operation: 'identity.sessions.create',
       parameters: {},
-      handler: async () => ({ status: 200, body: { accepted: true } }),
+      handler,
     }),
   } as unknown as RouteRegistry;
 }
 
 describe('HttpApp contract handshake', () => {
+  it('resolves one authoritative NodeContext and passes the same object to the operation', async () => {
+    let resolveCount = 0;
+    let resolved: ResolvedNodeContext | undefined;
+    let observed: ResolvedNodeContext | undefined;
+    const resolver: NodeContextResolver = {
+      registry: SERVER_NODE_MANIFEST_REGISTRY,
+      resolve(host) {
+        resolveCount += 1;
+        resolved = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, host);
+        return resolved;
+      },
+    };
+    const app = new HttpApp(routes(async (request) => {
+      observed = requireRequestNodeContext(request.headers);
+      return { status: 200, body: { node: observed.node_id } };
+    }), [], undefined, undefined, undefined, undefined, resolver);
+
+    const response = await app.handle(new Request('https://api.hbbtzn.com/api/v1/identity/sessions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
+      body: '{}',
+    }));
+
+    expect(response.status).toBe(200);
+    expect(resolveCount).toBe(1);
+    expect(observed).toBe(resolved);
+    expect(observed).toMatchObject({
+      node_id: 'node:hbbtzn:l1',
+      signed_level: 'L1',
+      surface: 'surface:api',
+      scope: { ref: 'mall:d1708f04df2dd8a61736852c4900fb43' },
+    });
+  });
+
+  it('keeps runtime health requests node-neutral and preserves their status', async () => {
+    let resolveCount = 0;
+    const healthRoutes = {
+      match: () => ({
+        operation: 'runtime.health.ready',
+        parameters: {},
+        handler: async () => ({ status: 200, body: { status: 'ready' } }),
+      }),
+    } as unknown as RouteRegistry;
+    const resolver: NodeContextResolver = {
+      registry: SERVER_NODE_MANIFEST_REGISTRY,
+      resolve() {
+        resolveCount += 1;
+        throw new Error('NODE_CONTEXT_NOT_EXPECTED');
+      },
+    };
+
+    const response = await new HttpApp(healthRoutes, [], undefined, undefined, undefined, undefined, resolver)
+      .handle(new Request('http://127.0.0.1/health/ready'));
+
+    expect(response.status).toBe(200);
+    expect(resolveCount).toBe(0);
+  });
+
   it('returns upgrade required before invoking a route with a missing contract version', async () => {
     const response = await new HttpApp(routes(), []).handle(new Request('https://api.example/api/v1/identity/sessions', {
       method: 'POST',

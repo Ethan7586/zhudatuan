@@ -19,6 +19,7 @@ import { ExtensionRegistry } from './ExtensionRegistry';
 import { MANIFEST_VERIFIER, SignatureVerifier } from './SignatureVerifier';
 import { loadProviders } from './ProviderLoader';
 import type { Container } from './Container';
+import { bindServerNodeManifestRegistry } from './ApiBootstrap';
 import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
 import { RiskCheckAdapter } from '../modules/risk';
 import { RISK_GATE } from '../foundation/security/RiskGate';
@@ -133,6 +134,7 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
     extensions,
     telemetry,
     configure(container) {
+      bindServerNodeManifestRegistry(container);
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);

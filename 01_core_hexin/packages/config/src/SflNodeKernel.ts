@@ -102,6 +102,31 @@ export interface NodeManifestRegistrySpec {
   readonly manifests: readonly NodeManifestSpec[];
 }
 
+export type NodeManifestDeclaration = Omit<NodeManifestSpec, 'release_pointer_ref'> & Readonly<{
+  release_pointer_ref: VersionedRef;
+}>;
+
+export interface NodeManifestRegistryDeclaration {
+  readonly registry_version: string;
+  readonly generated_at: string;
+  readonly manifests: readonly NodeManifestDeclaration[];
+}
+
+export interface ResolvedNodeContext extends NodeContext {
+  readonly host: string;
+  readonly surface: string;
+  readonly host_binding: DomainBindingRef;
+  readonly scope: VersionedRef;
+  readonly realm: VersionedRef;
+  readonly manifest_digest: ManifestDigest;
+  readonly manifest: NodeManifest;
+}
+
+export interface NodeContextResolver {
+  readonly registry: NodeManifestRegistry;
+  resolve(host: string): ResolvedNodeContext;
+}
+
 type UnsignedNodeManifest = Omit<NodeManifest, 'manifest_digest'>;
 type JsonRecord = Record<string, unknown>;
 
@@ -197,6 +222,27 @@ export async function generateNodeManifestRegistry(spec: NodeManifestRegistrySpe
   return registry;
 }
 
+export async function materializeNodeManifestRegistryDeclaration(
+  declaration: NodeManifestRegistryDeclaration,
+): Promise<NodeManifestRegistry> {
+  const declarationDigest = await digestCanonicalJson(declaration);
+  const sourceSha = declarationDigest.slice('sha256:'.length);
+  return generateNodeManifestRegistry({
+    registry_version: declaration.registry_version,
+    generated_at: declaration.generated_at,
+    manifests: declaration.manifests.map((manifest) => ({
+      ...manifest,
+      release_pointer_ref: {
+        ...manifest.release_pointer_ref,
+        source_sha: sourceSha,
+        build_id: `node-manifest-registry:${sourceSha}`,
+        build_count: 1,
+        immutable_artifact_digest: declarationDigest,
+      },
+    })),
+  });
+}
+
 export function parseNodeContext(value: unknown): NodeContext {
   const record = exactRecord(value, NODE_CONTEXT_KEYS, 'SFL_NODE_CONTEXT_INVALID');
   return parseNodeContextFields(record);
@@ -262,6 +308,34 @@ export function resolveNodeDomainBindingByHost(manifest: NodeManifest, host: str
   if (matches.length === 0) throw new Error(`SFL_NODE_MANIFEST_HOST_UNKNOWN:${normalizedHost}`);
   if (matches.length > 1) throw new Error(`SFL_NODE_MANIFEST_HOST_AMBIGUOUS:${normalizedHost}`);
   return matches[0]!;
+}
+
+export function resolveNodeContextByHost(registry: NodeManifestRegistry, host: string): ResolvedNodeContext {
+  const manifest = resolveNodeManifestByHost(registry, host);
+  const hostBinding = resolveNodeDomainBindingByHost(manifest, host);
+  return Object.freeze({
+    line_id: manifest.line_id,
+    node_id: manifest.node_id,
+    parent_node_id: manifest.parent_node_id,
+    signed_level: manifest.signed_level,
+    node_profile: manifest.node_profile,
+    mall_id: manifest.mall_id,
+    host_node_id: manifest.host_node_id,
+    host: hostBinding.host,
+    surface: hostBinding.surface_ref,
+    host_binding: hostBinding,
+    scope: manifest.data_scope_ref,
+    realm: manifest.realm_ref,
+    manifest_digest: manifest.manifest_digest,
+    manifest,
+  });
+}
+
+export function createNodeContextResolver(registry: NodeManifestRegistry): NodeContextResolver {
+  return Object.freeze({
+    registry,
+    resolve: (host: string) => resolveNodeContextByHost(registry, host),
+  });
 }
 
 export function nodeContextOf(manifest: NodeManifest): NodeContext {

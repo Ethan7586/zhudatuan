@@ -27,7 +27,7 @@ const bootstrapped = await bootstrapApi({ modules, extensions: runtime.extension
   allowedOrigins: apiAllowedOrigins(environment), telemetry: runtime.telemetry, operationIds: CONSOLE_SUPPORT_OPERATIONS });
 const ready = await bootstrapped.app.handle(new Request('http://127.0.0.1/health/ready'));
 if (!ready.ok) console.warn(`CONSOLE_SUPPORT_STARTUP_WARNING:${ready.status}`);
-const server = listen(bootstrapped.app, apiPort(environment));
+const server = listen(bootstrapped.app, apiPort(environment), '127.0.0.1', bootstrapped.nodeContextResolver);
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, async () => {
   await server.close();

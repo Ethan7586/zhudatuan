@@ -23,6 +23,7 @@ import { WECHAT_IDENTITY } from '../modules/identity/01_public_gongkai/ports_jie
 import { WechatIdentityGateway, type WechatIdentityConfiguration } from '../modules/identity/04_adapters_shixian/providers_waibu/WechatIdentityGateway';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import type { Container } from './Container';
+import { bindServerNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
 import { assertIdentityRuntimeDatabaseBoundary } from './LiveDatabaseBoundary';
 
@@ -99,6 +100,7 @@ export async function createIdentityRegistrationApiRuntime(
     extensions,
     telemetry,
     configure(container: Container) {
+      bindServerNodeManifestRegistry(container);
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);
