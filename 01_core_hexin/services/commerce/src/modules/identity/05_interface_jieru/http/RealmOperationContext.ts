@@ -7,6 +7,7 @@ import { IDENTITY_SECURITY_KEYS } from '../../../../foundation/infrastructure/Se
 import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
 import { textField } from '../../../../foundation/interface/Validation';
 import { PasswordPolicy } from '../../02_domain_yewu/policies_guize/PasswordPolicy';
+import { StepupPolicy } from '../../../../foundation/security/StepupPolicy';
 import { PgAuthTicket } from '../../04_adapters_shixian/persistence_cunchu/PgAuthTicket';
 import { RETURN_TARGETS } from '../../04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
 import { ReturnTargetSigner } from '../../04_adapters_shixian/providers_waibu/ReturnTargetSigner';
@@ -19,6 +20,7 @@ export function createRealmOperationContext(context: ModuleContext, registration
     keys,
     kms: context.container.get(KMS_CLIENT),
     passwords: new PasswordPolicy(),
+    stepup: new StepupPolicy(),
     tickets: new PgAuthTicket(new ReturnTargetSigner(context.container.get(RETURN_TARGETS), keys.session)),
     registrationOnly,
     digest: (value: string) => createHmac('sha256', keys.identity).update(value.trim().toLowerCase()).digest('hex'),
