@@ -9,6 +9,7 @@ import { MPCategoryPage } from '../../features/miniprogram/MPCategoryPage';
 import { MPDetailPage } from '../../features/miniprogram/MPDetailPage';
 import { MPCartPage } from '../../features/miniprogram/MPCartPage';
 import { MPProfilePage } from '../../features/miniprogram/MPProfilePage';
+import { MPAddressPage } from '../../features/miniprogram/MPAddressPage';
 
 // Android App Pages
 import { AndroidHomePage } from '../../features/android/AndroidHomePage';
@@ -38,6 +39,8 @@ export const MobileFrame: React.FC = () => {
         return <MobileOrdersPage mode="mini-program" />;
       case 'profile':
         return <MPProfilePage />;
+      case 'address':
+        return <MPAddressPage />;
       default:
         return <MPHomePage />;
     }

@@ -50,6 +50,7 @@ export interface MallContextType {
   viewportMode: ViewportMode;
   setViewportMode: (mode: ViewportMode) => void;
   mpPage: MiniProgramPage;
+  mpAddressReturnPage: 'cart' | 'profile';
   setMpPage: (page: MiniProgramPage, productId?: string) => void;
   androidPage: AndroidAppPage;
   setAndroidPage: (page: AndroidAppPage, productId?: string) => void;

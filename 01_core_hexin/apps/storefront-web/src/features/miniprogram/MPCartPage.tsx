@@ -3,17 +3,20 @@ import { CheckCircle2, Circle, CreditCard, ShoppingBag, Store } from 'lucide-rea
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { useMall } from '../../context/MallContext';
 import { storefrontImageUrl } from '../../services/storefrontImageUrl';
+import { requestWechatDeliveryAddress, WechatAddressRequestError } from '../../services/wechatDeliveryAddress';
 import { MPCartInvoiceDisclosure } from './MPCartInvoiceDisclosure';
 
 export const MPCartPage: React.FC = () => {
   const {
     addresses,
+    addAddress,
     cart,
     checkoutSelectedCart,
     currentMall,
     isSubmittingOrder,
     removeCartItem,
     setMpPage,
+    showToast,
     toggleCartItemSelected,
     toggleSelectAllCart,
     triggerPendingFeature,
@@ -22,6 +25,7 @@ export const MPCartPage: React.FC = () => {
   } = useMall();
   const [isManaging, setIsManaging] = React.useState(false);
   const [isOrderServicesOpen, setIsOrderServicesOpen] = React.useState(false);
+  const [isImportingWechatAddress, setIsImportingWechatAddress] = React.useState(false);
 
   const selectedItems = cart.filter((item) => item.selected);
   const cartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -32,6 +36,7 @@ export const MPCartPage: React.FC = () => {
     (sum, item) => sum + Math.max(0, item.product.priceMarket - item.product.priceWelfare) * item.quantity,
     0,
   );
+  const defaultAddress = addresses.find((address) => address.isDefault) ?? addresses[0];
 
   const handleCheckout = async () => {
     if (selectedItems.length === 0) return;
@@ -45,6 +50,21 @@ export const MPCartPage: React.FC = () => {
   const handleRemoveSelected = () => {
     selectedItems.forEach((item) => removeCartItem(item.id));
     setIsManaging(false);
+  };
+
+  const handleImportWechatAddress = async () => {
+    if (isImportingWechatAddress) return;
+    setIsImportingWechatAddress(true);
+    try {
+      const address = await requestWechatDeliveryAddress();
+      await addAddress({ ...address, isDefault: true, tag: '微信地址' });
+    } catch (error) {
+      const message = error instanceof WechatAddressRequestError ? error.message : '微信地址获取失败，请手动填写';
+      showToast(message, 'info');
+      if (!(error instanceof WechatAddressRequestError) || error.code !== 'cancelled') setMpPage('address');
+    } finally {
+      setIsImportingWechatAddress(false);
+    }
   };
 
   return (
@@ -191,13 +211,15 @@ export const MPCartPage: React.FC = () => {
 
             <div className="mt-2.5">
               <MPCartInvoiceDisclosure
+                defaultAddress={defaultAddress}
                 expanded={isOrderServicesOpen}
+                importingWechatAddress={isImportingWechatAddress}
+                onEditAddress={() => setMpPage('address')}
                 onToggle={() => setIsOrderServicesOpen((open) => !open)}
                 onEdit={() => triggerPendingFeature('企业发票抬头信息', '选择本次订单需要使用的发票抬头。')}
+                onImportWechatAddress={handleImportWechatAddress}
               />
             </div>
-
-            <p className="py-3 text-center text-[10px] text-gray-400">配送地址将在结算时确认</p>
           </div>
 
           <div data-cart-settlement-bar className="flex shrink-0 items-center gap-2 border-t border-gray-200/80 bg-white px-3 py-2.5 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]">

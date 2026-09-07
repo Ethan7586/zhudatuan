@@ -75,7 +75,7 @@ describe('checkout identity assurance', () => {
     expect(cartPage).toContain("if (addresses.length === 0)");
     expect(cartPage).toContain("setMpPage('address')");
     expect(addressPage).toContain('const saved = await addAddress');
-    expect(addressPage).toContain("if (saved) setMpPage('cart')");
+    expect(addressPage).toContain('if (saved) setMpPage(mpAddressReturnPage)');
     expect(profilePage).toContain("onClick={() => setMpPage('address')}");
   });
 });

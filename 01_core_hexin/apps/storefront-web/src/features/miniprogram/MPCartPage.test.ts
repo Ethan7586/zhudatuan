@@ -8,6 +8,7 @@ vi.mock('../../components/mobile/WeChatCapsule', () => ({
 
 vi.mock('../../context/MallContext', () => ({
   useMall: () => ({
+    addAddress: vi.fn(),
     addresses: [],
     cart: [{
       id: 'cart:one',
@@ -28,6 +29,7 @@ vi.mock('../../context/MallContext', () => ({
     isSubmittingOrder: false,
     removeCartItem: vi.fn(),
     setMpPage: vi.fn(),
+    showToast: vi.fn(),
     toggleCartItemSelected: vi.fn(),
     toggleSelectAllCart: vi.fn(),
     triggerPendingFeature: vi.fn(),
@@ -45,11 +47,12 @@ describe('mini-program cart experience', () => {
     expect(html).toContain('宏泰甄选');
     expect(html).toContain('福利卡可用额度');
     expect(html).toContain('管理');
-    expect(html).toContain('配送与发票等特殊需求');
-    expect(html).toContain('配送地址将在结算时确认');
+    expect(html).toContain('配送等');
     expect(html).toContain('结算 (1)');
     expect(html).toContain('data-cart-settlement-bar="true"');
     expect(html).not.toContain('添加配送地址');
+    expect(html).not.toContain('配送与发票等特殊需求');
+    expect(html).not.toContain('配送地址将在结算时确认');
     expect(html).not.toContain('中国建筑集团企采直供仓');
     expect(html).not.toContain('电子发票');
     expect(html).not.toContain('真实账户扣减');

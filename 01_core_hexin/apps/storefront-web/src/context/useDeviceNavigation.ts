@@ -24,6 +24,7 @@ export function useDeviceNavigation(initialPath = '/') {
   const [appMode, setAppModeState] = useState<AppMode>(() => modeFromPath(initialPath));
   const [viewportMode, setViewportMode] = useState<ViewportMode>('auto');
   const [mpPage, setMpPageState] = useState<MiniProgramPage>('home');
+  const [mpAddressReturnPage, setMpAddressReturnPage] = useState<'cart' | 'profile'>('profile');
   const [androidPage, setAndroidPageState] = useState<AndroidAppPage>('home');
   const [tabletPage, setTabletPageState] = useState<TabletPage>('home');
   const [tabletOrientation, setTabletOrientation] = useState<TabletOrientation>('landscape');
@@ -53,6 +54,7 @@ export function useDeviceNavigation(initialPath = '/') {
 
   const scrollTop = (behavior: ScrollBehavior = 'smooth') => window.scrollTo({ top: 0, behavior });
   const setMpPage = (page: MiniProgramPage, productId?: string) => {
+    if (page === 'address') setMpAddressReturnPage(mpPage === 'cart' ? 'cart' : 'profile');
     setMpPageState(page);
     if (productId) setMobileProductId(productId);
   };
@@ -114,6 +116,7 @@ export function useDeviceNavigation(initialPath = '/') {
     viewportMode,
     setViewportMode,
     mpPage,
+    mpAddressReturnPage,
     setMpPage,
     androidPage,
     setAndroidPage,

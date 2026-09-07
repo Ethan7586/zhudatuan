@@ -6,7 +6,7 @@ import { useMall } from '../../context/MallContext';
 const EMPTY_ADDRESS = Object.freeze({ name: '', phone: '', province: '', city: '', district: '', detail: '' });
 
 export const MPAddressPage: React.FC = () => {
-  const { addresses, addAddress, setMpPage } = useMall();
+  const { addresses, addAddress, mpAddressReturnPage, setMpPage } = useMall();
   const [form, setForm] = useState({ ...EMPTY_ADDRESS });
   const [saving, setSaving] = useState(false);
 
@@ -20,7 +20,7 @@ export const MPAddressPage: React.FC = () => {
     setSaving(true);
     try {
       const saved = await addAddress({ ...form, isDefault: addresses.length === 0, tag: '收货地址' });
-      if (saved) setMpPage('cart');
+      if (saved) setMpPage(mpAddressReturnPage);
     } finally {
       setSaving(false);
     }
@@ -28,7 +28,7 @@ export const MPAddressPage: React.FC = () => {
 
   return (
     <div className="min-h-full bg-[#F5F7FA] pb-8 text-gray-800">
-      <WeChatCapsule title="收货地址" showBack onBack={() => setMpPage(addresses.length > 0 ? 'profile' : 'cart')} />
+      <WeChatCapsule title="收货地址" showBack onBack={() => setMpPage(mpAddressReturnPage)} />
       <main className="space-y-3 p-3">
         {addresses.map((address) => (
           <div key={address.id} className="rounded-2xl border border-emerald-100 bg-white p-3 shadow-sm">
