@@ -66,7 +66,7 @@ describe('runtime configuration schema', () => {
       AUTH_MODE: 'membership',
       SERVICE_VERSION: '1.0.0',
       API_ALLOWED_ORIGINS: 'https://accounts.zhudatuan.com,https://console.hbbtzn.com,https://console.zhudatuan.com,https://h5.hbbtzn.com,https://h5.zhudatuan.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://mini.zhudatuan.com,https://www.hbbtzn.com,https://zhudatuan.com',
-      AUTH_RETURN_TARGETS: '{"console":"https://console.zhudatuan.com","console-hbbtzn":"https://console.hbbtzn.com","storefront":"https://zhudatuan.com","store":"https://console.zhudatuan.com/entrances/store","supplier":"https://console.zhudatuan.com/entrances/supplier"}',
+      AUTH_RETURN_TARGETS: '{"console":"https://console.zhudatuan.com","console-hbbtzn":"https://console.hbbtzn.com","storefront":"https://zhudatuan.com","storefront-hbbtzn":"https://hbbtzn.com","store":"https://console.zhudatuan.com/entrances/store","supplier":"https://console.zhudatuan.com/entrances/supplier"}',
       DATABASE_API_CONNECTION_REF: 'zhudatuan/database/api',
       SESSION_KEY_REF: 'zhudatuan/identity/session',
       IDENTITY_KEY_REF: 'zhudatuan/identity/index',
@@ -95,7 +95,7 @@ describe('runtime configuration schema', () => {
       API_ALLOWED_ORIGINS: `${registration.API_ALLOWED_ORIGINS},https://preview.zhudatuan.com` }))
       .toThrow('IDENTITY_REGISTRATION_API_ORIGINS_INVALID');
     expect(() => identityRegistrationApiEnvironment({ ...registration,
-      AUTH_RETURN_TARGETS: '{"console":"https://console.zhudatuan.com","console-hbbtzn":"https://console.hbbtzn.com","storefront":"https://preview.zhudatuan.com","store":"https://console.zhudatuan.com/entrances/store","supplier":"https://console.zhudatuan.com/entrances/supplier"}' }))
+      AUTH_RETURN_TARGETS: '{"console":"https://console.zhudatuan.com","console-hbbtzn":"https://console.hbbtzn.com","storefront":"https://preview.zhudatuan.com","storefront-hbbtzn":"https://hbbtzn.com","store":"https://console.zhudatuan.com/entrances/store","supplier":"https://console.zhudatuan.com/entrances/supplier"}' }))
       .toThrow('IDENTITY_REGISTRATION_API_RETURN_TARGETS_INVALID');
     expect(() => identityRegistrationApiEnvironment({ ...registration, KMS_BEARER_TOKEN: secretStoreBearerToken }))
       .toThrow('WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
@@ -295,7 +295,7 @@ describe('runtime configuration schema', () => {
       AUTH_MODE: 'membership',
       SERVICE_VERSION: '1.0.0',
       API_ALLOWED_ORIGINS: 'https://console.example.com',
-      AUTH_RETURN_TARGETS: '{"console":"https://console.example.com","console-hbbtzn":"https://console-hbbtzn.example.com","storefront":"https://storefront.example.com","store":"https://store.example.com","supplier":"https://supplier.example.com"}',
+      AUTH_RETURN_TARGETS: '{"console":"https://console.example.com","console-hbbtzn":"https://console-hbbtzn.example.com","storefront":"https://storefront.example.com","storefront-hbbtzn":"https://storefront-hbbtzn.example.com","store":"https://store.example.com","supplier":"https://supplier.example.com"}',
       DATABASE_API_CONNECTION_REF: 'secret/database/api',
       REDIS_CONNECTION_REF: 'secret/redis/query',
       SESSION_KEY_REF: 'secret/session/signing',

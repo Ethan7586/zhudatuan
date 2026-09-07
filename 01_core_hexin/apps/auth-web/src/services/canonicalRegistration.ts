@@ -2,7 +2,7 @@ import { CONTRACT_VERSION } from '@shop/contract/version';
 import { transportInteger } from '@shop/contract/client';
 import { createSecureId } from '@shop/sdk/context';
 import { z } from 'zod';
-import { beginCanonicalAuthorization, exchangeCanonicalStorefrontSession } from './canonicalIdentity';
+import { beginCanonicalAuthorization, canonicalStorefrontAuthTarget, exchangeCanonicalStorefrontSession } from './canonicalIdentity';
 
 const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
 const L1_STOREFRONT_API_ORIGIN = 'https://hbbtzn.com';
@@ -185,6 +185,7 @@ export async function createCanonicalRegistrationChallenge(destination: string, 
 export async function createCanonicalMember(input: CanonicalMemberRegistrationInput, signal?: AbortSignal): Promise<CanonicalRegisteredMember> {
   if (input.termsAccepted !== true) throw new Error('请先阅读并同意当前注册条款与隐私政策');
   const authorization = input.directLogin === true ? await beginCanonicalAuthorization() : undefined;
+  const returnTarget = authorization === undefined ? undefined : canonicalStorefrontAuthTarget(input.applicationSlug);
   const origin = input.directLogin === true ? storefrontApiOrigin() : apiOrigin();
   const verification = input.deferPhoneVerification === true
     ? { phoneVerification: 'checkout' }
@@ -204,6 +205,7 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
         termsAccepted: true,
         termsHash: requiredText(input.termsHash, '注册条款版本无效'),
         ...(authorization === undefined ? {} : { authorization: authorization.request }),
+        ...(returnTarget === undefined ? {} : { target: returnTarget }),
         ...(input.wechatToken === undefined ? {} : { wechatToken: requiredText(input.wechatToken, '微信授权无效') }),
       },
       signal,

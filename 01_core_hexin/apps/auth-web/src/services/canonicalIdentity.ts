@@ -140,13 +140,16 @@ export async function loginCanonicalStorefront(
   subject: string,
   password: string,
   membership: string,
+  application: string,
   signal?: AbortSignal,
 ): Promise<CanonicalStorefrontLoginResult> {
+  const target = canonicalStorefrontAuthTarget(application);
   const result = await authorizeCanonicalCredential(
     { provider: 'password', subject: canonicalPasswordSubject(subject), password },
-    'storefront',
+    target,
     membership,
     signal,
+    { application: canonicalApplication(application), expectedSessionTarget: 'storefront' },
   );
   if (result.kind === 'selection') throw new Error('新注册的消费者身份未能直接进入商城，请重新登录');
   return Object.freeze({
@@ -161,12 +164,13 @@ export async function loginCanonicalStorefrontEntry(
   application: string,
   signal?: AbortSignal,
 ): Promise<CanonicalStorefrontLoginResult> {
+  const target = canonicalStorefrontAuthTarget(application);
   const result = await authorizeCanonicalCredential(
     { provider: 'password', subject: canonicalPasswordSubject(subject), password },
-    'storefront',
+    target,
     undefined,
     signal,
-    { application: canonicalApplication(application) },
+    { application: canonicalApplication(application), expectedSessionTarget: 'storefront' },
   );
   if (result.kind === 'selection') {
     if (result.selection.memberships.length === 0) throw new Error('该手机号尚未开通当前商城，请先注册');
@@ -246,8 +250,7 @@ async function loginCanonicalConsoleWithCredential(
   options: CanonicalConsoleLoginOptions = {},
 ): Promise<CanonicalConsoleLoginResult> {
   const entryTarget = options.target ?? 'console';
-  const identityTarget = entryTarget === 'console-hbbtzn' ? 'console' : entryTarget;
-  const result = await authorizeCanonicalCredential(credential, identityTarget, membership, signal);
+  const result = await authorizeCanonicalCredential(credential, entryTarget, membership, signal, { expectedSessionTarget: 'console' });
   if (result.kind === 'selection') {
     const context: PreAuthContext = {
       identifier: credential.subject,
@@ -265,6 +268,7 @@ async function loginCanonicalConsoleWithCredential(
 }
 
 type CanonicalTarget = z.infer<typeof SessionCreatedSchema>['target'];
+type CanonicalAuthTarget = CanonicalTarget | 'storefront-hbbtzn';
 
 type AuthorizedCredential =
   | Readonly<{ kind: 'selection'; selection: z.infer<typeof MembershipSelectionSchema> }>
@@ -276,13 +280,13 @@ type AuthorizedCredential =
 
 async function authorizeCanonicalCredential(
   credential: LoginCredential,
-  target: CanonicalTarget,
+  target: CanonicalAuthTarget,
   membership?: string,
   signal?: AbortSignal,
-  context: Readonly<{ application?: string }> = {},
+  context: Readonly<{ application?: string; expectedSessionTarget?: CanonicalTarget }> = {},
 ): Promise<AuthorizedCredential> {
   const authorization = await beginCanonicalAuthorization();
-  const origin = target === 'storefront' ? storefrontApiOrigin() : apiOrigin();
+  const origin = target === 'storefront' || target === 'storefront-hbbtzn' ? storefrontApiOrigin() : apiOrigin();
   const output = LoginResultSchema.parse(await identityRequest('/api/v1/identity/sessions', {
     ...credential,
     target,
@@ -291,8 +295,9 @@ async function authorizeCanonicalCredential(
     authorization: authorization.request,
   }, signal, { origin }));
   if ('memberships' in output) return Object.freeze({ kind: 'selection', selection: output });
-  if (output.target !== target) {
-    throw new Error(target === 'storefront' ? '登录身份不属于消费者商城' : '登录身份不属于运营后台');
+  const expectedSessionTarget = context.expectedSessionTarget ?? target;
+  if (output.target !== expectedSessionTarget) {
+    throw new Error(expectedSessionTarget === 'storefront' ? '登录身份不属于消费者商城' : '登录身份不属于运营后台');
   }
   const exchange = TicketExchangeSchema.parse(await identityRequest('/api/v1/identity/tickets/exchange', {
     ticket: output.callback.ticket,
@@ -396,12 +401,10 @@ function approvedConsoleDestination(value: z.infer<typeof TicketExchangeSchema>[
   }
   const configured = expectedOrigin ?? (import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined));
   const approvedOrigin = resolveAdminLoginOrigin(configured, import.meta.env.DEV);
-  const signedOrigin = expectedOrigin === undefined ? approvedOrigin : resolveAdminLoginOrigin();
-  if (destination.origin !== signedOrigin || destination.username || destination.password || destination.hash) {
+  if (destination.origin !== approvedOrigin || destination.username || destination.password || destination.hash) {
     throw new Error('登录回跳地址不在后台允许清单');
   }
-  if (destination.origin === approvedOrigin) return destination.toString();
-  return new URL(`${destination.pathname}${destination.search}`, `${approvedOrigin}/`).toString();
+  return destination.toString();
 }
 
 function approvedStorefrontDestination(value: z.infer<typeof TicketExchangeSchema>['returnTarget']): string {
@@ -416,13 +419,20 @@ function approvedStorefrontDestination(value: z.infer<typeof TicketExchangeSchem
   const configured = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
   const configuredOrigin = resolveStorefrontLoginOrigin(configured, import.meta.env.DEV);
   const approvedOrigin = storefrontOriginForIdentityHost(configuredOrigin);
-  const trustedOrigins = new Set([L0_STOREFRONT_ORIGIN, L1_STOREFRONT_API_ORIGIN, configuredOrigin, approvedOrigin]);
-  if (!trustedOrigins.has(destination.origin) || destination.username || destination.password || destination.hash) {
+  if (destination.origin !== approvedOrigin || destination.username || destination.password || destination.hash) {
     throw new Error('登录回跳地址不在商城允许清单');
   }
-  if (import.meta.env.DEV && destination.origin === configuredOrigin) return destination.toString();
-  if (destination.origin === approvedOrigin) return destination.toString();
-  return new URL(`${destination.pathname}${destination.search}`, `${approvedOrigin}/`).toString();
+  return destination.toString();
+}
+
+export function canonicalStorefrontAuthTarget(application?: string): Extract<CanonicalAuthTarget, 'storefront' | 'storefront-hbbtzn'> {
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'accounts.hbbtzn.com') return 'storefront-hbbtzn';
+    if (window.location.hostname === 'accounts.zhudatuan.com') return 'storefront';
+  }
+  if (application === 'zdt-l1-verify') return 'storefront-hbbtzn';
+  if (application === undefined || application === 'zhudatuan-storefront') return 'storefront';
+  throw new Error('商城身份节点无效');
 }
 
 function storefrontOriginForIdentityHost(configuredOrigin: string): string {

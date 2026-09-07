@@ -111,15 +111,28 @@ describe('wechat identity session', () => {
     expect(queries.some((text) => text.includes('insert into identity.wechatgrant'))).toBe(true);
     expect(queries.some((text) => text.includes('insert into identity.session'))).toBe(false);
   });
+
+  it('rejects an L0 return target when the WeChat login belongs to the L1 storefront', async () => {
+    const operation = new WechatOperations({ invoke: async () => ({ status: 404, body: {} }) }, {} as DatabasePool, {
+      application: () => ({ applicationHash: 'application-hash' }), authorize: () => 'https://example.test',
+      exchange: async () => { throw new Error('must reject before WeChat code exchange'); },
+    }, {} as KmsClient, {} as AuditSink, 'identity-key', 'session-key', {} as PgAuthTicket);
+
+    await expect(operation.invoke(request(null, { application: 'zdt-l1-verify', target: 'storefront' })))
+      .rejects.toThrow('AUTH_RETURN_TARGET_INVALID');
+  });
 });
 
-function request(access: OperationRequest['access'] = null): OperationRequest {
+function request(access: OperationRequest['access'] = null,
+  identity: Readonly<{ application: string; target: 'storefront' | 'storefront-hbbtzn' }> = {
+    application: 'zhudatuan-storefront', target: 'storefront',
+  }): OperationRequest {
   return {
     type: 'identity.wechat.session',
     access,
     input: {
       path: {}, query: {}, headers: { 'x-device-id': 'device:one', 'user-agent': 'wechat', 'x-peer-address': '127.0.0.1' },
-      body: { scene: 'jsapi', action: 'exchange', code: 'wechat-code',
+      body: { scene: 'jsapi', action: 'exchange', code: 'wechat-code', ...identity,
         authorization: { state: 's'.repeat(32), nonce: 'n'.repeat(32), challenge: 'c'.repeat(43) } },
       rawBody: '', deadline: Date.now() + 1_000, signal: new AbortController().signal, idempotency: 'wechat-session:one',
     },

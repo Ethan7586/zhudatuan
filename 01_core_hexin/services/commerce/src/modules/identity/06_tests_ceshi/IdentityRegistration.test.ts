@@ -291,7 +291,7 @@ describe('canonical member registration security boundary', () => {
     expect(credential?.values).toEqual([subjectDigest(SUBJECT), 'principal:mobile-login']);
   });
 
-  it('normalizes the Hongtai Console alias before issuing the canonical auth ticket', async () => {
+  it('keeps the Hongtai Console node on its own auth ticket', async () => {
     const password = 'Current!Password1';
     const harness = registrationHarness({ challengeAccepted: false, subjectExists: false,
       boundMobilePrincipal: 'principal:hongtai-operator', credentialSecret: await new PasswordPolicy().hash(password),
@@ -305,7 +305,7 @@ describe('canonical member registration security boundary', () => {
 
     expect(response).toMatchObject({ status: 201, body: { membership: 'membership:hongtai:operator', target: 'console' } });
     const ticket = harness.queries.find(({ text }) => text.includes('insert into identity.authticket'));
-    expect(ticket?.values[6]).toBe('console');
+    expect(ticket?.values[6]).toBe('console-hbbtzn');
   });
 
   it('limits storefront login memberships to the requested application organization', async () => {
@@ -319,13 +319,29 @@ describe('canonical member registration security boundary', () => {
       ] });
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
-      target: 'storefront', application: 'zdt-l1-verify',
+      target: 'storefront-hbbtzn', application: 'zdt-l1-verify',
     }));
 
     expect(response).toMatchObject({ status: 200, body: { memberships: [
       { id: 'membership:hongtai:one', client: 'storefront' },
       { id: 'membership:hongtai:two', client: 'storefront' },
     ] } });
+  });
+
+  it('rejects an L0 return target for the L1 storefront application', async () => {
+    const password = 'Current!Password1';
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false, storefrontAvailable: true,
+      boundMobilePrincipal: 'principal:storefront-login', credentialSecret: await new PasswordPolicy().hash(password),
+      loginMembershipRows: [
+        { id: 'membership:hongtai:one', access_version: 1, client: 'storefront', organization_id: 'mall:l1-hongtai' },
+      ] });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
+      target: 'storefront', application: 'zdt-l1-verify',
+    }));
+
+    expect(response).toEqual({ status: 400, body: { code: 'AUTH_RETURN_TARGET_INVALID' } });
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.authticket'))).toBe(false);
   });
 
   it('resolves an active storefront as the public L6 self-registration context', async () => {
@@ -604,7 +620,7 @@ function registrationRequest(idempotency: string, directLogin = false): Operatio
         invite: 'INVITE-CODE',
         termsAccepted: true,
         termsHash: 'f'.repeat(64),
-        ...(directLogin ? { authorization: authorizationRequest() } : {}),
+        ...(directLogin ? { target: 'storefront', authorization: authorizationRequest() } : {}),
       },
       rawBody: '',
       deadline: Date.now() + 5_000,
@@ -629,6 +645,7 @@ function storefrontRegistrationRequest(idempotency: string): OperationRequest {
         challenge: 'challenge:registration',
         code: '123456',
         application: 'zdt-l1-verify',
+        target: 'storefront-hbbtzn',
         termsAccepted: true,
         termsHash: 'f'.repeat(64),
         authorization: authorizationRequest(),
@@ -652,6 +669,7 @@ function storefrontPasswordRegistrationRequest(idempotency: string): OperationRe
         password: 'Automatic!Password1',
         displayName: 'L6消费者8000',
         application: 'zdt-l1-verify',
+        target: 'storefront-hbbtzn',
         termsAccepted: true,
         termsHash: 'f'.repeat(64),
         authorization: authorizationRequest(),
@@ -937,6 +955,7 @@ function context(pool: DatabasePool, kms: KmsClient = {
     console: 'https://console.example.test',
     'console-hbbtzn': 'https://console-hbbtzn.example.test',
     storefront: 'https://storefront.example.test',
+    'storefront-hbbtzn': 'https://storefront-hbbtzn.example.test',
     store: 'https://store.example.test',
     supplier: 'https://supplier.example.test',
   });

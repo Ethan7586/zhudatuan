@@ -14,7 +14,7 @@ describe('identity authorization transaction', () => {
   });
 
   it('issues an expiring proof only for configured targets', () => {
-    const targets = { console: 'https://console.example.com', 'console-hbbtzn': 'https://console-hbbtzn.example.com', storefront: 'https://storefront.example.com', store: 'https://store.example.com', supplier: 'https://supplier.example.com' } as const;
+    const targets = { console: 'https://console.example.com', 'console-hbbtzn': 'https://console-hbbtzn.example.com', storefront: 'https://storefront.example.com', 'storefront-hbbtzn': 'https://storefront-hbbtzn.example.com', store: 'https://store.example.com', supplier: 'https://supplier.example.com' } as const;
     const signed = new ReturnTargetSigner(targets, 'k'.repeat(64)).issue('storefront', new Date('2026-08-21T00:00:00.000Z'));
     expect(signed.url).toBe(targets.storefront);
     expect(signed.proof.split('.')).toHaveLength(2);

@@ -185,6 +185,7 @@ function commerceEnvironment(values: Readonly<Record<string, string>>): string {
       console: 'http://localhost:5173',
       'console-hbbtzn': 'http://localhost:5173',
       storefront: 'http://localhost:3000',
+      'storefront-hbbtzn': 'http://localhost:3000',
       store: 'http://localhost:5173/entrances/store',
       supplier: 'http://localhost:5173/entrances/supplier',
     }),

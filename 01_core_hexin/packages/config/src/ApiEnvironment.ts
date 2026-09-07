@@ -62,7 +62,7 @@ export function apiReturnTargets(environment: ApiEnvironment): AuthReturnTargets
   try { parsed = JSON.parse(raw); } catch { throw new Error('AUTH_RETURN_TARGETS_INVALID'); }
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('AUTH_RETURN_TARGETS_INVALID');
   const record = parsed as Readonly<Record<string, unknown>>;
-  const keys: readonly AuthTarget[] = ['console', 'console-hbbtzn', 'storefront', 'store', 'supplier'];
+  const keys: readonly AuthTarget[] = ['console', 'console-hbbtzn', 'storefront', 'storefront-hbbtzn', 'store', 'supplier'];
   if (Object.keys(record).sort().join(',') !== [...keys].sort().join(',')) throw new Error('AUTH_RETURN_TARGETS_INVALID');
   return Object.freeze(Object.fromEntries(keys.map((key) => [key, webUrl(record[key])])) as Record<AuthTarget, string>);
 }

@@ -22,6 +22,7 @@ const PRODUCTION_RETURN_TARGETS = Object.freeze({
   console: 'https://console.zhudatuan.com',
   'console-hbbtzn': 'https://console.hbbtzn.com',
   storefront: 'https://zhudatuan.com',
+  'storefront-hbbtzn': 'https://hbbtzn.com',
   store: 'https://console.zhudatuan.com/entrances/store',
   supplier: 'https://console.zhudatuan.com/entrances/supplier',
 } satisfies AuthReturnTargets);

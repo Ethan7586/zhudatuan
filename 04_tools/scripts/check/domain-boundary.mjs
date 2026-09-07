@@ -118,7 +118,8 @@ export function validateDomainContract(contract) {
   const expectedTargets = {
     console: consoleOrigin,
     'console-hbbtzn': hongtaiConsoleOrigin,
-    storefront: h5Origin,
+    storefront: storefrontOrigin,
+    'storefront-hbbtzn': h5Origin,
     store: `${consoleOrigin}/entrances/store`,
     supplier: `${consoleOrigin}/entrances/supplier`,
   };
@@ -207,6 +208,9 @@ function block(source, name) {
 }
 
 export function validateEdgeRedirects(source, contract) {
+  if (source.includes("incoming.pathname === '/api/v1/identity/tickets/exchange'")) {
+    fail('PRODUCTION_DOMAIN_EDGE_TICKET_REWRITE_FORBIDDEN');
+  }
   const h5Host = new URL(contract.frontends.h5.publicOrigin).hostname;
   const upstreamBlock = block(source, 'UPSTREAM_ORIGINS');
   if (!upstreamBlock.includes(`[ROOT_STOREFRONT_HOST]: '${contract.canonicalOrigins.storefrontOrigin}'`)) {

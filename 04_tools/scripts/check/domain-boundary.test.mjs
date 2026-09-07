@@ -25,11 +25,16 @@ test('accepts the owner-approved production domain contract and lock', () => {
   );
 });
 
-test('allows the H5 root but rejects every hbbtzn subdomain in runtime code', () => {
+test('allows approved L1 origins but rejects unapproved hbbtzn subdomains in runtime code', () => {
   assert.doesNotThrow(() => assertNoHbbtznSubdomain('h5.ts', "const origin = 'https://hbbtzn.com'"));
+  assert.doesNotThrow(() => assertNoHbbtznSubdomain(
+    'identity.ts',
+    "const api = 'https://api.hbbtzn.com'",
+    Object.keys(contract.proxyAliases),
+  ));
   assert.throws(
-    () => assertNoHbbtznSubdomain('identity.ts', "const api = 'https://api.hbbtzn.com'"),
-    /HBBTZN_SUBDOMAIN_RUNTIME_FORBIDDEN:identity\.ts:api\.hbbtzn\.com/,
+    () => assertNoHbbtznSubdomain('identity.ts', "const api = 'https://unknown.hbbtzn.com'", Object.keys(contract.proxyAliases)),
+    /HBBTZN_SUBDOMAIN_RUNTIME_FORBIDDEN:identity\.ts:unknown\.hbbtzn\.com/,
   );
 });
 
@@ -41,8 +46,8 @@ test('rejects production identity environment pollution', () => {
   assert.doesNotThrow(() => validateIdentityEnvironmentText(valid, contract));
   assert.throws(
     () => validateIdentityEnvironmentText(valid.replace(
-      '"storefront":"https://hbbtzn.com"',
-      '"storefront":"https://mall.hbbtzn.com"',
+      '"storefront-hbbtzn":"https://hbbtzn.com"',
+      '"storefront-hbbtzn":"https://mall.hbbtzn.com"',
     ), contract),
     /PRODUCTION_DOMAIN_ENV_RETURN_TARGETS_DRIFT/,
   );
@@ -52,14 +57,11 @@ test('rejects production identity environment pollution', () => {
   );
 });
 
-test('keeps hbbtzn control-plane aliases redirect-only at the edge', () => {
+test('keeps signed login return targets opaque at the L1 edge', () => {
   const source = readFileSync(resolve(root, '02_platform_pingtai/infrastructure/zhudatuan/cloudflare/hbbtzn-alias/src/index.ts'), 'utf8');
   assert.doesNotThrow(() => validateEdgeRedirects(source, contract));
   assert.throws(
-    () => validateEdgeRedirects(source.replace(
-      "[ROOT_STOREFRONT_HOST]: 'https://zhudatuan.com'",
-      "[ROOT_STOREFRONT_HOST]: 'https://zhudatuan.com',\n  'api.hbbtzn.com': 'https://api.zhudatuan.com'",
-    ), contract),
-    /PRODUCTION_DOMAIN_EDGE_ALIAS_PROXY_FORBIDDEN/,
+    () => validateEdgeRedirects(`${source}\n// incoming.pathname === '/api/v1/identity/tickets/exchange'`, contract),
+    /PRODUCTION_DOMAIN_EDGE_TICKET_REWRITE_FORBIDDEN/,
   );
 });

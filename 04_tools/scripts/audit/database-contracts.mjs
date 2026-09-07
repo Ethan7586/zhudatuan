@@ -156,6 +156,7 @@ const REPAIR_FILES = [
   '20260906011000_complete_l1_owner_runtime_head.sql',
   '20260907010000_enable_identity_catalog_commands.sql',
   '20260907110000_publish_storefront_member_directory.sql',
+  '20260907113000_separate_l0_l1_auth_return_targets.sql',
 ];
 
 const mode = process.argv[2];

@@ -1,6 +1,6 @@
 {
   "schema": "zhudatuan.production-domain-boundary.v1",
-  "decision": "2026-09-03-owner-approved",
+  "decision": "2026-09-07-owner-approved-node-isolation",
   "frontends": {
     "h5": {
       "publicOrigin": "https://hbbtzn.com",
@@ -52,7 +52,8 @@
     "returnTargets": {
       "console": "https://console.zhudatuan.com",
       "console-hbbtzn": "https://console.hbbtzn.com",
-      "storefront": "https://hbbtzn.com",
+      "storefront": "https://zhudatuan.com",
+      "storefront-hbbtzn": "https://hbbtzn.com",
       "store": "https://console.zhudatuan.com/entrances/store",
       "supplier": "https://console.zhudatuan.com/entrances/supplier"
     }

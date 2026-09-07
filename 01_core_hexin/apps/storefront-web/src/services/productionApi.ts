@@ -9,6 +9,7 @@ import { mapCanonicalAddresses, mapCanonicalBootstrap, mapCanonicalSession } fro
 import { boolean, nextCursor, nonNegativeInteger, optionalText, pageItems, record, text } from './canonicalShape';
 import { ProductionApiError } from './productionApi.error';
 import type { ApiAccount, ApiAccountLedger, ApiActor, ApiBootstrap, ApiCartItem, ApiDeliveryAddress, ApiHomeSnapshot, ApiOrder, ApiProduct, LoginRequest } from './productionApi.types';
+import { resolveStorefrontApplication, resolveStorefrontAuthTarget } from '../config/storefrontIdentity';
 
 export { ProductionApiError } from './productionApi.error';
 export type { ApiAccount, ApiAccountLedger, ApiActor, ApiAfterSale, ApiBootstrap, ApiCartItem, ApiDeliveryAddress, ApiHomeSnapshot, ApiOrder, ApiPaymentResult, ApiPaymentResultState, ApiProduct, ApiSecurityCenter, CreateOrderRequest, LoginRequest } from './productionApi.types';
@@ -31,12 +32,13 @@ async function createStorefrontSession(input: LoginRequest, membership?: string)
   if (!subject || !password) throw new Error('请输入账号和密码');
 
   const authorization = await beginStorefrontAuthorization();
+  const application = resolveStorefrontApplication();
   const value = record(await canonicalCall(() => canonicalClient().identity.sessionsCreate({ body: {
     provider: 'password',
     subject,
     password,
-    target: 'storefront',
-    application: resolveStorefrontApplication(),
+    target: resolveStorefrontAuthTarget(application),
+    application,
     ...(membership ? { membership } : {}),
     authorization: authorization.request,
   } }, anonymousIdempotentContext())), 'identity.sessions.create');
@@ -303,4 +305,3 @@ export const productionApi = {
   checkout: checkoutWithCanonicalPayment,
   readPaymentResult: readCanonicalPaymentResult,
 };
-import { resolveStorefrontApplication } from '../config/storefrontIdentity';

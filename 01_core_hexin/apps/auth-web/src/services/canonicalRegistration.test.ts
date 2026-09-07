@@ -12,7 +12,7 @@ const TERMS_HASH = 'a'.repeat(64);
 beforeEach(() => {
   const values = new Map<string, string>();
   vi.stubGlobal('window', {
-    location: { hostname: 'accounts.zhudatuan.com' },
+    location: { hostname: 'localhost' },
     sessionStorage: {
       getItem: (key: string) => values.get(key) ?? null,
       setItem: (key: string, value: string) => values.set(key, value),
@@ -185,7 +185,7 @@ describe('canonical registration', () => {
       }
       return jsonResponse({
         returnTarget: {
-          url: 'http://127.0.0.1:3000/',
+          url: 'https://hbbtzn.com/',
           proof: 'signed-return-target-proof',
           expiresAt: '2099-01-01T00:00:00.000Z',
         },
@@ -209,7 +209,7 @@ describe('canonical registration', () => {
     expect(result).toMatchObject({
       membership: 'membership:storefront-one',
       target: 'storefront',
-      redirectUrl: 'http://127.0.0.1:3000/',
+      redirectUrl: 'https://hbbtzn.com/',
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://hbbtzn.com/api/v1/identity/members');
@@ -218,6 +218,7 @@ describe('canonical registration', () => {
       subject: '+8613800138000',
       challenge: 'challenge:registration-one',
       code: '483921',
+      target: 'storefront-hbbtzn',
       authorization: { state: expect.any(String), nonce: expect.any(String), challenge: expect.any(String) },
     });
     expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://hbbtzn.com/api/v1/identity/tickets/exchange');

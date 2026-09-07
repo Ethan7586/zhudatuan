@@ -20,7 +20,7 @@ const STOREFRONT_DESTINATION = 'http://127.0.0.1:3000/';
 beforeEach(() => {
   const values = new Map<string, string>();
   vi.stubGlobal('window', {
-    location: { hostname: 'accounts.zhudatuan.com' },
+    location: { hostname: 'localhost' },
     sessionStorage: {
       getItem: (key: string) => values.get(key) ?? null,
       setItem: (key: string, value: string) => values.set(key, value),
@@ -208,19 +208,19 @@ describe('canonical console identity', () => {
     expect(exchangeBody.verifier).not.toBe(sessionBody.authorization.challenge);
   });
 
-  it('keeps the Hongtai brand alias outside canonical identity and returns to its Console origin', async () => {
+  it('requests and accepts only the Hongtai Console return target', async () => {
     setWindowHostname('accounts.hbbtzn.com');
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('console', 'membership:hongtai:operator')))
-      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://console.zhudatuan.com/')));
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://console.hbbtzn.com/')));
     vi.stubGlobal('fetch', fetchMock);
 
     const result = await loginCanonicalConsole('13424327586', 'Original!Password1', undefined, undefined, {
       target: 'console-hbbtzn', expectedOrigin: 'https://console.hbbtzn.com',
     });
 
-    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({ target: 'console' });
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({ target: 'console-hbbtzn' });
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/sessions');
     expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/tickets/exchange');
     expect(result).toMatchObject({
@@ -257,6 +257,7 @@ describe('canonical console identity', () => {
       '+8613800138000',
       'Generated!Password2',
       'membership:storefront-one',
+      'zhudatuan-storefront',
     )).resolves.toEqual({
       membership: 'membership:storefront-one',
       redirectUrl: STOREFRONT_DESTINATION,
@@ -276,7 +277,7 @@ describe('canonical console identity', () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:hongtai')))
-      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://zhudatuan.com/orders?source=login')));
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://hbbtzn.com/orders?source=login')));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(loginCanonicalStorefrontEntry(
@@ -292,7 +293,7 @@ describe('canonical console identity', () => {
     expect(body).toMatchObject({
       provider: 'password',
       subject: '+8613800138000',
-      target: 'storefront',
+      target: 'storefront-hbbtzn',
       application: 'zdt-l1-verify',
     });
     expect(body).not.toHaveProperty('membership');
@@ -305,17 +306,43 @@ describe('canonical console identity', () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:zhudatuan')))
-      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://hbbtzn.com/orders?source=login')));
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://zhudatuan.com/orders?source=login')));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(loginCanonicalStorefrontEntry(
       '13800138000',
       'Generated!Password2',
-      'zdt-l0-verify',
+      'zhudatuan-storefront',
     )).resolves.toEqual({
       membership: 'membership:zhudatuan',
       redirectUrl: 'https://zhudatuan.com/orders?source=login',
     });
+  });
+
+  it('rejects an L0 return ticket on the L1 identity host instead of rewriting it', async () => {
+    setWindowHostname('accounts.hbbtzn.com');
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:hongtai')))
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://zhudatuan.com/orders')));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loginCanonicalStorefrontEntry(
+      '13800138000', 'Generated!Password2', 'zdt-l1-verify',
+    )).rejects.toThrow('登录回跳地址不在商城允许清单');
+  });
+
+  it('rejects an L1 return ticket on the L0 identity host instead of rewriting it', async () => {
+    setWindowHostname('accounts.zhudatuan.com');
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:zhudatuan')))
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://hbbtzn.com/orders')));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loginCanonicalStorefrontEntry(
+      '13800138000', 'Generated!Password2', 'zhudatuan-storefront',
+    )).rejects.toThrow('登录回跳地址不在商城允许清单');
   });
 
   it('maps a canonical console membership selection to the approved admin UI model', async () => {

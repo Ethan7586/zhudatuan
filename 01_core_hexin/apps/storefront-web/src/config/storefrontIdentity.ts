@@ -1,5 +1,6 @@
 export const ZHUDATUAN_STOREFRONT_APPLICATION = 'zhudatuan-storefront';
 export const HONGTAI_STOREFRONT_APPLICATION = 'zdt-l1-verify';
+export type StorefrontAuthTarget = 'storefront' | 'storefront-hbbtzn';
 
 function currentStorefrontHostname(): string {
   if (typeof window !== 'undefined') return window.location.hostname;
@@ -16,4 +17,10 @@ export function resolveStorefrontApplication(
   return normalized === 'hbbtzn.com' || normalized.endsWith('.hbbtzn.com')
     ? HONGTAI_STOREFRONT_APPLICATION
     : ZHUDATUAN_STOREFRONT_APPLICATION;
+}
+
+export function resolveStorefrontAuthTarget(application: string = resolveStorefrontApplication()): StorefrontAuthTarget {
+  if (application === ZHUDATUAN_STOREFRONT_APPLICATION) return 'storefront';
+  if (application === HONGTAI_STOREFRONT_APPLICATION) return 'storefront-hbbtzn';
+  throw new Error('商城身份节点无效');
 }

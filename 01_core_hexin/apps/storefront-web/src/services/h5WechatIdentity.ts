@@ -3,6 +3,7 @@ import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
 import { createSecureId } from '@shop/sdk/context';
 import { record, text } from './canonicalShape';
 import { ProductionApiError } from './productionApi.error';
+import { resolveStorefrontApplication, resolveStorefrontAuthTarget } from '../config/storefrontIdentity';
 
 export interface H5WechatAuthorization {
   readonly request: Readonly<{ state: string; nonce: string; challenge: string }>;
@@ -31,8 +32,9 @@ export async function requestH5WechatAuthorization(authorization: H5WechatAuthor
 
 export async function exchangeH5WechatCode(code: string, authorization: H5WechatAuthorization, mode: H5WechatSessionMode = 'anonymous'): Promise<H5WechatExchange> {
   const context = wechatSessionContext(mode);
+  const application = resolveStorefrontApplication();
   const value = record(await retryH5WechatNetworkRequest(() => canonicalCall(() => canonicalClient().identity.wechatSession({
-    body: { scene: 'jsapi', action: 'exchange', mode, code, authorization: authorization.request },
+    body: { scene: 'jsapi', action: 'exchange', mode, code, application, target: resolveStorefrontAuthTarget(application), authorization: authorization.request },
   }, context))), 'identity.wechat.exchange');
   if (typeof value.bindingToken === 'string' && value.bindingToken.length > 0) {
     return Object.freeze({ kind: 'binding', bindingToken: value.bindingToken,

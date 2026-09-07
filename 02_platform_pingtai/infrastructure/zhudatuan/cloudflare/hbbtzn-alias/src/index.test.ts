@@ -138,7 +138,7 @@ describe('hbbtzn H5 alias worker', () => {
     expect((fetchMock.mock.calls[1][0] as Request).url).toBe('https://console.zhudatuan.com/assets/index.js');
   });
 
-  it('rewrites only the identity ticket return target to the Hongtai console', async () => {
+  it('never rewrites the server-signed identity ticket return target across nodes', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({
       returnTarget: {
         url: 'https://console.zhudatuan.com/scopes/mall/mall%3Ahongtai/cockpit',
@@ -153,7 +153,7 @@ describe('hbbtzn H5 alias worker', () => {
     }));
 
     await expect(response.json()).resolves.toMatchObject({
-      returnTarget: { url: 'https://console.hbbtzn.com/scopes/mall/mall%3Ahongtai/cockpit' },
+      returnTarget: { url: 'https://console.zhudatuan.com/scopes/mall/mall%3Ahongtai/cockpit' },
     });
   });
 

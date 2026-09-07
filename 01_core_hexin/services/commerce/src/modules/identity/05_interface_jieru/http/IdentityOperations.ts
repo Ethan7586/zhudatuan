@@ -16,7 +16,7 @@ import { AuthTransaction } from '../../02_domain_yewu/models_moxing/AuthTransact
 import { PgAuthTicket } from '../../04_adapters_shixian/persistence_cunchu/PgAuthTicket';
 import { RETURN_TARGETS } from '../../04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
 import { ReturnTargetSigner } from '../../04_adapters_shixian/providers_waibu/ReturnTargetSigner';
-import { authTarget, consumeChallenge, requestCookie, sessionCookies } from './IdentitySecurity';
+import { authMembershipTarget, authTarget, consumeChallenge, requestCookie, sessionCookies, storefrontAuthTarget } from './IdentitySecurity';
 import { accessPort } from '../../../access';
 import { memberPort, type MemberInvite } from '../../../member';
 import { organizationPort } from '../../../organization';
@@ -150,11 +150,16 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             [found.principal_id]
           );
           const requestedTarget = typeof body.target === 'string' ? authTarget(body.target) : undefined;
-          const membershipTarget = requestedTarget === 'console-hbbtzn' ? 'console' : requestedTarget;
+          const membershipTarget = requestedTarget === undefined ? undefined : authMembershipTarget(requestedTarget);
           const targetCandidates = membershipTarget === undefined ? memberships.rows : memberships.rows.filter((item) => authTarget(item.client) === membershipTarget);
           const storefront = body.application === undefined
             ? undefined
             : await requireValidStorefront(memberPort.storefrontRegistration(database, storefrontSlug(body)));
+          const applicationTarget = storefront === undefined ? undefined : storefrontAuthTarget(storefront.application_slug);
+          if (applicationTarget !== undefined && requestedTarget !== undefined && requestedTarget !== applicationTarget) {
+            reject(400, 'AUTH_RETURN_TARGET_INVALID');
+          }
+          if (membershipTarget === 'storefront' && applicationTarget === undefined) reject(400, 'AUTH_RETURN_TARGET_INVALID');
           const candidates = storefront === undefined
             ? targetCandidates
             : targetCandidates.filter((item) => item.organization_id === storefront.organization_id);
@@ -214,7 +219,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           });
           const csrf = randomBytes(32).toString('base64url');
           const target = membershipTarget ?? authTarget(membership.client);
-          const callback = await tickets.issue(database, id, target, authorization);
+          const callback = await tickets.issue(database, id, applicationTarget ?? requestedTarget ?? target, authorization);
           return { status: 201, body: { session: id, csrf, expiresIn: 43_200, membership: membership.id, target, callback }, headers: sessionCookies(token, csrf, 43_200) };
         },
       }),
@@ -522,6 +527,10 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         },
         execute: async (request, database, prepared) => {
           const { body, subject, password, principal, mobile, authorization, assurance, member, membership, operatorMembership, credential, scopes } = prepared;
+          const requestedReturnTarget = authorization === null || typeof body.target !== 'string' ? undefined : authTarget(body.target);
+          if (authorization !== null && (requestedReturnTarget === undefined || authMembershipTarget(requestedReturnTarget) !== 'storefront')) {
+            throw new Error('AUTH_RETURN_TARGET_INVALID');
+          }
           const subjectHash = digest(subject);
           await database.query('select pg_advisory_xact_lock(hashtext($1))', [subjectHash]);
           const mobileTokens = [subjectHash, mobile.fingerprint, createHash('sha256').update(subject).digest('hex')];
@@ -555,10 +564,15 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
               { purpose: 'registration', destinationHash: subjectHash });
           }
           let registrationTarget: MemberInvite;
+          let applicationReturnTarget: ReturnType<typeof storefrontAuthTarget> | undefined;
           if (registration.kind === 'invite') {
             registrationTarget = await requireValidInvite(memberPort.consumeInvite(database, registrationHash, subjectHash, operatorMembership));
           } else {
             const storefront = await requireValidStorefront(memberPort.storefrontRegistration(database, registration.value));
+            applicationReturnTarget = storefrontAuthTarget(storefront.application_slug);
+            if (requestedReturnTarget !== undefined && requestedReturnTarget !== applicationReturnTarget) {
+              throw new Error('AUTH_RETURN_TARGET_INVALID');
+            }
             registrationTarget = {
               id: `storefront:${storefront.application_id}`,
               organization_id: storefront.organization_id,
@@ -692,7 +706,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             assurance: sessionAssurance,
             loginMethod: deferredPhoneVerification ? 'registration_password' : 'registration_otp',
           });
-          const callback = await tickets.issue(database, session, 'storefront', authorization);
+          const callback = await tickets.issue(database, session, applicationReturnTarget ?? requestedReturnTarget!, authorization);
           return {
             status: 201,
             body: { ...responseBody, authentication: { session, csrf, expiresIn: 43_200, membership: registeredMembership, target: 'storefront', callback } },

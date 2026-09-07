@@ -87,7 +87,7 @@ describe('canonical storefront production API', () => {
 
     const request = requestInit(fetcher, '/api/v1/identity/sessions', 'POST');
     expect(JSON.parse(String(request.body))).toMatchObject({
-      provider: 'password', target: 'storefront', application: 'zdt-l1-verify', subject: '13800138000',
+      provider: 'password', target: 'storefront-hbbtzn', application: 'zdt-l1-verify', subject: '13800138000',
     });
   });
 
@@ -162,6 +162,7 @@ describe('canonical storefront production API', () => {
   });
 
   it('obtains and binds a WeChat identity grant to the authenticated L6 membership', async () => {
+    vi.stubEnv('NEXT_PUBLIC_STOREFRONT_APPLICATION', 'zdt-l1-verify');
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);
     const { productionApi } = await import('./productionApi');
@@ -184,6 +185,9 @@ describe('canonical storefront production API', () => {
       expect(new Headers(init?.headers).get('idempotency-key')).toBeTruthy();
       expect(JSON.parse(String(init?.body))).toMatchObject({ mode: 'authenticated' });
     }
+    expect(JSON.parse(String(sessions[1]?.[1]?.body))).toMatchObject({
+      application: 'zdt-l1-verify', target: 'storefront-hbbtzn',
+    });
   });
 
   it('completes quote to order to payment only when the server captures an internal-benefit payment', async () => {

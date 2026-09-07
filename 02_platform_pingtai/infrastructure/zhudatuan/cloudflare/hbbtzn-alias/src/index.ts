@@ -142,14 +142,11 @@ async function publicResponse(request: Request, upstream: Response): Promise<Res
   const html = contentType.startsWith('text/html');
   const controlScript = incoming.hostname === HONGTAI_CONSOLE_HOST
     && contentType.includes('javascript');
-  const identityReturnTarget = incoming.hostname === 'api.hbbtzn.com'
-    && incoming.pathname === '/api/v1/identity/tickets/exchange'
-    && contentType.startsWith('application/json');
-  const rewritten = html || controlScript || identityReturnTarget;
+  const rewritten = html || controlScript;
   const source = rewritten ? await upstream.text() : undefined;
   const body = html
     ? publicHtml(request, source!, publicOrigins)
-    : controlScript || identityReturnTarget
+    : controlScript
       ? rewriteOrigins(source!, publicOrigins)
       : upstream.body;
   if (rewritten) {

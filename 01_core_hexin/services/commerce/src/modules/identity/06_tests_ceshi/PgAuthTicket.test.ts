@@ -26,6 +26,7 @@ describe('PgAuthTicket exchange', () => {
           console: 'https://console.zhudatuan.com',
           'console-hbbtzn': 'https://console.hbbtzn.com',
           storefront: 'https://zhudatuan.com',
+          'storefront-hbbtzn': 'https://hbbtzn.com',
           store: 'https://store.zhudatuan.com',
           supplier: 'https://supplier.zhudatuan.com',
         },

@@ -326,6 +326,7 @@ function context(pool: DatabasePool): ModuleContext {
     console: 'https://console.example.test',
     'console-hbbtzn': 'https://console-hbbtzn.example.test',
     storefront: 'https://storefront.example.test',
+    'storefront-hbbtzn': 'https://storefront-hbbtzn.example.test',
     store: 'https://store.example.test',
     supplier: 'https://supplier.example.test',
   });

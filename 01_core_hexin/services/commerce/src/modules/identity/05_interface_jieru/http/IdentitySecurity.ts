@@ -19,8 +19,20 @@ export function requestCookie(value: string | undefined, name: string): string |
 
 export function authTarget(value: string): AuthTarget {
   const target = value === 'operator' ? 'console' : value;
-  if (!['console', 'console-hbbtzn', 'storefront', 'store', 'supplier'].includes(target)) throw new Error('AUTH_RETURN_TARGET_INVALID');
+  if (!['console', 'console-hbbtzn', 'storefront', 'storefront-hbbtzn', 'store', 'supplier'].includes(target)) throw new Error('AUTH_RETURN_TARGET_INVALID');
   return target as AuthTarget;
+}
+
+export function authMembershipTarget(target: AuthTarget): Exclude<AuthTarget, 'console-hbbtzn' | 'storefront-hbbtzn'> {
+  if (target === 'console-hbbtzn') return 'console';
+  if (target === 'storefront-hbbtzn') return 'storefront';
+  return target;
+}
+
+export function storefrontAuthTarget(application: string): Extract<AuthTarget, 'storefront' | 'storefront-hbbtzn'> {
+  if (application === 'zhudatuan-storefront') return 'storefront';
+  if (application === 'zdt-l1-verify') return 'storefront-hbbtzn';
+  throw new Error('AUTH_RETURN_TARGET_INVALID');
 }
 
 export async function consumeChallenge(database: OperationDatabase, challenge: string, code: string,

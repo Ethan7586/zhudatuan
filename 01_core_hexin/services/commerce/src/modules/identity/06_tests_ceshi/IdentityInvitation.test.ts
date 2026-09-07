@@ -419,6 +419,7 @@ function context(pool: DatabasePool): ModuleContext {
   container.bind(RISK_GATE, { evaluate: async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) });
   container.bind(RETURN_TARGETS, {
     console: 'https://console.example.test', 'console-hbbtzn': 'https://console-hbbtzn.example.test', storefront: 'https://storefront.example.test',
+    'storefront-hbbtzn': 'https://storefront-hbbtzn.example.test',
     store: 'https://store.example.test', supplier: 'https://supplier.example.test',
   });
   return { container } as unknown as ModuleContext;
