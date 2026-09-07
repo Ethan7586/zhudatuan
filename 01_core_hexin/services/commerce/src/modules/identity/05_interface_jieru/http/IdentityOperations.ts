@@ -24,57 +24,19 @@ import { canonicalIdentitySubject, canonicalMobile } from '../../02_domain_yewu/
 import { consumeSmsLoginChallenge, recordInvalidSmsLoginChallenge, resolveBoundMobileAccount, resolvePasswordLoginCredential, verifySmsLoginChallenge } from '../../03_application_yingyong/services_fuwu/SmsLogin';
 import { currentRealmAccount, resolveRealmApplication, resolveRealmContext, resolveRealmNode } from '../../03_application_yingyong/services_fuwu/RealmAccount';
 
-export const IDENTITY_CORE_OPERATION_IDS = Object.freeze([
-  'identity.sessions.create',
-  'identity.tickets.exchange',
-  'identity.session.read',
-  'identity.session.delete',
-  'identity.sessions.read',
-  'identity.sessions.revoke',
-  'identity.challenges.create',
-  'identity.invitations.read',
-  'identity.storefronts.read',
-  'identity.invitations.create',
-  'identity.invitations.revoke',
-  'identity.members.create',
-  'identity.members.manage',
-  'identity.members.reset',
-  'identity.password.change',
-  'identity.password.verify',
-  'identity.password.reset',
-  'identity.mobile.challenge',
-  'identity.mobile.manage',
-  'identity.stepup.start',
-  'identity.stepup.complete',
-] as const satisfies readonly OperationId[]);
+import {
+  IDENTITY_CORE_OPERATION_IDS,
+  IDENTITY_REGISTRATION_OPERATION_IDS,
+  identityRegistrationCoreOperationIds,
+} from './IdentityOperationCatalog';
+import { createRealmOperationContext, maskMobile } from './RealmOperationContext';
+import { membershipInvitationOperations } from './MembershipInvitationOperations';
+import { sessionTicketOperations } from './SessionTicketOperations';
 
-const IDENTITY_REGISTRATION_CORE_OPERATION_IDS = Object.freeze([
-  'identity.sessions.create',
-  'identity.tickets.exchange',
-  'identity.session.read',
-  'identity.session.delete',
-  'identity.challenges.create',
-  'identity.invitations.read',
-  'identity.storefronts.read',
-  'identity.invitations.create',
-  'identity.invitations.revoke',
-  'identity.members.create',
-  'identity.password.reset',
-  'identity.password.verify',
-  'identity.mobile.challenge',
-  'identity.mobile.manage',
-  'identity.stepup.start',
-  'identity.stepup.complete',
-] as const satisfies readonly OperationId[]);
-
-export const IDENTITY_REGISTRATION_OPERATION_IDS = Object.freeze([
-  ...IDENTITY_REGISTRATION_CORE_OPERATION_IDS,
-  'identity.wechat.session',
-  'identity.wechat.bind',
-] as const satisfies readonly OperationId[]);
+export { IDENTITY_CORE_OPERATION_IDS, IDENTITY_REGISTRATION_OPERATION_IDS } from './IdentityOperationCatalog';
 
 export function identityRegistrationOperations(context: ModuleContext): OperationUsecase {
-  return identityCoreOperations(context, IDENTITY_REGISTRATION_CORE_OPERATION_IDS, true);
+  return identityCoreOperations(context, identityRegistrationCoreOperationIds(), true);
 }
 
 export function identityOperations(context: ModuleContext): OperationUsecase {
@@ -82,266 +44,11 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
 }
 
 function identityCoreOperations(context: ModuleContext, ownedOperations: readonly OperationId[], registrationOnly: boolean): OperationUsecase {
-  const pool = context.container.get(DATABASE_POOL);
-  const audit = context.container.get(AUDIT_SINK);
-  const keys = context.container.get(IDENTITY_SECURITY_KEYS);
-  const kms = context.container.get(KMS_CLIENT);
-  const passwords = new PasswordPolicy();
+  const runtime = createRealmOperationContext(context, registrationOnly);
+  const { audit, codeDigest, digest, keys, kms, passwords, pool, sessionDigest, tickets } = runtime;
   const stepup = new StepupPolicy();
-  const tickets = new PgAuthTicket(new ReturnTargetSigner(context.container.get(RETURN_TARGETS), keys.session));
-  const digest = (value: string) => createHmac('sha256', keys.identity).update(value.trim().toLowerCase()).digest('hex');
-  const codeDigest = (challenge: string, code: string) => createHmac('sha256', keys.session).update(`${challenge}:${code}`).digest('hex');
-  const sessionDigest = (session: string) => createHash('sha256').update(session).digest('hex');
   const actions: OperationActions = {
-      'identity.sessions.create': operationLifecycle({
-        prepare: async (request) => {
-          const body = bodyRecord(request);
-          const requestedTarget = authTarget(textField(body, 'target', 32));
-          const application = body.application === undefined ? undefined : textField(body, 'application', 48);
-          const authorization = AuthTransaction.start(body.authorization);
-          const provider = body.provider === undefined ? 'password' : textField(body, 'provider', 32);
-          if (provider !== 'password' && provider !== 'phone_otp') throw new Error('CREDENTIAL_PROVIDER_INVALID');
-          const normalizedSubject = provider === 'phone_otp'
-            ? canonicalMobile(textField(body, 'subject', 32))
-            : canonicalIdentitySubject(textField(body, 'subject'));
-          const subject = digest(normalizedSubject);
-          const passwordMobile = provider === 'password' && /^\+[1-9][0-9]{7,14}$/.test(normalizedSubject)
-            ? normalizedSubject
-            : undefined;
-          const mobileLookup = passwordMobile === undefined
-            ? undefined
-            : await kms.encrypt('identity/mobile', passwordMobile, { purpose: 'password_login' });
-          const mobileTokens = passwordMobile === undefined
-            ? undefined
-            : [subject, mobileLookup!.fingerprint, createHash('sha256').update(passwordMobile).digest('hex')];
-          return {
-            body,
-            provider,
-            authorization,
-            host: request.input.headers.host,
-            requestedTarget,
-            application,
-            subject,
-            mobileTokens,
-          };
-        },
-        execute: async (request, database, { body, provider, authorization, host, requestedTarget, application, subject, mobileTokens }) => {
-          const realm = await resolveRealmContext(database, host, requestedTarget, application);
-          let found: Readonly<{ account_id: string; realm_id: string; principal_id: string; credential_version: number }> | undefined;
-          let loginChallenge: string | undefined;
-          let loginCode: string | undefined;
-          if (provider === 'password') {
-            const credentialFound = await resolvePasswordLoginCredential(database,
-              mobileTokens === undefined
-                ? { realmId: realm.realmId, subjectHash: subject }
-                : { realmId: realm.realmId, subjectHash: subject, mobileTokens });
-            if (!(await passwords.verify(secretField(body, 'password', 128), credentialFound?.secret_hash ?? null))) {
-              reject(401, 'CREDENTIAL_INVALID');
-            }
-            if (credentialFound) found = credentialFound;
-          } else {
-            loginChallenge = textField(body, 'challenge', 128);
-            loginCode = textField(body, 'code', 16);
-            found = await verifySmsLoginChallenge(database, {
-              realmId: realm.realmId,
-              id: loginChallenge,
-              codeHash: codeDigest(loginChallenge, loginCode),
-              destinationHash: subject,
-            });
-            if (!found) {
-              await recordInvalidSmsLoginChallenge(database, loginChallenge, subject);
-              reject(401, 'CREDENTIAL_INVALID');
-            }
-          }
-          if (!found) reject(401, 'CREDENTIAL_INVALID');
-          const memberships = await database.query<{ id: string; access_version: number; client: string; organization_id: string }>(
-            `select membership.id,membership.access_version,membership.client,membership.organization_id from access.membership membership
-          where membership.account_id=$1 and membership.realm_id=$2 and membership.status='active'
-            and membership.client=$3 and membership.organization_id=$4
-          order by membership.id`,
-            [found.account_id, realm.realmId, realm.membershipClient, realm.membershipOrganizationId]
-          );
-          const candidates = memberships.rows.filter((item) => item.client === realm.membershipClient
-            && item.organization_id === realm.membershipOrganizationId);
-          if (realm.surface === 'consumer') {
-            const storefront = await requireValidStorefront(memberPort.storefrontRegistration(database, realm.application!));
-            if (storefront.application_slug !== realm.application
-              || storefront.organization_id !== realm.membershipOrganizationId) reject(400, 'AUTH_REALM_MISMATCH');
-          }
-          if (candidates.length === 0) reject(403, 'REALM_MEMBERSHIP_NOT_FOUND');
-          const requested = typeof body.membership === 'string' ? body.membership : undefined;
-          const membership = requested ? candidates.find((item) => item.id === requested) : candidates.length === 1 ? candidates[0] : undefined;
-          if (requested !== undefined && membership === undefined) reject(403, 'MEMBERSHIP_INACTIVE');
-          if (!membership) {
-            return {
-              status: 200,
-              body: {
-                principal: found.principal_id,
-                memberships: candidates.map(({ id, client }) => ({ id, client: authTarget(client) })),
-              },
-            };
-          }
-          if (provider === 'phone_otp') {
-            const consumed = await consumeSmsLoginChallenge(database, {
-              id: loginChallenge!,
-              codeHash: codeDigest(loginChallenge!, loginCode!),
-              account: found.account_id,
-              realmId: realm.realmId,
-              destinationHash: subject,
-            });
-            if (!consumed) reject(401, 'CREDENTIAL_INVALID');
-          }
-          const token = randomBytes(48).toString('base64url');
-          const id = `session:${randomUUID()}`;
-          const assurance = provider === 'phone_otp' ? 2 : 1;
-          await database.query(
-            `insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,user_agent,device_label,
-              assurance_level,realm_id,account_id,auth_target,expires_at,last_seen_at,created_at)
-          values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,clock_timestamp()+interval '12 hours',clock_timestamp(),clock_timestamp())`,
-            [
-              id,
-              found.principal_id,
-              membership.id,
-              tokenHash(token),
-              found.credential_version,
-              membership.access_version,
-              membership.client,
-              digest(request.input.headers['x-peer-address'] ?? 'unknown'),
-              String(request.input.headers['user-agent'] ?? 'unknown').slice(0, 512),
-              String(request.input.headers['x-device-id'] ?? 'browser').slice(0, 128),
-              assurance,
-              realm.realmId,
-              found.account_id,
-              realm.target,
-            ]
-          );
-          if (provider === 'phone_otp') {
-            await database.query(
-              `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
-              values($1,$2,$3,'phone_otp',2,$4,clock_timestamp(),clock_timestamp()+interval '12 hours',$5,$6)`,
-              [`assurance:${randomUUID()}`, found.principal_id, id, createHash('sha256').update(loginChallenge!).digest('hex'), realm.realmId, found.account_id]
-            );
-          }
-          await publishIdentityEvent(database, 'identity.session.created', id, membership.id, request.input.idempotency!, {
-            principal: found.principal_id,
-            account: found.account_id,
-            membership: membership.id,
-            realm: { nodeId: realm.nodeId, surface: realm.surface },
-            assurance,
-            loginMethod: provider,
-          });
-          const csrf = randomBytes(32).toString('base64url');
-          const target = authMembershipTarget(realm.target);
-          const callback = await tickets.issue(database, id, realm.realmId, found.account_id, realm.target, authorization);
-          return { status: 201, body: { session: id, csrf, expiresIn: 43_200, membership: membership.id, target, callback }, headers: sessionCookies(token, csrf, 43_200) };
-        },
-      }),
-      'identity.tickets.exchange': async (request, database) => {
-        const currentToken = requestCookie(request.input.headers.cookie, 'shop_session');
-        if (!currentToken) reject(401, 'AUTHENTICATION_REQUIRED');
-        const realm = await resolveRealmNode(database, request.input.headers.host);
-        const exchanged = await tickets.consume(database, request.input.body, currentToken, realm.realmId);
-        const expiresIn = Math.max(1, Math.min(43_200, Math.floor((exchanged.sessionExpiresAt.getTime() - Date.now()) / 1_000)));
-        return {
-          status: 200,
-          body: { returnTarget: exchanged.returnTarget, expiresIn },
-        };
-      },
-      'identity.session.read': async (request, database) => {
-        const access = requireAccess(request);
-        const governance = requireGovernanceContext(access);
-        const permissions = [...new Set(access.membership.grants.flatMap((grant) => grant.permissions).filter((permission) => !access.membership.denies.includes(permission)))].sort();
-        const scopes = [...new Map(access.membership.grants.map((grant) => [grant.scope.id, grant.scope] as const)).values()];
-        const csrf = requestCookie(request.input.headers.cookie, 'shop_csrf');
-        const realmAccount = await currentRealmAccount(database, access.membership.id, access.actor.id);
-        const [credential, member, accountState] = await Promise.all([
-          database.query<{ rotated_at: Date | null }>(
-            `select rotated_at from identity.credential
-          where account_id=$1 and realm_id=$2 and provider='password' and status='active' order by created_at desc limit 1`,
-            [realmAccount.accountId, realmAccount.realmId]
-          ),
-          memberPort.securityProfile(database, access.actor.id),
-          database.query<{ mobile_masked: string | null }>(`select mobile_masked from identity.account where id=$1 and realm_id=$2`,
-            [realmAccount.accountId, realmAccount.realmId]),
-        ]);
-        return {
-          status: 200,
-          body: {
-            actor: access.actor.id,
-            session: access.actor.session,
-            membership: access.membership.id,
-            scope: access.scope,
-            scopes,
-            accessVersion: access.accessVersion,
-            permissions,
-            capabilities: access.capabilities,
-            assurance: access.assurance,
-            target: access.actor.target,
-            governance: {
-              level: governance.governanceLevel,
-              exactOwner: governance.isExactOwner,
-              organization: governance.organizationId,
-            },
-            ...(member.displayName === null ? {} : {
-              profile: { display_name: member.displayName, employee_no: null },
-            }),
-            security: { hasLocalCredential: credential.rows.length > 0, phoneMasked: accountState.rows[0]?.mobile_masked ?? null,
-              passwordChangedAt: credential.rows[0]?.rotated_at?.toISOString() ?? null },
-            syncedAt: new Date().toISOString(),
-            ...(csrf === undefined ? {} : { csrf }),
-          },
-        };
-      },
-      'identity.session.delete': async (request, database) => {
-        const access = requireAccess(request);
-        const account = await currentRealmAccount(database, access.membership.id, access.actor.id);
-        const result = await database.query(`update identity.session set revoked_at=clock_timestamp(),revoked_reason='logout'
-          where id=$1 and account_id=$2 and realm_id=$3 and revoked_at is null returning id,revoked_at`,
-        [access.actor.session, account.accountId, account.realmId]);
-        const response = rowResult(result);
-        await publishIdentityEvent(database, 'identity.session.revoked', access.actor.session, access.membership.id, request.input.idempotency!, { sessions: [access.actor.session], reason: 'logout' });
-        return { ...response, headers: sessionCookies('', '', 0) };
-      },
-      'identity.sessions.read': async (request, database) => {
-        const access = requireAccess(request);
-        const account = await currentRealmAccount(database, access.membership.id, access.actor.id);
-        const result = await database.query(
-          `select id,membership_id as membership,client,device_label as "deviceLabel",user_agent as "userAgent",
-        assurance_level as assurance,created_at as "createdAt",last_seen_at as "lastSeenAt",expires_at as "expiresAt",id=$3 as current
-        from identity.session where account_id=$1 and realm_id=$2 and revoked_at is null and expires_at>clock_timestamp()
-        order by (id=$3) desc,last_seen_at desc,id limit 100`,
-          [account.accountId, account.realmId, access.actor.session]
-        );
-        return pageResult(result);
-      },
-      'identity.sessions.revoke': async (request, database) => {
-        const access = requireAccess(request);
-        const account = await currentRealmAccount(database, access.membership.id, access.actor.id);
-        const session = request.input.path.sessionid;
-        if (!session) reject(404, 'RESOURCE_NOT_FOUND');
-        const result =
-          session === 'others'
-            ? await database.query<{ id: string }>(
-                `update identity.session set revoked_at=clock_timestamp(),revoked_reason='security_center'
-            where account_id=$1 and realm_id=$2 and id<>$3 and revoked_at is null returning id`,
-                [account.accountId, account.realmId, access.actor.session]
-              )
-            : await database.query<{ id: string }>(
-                `update identity.session set revoked_at=clock_timestamp(),revoked_reason='security_center'
-            where account_id=$1 and realm_id=$2 and id=$3 and revoked_at is null returning id`,
-                [account.accountId, account.realmId, session]
-              );
-        if (session !== 'others' && result.rowCount === 0) {
-          const owned = await database.query<{ revoked_at: Date | null }>(
-            'select revoked_at from identity.session where account_id=$1 and realm_id=$2 and id=$3',
-            [account.accountId, account.realmId, session]);
-          if (!owned.rows[0]) reject(404, 'RESOURCE_NOT_FOUND');
-        }
-        const sessions = result.rows.map(({ id }) => id);
-        if (sessions.length > 0) await publishIdentityEvent(database, 'identity.session.revoked', session, access.membership.id, request.input.idempotency!, { sessions, reason: 'security_center' });
-        const response = { status: 200, body: { target: session, revoked: sessions.length, sessions } } as const;
-        return session === access.actor.session ? { ...response, headers: sessionCookies('', '', 0) } : response;
-      },
+      ...sessionTicketOperations(runtime),
       'identity.challenges.create': operationLifecycle({
         prepare: async (request) => {
           const body = bodyRecord(request);
@@ -404,130 +111,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           return rowResult(result, 202);
         },
       }),
-      'identity.invitations.read': async (request, database) => {
-        const body = bodyRecord(request);
-        const result = await memberPort.invite(database, digest(textField(body, 'invite')));
-        return rowResult(result);
-      },
-      'identity.storefronts.read': async (request, database) => {
-        const body = bodyRecord(request);
-        const storefront = await requireValidStorefront(memberPort.storefrontRegistration(database, storefrontSlug(body)));
-        return {
-          status: 200,
-          body: {
-            terms_title: storefront.terms_title,
-            terms_body: storefront.terms_body,
-            privacy_title: storefront.privacy_title,
-            privacy_body: storefront.privacy_body,
-            terms_hash: storefront.terms_hash,
-            application_id: storefront.application_id,
-            application_slug: storefront.application_slug,
-            organization_id: storefront.organization_id,
-            organization_name: storefront.organization_name,
-            target_client: 'storefront',
-          },
-        };
-      },
-      'identity.invitations.create': async (request, database) => {
-        const access = requireAccess(request);
-        const body = bodyRecord(request);
-        const label = textField(body, 'label', 80);
-        const requestedTarget = body.targetClient;
-        if (requestedTarget !== undefined && requestedTarget !== 'storefront' && requestedTarget !== 'operator') throw new Error('INVALID_INVITATION_INPUT');
-        const targetClient = registrationOnly ? 'operator' : requestedTarget ?? 'storefront';
-        const governanceLevel = invitationGovernanceLevel(body.governanceLevel, targetClient);
-        const invitationScope = access.scope.kind === 'platform' && targetClient === 'operator'
-          ? textField(body, 'tenantId') : access.scope.id;
-        if (access.scope.kind === 'platform' && targetClient === 'operator') {
-          const target = await database.query<{ id: string }>(`select organization.id from organization.organization organization
-          where organization.id=$1 and organization.kind='tenant' and organization.status='active'
-            and access.scope_allowed(organization.id)`, [invitationScope]);
-          if (target.rows[0]?.id !== invitationScope) reject(403, 'PERMISSION_DENIED');
-          await database.query(`select set_config('app.scope_id',$1,true)`, [invitationScope]);
-        }
-        requireInvitationManager(request);
-        if (governanceLevel === 'senior_administrator' && !requireGovernanceContext(access).isExactOwner) {
-          reject(403, 'PERMISSION_DENIED');
-        }
-        if (registrationOnly && requestedTarget !== undefined && requestedTarget !== 'operator') throw new Error('INVALID_INVITATION_INPUT');
-        const maxUses = integerField(body, 'maxUses', 1);
-        const expiresAt = inviteExpiry(body.expiresAt);
-        if (label.length < 2 || maxUses > 500 || (targetClient === 'operator' && maxUses !== 1)) throw new Error('INVALID_INVITATION_INPUT');
-        if (targetClient === 'operator' && access.scope.kind !== 'platform'
-          && (access.scope.kind !== 'tenant' || access.scope.id !== access.scope.tenant)) throw new Error('INVITATION_SCOPE_INVALID');
-        if (targetClient === 'storefront' && access.scope.kind !== 'mall') throw new Error('INVITATION_SCOPE_INVALID');
-        const destination = targetClient === 'operator' ? canonicalMobile(textField(body, 'destination', 32)) : null;
-        const destinationHash = destination === null ? null : digest(destination);
-        const requestedStorefront = typeof body.storefrontOrganization === 'string' && body.storefrontOrganization.trim().length > 0
-          ? body.storefrontOrganization.trim() : null;
-        const storefronts = targetClient === 'operator'
-          ? await database.query<{ id: string }>(`select storefront.id from organization.organization storefront
-            join organization.unitclosure closure on closure.descendant_id=storefront.id
-            where closure.ancestor_id=$1 and storefront.kind='mall' and storefront.status='active'
-              and ($2::text is null or storefront.id=$2) order by storefront.id limit 2`, [invitationScope, requestedStorefront])
-          : { rows: [] };
-        if (targetClient === 'operator' && storefronts.rows.length !== 1) throw new Error('STOREFRONT_SCOPE_REQUIRED');
-        const roleId = targetClient === 'operator'
-          ? governanceLevel === 'senior_administrator'
-            ? seniorAdministratorRoleId(invitationScope)
-            : 'role-zhudatuan-pending-operator'
-          : invitationScope === 'mall-zhudatuan'
-            ? 'role-zhudatuan-storefront-member'
-            : `role-zhudatuan-storefront-member:${invitationScope}`;
-        const role = await database.query<{ id: string }>(`select role.id from access.role role where role.id=$1
-        and role.status='active' and role.scope_id=$2
-        and ($3::text is distinct from 'administrator' or not exists(
-          select 1 from access.rolepermission pendingpermission where pendingpermission.role_id=role.id))`,
-        [roleId, invitationScope, governanceLevel]);
-        if (role.rows[0]?.id !== roleId) throw new Error('EMPLOYEE_ROLE_NOT_FOUND');
-        const policy = await database.query<{ id: string; terms_hash: string }>(`select id,terms_hash from identity.registrationpolicy
-        where effective_at<=clock_timestamp() and (retired_at is null or retired_at>clock_timestamp()) order by version desc limit 1`);
-        if (!policy.rows[0]) throw new Error('INVITE_INVALID');
-        const id = `invite:${randomUUID()}`;
-        const code = `${'ABCDEF'.charAt(randomInt(6))}${'ABCDEF'.charAt(randomInt(6))}${randomBytes(4).toString('hex').toUpperCase()}`;
-        const result = await database.query(
-          `insert into member.invite(id,organization_id,label,destination_hash,token_hash,expires_at,created_by,
-        role_id,allowed_destination_hash,max_uses,use_count,effective_at,status,created_at,registration_policy_id,terms_hash,version,
-        target_client,storefront_organization_id,destination_masked)
-        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0,clock_timestamp(),'active',clock_timestamp(),$11,$12,0,$13,$14,$15)
-        returning id,label,case target_client when 'operator' then 'console' else target_client end target,
-          max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
-          [id, invitationScope, label, destinationHash ?? digest(id), digest(code), expiresAt, access.membership.id,
-            role.rows[0].id, destinationHash, maxUses, policy.rows[0].id, policy.rows[0].terms_hash,
-            targetClient, storefronts.rows[0]?.id ?? null, destination === null ? null : maskInvitationMobile(destination)]
-        );
-        const saved = result.rows[0];
-        if (!saved) throw new Error('INVITE_INVALID');
-        return { status: 201, body: { ...saved, code, ...(governanceLevel === null ? {} : { governanceLevel }) }, headers: { etag: '"0"' } };
-      },
-      'identity.invitations.revoke': async (request, database) => {
-        const { invitationAuthority } = requireInvitationManager(request);
-        const body = bodyRecord(request);
-        const reason = textField(body, 'reason', 1000);
-        if (reason.length < 4) throw new Error('CHANGE_REASON_REQUIRED');
-        const id = request.input.path.invitationid!;
-        const result = await database.query(
-          `update member.invite set status='disabled',version=version+1
-        where id=$1 and access.scope_allowed(organization_id)
-          and (not $3::boolean or (target_client='operator' and organization_id='tenant-zhudatuan'))
-          and (target_client<>'operator' or $4::boolean)
-          and status='active' and ($2::bigint is null or version=$2)
-        returning id,label,target_client,max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
-          [id, request.input.expectedVersion ?? null, registrationOnly, invitationAuthority]
-        );
-        if (result.rows[0]) return rowResult(result);
-        const current = await database.query<{ status: string; version: number }>(
-          `select status,version from member.invite
-        where id=$1 and access.scope_allowed(organization_id)
-          and (not $2::boolean or (target_client='operator' and organization_id='tenant-zhudatuan'))
-          and (target_client<>'operator' or $3::boolean)`,
-          [id, registrationOnly, invitationAuthority]
-        );
-        if (!current.rows[0]) throw new Error('INVITATION_NOT_FOUND');
-        if (request.input.expectedVersion !== undefined && current.rows[0].version !== request.input.expectedVersion) throw new Error('VERSION_CONFLICT');
-        if (current.rows[0].status === 'active') throw new Error('VERSION_CONFLICT');
-        return { status: 200, body: { id, status: current.rows[0].status, version: current.rows[0].version }, headers: { etag: `"${String(current.rows[0].version)}"` } };
-      },
+      ...membershipInvitationOperations(runtime),
       'identity.members.create': operationLifecycle({
         prepare: async (request) => {
           const body = bodyRecord(request);
@@ -779,104 +363,6 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           };
         }),
       }),
-      'identity.members.manage': async (request, database) => {
-        const access = requireAccess(request);
-        const body = bodyRecord(request);
-        const action = body.action === 'update' || body.action === 'status' ? body.action : 'create';
-        const membershipId = request.input.path.membershipid!;
-        const reason = textField(body, 'reason', 1000);
-        if (reason.trim().length < 4) throw new Error('CHANGE_REASON_REQUIRED');
-        if (action === 'create') {
-          const actorAccount = await currentRealmAccount(database, access.membership.id, access.actor.id);
-          const username = textField(body, 'username', 128).trim();
-          const password = await passwords.hash(secretField(body, 'password', 128));
-          const principal = `principal:${randomUUID()}`;
-          const account = `account:${randomUUID()}`;
-          const member = `member:${randomUUID()}`;
-          const membership = membershipId === 'new' ? `membership:${randomUUID()}` : membershipId;
-          const credential = `credential:${randomUUID()}`;
-          const role = await database.query<{ id: string }>(
-            `select id from access.role where scope_id=$1 and status='active'
-          and id='role-employee' limit 1`,
-            [access.scope.id]
-          );
-          if (!role.rows[0]) throw new Error('EMPLOYEE_ROLE_NOT_FOUND');
-          const exists = await database.query('select 1 from identity.credential where realm_id=$1 and provider=$2 and subject_hash=$3',
-            [actorAccount.realmId, 'password', digest(username)]);
-          if (exists.rows[0]) throw new Error('IDENTITY_SUBJECT_EXISTS');
-          await database.query(`insert into identity.principal(id,status,created_at,updated_at) values($1,'active',clock_timestamp(),clock_timestamp())`, [principal]);
-          await database.query(`insert into identity.account(id,realm_id,legacy_principal_id,status,created_at,updated_at)
-            values($1,$2,$3,'active',clock_timestamp(),clock_timestamp())`, [account, actorAccount.realmId, principal]);
-          await database.query(
-            `insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,created_at,realm_id,account_id)
-          values($1,$2,'password',$3,$4,'active',clock_timestamp(),$5,$6)`,
-            [credential, principal, digest(username), password, actorAccount.realmId, account]
-          );
-          await memberPort.create(database, { member, principal, display: textField(body, 'displayName', 128), status: 'active' });
-          const scopeKind = await organizationPort.kind(database, access.scope.id);
-          const result = await accessPort.createRegistration(database, {
-            membership,
-            member,
-            principal,
-            organization: access.scope.id,
-            realm: actorAccount.realmId,
-            account,
-            employee: typeof body.employeeNo === 'string' ? body.employeeNo.trim() || null : null,
-            role: role.rows[0].id,
-            scopeKind,
-            scopes: [`scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`],
-          });
-          if (result.realm_id !== actorAccount.realmId || result.account_id !== account) {
-            throw new Error('MEMBERSHIP_REALM_BINDING_FAILED');
-          }
-          return { status: 201, body: { ...result, membershipId: membership, memberId: member, userId: principal } };
-        }
-        const target = await database.query<{
-          member_id: string;
-          governance_level: 'owner' | 'senior_administrator' | 'administrator' | 'member';
-        }>(
-          `select membership.member_id,target_governance.governance_level
-          from access.membership membership
-          join member.profile profile on profile.id=membership.member_id
-          cross join lateral access.resolve_governance(
-            membership.id,profile.principal_id,$2,$3) target_governance
-          where membership.id=$1 and access.scope_allowed(membership.organization_id)
-          for update of membership`,
-          [membershipId, access.scope.kind, access.scope.id]
-        );
-        if (!target.rows[0]) throw new Error('MEMBERSHIP_NOT_FOUND');
-        if (!requireGovernanceContext(access).isExactOwner
-          && (target.rows[0].governance_level === 'owner' || target.rows[0].governance_level === 'senior_administrator')) {
-          reject(403, 'PERMISSION_DENIED');
-        }
-        if (action === 'status') {
-          const status = body.status === 'offboarded' ? 'left' : body.status;
-          if (!['active', 'suspended', 'left'].includes(String(status))) throw new Error('MEMBERSHIP_STATUS_INVALID');
-          const result = await database.query(
-            `update access.membership set status=$2,access_version=access_version+1,
-          left_at=case when $2='left' then clock_timestamp() else null end where id=$1 returning *`,
-            [membershipId, status]
-          );
-          await accessPort.revokeSessions(database, membershipId);
-          return rowResult(result);
-        }
-        const displayName = textField(body, 'displayName', 128);
-        const result = await database.query(
-          `update member.profile set display_name=$2,version=version+1,updated_at=clock_timestamp()
-        where id=$1 returning *`,
-          [target.rows[0].member_id, displayName]
-        );
-        if (typeof body.departmentId === 'string' && body.departmentId.length > 0) {
-          await database.query(`delete from access.scopegrant where membership_id=$1 and scope_kind='department'`, [membershipId]);
-          await database.query(
-            `insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version)
-          values($1,$2,'department',$3,$4,'allow',clock_timestamp(),(select access_version+1 from access.membership where id=$2))`,
-            [`scope:${randomUUID()}`, membershipId, body.departmentId, `${access.scope.id}/${body.departmentId}`]
-          );
-        }
-        await accessPort.revokeSessions(database, membershipId);
-        return rowResult(result);
-      },
       'identity.members.reset': async (request, database) => {
         const access = requireAccess(request);
         const governance = requireGovernanceContext(access);
@@ -1305,31 +791,6 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
   return new ModuleOperations('identity', pool, audit, selected, ownedOperations);
 }
 
-function requireInvitationManager(request: OperationRequest) {
-  const access = requireAccess(request);
-  const permission = access.membership.grants.some((grant) => grant.permissions.includes('identity.invitation.manage'));
-  if (access.actor.target !== 'console' || !access.capabilities.includes(request.type) || !permission) reject(403, 'PERMISSION_DENIED');
-  const governance = requireGovernanceContext(access);
-  const invitationAuthority = governance.isExactOwner || governance.governanceLevel === 'senior_administrator';
-  if (!invitationAuthority) reject(403, 'PERMISSION_DENIED');
-  return { access, invitationAuthority };
-}
-
-function invitationGovernanceLevel(value: unknown, targetClient: 'storefront' | 'operator'):
-  'administrator' | 'senior_administrator' | null {
-  if (targetClient !== 'operator') {
-    if (value !== undefined) throw new Error('INVALID_INVITATION_INPUT');
-    return null;
-  }
-  if (value === undefined || value === 'administrator') return 'administrator';
-  if (value === 'senior_administrator') return value;
-  throw new Error('INVALID_INVITATION_INPUT');
-}
-
-function seniorAdministratorRoleId(organization: string): string {
-  return `role-senior-administrator-v1:${organization}`;
-}
-
 async function requireValidInvite<T>(operation: Promise<T>): Promise<T> {
   try {
     return await operation;
@@ -1359,14 +820,6 @@ async function requireValidStorefront<T>(operation: Promise<T | undefined>): Pro
   const storefront = await operation;
   if (storefront === undefined) reject(404, 'STOREFRONT_NOT_FOUND');
   return storefront;
-}
-
-function maskMobile(value: string): string {
-  return `${value.slice(0, 3)}****${value.slice(-4)}`;
-}
-
-function maskInvitationMobile(value: string): string {
-  return maskMobile(/^\+86(1[3-9][0-9]{9})$/.exec(value)?.[1] ?? value);
 }
 
 interface FinancialActionRequest {
@@ -1423,12 +876,4 @@ function financialActionRequest(value: unknown): FinancialActionRequest | null {
     expectedVersion: typeof expectedValue === 'number' ? expectedValue : null,
     requestHash: authoritativeHash,
   };
-}
-
-function inviteExpiry(value: unknown): string {
-  if (typeof value !== 'string') throw new Error('INVALID_INVITATION_INPUT');
-  const time = new Date(value).getTime();
-  const now = Date.now();
-  if (!Number.isFinite(time) || time <= now + 10 * 60_000 || time > now + 90 * 24 * 60 * 60_000) throw new Error('INVALID_INVITATION_INPUT');
-  return new Date(time).toISOString();
 }
