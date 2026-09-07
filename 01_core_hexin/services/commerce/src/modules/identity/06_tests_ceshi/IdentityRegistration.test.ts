@@ -124,7 +124,7 @@ describe('canonical member registration security boundary', () => {
     expect(response.status).toBe(200);
     const revocation = harness.queries.find(({ text }) => text.includes("revoked_reason='mobile_changed'"));
     expect(revocation?.text).not.toContain('id<>');
-    expect(revocation?.values).toEqual(['principal:stepup']);
+    expect(revocation?.values).toEqual(['account:stepup:l0', 'realm:l0']);
     expect(harness.queries.some(({ text }) => text.includes('update identity.credential set subject_hash'))).toBe(false);
   });
 
@@ -144,7 +144,7 @@ describe('canonical member registration security boundary', () => {
     ]);
     expect(harness.queries.some(({ text }) => text.includes('select id from identity.credential'))).toBe(false);
     expect(harness.queries.findIndex(({ text }) => text.includes('platform-owner-transfer:v1')))
-      .toBeLessThan(harness.queries.findIndex(({ text }) => text.includes('select mobile_ciphertext from member.profile')));
+      .toBeLessThan(harness.queries.findIndex(({ text }) => text.includes('select mobile_ciphertext from identity.account')));
   });
 
   it('binds Step-Up completion to the verified profile mobile', async () => {
@@ -161,6 +161,7 @@ describe('canonical member registration security boundary', () => {
     expect(challenge?.text).toContain('session_hash=$6');
     expect(challenge?.values.slice(2)).toEqual([
       'principal:stepup', 'stepup', subjectDigest(SUBJECT), sessionEvidenceDigest('session:stepup'),
+      'realm:l0', 'account:stepup:l0',
     ]);
   });
 
@@ -176,10 +177,12 @@ describe('canonical member registration security boundary', () => {
     const phoneAssurance = harness.queries.find(({ text }) => text.includes("'phone_otp',2"));
     expect(phoneAssurance?.values).toEqual([
       expect.stringMatching(/^assurance:/), 'principal:stepup', subjectDigest(SUBJECT),
+      'realm:l0', 'account:stepup:l0',
     ]);
     const assurance = harness.queries.find(({ text }) => text.includes("'otp',3"));
     expect(assurance?.values).toEqual([
       expect.stringMatching(/^assurance:/), 'principal:stepup', 'session:stepup', sessionEvidenceDigest('session:stepup'),
+      'realm:l0', 'account:stepup:l0',
     ]);
     expect(assurance?.values[3]).not.toBe(subjectDigest('challenge:stepup'));
   });
@@ -198,7 +201,7 @@ describe('canonical member registration security boundary', () => {
         wechat: { identity: 'identity:wechat', status: 'active' } },
     });
     const grant = harness.queries.find(({ text }) => text.includes('from identity.wechatgrant bindinggrant'));
-    expect(grant?.values).toEqual([createHash('sha256').update('wechat-binding-token').digest('hex')]);
+    expect(grant?.values).toEqual([createHash('sha256').update('wechat-binding-token').digest('hex'), 'realm:l0']);
     const grantIndex = harness.queries.findIndex(({ text }) => text.includes('from identity.wechatgrant bindinggrant'));
     const challengeIndex = harness.queries.findIndex(({ text }) => text.includes('update identity.challenge set consumed_at'));
     const bindingIndex = harness.queries.findIndex(({ text }) => text.startsWith('update identity.federatedidentity'));
@@ -259,7 +262,7 @@ describe('canonical member registration security boundary', () => {
     expect(challenge).toBeDefined();
     expect(challenge?.text).toContain('purpose=$4');
     expect(challenge?.text).toContain('destination_hash=$5');
-    expect(challenge?.values.slice(2)).toEqual([null, 'registration', subjectDigest(SUBJECT), null]);
+    expect(challenge?.values.slice(2)).toEqual([null, 'registration', subjectDigest(SUBJECT), null, 'realm:l0', null]);
     expect(challenge?.values[1]).toBe(challengeCodeDigest('challenge:registration', `123456:${subjectDigest('INVITE-CODE')}`));
     expect(harness.queries.some(({ text }) => text.includes('update member.invite set use_count'))).toBe(false);
   });
@@ -324,8 +327,8 @@ describe('canonical member registration security boundary', () => {
         memberships: [{ id: 'membership:console:one', client: 'console' }, { id: 'membership:console:two', client: 'console' }],
       },
     });
-    const credential = harness.queries.find(({ text }) => text.includes('select credential.principal_id,credential.secret_hash'));
-    expect(credential?.values).toEqual([subjectDigest(SUBJECT), 'principal:mobile-login']);
+    const credential = harness.queries.find(({ text }) => text.includes('account.credential_version,credential.secret_hash'));
+    expect(credential?.values).toEqual(['realm:l0', subjectDigest(SUBJECT), 'account:principal:mobile-login:l0']);
   });
 
   it.each([
@@ -719,7 +722,7 @@ function registrationRequest(idempotency: string, directLogin = false): Operatio
     input: {
       path: {},
       query: {},
-      headers: { 'x-device-id': 'device:registration-test' },
+      headers: { host: 'api.zhudatuan.com', 'x-device-id': 'device:registration-test' },
       body: {
         subject: SUBJECT,
         password: 'Registration!Password1',
@@ -746,7 +749,7 @@ function storefrontRegistrationRequest(idempotency: string): OperationRequest {
     input: {
       path: {},
       query: {},
-      headers: { 'x-device-id': 'device:storefront-registration-test' },
+      headers: { host: 'api.hbbtzn.com', 'x-device-id': 'device:storefront-registration-test' },
       body: {
         subject: SUBJECT,
         password: '654321',
@@ -772,7 +775,7 @@ function storefrontPasswordRegistrationRequest(idempotency: string): OperationRe
     input: {
       path: {},
       query: {},
-      headers: { 'x-device-id': 'device:storefront-registration-test' },
+      headers: { host: 'api.hbbtzn.com', 'x-device-id': 'device:storefront-registration-test' },
       body: {
         subject: SUBJECT,
         password: 'Automatic!Password1',
@@ -813,7 +816,8 @@ function challengeRequest(body: Readonly<Record<string, unknown>>): OperationReq
     input: {
       path: {},
       query: {},
-      headers: { 'x-device-id': 'device:registration-test' },
+      headers: { host: body.application === 'zdt-l1-verify' ? 'api.hbbtzn.com' : 'api.zhudatuan.com',
+        'x-device-id': 'device:registration-test' },
       body,
       rawBody: '',
       deadline: Date.now() + 5_000,
@@ -856,7 +860,7 @@ function stepupRequest(body: Readonly<Record<string, unknown>>): OperationReques
       accessVersion: 1, capabilities: ['identity.stepup.start'], assurance: { level: 2 }, trace: 'trace:stepup',
     },
     input: {
-      path: {}, query: {}, headers: { 'x-device-id': 'device:stepup-test' }, body, rawBody: JSON.stringify(body),
+      path: {}, query: {}, headers: { host: 'api.zhudatuan.com', 'x-device-id': 'device:stepup-test' }, body, rawBody: JSON.stringify(body),
       deadline: Date.now() + 5_000, signal: new AbortController().signal, idempotency: 'stepup:start',
     },
   };
@@ -882,7 +886,7 @@ function passwordResetRequest(): OperationRequest {
   return {
     type: 'identity.password.reset', access: null,
     input: {
-      path: {}, query: {}, headers: { 'x-device-id': 'device:password-reset' },
+      path: {}, query: {}, headers: { host: 'api.zhudatuan.com', 'x-device-id': 'device:password-reset' },
       body: { challenge: 'challenge:password-reset', code: '123456', newPassword: 'Replacement!Password2' },
       rawBody: '', deadline: Date.now() + 5_000, signal: new AbortController().signal,
       idempotency: 'password:reset',
@@ -907,7 +911,7 @@ function authenticatedRequest(type: OperationRequest['type'], body: Readonly<Rec
       capabilities: [type], assurance: { level: 2 }, trace: `trace:${idempotency}`,
     },
     input: {
-      path: {}, query: {}, headers: { 'x-device-id': `device:${idempotency}` }, body, rawBody: JSON.stringify(body),
+      path: {}, query: {}, headers: { host: 'api.zhudatuan.com', 'x-device-id': `device:${idempotency}` }, body, rawBody: JSON.stringify(body),
       deadline: Date.now() + 5_000, signal: new AbortController().signal, idempotency,
     },
   };
@@ -930,12 +934,47 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
   const client = {
     query: async (text: string, values: readonly unknown[] = []) => {
       queries.push({ text, values });
+      if (text.includes('from identity.realmentry entry')) {
+        const l1 = String(values[0]).includes('hbbtzn');
+        return result([{ realm_id: l1 ? 'realm:l1' : 'realm:l0', node_id: l1 ? 'l1' : 'l0' }]);
+      }
+      if (text.includes('from identity.realmtarget where realm_id=$1')) {
+        const target = String(values[1]);
+        const consumer = target.startsWith('storefront');
+        const l1 = values[0] === 'realm:l1';
+        if ((l1 && !['console-hbbtzn', 'storefront-hbbtzn'].includes(target))
+          || (!l1 && ['console-hbbtzn', 'storefront-hbbtzn'].includes(target))) return result([]);
+        return result([{
+          surface: consumer ? 'consumer' : 'admin',
+          membership_client: consumer ? 'storefront' : target.startsWith('store') ? 'store' : target.startsWith('supplier') ? 'supplier' : 'operator',
+          membership_organization_id: consumer
+            ? (l1 ? input.storefrontOrganizationId ?? 'mall:l1-hongtai' : 'mall-zhudatuan')
+            : l1 ? 'mall:d1708f04df2dd8a61736852c4900fb43' : 'tenant-zhudatuan',
+          application_slug: consumer ? (l1 ? 'zdt-l1-verify' : 'zhudatuan-storefront') : null,
+        }]);
+      }
+      if (text.includes('from identity.realmtarget target join identity.realm realm')) {
+        const l1 = values[0] === 'realm:l1';
+        return result([{
+          node_id: l1 ? 'l1' : 'l0', entry_host: l1 ? 'api.hbbtzn.com' : 'api.zhudatuan.com',
+          target: l1 ? 'storefront-hbbtzn' : 'storefront', surface: 'consumer', membership_client: 'storefront',
+          membership_organization_id: l1 ? input.storefrontOrganizationId ?? 'mall:l1-hongtai' : 'mall-zhudatuan',
+          application_slug: String(values[1]),
+        }]);
+      }
+      if (text.includes('from access.membership membership join identity.account account')
+        && text.includes('membership.id=$1') && text.includes('account.legacy_principal_id=$2')) {
+        return result([{ account_id: 'account:stepup:l0', realm_id: 'realm:l0',
+          principal_id: String(values[1]), credential_version: 1 }]);
+      }
       if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
       if (text.startsWith('select request_hash,state,response')) {
         return result([{ request_hash: requestHash, state: 'started', response: null }]);
       }
-      if (text.includes('select credential.principal_id,principal.credential_version')) {
-        return result(input.subjectExists ? [{ principal_id: 'principal:existing-phone', credential_version: 4 }] : []);
+      if (text.includes('select account.id account_id,account.legacy_principal_id principal_id,account.credential_version')
+        && text.includes('credential.subject_hash=$2') && !text.includes('credential.secret_hash')) {
+        return result(input.subjectExists ? [{ account_id: 'account:existing-phone:l0',
+          principal_id: 'principal:existing-phone', credential_version: 4 }] : []);
       }
       if (text.includes('from experience.application application') && text.includes('application.public_slug=$1')) {
         const l1 = values[0] === 'zdt-l1-verify';
@@ -949,23 +988,25 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           privacy_title: '主打团隐私政策', privacy_body: '隐私政策正文', terms_hash: 'f'.repeat(64),
         }] : []);
       }
-      if (text.includes('select principal.id principal_id,principal.credential_version')) {
-        return result([{ principal_id: String(values[0]), credential_version: 4 }]);
+      if (text.includes('from identity.account account where account.id=$1')) {
+        return result([{ account_id: String(values[0]), principal_id: input.boundMobilePrincipal ?? 'principal:existing-phone', credential_version: 4 }]);
       }
       if (text.includes('select principal_id from identity.credential')) {
         return result([{ principal_id: input.challengePrincipal ?? 'principal:password-reset' }]);
       }
-      if (text.includes('profile.mobile_token=any')) {
+      if (text.includes('account.mobile_token=any')) {
         const principals = [
           input.boundMobilePrincipal,
           input.subjectExists ? 'principal:existing-phone' : null,
           input.challengePrincipal,
         ].filter((principal, index, all): principal is string => principal !== null && principal !== undefined
           && all.indexOf(principal) === index);
-        return result(principals.map((principal_id) => ({ principal_id })));
+        return result(principals.map((principal_id) => ({ account_id: `account:${principal_id}:l0`, realm_id: String(values[0]),
+          principal_id, credential_version: 4 })));
       }
-      if (text.includes('select credential.principal_id,credential.secret_hash')) {
-        return result(input.credentialSecret ? [{ principal_id: input.boundMobilePrincipal ?? 'principal:password-login',
+      if (text.includes('account.credential_version,credential.secret_hash')) {
+        const principal = input.boundMobilePrincipal ?? 'principal:password-login';
+        return result(input.credentialSecret ? [{ account_id: `account:${principal}:l0`, realm_id: String(values[0]), principal_id: principal,
           secret_hash: input.credentialSecret, credential_version: 2 }] : []);
       }
       if (text.includes('select membership.id,membership.access_version,membership.client')) {
@@ -973,13 +1014,15 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           { id: 'membership:console:one', access_version: 1, client: 'operator', organization_id: 'tenant-zhudatuan' },
           { id: 'membership:console:two', access_version: 1, client: 'operator', organization_id: 'tenant-zhudatuan' },
         ] : []);
-        return result(rows.filter((row) => row.client === values[1] && row.organization_id === values[2]));
+        return result(rows.filter((row) => row.client === values[2] && row.organization_id === values[3]));
       }
       if (text.includes('with challenge as') && text.includes('identity.challengesecret')) {
         return result([{ id: String(values[0]), purpose: String(values[2]), expires_at: '2099-01-01T00:00:00.000Z' }]);
       }
       if (text.includes('update identity.challenge set consumed_at')) {
-        return result(input.challengeAccepted ? [{ principal_id: input.challengePrincipal ?? null }] : []);
+        const principal = input.challengePrincipal ?? null;
+        return result(input.challengeAccepted ? [{ principal_id: principal, realm_id: 'realm:l0',
+          account_id: principal === null ? null : `account:${principal}:l0` }] : []);
       }
       if (text.includes('with candidate as materialized') && text.includes('update member.invite')) {
         return result(input.inviteAccepted ? [input.operatorInvite ? {
@@ -992,13 +1035,13 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           target_client: 'storefront', storefront_organization_id: null, governance_level: null,
         }] : []);
       }
-      if (text.includes('select mobile_ciphertext from member.profile')) {
+      if (text.includes('select mobile_ciphertext from identity.account')) {
         return result(input.mobileCiphertext === undefined ? [] : [{ mobile_ciphertext: input.mobileCiphertext }]);
       }
       if (text.includes('from identity.wechatgrant bindinggrant')) {
         return result(input.wechatGrant ? [{ identity_id: 'identity:wechat', application_hash: 'hash:application' }] : []);
       }
-      if (text.includes("status='active' and id<>")) return result(input.wechatConflict ? [{ exists: 1 }] : []);
+      if (text.includes("account_id=$3 and status='active'")) return result(input.wechatConflict ? [{ exists: 1 }] : []);
       if (text.startsWith('update identity.federatedidentity')) {
         return result(input.wechatUpdate === false ? [] : [{ id: 'identity:wechat' }]);
       }
@@ -1025,6 +1068,9 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
         return result([{ id: 'member:test', display_name: '测试会员', mobile_masked: '138****8000', version: 2 }]);
       }
       if (text.includes('update identity.principal set credential_version')) return result([{ credential_version: 2, version: 2 }]);
+      if (text.includes('update identity.account set credential_version=credential_version+1')) {
+        return result([{ credential_version: 2, version: 2 }]);
+      }
       if (text.includes('update identity.session set assurance_level=3')) {
         return result([{ id: 'session:stepup', assurance_level: 3 }]);
       }

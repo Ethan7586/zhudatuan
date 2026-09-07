@@ -38,15 +38,18 @@ export function storefrontAuthTarget(application: string): Extract<AuthTarget, '
 
 export async function consumeChallenge(database: OperationDatabase, challenge: string, code: string,
   digest: (id: string, code: string) => string, principal?: string,
-  expected: Readonly<{ purpose?: string; destinationHash?: string; sessionHash?: string }> = {}): Promise<{ principal_id: string | null }> {
-  const result = await database.query<{ principal_id: string | null }>(`update identity.challenge set consumed_at=clock_timestamp(),attempts=attempts+1
+  expected: Readonly<{ purpose?: string; destinationHash?: string; sessionHash?: string; realmId?: string; accountId?: string }> = {}
+): Promise<{ principal_id: string | null; realm_id: string | null; account_id: string | null }> {
+  const result = await database.query<{ principal_id: string | null; realm_id: string | null; account_id: string | null }>(`update identity.challenge set consumed_at=clock_timestamp(),attempts=attempts+1
     where id=$1 and code_hash=$2 and consumed_at is null and expires_at>clock_timestamp()
       and ($3::text is null or principal_id=$3)
       and ($4::text is null or purpose=$4)
       and ($5::text is null or destination_hash=$5)
       and ($6::text is null or session_hash=$6)
-    returning principal_id`, [challenge, digest(challenge, code), principal ?? null, expected.purpose ?? null,
-    expected.destinationHash ?? null, expected.sessionHash ?? null]);
+      and ($7::text is null or realm_id=$7)
+      and ($8::text is null or account_id=$8)
+    returning principal_id,realm_id,account_id`, [challenge, digest(challenge, code), principal ?? null, expected.purpose ?? null,
+    expected.destinationHash ?? null, expected.sessionHash ?? null, expected.realmId ?? null, expected.accountId ?? null]);
   if (!result.rows[0]) {
     await database.query('update identity.challenge set attempts=attempts+1 where id=$1 and consumed_at is null', [challenge]);
     reject(400, 'CHALLENGE_INVALID');

@@ -10,18 +10,20 @@ describe('identity persistence SQL', () => {
       query: async (text: string) => {
         queries.push(text);
         if (text.includes('from identity.wechatgrant')) return result([{ identity_id: 'identity:wechat', application_hash: 'hash:app' }]);
-        if (text.includes('status=\'active\' and id<>')) return result([]);
+        if (text.includes("account_id=$3 and status='active'")) return result([]);
         if (text.startsWith('update identity.federatedidentity')) return result([{ id: 'identity:wechat' }]);
         return result([]);
       },
     };
 
-    await expect(bindWechat(database, 'hash:token', 'principal:owner', 'membership:owner')).resolves.toBe('identity:wechat');
+    await expect(bindWechat(database, 'hash:token', 'principal:owner', 'membership:owner', 'realm:l0', 'account:l0'))
+      .resolves.toBe('identity:wechat');
     expect(queries[0]).toContain('identity.wechatgrant bindinggrant');
     expect(queries[0]).not.toMatch(/\bidentity\.wechatgrant\s+grant\b/);
     expect(queries[0]).toContain("identity.status in('unbound','active')");
+    expect(queries[0]).toContain('identity.realm_id=$2');
     expect(queries.find((text) => text.startsWith('update identity.federatedidentity')))
-      .toContain("status in('unbound','active')");
+      .toContain('identity.realm_id=$4');
   });
 });
 

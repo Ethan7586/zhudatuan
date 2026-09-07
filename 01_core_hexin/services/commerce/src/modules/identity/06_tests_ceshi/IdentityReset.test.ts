@@ -20,10 +20,14 @@ describe('root identity registration reset', () => {
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
         statements.push({ text, values });
+        if (text.includes('account.legacy_principal_id=$2')) {
+          return rows([{ account_id: 'account:actor:l0', realm_id: 'realm:l0', principal_id: 'actor:one', credential_version: 1 }]);
+        }
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
         if (text.startsWith('select request_hash,state,response')) return rows([{ request_hash: requestHash, state: 'started', response: null }]);
-        if (text.includes('principal.version principal_version')) {
-          return rows([{ member_id: 'member:target', principal_id: 'principal:target', principal_status: 'active', principal_version: 7, organization_id: 'tenant:one' }]);
+        if (text.includes('account.status account_status')) {
+          return rows([{ member_id: 'member:target', account_id: 'account:target:l0', realm_id: 'realm:l0',
+            principal_id: 'principal:target', account_status: 'active', account_version: 7, organization_id: 'tenant:one' }]);
         }
         if (text.includes('from access.membership owner_membership')) return rows([]);
         if (text.startsWith('select id,organization_id from access.membership')) {
@@ -35,7 +39,7 @@ describe('root identity registration reset', () => {
           return rows([{ id: 'credential:target', provider: 'password', status: 'active', subject_hash: originalSubject }]);
         }
         if (text.startsWith('select id from identity.federatedidentity')) return rows([]);
-        if (text.includes('update identity.principal set status')) return rows([{ version: 8 }]);
+        if (text.includes('update identity.account set status')) return rows([{ version: 8 }]);
         return rows([]);
       },
       release: () => undefined,
@@ -46,10 +50,11 @@ describe('root identity registration reset', () => {
 
     expect(response).toEqual({
       status: 200,
-      body: { principal_id: 'principal:target', status: 'reset', login_identity_released: true, history_retained: true, version: 8 },
+      body: { principal_id: 'principal:target', account_id: 'account:target:l0', status: 'reset',
+        login_identity_released: true, history_retained: true, version: 8 },
     });
     expect(statements.some(({ text }) => text.includes('pg_advisory_xact_lock(hashtext($1))'))).toBe(true);
-    expect(statements.some(({ text }) => text.includes("update identity.session set revoked_at") && text.includes("'identity_reset'"))).toBe(true);
+    expect(statements.some(({ text }) => text.includes('update identity.session session set') && text.includes("'identity_reset'"))).toBe(true);
     const credentialUpdate = statements.find(({ text }) => text.includes("update identity.credential set status='revoked'"));
     expect(credentialUpdate?.values[1]).toMatch(/^[0-9a-f]{64}$/);
     expect(credentialUpdate?.values[1]).not.toBe(originalSubject);
@@ -64,10 +69,14 @@ describe('root identity registration reset', () => {
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
         statements.push(text);
+        if (text.includes('account.legacy_principal_id=$2')) {
+          return rows([{ account_id: 'account:owner:l0', realm_id: 'realm:l0', principal_id: 'actor:one', credential_version: 1 }]);
+        }
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
         if (text.startsWith('select request_hash,state,response')) return rows([{ request_hash: requestHash, state: 'started', response: null }]);
-        if (text.includes('principal.version principal_version')) {
-          return rows([{ member_id: 'member:owner', principal_id: 'actor:one', principal_status: 'active', principal_version: 7, organization_id: 'organization:one' }]);
+        if (text.includes('account.status account_status')) {
+          return rows([{ member_id: 'member:owner', account_id: 'account:owner:l0', realm_id: 'realm:l0',
+            principal_id: 'actor:one', account_status: 'active', account_version: 7, organization_id: 'organization:one' }]);
         }
         return rows([]);
       },

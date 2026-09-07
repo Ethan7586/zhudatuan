@@ -30,3 +30,14 @@
 - `identity.credential` 通过 `account_id + realm_id` 归属节点账号，唯一性改为 `realm_id + provider + subject_hash`；同一登录名可以跨 realm 共存。
 - `access.membership` 与 `identity.federatedidentity` 增加 account/realm 归属。迁移只回填由 L0/L1 已确认 organization 可以确定的数据，未确认历史数据保持未归类，不伪造节点。
 - 本批建立模型与确定性回填，运行时注册、改密、重置、短信和微信生命周期切换留在第 3 批。
+
+## 第 3 批账号生命周期
+
+- 注册、密码登录与短信登录先由可信 Host 查询 `identity.realmentry`，随后只在该 realm 内查找或创建 `identity.account` 与 `identity.credential`。手机号和账号名的唯一性边界是 realm；相同手机号可在不同节点拥有不同 account、principal、密码和 credential version。
+- 手机密文、检索 token、掩码与验证时间由 `identity.account` 保存。`member.profile` 中的历史手机字段只作为迁移来源和兼容投影，不再用于身份解析、冲突判断或 Step-Up 目的地址选择。
+- `identity.challenge`、`identity.assurance`、`identity.loginattempt` 和 `identity.federatedidentity` 均可记录 realm/account。新建登录、重置、手机变更、Step-Up 与微信记录必须带本域归属；共享 principal 的模糊历史记录不猜测回填。
+- 改密、重置、手机变更、成员释放、验证失效和微信绑定只更新目标 account，并只撤销该 account 所属 membership 的 session。仅当 principal 不再关联任何 active account 时，才同步停用兼容 principal/profile。
+- 微信 OpenID/UnionID 的查找、自动关联、绑定与重新绑定限制在当前 realm；绑定完成还必须匹配同一 account 的 active membership。
+- `identity.realmtarget.target` 改为 realm 内键，可由不同节点复用 `console`、`storefront`、`store`、`supplier` 等通用 surface target。L2–L11 新节点通过 registry 数据加入，不需要新增节点枚举或修改登录算法。
+
+第 3 批仍保留旧 session 表中的 principal 字段作为兼容桥；session、ticket、授权加载与撤销的显式 realm/account 切换属于第 4 批，不能提前宣称全链路根治完成。

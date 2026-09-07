@@ -18,10 +18,15 @@ describe('identity session projection', () => {
   it('returns the active member name without requiring a separate profile permission', async () => {
     const client = {
       query: async (text: string) => {
+        if (text.includes('from access.membership membership join identity.account account')) {
+          return { rows: [{ account_id: 'account:one', realm_id: 'realm:l0', principal_id: 'actor:one', credential_version: 1 }],
+            rowCount: 1 } as unknown as QueryResult;
+        }
         if (text.includes('select rotated_at from identity.credential')) return result([{ rotated_at: null }]);
         if (text.includes('select display_name,mobile_ciphertext from member.profile')) {
           return result([{ display_name: '张三', mobile_ciphertext: 'ciphertext:mobile' }]);
         }
+        if (text.includes('select mobile_masked from identity.account')) return result([{ mobile_masked: '+86****8000' }]);
         return result([]);
       },
       release: () => undefined,
@@ -104,14 +109,18 @@ describe('identity financial action proof issuance', () => {
     let persisted = '';
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
+        if (text.includes('from access.membership membership join identity.account account')) {
+          return { rows: [{ account_id: 'account:one', realm_id: 'realm:l0', principal_id: 'actor:one', credential_version: 1 }],
+            rowCount: 1 } as unknown as QueryResult;
+        }
         if (text.includes('insert into runtime.idempotency')) storedHash = String(values[3]);
         if (text.startsWith('select request_hash,state,response')) {
           return { rows: [{ request_hash: storedHash, state: 'started', response: null }], rowCount: 1 } as unknown as QueryResult;
         }
         if (text.includes('update identity.challenge set consumed_at')) {
-          return { rows: [{ principal_id: 'actor:one' }], rowCount: 1 } as unknown as QueryResult;
+          return { rows: [{ principal_id: 'actor:one', account_id: 'account:one', realm_id: 'realm:l0' }], rowCount: 1 } as unknown as QueryResult;
         }
-        if (text.includes('select mobile_ciphertext from member.profile')) {
+        if (text.includes('select mobile_ciphertext from identity.account')) {
           return { rows: [{ mobile_ciphertext: 'ciphertext:verified-mobile' }], rowCount: 1 } as unknown as QueryResult;
         }
         if (text.includes("'phone_otp',2")) phoneEvidence = String(values[2]);
@@ -192,6 +201,7 @@ describe('administrator invitation issuance', () => {
     let invitationValues: readonly unknown[] = [];
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
+        if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l0', node_id: 'l0' }]);
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
         if (text.startsWith('select request_hash,state,response')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
@@ -243,7 +253,7 @@ describe('administrator invitation issuance', () => {
       input: {
         path: {},
         query: {},
-        headers: {},
+        headers: { host: 'api.zhudatuan.com' },
         body: { label: '普通管理员邀请', targetClient: 'operator', destination: '+8613800138000',
           storefrontOrganization: 'mall:one', maxUses: 1, expiresAt: new Date(Date.now() + 86_400_000).toISOString() },
         rawBody: '',
@@ -268,6 +278,7 @@ describe('identity challenge notification queue', () => {
     let notificationSql = '';
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
+        if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l0', node_id: 'l0' }]);
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
         if (text.startsWith('select request_hash,state,response')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
@@ -295,7 +306,7 @@ describe('identity challenge notification queue', () => {
       input: {
         path: {},
         query: {},
-        headers: {},
+        headers: { host: 'api.zhudatuan.com' },
         body: { destination: '+8613800138000', invite: 'invitation-secret', purpose: 'registration' },
         rawBody: '',
         deadline: Date.now() + 1_000,

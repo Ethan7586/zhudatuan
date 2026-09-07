@@ -1,6 +1,5 @@
 import { createHash, createHmac, randomBytes, randomInt, randomUUID } from 'node:crypto';
 import { canonicalFinancialActionRequest, requiresFinancialActionProof, requiresFinancialExpectedVersion, type OperationId } from '@shop/contract';
-import { resolveIdentityRealm } from '@shop/config/server';
 import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../../../foundation/application/AuditSink';
 import { ModuleOperations, operationLifecycle, pageResult, reject, requireAccess, rowResult, type OperationActions, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
@@ -17,12 +16,13 @@ import { AuthTransaction } from '../../02_domain_yewu/models_moxing/AuthTransact
 import { PgAuthTicket } from '../../04_adapters_shixian/persistence_cunchu/PgAuthTicket';
 import { RETURN_TARGETS } from '../../04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
 import { ReturnTargetSigner } from '../../04_adapters_shixian/providers_waibu/ReturnTargetSigner';
-import { authMembershipTarget, authTarget, consumeChallenge, requestCookie, sessionCookies, storefrontAuthTarget } from './IdentitySecurity';
+import { authMembershipTarget, authTarget, consumeChallenge, requestCookie, sessionCookies } from './IdentitySecurity';
 import { accessPort } from '../../../access';
 import { memberPort, type MemberInvite } from '../../../member';
 import { organizationPort } from '../../../organization';
 import { canonicalIdentitySubject, canonicalMobile } from '../../02_domain_yewu/models_moxing/IdentitySubject';
-import { consumeSmsLoginChallenge, recordInvalidSmsLoginChallenge, resolveBoundMobilePrincipal, resolvePasswordLoginCredential, verifySmsLoginChallenge } from '../../03_application_yingyong/services_fuwu/SmsLogin';
+import { consumeSmsLoginChallenge, recordInvalidSmsLoginChallenge, resolveBoundMobileAccount, resolvePasswordLoginCredential, verifySmsLoginChallenge } from '../../03_application_yingyong/services_fuwu/SmsLogin';
+import { currentRealmAccount, resolveRealmApplication, resolveRealmContext, resolveRealmNode } from '../../03_application_yingyong/services_fuwu/RealmAccount';
 
 export const IDENTITY_CORE_OPERATION_IDS = Object.freeze([
   'identity.sessions.create',
@@ -98,7 +98,6 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const body = bodyRecord(request);
           const requestedTarget = authTarget(textField(body, 'target', 32));
           const application = body.application === undefined ? undefined : textField(body, 'application', 48);
-          const realm = resolveIdentityRealm(request.input.headers.host, requestedTarget, application);
           const authorization = AuthTransaction.start(body.authorization);
           const provider = body.provider === undefined ? 'password' : textField(body, 'provider', 32);
           if (provider !== 'password' && provider !== 'phone_otp') throw new Error('CREDENTIAL_PROVIDER_INVALID');
@@ -119,18 +118,23 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             body,
             provider,
             authorization,
-            realm,
+            host: request.input.headers.host,
+            requestedTarget,
+            application,
             subject,
             mobileTokens,
           };
         },
-        execute: async (request, database, { body, provider, authorization, realm, subject, mobileTokens }) => {
-          let found: Readonly<{ principal_id: string; credential_version: number }> | undefined;
+        execute: async (request, database, { body, provider, authorization, host, requestedTarget, application, subject, mobileTokens }) => {
+          const realm = await resolveRealmContext(database, host, requestedTarget, application);
+          let found: Readonly<{ account_id: string; realm_id: string; principal_id: string; credential_version: number }> | undefined;
           let loginChallenge: string | undefined;
           let loginCode: string | undefined;
           if (provider === 'password') {
             const credentialFound = await resolvePasswordLoginCredential(database,
-              mobileTokens === undefined ? { subjectHash: subject } : { subjectHash: subject, mobileTokens });
+              mobileTokens === undefined
+                ? { realmId: realm.realmId, subjectHash: subject }
+                : { realmId: realm.realmId, subjectHash: subject, mobileTokens });
             if (!(await passwords.verify(secretField(body, 'password', 128), credentialFound?.secret_hash ?? null))) {
               reject(401, 'CREDENTIAL_INVALID');
             }
@@ -139,6 +143,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             loginChallenge = textField(body, 'challenge', 128);
             loginCode = textField(body, 'code', 16);
             found = await verifySmsLoginChallenge(database, {
+              realmId: realm.realmId,
               id: loginChallenge,
               codeHash: codeDigest(loginChallenge, loginCode),
               destinationHash: subject,
@@ -150,17 +155,17 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           }
           if (!found) reject(401, 'CREDENTIAL_INVALID');
           const memberships = await database.query<{ id: string; access_version: number; client: string; organization_id: string }>(
-            `select membership.id,membership.access_version,membership.client,membership.organization_id from member.profile profile
-          join access.membership membership on membership.member_id=profile.id
-          where profile.principal_id=$1 and membership.status='active' and membership.client=$2 and membership.organization_id=$3
+            `select membership.id,membership.access_version,membership.client,membership.organization_id from access.membership membership
+          where membership.account_id=$1 and membership.realm_id=$2 and membership.status='active'
+            and membership.client=$3 and membership.organization_id=$4
           order by membership.id`,
-            [found.principal_id, realm.membershipClient, realm.membershipOrganizationId]
+            [found.account_id, realm.realmId, realm.membershipClient, realm.membershipOrganizationId]
           );
           const candidates = memberships.rows.filter((item) => item.client === realm.membershipClient
             && item.organization_id === realm.membershipOrganizationId);
           if (realm.surface === 'consumer') {
             const storefront = await requireValidStorefront(memberPort.storefrontRegistration(database, realm.application!));
-            if (storefrontAuthTarget(storefront.application_slug) !== realm.target
+            if (storefront.application_slug !== realm.application
               || storefront.organization_id !== realm.membershipOrganizationId) reject(400, 'AUTH_REALM_MISMATCH');
           }
           if (candidates.length === 0) reject(403, 'REALM_MEMBERSHIP_NOT_FOUND');
@@ -180,7 +185,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             const consumed = await consumeSmsLoginChallenge(database, {
               id: loginChallenge!,
               codeHash: codeDigest(loginChallenge!, loginCode!),
-              principal: found.principal_id,
+              account: found.account_id,
+              realmId: realm.realmId,
               destinationHash: subject,
             });
             if (!consumed) reject(401, 'CREDENTIAL_INVALID');
@@ -207,13 +213,14 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           );
           if (provider === 'phone_otp') {
             await database.query(
-              `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
-              values($1,$2,$3,'phone_otp',2,$4,clock_timestamp(),clock_timestamp()+interval '12 hours')`,
-              [`assurance:${randomUUID()}`, found.principal_id, id, createHash('sha256').update(loginChallenge!).digest('hex')]
+              `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
+              values($1,$2,$3,'phone_otp',2,$4,clock_timestamp(),clock_timestamp()+interval '12 hours',$5,$6)`,
+              [`assurance:${randomUUID()}`, found.principal_id, id, createHash('sha256').update(loginChallenge!).digest('hex'), realm.realmId, found.account_id]
             );
           }
           await publishIdentityEvent(database, 'identity.session.created', id, membership.id, request.input.idempotency!, {
             principal: found.principal_id,
+            account: found.account_id,
             membership: membership.id,
             realm: { nodeId: realm.nodeId, surface: realm.surface },
             assurance,
@@ -241,15 +248,17 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         const permissions = [...new Set(access.membership.grants.flatMap((grant) => grant.permissions).filter((permission) => !access.membership.denies.includes(permission)))].sort();
         const scopes = [...new Map(access.membership.grants.map((grant) => [grant.scope.id, grant.scope] as const)).values()];
         const csrf = requestCookie(request.input.headers.cookie, 'shop_csrf');
-        const [credential, member] = await Promise.all([
+        const realmAccount = await currentRealmAccount(database, access.membership.id, access.actor.id);
+        const [credential, member, accountState] = await Promise.all([
           database.query<{ rotated_at: Date | null }>(
             `select rotated_at from identity.credential
-          where principal_id=$1 and provider='password' and status='active' order by created_at desc limit 1`,
-            [access.actor.id]
+          where account_id=$1 and realm_id=$2 and provider='password' and status='active' order by created_at desc limit 1`,
+            [realmAccount.accountId, realmAccount.realmId]
           ),
           memberPort.securityProfile(database, access.actor.id),
+          database.query<{ mobile_masked: string | null }>(`select mobile_masked from identity.account where id=$1 and realm_id=$2`,
+            [realmAccount.accountId, realmAccount.realmId]),
         ]);
-        const mobile = member.mobileCiphertext === null ? null : await kms.decrypt('identity/mobile', member.mobileCiphertext, { principal: access.actor.id });
         return {
           status: 200,
           body: {
@@ -271,7 +280,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             ...(member.displayName === null ? {} : {
               profile: { display_name: member.displayName, employee_no: null },
             }),
-            security: { hasLocalCredential: credential.rows.length > 0, phoneMasked: mobile === null ? null : maskMobile(mobile), passwordChangedAt: credential.rows[0]?.rotated_at?.toISOString() ?? null },
+            security: { hasLocalCredential: credential.rows.length > 0, phoneMasked: accountState.rows[0]?.mobile_masked ?? null,
+              passwordChangedAt: credential.rows[0]?.rotated_at?.toISOString() ?? null },
             syncedAt: new Date().toISOString(),
             ...(csrf === undefined ? {} : { csrf }),
           },
@@ -349,6 +359,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         },
         execute: async (request, database, prepared) => {
           const { body, id, code, purpose, destinationHash, registration, registrationHash, legacyMobileToken, envelope, recipient, mobileLookup } = prepared;
+          const realm = await resolveRealmNode(database, request.input.headers.host);
           if (purpose === 'registration') {
             if (!registration || !registrationHash) throw new Error('REGISTRATION_CONTEXT_INVALID');
             if (registration.kind === 'invite') {
@@ -358,16 +369,19 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             }
           }
           let principal = typeof body.principal === 'string' ? body.principal : null;
+          let account: string | null = null;
           if (purpose === 'login' || purpose === 'password_reset') {
-            principal = await resolveBoundMobilePrincipal(database, [destinationHash, mobileLookup!.fingerprint, legacyMobileToken!]);
+            const bound = await resolveBoundMobileAccount(database, realm.realmId, [destinationHash, mobileLookup!.fingerprint, legacyMobileToken!]);
+            principal = bound?.principal_id ?? null;
+            account = bound?.account_id ?? null;
           }
           const result = await database.query(
             `with challenge as (
-          insert into identity.challenge(id,principal_id,purpose,destination_hash,code_hash,attempts,expires_at,created_at)
-          values($1,$2,$3,$4,$5,0,clock_timestamp()+interval '10 minutes',clock_timestamp()) returning id,purpose,expires_at
+          insert into identity.challenge(id,principal_id,purpose,destination_hash,code_hash,attempts,expires_at,created_at,realm_id,account_id)
+          values($1,$2,$3,$4,$5,0,clock_timestamp()+interval '10 minutes',clock_timestamp(),$10,$11) returning id,purpose,expires_at
         ), secret as (insert into identity.challengesecret(challenge_id,code_ciphertext,code_key_version,destination_ciphertext,destination_key_version,created_at)
           values($1,$6,$7,$8,$9,clock_timestamp())) select * from challenge`,
-            [id, principal, purpose, destinationHash, codeDigest(id, registrationHash === undefined ? code : `${code}:${registrationHash}`), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
+            [id, principal, purpose, destinationHash, codeDigest(id, registrationHash === undefined ? code : `${code}:${registrationHash}`), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion, realm.realmId, account]
           );
           await database.query(
             `insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
@@ -375,7 +389,9 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           where $3::text is not null`,
             [`job:notify:${id}`, id, purpose === 'login' ? principal : 'public-challenge']
           );
-          await publishIdentityEvent(database, 'identity.challenge.started', id, 'identity', request.input.idempotency!, { challenge: id, destination: destinationHash, purpose });
+          await publishIdentityEvent(database, 'identity.challenge.started', id, 'identity', request.input.idempotency!, {
+            challenge: id, destination: destinationHash, purpose, realm: realm.realmId, ...(account === null ? {} : { account }),
+          });
           return rowResult(result, 202);
         },
       }),
@@ -517,6 +533,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             subject,
             password,
             principal,
+            account: `account:${randomUUID()}`,
             mobile,
             authorization: body.authorization === undefined ? null : AuthTransaction.start(body.authorization),
             assurance: `assurance:${randomUUID()}`,
@@ -528,31 +545,33 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           };
         },
         execute: async (request, database, prepared) => {
-          const { body, subject, password, principal, mobile, authorization, assurance, member, membership, operatorMembership, credential, scopes } = prepared;
+          const { body, subject, password, principal, account, mobile, authorization, assurance, member, membership, operatorMembership, credential, scopes } = prepared;
+          const realm = await resolveRealmNode(database, request.input.headers.host);
           const requestedReturnTarget = authorization === null || typeof body.target !== 'string' ? undefined : authTarget(body.target);
           if (authorization !== null && (requestedReturnTarget === undefined || authMembershipTarget(requestedReturnTarget) !== 'storefront')) {
             throw new Error('AUTH_RETURN_TARGET_INVALID');
           }
           const subjectHash = digest(subject);
-          await database.query('select pg_advisory_xact_lock(hashtext($1))', [subjectHash]);
+          await database.query('select pg_advisory_xact_lock(hashtext($1))', [`${realm.realmId}:${subjectHash}`]);
           const mobileTokens = [subjectHash, mobile.fingerprint, createHash('sha256').update(subject).digest('hex')];
-          const boundPrincipal = await resolveBoundMobilePrincipal(database, mobileTokens);
-          let existing = await database.query<{ principal_id: string; credential_version: number }>(
-            `select credential.principal_id,principal.credential_version
-            from identity.credential credential join identity.principal principal on principal.id=credential.principal_id
-            where credential.provider='password' and credential.subject_hash=$1 and credential.status='active'
-              and principal.status='active' order by credential.created_at,credential.id limit 1
-            for update of credential,principal`,
-            [subjectHash]
+          const boundAccount = await resolveBoundMobileAccount(database, realm.realmId, mobileTokens);
+          let existing = await database.query<{ account_id: string; principal_id: string; credential_version: number }>(
+            `select account.id account_id,account.legacy_principal_id principal_id,account.credential_version
+            from identity.credential credential join identity.account account
+              on account.id=credential.account_id and account.realm_id=credential.realm_id
+            where credential.realm_id=$1 and credential.provider='password' and credential.subject_hash=$2
+              and credential.status='active' and account.status='active'
+            order by credential.created_at,credential.id limit 1 for update of credential,account`,
+            [realm.realmId, subjectHash]
           );
-          if (boundPrincipal !== null && existing.rows[0]?.principal_id !== boundPrincipal) {
-            existing = await database.query<{ principal_id: string; credential_version: number }>(
-              `select principal.id principal_id,principal.credential_version from identity.principal principal
-              where principal.id=$1 and principal.status='active'
-                and exists (select 1 from identity.credential credential where credential.principal_id=principal.id
-                  and credential.provider='password' and credential.status='active')
-              for update of principal`,
-              [boundPrincipal]
+          if (boundAccount !== null && existing.rows[0]?.account_id !== boundAccount.account_id) {
+            existing = await database.query<{ account_id: string; principal_id: string; credential_version: number }>(
+              `select account.id account_id,account.legacy_principal_id principal_id,account.credential_version
+              from identity.account account where account.id=$1 and account.realm_id=$2 and account.status='active'
+                and exists (select 1 from identity.credential credential where credential.account_id=account.id
+                  and credential.realm_id=account.realm_id and credential.provider='password' and credential.status='active')
+              for update of account`,
+              [boundAccount.account_id, realm.realmId]
             );
             if (!existing.rows[0]) reject(409, 'IDENTITY_SUBJECT_EXISTS');
           }
@@ -563,15 +582,17 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           if (!deferredPhoneVerification) {
             await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'),
               (challenge, code) => codeDigest(challenge, `${code}:${registrationHash}`), undefined,
-              { purpose: 'registration', destinationHash: subjectHash });
+              { purpose: 'registration', destinationHash: subjectHash, realmId: realm.realmId });
           }
           let registrationTarget: MemberInvite;
-          let applicationReturnTarget: ReturnType<typeof storefrontAuthTarget> | undefined;
+          let applicationReturnTarget: ReturnType<typeof authTarget> | undefined;
           if (registration.kind === 'invite') {
             registrationTarget = await requireValidInvite(memberPort.consumeInvite(database, registrationHash, subjectHash, operatorMembership));
           } else {
             const storefront = await requireValidStorefront(memberPort.storefrontRegistration(database, registration.value));
-            applicationReturnTarget = storefrontAuthTarget(storefront.application_slug);
+            const applicationRealm = await resolveRealmApplication(database, realm.realmId, storefront.application_slug);
+            if (applicationRealm.membershipOrganizationId !== storefront.organization_id) throw new Error('AUTH_REALM_MISMATCH');
+            applicationReturnTarget = applicationRealm.target;
             if (requestedReturnTarget !== undefined && requestedReturnTarget !== applicationReturnTarget) {
               throw new Error('AUTH_RETURN_TARGET_INVALID');
             }
@@ -594,12 +615,14 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const organization = registrationTarget.organization_id;
           if (body.termsAccepted !== true || body.termsHash !== registrationTarget.terms_hash) throw new Error('TERMS_ACCEPTANCE_REQUIRED');
           let resolvedPrincipal = principal;
+          let resolvedAccount = account;
           let resolvedMember = member;
           let credentialVersion = 1;
           let result: Readonly<Record<string, unknown>>;
           const scopeKind = await organizationPort.kind(database, organization);
           if (existing.rows[0]) {
             resolvedPrincipal = existing.rows[0].principal_id;
+            resolvedAccount = existing.rows[0].account_id;
             credentialVersion = existing.rows[0].credential_version;
             const profile = await database.query<{ id: string }>(
               `select id from member.profile where principal_id=$1 and status='active' for update`,
@@ -624,9 +647,16 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           } else {
             await database.query(`insert into identity.principal(id,status,created_at,updated_at) values($1,'active',clock_timestamp(),clock_timestamp())`, [principal]);
             await database.query(
-              `insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,created_at)
-            values($1,$2,'password',$3,$4,'active',clock_timestamp())`,
-              [credential, principal, subjectHash, password]
+              `insert into identity.account(id,realm_id,legacy_principal_id,status,credential_version,assurance_level,
+                mobile_ciphertext,mobile_token,mobile_masked,phone_verified_at,created_at,updated_at)
+              values($1,$2,$3,'active',1,$4,$5,$6,$7,$8,clock_timestamp(),clock_timestamp())`,
+              [account, realm.realmId, principal, deferredPhoneVerification ? 1 : 2, mobile.ciphertext, mobile.fingerprint,
+                `${subject.slice(0, 3)}****${subject.slice(-4)}`, deferredPhoneVerification ? null : new Date()]
+            );
+            await database.query(
+              `insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,created_at,realm_id,account_id)
+            values($1,$2,'password',$3,$4,'active',clock_timestamp(),$5,$6)`,
+              [credential, principal, subjectHash, password, realm.realmId, account]
             );
             await memberPort.create(database, {
               member,
@@ -639,9 +669,9 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             });
             if (!deferredPhoneVerification) {
               await database.query(
-                `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
-                values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
-                [assurance, principal, subjectHash]
+                `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
+                values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days',$4,$5)`,
+                [assurance, principal, subjectHash, realm.realmId, account]
               );
             }
             result = registrationTarget.target_client === 'operator'
@@ -669,9 +699,18 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
                 });
           }
           const registeredMembership = String(result.id);
-          if (typeof body.wechatToken === 'string') await bindWechat(database, tokenHash(body.wechatToken), resolvedPrincipal, registeredMembership);
+          const realmMemberships = registrationTarget.target_client === 'operator'
+            ? [registeredMembership, operatorMembership]
+            : [registeredMembership];
+          await database.query(`update access.membership set realm_id=$2,account_id=$3 where id=any($1::text[])`,
+            [realmMemberships, realm.realmId, resolvedAccount]);
+          if (typeof body.wechatToken === 'string') {
+            await bindWechat(database, tokenHash(body.wechatToken), resolvedPrincipal, registeredMembership, realm.realmId, resolvedAccount);
+          }
           await publishIdentityEvent(database, 'identity.member.registered', resolvedPrincipal, organization, request.input.idempotency!, {
             principal: resolvedPrincipal,
+            account: resolvedAccount,
+            realm: realm.realmId,
             member: resolvedMember,
             membership: registeredMembership,
             ...(registrationTarget.target_client === 'operator' ? { operatorMembership } : {}),
@@ -697,13 +736,15 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           );
           if (!deferredPhoneVerification) {
             await database.query(
-              `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
-              values($1,$2,$3,'phone_otp',2,$4,clock_timestamp(),clock_timestamp()+interval '12 hours')`,
-              [`assurance:${randomUUID()}`, resolvedPrincipal, session, createHash('sha256').update(textField(body, 'challenge')).digest('hex')]
+              `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
+              values($1,$2,$3,'phone_otp',2,$4,clock_timestamp(),clock_timestamp()+interval '12 hours',$5,$6)`,
+              [`assurance:${randomUUID()}`, resolvedPrincipal, session, createHash('sha256').update(textField(body, 'challenge')).digest('hex'), realm.realmId, resolvedAccount]
             );
           }
           await publishIdentityEvent(database, 'identity.session.created', session, registeredMembership, request.input.idempotency!, {
             principal: resolvedPrincipal,
+            account: resolvedAccount,
+            realm: realm.realmId,
             membership: registeredMembership,
             assurance: sessionAssurance,
             loginMethod: deferredPhoneVerification ? 'registration_password' : 'registration_otp',
@@ -724,9 +765,11 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         const reason = textField(body, 'reason', 1000);
         if (reason.trim().length < 4) throw new Error('CHANGE_REASON_REQUIRED');
         if (action === 'create') {
+          const actorAccount = await currentRealmAccount(database, access.membership.id, access.actor.id);
           const username = textField(body, 'username', 128).trim();
           const password = await passwords.hash(secretField(body, 'password', 128));
           const principal = `principal:${randomUUID()}`;
+          const account = `account:${randomUUID()}`;
           const member = `member:${randomUUID()}`;
           const membership = membershipId === 'new' ? `membership:${randomUUID()}` : membershipId;
           const credential = `credential:${randomUUID()}`;
@@ -736,13 +779,16 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             [access.scope.id]
           );
           if (!role.rows[0]) throw new Error('EMPLOYEE_ROLE_NOT_FOUND');
-          const exists = await database.query('select 1 from identity.credential where provider=$1 and subject_hash=$2', ['password', digest(username)]);
+          const exists = await database.query('select 1 from identity.credential where realm_id=$1 and provider=$2 and subject_hash=$3',
+            [actorAccount.realmId, 'password', digest(username)]);
           if (exists.rows[0]) throw new Error('IDENTITY_SUBJECT_EXISTS');
           await database.query(`insert into identity.principal(id,status,created_at,updated_at) values($1,'active',clock_timestamp(),clock_timestamp())`, [principal]);
+          await database.query(`insert into identity.account(id,realm_id,legacy_principal_id,status,created_at,updated_at)
+            values($1,$2,$3,'active',clock_timestamp(),clock_timestamp())`, [account, actorAccount.realmId, principal]);
           await database.query(
-            `insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,created_at)
-          values($1,$2,'password',$3,$4,'active',clock_timestamp())`,
-            [credential, principal, digest(username), password]
+            `insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,created_at,realm_id,account_id)
+          values($1,$2,'password',$3,$4,'active',clock_timestamp(),$5,$6)`,
+            [credential, principal, digest(username), password, actorAccount.realmId, account]
           );
           await memberPort.create(database, { member, principal, display: textField(body, 'displayName', 128), status: 'active' });
           const scopeKind = await organizationPort.kind(database, access.scope.id);
@@ -755,7 +801,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             scopeKind,
             scopes: [`scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`],
           });
-          await database.query('update access.membership set employee_no=$2 where id=$1', [membership, typeof body.employeeNo === 'string' ? body.employeeNo.trim() || null : null]);
+          await database.query('update access.membership set employee_no=$2,realm_id=$3,account_id=$4 where id=$1',
+            [membership, typeof body.employeeNo === 'string' ? body.employeeNo.trim() || null : null, actorAccount.realmId, account]);
           return { status: 201, body: { ...result, membershipId: membership, memberId: member, userId: principal } };
         }
         const target = await database.query<{
@@ -814,19 +861,21 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
 
         if (!governance.isExactOwner) reject(403, 'PERMISSION_DENIED');
 
+        const actorAccount = await currentRealmAccount(database, access.membership.id, access.actor.id);
         const target = await database.query<{
-          member_id: string; principal_id: string; principal_status: string; principal_version: number; organization_id: string;
-        }>(`select membership.member_id,profile.principal_id,principal.status principal_status,
-          principal.version principal_version,membership.organization_id
+          member_id: string; account_id: string; realm_id: string; principal_id: string;
+          account_status: string; account_version: number; organization_id: string;
+        }>(`select membership.member_id,account.id account_id,account.realm_id,
+          account.legacy_principal_id principal_id,account.status account_status,
+          account.version account_version,membership.organization_id
           from access.membership membership
-          join member.profile profile on profile.id=membership.member_id
-          join identity.principal principal on principal.id=profile.principal_id
+          join identity.account account on account.id=membership.account_id and account.realm_id=membership.realm_id
           where membership.id=$1 and access.scope_allowed(membership.organization_id)
-          for update of membership,profile,principal`, [request.input.path.membershipid!]);
+          for update of membership,account`, [request.input.path.membershipid!]);
         const selected = target.rows[0];
         if (!selected) reject(404, 'MEMBERSHIP_NOT_FOUND');
-        if (selected.principal_id === access.actor.id) reject(409, 'OWNER_MEMBERSHIP_PROTECTED');
-        if (Number(selected.principal_version) !== expectedVersion) reject(409, 'VERSION_CONFLICT');
+        if (selected.account_id === actorAccount.accountId) reject(409, 'OWNER_MEMBERSHIP_PROTECTED');
+        if (Number(selected.account_version) !== expectedVersion) reject(409, 'VERSION_CONFLICT');
 
         const protectedOwner = await database.query(`select 1 from access.membership owner_membership
           where owner_membership.id=$1 and owner_membership.member_id=$2 and owner_membership.status='active'`,
@@ -834,42 +883,56 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         if (protectedOwner.rows[0]) reject(409, 'OWNER_MEMBERSHIP_PROTECTED');
 
         const memberships = await database.query<{ id: string; organization_id: string }>(
-          `select id,organization_id from access.membership where member_id=$1 for update`, [selected.member_id]
+          `select id,organization_id from access.membership where account_id=$1 and realm_id=$2 for update`,
+          [selected.account_id, selected.realm_id]
         );
         if (memberships.rows.length === 0) reject(404, 'MEMBERSHIP_NOT_FOUND');
         const outsideScope = await database.query(`select 1 from access.membership
-          where member_id=$1 and not access.scope_allowed(organization_id) limit 1`, [selected.member_id]);
+          where account_id=$1 and realm_id=$2 and not access.scope_allowed(organization_id) limit 1`,
+        [selected.account_id, selected.realm_id]);
         if (outsideScope.rows[0]) reject(409, 'IDENTITY_RESET_SCOPE_CONFLICT');
 
         const reauthenticated = await database.query(`select 1 from identity.assurance
-          where principal_id=$1 and session_id=$2 and method='password' and level>=2
+          where account_id=$1 and realm_id=$2 and session_id=$3 and method='password' and level>=2
             and verified_at>clock_timestamp()-interval '10 minutes'
-            and (expires_at is null or expires_at>clock_timestamp()) limit 1`, [access.actor.id, access.actor.session]);
+            and (expires_at is null or expires_at>clock_timestamp()) limit 1`,
+        [actorAccount.accountId, actorAccount.realmId, access.actor.session]);
         if (!reauthenticated.rows[0]) reject(403, 'IDENTITY_REAUTH_REQUIRED');
 
         const credentials = await database.query<{ id: string; provider: string; status: string; subject_hash: string }>(
-          `select id,provider,status,subject_hash from identity.credential where principal_id=$1 for update`, [selected.principal_id]
+          `select id,provider,status,subject_hash from identity.credential where account_id=$1 and realm_id=$2 for update`,
+          [selected.account_id, selected.realm_id]
         );
         const activePassword = credentials.rows.filter((credential) => credential.provider === 'password' && credential.status === 'active');
-        if (selected.principal_status !== 'active' || activePassword.length === 0) reject(409, 'IDENTITY_ACCOUNT_ALREADY_RELEASED');
-        for (const credential of activePassword) await database.query('select pg_advisory_xact_lock(hashtext($1))', [credential.subject_hash]);
+        if (selected.account_status !== 'active' || activePassword.length === 0) reject(409, 'IDENTITY_ACCOUNT_ALREADY_RELEASED');
+        for (const credential of activePassword) {
+          await database.query('select pg_advisory_xact_lock(hashtext($1))', [`${selected.realm_id}:${credential.subject_hash}`]);
+        }
 
         const reset = `reset:${randomUUID()}`;
         const membershipIds = memberships.rows.map(({ id }) => id);
         await database.query(`update identity.authticket set consumed_at=coalesce(consumed_at,clock_timestamp())
-          where session_id in(select id from identity.session where principal_id=$1)`, [selected.principal_id]);
-        await database.query(`update identity.session set revoked_at=coalesce(revoked_at,clock_timestamp()),
-          revoked_reason=coalesce(revoked_reason,'identity_reset') where principal_id=$1`, [selected.principal_id]);
+          where session_id in(select session.id from identity.session session join access.membership membership
+            on membership.id=session.membership_id where membership.account_id=$1 and membership.realm_id=$2)`,
+        [selected.account_id, selected.realm_id]);
+        await database.query(`update identity.session session set revoked_at=coalesce(session.revoked_at,clock_timestamp()),
+          revoked_reason=coalesce(session.revoked_reason,'identity_reset') where exists(select 1 from access.membership membership
+            where membership.id=session.membership_id and membership.account_id=$1 and membership.realm_id=$2)`,
+        [selected.account_id, selected.realm_id]);
         await database.query(`update identity.assurance set expires_at=case when expires_at is null or expires_at>clock_timestamp()
-          then clock_timestamp() else expires_at end where principal_id=$1`, [selected.principal_id]);
+          then clock_timestamp() else expires_at end where account_id=$1 and realm_id=$2`, [selected.account_id, selected.realm_id]);
         await database.query(`delete from identity.challengesecret secret using identity.challenge challenge
-          where secret.challenge_id=challenge.id and (challenge.principal_id=$1 or challenge.destination_hash::text=any($2::text[]))`,
-        [selected.principal_id, activePassword.map(({ subject_hash }) => subject_hash)]);
+          where secret.challenge_id=challenge.id and challenge.realm_id=$1
+            and (challenge.account_id=$2 or challenge.destination_hash::text=any($3::text[]))`,
+        [selected.realm_id, selected.account_id, activePassword.map(({ subject_hash }) => subject_hash)]);
         await database.query(`update identity.challenge set consumed_at=coalesce(consumed_at,clock_timestamp())
-          where principal_id=$1 or destination_hash::text=any($2::text[])`, [selected.principal_id, activePassword.map(({ subject_hash }) => subject_hash)]);
-        await database.query(`delete from identity.loginattempt where subject_hash::text=any($1::text[])`, [activePassword.map(({ subject_hash }) => subject_hash)]);
+          where realm_id=$1 and (account_id=$2 or destination_hash::text=any($3::text[]))`,
+        [selected.realm_id, selected.account_id, activePassword.map(({ subject_hash }) => subject_hash)]);
+        await database.query(`delete from identity.loginattempt where realm_id=$1 and subject_hash::text=any($2::text[])`,
+          [selected.realm_id, activePassword.map(({ subject_hash }) => subject_hash)]);
 
-        const federated = await database.query<{ id: string }>(`select id from identity.federatedidentity where principal_id=$1 for update`, [selected.principal_id]);
+        const federated = await database.query<{ id: string }>(`select id from identity.federatedidentity
+          where account_id=$1 and realm_id=$2 for update`, [selected.account_id, selected.realm_id]);
         for (const identity of federated.rows) {
           await database.query(`update identity.federatedidentity set status='revoked',subject_hash=$2,union_hash=null,
             revoked_at=coalesce(revoked_at,clock_timestamp()),updated_at=clock_timestamp() where id=$1`,
@@ -893,15 +956,23 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           employee_no=null,left_at=coalesce(left_at,clock_timestamp()) where id=any($1::text[])`, [membershipIds]);
         await database.query(`update member.profile set display_name='已重置成员 · '||right(id,8),mobile_ciphertext=null,
           mobile_token=null,email_ciphertext=null,email_token=null,status='disabled',version=version+1,updated_at=clock_timestamp()
-          where id=$1`, [selected.member_id]);
-        const result = await database.query<{ version: number }>(`update identity.principal set status='disabled',
+          where id=$1 and not exists(select 1 from identity.account account
+            where account.legacy_principal_id=$2 and account.id<>$3 and account.status='active')`,
+        [selected.member_id, selected.principal_id, selected.account_id]);
+        const result = await database.query<{ version: number }>(`update identity.account set status='disabled',
+          mobile_ciphertext=null,mobile_token=null,mobile_masked=null,phone_verified_at=null,
           credential_version=credential_version+1,version=version+1,updated_at=clock_timestamp()
-          where id=$1 returning version`, [selected.principal_id]);
+          where id=$1 and realm_id=$2 returning version`, [selected.account_id, selected.realm_id]);
+        await database.query(`update identity.principal set status='disabled',credential_version=credential_version+1,
+          version=version+1,updated_at=clock_timestamp() where id=$1 and not exists(select 1 from identity.account account
+            where account.legacy_principal_id=$1 and account.status='active')`, [selected.principal_id]);
         const version = Number(result.rows[0]?.version);
         if (!Number.isSafeInteger(version)) throw new Error('IDENTITY_RESET_FAILED');
         await publishIdentityEvent(database, 'identity.member.reset', selected.principal_id, selected.organization_id,
-          request.input.idempotency!, { principal: selected.principal_id, memberships: membershipIds, reason });
-        return { status: 200, body: { principal_id: selected.principal_id, status: 'reset', login_identity_released: true, history_retained: true, version } };
+          request.input.idempotency!, { principal: selected.principal_id, account: selected.account_id,
+            realm: selected.realm_id, memberships: membershipIds, reason });
+        return { status: 200, body: { principal_id: selected.principal_id, account_id: selected.account_id,
+          status: 'reset', login_identity_released: true, history_retained: true, version } };
       },
       'identity.password.change': operationLifecycle({
         prepare: async (request) => {
@@ -913,13 +984,15 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         },
         execute: async (_request, database, { access, currentPassword, hash }) => {
           await database.query("select pg_advisory_xact_lock(hashtext('zhudatuan:platform-owner-transfer:v1'))");
-          const credential = await database.query<{ id: string; secret_hash: string }>(`select id,secret_hash from identity.credential where principal_id=$1 and provider='password' and status='active' for update`, [access.actor.id]);
+          const account = await currentRealmAccount(database, access.membership.id, access.actor.id);
+          const credential = await database.query<{ id: string; secret_hash: string }>(`select id,secret_hash from identity.credential
+            where account_id=$1 and realm_id=$2 and provider='password' and status='active' for update`, [account.accountId, account.realmId]);
           const found = credential.rows[0];
           if (!found || !(await passwords.verify(currentPassword, found.secret_hash))) throw new Error('CREDENTIAL_INVALID');
           const evidenceHash = sessionDigest(access.actor.session);
-          await database.query(`insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
-            values($1,$2,'password',2,$3,clock_timestamp(),clock_timestamp()+interval '10 minutes')`,
-          [`assurance:${randomUUID()}`, access.actor.id, evidenceHash]);
+          await database.query(`insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
+            values($1,$2,'password',2,$3,clock_timestamp(),clock_timestamp()+interval '10 minutes',$4,$5)`,
+          [`assurance:${randomUUID()}`, access.actor.id, evidenceHash, account.realmId, account.accountId]);
           const ownerRotation = await database.query<{ result: Readonly<Record<string, unknown>> | null }>(
             `select identity.rotate_zhudatuan_owner_password($1,$2,null::text,$3,'credential_changed') result`,
             [access.actor.id, access.actor.session, hash]
@@ -927,25 +1000,30 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const ownerResult = ownerRotation.rows[0]?.result;
           if (ownerResult) return { status: 200, body: ownerResult, headers: sessionCookies('', '', 0) };
           await database.query('update identity.credential set secret_hash=$2,rotated_at=clock_timestamp() where id=$1', [found.id, hash]);
-          const result = await database.query('update identity.principal set credential_version=credential_version+1,updated_at=clock_timestamp(),version=version+1 where id=$1 returning credential_version,version', [access.actor.id]);
-          await database.query("update identity.session set revoked_at=clock_timestamp(),revoked_reason='credential_changed' where principal_id=$1 and id<>$2 and revoked_at is null", [access.actor.id, access.actor.session]);
+          const result = await database.query(`update identity.account set credential_version=credential_version+1,
+            updated_at=clock_timestamp(),version=version+1 where id=$1 and realm_id=$2 returning credential_version,version`,
+          [account.accountId, account.realmId]);
+          await database.query(`update identity.session session set revoked_at=clock_timestamp(),revoked_reason='credential_changed'
+            where session.id<>$2 and session.revoked_at is null and exists(select 1 from access.membership membership
+              where membership.id=session.membership_id and membership.account_id=$1)`, [account.accountId, access.actor.session]);
           return rowResult(result);
         },
       }),
       'identity.password.verify': async (request, database) => {
         const access = requireAccess(request);
+        const account = await currentRealmAccount(database, access.membership.id, access.actor.id);
         const password = secretField(bodyRecord(request), 'password', 128);
         const credential = await database.query<{ secret_hash: string | null }>(
           `select secret_hash from identity.credential
-        where principal_id=$1 and provider='password' and status='active'`,
-          [access.actor.id]
+        where account_id=$1 and realm_id=$2 and provider='password' and status='active'`,
+          [account.accountId, account.realmId]
         );
         if (!(await passwords.verify(password, credential.rows[0]?.secret_hash ?? null))) reject(401, 'CREDENTIAL_INVALID');
         const verifiedAt = new Date().toISOString();
         await database.query(
-          `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
-        values($1,$2,$3,'password',2,$4,$5::timestamptz,$5::timestamptz+interval '10 minutes')`,
-          [`assurance:${randomUUID()}`, access.actor.id, access.actor.session, sessionDigest(access.actor.session), verifiedAt]
+          `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
+        values($1,$2,$3,'password',2,$4,$5::timestamptz,$5::timestamptz+interval '10 minutes',$6,$7)`,
+          [`assurance:${randomUUID()}`, access.actor.id, access.actor.session, sessionDigest(access.actor.session), verifiedAt, account.realmId, account.accountId]
         );
         await database.query(
           `update identity.session set assurance_level=greatest(assurance_level,2),last_seen_at=clock_timestamp()
@@ -961,19 +1039,25 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const hash = await passwords.hash(secretField(body, 'newPassword', 128));
           return { body, challenge, hash };
         },
-        execute: async (_request, database, { body, challenge, hash }) => {
-          const consumed = await consumeChallenge(database, challenge, textField(body, 'code'), codeDigest, undefined, { purpose: 'password_reset' });
+        execute: async (request, database, { body, challenge, hash }) => {
+          const realm = await resolveRealmNode(database, request.input.headers.host);
+          const consumed = await consumeChallenge(database, challenge, textField(body, 'code'), codeDigest, undefined,
+            { purpose: 'password_reset', realmId: realm.realmId });
           const principal = consumed.principal_id;
-          if (!principal) reject(400, 'CHALLENGE_PRINCIPAL_MISSING');
+          const account = consumed.account_id;
+          if (!principal || !account || consumed.realm_id !== realm.realmId) reject(400, 'CHALLENGE_PRINCIPAL_MISSING');
           const ownerRotation = await database.query<{ result: Readonly<Record<string, unknown>> | null }>(
             `select identity.rotate_zhudatuan_owner_password($1,null::text,$2,$3,'credential_reset') result`,
             [principal, challenge, hash]
           );
           const ownerResult = ownerRotation.rows[0]?.result;
           if (ownerResult) return { status: 200, body: ownerResult, headers: sessionCookies('', '', 0) };
-          await database.query("update identity.credential set secret_hash=$2,rotated_at=clock_timestamp() where principal_id=$1 and provider='password' and status='active'", [principal, hash]);
-          const result = await database.query('update identity.principal set credential_version=credential_version+1,updated_at=clock_timestamp(),version=version+1 where id=$1 returning credential_version,version', [principal]);
-          await database.query("update identity.session set revoked_at=clock_timestamp(),revoked_reason='credential_reset' where principal_id=$1 and revoked_at is null", [principal]);
+          await database.query("update identity.credential set secret_hash=$3,rotated_at=clock_timestamp() where account_id=$1 and realm_id=$2 and provider='password' and status='active'", [account, realm.realmId, hash]);
+          const result = await database.query(`update identity.account set credential_version=credential_version+1,
+            updated_at=clock_timestamp(),version=version+1 where id=$1 and realm_id=$2 returning credential_version,version`, [account, realm.realmId]);
+          await database.query(`update identity.session session set revoked_at=clock_timestamp(),revoked_reason='credential_reset'
+            where session.revoked_at is null and exists(select 1 from access.membership membership
+              where membership.id=session.membership_id and membership.account_id=$1 and membership.realm_id=$2)`, [account, realm.realmId]);
           return rowResult(result);
         },
       }),
@@ -993,14 +1077,15 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         },
         execute: async (request, database, prepared) => {
           const { access, id, code, destinationHash, envelope, recipient } = prepared;
+          const account = await currentRealmAccount(database, access.membership.id, access.actor.id);
           const result = await database.query(
             `with challenge as (
-          insert into identity.challenge(id,principal_id,purpose,destination_hash,code_hash,session_hash,attempts,expires_at,created_at)
-          values($1,$2,'phone_change',$3,$4,$5,0,clock_timestamp()+interval '10 minutes',clock_timestamp()) returning id,purpose,expires_at
+          insert into identity.challenge(id,principal_id,purpose,destination_hash,code_hash,session_hash,attempts,expires_at,created_at,realm_id,account_id)
+          values($1,$2,'phone_change',$3,$4,$5,0,clock_timestamp()+interval '10 minutes',clock_timestamp(),$10,$11) returning id,purpose,expires_at
         ), secret as (insert into identity.challengesecret(challenge_id,code_ciphertext,code_key_version,destination_ciphertext,destination_key_version,created_at)
           values($1,$6,$7,$8,$9,clock_timestamp())) select * from challenge`,
             [id, access.actor.id, destinationHash, codeDigest(id, code), sessionDigest(access.actor.session),
-              envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
+              envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion, account.realmId, account.accountId]
           );
           await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
           values($1,'identitynotification','identity',$2,jsonb_build_object('challenge',$3::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
@@ -1021,23 +1106,26 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         execute: async (_request, database, { access, body, mobile, envelope }) => {
           const governance = requireGovernanceContext(access);
           await database.query("select pg_advisory_xact_lock(hashtext('zhudatuan:platform-owner-transfer:v1'))");
+          const account = await currentRealmAccount(database, access.membership.id, access.actor.id);
           const destinationHash = digest(mobile);
-          await database.query('select pg_advisory_xact_lock(hashtext($1))', [destinationHash]);
-          const profile = await database.query<{ mobile_ciphertext: string | null }>(
-            `select mobile_ciphertext from member.profile where principal_id=$1 and status='active' for update`, [access.actor.id]);
-          const current = profile.rows[0];
+          await database.query('select pg_advisory_xact_lock(hashtext($1))', [`${account.realmId}:${destinationHash}`]);
+          const accountState = await database.query<{ mobile_ciphertext: string | null }>(
+            `select mobile_ciphertext from identity.account where id=$1 and realm_id=$2 and status='active' for update`,
+            [account.accountId, account.realmId]);
+          const current = accountState.rows[0];
           if (!current) reject(404, 'RESOURCE_NOT_FOUND');
           if (current.mobile_ciphertext === null) {
-            const passwordEvidence = await database.query(`select 1 from identity.assurance where principal_id=$1 and method='password' and level=2
-              and evidence_hash=$2 and verified_at>=clock_timestamp()-interval '10 minutes'
-              and expires_at>clock_timestamp() limit 1`, [access.actor.id, sessionDigest(access.actor.session)]);
+            const passwordEvidence = await database.query(`select 1 from identity.assurance where account_id=$1 and realm_id=$2 and method='password' and level=2
+              and evidence_hash=$3 and verified_at>=clock_timestamp()-interval '10 minutes'
+              and expires_at>clock_timestamp() limit 1`, [account.accountId, account.realmId, sessionDigest(access.actor.session)]);
             if (!passwordEvidence.rows[0]) reject(403, 'MOBILE_ENROLLMENT_PASSWORD_REQUIRED');
           } else if (!stepup.accepts(true, access.assurance, new Date())) reject(403, 'MOBILE_CHANGE_STEP_UP_REQUIRED');
-          const boundPrincipal = await resolveBoundMobilePrincipal(database,
+          const boundAccount = await resolveBoundMobileAccount(database, account.realmId,
             [destinationHash, envelope.fingerprint, createHash('sha256').update(mobile).digest('hex')]);
-          if (boundPrincipal !== null && boundPrincipal !== access.actor.id) reject(409, 'IDENTITY_SUBJECT_EXISTS');
+          if (boundAccount !== null && boundAccount.account_id !== account.accountId) reject(409, 'IDENTITY_SUBJECT_EXISTS');
           await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'), codeDigest, access.actor.id,
-            { purpose: 'phone_change', destinationHash, sessionHash: sessionDigest(access.actor.session) });
+            { purpose: 'phone_change', destinationHash, sessionHash: sessionDigest(access.actor.session),
+              realmId: account.realmId, accountId: account.accountId });
           if (governance.isExactOwner) {
             const changed = await database.query<{ profile: Readonly<Record<string, unknown>> }>(
               `select access.change_zhudatuan_owner_mobile($1,$2,$3,$4,$5,$6,$7,$8,$9) profile`,
@@ -1047,16 +1135,24 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             if (!result) throw new Error('MEMBER_PROFILE_NOT_FOUND');
             return { status: 200, body: result, headers: { ...sessionCookies('', '', 0), etag: `\"${String(result.version)}\"` } };
           }
-          const credential = await database.query<{ id: string }>(`select id from identity.credential where principal_id=$1 and provider='password' and status='active' for update`, [access.actor.id]);
+          const credential = await database.query<{ id: string }>(`select id from identity.credential
+            where account_id=$1 and realm_id=$2 and provider='password' and status='active' for update`, [account.accountId, account.realmId]);
           if (!credential.rows[0]) throw new Error('CREDENTIAL_NOT_FOUND');
           const result = await memberPort.changeMobile(database, access.actor.id, envelope.ciphertext, envelope.fingerprint, maskMobile(mobile));
           await database.query(`update identity.assurance set expires_at=least(coalesce(expires_at,clock_timestamp()),clock_timestamp())
-            where principal_id=$1 and method='phone_otp' and (expires_at is null or expires_at>clock_timestamp())`, [access.actor.id]);
-          await database.query(`insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
-            values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
-          [`assurance:${randomUUID()}`, access.actor.id, digest(mobile)]);
-          await database.query(`update identity.principal set credential_version=credential_version+1,version=version+1,updated_at=clock_timestamp() where id=$1`, [access.actor.id]);
-          await database.query("update identity.session set revoked_at=clock_timestamp(),revoked_reason='mobile_changed' where principal_id=$1 and revoked_at is null", [access.actor.id]);
+            where account_id=$1 and realm_id=$2 and method='phone_otp' and (expires_at is null or expires_at>clock_timestamp())`,
+          [account.accountId, account.realmId]);
+          await database.query(`insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
+            values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days',$4,$5)`,
+          [`assurance:${randomUUID()}`, access.actor.id, digest(mobile), account.realmId, account.accountId]);
+          await database.query(`update identity.account set mobile_ciphertext=$3,mobile_token=$4,mobile_masked=$5,
+            phone_verified_at=clock_timestamp(),credential_version=credential_version+1,assurance_level=greatest(assurance_level,2),
+            version=version+1,updated_at=clock_timestamp() where id=$1 and realm_id=$2`,
+          [account.accountId, account.realmId, envelope.ciphertext, envelope.fingerprint, maskMobile(mobile)]);
+          await database.query(`update identity.session session set revoked_at=clock_timestamp(),revoked_reason='mobile_changed'
+            where session.revoked_at is null and exists(select 1 from access.membership membership
+              where membership.id=session.membership_id and membership.account_id=$1 and membership.realm_id=$2)`,
+          [account.accountId, account.realmId]);
           return { status: 200, body: result, headers: { ...sessionCookies('', '', 0), etag: `\"${String(result.version)}\"` } };
         },
       }),
@@ -1069,19 +1165,20 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           return { access, id, code };
         },
         execute: async (request, database, { access, id, code }) => {
-          const profile = await database.query<{ mobile_ciphertext: string | null }>(
-            `select mobile_ciphertext from member.profile where principal_id=$1 and status='active'`, [access.actor.id]);
-          const ciphertext = profile.rows[0]?.mobile_ciphertext;
+          const account = await currentRealmAccount(database, access.membership.id, access.actor.id);
+          const accountState = await database.query<{ mobile_ciphertext: string | null }>(
+            `select mobile_ciphertext from identity.account where id=$1 and realm_id=$2 and status='active'`, [account.accountId, account.realmId]);
+          const ciphertext = accountState.rows[0]?.mobile_ciphertext;
           if (!ciphertext) throw new Error('STEP_UP_DESTINATION_MISSING');
           const destination = await kms.decrypt('identity/mobile', ciphertext, { principal: access.actor.id });
           const [envelope, recipient] = await Promise.all([kms.encrypt('identity/challenge', code, { challenge: id, purpose: 'stepup' }), kms.encrypt('identity/destination', destination, { challenge: id, purpose: 'stepup' })]);
           const result = await database.query(
-            `with challenge as (insert into identity.challenge(id,principal_id,purpose,destination_hash,code_hash,session_hash,attempts,expires_at,created_at)
-        values($1,$2,'stepup',$3,$4,$5,0,clock_timestamp()+interval '5 minutes',clock_timestamp()) returning id,purpose,expires_at),
+            `with challenge as (insert into identity.challenge(id,principal_id,purpose,destination_hash,code_hash,session_hash,attempts,expires_at,created_at,realm_id,account_id)
+        values($1,$2,'stepup',$3,$4,$5,0,clock_timestamp()+interval '5 minutes',clock_timestamp(),$10,$11) returning id,purpose,expires_at),
         secret as (insert into identity.challengesecret(challenge_id,code_ciphertext,code_key_version,destination_ciphertext,destination_key_version,created_at)
           values($1,$6,$7,$8,$9,clock_timestamp())) select * from challenge`,
             [id, access.actor.id, digest(destination), codeDigest(id, code), sessionDigest(access.actor.session),
-              envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
+              envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion, account.realmId, account.accountId]
           );
           await database.query(
             `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
@@ -1095,36 +1192,38 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
       'identity.stepup.complete': async (request, database) => {
         const access = requireAccess(request);
         const body = bodyRecord(request);
+        const account = await currentRealmAccount(database, access.membership.id, access.actor.id);
         const action = financialActionRequest(body.action);
         const bindingToken = body.bindingToken === undefined ? null : textField(body, 'bindingToken', 1024);
         if (action !== null && bindingToken !== null) reject(400, 'OPERATION_INPUT_INVALID');
         const wechatBinding = bindingToken === null ? null
-          : await prepareWechatBinding(database, tokenHash(bindingToken), access.actor.id);
+          : await prepareWechatBinding(database, tokenHash(bindingToken), access.actor.id, account.realmId, account.accountId);
         const challenge = textField(body, 'challenge');
-        const profile = await database.query<{ mobile_ciphertext: string | null }>(
-          `select mobile_ciphertext from member.profile where principal_id=$1 and status='active' for update`, [access.actor.id]);
-        const ciphertext = profile.rows[0]?.mobile_ciphertext;
+        const accountState = await database.query<{ mobile_ciphertext: string | null }>(
+          `select mobile_ciphertext from identity.account where id=$1 and realm_id=$2 and status='active' for update`, [account.accountId, account.realmId]);
+        const ciphertext = accountState.rows[0]?.mobile_ciphertext;
         if (!ciphertext) throw new Error('STEP_UP_DESTINATION_MISSING');
         const destination = await kms.decrypt('identity/mobile', ciphertext, { principal: access.actor.id });
         await consumeChallenge(database, challenge, textField(body, 'code'), codeDigest, access.actor.id,
-          { purpose: 'stepup', destinationHash: digest(destination), sessionHash: sessionDigest(access.actor.session) });
+          { purpose: 'stepup', destinationHash: digest(destination), sessionHash: sessionDigest(access.actor.session),
+            realmId: account.realmId, accountId: account.accountId });
         await database.query(
-          `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
-          values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
-          [`assurance:${randomUUID()}`, access.actor.id, digest(destination)]
+          `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
+          values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days',$4,$5)`,
+          [`assurance:${randomUUID()}`, access.actor.id, digest(destination), account.realmId, account.accountId]
         );
         const assurance = `assurance:${randomUUID()}`;
         if (action === null) {
           await database.query(
-            `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
-          values($1,$2,$3,'otp',3,$4,clock_timestamp(),clock_timestamp()+interval '15 minutes')`,
-            [assurance, access.actor.id, access.actor.session, sessionDigest(access.actor.session)]
+            `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
+          values($1,$2,$3,'otp',3,$4,clock_timestamp(),clock_timestamp()+interval '15 minutes',$5,$6)`,
+            [assurance, access.actor.id, access.actor.session, sessionDigest(access.actor.session), account.realmId, account.accountId]
           );
         } else {
           await database.query(
-            `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
-          values($1,$2,$3,'otp',3,$4,clock_timestamp(),clock_timestamp()+interval '15 minutes')`,
-            [assurance, access.actor.id, access.actor.session, digest(challenge)]
+            `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
+          values($1,$2,$3,'otp',3,$4,clock_timestamp(),clock_timestamp()+interval '15 minutes',$5,$6)`,
+            [assurance, access.actor.id, access.actor.session, digest(challenge), account.realmId, account.accountId]
           );
         }
         const result = await database.query(
@@ -1135,7 +1234,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         const session = result.rows[0];
         if (!session) throw new Error('AUTHENTICATION_REQUIRED');
         if (wechatBinding !== null) {
-          const identity = await completeWechatBinding(database, wechatBinding, access.actor.id, access.membership.id);
+          const identity = await completeWechatBinding(database, wechatBinding, access.actor.id, access.membership.id, account.realmId, account.accountId);
           return { status: 200, body: { ...session, wechat: { identity, status: 'active' } } };
         }
         if (action === null) return rowResult(result);

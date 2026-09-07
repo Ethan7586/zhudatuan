@@ -994,6 +994,14 @@ objects:
     owner: support
     source: 02_platform_pingtai/database/supabase/migrations/20260821046000_support_lifecycle.sql
     operationalOwner: support
+  - id: shopapp:function:access.change_zhudatuan_owner_mobile(text,text,text,text,text,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260907121000_scope_identity_lifecycle_by_realm.sql
+    role: shopapp
+    objectType: function
+    target: access.change_zhudatuan_owner_mobile(text,text,text,text,text,text,text,text,text)
+    privilege: execute
   - id: shopapp:function:access.consume_action_proof(text,text,text,text,text,text,text,text,bigint,text):execute
     kind: grant
     owner: access

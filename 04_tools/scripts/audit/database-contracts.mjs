@@ -158,6 +158,7 @@ const REPAIR_FILES = [
   '20260907110000_publish_storefront_member_directory.sql',
   '20260907113000_separate_l0_l1_auth_return_targets.sql',
   '20260907120000_create_identity_realm_accounts.sql',
+  '20260907121000_scope_identity_lifecycle_by_realm.sql',
 ];
 
 const mode = process.argv[2];
