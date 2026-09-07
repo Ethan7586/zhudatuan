@@ -2,14 +2,14 @@ import React from 'react';
 import { useMall, type MiniProgramPage } from '../../context/MallContext';
 import { MPHomePage } from '../../features/miniprogram/MPHomePage';
 import { WeChatTabBar } from './WeChatTabBar';
-import { loadMPCartPage, loadMPCategoryPage, loadMPDetailPage, loadMPProfilePage, loadMPWelfarePage, preloadPrimaryMiniProgramPages } from './miniProgramPageLoaders';
+import { loadMPAddressPage, loadMPCartPage, loadMPCategoryPage, loadMPDetailPage, loadMPProfilePage, loadMPWelfarePage, preloadPrimaryMiniProgramPages } from './miniProgramPageLoaders';
 
 const MPCartPage = React.lazy(() => loadMPCartPage().then(({ MPCartPage }) => ({ default: MPCartPage })));
 const MPCategoryPage = React.lazy(() => loadMPCategoryPage().then(({ MPCategoryPage }) => ({ default: MPCategoryPage })));
 const MPDetailPage = React.lazy(() => loadMPDetailPage().then(({ MPDetailPage }) => ({ default: MPDetailPage })));
 const MPProfilePage = React.lazy(() => loadMPProfilePage().then(({ MPProfilePage }) => ({ default: MPProfilePage })));
 const MPWelfarePage = React.lazy(() => loadMPWelfarePage().then(({ MPWelfarePage }) => ({ default: MPWelfarePage })));
-const MPAddressPage = React.lazy(() => import('../../features/miniprogram/MPAddressPage').then(({ MPAddressPage }) => ({ default: MPAddressPage })));
+const MPAddressPage = React.lazy(() => loadMPAddressPage().then(({ MPAddressPage }) => ({ default: MPAddressPage })));
 const MobileOrdersPage = React.lazy(() => import('./MobileOrdersPage').then(({ MobileOrdersPage }) => ({ default: MobileOrdersPage })));
 const PaymentResultPage = React.lazy(() => import('../common/PaymentResultPage').then(({ PaymentResultPage }) => ({ default: PaymentResultPage })));
 const PendingInterfaceModal = React.lazy(() => import('./PendingInterfaceModal').then(({ PendingInterfaceModal }) => ({ default: PendingInterfaceModal })));
@@ -52,6 +52,10 @@ export function ProductionMobileFrame() {
       globalThis.clearTimeout(handle);
     };
   }, []);
+
+  React.useEffect(() => {
+    if (mpPage === 'cart') void loadMPAddressPage();
+  }, [mpPage]);
 
   if (activeKeepAlivePage) visitedPages.current.add(activeKeepAlivePage);
 
