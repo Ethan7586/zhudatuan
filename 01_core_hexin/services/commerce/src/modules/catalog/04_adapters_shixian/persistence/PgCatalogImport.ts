@@ -97,7 +97,7 @@ export class PgCatalogImport {
       const cursor = staged.rows.at(-1)?.row_number ? staged.rows.at(-1)!.row_number - 1 : job.rows[0].cursor_value;
       const more = cursor < job.rows[0].total_count;
       await client.query(`update catalog.importjob set state=$2,cursor_value=$3,success_count=success_count+$4,failure_count=failure_count+$5,
-        validation_summary=validation_summary||jsonb_build_object('processed',$3,'errors',failure_count+$5),last_error=null,updated_at=clock_timestamp()
+        validation_summary=validation_summary||jsonb_build_object('processed',$3::integer,'errors',failure_count+$5),last_error=null,updated_at=clock_timestamp()
         where id=$1 and scope_id=$6`,
       [target.id, more ? 'running' : 'reporting', cursor, successes, failures, target.scope]);
       if (more) await continuation(client, target, cursor);

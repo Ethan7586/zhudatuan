@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 import { downloadCurrentPageCsv, timestampedCsvFilename, type CsvColumn } from '../../shared/export/CurrentPageCsv';
+import { scopePath } from '../../shared/url/ScopePath';
 import { ProductBatchPreview } from './ProductBatchPreview';
 import { ProductCatalogHeader } from './ProductCatalogHeader';
 import { ProductColumnSettings } from './ProductColumnSettings';
@@ -96,7 +97,7 @@ export function Component() {
   const openImportResult = (jobId: string) => {
     setImportOpen(false);
     setCreateOpen(false);
-    void navigate(`/imports/catalog/${encodeURIComponent(jobId)}`);
+    void navigate(scopePath(context.scope, `imports/catalog/${encodeURIComponent(jobId)}`));
   };
 
   const apply = (value: ProductFilter) => {
