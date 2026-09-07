@@ -195,8 +195,9 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const id = `session:${randomUUID()}`;
           const assurance = provider === 'phone_otp' ? 2 : 1;
           await database.query(
-            `insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,user_agent,device_label,assurance_level,expires_at,last_seen_at,created_at)
-          values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,clock_timestamp()+interval '12 hours',clock_timestamp(),clock_timestamp())`,
+            `insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,user_agent,device_label,
+              assurance_level,realm_id,account_id,auth_target,expires_at,last_seen_at,created_at)
+          values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,clock_timestamp()+interval '12 hours',clock_timestamp(),clock_timestamp())`,
             [
               id,
               found.principal_id,
@@ -209,6 +210,9 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
               String(request.input.headers['user-agent'] ?? 'unknown').slice(0, 512),
               String(request.input.headers['x-device-id'] ?? 'browser').slice(0, 128),
               assurance,
+              realm.realmId,
+              found.account_id,
+              realm.target,
             ]
           );
           if (provider === 'phone_otp') {
@@ -228,14 +232,15 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           });
           const csrf = randomBytes(32).toString('base64url');
           const target = authMembershipTarget(realm.target);
-          const callback = await tickets.issue(database, id, realm.target, authorization);
+          const callback = await tickets.issue(database, id, realm.realmId, found.account_id, realm.target, authorization);
           return { status: 201, body: { session: id, csrf, expiresIn: 43_200, membership: membership.id, target, callback }, headers: sessionCookies(token, csrf, 43_200) };
         },
       }),
       'identity.tickets.exchange': async (request, database) => {
         const currentToken = requestCookie(request.input.headers.cookie, 'shop_session');
         if (!currentToken) reject(401, 'AUTHENTICATION_REQUIRED');
-        const exchanged = await tickets.consume(database, request.input.body, currentToken);
+        const realm = await resolveRealmNode(database, request.input.headers.host);
+        const exchanged = await tickets.consume(database, request.input.body, currentToken, realm.realmId);
         const expiresIn = Math.max(1, Math.min(43_200, Math.floor((exchanged.sessionExpiresAt.getTime() - Date.now()) / 1_000)));
         return {
           status: 200,
@@ -289,43 +294,47 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
       },
       'identity.session.delete': async (request, database) => {
         const access = requireAccess(request);
-        const result = await database.query(`update identity.session set revoked_at=clock_timestamp(),revoked_reason='logout' where id=$1 and principal_id=$2 and revoked_at is null returning id,revoked_at`, [
-          access.actor.session,
-          access.actor.id,
-        ]);
+        const account = await currentRealmAccount(database, access.membership.id, access.actor.id);
+        const result = await database.query(`update identity.session set revoked_at=clock_timestamp(),revoked_reason='logout'
+          where id=$1 and account_id=$2 and realm_id=$3 and revoked_at is null returning id,revoked_at`,
+        [access.actor.session, account.accountId, account.realmId]);
         const response = rowResult(result);
         await publishIdentityEvent(database, 'identity.session.revoked', access.actor.session, access.membership.id, request.input.idempotency!, { sessions: [access.actor.session], reason: 'logout' });
         return { ...response, headers: sessionCookies('', '', 0) };
       },
       'identity.sessions.read': async (request, database) => {
         const access = requireAccess(request);
+        const account = await currentRealmAccount(database, access.membership.id, access.actor.id);
         const result = await database.query(
           `select id,membership_id as membership,client,device_label as "deviceLabel",user_agent as "userAgent",
-        assurance_level as assurance,created_at as "createdAt",last_seen_at as "lastSeenAt",expires_at as "expiresAt",id=$2 as current
-        from identity.session where principal_id=$1 and revoked_at is null and expires_at>clock_timestamp()
-        order by (id=$2) desc,last_seen_at desc,id limit 100`,
-          [access.actor.id, access.actor.session]
+        assurance_level as assurance,created_at as "createdAt",last_seen_at as "lastSeenAt",expires_at as "expiresAt",id=$3 as current
+        from identity.session where account_id=$1 and realm_id=$2 and revoked_at is null and expires_at>clock_timestamp()
+        order by (id=$3) desc,last_seen_at desc,id limit 100`,
+          [account.accountId, account.realmId, access.actor.session]
         );
         return pageResult(result);
       },
       'identity.sessions.revoke': async (request, database) => {
         const access = requireAccess(request);
+        const account = await currentRealmAccount(database, access.membership.id, access.actor.id);
         const session = request.input.path.sessionid;
         if (!session) reject(404, 'RESOURCE_NOT_FOUND');
         const result =
           session === 'others'
             ? await database.query<{ id: string }>(
                 `update identity.session set revoked_at=clock_timestamp(),revoked_reason='security_center'
-            where principal_id=$1 and id<>$2 and revoked_at is null returning id`,
-                [access.actor.id, access.actor.session]
+            where account_id=$1 and realm_id=$2 and id<>$3 and revoked_at is null returning id`,
+                [account.accountId, account.realmId, access.actor.session]
               )
             : await database.query<{ id: string }>(
                 `update identity.session set revoked_at=clock_timestamp(),revoked_reason='security_center'
-            where principal_id=$1 and id=$2 and revoked_at is null returning id`,
-                [access.actor.id, session]
+            where account_id=$1 and realm_id=$2 and id=$3 and revoked_at is null returning id`,
+                [account.accountId, account.realmId, session]
               );
         if (session !== 'others' && result.rowCount === 0) {
-          const owned = await database.query<{ revoked_at: Date | null }>('select revoked_at from identity.session where principal_id=$1 and id=$2', [access.actor.id, session]);
+          const owned = await database.query<{ revoked_at: Date | null }>(
+            'select revoked_at from identity.session where account_id=$1 and realm_id=$2 and id=$3',
+            [account.accountId, account.realmId, session]);
           if (!owned.rows[0]) reject(404, 'RESOURCE_NOT_FOUND');
         }
         const sessions = result.rows.map(({ id }) => id);
@@ -728,11 +737,13 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           if (!Number.isSafeInteger(accessVersion) || accessVersion < 1 || result.client !== 'storefront') throw new Error('MEMBERSHIP_INACTIVE');
           const sessionAssurance = deferredPhoneVerification ? 1 : 2;
           await database.query(
-            `insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,user_agent,device_label,assurance_level,expires_at,last_seen_at,created_at)
-            values($1,$2,$3,$4,$5,$6,'storefront',$7,$8,$9,$10,clock_timestamp()+interval '12 hours',clock_timestamp(),clock_timestamp())`,
+            `insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,user_agent,device_label,
+              assurance_level,realm_id,account_id,auth_target,expires_at,last_seen_at,created_at)
+            values($1,$2,$3,$4,$5,$6,'storefront',$7,$8,$9,$10,$11,$12,$13,clock_timestamp()+interval '12 hours',clock_timestamp(),clock_timestamp())`,
             [session, resolvedPrincipal, registeredMembership, tokenHash(token), credentialVersion, accessVersion,
               digest(request.input.headers['x-peer-address'] ?? 'unknown'), String(request.input.headers['user-agent'] ?? 'unknown').slice(0, 512),
-              String(request.input.headers['x-device-id'] ?? 'browser').slice(0, 128), sessionAssurance]
+              String(request.input.headers['x-device-id'] ?? 'browser').slice(0, 128), sessionAssurance,
+              realm.realmId, resolvedAccount, applicationReturnTarget ?? requestedReturnTarget!]
           );
           if (!deferredPhoneVerification) {
             await database.query(
@@ -749,7 +760,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             assurance: sessionAssurance,
             loginMethod: deferredPhoneVerification ? 'registration_password' : 'registration_otp',
           });
-          const callback = await tickets.issue(database, session, applicationReturnTarget ?? requestedReturnTarget!, authorization);
+          const callback = await tickets.issue(database, session, realm.realmId, resolvedAccount,
+            applicationReturnTarget ?? requestedReturnTarget!, authorization);
           return {
             status: 201,
             body: { ...responseBody, authentication: { session, csrf, expiresIn: 43_200, membership: registeredMembership, target: 'storefront', callback } },
@@ -1027,8 +1039,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         );
         await database.query(
           `update identity.session set assurance_level=greatest(assurance_level,2),last_seen_at=clock_timestamp()
-        where id=$1 and principal_id=$2 and revoked_at is null`,
-          [access.actor.session, access.actor.id]
+        where id=$1 and principal_id=$2 and account_id=$3 and realm_id=$4 and revoked_at is null`,
+          [access.actor.session, access.actor.id, account.accountId, account.realmId]
         );
         return { status: 200, body: { verified: true, verifiedAt } };
       },
@@ -1228,8 +1240,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         }
         const result = await database.query(
           `update identity.session set assurance_level=3,last_seen_at=clock_timestamp()
-        where id=$1 and principal_id=$2 and revoked_at is null returning id,assurance_level`,
-          [access.actor.session, access.actor.id]
+        where id=$1 and principal_id=$2 and account_id=$3 and realm_id=$4 and revoked_at is null returning id,assurance_level`,
+          [access.actor.session, access.actor.id, account.accountId, account.realmId]
         );
         const session = result.rows[0];
         if (!session) throw new Error('AUTHENTICATION_REQUIRED');

@@ -16,6 +16,8 @@ describe('PostgreSQL access NodeContext continuity', () => {
     const sessionQuery = vi.fn().mockResolvedValue({
       rows: [{
         actor_id: 'actor:one',
+        account_id: 'account:l1',
+        realm_id: 'realm:l1',
         session_id: 'session:one',
         membership_id: 'membership:one',
         credential_version: 1,
@@ -39,9 +41,45 @@ describe('PostgreSQL access NodeContext continuity', () => {
 
     expect(actor.nodeContext).toBe(nodeContext);
     expect(actor.realm).toBe(nodeContext.realm.ref);
+    expect(actor.account).toBe('account:l1');
     expect(requireScopeNodeContext(resolvedScope)).toBe(nodeContext);
     expect(requireAccessNodeContext(access)).toBe(nodeContext);
-    expect(sessionQuery.mock.calls[0]?.[1]).toHaveLength(1);
+    expect(sessionQuery.mock.calls[0]?.[0]).toContain('actor_id,account_id,realm_id,session_id');
+    expect(sessionQuery.mock.calls[0]?.[0]).toContain('identity.resolve_session($1,$2)');
+    expect(sessionQuery.mock.calls[0]?.[1]).toEqual([expect.any(String), nodeContext.host]);
+  });
+});
+
+describe('PgSessionResolver realm account projection', () => {
+  it('projects the account and realm selected by the database session boundary', async () => {
+    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
+    const query = vi.fn().mockResolvedValue({ rows: [{
+      actor_id: 'principal:shared', account_id: 'account:l1', realm_id: 'realm:l1',
+      session_id: 'session:l1', membership_id: 'membership:l1', credential_version: 7,
+      access_version: 3, target: 'console', assurance_level: 1, assurance_verified_at: null,
+    }] });
+    const resolver = new PgSessionResolver({ query } as never);
+    const headers = bindRequestNodeContext(Object.freeze({ authorization: `Bearer ${'t'.repeat(32)}` }), nodeContext);
+
+    await expect(resolver.resolve(headers)).resolves.toMatchObject({
+      id: 'principal:shared', account: 'account:l1', realm: 'realm:l1', nodeContext,
+      session: 'session:l1', membership: 'membership:l1', credentialVersion: 7,
+    });
+    expect(query.mock.calls[0]?.[0]).toContain('actor_id,account_id,realm_id,session_id');
+    expect(query.mock.calls[0]?.[0]).toContain('identity.resolve_session($1,$2)');
+    expect(query.mock.calls[0]?.[1]?.[1]).toBe('api.hbbtzn.com');
+  });
+
+  it('rejects a database session from a different realm than the resolved request node', async () => {
+    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
+    const query = vi.fn().mockResolvedValue({ rows: [{
+      actor_id: 'principal:shared', account_id: 'account:l0', realm_id: 'realm:l0',
+      session_id: 'session:l0', membership_id: 'membership:l0', credential_version: 1,
+      access_version: 1, target: 'console', assurance_level: 1, assurance_verified_at: null,
+    }] });
+    const headers = bindRequestNodeContext(Object.freeze({ authorization: `Bearer ${'x'.repeat(32)}` }), nodeContext);
+
+    await expect(new PgSessionResolver({ query } as never).resolve(headers)).rejects.toThrow('AUTH_REALM_MISMATCH');
   });
 });
 

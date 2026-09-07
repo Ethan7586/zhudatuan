@@ -27,6 +27,7 @@ export interface GovernanceContext {
 
 export interface Actor {
   readonly id: string;
+  /** Runtime sessions always provide account, realm and NodeContext; optional only for legacy synthetic fixtures. */
   readonly account?: string;
   readonly realm?: string;
   readonly nodeContext?: ResolvedNodeContext;

@@ -369,8 +369,14 @@ describe('canonical member registration security boundary', () => {
     expect(response).toMatchObject({ status: 201, body: { membership, target: responseTarget } });
     const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
     expect(session?.values[2]).toBe(membership);
+    expect(session?.values.slice(11)).toEqual([
+      host.includes('hbbtzn') ? 'realm:l1' : 'realm:l0',
+      `account:principal:all-realms:${host.includes('hbbtzn') ? 'l1' : 'l0'}`,
+      ticketTarget,
+    ]);
     const ticket = harness.queries.find(({ text }) => text.includes('insert into identity.authticket'));
     expect(ticket?.values[6]).toBe(ticketTarget);
+    expect(ticket?.values.slice(7)).toEqual(session?.values.slice(11, 13));
   });
 
   it.each([
@@ -587,7 +593,7 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes("'phone_otp',2"))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes("set_config('app.registration_phone_verification','checkout',true)"))).toBe(true);
     const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
-    expect(session?.values.at(-1)).toBe(1);
+    expect(session?.values.slice(9)).toEqual([1, 'realm:l1', expect.stringMatching(/^account:/), 'storefront-hbbtzn']);
   });
 
   it('reuses one phone identity while creating an independent membership in another storefront', async () => {
@@ -1001,12 +1007,13 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           input.challengePrincipal,
         ].filter((principal, index, all): principal is string => principal !== null && principal !== undefined
           && all.indexOf(principal) === index);
-        return result(principals.map((principal_id) => ({ account_id: `account:${principal_id}:l0`, realm_id: String(values[0]),
+        return result(principals.map((principal_id) => ({ account_id: `account:${principal_id}:${String(values[0]).slice(6)}`, realm_id: String(values[0]),
           principal_id, credential_version: 4 })));
       }
       if (text.includes('account.credential_version,credential.secret_hash')) {
         const principal = input.boundMobilePrincipal ?? 'principal:password-login';
-        return result(input.credentialSecret ? [{ account_id: `account:${principal}:l0`, realm_id: String(values[0]), principal_id: principal,
+        return result(input.credentialSecret ? [{ account_id: String(values[2] ?? `account:${principal}:${String(values[0]).slice(6)}`),
+          realm_id: String(values[0]), principal_id: principal,
           secret_hash: input.credentialSecret, credential_version: 2 }] : []);
       }
       if (text.includes('select membership.id,membership.access_version,membership.client')) {

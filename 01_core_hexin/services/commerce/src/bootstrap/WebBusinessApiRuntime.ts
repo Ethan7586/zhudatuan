@@ -147,7 +147,7 @@ export async function webBusinessRuntimeCompatibility(pool: DatabasePool): Promi
       to_regclass('fulfillment.fulfillmentorder')
     ],null) is null relations,
     array_position(array[
-      to_regprocedure('identity.resolve_session(text)'),to_regprocedure('access.resolve_membership(text)'),
+      to_regprocedure('identity.resolve_session(text,text)'),to_regprocedure('access.resolve_membership(text)'),
       to_regprocedure('access.membership_version(text)'),to_regprocedure('access.resolve_scope(text,text,text)'),
       to_regprocedure('access.resolve_scope(text,text,text,text)'),
       to_regprocedure('access.resource_scope(text,text,text)'),to_regprocedure('access.scope_object(text)'),

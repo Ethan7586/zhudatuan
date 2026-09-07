@@ -1418,13 +1418,13 @@ objects:
     objectType: function
     target: identity.notification_recipient(text)
     privilege: execute
-  - id: shopapp:function:identity.resolve_session(text):execute
+  - id: shopapp:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260907122000_bind_sessions_tickets_to_realm_accounts.sql
     role: shopapp
     objectType: function
-    target: identity.resolve_session(text)
+    target: identity.resolve_session(text,text)
     privilege: execute
   - id: shopapp:function:identity.rotate_zhudatuan_owner_password(text,text,text,text,text):execute
     kind: grant
@@ -9314,13 +9314,13 @@ objects:
     objectType: function
     target: capability.membership_operations(text)
     privilege: execute
-  - id: shopconsole:function:identity.resolve_session(text):execute
+  - id: shopconsole:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260830101000_console_support_boundary.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260907122000_bind_sessions_tickets_to_realm_accounts.sql
     role: shopconsole
     objectType: function
-    target: identity.resolve_session(text)
+    target: identity.resolve_session(text,text)
     privilege: execute
   - id: shopconsole:function:risk.scope_allowed(text):execute
     kind: grant
@@ -17890,13 +17890,13 @@ objects:
     objectType: function
     target: capability.membership_operations(text)
     privilege: execute
-  - id: zhudatuanidentityapi:function:identity.resolve_session(text):execute
+  - id: zhudatuanidentityapi:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260907122000_bind_sessions_tickets_to_realm_accounts.sql
     role: zhudatuanidentityapi
     objectType: function
-    target: identity.resolve_session(text)
+    target: identity.resolve_session(text,text)
     privilege: execute
   - id: zhudatuanidentityapi:function:identity.rotate_zhudatuan_owner_password(text,text,text,text,text):execute
     kind: grant
@@ -19522,13 +19522,13 @@ objects:
     objectType: function
     target: capability.membership_operations(text)
     privilege: execute
-  - id: zhudatuanprovisioningapi:function:identity.resolve_session(text):execute
+  - id: zhudatuanprovisioningapi:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260907122000_bind_sessions_tickets_to_realm_accounts.sql
     role: zhudatuanprovisioningapi
     objectType: function
-    target: identity.resolve_session(text)
+    target: identity.resolve_session(text,text)
     privilege: execute
   - id: zhudatuanprovisioningapi:schema:access:usage
     kind: grant
@@ -20058,13 +20058,13 @@ objects:
     objectType: function
     target: capability.membership_operations(text)
     privilege: execute
-  - id: zhudatuanpurchaseapi:function:identity.resolve_session(text):execute
+  - id: zhudatuanpurchaseapi:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260907122000_bind_sessions_tickets_to_realm_accounts.sql
     role: zhudatuanpurchaseapi
     objectType: function
-    target: identity.resolve_session(text)
+    target: identity.resolve_session(text,text)
     privilege: execute
   - id: zhudatuanpurchaseapi:schema:access:usage
     kind: grant
@@ -21346,13 +21346,13 @@ objects:
     objectType: function
     target: catalog.public_storefront_catalog(text,integer,integer,text)
     privilege: execute
-  - id: zhudatuanwebapi:function:identity.resolve_session(text):execute
+  - id: zhudatuanwebapi:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260907122000_bind_sessions_tickets_to_realm_accounts.sql
     role: zhudatuanwebapi
     objectType: function
-    target: identity.resolve_session(text)
+    target: identity.resolve_session(text,text)
     privilege: execute
   - id: zhudatuanwebapi:function:reporting.cockpit(text):execute
     kind: grant

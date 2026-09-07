@@ -160,7 +160,7 @@ export async function purchaseRuntimeCompatibility(pool: DatabasePool): Promise<
       to_regclass('fulfillment.fulfillmentorder'),to_regclass('fulfillment.line')
     ],null) is null relations,
     array_position(array[
-      to_regprocedure('identity.resolve_session(text)'),to_regprocedure('access.resolve_membership(text)'),
+      to_regprocedure('identity.resolve_session(text,text)'),to_regprocedure('access.resolve_membership(text)'),
       to_regprocedure('access.membership_version(text)'),to_regprocedure('access.resolve_scope(text,text,text)'),
       to_regprocedure('access.resolve_scope(text,text,text,text)'),
       to_regprocedure('capability.membership_operations(text)'),to_regprocedure('access.purchase_session_context(text,text,boolean)'),

@@ -6,13 +6,15 @@ import {
   bindScopeNodeContext,
   requireActorNodeContext,
   type Actor,
-  type NodeContextActor,
+  type AuthenticatedActor,
 } from './AccessContext';
 import type { ScopeResolver } from './ScopeResolver';
 import { sessionNodeContext, type RuntimeSessionResolver } from './SessionResolver';
 
 interface SessionRow {
   readonly actor_id: string;
+  readonly account_id: string;
+  readonly realm_id: string;
   readonly session_id: string;
   readonly membership_id: string;
   readonly credential_version: number;
@@ -34,16 +36,19 @@ interface ScopeRow { readonly scope: Scope }
 export class PgSessionResolver implements RuntimeSessionResolver {
   constructor(private readonly pool: DatabasePool) {}
 
-  async resolve(headers: Readonly<Record<string, string>>): Promise<NodeContextActor> {
+  async resolve(headers: Readonly<Record<string, string>>): Promise<AuthenticatedActor> {
     const token = bearer(headers.authorization) ?? cookie(headers.cookie, 'shop_session');
     if (!token) throw new Error('AUTHENTICATION_REQUIRED');
     const nodeContext = sessionNodeContext(headers);
-    const result = await this.pool.query<SessionRow>('select actor_id,session_id,membership_id,credential_version,access_version,target,assurance_level,assurance_verified_at from identity.resolve_session($1)', [createHash('sha256').update(token).digest('hex')]);
+    const result = await this.pool.query<SessionRow>('select actor_id,account_id,realm_id,session_id,membership_id,credential_version,access_version,target,assurance_level,assurance_verified_at from identity.resolve_session($1,$2)',
+      [createHash('sha256').update(token).digest('hex'), nodeContext.host]);
     const row = result.rows[0];
     if (!row) throw new Error('AUTHENTICATION_REQUIRED');
+    if (row.realm_id !== nodeContext.realm.ref) throw new Error('AUTH_REALM_MISMATCH');
     return {
       id: row.actor_id,
-      realm: nodeContext.realm.ref,
+      account: row.account_id,
+      realm: row.realm_id,
       nodeContext,
       session: row.session_id,
       membership: row.membership_id,

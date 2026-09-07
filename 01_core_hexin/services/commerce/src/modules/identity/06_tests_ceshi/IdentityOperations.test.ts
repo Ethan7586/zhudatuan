@@ -60,6 +60,40 @@ describe('identity session projection', () => {
       },
     });
   });
+
+  it('lists and revokes sessions only inside the authenticated realm account', async () => {
+    let requestHash = '';
+    const queries: Array<Readonly<{ text: string; values: readonly unknown[] }>> = [];
+    const client = {
+      query: async (text: string, values: readonly unknown[] = []) => {
+        queries.push({ text, values });
+        if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
+        if (text.startsWith('select request_hash,state,response')) {
+          return result([{ request_hash: requestHash, state: 'started', response: null }]);
+        }
+        if (text.includes('account.legacy_principal_id=$2')) {
+          return result([{ account_id: 'account:l11', realm_id: 'realm:l11', principal_id: 'actor:one', credential_version: 1 }]);
+        }
+        if (text.includes("revoked_reason='security_center'")) return result([{ id: 'session:l11:other' }]);
+        return result([]);
+      },
+      release: () => undefined,
+    } as unknown as PoolClient;
+    const pool: DatabasePool = { connect: async () => client, query: async () => result([]), workload: () => pool, end: async () => undefined };
+    const baseAccess = access();
+    const response = await identityOperations(context(pool)).invoke({
+      type: 'identity.sessions.revoke',
+      access: { ...baseAccess, capabilities: ['identity.sessions.revoke'] },
+      input: { path: { sessionid: 'others' }, query: {}, headers: {}, body: {}, rawBody: '',
+        deadline: Date.now() + 1_000, signal: new AbortController().signal, idempotency: 'sessions:realm:l11' },
+    });
+
+    expect(response).toMatchObject({ status: 200, body: { revoked: 1, sessions: ['session:l11:other'] } });
+    const revocation = queries.find(({ text }) => text.includes("revoked_reason='security_center'"));
+    expect(revocation?.text).toContain('account_id=$1 and realm_id=$2');
+    expect(revocation?.text).not.toContain('principal_id');
+    expect(revocation?.values).toEqual(['account:l11', 'realm:l11', 'session:one']);
+  });
 });
 
 describe('governance-aware member management', () => {

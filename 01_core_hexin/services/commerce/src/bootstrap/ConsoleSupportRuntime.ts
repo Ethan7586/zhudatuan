@@ -105,14 +105,14 @@ export async function consoleSupportRuntimeCompatibility(pool: DatabasePool): Pr
       to_regclass('audit.recorddefault'),to_regclass('audit.accessrecord'),to_regclass('audit.archiveref')
     ],null) is null relations,
     array_position(array[
-      to_regprocedure('identity.resolve_session(text)'),to_regprocedure('access.resolve_membership(text)'),
+      to_regprocedure('identity.resolve_session(text,text)'),to_regprocedure('access.resolve_membership(text)'),
       to_regprocedure('access.membership_version(text)'),to_regprocedure('access.resolve_scope(text,text,text,text)'),
       to_regprocedure('access.resolve_governance(text,text,text,text)'),
       to_regprocedure('access.resource_scope(text,text,text)'),to_regprocedure('access.scope_object(text)'),
       to_regprocedure('access.scope_allowed(text)'),to_regprocedure('capability.membership_operations(text)'),
       to_regprocedure('audit.scope_allowed(text)'),to_regprocedure('risk.scope_allowed(text)')
     ],null) is null
-      and has_function_privilege(current_user,'identity.resolve_session(text)','EXECUTE')
+      and has_function_privilege(current_user,'identity.resolve_session(text,text)','EXECUTE')
       and has_function_privilege(current_user,'access.resolve_membership(text)','EXECUTE')
       and has_function_privilege(current_user,'access.membership_version(text)','EXECUTE')
       and has_function_privilege(current_user,'access.resolve_scope(text,text,text,text)','EXECUTE')

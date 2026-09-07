@@ -41,3 +41,13 @@
 - `identity.realmtarget.target` 改为 realm 内键，可由不同节点复用 `console`、`storefront`、`store`、`supplier` 等通用 surface target。L2–L11 新节点通过 registry 数据加入，不需要新增节点枚举或修改登录算法。
 
 第 3 批仍保留旧 session 表中的 principal 字段作为兼容桥；session、ticket、授权加载与撤销的显式 realm/account 切换属于第 4 批，不能提前宣称全链路根治完成。
+
+## 第 4 批会话、票据与授权边界
+
+- `identity.session` 显式保存 `realm_id`、`account_id` 和 realm 内 `auth_target`，并以复合外键同时绑定 account、membership 与 registry target。新建密码、短信、注册和微信 session 均写入这三个字段。
+- `identity.resolve_session(token, entry_host)` 同时验证 Host registry、session、account、membership、target、credential version、access version 与 assurance 的 realm/account 一致性；不再通过 `member.profile + identity.principal` 推导登录账号。
+- 运行时 Actor 投影携带 account/realm。权限、scope 和 capability 继续只以已由 session 固定的单一 membership 解析，不搜索共享 principal 的其他 membership。
+- `identity.authticket` 显式保存 realm/account，并要求其 session 与 target 完全一致。兑换端先由请求 Host 固定 realm，再从 `identity.realmtarget.return_origin` 取得签名返回地址；运行时不再由静态节点表选择跳转 origin。
+- 会话读取、单次注销、批量撤销、改密和手机变更均以 account/realm 为边界。历史 session 仅按其确定 membership 回填；无法分类者在迁移中撤销，对应未消费 ticket 同步作废。
+
+本批关闭登录后的 session、ticket 与权限加载串域路径。第 5 批仍需完成 L0–L11 注册表扩展验收、四域端到端回归和总体验收，因此在第 5 批通过前仍不宣称全部根治完成。

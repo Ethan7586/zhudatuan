@@ -31,7 +31,7 @@ describe('wechat identity session', () => {
         if (text.includes('from access.membership membership join identity.account account')) {
           if (!text.includes('for update of account')) throw new Error('identity account was not locked');
           if (text.includes('for update of membership')) throw new Error('permission denied for table membership');
-          return result([{ access_version: 1, client: 'storefront', credential_version: 1 }]);
+          return result([{ access_version: 1, client: 'storefront', credential_version: 1, auth_target: 'storefront' }]);
         }
         return result([]);
       },
