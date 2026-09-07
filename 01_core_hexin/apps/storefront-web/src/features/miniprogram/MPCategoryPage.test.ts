@@ -58,6 +58,7 @@ describe('mini-program category page', () => {
     expect(html).toContain('福利卡可用');
     expect(html).toContain('员工福利礼盒');
     expect(html).toContain('加入购物车：员工福利礼盒');
+    expect(html).not.toContain('<nav aria-label="商品分类"');
     expect(html).not.toContain('热搜:');
     expect(html).not.toContain('全额包邮');
   });

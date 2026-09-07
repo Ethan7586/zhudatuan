@@ -31,6 +31,7 @@ export const MPCategoryPage: React.FC = () => {
     const matchesKeyword = !keyword || product.title.includes(keyword) || product.subtitle?.includes(keyword);
     return matchesCategory && matchesKeyword;
   });
+  const showCategoryRail = categories.length > 1;
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#F4F6FA] font-sans text-gray-900">
@@ -55,33 +56,35 @@ export const MPCategoryPage: React.FC = () => {
         </label>
       </div>
 
-      <div className="flex min-h-0 flex-1 gap-2.5 px-3 pb-3">
-        <nav aria-label="商品分类" className="w-[82px] flex-none overflow-y-auto overscroll-contain rounded-2xl bg-[#E9EDF5] p-1.5 no-scrollbar">
-          <div className="space-y-1">
-            {categories.map((category) => {
-              const isActive = category.id === activeCategoryId;
-              return (
-                <button
-                  key={category.id}
-                  type="button"
-                  aria-current={isActive ? 'page' : undefined}
-                  onClick={() => {
-                    setActiveCategoryId(category.id);
-                    setKeyword('');
-                  }}
-                  className={`relative flex min-h-12 w-full items-center justify-center rounded-xl px-2 text-center text-[11px] leading-4 ${
-                    isActive
-                      ? 'bg-white font-black text-[var(--sw-brand)] shadow-[0_3px_10px_rgba(15,23,42,0.07)]'
-                      : 'font-medium text-gray-600 active:bg-white/60'
-                  }`}
-                >
-                  {isActive && <span className="absolute left-1.5 h-4 w-0.5 rounded-full bg-[var(--sw-brand)]" />}
-                  <span className="line-clamp-2">{category.name}</span>
-                </button>
-              );
-            })}
-          </div>
-        </nav>
+      <div className={`flex min-h-0 flex-1 px-3 pb-3 ${showCategoryRail ? 'gap-2.5' : ''}`}>
+        {showCategoryRail && (
+          <nav aria-label="商品分类" className="w-[82px] flex-none overflow-y-auto overscroll-contain rounded-2xl bg-[#E9EDF5] p-1.5 no-scrollbar">
+            <div className="space-y-1">
+              {categories.map((category) => {
+                const isActive = category.id === activeCategoryId;
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    aria-current={isActive ? 'page' : undefined}
+                    onClick={() => {
+                      setActiveCategoryId(category.id);
+                      setKeyword('');
+                    }}
+                    className={`relative flex min-h-12 w-full items-center justify-center rounded-xl px-2 text-center text-[11px] leading-4 ${
+                      isActive
+                        ? 'bg-white font-black text-[var(--sw-brand)] shadow-[0_3px_10px_rgba(15,23,42,0.07)]'
+                        : 'font-medium text-gray-600 active:bg-white/60'
+                    }`}
+                  >
+                    {isActive && <span className="absolute left-1.5 h-4 w-0.5 rounded-full bg-[var(--sw-brand)]" />}
+                    <span className="line-clamp-2">{category.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+        )}
 
         <main className="min-w-0 flex-1 overflow-y-auto overscroll-contain no-scrollbar">
           <section className="rounded-2xl bg-gradient-to-r from-[#123D91] to-[#2166E8] p-3.5 text-white shadow-[0_8px_22px_rgba(29,78,216,0.15)]">
