@@ -1,6 +1,11 @@
 import React from 'react';
-import { ChevronLeft, RotateCcw, Store } from 'lucide-react';
+import { ChevronLeft, Eye, RotateCcw, Store, WalletCards } from 'lucide-react';
+import type { FrontendOrder } from '../../adapters/frontendData';
 import { useMall } from '../../context/MallContext';
+import { MobileAfterSaleView } from './MobileAfterSaleView';
+import { MobileInventoryBadge } from './MobileInventoryBadge';
+import { MobileOrderDetailView } from './MobileOrderDetailView';
+import { MobilePaymentSheet } from './MobilePaymentSheet';
 import { OrderFlowIcon } from './OrderFlowIcon';
 import { currentMobileOrderFilter, matchesMobileOrderFilter, selectMobileOrderFilter, type MobileOrderFilter } from './mobileOrderFilters';
 
@@ -19,6 +24,9 @@ const FILTER_OPTIONS: ReadonlyArray<Readonly<{ id: MobileOrderFilter; label: str
 export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
   const { presentationOrders, setMpPage, setAndroidPage, triggerPendingFeature } = useMall();
   const [activeFilter, setActiveFilter] = React.useState<MobileOrderFilter>(() => currentMobileOrderFilter());
+  const [selectedOrder, setSelectedOrder] = React.useState<FrontendOrder | null>(null);
+  const [orderView, setOrderView] = React.useState<'list' | 'detail' | 'after-sale'>('list');
+  const [paymentOrder, setPaymentOrder] = React.useState<FrontendOrder | null>(null);
   const visibleOrders = presentationOrders.filter((order) => matchesMobileOrderFilter(order.status, activeFilter));
   const activeLabel = FILTER_OPTIONS.find((option) => option.id === activeFilter)?.label ?? '全部';
 
@@ -27,13 +35,55 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
     setActiveFilter(filter);
   };
 
+  const openOrderView = (order: FrontendOrder, view: 'detail' | 'after-sale') => {
+    setSelectedOrder(order);
+    setOrderView(view);
+  };
+
+  const paymentSheet = paymentOrder && (
+    <MobilePaymentSheet
+      order={paymentOrder}
+      onClose={() => setPaymentOrder(null)}
+      onConfirm={() => {
+        setPaymentOrder(null);
+        triggerPendingFeature('继续付款', `订单 ${paymentOrder.orderNo} 的支付界面已完成，等待接入微信支付创建与回调接口。`);
+      }}
+    />
+  );
+
   const goBack = () => {
     if (mode === 'mini-program') setMpPage('profile');
     else setAndroidPage('profile');
   };
 
+  if (selectedOrder && orderView === 'detail') {
+    return (
+      <div className="relative min-h-full">
+        <MobileOrderDetailView
+          order={selectedOrder}
+          onBack={() => setOrderView('list')}
+          onContinuePayment={() => setPaymentOrder(selectedOrder)}
+          onAfterSale={() => setOrderView('after-sale')}
+        />
+        {paymentSheet}
+      </div>
+    );
+  }
+
+  if (selectedOrder && orderView === 'after-sale') {
+    return (
+      <div className="relative min-h-full">
+        <MobileAfterSaleView
+          order={selectedOrder}
+          onBack={() => setOrderView('detail')}
+          onSubmit={() => triggerPendingFeature('售后申请提交', `订单 ${selectedOrder.orderNo} 的退货退款表单已完成，等待接入售后提交与审核接口。`)}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-full bg-[#F5F7FA] pb-20 text-gray-800">
+    <div className="relative min-h-full bg-[#F5F7FA] pb-20 text-gray-800">
       <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-gray-200 bg-white/95 px-3 py-3 backdrop-blur">
         <button type="button" onClick={goBack} className="rounded-full p-1.5 hover:bg-gray-100" aria-label="返回个人中心">
           <ChevronLeft className="h-5 w-5" />
@@ -78,8 +128,10 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
         ) : (
           visibleOrders.map((order) => {
             const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+            const isPendingPayment = order.status === 'pending_payment' || order.status === 'pending_pay';
             const isCompleted = order.status === 'completed';
             const isAfterSale = order.status === 'after_sale';
+            const displayAmount = isPendingPayment && order.payment.wechatPaid > 0 ? order.payment.wechatPaid : order.totalAmount;
 
             return (
               <article key={order.id} className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
@@ -105,9 +157,12 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
                         <img src={item.product.imageUrl} alt={item.productTitle} className="h-14 w-14 shrink-0 rounded-xl border border-white bg-white object-cover shadow-xs" />
                         <div className="min-w-0 flex-1 self-stretch py-0.5">
                           <p className="line-clamp-2 text-[11px] font-bold leading-[1.45] text-gray-800">{item.productTitle}</p>
-                          <div className="mt-1.5 flex items-end justify-between gap-2">
-                            <span className="text-xs font-black text-gray-900">¥{item.priceAtPurchase.toFixed(2)}</span>
+                          <div className="mt-1 flex items-center justify-between gap-2">
+                            <MobileInventoryBadge product={item.product} />
                             <span className="text-[10px] text-gray-400">× {item.quantity}</span>
+                          </div>
+                          <div className="mt-1 flex items-end justify-between gap-2">
+                            <span className="text-xs font-black text-gray-900">¥{item.priceAtPurchase.toFixed(2)}</span>
                           </div>
                         </div>
                       </div>
@@ -118,23 +173,28 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
                   )}
                 </div>
 
-                <footer className="flex min-h-12 items-center justify-between gap-3 px-3.5 py-2.5">
-                  <div className="flex items-center gap-2 text-[10px] text-gray-400">
-                    <span>共 {itemCount} 件</span>
-                    {isAfterSale && <span className="font-medium text-purple-600">售后处理中</span>}
+                <footer className="border-t border-gray-50 px-3.5 py-2.5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                      <span>共 {itemCount} 件</span>
+                      {isAfterSale && <span className="font-medium text-purple-600">售后处理中</span>}
+                    </div>
+                    <span className="text-[10px] text-gray-500">{isPendingPayment ? '待支付' : '实付'} <strong className="ml-0.5 text-base font-black text-[#E5484D]">¥{displayAmount.toFixed(2)}</strong></span>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-[10px] text-gray-500">实付 <strong className="ml-0.5 text-base font-black text-[#E5484D]">¥{order.totalAmount.toFixed(2)}</strong></span>
+                  <div className="mt-2 flex items-center justify-end gap-2">
+                    <button type="button" onClick={() => openOrderView(order, 'detail')} className="flex min-h-8 items-center gap-1 rounded-full border border-gray-200 bg-white px-3 text-[9px] font-bold text-gray-600 active:bg-gray-50"><Eye className="h-3 w-3" />订单详情</button>
+                    {isPendingPayment && <button type="button" onClick={() => setPaymentOrder(order)} className="flex min-h-8 items-center gap-1 rounded-full bg-[var(--sw-brand)] px-3.5 text-[9px] font-bold text-white"><WalletCards className="h-3 w-3" />继续付款</button>}
                     {isCompleted && (
                       <button
                         type="button"
-                        onClick={() => triggerPendingFeature('移动端售后申请', `订单 ${order.orderNo} 已接入统一售后数据模型；退款审批仍需甲方确认流程。`)}
-                        className="flex min-h-8 items-center gap-1 rounded-full border border-gray-200 bg-white px-3 text-[10px] font-bold text-gray-700 active:bg-gray-50"
+                        onClick={() => openOrderView(order, 'after-sale')}
+                        className="flex min-h-8 items-center gap-1 rounded-full border border-gray-200 bg-white px-3 text-[9px] font-bold text-gray-700 active:bg-gray-50"
                       >
                         <RotateCcw className="h-3 w-3" />
-                        申请售后
+                        退货/退款
                       </button>
                     )}
+                    {isAfterSale && <button type="button" onClick={() => openOrderView(order, 'after-sale')} className="min-h-8 rounded-full bg-purple-50 px-3 text-[9px] font-bold text-purple-700">查看进度</button>}
                   </div>
                 </footer>
               </article>
@@ -142,6 +202,7 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
           })
         )}
       </main>
+      {paymentSheet}
     </div>
   );
 };
