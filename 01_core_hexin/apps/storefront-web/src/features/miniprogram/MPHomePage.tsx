@@ -7,8 +7,50 @@ import { storefrontAuthHref } from '../../config/storefrontAuth';
 import { MPAuthStatusCard } from './MPAuthStatusCard';
 import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 
+export const HOME_CAMPAIGN_AUTOPLAY_MS = 5200;
+export const HOME_CAMPAIGN_TRANSITION_MS = 760;
+
+const HOME_CAMPAIGNS = [
+  {
+    id: 'mid-autumn-care',
+    eyebrow: '月满宏泰 · 员工团圆礼',
+    title: '中秋关怀',
+    desc: '月饼粮油与团圆好礼 · 福利卡全额兑换',
+    cta: '领取团圆礼',
+    color: 'from-[#123A85] via-[#1858C7] to-[#2C7DF0]',
+    icon: Sparkles,
+  },
+  {
+    id: 'golden-autumn-hongtai',
+    eyebrow: '宏泰甄选 · 秋日焕新',
+    title: '金秋宏泰',
+    desc: '品质粮油与暖心家电 · 金秋好礼直达',
+    cta: '逛金秋好礼',
+    color: 'from-[#8F450E] via-[#C77516] to-[#E6A32D]',
+    icon: ShoppingBag,
+  },
+  {
+    id: 'double-festival',
+    eyebrow: '中秋 × 国庆 · 双节同庆',
+    title: '双喜临门',
+    desc: '双节精选礼遇 · 家国同庆好事成双',
+    cta: '开启双节礼',
+    color: 'from-[#9D2130] via-[#CF3D3A] to-[#F06A3D]',
+    icon: Gift,
+  },
+  {
+    id: 'wuhan-gifts',
+    eyebrow: '江城心意 · 企业定制礼',
+    title: '大武汉礼品',
+    desc: '武汉风味与城市文创 · 把江城心意带回家',
+    cta: '选武汉好礼',
+    color: 'from-[#173B70] via-[#28658F] to-[#A94E55]',
+    icon: Building2,
+  },
+] as const;
+
 export const MPHomePage: React.FC = () => {
-  const { user, currentMall, sessionStatus, setMpPage, addToCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
+  const { user, currentMall, mpPage, sessionStatus, setMpPage, addToCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
   const [activeBanner, setActiveBanner] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [authHref, setAuthHref] = useState<string | undefined>(undefined);
@@ -17,26 +59,26 @@ export const MPHomePage: React.FC = () => {
     setAuthHref(storefrontAuthHref(window.location.hostname));
   }, []);
 
-  const banners = [
-    {
-      id: 1,
-      title: '中秋关怀 · 企采礼包专场',
-      desc: '全额福利卡扣减 · 免费开票直达',
-      color: 'from-[var(--sw-brand-dark)] to-[var(--sw-brand)]',
-    },
-    {
-      id: 2,
-      title: '品牌代金券 · 凭码即刻核销',
-      desc: '星巴克/猫眼电影/肯德基 协议价8折起',
-      color: 'from-[#FF7A00] to-amber-600',
-    },
-    {
-      id: 3,
-      title: '米面粮油与生鲜劳保',
-      desc: '有机五常大米 · 产地直供免运费',
-      color: 'from-emerald-700 to-teal-600',
-    },
-  ];
+  useEffect(() => {
+    if (mpPage !== 'home' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+    let timer: number | undefined;
+    const scheduleNextCampaign = () => {
+      if (timer !== undefined) window.clearTimeout(timer);
+      if (document.visibilityState !== 'visible') return;
+      timer = window.setTimeout(
+        () => setActiveBanner((current) => (current + 1) % HOME_CAMPAIGNS.length),
+        HOME_CAMPAIGN_AUTOPLAY_MS,
+      );
+    };
+
+    scheduleNextCampaign();
+    document.addEventListener('visibilitychange', scheduleNextCampaign);
+    return () => {
+      if (timer !== undefined) window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', scheduleNextCampaign);
+    };
+  }, [activeBanner, mpPage]);
 
   // Quick 8 categories (Meituan B2C info architecture style)
   const quickCategories = [
@@ -85,33 +127,73 @@ export const MPHomePage: React.FC = () => {
 
       {/* 活动轮播图 */}
       <div className="px-3 mt-3">
-        <div className={`relative rounded-2xl overflow-hidden shadow-sm bg-gradient-to-r ${banners[activeBanner].color} p-4 text-white min-h-[110px] flex flex-col justify-between`}>
-          <div>
-            <span className="inline-block bg-white/20 text-yellow-300 text-[9px] font-bold px-2 py-0.5 rounded-full mb-1 border border-white/20">微信小程序企业专享</span>
-            <h2 className="text-sm font-black leading-tight">{banners[activeBanner].title}</h2>
-            <p className="text-[10px] text-blue-100 mt-0.5">{banners[activeBanner].desc}</p>
-          </div>
+        <section
+          aria-label="首页福利活动"
+          aria-roledescription="carousel"
+          className="relative h-[124px] overflow-hidden rounded-2xl bg-[var(--sw-brand-dark)] text-white shadow-sm"
+          data-home-campaign-carousel
+        >
+          {HOME_CAMPAIGNS.map((campaign, index) => {
+            const Icon = campaign.icon;
+            const isActive = activeBanner === index;
+            return (
+              <article
+                key={campaign.id}
+                aria-hidden={!isActive}
+                data-campaign-slide={campaign.id}
+                data-active={isActive ? 'true' : 'false'}
+                style={{ transitionDuration: `${HOME_CAMPAIGN_TRANSITION_MS}ms` }}
+                className={`absolute inset-0 bg-gradient-to-br ${campaign.color} p-4 transition-[opacity,transform] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transform-none motion-reduce:transition-none ${
+                  isActive
+                    ? 'z-10 translate-x-0 scale-100 opacity-100'
+                    : 'pointer-events-none z-0 translate-x-3 scale-[0.985] opacity-0'
+                }`}
+              >
+                <div aria-hidden="true" className="absolute -right-5 -top-8 h-28 w-28 rounded-full bg-white/10" />
+                <div aria-hidden="true" className="absolute bottom-1 right-7 h-12 w-12 rounded-full bg-white/8" />
+                <Icon aria-hidden="true" className="absolute right-5 top-5 h-12 w-12 text-white/18" strokeWidth={1.35} />
 
-          <div className="flex items-center justify-between pt-2 border-t border-white/10">
-            <button onClick={() => setMpPage('category')} className="bg-white text-[var(--sw-brand-dark)] font-bold text-[10px] px-3 py-1 rounded-full flex items-center gap-0.5 shadow-xs cursor-pointer">
-              <span>立即去兑换</span>
-              <ChevronRight className="w-3 h-3" />
-            </button>
+                <div className="relative z-10 max-w-[78%]">
+                  <span className="inline-flex rounded-full border border-white/20 bg-white/14 px-2 py-0.5 text-[9px] font-bold text-amber-100">
+                    {campaign.eyebrow}
+                  </span>
+                  <h2 className="mt-1 text-base font-black leading-tight tracking-tight">{campaign.title}</h2>
+                  <p className="mt-0.5 truncate text-[10px] font-medium text-white/78">{campaign.desc}</p>
+                </div>
 
-            <div className="flex items-center gap-1">
-              {banners.map((banner, i) => (
                 <button
-                  key={banner.id}
                   type="button"
-                  aria-label={`切换到活动：${banner.title}`}
-                  aria-pressed={activeBanner === i}
-                  onClick={() => setActiveBanner(i)}
-                  className={`h-1 rounded-full transition-all cursor-pointer ${activeBanner === i ? 'w-4 bg-yellow-300' : 'w-1 bg-white/40'}`}
+                  tabIndex={isActive ? 0 : -1}
+                  onClick={() => setMpPage('category')}
+                  className="absolute bottom-3 left-4 z-10 flex min-h-7 items-center gap-0.5 rounded-full bg-white px-3 text-[10px] font-bold text-[var(--sw-brand-dark)] shadow-xs active:scale-[0.98]"
+                >
+                  <span>{campaign.cta}</span>
+                  <ChevronRight className="h-3 w-3" />
+                </button>
+              </article>
+            );
+          })}
+
+          <div className="absolute bottom-2.5 right-3 z-20 flex items-center" aria-label="选择活动页">
+            {HOME_CAMPAIGNS.map((campaign, index) => (
+              <button
+                key={campaign.id}
+                type="button"
+                aria-label={`切换到活动：${campaign.title}`}
+                aria-pressed={activeBanner === index}
+                onClick={() => setActiveBanner(index)}
+                className="flex h-7 w-7 items-center justify-center rounded-full active:bg-white/10"
+              >
+                <span
+                  aria-hidden="true"
+                  className={`h-1 rounded-full transition-[width,background-color] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
+                    activeBanner === index ? 'w-4 bg-amber-200' : 'w-1.5 bg-white/45'
+                  }`}
                 />
-              ))}
-            </div>
+              </button>
+            ))}
           </div>
-        </div>
+        </section>
       </div>
 
       {/* 金刚区：8大分类入口 (Meituan mobile architecture) */}

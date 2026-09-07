@@ -22,7 +22,7 @@ vi.mock('../../context/MallContext', () => ({
   }),
 }));
 
-import { MPHomePage } from './MPHomePage';
+import { HOME_CAMPAIGN_AUTOPLAY_MS, HOME_CAMPAIGN_TRANSITION_MS, MPHomePage } from './MPHomePage';
 
 describe('mini-program home page', () => {
   it('keeps duplicated welfare and meal balances off the home page', () => {
@@ -35,8 +35,21 @@ describe('mini-program home page', () => {
   it('gives every campaign carousel control an accessible name and selected state', () => {
     const html = renderToStaticMarkup(React.createElement(MPHomePage));
 
-    expect(html.match(/aria-label="切换到活动：/g)).toHaveLength(3);
+    expect(html.match(/aria-label="切换到活动：/g)).toHaveLength(4);
     expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
-    expect(html.match(/aria-pressed="false"/g)).toHaveLength(2);
+    expect(html.match(/aria-pressed="false"/g)).toHaveLength(3);
+    expect(html).toContain('中秋关怀');
+    expect(html).toContain('金秋宏泰');
+    expect(html).toContain('双喜临门');
+    expect(html).toContain('大武汉礼品');
+  });
+
+  it('uses a calm autoplay rhythm and compositor-only campaign transition', () => {
+    const html = renderToStaticMarkup(React.createElement(MPHomePage));
+
+    expect(HOME_CAMPAIGN_AUTOPLAY_MS).toBe(5200);
+    expect(HOME_CAMPAIGN_TRANSITION_MS).toBe(760);
+    expect(html).toContain('transition-[opacity,transform]');
+    expect(html).toContain('h-[124px]');
   });
 });
