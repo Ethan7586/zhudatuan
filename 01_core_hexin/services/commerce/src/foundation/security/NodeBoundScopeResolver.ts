@@ -7,7 +7,8 @@ export class NodeBoundScopeResolver implements ScopeResolver {
 
   async resolve(actor: Actor, operation: string, resource?: string, scopeHint?: string): Promise<Scope> {
     const scope = await this.next.resolve(actor, operation, resource, scopeHint);
-    if (scope.id !== this.scopeId) throw new Error('NODE_SCOPE_MISMATCH');
+    const nodeScope = scope.kind === 'owner' ? scope.tenant : scope.id;
+    if (nodeScope !== this.scopeId) throw new Error('NODE_SCOPE_MISMATCH');
     return scope;
   }
 }

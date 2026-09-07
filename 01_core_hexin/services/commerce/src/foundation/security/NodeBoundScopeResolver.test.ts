@@ -12,8 +12,20 @@ describe('node-bound scope resolver', () => {
     await expect(resolver.resolve(actor, 'catalog.imports.create')).resolves.toBe(scope);
   });
 
+  it('returns an owner scope belonging to the node mall', async () => {
+    const owner = { kind: 'owner', id: 'member:one', tenant: scope.id, path: [] } satisfies Scope;
+    const resolver = new NodeBoundScopeResolver({ resolve: async () => owner }, scope.id);
+    await expect(resolver.resolve(actor, 'member.profile.read')).resolves.toBe(owner);
+  });
+
   it('rejects a valid membership scope from another node', async () => {
     const resolver = new NodeBoundScopeResolver({ resolve: async () => ({ ...scope, id: 'mall-zhudatuan' }) }, scope.id);
     await expect(resolver.resolve(actor, 'catalog.imports.create')).rejects.toThrow('NODE_SCOPE_MISMATCH');
+  });
+
+  it('rejects an owner scope belonging to another mall', async () => {
+    const owner = { kind: 'owner', id: 'member:one', tenant: 'mall-zhudatuan', path: [] } satisfies Scope;
+    const resolver = new NodeBoundScopeResolver({ resolve: async () => owner }, scope.id);
+    await expect(resolver.resolve(actor, 'member.profile.read')).rejects.toThrow('NODE_SCOPE_MISMATCH');
   });
 });
