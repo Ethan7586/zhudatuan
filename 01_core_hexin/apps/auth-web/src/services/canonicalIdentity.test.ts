@@ -169,7 +169,7 @@ describe('canonical console identity', () => {
     const sessionHeaders = sessionInit?.headers as Record<string, string>;
     expect(sessionHeaders).toMatchObject({
       'content-type': 'application/json',
-      'x-client-version': '0.0.0',
+      'x-client-version': process.env.VITE_CLIENT_VERSION ?? '0.0.0',
       'x-contract-version': expect.any(String),
       'x-device-id': expect.any(String),
       'x-request-id': expect.any(String),

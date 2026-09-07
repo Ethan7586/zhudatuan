@@ -11,8 +11,9 @@ import {
 import consoleReleaseDeclaration from '../../../02_platform_pingtai/config/console-node-manifests.json';
 import { consoleImmutableArtifactDigest } from '../../../04_tools/scripts/release/console-digest.mjs';
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
   const environment = { ...loadEnv(mode, import.meta.dirname, ''), ...process.env };
+  if (command === 'build') validateClientBuildEnvironment(environment);
   const build = buildDefinition(environment);
   const clientVersion = normalizeConsoleClientVersion(environment.VITE_CLIENT_VERSION);
   return {
@@ -89,4 +90,22 @@ function buildDefinition(environment: Readonly<Record<string, string | undefined
 
 function git(arguments_: readonly string[]): string {
   return execFileSync('git', ['-C', repositoryRoot, ...arguments_], { encoding: 'utf8' }).trim();
+}
+
+function validateClientBuildEnvironment(source: Readonly<Record<string, string | undefined>>): void {
+  const apiBaseUrl = requiredBuildValue(source.VITE_API_BASE_URL, 'CLIENT_API_BASE_URL_MISSING');
+  const authBaseUrl = requiredBuildValue(source.VITE_AUTH_BASE_URL, 'CLIENT_AUTH_BASE_URL_MISSING');
+  const clientVersion = requiredBuildValue(source.VITE_CLIENT_VERSION, 'CLIENT_VERSION_MISSING');
+  if (!/^https:\/\//.test(apiBaseUrl) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(apiBaseUrl)) {
+    throw new Error('CLIENT_API_BASE_URL_INVALID');
+  }
+  if (!/^https:\/\//.test(authBaseUrl) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(authBaseUrl)) {
+    throw new Error('CLIENT_AUTH_BASE_URL_INVALID');
+  }
+  if (!/^[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.]+)?$/i.test(clientVersion)) throw new Error('CLIENT_VERSION_INVALID');
+}
+
+function requiredBuildValue(value: string | undefined, code: string): string {
+  if (!value?.trim()) throw new Error(code);
+  return value.trim();
 }

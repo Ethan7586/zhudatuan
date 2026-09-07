@@ -1,6 +1,6 @@
 {
   "schema": "zhudatuan.owner-approved-ui.v1",
-  "approvedAt": "2026-08-28T05:39:24+08:00",
+  "approvedAt": "2026-09-08T07:51:03+08:00",
   "owner": "Ethan",
   "policy": {
     "sourceRoot": ".",
@@ -31,9 +31,9 @@
     ],
     "requiredValidation": ["caddy validate --adapter caddyfile", "multi-membership discovery returns 409 without Set-Cookie"],
     "lockedFiles": {
-      "02_platform_pingtai/infrastructure/zhudatuan/aliyun/Caddyfile": "a0cc43278e45c775400a45b9bef062757ae6878c5850c1375836150f667fee1e",
-      "02_platform_pingtai/infrastructure/zhudatuan/aliyun/delivery.yml": "1ac5a2173224afc1d769ef1dbd2187d57f4253e45829cb9d75d8c503354d95f4",
-      "02_platform_pingtai/infrastructure/zhudatuan/aliyun/ecosystem.config.cjs": "d8a8584d01dd6f69229c6d9e41672543267af7f91f5d3e82db806c2a1fb3fa52"
+      "02_platform_pingtai/infrastructure/zhudatuan/aliyun/Caddyfile": "f5a74b2784af30cd186bf0f25e6bbc8c23b597b98eee2ac236487d0adedb1206",
+      "02_platform_pingtai/infrastructure/zhudatuan/aliyun/delivery.yml": "f031e5ed15a76961b349842c4afd4cd9945073766339df99e1945e15ed80f57b",
+      "02_platform_pingtai/infrastructure/zhudatuan/aliyun/ecosystem.config.cjs": "aaaca80f391535a26dd0cb267ba643890087e099f4794a1b62a70d55dc824b9d"
     }
   },
   "surfaces": {
@@ -54,16 +54,16 @@
       "rejectedEntrypoint": "01_core_hexin/apps/storefront-web/src/App.tsx",
       "lockedFiles": {
         "01_core_hexin/apps/storefront-web/app/page.tsx": "653e8b2c6ee802a52b84d5140fcbbc08f5f4d074540a12a0eaf1ddc3c46b34ac",
-        "01_core_hexin/apps/storefront-web/src/StorefrontRoot.tsx": "695f28a3bb2dca06f8a9e3fc4429f172e09440f4684d46ce08f79a4539f6f876",
-        "01_core_hexin/apps/storefront-web/src/components/laptop/LaptopFrame.tsx": "9d94047019ff1a30ab5d132f217b92242ab8218b150bedc0b6cc800458b78a93",
-        "01_core_hexin/apps/storefront-web/src/components/laptop/LaptopHeader.tsx": "b55dba66fe695bad84741984cb7be7acf5207408288c36113946308e232c54a3",
+        "01_core_hexin/apps/storefront-web/src/StorefrontRoot.tsx": "249ae38f1fa07678491b97c88287582602b83ed137b317e0dc3d14f45cf83bb3",
+        "01_core_hexin/apps/storefront-web/src/components/laptop/LaptopFrame.tsx": "cf36975a042c49448692b8bdc09354cfaaccb1d235f30b088ebd7ff3194d0a22",
+        "01_core_hexin/apps/storefront-web/src/components/laptop/LaptopHeader.tsx": "fc26dd28413fc46b5ba9c1340cf5f877b5fae42f3de2a9e67acd5acf9d21ae68",
         "01_core_hexin/apps/storefront-web/src/components/laptop/LaptopTopSwitcher.tsx": "9a77a5b1a71c33de70a2ee5f3f97b270f15e895845c9e4b686347f3ea35dccc0",
         "01_core_hexin/apps/storefront-web/src/components/laptop/StorefrontWebStandard.ts": "a2e5b058b431a505d486f292250457f82a91041f7e23be52386ae00e906b3699",
-        "01_core_hexin/apps/storefront-web/src/config/storefrontAuth.ts": "24e56a5439a6ac280d16db197ed1e33a5e8250174daba198a79133eab15dd450",
-        "01_core_hexin/apps/storefront-web/src/config/showcaseAccess.ts": "fad0ce5a6a8467310fa5e764c5cdb90b3f7909805ec04d97cbdbd514d6085000",
+        "01_core_hexin/apps/storefront-web/src/config/storefrontAuth.ts": "e04df94655c6da78bad744eacfc21ee629cfe1a26717667e7b02fee884f34033",
+        "01_core_hexin/apps/storefront-web/src/config/showcaseAccess.ts": "9356772ff9795370396f81575ebf1ae7c3d1ff588457758f02cadcec296905b7",
         "01_core_hexin/apps/storefront-web/src/config/productionDemoAuth.ts": "747e568a05c39a4eac24e3e46c272f874181875a69ffd9171bb603218593782e",
-        "01_core_hexin/apps/storefront-web/worker/index.ts": "5457479e43e47fdec080207b1eeed6611995306715c2c0e7be6679a25e42c006",
-        "01_core_hexin/apps/storefront-web/vite.config.ts": "db8dfa7f68a0bff39cb81ef98835e7d251e5573188ae200d8bfc87825e7bf516"
+        "01_core_hexin/apps/storefront-web/worker/index.ts": "ae4335e3168dddb8513f6babf6786cd3343489b560caa833b787ab04b02a8c50",
+        "01_core_hexin/apps/storefront-web/vite.config.ts": "5850f3b9339c09895eccb209c90c52572d9d18b3f43ccf866d499af0704a57d0"
       }
     },
     "accounts": {
@@ -81,14 +81,14 @@
       "sessionEndpoint": "https://zhudatuan.com/api/v1/auth/login",
       "disabledUntilBackendExists": ["otp", "work-weixin-qr", "wechat-qr", "enterprise-sso", "multi-membership-selection", "step-up"],
       "lockedFiles": {
-        "01_core_hexin/apps/auth-web/src/App.tsx": "5f158b34867a6eea9f06906413c590c024cff2949900946c5bf0cc59a00fe58a",
-        "01_core_hexin/apps/auth-web/src/screens/LoginPage.tsx": "ee3eb22c88e40856e156859afc358732c3948aa41ab71e6539c0e599f47bc95c",
-        "01_core_hexin/apps/auth-web/src/context/MallContext.tsx": "f7413e2e5e39a9a888ba1aab4ac742c6adbc52b6d37749cc130c1f256e639559",
-        "01_core_hexin/apps/auth-web/src/services/auth.ts": "613239172484080f4043772799b3b2cba4d75fc8b5c690151e9c02164e2485aa",
-        "01_core_hexin/apps/auth-web/vite.config.ts": "20a25f1ea0d990d5d06a2f7ccbbf92ed43d538bb4182253eb522485cbc57ab0c",
+        "01_core_hexin/apps/auth-web/src/App.tsx": "9e4fed0f663bce7b4ec422f7ac4bacac64c8b06d2e49a155f8a6b49bae7e3ac0",
+        "01_core_hexin/apps/auth-web/src/screens/LoginPage.tsx": "165a53fa187e9c8caac7ff7806edcb2327782d157e44f2dc6b8b9ac5c0ac8ec9",
+        "01_core_hexin/apps/auth-web/src/context/MallContext.tsx": "bb015f347d23d92e8440e8b212d0363758521c02d8786f8e088d60aa586f7ebc",
+        "01_core_hexin/apps/auth-web/src/services/auth.ts": "42d6f839dbfe696b2b79cd83c0d8e0acdd49ac8818e1d31754d4ca2299fd81bc",
+        "01_core_hexin/apps/auth-web/vite.config.ts": "c75b69f22bbbb4a723b06e2d79e0fed82e50028adad8ea6235bd37b69f3221da",
         "01_core_hexin/apps/auth-web/index.html": "c5f4a203529a02bc4261770fed2db1ccbe7dc9010ff8a42423f7e2e1129c3eb8",
         "01_core_hexin/apps/auth-web/public/brand/site.webmanifest": "fba52460dae3b828f55fdd5b8c86aa4ea1eb079fe729de901a090ee63b4d3d79",
-        "01_core_hexin/services/commerce-api/src/api/publicRoutes.ts": "54230700a6a66c8363cb53e66282106c565cee49d193450bdea913fd445344a2",
+        "01_core_hexin/services/commerce-api/src/api/publicRoutes.ts": "856df1517cb204656baa2ff039a1aa0dae026485d7b28ea88ccdc4d25d252567",
         "01_core_hexin/services/commerce-api/src/api/session.ts": "d5ea335ab11f0cb750066f634c4dd2efac33eacc6cdfb9bc37db1a2d8b6cd5f0",
         "01_core_hexin/services/commerce-api/src/api/publicCatalogImages.ts": "d66c08186adf0d52f897baea10128f62605046010345be73795c518377fd995c",
         "01_core_hexin/services/commerce-api/src/api/publicCatalogRoutes.ts": "94e3d6230e3b41d36f6daa2e9740ac703dd2ac3e20f07f237efc3f79755c03ec",
@@ -116,12 +116,12 @@
       "lockedFiles": {
         "01_core_hexin/apps/console/src/main.tsx": "4f04593399d41dc0de2a2505fcb553b510bd895df789756d9919c0074fd63c5b",
         "01_core_hexin/apps/console/index.html": "257c5debcfcb1a22089c76740c8c5c60cabea302db1ef50d4f149282319fc170",
-        "01_core_hexin/apps/console/vite.config.ts": "13b64bec35f592ccaf0a48d611a806601579855d92f517d076d6cf46c62d68b3",
-        "01_core_hexin/apps/console/src/route/ConsoleRouter.tsx": "8d90b7af76563d5a49ee527288b45ad2a27f2c61edcc720aa0ac8abf0f708f33",
+        "01_core_hexin/apps/console/vite.config.ts": "60694e73e0d4ed4975e843fa9f0f5c28868162a82fa54c932da5fa6bf57a0bd2",
+        "01_core_hexin/apps/console/src/route/ConsoleRouter.tsx": "c867bc5364231516f7fb8a3c9d85dde4b0efea81733fc7a3952f153c0cf0037f",
         "01_core_hexin/apps/console/src/shell/ScopeShell.tsx": "9309bac0539d20e93cedc670bf743d780a768e27fdb20f1d7f090db5ff414fe0",
-        "01_core_hexin/apps/console/src/components/Sidebar.tsx": "5052da5087da512e5c4ecf14869f94bedb87c1e7cc100d523402c1ccb1d2fe96",
+        "01_core_hexin/apps/console/src/components/Sidebar.tsx": "aad32ca40b6d971f8715c5bb83d6fcd33a8edf7a6dcc20d168e473a883c6aace",
         "01_core_hexin/apps/console/src/feature/cockpit/CockpitRoute.tsx": "ab51de63939295c577da3e046be673d85de37ace4f6cb85e4017a13d1c595307",
-        "01_core_hexin/apps/console/src/smart-wing-vi.css": "847cdcf3dbbedd6b7a7cf7f7bbe1a8cc1ae08682ab4963fd8989f9da26a8495e",
+        "01_core_hexin/apps/console/src/smart-wing-vi.css": "3e31d0048468bc823011a038ea5360c8a72e227557d0fc90d4d0b502add35526",
         "01_core_hexin/apps/console/src/legacy-admin-theme.css": "f0bfb703f25ecc6d5411a6fc8617da597fa2ab2e717cbc0e1ecb76ef368d3084",
         "01_core_hexin/apps/console/public/demo/index.html": "b89bb6134f363f4e1cbb34d2a82f5622a0fdb4c8fbf8e90743b536814623de60",
         "01_core_hexin/apps/console/public/demo/variants.css": "c3b1889c002bdf81b9b5562803c4d21be32ee4a5c8658f3743c3e7324ba85c04",
