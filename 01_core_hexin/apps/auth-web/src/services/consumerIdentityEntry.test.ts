@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isHongtaiConsoleEntry, resolveConsumerIdentityEntry } from './consumerIdentityEntry';
+import { isHongtaiConsoleEntry, resolveConsumerIdentityEntry, resolveIdentityEntry } from './consumerIdentityEntry';
 
 describe('consumer identity entry', () => {
   it('routes a declared storefront application to the consumer adapter', () => {
@@ -25,5 +25,31 @@ describe('operator identity entry', () => {
     expect(isHongtaiConsoleEntry('?client=console-hbbtzn')).toBe(true);
     expect(isHongtaiConsoleEntry('?target=console')).toBe(false);
     expect(isHongtaiConsoleEntry('?target=storefront-hbbtzn&application=zdt-l1-verify')).toBe(false);
+  });
+});
+
+describe('node-bound identity entry', () => {
+  it('accepts only the consumer application belonging to the current accounts host', () => {
+    expect(resolveIdentityEntry(
+      '?target=storefront&application=zhudatuan-storefront', 'accounts.zhudatuan.com',
+    )).toMatchObject({ kind: 'consumer', target: 'storefront' });
+    expect(resolveIdentityEntry(
+      '?target=storefront-hbbtzn&application=zdt-l1-verify', 'accounts.hbbtzn.com',
+    )).toMatchObject({ kind: 'consumer', target: 'storefront-hbbtzn' });
+    expect(resolveIdentityEntry(
+      '?target=storefront&application=zhudatuan-storefront', 'accounts.hbbtzn.com',
+    )).toBeNull();
+    expect(resolveIdentityEntry(
+      '?target=storefront-hbbtzn&application=zdt-l1-verify', 'accounts.zhudatuan.com',
+    )).toBeNull();
+  });
+
+  it('binds operator targets to the current accounts host', () => {
+    expect(resolveIdentityEntry('', 'accounts.zhudatuan.com')).toEqual({ kind: 'operator', target: 'console' });
+    expect(resolveIdentityEntry('', 'accounts.hbbtzn.com')).toEqual({ kind: 'operator', target: 'console-hbbtzn' });
+    expect(resolveIdentityEntry('?target=console', 'accounts.hbbtzn.com')).toBeNull();
+    expect(resolveIdentityEntry('?target=console-hbbtzn', 'accounts.zhudatuan.com')).toBeNull();
+    expect(resolveIdentityEntry('?target=console&client=console-hbbtzn', 'accounts.zhudatuan.com')).toBeNull();
+    expect(resolveIdentityEntry('', 'untrusted.example.com')).toBeNull();
   });
 });

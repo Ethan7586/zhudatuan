@@ -12,14 +12,13 @@ import {
   resolveCanonicalInvite,
   type CanonicalInvitation,
 } from '../services/canonicalRegistration';
-import { isHongtaiConsoleEntry } from '../services/consumerIdentityEntry';
 
 type PageMode = 'login' | 'register' | 'reset';
 
-export const OperatorIdentityPage: React.FC = () => {
+export const OperatorIdentityPage: React.FC<Readonly<{ target: 'console' | 'console-hbbtzn' }>> = ({ target }) => {
   const search = typeof window === 'undefined' ? '' : window.location.search;
   const params = new URLSearchParams(search);
-  const tenantConsole = isHongtaiConsoleEntry(search);
+  const tenantConsole = target === 'console-hbbtzn';
   const initialInvite = params.get('invite')?.trim().toUpperCase() ?? '';
   const [mode, setMode] = useState<PageMode>(initialInvite ? 'register' : 'login');
   const [identifier, setIdentifier] = useState('');
@@ -57,7 +56,7 @@ export const OperatorIdentityPage: React.FC = () => {
   const consoleOptions = () => tenantConsole
     ? {
         target: 'console-hbbtzn' as const,
-        expectedOrigin: params.get('admin_origin')?.trim() || 'https://console.hbbtzn.com',
+        expectedOrigin: 'https://console.hbbtzn.com',
       }
     : { target: 'console' as const };
 

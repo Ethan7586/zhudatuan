@@ -202,6 +202,30 @@ describe('hbbtzn H5 alias worker', () => {
     expect(target.searchParams.get('application')).toBe('zdt-l1-verify');
   });
 
+  it('never serves an L0 consumer entry from the L1 accounts hostname', async () => {
+    const fetchMock = vi.fn<typeof fetch>();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await worker.fetch(new Request(
+      'https://accounts.hbbtzn.com/?target=storefront&application=zhudatuan-storefront',
+    ));
+
+    expect(response.status).toBe(409);
+    await expect(response.text()).resolves.toBe('AUTH_NODE_MISMATCH');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('upgrades legacy L0 console parameters to the L1 console on the L1 accounts hostname', async () => {
+    const response = await worker.fetch(new Request(
+      'https://accounts.hbbtzn.com/?target=console&admin_origin=https%3A%2F%2Fconsole.zhudatuan.com',
+    ));
+
+    expect(response.status).toBe(308);
+    const target = new URL(response.headers.get('location')!);
+    expect(target.searchParams.get('target')).toBe('console-hbbtzn');
+    expect(target.searchParams.get('admin_origin')).toBe('https://console.hbbtzn.com');
+  });
+
   it('preserves a canonical account origin for public API preflight', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (request) => {
       expect((request as Request).headers.get('origin')).toBe('https://accounts.zhudatuan.com');

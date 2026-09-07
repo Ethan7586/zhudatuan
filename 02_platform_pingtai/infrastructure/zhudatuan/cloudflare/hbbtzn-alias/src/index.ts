@@ -185,18 +185,32 @@ const worker = {
       return Response.redirect(incoming, 308);
     }
 
-    if (incoming.hostname === 'accounts.hbbtzn.com' && incoming.pathname === '/login'
-      && incoming.searchParams.get('client') === 'console') {
-      incoming.searchParams.set('client', 'console-hbbtzn');
-      incoming.searchParams.set('admin_origin', HONGTAI_CONSOLE_ORIGIN);
-      return Response.redirect(incoming, 308);
-    }
-
-    if (incoming.hostname === 'accounts.hbbtzn.com'
-      && incoming.searchParams.get('application') === HONGTAI_CONSUMER_APPLICATION
-      && incoming.searchParams.get('target') === 'storefront') {
-      incoming.searchParams.set('target', 'storefront-hbbtzn');
-      return Response.redirect(incoming, 308);
+    if (incoming.hostname === 'accounts.hbbtzn.com') {
+      const target = incoming.searchParams.get('target');
+      const client = incoming.searchParams.get('client');
+      const application = incoming.searchParams.get('application');
+      const declaresConsumer = target?.startsWith('storefront')
+        || application === HONGTAI_CONSUMER_APPLICATION
+        || application === 'zhudatuan-storefront';
+      if (declaresConsumer) {
+        if (application === HONGTAI_CONSUMER_APPLICATION && target === 'storefront') {
+          incoming.searchParams.set('target', 'storefront-hbbtzn');
+          return Response.redirect(incoming, 308);
+        }
+        if (application !== HONGTAI_CONSUMER_APPLICATION || target !== 'storefront-hbbtzn') {
+          return new Response('AUTH_NODE_MISMATCH', { status: 409 });
+        }
+      } else if (target === 'console' || client === 'console') {
+        if (target === 'console') incoming.searchParams.set('target', 'console-hbbtzn');
+        if (client === 'console') incoming.searchParams.set('client', 'console-hbbtzn');
+        incoming.searchParams.set('admin_origin', HONGTAI_CONSOLE_ORIGIN);
+        return Response.redirect(incoming, 308);
+      } else if ((target && target !== 'console-hbbtzn')
+        || (client && client !== 'console-hbbtzn')
+        || (incoming.searchParams.has('admin_origin')
+          && incoming.searchParams.get('admin_origin') !== HONGTAI_CONSOLE_ORIGIN)) {
+        return new Response('AUTH_NODE_MISMATCH', { status: 409 });
+      }
     }
 
     const canonicalHost = CANONICAL_REDIRECT_HOSTS[
