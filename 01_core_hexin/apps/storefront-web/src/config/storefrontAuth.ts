@@ -1,6 +1,7 @@
 import {
   HONGTAI_STOREFRONT_APPLICATION,
   resolveStorefrontApplication,
+  resolveStorefrontAuthTarget,
   ZHUDATUAN_STOREFRONT_APPLICATION,
 } from './storefrontIdentity';
 
@@ -35,7 +36,7 @@ export function storefrontAuthHref(hostname?: string): string {
         : configuredOrigin
     : configuredOrigin;
   const target = new URL('/', authOrigin);
-  target.searchParams.set('target', 'storefront');
+  target.searchParams.set('target', resolveStorefrontAuthTarget(application));
   target.searchParams.set('surface', 'web');
   target.searchParams.set('application', application);
   return target.toString();

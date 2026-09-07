@@ -33,6 +33,11 @@ describe('storefront auth origin boundary', () => {
     expect(resolveStorefrontApplication('beta.zhudatuan.com')).toBe(ZHUDATUAN_STOREFRONT_APPLICATION);
     expect(resolveStorefrontApplication('mall.hbbtzn.com')).toBe(HONGTAI_STOREFRONT_APPLICATION);
     expect(new URL(storefrontAuthHref('zhudatuan.com')).origin).toBe('https://accounts.zhudatuan.com');
-    expect(new URL(storefrontAuthHref('hbbtzn.com')).origin).toBe('https://accounts.hbbtzn.com');
+    const zhudatuan = new URL(storefrontAuthHref('zhudatuan.com'));
+    const hongtai = new URL(storefrontAuthHref('hbbtzn.com'));
+    expect(zhudatuan.origin).toBe('https://accounts.zhudatuan.com');
+    expect(zhudatuan.searchParams.get('target')).toBe('storefront');
+    expect(hongtai.origin).toBe('https://accounts.hbbtzn.com');
+    expect(hongtai.searchParams.get('target')).toBe('storefront-hbbtzn');
   });
 });

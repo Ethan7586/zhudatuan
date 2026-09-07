@@ -192,6 +192,13 @@ const worker = {
       return Response.redirect(incoming, 308);
     }
 
+    if (incoming.hostname === 'accounts.hbbtzn.com'
+      && incoming.searchParams.get('application') === HONGTAI_CONSUMER_APPLICATION
+      && incoming.searchParams.get('target') === 'storefront') {
+      incoming.searchParams.set('target', 'storefront-hbbtzn');
+      return Response.redirect(incoming, 308);
+    }
+
     const canonicalHost = CANONICAL_REDIRECT_HOSTS[
       incoming.hostname as keyof typeof CANONICAL_REDIRECT_HOSTS
     ];
@@ -206,7 +213,7 @@ const worker = {
 
     if (incoming.hostname === ROOT_STOREFRONT_HOST && isConsumerAccountPath(incoming.pathname)) {
       const target = new URL(`${consumerAccountUpstreamPath(incoming.pathname)}${incoming.search}`, HONGTAI_ACCOUNTS_ORIGIN);
-      target.searchParams.set('target', 'storefront');
+      target.searchParams.set('target', 'storefront-hbbtzn');
       target.searchParams.set('surface', 'web');
       target.searchParams.set('application', HONGTAI_CONSUMER_APPLICATION);
       return Response.redirect(target, request.method === 'GET' || request.method === 'HEAD' ? 308 : 307);
