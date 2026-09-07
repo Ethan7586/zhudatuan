@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { isHongtaiConsoleEntry, resolveConsumerIdentityEntry, resolveIdentityEntry } from './consumerIdentityEntry';
+import {
+  isHongtaiConsoleEntry,
+  recoverLocalIdentitySearch,
+  resolveConsumerIdentityEntry,
+  resolveIdentityEntry,
+} from './consumerIdentityEntry';
 
 describe('consumer identity entry', () => {
   it('routes a declared storefront application to the consumer adapter', () => {
@@ -51,5 +56,32 @@ describe('node-bound identity entry', () => {
     expect(resolveIdentityEntry('?target=console-hbbtzn', 'accounts.zhudatuan.com')).toBeNull();
     expect(resolveIdentityEntry('?target=console&client=console-hbbtzn', 'accounts.zhudatuan.com')).toBeNull();
     expect(resolveIdentityEntry('', 'untrusted.example.com')).toBeNull();
+  });
+
+  it('keeps unsigned cross-node links inside the current node instead of showing a rejection page', () => {
+    expect(recoverLocalIdentitySearch(
+      '?target=storefront-hbbtzn&surface=web&application=zdt-l1-verify&v=old',
+      'accounts.zhudatuan.com',
+    )).toBe('?target=storefront&surface=web&application=zhudatuan-storefront&v=old');
+    expect(recoverLocalIdentitySearch(
+      '?target=storefront&surface=web&application=zhudatuan-storefront&v=old',
+      'accounts.hbbtzn.com',
+    )).toBe('?target=storefront-hbbtzn&surface=web&application=zdt-l1-verify&v=old');
+    expect(recoverLocalIdentitySearch(
+      '?target=console-hbbtzn&client=console-hbbtzn&admin_origin=https%3A%2F%2Fconsole.hbbtzn.com',
+      'accounts.zhudatuan.com',
+    )).toBe('?target=console&client=console&admin_origin=https%3A%2F%2Fconsole.zhudatuan.com');
+    expect(recoverLocalIdentitySearch(
+      '?target=console&client=console&admin_origin=https%3A%2F%2Fconsole.zhudatuan.com',
+      'accounts.hbbtzn.com',
+    )).toBe('?target=console-hbbtzn&client=console-hbbtzn&admin_origin=https%3A%2F%2Fconsole.hbbtzn.com');
+  });
+
+  it('does not rewrite a valid local entry or an unknown identity hostname', () => {
+    expect(recoverLocalIdentitySearch(
+      '?target=storefront-hbbtzn&surface=web&application=zdt-l1-verify',
+      'accounts.hbbtzn.com',
+    )).toBeNull();
+    expect(recoverLocalIdentitySearch('?target=console', 'untrusted.example.com')).toBeNull();
   });
 });

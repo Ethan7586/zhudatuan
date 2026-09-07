@@ -202,7 +202,7 @@ describe('hbbtzn H5 alias worker', () => {
     expect(target.searchParams.get('application')).toBe('zdt-l1-verify');
   });
 
-  it('never serves an L0 consumer entry from the L1 accounts hostname', async () => {
+  it('keeps an unsigned L0 consumer link inside the L1 accounts hostname', async () => {
     const fetchMock = vi.fn<typeof fetch>();
     vi.stubGlobal('fetch', fetchMock);
 
@@ -210,8 +210,12 @@ describe('hbbtzn H5 alias worker', () => {
       'https://accounts.hbbtzn.com/?target=storefront&application=zhudatuan-storefront',
     ));
 
-    expect(response.status).toBe(409);
-    await expect(response.text()).resolves.toBe('AUTH_NODE_MISMATCH');
+    expect(response.status).toBe(308);
+    const target = new URL(response.headers.get('location')!);
+    expect(target.origin).toBe('https://accounts.hbbtzn.com');
+    expect(target.searchParams.get('target')).toBe('storefront-hbbtzn');
+    expect(target.searchParams.get('surface')).toBe('web');
+    expect(target.searchParams.get('application')).toBe('zdt-l1-verify');
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

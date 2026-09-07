@@ -193,12 +193,13 @@ const worker = {
         || application === HONGTAI_CONSUMER_APPLICATION
         || application === 'zhudatuan-storefront';
       if (declaresConsumer) {
-        if (application === HONGTAI_CONSUMER_APPLICATION && target === 'storefront') {
-          incoming.searchParams.set('target', 'storefront-hbbtzn');
-          return Response.redirect(incoming, 308);
-        }
         if (application !== HONGTAI_CONSUMER_APPLICATION || target !== 'storefront-hbbtzn') {
-          return new Response('AUTH_NODE_MISMATCH', { status: 409 });
+          incoming.searchParams.set('target', 'storefront-hbbtzn');
+          incoming.searchParams.set('surface', 'web');
+          incoming.searchParams.set('application', HONGTAI_CONSUMER_APPLICATION);
+          incoming.searchParams.delete('client');
+          incoming.searchParams.delete('admin_origin');
+          return Response.redirect(incoming, 308);
         }
       } else if (target === 'console' || client === 'console') {
         if (target === 'console') incoming.searchParams.set('target', 'console-hbbtzn');
