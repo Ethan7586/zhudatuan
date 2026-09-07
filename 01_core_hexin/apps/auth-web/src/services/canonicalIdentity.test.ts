@@ -276,7 +276,7 @@ describe('canonical console identity', () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:hongtai')))
-      .mockResolvedValueOnce(jsonResponse(ticketExchanged(STOREFRONT_DESTINATION)));
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://zhudatuan.com/orders?source=login')));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(loginCanonicalStorefrontEntry(
@@ -285,7 +285,7 @@ describe('canonical console identity', () => {
       'zdt-l1-verify',
     )).resolves.toEqual({
       membership: 'membership:hongtai',
-      redirectUrl: STOREFRONT_DESTINATION,
+      redirectUrl: 'https://hbbtzn.com/orders?source=login',
     });
 
     const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
@@ -298,6 +298,24 @@ describe('canonical console identity', () => {
     expect(body).not.toHaveProperty('membership');
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://hbbtzn.com/api/v1/identity/sessions');
     expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://hbbtzn.com/api/v1/identity/tickets/exchange');
+  });
+
+  it('keeps the L0 identity host on its own storefront when sharing the same auth build', async () => {
+    setWindowHostname('accounts.zhudatuan.com');
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:zhudatuan')))
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://hbbtzn.com/orders?source=login')));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loginCanonicalStorefrontEntry(
+      '13800138000',
+      'Generated!Password2',
+      'zdt-l0-verify',
+    )).resolves.toEqual({
+      membership: 'membership:zhudatuan',
+      redirectUrl: 'https://zhudatuan.com/orders?source=login',
+    });
   });
 
   it('maps a canonical console membership selection to the approved admin UI model', async () => {

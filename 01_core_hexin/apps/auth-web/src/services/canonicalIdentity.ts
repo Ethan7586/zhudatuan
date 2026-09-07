@@ -7,6 +7,7 @@ import { resolveAdminLoginOrigin, resolveStorefrontLoginOrigin } from './originP
 
 const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
 const L1_STOREFRONT_API_ORIGIN = 'https://hbbtzn.com';
+const L0_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
 const LEGACY_API_ORIGIN = 'https://api.zhudatuan.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
 
@@ -413,11 +414,23 @@ function approvedStorefrontDestination(value: z.infer<typeof TicketExchangeSchem
     throw new Error('登录回跳地址无效');
   }
   const configured = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
-  const approvedOrigin = resolveStorefrontLoginOrigin(configured, import.meta.env.DEV);
-  if (destination.origin !== approvedOrigin || destination.username || destination.password || destination.hash) {
+  const configuredOrigin = resolveStorefrontLoginOrigin(configured, import.meta.env.DEV);
+  const approvedOrigin = storefrontOriginForIdentityHost(configuredOrigin);
+  const trustedOrigins = new Set([L0_STOREFRONT_ORIGIN, L1_STOREFRONT_API_ORIGIN, configuredOrigin, approvedOrigin]);
+  if (!trustedOrigins.has(destination.origin) || destination.username || destination.password || destination.hash) {
     throw new Error('登录回跳地址不在商城允许清单');
   }
-  return destination.toString();
+  if (import.meta.env.DEV && destination.origin === configuredOrigin) return destination.toString();
+  if (destination.origin === approvedOrigin) return destination.toString();
+  return new URL(`${destination.pathname}${destination.search}`, `${approvedOrigin}/`).toString();
+}
+
+function storefrontOriginForIdentityHost(configuredOrigin: string): string {
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'accounts.hbbtzn.com') return L1_STOREFRONT_API_ORIGIN;
+    if (window.location.hostname === 'accounts.zhudatuan.com') return L0_STOREFRONT_ORIGIN;
+  }
+  return configuredOrigin;
 }
 
 function apiOrigin(): string {
