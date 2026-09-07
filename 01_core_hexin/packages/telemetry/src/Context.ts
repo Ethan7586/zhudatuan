@@ -10,6 +10,9 @@ export interface TelemetryContext {
   readonly scopeId?: string;
   readonly module?: string;
   readonly operation?: string;
+  readonly nodeId?: string;
+  readonly realmId?: string;
+  readonly phase?: string;
   readonly resourceType?: string;
   readonly resourceId?: string;
   readonly result?: string;

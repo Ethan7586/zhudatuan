@@ -1,9 +1,11 @@
 import { CONTRACT_VERSION } from '@shop/contract';
 import { resolveNodeContextByHost, type NodeContextResolver, type ResolvedNodeContext } from '@shop/config/sfl-node-kernel';
+import { createTelemetry } from '@shop/telemetry';
 import { describe, expect, it } from 'vitest';
 import { SERVER_NODE_MANIFEST_REGISTRY } from '../../bootstrap/ApiBootstrap';
 import type { RouteHandler, RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { requireRequestNodeContext } from '../security/AccessContext';
+import { OperationMetrics } from '../telemetry/OperationMetrics';
 import { HttpApp } from './HttpApp';
 
 function routes(handler: RouteHandler = async () => ({ status: 200, body: { accepted: true } })): RouteRegistry {
@@ -109,6 +111,49 @@ describe('HttpApp contract handshake', () => {
     expect(response.headers.get('set-cookie')).toContain('Max-Age=0');
     expect(response.headers.get('set-cookie')).toContain('shop_csrf=;');
     expect(await response.json()).toMatchObject({ code: 'CSRF_TOKEN_INVALID' });
+  });
+
+  it('records the identity node, realm, operation, version and failing phase without request secrets', async () => {
+    const records: Readonly<Record<string, unknown>>[] = [];
+    const metrics = new OperationMetrics(createTelemetry((record) => { records.push(record); }));
+    const response = await new HttpApp(routes(), ['https://accounts.hbbtzn.com'], undefined, undefined, metrics)
+      .handle(new Request('https://api.hbbtzn.com/api/v1/identity/sessions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          cookie: 'shop_session=private-session; shop_csrf=private-csrf',
+          origin: 'https://accounts.hbbtzn.com',
+          authorization: 'Bearer private-bearer-token',
+          'x-contract-version': CONTRACT_VERSION,
+        },
+        body: JSON.stringify({ mobile: '13800138000', password: 'Private-Password-1!', otp: '483921', ticket: 'private-ticket' }),
+      }));
+
+    expect(response.status).toBe(403);
+    const log = records.find((record) => record.event === 'commerce.operation.completed');
+    expect(log).toMatchObject({
+      level: 'warn', event: 'commerce.operation.completed', nodeId: 'l1', realmId: 'realm:l1',
+      operation: 'identity.sessions.create', version: CONTRACT_VERSION, phase: 'csrf',
+      result: 'failure', errorCode: 'CSRF_TOKEN_INVALID', data: { status: 403 },
+    });
+    const serialized = JSON.stringify(log);
+    for (const secret of ['private-session', 'private-csrf', 'private-bearer-token', '13800138000',
+      'Private-Password-1!', '483921', 'private-ticket']) expect(serialized).not.toContain(secret);
+  });
+
+  it('records a contract mismatch as HTTP 426 in the contract phase', async () => {
+    const records: Readonly<Record<string, unknown>>[] = [];
+    const metrics = new OperationMetrics(createTelemetry((record) => { records.push(record); }));
+    const response = await new HttpApp(routes(), [], undefined, undefined, metrics)
+      .handle(new Request('https://api.zhudatuan.com/api/v1/identity/sessions', {
+        method: 'POST', headers: { 'content-type': 'application/json', 'x-contract-version': '0.0.0' }, body: '{}',
+      }));
+
+    expect(response.status).toBe(426);
+    expect(records.find((record) => record.event === 'commerce.operation.completed')).toMatchObject({
+      nodeId: 'l0', realmId: 'realm:l0', operation: 'identity.sessions.create', phase: 'contract',
+      result: 'failure', errorCode: 'CONTRACT_VERSION_UNSUPPORTED', data: { status: 426 },
+    });
   });
 
   it('allows the exact generated contract version', async () => {

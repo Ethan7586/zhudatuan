@@ -1,7 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { CONTRACT_VERSION, OperationCatalog, type OperationGateDeclaration } from '@shop/contract';
+import { IDENTITY_NODE_MANIFEST } from '@shop/config/identity-node-manifest';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import type { NodeContextResolver } from '@shop/config/sfl-node-kernel';
+import { identityEntryHost } from '@shop/config/server';
 import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { Deadline } from '../performance/Deadline';
 import { bindRequestNodeContext, requestNodeContext } from '../security/AccessContext';
@@ -38,6 +40,7 @@ export class HttpApp {
     let observedOperation: string | undefined;
     let observedStatus = 500;
     let observedError: string | undefined;
+    let observedPhase = 'routing';
     try {
       if (origin && !this.origins.has(origin)) return secure(403, { code: 'ORIGIN_DENIED', requestId }, requestId);
       if (request.method === 'OPTIONS') return preflight(request, requestId, origin);
@@ -46,12 +49,17 @@ export class HttpApp {
       if (!route) return secure(404, { code: 'NOT_FOUND', message: 'NOT_FOUND', requestId }, requestId, origin);
       const operation = OperationCatalog.get(route.operation);
       observedOperation = operation.id;
+      observedPhase = 'csrf';
       assertCsrf(request, origin, operation.id);
+      observedPhase = 'contract';
       const version = request.headers.get('x-contract-version');
       if (!route.operation.startsWith('runtime.health.') && operation.audience !== 'provider' && version !== CONTRACT_VERSION) {
+        observedStatus = 426;
+        observedError = 'CONTRACT_VERSION_UNSUPPORTED';
         return secure(426, { code: 'CONTRACT_VERSION_UNSUPPORTED', message: '客户端版本不兼容，请刷新页面后重试', requestId,
           required: CONTRACT_VERSION }, requestId, origin, { 'x-contract-version': CONTRACT_VERSION });
       }
+      observedPhase = 'request';
       const nodeContext = route.operation.startsWith('runtime.health.')
         ? undefined
         : requestNodeContext(request.headers) ?? this.nodeContexts?.resolve(request.headers.get('host') ?? url.host);
@@ -59,10 +67,14 @@ export class HttpApp {
       deadline.throwIfExpired();
       const requestHeaders = Object.freeze(Object.fromEntries(request.headers.entries()));
       const headers = nodeContext === undefined ? requestHeaders : bindRequestNodeContext(requestHeaders, nodeContext);
+      observedPhase = 'gate';
       await observeOperationGates(this.gateEngine, operation.id, operation.gates, requestId, traceId);
+      observedPhase = 'handler';
       const result = await deadline.run((signal) => route.handler({ method: request.method, path: url.pathname, headers, parameters: route.parameters,
         query: url.searchParams, body: payload.body, rawBody: payload.raw, deadline: deadline.expiresAt, signal }));
       observedStatus = result.status;
+      observedError = result.status >= 400 ? bodyCode(result.body) : undefined;
+      if (result.status < 400) observedPhase = 'complete';
       return secure(result.status, result.body, requestId, origin, result.headers);
     } catch (cause) {
       const mapped = this.errors.map(cause, requestId);
@@ -74,9 +86,24 @@ export class HttpApp {
         recoverStaleIdentityCookie ? { ...mapped.headers, ...EXPIRED_IDENTITY_COOKIES } : mapped.headers);
     } finally {
       if (observedOperation) this.metrics?.observe({ requestId, traceId,
-        operation: observedOperation, version: CONTRACT_VERSION }, observedStatus, performance.now()-started, observedError);
+        operation: observedOperation, version: CONTRACT_VERSION, phase: observedPhase,
+        ...identityRealmObservation(request, observedOperation) }, observedStatus, performance.now()-started, observedError);
       deadline.dispose();
     }
+  }
+}
+
+function identityRealmObservation(request: Request, operation: string): Readonly<{ nodeId?: string; realmId?: string }> {
+  if (!operation.startsWith('identity.')) return {};
+  try {
+    const host = identityEntryHost(request.headers.get('host') ?? new URL(request.url).host);
+    const node = IDENTITY_NODE_MANIFEST.nodes.find((candidate) => candidate.status === 'active'
+      && candidate.entries.some((entry) => entry.status === 'active' && entry.host === host));
+    return node === undefined
+      ? { nodeId: 'unresolved', realmId: 'unresolved' }
+      : { nodeId: node.nodeId, realmId: node.realmId };
+  } catch {
+    return { nodeId: 'unresolved', realmId: 'unresolved' };
   }
 }
 

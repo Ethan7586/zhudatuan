@@ -649,6 +649,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
               member: resolvedMember,
               principal: resolvedPrincipal,
               organization,
+              realm: realm.realmId,
+              account: resolvedAccount,
               role: registrationTarget.role_id,
               scopeKind,
               scopes: [scopes[0], scopes[1], scopes[2]],
@@ -690,6 +692,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
                   governanceParentMembership: registrationTarget.created_by,
                   member,
                   principal,
+                  realm: realm.realmId,
+                  account,
                   operatorOrganization: organization,
                   storefrontOrganization: registrationTarget.storefront_organization_id!,
                   operatorRole: registrationTarget.role_id,
@@ -702,6 +706,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
                   member,
                   principal,
                   organization,
+                  realm: realm.realmId,
+                  account,
                   role: registrationTarget.role_id,
                   scopeKind,
                   scopes: [scopes[0], scopes[1], scopes[2]],
@@ -711,11 +717,10 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const realmMemberships = registrationTarget.target_client === 'operator'
             ? [registeredMembership, operatorMembership]
             : [registeredMembership];
-          const boundMemberships = await database.query<{ id: string }>(`update access.membership membership
-            set realm_id=realm.id,account_id=$3,node_profile=realm.node_profile
-            from identity.realm realm
-            where membership.id=any($1::text[]) and realm.id=$2 and realm.status='active'
-            returning membership.id`,
+          const boundMemberships = await database.query<{ id: string }>(`select membership.id
+            from access.membership membership join identity.realm realm
+              on realm.id=membership.realm_id and realm.node_profile=membership.node_profile and realm.status='active'
+            where membership.id=any($1::text[]) and membership.realm_id=$2 and membership.account_id=$3`,
             [realmMemberships, realm.realmId, resolvedAccount]);
           if (boundMemberships.rows.length !== realmMemberships.length) throw new Error('MEMBERSHIP_REALM_BINDING_FAILED');
           if (typeof body.wechatToken === 'string') {
@@ -814,16 +819,16 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             member,
             principal,
             organization: access.scope.id,
+            realm: actorAccount.realmId,
+            account,
+            employee: typeof body.employeeNo === 'string' ? body.employeeNo.trim() || null : null,
             role: role.rows[0].id,
             scopeKind,
             scopes: [`scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`],
           });
-          const boundMembership = await database.query<{ id: string }>(`update access.membership membership
-            set employee_no=$2,realm_id=realm.id,account_id=$4,node_profile=realm.node_profile
-            from identity.realm realm where membership.id=$1 and realm.id=$3 and realm.status='active'
-            returning membership.id`,
-            [membership, typeof body.employeeNo === 'string' ? body.employeeNo.trim() || null : null, actorAccount.realmId, account]);
-          if (!boundMembership.rows[0]) throw new Error('MEMBERSHIP_REALM_BINDING_FAILED');
+          if (result.realm_id !== actorAccount.realmId || result.account_id !== account) {
+            throw new Error('MEMBERSHIP_REALM_BINDING_FAILED');
+          }
           return { status: 201, body: { ...result, membershipId: membership, memberId: member, userId: principal } };
         }
         const target = await database.query<{

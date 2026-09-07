@@ -658,10 +658,10 @@ describe('canonical member registration security boundary', () => {
       status: 201,
       body: { organization_id: 'mall-zhudatuan', client: 'storefront', authentication: { target: 'storefront' } },
     });
-    const binding = harness.queries.find(({ text }) => text.includes('update access.membership membership')
-      && text.includes('node_profile=realm.node_profile'));
+    const binding = harness.queries.find(({ text }) => text.includes('insert into access.membership(')
+      && text.includes('realm.node_profile'));
     expect(binding?.text).toContain('from identity.realm realm');
-    expect(binding?.values.slice(1, 3)).toEqual(['realm:l6', expect.stringMatching(/^account:/)]);
+    expect(binding?.values.slice(4, 6)).toEqual(['realm:l6', expect.stringMatching(/^account:/)]);
     const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
     expect(session?.values.slice(9)).toEqual([1, 'realm:l6', expect.stringMatching(/^account:/), 'storefront']);
   });
@@ -1181,11 +1181,14 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       if (text.includes('insert into access.membership(') && text.includes('returning *')) {
         return result([{
           id: String(values[0]), member_id: String(values[1]), organization_id: String(values[2]),
-          client: text.includes("'operator'") ? 'operator' : 'storefront', employee_no: null, status: 'active', access_version: 1,
+          client: text.includes("'operator'") ? 'operator' : 'storefront', employee_no: values[3] ?? null,
+          realm_id: String(values[4]), account_id: String(values[5]), node_profile: 'operating_mall',
+          status: 'active', access_version: 1,
           joined_at: '2026-09-03T00:00:00.000Z', left_at: null,
         }]);
       }
-      if (text.includes('update access.membership membership') && text.includes('node_profile=realm.node_profile')) {
+      if (text.includes('from access.membership membership join identity.realm realm')
+        && text.includes('membership.id=any')) {
         const memberships = Array.isArray(values[0]) ? values[0] : [values[0]];
         return result(memberships.map((id) => ({ id })));
       }
