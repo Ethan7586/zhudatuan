@@ -28,9 +28,13 @@ export class WebBusinessScopeResolver implements ScopeResolver {
       return this.sessionScope(actor, 'access.web_member_scope($1,$2)', 'owner');
     }
     if (actor.target === 'storefront' && STOREFRONT_MALL_OPERATIONS.has(operation)) {
-      return this.sessionScope(actor, 'access.web_storefront_scope($1,$2)', 'mall');
+      return this.resolveStorefrontScope(actor);
     }
     return this.canonical.resolve(actor, operation, resource, scopeHint);
+  }
+
+  async resolveStorefrontScope(actor: Actor): Promise<Scope> {
+    return this.sessionScope(actor, 'access.web_storefront_scope($1,$2)', 'mall');
   }
 
   private async sessionScope(actor: Actor, expression: string, kind: Scope['kind']): Promise<Scope> {

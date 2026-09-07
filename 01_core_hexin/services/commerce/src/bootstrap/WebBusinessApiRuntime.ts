@@ -93,11 +93,16 @@ export async function createWebBusinessApiRuntime(
   }
   const risk = new WebRiskCheckAdapter(pool);
   const audit = new RecordAudit(new PgAuditRepository());
+  const scopeResolver = new WebBusinessScopeResolver(pool);
   const access = new AccessPipeline(
     new PgSessionResolver(pool),
     new PgMembershipResolver(pool),
     new PgAccessVersionResolver(pool),
-    new NodeBoundScopeResolver(new WebBusinessScopeResolver(pool), manifest.data_scope_ref),
+    new NodeBoundScopeResolver(
+      scopeResolver,
+      manifest.data_scope_ref,
+      (actor) => scopeResolver.resolveStorefrontScope(actor),
+    ),
     new PgCapabilityResolver(pool),
     new SystemClock(),
     risk,

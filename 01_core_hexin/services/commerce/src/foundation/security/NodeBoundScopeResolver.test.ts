@@ -13,8 +13,8 @@ describe('node-bound scope resolver', () => {
   });
 
   it('returns an owner scope belonging to the node mall', async () => {
-    const owner = { kind: 'owner', id: 'member:one', tenant: scope.id, path: [] } satisfies Scope;
-    const resolver = new NodeBoundScopeResolver({ resolve: async () => owner }, scope.id);
+    const owner = { kind: 'owner', id: 'member:one', path: [] } satisfies Scope;
+    const resolver = new NodeBoundScopeResolver({ resolve: async () => owner }, scope.id, async () => scope);
     await expect(resolver.resolve(actor, 'member.profile.read')).resolves.toBe(owner);
   });
 
@@ -24,7 +24,14 @@ describe('node-bound scope resolver', () => {
   });
 
   it('rejects an owner scope belonging to another mall', async () => {
-    const owner = { kind: 'owner', id: 'member:one', tenant: 'mall-zhudatuan', path: [] } satisfies Scope;
+    const owner = { kind: 'owner', id: 'member:one', path: [] } satisfies Scope;
+    const otherMall = { ...scope, id: 'mall-zhudatuan' } satisfies Scope;
+    const resolver = new NodeBoundScopeResolver({ resolve: async () => owner }, scope.id, async () => otherMall);
+    await expect(resolver.resolve(actor, 'member.profile.read')).rejects.toThrow('NODE_SCOPE_MISMATCH');
+  });
+
+  it('rejects an owner scope when no node membership resolver is installed', async () => {
+    const owner = { kind: 'owner', id: 'member:one', path: [] } satisfies Scope;
     const resolver = new NodeBoundScopeResolver({ resolve: async () => owner }, scope.id);
     await expect(resolver.resolve(actor, 'member.profile.read')).rejects.toThrow('NODE_SCOPE_MISMATCH');
   });
