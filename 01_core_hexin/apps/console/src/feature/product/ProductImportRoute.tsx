@@ -7,6 +7,7 @@ import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 import { DataTable, type DataColumn } from '../../shared/ui/DataTable';
 import { formatCount, formatDate } from '../../shared/ui/Format';
 import { MetricCards } from '../../shared/ui/MetricCards';
+import { scopePath } from '../../shared/url/ScopePath';
 import { importKey, readImport } from '../importing/ImportQuery';
 import type { ImportError } from '../importing/ImportSchema';
 import { canCreateCatalogImport, confirmCatalogImport } from './ProductImportCommand';
@@ -28,6 +29,7 @@ export function Component() {
 function CatalogImportJob({ jobId }: Readonly<{ jobId: string }>) {
   const context = useConsoleContext();
   const navigate = useNavigate();
+  const productsPath = scopePath(context.scope, 'products');
   const queryClient = useQueryClient();
   const key = importKey(context, 'catalog', jobId);
   const query = useQuery({
@@ -59,7 +61,7 @@ function CatalogImportJob({ jobId }: Readonly<{ jobId: string }>) {
   return (
     <ResourcePanel title="商品导入" eyebrow="VALIDATE → CONFIRM → DRAFT" description={`${jobId}；上传后先停在权威校验结果，确认后才写入当前商城。`}
       condition={condition} {...(queryError === undefined ? {} : { error: queryError })} retry={() => { void query.refetch(); }}
-      actions={<div className="productimportactions"><Button onPress={() => { void navigate('/products'); }}>返回商品</Button>
+      actions={<div className="productimportactions"><Button onPress={() => { void navigate(productsPath); }}>返回商品</Button>
         <Button onPress={() => { void query.refetch(); }}>刷新</Button></div>}>
       {data === undefined ? <span /> : <div className="featurestack productimportresult">
         <MetricCards items={[
@@ -79,7 +81,7 @@ function CatalogImportJob({ jobId }: Readonly<{ jobId: string }>) {
         </section> : null}
         {data.state === 'completed' ? <section className="productconfirmcard productconfirmcomplete" aria-label="导入完成">
           <div><h2>商品草稿已保存</h2><p>返回商品列表即可逐个上架；错误行仍保留在下方供修正后重新上传。</p></div>
-          <Button tone="primary" onPress={() => { void navigate('/products'); }}>去上架商品</Button>
+          <Button tone="primary" onPress={() => { void navigate(productsPath); }}>去上架商品</Button>
         </section> : null}
         {data.last_error == null ? null : <p className="productcommanderror" role="alert">{data.last_error}</p>}
         {confirmation.error === null ? null : <p className="productcommanderror" role="alert">
