@@ -148,6 +148,26 @@ describe('hbbtzn H5 alias worker', () => {
     expect(upstreamRequest.headers.get('x-zdt-identity-entry-host')).toBe('api.hbbtzn.com');
   });
 
+  it('keeps order creation on the shared purchase runtime while isolating order reads', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await worker.fetch(new Request('https://hbbtzn.com/api/v1/orders', {
+      method: 'POST',
+      headers: { origin: 'https://hbbtzn.com' },
+    }));
+    await worker.fetch(new Request('https://hbbtzn.com/api/v1/orders', {
+      headers: { origin: 'https://hbbtzn.com' },
+    }));
+
+    const createRequest = fetchMock.mock.calls[0][0] as Request;
+    expect(createRequest.headers.get('origin')).toBe('https://zhudatuan.com');
+    expect(createRequest.headers.get('x-sfl-node-id')).toBeNull();
+    const readRequest = fetchMock.mock.calls[1][0] as Request;
+    expect(readRequest.headers.get('origin')).toBe('https://hbbtzn.com');
+    expect(readRequest.headers.get('x-sfl-node-surface')).toBe('web-business');
+  });
+
   it.each([
     ['https://accounts.hbbtzn.com/assets/auth.js', 'https://accounts.zhudatuan.com/assets/auth.js'],
     ['https://api.hbbtzn.com/api/v1/identity/sessions', 'https://api.zhudatuan.com/api/v1/identity/sessions'],

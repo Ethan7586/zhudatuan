@@ -10,10 +10,35 @@
 		}
 	}
 
+	@hbbtznL1OrdersRead {
+		method GET
+		header X-SFL-Node-ID node:hbbtzn:l1
+		header X-SFL-Node-Surface web-business
+		path /api/v1/orders
+	}
+	handle @hbbtznL1OrdersRead {
+		reverse_proxy 127.0.0.1:4432 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@hbbtznL1OrdersReadPreflight {
+		method OPTIONS
+		header Access-Control-Request-Method GET
+		header X-SFL-Node-ID node:hbbtzn:l1
+		header X-SFL-Node-Surface web-business
+		path /api/v1/orders
+	}
+	handle @hbbtznL1OrdersReadPreflight {
+		reverse_proxy 127.0.0.1:4432 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
 	@hbbtznL1WebBusiness {
 		header X-SFL-Node-ID node:hbbtzn:l1
 		header X-SFL-Node-Surface web-business
-		path /api/v1/members/me /api/v1/members/me/addresses /api/v1/members/me/addresses/* /api/v1/organizations/layers /api/v1/reports/dashboard /api/v1/catalog/listings /api/v1/catalog/public/products /api/v1/pricing/offers /api/v1/inventory/availability /api/v1/carts/current /api/v1/carts/current/* /api/v1/benefits/accounts /api/v1/benefits/ledgers /api/v1/orders
+		path /api/v1/members/me /api/v1/members/me/addresses /api/v1/members/me/addresses/* /api/v1/organizations/layers /api/v1/reports/dashboard /api/v1/catalog/listings /api/v1/catalog/public/products /api/v1/pricing/offers /api/v1/inventory/availability /api/v1/carts/current /api/v1/carts/current/* /api/v1/benefits/accounts /api/v1/benefits/ledgers
 	}
 	handle @hbbtznL1WebBusiness {
 		reverse_proxy 127.0.0.1:4432 {
