@@ -72,7 +72,7 @@ export async function createOrReuseCatalogImport(
     values($1,$2,$3,$4,'uploaded',clock_timestamp(),clock_timestamp()) returning id,state,total_count,cursor_value,success_count,failure_count,created_at,updated_at`,
   [id, prepared.access.scope.id, prepared.reference, prepared.sha256]);
   await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-    values($1,'catalogimport','catalog',$2,jsonb_build_object('import',$3),'queued',100,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+    values($1,'catalogimport','catalog',$2,jsonb_build_object('import',$3::text),'queued',100,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
   [`job:${id}:0`, prepared.access.scope.id, id]);
   const row = result.rows[0];
   if (!row) throw new Error('CATALOG_IMPORT_CREATE_FAILED');
@@ -102,7 +102,7 @@ export async function confirmCatalogImport(
   const confirmed = updated.rows[0];
   if (!confirmed) return { status: 409, body: { code: 'CATALOG_IMPORT_CONFIRMATION_CONFLICT' } };
   await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-    values($1,'catalogimport','catalog',$2,jsonb_build_object('import',$3),'queued',100,clock_timestamp(),clock_timestamp(),clock_timestamp())
+    values($1,'catalogimport','catalog',$2,jsonb_build_object('import',$3::text),'queued',100,clock_timestamp(),clock_timestamp(),clock_timestamp())
     on conflict(id) do nothing`, [`job:${prepared.importId}:confirm`, prepared.access.scope.id, prepared.importId]);
   return { status: 202, body: { ...confirmed, confirmed: true, duplicate: false } };
 }

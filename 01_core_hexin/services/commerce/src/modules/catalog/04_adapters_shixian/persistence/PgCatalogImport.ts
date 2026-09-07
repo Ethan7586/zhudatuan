@@ -124,6 +124,6 @@ export class PgCatalogImport {
 
 async function continuation(client: PoolClient, target: ImportTarget, cursor: number): Promise<void> {
   await client.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-    values($1,'catalogimport','catalog',$2,jsonb_build_object('import',$3),'queued',100,clock_timestamp(),clock_timestamp(),clock_timestamp()) on conflict(id) do nothing`,
+    values($1,'catalogimport','catalog',$2,jsonb_build_object('import',$3::text),'queued',100,clock_timestamp(),clock_timestamp(),clock_timestamp()) on conflict(id) do nothing`,
   [`job:${target.id}:${cursor}`, target.scope, target.id]);
 }

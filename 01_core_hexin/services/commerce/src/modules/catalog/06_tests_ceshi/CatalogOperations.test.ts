@@ -20,6 +20,20 @@ describe('catalog mall command boundaries', () => {
     expect(calls[1]?.values).toEqual(['mall:hongtai', 'a'.repeat(64)]);
   });
 
+  it('creates a new import with a PostgreSQL-typed runtime payload', async () => {
+    const calls: QueryCall[] = [];
+    const database = recordingDatabase(calls, (text) => text.startsWith('insert into catalog.importjob') ? [job('uploaded')] : []);
+    const result = await createOrReuseCatalogImport(database, {
+      kind: 'upload', access, reference: 'object:new-catalog-package', sha256: 'b'.repeat(64),
+    });
+
+    expect(result).toMatchObject({ status: 202, body: { state: 'uploaded', duplicate: false } });
+    const scheduled = calls.find(({ text }) => text.includes('insert into runtime.job'));
+    expect(scheduled?.text).toContain("jsonb_build_object('import',$3::text)");
+    expect(scheduled?.values[1]).toBe('mall:hongtai');
+    expect(scheduled?.values[2]).toMatch(/^catalogimport:/);
+  });
+
   it('moves only an exact-mall ready import to running when the operator confirms', async () => {
     const calls: QueryCall[] = [];
     const database = recordingDatabase(calls, (text) => text.includes('from catalog.importjob where id=') ? [job('ready')]
@@ -31,6 +45,8 @@ describe('catalog mall command boundaries', () => {
     expect(calls.find(({ text }) => text.includes('insert into runtime.job'))?.values).toEqual([
       'job:catalogimport:1:confirm', 'mall:hongtai', 'catalogimport:1',
     ]);
+    expect(calls.find(({ text }) => text.includes('insert into runtime.job'))?.text)
+      .toContain("jsonb_build_object('import',$3::text)");
   });
 
   it('reads and publishes listings only in the current Access Pipeline mall scope', async () => {
