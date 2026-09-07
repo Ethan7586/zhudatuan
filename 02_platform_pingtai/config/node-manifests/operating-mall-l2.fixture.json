@@ -1,0 +1,64 @@
+{
+  "schema_version": "sfl.node-manifest/v1",
+  "manifest_id": "manifest:fixture:l2:v1",
+  "manifest_version": "1.0.0",
+  "generated_at": "2026-09-07T12:00:00Z",
+  "line_id": "line:zhudatuan:commerce:v1",
+  "lifecycle_status": "draft",
+  "node_id": "node:fixture:l2",
+  "parent_node_id": "node:hbbtzn:l1",
+  "signed_level": "L2",
+  "node_profile": "operating_mall",
+  "domain_bindings": [
+    {
+      "surface": "storefront",
+      "origin": "https://storefront.l2.example.test"
+    },
+    {
+      "surface": "console",
+      "origin": "https://console.l2.example.test"
+    },
+    {
+      "surface": "identity",
+      "origin": "https://accounts.l2.example.test"
+    },
+    {
+      "surface": "api",
+      "origin": "https://api.l2.example.test"
+    }
+  ],
+  "brand_ref": "brand:fixture:l2",
+  "applications": [
+    "application:fixture:l2"
+  ],
+  "surfaces": [
+    "storefront",
+    "console",
+    "identity",
+    "api"
+  ],
+  "enabled_features": [
+    "catalog",
+    "checkout",
+    "console",
+    "identity",
+    "orders"
+  ],
+  "api_contract_refs": [
+    "contract:commerce:v1"
+  ],
+  "realm_ref": "realm:fixture:l2",
+  "data_scope_ref": "mall:fixture:l2",
+  "secret_binding_set_ref": "fixture/nodes/l2/secrets/v1",
+  "payment_binding_refs": [
+    "fixture/nodes/l2/payment/v1"
+  ],
+  "callback_binding_refs": [
+    "fixture/nodes/l2/callbacks/v1"
+  ],
+  "runtime_instance_id": "runtime:fixture:l2:commerce",
+  "runtime_config_ref": "fixture/nodes/l2/runtime/v1",
+  "resource_binding_version": "1",
+  "release_pointer_ref": "/opt/sfl/nodes/fixture-l2/current",
+  "manifest_digest": "sha256:1011d337c8d7d79ba24c295f5310f5e5dc41564948b7457659eb9f2f679c11d0"
+}

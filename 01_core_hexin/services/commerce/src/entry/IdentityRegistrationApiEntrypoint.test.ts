@@ -17,8 +17,6 @@ import { ACCESS_OPERATOR_READ_OPERATION_IDS } from '../modules/access/03_applica
 import { IdentityOperatorAccessModule } from '../modules/access/05_interface_jieru/IdentityOperatorAccessModule';
 import { CHANNEL_OPERATOR_READ_OPERATION_IDS } from '../modules/channel/ChannelReadOperations';
 import { IdentityOperatorChannelModule } from '../modules/channel/IdentityOperatorChannelModule';
-import { CATALOG_OPERATOR_OPERATION_IDS } from '../modules/catalog/03_application_yingyong/CatalogOperatorOperations';
-import { IdentityOperatorCatalogModule } from '../modules/catalog/IdentityOperatorCatalogModule';
 import { EXPERIENCE_OPERATOR_OPERATION_IDS } from '../modules/experience/ExperienceOperatorOperations';
 import { IdentityOperatorExperienceModule } from '../modules/experience/IdentityOperatorExperienceModule';
 import { IDENTITY_REGISTRATION_OPERATION_IDS } from '../modules/identity';
@@ -56,7 +54,6 @@ describe('identity registration API entrypoint', () => {
       ...CHANNEL_OPERATOR_READ_OPERATION_IDS,
       ...VOUCHER_OPERATOR_READ_OPERATION_IDS,
       ...REPORTING_OPERATOR_READ_OPERATION_IDS,
-      ...CATALOG_OPERATOR_OPERATION_IDS,
       ...EXPERIENCE_OPERATOR_OPERATION_IDS,
       ...NOTIFICATION_OPERATOR_READ_OPERATION_IDS,
       ...QUALIFICATION_OPERATOR_READ_OPERATION_IDS,
@@ -113,10 +110,6 @@ describe('identity registration API entrypoint', () => {
       'reporting.products.read',
       'reporting.sales.read',
       'reporting.voucherconsumption.read',
-      'catalog.imports.create',
-      'catalog.imports.read',
-      'catalog.listings.publish',
-      'catalog.listings.unpublish',
       'experience.applications.create',
       'experience.applications.read',
       'experience.applications.update',
@@ -138,7 +131,6 @@ describe('identity registration API entrypoint', () => {
       ...CHANNEL_OPERATOR_READ_OPERATION_IDS,
       ...VOUCHER_OPERATOR_READ_OPERATION_IDS,
       ...REPORTING_OPERATOR_READ_OPERATION_IDS,
-      ...CATALOG_OPERATOR_OPERATION_IDS,
       ...EXPERIENCE_OPERATOR_OPERATION_IDS,
       ...NOTIFICATION_OPERATOR_READ_OPERATION_IDS,
       ...QUALIFICATION_OPERATOR_READ_OPERATION_IDS,
@@ -156,7 +148,6 @@ describe('identity registration API entrypoint', () => {
         IdentityOperatorChannelModule,
         IdentityOperatorVoucherModule,
         IdentityOperatorReportingModule,
-        IdentityOperatorCatalogModule,
         IdentityOperatorExperienceModule,
         IdentityOperatorNotificationModule,
         IdentityOperatorQualificationModule,
@@ -239,10 +230,10 @@ describe('identity registration API entrypoint', () => {
     expect(bootstrapped.routes.match('GET', '/api/v1/reports/products')?.operation).toBe('reporting.products.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/reports/sales')?.operation).toBe('reporting.sales.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/reports/voucherconsumption')?.operation).toBe('reporting.voucherconsumption.read');
-    expect(bootstrapped.routes.match('GET', '/api/v1/catalog/imports/x')?.operation).toBe('catalog.imports.read');
-    expect(bootstrapped.routes.match('POST', '/api/v1/catalog/imports')?.operation).toBe('catalog.imports.create');
-    expect(bootstrapped.routes.match('PUT', '/api/v1/catalog/listings/listing:test/publication')?.operation).toBe('catalog.listings.publish');
-    expect(bootstrapped.routes.match('DELETE', '/api/v1/catalog/listings/listing:test/publication')?.operation).toBe('catalog.listings.unpublish');
+    expect(bootstrapped.routes.match('GET', '/api/v1/catalog/imports/x')).toBeNull();
+    expect(bootstrapped.routes.match('POST', '/api/v1/catalog/imports')).toBeNull();
+    expect(bootstrapped.routes.match('PUT', '/api/v1/catalog/listings/listing:test/publication')).toBeNull();
+    expect(bootstrapped.routes.match('DELETE', '/api/v1/catalog/listings/listing:test/publication')).toBeNull();
     expect(bootstrapped.routes.match('POST', '/api/v1/experiences/applications')?.operation).toBe('experience.applications.create');
     expect(bootstrapped.routes.match('GET', '/api/v1/experiences/applications')?.operation).toBe('experience.applications.read');
     expect(bootstrapped.routes.match('PATCH', '/api/v1/experiences/applications/application:test')?.operation).toBe('experience.applications.update');

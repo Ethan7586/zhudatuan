@@ -1,0 +1,22 @@
+	# Insert before the canonical L0 catalog and WebBusiness handlers in api.zhudatuan.com.
+	@hbbtznL1CatalogOperator {
+		header X-SFL-Node-ID node:hbbtzn:l1
+		header X-SFL-Node-Surface catalog-operator
+		path /api/v1/catalog/*
+	}
+	handle @hbbtznL1CatalogOperator {
+		reverse_proxy 127.0.0.1:4431 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@hbbtznL1WebBusiness {
+		header X-SFL-Node-ID node:hbbtzn:l1
+		header X-SFL-Node-Surface web-business
+		path /api/v1/members/me /api/v1/members/me/addresses /api/v1/members/me/addresses/* /api/v1/organizations/layers /api/v1/reports/dashboard /api/v1/catalog/listings /api/v1/catalog/public/products /api/v1/pricing/offers /api/v1/inventory/availability /api/v1/carts/current /api/v1/carts/current/* /api/v1/benefits/accounts /api/v1/benefits/ledgers /api/v1/orders
+	}
+	handle @hbbtznL1WebBusiness {
+		reverse_proxy 127.0.0.1:4432 {
+			header_up X-Real-IP {client_ip}
+		}
+	}

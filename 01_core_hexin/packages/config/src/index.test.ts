@@ -2,13 +2,30 @@ import { readFile } from 'node:fs/promises';
 import { describe, expect, it, vi } from 'vitest';
 import { clientEnvironment } from './ClientEnvironment';
 import { miniappEnvironment } from './MiniappEnvironment';
-import { API_ENVIRONMENT_KEYS, IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS, JOBS_ENVIRONMENT_KEYS, LOCAL_ENVIRONMENT_KEYS, REGISTRATION_MIGRATION_ENVIRONMENT_KEYS, WechatApplicationCatalog, apiBindHost, apiReturnTargets, bearerToken, identityRegistrationApiEnvironment, integerValue, isPrivateIpv4Host, jobRuntimeProfile, localIdentityInfrastructureEnvironment, localInfrastructureEnvironment, localSeedEnvironment, registrationMigrationEnvironment, requiredValue, validateApiEnvironment, validateJobsEnvironment } from './ServerEnvironment';
+import { API_ENVIRONMENT_KEYS, CATALOG_OPERATOR_API_ENVIRONMENT_KEYS, IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS, JOBS_ENVIRONMENT_KEYS, LOCAL_ENVIRONMENT_KEYS, REGISTRATION_MIGRATION_ENVIRONMENT_KEYS, WechatApplicationCatalog, apiBindHost, apiReturnTargets, bearerToken, catalogOperatorApiEnvironment, identityRegistrationApiEnvironment, integerValue, isPrivateIpv4Host, jobRuntimeProfile, localIdentityInfrastructureEnvironment, localInfrastructureEnvironment, localSeedEnvironment, parseNodeManifest, registrationMigrationEnvironment, requiredValue, validateApiEnvironment, validateJobsEnvironment } from './ServerEnvironment';
 
 const secretStoreBearerToken = 's'.repeat(43);
 const kmsBearerToken = 'k'.repeat(43);
 const objectsBearerToken = 'o'.repeat(43);
 
 describe('runtime configuration schema', () => {
+  it('loads generated operating and consumer node profiles without inventing a consumer mall console', async () => {
+    const directory = new URL('../../../../02_platform_pingtai/config/node-manifests/', import.meta.url);
+    const l0 = parseNodeManifest(JSON.parse(await readFile(new URL('zhudatuan-l0.json', directory), 'utf8')));
+    const l1 = parseNodeManifest(JSON.parse(await readFile(new URL('hbbtzn-l1.json', directory), 'utf8')));
+    const l6 = parseNodeManifest(JSON.parse(await readFile(new URL('consumer-l6.fixture.json', directory), 'utf8')));
+    expect([l0.signed_level, l0.node_profile, l0.data_scope_ref]).toEqual(['L0', 'operating_mall', 'mall-zhudatuan']);
+    expect([l1.signed_level, l1.node_profile, l1.parent_node_id]).toEqual(['L1', 'operating_mall', l0.node_id]);
+    expect([l6.signed_level, l6.node_profile, l6.surfaces.includes('console')]).toEqual(['L6', 'consumer', false]);
+  });
+
+  it('rejects a generated node manifest whose published payload was changed', async () => {
+    const path = new URL('../../../../02_platform_pingtai/config/node-manifests/hbbtzn-l1.json', import.meta.url);
+    const manifest = JSON.parse(await readFile(path, 'utf8'));
+    expect(() => parseNodeManifest({ ...manifest, data_scope_ref: 'mall-zhudatuan' }))
+      .toThrow('NODE_MANIFEST_DIGEST_MISMATCH');
+  });
+
   it('keeps the private CA trust path in every registration-only HTTPS client env', async () => {
     const expected = 'NODE_EXTRA_CA_CERTS=/opt/zhudatuan/shared/tls/internal-ca.crt';
     for (const file of ['identity-registration-api.env.example','identity-notification-jobs.env.example',
@@ -20,10 +37,42 @@ describe('runtime configuration schema', () => {
 
   it('owns every shared key exactly once', () => {
     expect(new Set(API_ENVIRONMENT_KEYS).size).toBe(API_ENVIRONMENT_KEYS.length);
+    expect(new Set(CATALOG_OPERATOR_API_ENVIRONMENT_KEYS).size).toBe(CATALOG_OPERATOR_API_ENVIRONMENT_KEYS.length);
     expect(new Set(IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS).size).toBe(IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS.length);
     expect(new Set(JOBS_ENVIRONMENT_KEYS).size).toBe(JOBS_ENVIRONMENT_KEYS.length);
     expect(new Set(REGISTRATION_MIGRATION_ENVIRONMENT_KEYS).size).toBe(REGISTRATION_MIGRATION_ENVIRONMENT_KEYS.length);
     expect(new Set(Object.values(LOCAL_ENVIRONMENT_KEYS)).size).toBe(Object.values(LOCAL_ENVIRONMENT_KEYS).length);
+  });
+
+  it('accepts one node-bound catalog operator surface and rejects shared origins', () => {
+    const catalog = {
+      CATALOG_OPERATOR_API_PROFILE: 'catalog-operator-only',
+      API_PORT: '4431',
+      API_BIND_HOST: '127.0.0.1',
+      APP_ENV: 'production',
+      SERVICE_VERSION: '1.0.0',
+      API_ALLOWED_ORIGINS: 'https://console.hbbtzn.com',
+      DATABASE_API_CONNECTION_REF: 'hbbtzn/nodes/l1/database/catalog-api',
+      DATABASE_API_ROLE: 'hbbtzncatalogapi',
+      OBJECT_STORE_ENDPOINT: 'https://127.0.0.1:8655',
+      OBJECT_STORE_BEARER_TOKEN: objectsBearerToken,
+      SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8543',
+      SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
+      NODE_MANIFEST_PATH: '/opt/hbbtzn/nodes/l1/manifest.json',
+      NODE_MANIFEST_ID: 'manifest:hbbtzn:l1:v1',
+      NODE_MANIFEST_DIGEST: `sha256:${'a'.repeat(64)}`,
+      NODE_RUNTIME_INSTANCE_ID: 'runtime:hbbtzn:l1:commerce',
+      NODE_RUNTIME_CONFIG_REF: 'hbbtzn/nodes/l1/runtime/v1',
+      NODE_RESOURCE_BINDING_VERSION: '1',
+      NODE_RELEASE_POINTER_REF: '/opt/hbbtzn/nodes/l1/current',
+      NODE_EXTRA_CA_CERTS: '/opt/zhudatuan/shared/tls/internal-ca.crt',
+    };
+    expect(catalogOperatorApiEnvironment(catalog).API_ALLOWED_ORIGINS).toBe('https://console.hbbtzn.com');
+    expect(() => catalogOperatorApiEnvironment({ ...catalog,
+      API_ALLOWED_ORIGINS: 'https://console.hbbtzn.com,https://console.zhudatuan.com' }))
+      .toThrow('CATALOG_OPERATOR_API_ORIGINS_INVALID');
+    expect(() => catalogOperatorApiEnvironment({ ...catalog, SESSION_KEY_REF: 'shared/session' }))
+      .toThrow('CATALOG_OPERATOR_API_KEY_FORBIDDEN:SESSION_KEY_REF');
   });
 
   it('isolates strict registration migration settings from the generic migration environment', () => {

@@ -30,7 +30,7 @@ const bootstrapped = await bootstrapApi({
   gateEngine: runtime.gateEngine,
 });
 const app = new PublicCatalogHttpHandler(
-  bootstrapped.app, runtime.pool, webBusinessApiPublicMallSlug(environment), allowedOrigins,
+  bootstrapped.app, runtime.pool, webBusinessApiPublicMallSlug(environment), allowedOrigins, runtime.manifest.data_scope_ref,
 );
 const server = listen(app, webBusinessApiPort(environment), '127.0.0.1', bootstrapped.nodeContextResolver);
 

@@ -129,7 +129,6 @@ describe('hbbtzn H5 alias worker', () => {
     expect(upstreamRequest.headers.get('x-sfl-node-id')).toBe('node:hbbtzn:l1');
     expect(upstreamRequest.headers.get('x-sfl-node-surface')).toBe('web-business');
   });
-
   it('keeps shared Hongtai identity calls on the canonical routing contract', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}'));
     vi.stubGlobal('fetch', fetchMock);

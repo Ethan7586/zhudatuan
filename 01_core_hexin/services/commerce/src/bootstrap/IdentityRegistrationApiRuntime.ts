@@ -37,7 +37,6 @@ interface CompatibilityRow {
   readonly operator_invitation: boolean;
   readonly relations: boolean;
   readonly functions: boolean;
-  readonly catalog_writes: boolean;
 }
 
 export interface IdentityRegistrationApiRuntime {
@@ -140,20 +139,11 @@ export async function identityRegistrationRuntimeCompatibility(pool: DatabasePoo
       to_regclass('identity.registrationpolicy'),to_regclass('member.invite'),to_regclass('member.profile'),
       to_regclass('access.membership'),to_regclass('access.membershiprole'),to_regclass('access.scopegrant'),
       to_regclass('organization.organization'),to_regclass('audit.record'),to_regclass('audit.accessrecord')
-      ,to_regclass('catalog.importjob'),to_regclass('catalog.importrow'),to_regclass('catalog.importerror'),
-      to_regclass('catalog.listing')
-    ],null) is null relations,
-    has_table_privilege(current_user,'catalog.importjob','SELECT')
-      and has_table_privilege(current_user,'catalog.importjob','INSERT')
-      and has_table_privilege(current_user,'catalog.importjob','UPDATE')
-      and has_table_privilege(current_user,'catalog.importrow','SELECT')
-      and has_table_privilege(current_user,'catalog.importerror','SELECT')
-      and has_table_privilege(current_user,'catalog.listing','SELECT')
-      and has_table_privilege(current_user,'catalog.listing','UPDATE') catalog_writes`,
+    ],null) is null relations`,
   [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== 'zhudatuanidentityapi' || !state.writable || !state.schema || !state.contract
-    || !state.registration || !state.operator_invitation || !state.relations || !state.functions || !state.catalog_writes) {
+    || !state.registration || !state.operator_invitation || !state.relations || !state.functions) {
     throw new Error(`IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
   }
   return Object.freeze(state);

@@ -33,6 +33,7 @@ export interface JobRunnerConfig {
   readonly retryMinimum: number;
   readonly retryMaximum: number;
   readonly claim?: 'identity-notification';
+  readonly scope?: string;
 }
 
 export class JobRunner {
@@ -50,6 +51,16 @@ export class JobRunner {
           'select id,kind,scope_id,payload,attempts from runtime.claim_identity_notification_job($1,$2,$3)',
           [this.config.worker, this.config.batch, this.config.lease],
         )
+        : this.config.scope !== undefined
+          ? await this.pool.query<ClaimedJob>(`with candidates as (
+              select id from runtime.job where kind=$1 and scope_id=$2 and state='queued' and available_at<=clock_timestamp()
+              order by priority,available_at,id for update skip locked limit $3
+            )
+            update runtime.job target set state='running',lease_owner=$4,
+              lease_deadline=clock_timestamp()+make_interval(secs=>$5),attempts=target.attempts+1,updated_at=clock_timestamp()
+            from candidates where target.id=candidates.id
+            returning target.id,target.kind,target.scope_id,target.payload,target.attempts`,
+          [kind, this.config.scope, this.config.batch, this.config.worker, this.config.lease])
         : await this.pool.query<ClaimedJob>(
           'select id,kind,scope_id,payload,attempts from runtime.claim_job($1,$2,$3,$4)',
           [kind, this.config.worker, this.config.batch, this.config.lease],
@@ -63,6 +74,7 @@ export class JobRunner {
   }
 
   private async process(job: ClaimedJob, processor: JobProcessor, signal: AbortSignal): Promise<void> {
+    if (this.config.scope !== undefined && job.scope_id !== this.config.scope) throw new Error('JOB_SCOPE_MISMATCH');
     const deadline = Deadline.after(this.config.deadline, signal);
     const started = performance.now();
     const heartbeat = setInterval(() => void this.heartbeat(job.id).catch(() => undefined), Math.max(1_000, this.config.lease * 500));
@@ -70,8 +82,8 @@ export class JobRunner {
       await processor.process(job, deadline.signal);
       const result = await this.pool.query(
         `update runtime.job set state='completed',lease_owner=null,lease_deadline=null,updated_at=clock_timestamp()
-         where id=$1 and state='running' and lease_owner=$2`,
-        [job.id, this.config.worker],
+         where id=$1 and state='running' and lease_owner=$2 and ($3::text is null or scope_id=$3)`,
+        [job.id, this.config.worker, this.config.scope ?? null],
       );
       if (result.rowCount !== 1) throw new Error('JOB_LEASE_LOST');
       this.metrics?.observe(job, this.config.owner, performance.now()-started, 'success');
@@ -87,7 +99,8 @@ export class JobRunner {
 
   private async heartbeat(id: string): Promise<void> {
     const result = await this.pool.query(`update runtime.job set lease_deadline=clock_timestamp()+make_interval(secs=>$3),updated_at=clock_timestamp()
-      where id=$1 and state='running' and lease_owner=$2`, [id, this.config.worker, this.config.lease]);
+      where id=$1 and state='running' and lease_owner=$2 and ($4::text is null or scope_id=$4)`,
+    [id, this.config.worker, this.config.lease, this.config.scope ?? null]);
     if (result.rowCount !== 1) throw new Error('JOB_LEASE_LOST');
   }
 
@@ -110,8 +123,8 @@ export class JobRunner {
       const result = await client.query(
         `update runtime.job set state=$3,lease_owner=null,lease_deadline=null,
          available_at=case when $3='queued' then clock_timestamp()+make_interval(secs=>$4::double precision/1000) else available_at end,
-         updated_at=clock_timestamp() where id=$1 and state='running' and lease_owner=$2`,
-        [job.id, this.config.worker, terminal ? 'failed' : 'queued', delay],
+         updated_at=clock_timestamp() where id=$1 and state='running' and lease_owner=$2 and ($5::text is null or scope_id=$5)`,
+        [job.id, this.config.worker, terminal ? 'failed' : 'queued', delay, this.config.scope ?? null],
       );
       if (result.rowCount !== 1) throw new Error('JOB_LEASE_LOST');
       await client.query('commit');

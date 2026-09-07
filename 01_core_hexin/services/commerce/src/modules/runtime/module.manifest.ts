@@ -24,6 +24,7 @@ export const runtimeManifest = defineModuleManifest({
   entrypoints: {
     http: [
       'RuntimeModule',
+      'CatalogOperatorRuntimeModule',
       'IdentityRegistrationRuntimeModule',
       'MallProvisioningRuntimeModule',
       'PurchaseRuntimeModule',

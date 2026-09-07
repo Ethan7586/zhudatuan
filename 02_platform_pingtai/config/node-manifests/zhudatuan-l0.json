@@ -1,0 +1,68 @@
+{
+  "schema_version": "sfl.node-manifest/v1",
+  "manifest_id": "manifest:zhudatuan:l0:v1",
+  "manifest_version": "1.0.0",
+  "generated_at": "2026-09-07T12:00:00Z",
+  "line_id": "line:zhudatuan:commerce:v1",
+  "lifecycle_status": "active",
+  "node_id": "node:zhudatuan:l0",
+  "parent_node_id": null,
+  "signed_level": "L0",
+  "node_profile": "operating_mall",
+  "domain_bindings": [
+    {
+      "surface": "storefront",
+      "origin": "https://zhudatuan.com"
+    },
+    {
+      "surface": "storefront",
+      "origin": "https://h5.zhudatuan.com"
+    },
+    {
+      "surface": "console",
+      "origin": "https://console.zhudatuan.com"
+    },
+    {
+      "surface": "identity",
+      "origin": "https://accounts.zhudatuan.com"
+    },
+    {
+      "surface": "api",
+      "origin": "https://api.zhudatuan.com"
+    }
+  ],
+  "brand_ref": "brand:zhudatuan",
+  "applications": [
+    "application:mall-zhudatuan"
+  ],
+  "surfaces": [
+    "storefront",
+    "console",
+    "identity",
+    "api"
+  ],
+  "enabled_features": [
+    "catalog",
+    "checkout",
+    "console",
+    "identity",
+    "orders"
+  ],
+  "api_contract_refs": [
+    "contract:commerce:v1"
+  ],
+  "realm_ref": "realm:zhudatuan:l0",
+  "data_scope_ref": "mall-zhudatuan",
+  "secret_binding_set_ref": "zhudatuan/nodes/l0/secrets/v1",
+  "payment_binding_refs": [
+    "zhudatuan/nodes/l0/payment/v1"
+  ],
+  "callback_binding_refs": [
+    "zhudatuan/nodes/l0/callbacks/v1"
+  ],
+  "runtime_instance_id": "runtime:zhudatuan:l0:commerce",
+  "runtime_config_ref": "sfl/nodes/zhudatuan-l0/runtime/v1",
+  "resource_binding_version": "1",
+  "release_pointer_ref": "/opt/sfl/nodes/zhudatuan-l0/current",
+  "manifest_digest": "sha256:ec6f96b41d394cfaa876e38838015c628da731f1955a98b5c0bb9a9cf9aa529c"
+}

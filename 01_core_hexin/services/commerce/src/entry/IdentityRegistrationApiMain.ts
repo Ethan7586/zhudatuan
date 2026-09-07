@@ -6,8 +6,6 @@ import { ACCESS_OPERATOR_READ_OPERATION_IDS } from '../modules/access/03_applica
 import { IdentityOperatorAccessModule } from '../modules/access/05_interface_jieru/IdentityOperatorAccessModule';
 import { CHANNEL_OPERATOR_READ_OPERATION_IDS } from '../modules/channel/ChannelReadOperations';
 import { IdentityOperatorChannelModule } from '../modules/channel/IdentityOperatorChannelModule';
-import { CATALOG_OPERATOR_OPERATION_IDS } from '../modules/catalog/03_application_yingyong/CatalogOperatorOperations';
-import { IdentityOperatorCatalogModule } from '../modules/catalog/IdentityOperatorCatalogModule';
 import { EXPERIENCE_OPERATOR_OPERATION_IDS } from '../modules/experience/ExperienceOperatorOperations';
 import { IdentityOperatorExperienceModule } from '../modules/experience/IdentityOperatorExperienceModule';
 import { IdentityRegistrationModule } from '../modules/identity/05_interface_jieru/IdentityRegistrationModule';
@@ -43,7 +41,6 @@ const operationIds = Object.freeze([
   ...CHANNEL_OPERATOR_READ_OPERATION_IDS,
   ...VOUCHER_OPERATOR_READ_OPERATION_IDS,
   ...REPORTING_OPERATOR_READ_OPERATION_IDS,
-  ...CATALOG_OPERATOR_OPERATION_IDS,
   ...EXPERIENCE_OPERATOR_OPERATION_IDS,
   ...NOTIFICATION_OPERATOR_READ_OPERATION_IDS,
   ...QUALIFICATION_OPERATOR_READ_OPERATION_IDS,
@@ -59,7 +56,6 @@ const bootstrapped = await bootstrapApi({
     IdentityOperatorChannelModule,
     IdentityOperatorVoucherModule,
     IdentityOperatorReportingModule,
-    IdentityOperatorCatalogModule,
     IdentityOperatorExperienceModule,
     IdentityOperatorNotificationModule,
     IdentityOperatorQualificationModule,

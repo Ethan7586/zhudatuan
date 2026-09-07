@@ -1,12 +1,29 @@
+import { readFile } from 'node:fs/promises';
+import { parseNodeManifest } from '@shop/config/server';
 import { describe, expect, it } from 'vitest';
 import type { DatabasePool } from '../foundation/persistence/Pool';
 import {
   WEB_BUSINESS_SCHEMA_CHECKSUM,
   WEB_BUSINESS_SCHEMA_VERSION,
+  assertWebBusinessApplicationBinding,
+  assertWebBusinessNodeManifest,
   assertWebBusinessRuntimeCompatibility,
 } from './WebBusinessApiRuntime';
 
 describe('web business API runtime', () => {
+  it('requires node-owned origins and an application bound to the same mall scope', async () => {
+    const path = new URL('../../../../../02_platform_pingtai/config/node-manifests/hbbtzn-l1.json', import.meta.url);
+    const manifest = parseNodeManifest(JSON.parse(await readFile(path, 'utf8')));
+    expect(() => assertWebBusinessNodeManifest(manifest, ['https://hbbtzn.com', 'https://www.hbbtzn.com'], 'test')).not.toThrow();
+    expect(() => assertWebBusinessNodeManifest(manifest, ['https://zhudatuan.com'], 'test'))
+      .toThrow('WEB_BUSINESS_NODE_ORIGIN_MISMATCH');
+    const bound = { query: async () => result([{ bound: true }], 1) } as unknown as DatabasePool;
+    const wrong = { query: async () => result([{ bound: false }], 1) } as unknown as DatabasePool;
+    await expect(assertWebBusinessApplicationBinding(bound, 'zdt-l1-verify', manifest.data_scope_ref)).resolves.toBeUndefined();
+    await expect(assertWebBusinessApplicationBinding(wrong, 'zdt-l1-verify', 'mall-zhudatuan'))
+      .rejects.toThrow('WEB_BUSINESS_APPLICATION_SCOPE_MISMATCH');
+  });
+
   it('requires the dedicated role, schema marker, selected writes, and forbidden-write boundary', async () => {
     const healthy = {
       current_user: 'zhudatuanwebapi',

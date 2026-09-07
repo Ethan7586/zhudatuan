@@ -13,6 +13,7 @@ domains:
 
 artifacts:
   manifest: ../../../config/artifacts.json
+  nodeManifest: ../../../config/node-manifests/hbbtzn-l1.json
   copySourceCode: false
 
 isolation:

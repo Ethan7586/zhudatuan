@@ -13,8 +13,9 @@ interface StagedRow { readonly row_number: number; readonly payload: Readonly<Re
 export class PgCatalogImport {
   constructor(private readonly pool: DatabasePool) {}
 
-  async find(id: string): Promise<ImportTarget | null> {
-    const result = await this.pool.query<TargetRow>('select id,scope_id,object_ref,sha256,state from catalog.importjob where id=$1', [id]);
+  async find(id: string, scope: string): Promise<ImportTarget | null> {
+    const result = await this.pool.query<TargetRow>(
+      'select id,scope_id,object_ref,sha256,state from catalog.importjob where id=$1 and scope_id=$2', [id, scope]);
     const row = result.rows[0];
     return row ? { id: row.id, scope: row.scope_id, reference: row.object_ref, sha256: row.sha256, state: row.state } : null;
   }
@@ -22,9 +23,9 @@ export class PgCatalogImport {
   async stage(target: ImportTarget, document: CatalogPackageDocument): Promise<void> {
     const rows = document.rows;
     await workerTransaction(this.pool, target.scope, async (client) => {
-      await client.query("update catalog.importjob set state='validating',last_error=null,updated_at=clock_timestamp() where id=$1", [target.id]);
-      await client.query('delete from catalog.importrow where job_id=$1', [target.id]);
-      await client.query('delete from catalog.importerror where job_id=$1', [target.id]);
+      await client.query("update catalog.importjob set state='validating',last_error=null,updated_at=clock_timestamp() where id=$1 and scope_id=$2", [target.id, target.scope]);
+      await client.query('delete from catalog.importrow where job_id=$1 and scope_id=$2', [target.id, target.scope]);
+      await client.query('delete from catalog.importerror where job_id=$1 and scope_id=$2', [target.id, target.scope]);
     });
     for (let offset = 0; offset < rows.length; offset += 500) {
       const batch = rows.slice(offset, offset + 500).map((payload, index) => ({
@@ -59,8 +60,8 @@ export class PgCatalogImport {
     }
     await workerTransaction(this.pool, target.scope, async (client) => {
       await client.query(`update catalog.importjob set state='ready',total_count=$2,cursor_value=0,success_count=0,failure_count=0,
-        validation_summary=$3::jsonb||jsonb_build_object('shardSize',500),updated_at=clock_timestamp() where id=$1`,
-      [target.id, rows.length, JSON.stringify({ ...document.summary, validCount: rows.length - errorCount, errorCount })]);
+        validation_summary=$3::jsonb||jsonb_build_object('shardSize',500),updated_at=clock_timestamp() where id=$1 and scope_id=$4`,
+      [target.id, rows.length, JSON.stringify({ ...document.summary, validCount: rows.length - errorCount, errorCount }), target.scope]);
     });
   }
 
@@ -70,12 +71,13 @@ export class PgCatalogImport {
       await client.query('begin');
       await configureWorker(client, target.scope);
       const job = await client.query<{ cursor_value: number; total_count: number }>(`select cursor_value,total_count from catalog.importjob
-        where id=$1 and state='running' for update`, [target.id]);
+        where id=$1 and scope_id=$2 and state='running' for update`, [target.id, target.scope]);
       if (!job.rows[0]) { await client.query('commit'); return true; }
       const staged = await client.query<StagedRow>(`select stagedrow.row_number,stagedrow.payload,
-        exists(select 1 from catalog.importerror error where error.job_id=stagedrow.job_id and error.row_number=stagedrow.row_number) invalid
-        from catalog.importrow stagedrow where stagedrow.job_id=$1 and stagedrow.row_number>$2
-        order by stagedrow.row_number limit 500`, [target.id, job.rows[0].cursor_value + 1]);
+        exists(select 1 from catalog.importerror error where error.job_id=stagedrow.job_id and error.scope_id=stagedrow.scope_id
+          and error.row_number=stagedrow.row_number) invalid
+        from catalog.importrow stagedrow where stagedrow.job_id=$1 and stagedrow.scope_id=$2 and stagedrow.row_number>$3
+        order by stagedrow.row_number limit 500`, [target.id, target.scope, job.rows[0].cursor_value + 1]);
       if (staged.rows.length === 0 && job.rows[0].cursor_value < job.rows[0].total_count) throw new Error('CATALOG_IMPORT_STAGE_INCOMPLETE');
       let successes = 0; let failures = 0;
       for (const row of staged.rows) {
@@ -95,8 +97,9 @@ export class PgCatalogImport {
       const cursor = staged.rows.at(-1)?.row_number ? staged.rows.at(-1)!.row_number - 1 : job.rows[0].cursor_value;
       const more = cursor < job.rows[0].total_count;
       await client.query(`update catalog.importjob set state=$2,cursor_value=$3,success_count=success_count+$4,failure_count=failure_count+$5,
-        validation_summary=validation_summary||jsonb_build_object('processed',$3,'errors',failure_count+$5),last_error=null,updated_at=clock_timestamp() where id=$1`,
-      [target.id, more ? 'running' : 'reporting', cursor, successes, failures]);
+        validation_summary=validation_summary||jsonb_build_object('processed',$3,'errors',failure_count+$5),last_error=null,updated_at=clock_timestamp()
+        where id=$1 and scope_id=$6`,
+      [target.id, more ? 'running' : 'reporting', cursor, successes, failures, target.scope]);
       if (more) await continuation(client, target, cursor);
       await client.query('commit');
       return !more;
@@ -105,20 +108,24 @@ export class PgCatalogImport {
 
   async failures(target: ImportTarget): Promise<readonly ImportFailure[]> {
     const result = await this.pool.query<{ row_number: number; reason_code: string; field: string | null; detail: string }>(
-      'select row_number,reason_code,field,detail from catalog.importerror where job_id=$1 order by row_number,reason_code', [target.id]);
+      'select row_number,reason_code,field,detail from catalog.importerror where job_id=$1 and scope_id=$2 order by row_number,reason_code',
+    [target.id, target.scope]);
     return result.rows.map((row) => ({ row: row.row_number, reason: row.reason_code, field: row.field, detail: row.detail }));
   }
 
   async complete(target: ImportTarget, report: StoredObject): Promise<void> {
     await this.pool.query(`update catalog.importjob set state='completed',report_object_ref=$2,report_sha256=$3,report_size=$4,
-      last_error=null,updated_at=clock_timestamp() where id=$1 and state='reporting'`, [target.id, report.reference, report.sha256, report.size]);
+      last_error=null,updated_at=clock_timestamp() where id=$1 and scope_id=$5 and state='reporting'`,
+    [target.id, report.reference, report.sha256, report.size, target.scope]);
   }
   async reject(target: ImportTarget, code: string, detail: string): Promise<void> {
     await this.pool.query(`update catalog.importjob set state='failed',last_error=$2,
-      validation_summary=validation_summary||jsonb_build_object('code',$3),updated_at=clock_timestamp() where id=$1`, [target.id, detail, code]);
+      validation_summary=validation_summary||jsonb_build_object('code',$3),updated_at=clock_timestamp() where id=$1 and scope_id=$4`,
+    [target.id, detail, code, target.scope]);
   }
   async fault(target: ImportTarget, detail: string): Promise<void> {
-    await this.pool.query('update catalog.importjob set last_error=$2,updated_at=clock_timestamp() where id=$1', [target.id, detail]);
+    await this.pool.query('update catalog.importjob set last_error=$2,updated_at=clock_timestamp() where id=$1 and scope_id=$3',
+      [target.id, detail, target.scope]);
   }
 }
 

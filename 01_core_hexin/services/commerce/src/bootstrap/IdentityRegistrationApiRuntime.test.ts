@@ -6,7 +6,7 @@ import { expectedIdentityNodeDatabaseManifest } from './IdentityNodeManifestRunt
 describe('identity registration API runtime', () => {
   it('requires the dedicated writable registration database role and registration relations', async () => {
     const healthy = { current_user: 'zhudatuanidentityapi', writable: true, schema: true, contract: true,
-      registration: true, operator_invitation: true, relations: true, functions: true, catalog_writes: true };
+      registration: true, operator_invitation: true, relations: true, functions: true };
     let compatibilityStatement = '';
     const pool = (state: typeof healthy) => ({ query: async (statement: string) => {
       if (statement.includes('deployment.runtime_database_boundary')) return result([databaseBoundary('zhudatuanidentityapi')], 1);

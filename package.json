@@ -34,6 +34,8 @@
     "build:auth": "npm run build --workspace @smart-wing/auth-web",
     "generate:design": "node 04_tools/scripts/build-web-tokens.mjs && node 04_tools/scripts/build-miniapp-theme.mjs",
     "generate:runtime": "node 04_tools/scripts/build-runtime-config.mjs",
+    "generate:nodemanifests": "node 04_tools/scripts/release/generate-node-manifests.mjs",
+    "check:nodemanifests": "node 04_tools/scripts/release/generate-node-manifests.mjs --check",
     "generate:clients": "node --import tsx 04_tools/scripts/build-miniapp-environment.mjs && node --import tsx 04_tools/scripts/build-miniapp-contract.mjs",
     "generate:frontendmanifest": "node 04_tools/scripts/evidence/frontendmanifest.mjs",
     "build:commerce": "node 04_tools/scripts/build-commerce.mjs",

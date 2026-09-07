@@ -34,6 +34,33 @@ describe('public catalog HTTP handler', () => {
     expect(response.status).toBe(418);
     expect(next.handle).toHaveBeenCalledOnce();
   });
+
+  it('binds the public catalog to one application and one mall scope', async () => {
+    const query = vi.fn(async (text: string) => text.includes('select exists')
+      ? result([{ bound: true }])
+      : result([]));
+    const handler = new PublicCatalogHttpHandler(
+      { handle: vi.fn(async () => new Response(null, { status: 404 })) },
+      pool(query),
+      'zdt-l1-verify',
+      ['https://hbbtzn.com'],
+      'mall:hongtai',
+    );
+
+    const crossNode = await handler.handle(new Request(
+      'https://hbbtzn.com/api/v1/catalog/public/products?mall=zhudatuan-storefront',
+      { headers: { origin: 'https://hbbtzn.com' } },
+    ));
+    expect(crossNode.status).toBe(404);
+    expect(query).not.toHaveBeenCalled();
+
+    const ownNode = await handler.handle(new Request('https://hbbtzn.com/api/v1/catalog/public/products', {
+      headers: { origin: 'https://hbbtzn.com' },
+    }));
+    expect(ownNode.status).toBe(200);
+    expect(query).toHaveBeenNthCalledWith(1, expect.stringContaining('public_slug=$1 and scope_id=$2'),
+      ['zdt-l1-verify', 'mall:hongtai']);
+  });
 });
 
 function pool(query: ReturnType<typeof vi.fn>): DatabasePool {
