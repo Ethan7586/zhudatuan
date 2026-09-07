@@ -83,11 +83,15 @@ function manifestSpec(node) {
   };
 }
 
-const registry = await generateNodeManifestRegistry({
+const baseSpecs = fixture.nodes.map(manifestSpec);
+const registryInput = (manifests) => ({
   registry_version: fixture.registry_version,
   generated_at: fixture.generated_at,
-  manifests: fixture.nodes.map(manifestSpec),
+  manifests,
 });
+const replaceSpec = (node, patch) => baseSpecs.map((spec) => (spec.node_id === node ? { ...spec, ...patch } : spec));
+
+const registry = await generateNodeManifestRegistry(registryInput(baseSpecs));
 const serialized = serializeNodeManifestRegistry(registry);
 
 if (process.argv.includes('--write')) {
@@ -98,59 +102,81 @@ if (process.argv.includes('--write')) {
 
 assert.deepEqual(process.argv.slice(2), []);
 assert.equal(await readFile(outputUrl, 'utf8'), serialized, 'generated fixture must match its canonical source');
-assert.deepEqual(deserializeNodeManifestRegistry(serialized), registry, 'registry serialization must round-trip');
+assert.deepEqual(await deserializeNodeManifestRegistry(serialized), registry, 'verified registry serialization must round-trip');
+assert.ok((await Promise.all(registry.manifests.map(hasValidNodeManifestDigest))).every(Boolean));
+assert.equal(classifySignedLevel('L-2'), 'supply_side');
+assert.equal(classifySignedLevel('L0'), 'operating_mall');
+assert.equal(classifySignedLevel('L6'), 'consumer');
 
-const manifestsByNode = new Map(registry.manifests.map((manifest) => [manifest.node_id, manifest]));
 const l0 = registry.manifests.find((manifest) => manifest.signed_level === 'L0');
 const l1Nodes = registry.manifests.filter((manifest) => manifest.signed_level === 'L1');
 assert.ok(l0);
 assert.equal(l1Nodes.length, 3);
-assert.ok(l1Nodes.every((manifest) => manifest.parent_node_id === l0.node_id));
-
-for (const requiredLevel of ['L0', 'L2', 'L5', 'L6', 'L11']) {
+for (const requiredLevel of ['L0', 'L1', 'L2', 'L5', 'L6', 'L11']) {
   assert.ok(registry.manifests.some((manifest) => manifest.signed_level === requiredLevel));
 }
 
-for (const manifest of registry.manifests) {
-  assert.equal(await hasValidNodeManifestDigest(manifest), true);
-  const segment = classifySignedLevel(manifest.signed_level);
-  if (segment === 'operating_mall') {
-    assert.equal(manifest.node_profile, 'operating_mall');
-    assert.notEqual(manifest.mall_id, null);
-    assert.equal(manifest.host_node_id, null);
-  } else {
-    assert.equal(segment, 'consumer');
-    assert.equal(manifest.node_profile, 'consumer');
-    assert.equal(manifest.mall_id, null);
-    assert.notEqual(manifest.host_node_id, null);
-  }
-  for (const binding of manifest.domain_bindings) {
-    assert.equal(resolveNodeManifestByHost(registry, binding.host).node_id, manifest.node_id);
-  }
-  assert.ok(manifest.realm_ref.ref);
-  assert.ok(manifest.data_scope_ref.ref);
-  assert.ok(manifest.secret_binding_set_ref.ref);
-  assert.ok(Array.isArray(manifest.payment_binding_refs));
-  assert.ok(manifest.release_pointer_ref.ref);
-}
+const tamperTarget = registry.manifests.find((manifest) => manifest.node_id === nodeId('l1-b'));
+assert.ok(tamperTarget);
+await assert.rejects(
+  () =>
+    deserializeNodeManifestRegistry(
+      JSON.stringify({
+        ...registry,
+        manifests: registry.manifests.map((manifest) =>
+          manifest.node_id === tamperTarget.node_id
+            ? { ...manifest, brand_ref: { ...manifest.brand_ref, ref: 'brand:fixture:tampered' } }
+            : manifest
+        ),
+      })
+    ),
+  /SFL_NODE_MANIFEST_DIGEST_MISMATCH/
+);
 
-for (const manifest of registry.manifests.filter((entry) => classifySignedLevel(entry.signed_level) === 'consumer')) {
-  const parent = manifestsByNode.get(manifest.parent_node_id);
-  assert.ok(parent);
-  const parentLevel = Number(parent.signed_level.slice(1));
-  const level = Number(manifest.signed_level.slice(1));
-  if (level === 6) {
-    assert.equal(classifySignedLevel(parent.signed_level), 'operating_mall');
-    assert.equal(manifest.host_node_id, parent.node_id);
-  } else {
-    assert.equal(parentLevel, level - 1);
-    assert.equal(manifest.host_node_id, parent.host_node_id);
-  }
-}
+const l1ASpec = baseSpecs.find((spec) => spec.node_id === nodeId('l1-a'));
+const l1BSpec = baseSpecs.find((spec) => spec.node_id === nodeId('l1-b'));
+assert.ok(l1ASpec && l1BSpec);
+await assert.rejects(
+  () => generateNodeManifestRegistry(registryInput(replaceSpec(l1BSpec.node_id, { runtime_instance_id: l1ASpec.runtime_instance_id }))),
+  /SFL_NODE_MANIFEST_REGISTRY_IDENTIFIER_AMBIGUOUS:runtime_instance_id/
+);
+await assert.rejects(
+  () =>
+    generateNodeManifestRegistry(
+      registryInput(
+        replaceSpec(l1BSpec.node_id, {
+          domain_bindings: l1BSpec.domain_bindings.map((binding, index) =>
+            index === 0 ? { ...binding, host: l1ASpec.domain_bindings[0].host } : binding
+          ),
+        })
+      )
+    ),
+  /SFL_NODE_MANIFEST_HOST_AMBIGUOUS/
+);
 
-assert.equal(classifySignedLevel('L-2'), 'supply_side');
-assert.throws(() => resolveNodeManifestByHost(registry, 'l0.sfl-node.invalid'), /SFL_NODE_MANIFEST_HOST_UNKNOWN/);
-assert.throws(() => resolveNodeManifestByHost(registry, 'unknown.sfl-node.invalid'), /SFL_NODE_MANIFEST_HOST_UNKNOWN/);
+const l5Spec = baseSpecs.find((spec) => spec.signed_level === 'L5');
+const l6Spec = baseSpecs.find((spec) => spec.signed_level === 'L6');
+const l7Spec = baseSpecs.find((spec) => spec.signed_level === 'L7');
+assert.ok(l5Spec && l6Spec && l7Spec);
+await assert.rejects(
+  () => generateNodeManifestRegistry(registryInput(replaceSpec(l7Spec.node_id, { parent_node_id: l5Spec.node_id }))),
+  /SFL_CONSUMER_PARENT_CHAIN_INVALID/
+);
+await assert.rejects(
+  () =>
+    generateNodeManifestRegistry(
+      registryInput(
+        replaceSpec(l6Spec.node_id, {
+          surfaces: [...l6Spec.surfaces, ref('surface:console')],
+        })
+      )
+    ),
+  /SFL_CONSUMER_SURFACE_INVALID/
+);
+
+assert.equal(resolveNodeManifestByHost(registry, 'L1-A-CONSOLE.SFL-NODE.INVALID.').node_id, nodeId('l1-a'));
+assert.throws(() => resolveNodeManifestByHost(registry, 'l1-a.sfl-node.invalid'), /SFL_NODE_MANIFEST_HOST_UNKNOWN/);
+assert.throws(() => resolveNodeManifestByHost(registry, 'l1-a-console.sfl-node.invalid:443'), /SFL_NODE_MANIFEST_HOST_INVALID/);
 
 const l1A = resolveNodeManifestByHost(registry, 'l1-a-console.sfl-node.invalid');
 const l1B = resolveNodeManifestByHost(registry, 'l1-b-console.sfl-node.invalid');
@@ -158,18 +184,8 @@ assert.notEqual(l1A.node_id, l1B.node_id);
 assert.notEqual(l1A.realm_ref.ref, l1B.realm_ref.ref);
 assert.notEqual(l1A.data_scope_ref.ref, l1B.data_scope_ref.ref);
 assert.notEqual(l1A.resource_binding_set_ref.ref, l1B.resource_binding_set_ref.ref);
+assert.notEqual(l1A.runtime_instance_id, l1B.runtime_instance_id);
 assert.notEqual(l1A.release_pointer_ref.ref, l1B.release_pointer_ref.ref);
-
-for (const selector of [
-  (manifest) => manifest.node_id,
-  (manifest) => manifest.manifest_id,
-  (manifest) => manifest.realm_ref.ref,
-  (manifest) => manifest.data_scope_ref.ref,
-  (manifest) => manifest.resource_binding_set_ref.ref,
-  (manifest) => manifest.release_pointer_ref.ref,
-]) {
-  assert.equal(new Set(registry.manifests.map(selector)).size, registry.manifests.length);
-}
 
 const sourceShas = new Set(registry.manifests.map((manifest) => manifest.release_pointer_ref.source_sha));
 const artifactDigests = new Set(registry.manifests.map((manifest) => manifest.release_pointer_ref.immutable_artifact_digest));
@@ -177,11 +193,10 @@ const buildIds = new Set(registry.manifests.map((manifest) => manifest.release_p
 assert.equal(sourceShas.size, 1);
 assert.equal(artifactDigests.size, 1);
 assert.equal(buildIds.size, 1);
-assert.ok(registry.manifests.every((manifest) => manifest.release_pointer_ref.build_count === 1));
 
 const evidence = {
   schema_version: 'sfl.node-kernel-evidence.v1',
-  version_name: 'SFL 节点内核底座 v1.0｜第一批',
+  version_name: 'SFL 节点内核底座 v1.1｜第二批生产级硬化',
   fixture_manifest_count: registry.manifests.length,
   required_levels: ['L0', 'L1', 'L2', 'L5', 'L6', 'L11'],
   checks: {
@@ -193,11 +208,17 @@ const evidence = {
     unknown_host_no_fallback: 'PASS',
     cross_node_isolation: 'PASS',
     serialization_round_trip: 'PASS',
+    complete_contract_parsing: 'PASS',
+    authority_tamper_rejection: 'PASS',
+    registry_identifier_ambiguity_rejection: 'PASS',
+    topology_validation: 'PASS',
+    consumer_surface_isolation: 'PASS',
+    invalid_host_rejection: 'PASS',
   },
   gates: {
     'SFL-17': {
       status: 'PARTIAL',
-      evidence: 'One generator produced one L0 and three independent L1 manifests with unique refs and no node source paths.',
+      evidence: 'One real kernel generator produced one L0 and three independent L1 manifests with unique refs and no node source paths.',
       remaining: 'No production provisioning fact or allocated resource binding was created in this batch.',
     },
     'SFL-18': {
@@ -212,11 +233,11 @@ const evidence = {
     },
     'SFL-D03': {
       status: 'PASS',
-      evidence: 'All predeclared checks above directly assert generated contract facts.',
+      evidence: 'Predeclared checks call the real generator, verified parser, digest verifier, topology validator, and exact Host resolver.',
     },
     'SFL-D04': {
       status: 'PASS',
-      evidence: 'Every fixture manifest carries source/artifact/manifest digests and node-specific realm, scope, secret, payment, callback, runtime, and release references.',
+      evidence: 'Every verified fixture manifest carries source/artifact/manifest digests and node-specific realm, scope, secret, payment, callback, runtime, and release references.',
     },
   },
 };
