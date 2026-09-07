@@ -40,6 +40,20 @@ export async function bindWechat(database: OperationDatabase, hash: string, prin
   return completeWechatBinding(database, binding, principal, membership, realm, account);
 }
 
+export async function atomicIdentityMutation<T>(database: OperationDatabase, action: () => Promise<T>): Promise<T> {
+  await database.query('savepoint identity_business_mutation');
+  let result: T;
+  try {
+    result = await action();
+  } catch (cause) {
+    await database.query('rollback to savepoint identity_business_mutation');
+    await database.query('release savepoint identity_business_mutation');
+    throw cause;
+  }
+  await database.query('release savepoint identity_business_mutation');
+  return result;
+}
+
 export async function identityTransaction<T>(pool: DatabasePool, request: OperationRequest, action: (database: OperationDatabase) => Promise<T>): Promise<T> {
   const client = await pool.connect();
   try {

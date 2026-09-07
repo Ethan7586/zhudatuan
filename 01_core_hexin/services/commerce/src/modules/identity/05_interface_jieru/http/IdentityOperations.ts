@@ -11,7 +11,7 @@ import { requireGovernanceContext } from '../../../../foundation/security/Access
 import { StepupPolicy } from '../../../../foundation/security/StepupPolicy';
 import { IDENTITY_SECURITY_KEYS } from '../../../../foundation/infrastructure/SecretStore';
 import { PasswordPolicy } from '../../02_domain_yewu/policies_guize/PasswordPolicy';
-import { bindWechat, completeWechatBinding, prepareWechatBinding, publishIdentityEvent, tokenHash } from '../../04_adapters_shixian/persistence_cunchu/IdentityPersistence';
+import { atomicIdentityMutation, bindWechat, completeWechatBinding, prepareWechatBinding, publishIdentityEvent, tokenHash } from '../../04_adapters_shixian/persistence_cunchu/IdentityPersistence';
 import { AuthTransaction } from '../../02_domain_yewu/models_moxing/AuthTransaction';
 import { PgAuthTicket } from '../../04_adapters_shixian/persistence_cunchu/PgAuthTicket';
 import { RETURN_TARGETS } from '../../04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
@@ -553,7 +553,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             scopes: [`scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`] as const,
           };
         },
-        execute: async (request, database, prepared) => {
+        execute: async (request, database, prepared) => atomicIdentityMutation(database, async () => {
           const { body, subject, password, principal, account, mobile, authorization, assurance, member, membership, operatorMembership, credential, scopes } = prepared;
           const realm = await resolveRealmNode(database, request.input.headers.host);
           const requestedReturnTarget = authorization === null || typeof body.target !== 'string' ? undefined : authTarget(body.target);
@@ -772,7 +772,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             body: { ...responseBody, authentication: { session, csrf, expiresIn: 43_200, membership: registeredMembership, target: 'storefront', callback } },
             headers: sessionCookies(token, csrf, 43_200),
           };
-        },
+        }),
       }),
       'identity.members.manage': async (request, database) => {
         const access = requireAccess(request);
@@ -1060,7 +1060,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const hash = await passwords.hash(secretField(body, 'newPassword', 128));
           return { body, challenge, hash };
         },
-        execute: async (request, database, { body, challenge, hash }) => {
+        execute: async (request, database, { body, challenge, hash }) => atomicIdentityMutation(database, async () => {
           const realm = await resolveRealmNode(database, request.input.headers.host);
           const consumed = await consumeChallenge(database, challenge, textField(body, 'code'), codeDigest, undefined,
             { purpose: 'password_reset', realmId: realm.realmId });
@@ -1080,7 +1080,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             where session.revoked_at is null and exists(select 1 from access.membership membership
               where membership.id=session.membership_id and membership.account_id=$1 and membership.realm_id=$2)`, [account, realm.realmId]);
           return rowResult(result);
-        },
+        }),
       }),
       'identity.mobile.challenge': operationLifecycle({
         prepare: async (request) => {

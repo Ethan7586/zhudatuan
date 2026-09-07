@@ -253,6 +253,19 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.startsWith('update identity.credential set secret_hash'))).toBe(false);
   });
 
+  it('restores a consumed password-reset challenge when no realm account can be completed', async () => {
+    const harness = registrationHarness({ challengeAccepted: true, challengePrincipal: null, subjectExists: false });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordResetRequest());
+
+    expect(response).toEqual({ status: 400, body: { code: 'CHALLENGE_PRINCIPAL_MISSING' } });
+    const consumed = harness.queries.findIndex(({ text }) => text.includes('update identity.challenge set consumed_at'));
+    const rollback = harness.queries.findIndex(({ text }) => text === 'rollback to savepoint identity_business_mutation');
+    expect(consumed).toBeGreaterThanOrEqual(0);
+    expect(rollback).toBeGreaterThan(consumed);
+    expect(harness.queries.findIndex(({ text }) => text.startsWith('update runtime.idempotency'))).toBeGreaterThan(rollback);
+  });
+
   it('binds a registration challenge to both the registration purpose and the normalized subject digest', async () => {
     const harness = registrationHarness({ challengeAccepted: false, subjectExists: false });
     const result = await identityOperations(context(harness.pool)).invoke(registrationRequest('registration:challenge-binding'));
@@ -545,6 +558,40 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes('update member.invite set use_count'))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
+  });
+
+  it('rolls back phone proof, invitation, account and membership when final WeChat binding rejects', async () => {
+    const harness = registrationHarness({
+      challengeAccepted: true,
+      subjectExists: false,
+      inviteAccepted: true,
+      wechatGrant: true,
+      wechatConflict: true,
+    });
+    const request = registrationRequest('registration:wechat-conflict');
+    const response = await identityOperations(context(harness.pool)).invoke({
+      ...request,
+      input: {
+        ...request.input,
+        body: { ...(request.input.body as Readonly<Record<string, unknown>>), wechatToken: 'wechat-binding-token' },
+      },
+    });
+
+    expect(response).toEqual({ status: 409, body: { code: 'WECHAT_IDENTITY_ALREADY_BOUND' } });
+    const rollback = harness.queries.findIndex(({ text }) => text === 'rollback to savepoint identity_business_mutation');
+    for (const mutation of [
+      'update identity.challenge set consumed_at',
+      'update member.invite',
+      'insert into identity.principal',
+      'insert into identity.account',
+      'insert into access.membership(',
+    ]) {
+      const index = harness.queries.findIndex(({ text }) => text.includes(mutation));
+      expect(index, mutation).toBeGreaterThanOrEqual(0);
+      expect(index, mutation).toBeLessThan(rollback);
+    }
+    expect(rollback).toBeGreaterThanOrEqual(0);
+    expect(harness.queries.findIndex(({ text }) => text.startsWith('update runtime.idempotency'))).toBeGreaterThan(rollback);
   });
 
   it('self-registers an L6 membership in the selected storefront without consuming an invitation', async () => {

@@ -128,6 +128,54 @@ describe('wechat identity session', () => {
     expect(queries.some((text) => text.includes('insert into identity.session'))).toBe(false);
   });
 
+  it('rolls back the WeChat identity and idempotency when the binding session is rejected', async () => {
+    const queries: string[] = [];
+    let requestHash = '';
+    const client = {
+      query: async (text: string, values?: readonly unknown[]) => {
+        queries.push(text);
+        if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l0', node_id: 'l0' }]);
+        if (text.includes('from identity.realmtarget where realm_id=$1')) return result([{
+          surface: 'consumer', membership_client: 'storefront', membership_organization_id: 'mall-zhudatuan',
+          application_slug: 'zhudatuan-storefront',
+        }]);
+        if (text.includes('insert into runtime.idempotency')) requestHash = String(values?.[3]);
+        if (text.includes('select request_hash,state,response from runtime.idempotency')) {
+          return result([{ request_hash: requestHash, state: 'started', response: null }]);
+        }
+        if (text.includes("from identity.federatedidentity where realm_id=$1")) {
+          return result([{ id: 'wechat:revoked', principal_id: null, membership_id: null,
+            account_id: null, realm_id: 'realm:l0', status: 'revoked' }]);
+        }
+        return result([]);
+      },
+      release: () => undefined,
+    } as unknown as PoolClient;
+    const pool: DatabasePool = {
+      connect: async () => client,
+      query: async () => result([]),
+      workload: () => pool,
+      end: async () => undefined,
+    };
+    const operation = new WechatOperations({ invoke: async () => ({ status: 404, body: {} }) }, pool, {
+      application: () => ({ applicationHash: 'application-hash' }),
+      authorize: () => 'https://example.test',
+      exchange: async () => ({ subject: 'openid-revoked' }),
+    }, {
+      encrypt: async () => ({ ciphertext: 'ciphertext', keyVersion: 'key:v1', fingerprint: 'fingerprint' }),
+    } as unknown as KmsClient, { record: async () => undefined, access: async () => undefined },
+    'identity-key', 'session-key', {} as PgAuthTicket);
+
+    await expect(operation.invoke(request())).rejects.toMatchObject({
+      result: { status: 403, body: { code: 'WECHAT_IDENTITY_REVOKED' } },
+    });
+    const identityInsert = queries.findIndex((text) => text.includes('insert into identity.federatedidentity'));
+    const rollback = queries.indexOf('rollback');
+    expect(identityInsert).toBeGreaterThanOrEqual(0);
+    expect(rollback).toBeGreaterThan(identityInsert);
+    expect(queries).not.toContain('commit');
+  });
+
   it('rejects an L0 return target when the WeChat login belongs to the L1 storefront', async () => {
     const client = { query: async (text: string) => {
       if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l0', node_id: 'l0' }]);
