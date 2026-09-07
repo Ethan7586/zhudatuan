@@ -5,9 +5,9 @@ import { createSecureId } from '@shop/sdk/context';
 import { z } from 'zod';
 import { beginCanonicalAuthorization, canonicalStorefrontAuthTarget, exchangeCanonicalStorefrontSession } from './canonicalIdentity';
 
-const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
+const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
+const L1_API_ORIGIN = 'https://api.hbbtzn.com';
 const L1_STOREFRONT_API_ORIGIN = 'https://hbbtzn.com';
-const LEGACY_API_ORIGIN = 'https://api.zhudatuan.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
 
 const InvitationSchema = z.strictObject({
@@ -293,7 +293,7 @@ export function resolveCanonicalRegistrationApiOrigin(
   }
   const parsed = new URL(candidate);
   const local = development && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
-  if ((!local && parsed.origin !== CANONICAL_API_ORIGIN && parsed.origin !== LEGACY_API_ORIGIN)
+  if ((!local && parsed.origin !== CANONICAL_API_ORIGIN && parsed.origin !== L1_API_ORIGIN)
     || parsed.username || parsed.password || parsed.hash) {
     throw new Error('统一身份 API 不在允许清单');
   }

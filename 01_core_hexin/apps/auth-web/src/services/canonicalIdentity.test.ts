@@ -228,6 +228,19 @@ describe('canonical console identity', () => {
     });
   });
 
+  it('does not let a cross-node admin_origin override the accounts host', async () => {
+    setWindowHostname('accounts.hbbtzn.com');
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(sessionCreated('console', 'membership:hongtai:operator')))
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://console.hbbtzn.com/')));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loginCanonicalConsole('13424327586', 'Original!Password1', undefined, undefined, {
+      target: 'console-hbbtzn', expectedOrigin: 'https://console.zhudatuan.com',
+    })).rejects.toThrow('后台登录目标与当前身份节点不匹配');
+  });
+
   it('recovers once from a stale-session CSRF rejection before password login', async () => {
     const fetchMock = vi
       .fn<typeof fetch>()

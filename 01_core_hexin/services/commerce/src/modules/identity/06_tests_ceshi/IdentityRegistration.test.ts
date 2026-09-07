@@ -328,17 +328,90 @@ describe('canonical member registration security boundary', () => {
     expect(credential?.values).toEqual([subjectDigest(SUBJECT), 'principal:mobile-login']);
   });
 
+  it.each([
+    {
+      name: 'L0_ADMIN', host: 'api.zhudatuan.com', target: 'console', application: undefined,
+      membership: 'membership:l0:admin', responseTarget: 'console', ticketTarget: 'console',
+    },
+    {
+      name: 'L0_CONSUMER', host: 'api.zhudatuan.com', target: 'storefront', application: 'zhudatuan-storefront',
+      membership: 'membership:l0:consumer', responseTarget: 'storefront', ticketTarget: 'storefront',
+    },
+    {
+      name: 'L1_ADMIN', host: 'api.hbbtzn.com', target: 'console-hbbtzn', application: undefined,
+      membership: 'membership:l1:admin', responseTarget: 'console', ticketTarget: 'console-hbbtzn',
+    },
+    {
+      name: 'L1_CONSUMER', host: 'hbbtzn.com', target: 'storefront-hbbtzn', application: 'zdt-l1-verify',
+      membership: 'membership:l1:consumer', responseTarget: 'storefront', ticketTarget: 'storefront-hbbtzn',
+    },
+  ])('keeps $name inside its host-bound realm when one phone has every membership', async ({
+    host, target, application, membership, responseTarget, ticketTarget,
+  }) => {
+    const password = 'Current!Password1';
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false, storefrontAvailable: true,
+      storefrontOrganizationId: 'mall:d1708f04df2dd8a61736852c4900fb43',
+      boundMobilePrincipal: 'principal:all-realms', credentialSecret: await new PasswordPolicy().hash(password),
+      loginMembershipRows: [
+        { id: 'membership:l0:admin', access_version: 1, client: 'operator', organization_id: 'tenant-zhudatuan' },
+        { id: 'membership:l0:consumer', access_version: 1, client: 'storefront', organization_id: 'mall-zhudatuan' },
+        { id: 'membership:l1:admin', access_version: 1, client: 'operator', organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43' },
+        { id: 'membership:l1:consumer', access_version: 1, client: 'storefront', organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43' },
+      ] });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
+      target, ...(application === undefined ? {} : { application }),
+    }, host));
+
+    expect(response).toMatchObject({ status: 201, body: { membership, target: responseTarget } });
+    const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
+    expect(session?.values[2]).toBe(membership);
+    const ticket = harness.queries.find(({ text }) => text.includes('insert into identity.authticket'));
+    expect(ticket?.values[6]).toBe(ticketTarget);
+  });
+
+  it.each([
+    ['api.zhudatuan.com', 'console-hbbtzn', undefined],
+    ['api.hbbtzn.com', 'console', undefined],
+    ['api.zhudatuan.com', 'storefront', 'zdt-l1-verify'],
+    ['hbbtzn.com', 'storefront-hbbtzn', 'zhudatuan-storefront'],
+  ])('rejects cross-realm parameters before credential lookup on %s', async (host, target, application) => {
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false });
+
+    await expect(identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, 'Current!Password1', {
+      target, ...(application === undefined ? {} : { application }),
+    }, host))).rejects.toThrow('AUTH_REALM_MISMATCH');
+    expect(harness.queries.some(({ text }) => text.includes('identity.credential'))).toBe(false);
+  });
+
+  it('fails explicitly when the current realm has no membership and never falls back to another node', async () => {
+    const password = 'Current!Password1';
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false,
+      boundMobilePrincipal: 'principal:cross-node', credentialSecret: await new PasswordPolicy().hash(password),
+      loginMembershipRows: [
+        { id: 'membership:l0:admin', access_version: 1, client: 'operator', organization_id: 'tenant-zhudatuan' },
+      ] });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
+      target: 'console-hbbtzn',
+    }, 'api.hbbtzn.com'));
+
+    expect(response).toEqual({ status: 403, body: { code: 'REALM_MEMBERSHIP_NOT_FOUND' } });
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.session'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.authticket'))).toBe(false);
+  });
+
   it('keeps the Hongtai Console node on its own auth ticket', async () => {
     const password = 'Current!Password1';
     const harness = registrationHarness({ challengeAccepted: false, subjectExists: false,
       boundMobilePrincipal: 'principal:hongtai-operator', credentialSecret: await new PasswordPolicy().hash(password),
       loginMembershipRows: [
-        { id: 'membership:hongtai:operator', access_version: 1, client: 'operator', organization_id: 'mall:l1-hongtai' },
+        { id: 'membership:hongtai:operator', access_version: 1, client: 'operator', organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43' },
       ] });
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
       target: 'console-hbbtzn',
-    }));
+    }, 'api.hbbtzn.com'));
 
     expect(response).toMatchObject({ status: 201, body: { membership: 'membership:hongtai:operator', target: 'console' } });
     const ticket = harness.queries.find(({ text }) => text.includes('insert into identity.authticket'));
@@ -348,16 +421,17 @@ describe('canonical member registration security boundary', () => {
   it('limits storefront login memberships to the requested application organization', async () => {
     const password = 'Current!Password1';
     const harness = registrationHarness({ challengeAccepted: false, subjectExists: false, storefrontAvailable: true,
+      storefrontOrganizationId: 'mall:d1708f04df2dd8a61736852c4900fb43',
       boundMobilePrincipal: 'principal:storefront-login', credentialSecret: await new PasswordPolicy().hash(password),
       loginMembershipRows: [
-        { id: 'membership:hongtai:one', access_version: 1, client: 'storefront', organization_id: 'mall:l1-hongtai' },
+        { id: 'membership:hongtai:one', access_version: 1, client: 'storefront', organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43' },
         { id: 'membership:other', access_version: 1, client: 'storefront', organization_id: 'mall:l1-other' },
-        { id: 'membership:hongtai:two', access_version: 1, client: 'storefront', organization_id: 'mall:l1-hongtai' },
+        { id: 'membership:hongtai:two', access_version: 1, client: 'storefront', organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43' },
       ] });
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
       target: 'storefront-hbbtzn', application: 'zdt-l1-verify',
-    }));
+    }, 'hbbtzn.com'));
 
     expect(response).toMatchObject({ status: 200, body: { memberships: [
       { id: 'membership:hongtai:one', client: 'storefront' },
@@ -373,11 +447,9 @@ describe('canonical member registration security boundary', () => {
         { id: 'membership:hongtai:one', access_version: 1, client: 'storefront', organization_id: 'mall:l1-hongtai' },
       ] });
 
-    const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
+    await expect(identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
       target: 'storefront', application: 'zdt-l1-verify',
-    }));
-
-    expect(response).toEqual({ status: 400, body: { code: 'AUTH_RETURN_TARGET_INVALID' } });
+    }))).rejects.toThrow('AUTH_REALM_MISMATCH');
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.authticket'))).toBe(false);
   });
 
@@ -752,12 +824,13 @@ function challengeRequest(body: Readonly<Record<string, unknown>>): OperationReq
 }
 
 function passwordLoginRequest(subject: string, password: string,
-  entry: Readonly<{ target: string; application?: string }> = { target: 'console' }): OperationRequest {
+  entry: Readonly<{ target: string; application?: string }> = { target: 'console' },
+  host = 'api.zhudatuan.com'): OperationRequest {
   return {
     type: 'identity.sessions.create',
     access: null,
     input: {
-      path: {}, query: {}, headers: { 'x-device-id': 'device:password-login-test' },
+      path: {}, query: {}, headers: { host, 'x-device-id': 'device:password-login-test' },
       body: { provider: 'password', subject, password, ...entry, authorization: authorizationRequest() },
       rawBody: '', deadline: Date.now() + 5_000, signal: new AbortController().signal,
       idempotency: 'password:mobile-login',
@@ -843,6 +916,7 @@ function authenticatedRequest(type: OperationRequest['type'], body: Readonly<Rec
 function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subjectExists: boolean; inviteAccepted?: boolean; operatorInvite?: boolean;
   seniorInvite?: boolean;
   storefrontAvailable?: boolean;
+  storefrontOrganizationId?: string;
   mobileCiphertext?: string | null; passwordEvidence?: boolean; exactOwner?: boolean;
   challengePrincipal?: string | null; boundMobilePrincipal?: string | null;
   credentialSecret?: string; ownerPasswordRotation?: boolean; loginMemberships?: boolean;
@@ -864,10 +938,13 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
         return result(input.subjectExists ? [{ principal_id: 'principal:existing-phone', credential_version: 4 }] : []);
       }
       if (text.includes('from experience.application application') && text.includes('application.public_slug=$1')) {
+        const l1 = values[0] === 'zdt-l1-verify';
+        const l1Organization = input.storefrontOrganizationId ?? 'mall:l1-hongtai';
         return result(input.storefrontAvailable ? [{
-          application_id: 'application:zdt-l1-verify', application_slug: 'zdt-l1-verify',
-          organization_id: 'mall:l1-hongtai', organization_name: '宏泰甄选',
-          role_id: 'role-zhudatuan-storefront-member:mall:l1-hongtai',
+          application_id: l1 ? 'application:zdt-l1-verify' : 'application:zhudatuan-storefront',
+          application_slug: l1 ? 'zdt-l1-verify' : 'zhudatuan-storefront',
+          organization_id: l1 ? l1Organization : 'mall-zhudatuan', organization_name: l1 ? '宏泰甄选' : '主打团',
+          role_id: l1 ? `role-zhudatuan-storefront-member:${l1Organization}` : 'role-zhudatuan-storefront-member',
           terms_title: '主打团用户服务协议', terms_body: '服务协议正文',
           privacy_title: '主打团隐私政策', privacy_body: '隐私政策正文', terms_hash: 'f'.repeat(64),
         }] : []);
@@ -892,10 +969,11 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           secret_hash: input.credentialSecret, credential_version: 2 }] : []);
       }
       if (text.includes('select membership.id,membership.access_version,membership.client')) {
-        return result(input.loginMembershipRows ?? (input.loginMemberships ? [
-          { id: 'membership:console:one', access_version: 1, client: 'operator', organization_id: 'platform:l0' },
-          { id: 'membership:console:two', access_version: 1, client: 'operator', organization_id: 'platform:l0' },
-        ] : []));
+        const rows = input.loginMembershipRows ?? (input.loginMemberships ? [
+          { id: 'membership:console:one', access_version: 1, client: 'operator', organization_id: 'tenant-zhudatuan' },
+          { id: 'membership:console:two', access_version: 1, client: 'operator', organization_id: 'tenant-zhudatuan' },
+        ] : []);
+        return result(rows.filter((row) => row.client === values[1] && row.organization_id === values[2]));
       }
       if (text.includes('with challenge as') && text.includes('identity.challengesecret')) {
         return result([{ id: String(values[0]), purpose: String(values[2]), expires_at: '2099-01-01T00:00:00.000Z' }]);

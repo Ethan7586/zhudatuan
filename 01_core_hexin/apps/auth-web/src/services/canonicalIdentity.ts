@@ -6,10 +6,10 @@ import { z } from 'zod';
 import type { Membership, PreAuthContext } from '../types';
 import { resolveAdminLoginOrigin, resolveStorefrontLoginOrigin } from './originPolicy';
 
-const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
+const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
+const L1_API_ORIGIN = 'https://api.hbbtzn.com';
 const L1_STOREFRONT_API_ORIGIN = 'https://hbbtzn.com';
 const L0_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
-const LEGACY_API_ORIGIN = 'https://api.zhudatuan.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
 
 const MembershipSelectionSchema = z.strictObject({
@@ -400,12 +400,30 @@ function approvedConsoleDestination(value: z.infer<typeof TicketExchangeSchema>[
   } catch {
     throw new Error('登录回跳地址无效');
   }
-  const configured = expectedOrigin ?? (import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined));
-  const approvedOrigin = resolveAdminLoginOrigin(configured, import.meta.env.DEV);
+  const approvedOrigin = adminOriginForIdentityHost(expectedOrigin);
   if (destination.origin !== approvedOrigin || destination.username || destination.password || destination.hash) {
     throw new Error('登录回跳地址不在后台允许清单');
   }
   return destination.toString();
+}
+
+function adminOriginForIdentityHost(expectedOrigin?: string): string {
+  const hostname = typeof window === 'undefined' ? undefined : window.location.hostname;
+  const hostBoundOrigin = hostname === 'accounts.hbbtzn.com'
+    ? 'https://console.hbbtzn.com'
+    : hostname === 'accounts.zhudatuan.com'
+      ? 'https://console.zhudatuan.com'
+      : undefined;
+  if (hostBoundOrigin !== undefined) {
+    if (expectedOrigin !== undefined && resolveAdminLoginOrigin(expectedOrigin, import.meta.env.DEV) !== hostBoundOrigin) {
+      throw new Error('后台登录目标与当前身份节点不匹配');
+    }
+    return hostBoundOrigin;
+  }
+  const configured = expectedOrigin ?? import.meta.env.VITE_ADMIN_ORIGIN
+    ?? (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined);
+  if (configured === undefined) throw new Error('后台登录目标配置缺失，已停止提交账号凭证');
+  return resolveAdminLoginOrigin(configured, import.meta.env.DEV);
 }
 
 function approvedStorefrontDestination(value: z.infer<typeof TicketExchangeSchema>['returnTarget']): string {
@@ -451,7 +469,7 @@ function apiOrigin(): string {
   }
   const parsed = new URL(configured);
   const local = import.meta.env.DEV && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
-  if ((!local && parsed.origin !== CANONICAL_API_ORIGIN && parsed.origin !== LEGACY_API_ORIGIN)
+  if ((!local && parsed.origin !== CANONICAL_API_ORIGIN && parsed.origin !== L1_API_ORIGIN)
     || parsed.username || parsed.password || parsed.hash) {
     throw new Error('统一身份 API 不在允许清单');
   }

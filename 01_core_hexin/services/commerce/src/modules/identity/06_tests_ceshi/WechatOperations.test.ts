@@ -119,7 +119,7 @@ describe('wechat identity session', () => {
     }, {} as KmsClient, {} as AuditSink, 'identity-key', 'session-key', {} as PgAuthTicket);
 
     await expect(operation.invoke(request(null, { application: 'zdt-l1-verify', target: 'storefront' })))
-      .rejects.toThrow('AUTH_RETURN_TARGET_INVALID');
+      .rejects.toThrow('AUTH_REALM_MISMATCH');
   });
 });
 
@@ -131,7 +131,7 @@ function request(access: OperationRequest['access'] = null,
     type: 'identity.wechat.session',
     access,
     input: {
-      path: {}, query: {}, headers: { 'x-device-id': 'device:one', 'user-agent': 'wechat', 'x-peer-address': '127.0.0.1' },
+      path: {}, query: {}, headers: { host: 'api.zhudatuan.com', 'x-device-id': 'device:one', 'user-agent': 'wechat', 'x-peer-address': '127.0.0.1' },
       body: { scene: 'jsapi', action: 'exchange', code: 'wechat-code', ...identity,
         authorization: { state: 's'.repeat(32), nonce: 'n'.repeat(32), challenge: 'c'.repeat(43) } },
       rawBody: '', deadline: Date.now() + 1_000, signal: new AbortController().signal, idempotency: 'wechat-session:one',

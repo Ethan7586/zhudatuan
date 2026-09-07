@@ -58,12 +58,15 @@ export function resolveIdentityEntry(search: string, hostname: string): Identity
   const target = params.get('target')?.trim() ?? '';
   const client = params.get('client')?.trim() ?? '';
   const application = params.get('application')?.trim() ?? '';
+  const adminOrigin = params.get('admin_origin')?.trim() ?? '';
   if (target.startsWith('storefront') || application in APPLICATION_TARGETS) return null;
 
   const operatorTarget = node === 'l1' || (node === 'local' && isHongtaiConsoleEntry(search))
     ? 'console-hbbtzn'
     : 'console';
-  if ((target && target !== operatorTarget) || (client && client !== operatorTarget)) return null;
+  const operatorOrigin = node === 'local' ? '' : NODE_ENTRIES[node].operator.adminOrigin;
+  if ((target && target !== operatorTarget) || (client && client !== operatorTarget)
+    || (adminOrigin && adminOrigin !== operatorOrigin)) return null;
   return Object.freeze({ kind: 'operator', target: operatorTarget });
 }
 
@@ -92,7 +95,8 @@ export function recoverLocalIdentitySearch(search: string, hostname: string): st
   const operatorIntent = target === 'console'
     || target === 'console-hbbtzn'
     || client === 'console'
-    || client === 'console-hbbtzn';
+    || client === 'console-hbbtzn'
+    || params.has('admin_origin');
   if (!operatorIntent) return null;
 
   const local = NODE_ENTRIES[node].operator;

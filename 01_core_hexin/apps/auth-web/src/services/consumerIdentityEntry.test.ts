@@ -55,6 +55,12 @@ describe('node-bound identity entry', () => {
     expect(resolveIdentityEntry('?target=console', 'accounts.hbbtzn.com')).toBeNull();
     expect(resolveIdentityEntry('?target=console-hbbtzn', 'accounts.zhudatuan.com')).toBeNull();
     expect(resolveIdentityEntry('?target=console&client=console-hbbtzn', 'accounts.zhudatuan.com')).toBeNull();
+    expect(resolveIdentityEntry(
+      '?target=console&client=console&admin_origin=https%3A%2F%2Fconsole.hbbtzn.com', 'accounts.zhudatuan.com',
+    )).toBeNull();
+    expect(resolveIdentityEntry(
+      '?target=console-hbbtzn&client=console-hbbtzn&admin_origin=https%3A%2F%2Fconsole.zhudatuan.com', 'accounts.hbbtzn.com',
+    )).toBeNull();
     expect(resolveIdentityEntry('', 'untrusted.example.com')).toBeNull();
   });
 
@@ -73,6 +79,14 @@ describe('node-bound identity entry', () => {
     )).toBe('?target=console&client=console&admin_origin=https%3A%2F%2Fconsole.zhudatuan.com');
     expect(recoverLocalIdentitySearch(
       '?target=console&client=console&admin_origin=https%3A%2F%2Fconsole.zhudatuan.com',
+      'accounts.hbbtzn.com',
+    )).toBe('?target=console-hbbtzn&client=console-hbbtzn&admin_origin=https%3A%2F%2Fconsole.hbbtzn.com');
+    expect(recoverLocalIdentitySearch(
+      '?target=console&client=console&admin_origin=https%3A%2F%2Fconsole.hbbtzn.com',
+      'accounts.zhudatuan.com',
+    )).toBe('?target=console&client=console&admin_origin=https%3A%2F%2Fconsole.zhudatuan.com');
+    expect(recoverLocalIdentitySearch(
+      '?target=console-hbbtzn&client=console-hbbtzn&admin_origin=https%3A%2F%2Fconsole.zhudatuan.com',
       'accounts.hbbtzn.com',
     )).toBe('?target=console-hbbtzn&client=console-hbbtzn&admin_origin=https%3A%2F%2Fconsole.hbbtzn.com');
   });

@@ -1,5 +1,6 @@
 import { createHash, createHmac, randomBytes, randomInt, randomUUID } from 'node:crypto';
 import { canonicalFinancialActionRequest, requiresFinancialActionProof, requiresFinancialExpectedVersion, type OperationId } from '@shop/contract';
+import { resolveIdentityRealm } from '@shop/config/server';
 import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../../../foundation/application/AuditSink';
 import { ModuleOperations, operationLifecycle, pageResult, reject, requireAccess, rowResult, type OperationActions, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
@@ -95,6 +96,9 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
       'identity.sessions.create': operationLifecycle({
         prepare: async (request) => {
           const body = bodyRecord(request);
+          const requestedTarget = authTarget(textField(body, 'target', 32));
+          const application = body.application === undefined ? undefined : textField(body, 'application', 48);
+          const realm = resolveIdentityRealm(request.input.headers.host, requestedTarget, application);
           const authorization = AuthTransaction.start(body.authorization);
           const provider = body.provider === undefined ? 'password' : textField(body, 'provider', 32);
           if (provider !== 'password' && provider !== 'phone_otp') throw new Error('CREDENTIAL_PROVIDER_INVALID');
@@ -115,11 +119,12 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             body,
             provider,
             authorization,
+            realm,
             subject,
             mobileTokens,
           };
         },
-        execute: async (request, database, { body, provider, authorization, subject, mobileTokens }) => {
+        execute: async (request, database, { body, provider, authorization, realm, subject, mobileTokens }) => {
           let found: Readonly<{ principal_id: string; credential_version: number }> | undefined;
           let loginChallenge: string | undefined;
           let loginCode: string | undefined;
@@ -146,23 +151,19 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           if (!found) reject(401, 'CREDENTIAL_INVALID');
           const memberships = await database.query<{ id: string; access_version: number; client: string; organization_id: string }>(
             `select membership.id,membership.access_version,membership.client,membership.organization_id from member.profile profile
-          join access.membership membership on membership.member_id=profile.id where profile.principal_id=$1 and membership.status='active' order by membership.id`,
-            [found.principal_id]
+          join access.membership membership on membership.member_id=profile.id
+          where profile.principal_id=$1 and membership.status='active' and membership.client=$2 and membership.organization_id=$3
+          order by membership.id`,
+            [found.principal_id, realm.membershipClient, realm.membershipOrganizationId]
           );
-          const requestedTarget = typeof body.target === 'string' ? authTarget(body.target) : undefined;
-          const membershipTarget = requestedTarget === undefined ? undefined : authMembershipTarget(requestedTarget);
-          const targetCandidates = membershipTarget === undefined ? memberships.rows : memberships.rows.filter((item) => authTarget(item.client) === membershipTarget);
-          const storefront = body.application === undefined
-            ? undefined
-            : await requireValidStorefront(memberPort.storefrontRegistration(database, storefrontSlug(body)));
-          const applicationTarget = storefront === undefined ? undefined : storefrontAuthTarget(storefront.application_slug);
-          if (applicationTarget !== undefined && requestedTarget !== undefined && requestedTarget !== applicationTarget) {
-            reject(400, 'AUTH_RETURN_TARGET_INVALID');
+          const candidates = memberships.rows.filter((item) => item.client === realm.membershipClient
+            && item.organization_id === realm.membershipOrganizationId);
+          if (realm.surface === 'consumer') {
+            const storefront = await requireValidStorefront(memberPort.storefrontRegistration(database, realm.application!));
+            if (storefrontAuthTarget(storefront.application_slug) !== realm.target
+              || storefront.organization_id !== realm.membershipOrganizationId) reject(400, 'AUTH_REALM_MISMATCH');
           }
-          if (membershipTarget === 'storefront' && applicationTarget === undefined) reject(400, 'AUTH_RETURN_TARGET_INVALID');
-          const candidates = storefront === undefined
-            ? targetCandidates
-            : targetCandidates.filter((item) => item.organization_id === storefront.organization_id);
+          if (candidates.length === 0) reject(403, 'REALM_MEMBERSHIP_NOT_FOUND');
           const requested = typeof body.membership === 'string' ? body.membership : undefined;
           const membership = requested ? candidates.find((item) => item.id === requested) : candidates.length === 1 ? candidates[0] : undefined;
           if (requested !== undefined && membership === undefined) reject(403, 'MEMBERSHIP_INACTIVE');
@@ -214,12 +215,13 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           await publishIdentityEvent(database, 'identity.session.created', id, membership.id, request.input.idempotency!, {
             principal: found.principal_id,
             membership: membership.id,
+            realm: { nodeId: realm.nodeId, surface: realm.surface },
             assurance,
             loginMethod: provider,
           });
           const csrf = randomBytes(32).toString('base64url');
-          const target = membershipTarget ?? authTarget(membership.client);
-          const callback = await tickets.issue(database, id, applicationTarget ?? requestedTarget ?? target, authorization);
+          const target = authMembershipTarget(realm.target);
+          const callback = await tickets.issue(database, id, realm.target, authorization);
           return { status: 201, body: { session: id, csrf, expiresIn: 43_200, membership: membership.id, target, callback }, headers: sessionCookies(token, csrf, 43_200) };
         },
       }),

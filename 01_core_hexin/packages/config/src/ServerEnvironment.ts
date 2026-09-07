@@ -3,6 +3,7 @@ export type { AuthTarget } from './ClientEnvironment';
 export * from './Environment';
 export * from './JobsEnvironment';
 export * from './IdentityRegistrationApiEnvironment';
+export * from './IdentityRealmCatalog';
 export * from './WebBusinessApiEnvironment';
 export * from './PurchaseApiEnvironment';
 export * from './PaymentWebhookApiEnvironment';

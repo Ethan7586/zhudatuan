@@ -8,6 +8,7 @@ import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import type { WechatIdentity } from '../../01_public_gongkai/ports_jiekou/WechatIdentity';
 import { beginIdempotency, bindWechat, completeIdempotency, identityTransaction, publishIdentityEvent, tokenHash } from '../../04_adapters_shixian/persistence_cunchu/IdentityPersistence';
 import type { WechatScene } from '@shop/config/server';
+import { resolveIdentityRealm, type IdentityRealmContext } from '@shop/config/server';
 import { AuthTransaction } from '../../02_domain_yewu/models_moxing/AuthTransaction';
 import type { PgAuthTicket } from '../../04_adapters_shixian/persistence_cunchu/PgAuthTicket';
 import { authMembershipTarget, authTarget, sessionCookies, storefrontAuthTarget } from './IdentitySecurity';
@@ -37,7 +38,9 @@ export class WechatOperations implements OperationUsecase {
     if (action !== 'exchange') throw new Error('WECHAT_SESSION_ACTION_INVALID');
     const authorization = scene === 'jsapi' ? AuthTransaction.start(body.authorization) : null;
     const returnTarget = scene === 'jsapi' ? authTarget(textField(body, 'target')) : null;
-    const applicationTarget = scene === 'jsapi' ? storefrontAuthTarget(textField(body, 'application')) : null;
+    const application = scene === 'jsapi' ? textField(body, 'application') : null;
+    const realm = scene === 'jsapi' ? resolveIdentityRealm(request.input.headers.host, returnTarget!, application!) : null;
+    const applicationTarget = scene === 'jsapi' ? storefrontAuthTarget(application!) : null;
     if (returnTarget !== applicationTarget || (returnTarget !== null && authMembershipTarget(returnTarget) !== 'storefront')) {
       throw new Error('AUTH_RETURN_TARGET_INVALID');
     }
@@ -72,7 +75,7 @@ export class WechatOperations implements OperationUsecase {
       const result = accountConfirmationRequired
         ? await this.createGrant(database, current.id, 'account_confirmation_required')
         : current.status === 'active' && current.principal_id && current.membership_id
-        ? await this.createSession(database, request, body, current.principal_id, current.membership_id, scene, authorization, returnTarget)
+        ? await this.createSession(database, request, body, current.principal_id, current.membership_id, scene, authorization, returnTarget, realm)
         : await this.createGrant(database, current.id);
       const hash = operationRequestHash(request);
       await appendOperationAudit(this.audit, database, request, 'identity', result, current.principal_id ?? 'public:identity.wechat.session',
@@ -84,10 +87,13 @@ export class WechatOperations implements OperationUsecase {
 
   private async createSession(database: import('../../../../foundation/application/ModuleOperations').OperationDatabase, request: OperationRequest,
     body: Readonly<Record<string, unknown>>, principal: string, membershipid: string, scene: WechatScene,
-    authorization: AuthTransaction | null, returnTarget: ReturnType<typeof authTarget> | null): Promise<OperationResult> {
+    authorization: AuthTransaction | null, returnTarget: ReturnType<typeof authTarget> | null,
+    realm: IdentityRealmContext | null): Promise<OperationResult> {
     const membership = await database.query<{ access_version: number; client: string; credential_version: number }>(`select membership.access_version,membership.client,principal.credential_version
       from access.membership membership join member.profile profile on profile.id=membership.member_id join identity.principal principal on principal.id=profile.principal_id
-      where membership.id=$1 and principal.id=$2 and membership.status='active' and principal.status='active' for update of profile,principal`, [membershipid, principal]);
+      where membership.id=$1 and principal.id=$2 and membership.status='active' and principal.status='active'
+        and ($3::text is null or (membership.client=$3 and membership.organization_id=$4))
+      for update of profile,principal`, [membershipid, principal, realm?.membershipClient ?? null, realm?.membershipOrganizationId ?? null]);
     const active = membership.rows[0];
     if (!active) reject(403, 'WECHAT_MEMBERSHIP_INACTIVE');
     const token = randomBytes(48).toString('base64url');
@@ -100,10 +106,10 @@ export class WechatOperations implements OperationUsecase {
       String(request.input.headers['user-agent'] ?? 'unknown').slice(0, 512), String(request.input.headers['x-device-id'] ?? 'wechat').slice(0, 128)]);
     await publishIdentityEvent(database, 'identity.session.created', session, membershipid, request.input.idempotency!, { principal, membership: membershipid });
     if (scene === 'jsapi') {
-      if (!authorization || returnTarget === null) throw new Error('AUTH_TRANSACTION_REQUIRED');
+      if (!authorization || returnTarget === null || realm === null) throw new Error('AUTH_TRANSACTION_REQUIRED');
       if (authMembershipTarget(returnTarget) !== authTarget(active.client)) throw new Error('AUTH_RETURN_TARGET_INVALID');
       const csrf = randomBytes(32).toString('base64url');
-      const callback = await this.tickets.issue(database, session, returnTarget, authorization);
+      const callback = await this.tickets.issue(database, session, realm.target, authorization);
       return { status: 201, body: { session, csrf, expiresIn: 43_200, membership: membershipid, callback },
         headers: sessionCookies(token, csrf, 43_200) };
     }
