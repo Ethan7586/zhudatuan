@@ -51,15 +51,31 @@ describe('catalog mall command boundaries', () => {
 
   it('reads and publishes listings only in the current Access Pipeline mall scope', async () => {
     const readCalls: QueryCall[] = [];
-    const database = recordingDatabase(readCalls, () => []);
+    const database = recordingDatabase(readCalls, (text) => text.includes('count(*) filter') ? [{
+      total_count: 4,
+      needs_attention: 1,
+      pending_review: 1,
+      published: 1,
+      unpublished: 1,
+    }] : []);
     const actions = catalogActions({ container: { get: () => ({}) } } as unknown as ModuleContext);
     const read = actions['catalog.listings.read'];
     if (typeof read !== 'function') throw new Error('CATALOG_LISTING_READ_ACTION_MISSING');
-    await read(request('catalog.listings.read'), database);
+    const readResult = await read(request('catalog.listings.read', {}, undefined, { status: 'pending_review' }), database);
     const listingRead = readCalls.find(({ text }) => text.includes('from catalog.listing listing'))!;
     expect(listingRead.text).toContain('listing.scope_id=$1');
     expect(listingRead.text).not.toContain('organization.hierarchy');
+    expect(listingRead.text).toContain('sku_count');
+    expect(listingRead.text).toContain('management_status');
+    expect(listingRead.text).toContain("then 'needs_attention'");
     expect(listingRead.values[0]).toBe('mall:hongtai');
+    expect(listingRead.values[6]).toBe('pending_review');
+    expect(readResult).toMatchObject({ body: {
+      total_count: 4,
+      status_counts: { needs_attention: 1, pending_review: 1, published: 1, unpublished: 1 },
+    } });
+    const summaryRead = readCalls.find(({ text }) => text.includes('count(*) filter'))!;
+    expect(summaryRead.values).toEqual(['mall:hongtai', '', '', '', '']);
 
     const publishCalls: QueryCall[] = [];
     const publicationDatabase = recordingDatabase(publishCalls, (text) => text.startsWith('update catalog.listing')
@@ -92,11 +108,16 @@ const access = {
   actor: { target: 'console' },
 } as unknown as AccessContext;
 
-function request(type: OperationRequest['type'], path: Readonly<Record<string, string>> = {}, expectedVersion?: number): OperationRequest {
+function request(
+  type: OperationRequest['type'],
+  path: Readonly<Record<string, string>> = {},
+  expectedVersion?: number,
+  query: Readonly<Record<string, string>> = {},
+): OperationRequest {
   return {
     type,
     access,
-    input: { path, query: {}, headers: {}, body: {}, rawBody: '{}', deadline: Date.now() + 1_000,
+    input: { path, query, headers: {}, body: {}, rawBody: '{}', deadline: Date.now() + 1_000,
       signal: new AbortController().signal, ...(expectedVersion === undefined ? {} : { expectedVersion }) },
   };
 }

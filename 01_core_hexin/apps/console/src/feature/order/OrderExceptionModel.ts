@@ -90,7 +90,7 @@ const INCIDENT_DETAILS: Readonly<Record<IncidentKind, Omit<OrderIncident, 'order
 const MILESTONE_LABELS: Readonly<Record<string, Readonly<{ label: string; description: string }>>> = Object.freeze({
   placed: { label: '下单成功', description: '订单管理系统建立主订单' },
   paid: { label: '支付结果已确认', description: '支付状态已经写入订单' },
-  reserved: { label: '库存预占完成', description: '商品治理台已经回写库存结果' },
+  reserved: { label: '库存预占完成', description: '商品管理已经回写库存结果' },
   unshipped: { label: '履约任务已创建', description: '履约服务已经接收订单任务' },
   shipping: { label: '物流执行中', description: '订单等待履约结果回写' },
   completed: { label: '订单完成', description: '订单生命周期已经关闭' },
@@ -109,7 +109,7 @@ export function timelineFor(incident: OrderIncident): readonly TimelineStep[] {
     return [
       { key: 'placed', label: '下单成功', description: '订单管理系统建立主订单', at: order.created_at, state: 'done' },
       { key: 'paid', label: '支付成功', description: '支付结果已经写入订单', at: milestoneAt(preview, 'paid') ?? order.created_at, state: 'done' },
-      { key: 'reserved', label: '库存预占成功', description: '商品治理台 · SKU 库存已锁定', at: milestoneAt(preview, 'reserved') ?? order.created_at, state: 'done' },
+      { key: 'reserved', label: '库存预占成功', description: '商品管理 · SKU 库存已锁定', at: milestoneAt(preview, 'reserved') ?? order.created_at, state: 'done' },
       { key: 'returned', label: order.fulfillment_state === 'returned' ? '退货已签收' : '履约任务已完成', description: '履约服务已经回写执行结果', at: order.updated_at, state: 'done' },
       { key: 'aftersale', label: order.aftersale_state === 'resolved' ? '售后处理完成' : '售后申请已受理', description: '客服系统已经记录售后状态', at: order.updated_at, state: 'done' },
       { key: 'refund', label: order.payment_state === 'partially_refunded' ? '部分退款成功' : '退款成功', description: '原支付渠道已经返回退款结果', at: preview?.operation?.at ?? order.updated_at, state: 'done' },

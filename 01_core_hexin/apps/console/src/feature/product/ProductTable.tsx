@@ -52,7 +52,7 @@ export function ProductTable({ rows, previewEnabled, visibleColumns, selected, a
               </th>
               <th>商品信息</th>
               {visibleColumns.has('category') ? <th>分类 / 供应商</th> : null}
-              {visibleColumns.has('sku') ? <th>SKU 数</th> : null}
+              {visibleColumns.has('sku') ? <th>SKU 数量</th> : null}
               {visibleColumns.has('malls') ? <th>商城覆盖</th> : null}
               {visibleColumns.has('price') ? <th>售价</th> : null}
               {visibleColumns.has('stock') ? <th>库存</th> : null}
@@ -66,6 +66,10 @@ export function ProductTable({ rows, previewEnabled, visibleColumns, selected, a
               const preview = previewEnabled && row.preview?.kind === 'console-product-v1' ? row.preview : undefined;
               const publicationAction: ListingPublicationAction = row.status === 'published' ? 'unpublish' : 'publish';
               const publicationEnabled = publicationAction === 'publish' ? canPublish : canUnpublish;
+              const managementStatus = row.management_status ?? row.status;
+              const publicationLabel = publicationAction === 'unpublish' ? '下架'
+                : managementStatus === 'pending_review' ? '审核上架'
+                  : managementStatus === 'unpublished' ? '重新上架' : '上架';
               return (
                 <tr key={row.id} data-active={activeId === row.id ? 'true' : undefined} onClick={() => onOpen(row)}>
                   <td className="productcheckcell">
@@ -91,13 +95,15 @@ export function ProductTable({ rows, previewEnabled, visibleColumns, selected, a
                       <CellPair primary={preview?.categoryName ?? productType(row.product_type)} secondary={preview?.supplier.name ?? '供应商合同待补'} unavailable={preview === undefined} />
                     </td>
                   ) : null}
-                  {visibleColumns.has('sku') ? <td>{preview === undefined ? <Unavailable /> : `${preview.skuCount}/${preview.skuTotal}`}</td> : null}
+                  {visibleColumns.has('sku') ? <td>{preview === undefined
+                    ? row.sku_count === undefined ? <Unavailable /> : formatCount(row.sku_count)
+                    : `${preview.skuCount}/${preview.skuTotal}`}</td> : null}
                   {visibleColumns.has('malls') ? <td>{preview === undefined ? <Unavailable /> : `${preview.mallCount}/${preview.mallTotal}`}</td> : null}
                   {visibleColumns.has('price') ? <td className="productmoney">{preview?.priceCents == null ? <Unavailable /> : formatMoney(preview.priceCents)}</td> : null}
                   {visibleColumns.has('stock') ? <td>{preview?.inventory == null ? <Unavailable /> : formatCount(preview.inventory)}</td> : null}
                   {visibleColumns.has('status') ? (
                     <td>
-                      <StatusBadge status={row.status} />
+                      <StatusBadge status={managementStatus} />
                     </td>
                   ) : null}
                   {visibleColumns.has('updated') ? <td className="producttime">{formatTime(row.cursor_sort)}</td> : null}
@@ -113,12 +119,12 @@ export function ProductTable({ rows, previewEnabled, visibleColumns, selected, a
                         <ProductIcon name="eye" />
                         查看
                       </button>
-                      <button type="button" aria-label={`${publicationAction === 'publish' ? '上架' : '下架'} ${row.title}`}
+                      <button type="button" aria-label={`${publicationLabel} ${row.title}`}
                         disabled={!publicationEnabled || publicationPending !== undefined}
-                        title={publicationEnabled ? `${publicationAction === 'publish' ? '上架' : '下架'}当前商城货架` : '当前商城范围没有货架写权限'}
+                        title={publicationEnabled ? `${publicationLabel}当前商城货架` : '当前商城范围没有货架写权限'}
                         onClick={(event) => { event.stopPropagation(); onPublication(row, publicationAction); }}>
                         <ProductIcon name={publicationAction === 'publish' ? 'store' : 'archive'} />
-                        {publicationPending === row.id ? '处理中' : publicationAction === 'publish' ? '上架' : '下架'}
+                        {publicationPending === row.id ? '处理中' : publicationLabel}
                       </button>
                     </div>
                   </td>
@@ -179,7 +185,7 @@ export function StatusBadge({ status }: Readonly<{ status: string }>) {
 
 function statusLabel(status: string): Readonly<{ label: string; tone: string; icon: 'check' | 'warning' }> {
   if (status === 'available') return { label: '已上架', tone: 'success', icon: 'check' };
-  if (status === 'needs_attention') return { label: '待处理', tone: 'warning', icon: 'warning' };
+  if (status === 'needs_attention') return { label: '待完善', tone: 'warning', icon: 'warning' };
   if (status === 'pending_listing') return { label: '待上架', tone: 'info', icon: 'warning' };
   if (status === 'pending_review') return { label: '待审核', tone: 'info', icon: 'warning' };
   if (status === 'unpublished') return { label: '已下架', tone: 'muted', icon: 'warning' };

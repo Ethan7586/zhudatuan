@@ -57,7 +57,7 @@ export function Component() {
     category: search.get('category') ?? '',
     supplier: previewScope ? (search.get('supplier') ?? '') : '',
     mall: previewScope ? (search.get('mall') ?? '') : '',
-    status: previewScope ? (search.get('status') ?? '') : '',
+    status: search.get('status') ?? '',
     limit,
     preview: previewScope,
     ...(search.get('cursor') === null ? {} : { cursor: search.get('cursor')! }),
@@ -106,7 +106,7 @@ export function Component() {
     if (value.category !== '') next.set('category', value.category);
     if (previewScope && value.supplier !== '') next.set('supplier', value.supplier);
     if (previewScope && value.mall !== '') next.set('mall', value.mall);
-    if (previewScope && value.status !== '') next.set('status', value.status);
+    if (value.status !== '') next.set('status', value.status);
     if (limit !== 50) next.set('limit', String(limit));
     cursorTrail.current = new Map([[1, undefined]]);
     setSelected(new Set());
@@ -185,7 +185,7 @@ export function Component() {
   const canPrevious = page === 2 || (page > 2 && cursorTrail.current.has(page - 1));
 
   if (condition === 'denied') {
-    return <ResourceState condition="denied" resourceLabel="商品治理台"
+    return <ResourceState condition="denied" resourceLabel="商品管理"
       {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}><span /></ResourceState>;
   }
 
@@ -244,7 +244,9 @@ export function Component() {
             />
             <ProductPagination
               count={query.data.count}
-              {...(previewEnabled && query.data.preview !== undefined ? { total: query.data.preview.totalCount } : {})}
+              {...(query.data.total_count !== undefined
+                ? { total: query.data.total_count }
+                : previewEnabled && query.data.preview !== undefined ? { total: query.data.preview.totalCount } : {})}
               page={page}
               limit={limit}
               canPrevious={canPrevious}

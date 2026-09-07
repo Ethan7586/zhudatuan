@@ -16,7 +16,7 @@ const productsModule = defineConsoleModuleManifest({
     placement: 'main',
     group: 'commerce',
     order: 40,
-    label: '商品治理台',
+    label: '商品管理',
     icon: 'products',
     labelByScopeKind: { mall: '商品管理' },
     preferredScopeKind: 'mall',

@@ -3,7 +3,7 @@ import type { ConsoleModuleManifest } from '../../entity/navigation/ConsoleModul
 export const productsModule = {
   id: 'products',
   status: 'enabled',
-  navigation: { placement: 'main', group: 'commerce', order: 40, label: '商品治理台', icon: 'products' },
+  navigation: { placement: 'main', group: 'commerce', order: 40, label: '商品管理', icon: 'products' },
   routes: [
     {
       id: 'products.index',
@@ -12,7 +12,7 @@ export const productsModule = {
       lazy: () => import('./ProductRoute'),
       operations: ['catalog.listings.read', 'catalog.imports.create', 'catalog.imports.read',
         'catalog.listings.publish', 'catalog.listings.unpublish'],
-      presentation: { title: '商品管理', summary: '核心商品、可售状态和批量任务' },
+      presentation: { title: '商品管理', summary: '商品数量、SKU、审核与上下架状态' },
     },
     {
       id: 'products.detail',

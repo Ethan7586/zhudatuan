@@ -203,9 +203,9 @@ function UnavailablePanel({ tab, listing }: Readonly<{ tab: ProductDrawerTab; li
           <dd>{listing.code ?? listing.sku_id}</dd>
         </div>
         <div>
-          <dt>服务端状态</dt>
+          <dt>管理状态</dt>
           <dd>
-            <StatusBadge status={listing.status} />
+            <StatusBadge status={listing.management_status ?? listing.status} />
           </dd>
         </div>
         <div>

@@ -12,7 +12,7 @@ describe('Console navigation selector', () => {
       { moduleId: 'cockpit', label: '经营驾驶舱', icon: 'trend', order: 10 },
       { moduleId: 'reports', label: '数据报表', icon: 'trend', order: 15 },
       { moduleId: 'applications', label: '築店 · 商城管理', icon: 'building', order: 30 },
-      { moduleId: 'products', label: '商品治理台', icon: 'products', order: 40 },
+      { moduleId: 'products', label: '商品管理', icon: 'products', order: 40 },
       { moduleId: 'orders', label: '订单管理系统', icon: 'orders', order: 50 },
       { moduleId: 'referral', label: '分销返佣系统', icon: 'channel', order: 60 },
       { moduleId: 'channels', label: '渠道接入系统', icon: 'channel', order: 70 },

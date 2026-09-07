@@ -57,7 +57,7 @@ describe('Product governance workspace', () => {
 
     const access = await screen.findByRole('region', { name: '没有权限' });
     await waitFor(() => expect(document.activeElement).toBe(access));
-    expect(within(access).getByText('「商品治理台」不可访问')).toBeTruthy();
+    expect(within(access).getByText('「商品管理」不可访问')).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByRole('table', { name: '商品列表' })).toBeNull();
     expect(screen.queryByRole('heading', { level: 1, name: '商品管理' })).toBeNull();
@@ -85,6 +85,21 @@ describe('Product governance workspace', () => {
     expect(screen.getByRole<HTMLButtonElement>('button', { name: '新建商品' }).disabled).toBe(true);
     expect(screen.getByRole<HTMLButtonElement>('button', { name: '批量导入' }).disabled).toBe(true);
     expect(requests).toHaveLength(1);
+  });
+
+  it('shows real SKU quantity and filters the complete management statuses', async () => {
+    const user = userEvent.setup();
+    renderProductRoute(mallContext);
+    const table = await screen.findByRole('table', { name: '商品列表' });
+
+    expect(screen.getByText('当前范围内共 4 件商品')).toBeTruthy();
+    expect(within(table).getByRole('cell', { name: '3' })).toBeTruthy();
+    for (const label of ['待完善', '待审核', '已上架', '已下架']) {
+      expect(screen.getByRole<HTMLButtonElement>('button', { name: new RegExp(`^${label}`) }).disabled).toBe(false);
+    }
+
+    await user.click(screen.getByRole('button', { name: /^待审核/ }));
+    await waitFor(() => expect(requests.some((url) => url.searchParams.get('status') === 'pending_review')).toBe(true));
   });
 
   it('enables manual creation, standard-package import and publication in an authorized mall', async () => {
@@ -200,9 +215,13 @@ const productPage = {
     product_id: 'product:1',
     title: '核心商品',
     status: 'published',
+    management_status: 'published',
+    sku_count: 3,
     version: 3,
   }],
   count: 1,
+  total_count: 4,
+  status_counts: { needs_attention: 1, pending_review: 1, published: 1, unpublished: 1 },
 };
 
 const standardPackage = JSON.stringify({

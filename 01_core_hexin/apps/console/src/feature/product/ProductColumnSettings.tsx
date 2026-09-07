@@ -3,7 +3,7 @@ import type { ProductColumnKey } from './ProductTable';
 
 const columns: readonly Readonly<{ key: ProductColumnKey; label: string }>[] = Object.freeze([
   { key: 'category', label: '分类 / 供应商' },
-  { key: 'sku', label: 'SKU 数' },
+  { key: 'sku', label: 'SKU 数量' },
   { key: 'malls', label: '商城覆盖' },
   { key: 'price', label: '售价' },
   { key: 'stock', label: '库存' },
