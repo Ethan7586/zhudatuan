@@ -1,17 +1,14 @@
 import { OperationCatalog } from '@shop/contract';
 import { describe, expect, it } from 'vitest';
-import {
-  CREDENTIAL_OPERATION_IDS,
-  identityRegistrationCoreOperationIds,
-  MEMBERSHIP_INVITATION_OPERATION_IDS,
-  MOBILE_WECHAT_OPERATION_IDS,
-  REGISTRATION_OPERATION_IDS,
-  SESSION_TICKET_OPERATION_IDS,
-} from '../05_interface_jieru/http/IdentityOperationCatalog';
+import { CREDENTIAL_OPERATION_IDS } from '../05_interface_jieru/http/CredentialOperations';
 import {
   IDENTITY_CORE_OPERATION_IDS,
   IDENTITY_REGISTRATION_OPERATION_IDS,
 } from '../05_interface_jieru/http/IdentityOperations';
+import { MEMBERSHIP_INVITATION_OPERATION_IDS } from '../05_interface_jieru/http/MembershipInvitationOperations';
+import { MOBILE_WECHAT_OPERATION_IDS } from '../05_interface_jieru/http/MobileWechatOperations';
+import { REGISTRATION_OPERATION_IDS } from '../05_interface_jieru/http/RegistrationOperations';
+import { SESSION_TICKET_OPERATION_IDS } from '../05_interface_jieru/http/SessionTicketOperations';
 
 const CORE_CHARACTERISTICS = [
   ['identity.sessions.create', 'POST', '/api/v1/identity/sessions'],
@@ -57,7 +54,22 @@ describe('identity operation catalog characterization', () => {
     expect(new Set(partitioned).size).toBe(partitioned.length);
     expect([...partitioned].sort()).toEqual([...IDENTITY_CORE_OPERATION_IDS].sort());
     expect(IDENTITY_REGISTRATION_OPERATION_IDS).toEqual([
-      ...identityRegistrationCoreOperationIds(),
+      'identity.sessions.create',
+      'identity.tickets.exchange',
+      'identity.session.read',
+      'identity.session.delete',
+      'identity.challenges.create',
+      'identity.invitations.read',
+      'identity.storefronts.read',
+      'identity.invitations.create',
+      'identity.invitations.revoke',
+      'identity.members.create',
+      'identity.password.reset',
+      'identity.password.verify',
+      'identity.mobile.challenge',
+      'identity.mobile.manage',
+      'identity.stepup.start',
+      'identity.stepup.complete',
       'identity.wechat.session',
       'identity.wechat.bind',
     ]);

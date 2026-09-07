@@ -1,4 +1,5 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import type { OperationId } from '@shop/contract';
 import { operationLifecycle, pageResult, reject, requireAccess, rowResult, type OperationActions } from '../../../../foundation/application/ModuleOperations';
 import { bodyRecord, secretField, textField } from '../../../../foundation/interface/Validation';
 import { requireGovernanceContext } from '../../../../foundation/security/AccessContext';
@@ -11,6 +12,15 @@ import { canonicalIdentitySubject, canonicalMobile } from '../../02_domain_yewu/
 import { consumeSmsLoginChallenge, recordInvalidSmsLoginChallenge, resolvePasswordLoginCredential, verifySmsLoginChallenge } from '../../03_application_yingyong/services_fuwu/SmsLogin';
 import { currentRealmAccount, resolveRealmContext, resolveRealmNode } from '../../03_application_yingyong/services_fuwu/RealmAccount';
 import { requireValidStorefront, type RealmOperationContext } from './RealmOperationContext';
+
+export const SESSION_TICKET_OPERATION_IDS = Object.freeze([
+  'identity.sessions.create',
+  'identity.tickets.exchange',
+  'identity.session.read',
+  'identity.session.delete',
+  'identity.sessions.read',
+  'identity.sessions.revoke',
+] as const satisfies readonly OperationId[]);
 
 export function sessionTicketOperations(runtime: RealmOperationContext): OperationActions {
   const { codeDigest, digest, kms, passwords, tickets } = runtime;
@@ -266,4 +276,3 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
       },
   };
 }
-

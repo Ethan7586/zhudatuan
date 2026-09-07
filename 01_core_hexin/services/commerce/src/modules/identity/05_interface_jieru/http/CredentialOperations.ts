@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import type { OperationId } from '@shop/contract';
 import { operationLifecycle, reject, requireAccess, rowResult, type OperationActions } from '../../../../foundation/application/ModuleOperations';
 import { bodyRecord, secretField, textField } from '../../../../foundation/interface/Validation';
 import { requireGovernanceContext } from '../../../../foundation/security/AccessContext';
@@ -6,6 +7,13 @@ import { atomicIdentityMutation, publishIdentityEvent } from '../../04_adapters_
 import { consumeChallenge, sessionCookies } from './IdentitySecurity';
 import { currentRealmAccount, resolveRealmNode } from '../../03_application_yingyong/services_fuwu/RealmAccount';
 import type { RealmOperationContext } from './RealmOperationContext';
+
+export const CREDENTIAL_OPERATION_IDS = Object.freeze([
+  'identity.members.reset',
+  'identity.password.change',
+  'identity.password.verify',
+  'identity.password.reset',
+] as const satisfies readonly OperationId[]);
 
 export function credentialOperations(runtime: RealmOperationContext): OperationActions {
   const { codeDigest, digest, passwords, sessionDigest } = runtime;

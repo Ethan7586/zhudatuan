@@ -1,4 +1,5 @@
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
+import type { OperationId } from '@shop/contract';
 import { reject, requireAccess, rowResult, type OperationActions } from '../../../../foundation/application/ModuleOperations';
 import { bodyRecord, integerField, secretField, textField } from '../../../../foundation/interface/Validation';
 import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
@@ -14,6 +15,14 @@ import {
   storefrontSlug,
   type RealmOperationContext,
 } from './RealmOperationContext';
+
+export const MEMBERSHIP_INVITATION_OPERATION_IDS = Object.freeze([
+  'identity.invitations.read',
+  'identity.storefronts.read',
+  'identity.invitations.create',
+  'identity.invitations.revoke',
+  'identity.members.manage',
+] as const satisfies readonly OperationId[]);
 
 export function membershipInvitationOperations(runtime: RealmOperationContext): OperationActions {
   const { digest, passwords, registrationOnly } = runtime;

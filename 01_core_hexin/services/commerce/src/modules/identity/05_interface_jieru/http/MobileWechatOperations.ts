@@ -1,5 +1,5 @@
 import { createHash, randomBytes, randomInt, randomUUID } from 'node:crypto';
-import { canonicalFinancialActionRequest, requiresFinancialActionProof, requiresFinancialExpectedVersion } from '@shop/contract';
+import { canonicalFinancialActionRequest, requiresFinancialActionProof, requiresFinancialExpectedVersion, type OperationId } from '@shop/contract';
 import { operationLifecycle, reject, requireAccess, rowResult, type OperationActions } from '../../../../foundation/application/ModuleOperations';
 import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
 import { requireGovernanceContext } from '../../../../foundation/security/AccessContext';
@@ -10,6 +10,13 @@ import { canonicalMobile } from '../../02_domain_yewu/models_moxing/IdentitySubj
 import { resolveBoundMobileAccount } from '../../03_application_yingyong/services_fuwu/SmsLogin';
 import { currentRealmAccount } from '../../03_application_yingyong/services_fuwu/RealmAccount';
 import { maskMobile, type RealmOperationContext } from './RealmOperationContext';
+
+export const MOBILE_WECHAT_OPERATION_IDS = Object.freeze([
+  'identity.mobile.challenge',
+  'identity.mobile.manage',
+  'identity.stepup.start',
+  'identity.stepup.complete',
+] as const satisfies readonly OperationId[]);
 
 export function mobileWechatOperations(runtime: RealmOperationContext): OperationActions {
   const { codeDigest, digest, kms, sessionDigest, stepup } = runtime;

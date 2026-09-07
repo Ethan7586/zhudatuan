@@ -1,4 +1,5 @@
 import { createHash, randomBytes, randomInt, randomUUID } from 'node:crypto';
+import type { OperationId } from '@shop/contract';
 import { operationLifecycle, reject, rowResult, type OperationActions } from '../../../../foundation/application/ModuleOperations';
 import { bodyRecord, secretField, textField } from '../../../../foundation/interface/Validation';
 import { AuthTransaction } from '../../02_domain_yewu/models_moxing/AuthTransaction';
@@ -16,6 +17,11 @@ import {
   requireValidStorefront,
   type RealmOperationContext,
 } from './RealmOperationContext';
+
+export const REGISTRATION_OPERATION_IDS = Object.freeze([
+  'identity.challenges.create',
+  'identity.members.create',
+] as const satisfies readonly OperationId[]);
 
 export function registrationOperations(runtime: RealmOperationContext): OperationActions {
   const { codeDigest, digest, kms, passwords, registrationOnly, tickets } = runtime;
