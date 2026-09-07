@@ -17,7 +17,7 @@ export function RouteError() {
           {...(denied ? { resourceLabel: '当前数据范围' } : {})}
           actions={{
             onReturnToWorkspace: () => window.location.assign(new URL(import.meta.env.BASE_URL, window.location.origin).toString()),
-            onRelogin: () => window.location.assign(`${appConfig.authBaseUrl}/login?client=console`),
+            onRelogin: () => window.location.assign(appConfig.identityEntryUrl),
           }}
         />
       </main>

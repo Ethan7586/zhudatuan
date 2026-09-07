@@ -48,7 +48,7 @@ export function Component() {
         onReturnToWorkspace: () => { void navigate(scopePath(context.scope, 'cockpit')); },
         onRelogin: () => {
           void import('../../shared/config/AppConfig').then(({ appConfig }) => {
-            window.location.assign(`${appConfig.authBaseUrl}/login?client=console`);
+            window.location.assign(appConfig.identityEntryUrl);
           });
         },
       }}>

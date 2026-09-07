@@ -4,6 +4,7 @@ import { extname, join, relative, resolve, sep } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
 import { chromium } from '@playwright/test';
+import { resolveConsoleAppConfig } from '@shop/config/sfl-console-runtime';
 import { readConsoleArtifact } from '../release/console-artifact.mjs';
 
 const args = process.argv.slice(2);
@@ -50,13 +51,16 @@ try {
 
 async function target(label, directory) {
   const dist = resolve(directory);
-  const artifact = readConsoleArtifact(dist);
+  const artifact = await readConsoleArtifact(dist);
   const hosted = await serve(dist);
+  const runtime = resolveConsoleAppConfig(artifact.manifest, 'console.zhudatuan.com');
   return {
     label,
     dist,
     manifest: artifact.manifest,
-    baseUrl: hosted.baseUrl,
+    runtime,
+    baseUrl: runtime.consoleOrigin,
+    localBaseUrl: hosted.baseUrl,
     server: hosted.server,
     startupAssets: startupAssets(dist),
     runs: [],
@@ -122,6 +126,7 @@ async function measureInBrowser(browser, target, sample) {
     await client.send('Profiler.start');
   }
   await page.addInitScript(installObservers);
+  await proxyLocalArtifact(page, target);
   await mockOwnerApi(page, target, unmatchedApi);
 
   try {
@@ -193,6 +198,15 @@ async function measureInBrowser(browser, target, sample) {
   }
 }
 
+async function proxyLocalArtifact(page, target) {
+  await page.route(`${target.baseUrl}/**`, async (route) => {
+    const requested = new URL(route.request().url());
+    const localUrl = new URL(`${requested.pathname}${requested.search}`, `${target.localBaseUrl}/`);
+    const response = await route.fetch({ url: localUrl.href });
+    await route.fulfill({ response });
+  });
+}
+
 function normalizeEntryPath(value) {
   const url = new URL(value, 'https://console.zhudatuan.com/');
   if (url.origin !== 'https://console.zhudatuan.com') throw new Error('ENTRY_PATH_MUST_BE_RELATIVE');
@@ -250,7 +264,7 @@ function installObservers() {
 async function mockOwnerApi(page, target, unmatchedApi) {
   const ownerScope = Object.freeze({ kind: 'platform', id: 'platform:perf-owner', name: '主打团平台' });
   const origin = new URL(target.baseUrl).origin;
-  await page.route(`${target.manifest.apiBaseUrl}/**`, async (route) => {
+  await page.route(`${target.runtime.apiBaseUrl}/**`, async (route) => {
     const request = route.request();
     const url = new URL(request.url());
     const headers = apiHeaders(origin);
@@ -355,7 +369,7 @@ function summarize(target) {
   const criticalAssets = [...new Set(target.runs.flatMap((run) => run.criticalAssets))].sort();
   return Object.freeze({
     dist: target.dist,
-    commit: target.manifest.commit,
+    commit: target.manifest.source_sha,
     metrics: {
       visibleReadyMs: distribution(values('visibleReadyMs')),
       interactiveReadyMs: distribution(values('interactiveReadyMs')),

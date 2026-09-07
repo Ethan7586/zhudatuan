@@ -1,3 +1,5 @@
+import { appConfig } from './AppConfig';
+
 declare const __SHOP_BUILD_COMMIT__: string;
 declare const __SHOP_BUILD_BRANCH__: string;
 declare const __SHOP_BUILD_ID__: string;
@@ -48,7 +50,7 @@ export const buildInfo = resolveBuildInfo({
   id: typeof __SHOP_BUILD_ID__ === 'string' ? __SHOP_BUILD_ID__ : undefined,
   dirty: typeof __SHOP_BUILD_DIRTY__ === 'boolean' ? __SHOP_BUILD_DIRTY__ : undefined,
   database: import.meta.env.VITE_DATABASE_ID,
-  apiOrigin: import.meta.env.VITE_API_BASE_URL,
+  apiOrigin: appConfig.apiBaseUrl,
 });
 
 function text(value: string | undefined, fallback: string): string {

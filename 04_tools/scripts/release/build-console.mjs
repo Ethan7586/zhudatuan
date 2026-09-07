@@ -1,10 +1,10 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { cpSync, existsSync, writeFileSync } from 'node:fs';
-import { isAbsolute, join, relative, resolve } from 'node:path';
+import { cpSync, existsSync } from 'node:fs';
+import { isAbsolute, relative, resolve } from 'node:path';
 
-import { clientEnvironment } from '@shop/config/client';
+import { normalizeConsoleClientVersion } from '@shop/config/sfl-console-runtime';
 import { loadEnv } from 'vite';
-import { CONSOLE_ARTIFACT_SCHEMA, readConsoleArtifact } from './console-artifact.mjs';
+import { readConsoleArtifact } from './console-artifact.mjs';
 
 const root = resolve(import.meta.dirname, '../../..');
 const consoleRoot = resolve(root, '01_core_hexin/apps/console');
@@ -21,10 +21,9 @@ const environment = {
   ...loadEnv('production', consoleRoot, ''),
   ...process.env,
   SHOP_BUILD_COMMIT: commit,
-  SHOP_SOURCE_TREE: 'clean',
+  SHOP_BUILD_DIRTY: 'false',
 };
-const client = clientEnvironment(environment);
-
+normalizeConsoleClientVersion(environment.VITE_CLIENT_VERSION);
 const build = spawnSync(npmCommand(), ['run', 'build', '--workspace', '@shop/console'], {
   cwd: root,
   env: environment,
@@ -34,22 +33,14 @@ if (build.status !== 0) throw new Error(`CONSOLE_RELEASE_BUILD_FAILED:${build.st
 assertCleanWorkspace();
 
 const dist = resolve(consoleRoot, 'dist');
-writeFileSync(join(dist, 'console-build.json'), `${JSON.stringify({
-  schema: CONSOLE_ARTIFACT_SCHEMA,
-  commit,
-  sourceTree: 'clean',
-  apiBaseUrl: client.apiBaseUrl,
-  authBaseUrl: client.authBaseUrl,
-  clientVersion: client.clientVersion,
-}, null, 2)}\n`, { encoding: 'utf8', mode: 0o644 });
-readConsoleArtifact(dist, { expectedCommit: commit, requireClean: true });
+await readConsoleArtifact(dist, { expectedCommit: commit, requireClean: true });
 cpSync(dist, output, { recursive: true, errorOnExist: true, dereference: true });
 
 const verify = spawnSync(process.execPath, [resolve(import.meta.dirname, 'verify-console.mjs'), '--dist', output, '--expected-commit', commit, '--require-clean'], { cwd: root, stdio: 'inherit' });
 if (verify.status !== 0) throw new Error(`CONSOLE_RELEASE_BROWSER_VERIFICATION_FAILED:${verify.status ?? 'signal'}`);
 
-const artifact = readConsoleArtifact(output, { expectedCommit: commit, requireClean: true });
-console.log(`console release artifact: ${output} commit=${commit} sha256=${artifact.sha256}`);
+const artifact = await readConsoleArtifact(output, { expectedCommit: commit, requireClean: true });
+console.log(`console release artifact: ${output} source_sha=${commit} immutable_artifact_digest=${artifact.immutableArtifactDigest} sha256=${artifact.sha256}`);
 
 function assertCleanWorkspace() {
   const status = git(['status', '--porcelain', '--untracked-files=all']);

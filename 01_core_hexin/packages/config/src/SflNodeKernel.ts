@@ -256,6 +256,14 @@ export function resolveNodeManifestByHost(registry: NodeManifestRegistry, host: 
   return matches[0]!;
 }
 
+export function resolveNodeDomainBindingByHost(manifest: NodeManifest, host: string): DomainBindingRef {
+  const normalizedHost = normalizeHost(host);
+  const matches = manifest.domain_bindings.filter((binding) => binding.host === normalizedHost);
+  if (matches.length === 0) throw new Error(`SFL_NODE_MANIFEST_HOST_UNKNOWN:${normalizedHost}`);
+  if (matches.length > 1) throw new Error(`SFL_NODE_MANIFEST_HOST_AMBIGUOUS:${normalizedHost}`);
+  return matches[0]!;
+}
+
 export function nodeContextOf(manifest: NodeManifest): NodeContext {
   return parseNodeContext({
     line_id: manifest.line_id,

@@ -119,7 +119,7 @@ async function readSession(signal: AbortSignal): Promise<ConsoleSession> {
     if (signal.aborted) throw signal.reason ?? cause;
     if (apiErrorStatus(cause) === 401) {
       const { appConfig } = await import('../shared/config/AppConfig');
-      throw redirectDocument(`${appConfig.authBaseUrl}/login?client=console`);
+      throw redirectDocument(appConfig.identityEntryUrl);
     }
     if (cause instanceof Error || cause instanceof Response) throw cause;
     throw new Error('CONSOLE_SESSION_READ_FAILED', { cause });

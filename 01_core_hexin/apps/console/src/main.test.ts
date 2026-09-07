@@ -3,40 +3,45 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const index = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
+const main = readFileSync(resolve(process.cwd(), 'src/main.tsx'), 'utf8');
+const prefetch = readFileSync(resolve(process.cwd(), 'src/shared/api/DocumentPrefetch.ts'), 'utf8');
+const runtime = readFileSync(resolve(process.cwd(), 'src/shared/config/RuntimeConfig.ts'), 'utf8');
 
 describe('console bootstrap document', () => {
-  it('discovers the API before the main module executes', () => {
-    expect(index).toContain('<link rel="preconnect" href="%VITE_API_BASE_URL%" crossorigin />');
-    expect(index).toContain("readJson('%VITE_API_BASE_URL%/api/v1/identity/session'");
-    expect(index).toContain("'x-client-version': '%VITE_CLIENT_VERSION%'");
-    expect(index.indexOf('rel="preconnect"')).toBeLessThan(index.indexOf('src="/src/main.tsx"'));
+  it('loads the Host-bound NodeManifest before API prefetch or application modules', () => {
+    expect(index).not.toContain('%VITE_API_BASE_URL%');
+    expect(index).not.toContain('%VITE_CLIENT_VERSION%');
+    expect(runtime).toContain("fetch('/console-build.json'");
+    expect(prefetch).toContain('fetch(`${appConfig.apiBaseUrl}${path}`');
+    expect(prefetch).toContain("'x-client-version': appConfig.clientVersion");
+    expect(main.indexOf('loadConsoleRuntimeConfig()')).toBeLessThan(main.indexOf("import('./app/providers')"));
   });
 
   it('starts the default cockpit read from the validated session context', () => {
-    expect(index).toContain("location.pathname.match(/^\\/scopes\\/(platform|distributor|tenant|enterprise|mall)");
-    expect(index).toContain("if (location.pathname !== '/' && direct === undefined) return undefined;");
-    expect(index).toContain('readJson(`%VITE_API_BASE_URL%/api/v1/reports/dashboard?period=${period}&limit=100`');
-    expect(index).toContain("'x-scope-hint': first.id");
-    expect(index).toContain("'x-access-version': String(value.accessVersion)");
+    expect(prefetch).toContain("location.pathname.match(/^\\/scopes\\/(platform|distributor|tenant|enterprise|mall)");
+    expect(prefetch).toContain("if (location.pathname !== '/' && direct === undefined) return undefined;");
+    expect(prefetch).toContain('readJson<unknown>(`/api/v1/reports/dashboard?period=${period}&limit=100`');
+    expect(prefetch).toContain("'x-scope-hint': first.id");
+    expect(prefetch).toContain("'x-access-version': String(value.accessVersion)");
   });
 
   it('prefetches the exact direct cockpit scope and selected period on refresh', () => {
-    expect(index).toContain("direct = match === null ? undefined : { kind: match[1], id: decodeURIComponent(match[2]) }");
-    expect(index).toContain("['realtime', 'yesterday', '7days', '30days'].includes(requested)");
-    expect(index).toContain('scopeKind: first.kind, scopeId: first.id, accessVersion: value.accessVersion, period, value: dashboard');
+    expect(prefetch).toContain("direct = match === null ? undefined : { kind: match[1]!, id: decodeURIComponent(match[2]!) }");
+    expect(prefetch).toContain("['realtime', 'yesterday', '7days', '30days'].includes(requested)");
+    expect(prefetch).toContain('scopeKind: first.kind');
   });
 
   it('makes every document prefetch observable and immediately abortable by navigation', () => {
-    expect(index).toContain('const slot = { settled: false, promise: undefined };');
-    expect(index).toContain('window.__consoleAbortDocumentPrefetch = () =>');
-    expect(index).toContain('controller.abort(), 1_500');
-    expect(index).not.toContain('controller.abort(), 15_000');
+    expect(prefetch).toContain('const slot: Tracked<T> = { settled: false');
+    expect(prefetch).toContain('window.__consoleAbortDocumentPrefetch = () =>');
+    expect(prefetch).toContain('controller.abort(), 1_500');
+    expect(prefetch).not.toContain('controller.abort(), 15_000');
   });
 
   it('starts profile and organization context reads without adding API calls', () => {
-    expect(index).toContain("readJson('%VITE_API_BASE_URL%/api/v1/members/me', headers)");
-    expect(index).toContain("readJson('%VITE_API_BASE_URL%/api/v1/organizations/layers?limit=1000'");
-    expect(index).toContain('window.__consoleScopePrefetch = tracked(');
+    expect(prefetch).toContain("readJson<unknown>('/api/v1/members/me', headers)");
+    expect(prefetch).toContain("readJson<unknown>('/api/v1/organizations/layers?limit=1000'");
+    expect(prefetch).toContain('window.__consoleScopePrefetch = tracked(');
   });
 
   it('starts with the shared route loading state instead of an empty root', () => {

@@ -15,6 +15,7 @@ const runtimeEntries = Object.freeze([
   '01_core_hexin/apps/console/src',
   '01_core_hexin/apps/console/index.html',
   '01_core_hexin/apps/console/vite.config.ts',
+  '02_platform_pingtai/config/console-node-manifests.json',
   '01_core_hexin/apps/miniapp/miniprogram',
   '01_core_hexin/apps/storefront-web/src',
   '01_core_hexin/apps/storefront-web/vite.config.ts',
@@ -296,6 +297,7 @@ function validateWranglerRoutes(contract) {
 function validateRequiredBindings(contract) {
   const { accountsOrigin, apiOrigin, consoleOrigin } = contract.controlPlane;
   const h5Origin = contract.frontends.h5.publicOrigin;
+  const hongtai = contract.tenantControlPlanes.hongtai;
   requireTokens('01_core_hexin/apps/auth-web/src/services/canonicalIdentity.ts', [apiOrigin]);
   requireTokens('01_core_hexin/apps/auth-web/src/services/canonicalRegistration.ts', [apiOrigin]);
   requireTokens('01_core_hexin/apps/auth-web/src/services/auth.ts', [consoleOrigin, h5Origin]);
@@ -307,10 +309,19 @@ function validateRequiredBindings(contract) {
   requireTokens('01_core_hexin/apps/auth-web/index.html', [accountsOrigin]);
   requireTokens('01_core_hexin/apps/storefront-web/src/services/canonicalApiClient.ts', [apiOrigin]);
   requireTokens('01_core_hexin/apps/storefront-web/src/config/storefrontAuth.ts', [accountsOrigin]);
-  requireTokens('01_core_hexin/apps/console/src/shared/config/AppConfig.ts', [
-    'clientEnvironment()',
-    'apiBaseUrl',
-    'authBaseUrl',
+  requireTokens('01_core_hexin/apps/console/src/shared/config/RuntimeConfig.ts', [
+    'console-build.json',
+    'resolveConsoleAppConfig',
+    'CONSOLE_RUNTIME_CONFIG_NOT_READY',
+  ]);
+  requireTokens('02_platform_pingtai/config/console-node-manifests.json', [
+    consoleOrigin,
+    apiOrigin,
+    accountsOrigin,
+    hongtai.consoleOrigin,
+    hongtai.apiOrigin,
+    hongtai.accountsOrigin,
+    hongtai.scopeId,
   ]);
   requireTokens('01_core_hexin/packages/config/src/IdentityRegistrationApiEnvironment.ts', [accountsOrigin, consoleOrigin, h5Origin]);
 }
@@ -350,7 +361,12 @@ function validateBuiltArtifacts(contract, production) {
   if (!production) return;
   const expectations = [
     ['01_core_hexin/apps/auth-web/dist', [contract.controlPlane.accountsOrigin, contract.controlPlane.apiOrigin, contract.controlPlane.consoleOrigin, contract.frontends.h5.publicOrigin]],
-    ['01_core_hexin/apps/console/dist', [contract.controlPlane.accountsOrigin, contract.controlPlane.apiOrigin]],
+    ['01_core_hexin/apps/console/dist', [
+      contract.controlPlane.accountsOrigin,
+      contract.controlPlane.apiOrigin,
+      contract.tenantControlPlanes.hongtai.accountsOrigin,
+      contract.tenantControlPlanes.hongtai.apiOrigin,
+    ]],
     ['01_core_hexin/apps/storefront-web/dist', [contract.controlPlane.accountsOrigin, contract.controlPlane.apiOrigin]],
     ['01_core_hexin/services/commerce/dist', [contract.controlPlane.accountsOrigin, contract.controlPlane.consoleOrigin, contract.frontends.h5.publicOrigin]],
   ];

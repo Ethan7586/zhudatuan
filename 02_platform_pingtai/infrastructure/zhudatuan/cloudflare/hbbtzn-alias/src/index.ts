@@ -4,11 +4,14 @@ const ACCOUNTS_UPSTREAM_ORIGIN = 'https://accounts.zhudatuan.com';
 const CONSOLE_UPSTREAM_ORIGIN = 'https://console.zhudatuan.com';
 const HONGTAI_CONSOLE_HOST = 'console.hbbtzn.com';
 const HONGTAI_CONSOLE_ORIGIN = `https://${HONGTAI_CONSOLE_HOST}`;
+const HONGTAI_API_HOST = 'api.hbbtzn.com';
+const HONGTAI_NODE_ID = 'node:hbbtzn:l1';
 const HONGTAI_ACCOUNTS_ORIGIN = 'https://accounts.hbbtzn.com';
 const HONGTAI_CONSOLE_SCOPE = '/scopes/mall/mall%3Ad1708f04df2dd8a61736852c4900fb43/cockpit';
 const HONGTAI_CONTROL_ASSET_PREFIX = '/__hbbtzn-v1/assets/';
 const CONSUMER_ACCOUNT_PATH = '/accounts';
 const HONGTAI_CONSUMER_APPLICATION = 'zdt-l1-verify';
+const IDENTITY_ENTRY_HOST_HEADER = 'x-zdt-identity-entry-host';
 const WECHAT_VERIFICATION_FILES = Object.freeze({
   '/MP_verify_5ebC4TM1ep4hKgu3.txt': '5ebC4TM1ep4hKgu3',
 } as const);
@@ -45,6 +48,27 @@ const UPSTREAM_REQUEST_ORIGINS = Object.freeze({
   [HONGTAI_CONSOLE_ORIGIN]: CONSOLE_UPSTREAM_ORIGIN,
 } as const);
 
+const HONGTAI_WEB_BUSINESS_PATHS = Object.freeze([
+  '/api/v1/members/me',
+  '/api/v1/organizations/layers',
+  '/api/v1/reports/dashboard',
+  '/api/v1/catalog/listings',
+  '/api/v1/catalog/public/products',
+  '/api/v1/pricing/offers',
+  '/api/v1/inventory/availability',
+  '/api/v1/carts/current',
+  '/api/v1/benefits/accounts',
+  '/api/v1/benefits/ledgers',
+  '/api/v1/orders',
+] as const);
+
+type HongtaiNodeSurface = 'catalog-operator' | 'web-business';
+
+interface HongtaiNodeRoute {
+  readonly nodeId: typeof HONGTAI_NODE_ID;
+  readonly surface: HongtaiNodeSurface;
+}
+
 function rewriteOrigins(value: string, origins: Readonly<Record<string, string>>): string {
   return Object.entries(origins).reduce(
     (current, [source, destination]) => current.replaceAll(source, destination),
@@ -58,6 +82,37 @@ function isApiPath(pathname: string): boolean {
 
 function isConsumerAccountPath(pathname: string): boolean {
   return pathname === CONSUMER_ACCOUNT_PATH || pathname.startsWith(`${CONSUMER_ACCOUNT_PATH}/`);
+}
+
+function belongsToPathFamily(pathname: string, root: string): boolean {
+  return pathname === root || pathname.startsWith(`${root}/`);
+}
+
+function hongtaiNodeRoute(request: Request, incoming: URL, pathname: string): HongtaiNodeRoute | undefined {
+  if (incoming.hostname === HONGTAI_CONSOLE_HOST) {
+    return { nodeId: HONGTAI_NODE_ID, surface: 'catalog-operator' };
+  }
+  const routedMethod = request.method === 'OPTIONS'
+    ? request.headers.get('access-control-request-method')?.toUpperCase() ?? request.method
+    : request.method;
+  const ordersRead = pathname !== '/api/v1/orders' || routedMethod === 'GET';
+  const webBusiness = ordersRead
+    && HONGTAI_WEB_BUSINESS_PATHS.some((root) => belongsToPathFamily(pathname, root));
+  const catalogListingRead = pathname === '/api/v1/catalog/listings'
+    && (routedMethod === 'GET' || routedMethod === 'HEAD');
+  const publicCatalog = belongsToPathFamily(pathname, '/api/v1/catalog/public/products');
+  const catalogOperator = incoming.hostname === HONGTAI_API_HOST
+    && belongsToPathFamily(pathname, '/api/v1/catalog')
+    && !catalogListingRead
+    && !publicCatalog;
+  if (catalogOperator) return { nodeId: HONGTAI_NODE_ID, surface: 'catalog-operator' };
+  if (((incoming.hostname === ROOT_STOREFRONT_HOST || incoming.hostname === HONGTAI_API_HOST)
+      && webBusiness)
+    || (incoming.hostname === ROOT_STOREFRONT_HOST
+      && belongsToPathFamily(pathname, '/catalog-media'))) {
+    return { nodeId: HONGTAI_NODE_ID, surface: 'web-business' };
+  }
+  return undefined;
 }
 
 function wechatVerificationResponse(request: Request, incoming: URL): Response | null {
@@ -99,7 +154,7 @@ function controlAssetUpstreamPath(incoming: URL): string | undefined {
   return `/assets/${incoming.pathname.slice(HONGTAI_CONTROL_ASSET_PREFIX.length)}`;
 }
 
-function upstreamRequest(request: Request, target: URL): Request {
+function upstreamRequest(request: Request, target: URL, nodeRoute?: HongtaiNodeRoute): Request {
   const headers = new Headers(request.headers);
   const incoming = new URL(request.url);
   const controlDocument = (incoming.hostname === HONGTAI_CONSOLE_HOST || incoming.hostname === 'accounts.hbbtzn.com')
@@ -108,9 +163,24 @@ function upstreamRequest(request: Request, target: URL): Request {
     headers.delete('if-modified-since');
     headers.delete('if-none-match');
   }
-  for (const header of ['origin', 'referer']) {
-    const value = headers.get(header);
-    if (value) headers.set(header, rewriteOrigins(value, UPSTREAM_REQUEST_ORIGINS));
+  headers.delete('x-sfl-node-id');
+  headers.delete('x-sfl-node-surface');
+  if (nodeRoute) {
+    headers.set('x-sfl-node-id', nodeRoute.nodeId);
+    headers.set('x-sfl-node-surface', nodeRoute.surface);
+  } else {
+    for (const header of ['origin', 'referer']) {
+      const value = headers.get(header);
+      if (value) headers.set(header, rewriteOrigins(value, UPSTREAM_REQUEST_ORIGINS));
+    }
+  }
+  if (isApiPath(target.pathname)) {
+    headers.set(
+      IDENTITY_ENTRY_HOST_HEADER,
+      incoming.hostname === HONGTAI_CONSOLE_HOST ? HONGTAI_API_HOST : incoming.hostname,
+    );
+  } else {
+    headers.delete(IDENTITY_ENTRY_HOST_HEADER);
   }
   return new Request(target, {
     method: request.method,
@@ -120,7 +190,11 @@ function upstreamRequest(request: Request, target: URL): Request {
   });
 }
 
-async function publicResponse(request: Request, upstream: Response): Promise<Response> {
+async function publicResponse(
+  request: Request,
+  upstream: Response,
+  nodeRoute?: HongtaiNodeRoute,
+): Promise<Response> {
   const incoming = new URL(request.url);
   const headers = new Headers(upstream.headers);
   const publicOrigins = incoming.hostname === ROOT_STOREFRONT_HOST
@@ -130,7 +204,9 @@ async function publicResponse(request: Request, upstream: Response): Promise<Res
   const upstreamAllowedOrigin = headers.get('access-control-allow-origin');
   const normalizedRequestOrigin = requestOrigin === null
     ? null
-    : rewriteOrigins(requestOrigin, UPSTREAM_REQUEST_ORIGINS);
+    : nodeRoute
+      ? requestOrigin
+      : rewriteOrigins(requestOrigin, UPSTREAM_REQUEST_ORIGINS);
   if (requestOrigin !== null && upstreamAllowedOrigin === normalizedRequestOrigin) {
     headers.set('access-control-allow-origin', requestOrigin);
   }
@@ -140,15 +216,11 @@ async function publicResponse(request: Request, upstream: Response): Promise<Res
   }
   const contentType = headers.get('content-type')?.toLowerCase() ?? '';
   const html = contentType.startsWith('text/html');
-  const controlScript = incoming.hostname === HONGTAI_CONSOLE_HOST
-    && contentType.includes('javascript');
-  const rewritten = html || controlScript;
+  const immutableConsoleArtifact = incoming.hostname === HONGTAI_CONSOLE_HOST;
+  const rewritten = html && !immutableConsoleArtifact;
   const source = rewritten ? await upstream.text() : undefined;
   const body = html
-    ? publicHtml(request, source!, publicOrigins)
-    : controlScript
-      ? rewriteOrigins(source!, publicOrigins)
-      : upstream.body;
+    && !immutableConsoleArtifact ? publicHtml(request, source!, publicOrigins) : upstream.body;
   if (rewritten) {
     headers.delete('content-encoding');
     headers.delete('content-length');
@@ -236,7 +308,12 @@ const worker = {
 
     const path = controlAssetUpstreamPath(incoming) ?? storefrontPath(request, incoming);
     const target = new URL(`${path}${incoming.search}`, isApiPath(path) ? API_UPSTREAM_ORIGIN : upstreamOrigin);
-    return await publicResponse(request, await fetch(upstreamRequest(request, target), { redirect: 'manual' }));
+    const nodeRoute = hongtaiNodeRoute(request, incoming, path);
+    return await publicResponse(
+      request,
+      await fetch(upstreamRequest(request, target, nodeRoute), { redirect: 'manual' }),
+      nodeRoute,
+    );
   },
 };
 

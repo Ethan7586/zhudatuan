@@ -64,7 +64,7 @@ export function ScopeShell() {
         ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
       }));
       queryClient.clear();
-      window.location.assign(`${appConfig.authBaseUrl}/login?client=console`);
+      window.location.assign(appConfig.identityEntryUrl);
     } catch {
       setLogoutState('error');
     }
@@ -130,7 +130,7 @@ export function ScopeShell() {
     onReturnToWorkspace: () => navigateAfterCancel(scopePath(context.scope, 'cockpit')),
     onRelogin: () => {
       void import('../shared/config/AppConfig').then(({ appConfig }) => {
-        window.location.assign(`${appConfig.authBaseUrl}/login?client=console`);
+        window.location.assign(appConfig.identityEntryUrl);
       });
     },
   };

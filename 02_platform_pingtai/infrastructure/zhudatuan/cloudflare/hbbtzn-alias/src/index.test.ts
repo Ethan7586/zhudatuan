@@ -52,7 +52,7 @@ describe('hbbtzn H5 alias worker', () => {
     expect((fetchMock.mock.calls[1][0] as Request).url).toBe('https://api.zhudatuan.com/api/v1/catalog/listings');
   });
 
-  it('sends public API paths to the canonical API while preserving the public request origin', async () => {
+  it('sends the Hongtai storefront catalog to its L1 web runtime without rewriting its origin', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}'));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -62,13 +62,87 @@ describe('hbbtzn H5 alias worker', () => {
 
     const upstreamRequest = fetchMock.mock.calls[0][0] as Request;
     expect(upstreamRequest.url).toBe('https://api.zhudatuan.com/api/v1/catalog/listings');
-    expect(upstreamRequest.headers.get('origin')).toBe('https://zhudatuan.com');
+    expect(upstreamRequest.headers.get('origin')).toBe('https://hbbtzn.com');
+    expect(upstreamRequest.headers.get('x-sfl-node-id')).toBe('node:hbbtzn:l1');
+    expect(upstreamRequest.headers.get('x-sfl-node-surface')).toBe('web-business');
+    expect(upstreamRequest.headers.get('x-zdt-identity-entry-host')).toBe('hbbtzn.com');
+  });
+
+  it('sends Hongtai console catalog operations to its L1 catalog runtime', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, {
+      status: 204,
+      headers: { 'access-control-allow-origin': 'https://console.hbbtzn.com' },
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await worker.fetch(new Request('https://api.hbbtzn.com/api/v1/catalog/imports', {
+      method: 'OPTIONS',
+      headers: {
+        origin: 'https://console.hbbtzn.com',
+        'x-sfl-node-id': 'node:zhudatuan:l0',
+        'x-sfl-node-surface': 'web-business',
+      },
+    }));
+
+    const upstreamRequest = fetchMock.mock.calls[0][0] as Request;
+    expect(upstreamRequest.headers.get('origin')).toBe('https://console.hbbtzn.com');
+    expect(upstreamRequest.headers.get('x-sfl-node-id')).toBe('node:hbbtzn:l1');
+    expect(upstreamRequest.headers.get('x-sfl-node-surface')).toBe('catalog-operator');
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://console.hbbtzn.com');
+  });
+
+  it('separates Hongtai catalog reads from operator mutations on the API alias', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await worker.fetch(new Request('https://api.hbbtzn.com/api/v1/catalog/listings', {
+      headers: { origin: 'https://console.hbbtzn.com' },
+    }));
+    await worker.fetch(new Request('https://api.hbbtzn.com/api/v1/catalog/listings/listing%3A1/publication', {
+      method: 'DELETE',
+      headers: { origin: 'https://console.hbbtzn.com' },
+    }));
+
+    const readRequest = fetchMock.mock.calls[0][0] as Request;
+    expect(readRequest.headers.get('x-sfl-node-surface')).toBe('web-business');
+    const mutationRequest = fetchMock.mock.calls[1][0] as Request;
+    expect(mutationRequest.headers.get('x-sfl-node-surface')).toBe('catalog-operator');
+  });
+
+  it('marks Hongtai-only catalog media for its L1 storefront route', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('image'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await worker.fetch(new Request('https://hbbtzn.com/catalog-media/mockpool-test-product.svg'));
+
+    const upstreamRequest = fetchMock.mock.calls[0][0] as Request;
+    expect(upstreamRequest.headers.get('x-sfl-node-id')).toBe('node:hbbtzn:l1');
+    expect(upstreamRequest.headers.get('x-sfl-node-surface')).toBe('web-business');
+  });
+
+  it('keeps shared Hongtai identity calls on the canonical routing contract', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await worker.fetch(new Request('https://api.hbbtzn.com/api/v1/identity/session', {
+      headers: {
+        origin: 'https://console.hbbtzn.com',
+        'x-sfl-node-id': 'node:injected',
+        'x-sfl-node-surface': 'catalog-operator',
+      },
+    }));
+
+    const upstreamRequest = fetchMock.mock.calls[0][0] as Request;
+    expect(upstreamRequest.headers.get('origin')).toBe('https://console.zhudatuan.com');
+    expect(upstreamRequest.headers.get('x-sfl-node-id')).toBeNull();
+    expect(upstreamRequest.headers.get('x-sfl-node-surface')).toBeNull();
   });
 
   it.each([
     ['https://accounts.hbbtzn.com/assets/auth.js', 'https://accounts.zhudatuan.com/assets/auth.js'],
     ['https://api.hbbtzn.com/api/v1/identity/sessions', 'https://api.zhudatuan.com/api/v1/identity/sessions'],
     ['https://console.hbbtzn.com/assets/console.js', 'https://console.zhudatuan.com/assets/console.js'],
+    ['https://console.hbbtzn.com/api/v1/auth/session', 'https://api.zhudatuan.com/api/v1/auth/session'],
   ])('proxies tenant control-plane alias %s to %s', async (source, destination) => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('ok'));
     vi.stubGlobal('fetch', fetchMock);
@@ -76,10 +150,27 @@ describe('hbbtzn H5 alias worker', () => {
     const response = await worker.fetch(new Request(source));
 
     expect(response.status).toBe(200);
-    expect((fetchMock.mock.calls[0][0] as Request).url).toBe(destination);
+    const upstreamRequest = fetchMock.mock.calls[0][0] as Request;
+    expect(upstreamRequest.url).toBe(destination);
+    expect(upstreamRequest.headers.get('x-zdt-identity-entry-host'))
+      .toBe(source.includes('/api/') ? 'api.hbbtzn.com' : null);
   });
 
-  it('rewrites canonical control origins inside JavaScript bundles', async () => {
+  it('binds the Hongtai console document and assets to its L1 operator surface', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('ok'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await worker.fetch(new Request('https://console.hbbtzn.com/products'));
+    await worker.fetch(new Request('https://console.hbbtzn.com/assets/console.js'));
+
+    for (const call of fetchMock.mock.calls) {
+      const upstreamRequest = call[0] as Request;
+      expect(upstreamRequest.headers.get('x-sfl-node-id')).toBe('node:hbbtzn:l1');
+      expect(upstreamRequest.headers.get('x-sfl-node-surface')).toBe('catalog-operator');
+    }
+  });
+
+  it('serves the shared Console JavaScript artifact byte-for-byte without node rewriting', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(
       "const api='https://api.zhudatuan.com';const auth='https://accounts.zhudatuan.com';",
       { headers: {
@@ -93,10 +184,30 @@ describe('hbbtzn H5 alias worker', () => {
     const response = await worker.fetch(new Request('https://console.hbbtzn.com/assets/AppConfig.js'));
 
     await expect(response.text()).resolves.toBe(
-      "const api='https://api.hbbtzn.com';const auth='https://accounts.hbbtzn.com';",
+      "const api='https://api.zhudatuan.com';const auth='https://accounts.zhudatuan.com';",
     );
-    expect(response.headers.get('content-encoding')).toBeNull();
-    expect(response.headers.get('etag')).toBeNull();
+    expect(response.headers.get('content-encoding')).toBe('gzip');
+    expect(response.headers.get('etag')).toBe('canonical-script-etag');
+  });
+
+  it('serves Console NodeManifest evidence byte-for-byte without changing its digest inputs', async () => {
+    const source = JSON.stringify({
+      source_sha: 'a'.repeat(40),
+      immutable_artifact_digest: `sha256:${'b'.repeat(64)}`,
+      node_manifest_registry: { manifests: [] },
+    });
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(source, {
+      headers: {
+        'content-type': 'application/json; charset=utf-8',
+        etag: 'canonical-console-manifest-etag',
+      },
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await worker.fetch(new Request('https://console.hbbtzn.com/console-build.json'));
+
+    await expect(response.text()).resolves.toBe(source);
+    expect(response.headers.get('etag')).toBe('canonical-console-manifest-etag');
   });
 
   it('preserves both node origins inside the shared identity JavaScript bundle', async () => {
@@ -119,7 +230,7 @@ describe('hbbtzn H5 alias worker', () => {
     expect(response.headers.get('etag')).toBe('shared-identity-script-etag');
   });
 
-  it('gives Hongtai control assets an independent browser cache path', async () => {
+  it('serves the shared Console document and assets without changing artifact paths', async () => {
     const fetchMock = vi.fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(
         '<script src="/assets/index.js"></script><link href="/assets/index.css" rel="stylesheet">',
@@ -131,9 +242,9 @@ describe('hbbtzn H5 alias worker', () => {
     const documentResponse = await worker.fetch(new Request('https://console.hbbtzn.com/cockpit', {
       headers: { accept: 'text/html', 'if-none-match': 'old-console-etag' },
     }));
-    await expect(documentResponse.text()).resolves.toContain('src="/__hbbtzn-v1/assets/index.js"');
+    await expect(documentResponse.text()).resolves.toContain('src="/assets/index.js"');
     expect((fetchMock.mock.calls[0][0] as Request).headers.get('if-none-match')).toBeNull();
-    await expect(worker.fetch(new Request('https://console.hbbtzn.com/__hbbtzn-v1/assets/index.js')))
+    await expect(worker.fetch(new Request('https://console.hbbtzn.com/assets/index.js')))
       .resolves.toMatchObject({ status: 200 });
     expect((fetchMock.mock.calls[1][0] as Request).url).toBe('https://console.zhudatuan.com/assets/index.js');
   });

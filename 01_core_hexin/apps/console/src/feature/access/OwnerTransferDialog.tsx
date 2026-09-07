@@ -156,7 +156,7 @@ function DialogFooter({ busy, disabled, label, onContinue, danger = false }: Rea
 }
 
 export function AcceptedDialog({ open }: Readonly<{ open: boolean }>) {
-  const login = `${appConfig.authBaseUrl}/login?client=console`;
+  const login = appConfig.identityEntryUrl;
   return <Dialog open={open} title="Owner 已同步交换" eyebrow="ATOMIC COMMIT COMPLETE" onClose={() => window.location.assign(login)} dismissable={false}>
     <div className="ownertransferreceipt" role="status"><strong>唯一 Owner 席位已完成交换</strong>
       <p>服务端已在同一事务内完成角色交换、Access Version 更新与双方会话撤销。请重新登录取得新权限。</p>

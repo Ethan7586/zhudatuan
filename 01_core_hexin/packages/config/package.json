@@ -8,12 +8,13 @@
     "typecheck": "tsc --noEmit",
     "lint": "npm run typecheck",
     "build": "npm run typecheck",
-    "test": "vitest run src/index.test.ts src/SflNodeKernel.test.ts"
+    "test": "vitest run src/index.test.ts src/SflNodeKernel.test.ts src/SflNodeKernelConsole.test.ts"
   },
   "exports": {
     "./client": "./src/ClientEnvironment.ts",
     "./miniapp": "./src/MiniappEnvironment.ts",
     "./runtime": "./src/RuntimeCatalog.generated.ts",
+    "./sfl-console-runtime": "./src/SflNodeKernelConsole.ts",
     "./sfl-node-kernel": "./src/SflNodeKernel.ts",
     "./server": "./src/ServerEnvironment.ts"
   },
