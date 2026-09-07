@@ -1,7 +1,7 @@
 import React from 'react';
-import { ChevronLeft, Eye, RotateCcw, Store, WalletCards } from 'lucide-react';
+import { ChevronLeft, Eye, Package, PackageCheck, RotateCcw, Store, Truck, WalletCards } from 'lucide-react';
 import type { FrontendOrder } from '../../adapters/frontendData';
-import { useMall } from '../../context/MallContext';
+import { useMall, type MobileFulfillmentStage } from '../../context/MallContext';
 import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 import { MobileAfterSaleView } from './MobileAfterSaleView';
 import { MobileInventoryBadge } from './MobileInventoryBadge';
@@ -9,6 +9,13 @@ import { MobileOrderDetailView } from './MobileOrderDetailView';
 import { MobilePaymentSheet } from './MobilePaymentSheet';
 import { OrderFlowIcon } from './OrderFlowIcon';
 import { currentMobileOrderFilter, matchesMobileOrderFilter, selectMobileOrderFilter, type MobileOrderFilter } from './mobileOrderFilters';
+import {
+  effectiveMobileFulfillmentStage,
+  mobileFulfillmentSimulationAction,
+  mobileFulfillmentStageLabel,
+  nextMobileFulfillmentStage,
+  summarizeMobileFulfillment,
+} from './mobileOrderFulfillment';
 
 interface MobileOrdersPageProps {
   mode: 'mini-program' | 'android-app';
@@ -23,7 +30,15 @@ const FILTER_OPTIONS: ReadonlyArray<Readonly<{ id: MobileOrderFilter; label: str
 ];
 
 export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
-  const { presentationOrders, setMpPage, setAndroidPage, triggerPendingFeature } = useMall();
+  const {
+    presentationOrders,
+    mobileFulfillmentSimulationStage,
+    setMobileFulfillmentSimulationStage,
+    setMpPage,
+    setAndroidPage,
+    showToast,
+    triggerPendingFeature,
+  } = useMall();
   const [activeFilter, setActiveFilter] = React.useState<MobileOrderFilter>(() => currentMobileOrderFilter());
   const [selectedOrder, setSelectedOrder] = React.useState<FrontendOrder | null>(null);
   const [orderView, setOrderView] = React.useState<'list' | 'detail' | 'after-sale'>('list');
@@ -32,15 +47,29 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
     () => presentationOrders.filter((order) => matchesMobileOrderFilter(order.status, activeFilter)),
     [activeFilter, presentationOrders],
   );
+  const fulfillment = React.useMemo(
+    () => summarizeMobileFulfillment(presentationOrders, mobileFulfillmentSimulationStage),
+    [mobileFulfillmentSimulationStage, presentationOrders],
+  );
+  const filterOptions = React.useMemo(() => FILTER_OPTIONS.map((option) => (
+    option.id === 'pending_shipment' ? { ...option, label: fulfillment.label } : option
+  )), [fulfillment.label]);
   const filterCounts = React.useMemo(() => Object.fromEntries(FILTER_OPTIONS.map((option) => [
     option.id,
     presentationOrders.filter((order) => matchesMobileOrderFilter(order.status, option.id)).length,
   ])) as Record<MobileOrderFilter, number>, [presentationOrders]);
-  const activeLabel = FILTER_OPTIONS.find((option) => option.id === activeFilter)?.label ?? '全部';
+  const activeLabel = filterOptions.find((option) => option.id === activeFilter)?.label ?? '全部';
+  const FulfillmentStageIcon = fulfillment.stage === 'processing' ? Package : fulfillment.stage === 'shipped' ? Truck : PackageCheck;
 
   const chooseFilter = (filter: MobileOrderFilter) => {
     selectMobileOrderFilter(filter);
     setActiveFilter(filter);
+  };
+
+  const simulateNextFulfillmentStage = () => {
+    const nextStage = nextMobileFulfillmentStage(fulfillment.stage);
+    setMobileFulfillmentSimulationStage(nextStage);
+    showToast(`状态演示：${fulfillment.count} 笔订单已同步为${mobileFulfillmentStageLabel(nextStage)}`, 'info');
   };
 
   const openOrderView = (order: FrontendOrder, view: 'detail' | 'after-sale') => {
@@ -99,15 +128,24 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
         <div className="grid h-9 w-9 place-items-center rounded-xl bg-blue-50 text-[var(--sw-brand)]">
           <OrderFlowIcon className="h-7 w-7" />
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="text-sm font-black">订单管理</h1>
           <p className="text-[10px] text-gray-500">查看付款、履约与售后进度</p>
         </div>
+        {fulfillment.count > 0 && (
+          <button
+            type="button"
+            onClick={simulateNextFulfillmentStage}
+            className="shrink-0 rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1.5 text-[9px] font-bold text-[var(--sw-brand)] transition-transform active:scale-95"
+          >
+            {mobileFulfillmentSimulationAction(fulfillment.stage)}
+          </button>
+        )}
       </header>
 
       <main className="space-y-3 p-3">
         <nav aria-label="订单状态筛选" className="grid grid-cols-5 gap-1 rounded-2xl border border-gray-100 bg-white p-1.5 shadow-xs">
-          {FILTER_OPTIONS.map((option) => {
+          {filterOptions.map((option) => {
             const count = filterCounts[option.id];
             const isActive = option.id === activeFilter;
             return (
@@ -118,7 +156,8 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
                 onClick={() => chooseFilter(option.id)}
                 className={`flex min-h-9 items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-bold transition-colors ${isActive ? 'bg-[var(--sw-brand)] text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50 active:bg-blue-50'}`}
               >
-                <span>{option.label}</span>
+                {option.id === 'pending_shipment' && <FulfillmentStageIcon className="h-3 w-3 shrink-0" />}
+                <span key={option.label} aria-live={option.id === 'pending_shipment' ? 'polite' : undefined}>{option.label}</span>
                 {count > 0 && <span className={isActive ? 'text-blue-100' : 'text-gray-400'}>{count > 99 ? '99+' : count}</span>}
               </button>
             );
@@ -139,6 +178,10 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
             const isPendingPayment = order.status === 'pending_payment' || order.status === 'pending_pay';
             const isCompleted = order.status === 'completed';
             const isAfterSale = order.status === 'after_sale';
+            const fulfillmentStage = effectiveMobileFulfillmentStage(order, mobileFulfillmentSimulationStage);
+            const displayStatusText = fulfillmentStage ? mobileFulfillmentStageLabel(fulfillmentStage) : order.statusText;
+            const canRequestAfterSale = !isPendingPayment && !isAfterSale && (isCompleted || fulfillmentStage !== null);
+            const afterSaleActionLabel = isCompleted || fulfillmentStage === 'received' ? '退货/退款' : '申请退款';
             const displayAmount = isPendingPayment && order.payment.wechatPaid > 0 ? order.payment.wechatPaid : order.totalAmount;
 
             return (
@@ -153,8 +196,8 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
                       <p className="mt-0.5 truncate font-mono text-[9px] text-gray-400">{order.orderNo} · {order.createdAt}</p>
                     </div>
                   </div>
-                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${orderStatusTone(order.status)}`}>
-                    {order.statusText}
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${orderStatusTone(order.status, fulfillmentStage)}`}>
+                    {displayStatusText}
                   </span>
                 </header>
 
@@ -205,14 +248,14 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
                   <div className="mt-2 flex items-center justify-end gap-2">
                     <button type="button" onClick={() => openOrderView(order, 'detail')} className="flex min-h-8 items-center gap-1 rounded-full border border-gray-200 bg-white px-3 text-[9px] font-bold text-gray-600 active:bg-gray-50"><Eye className="h-3 w-3" />订单详情</button>
                     {isPendingPayment && <button type="button" onClick={() => setPaymentOrder(order)} className="flex min-h-8 items-center gap-1 rounded-full bg-[var(--sw-brand)] px-3.5 text-[9px] font-bold text-white"><WalletCards className="h-3 w-3" />继续付款</button>}
-                    {isCompleted && (
+                    {canRequestAfterSale && (
                       <button
                         type="button"
                         onClick={() => openOrderView(order, 'after-sale')}
                         className="flex min-h-8 items-center gap-1 rounded-full border border-gray-200 bg-white px-3 text-[9px] font-bold text-gray-700 active:bg-gray-50"
                       >
                         <RotateCcw className="h-3 w-3" />
-                        退货/退款
+                        {afterSaleActionLabel}
                       </button>
                     )}
                     {isAfterSale && <button type="button" onClick={() => openOrderView(order, 'after-sale')} className="min-h-8 rounded-full bg-purple-50 px-3 text-[9px] font-bold text-purple-700">查看进度</button>}
@@ -228,8 +271,10 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
   );
 };
 
-function orderStatusTone(status: string): string {
+function orderStatusTone(status: string, fulfillmentStage: MobileFulfillmentStage | null): string {
   if (status === 'pending_payment' || status === 'pending_pay') return 'bg-amber-50 text-amber-700';
+  if (fulfillmentStage === 'received') return 'bg-emerald-50 text-emerald-700';
+  if (fulfillmentStage) return 'bg-blue-50 text-[var(--sw-brand)]';
   if (status === 'completed') return 'bg-emerald-50 text-emerald-700';
   if (status === 'after_sale') return 'bg-purple-50 text-purple-700';
   return 'bg-blue-50 text-[var(--sw-brand)]';

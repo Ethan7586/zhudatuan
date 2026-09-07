@@ -1,4 +1,5 @@
 import type { FrontendOrder, FrontendOrderItem, FrontendProduct } from '../../adapters/frontendData';
+import type { MobileFulfillmentStage } from '../../context/MallContext';
 
 export type MobileInventoryStatus = 'available' | 'tight' | 'unavailable' | 'pending';
 
@@ -17,7 +18,7 @@ export function inventoryStatus(product: FrontendProduct): MobileInventoryStatus
   return 'available';
 }
 
-export function groupOrderPackages(order: FrontendOrder): MobileMerchantPackage[] {
+export function groupOrderPackages(order: FrontendOrder, fulfillmentStage: MobileFulfillmentStage | null = null): MobileMerchantPackage[] {
   const groups = new Map<string, FrontendOrderItem[]>();
   order.items.forEach((item) => {
     const merchantName = item.product.supplierName || order.supplierName || order.mallName;
@@ -28,12 +29,15 @@ export function groupOrderPackages(order: FrontendOrder): MobileMerchantPackage[
     id: `${order.id}-package-${index + 1}`,
     merchantName,
     items,
-    statusLabel: packageStatusLabel(order.status),
-    deliveryHint: packageDeliveryHint(order, index),
+    statusLabel: packageStatusLabel(order.status, fulfillmentStage),
+    deliveryHint: packageDeliveryHint(order, index, fulfillmentStage),
   }));
 }
 
-function packageStatusLabel(status: FrontendOrder['status']): string {
+function packageStatusLabel(status: FrontendOrder['status'], fulfillmentStage: MobileFulfillmentStage | null): string {
+  if (fulfillmentStage === 'processing') return '备货中';
+  if (fulfillmentStage === 'shipped') return '运输中';
+  if (fulfillmentStage === 'received') return '已收货';
   if (status === 'pending_payment' || status === 'pending_pay') return '待付款';
   if (status === 'pending_shipment' || status === 'paid') return '备货中';
   if (status === 'pending_receipt' || status === 'shipping' || status === 'shipped') return '运输中';
@@ -41,7 +45,10 @@ function packageStatusLabel(status: FrontendOrder['status']): string {
   return '售后处理中';
 }
 
-function packageDeliveryHint(order: FrontendOrder, index: number): string {
+function packageDeliveryHint(order: FrontendOrder, index: number, fulfillmentStage: MobileFulfillmentStage | null): string {
+  if (fulfillmentStage === 'received') return '包裹已签收，等待订单完成';
+  if (fulfillmentStage === 'shipped' && order.trackingNo) return `${order.expressCompany || '承运方'} · ${order.trackingNo}`;
+  if (fulfillmentStage === 'shipped') return '包裹运输中，物流信息持续更新';
   if (order.trackingNo) return `${order.expressCompany || '承运方'} · ${order.trackingNo}`;
   if (order.status === 'pending_payment' || order.status === 'pending_pay') return '付款后由商户独立安排配送';
   if (order.status === 'completed') return '包裹已完成签收';

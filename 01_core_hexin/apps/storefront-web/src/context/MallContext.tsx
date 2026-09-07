@@ -3,7 +3,7 @@ import { UserProfile, EnterpriseMall, Product, CartItem, Order, DeliveryAddress,
 import { ProductionApiError } from '../services/productionApi.error';
 import { loadProductionApi } from '../services/productionApiLoader';
 import { toFrontendCategories, toFrontendOrders, toFrontendProducts } from '../adapters/frontendData';
-import type { AndroidAppPage, AppMode, LaptopPage, LoginCredentials, MallContextType, MiniProgramPage, PageRoute, PendingFeatureInfo, RouteParams, SessionStatus, TabletOrientation, TabletPage, ViewportMode } from './MallContext.types';
+import type { AndroidAppPage, AppMode, LaptopPage, LoginCredentials, MallContextType, MiniProgramPage, MobileFulfillmentStage, PageRoute, PendingFeatureInfo, RouteParams, SessionStatus, TabletOrientation, TabletPage, ViewportMode } from './MallContext.types';
 import { useDeviceNavigation } from './useDeviceNavigation';
 import { checkoutSelectedCartRequest, PaymentPhoneVerificationRequired } from './checkoutSelectedCart';
 import { useProductionSync } from './useProductionSync';
@@ -53,6 +53,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const [malls, setMalls] = useState<EnterpriseMall[]>(() => (showcaseService ? showcaseService.getMalls() : []));
   const [cart, setCart] = useState<CartItem[]>(() => (showcaseService ? showcaseService.getCart() : []));
   const [orders, setOrders] = useState<Order[]>(() => (showcaseService ? showcaseService.getOrders() : []));
+  const [mobileFulfillmentSimulationStage, setMobileFulfillmentSimulationStage] = useState<MobileFulfillmentStage | null>(null);
   const [products, setProducts] = useState<Product[]>(() => (showcaseService ? showcaseService.getProducts() : []));
   const [accountLogs, setAccountLogs] = useState<AccountLog[]>(() => (showcaseService ? showcaseService.getAccountLogs() : []));
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>(isShowcase ? 'authenticated' : 'checking');
@@ -154,6 +155,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     void refreshPublicCatalog().catch(() => showToast('公开商品目录同步失败，请稍后重试', 'error'));
     setCart([]);
     setOrders([]);
+    setMobileFulfillmentSimulationStage(null);
   };
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
@@ -407,6 +409,8 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
         products,
         presentationProducts,
         presentationOrders,
+        mobileFulfillmentSimulationStage,
+        setMobileFulfillmentSimulationStage,
         presentationCategories,
         accountLogs,
         sessionStatus,

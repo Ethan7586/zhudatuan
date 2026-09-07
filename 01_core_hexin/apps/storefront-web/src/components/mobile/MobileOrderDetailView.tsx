@@ -1,7 +1,9 @@
-import { ChevronLeft, Clock3, MapPin, PackageCheck, ReceiptText, Store, Truck, WalletCards } from 'lucide-react';
+import { ChevronLeft, Clock3, MapPin, Package, PackageCheck, ReceiptText, Store, Truck, WalletCards } from 'lucide-react';
 import type { FrontendOrder } from '../../adapters/frontendData';
+import { useMall, type MobileFulfillmentStage } from '../../context/MallContext';
 import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 import { MobileInventoryBadge } from './MobileInventoryBadge';
+import { effectiveMobileFulfillmentStage, mobileFulfillmentStageLabel } from './mobileOrderFulfillment';
 import { groupOrderPackages } from './mobileOrderPresentation';
 
 interface MobileOrderDetailViewProps {
@@ -12,10 +14,14 @@ interface MobileOrderDetailViewProps {
 }
 
 export function MobileOrderDetailView({ order, onBack, onContinuePayment, onAfterSale }: Readonly<MobileOrderDetailViewProps>) {
-  const packages = groupOrderPackages(order);
+  const { mobileFulfillmentSimulationStage } = useMall();
+  const fulfillmentStage = effectiveMobileFulfillmentStage(order, mobileFulfillmentSimulationStage);
+  const packages = groupOrderPackages(order, fulfillmentStage);
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const canPay = order.status === 'pending_payment' || order.status === 'pending_pay';
-  const canAfterSale = order.status === 'completed';
+  const canAfterSale = order.status === 'completed' || fulfillmentStage !== null;
+  const afterSaleActionLabel = order.status === 'completed' || fulfillmentStage === 'received' ? '申请退货/退款' : '申请退款';
+  const displayStatusText = fulfillmentStage ? mobileFulfillmentStageLabel(fulfillmentStage) : order.statusText;
   const payableAmount = order.payment.wechatPaid > 0 ? order.payment.wechatPaid : order.totalAmount;
 
   return (
@@ -35,16 +41,20 @@ export function MobileOrderDetailView({ order, onBack, onContinuePayment, onAfte
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[10px] text-blue-100">当前进度</p>
-              <h2 className="mt-1 text-xl font-black">{order.statusText}</h2>
-              <p className="mt-1 text-[10px] text-blue-100">{statusHint(order.status)}</p>
+              <h2 className="mt-1 text-xl font-black">{displayStatusText}</h2>
+              <p className="mt-1 text-[10px] text-blue-100">{statusHint(order.status, fulfillmentStage)}</p>
             </div>
             <div className="grid h-12 w-12 place-items-center rounded-2xl border border-white/20 bg-white/12">
-              {order.status === 'completed' ? <PackageCheck className="h-6 w-6" /> : <Truck className="h-6 w-6" />}
+              {order.status === 'completed' || fulfillmentStage === 'received'
+                ? <PackageCheck className="h-6 w-6" />
+                : fulfillmentStage === 'processing'
+                  ? <Package className="h-6 w-6" />
+                  : <Truck className="h-6 w-6" />}
             </div>
           </div>
           <div className="mt-4 grid grid-cols-3 gap-2 text-center text-[9px]">
             {['已下单', '履约中', '已完成'].map((step, index) => {
-              const reached = index <= progressIndex(order.status);
+              const reached = index <= progressIndex(order.status, fulfillmentStage);
               return (
                 <div key={step} className="space-y-1.5">
                   <div className={`mx-auto h-1.5 rounded-full ${reached ? 'bg-white' : 'bg-white/25'}`} />
@@ -146,7 +156,7 @@ export function MobileOrderDetailView({ order, onBack, onContinuePayment, onAfte
         <footer className="absolute inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t border-gray-100 bg-white/96 px-3 py-2.5 backdrop-blur">
           <div className="flex items-center gap-1.5 text-[9px] text-gray-400"><WalletCards className="h-4 w-4" />订单服务</div>
           {canPay && <button type="button" onClick={onContinuePayment} className="min-h-10 rounded-full bg-[var(--sw-brand)] px-6 text-xs font-black text-white shadow-[0_8px_20px_rgba(36,105,232,0.24)]">继续付款</button>}
-          {canAfterSale && <button type="button" onClick={onAfterSale} className="min-h-10 rounded-full border border-gray-200 bg-white px-6 text-xs font-black text-gray-800 active:bg-gray-50">申请退货/退款</button>}
+          {canAfterSale && <button type="button" onClick={onAfterSale} className="min-h-10 rounded-full border border-gray-200 bg-white px-6 text-xs font-black text-gray-800 active:bg-gray-50">{afterSaleActionLabel}</button>}
         </footer>
       )}
     </div>
@@ -157,14 +167,18 @@ function AmountRow({ label, value, tone = 'default' }: Readonly<{ label: string;
   return <div className="flex items-center justify-between"><span>{label}</span><span className={tone === 'benefit' ? 'font-bold text-emerald-600' : 'font-medium text-gray-700'}>{value}</span></div>;
 }
 
-function progressIndex(status: FrontendOrder['status']): number {
+function progressIndex(status: FrontendOrder['status'], fulfillmentStage: MobileFulfillmentStage | null): number {
   if (status === 'completed' || status === 'after_sale') return 2;
+  if (fulfillmentStage) return 1;
   if (status === 'pending_shipment' || status === 'pending_receipt' || status === 'paid' || status === 'shipping' || status === 'shipped') return 1;
   return 0;
 }
 
-function statusHint(status: FrontendOrder['status']): string {
+function statusHint(status: FrontendOrder['status'], fulfillmentStage: MobileFulfillmentStage | null): string {
   if (status === 'pending_payment' || status === 'pending_pay') return '订单已保留，请在有效时间内完成付款';
+  if (fulfillmentStage === 'processing') return '商户正在处理订单，发货后状态会同步更新';
+  if (fulfillmentStage === 'shipped') return '订单已经发货，请留意物流更新';
+  if (fulfillmentStage === 'received') return '包裹已经收货，仍可申请退货或退款';
   if (status === 'pending_shipment' || status === 'paid') return '商户正在备货，包裹将分别发出';
   if (status === 'pending_receipt' || status === 'shipping' || status === 'shipped') return '包裹正在路上，请留意物流更新';
   if (status === 'completed') return '订单已完成，仍可发起售后服务';

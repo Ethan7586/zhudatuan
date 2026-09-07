@@ -12,6 +12,7 @@ export type AndroidAppPage = 'home' | 'search' | 'detail' | 'checkout' | 'orders
 export type TabletPage = 'home' | 'category' | 'detail' | 'cart' | 'orders' | 'profile';
 export type TabletOrientation = 'landscape' | 'portrait';
 export type LaptopPage = 'home-1366' | 'home-1440' | 'category' | 'detail' | 'cart' | 'orders';
+export type MobileFulfillmentStage = 'processing' | 'shipped' | 'received';
 
 export interface PendingFeatureInfo {
   isOpen: boolean;
@@ -77,6 +78,8 @@ export interface MallContextType {
   products: Product[];
   presentationProducts: FrontendProduct[];
   presentationOrders: FrontendOrder[];
+  mobileFulfillmentSimulationStage: MobileFulfillmentStage | null;
+  setMobileFulfillmentSimulationStage: Dispatch<SetStateAction<MobileFulfillmentStage | null>>;
   presentationCategories: FrontendCategory[];
   accountLogs: AccountLog[];
   sessionStatus: SessionStatus;

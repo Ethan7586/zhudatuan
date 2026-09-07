@@ -1,13 +1,14 @@
 import React from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
-import { CreditCard, Utensils, Clock, Truck, CheckCircle, HelpCircle, Ticket, MapPin, FileText, BellRing, Headphones, ShieldCheck, ChevronRight, Building2, Smartphone, LogOut } from 'lucide-react';
+import { CreditCard, Utensils, Clock, Truck, CheckCircle, HelpCircle, Ticket, MapPin, FileText, BellRing, Headphones, ShieldCheck, ChevronRight, Building2, Smartphone, LogOut, Package, PackageCheck } from 'lucide-react';
 import { OrderFlowIcon } from '../../components/mobile/OrderFlowIcon';
 import { matchesMobileOrderFilter, selectMobileOrderFilter, type MobileOrderFilter } from '../../components/mobile/mobileOrderFilters';
+import { summarizeMobileFulfillment } from '../../components/mobile/mobileOrderFulfillment';
 import { preloadMiniProgramPage } from '../../components/mobile/miniProgramPageLoaders';
 
 export const MPProfilePage: React.FC = () => {
-  const { user, currentMall, sessionStatus, logout, presentationOrders, triggerPendingFeature, setMpPage } = useMall();
+  const { user, currentMall, sessionStatus, logout, presentationOrders, mobileFulfillmentSimulationStage, triggerPendingFeature, setMpPage } = useMall();
 
   React.useEffect(() => preloadMiniProgramPage('orders'), []);
 
@@ -20,6 +21,16 @@ export const MPProfilePage: React.FC = () => {
   const orderCount = (statusFilter: MobileOrderFilter) => presentationOrders.filter((order) => (
     matchesMobileOrderFilter(order.status, statusFilter)
   )).length;
+  const fulfillment = React.useMemo(
+    () => summarizeMobileFulfillment(presentationOrders, mobileFulfillmentSimulationStage),
+    [mobileFulfillmentSimulationStage, presentationOrders],
+  );
+  const FulfillmentStageIcon = fulfillment.stage === 'processing' ? Package : fulfillment.stage === 'shipped' ? Truck : PackageCheck;
+  const fulfillmentTone = fulfillment.stage === 'processing'
+    ? 'bg-amber-50 text-amber-600'
+    : fulfillment.stage === 'shipped'
+      ? 'bg-blue-50 text-[var(--sw-brand)]'
+      : 'bg-emerald-50 text-emerald-600';
 
   return (
     <div className="bg-[#F5F7FA] min-h-full flex flex-col font-sans text-gray-800 pb-16">
@@ -103,11 +114,11 @@ export const MPProfilePage: React.FC = () => {
             </button>
 
             <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('pending_shipment')} className="relative cursor-pointer touch-manipulation rounded-xl p-1 transition-[color,background-color,transform] duration-100 hover:bg-gray-50 active:scale-95 active:bg-blue-50">
-              <div className="w-8 h-8 mx-auto rounded-full bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-                <Truck className="w-4 h-4" />
+              <div className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full font-bold transition-colors duration-200 ${fulfillmentTone}`}>
+                <FulfillmentStageIcon className="h-4 w-4" />
               </div>
-              {orderCount('pending_shipment') > 0 && <OrderCountBadge count={orderCount('pending_shipment')} />}
-              <div className="text-[10px] text-gray-600 mt-1 font-medium">待处理</div>
+              {fulfillment.count > 0 && <OrderCountBadge count={fulfillment.count} />}
+              <div key={fulfillment.stage} aria-live="polite" className="mt-1 text-[10px] font-medium text-gray-600">{fulfillment.label}</div>
             </button>
 
             <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('completed')} className="relative cursor-pointer touch-manipulation rounded-xl p-1 transition-[color,background-color,transform] duration-100 hover:bg-gray-50 active:scale-95 active:bg-blue-50">
