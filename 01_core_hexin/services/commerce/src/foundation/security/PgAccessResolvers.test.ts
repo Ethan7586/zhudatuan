@@ -93,6 +93,13 @@ describe('PgSessionResolver realm account projection', () => {
     await expect(resolver.resolve({ authorization: `Bearer ${'t'.repeat(32)}`, host: 'api.example.com' }))
       .rejects.toThrow('AUTH_REALM_CONTEXT_MISSING');
   });
+
+  it('keeps an unknown, expired, or cross-host session on the authentication-required path', async () => {
+    const resolver = new PgSessionResolver({ query: vi.fn().mockResolvedValue({ rows: [] }) } as never);
+
+    await expect(resolver.resolve({ authorization: `Bearer ${'t'.repeat(32)}`, host: 'api.example.com' }))
+      .rejects.toThrow('AUTHENTICATION_REQUIRED');
+  });
 });
 
 describe('PgMembershipResolver authorization time snapshot', () => {

@@ -596,6 +596,28 @@ describe('canonical member registration security boundary', () => {
     expect(session?.values.slice(9)).toEqual([1, 'realm:l1', expect.stringMatching(/^account:/), 'storefront-hbbtzn']);
   });
 
+  it('binds a consumer-node registration with the profile derived from its realm', async () => {
+    const harness = registrationHarness({
+      challengeAccepted: false,
+      subjectExists: false,
+      storefrontAvailable: true,
+    });
+
+    const response = await identityRegistrationOperations(context(harness.pool))
+      .invoke(consumerNodePasswordRegistrationRequest('registration:consumer-node'));
+
+    expect(response).toMatchObject({
+      status: 201,
+      body: { organization_id: 'mall-zhudatuan', client: 'storefront', authentication: { target: 'storefront' } },
+    });
+    const binding = harness.queries.find(({ text }) => text.includes('update access.membership membership')
+      && text.includes('node_profile=realm.node_profile'));
+    expect(binding?.text).toContain('from identity.realm realm');
+    expect(binding?.values.slice(1, 3)).toEqual(['realm:l6', expect.stringMatching(/^account:/)]);
+    const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
+    expect(session?.values.slice(9)).toEqual([1, 'realm:l6', expect.stringMatching(/^account:/), 'storefront']);
+  });
+
   it('reuses one phone identity while creating an independent membership in another storefront', async () => {
     const harness = registrationHarness({
       challengeAccepted: true,
@@ -803,6 +825,18 @@ function storefrontPasswordRegistrationRequest(idempotency: string): OperationRe
   };
 }
 
+function consumerNodePasswordRegistrationRequest(idempotency: string): OperationRequest {
+  const request = storefrontPasswordRegistrationRequest(idempotency);
+  return {
+    ...request,
+    input: {
+      ...request.input,
+      headers: { ...request.input.headers, host: 'api.l6.identity.test' },
+      body: { ...(request.input.body as Readonly<Record<string, unknown>>), application: 'l6-storefront', target: 'storefront' },
+    },
+  };
+}
+
 function storefrontContextRequest(): OperationRequest {
   return {
     type: 'identity.storefronts.read',
@@ -941,13 +975,16 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
     query: async (text: string, values: readonly unknown[] = []) => {
       queries.push({ text, values });
       if (text.includes('from identity.realmentry entry')) {
+        const l6 = String(values[0]).includes('l6.identity.test');
         const l1 = String(values[0]).includes('hbbtzn');
-        return result([{ realm_id: l1 ? 'realm:l1' : 'realm:l0', node_id: l1 ? 'l1' : 'l0' }]);
+        return result([{ realm_id: l6 ? 'realm:l6' : l1 ? 'realm:l1' : 'realm:l0', node_id: l6 ? 'l6' : l1 ? 'l1' : 'l0' }]);
       }
       if (text.includes('from identity.realmtarget where realm_id=$1')) {
         const target = String(values[1]);
         const consumer = target.startsWith('storefront');
         const l1 = values[0] === 'realm:l1';
+        const l6 = values[0] === 'realm:l6';
+        if (l6 && target !== 'storefront') return result([]);
         if ((l1 && !['console-hbbtzn', 'storefront-hbbtzn'].includes(target))
           || (!l1 && ['console-hbbtzn', 'storefront-hbbtzn'].includes(target))) return result([]);
         return result([{
@@ -956,7 +993,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           membership_organization_id: consumer
             ? (l1 ? input.storefrontOrganizationId ?? 'mall:l1-hongtai' : 'mall-zhudatuan')
             : l1 ? 'mall:d1708f04df2dd8a61736852c4900fb43' : 'tenant-zhudatuan',
-          application_slug: consumer ? (l1 ? 'zdt-l1-verify' : 'zhudatuan-storefront') : null,
+          application_slug: consumer ? (l6 ? 'l6-storefront' : l1 ? 'zdt-l1-verify' : 'zhudatuan-storefront') : null,
         }]);
       }
       if (text.includes('from identity.realmtarget target join identity.realm realm')) {
@@ -984,10 +1021,11 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       }
       if (text.includes('from experience.application application') && text.includes('application.public_slug=$1')) {
         const l1 = values[0] === 'zdt-l1-verify';
+        const l6 = values[0] === 'l6-storefront';
         const l1Organization = input.storefrontOrganizationId ?? 'mall:l1-hongtai';
         return result(input.storefrontAvailable ? [{
-          application_id: l1 ? 'application:zdt-l1-verify' : 'application:zhudatuan-storefront',
-          application_slug: l1 ? 'zdt-l1-verify' : 'zhudatuan-storefront',
+          application_id: l6 ? 'application:l6-storefront' : l1 ? 'application:zdt-l1-verify' : 'application:zhudatuan-storefront',
+          application_slug: l6 ? 'l6-storefront' : l1 ? 'zdt-l1-verify' : 'zhudatuan-storefront',
           organization_id: l1 ? l1Organization : 'mall-zhudatuan', organization_name: l1 ? '宏泰甄选' : '主打团',
           role_id: l1 ? `role-zhudatuan-storefront-member:${l1Organization}` : 'role-zhudatuan-storefront-member',
           terms_title: '主打团用户服务协议', terms_body: '服务协议正文',
@@ -1098,6 +1136,10 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           client: text.includes("'operator'") ? 'operator' : 'storefront', employee_no: null, status: 'active', access_version: 1,
           joined_at: '2026-09-03T00:00:00.000Z', left_at: null,
         }]);
+      }
+      if (text.includes('update access.membership membership') && text.includes('node_profile=realm.node_profile')) {
+        const memberships = Array.isArray(values[0]) ? values[0] : [values[0]];
+        return result(memberships.map((id) => ({ id })));
       }
       return result([]);
     },

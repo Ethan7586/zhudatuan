@@ -91,11 +91,14 @@ export async function verifyIdentityRealmIsolation(database) {
       from identity_realm_fixture;
 
       insert into access.membership(
-        id,member_id,organization_id,client,status,access_version,joined_at,realm_id,account_id,node_profile
+        id,member_id,organization_id,client,status,access_version,joined_at
       )
-      select membership_id,member_id,organization_id,membership_client,'active',1,clock_timestamp(),realm_id,
-        account_id,node_profile
+      select membership_id,member_id,organization_id,membership_client,'active',1,clock_timestamp()
       from identity_realm_fixture;
+      update access.membership membership
+      set realm_id=realm.id,account_id=fixture.account_id,node_profile=realm.node_profile
+      from identity_realm_fixture fixture join identity.realm realm on realm.id=fixture.realm_id
+      where membership.id=fixture.membership_id;
 
       insert into access.membershiprole(membership_id,role_id,effective_at)
       select membership_id,'role:self',clock_timestamp() from identity_realm_fixture;
@@ -135,11 +138,14 @@ export async function verifyIdentityRealmIsolation(database) {
       from identity_realm_fixture where level in(0,1);
 
       insert into access.membership(
-        id,member_id,organization_id,client,status,access_version,joined_at,realm_id,account_id,node_profile
+        id,member_id,organization_id,client,status,access_version,joined_at
       )
-      select membership_id,member_id,organization_id,'storefront','active',1,clock_timestamp(),realm_id,
-        account_id,'operating_mall'
+      select membership_id,member_id,organization_id,'storefront','active',1,clock_timestamp()
       from identity_l0_l1_consumer_fixture;
+      update access.membership membership
+      set realm_id=realm.id,account_id=fixture.account_id,node_profile=realm.node_profile
+      from identity_l0_l1_consumer_fixture fixture join identity.realm realm on realm.id=fixture.realm_id
+      where membership.id=fixture.membership_id;
       insert into access.membershiprole(membership_id,role_id,effective_at)
       select membership_id,'role:self',clock_timestamp() from identity_l0_l1_consumer_fixture;
       insert into access.scopegrant(
@@ -238,6 +244,15 @@ export async function verifyIdentityRealmIsolation(database) {
             'https://console.l6.identity.test',clock_timestamp(),'consumer');
           raise exception 'IDENTITY_CONSUMER_ADMIN_TARGET_ACCEPTED';
         exception when check_violation or foreign_key_violation then null;
+        end;
+        begin
+          insert into identity.realmtarget(
+            realm_id,surface,target,membership_client,membership_organization_id,application_slug,
+            return_origin,created_at
+          ) values('realm:l6','consumer','storefront-without-profile','storefront','mall-zhudatuan',
+            'l6-without-profile','https://l6.identity.test',clock_timestamp());
+          raise exception 'IDENTITY_TARGET_PROFILE_DEFAULT_ACCEPTED';
+        exception when not_null_violation then null;
         end;
         begin
           update access.membership set client='operator' where id='membership:realm-isolation:l6';

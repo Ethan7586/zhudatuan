@@ -49,6 +49,7 @@ alter table identity.realmtarget add constraint identity_realmtarget_profile_sur
   node_profile='operating_mall'
   or (node_profile='consumer' and surface='consumer' and membership_client='storefront')
 );
+alter table identity.realmtarget alter column node_profile drop default;
 
 alter table access.membership add column node_profile text not null default 'operating_mall';
 alter table access.membership add constraint access_membership_realm_profile
@@ -58,7 +59,7 @@ alter table access.membership add constraint access_membership_profile_client ch
 );
 
 insert into runtime.schemaversion(version,checksum)
-values('20260907123000','4af615dca53c20b7a79b26e53f1ef4aacac2f731afab82dc55ef4ba6dfe73c68');
+values('20260907123000','0293ec3014459ff693e28042787c6e3b5866da28608623c079fb8ab0088f6402');
 
 do $assert$
 begin
@@ -80,7 +81,7 @@ begin
   end if;
   if not exists(select 1 from runtime.schemaversion
       where version='20260907123000'
-        and checksum='4af615dca53c20b7a79b26e53f1ef4aacac2f731afab82dc55ef4ba6dfe73c68') then
+        and checksum='0293ec3014459ff693e28042787c6e3b5866da28608623c079fb8ab0088f6402') then
     raise exception 'IDENTITY_NODE_PROFILE_MIGRATION_INCOMPLETE';
   end if;
 end

@@ -711,8 +711,13 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const realmMemberships = registrationTarget.target_client === 'operator'
             ? [registeredMembership, operatorMembership]
             : [registeredMembership];
-          await database.query(`update access.membership set realm_id=$2,account_id=$3 where id=any($1::text[])`,
+          const boundMemberships = await database.query<{ id: string }>(`update access.membership membership
+            set realm_id=realm.id,account_id=$3,node_profile=realm.node_profile
+            from identity.realm realm
+            where membership.id=any($1::text[]) and realm.id=$2 and realm.status='active'
+            returning membership.id`,
             [realmMemberships, realm.realmId, resolvedAccount]);
+          if (boundMemberships.rows.length !== realmMemberships.length) throw new Error('MEMBERSHIP_REALM_BINDING_FAILED');
           if (typeof body.wechatToken === 'string') {
             await bindWechat(database, tokenHash(body.wechatToken), resolvedPrincipal, registeredMembership, realm.realmId, resolvedAccount);
           }
@@ -813,8 +818,12 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             scopeKind,
             scopes: [`scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`],
           });
-          await database.query('update access.membership set employee_no=$2,realm_id=$3,account_id=$4 where id=$1',
+          const boundMembership = await database.query<{ id: string }>(`update access.membership membership
+            set employee_no=$2,realm_id=realm.id,account_id=$4,node_profile=realm.node_profile
+            from identity.realm realm where membership.id=$1 and realm.id=$3 and realm.status='active'
+            returning membership.id`,
             [membership, typeof body.employeeNo === 'string' ? body.employeeNo.trim() || null : null, actorAccount.realmId, account]);
+          if (!boundMembership.rows[0]) throw new Error('MEMBERSHIP_REALM_BINDING_FAILED');
           return { status: 201, body: { ...result, membershipId: membership, memberId: member, userId: principal } };
         }
         const target = await database.query<{

@@ -59,6 +59,6 @@
 - 完整迁移后的临时数据库实建 L0–L11 十二个 realm：L0–L5 为独立经营商城，L6–L11 为绑定宿主商城的消费者节点。十二个账号使用同一手机号检索值和同一微信 subject，但分别持有 account、密码 hash、credential version、手机验证、challenge、assurance、login attempt、federated identity、membership、session 和 ticket。
 - 十二个 session 在各自 Host 下解析为 12 个精确 account/realm/membership，循环错位 Host 解析为 0 个；跨 realm 改写 ticket 被复合外键拒绝。数据库同时拒绝为 L6–L11 写入独立 `mall_id`、admin target 或 operator membership。L11 单独提升 credential version 后只失效 L11，L10 单独注销后只再失效 L10。
 - L11 membership 的单独 deny 不出现在 L10 的授权快照中；跨节点权限仍只能来自未来由 Ethan 明确定义的显式授权或委派记录，本批没有引入自动共享。
-- 最终回归覆盖 L0 admin、L0 consumer、L1 admin、L1 consumer 四入口，以及 registry-only L11 认证页和商城入口。认证前端 70 项、商城前端 355 项、身份与授权后端关键链 128 项全部通过；共享 registry 契约 24 项覆盖 L0–L11。
+- 最终回归覆盖 L0 admin、L0 consumer、L1 admin、L1 consumer 四入口，以及 registry-only L11 认证页和商城入口。认证前端 70 项、商城前端 363 项、身份与授权后端关键链 130 项全部通过；共享 registry 契约 24 项覆盖 L0–L11。consumer Membership 先以未绑定状态创建，再由数据库 realm 原子派生并写入 `realm_id / account_id / node_profile`，不接受客户端自报节点类型。
 
 至此，SFL 身份域后置绑定的五批根因修复在代码、受管迁移与本地完整回放范围内完成。生产部署不属于本次执行范围；在部署前仍以第 4 批提交作为本批回滚点，并按正式部署流程另行建立生产基线和外部十五域冒烟结果。
