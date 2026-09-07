@@ -102,8 +102,21 @@ async function buildRelease(buildToolchain) {
     npm_config_userconfig: '/dev/null',
     VITE_CLIENT_VERSION: '0.0.0-staging',
   };
+  const identityNodeRegistry = JSON.stringify({
+    version: 2,
+    defaultNodeId: 'staging',
+    nodes: [{
+      nodeId: 'staging', nodeProfile: 'operating_mall', mallId: 'mall-staging',
+      displayName: '身份预发布节点', accountsOrigin: `https://${hosts.accounts}`,
+      apiOrigin: `https://${hosts.api}`, consumerApiOrigin: `https://${hosts.api}`,
+      adminOrigin: `https://${hosts.console}`, storefrontOrigin: 'https://disabled.full.staging.example.invalid',
+      adminTarget: 'console', consumerTarget: 'storefront', consumerApplication: 'staging-storefront',
+    }],
+  });
   await execute(buildToolchain.node, [buildToolchain.npmCli, 'run', 'build:auth'], { cwd: repository, maxBuffer: 10 * 1024 * 1024, env: {
     ...common,
+    VITE_IDENTITY_NODE_REGISTRY: identityNodeRegistry,
+    VITE_IDENTITY_NODE_REGISTRY_MODE: 'staging',
     VITE_API_BASE_URL: `https://${hosts.api}`,
     VITE_AUTH_STAGING_API_ORIGIN: `https://${hosts.api}`,
     VITE_ADMIN_ORIGIN: `https://${hosts.console}`,

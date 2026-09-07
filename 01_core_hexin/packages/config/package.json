@@ -13,6 +13,7 @@
   "exports": {
     "./client": "./src/ClientEnvironment.ts",
     "./miniapp": "./src/MiniappEnvironment.ts",
+    "./identity-node-manifest": "./src/IdentityNodeManifest.ts",
     "./runtime": "./src/RuntimeCatalog.generated.ts",
     "./sfl-console-runtime": "./src/SflNodeKernelConsole.ts",
     "./sfl-node-kernel": "./src/SflNodeKernel.ts",

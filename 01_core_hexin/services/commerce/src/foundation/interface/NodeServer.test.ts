@@ -6,7 +6,7 @@ import { SERVER_NODE_MANIFEST_REGISTRY } from '../../bootstrap/ApiBootstrap';
 import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { requireRequestNodeContext } from '../security/AccessContext';
 import { HttpApp } from './HttpApp';
-import { listen, trustedPeerAddress } from './NodeServer';
+import { listen, trustedIdentityEntryHost, trustedPeerAddress } from './NodeServer';
 
 describe('NodeServer NodeContext ingress', () => {
   it('resolves once before an outer handler and shares the exact context with HttpApp', async () => {
@@ -134,5 +134,29 @@ describe('trusted peer address', () => {
     expect(trustedPeerAddress('203.0.113.8, 198.51.100.2', '127.0.0.1')).toBe('127.0.0.1');
     expect(trustedPeerAddress(['203.0.113.8', '203.0.113.9'], '127.0.0.1')).toBe('127.0.0.1');
     expect(trustedPeerAddress(undefined, undefined)).toBe('unknown');
+  });
+});
+
+describe('trusted identity entry host', () => {
+  it('preserves an L1 host only on a Cloudflare cross-zone Worker subrequest', () => {
+    const trusted = {
+      'cf-worker': 'hbbtzn.com',
+      'cf-connecting-ip': '2a06:98c0:3600::103',
+      'x-real-ip': '2a06:98c0:3600::103',
+      'x-zdt-identity-entry-host': 'api.hbbtzn.com',
+    };
+    expect(trustedIdentityEntryHost(trusted, 'api.zhudatuan.com')).toBe('api.hbbtzn.com');
+    expect(trustedIdentityEntryHost({ ...trusted, 'cf-worker': undefined }, 'api.zhudatuan.com'))
+      .toBe('api.zhudatuan.com');
+    expect(trustedIdentityEntryHost({ ...trusted, 'x-real-ip': '203.0.113.8' }, 'api.zhudatuan.com'))
+      .toBe('api.zhudatuan.com');
+    expect(trustedIdentityEntryHost({ ...trusted, 'cf-connecting-ip': '203.0.113.8' }, 'api.zhudatuan.com'))
+      .toBe('api.hbbtzn.com');
+    expect(trustedIdentityEntryHost({ ...trusted, 'x-real-ip': '203.0.113.8', 'cf-connecting-ip': '2a06:98c0:3600::103' }, 'api.zhudatuan.com'))
+      .toBe('api.zhudatuan.com');
+    expect(trustedIdentityEntryHost({ ...trusted, 'x-zdt-identity-entry-host': 'api.zhudatuan.com' }, 'api.zhudatuan.com'))
+      .toBe('api.zhudatuan.com');
+    expect(trustedIdentityEntryHost({ ...trusted, 'x-zdt-identity-entry-host': 'unknown.hbbtzn.com' }, 'api.zhudatuan.com'))
+      .toBe('api.zhudatuan.com');
   });
 });

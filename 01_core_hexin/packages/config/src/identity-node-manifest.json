@@ -1,0 +1,123 @@
+{
+  "schema": "zhudatuan.identity-node-manifest.v1",
+  "revision": "SFL-1.5-L0-L1-20260907",
+  "version": 2,
+  "defaultNodeId": "l0",
+  "allowedBrowserOrigins": [
+    "https://accounts.zhudatuan.com",
+    "https://console.hbbtzn.com",
+    "https://console.zhudatuan.com",
+    "https://h5.hbbtzn.com",
+    "https://h5.zhudatuan.com",
+    "https://hbbtzn.com",
+    "https://mall.hbbtzn.com",
+    "https://mini.zhudatuan.com",
+    "https://www.hbbtzn.com",
+    "https://zhudatuan.com"
+  ],
+  "nodes": [
+    {
+      "nodeId": "l0",
+      "realmId": "realm:l0",
+      "status": "active",
+      "nodeProfile": "operating_mall",
+      "mallId": "mall-zhudatuan",
+      "hostNodeId": null,
+      "displayName": "主打团平台",
+      "mallName": "筑大团商城",
+      "brandName": "筑大团",
+      "accountsOrigin": "https://accounts.zhudatuan.com",
+      "apiOrigin": "https://api.zhudatuan.com",
+      "consumerApiOrigin": "https://api.zhudatuan.com",
+      "adminOrigin": "https://console.zhudatuan.com",
+      "storefrontOrigin": "https://zhudatuan.com",
+      "storefrontHosts": [
+        "www.zhudatuan.com",
+        "internal.zhudatuan.com",
+        "beta.zhudatuan.com"
+      ],
+      "entries": [
+        { "host": "accounts.zhudatuan.com", "kind": "accounts", "status": "active" },
+        { "host": "api.zhudatuan.com", "kind": "api", "status": "active" }
+      ],
+      "targets": [
+        {
+          "surface": "admin",
+          "target": "console",
+          "membershipClient": "operator",
+          "membershipOrganizationId": "tenant-zhudatuan",
+          "application": null,
+          "returnOrigin": "https://console.zhudatuan.com"
+        },
+        {
+          "surface": "admin",
+          "target": "store",
+          "membershipClient": "store",
+          "membershipOrganizationId": "tenant-zhudatuan",
+          "application": null,
+          "returnOrigin": "https://console.zhudatuan.com/entrances/store"
+        },
+        {
+          "surface": "admin",
+          "target": "supplier",
+          "membershipClient": "supplier",
+          "membershipOrganizationId": "tenant-zhudatuan",
+          "application": null,
+          "returnOrigin": "https://console.zhudatuan.com/entrances/supplier"
+        },
+        {
+          "surface": "consumer",
+          "target": "storefront",
+          "membershipClient": "storefront",
+          "membershipOrganizationId": "mall-zhudatuan",
+          "application": "zhudatuan-storefront",
+          "returnOrigin": "https://zhudatuan.com"
+        }
+      ]
+    },
+    {
+      "nodeId": "l1",
+      "realmId": "realm:l1",
+      "status": "active",
+      "nodeProfile": "operating_mall",
+      "mallId": "mall:d1708f04df2dd8a61736852c4900fb43",
+      "hostNodeId": null,
+      "displayName": "宏泰甄选运营后台",
+      "mallName": "宏泰甄选",
+      "brandName": "宏泰甄选",
+      "accountsOrigin": "https://accounts.hbbtzn.com",
+      "apiOrigin": "https://api.hbbtzn.com",
+      "consumerApiOrigin": "https://hbbtzn.com",
+      "adminOrigin": "https://console.hbbtzn.com",
+      "storefrontOrigin": "https://hbbtzn.com",
+      "storefrontHosts": [
+        "h5.hbbtzn.com",
+        "mall.hbbtzn.com",
+        "www.hbbtzn.com"
+      ],
+      "entries": [
+        { "host": "accounts.hbbtzn.com", "kind": "accounts", "status": "active" },
+        { "host": "api.hbbtzn.com", "kind": "api", "status": "active" },
+        { "host": "hbbtzn.com", "kind": "storefront", "status": "active" }
+      ],
+      "targets": [
+        {
+          "surface": "admin",
+          "target": "console-hbbtzn",
+          "membershipClient": "operator",
+          "membershipOrganizationId": "mall:d1708f04df2dd8a61736852c4900fb43",
+          "application": null,
+          "returnOrigin": "https://console.hbbtzn.com"
+        },
+        {
+          "surface": "consumer",
+          "target": "storefront-hbbtzn",
+          "membershipClient": "storefront",
+          "membershipOrganizationId": "mall:d1708f04df2dd8a61736852c4900fb43",
+          "application": "zdt-l1-verify",
+          "returnOrigin": "https://hbbtzn.com"
+        }
+      ]
+    }
+  ]
+}

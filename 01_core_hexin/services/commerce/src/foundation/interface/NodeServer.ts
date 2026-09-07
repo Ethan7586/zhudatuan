@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { isIP } from 'node:net';
+import { IDENTITY_NODE_MANIFEST } from '@shop/config/identity-node-manifest';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import type { NodeContextResolver } from '@shop/config/sfl-node-kernel';
 import { bindRequestNodeContext } from '../security/AccessContext';
@@ -62,7 +63,7 @@ export function listen(
 }
 
 async function convert(request: IncomingMessage, signal: AbortSignal): Promise<Request> {
-  const host = request.headers.host;
+  const host = trustedIdentityEntryHost(request.headers, request.headers.host);
   if (!host) throw new Error('REQUEST_HOST_MISSING');
   const protocol = request.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
   const headers = new Headers();
@@ -76,11 +77,33 @@ async function convert(request: IncomingMessage, signal: AbortSignal): Promise<R
     ...(body === undefined ? {} : { body: body.toString('utf8') }) });
 }
 
+const CLOUDFLARE_CROSS_ZONE_WORKER_ADDRESS = '2a06:98c0:3600::103';
+const trustedL1IdentityEntryHosts = new Set(IDENTITY_NODE_MANIFEST.nodes
+  .filter((node) => node.nodeId === 'l1')
+  .flatMap((node) => [new URL(node.storefrontOrigin).hostname, ...node.entries.map((entry) => entry.host)]));
+
+export function trustedIdentityEntryHost(
+  headers: Readonly<Record<string, string | string[] | undefined>>,
+  fallback: string | undefined,
+): string | undefined {
+  const candidate = single(headers['x-zdt-identity-entry-host'])?.trim().toLowerCase();
+  return single(headers['cf-worker']) === 'hbbtzn.com'
+    && single(headers['x-real-ip']) === CLOUDFLARE_CROSS_ZONE_WORKER_ADDRESS
+    && candidate !== undefined
+    && trustedL1IdentityEntryHosts.has(candidate)
+    ? candidate
+    : fallback;
+}
+
 export function trustedPeerAddress(forwarded: string | string[] | undefined, remoteAddress: string | undefined): string {
   const peer = remoteAddress ?? 'unknown';
   const local = peer === '127.0.0.1' || peer === '::1' || peer === '::ffff:127.0.0.1';
   const candidate = Array.isArray(forwarded) ? undefined : forwarded?.trim();
   return local && candidate !== undefined && isIP(candidate) !== 0 ? candidate : peer;
+}
+
+function single(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? undefined : value;
 }
 
 async function read(request: IncomingMessage): Promise<Buffer | undefined> {

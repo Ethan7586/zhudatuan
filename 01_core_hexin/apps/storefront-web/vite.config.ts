@@ -1,4 +1,5 @@
 import vinext from 'vinext';
+import { PRODUCTION_IDENTITY_NODE_REGISTRY_SOURCE, parseIdentityNodeRegistry } from '@shop/sdk/identity-node';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
@@ -14,6 +15,14 @@ export default defineConfig(async ({ command }) => {
   process.env.WRANGLER_WRITE_LOGS ??= 'false';
   process.env.WRANGLER_LOG_PATH ??= '.wrangler/logs';
   process.env.MINIFLARE_REGISTRY_PATH ??= '.wrangler/registry';
+  if (command === 'build') {
+    const configured = process.env.NEXT_PUBLIC_IDENTITY_NODE_REGISTRY?.trim();
+    if (configured !== undefined
+      && JSON.stringify(parseIdentityNodeRegistry(configured)) !== PRODUCTION_IDENTITY_NODE_REGISTRY_SOURCE) {
+      throw new Error('STOREFRONT_IDENTITY_NODE_MANIFEST_DRIFT');
+    }
+    process.env.NEXT_PUBLIC_IDENTITY_NODE_REGISTRY = PRODUCTION_IDENTITY_NODE_REGISTRY_SOURCE;
+  }
 
   const { cloudflare } = await import('@cloudflare/vite-plugin');
 

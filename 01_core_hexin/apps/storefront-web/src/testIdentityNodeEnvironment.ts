@@ -1,5 +1,7 @@
+import { PRODUCTION_IDENTITY_NODE_REGISTRY } from '@shop/sdk/identity-node';
+
 process.env.NEXT_PUBLIC_IDENTITY_NODE_REGISTRY ??= JSON.stringify({
-  version: 2,
+  version: PRODUCTION_IDENTITY_NODE_REGISTRY.version,
   defaultNodeId: 'l1',
   nodes: [
     {
@@ -10,22 +12,7 @@ process.env.NEXT_PUBLIC_IDENTITY_NODE_REGISTRY ??= JSON.stringify({
       storefrontHosts: ['127.0.0.1'], adminTarget: 'console', consumerTarget: 'storefront',
       consumerApplication: 'local-storefront',
     },
-    {
-      nodeId: 'l0', nodeProfile: 'operating_mall', mallId: 'mall-zhudatuan',
-      displayName: '主打团平台', mallName: '筑大团商城', brandName: '筑大团', accountsOrigin: 'https://accounts.zhudatuan.com',
-      apiOrigin: 'https://api.zhudatuan.com', consumerApiOrigin: 'https://api.zhudatuan.com',
-      adminOrigin: 'https://console.zhudatuan.com', storefrontOrigin: 'https://zhudatuan.com',
-      storefrontHosts: ['www.zhudatuan.com', 'internal.zhudatuan.com', 'beta.zhudatuan.com'],
-      adminTarget: 'console', consumerTarget: 'storefront', consumerApplication: 'zhudatuan-storefront',
-    },
-    {
-      nodeId: 'l1', nodeProfile: 'operating_mall', mallId: 'mall:d1708f04df2dd8a61736852c4900fb43',
-      displayName: '宏泰甄选运营后台', mallName: '宏泰甄选', brandName: '宏泰甄选', accountsOrigin: 'https://accounts.hbbtzn.com',
-      apiOrigin: 'https://api.hbbtzn.com', consumerApiOrigin: 'https://hbbtzn.com',
-      adminOrigin: 'https://console.hbbtzn.com', storefrontOrigin: 'https://hbbtzn.com',
-      storefrontHosts: ['mall.hbbtzn.com'], adminTarget: 'console-hbbtzn', consumerTarget: 'storefront-hbbtzn',
-      consumerApplication: 'zdt-l1-verify',
-    },
+    ...PRODUCTION_IDENTITY_NODE_REGISTRY.nodes,
   ],
 });
 

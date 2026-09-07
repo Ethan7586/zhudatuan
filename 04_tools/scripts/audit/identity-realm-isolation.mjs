@@ -1,6 +1,13 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const identityNodeManifest = JSON.parse(readFileSync(resolve(import.meta.dirname,
+  '../../../01_core_hexin/packages/config/src/identity-node-manifest.json'), 'utf8'));
+
 export async function verifyIdentityRealmIsolation(database) {
   await database.exec('begin');
   try {
+    await assertCanonicalIdentityNodeManifest(database);
     await database.exec(`
       create temporary table identity_realm_fixture(
         level integer primary key,
@@ -406,6 +413,35 @@ export async function verifyIdentityRealmIsolation(database) {
       'IDENTITY_REALM_LOGOUT_SCOPE_INVALID');
   } finally {
     await database.exec('rollback');
+  }
+}
+
+async function assertCanonicalIdentityNodeManifest(database) {
+  const [realmResult, entryResult, targetResult] = await Promise.all([
+    database.query(`select id,node_id,status,node_profile,mall_id,host_node_id,host_node_profile
+      from identity.realm order by id`),
+    database.query(`select host,realm_id,kind,status from identity.realmentry order by host`),
+    database.query(`select realm_id,surface,target,membership_client,membership_organization_id,
+      application_slug,return_origin,node_profile from identity.realmtarget order by realm_id,target`),
+  ]);
+  const expected = {
+    realms: identityNodeManifest.nodes.map((node) => ({
+      id: node.realmId, node_id: node.nodeId, status: node.status, node_profile: node.nodeProfile,
+      mall_id: node.mallId, host_node_id: node.hostNodeId,
+      host_node_profile: node.nodeProfile === 'consumer' ? 'operating_mall' : null,
+    })).sort((left, right) => left.id.localeCompare(right.id)),
+    entries: identityNodeManifest.nodes.flatMap((node) => node.entries.map((entry) => ({
+      host: entry.host, realm_id: node.realmId, kind: entry.kind, status: entry.status,
+    }))).sort((left, right) => left.host.localeCompare(right.host)),
+    targets: identityNodeManifest.nodes.flatMap((node) => node.targets.map((target) => ({
+      realm_id: node.realmId, surface: target.surface, target: target.target,
+      membership_client: target.membershipClient, membership_organization_id: target.membershipOrganizationId,
+      application_slug: target.application, return_origin: target.returnOrigin, node_profile: node.nodeProfile,
+    }))).sort((left, right) => `${left.realm_id}:${left.target}`.localeCompare(`${right.realm_id}:${right.target}`)),
+  };
+  const actual = { realms: realmResult.rows, entries: entryResult.rows, targets: targetResult.rows };
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new Error(`IDENTITY_NODE_MANIFEST_MIGRATION_DRIFT:${identityNodeManifest.revision}`);
   }
 }
 

@@ -1,7 +1,8 @@
 import { defineConfig } from 'vitest/config';
+import { PRODUCTION_IDENTITY_NODE_REGISTRY } from '@shop/sdk/identity-node';
 
 const identityNodeRegistry = JSON.stringify({
-  version: 2,
+  version: PRODUCTION_IDENTITY_NODE_REGISTRY.version,
   defaultNodeId: 'local',
   nodes: [
     {
@@ -12,20 +13,7 @@ const identityNodeRegistry = JSON.stringify({
       storefrontHosts: ['localhost'], adminTarget: 'console', consumerTarget: 'storefront',
       consumerApplication: 'zhudatuan-storefront',
     },
-    {
-      nodeId: 'l0', nodeProfile: 'operating_mall', mallId: 'mall-zhudatuan',
-      displayName: '主打团平台', accountsOrigin: 'https://accounts.zhudatuan.com',
-      apiOrigin: 'https://api.zhudatuan.com', consumerApiOrigin: 'https://api.zhudatuan.com',
-      adminOrigin: 'https://console.zhudatuan.com', storefrontOrigin: 'https://zhudatuan.com',
-      adminTarget: 'console', consumerTarget: 'storefront', consumerApplication: 'zhudatuan-storefront',
-    },
-    {
-      nodeId: 'l1', nodeProfile: 'operating_mall', mallId: 'mall:d1708f04df2dd8a61736852c4900fb43',
-      displayName: '宏泰甄选运营后台', accountsOrigin: 'https://accounts.hbbtzn.com',
-      apiOrigin: 'https://api.hbbtzn.com', consumerApiOrigin: 'https://hbbtzn.com',
-      adminOrigin: 'https://console.hbbtzn.com', storefrontOrigin: 'https://hbbtzn.com',
-      adminTarget: 'console-hbbtzn', consumerTarget: 'storefront-hbbtzn', consumerApplication: 'zdt-l1-verify',
-    },
+    ...PRODUCTION_IDENTITY_NODE_REGISTRY.nodes,
   ],
 });
 

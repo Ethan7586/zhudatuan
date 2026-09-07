@@ -2,6 +2,7 @@ import {
   defaultIdentityNode,
   identityNodeForStorefrontHost,
   parseIdentityNodeRegistry,
+  PRODUCTION_IDENTITY_NODE_REGISTRY_SOURCE,
   type IdentityNodeDefinition,
   type IdentityNodeRegistry,
 } from '@shop/sdk/identity-node';
@@ -17,7 +18,8 @@ function currentStorefrontHostname(): string {
 }
 
 export function storefrontIdentityNodeRegistry(
-  source: string | undefined = process.env.NEXT_PUBLIC_IDENTITY_NODE_REGISTRY,
+  source: string | undefined = process.env.NEXT_PUBLIC_IDENTITY_NODE_REGISTRY
+    ?? PRODUCTION_IDENTITY_NODE_REGISTRY_SOURCE,
 ): IdentityNodeRegistry {
   if (!source?.trim()) throw new Error('IDENTITY_NODE_REGISTRY_MISSING');
   return parseIdentityNodeRegistry(source);

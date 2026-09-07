@@ -1,31 +1,15 @@
 import { bearerToken, distinctValues, enumValue, integerValue, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
 import { apiAllowedOrigins, apiReturnTargets, type AuthReturnTargets } from './ApiEnvironment';
+import { IDENTITY_NODE_MANIFEST } from './IdentityNodeManifest';
 
 export const IDENTITY_REGISTRATION_API_PROFILE = 'registration-only' as const;
 
-const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([
-  'https://accounts.zhudatuan.com',
-  'https://console.hbbtzn.com',
-  'https://console.zhudatuan.com',
-  'https://h5.hbbtzn.com',
-  'https://h5.zhudatuan.com',
-  'https://hbbtzn.com',
-  'https://mall.hbbtzn.com',
-  'https://mini.zhudatuan.com',
-  'https://www.hbbtzn.com',
-  'https://zhudatuan.com',
-] as const);
+const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([...IDENTITY_NODE_MANIFEST.allowedBrowserOrigins]);
 const INTERNAL_STOREFRONT_ORIGIN = 'https://internal.zhudatuan.com';
 const INTERNAL_ALLOWED_ORIGINS = Object.freeze([...PRODUCTION_ALLOWED_ORIGINS, INTERNAL_STOREFRONT_ORIGIN]);
 
-const PRODUCTION_RETURN_TARGETS = Object.freeze({
-  console: 'https://console.zhudatuan.com',
-  'console-hbbtzn': 'https://console.hbbtzn.com',
-  storefront: 'https://zhudatuan.com',
-  'storefront-hbbtzn': 'https://hbbtzn.com',
-  store: 'https://console.zhudatuan.com/entrances/store',
-  supplier: 'https://console.zhudatuan.com/entrances/supplier',
-} satisfies AuthReturnTargets);
+const PRODUCTION_RETURN_TARGETS = Object.freeze(Object.fromEntries(IDENTITY_NODE_MANIFEST.nodes
+  .flatMap((node) => node.targets.map((target) => [target.target, target.returnOrigin])))) as AuthReturnTargets;
 const INTERNAL_RETURN_TARGETS = Object.freeze({
   ...PRODUCTION_RETURN_TARGETS,
   storefront: INTERNAL_STOREFRONT_ORIGIN,
@@ -64,8 +48,12 @@ export function identityRegistrationApiEnvironment(
   source: EnvironmentSource = processEnvironment(),
 ): IdentityRegistrationApiEnvironment {
   validateIdentityRegistrationApiEnvironment(source);
-  return Object.freeze(Object.fromEntries(IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS
-    .flatMap((key) => source[key] === undefined ? [] : [[key, source[key]!]]))) as IdentityRegistrationApiEnvironment;
+  const environment: Partial<Record<(typeof IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS)[number], string>> = {};
+  for (const key of IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS) {
+    const value = source[key];
+    if (value !== undefined) environment[key] = value;
+  }
+  return Object.freeze(environment);
 }
 
 export function validateIdentityRegistrationApiEnvironment(source: EnvironmentSource): void {

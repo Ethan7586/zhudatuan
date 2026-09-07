@@ -9,12 +9,15 @@ import {
   validateDomainContract,
   validateEdgeRedirects,
   validateIdentityEnvironmentText,
+  validateIdentityNodeManifest,
 } from './domain-boundary.mjs';
 
 const root = resolve(import.meta.dirname, '../../..');
 const contractSource = readFileSync(resolve(root, '02_platform_pingtai/config/production-domain-boundary.json'), 'utf8');
 const contract = JSON.parse(contractSource);
 const lock = JSON.parse(readFileSync(resolve(root, '02_platform_pingtai/config/production-domain-boundary.lock.json'), 'utf8'));
+const identityNodeManifest = JSON.parse(readFileSync(resolve(root,
+  '01_core_hexin/packages/config/src/identity-node-manifest.json'), 'utf8'));
 
 test('accepts the owner-approved production domain contract and lock', () => {
   assert.doesNotThrow(() => assertContractLock(contractSource, lock));
@@ -23,6 +26,15 @@ test('accepts the owner-approved production domain contract and lock', () => {
     () => assertContractLock(contractSource.replace('api.zhudatuan.com', 'api.hbbtzn.com'), lock),
     /PRODUCTION_DOMAIN_OWNER_APPROVAL_REQUIRED/,
   );
+});
+
+test('keeps the canonical identity node manifest aligned with domains and SFL node profiles', () => {
+  assert.equal(validateIdentityNodeManifest(identityNodeManifest, contract), identityNodeManifest);
+  const invalid = structuredClone(identityNodeManifest);
+  invalid.nodes[1].nodeProfile = 'consumer';
+  invalid.nodes[1].mallId = null;
+  invalid.nodes[1].hostNodeId = 'l0';
+  assert.throws(() => validateIdentityNodeManifest(invalid, contract), /IDENTITY_NODE_MANIFEST_PROFILE_INVALID/);
 });
 
 test('allows approved L1 origins but rejects unapproved hbbtzn subdomains in runtime code', () => {

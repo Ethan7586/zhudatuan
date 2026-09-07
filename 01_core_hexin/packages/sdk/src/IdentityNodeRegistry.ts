@@ -1,3 +1,5 @@
+import { IDENTITY_NODE_MANIFEST, type IdentityNodeManifest } from '@shop/config/identity-node-manifest';
+
 export type IdentityNodeProfile = 'operating_mall' | 'consumer';
 
 interface IdentityNodeDefinitionBase {
@@ -39,6 +41,81 @@ export interface IdentityNodeRegistry {
   readonly defaultNodeId: string;
   readonly nodes: readonly IdentityNodeDefinition[];
 }
+
+export function identityNodeRegistryFromManifest(
+  manifest: IdentityNodeManifest = IDENTITY_NODE_MANIFEST,
+): IdentityNodeRegistry {
+  if (manifest.schema !== 'zhudatuan.identity-node-manifest.v1' || manifest.version !== 2) {
+    throw new Error('IDENTITY_NODE_MANIFEST_INVALID');
+  }
+  const activeNodes = manifest.nodes.filter((node) => node.status === 'active');
+  const nodes = activeNodes.map((node) => {
+    const level = /^l(\d+)$/.exec(node.nodeId)?.[1];
+    if (level !== undefined) {
+      const expectedProfile = Number(level) <= 5 ? 'operating_mall' : 'consumer';
+      if (Number(level) <= 11 && node.nodeProfile !== expectedProfile) {
+        throw new Error('IDENTITY_NODE_MANIFEST_PROFILE_INVALID');
+      }
+    }
+    const accountsHost = new URL(node.accountsOrigin).hostname;
+    const apiHost = new URL(node.apiOrigin).hostname;
+    if (!node.entries.some((entry) => entry.status === 'active' && entry.kind === 'accounts' && entry.host === accountsHost)
+      || !node.entries.some((entry) => entry.status === 'active' && entry.kind === 'api' && entry.host === apiHost)) {
+      throw new Error('IDENTITY_NODE_MANIFEST_ENTRY_INVALID');
+    }
+    if (new Set(node.targets.map((target) => target.target)).size !== node.targets.length) {
+      throw new Error('IDENTITY_NODE_MANIFEST_TARGET_INVALID');
+    }
+    const consumerTargets = node.targets.filter((target) => target.surface === 'consumer');
+    const consumer = consumerTargets[0];
+    if (consumerTargets.length !== 1 || consumer === undefined || consumer.membershipClient !== 'storefront'
+      || consumer.application === null || consumer.returnOrigin !== node.storefrontOrigin) {
+      throw new Error('IDENTITY_NODE_MANIFEST_CONSUMER_INVALID');
+    }
+    const common = {
+      nodeId: node.nodeId,
+      nodeProfile: node.nodeProfile,
+      displayName: node.displayName,
+      mallName: node.mallName,
+      brandName: node.brandName,
+      accountsOrigin: node.accountsOrigin,
+      apiOrigin: node.apiOrigin,
+      consumerApiOrigin: node.consumerApiOrigin,
+      storefrontOrigin: node.storefrontOrigin,
+      storefrontHosts: node.storefrontHosts,
+      consumerTarget: consumer.target,
+      consumerApplication: consumer.application,
+    };
+    if (node.nodeProfile === 'consumer') {
+      if (node.mallId !== null || node.adminOrigin !== null
+        || node.targets.some((target) => target.surface === 'admin')) {
+        throw new Error('IDENTITY_NODE_MANIFEST_CONSUMER_INVALID');
+      }
+      return { ...common, mallId: null, hostNodeId: node.hostNodeId, adminOrigin: null, adminTarget: null };
+    }
+    const operators = node.targets.filter((target) => target.surface === 'admin' && target.membershipClient === 'operator');
+    const operator = operators[0];
+    if (node.mallId === null || node.hostNodeId !== null || node.adminOrigin === null || operators.length !== 1
+      || operator === undefined || operator.returnOrigin !== node.adminOrigin) {
+      throw new Error('IDENTITY_NODE_MANIFEST_OPERATING_INVALID');
+    }
+    return {
+      ...common,
+      mallId: node.mallId,
+      hostNodeId: null,
+      adminOrigin: node.adminOrigin,
+      adminTarget: operator.target,
+    };
+  });
+  return parseIdentityNodeRegistry(JSON.stringify({
+    version: manifest.version,
+    defaultNodeId: manifest.defaultNodeId,
+    nodes,
+  }));
+}
+
+export const PRODUCTION_IDENTITY_NODE_REGISTRY = identityNodeRegistryFromManifest();
+export const PRODUCTION_IDENTITY_NODE_REGISTRY_SOURCE = JSON.stringify(PRODUCTION_IDENTITY_NODE_REGISTRY);
 
 export function parseIdentityNodeRegistry(source: string): IdentityNodeRegistry {
   let value: unknown;

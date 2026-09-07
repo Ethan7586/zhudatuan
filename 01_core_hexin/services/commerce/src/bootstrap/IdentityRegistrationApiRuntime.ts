@@ -26,6 +26,7 @@ import type { Container } from './Container';
 import { bindServerNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
 import { assertIdentityRuntimeDatabaseBoundary } from './LiveDatabaseBoundary';
+import { assertIdentityNodeManifestRuntime } from './IdentityNodeManifestRuntime';
 
 interface CompatibilityRow {
   readonly current_user: string;
@@ -70,8 +71,7 @@ export async function createIdentityRegistrationApiRuntime(
     required(environment.OBJECT_STORE_BEARER_TOKEN, 'OBJECT_STORE_BEARER_TOKEN_MISSING'),
   );
   try {
-    await assertIdentityRegistrationRuntimeCompatibility(pool)
-      .catch((cause: unknown) => console.warn('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_WARNING', cause));
+    await assertIdentityRegistrationRuntimeCompatibility(pool);
     await objects.find('catalog/readiness-probe');
   } catch (cause) {
     await pool.end();
@@ -162,6 +162,7 @@ export async function identityRegistrationRuntimeCompatibility(pool: DatabasePoo
 export async function assertIdentityRegistrationRuntimeCompatibility(pool: DatabasePool): Promise<void> {
   await identityRegistrationRuntimeCompatibility(pool);
   await assertIdentityRuntimeDatabaseBoundary(pool, 'zhudatuanidentityapi');
+  await assertIdentityNodeManifestRuntime(pool);
 }
 
 function required(value: string | undefined, code: string): string {

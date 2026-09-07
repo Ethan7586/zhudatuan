@@ -184,6 +184,12 @@ function upstreamRequest(request: Request, target: URL, nodeRoute?: HongtaiNodeR
   } else {
     headers.delete(IDENTITY_ENTRY_HOST_HEADER);
   }
+  if (isApiPath(target.pathname)) {
+    headers.set(IDENTITY_ENTRY_HOST_HEADER,
+      incoming.hostname === HONGTAI_CONSOLE_HOST ? 'api.hbbtzn.com' : incoming.hostname);
+  } else {
+    headers.delete(IDENTITY_ENTRY_HOST_HEADER);
+  }
   return new Request(target, {
     method: request.method,
     headers,

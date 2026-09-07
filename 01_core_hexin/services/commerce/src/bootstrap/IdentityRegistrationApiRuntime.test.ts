@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabasePool } from '../foundation/persistence/Pool';
 import { assertIdentityRegistrationRuntimeCompatibility } from './IdentityRegistrationApiRuntime';
+import { expectedIdentityNodeDatabaseManifest } from './IdentityNodeManifestRuntime';
 
 describe('identity registration API runtime', () => {
   it('requires the dedicated writable registration database role and registration relations', async () => {
@@ -9,7 +10,11 @@ describe('identity registration API runtime', () => {
     let compatibilityStatement = '';
     const pool = (state: typeof healthy) => ({ query: async (statement: string) => {
       if (statement.includes('deployment.runtime_database_boundary')) return result([databaseBoundary('zhudatuanidentityapi')], 1);
-      compatibilityStatement = statement;
+      const manifest = expectedIdentityNodeDatabaseManifest();
+      if (statement.includes('from identity.realm order by id')) return result(manifest.realms, manifest.realms.length);
+      if (statement.includes('from identity.realmentry order by host')) return result(manifest.entries, manifest.entries.length);
+      if (statement.includes('from identity.realmtarget order by realm_id,target')) return result(manifest.targets, manifest.targets.length);
+      if (statement.includes('select current_user')) compatibilityStatement = statement;
       return result([state], 1);
     } }) as unknown as DatabasePool;
     await expect(assertIdentityRegistrationRuntimeCompatibility(pool(healthy))).resolves.toBeUndefined();
@@ -27,9 +32,16 @@ describe('identity registration API runtime', () => {
       .rejects.toThrow('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED');
     await expect(assertIdentityRegistrationRuntimeCompatibility(pool({ ...healthy, catalog_writes: false })))
       .rejects.toThrow('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED');
-    const migrationActive = { query: async (statement: string) => statement.includes('deployment.runtime_database_boundary')
-      ? result([{ ...databaseBoundary('zhudatuanidentityapi'), retired_roles_valid: false }], 1)
-      : result([healthy], 1) } as unknown as DatabasePool;
+    const manifest = expectedIdentityNodeDatabaseManifest();
+    const migrationActive = { query: async (statement: string) => {
+      if (statement.includes('deployment.runtime_database_boundary')) {
+        return result([{ ...databaseBoundary('zhudatuanidentityapi'), retired_roles_valid: false }], 1);
+      }
+      if (statement.includes('from identity.realm order by id')) return result(manifest.realms, manifest.realms.length);
+      if (statement.includes('from identity.realmentry order by host')) return result(manifest.entries, manifest.entries.length);
+      if (statement.includes('from identity.realmtarget order by realm_id,target')) return result(manifest.targets, manifest.targets.length);
+      return result([healthy], 1);
+    } } as unknown as DatabasePool;
     await expect(assertIdentityRegistrationRuntimeCompatibility(migrationActive)).resolves.toBeUndefined();
   });
 });

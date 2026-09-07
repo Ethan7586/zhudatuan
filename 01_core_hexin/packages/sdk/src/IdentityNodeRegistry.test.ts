@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  PRODUCTION_IDENTITY_NODE_REGISTRY,
   defaultIdentityNode,
   identityNodeForAccountsHost,
   identityNodeForStorefrontHost,
@@ -7,6 +8,25 @@ import {
 } from './IdentityNodeRegistry';
 
 describe('identity node registry', () => {
+  it('projects the production L0 and L1 registry from the canonical manifest', () => {
+    expect(PRODUCTION_IDENTITY_NODE_REGISTRY.nodes.map((node) => ({
+      nodeId: node.nodeId,
+      nodeProfile: node.nodeProfile,
+      accountsHost: node.accountsHost,
+      adminTarget: node.adminTarget,
+      consumerTarget: node.consumerTarget,
+    }))).toEqual([
+      {
+        nodeId: 'l0', nodeProfile: 'operating_mall', accountsHost: 'accounts.zhudatuan.com',
+        adminTarget: 'console', consumerTarget: 'storefront',
+      },
+      {
+        nodeId: 'l1', nodeProfile: 'operating_mall', accountsHost: 'accounts.hbbtzn.com',
+        adminTarget: 'console-hbbtzn', consumerTarget: 'storefront-hbbtzn',
+      },
+    ]);
+  });
+
   it('keeps L0-L5 operating malls and L6-L11 consumer-only without node-specific code branches', () => {
     const registry = parseIdentityNodeRegistry(JSON.stringify({
       version: 2,
