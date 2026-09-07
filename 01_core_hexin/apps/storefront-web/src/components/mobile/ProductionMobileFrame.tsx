@@ -1,26 +1,51 @@
 import React from 'react';
 import { useMall, type MiniProgramPage } from '../../context/MallContext';
-import { MPCartPage } from '../../features/miniprogram/MPCartPage';
-import { MPCategoryPage } from '../../features/miniprogram/MPCategoryPage';
-import { MPDetailPage } from '../../features/miniprogram/MPDetailPage';
 import { MPHomePage } from '../../features/miniprogram/MPHomePage';
-import { MPProfilePage } from '../../features/miniprogram/MPProfilePage';
-import { MPAddressPage } from '../../features/miniprogram/MPAddressPage';
-import { ToastContainer } from '../common/ToastContainer';
-import { MobileOrdersPage } from './MobileOrdersPage';
-import { PendingInterfaceModal } from './PendingInterfaceModal';
-import { PaymentResultPage } from '../common/PaymentResultPage';
 import { WeChatTabBar } from './WeChatTabBar';
+
+const loadMPCartPage = () => import('../../features/miniprogram/MPCartPage');
+const loadMPCategoryPage = () => import('../../features/miniprogram/MPCategoryPage');
+const loadMPDetailPage = () => import('../../features/miniprogram/MPDetailPage');
+const loadMPProfilePage = () => import('../../features/miniprogram/MPProfilePage');
+const MPCartPage = React.lazy(() => loadMPCartPage().then(({ MPCartPage }) => ({ default: MPCartPage })));
+const MPCategoryPage = React.lazy(() => loadMPCategoryPage().then(({ MPCategoryPage }) => ({ default: MPCategoryPage })));
+const MPDetailPage = React.lazy(() => loadMPDetailPage().then(({ MPDetailPage }) => ({ default: MPDetailPage })));
+const MPProfilePage = React.lazy(() => loadMPProfilePage().then(({ MPProfilePage }) => ({ default: MPProfilePage })));
+const MPAddressPage = React.lazy(() => import('../../features/miniprogram/MPAddressPage').then(({ MPAddressPage }) => ({ default: MPAddressPage })));
+const MobileOrdersPage = React.lazy(() => import('./MobileOrdersPage').then(({ MobileOrdersPage }) => ({ default: MobileOrdersPage })));
+const PaymentResultPage = React.lazy(() => import('../common/PaymentResultPage').then(({ PaymentResultPage }) => ({ default: PaymentResultPage })));
+const PendingInterfaceModal = React.lazy(() => import('./PendingInterfaceModal').then(({ PendingInterfaceModal }) => ({ default: PendingInterfaceModal })));
+const ToastContainer = React.lazy(() => import('../common/ToastContainer').then(({ ToastContainer }) => ({ default: ToastContainer })));
 
 /** Production phone storefront shown after an L6 consumer opens the mall. */
 export function ProductionMobileFrame() {
-  const { mpPage, activePaymentId } = useMall();
+  const { mpPage, activePaymentId, catalogSyncStatus, pendingFeature, toasts } = useMall();
   const visitedPages = React.useRef(new Set<KeepAlivePage>(['home']));
   const activeKeepAlivePage = !activePaymentId && isKeepAlivePage(mpPage) ? mpPage : null;
 
+  React.useEffect(() => {
+    if (catalogSyncStatus === 'idle' || catalogSyncStatus === 'syncing') return;
+    const warmPrimaryTabs = () => {
+      void loadMPCategoryPage();
+      void loadMPDetailPage();
+      void loadMPCartPage();
+      void loadMPProfilePage();
+    };
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    if (idleWindow.requestIdleCallback && idleWindow.cancelIdleCallback) {
+      const handle = idleWindow.requestIdleCallback(warmPrimaryTabs, { timeout: 2_000 });
+      return () => idleWindow.cancelIdleCallback?.(handle);
+    }
+    const handle = globalThis.setTimeout(warmPrimaryTabs, 500);
+    return () => globalThis.clearTimeout(handle);
+  }, [catalogSyncStatus]);
+
   if (activeKeepAlivePage) visitedPages.current.add(activeKeepAlivePage);
 
-  const transientPage = activePaymentId ? <PaymentResultPage paymentId={activePaymentId} /> : renderTransientPage(mpPage);
+  const transientPage = activePaymentId ? deferredPage(<PaymentResultPage paymentId={activePaymentId} />) : renderTransientPage(mpPage);
 
   return (
     <div data-storefront-surface="h5" className="h-[100dvh] overflow-hidden bg-[#F5F7FA] text-gray-800">
@@ -50,8 +75,8 @@ export function ProductionMobileFrame() {
         </div>
         <WeChatTabBar />
       </div>
-      <PendingInterfaceModal />
-      <ToastContainer />
+      {pendingFeature.isOpen ? <React.Suspense fallback={null}><PendingInterfaceModal /></React.Suspense> : null}
+      {toasts.length > 0 ? <React.Suspense fallback={null}><ToastContainer /></React.Suspense> : null}
     </div>
   );
 }
@@ -67,13 +92,13 @@ function isKeepAlivePage(page: MiniProgramPage): page is KeepAlivePage {
 function renderKeepAlivePage(page: KeepAlivePage) {
   switch (page) {
     case 'category':
-      return <MPCategoryPage />;
+      return deferredPage(<MPCategoryPage />);
     case 'detail':
-      return <MPDetailPage />;
+      return deferredPage(<MPDetailPage />);
     case 'cart':
-      return <MPCartPage />;
+      return deferredPage(<MPCartPage />);
     case 'profile':
-      return <MPProfilePage />;
+      return deferredPage(<MPProfilePage />);
     default:
       return <MPHomePage />;
   }
@@ -82,10 +107,18 @@ function renderKeepAlivePage(page: KeepAlivePage) {
 function renderTransientPage(page: MiniProgramPage) {
   switch (page) {
     case 'orders':
-      return <MobileOrdersPage mode="mini-program" />;
+      return deferredPage(<MobileOrdersPage mode="mini-program" />);
     case 'address':
-      return <MPAddressPage />;
+      return deferredPage(<MPAddressPage />);
     default:
       return null;
   }
+}
+
+function deferredPage(page: React.ReactNode) {
+  return (
+    <React.Suspense fallback={<div className="flex min-h-full items-center justify-center bg-[#F5F7FA] text-xs font-medium text-slate-500">页面准备中…</div>}>
+      {page}
+    </React.Suspense>
+  );
 }

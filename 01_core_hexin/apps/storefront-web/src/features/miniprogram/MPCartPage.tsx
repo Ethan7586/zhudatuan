@@ -2,9 +2,11 @@ import React from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { Trash2, ShoppingBag, CreditCard, ShieldCheck, ChevronRight, CheckSquare, Square, MapPin } from 'lucide-react';
+import { MPCartInvoiceDisclosure } from './MPCartInvoiceDisclosure';
 
 export const MPCartPage: React.FC = () => {
   const { cart, user, addresses, updateCartQuantity, toggleCartItemSelected, toggleSelectAllCart, removeCartItem, setMpPage, triggerPendingFeature, checkoutSelectedCart, isSubmittingOrder } = useMall();
+  const [isInvoiceOpen, setIsInvoiceOpen] = React.useState(false);
 
   const selectedItems = cart.filter((i) => i.selected);
   const isAllSelected = cart.length > 0 && cart.every((i) => i.selected);
@@ -128,10 +130,12 @@ export const MPCartPage: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-gray-100 text-gray-600 font-medium">
-              <span>开具发票抬头</span>
-              <span className="text-gray-800 font-bold">中国建筑集团有限公司 (电子普通发票)</span>
-            </div>
+            <MPCartInvoiceDisclosure
+              expanded={isInvoiceOpen}
+              invoiceHeader={user.enterpriseName || '企业发票抬头'}
+              onToggle={() => setIsInvoiceOpen((open) => !open)}
+              onEdit={() => triggerPendingFeature('企业发票抬头信息', '选择本次订单需要使用的发票抬头。')}
+            />
           </div>
         </div>
       )}

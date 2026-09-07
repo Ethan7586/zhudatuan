@@ -33,6 +33,10 @@ export default defineConfig(async ({ command }) => {
         config: localBindingConfig,
       }),
     ],
+    build: {
+      cssMinify: 'lightningcss' as const,
+      cssTarget: 'chrome61',
+    },
     server: {
       fs: {
         allow: ['..', '../..', '../../..'],

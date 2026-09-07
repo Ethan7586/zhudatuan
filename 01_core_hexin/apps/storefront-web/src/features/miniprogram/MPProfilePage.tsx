@@ -1,10 +1,10 @@
 import React from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
-import { CreditCard, Utensils, Package, Clock, Truck, CheckCircle, HelpCircle, Ticket, MapPin, FileText, BellRing, Headphones, ShieldCheck, ChevronRight, Building2, Smartphone } from 'lucide-react';
+import { CreditCard, Utensils, Package, Clock, Truck, CheckCircle, HelpCircle, Ticket, MapPin, FileText, BellRing, Headphones, ShieldCheck, ChevronRight, Building2, Smartphone, LogOut } from 'lucide-react';
 
 export const MPProfilePage: React.FC = () => {
-  const { user, currentMall, triggerPendingFeature, setMpPage } = useMall();
+  const { user, currentMall, sessionStatus, logout, triggerPendingFeature, setMpPage } = useMall();
 
   return (
     <div className="bg-[#F5F7FA] min-h-full flex flex-col font-sans text-gray-800 pb-16">
@@ -186,6 +186,18 @@ export const MPProfilePage: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {sessionStatus === 'authenticated' && (
+          <button
+            type="button"
+            onClick={() => void logout()}
+            aria-label="退出当前会员账户"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-100 bg-white py-3 text-xs font-bold text-red-500 shadow-xs active:bg-red-50"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>退出当前账号</span>
+          </button>
+        )}
 
         <div className="text-center py-2 text-[10px] text-gray-400">
           <div>智慧翼企业福利商城 v2.8.0</div>

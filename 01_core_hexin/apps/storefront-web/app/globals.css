@@ -17,6 +17,15 @@ body {
   font-family: var(--sw-font-sans);
 }
 
+/* The inline first-paint guard is released only after this stylesheet applies. */
+body > * {
+  visibility: visible !important;
+}
+
+#sw-first-paint {
+  display: none !important;
+}
+
 button,
 input,
 select,

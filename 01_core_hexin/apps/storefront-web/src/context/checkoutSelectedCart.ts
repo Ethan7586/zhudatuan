@@ -1,6 +1,6 @@
 import type { CartItem, DeliveryAddress, UserProfile } from '../types';
 import { createSecureId } from '@shop/sdk/context';
-import { productionApi } from '../services/productionApi';
+import { loadProductionApi } from '../services/productionApiLoader';
 
 export class PaymentPhoneVerificationRequired extends Error {
   constructor() {
@@ -28,6 +28,7 @@ export async function checkoutSelectedCartRequest(cart: CartItem[], addresses: D
     throw new Error('购物车中的商品信息已失效，请从在线商品目录重新加入');
   }
 
+  const productionApi = await loadProductionApi();
   const checkout = await productionApi.checkout({
     addressId: address.id,
     items: selectedItems.map((item) => ({ listingId: item.product.id, quantity: item.quantity })),

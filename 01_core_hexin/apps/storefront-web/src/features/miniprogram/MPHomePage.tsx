@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { MPProductFeed } from './MPProductFeed';
-import { CreditCard, Utensils, Search, ChevronRight, Flame, Store, Ticket, ShoppingBag, Gift, Tv, Coffee, Sparkles, Plus, ShieldCheck, Building2, Tag, LogIn } from 'lucide-react';
+import { CreditCard, Utensils, Search, ChevronRight, Flame, Store, Ticket, ShoppingBag, Gift, Tv, Coffee, Sparkles, Plus, ShieldCheck, Building2, Tag } from 'lucide-react';
 import { storefrontAuthHref } from '../../config/storefrontAuth';
+import { MPAuthStatusCard } from './MPAuthStatusCard';
+import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 
 export const MPHomePage: React.FC = () => {
   const { user, currentMall, sessionStatus, setMpPage, addToCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
@@ -56,26 +58,12 @@ export const MPHomePage: React.FC = () => {
       {/* 顶部胶囊 Header */}
       <WeChatCapsule />
 
-      {sessionStatus !== 'authenticated' && (
-        <div className="bg-[var(--sw-brand-dark)] px-3 pb-3">
-          <a
-            href={authHref}
-            aria-label="使用手机号登录智慧翼账户"
-            className="flex w-full items-center justify-between rounded-xl border border-white/20 bg-white px-3.5 py-3 text-left shadow-sm active:scale-[0.99]"
-          >
-            <span className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-[var(--sw-brand)]">
-                <LogIn className="h-4 w-4" />
-              </span>
-              <span>
-                <span className="block text-sm font-black text-slate-900">手机号登录</span>
-                <span className="block text-[10px] text-slate-500">登录后查看会员身份、订单与支付</span>
-              </span>
-            </span>
-            <span className="rounded-full bg-[var(--sw-brand)] px-3 py-1.5 text-xs font-bold text-white">登录</span>
-          </a>
-        </div>
-      )}
+      <MPAuthStatusCard
+        authHref={authHref}
+        sessionStatus={sessionStatus}
+        user={user}
+        onOpenProfile={() => setMpPage('profile')}
+      />
 
       {/* 搜索框区 */}
       <div className="bg-[var(--sw-brand-dark)] px-3 pb-3 pt-1">
@@ -182,10 +170,20 @@ export const MPHomePage: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            {enterpriseExclusives.map((p) => (
+          <div className="grid min-h-[72px] grid-cols-2 gap-2">
+            {enterpriseExclusives.map((p, index) => (
               <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-gray-50/80 rounded-xl p-2 flex gap-2 border border-gray-100 cursor-pointer active:bg-blue-50/50 transition-colors">
-                <img src={p.imageUrl} alt={p.title} width={56} height={56} loading="lazy" decoding="async" className="w-14 h-14 object-cover rounded-lg flex-shrink-0" />
+                <img
+                  src={storefrontImageUrl(p.imageUrl, 112)}
+                  srcSet={`${storefrontImageUrl(p.imageUrl, 112)} 2x, ${storefrontImageUrl(p.imageUrl, 168)} 3x`}
+                  alt={p.title}
+                  width={56}
+                  height={56}
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  fetchPriority={index === 0 ? 'high' : 'auto'}
+                  decoding="async"
+                  className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
+                />
                 <div className="overflow-hidden flex flex-col justify-between flex-1">
                   <div className="text-[11px] font-bold text-gray-800 truncate">{p.title}</div>
                   <div>
@@ -217,7 +215,16 @@ export const MPHomePage: React.FC = () => {
             {nearbyServices.map((p) => (
               <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-white rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-xs border border-gray-100 cursor-pointer">
                 <div className="flex items-center gap-2.5 overflow-hidden">
-                  <img src={p.imageUrl} alt={p.title} width={48} height={48} loading="lazy" decoding="async" className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
+                  <img
+                    src={storefrontImageUrl(p.imageUrl, 96)}
+                    srcSet={`${storefrontImageUrl(p.imageUrl, 96)} 2x, ${storefrontImageUrl(p.imageUrl, 144)} 3x`}
+                    alt={p.title}
+                    width={48}
+                    height={48}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
+                  />
                   <div className="overflow-hidden">
                     <div className="text-xs font-bold text-gray-900 truncate">{p.title}</div>
                     <div className="text-[10px] text-gray-500 truncate mt-0.5">{p.applicableStoreName || '包含朝阳区国贸店、三里屯店等28家门店'}</div>

@@ -9,7 +9,8 @@ import { mapCanonicalAddresses, mapCanonicalBootstrap, mapCanonicalSession } fro
 import { boolean, nextCursor, nonNegativeInteger, optionalText, pageItems, record, text } from './canonicalShape';
 import { ProductionApiError } from './productionApi.error';
 import type { ApiAccount, ApiAccountLedger, ApiActor, ApiBootstrap, ApiCartItem, ApiDeliveryAddress, ApiHomeSnapshot, ApiOrder, ApiProduct, LoginRequest } from './productionApi.types';
-import { resolveStorefrontApplication, resolveStorefrontAuthTarget } from '../config/storefrontIdentity';
+import { resolveStorefrontApplication, resolveStorefrontAuthTarget, resolveStorefrontPresentationIdentity } from '../config/storefrontIdentity';
+import { listPublicProducts } from './publicCatalogApi';
 
 export { ProductionApiError } from './productionApi.error';
 export type { ApiAccount, ApiAccountLedger, ApiActor, ApiAfterSale, ApiBootstrap, ApiCartItem, ApiDeliveryAddress, ApiHomeSnapshot, ApiOrder, ApiPaymentResult, ApiPaymentResultState, ApiProduct, ApiSecurityCenter, CreateOrderRequest, LoginRequest } from './productionApi.types';
@@ -66,7 +67,7 @@ async function sessionBootstrap(): Promise<ApiBootstrap> {
   const session = mapCanonicalSession(await canonicalCall(() => client.identity.sessionRead({}, anonymousContext())));
   rememberCanonicalSession(session);
   const profile = await canonicalCall(() => client.member.profileRead({}, sessionContext()));
-  return mapCanonicalBootstrap(session, profile);
+  return mapCanonicalBootstrap(session, profile, resolveStorefrontPresentationIdentity());
 }
 
 async function accounts(): Promise<ApiAccount[]> {
@@ -115,28 +116,6 @@ async function inventory(skus: readonly string[]): Promise<{ items: unknown[] }>
   throw new ProductionApiError('库存分页超过安全上限', 502, 'INVENTORY_PAGE_LIMIT_EXCEEDED');
 }
 
-async function publicCatalog(options: CatalogOptions): Promise<{ items: ApiProduct[]; pagination: { nextCursor: string | null } }> {
-  const query = new URLSearchParams({ limit: String(options.limit ?? 100) });
-  if (options.cursor) query.set('cursor', options.cursor);
-  if (options.category) query.set('category', options.category);
-  const response = await fetch(`/api/v1/catalog/public/products?${query}`, {
-    method: 'GET',
-    headers: { accept: 'application/json' },
-    credentials: 'omit',
-    redirect: 'error',
-  });
-  const value = await response.json().catch(() => null) as unknown;
-  if (!response.ok) {
-    const error = value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
-    const code = typeof error.code === 'string' ? error.code : 'PUBLIC_CATALOG_FAILED';
-    throw new ProductionApiError('公开商品目录暂时不可用，请稍后重试', response.status, code, response.headers.get('x-request-id') ?? undefined);
-  }
-  const payload = record(value, 'catalog.public');
-  const items = pageItems(payload, 'catalog.public').map(publicProduct);
-  const pagination = record(payload.pagination, 'catalog.public.pagination');
-  return { items, pagination: { nextCursor: typeof pagination.nextCursor === 'string' && pagination.nextCursor ? pagination.nextCursor : null } };
-}
-
 async function publicStorefront(): Promise<{ id: string; name: string }> {
   const value = await canonicalCall(() => canonicalClient().identity.storefrontsRead({
     body: { application: resolveStorefrontApplication() },
@@ -145,31 +124,6 @@ async function publicStorefront(): Promise<{ id: string; name: string }> {
   return {
     id: text(payload.organization_id, 'identity.storefront.organization_id'),
     name: text(payload.organization_name, 'identity.storefront.organization_name'),
-  };
-}
-
-function publicProduct(item: Record<string, unknown>): ApiProduct {
-  const qualification = record(item.qualification, 'catalog.public.qualification');
-  return {
-    id: text(item.id, 'catalog.public.id'),
-    skuId: text(item.skuId, 'catalog.public.skuId'),
-    name: text(item.name, 'catalog.public.name'),
-    subtitle: optionalText(item.subtitle),
-    categoryCode: text(item.categoryCode, 'catalog.public.categoryCode'),
-    coverUrl: optionalText(item.coverUrl),
-    priceCents: nonNegativeInteger(item.priceCents, 'catalog.public.priceCents'),
-    marketPriceCents: item.marketPriceCents === null || item.marketPriceCents === undefined
-      ? null : nonNegativeInteger(item.marketPriceCents, 'catalog.public.marketPriceCents'),
-    availableStock: nonNegativeInteger(item.availableStock, 'catalog.public.availableStock'),
-    supplierName: text(item.supplierName, 'catalog.public.supplierName'),
-    isTest: boolean(item.isTest),
-    purchasable: boolean(item.purchasable),
-    qualification: {
-      visible: boolean(qualification.visible),
-      purchasable: boolean(qualification.purchasable),
-      visibilityReason: text(qualification.visibilityReason, 'catalog.public.visibilityReason'),
-      purchaseReason: text(qualification.purchaseReason, 'catalog.public.purchaseReason'),
-    },
   };
 }
 
@@ -190,9 +144,9 @@ export const productionApi = {
     await createStorefrontSession(input);
   },
 
-  async getSession(): Promise<{ authenticated: true; actor: ApiActor }> {
+  async getSession(): Promise<{ authenticated: true; actor: ApiActor; bootstrap: ApiBootstrap }> {
     const bootstrap = await sessionBootstrap();
-    return { authenticated: true, actor: bootstrap.actor };
+    return { authenticated: true, actor: bootstrap.actor, bootstrap };
   },
 
   async logout(): Promise<{ authenticated: false }> {
@@ -204,8 +158,8 @@ export const productionApi = {
     }
   },
 
-  async getHomeSnapshot(): Promise<ApiHomeSnapshot> {
-    const bootstrap = await sessionBootstrap();
+  async getHomeSnapshot(preloadedBootstrap?: ApiBootstrap): Promise<ApiHomeSnapshot> {
+    const bootstrap = preloadedBootstrap ?? await sessionBootstrap();
     const [accountItems, orderItems] = await Promise.all([accounts(), orders()]);
     const ledgerItems = await ledgers(accountItems);
     return { bootstrap, accounts: { items: accountItems }, orders: { items: orderItems }, accountLedgers: { items: ledgerItems } };
@@ -221,7 +175,7 @@ export const productionApi = {
   },
 
   async listPublicProducts(options: CatalogOptions = {}): Promise<{ items: ApiProduct[]; pagination: { nextCursor: string | null } }> {
-    return publicCatalog(options);
+    return listPublicProducts(options);
   },
 
   async listProducts(options: CatalogOptions = {}): Promise<{ items: ApiProduct[]; pagination: { nextCursor: string | null } }> {

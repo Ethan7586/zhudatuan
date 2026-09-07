@@ -3,6 +3,7 @@ import type { ApiBootstrap, ApiDeliveryAddress } from './productionApi.types';
 import type { CanonicalSessionContext } from './canonicalApiClient';
 import { asDate, optionalText, pageItems, record, records, text, version } from './canonicalShape';
 import { ProductionApiError } from './productionApi.error';
+import type { StorefrontPresentationIdentity } from '../config/storefrontIdentity';
 
 const SCOPE_KINDS = new Set(['platform', 'distributor', 'tenant', 'enterprise', 'mall', 'department', 'supplier', 'brand', 'store', 'owner', 'self']);
 
@@ -39,10 +40,14 @@ export function mapCanonicalSession(value: unknown): CanonicalSessionProjection 
   });
 }
 
-export function mapCanonicalBootstrap(session: CanonicalSessionProjection, profileValue: unknown): ApiBootstrap {
+export function mapCanonicalBootstrap(
+  session: CanonicalSessionProjection,
+  profileValue: unknown,
+  presentation: StorefrontPresentationIdentity = { mallName: '当前福利商城', brandName: '筑大团' },
+): ApiBootstrap {
   const profile = record(profileValue, 'member.profile');
   const mall = session.scopes.find((scope) => scope.kind === 'mall') ?? (session.scope.kind === 'mall' ? session.scope : session.scope);
-  const mallName = optionalText(profile.organization_name) ?? '当前福利商城';
+  const mallName = optionalText(profile.organization_name) ?? presentation.mallName;
   const enterprise = session.scopes.find((scope) => scope.kind === 'enterprise');
   const tenant = session.scopes.find((scope) => scope.kind === 'tenant');
   const phoneVerified = session.assuranceLevel >= 2;
@@ -72,7 +77,7 @@ export function mapCanonicalBootstrap(session: CanonicalSessionProjection, profi
       mallId: mall.id,
       mallCode: mall.id,
       mallName,
-      brandName: '筑大团',
+      brandName: presentation.brandName,
       enterpriseName: '已授权企业',
     },
   };

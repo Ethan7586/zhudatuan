@@ -1,6 +1,128 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
+const firstPaintGuardCss = `
+  html {
+    min-width: 320px;
+    background: #f5f7fa;
+  }
+
+  body {
+    margin: 0;
+    background: #f5f7fa;
+    color: #172033;
+    font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+
+  body > * {
+    visibility: hidden;
+  }
+
+  #sw-first-paint {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    display: flex;
+    visibility: visible;
+    align-items: center;
+    justify-content: center;
+    background: #f5f7fa;
+  }
+
+  #sw-first-paint-card {
+    display: flex;
+    width: min(78vw, 280px);
+    align-items: center;
+    gap: 14px;
+    border: 1px solid #dbe7ff;
+    border-radius: 18px;
+    background: #ffffff;
+    padding: 18px;
+    box-shadow: 0 8px 28px rgba(20, 58, 143, 0.10);
+  }
+
+  #sw-first-paint-mark {
+    display: flex;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: #1f5eff;
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  #sw-first-paint-copy {
+    min-width: 0;
+  }
+
+  #sw-first-paint-title,
+  #sw-first-paint-note {
+    display: block;
+  }
+
+  #sw-first-paint-title {
+    color: #172033;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  #sw-first-paint-note {
+    margin-top: 4px;
+    color: #64748b;
+    font-size: 12px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    #sw-first-paint-mark {
+      animation: sw-first-paint-pulse 1.2s ease-in-out infinite alternate;
+    }
+  }
+
+  @keyframes sw-first-paint-pulse {
+    from { opacity: 0.72; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+`;
+
+const publicCatalogBootstrapScript = `
+  (function () {
+    if (location.pathname !== '/' && location.pathname !== '/h5') return;
+    try {
+      var request = fetch('/api/v1/catalog/public/products?limit=100', {
+        method: 'GET',
+        headers: { accept: 'application/json' },
+        credentials: 'omit',
+        redirect: 'error'
+      });
+      self.__SW_PUBLIC_CATALOG_RESPONSE__ = request.catch(function () { return null; });
+      request.then(function (response) {
+        if (!response.ok) return;
+        return response.clone().json().then(function (payload) {
+          var item = payload && payload.items && payload.items[0];
+          if (!item || !item.coverUrl) return;
+          var imageUrl = new URL(item.coverUrl, location.href);
+          if (imageUrl.hostname === 'images.unsplash.com') {
+            imageUrl.searchParams.set('w', devicePixelRatio >= 2.5 ? '168' : '112');
+            imageUrl.searchParams.set('q', '72');
+            imageUrl.searchParams.set('auto', 'format');
+            imageUrl.searchParams.set('fit', 'crop');
+          }
+          var preload = document.createElement('link');
+          preload.rel = 'preload';
+          preload.as = 'image';
+          preload.href = imageUrl.href;
+          preload.setAttribute('fetchpriority', 'high');
+          document.head.appendChild(preload);
+        });
+      }).catch(function () {});
+    } catch (_) {}
+  }());
+`;
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://zhudatuan.com'),
   title: '智慧翼企业福利商城｜企业员工福利平台',
@@ -42,7 +164,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <head>
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+        <style id="sw-first-paint-guard" dangerouslySetInnerHTML={{ __html: firstPaintGuardCss }} />
+        <script id="sw-public-catalog-bootstrap" dangerouslySetInnerHTML={{ __html: publicCatalogBootstrapScript }} />
+      </head>
+      <body>
+        <div id="sw-first-paint" role="status" aria-live="polite" aria-label="商城正在加载">
+          <div id="sw-first-paint-card">
+            <span id="sw-first-paint-mark" aria-hidden="true">翼</span>
+            <span id="sw-first-paint-copy">
+              <strong id="sw-first-paint-title">智慧翼福利商城</strong>
+              <span id="sw-first-paint-note">网络较慢，正在准备商城…</span>
+            </span>
+          </div>
+        </div>
+        {children}
+      </body>
     </html>
   );
 }

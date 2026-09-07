@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { AccountLog, CartItem, DeliveryAddress, EnterpriseMall, Order, Product, UserProfile } from '../types';
-import { productionApi, ProductionApiError, type ApiProduct } from '../services/productionApi';
+import { ProductionApiError } from '../services/productionApi.error';
+import type { ApiBootstrap, ApiHomeSnapshot, ApiProduct } from '../services/productionApi.types';
+import { listPublicProducts, type PublicCatalogOptions } from '../services/publicCatalogApi';
+import { loadProductionApi } from '../services/productionApiLoader';
 import { mapApiOrder, mapApiProduct } from './mallMappers';
 import type { CatalogSyncStatus, SessionStatus } from './MallContext.types';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
@@ -23,7 +26,7 @@ interface ProductionSyncSetters {
   setCatalogSyncStatus: Dispatch<SetStateAction<CatalogSyncStatus>>;
 }
 
-type CatalogPageLoader = typeof productionApi.listPublicProducts;
+type CatalogPageLoader = (options?: PublicCatalogOptions) => Promise<{ items: ApiProduct[]; pagination: { nextCursor: string | null } }>;
 
 async function loadCompleteCatalog(loadPage: CatalogPageLoader): Promise<ApiProduct[]> {
   const items = new Map<string, ApiProduct>();
@@ -43,6 +46,22 @@ async function loadCompleteCatalog(loadPage: CatalogPageLoader): Promise<ApiProd
 
 export function shouldRetainProductionSnapshot(error: unknown): boolean {
   return error instanceof ProductionApiError && error.status === 0;
+}
+
+export function shouldCloseMemberSession(error: unknown): boolean {
+  return error instanceof ProductionApiError && (error.status === 401 || error.status === 403);
+}
+
+export function authenticatedMall(bootstrap: ApiBootstrap): EnterpriseMall {
+  return {
+    id: bootstrap.scope.mallId,
+    enterpriseId: bootstrap.scope.enterpriseId,
+    enterpriseName: bootstrap.scope.enterpriseName,
+    mallName: bootstrap.scope.mallName,
+    logoText: bootstrap.scope.brandName,
+    badge: '企业福利专享',
+    welcomeBanner: `${bootstrap.scope.enterpriseName}员工福利商城已开放，实际权益以企业发放为准。`,
+  };
 }
 
 export function useProductionSync(setters: ProductionSyncSetters, enabled = true) {
@@ -66,11 +85,19 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     setters.setCatalogSyncStatus('ready');
   };
 
+  const publishMemberShell = (bootstrap: ApiBootstrap) => {
+    const resolvedMall = authenticatedMall(bootstrap);
+    setters.setUser((previous) => mergeAuthenticatedMemberProfile(previous, bootstrap));
+    setters.setCurrentMall(resolvedMall);
+    setters.setMalls([resolvedMall]);
+    setters.setSessionStatus('authenticated');
+  };
+
   const refreshPublicCatalog = async () => {
     const syncVersion = ++syncVersionRef.current;
     setters.setCatalogSyncStatus('syncing');
     try {
-      const items = await loadCompleteCatalog(productionApi.listPublicProducts);
+      const items = await loadCompleteCatalog(listPublicProducts);
       if (syncVersion === syncVersionRef.current) publishCatalog(items);
     } catch (error) {
       if (syncVersion === syncVersionRef.current) setters.setCatalogSyncStatus('error');
@@ -85,16 +112,20 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     // upgrades this snapshot with member pricing and purchase qualification.
     setters.setCatalogSyncStatus('syncing');
     const publisher = createCatalogPublisher(() => syncVersion === syncVersionRef.current, publishCatalog);
-    const publicCatalogRequest = loadCompleteCatalog(productionApi.listPublicProducts);
+    const publicCatalogRequest = loadCompleteCatalog(listPublicProducts);
+    const productionApiRequest = loadProductionApi();
     void publicCatalogRequest.then(publisher.commitPublic).catch(() => undefined);
-    let snapshot: Awaited<ReturnType<typeof productionApi.getHomeSnapshot>>;
+    let bootstrap: ApiBootstrap;
     try {
-      snapshot = await productionApi.getHomeSnapshot();
+      const productionApi = await productionApiRequest;
+      bootstrap = (await productionApi.getSession()).bootstrap;
     } catch (error) {
       if (syncVersion !== syncVersionRef.current) return;
       if (!shouldRetainProductionSnapshot(error)) {
         closeMemberData();
         setters.setSessionStatus('guest');
+      } else {
+        setters.setSessionStatus((current) => current === 'checking' ? 'guest' : current);
       }
       try {
         publisher.commitPublic(await publicCatalogRequest);
@@ -107,25 +138,37 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
       void publicCatalogRequest.catch(() => undefined);
       return;
     }
-    const { bootstrap, accounts, orders: orderResult, accountLedgers: ledgerResult } = snapshot;
+    // Identity and the stable shell are ready before balances, orders and
+    // ledgers. Slow account APIs must never keep the page in a guest frame.
+    publishMemberShell(bootstrap);
+
+    let snapshot: ApiHomeSnapshot;
+    try {
+      const productionApi = await productionApiRequest;
+      snapshot = await productionApi.getHomeSnapshot(bootstrap);
+    } catch (error) {
+      if (syncVersion !== syncVersionRef.current) return;
+      if (shouldCloseMemberSession(error)) {
+        closeMemberData();
+        setters.setSessionStatus('guest');
+      }
+      try {
+        publisher.commitPublic(await publicCatalogRequest);
+      } catch {
+        if (syncVersion === syncVersionRef.current) setters.setCatalogSyncStatus('error');
+      }
+      throw error;
+    }
+    if (syncVersion !== syncVersionRef.current) return;
+
+    const { accounts, orders: orderResult, accountLedgers: ledgerResult } = snapshot;
     const welfare = accounts.items.find((account) => account.type === 'welfare');
     const meal = accounts.items.find((account) => account.type === 'meal');
     setters.setUser((previous) => ({
-      ...mergeAuthenticatedMemberProfile(previous, bootstrap),
+      ...previous,
       welfareBalance: (welfare?.balanceCents ?? 0) / 100,
       mealBalance: (meal?.balanceCents ?? 0) / 100,
     }));
-    const resolvedMall: EnterpriseMall = {
-      id: bootstrap.scope.mallId,
-      enterpriseId: bootstrap.scope.enterpriseId,
-      enterpriseName: bootstrap.scope.enterpriseName,
-      mallName: bootstrap.scope.mallName,
-      logoText: bootstrap.scope.brandName,
-      badge: '企业福利专享',
-      welcomeBanner: `${bootstrap.scope.enterpriseName}员工福利商城已开放，实际权益以企业发放为准。`,
-    };
-    setters.setCurrentMall(resolvedMall);
-    setters.setMalls([resolvedMall]);
     setters.setOrders(orderResult.items.map((order) => mapApiOrder(order, bootstrap.scope)));
     setters.setAccountLogs(
       ledgerResult.items.map((ledger) => ({
@@ -141,11 +184,8 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
         balanceAfter: ledger.balanceAfterCents / 100,
       }))
     );
-    // Account identity, balances and orders are enough to make the shell
-    // interactive. The qualified catalog is heavier and can finish in the
-    // background without hiding account actions such as logout.
-    setters.setSessionStatus('authenticated');
-    void loadCompleteCatalog(productionApi.listQualifiedProducts)
+    // The qualified catalog is heavier and can finish after the member shell.
+    void productionApiRequest.then((productionApi) => loadCompleteCatalog(productionApi.listQualifiedProducts))
       .then(publisher.commitQualified)
       .catch(async () => {
         try {
@@ -180,18 +220,14 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
 
   useEffect(() => {
     if (!enabled) return;
-    let active = true;
-    // /home is both the authorization check and the initial data snapshot.
-    // Avoid a separate /auth/session round trip before loading the page.
-    void refreshProductionData().catch(() => {
-      if (active) setters.setSessionStatus('guest');
-    });
+    // Publish identity first; balances, orders and catalog continue without
+    // blocking the first authenticated frame.
+    void refreshProductionData().catch(() => undefined);
     const handleOnline = () => {
       void refreshProductionData().catch(() => undefined);
     };
     window.addEventListener('online', handleOnline);
     return () => {
-      active = false;
       window.removeEventListener('online', handleOnline);
       syncVersionRef.current += 1;
       productionRefreshRef.current = null;

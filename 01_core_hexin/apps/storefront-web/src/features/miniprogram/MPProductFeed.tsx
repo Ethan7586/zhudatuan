@@ -1,6 +1,7 @@
 import React from 'react';
 import { Flame, Plus } from 'lucide-react';
 import { useMall } from '../../context/MallContext';
+import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 
 export const MPProductFeed: React.FC = () => {
   const { setMpPage, addToCart, presentationProducts: products } = useMall();
@@ -21,7 +22,17 @@ export const MPProductFeed: React.FC = () => {
           {feedProducts.map((p) => (
             <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-white rounded-2xl overflow-hidden shadow-xs border border-gray-100 flex flex-col justify-between cursor-pointer active:scale-98 transition-transform">
               <div className="relative aspect-square bg-gray-50">
-                <img src={p.imageUrl} alt={p.title} width={320} height={320} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                <img
+                  src={storefrontImageUrl(p.imageUrl, 336)}
+                  srcSet={`${storefrontImageUrl(p.imageUrl, 336)} 2x, ${storefrontImageUrl(p.imageUrl, 504)} 3x`}
+                  alt={p.title}
+                  width={320}
+                  height={320}
+                  loading="lazy"
+                  fetchPriority="low"
+                  decoding="async"
+                  className="w-full h-full object-cover"
+                />
                 <span className="absolute top-1.5 left-1.5 bg-[var(--sw-brand-dark)]/90 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">
                   {p.itemType === 'virtual_coupon' ? '电子券' : p.itemType === 'nearby_store' ? '到店核销' : '企采实物'}
                 </span>

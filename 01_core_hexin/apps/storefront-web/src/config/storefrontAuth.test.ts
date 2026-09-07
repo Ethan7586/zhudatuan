@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CANONICAL_STOREFRONT_AUTH_ORIGIN, LOCAL_STOREFRONT_AUTH_ORIGIN, resolveStorefrontAuthOrigin, storefrontAuthHref } from './storefrontAuth';
-import { HONGTAI_STOREFRONT_APPLICATION, resolveStorefrontApplication, ZHUDATUAN_STOREFRONT_APPLICATION } from './storefrontIdentity';
+import { HONGTAI_STOREFRONT_APPLICATION, resolveStorefrontApplication, resolveStorefrontPresentationIdentity, ZHUDATUAN_STOREFRONT_APPLICATION } from './storefrontIdentity';
 
 describe('storefront auth origin boundary', () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -39,5 +39,7 @@ describe('storefront auth origin boundary', () => {
     expect(zhudatuan.searchParams.get('target')).toBe('storefront');
     expect(hongtai.origin).toBe('https://accounts.hbbtzn.com');
     expect(hongtai.searchParams.get('target')).toBe('storefront-hbbtzn');
+    expect(resolveStorefrontPresentationIdentity('hbbtzn.com')).toEqual({ mallName: '宏泰甄选', brandName: '宏泰甄选' });
+    expect(resolveStorefrontPresentationIdentity('zhudatuan.com')).toEqual({ mallName: '筑大团商城', brandName: '筑大团' });
   });
 });

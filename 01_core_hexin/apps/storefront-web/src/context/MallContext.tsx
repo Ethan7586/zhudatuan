@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { UserProfile, EnterpriseMall, Product, CartItem, Order, DeliveryAddress, AccountLog } from '../types';
-import { productionApi, ProductionApiError } from '../services/productionApi';
+import { ProductionApiError } from '../services/productionApi.error';
+import { loadProductionApi } from '../services/productionApiLoader';
 import { toFrontendCategories, toFrontendOrders, toFrontendProducts } from '../adapters/frontendData';
 import type { AndroidAppPage, AppMode, LaptopPage, LoginCredentials, MallContextType, MiniProgramPage, PageRoute, PendingFeatureInfo, RouteParams, SessionStatus, TabletOrientation, TabletPage, ViewportMode } from './MallContext.types';
 import { useDeviceNavigation } from './useDeviceNavigation';
@@ -10,10 +11,10 @@ import { useToasts } from './useToasts';
 import { mapApiCartItems } from './mallMappers';
 import { guestStorefrontProfile } from './guestStorefrontProfile';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
-import { PaymentPhoneVerificationModal } from '../components/mobile/PaymentPhoneVerificationModal';
 import { createCartQuantitySync, type CartQuantitySync } from './cartQuantitySync';
 export type * from './MallContext.types';
 const MallContext = createContext<MallContextType | undefined>(undefined);
+const PaymentPhoneVerificationModal = React.lazy(() => import('../components/mobile/PaymentPhoneVerificationModal').then(({ PaymentPhoneVerificationModal }) => ({ default: PaymentPhoneVerificationModal })));
 
 type ShowcaseService = {
   getUserProfile: () => UserProfile;
@@ -54,7 +55,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const [orders, setOrders] = useState<Order[]>(() => (showcaseService ? showcaseService.getOrders() : []));
   const [products, setProducts] = useState<Product[]>(() => (showcaseService ? showcaseService.getProducts() : []));
   const [accountLogs, setAccountLogs] = useState<AccountLog[]>(() => (showcaseService ? showcaseService.getAccountLogs() : []));
-  const [sessionStatus, setSessionStatus] = useState<SessionStatus>(isShowcase ? 'guest' : 'checking');
+  const [sessionStatus, setSessionStatus] = useState<SessionStatus>(isShowcase ? 'authenticated' : 'checking');
   const [catalogSyncStatus, setCatalogSyncStatus] = useState<'idle' | 'syncing' | 'ready' | 'error'>(isShowcase ? 'ready' : 'idle');
   const [sessionError, setSessionError] = useState<string | null>(null);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
@@ -77,6 +78,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
 
   const refreshServerCart = useCallback(async () => {
     const sessionGeneration = sessionGenerationRef.current;
+    const productionApi = await loadProductionApi();
     const response = await productionApi.listCart();
     if (sessionGeneration !== sessionGenerationRef.current) return;
     setCart(mapApiCartItems(response.items, productsRef.current));
@@ -85,6 +87,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   if (!cartQuantitySyncRef.current) {
     cartQuantitySyncRef.current = createCartQuantitySync(
       async ({ listingId, quantity }) => {
+        const productionApi = await loadProductionApi();
         await productionApi.upsertCartItem({ listingId, quantity });
       },
       () => {
@@ -95,6 +98,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   useEffect(() => () => cartQuantitySyncRef.current?.cancel(), []);
   const refreshServerAddresses = useCallback(async () => {
     const sessionGeneration = sessionGenerationRef.current;
+    const productionApi = await loadProductionApi();
     const response = await productionApi.listAddresses();
     if (sessionGeneration === sessionGenerationRef.current) setAddresses(response.items);
   }, []);
@@ -155,6 +159,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     setSessionError(null);
     try {
+      const productionApi = await loadProductionApi();
       await productionApi.login(credentials);
       await refreshProductionData();
       showToast('安全登录成功，已同步福利账户与订单', 'success');
@@ -167,7 +172,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     }
   };
   const logout = async () => {
-    const revokeRequest = productionApi.logout();
+    const revokeRequest = loadProductionApi().then((productionApi) => productionApi.logout());
     cartQuantitySyncRef.current?.cancel();
     sessionGenerationRef.current += 1;
     cancelProductionSync();
@@ -229,6 +234,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     }
     if (sessionStatus === 'authenticated' && product.skuId) {
       try {
+        const productionApi = await loadProductionApi();
         await productionApi.upsertCartItem({ listingId: product.id, quantity });
       } catch {
         showToast('购物车保存失败，请稍后重试', 'error');
@@ -318,6 +324,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       const checkout = await checkoutSelectedCartRequest(cart, addresses, checkoutUser);
       const { selectedItems } = checkout;
       setActivePaymentId(checkout.paymentId);
+      const productionApi = await loadProductionApi();
       await Promise.all(selectedItems.map((item) => productionApi.deleteCartItem(item.id)));
       await refreshServerCart();
       await refreshProductionData();
@@ -366,6 +373,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const handleAddAddress = async (address: Omit<DeliveryAddress, 'id'>): Promise<boolean> => {
     if (sessionStatus === 'authenticated') {
       try {
+        const productionApi = await loadProductionApi();
         await productionApi.upsertAddress({ ...address, id: '' });
         await refreshServerAddresses();
         showToast('收货地址已加密保存', 'success');
@@ -431,11 +439,13 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     >
       {children}
       {paymentPhoneVerificationOpen && sessionStatus === 'authenticated' && (
-        <PaymentPhoneVerificationModal
-          phone={user.phone}
-          onClose={() => setPaymentPhoneVerificationOpen(false)}
-          onVerified={completePaymentPhoneVerification}
-        />
+        <React.Suspense fallback={null}>
+          <PaymentPhoneVerificationModal
+            phone={user.phone}
+            onClose={() => setPaymentPhoneVerificationOpen(false)}
+            onVerified={completePaymentPhoneVerification}
+          />
+        </React.Suspense>
       )}
     </MallContext.Provider>
   );

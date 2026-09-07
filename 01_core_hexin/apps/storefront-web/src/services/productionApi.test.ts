@@ -77,6 +77,21 @@ describe('canonical storefront production API', () => {
     expect(new Headers(logout.headers).get('x-csrf-token')).toBe('csrf-token-for-storefront');
   });
 
+  it('publishes the identity shell first and reuses it for the heavier home snapshot', async () => {
+    vi.stubEnv('NEXT_PUBLIC_STOREFRONT_APPLICATION', 'zdt-l1-verify');
+    const fetcher = apiFetch({ profile: { ...PROFILE, organization_name: undefined } });
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+
+    const session = await productionApi.getSession();
+    expect(session.bootstrap.scope).toMatchObject({ mallName: '宏泰甄选', brandName: '宏泰甄选' });
+    expect(requestPaths(fetcher)).toEqual(['/api/v1/identity/session', '/api/v1/members/me']);
+
+    await productionApi.getHomeSnapshot(session.bootstrap);
+    expect(requestPaths(fetcher).filter((path) => path === '/api/v1/identity/session')).toHaveLength(1);
+    expect(requestPaths(fetcher).filter((path) => path === '/api/v1/members/me')).toHaveLength(1);
+  });
+
   it('binds password login to the current storefront application', async () => {
     vi.stubEnv('NEXT_PUBLIC_STOREFRONT_APPLICATION', 'zdt-l1-verify');
     const fetcher = apiFetch();
@@ -287,7 +302,7 @@ describe('canonical storefront production API', () => {
   });
 });
 
-function apiFetch(options: { personalMinor?: number; paymentState?: string } = {}) {
+function apiFetch(options: { personalMinor?: number; paymentState?: string; profile?: Record<string, unknown> } = {}) {
   return vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
     const path = new URL(String(input)).pathname;
     const method = init?.method ?? 'GET';
@@ -296,7 +311,7 @@ function apiFetch(options: { personalMinor?: number; paymentState?: string } = {
     }, 201);
     if (path === '/api/v1/identity/tickets/exchange' && method === 'POST') return json({ session: 'session:one' });
     if (path === '/api/v1/identity/session') return json(SESSION);
-    if (path === '/api/v1/members/me') return json(PROFILE);
+    if (path === '/api/v1/members/me') return json(options.profile ?? PROFILE);
     if (path === '/api/v1/benefits/accounts') return json(ACCOUNTS);
     if (path === '/api/v1/benefits/ledgers') return json({ items: [] });
     if (path === '/api/v1/orders' && method === 'GET') return json({ items: [] });
