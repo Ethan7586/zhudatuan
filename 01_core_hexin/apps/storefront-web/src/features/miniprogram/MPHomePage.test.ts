@@ -25,6 +25,13 @@ vi.mock('../../context/MallContext', () => ({
 import { MPHomePage } from './MPHomePage';
 
 describe('mini-program home page', () => {
+  it('keeps duplicated welfare and meal balances off the home page', () => {
+    const html = renderToStaticMarkup(React.createElement(MPHomePage));
+
+    expect(html).not.toContain('福利卡余额');
+    expect(html).not.toContain('餐卡专享余额');
+  });
+
   it('gives every campaign carousel control an accessible name and selected state', () => {
     const html = renderToStaticMarkup(React.createElement(MPHomePage));
 

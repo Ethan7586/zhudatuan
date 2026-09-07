@@ -83,31 +83,6 @@ export const MPHomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* 福利与餐卡余额双 Pill 卡片 */}
-      <div className="px-3 -mt-1.5 z-10">
-        <div className="bg-white rounded-2xl p-3 shadow-md border border-blue-100 flex items-center justify-between divide-x divide-gray-100">
-          <div onClick={() => setMpPage('profile')} className="flex-1 pr-2 flex items-center gap-2 cursor-pointer active:opacity-70 transition-opacity">
-            <div className="w-8 h-8 rounded-xl bg-[var(--sw-brand)] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-              <CreditCard className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-[10px] text-gray-500 font-medium">福利卡余额</div>
-              <div className="text-sm font-black text-[var(--sw-brand)] font-mono">¥{user.welfareBalance.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</div>
-            </div>
-          </div>
-
-          <div onClick={() => setMpPage('profile')} className="flex-1 pl-3 flex items-center gap-2 cursor-pointer active:opacity-70 transition-opacity">
-            <div className="w-8 h-8 rounded-xl bg-[#FF7A00] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-              <Utensils className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-[10px] text-gray-500 font-medium">餐卡专享余额</div>
-              <div className="text-sm font-black text-[#FF7A00] font-mono">¥{user.mealBalance.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* 活动轮播图 */}
       <div className="px-3 mt-3">
         <div className={`relative rounded-2xl overflow-hidden shadow-sm bg-gradient-to-r ${banners[activeBanner].color} p-4 text-white min-h-[110px] flex flex-col justify-between`}>
