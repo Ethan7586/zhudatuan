@@ -2,7 +2,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { EMPTY_GUEST_PROFILE } from '../../context/productionStorefrontState';
-import { MPAuthStatusCard } from './MPAuthStatusCard';
+import { AUTH_WELCOME_EXIT_MS, AUTH_WELCOME_HOLD_MS, MPAuthStatusCard } from './MPAuthStatusCard';
 
 const member = {
   ...EMPTY_GUEST_PROFILE,
@@ -39,6 +39,12 @@ describe('mini-program authentication shell', () => {
     expect(guest).toContain('手机号登录');
     expect(authenticated).toContain('欢迎回来，Ethan');
     expect(authenticated).toContain('查看Ethan的会员账户');
+    expect(authenticated).toContain('data-auth-phase="visible"');
     expect(authenticated).not.toContain('退出会员登录');
+  });
+
+  it('uses the short iPhone-style welcome timing', () => {
+    expect(AUTH_WELCOME_HOLD_MS).toBe(1600);
+    expect(AUTH_WELCOME_EXIT_MS).toBe(420);
   });
 });

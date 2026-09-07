@@ -12,9 +12,40 @@ interface MPAuthStatusCardProps {
 
 const cardClassName = 'flex h-[68px] w-full items-center justify-between rounded-xl border border-white/20 bg-white px-3.5 text-left shadow-sm';
 
+export const AUTH_WELCOME_HOLD_MS = 1600;
+export const AUTH_WELCOME_EXIT_MS = 420;
+
 export function MPAuthStatusCard({ authHref, sessionStatus, user, onOpenProfile }: MPAuthStatusCardProps) {
+  const [welcomePhase, setWelcomePhase] = React.useState<'visible' | 'leaving' | 'hidden'>('visible');
+
+  React.useEffect(() => {
+    if (sessionStatus !== 'authenticated') {
+      setWelcomePhase('visible');
+      return undefined;
+    }
+
+    setWelcomePhase('visible');
+    const leaveTimer = window.setTimeout(() => setWelcomePhase('leaving'), AUTH_WELCOME_HOLD_MS);
+    const hideTimer = window.setTimeout(() => setWelcomePhase('hidden'), AUTH_WELCOME_HOLD_MS + AUTH_WELCOME_EXIT_MS);
+
+    return () => {
+      window.clearTimeout(leaveTimer);
+      window.clearTimeout(hideTimer);
+    };
+  }, [sessionStatus, user.id]);
+
+  if (sessionStatus === 'authenticated' && welcomePhase === 'hidden') return null;
+
+  const isWelcomeLeaving = sessionStatus === 'authenticated' && welcomePhase === 'leaving';
+
   return (
-    <div className="bg-[var(--sw-brand-dark)] px-3 pb-3" data-auth-shell={sessionStatus}>
+    <div
+      className={`overflow-hidden bg-[var(--sw-brand-dark)] px-3 transition-[max-height,opacity,transform,padding] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none motion-reduce:transition-none ${
+        isWelcomeLeaving ? 'pointer-events-none max-h-0 -translate-y-5 pb-0 opacity-0' : 'max-h-[88px] translate-y-0 pb-3 opacity-100'
+      }`}
+      data-auth-shell={sessionStatus}
+      data-auth-phase={welcomePhase}
+    >
       {sessionStatus === 'checking' ? (
         <div className={cardClassName} role="status" aria-live="polite" aria-busy="true">
           <span className="flex min-w-0 items-center gap-2.5">

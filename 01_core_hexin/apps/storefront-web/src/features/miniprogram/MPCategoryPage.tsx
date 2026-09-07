@@ -1,164 +1,176 @@
 import React, { useState } from 'react';
-import { useMall } from '../../context/MallContext';
+import { Plus, Search, ShoppingBag } from 'lucide-react';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
-import { Search, Plus, Filter, Tag, ArrowUpDown } from 'lucide-react';
+import { useMall } from '../../context/MallContext';
+import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 
 export const MPCategoryPage: React.FC = () => {
-  const { setMpPage, addToCart, presentationProducts: MOCK_PRODUCTS, presentationCategories: MOCK_CATEGORIES } = useMall();
-  const [activeCategoryId, setActiveCategoryId] = useState(() => MOCK_CATEGORIES[0]?.id ?? 'cat_all');
+  const { setMpPage, addToCart, presentationProducts: products, presentationCategories: categories } = useMall();
+  const [activeCategoryId, setActiveCategoryId] = useState(() => categories[0]?.id ?? 'cat_all');
   const [keyword, setKeyword] = useState('');
 
-  const currentCategory = MOCK_CATEGORIES.find((c) => c.id === activeCategoryId) || MOCK_CATEGORIES[0];
+  const currentCategory = categories.find((category) => category.id === activeCategoryId) || categories[0];
 
   if (!currentCategory) {
     return (
-      <div className="flex min-h-full flex-col bg-[#F5F7FA] font-sans text-gray-800">
-        <WeChatCapsule title="全品类福利兑换" />
+      <div className="flex h-full min-h-0 flex-col bg-[#F4F6FA] font-sans text-gray-900">
+        <WeChatCapsule title="商品分类" />
         <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-          <div className="h-12 w-12 animate-pulse rounded-2xl bg-blue-100" />
-          <h1 className="mt-4 text-sm font-bold text-gray-800">商品分类正在同步</h1>
-          <p className="mt-1 text-xs leading-5 text-gray-500">网络恢复后会自动加载，无需刷新整个页面。</p>
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-[var(--sw-brand)] shadow-[0_10px_30px_rgba(30,64,175,0.10)]">
+            <ShoppingBag className="h-7 w-7" strokeWidth={1.8} />
+          </div>
+          <h1 className="mt-4 text-sm font-black text-gray-900">商品分类正在同步</h1>
+          <p className="mt-1 text-xs leading-5 text-gray-400">网络恢复后会自动加载，无需刷新整个页面。</p>
         </div>
       </div>
     );
   }
 
-  const filteredProducts = MOCK_PRODUCTS.filter((p) => {
-    const matchCat = activeCategoryId === 'cat_all' || p.categoryId === activeCategoryId;
-    const matchKw = !keyword || p.title.includes(keyword) || p.subtitle?.includes(keyword);
-    return matchCat && matchKw;
+  const filteredProducts = products.filter((product) => {
+    const matchesCategory = activeCategoryId === 'cat_all' || product.categoryId === activeCategoryId;
+    const matchesKeyword = !keyword || product.title.includes(keyword) || product.subtitle?.includes(keyword);
+    return matchesCategory && matchesKeyword;
   });
 
   return (
-    <div className="bg-[#F5F7FA] min-h-full flex flex-col font-sans text-gray-800">
-      <WeChatCapsule title="全品类福利兑换" />
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#F4F6FA] font-sans text-gray-900">
+      <WeChatCapsule title="商品分类" />
 
-      {/* 搜索框与排序筛选 */}
-      <div className="bg-white border-b border-gray-200/80 p-2.5 space-y-2 sticky top-[72px] z-20 shadow-xs">
-        <div className="relative flex items-center">
+      <div className="shrink-0 px-3 pb-2.5 pt-3">
+        <label className="flex h-11 items-center gap-2 rounded-2xl border border-gray-100 bg-white px-3 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+          <Search className="h-4 w-4 flex-none text-gray-400" />
           <input
-            type="text"
+            type="search"
             value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            placeholder="在全站品类中搜索商品..."
-            className="w-full bg-gray-100 text-gray-800 placeholder-gray-400 text-xs pl-8 pr-8 py-1.5 rounded-full focus:outline-none focus:bg-white border border-gray-200 font-medium"
+            onChange={(event) => setKeyword(event.target.value)}
+            placeholder="搜索福利商品"
+            aria-label="搜索福利商品"
+            className="min-w-0 flex-1 bg-transparent text-xs font-medium text-gray-900 outline-none placeholder:text-gray-400"
           />
-          <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
           {keyword && (
-            <button onClick={() => setKeyword('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-bold">
+            <button type="button" onClick={() => setKeyword('')} aria-label="清除搜索" className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-gray-500 active:bg-gray-200">
               ✕
             </button>
           )}
-        </div>
-
-        {/* 常用热门关键词 Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap text-[10px] text-gray-600 no-scrollbar">
-          <span className="text-gray-400 font-bold flex-shrink-0">热搜:</span>
-          {currentCategory.hotKeywords.map((kw) => (
-            <button key={kw} onClick={() => setKeyword(kw)} className="bg-blue-50 text-[var(--sw-brand)] border border-blue-100 px-2 py-0.5 rounded-full font-medium cursor-pointer">
-              {kw}
-            </button>
-          ))}
-        </div>
+        </label>
       </div>
 
-      {/* 主体左右双栏 (左侧分类 Tab，右侧商品列表) */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* 左侧垂直 Category Tabs */}
-        <div className="w-24 bg-gray-100/80 divide-y divide-gray-200/50 overflow-y-auto text-xs font-medium select-none flex-shrink-0">
-          {MOCK_CATEGORIES.map((cat) => {
-            const isActive = cat.id === activeCategoryId;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategoryId(cat.id)}
-                className={`w-full py-3.5 px-2 text-left relative transition-colors flex flex-col gap-0.5 cursor-pointer ${isActive ? 'bg-white font-bold text-[var(--sw-brand)] shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}
-              >
-                {isActive && <span className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--sw-brand)] rounded-r" />}
-                <span className="truncate">{cat.name}</span>
-                <span className="text-[9px] text-gray-400 truncate font-normal">{cat.hotKeywords[0]}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* 右侧商品列表区 */}
-        <div className="flex-1 bg-white p-2.5 overflow-y-auto space-y-3">
-          {/* Subcategory Banner/Header */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-2.5 rounded-xl border border-blue-100/80 flex items-center justify-between">
-            <div>
-              <div className="text-xs font-black text-gray-900">{currentCategory.name}</div>
-              <div className="text-[10px] text-gray-500 mt-0.5">企采协议补贴 · 共 {filteredProducts.length} 件福利卡可兑商品</div>
-            </div>
-            <span className="text-[9px] bg-[var(--sw-brand)] text-white font-bold px-2 py-0.5 rounded-full">全额包邮</span>
-          </div>
-
-          {/* Subcategories pill grid */}
-          {currentCategory.subCategories && currentCategory.subCategories.length > 0 && (
-            <div className="grid grid-cols-3 gap-1.5">
-              {currentCategory.subCategories.map((sub) => (
+      <div className="flex min-h-0 flex-1 gap-2.5 px-3 pb-3">
+        <nav aria-label="商品分类" className="w-[82px] flex-none overflow-y-auto overscroll-contain rounded-2xl bg-[#E9EDF5] p-1.5 no-scrollbar">
+          <div className="space-y-1">
+            {categories.map((category) => {
+              const isActive = category.id === activeCategoryId;
+              return (
                 <button
-                  key={sub.id}
-                  onClick={() => setKeyword(sub.name)}
-                  className="bg-gray-50 hover:bg-blue-50 hover:text-[var(--sw-brand)] border border-gray-100 rounded-lg p-1.5 text-center text-[10px] font-medium text-gray-700 truncate cursor-pointer transition-colors"
+                  key={category.id}
+                  type="button"
+                  aria-current={isActive ? 'page' : undefined}
+                  onClick={() => {
+                    setActiveCategoryId(category.id);
+                    setKeyword('');
+                  }}
+                  className={`relative flex min-h-12 w-full items-center justify-center rounded-xl px-2 text-center text-[11px] leading-4 ${
+                    isActive
+                      ? 'bg-white font-black text-[var(--sw-brand)] shadow-[0_3px_10px_rgba(15,23,42,0.07)]'
+                      : 'font-medium text-gray-600 active:bg-white/60'
+                  }`}
                 >
-                  {sub.name}
+                  {isActive && <span className="absolute left-1.5 h-4 w-0.5 rounded-full bg-[var(--sw-brand)]" />}
+                  <span className="line-clamp-2">{category.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+
+        <main className="min-w-0 flex-1 overflow-y-auto overscroll-contain no-scrollbar">
+          <section className="rounded-2xl bg-gradient-to-r from-[#123D91] to-[#2166E8] p-3.5 text-white shadow-[0_8px_22px_rgba(29,78,216,0.15)]">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="text-[9px] font-medium text-blue-100">当前分类</div>
+                <h1 className="mt-0.5 truncate text-sm font-black tracking-tight">{currentCategory.name}</h1>
+                <p className="mt-1 text-[10px] text-blue-100">共 {filteredProducts.length} 件商品</p>
+              </div>
+              <span className="flex-none rounded-full bg-white/15 px-2.5 py-1 text-[9px] font-bold ring-1 ring-inset ring-white/15">福利卡可用</span>
+            </div>
+          </section>
+
+          {currentCategory.subCategories && currentCategory.subCategories.length > 0 && (
+            <div className="mt-2 grid grid-cols-3 gap-1.5 rounded-xl bg-white p-2 shadow-[0_3px_14px_rgba(15,23,42,0.04)]">
+              {currentCategory.subCategories.slice(0, 6).map((subcategory) => (
+                <button
+                  key={subcategory.id}
+                  type="button"
+                  onClick={() => setKeyword(subcategory.name)}
+                  className="min-h-8 truncate rounded-lg bg-gray-50 px-1.5 text-[9px] font-medium text-gray-600 active:bg-blue-50 active:text-[var(--sw-brand)]"
+                >
+                  {subcategory.name}
                 </button>
               ))}
             </div>
           )}
 
-          {/* Product Items List */}
           {filteredProducts.length === 0 ? (
-            <div className="text-center py-12 text-gray-400 space-y-2">
-              <p className="text-xs">暂无符合条件的商品</p>
-              <button onClick={() => setKeyword('')} className="text-xs text-[var(--sw-brand)] underline font-bold">
-                清除关键字重试
+            <div className="mt-2.5 rounded-2xl border border-gray-100 bg-white px-4 py-10 text-center shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+              <p className="text-xs font-bold text-gray-600">没有找到相关商品</p>
+              <button type="button" onClick={() => setKeyword('')} className="mt-2 min-h-8 px-3 text-[10px] font-bold text-[var(--sw-brand)]">
+                查看当前分类全部商品
               </button>
             </div>
           ) : (
-            <div className="space-y-2.5 pb-8">
-              {filteredProducts.map((p) => (
-                <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-white rounded-xl p-2 flex gap-2.5 border border-gray-100 shadow-2xs hover:border-blue-200 transition-all cursor-pointer active:bg-gray-50">
-                  <img src={p.imageUrl} alt={p.title} width={80} height={80} loading="lazy" decoding="async" className="w-20 h-20 object-cover rounded-lg flex-shrink-0 bg-gray-50" />
-                  <div className="flex-1 overflow-hidden flex flex-col justify-between">
+            <div className="mt-2.5 space-y-2.5 pb-3">
+              {filteredProducts.map((product) => (
+                <article
+                  key={product.id}
+                  onClick={() => setMpPage('detail', product.id)}
+                  className="flex gap-2.5 rounded-2xl border border-gray-100 bg-white p-2.5 shadow-[0_5px_18px_rgba(15,23,42,0.05)] active:bg-gray-50"
+                >
+                  <img
+                    src={storefrontImageUrl(product.imageUrl, 152)}
+                    srcSet={`${storefrontImageUrl(product.imageUrl, 152)} 2x, ${storefrontImageUrl(product.imageUrl, 228)} 3x`}
+                    alt={product.title}
+                    width={76}
+                    height={76}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-[76px] w-[76px] flex-none rounded-xl border border-gray-100 bg-gray-50 object-cover"
+                  />
+
+                  <div className="flex min-w-0 flex-1 flex-col justify-between">
                     <div>
-                      <div className="text-xs font-bold text-gray-900 line-clamp-2 leading-tight">{p.title}</div>
-                      <div className="text-[10px] text-gray-400 line-clamp-1 mt-0.5">{p.subtitle}</div>
+                      <h2 className="line-clamp-2 text-[11px] font-bold leading-[16px] text-gray-900">{product.title}</h2>
+                      <div className="mt-1.5 flex min-w-0 gap-1">
+                        {product.enterpriseSubsidyAmount > 0 && (
+                          <span className="truncate rounded-md bg-red-50 px-1.5 py-0.5 text-[8px] font-bold text-[#E5484D]">协议省¥{product.enterpriseSubsidyAmount}</span>
+                        )}
+                        <span className="flex-none rounded-md bg-blue-50 px-1.5 py-0.5 text-[8px] font-bold text-blue-700">福利卡可用</span>
+                      </div>
                     </div>
 
-                    <div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-[9px] bg-red-50 text-[#E5484D] font-bold px-1 py-0.2 rounded">协议价省¥{p.enterpriseSubsidyAmount}</span>
-                        <span className="text-[9px] bg-blue-50 text-[var(--sw-brand)] font-bold px-1 py-0.2 rounded">支持福利卡</span>
+                    <div className="flex items-end justify-between gap-1.5">
+                      <div className="min-w-0 whitespace-nowrap">
+                        <span className="font-mono text-sm font-black text-[#E5484D]"><span className="text-[9px]">¥</span>{product.price}</span>
+                        {product.originalPrice > product.price && <span className="ml-1 font-mono text-[8px] text-gray-400 line-through">¥{product.originalPrice}</span>}
                       </div>
-
-                      <div className="flex items-center justify-between pt-1">
-                        <div>
-                          <span className="text-xs font-black text-[#E5484D] font-mono">¥{p.price}</span>
-                          <span className="text-[9px] text-gray-400 line-through ml-1">¥{p.originalPrice}</span>
-                        </div>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addToCart(p, 1);
-                          }}
-                          className="bg-[var(--sw-brand)] text-white text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1 shadow-2xs cursor-pointer active:scale-95"
-                        >
-                          <Plus className="w-3 h-3" />
-                          <span>加购物车</span>
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        aria-label={`加入购物车：${product.title}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          addToCart(product, 1);
+                        }}
+                        className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-[var(--sw-brand)] text-white shadow-[0_4px_10px_rgba(37,99,235,0.22)] active:bg-[var(--sw-brand-dark)]"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           )}
-        </div>
+        </main>
       </div>
-
     </div>
   );
 };
