@@ -4,11 +4,15 @@ import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { CreditCard, Utensils, Clock, Truck, CheckCircle, HelpCircle, Ticket, MapPin, FileText, BellRing, Headphones, ShieldCheck, ChevronRight, Building2, Smartphone, LogOut } from 'lucide-react';
 import { OrderFlowIcon } from '../../components/mobile/OrderFlowIcon';
 import { matchesMobileOrderFilter, selectMobileOrderFilter, type MobileOrderFilter } from '../../components/mobile/mobileOrderFilters';
+import { preloadMiniProgramPage } from '../../components/mobile/miniProgramPageLoaders';
 
 export const MPProfilePage: React.FC = () => {
   const { user, currentMall, sessionStatus, logout, presentationOrders, triggerPendingFeature, setMpPage } = useMall();
 
+  React.useEffect(() => preloadMiniProgramPage('orders'), []);
+
   const openOrders = (statusFilter: MobileOrderFilter) => {
+    preloadMiniProgramPage('orders');
     selectMobileOrderFilter(statusFilter);
     setMpPage('orders');
   };
@@ -83,14 +87,14 @@ export const MPProfilePage: React.FC = () => {
               <OrderFlowIcon className="h-6 w-6 text-[var(--sw-brand)]" />
               <span>订单管理</span>
             </h3>
-            <button onClick={() => openOrders('all')} className="text-[10px] text-gray-400 hover:text-[var(--sw-brand)] flex items-center">
+            <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('all')} className="flex touch-manipulation items-center text-[10px] text-gray-400 transition-transform duration-100 hover:text-[var(--sw-brand)] active:scale-95">
               <span>全部订单</span>
               <ChevronRight className="w-3 h-3" />
             </button>
           </div>
 
           <div className="grid grid-cols-4 gap-2 text-center text-xs">
-            <button onClick={() => openOrders('pending_payment')} className="relative rounded-xl p-1 transition-colors hover:bg-gray-50 active:bg-blue-50 cursor-pointer">
+            <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('pending_payment')} className="relative cursor-pointer touch-manipulation rounded-xl p-1 transition-[color,background-color,transform] duration-100 hover:bg-gray-50 active:scale-95 active:bg-blue-50">
               <div className="w-8 h-8 mx-auto rounded-full bg-blue-50 text-[var(--sw-brand)] flex items-center justify-center font-bold">
                 <Clock className="w-4 h-4" />
               </div>
@@ -98,7 +102,7 @@ export const MPProfilePage: React.FC = () => {
               <div className="text-[10px] text-gray-600 mt-1 font-medium">待付款</div>
             </button>
 
-            <button onClick={() => openOrders('pending_shipment')} className="relative rounded-xl p-1 transition-colors hover:bg-gray-50 active:bg-blue-50 cursor-pointer">
+            <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('pending_shipment')} className="relative cursor-pointer touch-manipulation rounded-xl p-1 transition-[color,background-color,transform] duration-100 hover:bg-gray-50 active:scale-95 active:bg-blue-50">
               <div className="w-8 h-8 mx-auto rounded-full bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
                 <Truck className="w-4 h-4" />
               </div>
@@ -106,7 +110,7 @@ export const MPProfilePage: React.FC = () => {
               <div className="text-[10px] text-gray-600 mt-1 font-medium">待处理</div>
             </button>
 
-            <button onClick={() => openOrders('completed')} className="relative rounded-xl p-1 transition-colors hover:bg-gray-50 active:bg-blue-50 cursor-pointer">
+            <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('completed')} className="relative cursor-pointer touch-manipulation rounded-xl p-1 transition-[color,background-color,transform] duration-100 hover:bg-gray-50 active:scale-95 active:bg-blue-50">
               <div className="w-8 h-8 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
                 <CheckCircle className="w-4 h-4" />
               </div>
@@ -114,7 +118,7 @@ export const MPProfilePage: React.FC = () => {
               <div className="text-[10px] text-gray-600 mt-1 font-medium">已完成</div>
             </button>
 
-            <button onClick={() => openOrders('after_sale')} className="relative rounded-xl p-1 transition-colors hover:bg-gray-50 active:bg-blue-50 cursor-pointer">
+            <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('after_sale')} className="relative cursor-pointer touch-manipulation rounded-xl p-1 transition-[color,background-color,transform] duration-100 hover:bg-gray-50 active:scale-95 active:bg-blue-50">
               <div className="w-8 h-8 mx-auto rounded-full bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
                 <HelpCircle className="w-4 h-4" />
               </div>

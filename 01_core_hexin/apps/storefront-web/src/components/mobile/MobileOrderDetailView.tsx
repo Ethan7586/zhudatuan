@@ -1,5 +1,6 @@
 import { ChevronLeft, Clock3, MapPin, PackageCheck, ReceiptText, Store, Truck, WalletCards } from 'lucide-react';
 import type { FrontendOrder } from '../../adapters/frontendData';
+import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 import { MobileInventoryBadge } from './MobileInventoryBadge';
 import { groupOrderPackages } from './mobileOrderPresentation';
 
@@ -91,9 +92,21 @@ export function MobileOrderDetailView({ order, onBack, onContinuePayment, onAfte
                 </header>
 
                 <div className="space-y-2.5 p-3">
-                  {deliveryPackage.items.map((item) => (
+                  {deliveryPackage.items.map((item, itemIndex) => {
+                    const isPriorityImage = packageIndex === 0 && itemIndex === 0;
+                    return (
                     <div key={`${deliveryPackage.id}-${item.productId}`} className="flex gap-2.5">
-                      <img src={item.product.imageUrl} alt={item.productTitle} className="h-14 w-14 shrink-0 rounded-xl bg-white object-cover" />
+                      <img
+                        src={storefrontImageUrl(item.product.imageUrl, 112)}
+                        srcSet={`${storefrontImageUrl(item.product.imageUrl, 56)} 1x, ${storefrontImageUrl(item.product.imageUrl, 112)} 2x, ${storefrontImageUrl(item.product.imageUrl, 168)} 3x`}
+                        alt={item.productTitle}
+                        width={56}
+                        height={56}
+                        loading={isPriorityImage ? 'eager' : 'lazy'}
+                        fetchPriority={isPriorityImage ? 'high' : 'low'}
+                        decoding="async"
+                        className="h-14 w-14 shrink-0 rounded-xl bg-white object-cover"
+                      />
                       <div className="min-w-0 flex-1">
                         <p className="line-clamp-2 text-[10px] font-bold leading-4 text-gray-800">{item.productTitle}</p>
                         <div className="mt-1 flex items-center justify-between gap-2">
@@ -102,7 +115,8 @@ export function MobileOrderDetailView({ order, onBack, onContinuePayment, onAfte
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                   <div className="flex items-center gap-1.5 border-t border-white pt-2 text-[9px] text-gray-400">
                     <Clock3 className="h-3 w-3" />
                     <span>{deliveryPackage.deliveryHint}</span>

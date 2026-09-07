@@ -1,6 +1,7 @@
 import React from 'react';
 import { Camera, Check, ChevronLeft, Clock3, PackageOpen, RotateCcw, Truck, WalletCards } from 'lucide-react';
 import type { FrontendOrder } from '../../adapters/frontendData';
+import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 
 interface MobileAfterSaleViewProps {
   order: FrontendOrder;
@@ -56,7 +57,7 @@ function AfterSaleApplication({ order, onBack, onSubmit }: Readonly<MobileAfterS
               return (
                 <button key={item.productId} type="button" onClick={() => toggleItem(item.productId)} className="flex w-full items-center gap-2.5 text-left">
                   <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border ${selected ? 'border-[var(--sw-brand)] bg-[var(--sw-brand)] text-white' : 'border-gray-300 bg-white text-transparent'}`}><Check className="h-3 w-3" /></span>
-                  <img src={item.product.imageUrl} alt={item.productTitle} className="h-14 w-14 shrink-0 rounded-xl bg-gray-50 object-cover" />
+                  <img src={storefrontImageUrl(item.product.imageUrl, 112)} srcSet={`${storefrontImageUrl(item.product.imageUrl, 56)} 1x, ${storefrontImageUrl(item.product.imageUrl, 112)} 2x, ${storefrontImageUrl(item.product.imageUrl, 168)} 3x`} alt={item.productTitle} width={56} height={56} loading="lazy" decoding="async" className="h-14 w-14 shrink-0 rounded-xl bg-gray-50 object-cover" />
                   <span className="min-w-0 flex-1"><strong className="line-clamp-2 block text-[10px] leading-4 text-gray-800">{item.productTitle}</strong><span className="mt-1 block text-[9px] text-gray-400">¥{item.priceAtPurchase.toFixed(2)} × {item.quantity}</span></span>
                 </button>
               );
@@ -119,7 +120,7 @@ function AfterSaleProgress({ order, onBack }: Readonly<Pick<MobileAfterSaleViewP
           </div>
         </section>
         <section className="rounded-3xl border border-gray-100 bg-white p-3.5 shadow-sm">
-          <div className="flex items-center gap-3"><img src={order.items[0]?.product.imageUrl} alt="售后商品" className="h-14 w-14 rounded-xl bg-gray-50 object-cover" /><div className="min-w-0 flex-1"><p className="line-clamp-2 text-[10px] font-bold leading-4">{order.items[0]?.productTitle}</p><p className="mt-1 text-[9px] text-gray-400">退款金额 ¥{order.totalAmount.toFixed(2)}</p></div></div>
+          <div className="flex items-center gap-3"><img src={storefrontImageUrl(order.items[0]?.product.imageUrl ?? '', 112)} srcSet={`${storefrontImageUrl(order.items[0]?.product.imageUrl ?? '', 56)} 1x, ${storefrontImageUrl(order.items[0]?.product.imageUrl ?? '', 112)} 2x, ${storefrontImageUrl(order.items[0]?.product.imageUrl ?? '', 168)} 3x`} alt="售后商品" width={56} height={56} loading="eager" fetchPriority="high" decoding="async" className="h-14 w-14 rounded-xl bg-gray-50 object-cover" /><div className="min-w-0 flex-1"><p className="line-clamp-2 text-[10px] font-bold leading-4">{order.items[0]?.productTitle}</p><p className="mt-1 text-[9px] text-gray-400">退款金额 ¥{order.totalAmount.toFixed(2)}</p></div></div>
         </section>
       </main>
     </div>

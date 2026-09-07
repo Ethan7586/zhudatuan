@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronLeft, Eye, RotateCcw, Store, WalletCards } from 'lucide-react';
 import type { FrontendOrder } from '../../adapters/frontendData';
 import { useMall } from '../../context/MallContext';
+import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 import { MobileAfterSaleView } from './MobileAfterSaleView';
 import { MobileInventoryBadge } from './MobileInventoryBadge';
 import { MobileOrderDetailView } from './MobileOrderDetailView';
@@ -27,7 +28,14 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
   const [selectedOrder, setSelectedOrder] = React.useState<FrontendOrder | null>(null);
   const [orderView, setOrderView] = React.useState<'list' | 'detail' | 'after-sale'>('list');
   const [paymentOrder, setPaymentOrder] = React.useState<FrontendOrder | null>(null);
-  const visibleOrders = presentationOrders.filter((order) => matchesMobileOrderFilter(order.status, activeFilter));
+  const visibleOrders = React.useMemo(
+    () => presentationOrders.filter((order) => matchesMobileOrderFilter(order.status, activeFilter)),
+    [activeFilter, presentationOrders],
+  );
+  const filterCounts = React.useMemo(() => Object.fromEntries(FILTER_OPTIONS.map((option) => [
+    option.id,
+    presentationOrders.filter((order) => matchesMobileOrderFilter(order.status, option.id)).length,
+  ])) as Record<MobileOrderFilter, number>, [presentationOrders]);
   const activeLabel = FILTER_OPTIONS.find((option) => option.id === activeFilter)?.label ?? '全部';
 
   const chooseFilter = (filter: MobileOrderFilter) => {
@@ -100,7 +108,7 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
       <main className="space-y-3 p-3">
         <nav aria-label="订单状态筛选" className="grid grid-cols-5 gap-1 rounded-2xl border border-gray-100 bg-white p-1.5 shadow-xs">
           {FILTER_OPTIONS.map((option) => {
-            const count = presentationOrders.filter((order) => matchesMobileOrderFilter(order.status, option.id)).length;
+            const count = filterCounts[option.id];
             const isActive = option.id === activeFilter;
             return (
               <button
@@ -126,7 +134,7 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
             <p className="mt-1 text-[11px] text-gray-500">新的订单进度会在这里及时出现。</p>
           </div>
         ) : (
-          visibleOrders.map((order) => {
+          visibleOrders.map((order, orderIndex) => {
             const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
             const isPendingPayment = order.status === 'pending_payment' || order.status === 'pending_pay';
             const isCompleted = order.status === 'completed';
@@ -134,7 +142,7 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
             const displayAmount = isPendingPayment && order.payment.wechatPaid > 0 ? order.payment.wechatPaid : order.totalAmount;
 
             return (
-              <article key={order.id} className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+              <article key={order.id} className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm [content-visibility:auto] [contain-intrinsic-size:190px]">
                 <header className="flex items-start justify-between gap-3 px-3.5 py-3">
                   <div className="flex min-w-0 items-center gap-2.5">
                     <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-blue-50 text-[var(--sw-brand)]">
@@ -152,9 +160,21 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
 
                 <div className="mx-3 rounded-2xl bg-[#F7F9FC] px-2.5 py-2.5">
                   <div className="space-y-2.5">
-                    {order.items.slice(0, 2).map((item) => (
+                    {order.items.slice(0, 2).map((item, itemIndex) => {
+                      const isPriorityImage = orderIndex === 0 && itemIndex === 0;
+                      return (
                       <div key={`${order.id}-${item.productId}`} className="flex items-center gap-2.5">
-                        <img src={item.product.imageUrl} alt={item.productTitle} className="h-14 w-14 shrink-0 rounded-xl border border-white bg-white object-cover shadow-xs" />
+                        <img
+                          src={storefrontImageUrl(item.product.imageUrl, 112)}
+                          srcSet={`${storefrontImageUrl(item.product.imageUrl, 56)} 1x, ${storefrontImageUrl(item.product.imageUrl, 112)} 2x, ${storefrontImageUrl(item.product.imageUrl, 168)} 3x`}
+                          alt={item.productTitle}
+                          width={56}
+                          height={56}
+                          loading={isPriorityImage ? 'eager' : 'lazy'}
+                          fetchPriority={isPriorityImage ? 'high' : 'low'}
+                          decoding="async"
+                          className="h-14 w-14 shrink-0 rounded-xl border border-white bg-white object-cover shadow-xs"
+                        />
                         <div className="min-w-0 flex-1 self-stretch py-0.5">
                           <p className="line-clamp-2 text-[11px] font-bold leading-[1.45] text-gray-800">{item.productTitle}</p>
                           <div className="mt-1 flex items-center justify-between gap-2">
@@ -166,7 +186,8 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
                           </div>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                   {order.items.length > 2 && (
                     <p className="mt-2 border-t border-white pt-2 text-right text-[9px] text-gray-400">另有 {order.items.length - 2} 种商品</p>
