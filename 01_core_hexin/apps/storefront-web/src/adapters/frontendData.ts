@@ -101,13 +101,30 @@ const CATEGORY_ICONS: Record<string, string> = {
   cat_welfare_zone: 'Gift',
 };
 
-/**
- * Navigation categories are derived from the products returned by the API.
- * A category with no database-backed product therefore cannot appear in the
- * production storefront as an apparently stocked channel.
- */
+const STOREFRONT_CATEGORY_SKELETON = [
+  { id: 'cat_welfare_zone', name: '福利品' },
+  { id: 'cat_food', name: '食品饮料' },
+  { id: 'cat_appliance', name: '家用电器' },
+  { id: 'cat_digital', name: '数码办公' },
+  { id: 'cat_home', name: '家居日用' },
+  { id: 'cat_personal', name: '个护清洁' },
+  { id: 'cat_supermarket', name: '商超商品' },
+  { id: 'cat_apparel', name: '服饰鞋包' },
+  { id: 'cat_virtual', name: '虚拟卡券' },
+  { id: 'cat_movie', name: '电影娱乐' },
+  { id: 'cat_life', name: '生活服务' },
+] as const;
+
 export function toFrontendCategories(products: Product[]): FrontendCategory[] {
   const categories = new Map<string, { name: string; titles: Set<string>; keywords: Set<string> }>();
+
+  STOREFRONT_CATEGORY_SKELETON.forEach((category) => {
+    categories.set(category.id, {
+      name: category.name,
+      titles: new Set<string>(),
+      keywords: new Set<string>(),
+    });
+  });
 
   products.forEach((product) => {
     const category = categories.get(product.categoryId) ?? {

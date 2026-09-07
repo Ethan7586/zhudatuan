@@ -32,6 +32,7 @@ export const MPCategoryPage: React.FC = () => {
     return matchesCategory && matchesKeyword;
   });
   const showCategoryRail = categories.length > 1;
+  const stockedCategoryId = categories.find((category) => products.some((product) => product.categoryId === category.id))?.id;
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#F4F6FA] font-sans text-gray-900">
@@ -115,10 +116,17 @@ export const MPCategoryPage: React.FC = () => {
 
           {filteredProducts.length === 0 ? (
             <div className="mt-2.5 rounded-2xl border border-gray-100 bg-white px-4 py-10 text-center shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
-              <p className="text-xs font-bold text-gray-600">没有找到相关商品</p>
-              <button type="button" onClick={() => setKeyword('')} className="mt-2 min-h-8 px-3 text-[10px] font-bold text-[var(--sw-brand)]">
-                查看当前分类全部商品
-              </button>
+              <p className="text-xs font-bold text-gray-700">{keyword ? '没有找到相关商品' : `${currentCategory.name}正在上新`}</p>
+              <p className="mt-1 text-[10px] leading-4 text-gray-400">{keyword ? '换个关键词，或者查看这个分类的全部商品' : '分类入口已经保留，商品上架后会显示在这里'}</p>
+              {keyword ? (
+                <button type="button" onClick={() => setKeyword('')} className="mt-2 min-h-8 px-3 text-[10px] font-bold text-[var(--sw-brand)]">
+                  清除搜索条件
+                </button>
+              ) : stockedCategoryId && stockedCategoryId !== activeCategoryId ? (
+                <button type="button" onClick={() => setActiveCategoryId(stockedCategoryId)} className="mt-2 min-h-8 px-3 text-[10px] font-bold text-[var(--sw-brand)]">
+                  先看已上架商品
+                </button>
+              ) : null}
             </div>
           ) : (
             <div className="mt-2.5 space-y-2.5 pb-3">

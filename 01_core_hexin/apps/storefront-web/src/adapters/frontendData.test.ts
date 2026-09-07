@@ -65,20 +65,24 @@ describe('multi-device frontend data adapter', () => {
     expect(adapted.items[0].product.id).toBe(products[0].id);
   });
 
-  it('derives visible categories only from API-backed products', () => {
+  it('keeps the complete storefront category skeleton while enriching stocked categories', () => {
     const source = [
       { ...MOCK_PRODUCTS[0], categoryId: 'cat_food', categoryName: '食品饮料', title: '数据库商品甲' },
       { ...MOCK_PRODUCTS[1], categoryId: 'cat_food', categoryName: '食品饮料', title: '数据库商品乙' },
     ];
 
-    expect(toFrontendCategories(source)).toMatchObject([
-      {
-        id: 'cat_food',
-        name: '食品饮料',
-        hotKeywords: expect.arrayContaining(['数据库商品甲', '数据库商品乙']),
-      },
-    ]);
-    expect(toFrontendCategories([])).toEqual([]);
+    const categories = toFrontendCategories(source);
+
+    expect(categories[0]).toMatchObject({ id: 'cat_welfare_zone', name: '福利品' });
+    expect(categories.find((category) => category.id === 'cat_food')).toMatchObject({
+      name: '食品饮料',
+      hotKeywords: expect.arrayContaining(['数据库商品甲', '数据库商品乙']),
+    });
+    expect(categories.find((category) => category.id === 'cat_appliance')).toMatchObject({
+      name: '家用电器',
+      hotKeywords: [],
+    });
+    expect(toFrontendCategories([])).toHaveLength(11);
   });
 
   it('uses the immutable order item snapshot when the current catalogue no longer contains the product', () => {

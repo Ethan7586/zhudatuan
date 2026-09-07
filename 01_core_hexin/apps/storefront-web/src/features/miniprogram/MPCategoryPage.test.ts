@@ -62,4 +62,28 @@ describe('mini-program category page', () => {
     expect(html).not.toContain('热搜:');
     expect(html).not.toContain('全额包邮');
   });
+
+  it('keeps empty business categories visible beside the stocked welfare category', () => {
+    catalogState.categories = [
+      { hotKeywords: [], id: 'cat_welfare_zone', name: '福利品', subCategories: [] },
+      { hotKeywords: [], id: 'cat_appliance', name: '家用电器', subCategories: [] },
+    ];
+    catalogState.products = [{
+      categoryId: 'cat_welfare_zone',
+      enterpriseSubsidyAmount: 0,
+      id: 'product:rice',
+      imageUrl: 'https://images.unsplash.com/rice',
+      originalPrice: 1,
+      price: 0.01,
+      subtitle: '企业福利',
+      title: '主打团货盘',
+    }];
+
+    const html = renderToStaticMarkup(React.createElement(MPCategoryPage));
+
+    expect(html).toContain('<nav aria-label="商品分类"');
+    expect(html).toContain('福利品');
+    expect(html).toContain('家用电器');
+    expect(html).toContain('主打团货盘');
+  });
 });

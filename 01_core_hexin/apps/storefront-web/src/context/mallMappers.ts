@@ -10,7 +10,7 @@ const CATEGORY_MAP: Record<string, { id: string; name: string }> = {
   personal: { id: 'cat_personal', name: '个护清洁' },
   supermarket: { id: 'cat_supermarket', name: '商超商品' },
   apparel: { id: 'cat_apparel', name: '服饰鞋包' },
-  welfare: { id: 'cat_welfare_zone', name: '企业福利专区' },
+  welfare: { id: 'cat_welfare_zone', name: '福利品' },
   'virtual-card': { id: 'cat_virtual', name: '虚拟卡券' },
   movie: { id: 'cat_movie', name: '电影娱乐' },
   life: { id: 'cat_life', name: '生活服务' },
@@ -23,7 +23,7 @@ export function mapApiProduct(product: ApiProduct): Product {
   const strictPath = isStrictTaxonomyPath(taxonomy?.l1 ?? null, taxonomy?.l2 ?? null, taxonomy?.l3 ?? null);
   const category = CATEGORY_MAP[strictPath ? taxonomy!.l1! : product.categoryCode] ?? {
     id: 'cat_welfare_zone',
-    name: '企业福利专区',
+    name: '福利品',
   };
   const isVirtual = product.categoryCode === 'virtual-card';
   return {
