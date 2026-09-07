@@ -1,12 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { FrontendOrder } from '../../adapters/frontendData';
-import { matchesMobileOrderFilter, normalizeMobileOrderFilter } from './mobileOrderFilters';
+import { currentMobileOrderFilter, matchesMobileOrderFilter, normalizeMobileOrderFilter, selectMobileOrderFilter } from './mobileOrderFilters';
 
 describe('mobile order filters', () => {
   it('opens unknown filters as all orders', () => {
     expect(normalizeMobileOrderFilter(undefined)).toBe('all');
     expect(normalizeMobileOrderFilter('unknown')).toBe('all');
     expect(normalizeMobileOrderFilter('after_sale')).toBe('after_sale');
+  });
+
+  it('keeps a selected status inside the mobile order flow', () => {
+    selectMobileOrderFilter('completed');
+    expect(currentMobileOrderFilter()).toBe('completed');
+    selectMobileOrderFilter('all');
   });
 
   it.each([

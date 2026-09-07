@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronLeft, RotateCcw, Store } from 'lucide-react';
 import { useMall } from '../../context/MallContext';
 import { OrderFlowIcon } from './OrderFlowIcon';
-import { matchesMobileOrderFilter, normalizeMobileOrderFilter, type MobileOrderFilter } from './mobileOrderFilters';
+import { currentMobileOrderFilter, matchesMobileOrderFilter, selectMobileOrderFilter, type MobileOrderFilter } from './mobileOrderFilters';
 
 interface MobileOrdersPageProps {
   mode: 'mini-program' | 'android-app';
@@ -17,10 +17,15 @@ const FILTER_OPTIONS: ReadonlyArray<Readonly<{ id: MobileOrderFilter; label: str
 ];
 
 export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
-  const { presentationOrders, routeParams, navigateTo, setMpPage, setAndroidPage, triggerPendingFeature } = useMall();
-  const activeFilter = normalizeMobileOrderFilter(routeParams.statusFilter);
+  const { presentationOrders, setMpPage, setAndroidPage, triggerPendingFeature } = useMall();
+  const [activeFilter, setActiveFilter] = React.useState<MobileOrderFilter>(() => currentMobileOrderFilter());
   const visibleOrders = presentationOrders.filter((order) => matchesMobileOrderFilter(order.status, activeFilter));
   const activeLabel = FILTER_OPTIONS.find((option) => option.id === activeFilter)?.label ?? '全部';
+
+  const chooseFilter = (filter: MobileOrderFilter) => {
+    selectMobileOrderFilter(filter);
+    setActiveFilter(filter);
+  };
 
   const goBack = () => {
     if (mode === 'mini-program') setMpPage('profile');
@@ -52,7 +57,7 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
                 key={option.id}
                 type="button"
                 aria-pressed={isActive}
-                onClick={() => navigateTo('orders', { statusFilter: option.id })}
+                onClick={() => chooseFilter(option.id)}
                 className={`flex min-h-9 items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-bold transition-colors ${isActive ? 'bg-[var(--sw-brand)] text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50 active:bg-blue-50'}`}
               >
                 <span>{option.label}</span>

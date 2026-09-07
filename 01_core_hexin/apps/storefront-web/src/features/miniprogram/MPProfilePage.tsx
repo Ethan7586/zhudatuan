@@ -3,14 +3,14 @@ import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { CreditCard, Utensils, Clock, Truck, CheckCircle, HelpCircle, Ticket, MapPin, FileText, BellRing, Headphones, ShieldCheck, ChevronRight, Building2, Smartphone, LogOut } from 'lucide-react';
 import { OrderFlowIcon } from '../../components/mobile/OrderFlowIcon';
-import { matchesMobileOrderFilter, type MobileOrderFilter } from '../../components/mobile/mobileOrderFilters';
+import { matchesMobileOrderFilter, selectMobileOrderFilter, type MobileOrderFilter } from '../../components/mobile/mobileOrderFilters';
 
 export const MPProfilePage: React.FC = () => {
-  const { user, currentMall, sessionStatus, logout, presentationOrders, triggerPendingFeature, setMpPage, navigateTo } = useMall();
+  const { user, currentMall, sessionStatus, logout, presentationOrders, triggerPendingFeature, setMpPage } = useMall();
 
   const openOrders = (statusFilter: MobileOrderFilter) => {
+    selectMobileOrderFilter(statusFilter);
     setMpPage('orders');
-    navigateTo('orders', { statusFilter });
   };
 
   const orderCount = (statusFilter: MobileOrderFilter) => presentationOrders.filter((order) => (
