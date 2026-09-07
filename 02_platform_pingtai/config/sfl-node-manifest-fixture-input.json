@@ -1,0 +1,108 @@
+{
+  "schema_version": "sfl.node-manifest-fixture-input.v1",
+  "registry_version": "1.0.0",
+  "generated_at": "2026-09-07T00:00:00.000Z",
+  "source_sha": "0123456789abcdef0123456789abcdef01234567",
+  "build_id": "build:fixture:shared-core:1",
+  "immutable_artifact_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "nodes": [
+    {
+      "key": "l0",
+      "signed_level": "L0",
+      "parent_key": null,
+      "node_profile": "operating_mall",
+      "host_node_key": null
+    },
+    {
+      "key": "l1-a",
+      "signed_level": "L1",
+      "parent_key": "l0",
+      "node_profile": "operating_mall",
+      "host_node_key": null
+    },
+    {
+      "key": "l1-b",
+      "signed_level": "L1",
+      "parent_key": "l0",
+      "node_profile": "operating_mall",
+      "host_node_key": null
+    },
+    {
+      "key": "l1-c",
+      "signed_level": "L1",
+      "parent_key": "l0",
+      "node_profile": "operating_mall",
+      "host_node_key": null
+    },
+    {
+      "key": "l2",
+      "signed_level": "L2",
+      "parent_key": "l1-a",
+      "node_profile": "operating_mall",
+      "host_node_key": null
+    },
+    {
+      "key": "l3",
+      "signed_level": "L3",
+      "parent_key": "l2",
+      "node_profile": "operating_mall",
+      "host_node_key": null
+    },
+    {
+      "key": "l4",
+      "signed_level": "L4",
+      "parent_key": "l3",
+      "node_profile": "operating_mall",
+      "host_node_key": null
+    },
+    {
+      "key": "l5",
+      "signed_level": "L5",
+      "parent_key": "l4",
+      "node_profile": "operating_mall",
+      "host_node_key": null
+    },
+    {
+      "key": "l6",
+      "signed_level": "L6",
+      "parent_key": "l5",
+      "node_profile": "consumer",
+      "host_node_key": "l5"
+    },
+    {
+      "key": "l7",
+      "signed_level": "L7",
+      "parent_key": "l6",
+      "node_profile": "consumer",
+      "host_node_key": "l5"
+    },
+    {
+      "key": "l8",
+      "signed_level": "L8",
+      "parent_key": "l7",
+      "node_profile": "consumer",
+      "host_node_key": "l5"
+    },
+    {
+      "key": "l9",
+      "signed_level": "L9",
+      "parent_key": "l8",
+      "node_profile": "consumer",
+      "host_node_key": "l5"
+    },
+    {
+      "key": "l10",
+      "signed_level": "L10",
+      "parent_key": "l9",
+      "node_profile": "consumer",
+      "host_node_key": "l5"
+    },
+    {
+      "key": "l11",
+      "signed_level": "L11",
+      "parent_key": "l10",
+      "node_profile": "consumer",
+      "host_node_key": "l5"
+    }
+  ]
+}
