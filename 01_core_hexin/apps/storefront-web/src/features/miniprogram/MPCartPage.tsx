@@ -1,18 +1,34 @@
 import React from 'react';
-import { useMall } from '../../context/MallContext';
+import { CheckSquare, ChevronRight, CreditCard, MapPin, ShoppingBag, Square, Trash2 } from 'lucide-react';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
-import { Trash2, ShoppingBag, CreditCard, ShieldCheck, ChevronRight, CheckSquare, Square, MapPin } from 'lucide-react';
+import { useMall } from '../../context/MallContext';
+import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 import { MPCartInvoiceDisclosure } from './MPCartInvoiceDisclosure';
 
 export const MPCartPage: React.FC = () => {
-  const { cart, user, addresses, updateCartQuantity, toggleCartItemSelected, toggleSelectAllCart, removeCartItem, setMpPage, triggerPendingFeature, checkoutSelectedCart, isSubmittingOrder } = useMall();
-  const [isInvoiceOpen, setIsInvoiceOpen] = React.useState(false);
+  const {
+    addresses,
+    cart,
+    checkoutSelectedCart,
+    currentMall,
+    isSubmittingOrder,
+    removeCartItem,
+    setMpPage,
+    toggleCartItemSelected,
+    toggleSelectAllCart,
+    triggerPendingFeature,
+    updateCartQuantity,
+    user,
+  } = useMall();
+  const [isOrderServicesOpen, setIsOrderServicesOpen] = React.useState(false);
 
-  const selectedItems = cart.filter((i) => i.selected);
-  const isAllSelected = cart.length > 0 && cart.every((i) => i.selected);
-
-  const totalPrice = selectedItems.reduce((sum, i) => sum + i.product.priceMall * i.quantity, 0);
-  const totalSubsidy = selectedItems.reduce((sum, i) => sum + Math.max(0, i.product.priceMarket - i.product.priceWelfare) * i.quantity, 0);
+  const selectedItems = cart.filter((item) => item.selected);
+  const isAllSelected = cart.length > 0 && cart.every((item) => item.selected);
+  const totalPrice = selectedItems.reduce((sum, item) => sum + item.product.priceMall * item.quantity, 0);
+  const totalSubsidy = selectedItems.reduce(
+    (sum, item) => sum + Math.max(0, item.product.priceMarket - item.product.priceWelfare) * item.quantity,
+    0,
+  );
 
   const handleCheckout = async () => {
     if (selectedItems.length === 0) return;
@@ -20,157 +36,134 @@ export const MPCartPage: React.FC = () => {
       setMpPage('address');
       return;
     }
-    if (await checkoutSelectedCart()) {
-      setMpPage('profile');
-    }
+    if (await checkoutSelectedCart()) setMpPage('profile');
   };
 
   return (
-    <div className="bg-[#F5F7FA] min-h-full flex flex-col font-sans text-gray-800 pb-16">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#F5F7FA] font-sans text-gray-800">
       <WeChatCapsule title="福利购物车" />
 
-      {/* 顶部福利卡余额提示栏 */}
-      <div className="bg-[var(--sw-brand-light)] border-b border-blue-200/80 px-3 py-2 flex items-center justify-between text-xs text-blue-900">
-        <div className="flex items-center gap-1.5 font-medium">
-          <CreditCard className="w-4 h-4 text-[var(--sw-brand)]" />
-          <span>福利卡可用余额：</span>
-          <span className="font-black text-[var(--sw-brand)] font-mono">¥{user.welfareBalance.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</span>
-        </div>
-        <span className="text-[10px] bg-white text-[var(--sw-brand)] font-bold px-2 py-0.5 rounded border border-blue-200">全额抵扣无须自费</span>
-      </div>
-
-      {/* 购物车为空 */}
       {cart.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-3">
-          <div className="w-16 h-16 rounded-full bg-blue-50 text-[var(--sw-brand)] flex items-center justify-center shadow-xs">
-            <ShoppingBag className="w-8 h-8" />
+        <div className="flex flex-1 flex-col items-center justify-center space-y-3 p-8 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-[var(--sw-brand)] shadow-xs">
+            <ShoppingBag className="h-8 w-8" />
           </div>
           <div>
-            <h3 className="font-bold text-gray-800 text-sm">购物车暂无商品</h3>
-            <p className="text-xs text-gray-400 mt-0.5">快去选购员工专属协议特惠福利吧</p>
+            <h1 className="text-sm font-bold text-gray-800">购物车还是空的</h1>
+            <p className="mt-1 text-xs text-gray-400">选好福利商品后，可以在这里统一结算</p>
           </div>
-          <button onClick={() => setMpPage('home')} className="bg-[var(--sw-brand)] hover:bg-blue-700 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-md cursor-pointer">
-            去商城逛逛
+          <button type="button" onClick={() => setMpPage('home')} className="min-h-10 rounded-xl bg-[var(--sw-brand)] px-6 text-xs font-bold text-white shadow-md active:bg-[var(--sw-brand-dark)]">
+            去逛逛
           </button>
         </div>
       ) : (
-        <div className="p-3 space-y-3 flex-1 overflow-y-auto">
-          {/* Supplier Group Header */}
-          <div className="bg-white rounded-2xl p-3 shadow-xs border border-gray-100 space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-gray-100 text-xs">
-              <button onClick={() => toggleSelectAllCart(!isAllSelected)} className="flex items-center gap-2 font-bold text-gray-800 cursor-pointer">
-                {isAllSelected ? <CheckSquare className="w-4 h-4 text-[var(--sw-brand)]" /> : <Square className="w-4 h-4 text-gray-300" />}
-                <span>中国建筑集团企采直供仓</span>
-              </button>
-
-              <span className="text-[10px] text-gray-400">自营统一发货</span>
+        <>
+          <div className="flex shrink-0 items-center justify-between border-b border-blue-200/80 bg-[var(--sw-brand-light)] px-3 py-2 text-xs text-blue-900">
+            <div className="flex min-w-0 items-center gap-1.5 font-medium">
+              <CreditCard className="h-4 w-4 flex-none text-[var(--sw-brand)]" />
+              <span className="flex-none">福利卡余额</span>
+              <span className="truncate font-mono font-black text-[var(--sw-brand)]">¥{user.welfareBalance.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</span>
             </div>
-
-            {/* Cart Items List */}
-            <div className="space-y-3 divide-y divide-gray-100">
-              {cart.map((item) => (
-                <div key={item.id} className="pt-3 first:pt-0 flex items-center gap-2.5">
-                  <button onClick={() => toggleCartItemSelected(item.id)} className="p-1 cursor-pointer">
-                    {item.selected ? <CheckSquare className="w-4 h-4 text-[var(--sw-brand)]" /> : <Square className="w-4 h-4 text-gray-300" />}
-                  </button>
-
-                  <img src={item.product.images[0]} alt={item.product.title} width={64} height={64} loading="lazy" decoding="async" className="w-16 h-16 object-cover rounded-xl border border-gray-100 flex-shrink-0" />
-
-                  <div className="flex-1 overflow-hidden space-y-1">
-                    <div className="flex items-start justify-between gap-1">
-                      <h4 className="text-xs font-bold text-gray-900 line-clamp-1">{item.product.title}</h4>
-                      <button onClick={() => removeCartItem(item.id)} className="text-gray-400 hover:text-red-500 p-0.5 cursor-pointer">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    <div className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded w-fit">{Object.values(item.selectedSpec || {}).join(' / ') || '默认企采规格'}</div>
-
-                    <div className="flex items-center justify-between pt-1">
-                      <div>
-                        <span className="text-xs font-black text-[#E5484D] font-mono">¥{item.product.priceMall}</span>
-                        <span className="text-[9px] text-gray-400 line-through ml-1">¥{item.product.priceMarket}</span>
-                      </div>
-
-                      {/* Quantity Stepper */}
-                      <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden text-xs">
-                        <button type="button" onClick={() => updateCartQuantity(item.id, item.quantity - 1)} className="min-h-8 min-w-8 bg-gray-50 font-bold hover:bg-gray-100 active:bg-gray-200">
-                          -
-                        </button>
-                        <CartQuantityInput value={item.quantity} onChange={(quantity) => updateCartQuantity(item.id, quantity)} />
-                        <button type="button" onClick={() => updateCartQuantity(item.id, item.quantity + 1)} className="min-h-8 min-w-8 bg-gray-50 font-bold hover:bg-gray-100 active:bg-gray-200">
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <span className="ml-2 flex-none text-[10px] text-blue-700">结算时核对额度</span>
           </div>
 
-          <button onClick={() => setMpPage('address')} className="flex w-full items-center gap-2 rounded-2xl border border-gray-100 bg-white p-3 text-left shadow-xs">
-            <MapPin className="h-4 w-4 flex-shrink-0 text-[var(--sw-brand)]" />
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-bold text-gray-800">{addresses[0] ? `${addresses[0].name} ${addresses[0].phone}` : '新增收货地址'}</div>
-              <div className="mt-0.5 truncate text-[10px] text-gray-400">
-                {addresses[0] ? [addresses[0].province, addresses[0].city, addresses[0].district, addresses[0].detail].filter(Boolean).join(' ') : '结账前请先填写真实配送信息'}
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-3">
+            <section className="space-y-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-xs">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-2 text-xs">
+                <span className="min-w-0 truncate font-bold text-gray-800">{currentMall.mallName || '当前福利商城'}</span>
+                <span className="ml-2 flex-none text-[10px] text-gray-400">统一结算</span>
               </div>
-            </div>
-            <ChevronRight className="h-3.5 w-3.5 flex-shrink-0 text-gray-300" />
-          </button>
 
-          {/* Coupon & Invoice Banner */}
-          <div className="bg-white rounded-2xl p-3 shadow-xs border border-gray-100 space-y-2 text-xs">
-            <div onClick={() => triggerPendingFeature('微信小程序 企采优惠券与包邮卡', '选择或核销企业专项优惠券。')} className="flex items-center justify-between cursor-pointer">
-              <span className="text-gray-600 font-medium">企业企采优惠券</span>
-              <span className="text-[var(--sw-brand)] font-bold flex items-center gap-0.5">
-                <span>已选最佳优惠 (-¥{totalSubsidy > 0 ? totalSubsidy.toFixed(2) : '0.00'})</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+              <div className="divide-y divide-gray-100">
+                {cart.map((item) => (
+                  <article key={item.id} className="flex items-center gap-2.5 py-3 first:pt-0 last:pb-0">
+                    <button type="button" aria-label={`${item.selected ? '取消选择' : '选择'}：${item.product.title}`} onClick={() => toggleCartItemSelected(item.id)} className="flex h-9 w-7 flex-none items-center justify-start">
+                      {item.selected ? <CheckSquare className="h-5 w-5 text-[var(--sw-brand)]" /> : <Square className="h-5 w-5 text-gray-300" />}
+                    </button>
+
+                    <img
+                      src={storefrontImageUrl(item.product.images[0], 128)}
+                      srcSet={`${storefrontImageUrl(item.product.images[0], 128)} 2x, ${storefrontImageUrl(item.product.images[0], 192)} 3x`}
+                      alt={item.product.title}
+                      width={64}
+                      height={64}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-16 w-16 flex-none rounded-xl border border-gray-100 bg-gray-50 object-cover"
+                    />
+
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex items-start justify-between gap-1">
+                        <h2 className="line-clamp-1 text-xs font-bold text-gray-900">{item.product.title}</h2>
+                        <button type="button" aria-label={`删除：${item.product.title}`} onClick={() => removeCartItem(item.id)} className="flex h-7 w-7 flex-none items-center justify-center rounded-lg text-gray-400 active:bg-red-50 active:text-red-500">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      <div className="w-fit rounded bg-gray-50 px-1.5 py-0.5 text-[10px] text-gray-400">{Object.values(item.selectedSpec || {}).join(' / ') || '默认规格'}</div>
+
+                      <div className="flex items-center justify-between pt-1">
+                        <div>
+                          <span className="font-mono text-xs font-black text-[#E5484D]">¥{item.product.priceMall}</span>
+                          <span className="ml-1 text-[9px] text-gray-400 line-through">¥{item.product.priceMarket}</span>
+                        </div>
+
+                        <div className="flex items-center overflow-hidden rounded-lg border border-gray-200 text-xs">
+                          <button type="button" aria-label={`减少${item.product.title}数量`} onClick={() => updateCartQuantity(item.id, item.quantity - 1)} className="h-9 w-9 bg-gray-50 font-bold active:bg-gray-200">−</button>
+                          <CartQuantityInput value={item.quantity} onChange={(quantity) => updateCartQuantity(item.id, quantity)} />
+                          <button type="button" aria-label={`增加${item.product.title}数量`} onClick={() => updateCartQuantity(item.id, item.quantity + 1)} className="h-9 w-9 bg-gray-50 font-bold active:bg-gray-200">＋</button>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <button type="button" onClick={() => setMpPage('address')} className="flex w-full items-center gap-2 rounded-2xl border border-gray-100 bg-white p-3 text-left shadow-xs active:bg-gray-50">
+              <MapPin className="h-4 w-4 flex-none text-[var(--sw-brand)]" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-bold text-gray-800">{addresses[0] ? `${addresses[0].name} ${addresses[0].phone}` : '添加配送地址'}</span>
+                <span className="mt-0.5 block truncate text-[10px] text-gray-400">
+                  {addresses[0] ? [addresses[0].province, addresses[0].city, addresses[0].district, addresses[0].detail].filter(Boolean).join(' ') : '结算前补充即可'}
+                </span>
               </span>
-            </div>
+              <ChevronRight className="h-4 w-4 flex-none text-gray-300" />
+            </button>
 
             <MPCartInvoiceDisclosure
-              expanded={isInvoiceOpen}
-              invoiceHeader={user.enterpriseName || '企业发票抬头'}
-              onToggle={() => setIsInvoiceOpen((open) => !open)}
+              expanded={isOrderServicesOpen}
+              onToggle={() => setIsOrderServicesOpen((open) => !open)}
               onEdit={() => triggerPendingFeature('企业发票抬头信息', '选择本次订单需要使用的发票抬头。')}
             />
           </div>
-        </div>
-      )}
 
-      {/* Fixed Settlement Footer Bar */}
-      {cart.length > 0 && (
-        <div className="fixed bottom-12 left-0 right-0 max-w-[430px] mx-auto bg-white border-t border-gray-200/90 p-3 z-40 flex items-center justify-between shadow-2xl">
-          <button onClick={() => toggleSelectAllCart(!isAllSelected)} className="flex items-center gap-1.5 text-xs font-bold text-gray-700 cursor-pointer">
-            {isAllSelected ? <CheckSquare className="w-4 h-4 text-[var(--sw-brand)]" /> : <Square className="w-4 h-4 text-gray-300" />}
-            <span>全选</span>
-          </button>
+          <div data-cart-settlement-bar className="flex shrink-0 items-center justify-between gap-2 border-t border-gray-200/90 bg-white px-3 py-2 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]">
+            <button type="button" onClick={() => toggleSelectAllCart(!isAllSelected)} className="flex min-h-10 flex-none items-center gap-1.5 pr-1 text-xs font-bold text-gray-700">
+              {isAllSelected ? <CheckSquare className="h-5 w-5 text-[var(--sw-brand)]" /> : <Square className="h-5 w-5 text-gray-300" />}
+              <span>全选</span>
+            </button>
 
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <div className="text-[10px] text-gray-500">
-                已选 <span className="text-[var(--sw-brand)] font-bold">{selectedItems.length}</span> 件商品
-              </div>
-              <div className="text-xs font-bold text-gray-900">
-                合计: <span className="text-sm font-black text-[#E5484D] font-mono">¥{totalPrice.toFixed(2)}</span>
+            <div className="min-w-0 flex-1 text-right">
+              {totalSubsidy > 0 && <div className="truncate text-[9px] text-emerald-600">已省 ¥{totalSubsidy.toFixed(2)}</div>}
+              <div className="truncate text-xs font-bold text-gray-900">
+                合计 <span className="font-mono text-sm font-black text-[#E5484D]">¥{totalPrice.toFixed(2)}</span>
               </div>
             </div>
 
             <button
+              type="button"
               onClick={handleCheckout}
               disabled={selectedItems.length === 0 || isSubmittingOrder}
-              className={`px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-md transition-all cursor-pointer ${
-                selectedItems.length > 0 ? 'bg-gradient-to-r from-[var(--sw-brand)] to-[var(--sw-brand-dark)] hover:bg-blue-700 shadow-blue-500/20' : 'bg-gray-300 cursor-not-allowed'
+              className={`min-h-10 flex-none rounded-xl px-4 text-xs font-bold text-white shadow-md ${
+                selectedItems.length > 0 ? 'bg-[var(--sw-brand)] active:bg-[var(--sw-brand-dark)]' : 'cursor-not-allowed bg-gray-300'
               }`}
             >
-              {isSubmittingOrder ? '安全提交中…' : '去结算（真实账户扣减）'}
+              {isSubmittingOrder ? '正在提交…' : `去结算 (${selectedItems.length})`}
             </button>
           </div>
-        </div>
+        </>
       )}
-
     </div>
   );
 };
@@ -213,7 +206,7 @@ function CartQuantityInput({ value, onChange }: Readonly<{ value: number; onChan
       onKeyDown={(event) => {
         if (event.key === 'Enter') event.currentTarget.blur();
       }}
-      className="h-8 w-12 border-x border-gray-200 bg-white px-1 text-center font-mono font-bold outline-none focus:bg-blue-50"
+      className="h-9 w-11 border-x border-gray-200 bg-white px-1 text-center font-mono font-bold outline-none focus:bg-blue-50"
     />
   );
 }

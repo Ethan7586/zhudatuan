@@ -1,31 +1,42 @@
 import React from 'react';
 import { useMall, MiniProgramPage } from '../../context/MallContext';
 import { Home, LayoutGrid, Gift, ShoppingCart, User } from 'lucide-react';
+import { preloadMiniProgramPage } from './miniProgramPageLoaders';
+
+export const WECHAT_TABS: readonly { id: MiniProgramPage; label: string; icon: React.FC<{ className?: string }> }[] = [
+  { id: 'home', label: '首页', icon: Home },
+  { id: 'category', label: '分类', icon: LayoutGrid },
+  { id: 'welfare', label: '企业福利', icon: Gift },
+  { id: 'cart', label: '购物车', icon: ShoppingCart },
+  { id: 'profile', label: '我的', icon: User },
+];
 
 export const WeChatTabBar: React.FC = () => {
   const { mpPage, setMpPage, cartCount } = useMall();
+  const [visualPage, setVisualPage] = React.useState<MiniProgramPage>(mpPage);
 
-  const tabs: { id: MiniProgramPage; label: string; icon: React.FC<{ className?: string }> }[] = [
-    { id: 'home', label: '首页', icon: Home },
-    { id: 'category', label: '分类', icon: LayoutGrid },
-    { id: 'detail', label: '企业福利', icon: Gift },
-    { id: 'cart', label: '购物车', icon: ShoppingCart },
-    { id: 'profile', label: '我的', icon: User },
-  ];
+  React.useEffect(() => setVisualPage(mpPage), [mpPage]);
+
+  const selectTab = (page: MiniProgramPage) => {
+    if (page === mpPage) return;
+    setVisualPage(page);
+    React.startTransition(() => setMpPage(page));
+  };
 
   return (
     <div data-storefront-mobile-tabbar className="z-40 grid h-[58px] w-full shrink-0 grid-cols-5 border-t border-gray-200/80 bg-white px-2 py-1.5 font-sans shadow-lg select-none">
-      {tabs.map((tab) => {
+      {WECHAT_TABS.map((tab) => {
         const Icon = tab.icon;
-        const isActive = mpPage === tab.id;
+        const isActive = visualPage === tab.id;
 
         return (
           <button
             key={tab.id}
             type="button"
-            onClick={() => setMpPage(tab.id)}
+            onPointerDown={() => preloadMiniProgramPage(tab.id)}
+            onClick={() => selectTab(tab.id)}
             aria-current={isActive ? 'page' : undefined}
-            className={`relative flex h-full min-w-0 touch-manipulation cursor-pointer flex-col items-center justify-center py-1 transition-[color,transform,opacity] duration-75 active:scale-95 active:opacity-70 ${isActive ? 'text-[var(--sw-brand)]' : 'text-gray-500 hover:text-gray-800'}`}
+            className={`relative flex h-full min-w-0 touch-manipulation cursor-pointer flex-col items-center justify-center rounded-lg py-1 transition-colors duration-100 active:bg-slate-50 ${isActive ? 'text-[var(--sw-brand)]' : 'text-gray-500 hover:text-gray-800'}`}
           >
             <div className="relative flex h-5 items-center justify-center">
               <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />

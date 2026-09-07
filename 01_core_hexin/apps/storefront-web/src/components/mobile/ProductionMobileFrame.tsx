@@ -2,15 +2,13 @@ import React from 'react';
 import { useMall, type MiniProgramPage } from '../../context/MallContext';
 import { MPHomePage } from '../../features/miniprogram/MPHomePage';
 import { WeChatTabBar } from './WeChatTabBar';
+import { loadMPCartPage, loadMPCategoryPage, loadMPDetailPage, loadMPProfilePage, loadMPWelfarePage, preloadPrimaryMiniProgramPages } from './miniProgramPageLoaders';
 
-const loadMPCartPage = () => import('../../features/miniprogram/MPCartPage');
-const loadMPCategoryPage = () => import('../../features/miniprogram/MPCategoryPage');
-const loadMPDetailPage = () => import('../../features/miniprogram/MPDetailPage');
-const loadMPProfilePage = () => import('../../features/miniprogram/MPProfilePage');
 const MPCartPage = React.lazy(() => loadMPCartPage().then(({ MPCartPage }) => ({ default: MPCartPage })));
 const MPCategoryPage = React.lazy(() => loadMPCategoryPage().then(({ MPCategoryPage }) => ({ default: MPCategoryPage })));
 const MPDetailPage = React.lazy(() => loadMPDetailPage().then(({ MPDetailPage }) => ({ default: MPDetailPage })));
 const MPProfilePage = React.lazy(() => loadMPProfilePage().then(({ MPProfilePage }) => ({ default: MPProfilePage })));
+const MPWelfarePage = React.lazy(() => loadMPWelfarePage().then(({ MPWelfarePage }) => ({ default: MPWelfarePage })));
 const MPAddressPage = React.lazy(() => import('../../features/miniprogram/MPAddressPage').then(({ MPAddressPage }) => ({ default: MPAddressPage })));
 const MobileOrdersPage = React.lazy(() => import('./MobileOrdersPage').then(({ MobileOrdersPage }) => ({ default: MobileOrdersPage })));
 const PaymentResultPage = React.lazy(() => import('../common/PaymentResultPage').then(({ PaymentResultPage }) => ({ default: PaymentResultPage })));
@@ -19,17 +17,23 @@ const ToastContainer = React.lazy(() => import('../common/ToastContainer').then(
 
 /** Production phone storefront shown after an L6 consumer opens the mall. */
 export function ProductionMobileFrame() {
-  const { mpPage, activePaymentId, catalogSyncStatus, pendingFeature, toasts } = useMall();
+  const { mpPage, activePaymentId, pendingFeature, toasts } = useMall();
   const visitedPages = React.useRef(new Set<KeepAlivePage>(['home']));
+  const [warmedPages, setWarmedPages] = React.useState<WarmedPageComponents>({});
   const activeKeepAlivePage = !activePaymentId && isKeepAlivePage(mpPage) ? mpPage : null;
 
   React.useEffect(() => {
-    if (catalogSyncStatus === 'idle' || catalogSyncStatus === 'syncing') return;
+    let cancelled = false;
     const warmPrimaryTabs = () => {
-      void loadMPCategoryPage();
-      void loadMPDetailPage();
-      void loadMPCartPage();
-      void loadMPProfilePage();
+      void preloadPrimaryMiniProgramPages().then(([category, welfare, cart, profile]) => {
+        if (cancelled) return;
+        setWarmedPages({
+          category: category.MPCategoryPage,
+          welfare: welfare.MPWelfarePage,
+          cart: cart.MPCartPage,
+          profile: profile.MPProfilePage,
+        });
+      });
     };
     const idleWindow = window as Window & {
       requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
@@ -37,11 +41,17 @@ export function ProductionMobileFrame() {
     };
     if (idleWindow.requestIdleCallback && idleWindow.cancelIdleCallback) {
       const handle = idleWindow.requestIdleCallback(warmPrimaryTabs, { timeout: 2_000 });
-      return () => idleWindow.cancelIdleCallback?.(handle);
+      return () => {
+        cancelled = true;
+        idleWindow.cancelIdleCallback?.(handle);
+      };
     }
     const handle = globalThis.setTimeout(warmPrimaryTabs, 500);
-    return () => globalThis.clearTimeout(handle);
-  }, [catalogSyncStatus]);
+    return () => {
+      cancelled = true;
+      globalThis.clearTimeout(handle);
+    };
+  }, []);
 
   if (activeKeepAlivePage) visitedPages.current.add(activeKeepAlivePage);
 
@@ -60,7 +70,7 @@ export function ProductionMobileFrame() {
               aria-hidden={activeKeepAlivePage !== page}
               className={`absolute inset-0 overflow-x-hidden overflow-y-auto overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch] ${activeKeepAlivePage === page ? 'visible z-10' : 'invisible pointer-events-none z-0'}`}
             >
-              {renderKeepAlivePage(page)}
+              {renderKeepAlivePage(page, warmedPages)}
             </div>
           ))}
           {activeKeepAlivePage === null ? (
@@ -81,18 +91,25 @@ export function ProductionMobileFrame() {
   );
 }
 
-type KeepAlivePage = Extract<MiniProgramPage, 'home' | 'category' | 'detail' | 'cart' | 'profile'>;
+type KeepAlivePage = Extract<MiniProgramPage, 'home' | 'category' | 'welfare' | 'detail' | 'cart' | 'profile'>;
+type WarmedPage = Extract<KeepAlivePage, 'category' | 'welfare' | 'cart' | 'profile'>;
+type WarmedPageComponents = Partial<Record<WarmedPage, React.ComponentType>>;
 
-const KEEP_ALIVE_PAGES: readonly KeepAlivePage[] = ['home', 'category', 'detail', 'cart', 'profile'];
+const KEEP_ALIVE_PAGES: readonly KeepAlivePage[] = ['home', 'category', 'welfare', 'detail', 'cart', 'profile'];
 
 function isKeepAlivePage(page: MiniProgramPage): page is KeepAlivePage {
   return KEEP_ALIVE_PAGES.includes(page as KeepAlivePage);
 }
 
-function renderKeepAlivePage(page: KeepAlivePage) {
+function renderKeepAlivePage(page: KeepAlivePage, warmedPages: WarmedPageComponents) {
+  const WarmedPage = page === 'home' || page === 'detail' ? undefined : warmedPages[page];
+  if (WarmedPage) return <WarmedPage />;
+
   switch (page) {
     case 'category':
       return deferredPage(<MPCategoryPage />);
+    case 'welfare':
+      return deferredPage(<MPWelfarePage />);
     case 'detail':
       return deferredPage(<MPDetailPage />);
     case 'cart':
