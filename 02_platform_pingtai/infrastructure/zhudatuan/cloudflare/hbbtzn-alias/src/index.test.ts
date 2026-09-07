@@ -99,6 +99,26 @@ describe('hbbtzn H5 alias worker', () => {
     expect(response.headers.get('etag')).toBeNull();
   });
 
+  it('preserves both node origins inside the shared identity JavaScript bundle', async () => {
+    const source = [
+      "const l0='https://zhudatuan.com';",
+      "const l1='https://hbbtzn.com';",
+      "const api='https://api.zhudatuan.com';",
+    ].join('');
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(source, {
+      headers: {
+        'content-type': 'application/javascript; charset=utf-8',
+        etag: 'shared-identity-script-etag',
+      },
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await worker.fetch(new Request('https://accounts.hbbtzn.com/assets/identity.js'));
+
+    await expect(response.text()).resolves.toBe(source);
+    expect(response.headers.get('etag')).toBe('shared-identity-script-etag');
+  });
+
   it('gives Hongtai control assets an independent browser cache path', async () => {
     const fetchMock = vi.fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(

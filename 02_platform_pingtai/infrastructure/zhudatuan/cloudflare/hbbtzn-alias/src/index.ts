@@ -140,7 +140,7 @@ async function publicResponse(request: Request, upstream: Response): Promise<Res
   }
   const contentType = headers.get('content-type')?.toLowerCase() ?? '';
   const html = contentType.startsWith('text/html');
-  const controlScript = incoming.hostname !== ROOT_STOREFRONT_HOST
+  const controlScript = incoming.hostname === HONGTAI_CONSOLE_HOST
     && contentType.includes('javascript');
   const identityReturnTarget = incoming.hostname === 'api.hbbtzn.com'
     && incoming.pathname === '/api/v1/identity/tickets/exchange'
