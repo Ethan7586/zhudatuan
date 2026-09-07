@@ -95,22 +95,36 @@ describe('node-bound identity entry', () => {
     expect(recoverLocalIdentitySearch('?target=console', 'untrusted.example.com')).toBeNull();
   });
 
-  it('accepts an L11 node added only through registry data', () => {
+  it('accepts an L11 consumer node but never exposes an operator entry', () => {
     const l11Registry = parseIdentityNodeRegistry(JSON.stringify({
-      version: 1,
+      version: 2,
       defaultNodeId: 'l11',
       nodes: [{
-        nodeId: 'l11', displayName: 'L11 运营后台', accountsOrigin: 'https://accounts.l11.example.com',
+        nodeId: 'l5', nodeProfile: 'operating_mall', mallId: 'mall:l5', displayName: 'L5 商城',
+        accountsOrigin: 'https://accounts.l5.example.com', apiOrigin: 'https://api.l5.example.com',
+        consumerApiOrigin: 'https://l5.example.com', adminOrigin: 'https://console.l5.example.com',
+        storefrontOrigin: 'https://l5.example.com', adminTarget: 'console',
+        consumerTarget: 'storefront', consumerApplication: 'l5-storefront',
+      }, {
+        nodeId: 'l11', nodeProfile: 'consumer', hostNodeId: 'l5', displayName: 'L11 消费者',
+        accountsOrigin: 'https://accounts.l11.example.com',
         apiOrigin: 'https://api.l11.example.com', consumerApiOrigin: 'https://l11.example.com',
-        adminOrigin: 'https://console.l11.example.com', storefrontOrigin: 'https://l11.example.com',
-        adminTarget: 'console', consumerTarget: 'storefront', consumerApplication: 'l11-storefront',
+        storefrontOrigin: 'https://l11.example.com', consumerTarget: 'storefront',
+        consumerApplication: 'l11-storefront',
       }],
     }));
     expect(resolveIdentityEntry(
       '?target=storefront&surface=web&application=l11-storefront', 'accounts.l11.example.com', l11Registry,
     )).toMatchObject({ kind: 'consumer', nodeId: 'l11', application: 'l11-storefront', target: 'storefront' });
-    expect(resolveIdentityEntry('', 'accounts.l11.example.com', l11Registry))
-      .toMatchObject({ kind: 'operator', nodeId: 'l11', target: 'console' });
+    expect(resolveIdentityEntry('', 'accounts.l11.example.com', l11Registry)).toBeNull();
+    expect(resolveIdentityEntry(
+      '?target=console&client=console&admin_origin=https%3A%2F%2Fconsole.l5.example.com',
+      'accounts.l11.example.com', l11Registry,
+    )).toBeNull();
+    expect(recoverLocalIdentitySearch(
+      '?target=console&client=console&admin_origin=https%3A%2F%2Fconsole.l5.example.com',
+      'accounts.l11.example.com', l11Registry,
+    )).toBeNull();
     expect(resolveIdentityEntry('', 'accounts.l10.example.com', l11Registry)).toBeNull();
   });
 });

@@ -55,6 +55,7 @@ export function resolveIdentityEntry(
   const consumerIntent = application !== '' || params.get('surface') === 'web'
     || registry.nodes.some((candidate) => candidate.consumerTarget === target);
   if (consumerIntent) return null;
+  if (node.nodeProfile !== 'operating_mall') return null;
   if ((target && target !== node.adminTarget) || (client && client !== node.adminTarget)
     || (adminOrigin && adminOrigin !== node.adminOrigin)) return null;
   return Object.freeze({
@@ -87,7 +88,7 @@ export function recoverLocalIdentitySearch(
   }
 
   const operatorIntent = target !== '' || client !== '' || params.has('admin_origin');
-  if (!operatorIntent) return null;
+  if (!operatorIntent || node.nodeProfile !== 'operating_mall') return null;
   params.set('target', node.adminTarget);
   params.set('client', node.adminTarget);
   params.set('admin_origin', node.adminOrigin);

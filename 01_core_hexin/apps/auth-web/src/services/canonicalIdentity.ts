@@ -404,7 +404,9 @@ function approvedConsoleDestination(value: z.infer<typeof TicketExchangeSchema>[
 }
 
 function adminOriginForIdentityHost(expectedOrigin?: string): string {
-  const approved = currentIdentityNode().adminOrigin;
+  const node = currentIdentityNode();
+  if (node.nodeProfile !== 'operating_mall') throw new Error('消费者节点不提供运营后台');
+  const approved = node.adminOrigin;
   if (expectedOrigin !== undefined && exactOrigin(expectedOrigin) !== approved) {
     throw new Error('后台登录目标与当前身份节点不匹配');
   }

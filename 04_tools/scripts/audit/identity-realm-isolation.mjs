@@ -6,8 +6,12 @@ export async function verifyIdentityRealmIsolation(database) {
         level integer primary key,
         node_id text not null,
         realm_id text not null,
+        node_profile text not null,
+        mall_id text,
+        host_node_id text,
         accounts_host text not null,
-        admin_target text not null,
+        auth_target text not null,
+        membership_client text not null,
         organization_id text not null,
         principal_id text not null,
         account_id text not null,
@@ -18,18 +22,28 @@ export async function verifyIdentityRealmIsolation(database) {
       );
       insert into identity_realm_fixture
       select level,'l'||level,'realm:l'||level,
+        case when level<=5 then 'operating_mall' else 'consumer' end,
+        case when level=0 then 'mall-zhudatuan'
+          when level=1 then 'mall:d1708f04df2dd8a61736852c4900fb43'
+          when level<=5 then 'mall:realm-isolation:l'||level else null end,
+        case when level<=5 then null else 'l0' end,
         case level when 0 then 'accounts.zhudatuan.com' when 1 then 'accounts.hbbtzn.com'
           else 'accounts.l'||level||'.identity.test' end,
-        case level when 1 then 'console-hbbtzn' else 'console' end,
-        case level when 1 then 'mall:d1708f04df2dd8a61736852c4900fb43' else 'tenant-zhudatuan' end,
+        case when level=1 then 'console-hbbtzn' when level<=5 then 'console' else 'storefront' end,
+        case when level<=5 then 'operator' else 'storefront' end,
+        case when level=0 then 'tenant-zhudatuan'
+          when level=1 then 'mall:d1708f04df2dd8a61736852c4900fb43' else 'mall-zhudatuan' end,
         'principal:realm-isolation:l'||level,'account:realm-isolation:l'||level,
         'member:realm-isolation:l'||level,'membership:realm-isolation:l'||level,
         'session:realm-isolation:l'||level,
         encode(public.digest('session-token:realm-isolation:l'||level,'sha256'),'hex')
       from generate_series(0,11) level;
 
-      insert into identity.realm(id,node_id,status,created_at,updated_at)
-      select realm_id,node_id,'active',clock_timestamp(),clock_timestamp()
+      insert into identity.realm(
+        id,node_id,status,created_at,updated_at,node_profile,mall_id,host_node_id,host_node_profile
+      )
+      select realm_id,node_id,'active',clock_timestamp(),clock_timestamp(),node_profile,mall_id,host_node_id,
+        case when node_profile='consumer' then 'operating_mall' else null end
       from identity_realm_fixture where level>=2;
 
       insert into identity.realmentry(host,realm_id,kind,status,created_at)
@@ -43,14 +57,15 @@ export async function verifyIdentityRealmIsolation(database) {
       from identity_realm_fixture where level>=2;
 
       insert into identity.realmtarget(
-        realm_id,surface,target,membership_client,membership_organization_id,application_slug,return_origin,created_at
+        realm_id,surface,target,membership_client,membership_organization_id,application_slug,return_origin,created_at,
+        node_profile
       )
-      select realm_id,'admin','console','operator','tenant-zhudatuan',null,
-        'https://console.l'||level||'.identity.test',clock_timestamp()
-      from identity_realm_fixture where level>=2
+      select realm_id,'admin','console','operator',organization_id,null,
+        'https://console.l'||level||'.identity.test',clock_timestamp(),node_profile
+      from identity_realm_fixture where level between 2 and 5
       union all
-      select realm_id,'consumer','storefront','storefront','mall-zhudatuan','l'||level||'-storefront',
-        'https://l'||level||'.identity.test',clock_timestamp()
+      select realm_id,'consumer','storefront','storefront',organization_id,'l'||level||'-storefront',
+        'https://l'||level||'.identity.test',clock_timestamp(),node_profile
       from identity_realm_fixture where level>=2;
 
       insert into identity.principal(id,status,credential_version,created_at,updated_at)
@@ -76,9 +91,10 @@ export async function verifyIdentityRealmIsolation(database) {
       from identity_realm_fixture;
 
       insert into access.membership(
-        id,member_id,organization_id,client,status,access_version,joined_at,realm_id,account_id
+        id,member_id,organization_id,client,status,access_version,joined_at,realm_id,account_id,node_profile
       )
-      select membership_id,member_id,organization_id,'operator','active',1,clock_timestamp(),realm_id,account_id
+      select membership_id,member_id,organization_id,membership_client,'active',1,clock_timestamp(),realm_id,
+        account_id,node_profile
       from identity_realm_fixture;
 
       insert into access.membershiprole(membership_id,role_id,effective_at)
@@ -94,9 +110,9 @@ export async function verifyIdentityRealmIsolation(database) {
         id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,
         user_agent,device_label,assurance_level,expires_at,last_seen_at,created_at,realm_id,account_id,auth_target
       )
-      select session_id,principal_id,membership_id,token_hash,level+1,1,'operator',repeat('c',64),
+      select session_id,principal_id,membership_id,token_hash,level+1,1,membership_client,repeat('c',64),
         'realm-isolation-fixture','fixture-device',1,clock_timestamp()+interval '1 hour',clock_timestamp(),
-        clock_timestamp(),realm_id,account_id,admin_target
+        clock_timestamp(),realm_id,account_id,auth_target
       from identity_realm_fixture;
 
       insert into identity.authticket(
@@ -106,8 +122,49 @@ export async function verifyIdentityRealmIsolation(database) {
         encode(public.digest('ticket:realm-isolation:l'||level,'sha256'),'hex'),
         encode(public.digest('state:realm-isolation:l'||level,'sha256'),'hex'),
         encode(public.digest('nonce:realm-isolation:l'||level,'sha256'),'hex'),
-        repeat('A',43),admin_target,clock_timestamp()+interval '10 minutes',clock_timestamp(),realm_id,account_id
+        repeat('A',43),auth_target,clock_timestamp()+interval '10 minutes',clock_timestamp(),realm_id,account_id
       from identity_realm_fixture;
+
+      create temporary table identity_l0_l1_consumer_fixture as
+      select level,realm_id,accounts_host,principal_id,account_id,member_id,
+        'membership:realm-isolation:l'||level||':consumer' membership_id,
+        'session:realm-isolation:l'||level||':consumer' session_id,
+        encode(public.digest('session-token:realm-isolation:l'||level||':consumer','sha256'),'hex') token_hash,
+        case level when 0 then 'storefront' else 'storefront-hbbtzn' end auth_target,
+        case level when 0 then 'mall-zhudatuan' else 'mall:d1708f04df2dd8a61736852c4900fb43' end organization_id
+      from identity_realm_fixture where level in(0,1);
+
+      insert into access.membership(
+        id,member_id,organization_id,client,status,access_version,joined_at,realm_id,account_id,node_profile
+      )
+      select membership_id,member_id,organization_id,'storefront','active',1,clock_timestamp(),realm_id,
+        account_id,'operating_mall'
+      from identity_l0_l1_consumer_fixture;
+      insert into access.membershiprole(membership_id,role_id,effective_at)
+      select membership_id,'role:self',clock_timestamp() from identity_l0_l1_consumer_fixture;
+      insert into access.scopegrant(
+        id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version
+      )
+      select 'scope:realm-isolation:l'||level||':consumer',membership_id,'self','self:'||principal_id,
+        'self:'||principal_id,'allow',clock_timestamp(),1
+      from identity_l0_l1_consumer_fixture;
+      insert into identity.session(
+        id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,
+        user_agent,device_label,assurance_level,expires_at,last_seen_at,created_at,realm_id,account_id,auth_target
+      )
+      select session_id,principal_id,membership_id,token_hash,level+1,1,'storefront',repeat('9',64),
+        'realm-isolation-consumer-fixture','consumer-device',1,clock_timestamp()+interval '1 hour',
+        clock_timestamp(),clock_timestamp(),realm_id,account_id,auth_target
+      from identity_l0_l1_consumer_fixture;
+      insert into identity.authticket(
+        id,session_id,token_hash,state_hash,nonce_hash,pkce_challenge,target,expires_at,created_at,realm_id,account_id
+      )
+      select 'ticket:realm-isolation:l'||level||':consumer',session_id,
+        encode(public.digest('ticket:realm-isolation:l'||level||':consumer','sha256'),'hex'),
+        encode(public.digest('state:realm-isolation:l'||level||':consumer','sha256'),'hex'),
+        encode(public.digest('nonce:realm-isolation:l'||level||':consumer','sha256'),'hex'),
+        repeat('B',43),auth_target,clock_timestamp()+interval '10 minutes',clock_timestamp(),realm_id,account_id
+      from identity_l0_l1_consumer_fixture;
 
       insert into identity.challenge(
         id,principal_id,purpose,destination_hash,code_hash,expires_at,created_at,realm_id,account_id
@@ -156,6 +213,126 @@ export async function verifyIdentityRealmIsolation(database) {
     await expectScalar(database, `select count(*)::integer value from identity.federatedidentity
       where provider='wechat' and application_hash=repeat('1',64) and subject_hash=repeat('2',64)`, 12,
       'IDENTITY_REALM_WECHAT_ISOLATION_INVALID');
+    await expectScalar(database, `select count(*)::integer value from identity_realm_fixture fixture
+      join identity.realm realm on realm.id=fixture.realm_id
+      where realm.node_profile=fixture.node_profile
+        and realm.mall_id is not distinct from fixture.mall_id
+        and realm.host_node_id is not distinct from fixture.host_node_id`, 12,
+      'IDENTITY_REALM_NODE_PROFILE_INVALID');
+    await expectScalar(database, `select count(*)::integer value from identity.realmtarget target
+      join identity.realm realm on realm.id=target.realm_id
+      where realm.node_profile='consumer' and (target.surface='admin' or target.membership_client<>'storefront')`, 0,
+      'IDENTITY_CONSUMER_ADMIN_TARGET_PRESENT');
+    await expectScalar(database, `select count(*)::integer value from access.membership membership
+      join identity.realm realm on realm.id=membership.realm_id
+      where realm.node_profile='consumer' and membership.client<>'storefront'`, 0,
+      'IDENTITY_CONSUMER_OPERATOR_MEMBERSHIP_PRESENT');
+
+    await database.exec(`do $fixture$
+      begin
+        begin
+          insert into identity.realmtarget(
+            realm_id,surface,target,membership_client,membership_organization_id,application_slug,
+            return_origin,created_at,node_profile
+          ) values('realm:l6','admin','forbidden-console','operator','mall-zhudatuan',null,
+            'https://console.l6.identity.test',clock_timestamp(),'consumer');
+          raise exception 'IDENTITY_CONSUMER_ADMIN_TARGET_ACCEPTED';
+        exception when check_violation or foreign_key_violation then null;
+        end;
+        begin
+          update access.membership set client='operator' where id='membership:realm-isolation:l6';
+          raise exception 'IDENTITY_CONSUMER_OPERATOR_MEMBERSHIP_ACCEPTED';
+        exception when check_violation or foreign_key_violation then null;
+        end;
+        begin
+          update identity.realm set mall_id='mall:forbidden:l6' where id='realm:l6';
+          raise exception 'IDENTITY_CONSUMER_MALL_ACCEPTED';
+        exception when check_violation or foreign_key_violation then null;
+        end;
+      end
+    $fixture$;`);
+
+    const entryMatrix = await database.query(`with matrix as(
+        select level,'admin' surface,accounts_host,session_id,account_id,realm_id,
+          case level when 0 then 'console' else 'console-hbbtzn' end auth_target
+        from identity_realm_fixture where level in(0,1)
+        union all
+        select level,'consumer',accounts_host,session_id,account_id,realm_id,auth_target
+        from identity_l0_l1_consumer_fixture
+      )
+      select matrix.level,matrix.surface,matrix.auth_target,resolved.account_id,resolved.realm_id,resolved.membership_id,
+        resolved.target,target.return_origin
+      from matrix cross join lateral identity.resolve_session(
+        (select session.token_hash from identity.session session where session.id=matrix.session_id),matrix.accounts_host
+      ) resolved join identity.realmtarget target on target.realm_id=resolved.realm_id and target.target=matrix.auth_target
+      order by matrix.level,matrix.surface`);
+    if (entryMatrix.rows.length !== 4 || entryMatrix.rows.some((row) =>
+      row.account_id !== `account:realm-isolation:l${row.level}` || row.realm_id !== `realm:l${row.level}`
+      || (row.surface === 'admin' && row.target !== 'console')
+      || (row.surface === 'consumer' && row.target !== 'storefront')
+      || (row.level === 0 && row.surface === 'admin' && row.auth_target !== 'console')
+      || (row.level === 1 && row.surface === 'admin' && row.auth_target !== 'console-hbbtzn')
+      || (row.level === 0 && row.surface === 'consumer' && row.auth_target !== 'storefront')
+      || (row.level === 1 && row.surface === 'consumer' && row.auth_target !== 'storefront-hbbtzn')
+      || row.return_origin !== ({
+        '0:admin': 'https://console.zhudatuan.com',
+        '0:consumer': 'https://zhudatuan.com',
+        '1:admin': 'https://console.hbbtzn.com',
+        '1:consumer': 'https://hbbtzn.com',
+      })[`${row.level}:${row.surface}`])) {
+      throw new Error(`IDENTITY_L0_L1_FOUR_ENTRY_MATRIX_INVALID:${JSON.stringify(entryMatrix.rows)}`);
+    }
+    await expectScalar(database, `with matrix as(
+        select level,session_id from identity_realm_fixture where level in(0,1)
+        union all select level,session_id from identity_l0_l1_consumer_fixture
+      )
+      select count(*)::integer value from matrix
+      cross join lateral identity.resolve_session(
+        (select session.token_hash from identity.session session where session.id=matrix.session_id),
+        case matrix.level when 0 then 'accounts.hbbtzn.com' else 'accounts.zhudatuan.com' end
+      ) resolved`, 0, 'IDENTITY_L0_L1_CROSS_HOST_ENTRY_ACCEPTED');
+
+    await database.exec(`savepoint l0_l1_password_scope;
+      update identity.account set credential_version=credential_version+1
+      where id='account:realm-isolation:l1' and realm_id='realm:l1';`);
+    await expectScalar(database, `with matrix as(
+        select level,accounts_host,session_id from identity_realm_fixture where level in(0,1)
+        union all select level,accounts_host,session_id from identity_l0_l1_consumer_fixture
+      )
+      select count(*)::integer value from matrix
+      cross join lateral identity.resolve_session(
+        (select session.token_hash from identity.session session where session.id=matrix.session_id),matrix.accounts_host
+      ) resolved where matrix.level=0`, 2, 'IDENTITY_L1_PASSWORD_CHANGE_AFFECTED_L0');
+    await expectScalar(database, `with matrix as(
+        select level,accounts_host,session_id from identity_realm_fixture where level in(0,1)
+        union all select level,accounts_host,session_id from identity_l0_l1_consumer_fixture
+      )
+      select count(*)::integer value from matrix
+      cross join lateral identity.resolve_session(
+        (select session.token_hash from identity.session session where session.id=matrix.session_id),matrix.accounts_host
+      ) resolved where matrix.level=1`, 0, 'IDENTITY_L1_PASSWORD_CHANGE_NOT_SCOPED');
+    await database.exec('rollback to savepoint l0_l1_password_scope; release savepoint l0_l1_password_scope;');
+
+    await database.exec(`savepoint l0_l1_logout_scope;
+      update identity.session set revoked_at=clock_timestamp(),revoked_reason='realm_fixture_logout'
+      where account_id='account:realm-isolation:l0' and realm_id='realm:l0' and revoked_at is null;`);
+    await expectScalar(database, `with matrix as(
+        select level,accounts_host,session_id from identity_realm_fixture where level in(0,1)
+        union all select level,accounts_host,session_id from identity_l0_l1_consumer_fixture
+      )
+      select count(*)::integer value from matrix
+      cross join lateral identity.resolve_session(
+        (select session.token_hash from identity.session session where session.id=matrix.session_id),matrix.accounts_host
+      ) resolved where matrix.level=1`, 2, 'IDENTITY_L0_LOGOUT_AFFECTED_L1');
+    await expectScalar(database, `with matrix as(
+        select level,accounts_host,session_id from identity_realm_fixture where level in(0,1)
+        union all select level,accounts_host,session_id from identity_l0_l1_consumer_fixture
+      )
+      select count(*)::integer value from matrix
+      cross join lateral identity.resolve_session(
+        (select session.token_hash from identity.session session where session.id=matrix.session_id),matrix.accounts_host
+      ) resolved where matrix.level=0`, 0, 'IDENTITY_L0_LOGOUT_NOT_SCOPED');
+    await database.exec('rollback to savepoint l0_l1_logout_scope; release savepoint l0_l1_logout_scope;');
 
     const resolved = await database.query(`select fixture.level,resolved.account_id,resolved.realm_id,resolved.membership_id
       from identity_realm_fixture fixture

@@ -6,7 +6,7 @@ import {
   bindScopeNodeContext,
   requireActorNodeContext,
   type Actor,
-  type AuthenticatedActor,
+  type NodeContextActor,
 } from './AccessContext';
 import type { ScopeResolver } from './ScopeResolver';
 import { sessionNodeContext, type RuntimeSessionResolver } from './SessionResolver';
@@ -36,7 +36,7 @@ interface ScopeRow { readonly scope: Scope }
 export class PgSessionResolver implements RuntimeSessionResolver {
   constructor(private readonly pool: DatabasePool) {}
 
-  async resolve(headers: Readonly<Record<string, string>>): Promise<AuthenticatedActor> {
+  async resolve(headers: Readonly<Record<string, string>>): Promise<NodeContextActor> {
     const token = bearer(headers.authorization) ?? cookie(headers.cookie, 'shop_session');
     if (!token) throw new Error('AUTHENTICATION_REQUIRED');
     const nodeContext = sessionNodeContext(headers);
@@ -44,6 +44,7 @@ export class PgSessionResolver implements RuntimeSessionResolver {
       [createHash('sha256').update(token).digest('hex'), nodeContext.host]);
     const row = result.rows[0];
     if (!row) throw new Error('AUTHENTICATION_REQUIRED');
+    if (!row.account_id || !row.realm_id) throw new Error('AUTH_REALM_CONTEXT_MISSING');
     if (row.realm_id !== nodeContext.realm.ref) throw new Error('AUTH_REALM_MISMATCH');
     return {
       id: row.actor_id,

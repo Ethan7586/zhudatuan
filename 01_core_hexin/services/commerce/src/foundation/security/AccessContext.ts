@@ -39,13 +39,15 @@ export interface Actor {
   readonly assurance: Readonly<{ level: number; verified?: Date }>;
 }
 
-export interface NodeContextActor extends Actor {
+/** A resolved runtime session is never allowed to lose its realm/account binding. */
+export interface AuthenticatedActor extends Actor {
+  readonly account: string;
   readonly realm: string;
-  readonly nodeContext: ResolvedNodeContext;
 }
 
-export interface AuthenticatedActor extends NodeContextActor {
-  readonly account: string;
+/** API runtime sessions additionally carry the server-resolved node context. */
+export interface NodeContextActor extends AuthenticatedActor {
+  readonly nodeContext: ResolvedNodeContext;
 }
 
 export interface AccessContext {

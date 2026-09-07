@@ -9,7 +9,8 @@ export function validateAuthBuildEnvironment(source: Readonly<Record<string, str
   const registrySource = required(source.VITE_IDENTITY_NODE_REGISTRY, 'AUTH_CLIENT_IDENTITY_NODE_REGISTRY_MISSING');
   const identityNodes = parseIdentityNodeRegistry(registrySource);
   if (identityNodes.nodes.some((node) => [node.accountsOrigin, node.apiOrigin, node.consumerApiOrigin,
-    node.adminOrigin, node.storefrontOrigin].some((origin) => !origin.startsWith('https://')))) {
+    node.storefrontOrigin, ...(node.adminOrigin === null ? [] : [node.adminOrigin])]
+    .some((origin) => !origin.startsWith('https://')))) {
     throw new Error('AUTH_CLIENT_IDENTITY_NODE_ORIGIN_INVALID');
   }
   const clientVersion = required(source.VITE_CLIENT_VERSION, 'AUTH_CLIENT_VERSION_MISSING');

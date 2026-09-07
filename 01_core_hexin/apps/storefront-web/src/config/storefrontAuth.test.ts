@@ -47,15 +47,25 @@ describe('storefront auth origin boundary', () => {
 
   it('opens an L11 identity entry added only through registry data', () => {
     const registry = parseIdentityNodeRegistry(JSON.stringify({
-      version: 1,
+      version: 2,
       defaultNodeId: 'l11',
       nodes: [{
-        nodeId: 'l11', displayName: 'L11', accountsOrigin: 'https://accounts.l11.example.com',
+        nodeId: 'l5', nodeProfile: 'operating_mall', mallId: 'mall:l5', displayName: 'L5 商城',
+        accountsOrigin: 'https://accounts.l5.example.com', apiOrigin: 'https://api.l5.example.com',
+        consumerApiOrigin: 'https://l5.example.com', adminOrigin: 'https://console.l5.example.com',
+        storefrontOrigin: 'https://l5.example.com', adminTarget: 'console',
+        consumerTarget: 'storefront', consumerApplication: 'l5-storefront',
+      }, {
+        nodeId: 'l11', nodeProfile: 'consumer', hostNodeId: 'l5', displayName: 'L11 消费者',
+        accountsOrigin: 'https://accounts.l11.example.com',
         apiOrigin: 'https://api.l11.example.com', consumerApiOrigin: 'https://l11.example.com',
-        adminOrigin: 'https://console.l11.example.com', storefrontOrigin: 'https://l11.example.com',
-        adminTarget: 'console', consumerTarget: 'storefront', consumerApplication: 'l11-storefront',
+        storefrontOrigin: 'https://l11.example.com', consumerTarget: 'storefront',
+        consumerApplication: 'l11-storefront',
       }],
     }));
+    expect(resolveStorefrontNode('l11.example.com', registry)).toMatchObject({
+      nodeProfile: 'consumer', mallId: null, adminOrigin: null, adminTarget: null,
+    });
     const target = new URL(storefrontAuthHref('l11.example.com', registry));
     expect(target.origin).toBe('https://accounts.l11.example.com');
     expect(Object.fromEntries(target.searchParams)).toEqual({

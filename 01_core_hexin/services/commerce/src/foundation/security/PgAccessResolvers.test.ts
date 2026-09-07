@@ -81,6 +81,18 @@ describe('PgSessionResolver realm account projection', () => {
 
     await expect(new PgSessionResolver({ query } as never).resolve(headers)).rejects.toThrow('AUTH_REALM_MISMATCH');
   });
+
+  it('fails closed when a resolved session has lost its realm or account binding', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [{
+      actor_id: 'principal:shared', account_id: null, realm_id: 'realm:l0',
+      session_id: 'session:l0', membership_id: 'membership:l0', credential_version: 1,
+      access_version: 1, target: 'console', assurance_level: 1, assurance_verified_at: null,
+    }] });
+    const resolver = new PgSessionResolver({ query } as never);
+
+    await expect(resolver.resolve({ authorization: `Bearer ${'t'.repeat(32)}`, host: 'api.example.com' }))
+      .rejects.toThrow('AUTH_REALM_CONTEXT_MISSING');
+  });
 });
 
 describe('PgMembershipResolver authorization time snapshot', () => {

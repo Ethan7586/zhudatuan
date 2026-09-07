@@ -28,7 +28,7 @@ export function isStorefrontRuntimeConfigurationAllowed(
   const productionHosts = new Set(registry.nodes.flatMap((node) => [
     ...node.storefrontHosts,
     node.accountsHost,
-    new URL(node.adminOrigin).hostname,
+    ...(node.adminOrigin === null ? [] : [new URL(node.adminOrigin).hostname]),
   ]));
   if (productionHosts.has(normalized)) return appEnvironment === 'production' && authMode === 'membership';
   return false;

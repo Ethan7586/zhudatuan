@@ -18,10 +18,10 @@ describe('PgAuthTicket exchange', () => {
       state: 's'.repeat(32), nonce: 'n'.repeat(32), challenge: 'c'.repeat(43),
     });
 
-    await tickets.issue(database, 'session:l11', 'realm:l11', 'account:l11', 'console', transaction);
+    await tickets.issue(database, 'session:l11', 'realm:l11', 'account:l11', 'storefront', transaction);
 
     expect(queries[0]?.text).toContain('realm_id,account_id');
-    expect(queries[0]?.values.slice(-3)).toEqual(['console', 'realm:l11', 'account:l11']);
+    expect(queries[0]?.values.slice(-3)).toEqual(['storefront', 'realm:l11', 'account:l11']);
   });
 
   it('binds the ticket to the current session and consumes it once', async () => {

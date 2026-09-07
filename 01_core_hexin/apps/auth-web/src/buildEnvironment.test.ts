@@ -3,10 +3,11 @@ import { validateAuthBuildEnvironment } from './buildEnvironment';
 
 const production = Object.freeze({
   VITE_IDENTITY_NODE_REGISTRY: JSON.stringify({
-    version: 1,
+    version: 2,
     defaultNodeId: 'l0',
     nodes: [{
-      nodeId: 'l0', displayName: '主打团平台', accountsOrigin: 'https://accounts.zhudatuan.com',
+      nodeId: 'l0', nodeProfile: 'operating_mall', mallId: 'mall-zhudatuan',
+      displayName: '主打团平台', accountsOrigin: 'https://accounts.zhudatuan.com',
       apiOrigin: 'https://api.zhudatuan.com', consumerApiOrigin: 'https://api.zhudatuan.com',
       adminOrigin: 'https://console.zhudatuan.com', storefrontOrigin: 'https://zhudatuan.com',
       adminTarget: 'console', consumerTarget: 'storefront', consumerApplication: 'zhudatuan-storefront',
@@ -18,7 +19,7 @@ const production = Object.freeze({
 describe('auth production build environment', () => {
   it('requires every browser runtime value at build time', () => {
     expect(validateAuthBuildEnvironment(production)).toEqual({
-      identityNodes: expect.objectContaining({ version: 1, defaultNodeId: 'l0' }),
+      identityNodes: expect.objectContaining({ version: 2, defaultNodeId: 'l0' }),
       clientVersion: '1.0.0',
     });
     for (const key of Object.keys(production)) {

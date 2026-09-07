@@ -57,7 +57,7 @@ describe('purchase API runtime', () => {
 describe('purchase API session boundary', () => {
   it('rejects a Console credential immediately after session resolution', async () => {
     const actor = {
-      id: 'principal:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1,
+      id: 'principal:one', account: 'account:one', realm: 'realm:l0', session: 'session:one', membership: 'membership:one', credentialVersion: 1,
       accessVersion: 1, target: 'console' as const, assurance: { level: 2 },
     };
     const resolver = new PurchaseSessionResolver({ resolve: async () => actor });

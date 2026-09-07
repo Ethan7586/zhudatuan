@@ -258,10 +258,11 @@ function storefrontWebEnvironment(): string {
 
 function localIdentityNodeRegistry(): string {
   return JSON.stringify({
-    version: 1,
+    version: 2,
     defaultNodeId: 'local',
     nodes: [{
-      nodeId: 'local', displayName: '本地身份节点', accountsOrigin: 'http://127.0.0.1:3002',
+      nodeId: 'local', nodeProfile: 'operating_mall', mallId: 'mall-local', displayName: '本地身份节点',
+      accountsOrigin: 'http://127.0.0.1:3002',
       apiOrigin: 'http://127.0.0.1:3001', consumerApiOrigin: 'http://127.0.0.1:3001',
       adminOrigin: 'http://127.0.0.1:5173', storefrontOrigin: 'http://127.0.0.1:3000',
       storefrontHosts: ['localhost'], adminTarget: 'console', consumerTarget: 'storefront',

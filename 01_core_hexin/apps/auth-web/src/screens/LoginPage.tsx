@@ -26,10 +26,11 @@ type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
 export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const identityNode = currentIdentityNode();
+  const operatorNode = identityNode.nodeProfile === 'operating_mall' ? identityNode : null;
   const searchParams = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search);
   const isStorefrontEmbed = searchParams?.get('embed') === 'storefront';
-  const isTenantConsoleLogin = searchParams?.get('client') === identityNode.adminTarget;
-  const tenantConsoleOrigin = searchParams?.get('admin_origin')?.trim() || identityNode.adminOrigin;
+  const isTenantConsoleLogin = operatorNode !== null && searchParams?.get('client') === operatorNode.adminTarget;
+  const tenantConsoleOrigin = searchParams?.get('admin_origin')?.trim() || operatorNode?.adminOrigin;
   const registrationDeepLink = searchParams?.get('invite')?.trim() ?? '';
 
   // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
@@ -219,9 +220,9 @@ export const LoginPage: React.FC = () => {
     setFormError('');
 
     try {
-      if (isTenantConsoleLogin) {
+      if (isTenantConsoleLogin && operatorNode !== null) {
         const result = await loginCanonicalConsole(identifier, password, undefined, undefined, {
-          target: identityNode.adminTarget,
+          target: operatorNode.adminTarget,
           ...(tenantConsoleOrigin === undefined ? {} : { expectedOrigin: tenantConsoleOrigin }),
         });
         if (result.kind === 'selection') {
@@ -330,15 +331,11 @@ export const LoginPage: React.FC = () => {
     // The browser performs a top-level POST on the target host, allowing the
     // admin domain to create its own __Host- cookie before loading the app.
     // Credentials are deliberately submitted in the request body, never URL.
-    let adminOrigin: string;
-    try {
-      adminOrigin = identityNode.adminOrigin;
-    } catch (error: any) {
-      setFormError(error.message || '后台登录目标配置无效');
+    if (operatorNode === null) {
+      setFormError('消费者节点不提供运营后台');
       return;
     }
-
-    submitCredentialForm(adminOrigin);
+    submitCredentialForm(operatorNode.adminOrigin);
   };
 
   const processPreAuthContext = async (context: PreAuthContext) => {
@@ -382,12 +379,12 @@ export const LoginPage: React.FC = () => {
 
   // 2. 选中并确认某条会员关系
   const handleSelectMembership = async (mem: Membership) => {
-    if (isTenantConsoleLogin && mem.target === 'admin') {
+    if (isTenantConsoleLogin && operatorNode !== null && mem.target === 'admin') {
       setLoading(true);
       setFormError('');
       try {
         const result = await loginCanonicalConsole(identifier, password, mem.id, undefined, {
-          target: identityNode.adminTarget,
+          target: operatorNode.adminTarget,
           ...(tenantConsoleOrigin === undefined ? {} : { expectedOrigin: tenantConsoleOrigin }),
         });
         if (result.kind !== 'authenticated') throw new Error('后台身份选择未完成');
