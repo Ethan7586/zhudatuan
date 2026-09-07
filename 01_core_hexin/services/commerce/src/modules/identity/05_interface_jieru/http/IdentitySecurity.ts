@@ -30,12 +30,6 @@ export function authMembershipTarget(target: AuthTarget): Exclude<AuthTarget, 'c
   return target;
 }
 
-export function storefrontAuthTarget(application: string): Extract<AuthTarget, 'storefront' | 'storefront-hbbtzn'> {
-  if (application === 'zhudatuan-storefront') return 'storefront';
-  if (application === 'zdt-l1-verify') return 'storefront-hbbtzn';
-  throw new Error('AUTH_RETURN_TARGET_INVALID');
-}
-
 export async function consumeChallenge(database: OperationDatabase, challenge: string, code: string,
   digest: (id: string, code: string) => string, principal?: string,
   expected: Readonly<{ purpose?: string; destinationHash?: string; sessionHash?: string; realmId?: string; accountId?: string }> = {}

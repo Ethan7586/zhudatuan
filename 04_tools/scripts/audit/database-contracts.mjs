@@ -163,8 +163,8 @@ const REPAIR_FILES = [
 ];
 
 const mode = process.argv[2];
-if (!['--check-inventory','--schema-fresh','--environment-bootstrap','--inventory-cutover-unsafe','--postgres-fresh','--mvp-kernel'].includes(mode)) {
-  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel [URL]');
+if (!['--check-inventory','--schema-fresh','--environment-bootstrap','--inventory-cutover-unsafe','--postgres-fresh','--mvp-kernel','--identity-realm-isolation'].includes(mode)) {
+  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel|--identity-realm-isolation [URL]');
 }
 const replayRole = mode === '--postgres-fresh' ? process.argv[4] : undefined;
 if (replayRole !== undefined && !/^[a-z][a-z0-9_]{2,62}$/.test(replayRole)) throw new Error('POSTGRES_FRESH_ROLE_INVALID');
@@ -232,6 +232,11 @@ try {
     if (mode === '--mvp-kernel') {
       const { verifyMvpKernel } = await import('./mvp-kernel.mjs');
       await verifyMvpKernel(database);
+    }
+    if (mode === '--identity-realm-isolation') {
+      const { verifyIdentityRealmIsolation } = await import('./identity-realm-isolation.mjs');
+      await verifyIdentityRealmIsolation(database);
+      console.log('identity realm isolation passed: nodes=L0-L11 accounts=12 shared-login=12 cross-host=0 scoped-lifecycle=2');
     }
     console.log(`target schema replay passed: migrations=${applied} historical=94 repair=${REPAIR_FILES.length}`);
   }

@@ -31,7 +31,7 @@ afterEach(() => {
 
 describe('canonical registration', () => {
   it('routes the L1 accounts host to its own L1 API even when a local build value leaked in', () => {
-    expect(resolveCanonicalRegistrationApiOrigin('http://127.0.0.1:3001', false, 'accounts.hbbtzn.com'))
+    expect(resolveCanonicalRegistrationApiOrigin('accounts.hbbtzn.com'))
       .toBe('https://api.hbbtzn.com');
   });
 

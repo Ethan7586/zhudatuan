@@ -1,6 +1,10 @@
-export const ZHUDATUAN_STOREFRONT_APPLICATION = 'zhudatuan-storefront';
-export const HONGTAI_STOREFRONT_APPLICATION = 'zdt-l1-verify';
-export type StorefrontAuthTarget = 'storefront' | 'storefront-hbbtzn';
+import {
+  defaultIdentityNode,
+  identityNodeForStorefrontHost,
+  parseIdentityNodeRegistry,
+  type IdentityNodeDefinition,
+  type IdentityNodeRegistry,
+} from '@shop/sdk/identity-node';
 
 export interface StorefrontPresentationIdentity {
   readonly mallName: string;
@@ -12,30 +16,57 @@ function currentStorefrontHostname(): string {
   return process.env.NEXT_PUBLIC_STOREFRONT_HOSTNAME || 'zhudatuan.com';
 }
 
-export function resolveStorefrontApplication(
-  hostname: string = currentStorefrontHostname(),
-  configured: string | undefined = process.env.NEXT_PUBLIC_STOREFRONT_APPLICATION,
-): string {
-  const explicit = configured?.trim();
-  if (explicit) return explicit;
-  const normalized = hostname.trim().toLowerCase().replace(/\.$/, '');
-  return normalized === 'hbbtzn.com' || normalized.endsWith('.hbbtzn.com')
-    ? HONGTAI_STOREFRONT_APPLICATION
-    : ZHUDATUAN_STOREFRONT_APPLICATION;
+export function storefrontIdentityNodeRegistry(
+  source: string | undefined = process.env.NEXT_PUBLIC_IDENTITY_NODE_REGISTRY,
+): IdentityNodeRegistry {
+  if (!source?.trim()) throw new Error('IDENTITY_NODE_REGISTRY_MISSING');
+  return parseIdentityNodeRegistry(source);
 }
 
-export function resolveStorefrontAuthTarget(application: string = resolveStorefrontApplication()): StorefrontAuthTarget {
-  if (application === ZHUDATUAN_STOREFRONT_APPLICATION) return 'storefront';
-  if (application === HONGTAI_STOREFRONT_APPLICATION) return 'storefront-hbbtzn';
-  throw new Error('商城身份节点无效');
+export function resolveStorefrontNode(
+  hostname?: string,
+  registry: IdentityNodeRegistry = storefrontIdentityNodeRegistry(),
+): IdentityNodeDefinition {
+  const browserHostname = typeof window === 'undefined' ? undefined : window.location?.hostname;
+  const selectedHostname = hostname ?? browserHostname ?? process.env.NEXT_PUBLIC_STOREFRONT_HOSTNAME;
+  if (selectedHostname === undefined || selectedHostname === '') return defaultIdentityNode(registry);
+  const node = identityNodeForStorefrontHost(registry, selectedHostname);
+  if (node === null) throw new Error('商城身份节点无效');
+  return node;
+}
+
+export function resolveStorefrontApplication(
+  hostname?: string,
+  configured: string | undefined = process.env.NEXT_PUBLIC_STOREFRONT_APPLICATION,
+  registry: IdentityNodeRegistry = storefrontIdentityNodeRegistry(),
+): string {
+  const node = resolveStorefrontNode(hostname, registry);
+  const explicit = configured?.trim();
+  if (explicit !== undefined && explicit !== '' && explicit !== node.consumerApplication) {
+    throw new Error('商城身份节点无效');
+  }
+  return node.consumerApplication;
+}
+
+export function resolveStorefrontAuthTarget(
+  application: string = resolveStorefrontApplication(),
+  hostname?: string,
+  registry: IdentityNodeRegistry = storefrontIdentityNodeRegistry(),
+): string {
+  const node = resolveStorefrontNode(hostname, registry);
+  if (application !== node.consumerApplication) throw new Error('商城身份节点无效');
+  return node.consumerTarget;
 }
 
 /** Keep the host's visible identity stable while the member scope hydrates. */
 export function resolveStorefrontPresentationIdentity(
   hostname: string = currentStorefrontHostname(),
   configured: string | undefined = process.env.NEXT_PUBLIC_STOREFRONT_APPLICATION,
+  registry: IdentityNodeRegistry = storefrontIdentityNodeRegistry(),
 ): StorefrontPresentationIdentity {
-  return resolveStorefrontApplication(hostname, configured) === HONGTAI_STOREFRONT_APPLICATION
-    ? { mallName: '宏泰甄选', brandName: '宏泰甄选' }
-    : { mallName: '筑大团商城', brandName: '筑大团' };
+  const node = resolveStorefrontNode(hostname, registry);
+  if (resolveStorefrontApplication(hostname, configured, registry) !== node.consumerApplication) {
+    throw new Error('商城身份节点无效');
+  }
+  return { mallName: node.mallName, brandName: node.brandName };
 }

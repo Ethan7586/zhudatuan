@@ -16,10 +16,13 @@ import {
 
 type PageMode = 'login' | 'register' | 'reset';
 
-export const OperatorIdentityPage: React.FC<Readonly<{ target: 'console' | 'console-hbbtzn' }>> = ({ target }) => {
+export const OperatorIdentityPage: React.FC<Readonly<{
+  target: string;
+  expectedOrigin: string;
+  displayName: string;
+}>> = ({ target, expectedOrigin, displayName: nodeDisplayName }) => {
   const search = typeof window === 'undefined' ? '' : window.location.search;
   const params = new URLSearchParams(search);
-  const tenantConsole = target === 'console-hbbtzn';
   const initialInvite = params.get('invite')?.trim().toUpperCase() ?? '';
   const [mode, setMode] = useState<PageMode>(initialInvite ? 'register' : 'login');
   const [identifier, setIdentifier] = useState('');
@@ -54,12 +57,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{ target: 'console' | 'cons
     setMemberships([]);
   };
 
-  const consoleOptions = () => tenantConsole
-    ? {
-        target: 'console-hbbtzn' as const,
-        expectedOrigin: 'https://console.hbbtzn.com',
-      }
-    : { target: 'console' as const };
+  const consoleOptions = () => ({ target, expectedOrigin });
 
   const signIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -190,7 +188,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{ target: 'console' | 'cons
     }
   };
 
-  const productName = tenantConsole ? '宏泰甄选运营后台' : '主打团平台';
+  const productName = nodeDisplayName;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4 sm:p-8">

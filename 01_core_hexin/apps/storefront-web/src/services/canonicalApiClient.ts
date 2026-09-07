@@ -1,12 +1,8 @@
 import { createFetchCommerce, createRequestContext, createSecureId } from '@shop/sdk';
 import type { CommerceClient, RequestContext, RequestScope } from '@shop/sdk';
+import type { IdentityNodeDefinition } from '@shop/sdk/identity-node';
+import { resolveStorefrontNode } from '../config/storefrontIdentity';
 import { ProductionApiError, productionError } from './productionApi.error';
-
-export const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
-const L1_STOREFRONT_ORIGIN = 'https://hbbtzn.com';
-const LEGACY_API_ORIGIN = 'https://api.zhudatuan.com';
-const INTERNAL_API_ORIGIN = 'https://internal.zhudatuan.com';
-const LOCAL_API_ORIGINS = new Set(['http://127.0.0.1:3001', 'http://localhost:3001']);
 
 export interface CanonicalSessionContext {
   readonly actor: string;
@@ -28,13 +24,16 @@ interface ContextOptions {
 let activeSession: CanonicalSessionContext | null = null;
 let cachedClient: Readonly<{ origin: string; value: CommerceClient }> | null = null;
 
-export function resolveProductionApiOrigin(candidate: string | undefined, environment: string | undefined): string {
-  const fallback = environment === 'production' ? CANONICAL_API_ORIGIN : 'http://127.0.0.1:3001';
+export function resolveProductionApiOrigin(
+  candidate: string | undefined,
+  environment: string | undefined,
+  node: IdentityNodeDefinition = resolveStorefrontNode(),
+): string {
+  const fallback = node.apiOrigin;
   const parsed = new URL(candidate?.trim() || fallback);
-  const approved = parsed.origin === CANONICAL_API_ORIGIN
-    || parsed.origin === LEGACY_API_ORIGIN
-    || parsed.origin === INTERNAL_API_ORIGIN
-    || (environment !== 'production' && LOCAL_API_ORIGINS.has(parsed.origin));
+  const local = parsed.protocol === 'http:' && (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1');
+  const approved = parsed.origin === node.apiOrigin || parsed.origin === node.consumerApiOrigin
+    || (environment !== 'production' && local);
   if (!approved || parsed.username || parsed.password || parsed.hash || (parsed.pathname !== '/' && parsed.pathname !== '')) {
     throw new ProductionApiError('平台 API 地址不在允许清单', 0, 'API_ORIGIN_DENIED');
   }
@@ -45,18 +44,17 @@ export function resolveStorefrontApiOrigin(
   candidate: string | undefined,
   environment: string | undefined,
   browserOrigin: string | undefined,
+  node: IdentityNodeDefinition = resolveStorefrontNode(),
 ): string {
-  // The L1 storefront exposes the canonical API on its own origin. Keeping
-  // browser traffic same-origin avoids legacy WeChat WebView cross-origin
-  // failures while server-side calls retain the dedicated API origin.
-  if (browserOrigin === L1_STOREFRONT_ORIGIN) return L1_STOREFRONT_ORIGIN;
-  return resolveProductionApiOrigin(candidate, environment);
+  if (browserOrigin === node.storefrontOrigin) return node.consumerApiOrigin;
+  return resolveProductionApiOrigin(candidate, environment, node);
 }
 
 export function canonicalClient(): CommerceClient {
+  const node = resolveStorefrontNode();
   const configured = process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_ORIGIN;
   const browserOrigin = typeof window === 'undefined' || !window.location ? undefined : window.location.origin;
-  const origin = resolveStorefrontApiOrigin(configured, process.env.NODE_ENV, browserOrigin);
+  const origin = resolveStorefrontApiOrigin(configured, process.env.NODE_ENV, browserOrigin, node);
   if (cachedClient?.origin !== origin) cachedClient = Object.freeze({ origin, value: createFetchCommerce(origin) });
   return cachedClient.value;
 }

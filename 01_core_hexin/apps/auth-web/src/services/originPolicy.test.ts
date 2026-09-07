@@ -46,9 +46,10 @@ describe('canonical identity return origin policy', () => {
     expect(resolveStorefrontLoginOrigin('https://zhudatuan.com')).toBe('https://zhudatuan.com');
   });
 
-  it('keeps canonical identity physically disconnected from the legacy auth module', () => {
+  it('keeps canonical identity physically disconnected from the legacy auth and static origin modules', () => {
     const source = readFileSync(new URL('./canonicalIdentity.ts', import.meta.url), 'utf8');
-    expect(source).toContain("from './originPolicy'");
+    expect(source).toContain("from './identityNodeEnvironment'");
     expect(source).not.toContain("from './auth'");
+    expect(source).not.toContain("from './originPolicy'");
   });
 });

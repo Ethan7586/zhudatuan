@@ -4,10 +4,9 @@ import { PASSWORD_POLICY_MESSAGE } from '@shop/contract/password-policy';
 import { createSecureId } from '@shop/sdk/context';
 import { z } from 'zod';
 import { beginCanonicalAuthorization, canonicalStorefrontAuthTarget, exchangeCanonicalStorefrontSession } from './canonicalIdentity';
+import { configuredIdentityNode, configuredIdentityNodeRegistry, currentIdentityNode } from './identityNodeEnvironment';
+import type { IdentityNodeRegistry } from '@shop/sdk/identity-node';
 
-const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
-const L1_API_ORIGIN = 'https://api.hbbtzn.com';
-const L1_STOREFRONT_API_ORIGIN = 'https://hbbtzn.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
 
 const InvitationSchema = z.strictObject({
@@ -268,36 +267,20 @@ async function identityRequest(
 }
 
 function apiOrigin(): string {
-  return resolveCanonicalRegistrationApiOrigin(
-    import.meta.env.VITE_API_BASE_URL,
-    import.meta.env.DEV,
-    typeof window === 'undefined' ? undefined : window.location.hostname,
-  );
+  return currentIdentityNode().apiOrigin;
 }
 
 function storefrontApiOrigin(): string {
-  if (typeof window !== 'undefined' && window.location.hostname === 'accounts.hbbtzn.com') {
-    return L1_STOREFRONT_API_ORIGIN;
-  }
-  return apiOrigin();
+  return currentIdentityNode().consumerApiOrigin;
 }
 
 export function resolveCanonicalRegistrationApiOrigin(
-  configured: string | undefined,
-  development: boolean,
   hostname?: string,
+  registry: IdentityNodeRegistry = configuredIdentityNodeRegistry(),
 ): string {
-  let candidate = configured?.trim() || (development ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
-  if (hostname?.startsWith('accounts.')) {
-    candidate = `https://api.${hostname.slice('accounts.'.length)}`;
-  }
-  const parsed = new URL(candidate);
-  const local = development && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
-  if ((!local && parsed.origin !== CANONICAL_API_ORIGIN && parsed.origin !== L1_API_ORIGIN)
-    || parsed.username || parsed.password || parsed.hash) {
-    throw new Error('统一身份 API 不在允许清单');
-  }
-  return parsed.origin;
+  const node = configuredIdentityNode(hostname, registry);
+  if (node === null) throw new Error('AUTH_REALM_ENTRY_INVALID');
+  return node.apiOrigin;
 }
 
 function clientVersion(): string {

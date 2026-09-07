@@ -26,8 +26,8 @@ await writePrivate(infrastructureEnvironmentFile, infrastructureEnvironment(valu
 await writePrivate(commerceEnvironmentFile, commerceEnvironment(values));
 const clientEnvironments: ReadonlyArray<readonly [string, string]> = [
   ['console', viteEnvironment(5173)],
-  ['auth-web', viteEnvironment(3002)],
-  ['storefront-web', viteEnvironment(3000, true)],
+  ['auth-web', authWebEnvironment()],
+  ['storefront-web', storefrontWebEnvironment()],
   ['miniapp', miniappEnvironment()],
 ];
 const clientEnvironmentWrites: Array<Promise<void>> = [];
@@ -226,13 +226,47 @@ function commerceEnvironment(values: Readonly<Record<string, string>>): string {
   });
 }
 
-function viteEnvironment(port: number, storefrontRuntime = false): string {
+function viteEnvironment(port: number): string {
   return lines({
-    ...(storefrontRuntime ? { APP_ENV: 'development' } : {}),
     VITE_API_BASE_URL: 'http://127.0.0.1:3001',
     VITE_AUTH_BASE_URL: 'http://127.0.0.1:3002',
     VITE_CLIENT_VERSION: '0.0.0',
     PORT: String(port),
+  });
+}
+
+function authWebEnvironment(): string {
+  return lines({
+    VITE_IDENTITY_NODE_REGISTRY: localIdentityNodeRegistry(),
+    VITE_CLIENT_VERSION: '0.0.0',
+    AUTH_COMPAT_API_ORIGIN: 'http://127.0.0.1:3000',
+    PORT: '3002',
+  });
+}
+
+function storefrontWebEnvironment(): string {
+  return lines({
+    APP_ENV: 'development',
+    NEXT_PUBLIC_IDENTITY_NODE_REGISTRY: localIdentityNodeRegistry(),
+    NEXT_PUBLIC_STOREFRONT_HOSTNAME: '127.0.0.1',
+    NEXT_PUBLIC_API_BASE_URL: 'http://127.0.0.1:3001',
+    NEXT_PUBLIC_AUTH_ORIGIN: 'http://127.0.0.1:3002',
+    NEXT_PUBLIC_CLIENT_VERSION: '0.0.0',
+    PORT: '3000',
+  });
+}
+
+function localIdentityNodeRegistry(): string {
+  return JSON.stringify({
+    version: 1,
+    defaultNodeId: 'local',
+    nodes: [{
+      nodeId: 'local', displayName: '本地身份节点', accountsOrigin: 'http://127.0.0.1:3002',
+      apiOrigin: 'http://127.0.0.1:3001', consumerApiOrigin: 'http://127.0.0.1:3001',
+      adminOrigin: 'http://127.0.0.1:5173', storefrontOrigin: 'http://127.0.0.1:3000',
+      storefrontHosts: ['localhost'], adminTarget: 'console', consumerTarget: 'storefront',
+      consumerApplication: 'local-storefront',
+    }],
   });
 }
 

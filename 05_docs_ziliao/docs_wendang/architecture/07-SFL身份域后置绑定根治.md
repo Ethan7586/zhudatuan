@@ -51,3 +51,14 @@
 - 会话读取、单次注销、批量撤销、改密和手机变更均以 account/realm 为边界。历史 session 仅按其确定 membership 回填；无法分类者在迁移中撤销，对应未消费 ticket 同步作废。
 
 本批关闭登录后的 session、ticket 与权限加载串域路径。第 5 批仍需完成 L0–L11 注册表扩展验收、四域端到端回归和总体验收，因此在第 5 批通过前仍不宣称全部根治完成。
+
+## 第 5 批扩展与总体验收
+
+- 认证页与商城页共用 `IdentityNodeRegistry` 数据契约。每个节点配置 `nodeId`、Accounts/API/Consumer API/Console/Storefront origin、admin/consumer target 与 storefront application；活动链路不再包含 L0/L1 条件分支。新增节点只投影 registry 数据，不修改身份业务算法。
+- 浏览器首先按当前 Accounts Host 或 Storefront Host 选定唯一节点，再从同一条节点记录取得 API、target、application 和回跳 origin。未知 Host 不回退默认节点；Host 与 URL 参数不一致时入口无效。L0/L1 的既有 target 名称仅作为对应 registry 记录中的兼容数据。
+- 完整迁移后的临时数据库实建 L0–L11 十二个 realm。十二个账号使用同一手机号检索值和同一微信 subject，但分别持有 account、密码 hash、credential version、手机验证、challenge、assurance、login attempt、federated identity、membership、session 和 ticket。
+- 十二个 session 在各自 Host 下解析为 12 个精确 account/realm/membership，循环错位 Host 解析为 0 个；跨 realm 改写 ticket 被复合外键拒绝。L11 单独提升 credential version 后只失效 L11，L10 单独注销后只再失效 L10。
+- L11 membership 的单独 deny 不出现在 L10 的授权快照中；跨节点权限仍只能来自未来由 Ethan 明确定义的显式授权或委派记录，本批没有引入自动共享。
+- 最终回归覆盖 L0 admin、L0 consumer、L1 admin、L1 consumer 四入口，以及 registry-only L11 认证页和商城入口。认证前端 70 项、商城前端 343 项、身份后端关键链 65 项全部通过；共享 registry 契约测试覆盖 L0–L11。
+
+至此，SFL 身份域后置绑定的五批根因修复在代码、受管迁移与本地完整回放范围内完成。生产部署不属于本次执行范围；在部署前仍以第 4 批提交作为本批回滚点，并按正式部署流程另行建立生产基线和外部十五域冒烟结果。

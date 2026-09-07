@@ -1,35 +1,31 @@
 import { describe, expect, it } from 'vitest';
 import {
-  isHongtaiConsoleEntry,
   recoverLocalIdentitySearch,
   resolveConsumerIdentityEntry,
   resolveIdentityEntry,
 } from './consumerIdentityEntry';
+import { configuredIdentityNodeRegistry } from './identityNodeEnvironment';
+import { parseIdentityNodeRegistry } from '@shop/sdk/identity-node';
+
+const registry = configuredIdentityNodeRegistry();
+const l0 = registry.nodes.find((node) => node.nodeId === 'l0')!;
+const l1 = registry.nodes.find((node) => node.nodeId === 'l1')!;
 
 describe('consumer identity entry', () => {
   it('routes a declared storefront application to the consumer adapter', () => {
-    expect(resolveConsumerIdentityEntry('?target=storefront-hbbtzn&surface=web&application=zdt-l1-verify')).toEqual({
+    expect(resolveConsumerIdentityEntry('?target=storefront-hbbtzn&surface=web&application=zdt-l1-verify', l1)).toEqual({
       application: 'zdt-l1-verify',
       target: 'storefront-hbbtzn',
     });
-    expect(resolveConsumerIdentityEntry('?target=storefront&application=zhudatuan-storefront')).toEqual({
+    expect(resolveConsumerIdentityEntry('?target=storefront&application=zhudatuan-storefront', l0)).toEqual({
       application: 'zhudatuan-storefront',
       target: 'storefront',
     });
-    expect(resolveConsumerIdentityEntry('?target=storefront&application=zdt-l1-verify')).toBeNull();
-    expect(resolveConsumerIdentityEntry('?target=storefront-hbbtzn&application=zhudatuan-storefront')).toBeNull();
-    expect(resolveConsumerIdentityEntry('?target=storefront&application=another-mall')).toBeNull();
-    expect(resolveConsumerIdentityEntry('?target=storefront&application=INVALID_APP')).toBeNull();
-    expect(resolveConsumerIdentityEntry('?client=console-hbbtzn&application=zdt-l1-verify')).toBeNull();
-  });
-});
-
-describe('operator identity entry', () => {
-  it('recognizes both canonical and existing Hongtai console links', () => {
-    expect(isHongtaiConsoleEntry('?target=console-hbbtzn')).toBe(true);
-    expect(isHongtaiConsoleEntry('?client=console-hbbtzn')).toBe(true);
-    expect(isHongtaiConsoleEntry('?target=console')).toBe(false);
-    expect(isHongtaiConsoleEntry('?target=storefront-hbbtzn&application=zdt-l1-verify')).toBe(false);
+    expect(resolveConsumerIdentityEntry('?target=storefront&application=zdt-l1-verify', l1)).toBeNull();
+    expect(resolveConsumerIdentityEntry('?target=storefront-hbbtzn&application=zhudatuan-storefront', l0)).toBeNull();
+    expect(resolveConsumerIdentityEntry('?target=storefront&application=another-mall', l0)).toBeNull();
+    expect(resolveConsumerIdentityEntry('?target=storefront&application=INVALID_APP', l0)).toBeNull();
+    expect(resolveConsumerIdentityEntry('?client=console-hbbtzn&application=zdt-l1-verify', l1)).toBeNull();
   });
 });
 
@@ -50,8 +46,8 @@ describe('node-bound identity entry', () => {
   });
 
   it('binds operator targets to the current accounts host', () => {
-    expect(resolveIdentityEntry('', 'accounts.zhudatuan.com')).toEqual({ kind: 'operator', target: 'console' });
-    expect(resolveIdentityEntry('', 'accounts.hbbtzn.com')).toEqual({ kind: 'operator', target: 'console-hbbtzn' });
+    expect(resolveIdentityEntry('', 'accounts.zhudatuan.com')).toMatchObject({ kind: 'operator', nodeId: 'l0', target: 'console' });
+    expect(resolveIdentityEntry('', 'accounts.hbbtzn.com')).toMatchObject({ kind: 'operator', nodeId: 'l1', target: 'console-hbbtzn' });
     expect(resolveIdentityEntry('?target=console', 'accounts.hbbtzn.com')).toBeNull();
     expect(resolveIdentityEntry('?target=console-hbbtzn', 'accounts.zhudatuan.com')).toBeNull();
     expect(resolveIdentityEntry('?target=console&client=console-hbbtzn', 'accounts.zhudatuan.com')).toBeNull();
@@ -97,5 +93,24 @@ describe('node-bound identity entry', () => {
       'accounts.hbbtzn.com',
     )).toBeNull();
     expect(recoverLocalIdentitySearch('?target=console', 'untrusted.example.com')).toBeNull();
+  });
+
+  it('accepts an L11 node added only through registry data', () => {
+    const l11Registry = parseIdentityNodeRegistry(JSON.stringify({
+      version: 1,
+      defaultNodeId: 'l11',
+      nodes: [{
+        nodeId: 'l11', displayName: 'L11 运营后台', accountsOrigin: 'https://accounts.l11.example.com',
+        apiOrigin: 'https://api.l11.example.com', consumerApiOrigin: 'https://l11.example.com',
+        adminOrigin: 'https://console.l11.example.com', storefrontOrigin: 'https://l11.example.com',
+        adminTarget: 'console', consumerTarget: 'storefront', consumerApplication: 'l11-storefront',
+      }],
+    }));
+    expect(resolveIdentityEntry(
+      '?target=storefront&surface=web&application=l11-storefront', 'accounts.l11.example.com', l11Registry,
+    )).toMatchObject({ kind: 'consumer', nodeId: 'l11', application: 'l11-storefront', target: 'storefront' });
+    expect(resolveIdentityEntry('', 'accounts.l11.example.com', l11Registry))
+      .toMatchObject({ kind: 'operator', nodeId: 'l11', target: 'console' });
+    expect(resolveIdentityEntry('', 'accounts.l10.example.com', l11Registry)).toBeNull();
   });
 });

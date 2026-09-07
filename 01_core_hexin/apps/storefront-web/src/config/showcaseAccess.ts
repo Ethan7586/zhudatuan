@@ -2,14 +2,6 @@ const SHOWCASE_PATH_PREFIXES = ['/desktop-1920', '/mini-program', '/android-app'
 const COMPATIBILITY_API_PATH_PREFIX = '/api/v1/';
 
 const LOCAL_SHOWCASE_HOSTS = new Set(['127.0.0.1', 'localhost']);
-const PRODUCTION_RUNTIME_HOSTS = new Set([
-  'zhudatuan.com',
-  'www.zhudatuan.com',
-  'internal.zhudatuan.com',
-  'accounts.zhudatuan.com',
-  'console.zhudatuan.com',
-]);
-
 export function isShowcasePath(pathname: string): boolean {
   return SHOWCASE_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
@@ -24,10 +16,22 @@ export function isShowcaseHostAllowed(hostname: string, appEnvironment: string |
   return appEnvironment !== 'production' && LOCAL_SHOWCASE_HOSTS.has(normalized);
 }
 
-export function isStorefrontRuntimeConfigurationAllowed(hostname: string, appEnvironment: string | undefined, authMode: string | undefined): boolean {
+export function isStorefrontRuntimeConfigurationAllowed(
+  hostname: string,
+  appEnvironment: string | undefined,
+  authMode: string | undefined,
+  registry: IdentityNodeRegistry = storefrontIdentityNodeRegistry(),
+): boolean {
   const normalized = hostname.toLowerCase();
-  if (PRODUCTION_RUNTIME_HOSTS.has(normalized)) return appEnvironment === 'production' && authMode === 'membership';
   if (normalized === 'labs.zhudatuan.com') return true;
   if (LOCAL_SHOWCASE_HOSTS.has(normalized)) return appEnvironment !== 'production';
+  const productionHosts = new Set(registry.nodes.flatMap((node) => [
+    ...node.storefrontHosts,
+    node.accountsHost,
+    new URL(node.adminOrigin).hostname,
+  ]));
+  if (productionHosts.has(normalized)) return appEnvironment === 'production' && authMode === 'membership';
   return false;
 }
+import type { IdentityNodeRegistry } from '@shop/sdk/identity-node';
+import { storefrontIdentityNodeRegistry } from './storefrontIdentity';

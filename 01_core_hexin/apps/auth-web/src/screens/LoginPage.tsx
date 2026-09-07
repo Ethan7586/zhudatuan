@@ -11,6 +11,7 @@ import { useMallContext } from '../context/MallContext';
 import { Membership, PreAuthContext } from '../types';
 import { defaultTermsAccepted } from '../services/termsAcceptance';
 import { loginCanonicalConsole } from '../services/canonicalIdentity';
+import { currentIdentityNode } from '../services/identityNodeEnvironment';
 import {
   loginWithPassword,
   getLockoutState,
@@ -18,18 +19,17 @@ import {
   registerUsernameMember,
   buildCredentialLoginAction,
   requiresAuthoritativeMembershipSelection,
-  resolveAdminLoginOrigin,
-  resolveStorefrontLoginOrigin,
 } from '../services/auth';
 
 type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
 
 export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
+  const identityNode = currentIdentityNode();
   const searchParams = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search);
   const isStorefrontEmbed = searchParams?.get('embed') === 'storefront';
-  const isTenantConsoleLogin = searchParams?.get('client') === 'console-hbbtzn';
-  const tenantConsoleOrigin = searchParams?.get('admin_origin')?.trim() || undefined;
+  const isTenantConsoleLogin = searchParams?.get('client') === identityNode.adminTarget;
+  const tenantConsoleOrigin = searchParams?.get('admin_origin')?.trim() || identityNode.adminOrigin;
   const registrationDeepLink = searchParams?.get('invite')?.trim() ?? '';
 
   // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
@@ -221,7 +221,7 @@ export const LoginPage: React.FC = () => {
     try {
       if (isTenantConsoleLogin) {
         const result = await loginCanonicalConsole(identifier, password, undefined, undefined, {
-          target: 'console-hbbtzn',
+          target: identityNode.adminTarget,
           ...(tenantConsoleOrigin === undefined ? {} : { expectedOrigin: tenantConsoleOrigin }),
         });
         if (result.kind === 'selection') {
@@ -285,14 +285,13 @@ export const LoginPage: React.FC = () => {
     // place that establishes the tracked, revocable HttpOnly device session.
     let storefrontOrigin: string;
     try {
-      const configuredOrigin = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
-      storefrontOrigin = resolveStorefrontLoginOrigin(configuredOrigin, import.meta.env.DEV);
+      storefrontOrigin = identityNode.storefrontOrigin;
     } catch (error: any) {
       setFormError(error.message || '商城登录目标配置无效');
       return;
     }
 
-    // When accounts.zhudatuan.com is the standalone shell, a relative fetch
+    // When the configured accounts host is the standalone shell, a relative fetch
     // would set a host-only cookie on the wrong host and then loop back here.
     // Transfer the browser to the storefront host before the final login.
     if (isStorefrontEmbed && window.location.origin !== storefrontOrigin) {
@@ -333,8 +332,7 @@ export const LoginPage: React.FC = () => {
     // Credentials are deliberately submitted in the request body, never URL.
     let adminOrigin: string;
     try {
-      const configuredOrigin = import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined);
-      adminOrigin = resolveAdminLoginOrigin(configuredOrigin, import.meta.env.DEV);
+      adminOrigin = identityNode.adminOrigin;
     } catch (error: any) {
       setFormError(error.message || '后台登录目标配置无效');
       return;
@@ -389,7 +387,7 @@ export const LoginPage: React.FC = () => {
       setFormError('');
       try {
         const result = await loginCanonicalConsole(identifier, password, mem.id, undefined, {
-          target: 'console-hbbtzn',
+          target: identityNode.adminTarget,
           ...(tenantConsoleOrigin === undefined ? {} : { expectedOrigin: tenantConsoleOrigin }),
         });
         if (result.kind !== 'authenticated') throw new Error('后台身份选择未完成');

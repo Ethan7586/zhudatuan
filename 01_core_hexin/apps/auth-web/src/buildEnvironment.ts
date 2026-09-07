@@ -1,17 +1,20 @@
+import { parseIdentityNodeRegistry, type IdentityNodeRegistry } from '@shop/sdk/identity-node';
+
 export interface AuthBuildEnvironment {
-  readonly apiBaseUrl: string;
-  readonly adminOrigin: string;
-  readonly storefrontOrigin: string;
+  readonly identityNodes: IdentityNodeRegistry;
   readonly clientVersion: string;
 }
 
 export function validateAuthBuildEnvironment(source: Readonly<Record<string, string | undefined>>): AuthBuildEnvironment {
-  const apiBaseUrl = required(source.VITE_API_BASE_URL, 'AUTH_CLIENT_API_BASE_URL_MISSING');
-  const adminOrigin = required(source.VITE_ADMIN_ORIGIN, 'AUTH_CLIENT_ADMIN_ORIGIN_MISSING');
-  const storefrontOrigin = required(source.VITE_STOREFRONT_ORIGIN, 'AUTH_CLIENT_STOREFRONT_ORIGIN_MISSING');
+  const registrySource = required(source.VITE_IDENTITY_NODE_REGISTRY, 'AUTH_CLIENT_IDENTITY_NODE_REGISTRY_MISSING');
+  const identityNodes = parseIdentityNodeRegistry(registrySource);
+  if (identityNodes.nodes.some((node) => [node.accountsOrigin, node.apiOrigin, node.consumerApiOrigin,
+    node.adminOrigin, node.storefrontOrigin].some((origin) => !origin.startsWith('https://')))) {
+    throw new Error('AUTH_CLIENT_IDENTITY_NODE_ORIGIN_INVALID');
+  }
   const clientVersion = required(source.VITE_CLIENT_VERSION, 'AUTH_CLIENT_VERSION_MISSING');
   if (!/^[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.]+)?$/i.test(clientVersion)) throw new Error('AUTH_CLIENT_VERSION_INVALID');
-  return Object.freeze({ apiBaseUrl, adminOrigin, storefrontOrigin, clientVersion });
+  return Object.freeze({ identityNodes, clientVersion });
 }
 
 function required(value: string | undefined, code: string): string {
