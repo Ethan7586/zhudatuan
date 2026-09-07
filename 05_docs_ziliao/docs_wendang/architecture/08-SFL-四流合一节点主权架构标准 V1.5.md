@@ -6,7 +6,7 @@ version: 'SFL 1.5'
 status: '正式架构标准'
 date: '2026-09-07'
 owner: 'Ethan'
-canonical_path: '05_docs_ziliao/docs_wendang/architecture/08-SFL1.5-四流合一节点主权架构标准.md'
+canonical_path: '05_docs_ziliao/docs_wendang/architecture/08-SFL-四流合一节点主权架构标准 V1.5.md'
 ---
 
 # 四流合一 · 节点主权架构（SFL）标准
