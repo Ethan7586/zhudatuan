@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle2, Circle, CreditCard, ShoppingBag, Store } from 'lucide-react';
+import { MobileInventoryBadge } from '../../components/mobile/MobileInventoryBadge';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { useMall } from '../../context/MallContext';
 import { storefrontImageUrl } from '../../services/storefrontImageUrl';
@@ -164,11 +165,11 @@ export const MPCartPage: React.FC = () => {
                         <h2 className="line-clamp-2 min-h-9 text-xs font-bold leading-[18px] text-gray-900">{item.product.title}</h2>
                       </button>
 
-                      <div className="mt-1.5 flex min-w-0 items-center gap-1.5">
+                      <div className="mt-1.5 flex min-w-0 items-center justify-between gap-1.5">
                         <span className="max-w-[120px] truncate rounded-md bg-gray-100 px-1.5 py-0.5 text-[9px] text-gray-500">
                           {Object.values(item.selectedSpec || {}).join(' / ') || '默认规格'}
                         </span>
-                        <span className="flex-none rounded-md bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-blue-700">福利卡可用</span>
+                        <MobileInventoryBadge product={item.product} />
                       </div>
 
                       <div className="mt-2.5 flex items-end justify-between gap-2">

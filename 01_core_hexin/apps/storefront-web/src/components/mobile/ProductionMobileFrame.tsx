@@ -2,7 +2,7 @@ import React from 'react';
 import { useMall, type MiniProgramPage } from '../../context/MallContext';
 import { MPHomePage } from '../../features/miniprogram/MPHomePage';
 import { WeChatTabBar } from './WeChatTabBar';
-import { loadMPAddressPage, loadMPCartPage, loadMPCategoryPage, loadMPDetailPage, loadMPProfilePage, loadMPWelfarePage, preloadPrimaryMiniProgramPages } from './miniProgramPageLoaders';
+import { loadMobileOrdersPage, loadMPAddressPage, loadMPCartPage, loadMPCategoryPage, loadMPDetailPage, loadMPProfilePage, loadMPWelfarePage, preloadPrimaryMiniProgramPages } from './miniProgramPageLoaders';
 
 const MPCartPage = React.lazy(() => loadMPCartPage().then(({ MPCartPage }) => ({ default: MPCartPage })));
 const MPCategoryPage = React.lazy(() => loadMPCategoryPage().then(({ MPCategoryPage }) => ({ default: MPCategoryPage })));
@@ -10,7 +10,7 @@ const MPDetailPage = React.lazy(() => loadMPDetailPage().then(({ MPDetailPage })
 const MPProfilePage = React.lazy(() => loadMPProfilePage().then(({ MPProfilePage }) => ({ default: MPProfilePage })));
 const MPWelfarePage = React.lazy(() => loadMPWelfarePage().then(({ MPWelfarePage }) => ({ default: MPWelfarePage })));
 const MPAddressPage = React.lazy(() => loadMPAddressPage().then(({ MPAddressPage }) => ({ default: MPAddressPage })));
-const MobileOrdersPage = React.lazy(() => import('./MobileOrdersPage').then(({ MobileOrdersPage }) => ({ default: MobileOrdersPage })));
+const MobileOrdersPage = React.lazy(() => loadMobileOrdersPage().then(({ MobileOrdersPage }) => ({ default: MobileOrdersPage })));
 const PaymentResultPage = React.lazy(() => import('../common/PaymentResultPage').then(({ PaymentResultPage }) => ({ default: PaymentResultPage })));
 const PendingInterfaceModal = React.lazy(() => import('./PendingInterfaceModal').then(({ PendingInterfaceModal }) => ({ default: PendingInterfaceModal })));
 const ToastContainer = React.lazy(() => import('../common/ToastContainer').then(({ ToastContainer }) => ({ default: ToastContainer })));
@@ -55,6 +55,7 @@ export function ProductionMobileFrame() {
 
   React.useEffect(() => {
     if (mpPage === 'cart') void loadMPAddressPage();
+    if (mpPage === 'profile') void loadMobileOrdersPage();
   }, [mpPage]);
 
   if (activeKeepAlivePage) visitedPages.current.add(activeKeepAlivePage);
@@ -128,7 +129,7 @@ function renderKeepAlivePage(page: KeepAlivePage, warmedPages: WarmedPageCompone
 function renderTransientPage(page: MiniProgramPage) {
   switch (page) {
     case 'orders':
-      return deferredPage(<MobileOrdersPage mode="mini-program" />);
+      return deferredPage(<MobileOrdersPage mode="mini-program" />, <MobileOrdersEntryShell />);
     case 'address':
       return deferredPage(<MPAddressPage />);
     default:
@@ -136,10 +137,29 @@ function renderTransientPage(page: MiniProgramPage) {
   }
 }
 
-function deferredPage(page: React.ReactNode) {
+function deferredPage(page: React.ReactNode, fallback: React.ReactNode = <div className="flex min-h-full items-center justify-center bg-[#F5F7FA] text-xs font-medium text-slate-500">页面准备中…</div>) {
   return (
-    <React.Suspense fallback={<div className="flex min-h-full items-center justify-center bg-[#F5F7FA] text-xs font-medium text-slate-500">页面准备中…</div>}>
+    <React.Suspense fallback={fallback}>
       {page}
     </React.Suspense>
+  );
+}
+
+function MobileOrdersEntryShell() {
+  return (
+    <div aria-label="订单页面正在准备" className="min-h-full bg-[#F5F7FA] text-gray-800">
+      <div className="flex items-center gap-3 border-b border-gray-100 bg-white px-3 py-3">
+        <span className="h-8 w-8 rounded-full bg-slate-100" />
+        <div className="space-y-1.5"><span className="block h-3 w-16 rounded-full bg-slate-200" /><span className="block h-2 w-32 rounded-full bg-slate-100" /></div>
+      </div>
+      <div className="space-y-3 p-3">
+        <div className="grid grid-cols-5 gap-1 rounded-2xl bg-white p-1.5">
+          {Array.from({ length: 5 }, (_, index) => <span key={index} className="h-9 rounded-xl bg-slate-100" />)}
+        </div>
+        <div className="rounded-3xl bg-white p-3.5">
+          <div className="flex gap-3"><span className="h-14 w-14 rounded-xl bg-slate-100" /><div className="flex-1 space-y-2"><span className="block h-3 w-3/4 rounded-full bg-slate-200" /><span className="block h-2 w-1/2 rounded-full bg-slate-100" /></div></div>
+        </div>
+      </div>
+    </div>
   );
 }
