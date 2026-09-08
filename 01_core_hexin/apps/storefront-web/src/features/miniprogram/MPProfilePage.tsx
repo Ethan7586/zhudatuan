@@ -1,7 +1,7 @@
 import React from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
-import { CreditCard, Utensils, Clock, Truck, CheckCircle, HelpCircle, Ticket, MapPin, FileText, BellRing, Headphones, ShieldCheck, ChevronRight, Building2, Smartphone, LogOut, Package, PackageCheck } from 'lucide-react';
+import { CreditCard, Utensils, Clock, Truck, CheckCircle, HelpCircle, Ticket, MapPin, FileText, BellRing, Headphones, ShieldCheck, ChevronRight, Building2, Smartphone, LogOut } from 'lucide-react';
 import { OrderFlowIcon } from '../../components/mobile/OrderFlowIcon';
 import { matchesMobileOrderFilter, selectMobileOrderFilter, type MobileOrderFilter } from '../../components/mobile/mobileOrderFilters';
 import { summarizeMobileFulfillment } from '../../components/mobile/mobileOrderFulfillment';
@@ -25,11 +25,6 @@ export const MPProfilePage: React.FC = () => {
     () => summarizeMobileFulfillment(presentationOrders, mobileFulfillmentSimulationStage),
     [mobileFulfillmentSimulationStage, presentationOrders],
   );
-  const FulfillmentStageIcon = fulfillment.stage === 'processing' ? Package : fulfillment.stage === 'shipped' ? Truck : PackageCheck;
-  const fulfillmentTone = fulfillment.stage === 'received'
-    ? 'bg-[#EEF7F4] text-[#4F7E72]'
-    : 'bg-[#EDF4FC] text-[#52749D]';
-
   return (
     <div className="bg-[#F5F7FA] min-h-full flex flex-col font-sans text-gray-800 pb-16">
       <WeChatCapsule title="个人中心" />
@@ -104,7 +99,7 @@ export const MPProfilePage: React.FC = () => {
 
           <div className="grid grid-cols-4 gap-1 rounded-[18px] bg-[#F8FAFC] px-1 py-2 text-center text-xs">
             <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('pending_payment')} className="relative cursor-pointer touch-manipulation rounded-[14px] py-1.5 transition-[background-color,transform] duration-150 active:scale-95 active:bg-white">
-              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-[14px] bg-[#EDF4FC] font-bold text-[#52749D]">
+              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 font-bold text-[var(--sw-brand)]">
                 <Clock className="w-4 h-4" />
               </div>
               {orderCount('pending_payment') > 0 && <OrderCountBadge count={orderCount('pending_payment')} />}
@@ -112,15 +107,15 @@ export const MPProfilePage: React.FC = () => {
             </button>
 
             <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('pending_shipment')} className="relative cursor-pointer touch-manipulation rounded-[14px] py-1.5 transition-[background-color,transform] duration-150 active:scale-95 active:bg-white">
-              <div className={`mx-auto flex h-9 w-9 items-center justify-center rounded-[14px] font-bold transition-colors duration-200 ${fulfillmentTone}`}>
-                <FulfillmentStageIcon className="h-4 w-4" />
+              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-amber-50 font-bold text-amber-600">
+                <Truck className="h-4 w-4" />
               </div>
               {fulfillment.count > 0 && <OrderCountBadge count={fulfillment.count} />}
               <div key={fulfillment.label} aria-live="polite" className="mt-1.5 text-[10px] font-semibold text-slate-600">{fulfillment.label}</div>
             </button>
 
             <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('completed')} className="relative cursor-pointer touch-manipulation rounded-[14px] py-1.5 transition-[background-color,transform] duration-150 active:scale-95 active:bg-white">
-              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-[14px] bg-[#EEF7F4] font-bold text-[#4F7E72]">
+              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 font-bold text-emerald-600">
                 <CheckCircle className="w-4 h-4" />
               </div>
               {orderCount('completed') > 0 && <OrderCountBadge count={orderCount('completed')} />}
@@ -128,7 +123,7 @@ export const MPProfilePage: React.FC = () => {
             </button>
 
             <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('after_sale')} className="relative cursor-pointer touch-manipulation rounded-[14px] py-1.5 transition-[background-color,transform] duration-150 active:scale-95 active:bg-white">
-              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-[14px] bg-[#F2F1F7] font-bold text-[#746C8B]">
+              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-purple-50 font-bold text-purple-600">
                 <HelpCircle className="w-4 h-4" />
               </div>
               {orderCount('after_sale') > 0 && <OrderCountBadge count={orderCount('after_sale')} />}
