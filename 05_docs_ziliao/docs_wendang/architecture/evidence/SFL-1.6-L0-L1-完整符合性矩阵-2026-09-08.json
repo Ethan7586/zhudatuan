@@ -187,8 +187,8 @@
       "title": "D 类兼容退出",
       "candidate_status": "PASS",
       "candidate_evidence": ["hbbtzn-alias/wrangler.jsonc routes=[]", "Worker 仅返回 410 且不 fetch/rewrite/fallback", "L1 网关不含 L0 上游"] ,
-      "production_status": "FAIL",
-      "production_evidence": ["本批任务输入确认旧 hbbtzn Worker 仍在生产路由并借用 zhudatuan 上游；尚未执行 Cloudflare 切流"]
+      "production_status": "PASS",
+      "production_evidence": ["zhudatuan-hbbtzn-alias 当前版本 f6b0d5a7-25b0-4118-a9a6-5429561e3446 为 410 退休哨兵", "Worker 域页面刷新后仅余表头和‘没有自定义域’，hbbtzn.com/* 及六个旧域绑定均已删除", "hbbtzn.zhudatuan.com 与 console-hbbtzn.zhudatuan.com 两个跨节点别名已退出"]
     },
     {
       "id": "SFL-24",
@@ -203,8 +203,8 @@
       "title": "节点域名主权",
       "candidate_status": "PASS",
       "candidate_evidence": ["api.hbbtzn.com 专属 Tunnel 候选配置", "hbbtzn-l1 本地 TLS 网关", "L1 独立 identity/purchase/webhook/jobs 进程与端口", "NodeServer.test.ts: Host 与伪造头对照"] ,
-      "production_status": "FAIL",
-      "production_evidence": ["生产仍为旧 Worker→zhudatuan 上游；专属 Tunnel、4430 网关及 4433/4434/4436 进程尚未切入"]
+      "production_status": "PASS",
+      "production_evidence": ["hbbtzn.com、www、h5、mall、accounts、console、api 共七条 DNS 均指向 hbbtzn-l1-production Tunnel", "Tunnel 4124d4ea-cd3a-4439-9872-86672df64997 保持 4 条 HA 连接、请求错误 0", "独立网关 4430 与 identity 4433、purchase 4434、payment webhook 4436 进程 active", "https://api.hbbtzn.com/health/gateway 返回 200、node:hbbtzn:l1"]
     },
     {
       "id": "SFL-26",
@@ -225,18 +225,18 @@
     {
       "id": "SFL-D02",
       "title": "源码、构建物与运行版本一致",
-      "candidate_status": "UNKNOWN",
-      "candidate_evidence": ["待最终 source SHA、一次 production build 与 artifact digest"] ,
-      "production_status": "UNKNOWN",
-      "production_evidence": ["待生产 NodeManifest digest、release pointer 与运行版本对照"]
+      "candidate_status": "PASS",
+      "candidate_evidence": ["运行源码 ee0a6a1fcd714f6eaa2bf80dfa6ceca8e2886513", "最终 npm run build 返回 0", "最终补丁归档 sha256:21721c68e477a4b4d4861f1fc52358d7da3525ed9fdc370a7ca0aa1894130f08"] ,
+      "production_status": "PASS",
+      "production_evidence": ["release pointer=/opt/sfl/releases/ee0a6a1f-sfl16-l1-sovereignty-20260908-193346", "发布目录 checksums.sha256 全量校验通过", "NodeManifest digest=sha256:b46f95da5f7b4e1085e5189af2d57e10cf432500aa50c390096eda034076c24f", "八份运行环境引用源码 ee0a6a1fcd714f6eaa2bf80dfa6ceca8e2886513"]
     },
     {
       "id": "SFL-D03",
       "title": "验收直接测量目标事实",
       "candidate_status": "PASS",
       "candidate_evidence": ["domain-boundary.mjs", "sfl-conformance-matrix.mjs", "定向 Host/Worker/进程/Login Intent 测试"] ,
-      "production_status": "UNKNOWN",
-      "production_evidence": ["待按预先冻结穷举表执行生产验收"]
+      "production_status": "PASS",
+      "production_evidence": ["七个公网入口均返回 200，api health 明确返回 node:hbbtzn:l1", "identity session、catalog、cart、orders、payment 五条受保护路由均返回预期 401 而非 404/502", "Cloudflare DNS 精确查询 UUID 后仅返回七条目标记录，Worker 域表为零", "共享 Caddy SHA256 24c64dee8f6cb4698841be9b1b7cdd8627549aeed24599e175b6384fa870d531 且 MainPID 1820491 未变"]
     },
     {
       "id": "SFL-D04",

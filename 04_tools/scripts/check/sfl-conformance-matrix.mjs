@@ -135,8 +135,9 @@ const gate = (id) => matrix.gates.find((item) => item.id === id);
 for (const id of ['SFL-19', 'SFL-20', 'SFL-23', 'SFL-24', 'SFL-25', 'SFL-26', 'SFL-D03', 'SFL-D04']) {
   assert.equal(gate(id)?.candidate_status, 'PASS', `${id}: candidate architecture must be complete`);
 }
-assert.equal(gate('SFL-23')?.production_status, 'FAIL');
-assert.equal(gate('SFL-25')?.production_status, 'FAIL');
+for (const id of ['SFL-23', 'SFL-25', 'SFL-D02', 'SFL-D03']) {
+  assert.equal(gate(id)?.production_status, 'PASS', `${id}: production cutover must be verified`);
+}
 
 function summarize(field) {
   return Object.fromEntries([...statuses].map((status) => [status, matrix.gates.filter((gate) => gate[field] === status).length]));
