@@ -13,9 +13,9 @@ import type { EnrollmentCompletion } from '../../enrollment';
 import { loginBusy, useLoginCommand } from './LoginCommandViewModel';
 import { useLoginProviderViewModel } from './LoginProviderViewModel';
 import { startLoginProvider } from './LoginProviderAction';
+import { invitationIssues, otpIssues, passwordIssues, subjectIssue } from '../model/LoginValidation';
 
 const NO_METHODS: readonly [] = Object.freeze([]);
-
 export function useLoginViewModel(dependencies: Dependencies, request: SessionRequest, journey: 'login' | 'registration', onTarget: (target: SessionRequest['target']) => void) {
   const [state, dispatch] = useReducer(loginMachine, request.target, initialLoginState);
   const [fields, setFields] = useState<Readonly<Record<string, string>>>({});
@@ -28,7 +28,6 @@ export function useLoginViewModel(dependencies: Dependencies, request: SessionRe
   const currentBootstrap = 'bootstrap' in state ? state.bootstrap : undefined;
   const command = useLoginCommand(dependencies, state, dispatch);
   const providerState = useLoginProviderViewModel(dependencies, session, journey === 'login' ? (currentBootstrap?.methods ?? NO_METHODS) : NO_METHODS);
-
   useEffect(() => {
     if (state.phase !== 'bootstrapping') return;
     const controller = new AbortController();
@@ -54,7 +53,7 @@ export function useLoginViewModel(dependencies: Dependencies, request: SessionRe
     return false;
   };
   const password = (subject: string, password: string) => {
-    const next = Object.freeze({ ...(!subject.trim() ? { subject: '请输入登录账号或已绑定手机号' } : {}), ...(!password ? { password: '请输入密码' } : {}) });
+    const next = passwordIssues(subject, password);
     setFields(next);
     if (Object.keys(next).length || !validateTerms()) return;
     const operation = command.start();
@@ -65,7 +64,7 @@ export function useLoginViewModel(dependencies: Dependencies, request: SessionRe
     );
   };
   const otp = (subject: string, challenge: string, code: string) => {
-    const next = Object.freeze({ ...(!subject.trim() ? { subject: '请输入登录账号或已绑定手机号' } : {}), ...(!challenge || !/^\d{6}$/.test(code) ? { code: challenge ? '请输入 6 位短信验证码' : '请先获取验证码' } : {}) });
+    const next = otpIssues(subject, challenge, code);
     setFields(next);
     if (Object.keys(next).length || !validateTerms()) return;
     const operation = command.start();
@@ -76,8 +75,9 @@ export function useLoginViewModel(dependencies: Dependencies, request: SessionRe
     );
   };
   const challenge = async (subject: string): Promise<ActionResult<Challenge>> => {
-    if (!subject.trim()) {
-      setFields({ subject: '请输入登录账号或已绑定手机号' });
+    const issue = subjectIssue(subject);
+    if (issue !== undefined) {
+      setFields({ subject: issue });
       return actionFailure(presentError({ kind: 'api', code: 'VALIDATION_FAILED', retryable: false }));
     }
     const signal = command.renew();
@@ -92,10 +92,7 @@ export function useLoginViewModel(dependencies: Dependencies, request: SessionRe
     }
   };
   const resolveInvitation = async (code: string) => {
-    const next = Object.freeze({
-      ...(!code.trim() ? { invitation: '请输入企业邀请码' } : {}),
-      ...(!state.accepted ? { agreement: '请先阅读并同意服务协议与隐私政策' } : {}),
-    });
+    const next = invitationIssues(code, state.accepted);
     setFields(next);
     if (Object.keys(next).length) return;
     const operation = command.start(true);
