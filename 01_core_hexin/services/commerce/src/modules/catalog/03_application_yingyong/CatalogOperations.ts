@@ -10,7 +10,7 @@ import {
   catalogListingPageResult,
   type CatalogListingStatusSummary,
 } from './CatalogListingManagement';
-import { setListingPublication } from './CatalogListingPublication';
+import { setListingBatchPublication, setListingPublication } from './CatalogListingPublication';
 
 export { setListingPublication } from './CatalogListingPublication';
 
@@ -148,19 +148,7 @@ export function catalogActions(context: ModuleContext): OperationActions {
     },
     'catalog.listings.publish': async (request, database) => setListingPublication(request, database, 'published'),
     'catalog.listings.unpublish': async (request, database) => setListingPublication(request, database, 'unpublished'),
-    'catalog.listings.batch': async (request, database) => {
-      const access = requireAccess(request);
-      const body = bodyRecord(request);
-      if (!Array.isArray(body.ids) || body.ids.some((id) => typeof id !== 'string')) throw new Error('VALIDATION_FAILED:ids');
-      const state = body.action === 'publish' ? 'published' : 'unpublished';
-      const result = await database.query(
-        `update catalog.listing set status=$3,effective_at=case when $3='published' then clock_timestamp() else effective_at end,
-        expires_at=case when $3='unpublished' then clock_timestamp() else null end,version=version+1,updated_at=clock_timestamp()
-        where scope_id=$1 and id=any($2::text[]) returning id,status,version`,
-        [access.scope.id, body.ids, state]
-      );
-      return { status: 200, body: { items: result.rows, count: result.rowCount } };
-    },
+    'catalog.listings.batch': setListingBatchPublication,
   };
 }
 

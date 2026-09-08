@@ -9,10 +9,10 @@ interface ProductBatchPreviewProps {
 
 export function ProductBatchPreview({ open, rows, onClose }: ProductBatchPreviewProps) {
   return (
-    <Dialog open={open} title="批量操作影响预览" eyebrow="FILTER SNAPSHOT → PREVIEW → OPERATION → VERIFY" onClose={onClose}>
+    <Dialog open={open} title="当前页所选商品" eyebrow="CATALOG REVIEW" onClose={onClose}>
       <div className="productbatchpreview">
         <p>
-          当前只预览本页明确勾选的 <strong>{rows.length}</strong> 项，不会把它们冒充当前筛选下的全部商品。
+          当前页已勾选 <strong>{rows.length}</strong> 项，可在发布前核对商品范围。
         </p>
         <ul>
           {rows.slice(0, 5).map((row) => (
@@ -24,15 +24,12 @@ export function ProductBatchPreview({ open, rows, onClose }: ProductBatchPreview
         </ul>
         {rows.length > 5 ? <p>另有 {rows.length - 5} 项已选择。</p> : null}
         <section aria-labelledby="batchproofboundary">
-          <h3 id="batchproofboundary">执行边界</h3>
-          <p>服务端尚未返回 Filter Snapshot、影响范围预览及 action-bound proof，因此不会创建或执行批量 Operation。</p>
+          <h3 id="batchproofboundary">一键发布范围</h3>
+          <p>页面顶部的“一键审核上架”按当前商城执行；后台会再核验商品、SKU、价格和库存，仅上架全部合格草稿。</p>
         </section>
         <footer>
           <button type="button" onClick={onClose}>
             返回列表
-          </button>
-          <button className="productactionprimary" type="button" disabled title="等待 action-bound proof">
-            创建 Operation
           </button>
         </footer>
       </div>

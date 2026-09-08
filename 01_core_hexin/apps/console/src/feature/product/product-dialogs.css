@@ -150,6 +150,12 @@
   color: #991b1b;
   overflow-wrap: anywhere;
 }
+.productcommandsuccess {
+  border-left: 3px solid #16a34a;
+  background: #f0fdf4;
+  padding: 10px 12px;
+  color: #166534;
+}
 .productimportresult { min-width: 0; }
 .productconfirmcard {
   justify-content: space-between;

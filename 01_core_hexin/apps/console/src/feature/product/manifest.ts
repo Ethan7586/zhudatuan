@@ -11,7 +11,7 @@ export const productsModule = {
       kind: 'entry',
       lazy: () => import('./ProductRoute'),
       operations: ['catalog.listings.read', 'catalog.imports.create', 'catalog.imports.read',
-        'catalog.listings.publish', 'catalog.listings.unpublish'],
+        'catalog.listings.publish', 'catalog.listings.unpublish', 'catalog.listings.batch'],
       presentation: { title: '商品管理', summary: '商品数量、SKU、审核与上下架状态' },
     },
     {

@@ -81,6 +81,12 @@ export const ListingPublicationReceiptSchema = z.object({
   version: DatabaseIntegerSchema,
 });
 
+export const ListingBatchPublicationReceiptSchema = z.object({
+  action: z.literal('publish_ready'),
+  items: z.array(ListingPublicationReceiptSchema),
+  count: DatabaseIntegerSchema,
+});
+
 export const CatalogImportCreateSchema = z.object({
   id: z.string().check(z.minLength(1)),
   state: z.string().check(z.minLength(1)),
@@ -145,6 +151,7 @@ export const ListingPageSchema = z.object({
 
 export type ProductFilter = z.infer<typeof ProductFilterSchema>;
 export type Listing = z.infer<typeof ListingSchema>;
+export type ListingBatchPublicationReceipt = z.infer<typeof ListingBatchPublicationReceiptSchema>;
 export type ListingPage = z.infer<typeof ListingPageSchema>;
 export type ProductListingPreview = z.infer<typeof ProductListingPreviewSchema>;
 export type ProductPagePreview = z.infer<typeof ProductPagePreviewSchema>;

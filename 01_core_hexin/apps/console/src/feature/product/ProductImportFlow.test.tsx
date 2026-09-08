@@ -119,7 +119,7 @@ const context: ConsoleContext = {
     actor: 'actor:catalog', membership: 'membership:catalog', accessVersion: 8,
     permissions: ['catalog.import.manage', 'catalog.import.read', 'catalog.listing.manage'],
     capabilities: ['catalog.listings.read', 'catalog.imports.create', 'catalog.imports.read',
-      'catalog.listings.publish', 'catalog.listings.unpublish'],
+      'catalog.listings.publish', 'catalog.listings.unpublish', 'catalog.listings.batch'],
     csrf: 'csrf:catalog', target: 'console', scope, scopes: [scope], assurance: { level: 2 },
     syncedAt: '2026-09-07T00:00:00.000Z',
   },

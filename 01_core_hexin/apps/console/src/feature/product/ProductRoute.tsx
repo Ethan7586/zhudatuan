@@ -15,7 +15,8 @@ import { ProductFilterForm } from './ProductFilter';
 import { canCreateCatalogImport } from './ProductImportCommand';
 import { ProductImportDialog } from './ProductImportDialog';
 import { ProductPagination } from './ProductPagination';
-import { canManageListing, setListingPublication, type ListingPublicationAction } from './ProductPublicationCommand';
+import { canManageListing, canPublishReadyListings, publishReadyListings, setListingPublication,
+  type ListingPublicationAction } from './ProductPublicationCommand';
 import { productKey, readProducts, type ProductQuery } from './ProductQuery';
 import type { Listing, ProductFilter } from './ProductSchema';
 import { ProductTable, type ProductColumnKey } from './ProductTable';
@@ -92,6 +93,13 @@ export function Component() {
     mutationFn: ({ listing, action }: Readonly<{ listing: Listing; action: ListingPublicationAction }>) =>
       setListingPublication(context, listing, action),
     onSuccess: () => { void queryClient.invalidateQueries({ queryKey: productKey(context, filter) }); },
+  });
+  const readyPublication = useMutation({
+    mutationFn: () => publishReadyListings(context),
+    onSuccess: () => {
+      setSelected(new Set());
+      void queryClient.invalidateQueries({ queryKey: productKey(context, filter) });
+    },
   });
   const writeEnabled = canCreateCatalogImport(context);
   const openImportResult = (jobId: string) => {
@@ -197,8 +205,11 @@ export function Component() {
         status={filter.status ?? ''}
         exportReady={query.data !== undefined}
         writeEnabled={writeEnabled}
+        releaseEnabled={canPublishReadyListings(context)}
+        releasePending={readyPublication.isPending}
         onImport={() => setImportOpen(true)}
         onCreate={() => setCreateOpen(true)}
+        onRelease={() => readyPublication.mutate()}
         onExport={() => downloadCurrentPageCsv({ rows: query.data?.items ?? [], columns: productCsvColumns,
           filename: timestampedCsvFilename('products-current-page') })}
         onStatus={(status) => apply({ q: filter.q, category: filter.category, supplier: filter.supplier ?? '', mall: filter.mall ?? '', status })}
@@ -260,6 +271,12 @@ export function Component() {
       </ResourceState>
       {publication.error === null ? null : <p className="productcommanderror" role="alert">
         {publication.error instanceof Error ? publication.error.message : '货架状态更新失败'}
+      </p>}
+      {readyPublication.data === undefined ? null : <p className="productcommandsuccess" role="status">
+        已审核并上架 {readyPublication.data.count} 件商品，前台商品接口已可读取。
+      </p>}
+      {readyPublication.error === null ? null : <p className="productcommanderror" role="alert">
+        {readyPublication.error instanceof Error ? readyPublication.error.message : '一键审核上架失败'}
       </p>}
       <ProductDrawer {...(selectedListing === undefined ? {} : { listing: selectedListing })} previewEnabled={previewEnabled} onClose={closeDrawer} />
       <ProductColumnSettings open={columnsOpen} visible={visibleColumns} onChange={toggleColumn} onClose={() => setColumnsOpen(false)} />

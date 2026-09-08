@@ -48,6 +48,7 @@ describe('catalog operator API entrypoint', () => {
     expect(CatalogOperatorModule.dependencies).toEqual([]);
     expect(bootstrapped.routes.match('POST', '/api/v1/catalog/imports')?.operation).toBe('catalog.imports.create');
     expect(bootstrapped.routes.match('GET', '/api/v1/catalog/imports/test')?.operation).toBe('catalog.imports.read');
+    expect(bootstrapped.routes.match('POST', '/api/v1/catalog/listings/batches')?.operation).toBe('catalog.listings.batch');
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/sessions')).toBeNull();
     expect(bootstrapped.routes.match('GET', '/api/v1/members')).toBeNull();
   });

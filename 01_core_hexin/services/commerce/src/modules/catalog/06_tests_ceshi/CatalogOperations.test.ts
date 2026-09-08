@@ -6,6 +6,7 @@ import type { OperationRequest } from '../../../foundation/application/Operation
 import type { AccessContext } from '../../../foundation/security/AccessContext';
 import { confirmCatalogImport, createOrReuseCatalogImport } from '../03_application_yingyong/CatalogImportOperations';
 import { catalogActions, setListingPublication } from '../03_application_yingyong/CatalogOperations';
+import { setListingBatchPublication } from '../03_application_yingyong/CatalogListingPublication';
 
 describe('catalog mall command boundaries', () => {
   it('reuses a standard package by mall and sha without scheduling duplicate work', async () => {
@@ -84,6 +85,26 @@ describe('catalog mall command boundaries', () => {
     expect(publishCalls[0]?.text).toContain('where id=$1 and scope_id=$2 and version=$3');
     expect(publishCalls[0]?.values).toEqual(['listing:1', 'mall:hongtai', 3, 'published']);
   });
+
+  it('publishes every ready draft in the current mall as one database action', async () => {
+    const calls: QueryCall[] = [];
+    const database = recordingDatabase(calls, (text) => text.startsWith('with eligible')
+      ? [{ id: 'listing:1', status: 'published', version: 1 }, { id: 'listing:2', status: 'published', version: 4 }]
+      : []);
+
+    const result = await setListingBatchPublication(
+      request('catalog.listings.batch', {}, undefined, {}, { action: 'publish_ready' }),
+      database,
+    );
+
+    expect(result).toMatchObject({ status: 200, body: { action: 'publish_ready', count: 2 } });
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.values).toEqual(['mall:hongtai']);
+    expect(calls[0]?.text).toContain("listing.status='draft'");
+    expect(calls[0]?.text).toContain('pricing.pricebook');
+    expect(calls[0]?.text).toContain('inventory.stockitem');
+    expect(calls[0]?.text).toContain('for update of listing');
+  });
 });
 
 interface QueryCall { readonly text: string; readonly values: readonly unknown[] }
@@ -113,11 +134,12 @@ function request(
   path: Readonly<Record<string, string>> = {},
   expectedVersion?: number,
   query: Readonly<Record<string, string>> = {},
+  body: Readonly<Record<string, unknown>> = {},
 ): OperationRequest {
   return {
     type,
     access,
-    input: { path, query, headers: {}, body: {}, rawBody: '{}', deadline: Date.now() + 1_000,
+    input: { path, query, headers: {}, body, rawBody: '{}', deadline: Date.now() + 1_000,
       signal: new AbortController().signal, ...(expectedVersion === undefined ? {} : { expectedVersion }) },
   };
 }

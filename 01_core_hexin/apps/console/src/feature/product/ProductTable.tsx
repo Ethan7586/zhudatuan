@@ -34,12 +34,9 @@ export function ProductTable({ rows, previewEnabled, visibleColumns, selected, a
           <span>
             已选择当前页 <strong>{selected.size}</strong> 项
           </span>
-          <span>跨页批量仍需 Filter Snapshot 与 action-bound proof</span>
+          <span>页面顶部的一键审核上架会处理当前商城全部合格商品</span>
           <button type="button" onClick={onBatchPreview}>
-            预览影响
-          </button>
-          <button type="button" disabled title="批量执行合同尚未闭合">
-            批量执行
+            查看所选
           </button>
         </div>
       )}

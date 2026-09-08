@@ -11,6 +11,7 @@ import { Component } from './ProductRoute';
 
 const requests: URL[] = [];
 const writes: string[] = [];
+const batchActions: string[] = [];
 const server = setupServer(
   http.get('*/api/v1/catalog/listings', ({ request }) => {
     requests.push(new URL(request.url));
@@ -29,6 +30,7 @@ afterEach(() => {
   server.resetHandlers();
   requests.length = 0;
   writes.length = 0;
+  batchActions.length = 0;
 });
 afterAll(() => server.close());
 
@@ -84,6 +86,7 @@ describe('Product governance workspace', () => {
     expect(writes).toHaveLength(0);
     expect(screen.getByRole<HTMLButtonElement>('button', { name: '新建商品' }).disabled).toBe(true);
     expect(screen.getByRole<HTMLButtonElement>('button', { name: '批量导入' }).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: '一键审核上架 1' }).disabled).toBe(true);
     expect(requests).toHaveLength(1);
   });
 
@@ -100,6 +103,31 @@ describe('Product governance workspace', () => {
 
     await user.click(screen.getByRole('button', { name: /^待审核/ }));
     await waitFor(() => expect(requests.some((url) => url.searchParams.get('status') === 'pending_review')).toBe(true));
+  });
+
+  it('publishes every ready product in the current mall with one action', async () => {
+    const user = userEvent.setup();
+    server.use(http.post('*/api/v1/catalog/listings/batches', async ({ request }) => {
+      const body = await request.json() as { action?: string };
+      batchActions.push(body.action ?? '');
+      writes.push('POST');
+      return HttpResponse.json({
+        action: 'publish_ready',
+        items: [{ id: 'listing:ready', status: 'published', version: 1 }],
+        count: 1,
+      });
+    }));
+    renderProductRoute(mallContext);
+    await screen.findByRole('table', { name: '商品列表' });
+
+    const release = screen.getByRole<HTMLButtonElement>('button', { name: '一键审核上架 1' });
+    expect(release.disabled).toBe(false);
+    await user.click(release);
+
+    await waitFor(() => expect(batchActions).toEqual(['publish_ready']));
+    expect(writes).toContain('POST');
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect((await screen.findByRole('status')).textContent).toContain('已审核并上架 1 件商品');
   });
 
   it('enables manual creation, standard-package import and publication in an authorized mall', async () => {
@@ -262,7 +290,7 @@ const mallContext: ConsoleContext = {
     csrf: 'csrf:catalog',
     permissions: ['catalog.import.manage', 'catalog.import.read', 'catalog.listing.manage'],
     capabilities: ['catalog.listings.read', 'catalog.imports.create', 'catalog.imports.read',
-      'catalog.listings.publish', 'catalog.listings.unpublish'],
+      'catalog.listings.publish', 'catalog.listings.unpublish', 'catalog.listings.batch'],
     scope: mallScope,
     scopes: [mallScope],
   },
