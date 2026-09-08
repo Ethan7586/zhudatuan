@@ -145,6 +145,27 @@ release:
   compatibilityMigrationBeforeRuntime: 20260828060000_auth_membership_selection_boundary.sql
   mediaMigrationBeforeWriteback: 20260828061000_catalog_media_domain_boundary.sql
   caddyValidateBeforeReload: true
+  lifecycle:
+    preflightCommand: /usr/local/sbin/zhudatuan-release-policy preflight
+    postdeployCommand: /usr/local/sbin/zhudatuan-release-policy postdeploy
+    scheduledCollector: zhudatuan-release-policy.timer
+    pointerCollector: zhudatuan-release-policy.path
+    keepRecentPerRoot: 12
+    maximumReleasesPerRoot: 30
+    releaseGraceHours: 12
+    minimumFreeGiB: 15
+    minimumFreePercent: 15
+    incomingTtlHours: 2
+    failedCandidateTtlHours: 24
+    neverCollect:
+      - current-pointer-targets
+      - previous-pointer-targets
+      - rollback-pointer-targets
+      - running-process-releases
+      - release-dependencies
+      - manual-pins
+      - database-backups
+      - media
   publicCutoverRequiresRealSmsReceipt: true
   publicCutoverRequiresRegistrationE2e: true
   publicCutoverRequiresWebBusinessE2e: true

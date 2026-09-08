@@ -5,6 +5,9 @@
 ## 隔離邊界
 
 - 正式工程：`/opt/zhudatuan/releases/<commit>`，`/opt/zhudatuan/current` 只指向已驗證 Release。
+- 每次创建候选版本前必须执行 `/usr/local/sbin/zhudatuan-release-policy preflight`；低于磁盘门槛或版本数量超限时停止发布。
+- 每次成功、失败或回滚收口后必须执行 `/usr/local/sbin/zhudatuan-release-policy postdeploy`。服务器同时监听正式指针变化并每小时补扫一次，不再依赖执行者记得手工清理。
+- 自动回收永远跳过当前、上一版、回滚指针、运行中版本、版本依赖和人工固定版本；数据库备份与媒体目录不属于发布垃圾回收范围。
 - 私密配置：`/opt/zhudatuan/shared`，不得進入 Git 或 Release archive。
 - 狀態資料：`/var/lib/zhudatuan/postgres`；窄版註冊 API、WebBusiness API、Purchase API／Jobs 不啟動 Redis 或 Object Store。
 - Identity Registration API：`127.0.0.1:4321`；只公開 health 與 Identity。
