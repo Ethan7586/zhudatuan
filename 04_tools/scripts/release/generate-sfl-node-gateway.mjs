@@ -72,6 +72,8 @@ function gatewayConfiguration(manifest, instance, ports) {
 `\thandle @paymentRead {\n${proxy(ports.purchase)}\n\t}\n\n` +
 `\t@ordersRead {\n\t\thost ${apiHost}\n\t\tmethod GET HEAD\n\t\tpath /api/v1/orders /api/v1/orders/*\n\t}\n` +
 `\thandle @ordersRead {\n${proxy(ports.web)}\n\t}\n\n` +
+`\t@storefrontPublicCatalog {\n\t\thost ${storefrontHosts.join(' ')}\n\t\tmethod GET HEAD OPTIONS\n\t\tpath /api/v1/catalog/public/products*\n\t}\n` +
+`\thandle @storefrontPublicCatalog {\n${proxy(ports.web)}\n\t}\n\n` +
 `\t@webBusiness {\n\t\thost ${apiHost}\n\t\tpath /api/v1/members/me* /api/v1/organizations/layers* /api/v1/reports/dashboard* /api/v1/catalog/listings /api/v1/catalog/public/products* /api/v1/pricing/offers* /api/v1/inventory/availability* /api/v1/carts/current* /api/v1/benefits/accounts* /api/v1/benefits/ledgers*\n\t}\n` +
 `\thandle @webBusiness {\n${proxy(ports.web)}\n\t}\n\n` +
 `\t@catalogImports {\n\t\thost ${apiHost}\n\t\tpath /api/v1/catalog/imports*\n\t}\n` +

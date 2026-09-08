@@ -56,6 +56,22 @@ https://:4430 {
 		}
 	}
 
+	@storefrontPublicCatalog {
+		host h5.hbbtzn.com hbbtzn.com mall.hbbtzn.com www.hbbtzn.com
+		method GET HEAD OPTIONS
+		path /api/v1/catalog/public/products*
+	}
+	handle @storefrontPublicCatalog {
+		reverse_proxy 127.0.0.1:4432 {
+			header_up Host {http.request.host}
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up -X-Sfl-Node-Id
+			header_up -X-Sfl-Node-Manifest-Id
+			header_up -X-Sfl-Node-Surface
+			header_up -X-Zdt-Identity-Entry-Host
+		}
+	}
+
 	@webBusiness {
 		host api.hbbtzn.com
 		path /api/v1/members/me* /api/v1/organizations/layers* /api/v1/reports/dashboard* /api/v1/catalog/listings /api/v1/catalog/public/products* /api/v1/pricing/offers* /api/v1/inventory/availability* /api/v1/carts/current* /api/v1/benefits/accounts* /api/v1/benefits/ledgers*
