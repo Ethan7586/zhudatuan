@@ -9,6 +9,12 @@ export const Manifest = defineModuleManifest({
   dependencies: ['catalog', 'experience', 'member', 'organization', 'partner', 'runtime'],
   services: ['database.pool', 'audit.sink', 'cache', 'object.store'],
   ports: REPORTING_PORTS,
-  workloads: { jobs: { dependencies: ['runtime'], services: ['database.pool', 'cache'] } },
+  workloads: {
+    jobs: {
+      dependencies: ['catalog', 'experience', 'member', 'organization', 'partner', 'runtime'],
+      bindings: ['catalog', 'experience', 'member', 'organization', 'partner', 'runtime'],
+      services: ['database.pool', 'cache'],
+    },
+  },
   capabilities: ReportingCapabilities,
 });

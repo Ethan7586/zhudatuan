@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CockpitSummary } from '../../domain/model/Metric';
-import { cockpitSummary, exportJob, metricRow, utcTime } from './ReportingRecord';
+import { cockpitSummary, exportJob, metricExportRow, metricRow, utcTime } from './ReportingRecord';
 
 describe('reporting persistence records', () => {
   it('normalizes database offsets and microseconds to the public UTC format', () => {
@@ -30,6 +30,45 @@ describe('reporting persistence records', () => {
     expect(row.period.to).toBe('2026-09-01T00:00:00.000Z');
     expect(row.watermark).toBe('2026-08-31T04:21:09.857Z');
     expect(row.cursorTime).toBe('2026-09-01T00:00:00.000Z');
+  });
+
+  it('maps the frozen metric export row into a governed metric before presentation', () => {
+    const row = metricExportRow({
+      key: '2026-09-02:metric:one',
+      values: [
+        'sales.amount',
+        2,
+        '成交金额',
+        '支付金额合计',
+        ['mall', 'application'],
+        'day',
+        'reporting',
+        'enterprise:one',
+        '2026-09-01T00:00:00+00:00',
+        '2026-09-02T00:00:00+00:00',
+        'Asia/Shanghai',
+        { mall: 'mall:one', application: 'application:one' },
+        12345,
+        'minor',
+        'CNY',
+        '2026-09-02T01:02:03+00:00',
+        7,
+        { view: 'sales', period: '30days' },
+        '2026-09-03T00:00:00+00:00',
+      ],
+    });
+
+    expect(row).toMatchObject({
+      key: '2026-09-02:metric:one',
+      generatedAt: '2026-09-03T00:00:00.000Z',
+      metric: {
+        code: 'sales.amount',
+        version: 2,
+        dimensions: { mall: 'mall:one', application: 'application:one' },
+        watermark: '2026-09-02T01:02:03.000Z',
+      },
+    });
+    expect(Object.isFrozen(row.metric.dimensions)).toBe(true);
   });
 
   it('normalizes cockpit and export timestamps through the same policy', () => {

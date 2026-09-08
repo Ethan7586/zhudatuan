@@ -18,7 +18,11 @@ export const Manifest = defineModuleManifest({
   services: ['database.pool', 'object.store'],
   ports: [REFERRAL_CATALOG_PORT, CART_CATALOG_PORT, CHECKOUT_CATALOG_PORT, EXPERIENCE_CATALOG_PORT, CATALOG_READ_PORT, CATALOG_DIMENSION_PORT, MEMBER_CATALOG_PORT],
   workloads: {
-    jobs: { dependencies: ['access', 'audit', 'partner', 'qualification', 'runtime'], services: ['database.pool', 'object.store'], ports: [RISK_CATALOG_PORT, INVENTORY_CATALOG_PORT, EXPERIENCE_CATALOG_PORT] },
+    jobs: {
+      dependencies: ['access', 'audit', 'partner', 'qualification', 'runtime'],
+      services: ['database.pool', 'object.store'],
+      ports: [RISK_CATALOG_PORT, INVENTORY_CATALOG_PORT, EXPERIENCE_CATALOG_PORT, CATALOG_DIMENSION_PORT],
+    },
     provider: { dependencies: ['channel'], ports: [PROVIDER_CATALOG_PORT] },
   },
 });

@@ -1,6 +1,6 @@
 import { type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
-import type { ExportJob, ExportReport, ExportRow } from '../../domain/model/ExportJob';
-import { exportJob, type ExportRecord } from './ReportingRecord';
+import type { ExportJob, ExportReport, ExportRow, MetricExportRow } from '../../domain/model/ExportJob';
+import { exportJob, metricExportRow, type ExportRecord, type MetricExportRecord } from './ReportingRecord';
 
 export class PgReportingExportRepository {
   constructor(protected readonly database: SqlExecutor) {}
@@ -18,8 +18,7 @@ export class PgReportingExportRepository {
     return result.rows[0] ? exportJob(result.rows[0]) : null;
   }
 
-  async exportRows(id: string, report: ExportReport, cursor: string | null, fetch: number): Promise<readonly ExportRow[]> {
-    if (report === 'metrics') return this.metricExportRows(id, cursor, fetch);
+  async exportRows(id: string, report: Exclude<ExportReport, 'metrics'>, cursor: string | null, fetch: number): Promise<readonly ExportRow[]> {
     if (report === 'orders') {
       const result = await this.database.query<{ key: string; values: unknown[] }>(
         `select projection.order_id key,jsonb_build_array(projection.order_number,projection.snapshot->>'externalOrderNo',
@@ -78,6 +77,15 @@ export class PgReportingExportRepository {
     return result.rows;
   }
 
+  async metricExportRows(id: string, cursor: string | null, fetch: number): Promise<readonly MetricExportRow[]> {
+    const result = await this.database.query<MetricExportRecord>(
+      `select key,rowvalues values from reporting.metricexportrows($1)
+      where ($2::text is null or key>$2) order by key limit $3`,
+      [id, cursor, fetch]
+    );
+    return Object.freeze(result.rows.map(metricExportRow));
+  }
+
   async exportCount(id: string, report: ExportReport): Promise<number | null> {
     if (report !== 'metrics') return null;
     const result = await this.database.query<{ count: number }>('select count(*)::integer count from reporting.metricexportrows($1)', [id]);
@@ -106,14 +114,5 @@ export class PgReportingExportRepository {
       generated_at=case when $3 then clock_timestamp() else null end where id=$1 and state='running'`,
       [id, code, terminal]
     );
-  }
-
-  private async metricExportRows(id: string, cursor: string | null, fetch: number): Promise<readonly ExportRow[]> {
-    const result = await this.database.query<{ key: string; values: unknown[] }>(
-      `select key,rowvalues values from reporting.metricexportrows($1)
-      where ($2::text is null or key>$2) order by key limit $3`,
-      [id, cursor, fetch]
-    );
-    return result.rows;
   }
 }

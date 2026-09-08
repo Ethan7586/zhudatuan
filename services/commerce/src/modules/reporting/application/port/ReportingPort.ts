@@ -1,4 +1,4 @@
-import type { ExportJob, ExportReport, ExportRow } from '../../domain/model/ExportJob';
+import type { ExportJob, ExportReport, ExportRow, MetricExportRow } from '../../domain/model/ExportJob';
 import type { MetricContribution } from '../../domain/model/Metric';
 import type { OrderProjection, ProjectionEvent } from '../../domain/model/Projection';
 
@@ -15,7 +15,8 @@ export interface ReportingPort {
   saveStatement(scope: string, payload: Readonly<Record<string, unknown>>, watermark: string, event: string): Promise<void>;
   completeEvent(event: ProjectionEvent, scopes: readonly string[]): Promise<readonly Readonly<{ scope: string; version: number }>[]>;
   claimExport(id: string): Promise<ExportJob | null>;
-  exportRows(id: string, report: ExportReport, cursor: string | null, fetch: number): Promise<readonly ExportRow[]>;
+  exportRows(id: string, report: Exclude<ExportReport, 'metrics'>, cursor: string | null, fetch: number): Promise<readonly ExportRow[]>;
+  metricExportRows(id: string, cursor: string | null, fetch: number): Promise<readonly MetricExportRow[]>;
   exportCount(id: string, report: ExportReport): Promise<number | null>;
   advanceExport(id: string, cursor: string, count: number): Promise<void>;
   completeExport(id: string, object: Readonly<{ reference: string; sha256: string; size: number; scan: 'clean' }>): Promise<void>;

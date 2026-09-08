@@ -1,4 +1,5 @@
 import { PROVIDER_REQUIREMENTS } from '@shop/contract';
+import type { Metric } from '../model/Metric';
 
 export interface DimensionDefinition {
   readonly code: string;
@@ -26,6 +27,8 @@ export interface DisplayedDimension {
   readonly name: string;
   readonly value: string;
 }
+
+export type DisplayedMetric<T extends Metric = Metric> = T & Readonly<{ displayedDimensions: readonly DisplayedDimension[] }>;
 
 export const DIMENSION_DEFINITIONS = Object.freeze([
   Object.freeze({ code: 'mall', name: '商城' }),

@@ -1,4 +1,4 @@
-import type { ExportFilterValue, ExportJob, ExportReport, ExportSnapshot } from '../../domain/model/ExportJob';
+import type { ExportFilterValue, ExportJob, ExportReport, ExportSnapshot, MetricExportRow } from '../../domain/model/ExportJob';
 import type { CockpitProduct, CockpitSummary, Metric, MetricRow } from '../../domain/model/Metric';
 import { dimensionNames, dimensionRecord, timezoneName } from '../../domain/value/Dimension';
 
@@ -44,6 +44,11 @@ export interface ExportRecord {
   readonly generatedAt: DatabaseTime | null;
 }
 
+export interface MetricExportRecord {
+  readonly key: string;
+  readonly values: unknown;
+}
+
 export function exportSelect(): string {
   return `select job.id,job.scope_id scope,job.report,job.filter,case when job.state='completed' and job.expires_at<=clock_timestamp()
     then 'expired' else job.state end state,job.cursor,job.record_count "recordCount",job.object_ref "objectReference",job.sha256 "objectHash",
@@ -80,6 +85,38 @@ export function metricRow(row: MetricRecord): MetricRow {
   });
 }
 
+export function metricExportRow(row: MetricExportRecord): MetricExportRow {
+  const values = array(row.values, 19, 'REPORT_EXPORT_ROW_INVALID');
+  const key = exportText(row.key, 'REPORT_EXPORT_CURSOR_INVALID');
+  const dimensions = record(values[11], 'REPORT_EXPORT_DIMENSIONS_INVALID');
+  const metric = metricRow({
+    code: exportText(values[0], 'REPORT_EXPORT_METRIC_INVALID'),
+    version: positiveInteger(values[1], 'REPORT_EXPORT_METRIC_VERSION_INVALID'),
+    definition: {
+      name: exportText(values[2], 'REPORT_EXPORT_METRIC_NAME_INVALID'),
+      formula: exportText(values[3], 'REPORT_EXPORT_FORMULA_INVALID'),
+      dimensions: stringArray(values[4], 'REPORT_EXPORT_DEFINITIONS_INVALID'),
+      granularity: literal(values[5], ['day'] as const, 'REPORT_EXPORT_GRANULARITY_INVALID'),
+      owner: literal(values[6], ['reporting'] as const, 'REPORT_EXPORT_OWNER_INVALID'),
+    },
+    scope: exportText(values[7], 'REPORT_EXPORT_SCOPE_INVALID'),
+    period: {
+      from: time(values[8], 'REPORT_EXPORT_PERIOD_INVALID'),
+      to: time(values[9], 'REPORT_EXPORT_PERIOD_INVALID'),
+      timezone: exportText(values[10], 'REPORT_EXPORT_TIMEZONE_INVALID'),
+    },
+    dimensions: Object.fromEntries(Object.entries(dimensions).map(([name, value]) => [name, exportText(value, 'REPORT_EXPORT_DIMENSION_INVALID')])),
+    value: finiteNumber(values[12], 'REPORT_EXPORT_VALUE_INVALID'),
+    unit: literal(values[13], ['minor', 'count', 'ratio'] as const, 'REPORT_EXPORT_UNIT_INVALID'),
+    currency: nullableText(values[14], 'REPORT_EXPORT_CURRENCY_INVALID'),
+    watermark: time(values[15], 'REPORT_EXPORT_WATERMARK_INVALID'),
+    projectionVersion: positiveInteger(values[16], 'REPORT_EXPORT_PROJECTION_VERSION_INVALID'),
+    cursorTime: time(values[9], 'REPORT_EXPORT_PERIOD_INVALID'),
+    cursorId: key,
+  });
+  return Object.freeze({ key, metric, generatedAt: utcTime(time(values[18], 'REPORT_EXPORT_GENERATED_AT_INVALID')) });
+}
+
 export function cockpitSummary(summary: CockpitSummary, products: readonly CockpitProduct[] = summary.sales.topProducts): CockpitSummary {
   return Object.freeze({
     ...summary,
@@ -107,6 +144,50 @@ export function utcTime(value: DatabaseTime): string {
 
 function optionalTime(value: DatabaseTime | null): string | null {
   return value === null ? null : utcTime(value);
+}
+
+function array(value: unknown, length: number, code: string): readonly unknown[] {
+  if (!Array.isArray(value) || value.length !== length) throw new Error(code);
+  return value;
+}
+
+function record(value: unknown, code: string): Readonly<Record<string, unknown>> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error(code);
+  return value as Readonly<Record<string, unknown>>;
+}
+
+function exportText(value: unknown, code: string): string {
+  if (typeof value !== 'string' || !value || value.length > 4096) throw new Error(code);
+  return value;
+}
+
+function nullableText(value: unknown, code: string): string | null {
+  return value === null ? null : exportText(value, code);
+}
+
+function time(value: unknown, code: string): DatabaseTime {
+  if (!(typeof value === 'string' || value instanceof Date) || Number.isNaN(new Date(value).getTime())) throw new Error(code);
+  return value;
+}
+
+function positiveInteger(value: unknown, code: string): number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1) throw new Error(code);
+  return value;
+}
+
+function finiteNumber(value: unknown, code: string): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error(code);
+  return value;
+}
+
+function stringArray(value: unknown, code: string): readonly string[] {
+  if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) throw new Error(code);
+  return value;
+}
+
+function literal<T extends string>(value: unknown, allowed: readonly T[], code: string): T {
+  if (typeof value !== 'string' || !allowed.includes(value as T)) throw new Error(code);
+  return value as T;
 }
 export function required<T>(value: T | undefined, code: string): T {
   if (value === undefined) throw new Error(code);

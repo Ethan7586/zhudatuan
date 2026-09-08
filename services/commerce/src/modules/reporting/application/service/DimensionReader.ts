@@ -5,9 +5,7 @@ import type { MemberReadPort } from '../../../member/public';
 import type { OrganizationReadPort } from '../../../organization/public';
 import type { CatalogPartnerPort } from '../../../partner/public';
 import type { Metric } from '../../domain/model/Metric';
-import { DIMENSION_DEFINITIONS, DIMENSION_PRESETS, dimensionName, hiddenDimensionValue, semanticDimensionValue, type DimensionOption, type DisplayedDimension } from '../../domain/value/DimensionCatalog';
-
-export type PresentedMetric<T extends Metric = Metric> = T & Readonly<{ displayedDimensions: readonly DisplayedDimension[] }>;
+import { DIMENSION_DEFINITIONS, DIMENSION_PRESETS, dimensionName, hiddenDimensionValue, semanticDimensionValue, type DimensionOption, type DisplayedDimension, type DisplayedMetric } from '../../domain/value/DimensionCatalog';
 
 export class DimensionReader {
   constructor(
@@ -27,7 +25,7 @@ export class DimensionReader {
     });
   }
 
-  async present<T extends Metric>(context: ReadTransactionContext, scope: string, rows: readonly T[]): Promise<readonly PresentedMetric<T>[]> {
+  async present<T extends Metric>(context: ReadTransactionContext, scope: string, rows: readonly T[]): Promise<readonly DisplayedMetric<T>[]> {
     if (rows.length === 0) return Object.freeze([]);
     const values = collect(rows);
     // Every port shares the transaction's single PostgreSQL client. Keep reads

@@ -94,4 +94,5 @@ export const ExperienceModule = defineModule(Manifest, {
       ),
     },
   ],
+  jobPorts: (context) => [{ token: EXPERIENCE_DIMENSION_PORT, value: new PgExperienceDimensionPort(new PgTransactionAccess(), context.ports.get(ORGANIZATION_READ_PORT)) }],
 });

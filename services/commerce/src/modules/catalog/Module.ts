@@ -82,11 +82,15 @@ export const CatalogModule = defineModule(Manifest, {
     ];
   },
   ports: (context) => [...catalogPorts(new PgCatalogFacade(context.service(DATABASE_POOL).workload(readDatabaseWorkload(context.workload))))],
-  jobPorts: (context) => [
-    { token: RISK_CATALOG_PORT, value: new ListingWithdrawal() },
-    { token: INVENTORY_CATALOG_PORT, value: new PgCatalogSku() },
-    { token: EXPERIENCE_CATALOG_PORT, value: new PgCatalogFacade(context.service(DATABASE_POOL)) },
-  ],
+  jobPorts: (context) => {
+    const facade = new PgCatalogFacade(context.service(DATABASE_POOL));
+    return [
+      { token: RISK_CATALOG_PORT, value: new ListingWithdrawal() },
+      { token: INVENTORY_CATALOG_PORT, value: new PgCatalogSku() },
+      { token: EXPERIENCE_CATALOG_PORT, value: facade },
+      { token: CATALOG_DIMENSION_PORT, value: facade },
+    ];
+  },
   providerPorts: [{ token: PROVIDER_CATALOG_PORT, value: new CatalogSourcePort() }],
 });
 function catalogPorts(facade: PgCatalogFacade) {

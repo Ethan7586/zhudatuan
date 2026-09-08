@@ -18,8 +18,12 @@ export class PgReportingJobRepository implements ReportingJobRepository {
     return this.repository(context).claimExport(id);
   }
 
-  exportRows(context: ReadTransactionContext, id: string, report: ExportReport, cursor: string | null, fetch: number) {
+  exportRows(context: ReadTransactionContext, id: string, report: Exclude<ExportReport, 'metrics'>, cursor: string | null, fetch: number) {
     return this.repository(context).exportRows(id, report, cursor, fetch);
+  }
+
+  metricExportRows(context: ReadTransactionContext, id: string, cursor: string | null, fetch: number) {
+    return this.repository(context).metricExportRows(id, cursor, fetch);
   }
 
   exportCount(context: ReadTransactionContext, id: string, report: ExportReport) {

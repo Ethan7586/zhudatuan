@@ -1,5 +1,7 @@
 import type { ContractJsonValue } from '@shop/contract';
 import type { DataWatermark } from './ReportSnapshot';
+import type { MetricRow } from './Metric';
+import { METRIC_EXPORT_COLUMNS } from '../value/MetricExport';
 
 export const EXPORT_REPORTS = Object.freeze(['metrics', 'orders', 'finance.statement'] as const);
 export type ExportReport = (typeof EXPORT_REPORTS)[number];
@@ -46,34 +48,19 @@ export interface ExportRow {
   readonly values: readonly unknown[];
 }
 
+export interface MetricExportRow {
+  readonly key: string;
+  readonly metric: MetricRow;
+  readonly generatedAt: string;
+}
+
 export function exportReport(value: string): ExportReport {
   if (!EXPORT_REPORTS.includes(value as ExportReport)) throw new Error('REPORT_EXPORT_TYPE_UNSUPPORTED');
   return value as ExportReport;
 }
 
 export function exportHeader(report: ExportReport): readonly string[] {
-  if (report === 'metrics')
-    return Object.freeze([
-      'metricCode',
-      'metricVersion',
-      'metricName',
-      'formula',
-      'availableDimensions',
-      'granularity',
-      'owner',
-      'scope',
-      'periodFrom',
-      'periodTo',
-      'timezone',
-      'dimensions',
-      'value',
-      'unit',
-      'currency',
-      'watermark',
-      'projectionVersion',
-      'filter',
-      'generatedAt',
-    ]);
+  if (report === 'metrics') return METRIC_EXPORT_COLUMNS;
   if (report === 'orders')
     return Object.freeze(['orderNumber', 'externalOrderNumber', 'sourceChannel', 'paymentState', 'fulfillmentState', 'aftersaleState', 'lifecycleState', 'verificationState', 'totalMinor', 'currency', 'orderedAt', 'exportWatermark']);
   return Object.freeze(['statementId', 'periodStart', 'periodEnd', 'currency', 'openingMinor', 'debitMinor', 'creditMinor', 'closingMinor', 'state']);

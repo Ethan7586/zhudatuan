@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ReportingPort } from '../application/port/ReportingPort';
-import type { ExportJob, ExportReport, ExportRow } from '../domain/model/ExportJob';
+import type { ExportJob, ExportReport, ExportRow, MetricExportRow } from '../domain/model/ExportJob';
 import type { MetricContribution } from '../domain/model/Metric';
 import type { OrderProjection, ProjectionEvent } from '../domain/model/Projection';
 import { ProjectEvent } from '../application/service/ProjectEvent';
@@ -49,7 +49,10 @@ class MemoryReporting implements ReportingPort {
   claimExport(): Promise<ExportJob | null> {
     return Promise.resolve(null);
   }
-  exportRows(_id: string, _report: ExportReport, _cursor: string | null, _fetch: number): Promise<readonly ExportRow[]> {
+  exportRows(_id: string, _report: Exclude<ExportReport, 'metrics'>, _cursor: string | null, _fetch: number): Promise<readonly ExportRow[]> {
+    return Promise.resolve([]);
+  }
+  metricExportRows(): Promise<readonly MetricExportRow[]> {
     return Promise.resolve([]);
   }
   exportCount(): Promise<number | null> {
