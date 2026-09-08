@@ -93,6 +93,7 @@ export interface LocalSeedEnvironment {
   readonly objectStoreTokenRef: string;
   readonly secretStoreEndpoint: string;
   readonly secretStoreBearerToken: string;
+  readonly serviceVersion: string;
 }
 
 export interface LocalSecurityEnvironment {
@@ -186,6 +187,7 @@ export function localSeedEnvironment(source: EnvironmentSource = processEnvironm
     objectStoreEndpoint: secureEndpoint(source.OBJECT_STORE_ENDPOINT, 'OBJECT_STORE_ENDPOINT_INVALID'),
     objectStoreTokenRef: reference(source.OBJECT_STORE_TOKEN_REF, 'OBJECT_STORE_TOKEN_REF_INVALID'),
     secretStoreBearerToken,
+    serviceVersion: requiredValue(source.SERVICE_VERSION, 'SERVICE_VERSION_MISSING'),
   });
 }
 

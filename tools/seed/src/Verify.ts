@@ -7,6 +7,7 @@ import type { KmsClient } from '../../../services/commerce/src/pipeline/KmsPort'
 import { HttpObjectStore } from '../../../services/commerce/src/platform/object/ObjectStore';
 import { localFetch } from '@shop/localinfra';
 import { localSecret } from './LocalSecrets';
+import { EMPLOYEE_PERMISSIONS } from './RolePermissions';
 
 const CURRENT_SCHEMA_RELATIONS = 246;
 const LOCAL_ACCOUNT = 'ethan';
@@ -44,12 +45,15 @@ await verifyEmployeeSession(ethanPassword);
 const database = new Client({ connectionString });
 await database.connect();
 try {
-  const result = await database.query<{ tables: string; migrations: string; operations: string; publicobjects: string; head: boolean }>(`select
+  const result = await database.query<{ tables: string; migrations: string; operations: string; publicobjects: string; head: boolean }>(
+    `select
     (select count(*) from information_schema.tables where table_schema not in('pg_catalog','information_schema')) tables,
     (select count(*) from supabase_migrations.schema_migrations) migrations,
     (select count(*) from runtime.operation) operations,
     (select count(*) from information_schema.tables where table_schema='public') publicobjects,
-    (select exists(select 1 from runtime.schemaversion where version=$1)) head`, [TARGET_SCHEMA_HEAD]);
+    (select exists(select 1 from runtime.schemaversion where version=$1)) head`,
+    [TARGET_SCHEMA_HEAD]
+  );
   const counts = result.rows[0];
   if (!counts || Number(counts.tables) < CURRENT_SCHEMA_RELATIONS || counts.head !== true || Number(counts.operations) < COMMERCE_OPERATIONS.length || Number(counts.publicobjects) !== 0) {
     throw new Error(`LOCAL_RUNTIME_COUNTS_INVALID:${JSON.stringify(counts)}`);
@@ -208,22 +212,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   if (!Number.isSafeInteger(storefrontAccessVersion) || storefrontAccessVersion < 1) throw new Error('LOCAL_EMPLOYEE_SESSION_ACCESS_VERSION_INVALID');
   const permissions = (payload as Readonly<Record<string, unknown>>).permissions;
   if (!Array.isArray(permissions)) throw new Error('LOCAL_EMPLOYEE_SESSION_PERMISSIONS_INVALID');
-  const required = [
-    'catalog.listing.read',
-    'pricing.offer.read',
-    'inventory.read',
-    'cart.read',
-    'cart.manage',
-    'checkout.create',
-    'order.create',
-    'order.read',
-    'order.aftersale.apply',
-    'benefit.read',
-    'voucher.binding.read',
-    'support.case.create',
-    'observability.clienterror.create',
-  ];
-  const missing = required.filter((permission) => !permissions.includes(permission));
+  const missing = EMPLOYEE_PERMISSIONS.filter((permission) => !permissions.includes(permission));
   if (missing.length > 0) throw new Error(`LOCAL_EMPLOYEE_SESSION_PERMISSIONS_MISSING:${missing.join(',')}`);
   const report = await localFetch('http://127.0.0.1:3001/api/v1/telemetry/clienterrors', {
     method: 'POST',
@@ -232,7 +221,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
       'content-type': 'application/json',
       'idempotency-key': randomUUID(),
     },
-    body: JSON.stringify({ surface: 'storefront', route: '/local/verify', message: 'local telemetry verification', stack: null, componentStack: null }),
+    body: JSON.stringify({ surface: 'storefront', route: 'storehome', release: environment.serviceVersion, message: 'local telemetry verification', stack: null, componentStack: null }),
   });
   if (report.status !== 202) throw new Error(`LOCAL_CLIENT_ERROR_HTTP_${report.status}:${await report.text()}`);
   const reported: unknown = await report.json();
@@ -455,7 +444,7 @@ interface AuthenticatedSession {
 }
 
 async function authBootstrap(target: AuthTarget): Promise<AuthBootstrap> {
-  const response = await localFetch('http://127.0.0.1:3001/api/v1/identity/providers', {
+  const response = await localFetch('http://127.0.0.1:3001/api/v1/identity/bootstrap', {
     headers: {
       'x-client-target': target,
       'x-client-version': '0.0.0',

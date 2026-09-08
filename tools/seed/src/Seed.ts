@@ -11,6 +11,7 @@ import { assertLocalBenefitLedger, ensureLocalBenefits } from './LocalBenefits';
 import { ensureLocalPricebook, LOCAL_PRICEBOOK } from './LocalPricing';
 import { syncMemberProjection } from './MemberProjection';
 import { serializeExperience } from '@shop/contract';
+import { EMPLOYEE_PERMISSIONS } from './RolePermissions';
 
 const environment = localSeedEnvironment();
 const [connectionString, password, identityKey] = await Promise.all([localSecret(environment.adminDatabaseConnectionRef), localSecret(environment.ethanPasswordRef), localSecret(environment.identityKeyRef)]);
@@ -20,22 +21,6 @@ const mobile = '+8613800138000';
 const mobileSubjectHash = createHmac('sha256', identityKey).update(mobile).digest('hex');
 const kms = new HttpKmsClient(environment.kmsEndpoint, environment.kmsBearerToken);
 const mobileEnvelope = await kms.encrypt('pii', 'identity/mobile', mobile, { principal: LOCAL_OWNER.principal });
-const EMPLOYEE_PERMISSIONS = Object.freeze([
-  'catalog.listing.read',
-  'pricing.offer.read',
-  'inventory.read',
-  'cart.read',
-  'cart.manage',
-  'checkout.create',
-  'order.create',
-  'order.read',
-  'order.aftersale.apply',
-  'benefit.read',
-  'voucher.binding.read',
-  'voucher.redemption.read',
-  'support.case.create',
-  'observability.clienterror.create',
-] as const);
 const client = new Client({ connectionString });
 await client.connect();
 
@@ -204,8 +189,11 @@ async function ensureLocalQualification(database: Client): Promise<void> {
 
 async function ensureLocalCommercialCatalog(database: Client): Promise<void> {
   await ensureLocalPricebook(database);
-  await database.query(`update pricing.pricebook set status='retired',version=version+1
-    where scope_id=$1 and id<>$2 and status='active'`, [LOCAL_PRICEBOOK.scope, LOCAL_PRICEBOOK.id]);
+  await database.query(
+    `update pricing.pricebook set status='retired',version=version+1
+    where scope_id=$1 and id<>$2 and status='active'`,
+    [LOCAL_PRICEBOOK.scope, LOCAL_PRICEBOOK.id]
+  );
   await database.query(
     `insert into pricing.price(id,book_id,sku_id,amount_minor,compare_minor,effective_at,expires_at)
     select 'price:local:'||md5(item.sku_id),$1,item.sku_id,
@@ -258,20 +246,26 @@ async function ensureLocalMallCatalog(database: Client): Promise<void> {
     theme: { preset: 'shop', primaryColor: '#1F5EFF', accentColor: '#19A974', logoObjectRef: null, faviconObjectRef: null },
     navigation: [{ id: `${application}:navigation:home`, label: '首页', page: `${application}:home` }],
     assets: [],
-    pages: [{ blocks: [
-      { component: 'hero', content: { subtitle: '企业福利，温暖抵达', title: '主打团福利商城' }, id: `${application}:home:hero` },
+    pages: [
       {
-        component: 'productcollection',
-        content: {
-          collectionId: 'pool-local-zhudatuan',
-          displayLimit: 4,
-          listingIds: ['listing:mall-zhudatuan:sku:visual:care', 'listing:mall-zhudatuan:sku:visual:meal', 'listing:mall-zhudatuan:sku:visual:movie'],
-          subtitle: '当前商城已发布、可购买的企业福利',
-          title: '员工严选',
-        },
-        id: `${application}:home:products`,
+        blocks: [
+          { component: 'hero', content: { subtitle: '企业福利，温暖抵达', title: '主打团福利商城' }, id: `${application}:home:hero` },
+          {
+            component: 'productcollection',
+            content: {
+              collectionId: 'pool-local-zhudatuan',
+              displayLimit: 4,
+              listingIds: ['listing:mall-zhudatuan:sku:visual:care', 'listing:mall-zhudatuan:sku:visual:meal', 'listing:mall-zhudatuan:sku:visual:movie'],
+              subtitle: '当前商城已发布、可购买的企业福利',
+              title: '员工严选',
+            },
+            id: `${application}:home:products`,
+          },
+        ],
+        id: `${application}:home`,
+        path: 'home',
       },
-    ], id: `${application}:home`, path: 'home' }],
+    ],
     version: 2,
   });
   const contentHash = createHash('sha256').update(configuration).digest('hex');
@@ -544,18 +538,9 @@ async function assertBaseline(database: Client): Promise<void> {
 async function assertEmployeePermissions(database: Client, membership: string): Promise<void> {
   const result = await database.query<{ code: string }>(
     `select requested.code from unnest($1::text[]) requested(code)
-    where not exists(
-      select 1 from access.membershiprole assignment
-      join access.rolepermission mapping on mapping.role_id=assignment.role_id and mapping.effect='allow'
-      join access.permission permission on permission.id=mapping.permission_id and permission.code=requested.code
-      where assignment.membership_id=$2 and assignment.effective_at<=clock_timestamp()
-        and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
-    ) or exists(
-      select 1 from access.membershiprole assignment
-      join access.rolepermission mapping on mapping.role_id=assignment.role_id and mapping.effect='deny'
-      join access.permission permission on permission.id=mapping.permission_id and permission.code=requested.code
-      where assignment.membership_id=$2
-    ) order by requested.code`,
+    where not exists(select 1 from access.effective_permissions($2) effective
+      where effective.permission_code=requested.code and effective.effect='allow')
+    order by requested.code`,
     [EMPLOYEE_PERMISSIONS, membership]
   );
   if (result.rows.length > 0) throw new Error(`LOCAL_EMPLOYEE_PERMISSIONS_MISSING:${result.rows.map(({ code }) => code).join(',')}`);

@@ -43,7 +43,11 @@ const kmsBearerToken = 'k'.repeat(43);
 describe('canonical runtime configuration', () => {
   it('parses provider configuration without exposing secrets and rejects unknown keys', () => {
     const value = {
-      id: 'jd-main', baseUrl: 'https://provider.example.com', secretRef: 'secret/provider/jd', healthOperation: 'health', endpoints: { health: '/health', catalog: '/catalog' },
+      id: 'jd-main',
+      baseUrl: 'https://provider.example.com',
+      secretRef: 'secret/provider/jd',
+      healthOperation: 'health',
+      endpoints: { health: '/health', catalog: '/catalog' },
       limits: { connectionTimeoutMs: 1000, responseTimeoutMs: 5000, totalDeadlineMs: 15000, maxConcurrency: 8, requestsPerSecond: 20, maxAttempts: 3, failureThreshold: 5, recoveryMs: 30000 },
     };
     expect(providerConnectionConfig(value, 'health')).toMatchObject({ id: 'jd-main', secretRef: 'secret/provider/jd' });
@@ -167,8 +171,9 @@ describe('canonical runtime configuration', () => {
       OBJECT_STORE_ENDPOINT: 'https://127.0.0.1:8445',
       OBJECT_STORE_TOKEN_REF: 'shop/local/objects/api',
       KMS_BEARER_TOKEN: kmsBearerToken,
+      SERVICE_VERSION: 'local-test',
     };
-    expect(localSeedEnvironment(seed).adminDatabaseConnectionRef).toBe('shop/local/database/admin');
+    expect(localSeedEnvironment(seed)).toMatchObject({ adminDatabaseConnectionRef: 'shop/local/database/admin', serviceVersion: 'local-test' });
   });
 
   it('owns Auth and Storefront origins, versions and local exceptions in one fail-closed source', () => {

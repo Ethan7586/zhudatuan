@@ -1,5 +1,23 @@
 import type { Client } from 'pg';
 
+export const EMPLOYEE_PERMISSIONS = Object.freeze([
+  'catalog.listing.read',
+  'pricing.offer.read',
+  'inventory.read',
+  'cart.read',
+  'cart.manage',
+  'checkout.create',
+  'order.create',
+  'order.read',
+  'order.aftersale.apply',
+  'benefit.read',
+  'voucher.holder.read',
+  'voucher.search.read',
+  'voucher.redemption.read',
+  'support.case.create',
+  'observability.clienterror.create',
+] as const);
+
 export async function grantAudiencePermissions(database: Client, roleId: string, audience: string): Promise<void> {
   await database.query(
     `delete from access.rolepermission mapping
