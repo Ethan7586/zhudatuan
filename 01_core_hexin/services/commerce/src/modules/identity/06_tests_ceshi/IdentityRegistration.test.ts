@@ -13,7 +13,6 @@ import { WECHAT_IDENTITY } from '../01_public_gongkai/ports_jiekou/WechatIdentit
 import { identityOperations, identityRegistrationOperations } from '../05_interface_jieru/http/IdentityOperations';
 import { authTarget } from '../05_interface_jieru/http/IdentitySecurity';
 import { PasswordPolicy } from '../02_domain_yewu/policies_guize/PasswordPolicy';
-import { RETURN_TARGETS } from '../04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
 
 const IDENTITY_KEY = 'identity-key';
 const SUBJECT = '+8613800138000';
@@ -354,12 +353,12 @@ describe('canonical member registration security boundary', () => {
       membership: 'membership:l0:consumer', responseTarget: 'storefront', ticketTarget: 'storefront',
     },
     {
-      name: 'L1_ADMIN', host: 'api.hbbtzn.com', target: 'console-hbbtzn', application: undefined,
-      membership: 'membership:l1:admin', responseTarget: 'console', ticketTarget: 'console-hbbtzn',
+      name: 'L1_ADMIN', host: 'api.hbbtzn.com', target: 'console', application: undefined,
+      membership: 'membership:l1:admin', responseTarget: 'console', ticketTarget: 'console',
     },
     {
-      name: 'L1_CONSUMER', host: 'hbbtzn.com', target: 'storefront-hbbtzn', application: 'zdt-l1-verify',
-      membership: 'membership:l1:consumer', responseTarget: 'storefront', ticketTarget: 'storefront-hbbtzn',
+      name: 'L1_CONSUMER', host: 'hbbtzn.com', target: 'storefront', application: 'zdt-l1-verify',
+      membership: 'membership:l1:consumer', responseTarget: 'storefront', ticketTarget: 'storefront',
     },
   ])('keeps $name inside its host-bound realm when one phone has every membership', async ({
     host, target, application, membership, responseTarget, ticketTarget,
@@ -393,10 +392,8 @@ describe('canonical member registration security boundary', () => {
   });
 
   it.each([
-    ['api.zhudatuan.com', 'console-hbbtzn', undefined],
-    ['api.hbbtzn.com', 'console', undefined],
     ['api.zhudatuan.com', 'storefront', 'zdt-l1-verify'],
-    ['hbbtzn.com', 'storefront-hbbtzn', 'zhudatuan-storefront'],
+    ['hbbtzn.com', 'storefront', 'zhudatuan-storefront'],
   ])('rejects cross-realm parameters before credential lookup on %s', async (host, target, application) => {
     const harness = registrationHarness({ challengeAccepted: false, subjectExists: false });
 
@@ -416,7 +413,7 @@ describe('canonical member registration security boundary', () => {
       ] });
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
-      target: 'console-hbbtzn',
+      target: 'console',
     }, 'api.hbbtzn.com'));
 
     expect(response).toEqual({ status: 403, body: { code: 'REALM_MEMBERSHIP_NOT_FOUND' } });
@@ -433,12 +430,12 @@ describe('canonical member registration security boundary', () => {
       ] });
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
-      target: 'console-hbbtzn',
+      target: 'console',
     }, 'api.hbbtzn.com'));
 
     expect(response).toMatchObject({ status: 201, body: { membership: 'membership:hongtai:operator', target: 'console' } });
     const ticket = harness.queries.find(({ text }) => text.includes('insert into identity.authticket'));
-    expect(ticket?.values[6]).toBe('console-hbbtzn');
+    expect(ticket?.values[6]).toBe('console');
   });
 
   it('limits storefront login memberships to the requested application organization', async () => {
@@ -453,7 +450,7 @@ describe('canonical member registration security boundary', () => {
       ] });
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
-      target: 'storefront-hbbtzn', application: 'zdt-l1-verify',
+      target: 'storefront', application: 'zdt-l1-verify',
     }, 'hbbtzn.com'));
 
     expect(response).toMatchObject({ status: 200, body: { memberships: [
@@ -641,7 +638,7 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes("'phone_otp',2"))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes("set_config('app.registration_phone_verification','checkout',true)"))).toBe(true);
     const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
-    expect(session?.values.slice(9)).toEqual([1, 'realm:l1', expect.stringMatching(/^account:/), 'storefront-hbbtzn']);
+    expect(session?.values.slice(9)).toEqual([1, 'realm:l1', expect.stringMatching(/^account:/), 'storefront']);
   });
 
   it('binds a consumer-node registration with the profile derived from its realm', async () => {
@@ -833,7 +830,7 @@ function storefrontRegistrationRequest(idempotency: string): OperationRequest {
         challenge: 'challenge:registration',
         code: '123456',
         application: 'zdt-l1-verify',
-        target: 'storefront-hbbtzn',
+        target: 'storefront',
         termsAccepted: true,
         termsHash: 'f'.repeat(64),
         authorization: authorizationRequest(),
@@ -857,7 +854,7 @@ function storefrontPasswordRegistrationRequest(idempotency: string): OperationRe
         password: 'Automatic!Password1',
         displayName: 'L6消费者8000',
         application: 'zdt-l1-verify',
-        target: 'storefront-hbbtzn',
+        target: 'storefront',
         termsAccepted: true,
         termsHash: 'f'.repeat(64),
         authorization: authorizationRequest(),
@@ -1025,7 +1022,8 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       if (text.includes('from identity.realmentry entry')) {
         const l6 = String(values[0]).includes('l6.identity.test');
         const l1 = String(values[0]).includes('hbbtzn');
-        return result([{ realm_id: l6 ? 'realm:l6' : l1 ? 'realm:l1' : 'realm:l0', node_id: l6 ? 'l6' : l1 ? 'l1' : 'l0' }]);
+        return result([{ realm_id: l6 ? 'realm:l6' : l1 ? 'realm:l1' : 'realm:l0',
+          node_id: l6 ? 'node:fixture:l6' : l1 ? 'node:hbbtzn:l1' : 'node:zhudatuan:l0' }]);
       }
       if (text.includes('from identity.realmtarget where realm_id=$1')) {
         const target = String(values[1]);
@@ -1033,8 +1031,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
         const l1 = values[0] === 'realm:l1';
         const l6 = values[0] === 'realm:l6';
         if (l6 && target !== 'storefront') return result([]);
-        if ((l1 && !['console-hbbtzn', 'storefront-hbbtzn'].includes(target))
-          || (!l1 && ['console-hbbtzn', 'storefront-hbbtzn'].includes(target))) return result([]);
+        if (!['console', 'storefront', 'store', 'supplier'].includes(target)) return result([]);
         return result([{
           surface: consumer ? 'consumer' : 'admin',
           membership_client: consumer ? 'storefront' : target.startsWith('store') ? 'store' : target.startsWith('supplier') ? 'supplier' : 'operator',
@@ -1047,8 +1044,8 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       if (text.includes('from identity.realmtarget target join identity.realm realm')) {
         const l1 = values[0] === 'realm:l1';
         return result([{
-          node_id: l1 ? 'l1' : 'l0', entry_host: l1 ? 'api.hbbtzn.com' : 'api.zhudatuan.com',
-          target: l1 ? 'storefront-hbbtzn' : 'storefront', surface: 'consumer', membership_client: 'storefront',
+          node_id: l1 ? 'node:hbbtzn:l1' : 'node:zhudatuan:l0', entry_host: l1 ? 'api.hbbtzn.com' : 'api.zhudatuan.com',
+          target: 'storefront', surface: 'consumer', membership_client: 'storefront',
           membership_organization_id: l1 ? input.storefrontOrganizationId ?? 'mall:l1-hongtai' : 'mall-zhudatuan',
           application_slug: String(values[1]),
         }]);
@@ -1122,10 +1119,12 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           organization_id: 'tenant-zhudatuan',
           role_id: input.seniorInvite ? 'role-senior-administrator-v1:tenant-zhudatuan' : 'role-zhudatuan-pending-operator',
           terms_hash: 'f'.repeat(64), target_client: 'operator', storefront_organization_id: 'mall-zhudatuan',
+          storefront_role_id: 'role-zhudatuan-storefront-member',
           governance_level: input.seniorInvite ? 'senior_administrator' : 'administrator',
         } : {
           organization_id: 'mall-zhudatuan', role_id: 'role-zhudatuan-storefront-member', terms_hash: 'f'.repeat(64),
-          target_client: 'storefront', storefront_organization_id: null, governance_level: null,
+          target_client: 'storefront', storefront_organization_id: null,
+          storefront_role_id: 'role-zhudatuan-storefront-member', governance_level: null,
         }] : []);
       }
       if (text.includes('select mobile_ciphertext from identity.account')) {
@@ -1218,14 +1217,6 @@ function context(pool: DatabasePool, kms: KmsClient = {
     application: () => ({ applicationHash: 'application' }),
     authorize: () => 'https://example.test',
     exchange: async () => ({ subject: 'subject' }),
-  });
-  container.bind(RETURN_TARGETS, {
-    console: 'https://console.example.test',
-    'console-hbbtzn': 'https://console-hbbtzn.example.test',
-    storefront: 'https://storefront.example.test',
-    'storefront-hbbtzn': 'https://storefront-hbbtzn.example.test',
-    store: 'https://store.example.test',
-    supplier: 'https://supplier.example.test',
   });
   return { container } as unknown as ModuleContext;
 }

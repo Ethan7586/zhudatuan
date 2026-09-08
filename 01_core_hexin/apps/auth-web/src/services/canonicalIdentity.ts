@@ -4,7 +4,7 @@ import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
 import { createSecureId } from '@shop/sdk/context';
 import { z } from 'zod';
 import type { Membership, PreAuthContext } from '../types';
-import { currentIdentityNode } from './identityNodeEnvironment';
+import { currentIdentityNode, currentLoginIntent } from './identityNodeEnvironment';
 
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
 
@@ -283,12 +283,14 @@ async function authorizeCanonicalCredential(
   context: Readonly<{ application?: string; expectedSessionTarget?: CanonicalTarget }> = {},
 ): Promise<AuthorizedCredential> {
   const authorization = await beginCanonicalAuthorization();
+  const loginIntent = currentLoginIntent();
   const origin = context.expectedSessionTarget === 'storefront' ? storefrontApiOrigin() : apiOrigin();
   const output = LoginResultSchema.parse(await identityRequest('/api/v1/identity/sessions', {
     ...credential,
     target,
     ...(membership === undefined ? {} : { membership }),
     ...(context.application === undefined ? {} : { application: context.application }),
+    ...(loginIntent === undefined ? {} : { loginIntent }),
     authorization: authorization.request,
   }, signal, { origin }));
   if ('memberships' in output) return Object.freeze({ kind: 'selection', selection: output });
@@ -489,10 +491,12 @@ function identityError(value: unknown, status: number, action: string): string {
     RISK_REVIEW_REQUIRED: '本次登录需要人工安全复核',
     AUTHENTICATION_REQUIRED: '登录会话未能建立，请重新登录',
     AUTH_TICKET_EXCHANGE_REJECTED: '一次性登录授权无效或已经使用',
+    LOGIN_INTENT_INVALID: '跨节点登录凭证无效、已过期或已经使用，请从原节点重新发起',
+    LOGIN_INTENT_TARGET_INVALID: '目标节点当前不接受该登录申请，请返回原节点',
     CHALLENGE_INVALID: '验证码错误或已经失效',
     CHALLENGE_PRINCIPAL_MISSING: '该手机号没有可重置的账号',
     PASSWORD_POLICY_REJECTED: PASSWORD_POLICY_MESSAGE,
-  }[code] ?? `统一身份服务暂时无法完成${action}（${code}）`;
+  }[code] ?? `统一身份服务暂时无法完成${action}，请稍后重试`;
 }
 
 function responseCode(value: unknown, status: number): string {

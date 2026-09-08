@@ -89,8 +89,12 @@ describe('PgSessionResolver realm account projection', () => {
       access_version: 1, target: 'console', assurance_level: 1, assurance_verified_at: null,
     }] });
     const resolver = new PgSessionResolver({ query } as never);
+    const headers = bindRequestNodeContext(
+      Object.freeze({ authorization: `Bearer ${'t'.repeat(32)}` }),
+      resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.zhudatuan.com'),
+    );
 
-    await expect(resolver.resolve({ authorization: `Bearer ${'t'.repeat(32)}`, host: 'api.example.com' }))
+    await expect(resolver.resolve(headers))
       .rejects.toThrow('AUTH_REALM_CONTEXT_MISSING');
   });
 
@@ -105,9 +109,13 @@ describe('PgSessionResolver realm account projection', () => {
     const resolver = new PgSessionResolver({ query } as never);
     const cookie = `shop_session=${'t'.repeat(32)}`;
 
-    await expect(resolver.resolve({ cookie, host: 'api.hbbtzn.com' }))
+    await expect(resolver.resolve(bindRequestNodeContext(
+      Object.freeze({ cookie }), resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com'),
+    )))
       .rejects.toThrow('AUTHENTICATION_REQUIRED');
-    await expect(resolver.resolve({ cookie, host: 'api.zhudatuan.com' }))
+    await expect(resolver.resolve(bindRequestNodeContext(
+      Object.freeze({ cookie }), resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.zhudatuan.com'),
+    )))
       .resolves.toMatchObject({ account: 'account:l0', realm: 'realm:l0', session: 'session:l0' });
     expect(query.mock.calls.map((call) => call[1]?.[1])).toEqual(['api.hbbtzn.com', 'api.zhudatuan.com']);
     expect(query.mock.calls.every((call) => call[0].trimStart().startsWith('select '))).toBe(true);

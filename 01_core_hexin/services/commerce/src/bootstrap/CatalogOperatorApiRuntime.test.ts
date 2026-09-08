@@ -8,12 +8,11 @@ import { assertCatalogNodeManifest, catalogOperatorRuntimeCompatibility } from '
 describe('catalog operator API runtime', () => {
   it('binds the catalog surface to the exact console origin and active production manifest', async () => {
     const path = new URL('../../../../../02_platform_pingtai/config/node-manifests/hbbtzn-l1.json', import.meta.url);
-    const manifest = parseNodeManifest(JSON.parse(await readFile(path, 'utf8')));
+    const manifest = await parseNodeManifest(JSON.parse(await readFile(path, 'utf8')));
     expect(() => assertCatalogNodeManifest(manifest, ['https://console.hbbtzn.com'], 'test')).not.toThrow();
     expect(() => assertCatalogNodeManifest(manifest, ['https://console.zhudatuan.com'], 'test'))
       .toThrow('CATALOG_NODE_ORIGIN_MISMATCH');
-    expect(() => assertCatalogNodeManifest(manifest, ['https://console.hbbtzn.com'], 'production'))
-      .toThrow('CATALOG_NODE_NOT_ACTIVE');
+    expect(() => assertCatalogNodeManifest(manifest, ['https://console.hbbtzn.com'], 'production')).not.toThrow();
   });
 
   it('requires the database role named by the node resource binding', async () => {

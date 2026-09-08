@@ -1,0 +1,313 @@
+{
+  "schema_version": "sfl.node-registry-declaration.v1",
+  "registry_version": "1.6.0",
+  "generated_at": "2026-09-08T00:00:00.000Z",
+  "manifests": [
+    {
+      "manifest_id": "manifest:zhudatuan:l0:v1",
+      "manifest_revision": 1,
+      "generated_at": "2026-09-08T00:00:00.000Z",
+      "lifecycle_status": "active",
+      "line_id": "line:zhudatuan:commerce:v1",
+      "node_id": "node:zhudatuan:l0",
+      "parent_node_id": null,
+      "signed_level": "L0",
+      "node_profile": "operating_mall",
+      "mall_id": "mall-zhudatuan",
+      "host_node_id": null,
+      "domain_bindings": [
+        {
+          "host": "accounts.zhudatuan.com",
+          "binding_ref": { "ref": "domain:zhudatuan:l0:identity", "version": "1" },
+          "application_ref": "application:identity",
+          "surface_ref": "surface:identity"
+        },
+        {
+          "host": "api.zhudatuan.com",
+          "binding_ref": { "ref": "domain:zhudatuan:l0:api", "version": "1" },
+          "application_ref": "application:commerce-api",
+          "surface_ref": "surface:api"
+        },
+        {
+          "host": "console.zhudatuan.com",
+          "binding_ref": { "ref": "domain:zhudatuan:l0:console", "version": "1" },
+          "application_ref": "application:console",
+          "surface_ref": "surface:console"
+        },
+        {
+          "host": "zhudatuan.com",
+          "binding_ref": { "ref": "domain:zhudatuan:l0:storefront", "version": "1" },
+          "application_ref": "application:mall-zhudatuan",
+          "surface_ref": "surface:storefront"
+        },
+        {
+          "host": "www.zhudatuan.com",
+          "binding_ref": { "ref": "domain:zhudatuan:l0:storefront:www", "version": "1" },
+          "application_ref": "application:mall-zhudatuan",
+          "surface_ref": "surface:storefront"
+        },
+        {
+          "host": "h5.zhudatuan.com",
+          "binding_ref": { "ref": "domain:zhudatuan:l0:storefront:h5", "version": "1" },
+          "application_ref": "application:mall-zhudatuan",
+          "surface_ref": "surface:storefront"
+        },
+        {
+          "host": "internal.zhudatuan.com",
+          "binding_ref": { "ref": "domain:zhudatuan:l0:storefront:internal", "version": "1" },
+          "application_ref": "application:mall-zhudatuan",
+          "surface_ref": "surface:storefront"
+        },
+        {
+          "host": "beta.zhudatuan.com",
+          "binding_ref": { "ref": "domain:zhudatuan:l0:storefront:beta", "version": "1" },
+          "application_ref": "application:mall-zhudatuan",
+          "surface_ref": "surface:storefront"
+        },
+        {
+          "host": "mini.zhudatuan.com",
+          "binding_ref": { "ref": "domain:zhudatuan:l0:storefront:mini", "version": "1" },
+          "application_ref": "application:mall-zhudatuan",
+          "surface_ref": "surface:storefront"
+        }
+      ],
+      "brand_ref": { "ref": "brand:zhudatuan", "version": "1" },
+      "applications": [
+        { "ref": "application:commerce-api", "version": "1" },
+        { "ref": "application:console", "version": "1" },
+        { "ref": "application:identity", "version": "1" },
+        { "ref": "application:mall-zhudatuan", "version": "1" }
+      ],
+      "surfaces": [
+        { "ref": "surface:api", "version": "1" },
+        { "ref": "surface:console", "version": "1" },
+        { "ref": "surface:identity", "version": "1" },
+        { "ref": "surface:storefront", "version": "1" }
+      ],
+      "enabled_features": [
+        { "ref": "feature:catalog", "version": "1" },
+        { "ref": "feature:checkout", "version": "1" },
+        { "ref": "feature:console", "version": "1" },
+        { "ref": "feature:identity", "version": "1" },
+        { "ref": "feature:orders", "version": "1" }
+      ],
+      "api_contract_refs": [
+        { "ref": "contract:commerce-api", "version": "1.0.0" }
+      ],
+      "realm_ref": { "ref": "realm:l0", "version": "1" },
+      "data_scope_ref": { "ref": "organization-platform-root", "version": "1" },
+      "resource_binding_set_ref": { "ref": "resource-binding:zhudatuan:l0", "version": "1" },
+      "secret_binding_set_ref": { "ref": "zhudatuan/nodes/l0/secrets", "version": "1" },
+      "payment_binding_refs": [
+        { "ref": "zhudatuan/nodes/l0/payment", "version": "1" }
+      ],
+      "callback_binding_refs": [
+        { "ref": "zhudatuan/nodes/l0/callbacks", "version": "1" }
+      ],
+      "runtime_instance_id": "runtime:zhudatuan:l0:commerce",
+      "runtime_config_ref": { "ref": "sfl/nodes/zhudatuan-l0/runtime/v1", "version": "1" },
+      "release_pointer_ref": { "ref": "/opt/zhudatuan/current", "version": "1" }
+    },
+    {
+      "manifest_id": "manifest:hbbtzn:l1:v1",
+      "manifest_revision": 1,
+      "generated_at": "2026-09-08T00:00:00.000Z",
+      "lifecycle_status": "active",
+      "line_id": "line:zhudatuan:commerce:v1",
+      "node_id": "node:hbbtzn:l1",
+      "parent_node_id": "node:zhudatuan:l0",
+      "signed_level": "L1",
+      "node_profile": "operating_mall",
+      "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+      "host_node_id": null,
+      "domain_bindings": [
+        {
+          "host": "accounts.hbbtzn.com",
+          "binding_ref": { "ref": "domain:hbbtzn:l1:identity", "version": "1" },
+          "application_ref": "application:identity",
+          "surface_ref": "surface:identity"
+        },
+        {
+          "host": "api.hbbtzn.com",
+          "binding_ref": { "ref": "domain:hbbtzn:l1:api", "version": "1" },
+          "application_ref": "application:commerce-api",
+          "surface_ref": "surface:api"
+        },
+        {
+          "host": "console.hbbtzn.com",
+          "binding_ref": { "ref": "domain:hbbtzn:l1:console", "version": "1" },
+          "application_ref": "application:console",
+          "surface_ref": "surface:console"
+        },
+        {
+          "host": "hbbtzn.com",
+          "binding_ref": { "ref": "domain:hbbtzn:l1:storefront", "version": "1" },
+          "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
+          "surface_ref": "surface:storefront"
+        },
+        {
+          "host": "www.hbbtzn.com",
+          "binding_ref": { "ref": "domain:hbbtzn:l1:storefront:www", "version": "1" },
+          "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
+          "surface_ref": "surface:storefront"
+        },
+        {
+          "host": "h5.hbbtzn.com",
+          "binding_ref": { "ref": "domain:hbbtzn:l1:storefront:h5", "version": "1" },
+          "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
+          "surface_ref": "surface:storefront"
+        },
+        {
+          "host": "mall.hbbtzn.com",
+          "binding_ref": { "ref": "domain:hbbtzn:l1:storefront:mall", "version": "1" },
+          "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
+          "surface_ref": "surface:storefront"
+        }
+      ],
+      "brand_ref": { "ref": "brand:hbbtzn", "version": "1" },
+      "applications": [
+        { "ref": "application:commerce-api", "version": "1" },
+        { "ref": "application:console", "version": "1" },
+        { "ref": "application:efea797b2469a1280086d3d9f1fe1355", "version": "1" },
+        { "ref": "application:identity", "version": "1" }
+      ],
+      "surfaces": [
+        { "ref": "surface:api", "version": "1" },
+        { "ref": "surface:console", "version": "1" },
+        { "ref": "surface:identity", "version": "1" },
+        { "ref": "surface:storefront", "version": "1" }
+      ],
+      "enabled_features": [
+        { "ref": "feature:catalog", "version": "1" },
+        { "ref": "feature:checkout", "version": "1" },
+        { "ref": "feature:console", "version": "1" },
+        { "ref": "feature:identity", "version": "1" },
+        { "ref": "feature:orders", "version": "1" }
+      ],
+      "api_contract_refs": [
+        { "ref": "contract:commerce-api", "version": "1.0.0" }
+      ],
+      "realm_ref": { "ref": "realm:l1", "version": "1" },
+      "data_scope_ref": { "ref": "mall:d1708f04df2dd8a61736852c4900fb43", "version": "1" },
+      "resource_binding_set_ref": { "ref": "resource-binding:hbbtzn:l1", "version": "1" },
+      "secret_binding_set_ref": { "ref": "hbbtzn/nodes/l1/secrets", "version": "1" },
+      "payment_binding_refs": [
+        { "ref": "hbbtzn/nodes/l1/payment", "version": "1" }
+      ],
+      "callback_binding_refs": [
+        { "ref": "hbbtzn/nodes/l1/callbacks", "version": "1" }
+      ],
+      "runtime_instance_id": "runtime:hbbtzn:l1:commerce",
+      "runtime_config_ref": { "ref": "sfl/nodes/hbbtzn-l1/runtime/v1", "version": "1" },
+      "release_pointer_ref": { "ref": "/opt/sfl/nodes/hbbtzn-l1/current", "version": "1" }
+    }
+  ],
+  "node_bindings": [
+    {
+      "node_id": "node:zhudatuan:l0",
+      "runtime_manifest_file": "zhudatuan-l0.json",
+      "display_name": "主打团平台",
+      "mall_name": "筑大团商城",
+      "brand_name": "筑大团",
+      "primary_storefront_binding_ref": "domain:zhudatuan:l0:storefront",
+      "consumer_api_binding_ref": "domain:zhudatuan:l0:api",
+      "purchase_origin_binding_refs": [
+        "domain:zhudatuan:l0:storefront"
+      ],
+      "identity_entry_binding_refs": [
+        "domain:zhudatuan:l0:identity",
+        "domain:zhudatuan:l0:api"
+      ],
+      "targets": [
+        {
+          "surface": "admin",
+          "target": "console",
+          "membership_client": "operator",
+          "membership_organization_id": "tenant-zhudatuan",
+          "application": null,
+          "return_binding_ref": "domain:zhudatuan:l0:console",
+          "return_path": ""
+        },
+        {
+          "surface": "admin",
+          "target": "store",
+          "membership_client": "store",
+          "membership_organization_id": "tenant-zhudatuan",
+          "application": null,
+          "return_binding_ref": "domain:zhudatuan:l0:console",
+          "return_path": "/entrances/store"
+        },
+        {
+          "surface": "admin",
+          "target": "supplier",
+          "membership_client": "supplier",
+          "membership_organization_id": "tenant-zhudatuan",
+          "application": null,
+          "return_binding_ref": "domain:zhudatuan:l0:console",
+          "return_path": "/entrances/supplier"
+        },
+        {
+          "surface": "consumer",
+          "target": "storefront",
+          "membership_client": "storefront",
+          "membership_organization_id": "mall-zhudatuan",
+          "application": "zhudatuan-storefront",
+          "return_binding_ref": "domain:zhudatuan:l0:storefront",
+          "return_path": ""
+        }
+      ],
+      "console": {
+        "api_binding_ref": "domain:zhudatuan:l0:api",
+        "identity_binding_ref": "domain:zhudatuan:l0:identity",
+        "identity_target": "console",
+        "scope_kind": "platform"
+      }
+    },
+    {
+      "node_id": "node:hbbtzn:l1",
+      "runtime_manifest_file": "hbbtzn-l1.json",
+      "display_name": "宏泰甄选运营后台",
+      "mall_name": "宏泰甄选",
+      "brand_name": "宏泰甄选",
+      "primary_storefront_binding_ref": "domain:hbbtzn:l1:storefront",
+      "consumer_api_binding_ref": "domain:hbbtzn:l1:api",
+      "purchase_origin_binding_refs": [
+        "domain:hbbtzn:l1:storefront",
+        "domain:hbbtzn:l1:storefront:www",
+        "domain:hbbtzn:l1:storefront:h5",
+        "domain:hbbtzn:l1:storefront:mall"
+      ],
+      "identity_entry_binding_refs": [
+        "domain:hbbtzn:l1:identity",
+        "domain:hbbtzn:l1:api",
+        "domain:hbbtzn:l1:storefront"
+      ],
+      "targets": [
+        {
+          "surface": "admin",
+          "target": "console",
+          "membership_client": "operator",
+          "membership_organization_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+          "application": null,
+          "return_binding_ref": "domain:hbbtzn:l1:console",
+          "return_path": ""
+        },
+        {
+          "surface": "consumer",
+          "target": "storefront",
+          "membership_client": "storefront",
+          "membership_organization_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+          "application": "zdt-l1-verify",
+          "return_binding_ref": "domain:hbbtzn:l1:storefront",
+          "return_path": ""
+        }
+      ],
+      "console": {
+        "api_binding_ref": "domain:hbbtzn:l1:api",
+        "identity_binding_ref": "domain:hbbtzn:l1:identity",
+        "identity_target": "console",
+        "scope_kind": "mall"
+      }
+    }
+  ]
+}

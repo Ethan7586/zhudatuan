@@ -1,13 +1,48 @@
+import { readFile } from 'node:fs/promises';
+import { parseNodeManifest } from '@shop/config/server';
+import type { WechatPayConfig } from '@shop/wechatpayment';
 import { describe, expect, it } from 'vitest';
 import type { DatabasePool } from '../foundation/persistence/Pool';
 import { PurchaseSessionResolver } from '../modules/purchase/PurchaseSessionResolver';
 import {
   PURCHASE_SCHEMA_CHECKSUM,
   PURCHASE_SCHEMA_VERSION,
+  assertPurchaseNodeManifest,
+  assertPurchasePaymentConfiguration,
   assertPurchaseRuntimeCompatibility,
 } from './PurchaseApiRuntime';
 
 describe('purchase API runtime', () => {
+  it('binds purchase origins, secrets, payment, and callbacks to one node', async () => {
+    const path = new URL('../../../../../02_platform_pingtai/config/node-manifests/hbbtzn-l1.json', import.meta.url);
+    const manifest = await parseNodeManifest(JSON.parse(await readFile(path, 'utf8')));
+    const environment = {
+      APP_ENV: 'production',
+      API_ALLOWED_ORIGINS: 'https://h5.hbbtzn.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com',
+      DATABASE_API_CONNECTION_REF: 'hbbtzn/nodes/l1/database/purchase-api',
+      QUOTE_KEY_REF: 'hbbtzn/nodes/l1/purchase/checkout/quote',
+      KMS_ENDPOINT: 'https://127.0.0.1:8544',
+      KMS_BEARER_TOKEN: 'k'.repeat(43),
+      WECHAT_APPLICATION_CONFIG_REF: 'hbbtzn/nodes/l1/payment/wechat-applications',
+      WECHAT_PAYMENT_CONFIG_REF: 'hbbtzn/nodes/l1/payment/wechat',
+    };
+    expect(() => assertPurchaseNodeManifest(manifest, environment)).not.toThrow();
+    expect(() => assertPurchaseNodeManifest(manifest, {
+      ...environment, API_ALLOWED_ORIGINS: `${environment.API_ALLOWED_ORIGINS},https://zhudatuan.com`,
+    })).toThrow('PURCHASE_NODE_ORIGIN_MISMATCH');
+    expect(() => assertPurchaseNodeManifest(manifest, {
+      ...environment, WECHAT_PAYMENT_CONFIG_REF: 'zhudatuan/nodes/l0/payment/wechat',
+    })).toThrow('PURCHASE_NODE_PAYMENT_BINDING_MISMATCH');
+    const configuration = {
+      notifyUrl: 'https://api.hbbtzn.com/api/v1/webhooks/wechat/payment',
+      notifyUrlsByScope: { [manifest.data_scope_ref.ref]: 'https://api.hbbtzn.com/api/v1/webhooks/wechat/payment' },
+    } as unknown as WechatPayConfig;
+    expect(() => assertPurchasePaymentConfiguration(manifest, configuration)).not.toThrow();
+    expect(() => assertPurchasePaymentConfiguration(manifest, {
+      ...configuration, notifyUrl: 'https://api.zhudatuan.com/api/v1/webhooks/wechat/payment',
+    })).toThrow('PURCHASE_NODE_CALLBACK_HOST_MISMATCH');
+  });
+
   it('requires the direct purchase role, exact marker, selected writes, and forbidden finance/provider writes', async () => {
     const healthy = {
       current_user: 'zhudatuanpurchaseapi', session_user: 'zhudatuanpurchaseapi', role_safe: true, writable: true,

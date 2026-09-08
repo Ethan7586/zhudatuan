@@ -55,7 +55,8 @@ create index identity_session_account_active_idx on identity.session(account_id,
 
 alter table identity.authticket add column realm_id text;
 alter table identity.authticket add column account_id text;
-update identity.authticket ticket set realm_id=session.realm_id,account_id=session.account_id
+update identity.authticket ticket
+set realm_id=session.realm_id,account_id=session.account_id,target=session.auth_target
 from identity.session session where session.id=ticket.session_id;
 update identity.authticket ticket set consumed_at=coalesce(ticket.consumed_at,clock_timestamp())
 where ticket.consumed_at is null and (ticket.realm_id is null or ticket.account_id is null
@@ -116,7 +117,7 @@ grant execute on function identity.resolve_session(text,text)
   to shopconsole,zhudatuanwebapi,zhudatuanpurchaseapi,zhudatuanprovisioningapi;
 
 insert into runtime.schemaversion(version,checksum)
-values('20260907122000','19f181de3eae51676173fd003c496f83ac3e82de5e40be21537acc3020167700');
+values('20260907122000','1efe07e3ac4ae654889a7a6a7ba61611e20a6c7d24a1c3afe07d1a7ab60ec734');
 
 do $assert$
 begin
@@ -129,7 +130,7 @@ begin
       and (ticket.realm_id is null or ticket.account_id is null))
     or not exists(select 1 from runtime.schemaversion
       where version='20260907122000'
-        and checksum='19f181de3eae51676173fd003c496f83ac3e82de5e40be21537acc3020167700') then
+        and checksum='1efe07e3ac4ae654889a7a6a7ba61611e20a6c7d24a1c3afe07d1a7ab60ec734') then
     raise exception 'IDENTITY_REALM_SESSION_MIGRATION_INCOMPLETE';
   end if;
 end

@@ -1,5 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import consoleReleaseDeclaration from '../../../../02_platform_pingtai/config/console-node-manifests.json';
+import {
+  SFL_CONSOLE_RELEASE_DECLARATION,
+  SFL_NODE_MANIFEST_REGISTRY_DECLARATION,
+} from './SflNodeRegistry';
 import {
   materializeSflConsoleArtifact,
   normalizeConsoleClientVersion,
@@ -10,7 +13,7 @@ import {
 import {
   createNodeContextResolver,
   materializeNodeManifestRegistryDeclaration,
-  type NodeManifestRegistryDeclaration,
+  materializeNodeManifestRegistryRelease,
 } from './SflNodeKernel';
 
 const sourceSha = 'a'.repeat(40);
@@ -18,7 +21,7 @@ const artifactDigest = `sha256:${'b'.repeat(64)}` as const;
 let artifact: SflConsoleArtifact;
 
 beforeAll(async () => {
-  artifact = await materializeSflConsoleArtifact(consoleReleaseDeclaration, {
+  artifact = await materializeSflConsoleArtifact(SFL_CONSOLE_RELEASE_DECLARATION, {
     source_sha: sourceSha,
     build_id: 'console:test:single-build',
     source_tree: 'clean',
@@ -66,14 +69,34 @@ describe('SFL Console runtime adapter', () => {
   });
 
   it('materializes a deterministic verified server registry from the shared declaration', async () => {
-    const declaration = consoleReleaseDeclaration as unknown as NodeManifestRegistryDeclaration;
-    const first = await materializeNodeManifestRegistryDeclaration(declaration);
-    const second = await materializeNodeManifestRegistryDeclaration(declaration);
+    const first = await materializeNodeManifestRegistryDeclaration(SFL_NODE_MANIFEST_REGISTRY_DECLARATION);
+    const second = await materializeNodeManifestRegistryDeclaration(SFL_NODE_MANIFEST_REGISTRY_DECLARATION);
 
     expect(first).toEqual(second);
     expect(first.manifests).toHaveLength(2);
     expect(first.manifests[0]!.release_pointer_ref).toMatchObject({ build_count: 1 });
     expect(first.manifests[0]!.release_pointer_ref.source_sha).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('materializes release manifests from actual source and artifact evidence', async () => {
+    const released = await materializeNodeManifestRegistryRelease(SFL_NODE_MANIFEST_REGISTRY_DECLARATION, {
+      source_sha: sourceSha,
+      build_id: 'sfl:test:single-build',
+      immutable_artifact_digest: artifactDigest,
+      generated_at: '2026-09-08T01:30:00.000Z',
+    });
+
+    expect(released.generated_at).toBe('2026-09-08T01:30:00.000Z');
+    for (const manifest of released.manifests) {
+      expect(manifest.generated_at).toBe('2026-09-08T01:30:00.000Z');
+      expect(manifest.release_pointer_ref).toEqual({
+        ...manifest.release_pointer_ref,
+        source_sha: sourceSha,
+        build_id: 'sfl:test:single-build',
+        build_count: 1,
+        immutable_artifact_digest: artifactDigest,
+      });
+    }
   });
 
   it('materializes two complete generic NodeManifests from one source and artifact', () => {
@@ -116,7 +139,7 @@ describe('SFL Console runtime adapter', () => {
     });
     expect(l1).toMatchObject({
       apiBaseUrl: 'https://api.hbbtzn.com',
-      identityEntryUrl: 'https://accounts.hbbtzn.com/?target=console-hbbtzn',
+      identityEntryUrl: 'https://accounts.hbbtzn.com/?target=console',
       scope: { kind: 'mall', id: 'mall:d1708f04df2dd8a61736852c4900fb43' },
       nodeContext: {
         line_id: 'line:zhudatuan:commerce:v1',
@@ -140,8 +163,8 @@ describe('SFL Console runtime adapter', () => {
   });
 
   it('rejects ambiguous Hosts and tampered generic manifest digests', async () => {
-    const ambiguous = structuredClone(consoleReleaseDeclaration);
-    ambiguous.manifests[1]!.domain_bindings.find(({ surface_ref }) => surface_ref === 'surface:console')!.host =
+    const ambiguous = structuredClone(SFL_CONSOLE_RELEASE_DECLARATION);
+    (ambiguous.manifests[1]!.domain_bindings.find(({ surface_ref }) => surface_ref === 'surface:console') as { host: string }).host =
       'console.zhudatuan.com';
     await expect(materializeSflConsoleArtifact(ambiguous, {
       source_sha: sourceSha,

@@ -9,7 +9,6 @@ import { textField } from '../../../../foundation/interface/Validation';
 import { PasswordPolicy } from '../../02_domain_yewu/policies_guize/PasswordPolicy';
 import { StepupPolicy } from '../../../../foundation/security/StepupPolicy';
 import { PgAuthTicket } from '../../04_adapters_shixian/persistence_cunchu/PgAuthTicket';
-import { RETURN_TARGETS } from '../../04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
 import { ReturnTargetSigner } from '../../04_adapters_shixian/providers_waibu/ReturnTargetSigner';
 
 export function createRealmOperationContext(context: ModuleContext, registrationOnly: boolean) {
@@ -21,7 +20,7 @@ export function createRealmOperationContext(context: ModuleContext, registration
     kms: context.container.get(KMS_CLIENT),
     passwords: new PasswordPolicy(),
     stepup: new StepupPolicy(),
-    tickets: new PgAuthTicket(new ReturnTargetSigner(context.container.get(RETURN_TARGETS), keys.session)),
+    tickets: new PgAuthTicket(new ReturnTargetSigner(keys.session)),
     registrationOnly,
     digest: (value: string) => createHmac('sha256', keys.identity).update(value.trim().toLowerCase()).digest('hex'),
     codeDigest: (challenge: string, code: string) => createHmac('sha256', keys.session).update(`${challenge}:${code}`).digest('hex'),

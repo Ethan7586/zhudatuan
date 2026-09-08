@@ -112,6 +112,13 @@ export interface NodeManifestRegistryDeclaration {
   readonly manifests: readonly NodeManifestDeclaration[];
 }
 
+export interface NodeManifestReleaseEvidence {
+  readonly source_sha: string;
+  readonly build_id: string;
+  readonly immutable_artifact_digest: ManifestDigest;
+  readonly generated_at: string;
+}
+
 export interface ResolvedNodeContext extends NodeContext {
   readonly host: string;
   readonly surface: string;
@@ -227,17 +234,30 @@ export async function materializeNodeManifestRegistryDeclaration(
 ): Promise<NodeManifestRegistry> {
   const declarationDigest = await digestCanonicalJson(declaration);
   const sourceSha = declarationDigest.slice('sha256:'.length);
+  return materializeNodeManifestRegistryRelease(declaration, {
+    source_sha: sourceSha,
+    build_id: `node-manifest-declaration:${sourceSha}`,
+    immutable_artifact_digest: declarationDigest,
+    generated_at: declaration.generated_at,
+  });
+}
+
+export async function materializeNodeManifestRegistryRelease(
+  declaration: NodeManifestRegistryDeclaration,
+  evidence: NodeManifestReleaseEvidence,
+): Promise<NodeManifestRegistry> {
   return generateNodeManifestRegistry({
     registry_version: declaration.registry_version,
-    generated_at: declaration.generated_at,
+    generated_at: evidence.generated_at,
     manifests: declaration.manifests.map((manifest) => ({
       ...manifest,
+      generated_at: evidence.generated_at,
       release_pointer_ref: {
         ...manifest.release_pointer_ref,
-        source_sha: sourceSha,
-        build_id: `node-manifest-registry:${sourceSha}`,
+        source_sha: evidence.source_sha,
+        build_id: evidence.build_id,
         build_count: 1,
-        immutable_artifact_digest: declarationDigest,
+        immutable_artifact_digest: evidence.immutable_artifact_digest,
       },
     })),
   });

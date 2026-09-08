@@ -7,6 +7,9 @@ import {
   TARGET_SCHEMA_HEAD,
   catalogOperatorApiAllowedOrigins,
   loadNodeManifest,
+  nodeManifestHasFeature,
+  nodeManifestHasSurface,
+  nodeManifestOrigins,
   type CatalogOperatorApiEnvironment,
   type NodeManifest,
 } from '@shop/config/server';
@@ -85,7 +88,7 @@ export async function createCatalogOperatorApiRuntime(
     new PgSessionResolver(pool),
     new PgMembershipResolver(pool),
     new PgAccessVersionResolver(pool),
-    new NodeBoundScopeResolver(new PgScopeResolver(pool), manifest.data_scope_ref),
+    new NodeBoundScopeResolver(new PgScopeResolver(pool), manifest.data_scope_ref.ref),
     new PgCapabilityResolver(pool),
     new SystemClock(),
     risk,
@@ -126,9 +129,11 @@ export function assertCatalogNodeManifest(
   appEnvironment: string | undefined,
 ): void {
   if (manifest.node_profile !== 'operating_mall') throw new Error('CATALOG_NODE_PROFILE_INVALID');
-  if (!manifest.enabled_features.includes('catalog')) throw new Error('CATALOG_NODE_FEATURE_DISABLED');
-  if (!manifest.surfaces.includes('console') || !manifest.surfaces.includes('api')) throw new Error('CATALOG_NODE_SURFACE_MISSING');
-  const consoleOrigin = manifest.domain_bindings.find(({ surface }) => surface === 'console')?.origin;
+  if (!nodeManifestHasFeature(manifest, 'catalog')) throw new Error('CATALOG_NODE_FEATURE_DISABLED');
+  if (!nodeManifestHasSurface(manifest, 'console') || !nodeManifestHasSurface(manifest, 'api')) {
+    throw new Error('CATALOG_NODE_SURFACE_MISSING');
+  }
+  const consoleOrigin = nodeManifestOrigins(manifest, 'console')[0];
   if (!consoleOrigin || allowedOrigins.length !== 1 || allowedOrigins[0] !== consoleOrigin) {
     throw new Error('CATALOG_NODE_ORIGIN_MISMATCH');
   }

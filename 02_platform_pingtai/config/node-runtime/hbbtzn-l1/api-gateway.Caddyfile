@@ -1,0 +1,175 @@
+# Generated from manifest:hbbtzn:l1:v1 (sha256:b46f95da5f7b4e1085e5189af2d57e10cf432500aa50c390096eda034076c24f). Do not hand edit.
+{
+	admin off
+	auto_https off
+}
+
+https://:4430 {
+	tls /opt/sfl/nodes/hbbtzn-l1/runtime/tls/origin.crt /opt/sfl/nodes/hbbtzn-l1/runtime/tls/origin.key
+	encode gzip
+
+	@purchaseWrite {
+		host api.hbbtzn.com
+		method POST OPTIONS
+		path /api/v1/checkouts/quotes /api/v1/orders /api/v1/payments/intents
+	}
+	handle @purchaseWrite {
+		reverse_proxy 127.0.0.1:4434 {
+			header_up Host {http.request.host}
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up -X-Sfl-Node-Id
+			header_up -X-Sfl-Node-Manifest-Id
+			header_up -X-Sfl-Node-Surface
+			header_up -X-Zdt-Identity-Entry-Host
+		}
+	}
+
+	@paymentRead {
+		host api.hbbtzn.com
+		method GET HEAD OPTIONS
+		path /api/v1/payments/intents/*
+	}
+	handle @paymentRead {
+		reverse_proxy 127.0.0.1:4434 {
+			header_up Host {http.request.host}
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up -X-Sfl-Node-Id
+			header_up -X-Sfl-Node-Manifest-Id
+			header_up -X-Sfl-Node-Surface
+			header_up -X-Zdt-Identity-Entry-Host
+		}
+	}
+
+	@ordersRead {
+		host api.hbbtzn.com
+		method GET HEAD
+		path /api/v1/orders /api/v1/orders/*
+	}
+	handle @ordersRead {
+		reverse_proxy 127.0.0.1:4432 {
+			header_up Host {http.request.host}
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up -X-Sfl-Node-Id
+			header_up -X-Sfl-Node-Manifest-Id
+			header_up -X-Sfl-Node-Surface
+			header_up -X-Zdt-Identity-Entry-Host
+		}
+	}
+
+	@webBusiness {
+		host api.hbbtzn.com
+		path /api/v1/members/me* /api/v1/organizations/layers* /api/v1/reports/dashboard* /api/v1/catalog/listings /api/v1/catalog/public/products* /api/v1/pricing/offers* /api/v1/inventory/availability* /api/v1/carts/current* /api/v1/benefits/accounts* /api/v1/benefits/ledgers*
+	}
+	handle @webBusiness {
+		reverse_proxy 127.0.0.1:4432 {
+			header_up Host {http.request.host}
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up -X-Sfl-Node-Id
+			header_up -X-Sfl-Node-Manifest-Id
+			header_up -X-Sfl-Node-Surface
+			header_up -X-Zdt-Identity-Entry-Host
+		}
+	}
+
+	@catalogImports {
+		host api.hbbtzn.com
+		path /api/v1/catalog/imports*
+	}
+	handle @catalogImports {
+		reverse_proxy 127.0.0.1:4431 {
+			header_up Host {http.request.host}
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up -X-Sfl-Node-Id
+			header_up -X-Sfl-Node-Manifest-Id
+			header_up -X-Sfl-Node-Surface
+			header_up -X-Zdt-Identity-Entry-Host
+		}
+	}
+
+	@catalogPublication {
+		host api.hbbtzn.com
+		method PUT DELETE OPTIONS
+		path_regexp publication ^/api/v1/catalog/listings/[^/]+/publication$
+	}
+	handle @catalogPublication {
+		reverse_proxy 127.0.0.1:4431 {
+			header_up Host {http.request.host}
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up -X-Sfl-Node-Id
+			header_up -X-Sfl-Node-Manifest-Id
+			header_up -X-Sfl-Node-Surface
+			header_up -X-Zdt-Identity-Entry-Host
+		}
+	}
+
+	@paymentWebhook {
+		host api.hbbtzn.com
+		method POST
+		path /api/v1/webhooks/wechat/payment
+	}
+	handle @paymentWebhook {
+		reverse_proxy 127.0.0.1:4436 {
+			header_up Host {http.request.host}
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up -X-Sfl-Node-Id
+			header_up -X-Sfl-Node-Manifest-Id
+			header_up -X-Sfl-Node-Surface
+			header_up -X-Zdt-Identity-Entry-Host
+		}
+	}
+
+	@identityApi {
+		host api.hbbtzn.com
+		path /api/v1/*
+	}
+	handle @identityApi {
+		reverse_proxy 127.0.0.1:4433 {
+			header_up Host {http.request.host}
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up -X-Sfl-Node-Id
+			header_up -X-Sfl-Node-Manifest-Id
+			header_up -X-Sfl-Node-Surface
+			header_up -X-Zdt-Identity-Entry-Host
+		}
+	}
+
+	@gatewayHealth {
+		host api.hbbtzn.com
+		path /health/gateway
+	}
+	handle @gatewayHealth {
+		header Content-Type application/json
+		respond `{"status":"ready","nodeId":"node:hbbtzn:l1","manifestId":"manifest:hbbtzn:l1:v1"}` 200
+	}
+
+	@accounts host accounts.hbbtzn.com
+	handle @accounts {
+		root * /opt/sfl/nodes/hbbtzn-l1/current/01_core_hexin/apps/auth-web/dist
+		try_files {path} /index.html
+		file_server
+	}
+
+	@console host console.hbbtzn.com
+	handle @console {
+		root * /opt/sfl/nodes/hbbtzn-l1/current/01_core_hexin/apps/console/dist
+		try_files {path} /index.html
+		file_server
+	}
+
+	@storefront host h5.hbbtzn.com hbbtzn.com mall.hbbtzn.com www.hbbtzn.com
+	handle @storefront {
+		reverse_proxy 127.0.0.1:4410 {
+			header_up Host {http.request.host}
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up -X-Sfl-Node-Id
+			header_up -X-Sfl-Node-Manifest-Id
+			header_up -X-Sfl-Node-Surface
+			header_up -X-Zdt-Identity-Entry-Host
+		}
+	}
+
+	handle {
+		header Content-Type application/json
+		respond `{"code":"NODE_BOUNDARY_HOST_MISMATCH"}` 421
+	}
+}

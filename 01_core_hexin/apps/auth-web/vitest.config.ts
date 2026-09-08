@@ -3,10 +3,9 @@ import { PRODUCTION_IDENTITY_NODE_REGISTRY } from '@shop/sdk/identity-node';
 
 const identityNodeRegistry = JSON.stringify({
   version: PRODUCTION_IDENTITY_NODE_REGISTRY.version,
-  defaultNodeId: 'local',
   nodes: [
     {
-      nodeId: 'local', nodeProfile: 'operating_mall', mallId: 'mall-local',
+      nodeId: 'node:local:l0', nodeProfile: 'operating_mall', mallId: 'mall-local',
       displayName: '本地身份节点', accountsOrigin: 'http://localhost:3002',
       apiOrigin: 'http://127.0.0.1:3001', consumerApiOrigin: 'http://127.0.0.1:3001',
       adminOrigin: 'http://127.0.0.1:4173', storefrontOrigin: 'http://127.0.0.1:3000',

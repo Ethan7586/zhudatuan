@@ -17,15 +17,23 @@ function valid() {
     APP_ENV: 'production',
     AUTH_MODE: 'membership',
     SERVICE_VERSION: '1.0.0',
-    API_ALLOWED_ORIGINS: 'https://h5.hbbtzn.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com,https://zhudatuan.com',
-    DATABASE_API_CONNECTION_REF: 'zhudatuan/purchase/database/api',
-    QUOTE_KEY_REF: 'zhudatuan/purchase/checkout/quote',
+    API_ALLOWED_ORIGINS: 'https://beta.zhudatuan.com,https://h5.zhudatuan.com,https://internal.zhudatuan.com,https://mini.zhudatuan.com,https://www.zhudatuan.com,https://zhudatuan.com',
+    DATABASE_API_CONNECTION_REF: 'zhudatuan/nodes/l0/database/purchase-api',
+    DATABASE_API_ROLE: 'zhudatuanpurchaseapi',
+    QUOTE_KEY_REF: 'zhudatuan/nodes/l0/purchase/checkout/quote',
     SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8543',
     SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
     KMS_ENDPOINT: 'https://127.0.0.1:8544',
     KMS_BEARER_TOKEN: 'k'.repeat(43),
-    WECHAT_APPLICATION_CONFIG_REF: 'zhudatuan/purchase/wechat/applications',
-    WECHAT_PAYMENT_CONFIG_REF: 'zhudatuan/purchase/payment/wechat',
+    WECHAT_APPLICATION_CONFIG_REF: 'zhudatuan/nodes/l0/payment/wechat-applications',
+    WECHAT_PAYMENT_CONFIG_REF: 'zhudatuan/nodes/l0/payment/wechat',
+    NODE_MANIFEST_PATH: '/opt/sfl/nodes/zhudatuan-l0/manifest.json',
+    NODE_MANIFEST_ID: 'manifest:zhudatuan:l0:v1',
+    NODE_MANIFEST_DIGEST: `sha256:${'a'.repeat(64)}`,
+    NODE_RUNTIME_INSTANCE_ID: 'runtime:zhudatuan:l0:commerce',
+    NODE_RUNTIME_CONFIG_REF: 'sfl/nodes/zhudatuan-l0/runtime/v1',
+    NODE_RESOURCE_BINDING_VERSION: '1',
+    NODE_RELEASE_POINTER_REF: '/opt/sfl/nodes/zhudatuan-l0/current',
   };
 }
 
@@ -35,10 +43,11 @@ describe('purchase API environment', () => {
     expect(environment.PURCHASE_API_PROFILE).toBe('purchase-only');
     expect(purchaseApiPort(environment)).toBe(4323);
     expect(purchaseApiAllowedOrigins(environment)).toEqual([
-      'https://h5.hbbtzn.com',
-      'https://hbbtzn.com',
-      'https://mall.hbbtzn.com',
-      'https://www.hbbtzn.com',
+      'https://beta.zhudatuan.com',
+      'https://h5.zhudatuan.com',
+      'https://internal.zhudatuan.com',
+      'https://mini.zhudatuan.com',
+      'https://www.zhudatuan.com',
       'https://zhudatuan.com',
     ]);
     expect(new Set(PURCHASE_API_ENVIRONMENT_KEYS).size).toBe(PURCHASE_API_ENVIRONMENT_KEYS.length);
@@ -50,19 +59,28 @@ describe('purchase API environment', () => {
       delete disabled[key];
     }
     expect(purchasePaymentProviderEnabled(disabled)).toBe(false);
-    expect(purchaseApiEnvironment(disabled).DATABASE_API_CONNECTION_REF).toBe('zhudatuan/purchase/database/api');
+    expect(purchaseApiEnvironment(disabled).DATABASE_API_CONNECTION_REF).toBe('zhudatuan/nodes/l0/database/purchase-api');
     expect(() => purchaseApiEnvironment({ ...disabled, KMS_ENDPOINT: 'https://127.0.0.1:8544' }))
       .toThrow('PURCHASE_PAYMENT_CONFIGURATION_PARTIAL');
   });
 
-  it('accepts the isolated internal storefront slot', () => {
+  it('accepts the L1 node-owned purchase slot without L0 origins', () => {
     const environment = purchaseApiEnvironment({
       ...valid(),
-      API_PORT: '4423',
-      API_ALLOWED_ORIGINS: `${valid().API_ALLOWED_ORIGINS},https://internal.zhudatuan.com`,
+      API_PORT: '4434',
+      API_ALLOWED_ORIGINS: 'https://h5.hbbtzn.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com',
+      DATABASE_API_CONNECTION_REF: 'hbbtzn/nodes/l1/database/purchase-api',
+      QUOTE_KEY_REF: 'hbbtzn/nodes/l1/purchase/checkout/quote',
+      WECHAT_APPLICATION_CONFIG_REF: 'hbbtzn/nodes/l1/payment/wechat-applications',
+      WECHAT_PAYMENT_CONFIG_REF: 'hbbtzn/nodes/l1/payment/wechat',
+      NODE_MANIFEST_PATH: '/opt/sfl/nodes/hbbtzn-l1/manifest.json',
+      NODE_MANIFEST_ID: 'manifest:hbbtzn:l1:v1',
+      NODE_RUNTIME_INSTANCE_ID: 'runtime:hbbtzn:l1:commerce',
+      NODE_RUNTIME_CONFIG_REF: 'sfl/nodes/hbbtzn-l1/runtime/v1',
+      NODE_RELEASE_POINTER_REF: '/opt/sfl/nodes/hbbtzn-l1/current',
     });
-    expect(purchaseApiPort(environment)).toBe(4423);
-    expect(purchaseApiAllowedOrigins(environment)).toContain('https://internal.zhudatuan.com');
+    expect(purchaseApiPort(environment)).toBe(4434);
+    expect(purchaseApiAllowedOrigins(environment)).not.toContain('https://zhudatuan.com');
   });
 
   it('fails closed on full-runtime dependencies, public binds, and non-purchase origins', () => {

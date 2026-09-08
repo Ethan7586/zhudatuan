@@ -40,7 +40,7 @@ describe('storefront auth origin boundary', () => {
     expect(zhudatuan.origin).toBe('https://accounts.zhudatuan.com');
     expect(zhudatuan.searchParams.get('target')).toBe('storefront');
     expect(hongtai.origin).toBe('https://accounts.hbbtzn.com');
-    expect(hongtai.searchParams.get('target')).toBe('storefront-hbbtzn');
+    expect(hongtai.searchParams.get('target')).toBe('storefront');
     expect(resolveStorefrontPresentationIdentity('hbbtzn.com')).toEqual({ mallName: '宏泰甄选', brandName: '宏泰甄选' });
     expect(resolveStorefrontPresentationIdentity('zhudatuan.com')).toEqual({ mallName: '筑大团商城', brandName: '筑大团' });
   });
@@ -48,15 +48,14 @@ describe('storefront auth origin boundary', () => {
   it('opens an L11 identity entry added only through registry data', () => {
     const registry = parseIdentityNodeRegistry(JSON.stringify({
       version: 2,
-      defaultNodeId: 'l11',
       nodes: [{
-        nodeId: 'l5', nodeProfile: 'operating_mall', mallId: 'mall:l5', displayName: 'L5 商城',
+        nodeId: 'node:example:l5', nodeProfile: 'operating_mall', mallId: 'mall:l5', displayName: 'L5 商城',
         accountsOrigin: 'https://accounts.l5.example.com', apiOrigin: 'https://api.l5.example.com',
         consumerApiOrigin: 'https://l5.example.com', adminOrigin: 'https://console.l5.example.com',
         storefrontOrigin: 'https://l5.example.com', adminTarget: 'console',
         consumerTarget: 'storefront', consumerApplication: 'l5-storefront',
       }, {
-        nodeId: 'l11', nodeProfile: 'consumer', hostNodeId: 'l5', displayName: 'L11 消费者',
+        nodeId: 'node:example:l11', nodeProfile: 'consumer', hostNodeId: 'node:example:l5', displayName: 'L11 消费者',
         accountsOrigin: 'https://accounts.l11.example.com',
         apiOrigin: 'https://api.l11.example.com', consumerApiOrigin: 'https://l11.example.com',
         storefrontOrigin: 'https://l11.example.com', consumerTarget: 'storefront',

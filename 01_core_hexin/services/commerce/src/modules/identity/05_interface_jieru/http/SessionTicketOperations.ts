@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { OperationId } from '@shop/contract';
 import { operationLifecycle, pageResult, reject, requireAccess, rowResult, type OperationActions } from '../../../../foundation/application/ModuleOperations';
 import { bodyRecord, secretField, textField } from '../../../../foundation/interface/Validation';
-import { requireGovernanceContext } from '../../../../foundation/security/AccessContext';
+import { requireAccessNodeContext, requireGovernanceContext } from '../../../../foundation/security/AccessContext';
 import { PasswordPolicy } from '../../02_domain_yewu/policies_guize/PasswordPolicy';
 import { AuthTransaction } from '../../02_domain_yewu/models_moxing/AuthTransaction';
 import { publishIdentityEvent, tokenHash } from '../../04_adapters_shixian/persistence_cunchu/IdentityPersistence';
@@ -15,6 +15,7 @@ import { requireValidStorefront, type RealmOperationContext } from './RealmOpera
 
 export const SESSION_TICKET_OPERATION_IDS = Object.freeze([
   'identity.sessions.create',
+  'identity.loginintents.create',
   'identity.tickets.exchange',
   'identity.session.read',
   'identity.session.delete',
@@ -30,6 +31,8 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           const body = bodyRecord(request);
           const requestedTarget = authTarget(textField(body, 'target', 32));
           const application = body.application === undefined ? undefined : textField(body, 'application', 48);
+          const loginIntent = body.loginIntent === undefined ? undefined : secretField(body, 'loginIntent', 128);
+          if (loginIntent !== undefined && !/^[A-Za-z0-9_-]{64}$/.test(loginIntent)) throw new Error('LOGIN_INTENT_INVALID');
           const authorization = AuthTransaction.start(body.authorization);
           const provider = body.provider === undefined ? 'password' : textField(body, 'provider', 32);
           if (provider !== 'password' && provider !== 'phone_otp') throw new Error('CREDENTIAL_PROVIDER_INVALID');
@@ -53,11 +56,12 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
             host: request.input.headers.host,
             requestedTarget,
             application,
+            loginIntent,
             subject,
             mobileTokens,
           };
         },
-        execute: async (request, database, { body, provider, authorization, host, requestedTarget, application, subject, mobileTokens }) => {
+        execute: async (request, database, { body, provider, authorization, host, requestedTarget, application, loginIntent, subject, mobileTokens }) => {
           const realm = await resolveRealmContext(database, host, requestedTarget, application);
           let found: Readonly<{ account_id: string; realm_id: string; principal_id: string; credential_version: number }> | undefined;
           let loginChallenge: string | undefined;
@@ -154,6 +158,17 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
               [`assurance:${randomUUID()}`, found.principal_id, id, createHash('sha256').update(loginChallenge!).digest('hex'), realm.realmId, found.account_id]
             );
           }
+          const consumedIntent = loginIntent === undefined ? undefined : (await database.query<{
+            login_intent_id: string;
+            source_realm_id: string;
+            source_node_id: string;
+            source_account_id: string;
+            source_session_id: string;
+            target_node_id: string;
+          }>(`select * from identity.consume_login_intent($1,$2,$3,$4,$5,$6)`, [
+            tokenHash(loginIntent), realm.realmId, realm.target, realm.application ?? null, found.account_id, id,
+          ])).rows[0];
+          if (loginIntent !== undefined && consumedIntent === undefined) reject(403, 'LOGIN_INTENT_INVALID');
           await publishIdentityEvent(database, 'identity.session.created', id, membership.id, request.input.idempotency!, {
             principal: found.principal_id,
             account: found.account_id,
@@ -161,6 +176,11 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
             realm: { nodeId: realm.nodeId, surface: realm.surface },
             assurance,
             loginMethod: provider,
+            ...(consumedIntent === undefined ? {} : {
+              loginIntent: consumedIntent.login_intent_id,
+              sourceRealm: consumedIntent.source_realm_id,
+              sourceNode: consumedIntent.source_node_id,
+            }),
           });
           const csrf = randomBytes(32).toString('base64url');
           const target = authMembershipTarget(realm.target);
@@ -168,6 +188,56 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           return { status: 201, body: { session: id, csrf, expiresIn: 43_200, membership: membership.id, target, callback }, headers: sessionCookies(token, csrf, 43_200) };
         },
       }),
+      'identity.loginintents.create': async (request, database) => {
+        const access = requireAccess(request);
+        const sourceNode = requireAccessNodeContext(access);
+        if (!access.actor.account || !access.actor.realm) throw new Error('AUTH_REALM_CONTEXT_MISSING');
+        const body = bodyRecord(request);
+        const targetNodeId = textField(body, 'targetNodeId', 96);
+        if (!/^node:[a-z0-9][a-z0-9-]{0,62}:l[0-9]{1,3}$/.test(targetNodeId)) {
+          throw new Error('LOGIN_INTENT_TARGET_NODE_INVALID');
+        }
+        const targetSurface = textField(body, 'targetSurface', 16);
+        if (targetSurface !== 'admin' && targetSurface !== 'consumer') throw new Error('LOGIN_INTENT_TARGET_SURFACE_INVALID');
+        const targetApplication = body.targetApplication === undefined
+          ? undefined
+          : textField(body, 'targetApplication', 48);
+        if ((targetSurface === 'consumer') !== (targetApplication !== undefined)) {
+          throw new Error('LOGIN_INTENT_TARGET_APPLICATION_INVALID');
+        }
+        if (targetNodeId === sourceNode.node_id) throw new Error('LOGIN_INTENT_CROSS_NODE_REQUIRED');
+        const token = randomBytes(48).toString('base64url');
+        const id = `loginintent:${randomUUID()}`;
+        const issued = (await database.query<{
+          target_realm_id: string;
+          target_accounts_host: string;
+          target_target: string;
+          target_application: string | null;
+          target_return_origin: string;
+        }>('select * from identity.issue_login_intent($1,$2,$3,$4,$5,$6,$7,$8)', [
+          id, tokenHash(token), access.actor.session, access.actor.account, access.actor.realm,
+          targetNodeId, targetSurface, targetApplication ?? null,
+        ])).rows[0];
+        if (issued === undefined) reject(403, 'LOGIN_INTENT_TARGET_INVALID');
+        const loginUrl = new URL(`https://${issued.target_accounts_host}`);
+        loginUrl.searchParams.set('target', issued.target_target);
+        if (targetSurface === 'consumer') loginUrl.searchParams.set('surface', 'web');
+        if (issued.target_application !== null) loginUrl.searchParams.set('application', issued.target_application);
+        loginUrl.searchParams.set('login_intent', token);
+        return {
+          status: 201,
+          body: {
+            loginIntent: id,
+            sourceNode: sourceNode.node_id,
+            targetNode: targetNodeId,
+            targetRealm: issued.target_realm_id,
+            targetSurface,
+            returnOrigin: issued.target_return_origin,
+            loginUrl: loginUrl.toString(),
+            expiresIn: 300,
+          },
+        };
+      },
       'identity.tickets.exchange': async (request, database) => {
         const currentToken = requestCookie(request.input.headers.cookie, 'shop_session');
         if (!currentToken) reject(401, 'AUTHENTICATION_REQUIRED');

@@ -10,7 +10,7 @@ begin
   end if;
   if not exists(select 1 from runtime.schemaversion
       where version='20260907122000'
-        and checksum='19f181de3eae51676173fd003c496f83ac3e82de5e40be21537acc3020167700')
+        and checksum='1efe07e3ac4ae654889a7a6a7ba61611e20a6c7d24a1c3afe07d1a7ab60ec734')
     or exists(select 1 from runtime.schemaversion where version>'20260907122000') then
     raise exception 'IDENTITY_NODE_PROFILE_PREDECESSOR_INVALID';
   end if;

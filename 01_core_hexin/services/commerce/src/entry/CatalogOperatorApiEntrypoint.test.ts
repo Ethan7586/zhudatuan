@@ -19,7 +19,7 @@ import { CatalogOperatorRuntimeModule } from '../modules/runtime/CatalogOperator
 describe('catalog operator API entrypoint', () => {
   it('owns catalog routes without identity or member routes', async () => {
     const manifestPath = new URL('../../../../../02_platform_pingtai/config/node-manifests/hbbtzn-l1.json', import.meta.url);
-    const manifest = parseNodeManifest(JSON.parse(await readFile(manifestPath, 'utf8')));
+    const manifest = await parseNodeManifest(JSON.parse(await readFile(manifestPath, 'utf8')));
     const pool = { workload: () => pool } as unknown as DatabasePool;
     const operationIds = [...CATALOG_OPERATOR_RUNTIME_OPERATION_IDS, ...CATALOG_OPERATOR_OPERATION_IDS];
     const bootstrapped = await bootstrapApi({

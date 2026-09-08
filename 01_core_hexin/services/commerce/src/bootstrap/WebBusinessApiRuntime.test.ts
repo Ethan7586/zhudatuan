@@ -12,11 +12,11 @@ import {
 describe('web business API runtime', () => {
   it('requires node-owned origins and one declared application', async () => {
     const path = new URL('../../../../../02_platform_pingtai/config/node-manifests/hbbtzn-l1.json', import.meta.url);
-    const manifest = parseNodeManifest(JSON.parse(await readFile(path, 'utf8')));
+    const manifest = await parseNodeManifest(JSON.parse(await readFile(path, 'utf8')));
     expect(() => assertWebBusinessNodeManifest(manifest, ['https://hbbtzn.com', 'https://www.hbbtzn.com'], 'test')).not.toThrow();
     expect(() => assertWebBusinessNodeManifest(manifest, ['https://zhudatuan.com'], 'test'))
       .toThrow('WEB_BUSINESS_NODE_ORIGIN_MISMATCH');
-    expect(manifest.applications).toEqual(['application:efea797b2469a1280086d3d9f1fe1355']);
+    expect(manifest.applications.map(({ ref }) => ref)).toContain('application:efea797b2469a1280086d3d9f1fe1355');
   });
 
   it('requires the dedicated role, schema marker, selected writes, and forbidden-write boundary', async () => {

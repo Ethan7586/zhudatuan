@@ -6,6 +6,7 @@ import { bindOperation, defineStructuralOperation, type OperationExecutor, type 
 
 export const IDENTITY_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "identity.sessions.create",
+  "identity.loginintents.create",
   "identity.tickets.exchange",
   "identity.session.read",
   "identity.session.delete",
@@ -32,6 +33,7 @@ export const IDENTITY_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
 
 export interface IdentityOperations {
   readonly sessionsCreate: OperationMethod<"identity.sessions.create">;
+  readonly loginintentsCreate: OperationMethod<"identity.loginintents.create">;
   readonly ticketsExchange: OperationMethod<"identity.tickets.exchange">;
   readonly sessionRead: OperationMethod<"identity.session.read">;
   readonly sessionDelete: OperationMethod<"identity.session.delete">;
@@ -63,6 +65,7 @@ export function createFetchIdentity(baseUrl: string): IdentityOperations {
 export function createIdentityOperations(client: OperationExecutor): IdentityOperations {
   return Object.freeze({
     sessionsCreate: bindSessionsCreate(client),
+    loginintentsCreate: bindLoginintentsCreate(client),
     ticketsExchange: bindTicketsExchange(client),
     sessionRead: bindSessionRead(client),
     sessionDelete: bindSessionDelete(client),
@@ -94,6 +97,14 @@ export function createFetchIdentitySessionsCreate(baseUrl: string): OperationMet
 
 function bindSessionsCreate(client: OperationExecutor): OperationMethod<"identity.sessions.create"> {
   return bindOperation(client, defineStructuralOperation({"id":"identity.sessions.create","method":"POST","path":"/api/v1/identity/sessions","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+}
+
+export function createFetchIdentityLoginintentsCreate(baseUrl: string): OperationMethod<"identity.loginintents.create"> {
+  return bindLoginintentsCreate(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindLoginintentsCreate(client: OperationExecutor): OperationMethod<"identity.loginintents.create"> {
+  return bindOperation(client, defineStructuralOperation({"id":"identity.loginintents.create","method":"POST","path":"/api/v1/identity/login-intents","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchIdentityTicketsExchange(baseUrl: string): OperationMethod<"identity.tickets.exchange"> {

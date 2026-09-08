@@ -1,12 +1,36 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabasePool } from '../foundation/persistence/Pool';
 import {
+  assertPaymentWebhookConfiguration,
+  assertPaymentWebhookNodeManifest,
   assertPaymentWebhookRuntimeCompatibility,
   PAYMENT_WEBHOOK_SCHEMA_CHECKSUM,
   PAYMENT_WEBHOOK_SCHEMA_VERSION,
 } from './PaymentWebhookApiRuntime';
 
 describe('payment webhook API runtime', () => {
+  it('binds the provider callback process to the L1 manifest and API host', async () => {
+    const path = new URL('../../../../../02_platform_pingtai/config/node-manifests/hbbtzn-l1.json', import.meta.url);
+    const manifest = await parseNodeManifest(JSON.parse(await readFile(path, 'utf8')));
+    const environment = {
+      APP_ENV: 'production',
+      DATABASE_API_CONNECTION_REF: 'hbbtzn/nodes/l1/database/payment-webhook-api',
+      WECHAT_APPLICATION_CONFIG_REF: 'hbbtzn/nodes/l1/payment/wechat-applications',
+      WECHAT_PAYMENT_CONFIG_REF: 'hbbtzn/nodes/l1/payment/wechat',
+    };
+    expect(() => assertPaymentWebhookNodeManifest(manifest, environment)).not.toThrow();
+    expect(() => assertPaymentWebhookNodeManifest(manifest, {
+      ...environment, WECHAT_PAYMENT_CONFIG_REF: 'zhudatuan/nodes/l0/payment/wechat',
+    })).toThrow('PAYMENT_WEBHOOK_NODE_PAYMENT_BINDING_MISMATCH');
+    const configuration = {
+      notifyUrl: 'https://api.hbbtzn.com/api/v1/webhooks/wechat/payment', notifyUrlsByScope: {},
+    } as unknown as WechatPayConfig;
+    expect(() => assertPaymentWebhookConfiguration(manifest, configuration)).not.toThrow();
+    expect(() => assertPaymentWebhookConfiguration(manifest, {
+      ...configuration, notifyUrl: 'https://api.zhudatuan.com/api/v1/webhooks/wechat/payment',
+    })).toThrow('PAYMENT_WEBHOOK_CALLBACK_HOST_MISMATCH');
+  });
+
   it('requires the direct webhook role, exact marker, selected reads/writes, and no unrelated access', async () => {
     const healthy = {
       current_user: 'zhudatuanpaymentwebhookapi', session_user: 'zhudatuanpaymentwebhookapi', role_safe: true,
@@ -39,3 +63,6 @@ describe('payment webhook API runtime', () => {
 function result(rows: readonly object[]) {
   return { rows, rowCount: rows.length, command: '', oid: 0, fields: [] };
 }
+import { readFile } from 'node:fs/promises';
+import { parseNodeManifest } from '@shop/config/server';
+import type { WechatPayConfig } from '@shop/wechatpayment';

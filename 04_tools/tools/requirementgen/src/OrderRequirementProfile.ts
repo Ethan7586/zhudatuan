@@ -197,7 +197,8 @@ function requirementValue(
   const releaseEvidenceTarget = traceNode('Designed', 'evidence/releases/' + id + '.json', []);
   if (source.lifecycleStatus !== 'Designed') fail(location + ':lifecycleStatus');
   const owner = stringValue(source.owner, location + ':owner');
-  const ownerPath = '01_core_hexin/services/commerce/src/modules/' + owner;
+  const ownerDirectory = owner === 'order' ? 'order_dingdan' : owner;
+  const ownerPath = '01_core_hexin/services/commerce/src/modules/' + ownerDirectory;
   evidencePaths(root, [ownerPath], location + ':owner', true);
   const operationTrace = [
     ...existingOperations.map((operation) => traceNode('Existing', operation, ['01_core_hexin/packages/contract/definitions/operations.yml'])),

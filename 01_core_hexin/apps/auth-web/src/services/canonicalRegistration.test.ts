@@ -24,6 +24,11 @@ function setWindowHostname(hostname: string): void {
   (window.location as unknown as { hostname: string }).hostname = hostname;
 }
 
+
+function setWindowSearch(search: string): void {
+  (window.location as unknown as { search: string }).search = search;
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -36,7 +41,7 @@ describe('canonical registration', () => {
   });
 
   it('routes the L0 accounts host to its own L0 API even when an L1 build value leaked in', () => {
-    expect(resolveCanonicalRegistrationApiOrigin('https://api.hbbtzn.com', false, 'accounts.zhudatuan.com'))
+    expect(resolveCanonicalRegistrationApiOrigin('accounts.zhudatuan.com'))
       .toBe('https://api.zhudatuan.com');
   });
 
@@ -172,6 +177,8 @@ describe('canonical registration', () => {
 
   it('uses the registration OTP to establish and exchange the new storefront session immediately', async () => {
     setWindowHostname('accounts.hbbtzn.com');
+    const loginIntent = 'r'.repeat(64);
+    setWindowSearch(`?login_intent=${loginIntent}`);
     const fetchMock = vi.fn<typeof fetch>(async (input, init) => {
       const path = new URL(String(input)).pathname;
       if (path === '/api/v1/identity/members') {
@@ -217,16 +224,17 @@ describe('canonical registration', () => {
       redirectUrl: 'https://hbbtzn.com/',
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://hbbtzn.com/api/v1/identity/members');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/members');
     expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ credentials: 'include' });
     expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
       subject: '+8613800138000',
       challenge: 'challenge:registration-one',
       code: '483921',
-      target: 'storefront-hbbtzn',
+      target: 'storefront',
+      loginIntent,
       authorization: { state: expect.any(String), nonce: expect.any(String), challenge: expect.any(String) },
     });
-    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://hbbtzn.com/api/v1/identity/tickets/exchange');
+    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/tickets/exchange');
     expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({ credentials: 'include' });
   });
 

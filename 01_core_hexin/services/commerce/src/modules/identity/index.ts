@@ -4,7 +4,6 @@ export type { IdentityPrincipal } from './01_public_gongkai/ports_jiekou/Identit
 export * from './01_public_gongkai/ports_jiekou/IdentityRetentionPort';
 export * from './01_public_gongkai/ports_jiekou/WechatIdentity';
 export { PasswordPolicy } from './02_domain_yewu/policies_guize/PasswordPolicy';
-export * from './04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
 export * from './04_adapters_shixian/providers_waibu/WechatIdentityGateway';
 export {
   IDENTITY_CORE_OPERATION_IDS,

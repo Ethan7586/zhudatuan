@@ -10,7 +10,6 @@ import { DATABASE_POOL, type DatabasePool } from '../../../foundation/persistenc
 import { RISK_GATE } from '../../../foundation/security/RiskGate';
 import { WECHAT_IDENTITY } from '../01_public_gongkai/ports_jiekou/WechatIdentity';
 import { identityOperations } from '../05_interface_jieru/http/IdentityOperations';
-import { RETURN_TARGETS } from '../04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
 
 describe('root identity registration reset', () => {
   it('atomically releases the login subject while retaining historical identifiers', async () => {
@@ -114,7 +113,6 @@ function context(pool: DatabasePool): ModuleContext {
   container.bind(KMS_CLIENT, {} as KmsClient);
   container.bind(RISK_GATE, { evaluate: async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) });
   container.bind(WECHAT_IDENTITY, { application: () => ({ applicationHash: 'application' }), authorize: () => 'https://example.test', exchange: async () => ({ subject: 'subject' }) });
-  container.bind(RETURN_TARGETS, { console: 'https://console.example.test', 'console-hbbtzn': 'https://console-hbbtzn.example.test', storefront: 'https://storefront.example.test', 'storefront-hbbtzn': 'https://storefront-hbbtzn.example.test', store: 'https://store.example.test', supplier: 'https://supplier.example.test' });
   return { container } as unknown as ModuleContext;
 }
 

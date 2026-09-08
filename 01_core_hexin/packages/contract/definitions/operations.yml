@@ -77,6 +77,18 @@ operations:
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
     sdk: 01_core_hexin/packages/sdk/src/operations/identity.ts
+  - id: identity.loginintents.create
+    owner: identity
+    method: POST
+    path: /api/v1/identity/login-intents
+    audience: member
+    permission: identity.session.read
+    idempotent: false
+    schema: structural
+    requirements: *a1
+    controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
+    handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: 01_core_hexin/packages/sdk/src/operations/identity.ts
   - id: identity.tickets.exchange
     owner: identity
     method: POST

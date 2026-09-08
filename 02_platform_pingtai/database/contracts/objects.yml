@@ -218,7 +218,7 @@ objects:
   - id: access.registration_invite_role_allowed
     kind: function
     owner: access
-    source: 02_platform_pingtai/database/supabase/migrations/20260905013000_registration_invite_role_projection.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260908013000_generalize_storefront_roles.sql
     operationalOwner: access
   - id: access.resolve_governance
     kind: function
@@ -689,11 +689,24 @@ objects:
     owner: finance
     source: 02_platform_pingtai/database/supabase/migrations/20260828091000_finance_reconciliation_integrity.sql
     operationalOwner: finance
+  - id: identity.consume_login_intent
+    kind: function
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql
+    callers:
+      - 01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/RegistrationOperations.ts
+      - 01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/SessionTicketOperations.ts
   - id: identity.ensure_imported_principal
     kind: function
     owner: identity
     source: 02_platform_pingtai/database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
     operationalOwner: identity
+  - id: identity.issue_login_intent
+    kind: function
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql
+    callers:
+      - 01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/SessionTicketOperations.ts
   - id: identity.notification_recipient
     kind: function
     owner: identity
@@ -1409,6 +1422,22 @@ objects:
     role: shopapp
     objectType: function
     target: finance.trial_balance_hash(text,text,text)
+    privilege: execute
+  - id: shopapp:function:identity.consume_login_intent(text,text,text,text,text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql
+    role: shopapp
+    objectType: function
+    target: identity.consume_login_intent(text,text,text,text,text,text)
+    privilege: execute
+  - id: shopapp:function:identity.issue_login_intent(text,text,text,text,text,text,text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql
+    role: shopapp
+    objectType: function
+    target: identity.issue_login_intent(text,text,text,text,text,text,text,text)
     privilege: execute
   - id: shopapp:function:identity.notification_recipient(text):execute
     kind: grant
@@ -17890,6 +17919,22 @@ objects:
     objectType: function
     target: capability.membership_operations(text)
     privilege: execute
+  - id: zhudatuanidentityapi:function:identity.consume_login_intent(text,text,text,text,text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: identity.consume_login_intent(text,text,text,text,text,text)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:identity.issue_login_intent(text,text,text,text,text,text,text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: identity.issue_login_intent(text,text,text,text,text,text,text,text)
+    privilege: execute
   - id: zhudatuanidentityapi:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
@@ -26195,6 +26240,11 @@ objects:
     kind: table
     owner: identity
     source: 02_platform_pingtai/database/supabase/migrations/20260821013000_create_identity_access.sql
+    rls: true
+  - id: identity.loginintent
+    kind: table
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql
     rls: true
   - id: identity.principal
     kind: table

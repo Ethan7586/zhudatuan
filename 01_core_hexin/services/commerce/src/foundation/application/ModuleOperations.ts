@@ -26,6 +26,7 @@ export type OperationActions = Readonly<Partial<Record<OperationId, OperationEnt
 
 const IDENTITY_AUDIT_INPUT_ALLOWLIST: Readonly<Partial<Record<OperationId, readonly string[]>>> = Object.freeze({
   'identity.sessions.create': Object.freeze(['provider', 'target', 'membership']),
+  'identity.loginintents.create': Object.freeze(['targetNodeId', 'targetSurface', 'targetApplication']),
   'identity.tickets.exchange': Object.freeze([]),
   'identity.challenges.create': Object.freeze(['purpose']),
   'identity.invitations.read': Object.freeze([]),

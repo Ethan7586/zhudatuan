@@ -8,20 +8,12 @@ import React from 'react';
 import { MallProvider } from './context/MallContext';
 import { ConsumerIdentityPage } from './screens/ConsumerIdentityPage';
 import { OperatorIdentityPage } from './screens/OperatorIdentityPage';
-import { recoverLocalIdentitySearch, resolveIdentityEntry } from './services/consumerIdentityEntry';
+import { resolveIdentityEntry } from './services/consumerIdentityEntry';
 
 export default function App() {
   const search = typeof window === 'undefined' ? '' : window.location.search;
   const hostname = typeof window === 'undefined' ? '' : window.location.hostname;
-  const recoveredSearch = recoverLocalIdentitySearch(search, hostname);
-  if (recoveredSearch !== null && typeof window !== 'undefined') {
-    window.history.replaceState(
-      window.history.state,
-      '',
-      `${window.location.pathname}${recoveredSearch}${window.location.hash}`,
-    );
-  }
-  const entry = resolveIdentityEntry(recoveredSearch ?? search, hostname);
+  const entry = resolveIdentityEntry(search, hostname);
   return (
     <MallProvider>
       {entry === null

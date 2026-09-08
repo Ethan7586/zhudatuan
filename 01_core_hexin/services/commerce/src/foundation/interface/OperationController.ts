@@ -13,6 +13,7 @@ export const CONTROLLER_OPERATION_IDS = Object.freeze([
   'runtime.health.startup',
   'runtime.health.dependency',
   'identity.sessions.create',
+  'identity.loginintents.create',
   'identity.tickets.exchange',
   'identity.session.read',
   'identity.session.delete',

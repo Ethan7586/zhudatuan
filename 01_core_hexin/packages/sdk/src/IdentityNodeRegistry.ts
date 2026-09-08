@@ -38,25 +38,17 @@ export type IdentityNodeDefinition = OperatingMallIdentityNodeDefinition | Consu
 
 export interface IdentityNodeRegistry {
   readonly version: 2;
-  readonly defaultNodeId: string;
   readonly nodes: readonly IdentityNodeDefinition[];
 }
 
 export function identityNodeRegistryFromManifest(
   manifest: IdentityNodeManifest = IDENTITY_NODE_MANIFEST,
 ): IdentityNodeRegistry {
-  if (manifest.schema !== 'zhudatuan.identity-node-manifest.v1' || manifest.version !== 2) {
+  if (manifest.schema !== 'sfl.identity-node-projection.v1' || manifest.version !== 2) {
     throw new Error('IDENTITY_NODE_MANIFEST_INVALID');
   }
   const activeNodes = manifest.nodes.filter((node) => node.status === 'active');
   const nodes = activeNodes.map((node) => {
-    const level = /^l(\d+)$/.exec(node.nodeId)?.[1];
-    if (level !== undefined) {
-      const expectedProfile = Number(level) <= 5 ? 'operating_mall' : 'consumer';
-      if (Number(level) <= 11 && node.nodeProfile !== expectedProfile) {
-        throw new Error('IDENTITY_NODE_MANIFEST_PROFILE_INVALID');
-      }
-    }
     const accountsHost = new URL(node.accountsOrigin).hostname;
     const apiHost = new URL(node.apiOrigin).hostname;
     if (!node.entries.some((entry) => entry.status === 'active' && entry.kind === 'accounts' && entry.host === accountsHost)
@@ -109,7 +101,6 @@ export function identityNodeRegistryFromManifest(
   });
   return parseIdentityNodeRegistry(JSON.stringify({
     version: manifest.version,
-    defaultNodeId: manifest.defaultNodeId,
     nodes,
   }));
 }
@@ -127,20 +118,18 @@ export function parseIdentityNodeRegistry(source: string): IdentityNodeRegistry 
   if (!isRecord(value) || value.version !== 2 || !Array.isArray(value.nodes) || value.nodes.length === 0) {
     throw new Error('IDENTITY_NODE_REGISTRY_INVALID');
   }
-  const defaultNodeId = nodeKey(value.defaultNodeId, 'IDENTITY_NODE_DEFAULT_INVALID');
   const nodes = value.nodes.map(parseNode);
   unique(nodes.map((node) => node.nodeId), 'IDENTITY_NODE_ID_DUPLICATE');
   unique(nodes.map((node) => node.accountsHost), 'IDENTITY_NODE_ACCOUNTS_HOST_DUPLICATE');
   unique(nodes.flatMap((node) => node.storefrontHosts), 'IDENTITY_NODE_STOREFRONT_HOST_DUPLICATE');
   unique(nodes.flatMap((node) => node.adminOrigin === null ? [] : [new URL(node.adminOrigin).hostname]),
     'IDENTITY_NODE_ADMIN_HOST_DUPLICATE');
-  if (!nodes.some((node) => node.nodeId === defaultNodeId)) throw new Error('IDENTITY_NODE_DEFAULT_INVALID');
   for (const node of nodes) {
     if (node.nodeProfile !== 'consumer') continue;
     const host = nodes.find((candidate) => candidate.nodeId === node.hostNodeId);
     if (host?.nodeProfile !== 'operating_mall') throw new Error('IDENTITY_CONSUMER_HOST_NODE_INVALID');
   }
-  return Object.freeze({ version: 2, defaultNodeId, nodes: Object.freeze(nodes) });
+  return Object.freeze({ version: 2, nodes: Object.freeze(nodes) });
 }
 
 export function identityNodeForAccountsHost(
@@ -159,10 +148,6 @@ export function identityNodeForStorefrontHost(
   return registry.nodes.find((node) => node.storefrontHosts.includes(normalized)) ?? null;
 }
 
-export function defaultIdentityNode(registry: IdentityNodeRegistry): IdentityNodeDefinition {
-  return registry.nodes.find((node) => node.nodeId === registry.defaultNodeId)!;
-}
-
 function parseNode(value: unknown): IdentityNodeDefinition {
   if (!isRecord(value)) throw new Error('IDENTITY_NODE_REGISTRY_INVALID');
   const nodeProfile = identityNodeProfile(value.nodeProfile);
@@ -174,7 +159,7 @@ function parseNode(value: unknown): IdentityNodeDefinition {
     : [];
   const storefrontHosts = [...new Set([new URL(storefrontOrigin).hostname, ...configuredStorefrontHosts])];
   const common = {
-    nodeId: nodeKey(value.nodeId, 'IDENTITY_NODE_ID_INVALID'),
+    nodeId: nodeIdKey(value.nodeId, 'IDENTITY_NODE_ID_INVALID'),
     nodeProfile,
     displayName,
     mallName: optionalText(value.mallName) ?? displayName,
@@ -208,7 +193,7 @@ function parseNode(value: unknown): IdentityNodeDefinition {
     ...common,
     nodeProfile,
     mallId: null,
-    hostNodeId: nodeKey(value.hostNodeId, 'IDENTITY_CONSUMER_HOST_NODE_INVALID'),
+    hostNodeId: nodeIdKey(value.hostNodeId, 'IDENTITY_CONSUMER_HOST_NODE_INVALID'),
     adminOrigin: null,
     adminTarget: null,
   });
@@ -241,6 +226,12 @@ function normalizedHost(value: string): string {
 function nodeKey(value: unknown, code: string): string {
   const key = text(value, code).toLowerCase();
   if (!/^[a-z0-9][a-z0-9-]{0,62}$/.test(key)) throw new Error(code);
+  return key;
+}
+
+function nodeIdKey(value: unknown, code: string): string {
+  const key = text(value, code).toLowerCase();
+  if (!/^node:[a-z0-9][a-z0-9-]{0,62}:[a-z0-9][a-z0-9-]{0,62}$/.test(key)) throw new Error(code);
   return key;
 }
 

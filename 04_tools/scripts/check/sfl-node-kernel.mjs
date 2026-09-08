@@ -217,12 +217,12 @@ const evidence = {
   },
   gates: {
     'SFL-17': {
-      status: 'PARTIAL',
+      status: 'UNKNOWN',
       evidence: 'One real kernel generator produced one L0 and three independent L1 manifests with unique refs and no node source paths.',
       remaining: 'No production provisioning fact or allocated resource binding was created in this batch.',
     },
     'SFL-18': {
-      status: 'PARTIAL',
+      status: 'UNKNOWN',
       evidence: {
         source_sha: [...sourceShas][0],
         build_id: [...buildIds][0],

@@ -13,11 +13,14 @@ describe('identity authorization transaction', () => {
     expect(() => AuthTransaction.complete({ ticket: 't'.repeat(86), state: started.state, nonce: started.nonce, verifier: 'wrong' })).toThrow('AUTH_PKCE_VERIFIER_INVALID');
   });
 
-  it('issues an expiring proof only for configured targets', () => {
-    const targets = { console: 'https://console.example.com', 'console-hbbtzn': 'https://console-hbbtzn.example.com', storefront: 'https://storefront.example.com', 'storefront-hbbtzn': 'https://storefront-hbbtzn.example.com', store: 'https://store.example.com', supplier: 'https://supplier.example.com' } as const;
-    const signed = new ReturnTargetSigner(targets, 'k'.repeat(64)).issue('storefront', new Date('2026-08-21T00:00:00.000Z'));
-    expect(signed.url).toBe(targets.storefront);
+  it('signs the realm-bound return origin supplied by the consumed ticket', () => {
+    const signed = new ReturnTargetSigner('k'.repeat(64)).issue(
+      'storefront', 'https://storefront.example.com', new Date('2026-08-21T00:00:00.000Z'),
+    );
+    expect(signed.url).toBe('https://storefront.example.com');
     expect(signed.proof.split('.')).toHaveLength(2);
     expect(signed.expiresAt).toBe('2026-08-21T00:01:00.000Z');
+    expect(() => new ReturnTargetSigner('k'.repeat(64)).issue('storefront', 'https://storefront.example.com?node=other'))
+      .toThrow('AUTH_RETURN_TARGET_INVALID');
   });
 });

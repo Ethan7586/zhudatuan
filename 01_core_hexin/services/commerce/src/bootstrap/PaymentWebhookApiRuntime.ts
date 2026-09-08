@@ -3,8 +3,13 @@ import {
   CONTRACT_SCHEMA_HEAD,
   RUNTIME_CONTRACT_CHECKSUM,
   WechatApplicationCatalog,
+  loadNodeManifest,
+  nodeManifestHasFeature,
+  nodeManifestHasSurface,
+  type NodeManifest,
   type PaymentWebhookApiEnvironment,
 } from '@shop/config/server';
+import { loadWechatPayConfig, type WechatPayConfig } from '@shop/wechatpayment';
 import type { Telemetry } from '@shop/telemetry';
 import type { OperationRequest, OperationUsecase } from '../foundation/application/OperationHandler';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
@@ -18,10 +23,11 @@ import { PAYMENT_GATEWAY } from '../modules/payment_zhifu/01_public_gongkai/port
 import { WechatGateway } from '../modules/payment_zhifu/04_adapters_shixian/providers_waibu/WechatGateway';
 import { PaymentWebhook } from '../modules/payment_zhifu/05_interface_jieru/http/PaymentWebhook';
 import type { Container } from './Container';
-import { bindServerNodeManifestRegistry } from './ApiBootstrap';
+import { bindServerNodeManifestRegistry, singleNodeManifestRegistry } from './ApiBootstrap';
 import { defineSelectedModule } from './DefinedModule';
 import { ExtensionRegistry } from './ExtensionRegistry';
 import type { ModuleContext } from './ModuleRegistry';
+import { NODE_DATABASE_ROLE, NODE_MANIFEST } from './NodeRuntime';
 
 export const PAYMENT_WEBHOOK_OPERATION_IDS = Object.freeze([
   'payment.webhooks.wechat',
@@ -48,6 +54,7 @@ interface CompatibilityRow {
 
 export interface PaymentWebhookApiRuntime {
   readonly pool: DatabasePool;
+  readonly manifest: NodeManifest;
   readonly extensions: ExtensionRegistry;
   readonly telemetry: Telemetry;
   readonly configure: (container: Container) => void;
@@ -57,6 +64,15 @@ export interface PaymentWebhookApiRuntime {
 export async function createPaymentWebhookApiRuntime(
   environment: PaymentWebhookApiEnvironment,
 ): Promise<PaymentWebhookApiRuntime> {
+  const manifest = await loadNodeManifest(required(environment.NODE_MANIFEST_PATH, 'NODE_MANIFEST_PATH_MISSING'), {
+    manifestId: required(environment.NODE_MANIFEST_ID, 'NODE_MANIFEST_ID_MISSING'),
+    manifestDigest: required(environment.NODE_MANIFEST_DIGEST, 'NODE_MANIFEST_DIGEST_MISSING'),
+    runtimeInstanceId: required(environment.NODE_RUNTIME_INSTANCE_ID, 'NODE_RUNTIME_INSTANCE_ID_MISSING'),
+    runtimeConfigRef: required(environment.NODE_RUNTIME_CONFIG_REF, 'NODE_RUNTIME_CONFIG_REF_MISSING'),
+    resourceBindingVersion: required(environment.NODE_RESOURCE_BINDING_VERSION, 'NODE_RESOURCE_BINDING_VERSION_MISSING'),
+    releasePointerRef: required(environment.NODE_RELEASE_POINTER_REF, 'NODE_RELEASE_POINTER_REF_MISSING'),
+  });
+  assertPaymentWebhookNodeManifest(manifest, environment);
   const secrets = new WorkloadSecretStore(
     required(environment.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING'),
     required(environment.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_MISSING'),
@@ -66,13 +82,16 @@ export async function createPaymentWebhookApiRuntime(
     secrets.read(required(environment.WECHAT_APPLICATION_CONFIG_REF, 'WECHAT_APPLICATION_CONFIG_REF_MISSING')),
     secrets.read(required(environment.WECHAT_PAYMENT_CONFIG_REF, 'WECHAT_PAYMENT_CONFIG_REF_MISSING')),
   ]);
+  const paymentConfiguration = loadWechatPayConfig(
+    parseSecret(paymentSource, 'WECHAT_PAYMENT_CONFIG_INVALID') as unknown as Parameters<typeof loadWechatPayConfig>[0]);
+  assertPaymentWebhookConfiguration(manifest, paymentConfiguration);
   const gateway = new WechatGateway(
     WechatApplicationCatalog.parse(parseSecret(applicationSource, 'WECHAT_APPLICATION_CONFIG_INVALID')),
-    parseSecret(paymentSource, 'WECHAT_PAYMENT_CONFIG_INVALID') as unknown as ConstructorParameters<typeof WechatGateway>[1],
+    paymentConfiguration,
   );
   const pool = createPool(connection, 'api');
   try {
-    await assertPaymentWebhookRuntimeCompatibility(pool);
+    await assertPaymentWebhookRuntimeCompatibility(pool, required(environment.DATABASE_API_ROLE, 'DATABASE_API_ROLE_MISSING'));
   } catch (cause) {
     await pool.end();
     throw cause;
@@ -81,12 +100,14 @@ export async function createPaymentWebhookApiRuntime(
   const extensions = new ExtensionRegistry({ verify: async () => false });
   const telemetry = commerceTelemetry();
   const audit = new RecordAudit(new PgAuditRepository());
+  const databaseRole = required(environment.DATABASE_API_ROLE, 'DATABASE_API_ROLE_MISSING');
   return Object.freeze({
     pool,
+    manifest,
     extensions,
     telemetry,
     configure(container: Container) {
-      bindServerNodeManifestRegistry(container);
+      bindServerNodeManifestRegistry(container, singleNodeManifestRegistry(manifest));
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, {
         authorize: async () => { throw new Error('PAYMENT_WEBHOOK_AUTHORIZATION_FORBIDDEN'); },
@@ -94,6 +115,8 @@ export async function createPaymentWebhookApiRuntime(
       container.bind(DATABASE_POOL, pool);
       container.bind(AUDIT_SINK, audit);
       container.bind(PAYMENT_GATEWAY, gateway);
+      container.bind(NODE_MANIFEST, manifest);
+      container.bind(NODE_DATABASE_ROLE, databaseRole);
     },
     async close() {
       await extensions.stop();
@@ -102,7 +125,10 @@ export async function createPaymentWebhookApiRuntime(
   });
 }
 
-export async function paymentWebhookRuntimeCompatibility(pool: DatabasePool): Promise<Readonly<CompatibilityRow>> {
+export async function paymentWebhookRuntimeCompatibility(
+  pool: DatabasePool,
+  expectedRole = 'zhudatuanpaymentwebhookapi',
+): Promise<Readonly<CompatibilityRow>> {
   const result = await pool.query<CompatibilityRow>(`select current_user,session_user,
     not exists(select 1 from pg_roles role where role.rolname=current_user
       and (role.rolsuper or role.rolcreatedb or role.rolcreaterole or role.rolinherit or role.rolreplication or role.rolbypassrls))
@@ -152,7 +178,7 @@ export async function paymentWebhookRuntimeCompatibility(pool: DatabasePool): Pr
       and not has_table_privilege(current_user,'payment.refundtender','INSERT,UPDATE,DELETE') forbidden_privileges`,
   [PAYMENT_WEBHOOK_SCHEMA_VERSION, PAYMENT_WEBHOOK_SCHEMA_CHECKSUM, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
   const state = result.rows[0];
-  if (!state || state.current_user !== 'zhudatuanpaymentwebhookapi' || state.session_user !== 'zhudatuanpaymentwebhookapi'
+  if (!state || state.current_user !== expectedRole || state.session_user !== expectedRole
     || !state.role_safe || !state.writable || !state.schema || !state.contract || !state.relations || !state.functions
     || !state.selected_privileges || !state.forbidden_privileges) {
     throw new Error(`PAYMENT_WEBHOOK_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
@@ -160,8 +186,42 @@ export async function paymentWebhookRuntimeCompatibility(pool: DatabasePool): Pr
   return Object.freeze(state);
 }
 
-export async function assertPaymentWebhookRuntimeCompatibility(pool: DatabasePool): Promise<void> {
-  await paymentWebhookRuntimeCompatibility(pool);
+export async function assertPaymentWebhookRuntimeCompatibility(
+  pool: DatabasePool,
+  expectedRole = 'zhudatuanpaymentwebhookapi',
+): Promise<void> {
+  await paymentWebhookRuntimeCompatibility(pool, expectedRole);
+}
+
+export function assertPaymentWebhookNodeManifest(manifest: NodeManifest, environment: PaymentWebhookApiEnvironment): void {
+  if (manifest.node_profile !== 'operating_mall' || !nodeManifestHasFeature(manifest, 'checkout')
+    || !nodeManifestHasSurface(manifest, 'api')) throw new Error('PAYMENT_WEBHOOK_NODE_MANIFEST_INVALID');
+  const secretPrefix = bindingPrefix(manifest.secret_binding_set_ref.ref, 'secrets');
+  if (!environment.DATABASE_API_CONNECTION_REF?.startsWith(secretPrefix)) {
+    throw new Error('PAYMENT_WEBHOOK_NODE_SECRET_BINDING_MISMATCH');
+  }
+  const paymentPrefix = bindingPrefix(manifest.payment_binding_refs[0]?.ref, 'payment');
+  if (![environment.WECHAT_APPLICATION_CONFIG_REF, environment.WECHAT_PAYMENT_CONFIG_REF]
+    .every((reference) => reference?.startsWith(paymentPrefix))) {
+    throw new Error('PAYMENT_WEBHOOK_NODE_PAYMENT_BINDING_MISMATCH');
+  }
+  if (environment.APP_ENV === 'production' && manifest.lifecycle_status !== 'active') throw new Error('PAYMENT_WEBHOOK_NODE_NOT_ACTIVE');
+}
+
+export function assertPaymentWebhookConfiguration(manifest: NodeManifest, configuration: WechatPayConfig): void {
+  const apiHosts = new Set(manifest.domain_bindings
+    .filter((binding) => binding.surface_ref === 'surface:api')
+    .map((binding) => binding.host));
+  const urls = [configuration.notifyUrl, ...Object.values(configuration.notifyUrlsByScope)];
+  if (urls.some((value) => !apiHosts.has(new URL(value).hostname))) throw new Error('PAYMENT_WEBHOOK_CALLBACK_HOST_MISMATCH');
+  if (Object.keys(configuration.notifyUrlsByScope).some((scope) => scope !== manifest.data_scope_ref.ref)) {
+    throw new Error('PAYMENT_WEBHOOK_CALLBACK_SCOPE_MISMATCH');
+  }
+}
+
+function bindingPrefix(reference: string | undefined, suffix: string): string {
+  if (!reference) return '__missing__/';
+  return reference.endsWith(`/${suffix}`) ? reference.slice(0, -suffix.length) : `${reference}/`;
 }
 
 function paymentWebhookOperations(context: ModuleContext): OperationUsecase {

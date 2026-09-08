@@ -1,57 +1,86 @@
-import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+// Declaration projection:
+//   node --import tsx 04_tools/scripts/release/generate-node-manifests.mjs [--check]
+// Runtime release evidence:
+//   node --import tsx 04_tools/scripts/release/generate-node-manifests.mjs \
+//     --release-output <dir> --source-sha <git-sha> --artifact-digest <sha256:...> \
+//     --build-id <id> --generated-at <ISO-8601>
+
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  materializeNodeManifestRegistryDeclaration,
+  materializeNodeManifestRegistryRelease,
+} from '../../../01_core_hexin/packages/config/src/SflNodeKernel.ts';
+import {
+  SFL_NODE_MANIFEST_REGISTRY_DECLARATION,
+  SFL_NODE_REGISTRY,
+} from '../../../01_core_hexin/packages/config/src/SflNodeRegistry.ts';
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
-const registryPath = resolve(root, '02_platform_pingtai/config/node-registry.json');
-const outputDirectory = resolve(root, '02_platform_pingtai/config/node-manifests');
-const registry = JSON.parse(await readFile(registryPath, 'utf8'));
-const checking = process.argv.includes('--check');
+const options = parseArguments(process.argv.slice(2));
+const outputDirectory = options.releaseOutput ?? resolve(root, '02_platform_pingtai/config/node-manifests');
+const checking = options.checking;
+const registry = options.releaseEvidence === null
+  ? await materializeNodeManifestRegistryDeclaration(SFL_NODE_MANIFEST_REGISTRY_DECLARATION)
+  : await materializeNodeManifestRegistryRelease(SFL_NODE_MANIFEST_REGISTRY_DECLARATION, options.releaseEvidence);
+const fileByNode = new Map(SFL_NODE_REGISTRY.node_bindings
+  .map((binding) => [binding.node_id, binding.runtime_manifest_file]));
+const expectedFiles = new Set(fileByNode.values());
 
-if (registry.schema_version !== 'sfl.node-registry/v1' || !Array.isArray(registry.nodes)) {
-  throw new Error('NODE_REGISTRY_INVALID');
-}
+if (fileByNode.size !== registry.manifests.length) throw new Error('NODE_MANIFEST_FILE_BINDING_MISMATCH');
 
-const ids = new Set(registry.nodes.map(({ node_id: id }) => id));
-const files = new Set();
-for (const node of registry.nodes) {
-  if (!node.file || files.has(node.file)) throw new Error(`NODE_REGISTRY_FILE_INVALID:${node.file ?? ''}`);
-  files.add(node.file);
-  if (node.parent_node_id !== null && !ids.has(node.parent_node_id)) throw new Error(`NODE_REGISTRY_PARENT_MISSING:${node.node_id}`);
-  const level = Number(String(node.signed_level).slice(1));
-  if (!Number.isInteger(level) || level < 0 || level > 11) throw new Error(`NODE_REGISTRY_LEVEL_INVALID:${node.node_id}`);
-  if ((level <= 5) !== (node.node_profile === 'operating_mall')) throw new Error(`NODE_REGISTRY_PROFILE_INVALID:${node.node_id}`);
-  if (node.node_profile === 'consumer' && node.surfaces?.includes('console')) throw new Error(`NODE_REGISTRY_CONSUMER_CONSOLE_FORBIDDEN:${node.node_id}`);
-
-  const { file: _file, ...definition } = node;
-  const payload = {
-    schema_version: 'sfl.node-manifest/v1',
-    manifest_id: definition.manifest_id,
-    manifest_version: registry.manifest_version,
-    generated_at: registry.generated_at,
-    line_id: registry.line_id,
-    ...definition,
-  };
-  const manifest = { ...payload, manifest_digest: digest(payload) };
+for (const manifest of registry.manifests) {
+  const file = fileByNode.get(manifest.node_id);
+  if (file === undefined) throw new Error(`NODE_MANIFEST_FILE_BINDING_MISSING:${manifest.node_id}`);
   const serialized = `${JSON.stringify(manifest, null, 2)}\n`;
-  const destination = resolve(outputDirectory, node.file);
+  const destination = resolve(outputDirectory, file);
   if (checking) {
     const existing = await readFile(destination, 'utf8').catch(() => '');
-    if (existing !== serialized) throw new Error(`NODE_MANIFEST_GENERATED_DRIFT:${node.file}`);
+    if (existing !== serialized) throw new Error(`NODE_MANIFEST_GENERATED_DRIFT:${file}`);
   } else {
     await mkdir(outputDirectory, { recursive: true });
     await writeFile(destination, serialized);
   }
 }
 
-function digest(value) {
-  return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
-}
+const unexpected = (await readdir(outputDirectory).catch(() => []))
+  .filter((file) => file.endsWith('.json') && !expectedFiles.has(file));
+if (unexpected.length > 0) throw new Error(`NODE_MANIFEST_UNDECLARED_FILES:${unexpected.sort().join(',')}`);
 
-function canonicalJson(value) {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
-  return `{${Object.entries(value).sort(([left], [right]) => left.localeCompare(right))
-    .map(([key, item]) => `${JSON.stringify(key)}:${canonicalJson(item)}`).join(',')}}`;
+console.log(`SFL NodeManifest ${options.releaseEvidence === null ? 'declaration projection' : 'release evidence'} verified: ${registry.manifests.length} nodes, registry ${registry.registry_version}.`);
+
+function parseArguments(values) {
+  if (values.length === 0) return Object.freeze({ checking: false, releaseOutput: null, releaseEvidence: null });
+  if (values.length === 1 && values[0] === '--check') {
+    return Object.freeze({ checking: true, releaseOutput: null, releaseEvidence: null });
+  }
+  const parsed = new Map();
+  for (let index = 0; index < values.length; index += 2) {
+    const key = values[index];
+    const value = values[index + 1];
+    if (typeof key !== 'string' || typeof value !== 'string' || !key.startsWith('--') || parsed.has(key)) {
+      throw new Error('NODE_MANIFEST_ARGUMENT_INVALID');
+    }
+    parsed.set(key, value);
+  }
+  const expected = ['--artifact-digest', '--build-id', '--generated-at', '--release-output', '--source-sha'];
+  if (parsed.size !== expected.length || expected.some((key) => !parsed.has(key))) {
+    throw new Error('NODE_MANIFEST_RELEASE_ARGUMENTS_REQUIRED');
+  }
+  const releaseOutput = resolve(parsed.get('--release-output'));
+  if (releaseOutput === '/' || releaseOutput === root || releaseOutput === resolve(root, '02_platform_pingtai/config/node-manifests')) {
+    throw new Error('NODE_MANIFEST_RELEASE_OUTPUT_INVALID');
+  }
+  return Object.freeze({
+    checking: false,
+    releaseOutput,
+    releaseEvidence: Object.freeze({
+      source_sha: parsed.get('--source-sha'),
+      build_id: parsed.get('--build-id'),
+      immutable_artifact_digest: parsed.get('--artifact-digest'),
+      generated_at: parsed.get('--generated-at'),
+    }),
+  });
 }

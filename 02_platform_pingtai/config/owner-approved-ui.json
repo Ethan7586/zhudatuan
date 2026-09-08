@@ -22,7 +22,7 @@
       "PUBLIC_MALL_SLUG=<owner-approved-mall>",
       "PUBLIC_MEDIA_BASE_URL=https://media.zhudatuan.com",
       "WECHAT_PAY_NOTIFY_URL=https://zhudatuan.com/api/v1/payments/wechat/notify",
-      "API_ALLOWED_ORIGINS=https://accounts.zhudatuan.com,https://console.hbbtzn.com,https://console.zhudatuan.com,https://h5.hbbtzn.com,https://h5.zhudatuan.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://mini.zhudatuan.com,https://www.hbbtzn.com,https://zhudatuan.com",
+      "API_ALLOWED_ORIGINS=https://accounts.hbbtzn.com,https://accounts.zhudatuan.com,https://beta.zhudatuan.com,https://console.hbbtzn.com,https://console.zhudatuan.com,https://h5.hbbtzn.com,https://h5.zhudatuan.com,https://hbbtzn.com,https://internal.zhudatuan.com,https://mall.hbbtzn.com,https://mini.zhudatuan.com,https://www.hbbtzn.com,https://www.zhudatuan.com,https://zhudatuan.com",
       "AUTH_RETURN_TARGETS={\"console\":\"https://console.zhudatuan.com\",\"console-hbbtzn\":\"https://console.hbbtzn.com\",\"storefront\":\"https://zhudatuan.com\",\"storefront-hbbtzn\":\"https://hbbtzn.com\",\"store\":\"https://console.zhudatuan.com/entrances/store\",\"supplier\":\"https://console.zhudatuan.com/entrances/supplier\"}"
     ],
     "requiredAppliedMigrations": [
@@ -48,7 +48,7 @@
       "approvedReferenceRoute": "/laptop-web",
       "buildCommand": "npm run build:storefront",
       "output": "01_core_hexin/apps/storefront-web/dist",
-      "requiredBuildInputs": ["01_core_hexin/packages/config/src/identity-node-manifest.json"],
+      "requiredBuildInputs": ["02_platform_pingtai/config/sfl-node-registry.declaration.json"],
       "requiredBuildEnvironment": ["APP_ENV=production", "AUTH_MODE=membership", "PUBLIC_MALL_SLUG=<owner-approved-mall>", "PUBLIC_MEDIA_BASE_URL=https://media.zhudatuan.com"],
       "acceptance": "visual-approved-functional-partial",
       "rejectedEntrypoint": "01_core_hexin/apps/storefront-web/src/App.tsx",
@@ -75,7 +75,7 @@
       "approvedReference": "../archives/smart-wing-20260826/Shop1/apps/auth-web/src/screens/LoginPage.tsx",
       "buildCommand": "npm run build:auth",
       "output": "01_core_hexin/apps/auth-web/dist",
-      "requiredBuildInputs": ["01_core_hexin/packages/config/src/identity-node-manifest.json"],
+      "requiredBuildInputs": ["02_platform_pingtai/config/sfl-node-registry.declaration.json"],
       "requiredBuildEnvironment": ["VITE_CLIENT_VERSION=<release-version>"],
       "acceptance": "visual-approved-password-session-compatible",
       "sessionEndpoint": "https://zhudatuan.com/api/v1/auth/login",
@@ -111,7 +111,7 @@
       "acceptance": "visual-approved-preview-fixture",
       "financeBoundary": "finance-upgrade-is-separate-and-not-yet-owner-frozen",
       "requiredBuildEnvironment": ["VITE_CLIENT_VERSION=<release-version>", "VITE_ZHUDIAN_SOLUTION_ORIGIN=<approved-origin>"],
-      "runtimeNodeManifest": "02_platform_pingtai/config/console-node-manifests.json",
+      "runtimeNodeManifest": "02_platform_pingtai/config/sfl-node-registry.declaration.json",
       "immutableArtifactHosts": ["console.zhudatuan.com", "console.hbbtzn.com"],
       "lockedFiles": {
         "01_core_hexin/apps/console/src/main.tsx": "4f04593399d41dc0de2a2505fcb553b510bd895df789756d9919c0074fd63c5b",

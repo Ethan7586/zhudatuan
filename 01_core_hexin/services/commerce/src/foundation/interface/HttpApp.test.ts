@@ -132,7 +132,7 @@ describe('HttpApp contract handshake', () => {
     expect(response.status).toBe(403);
     const log = records.find((record) => record.event === 'commerce.operation.completed');
     expect(log).toMatchObject({
-      level: 'warn', event: 'commerce.operation.completed', nodeId: 'l1', realmId: 'realm:l1',
+      level: 'warn', event: 'commerce.operation.completed', nodeId: 'node:hbbtzn:l1', realmId: 'realm:l1',
       operation: 'identity.sessions.create', version: CONTRACT_VERSION, phase: 'csrf',
       result: 'failure', errorCode: 'CSRF_TOKEN_INVALID', data: { status: 403 },
     });
@@ -151,7 +151,7 @@ describe('HttpApp contract handshake', () => {
 
     expect(response.status).toBe(426);
     expect(records.find((record) => record.event === 'commerce.operation.completed')).toMatchObject({
-      nodeId: 'l0', realmId: 'realm:l0', operation: 'identity.sessions.create', phase: 'contract',
+      nodeId: 'node:zhudatuan:l0', realmId: 'realm:l0', operation: 'identity.sessions.create', phase: 'contract',
       result: 'failure', errorCode: 'CONTRACT_VERSION_UNSUPPORTED', data: { status: 426 },
     });
   });

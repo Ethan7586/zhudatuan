@@ -13,7 +13,7 @@ describe('payment Jobs entrypoint', () => {
         context.signal.addEventListener('abort', () => { secondStopped(); resolve(); }, { once: true });
       })),
     ];
-    const runtime: PaymentJobsRuntime = { jobs, close: closed };
+    const runtime: PaymentJobsRuntime = { jobs, manifest: {} as PaymentJobsRuntime['manifest'], close: closed };
     const output = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
     await expect(runPaymentJobs({}, async () => runtime)).rejects.toThrow('TEST_STOP');
     expect(output).toHaveBeenCalledWith('ZHUDATUAN_PAYMENT_JOBS_READY\n');

@@ -10,7 +10,6 @@ import { KMS_CLIENT, type KmsClient } from '../../src/foundation/infrastructure/
 import { IDENTITY_SECURITY_KEYS } from '../../src/foundation/infrastructure/SecretStore';
 import { DATABASE_POOL, type DatabasePool } from '../../src/foundation/persistence/Pool';
 import type { AccessContext } from '../../src/foundation/security/AccessContext';
-import { RETURN_TARGETS } from '../../src/modules/identity/04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
 import { identityOperations, identityRegistrationOperations } from '../../src/modules/identity/05_interface_jieru/http/IdentityOperations';
 import { MemberPort } from '../../src/modules/member/01_public_gongkai/MemberPort';
 
@@ -283,8 +282,6 @@ function context(pool: DatabasePool): ModuleContext {
   container.bind(AUDIT_SINK, { record: async () => undefined, access: async () => undefined });
   container.bind(IDENTITY_SECURITY_KEYS, { identity: IDENTITY_KEY, session: SESSION_KEY });
   container.bind(KMS_CLIENT, kms);
-  container.bind(RETURN_TARGETS, Object.freeze(Object.fromEntries(IDENTITY_NODE_MANIFEST.nodes
-    .flatMap((manifestNode) => manifestNode.targets.map((target) => [target.target, target.returnOrigin])))) as never);
   return { container } as unknown as ModuleContext;
 }
 

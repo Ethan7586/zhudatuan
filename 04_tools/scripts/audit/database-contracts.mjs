@@ -161,6 +161,10 @@ const REPAIR_FILES = [
   '20260907121000_scope_identity_lifecycle_by_realm.sql',
   '20260907122000_bind_sessions_tickets_to_realm_accounts.sql',
   '20260907123000_enforce_identity_node_profiles.sql',
+  '20260908010000_canonicalize_sfl_identity_node_ids.sql',
+  '20260908011000_canonicalize_sfl_identity_targets.sql',
+  '20260908012000_create_sfl_login_intents.sql',
+  '20260908013000_generalize_storefront_roles.sql',
 ];
 
 const mode = process.argv[2];
@@ -237,7 +241,7 @@ try {
     if (mode === '--identity-realm-isolation') {
       const { verifyIdentityRealmIsolation } = await import('./identity-realm-isolation.mjs');
       await verifyIdentityRealmIsolation(database);
-      console.log('identity realm isolation passed: nodes=L0-L11 profiles=operating_mall:6,consumer:6 accounts=12 l0-l1-surfaces=4 cross-host=0 l0-l1-password-scope=pass l0-l1-logout-scope=pass node-lifecycle=2');
+      console.log('identity realm isolation passed: nodes=L0-L11 profiles=operating_mall:6,consumer:6 accounts=12 l0-l1-surfaces=4 cross-host=0 login-intent=issue/wrong-target/consume/replay password-scope=pass logout-scope=pass node-lifecycle=2');
     }
     console.log(`target schema replay passed: migrations=${applied} historical=94 repair=${REPAIR_FILES.length}`);
   }

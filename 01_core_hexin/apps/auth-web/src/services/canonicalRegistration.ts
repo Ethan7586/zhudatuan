@@ -4,7 +4,7 @@ import { PASSWORD_POLICY_MESSAGE } from '@shop/contract/password-policy';
 import { createSecureId } from '@shop/sdk/context';
 import { z } from 'zod';
 import { beginCanonicalAuthorization, canonicalStorefrontAuthTarget, exchangeCanonicalStorefrontSession } from './canonicalIdentity';
-import { configuredIdentityNode, configuredIdentityNodeRegistry, currentIdentityNode } from './identityNodeEnvironment';
+import { configuredIdentityNode, configuredIdentityNodeRegistry, currentIdentityNode, currentLoginIntent } from './identityNodeEnvironment';
 import type { IdentityNodeRegistry } from '@shop/sdk/identity-node';
 
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
@@ -186,6 +186,7 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
   if (input.termsAccepted !== true) throw new Error('请先阅读并同意当前注册条款与隐私政策');
   const authorization = input.directLogin === true ? await beginCanonicalAuthorization() : undefined;
   const returnTarget = authorization === undefined ? undefined : canonicalStorefrontAuthTarget(input.applicationSlug);
+  const loginIntent = authorization === undefined ? undefined : currentLoginIntent();
   const origin = input.directLogin === true ? storefrontApiOrigin() : apiOrigin();
   const verification = input.deferPhoneVerification === true
     ? { phoneVerification: 'checkout' }
@@ -206,6 +207,7 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
         termsHash: requiredText(input.termsHash, '注册条款版本无效'),
         ...(authorization === undefined ? {} : { authorization: authorization.request }),
         ...(returnTarget === undefined ? {} : { target: returnTarget }),
+        ...(loginIntent === undefined ? {} : { loginIntent }),
         ...(input.wechatToken === undefined ? {} : { wechatToken: requiredText(input.wechatToken, '微信授权无效') }),
       },
       signal,
@@ -362,9 +364,10 @@ function registrationError(value: unknown, status: number): string {
       RISK_REVIEW_REQUIRED: '本次注册需要人工安全复核',
       RISK_DENIED: '本次注册未通过安全检查',
       IDENTITY_SUBJECT_EXISTS: '该手机号已注册，请直接登录或找回密码',
+      LOGIN_INTENT_INVALID: '跨节点登录凭证无效、已过期或已经使用，请从原节点重新发起',
       PASSWORD_POLICY_REJECTED: PASSWORD_POLICY_MESSAGE,
       TERMS_ACCEPTANCE_REQUIRED: '注册条款已更新，请重新阅读并同意',
-    }[code] ?? `统一身份服务暂时无法完成注册（${code}）`
+    }[code] ?? '统一身份服务暂时无法完成注册，请稍后重试'
   );
 }
 

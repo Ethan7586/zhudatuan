@@ -1,0 +1,250 @@
+{
+  "schema_version": "sfl.conformance-matrix.v1",
+  "standard_version": "SFL 1.6",
+  "scope": "node:zhudatuan:l0 + node:hbbtzn:l1",
+  "as_of": "2026-09-08",
+  "status_vocabulary": ["PASS", "FAIL", "UNKNOWN", "N/A"],
+  "rule": "任何必测项 FAIL 即总体不符合；无 FAIL 但有 UNKNOWN 即部分符合；全部必测项 PASS 才完整符合。候选证据不得代替生产证据。",
+  "gates": [
+    {
+      "id": "SFL-01",
+      "title": "唯一经营线与节点上下文",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["npm run check:identity-nodes", "NodeServer.test.ts: Host 唯一解析并绑定 NodeContext"],
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待生产四入口逐项输出 line/node/level/surface/mall/scope"]
+    },
+    {
+      "id": "SFL-02",
+      "title": "单一活动节点业务身份",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["IdentityOperations.test.ts", "PgAccessResolvers.test.ts"],
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待生产四入口授权写入对照"]
+    },
+    {
+      "id": "SFL-03",
+      "title": "同凭据多账号隔离",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["identity-realm-isolation.mjs", "IdentityConcurrency.test.ts", "SmsLogin.test.ts"],
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待同一凭据在 L0/L1 的账号、Membership、Scope 与数据对照"]
+    },
+    {
+      "id": "SFL-04",
+      "title": "功能∩权限∩范围∩能力",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["Policy.test.ts", "AccessPipeline.test.ts", "RuntimeCompatibility 定向测试"],
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待生产四项真值表执行记录"]
+    },
+    {
+      "id": "SFL-05",
+      "title": "层级不自动授权",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["IdentityOperations.test.ts: governance 对照", "PgAccessResolvers.test.ts: realm mismatch 拒绝"],
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待父子节点无授权访问对照"]
+    },
+    {
+      "id": "SFL-06",
+      "title": "不信任前端自报范围",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["NodeServer.test.ts: 伪造节点头不改变 Host 归属", "PgAccessResolvers.test.ts"],
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待生产篡改 node/mall/role 负向请求"]
+    },
+    {
+      "id": "SFL-07",
+      "title": "数据不泄漏其他节点",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["identity-realm-isolation.mjs", "IdentityConcurrency.test.ts", "PaymentJobsRuntime.test.ts: 节点 Scope 领取作业"],
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待 L0/L1 生产对照数据查询"]
+    },
+    {
+      "id": "SFL-08",
+      "title": "四流写入所有权",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["现有模块边界测试存在，但本批未重新形成完整跨流直接证据"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待真实跨流状态变化与写路径证据"]
+    },
+    {
+      "id": "SFL-09",
+      "title": "四流交易收据",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["需要真实 transaction/correlation/route/supplier-leg 收据，静态测试不能替代"],
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待每节点真实交易四流收据"]
+    },
+    {
+      "id": "SFL-10",
+      "title": "节点可观测与可恢复",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["候选具备节点化健康标识；尚未执行完整恢复演练"],
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待停止、恢复与历史事实零改写演练"]
+    },
+    {
+      "id": "SFL-11",
+      "title": "运营后台四类对象分舱",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["Console 单元测试", "IdentityOperations.test.ts", "supplier/member 模块边界测试"],
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待四类生产接口和页面逐项对照"]
+    },
+    {
+      "id": "SFL-12",
+      "title": "有符号级号语义",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["节点内核已验证 L-2 分类，但缺少 L1→L-2→L2 保序交易路径直接测试"],
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待含负级节点的真实路径"]
+    },
+    {
+      "id": "SFL-13",
+      "title": "供应商进入四流",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["不在本批三项收口范围，未提交完整四流供应商证据"],
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待真实供应商商品行四流追溯"]
+    },
+    {
+      "id": "SFL-14",
+      "title": "多供应商分腿",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["不在本批三项收口范围，未执行双供应商主订单"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待双供应商订单、金额守恒和独立售后"]
+    },
+    {
+      "id": "SFL-15",
+      "title": "逆向原路回放",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["不在本批三项收口范围，未执行含负级路径的部分退款"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待退货、退款、库存回补和财务冲销原路证据"]
+    },
+    {
+      "id": "SFL-16",
+      "title": "历史路径不受关系变更影响",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["不在本批三项收口范围，未执行关系换版后的历史售后"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待 Owner/供应关系/合同变更对照"]
+    },
+    {
+      "id": "SFL-17",
+      "title": "节点生成而非源码复制",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["sfl-node-kernel.mjs 已生成一 L0 三 L1 夹具；缺真实 provisioning 事实与资源分配"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待三个真实 L1 生成记录"]
+    },
+    {
+      "id": "SFL-18",
+      "title": "同源一次构建",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["NodeManifest 已声明同源合同；待本批实际 production build 的 SHA、build_count 与制品摘要"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待 L0/L1 实际运行制品摘要对照"]
+    },
+    {
+      "id": "SFL-19",
+      "title": "任意节点身份域与首轮矩阵",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["npm run test:identity-realms: 空库重放后验证 L0—L11 共 12 个账号、L0/L1 四入口、operating_mall 6 + consumer 6、跨 Host 结果 0"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待 L0/L1 四入口及一个非写死 L2/L3 身份闭环"]
+    },
+    {
+      "id": "SFL-20",
+      "title": "节点内登录与显式跨节点",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["consumerIdentityEntry.test.ts", "canonicalIdentity.test.ts", "canonicalRegistration.test.ts", "create_sfl_login_intents.sql"],
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待 L0/L1 本地登录、合法意图、过期、重放和错目标生产对照"]
+    },
+    {
+      "id": "SFL-21",
+      "title": "节点支付 7/7",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["L0/L1 独立支付绑定、回调进程和作业 Scope 已实现；真实渠道 7/7 尚未逐节点完成"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待 L0 与 L1 各自微信支付 7/7"]
+    },
+    {
+      "id": "SFL-22",
+      "title": "独立推进与回滚",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["独立 release pointer 与 systemd 单元已声明；尚未执行推进及单节点回滚"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待 L1 独立推进、L0 PID 零变化与 L1 单独回滚"]
+    },
+    {
+      "id": "SFL-23",
+      "title": "D 类兼容退出",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["hbbtzn-alias/wrangler.jsonc routes=[]", "Worker 仅返回 410 且不 fetch/rewrite/fallback", "L1 网关不含 L0 上游"] ,
+      "production_status": "FAIL",
+      "production_evidence": ["本批任务输入确认旧 hbbtzn Worker 仍在生产路由并借用 zhudatuan 上游；尚未执行 Cloudflare 切流"]
+    },
+    {
+      "id": "SFL-24",
+      "title": "商城与消费者节点段",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["sfl-node-kernel.mjs: L5/L6/L11 profile、mall 与 surface 校验"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待真实生成 L5、L6、L11"]
+    },
+    {
+      "id": "SFL-25",
+      "title": "节点域名主权",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["api.hbbtzn.com 专属 Tunnel 候选配置", "hbbtzn-l1 本地 TLS 网关", "L1 独立 identity/purchase/webhook/jobs 进程与端口", "NodeServer.test.ts: Host 与伪造头对照"] ,
+      "production_status": "FAIL",
+      "production_evidence": ["生产仍为旧 Worker→zhudatuan 上游；专属 Tunnel、4430 网关及 4433/4434/4436 进程尚未切入"]
+    },
+    {
+      "id": "SFL-26",
+      "title": "主动跨节点授权",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["服务端 identity.loginintents.create", "五分钟一次性 consume_login_intent", "目标自有 accounts/api 域", "裸 target 无意图不触发跨节点"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待生产合法、过期、重放、错 Realm/Surface/Application/Account/Session 对照"]
+    },
+    {
+      "id": "SFL-D01",
+      "title": "页面分舱和正式 VI",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["本批只改身份入口行为，尚未形成正式 VI 人工验收记录"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待四入口页面分舱和正式 VI 验收"]
+    },
+    {
+      "id": "SFL-D02",
+      "title": "源码、构建物与运行版本一致",
+      "candidate_status": "UNKNOWN",
+      "candidate_evidence": ["待最终 source SHA、一次 production build 与 artifact digest"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待生产 NodeManifest digest、release pointer 与运行版本对照"]
+    },
+    {
+      "id": "SFL-D03",
+      "title": "验收直接测量目标事实",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["domain-boundary.mjs", "sfl-conformance-matrix.mjs", "定向 Host/Worker/进程/Login Intent 测试"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待按预先冻结穷举表执行生产验收"]
+    },
+    {
+      "id": "SFL-D04",
+      "title": "机器证据包完整",
+      "candidate_status": "PASS",
+      "candidate_evidence": ["本 JSON 完整列出 30 项", "NodeManifest 含 realm/scope/secret/payment/callback/runtime/release 引用", "检查器拒绝缺项和非法状态"] ,
+      "production_status": "UNKNOWN",
+      "production_evidence": ["待补 DNS、Worker、Tunnel、进程、交易、支付与回滚生产证据"]
+    }
+  ]
+}

@@ -4,11 +4,12 @@ import type { Telemetry } from '@shop/telemetry';
 import {
   createNodeContextResolver,
   materializeNodeManifestRegistryDeclaration,
+  SFL_NODE_MANIFEST_REGISTRY_SCHEMA_VERSION,
   type NodeContextResolver,
+  type NodeManifest,
   type NodeManifestRegistry,
-  type NodeManifestRegistryDeclaration,
 } from '@shop/config/sfl-node-kernel';
-import nodeManifestDeclaration from '../../../../../02_platform_pingtai/config/console-node-manifests.json';
+import { SFL_NODE_MANIFEST_REGISTRY_DECLARATION } from '@shop/config/sfl-node-registry';
 import { HttpApp } from '../foundation/interface/HttpApp';
 import { OperationMetrics } from '../foundation/telemetry/OperationMetrics';
 import { Container, token } from './Container';
@@ -22,11 +23,23 @@ import type { GateEngine } from '../foundation/security/gate_menjin';
 
 export const NODE_MANIFEST_REGISTRY = token<NodeManifestRegistry>('foundation.node-manifest-registry');
 export const SERVER_NODE_MANIFEST_REGISTRY = await materializeNodeManifestRegistryDeclaration(
-  nodeManifestDeclaration as unknown as NodeManifestRegistryDeclaration,
+  SFL_NODE_MANIFEST_REGISTRY_DECLARATION,
 );
 
-export function bindServerNodeManifestRegistry(container: Container): void {
-  container.bind(NODE_MANIFEST_REGISTRY, SERVER_NODE_MANIFEST_REGISTRY);
+export function bindServerNodeManifestRegistry(
+  container: Container,
+  registry: NodeManifestRegistry = SERVER_NODE_MANIFEST_REGISTRY,
+): void {
+  container.bind(NODE_MANIFEST_REGISTRY, registry);
+}
+
+export function singleNodeManifestRegistry(manifest: NodeManifest): NodeManifestRegistry {
+  return Object.freeze({
+    schema_version: SFL_NODE_MANIFEST_REGISTRY_SCHEMA_VERSION,
+    registry_version: `runtime:${manifest.manifest_id}:${manifest.manifest_version}`,
+    generated_at: manifest.generated_at,
+    manifests: Object.freeze([manifest]),
+  });
 }
 
 export interface ApiBootstrapOptions {

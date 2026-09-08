@@ -12,6 +12,7 @@ import { SESSION_TICKET_OPERATION_IDS } from '../05_interface_jieru/http/Session
 
 const CORE_CHARACTERISTICS = [
   ['identity.sessions.create', 'POST', '/api/v1/identity/sessions'],
+  ['identity.loginintents.create', 'POST', '/api/v1/identity/login-intents'],
   ['identity.tickets.exchange', 'POST', '/api/v1/identity/tickets/exchange'],
   ['identity.session.read', 'GET', '/api/v1/identity/session'],
   ['identity.session.delete', 'DELETE', '/api/v1/identity/session'],
@@ -55,6 +56,7 @@ describe('identity operation catalog characterization', () => {
     expect([...partitioned].sort()).toEqual([...IDENTITY_CORE_OPERATION_IDS].sort());
     expect(IDENTITY_REGISTRATION_OPERATION_IDS).toEqual([
       'identity.sessions.create',
+      'identity.loginintents.create',
       'identity.tickets.exchange',
       'identity.session.read',
       'identity.session.delete',

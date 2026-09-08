@@ -1,5 +1,4 @@
 import {
-  defaultIdentityNode,
   identityNodeForAccountsHost,
   parseIdentityNodeRegistry,
   type IdentityNodeDefinition,
@@ -17,13 +16,24 @@ export function configuredIdentityNode(
   hostname: string | undefined = typeof window === 'undefined' ? undefined : window.location.hostname,
   registry: IdentityNodeRegistry = configuredIdentityNodeRegistry(),
 ): IdentityNodeDefinition | null {
-  return hostname === undefined || hostname === ''
-    ? defaultIdentityNode(registry)
-    : identityNodeForAccountsHost(registry, hostname);
+  if (hostname === undefined || hostname === '') return null;
+  return identityNodeForAccountsHost(registry, hostname);
 }
 
 export function currentIdentityNode(): IdentityNodeDefinition {
   const node = configuredIdentityNode();
   if (node === null) throw new Error('AUTH_REALM_ENTRY_INVALID');
   return node;
+}
+
+export function currentLoginIntent(
+  search: string | undefined = typeof window === 'undefined' ? undefined : window.location.search,
+): string | undefined {
+  if (search === undefined || search === '') return undefined;
+  const values = new URLSearchParams(search).getAll('login_intent');
+  if (values.length === 0) return undefined;
+  if (values.length !== 1 || !/^[A-Za-z0-9_-]{64}$/.test(values[0]!)) {
+    throw new Error('跨节点登录凭证无效，请从原节点重新发起');
+  }
+  return values[0];
 }

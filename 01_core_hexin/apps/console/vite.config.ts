@@ -8,7 +8,7 @@ import {
   materializeSflConsoleArtifact,
   normalizeConsoleClientVersion,
 } from '@shop/config/sfl-console-runtime';
-import consoleReleaseDeclaration from '../../../02_platform_pingtai/config/console-node-manifests.json';
+import { SFL_CONSOLE_RELEASE_DECLARATION } from '@shop/config/sfl-node-registry';
 import { consoleImmutableArtifactDigest } from '../../../04_tools/scripts/release/console-digest.mjs';
 
 export default defineConfig(({ command, mode }) => {
@@ -63,7 +63,7 @@ function consoleRuntimeEvidence(build: BuildDefinition, clientVersion: string): 
     },
     async closeBundle() {
       const immutableArtifactDigest = consoleImmutableArtifactDigest(outputDirectory);
-      const artifact = await materializeSflConsoleArtifact(consoleReleaseDeclaration, {
+      const artifact = await materializeSflConsoleArtifact(SFL_CONSOLE_RELEASE_DECLARATION, {
         source_sha: build.commit,
         build_id: build.id,
         source_tree: build.dirty ? 'dirty' : 'clean',

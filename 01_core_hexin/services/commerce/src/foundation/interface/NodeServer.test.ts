@@ -6,7 +6,7 @@ import { SERVER_NODE_MANIFEST_REGISTRY } from '../../bootstrap/ApiBootstrap';
 import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { requireRequestNodeContext } from '../security/AccessContext';
 import { HttpApp } from './HttpApp';
-import { listen, trustedIdentityEntryHost, trustedPeerAddress } from './NodeServer';
+import { listen, trustedPeerAddress } from './NodeServer';
 
 describe('NodeServer NodeContext ingress', () => {
   it('resolves once before an outer handler and shares the exact context with HttpApp', async () => {
@@ -40,7 +40,11 @@ describe('NodeServer NodeContext ingress', () => {
     const server = listen(outerHandler, 0, '127.0.0.1', resolver);
     await server.ready;
     try {
-      const response = await nodeRequest(server.port(), 'api.zhudatuan.com');
+      const response = await nodeRequest(server.port(), 'api.zhudatuan.com', '/api/v1/identity/sessions', 'POST', {
+        'x-zdt-identity-entry-host': 'api.hbbtzn.com',
+        'x-sfl-node-id': 'node:hbbtzn:l1',
+        'x-sfl-node-manifest-id': 'manifest:hbbtzn:l1:v1',
+      });
       expect(response.status).toBe(200);
       expect(resolveCount).toBe(1);
       expect(observed).toMatchObject({ node_id: 'node:zhudatuan:l0', surface: 'surface:api' });
@@ -65,7 +69,8 @@ describe('NodeServer NodeContext ingress', () => {
     await server.ready;
     try {
       const response = await nodeRequest(server.port(), 'unknown.example');
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(421);
+      expect(response.body).toContain('NODE_BOUNDARY_HOST_MISMATCH');
       expect(handled).toBe(false);
     } finally {
       await server.close();
@@ -98,6 +103,7 @@ function nodeRequest(
   host: string,
   path = '/api/v1/identity/sessions',
   method: 'GET' | 'POST' = 'POST',
+  extraHeaders: Readonly<Record<string, string>> = {},
 ): Promise<Readonly<{ status: number; body: string }>> {
   return new Promise((resolve, reject) => {
     const request = httpRequest({
@@ -110,7 +116,8 @@ function nodeRequest(
         'content-type': 'application/json',
         'content-length': '2',
         'x-contract-version': CONTRACT_VERSION,
-      } : { host },
+        ...extraHeaders,
+      } : { host, ...extraHeaders },
     }, (response) => {
       const chunks: Buffer[] = [];
       response.on('data', (chunk: Buffer) => chunks.push(chunk));
@@ -134,29 +141,5 @@ describe('trusted peer address', () => {
     expect(trustedPeerAddress('203.0.113.8, 198.51.100.2', '127.0.0.1')).toBe('127.0.0.1');
     expect(trustedPeerAddress(['203.0.113.8', '203.0.113.9'], '127.0.0.1')).toBe('127.0.0.1');
     expect(trustedPeerAddress(undefined, undefined)).toBe('unknown');
-  });
-});
-
-describe('trusted identity entry host', () => {
-  it('preserves an L1 host only on a Cloudflare cross-zone Worker subrequest', () => {
-    const trusted = {
-      'cf-worker': 'hbbtzn.com',
-      'cf-connecting-ip': '2a06:98c0:3600::103',
-      'x-real-ip': '2a06:98c0:3600::103',
-      'x-zdt-identity-entry-host': 'api.hbbtzn.com',
-    };
-    expect(trustedIdentityEntryHost(trusted, 'api.zhudatuan.com')).toBe('api.hbbtzn.com');
-    expect(trustedIdentityEntryHost({ ...trusted, 'cf-worker': undefined }, 'api.zhudatuan.com'))
-      .toBe('api.zhudatuan.com');
-    expect(trustedIdentityEntryHost({ ...trusted, 'x-real-ip': '203.0.113.8' }, 'api.zhudatuan.com'))
-      .toBe('api.zhudatuan.com');
-    expect(trustedIdentityEntryHost({ ...trusted, 'cf-connecting-ip': '203.0.113.8' }, 'api.zhudatuan.com'))
-      .toBe('api.hbbtzn.com');
-    expect(trustedIdentityEntryHost({ ...trusted, 'x-real-ip': '203.0.113.8', 'cf-connecting-ip': '2a06:98c0:3600::103' }, 'api.zhudatuan.com'))
-      .toBe('api.zhudatuan.com');
-    expect(trustedIdentityEntryHost({ ...trusted, 'x-zdt-identity-entry-host': 'api.zhudatuan.com' }, 'api.zhudatuan.com'))
-      .toBe('api.zhudatuan.com');
-    expect(trustedIdentityEntryHost({ ...trusted, 'x-zdt-identity-entry-host': 'unknown.hbbtzn.com' }, 'api.zhudatuan.com'))
-      .toBe('api.zhudatuan.com');
   });
 });

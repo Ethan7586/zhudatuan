@@ -94,7 +94,7 @@ export class DomainPurchasePolicy {
 function purchaseOwner(owner: DomainPurchaseOwner): DomainPurchaseOwner {
   text(owner.organizationId, 'DOMAIN_PURCHASE_ORGANIZATION_INVALID');
   text(owner.mallId, 'DOMAIN_PURCHASE_MALL_INVALID');
-  if (owner.resolvedLevel !== 'L0' && owner.resolvedLevel !== 'L1') throw new Error('DOMAIN_PURCHASE_LEVEL_NOT_ELIGIBLE');
+  if (!/^L[0-5]$/.test(owner.resolvedLevel)) throw new Error('DOMAIN_PURCHASE_LEVEL_NOT_ELIGIBLE');
   return Object.freeze({ ...owner });
 }
 

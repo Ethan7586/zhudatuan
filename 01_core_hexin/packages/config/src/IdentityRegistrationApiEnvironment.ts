@@ -1,19 +1,8 @@
 import { bearerToken, distinctValues, enumValue, integerValue, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
-import { apiAllowedOrigins, apiReturnTargets, type AuthReturnTargets } from './ApiEnvironment';
-import { IDENTITY_NODE_MANIFEST } from './IdentityNodeManifest';
+import { apiAllowedOrigins } from './ApiEnvironment';
+import { nodeManifestDeclarationByManifestId } from './SflNodeRegistry';
 
 export const IDENTITY_REGISTRATION_API_PROFILE = 'registration-only' as const;
-
-const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([...IDENTITY_NODE_MANIFEST.allowedBrowserOrigins]);
-const INTERNAL_STOREFRONT_ORIGIN = 'https://internal.zhudatuan.com';
-const INTERNAL_ALLOWED_ORIGINS = Object.freeze([...PRODUCTION_ALLOWED_ORIGINS, INTERNAL_STOREFRONT_ORIGIN]);
-
-const PRODUCTION_RETURN_TARGETS = Object.freeze(Object.fromEntries(IDENTITY_NODE_MANIFEST.nodes
-  .flatMap((node) => node.targets.map((target) => [target.target, target.returnOrigin])))) as AuthReturnTargets;
-const INTERNAL_RETURN_TARGETS = Object.freeze({
-  ...PRODUCTION_RETURN_TARGETS,
-  storefront: INTERNAL_STOREFRONT_ORIGIN,
-} satisfies AuthReturnTargets);
 
 export const IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS = Object.freeze([
   'IDENTITY_REGISTRATION_API_PROFILE',
@@ -23,8 +12,8 @@ export const IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS = Object.freeze([
   'AUTH_MODE',
   'SERVICE_VERSION',
   'API_ALLOWED_ORIGINS',
-  'AUTH_RETURN_TARGETS',
   'DATABASE_API_CONNECTION_REF',
+  'DATABASE_API_ROLE',
   'SESSION_KEY_REF',
   'IDENTITY_KEY_REF',
   'WECHAT_APPLICATION_CONFIG_REF',
@@ -35,13 +24,20 @@ export const IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS = Object.freeze([
   'OBJECT_STORE_BEARER_TOKEN',
   'SECRET_STORE_ENDPOINT',
   'SECRET_STORE_BEARER_TOKEN',
+  'NODE_MANIFEST_PATH',
+  'NODE_MANIFEST_ID',
+  'NODE_MANIFEST_DIGEST',
+  'NODE_RUNTIME_INSTANCE_ID',
+  'NODE_RUNTIME_CONFIG_REF',
+  'NODE_RESOURCE_BINDING_VERSION',
+  'NODE_RELEASE_POINTER_REF',
 ] as const);
 
 export type IdentityRegistrationApiEnvironment = Readonly<Partial<Record<
   (typeof IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS)[number], string
 >>>;
 
-const CONFIGURATION_KEY = /^(?:API_|APP_ENV$|AUTH_|DATABASE_|EXTENSION_|IDENTITY_|INVOICE_|JOB_|KMS_|NOTIFICATION_|OBJECT_|PAYMENT_|PAYOUT_|PII_|PUBLIC_|QUOTE_|REDIS_|SECRET_|SESSION_|SERVICE_VERSION$|WECHAT_)/;
+const CONFIGURATION_KEY = /^(?:API_|APP_ENV$|AUTH_|DATABASE_|EXTENSION_|IDENTITY_|INVOICE_|JOB_|KMS_|NODE_(?:MANIFEST_|RUNTIME_|RESOURCE_|RELEASE_)|NOTIFICATION_|OBJECT_|PAYMENT_|PAYOUT_|PII_|PUBLIC_|QUOTE_|REDIS_|SECRET_|SESSION_|SERVICE_VERSION$|WECHAT_)/;
 const ALLOWED_KEYS = new Set<string>(IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS);
 
 export function identityRegistrationApiEnvironment(
@@ -67,8 +63,8 @@ export function validateIdentityRegistrationApiEnvironment(source: EnvironmentSo
   for (const [key, code] of [
     ['SERVICE_VERSION', 'SERVICE_VERSION_MISSING'],
     ['API_ALLOWED_ORIGINS', 'API_ALLOWED_ORIGINS_MISSING'],
-    ['AUTH_RETURN_TARGETS', 'AUTH_RETURN_TARGETS_MISSING'],
     ['DATABASE_API_CONNECTION_REF', 'DATABASE_API_CONNECTION_REF_MISSING'],
+    ['DATABASE_API_ROLE', 'DATABASE_API_ROLE_MISSING'],
     ['SESSION_KEY_REF', 'SESSION_KEY_REF_MISSING'],
     ['IDENTITY_KEY_REF', 'IDENTITY_KEY_REF_MISSING'],
     ['WECHAT_APPLICATION_CONFIG_REF', 'WECHAT_APPLICATION_CONFIG_REF_MISSING'],
@@ -76,7 +72,16 @@ export function validateIdentityRegistrationApiEnvironment(source: EnvironmentSo
     ['KMS_ENDPOINT', 'KMS_ENDPOINT_MISSING'],
     ['OBJECT_STORE_ENDPOINT', 'OBJECT_STORE_ENDPOINT_MISSING'],
     ['SECRET_STORE_ENDPOINT', 'SECRET_STORE_ENDPOINT_MISSING'],
+    ['NODE_MANIFEST_PATH', 'NODE_MANIFEST_PATH_MISSING'],
+    ['NODE_MANIFEST_ID', 'NODE_MANIFEST_ID_MISSING'],
+    ['NODE_RUNTIME_INSTANCE_ID', 'NODE_RUNTIME_INSTANCE_ID_MISSING'],
+    ['NODE_RUNTIME_CONFIG_REF', 'NODE_RUNTIME_CONFIG_REF_MISSING'],
+    ['NODE_RESOURCE_BINDING_VERSION', 'NODE_RESOURCE_BINDING_VERSION_MISSING'],
+    ['NODE_RELEASE_POINTER_REF', 'NODE_RELEASE_POINTER_REF_MISSING'],
   ] as const) requiredValue(source[key], code);
+  if (!/^sha256:[0-9a-f]{64}$/.test(requiredValue(source.NODE_MANIFEST_DIGEST, 'NODE_MANIFEST_DIGEST_INVALID'))) {
+    throw new Error('NODE_MANIFEST_DIGEST_INVALID');
+  }
   if (source.API_BIND_HOST !== undefined && source.API_BIND_HOST !== '127.0.0.1') throw new Error('IDENTITY_REGISTRATION_API_BIND_HOST_INVALID');
   secureEndpoint(source.KMS_ENDPOINT, 'KMS_ENDPOINT_INVALID');
   secureEndpoint(source.OBJECT_STORE_ENDPOINT, 'OBJECT_STORE_ENDPOINT_INVALID');
@@ -86,15 +91,13 @@ export function validateIdentityRegistrationApiEnvironment(source: EnvironmentSo
   const secretStoreBearer = bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
   distinctValues(kmsBearer, secretStoreBearer, 'WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
   const origins = apiAllowedOrigins(source);
-  const returnTargets = apiReturnTargets(source);
-  const normalizedOrigins = [...origins].sort().join(',');
-  if (app === 'production' && ![PRODUCTION_ALLOWED_ORIGINS, INTERNAL_ALLOWED_ORIGINS]
-    .some((allowed) => normalizedOrigins === [...allowed].sort().join(','))) {
+  const manifest = nodeManifestDeclarationByManifestId(source.NODE_MANIFEST_ID!);
+  const expectedOrigins = manifest.domain_bindings
+    .filter((binding) => binding.surface_ref !== 'surface:api')
+    .map((binding) => `https://${binding.host}`)
+    .sort();
+  if (app === 'production' && [...origins].sort().join(',') !== expectedOrigins.join(',')) {
     throw new Error('IDENTITY_REGISTRATION_API_ORIGINS_INVALID');
-  }
-  if (app === 'production' && ![PRODUCTION_RETURN_TARGETS, INTERNAL_RETURN_TARGETS].some((allowed) =>
-    Object.keys(allowed).every((target) => returnTargets[target as keyof AuthReturnTargets] === allowed[target as keyof AuthReturnTargets]))) {
-    throw new Error('IDENTITY_REGISTRATION_API_RETURN_TARGETS_INVALID');
   }
   identityRegistrationApiPort(source);
 }
@@ -105,10 +108,6 @@ export function identityRegistrationApiPort(environment: IdentityRegistrationApi
 
 export function identityRegistrationApiAllowedOrigins(environment: IdentityRegistrationApiEnvironment): readonly string[] {
   return apiAllowedOrigins(environment);
-}
-
-export function identityRegistrationApiReturnTargets(environment: IdentityRegistrationApiEnvironment): AuthReturnTargets {
-  return apiReturnTargets(environment);
 }
 
 function secureEndpoint(value: string | undefined, code: string): void {

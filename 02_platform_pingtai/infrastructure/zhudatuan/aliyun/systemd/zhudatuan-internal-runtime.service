@@ -15,6 +15,7 @@ Environment=NODE_ENV=production
 Environment=APP_ENV=production
 Environment=LOCAL_RUNTIME_PROFILE=registration-only
 EnvironmentFile=/opt/zhudatuan/shared/runtime.env
+UnsetEnvironment=LOCAL_OBJECTS_PORT LOCAL_OBJECTS_DIRECTORY LOCAL_OBJECTS_TOKEN
 ExecStart=/usr/bin/node 01_core_hexin/services/commerce/dist/InternalRuntimeMain.js
 ExecStartPost=/usr/bin/node 01_core_hexin/services/commerce/dist/InternalRuntimeReadyMain.js
 Restart=on-failure

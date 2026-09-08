@@ -32,6 +32,10 @@ function setWindowHostname(hostname: string): void {
   (window.location as unknown as { hostname: string }).hostname = hostname;
 }
 
+function setWindowSearch(search: string): void {
+  (window.location as unknown as { search: string }).search = search;
+}
+
 describe('canonical storefront session', () => {
   it('recognizes the already signed-in L1 before reopening consumer registration', async () => {
     setWindowHostname('accounts.hbbtzn.com');
@@ -45,7 +49,7 @@ describe('canonical storefront session', () => {
     await expect(currentCanonicalStorefrontOrganization()).resolves.toBe('mall:l1-hongtai');
 
     const [url, init] = fetchMock.mock.calls[0];
-    expect(String(url)).toBe('https://hbbtzn.com/api/v1/identity/session');
+    expect(String(url)).toBe('https://api.hbbtzn.com/api/v1/identity/session');
     expect(init).toMatchObject({ method: 'GET', credentials: 'include', redirect: 'error' });
   });
 
@@ -217,10 +221,10 @@ describe('canonical console identity', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const result = await loginCanonicalConsole('13424327586', 'Original!Password1', undefined, undefined, {
-      target: 'console-hbbtzn', expectedOrigin: 'https://console.hbbtzn.com',
+      target: 'console', expectedOrigin: 'https://console.hbbtzn.com',
     });
 
-    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({ target: 'console-hbbtzn' });
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({ target: 'console' });
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/sessions');
     expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/tickets/exchange');
     expect(result).toMatchObject({
@@ -237,7 +241,7 @@ describe('canonical console identity', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(loginCanonicalConsole('13424327586', 'Original!Password1', undefined, undefined, {
-      target: 'console-hbbtzn', expectedOrigin: 'https://console.zhudatuan.com',
+      target: 'console', expectedOrigin: 'https://console.zhudatuan.com',
     })).rejects.toThrow('后台登录目标与当前身份节点不匹配');
   });
 
@@ -267,7 +271,7 @@ describe('canonical console identity', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(loginCanonicalConsole('ethan', 'Original!Password1'))
-      .rejects.toThrow('统一身份服务暂时无法完成登录（CSRF_TOKEN_INVALID）');
+      .rejects.toThrow('统一身份服务暂时无法完成登录，请稍后重试');
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
@@ -278,7 +282,7 @@ describe('canonical console identity', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(loginCanonicalConsole('ethan', 'Original!Password1'))
-      .rejects.toThrow('统一身份服务暂时无法完成登录（CONTRACT_VERSION_UNSUPPORTED）');
+      .rejects.toThrow('统一身份服务暂时无法完成登录，请稍后重试');
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -322,6 +326,8 @@ describe('canonical console identity', () => {
 
   it('binds a storefront entry login to the requested application', async () => {
     setWindowHostname('accounts.hbbtzn.com');
+    const loginIntent = 'i'.repeat(64);
+    setWindowSearch(`?login_intent=${loginIntent}`);
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:hongtai')))
@@ -341,12 +347,13 @@ describe('canonical console identity', () => {
     expect(body).toMatchObject({
       provider: 'password',
       subject: '+8613800138000',
-      target: 'storefront-hbbtzn',
+      target: 'storefront',
       application: 'zdt-l1-verify',
+      loginIntent,
     });
     expect(body).not.toHaveProperty('membership');
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://hbbtzn.com/api/v1/identity/sessions');
-    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://hbbtzn.com/api/v1/identity/tickets/exchange');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/sessions');
+    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/tickets/exchange');
   });
 
   it('keeps the L0 identity host on its own storefront when sharing the same auth build', async () => {

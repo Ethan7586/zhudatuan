@@ -10,7 +10,7 @@ const production = Object.freeze({
 describe('auth production build environment', () => {
   it('requires every browser runtime value at build time', () => {
     expect(validateAuthBuildEnvironment(production)).toEqual({
-      identityNodes: expect.objectContaining({ version: 2, defaultNodeId: 'l0' }),
+      identityNodes: expect.objectContaining({ version: 2, nodes: expect.any(Array) }),
       identityNodeRegistrySource: PRODUCTION_IDENTITY_NODE_REGISTRY_SOURCE,
       clientVersion: '1.0.0',
     });

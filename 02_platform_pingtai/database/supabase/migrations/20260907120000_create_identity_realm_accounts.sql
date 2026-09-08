@@ -133,12 +133,19 @@ where profile.id=membership.member_id
 alter table identity.credential add column realm_id text;
 alter table identity.credential add column account_id text;
 alter table identity.credential drop constraint credential_provider_subject_hash_key;
+drop index identity.identity_one_active_password_per_principal;
 alter table identity.credential add constraint credential_realm_account_pair
   check((realm_id is null)=(account_id is null));
 alter table identity.credential add constraint credential_realm_account
   foreign key(account_id,realm_id) references identity.account(id,realm_id);
 create unique index identity_credential_realm_provider_subject_unique
   on identity.credential(realm_id,provider,subject_hash) where realm_id is not null;
+create unique index identity_one_active_password_per_account
+  on identity.credential(account_id)
+  where provider='password' and status='active' and account_id is not null;
+create unique index identity_one_active_password_per_unbound_principal
+  on identity.credential(principal_id)
+  where provider='password' and status='active' and account_id is null;
 create index identity_credential_account_status_idx on identity.credential(account_id,status,provider);
 
 with ranked as (
@@ -161,6 +168,110 @@ join identity.account account on account.legacy_principal_id=source.principal_id
 where source.account_id is not null
   and not exists(select 1 from identity.credential existing
     where existing.account_id=account.id and existing.provider=source.provider and existing.subject_hash=source.subject_hash);
+
+create or replace function access.protect_owner_transfer_snapshot()
+returns trigger language plpgsql security definer
+set search_path=pg_catalog,pg_temp
+set row_security=off as $function$
+declare
+  targetrow record;
+  passwordrow record;
+  active_passwords integer;
+begin
+  if tg_op='INSERT' then
+    select target.member_id,target.account_id,target.realm_id,profile.principal_id,principal.credential_version,
+      profile.mobile_token,target.access_version,target.status membership_status,
+      profile.status profile_status,principal.status principal_status
+    into targetrow
+    from access.membership target
+    join member.profile profile on profile.id=target.member_id
+    join identity.principal principal on principal.id=profile.principal_id
+    where target.id=new.target_membership_id
+      and target.organization_id='tenant-zhudatuan' and target.client='operator'
+    for update of target,profile,principal;
+    if targetrow.member_id is null
+      or targetrow.account_id is null
+      or targetrow.realm_id<>'realm:l0'
+      or targetrow.membership_status<>'active'
+      or targetrow.profile_status<>'active'
+      or targetrow.principal_status<>'active'
+      or targetrow.mobile_token is null
+      or targetrow.access_version<>new.target_access_version then
+      raise exception 'OWNER_TRANSFER_TARGET_IDENTITY_INVALID';
+    end if;
+    perform 1 from identity.credential credential
+    where credential.account_id=targetrow.account_id and credential.realm_id=targetrow.realm_id
+      and credential.principal_id=targetrow.principal_id
+      and credential.provider='password' and credential.status='active'
+    for update;
+    select count(*) into active_passwords from identity.credential credential
+    where credential.account_id=targetrow.account_id and credential.realm_id=targetrow.realm_id
+      and credential.principal_id=targetrow.principal_id
+      and credential.provider='password' and credential.status='active';
+    if active_passwords<>1 then raise exception 'OWNER_TRANSFER_TARGET_IDENTITY_INVALID'; end if;
+    select credential.id,credential.subject_hash into passwordrow
+    from identity.credential credential
+    where credential.account_id=targetrow.account_id and credential.realm_id=targetrow.realm_id
+      and credential.principal_id=targetrow.principal_id
+      and credential.provider='password' and credential.status='active';
+    new.target_member_id:=targetrow.member_id;
+    new.target_principal_id:=targetrow.principal_id;
+    new.target_password_credential_id:=passwordrow.id;
+    new.target_credential_version:=targetrow.credential_version;
+    new.target_subject_hash:=passwordrow.subject_hash;
+    new.target_mobile_token:=targetrow.mobile_token;
+    return new;
+  end if;
+
+  if new.target_member_id is distinct from old.target_member_id
+    or new.target_principal_id is distinct from old.target_principal_id
+    or new.target_password_credential_id is distinct from old.target_password_credential_id
+    or new.target_credential_version is distinct from old.target_credential_version
+    or new.target_subject_hash is distinct from old.target_subject_hash
+    or new.target_mobile_token is distinct from old.target_mobile_token then
+    raise exception 'OWNER_TRANSFER_TARGET_SNAPSHOT_IMMUTABLE';
+  end if;
+  if new.state is distinct from old.state
+    and not (old.state='pending_acceptance' and new.state in('accepted','cancelled','expired')) then
+    raise exception 'OWNER_TRANSFER_STATE_TRANSITION_INVALID';
+  end if;
+
+  if old.state='pending_acceptance' and new.state='accepted' then
+    perform 1 from identity.credential credential
+    where credential.id=old.target_password_credential_id
+      and credential.principal_id=old.target_principal_id
+      and credential.provider='password' and credential.status='active'
+    for update;
+    select count(*) into active_passwords from identity.credential credential
+    where credential.id=old.target_password_credential_id
+      and credential.principal_id=old.target_principal_id
+      and credential.provider='password' and credential.status='active';
+    if active_passwords<>1
+      or new.accepted_by is distinct from old.target_principal_id
+      or not exists(select 1
+        from access.membership target
+        join member.profile profile on profile.id=target.member_id
+        join identity.principal principal on principal.id=profile.principal_id
+        join identity.credential credential on credential.id=old.target_password_credential_id
+          and credential.principal_id=principal.id
+          and credential.account_id=target.account_id and credential.realm_id=target.realm_id
+          and credential.provider='password' and credential.status='active'
+        where target.id=old.target_membership_id
+          and target.member_id=old.target_member_id
+          and target.organization_id='tenant-zhudatuan' and target.client='operator' and target.status='active'
+          and target.realm_id='realm:l0'
+          and target.access_version=old.target_access_version+2
+          and profile.id=old.target_member_id and profile.principal_id=old.target_principal_id
+          and profile.status='active' and profile.mobile_token=old.target_mobile_token
+          and principal.id=old.target_principal_id and principal.status='active'
+          and principal.credential_version=old.target_credential_version
+          and credential.subject_hash=old.target_subject_hash) then
+      raise exception 'OWNER_TRANSFER_TARGET_IDENTITY_CHANGED';
+    end if;
+  end if;
+  return new;
+end
+$function$;
 
 alter table identity.federatedidentity add column realm_id text;
 alter table identity.federatedidentity add column account_id text;
@@ -197,7 +308,7 @@ create policy identityapi on identity.realmtarget for select to zhudatuanidentit
 create policy identityapi on identity.account for all to zhudatuanidentityapi using(true) with check(true);
 
 insert into runtime.schemaversion(version,checksum)
-values('20260907120000','d0a23337279f44c222ef1b385caaefe9562a20689caafde703dea6e9fed38b96');
+values('20260907120000','8bfcc7552e21b0c98a9f845d92ff58e52dbaf93ee63c462c5d4c0aed360e65e1');
 
 do $assert$
 begin
@@ -225,7 +336,7 @@ begin
       where membership.realm_id<>account.realm_id)
     or not exists(select 1 from runtime.schemaversion
       where version='20260907120000'
-        and checksum='d0a23337279f44c222ef1b385caaefe9562a20689caafde703dea6e9fed38b96') then
+        and checksum='8bfcc7552e21b0c98a9f845d92ff58e52dbaf93ee63c462c5d4c0aed360e65e1') then
     raise exception 'IDENTITY_REALM_ACCOUNT_MIGRATION_INCOMPLETE';
   end if;
 end

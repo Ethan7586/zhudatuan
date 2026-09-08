@@ -90,19 +90,20 @@ export function membershipInvitationOperations(runtime: RealmOperationContext): 
               and ($2::text is null or storefront.id=$2) order by storefront.id limit 2`, [invitationScope, requestedStorefront])
           : { rows: [] };
         if (targetClient === 'operator' && storefronts.rows.length !== 1) throw new Error('STOREFRONT_SCOPE_REQUIRED');
-        const roleId = targetClient === 'operator'
+        const operatorRoleId = targetClient === 'operator'
           ? governanceLevel === 'senior_administrator'
             ? seniorAdministratorRoleId(invitationScope)
             : 'role-zhudatuan-pending-operator'
-          : invitationScope === 'mall-zhudatuan'
-            ? 'role-zhudatuan-storefront-member'
-            : `role-zhudatuan-storefront-member:${invitationScope}`;
-        const role = await database.query<{ id: string }>(`select role.id from access.role role where role.id=$1
-        and role.status='active' and role.scope_id=$2
+          : null;
+        const role = await database.query<{ id: string }>(`select role.id from access.role role where role.scope_id=$2
+        and role.status='active'
+        and (($4::text='storefront' and role.name='商城会员') or ($4::text='operator' and role.id=$1))
         and ($3::text is distinct from 'administrator' or not exists(
-          select 1 from access.rolepermission pendingpermission where pendingpermission.role_id=role.id))`,
-        [roleId, invitationScope, governanceLevel]);
-        if (role.rows[0]?.id !== roleId) throw new Error('EMPLOYEE_ROLE_NOT_FOUND');
+          select 1 from access.rolepermission pendingpermission where pendingpermission.role_id=role.id))
+        order by role.id limit 2`,
+        [operatorRoleId, invitationScope, governanceLevel, targetClient]);
+        if (role.rows.length !== 1) throw new Error('EMPLOYEE_ROLE_NOT_FOUND');
+        const roleId = role.rows[0]!.id;
         const policy = await database.query<{ id: string; terms_hash: string }>(`select id,terms_hash from identity.registrationpolicy
         where effective_at<=clock_timestamp() and (retired_at is null or retired_at>clock_timestamp()) order by version desc limit 1`);
         if (!policy.rows[0]) throw new Error('INVITE_INVALID');
@@ -116,7 +117,7 @@ export function membershipInvitationOperations(runtime: RealmOperationContext): 
         returning id,label,case target_client when 'operator' then 'console' else target_client end target,
           max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
           [id, invitationScope, label, destinationHash ?? digest(id), digest(code), expiresAt, access.membership.id,
-            role.rows[0].id, destinationHash, maxUses, policy.rows[0].id, policy.rows[0].terms_hash,
+            roleId, destinationHash, maxUses, policy.rows[0].id, policy.rows[0].terms_hash,
             targetClient, storefronts.rows[0]?.id ?? null, destination === null ? null : maskInvitationMobile(destination)]
         );
         const saved = result.rows[0];

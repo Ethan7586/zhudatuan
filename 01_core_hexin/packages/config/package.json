@@ -17,6 +17,7 @@
     "./runtime": "./src/RuntimeCatalog.generated.ts",
     "./sfl-console-runtime": "./src/SflNodeKernelConsole.ts",
     "./sfl-node-kernel": "./src/SflNodeKernel.ts",
+    "./sfl-node-registry": "./src/SflNodeRegistry.ts",
     "./server": "./src/ServerEnvironment.ts"
   },
   "devDependencies": {

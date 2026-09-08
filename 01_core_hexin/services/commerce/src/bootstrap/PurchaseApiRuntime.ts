@@ -1,8 +1,19 @@
 import { SystemClock } from '@shop/kernel';
 import type { Telemetry } from '@shop/telemetry';
 import type { OperationId } from '@shop/contract';
-import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD, WechatApplicationCatalog, purchasePaymentProviderEnabled,
-  type PurchaseApiEnvironment } from '@shop/config/server';
+import {
+  CONTRACT_SCHEMA_HEAD,
+  RUNTIME_CONTRACT_CHECKSUM,
+  TARGET_SCHEMA_HEAD,
+  WechatApplicationCatalog,
+  loadNodeManifest,
+  nodeManifestHasFeature,
+  nodeManifestHasSurface,
+  purchasePaymentProviderEnabled,
+  type NodeManifest,
+  type PurchaseApiEnvironment,
+} from '@shop/config/server';
+import { loadWechatPayConfig, type WechatPayConfig } from '@shop/wechatpayment';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
@@ -32,8 +43,9 @@ import { PurchaseSessionResolver } from '../modules/purchase/PurchaseSessionReso
 import { WebBusinessScopeResolver } from '../modules/webbusiness/WebBusinessScopeResolver';
 import { WebRiskCheckAdapter } from '../modules/webbusiness/WebRiskCheckAdapter';
 import type { Container } from './Container';
-import { bindServerNodeManifestRegistry } from './ApiBootstrap';
+import { bindServerNodeManifestRegistry, singleNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
+import { NODE_DATABASE_ROLE, NODE_MANIFEST } from './NodeRuntime';
 
 export const PURCHASE_SCHEMA_VERSION = '20260902011000' as const;
 export const PURCHASE_SCHEMA_CHECKSUM = 'd53ccec069c3a040fb31977482ae3ebbb256a0d6285cf2e25f6a1497b8784549' as const;
@@ -54,6 +66,7 @@ interface CompatibilityRow {
 
 export interface PurchaseApiRuntime {
   readonly pool: DatabasePool;
+  readonly manifest: NodeManifest;
   readonly extensions: ExtensionRegistry;
   readonly telemetry: Telemetry;
   readonly configure: (container: Container) => void;
@@ -61,6 +74,15 @@ export interface PurchaseApiRuntime {
 }
 
 export async function createPurchaseApiRuntime(environment: PurchaseApiEnvironment): Promise<PurchaseApiRuntime> {
+  const manifest = await loadNodeManifest(required(environment.NODE_MANIFEST_PATH, 'NODE_MANIFEST_PATH_MISSING'), {
+    manifestId: required(environment.NODE_MANIFEST_ID, 'NODE_MANIFEST_ID_MISSING'),
+    manifestDigest: required(environment.NODE_MANIFEST_DIGEST, 'NODE_MANIFEST_DIGEST_MISSING'),
+    runtimeInstanceId: required(environment.NODE_RUNTIME_INSTANCE_ID, 'NODE_RUNTIME_INSTANCE_ID_MISSING'),
+    runtimeConfigRef: required(environment.NODE_RUNTIME_CONFIG_REF, 'NODE_RUNTIME_CONFIG_REF_MISSING'),
+    resourceBindingVersion: required(environment.NODE_RESOURCE_BINDING_VERSION, 'NODE_RESOURCE_BINDING_VERSION_MISSING'),
+    releasePointerRef: required(environment.NODE_RELEASE_POINTER_REF, 'NODE_RELEASE_POINTER_REF_MISSING'),
+  });
+  assertPurchaseNodeManifest(manifest, environment);
   const secrets = new WorkloadSecretStore(
     required(environment.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING'),
     required(environment.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_MISSING'),
@@ -78,14 +100,18 @@ export async function createPurchaseApiRuntime(environment: PurchaseApiEnvironme
     ? new KmsClient(required(environment.KMS_ENDPOINT, 'KMS_ENDPOINT_MISSING'),
       required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'))
     : disabledPaymentKms();
-  const payment = provider === null ? new DisabledExternalPaymentGateway() : new WechatGateway(
-    WechatApplicationCatalog.parse(parseSecret(provider[0], 'WECHAT_APPLICATION_CONFIG_INVALID')),
-    parseSecret(provider[1], 'WECHAT_PAYMENT_CONFIG_INVALID') as unknown as ConstructorParameters<typeof WechatGateway>[1],
-  );
+  const applications = provider === null ? null
+    : WechatApplicationCatalog.parse(parseSecret(provider[0], 'WECHAT_APPLICATION_CONFIG_INVALID'));
+  const paymentConfiguration = provider === null ? null
+    : loadWechatPayConfig(parseSecret(provider[1], 'WECHAT_PAYMENT_CONFIG_INVALID'));
+  if (paymentConfiguration !== null) assertPurchasePaymentConfiguration(manifest, paymentConfiguration);
+  const payment = applications === null || paymentConfiguration === null
+    ? new DisabledExternalPaymentGateway()
+    : new WechatGateway(applications, paymentConfiguration);
   if (!paymentProviderEnabled) console.warn('PURCHASE_EXTERNAL_PAYMENT_DISABLED');
   const pool = createPool(connection, 'api');
   try {
-    await assertPurchaseRuntimeCompatibility(pool);
+    await assertPurchaseRuntimeCompatibility(pool, required(environment.DATABASE_API_ROLE, 'DATABASE_API_ROLE_MISSING'));
   } catch (cause) {
     await pool.end();
     throw cause;
@@ -109,12 +135,14 @@ export async function createPurchaseApiRuntime(environment: PurchaseApiEnvironme
   const handlers = new Map<OperationId, OperationHandler>();
   const extensions = new ExtensionRegistry({ verify: async () => false });
   const telemetry = commerceTelemetry();
+  const databaseRole = required(environment.DATABASE_API_ROLE, 'DATABASE_API_ROLE_MISSING');
   return Object.freeze({
     pool,
+    manifest,
     extensions,
     telemetry,
     configure(container: Container) {
-      bindServerNodeManifestRegistry(container);
+      bindServerNodeManifestRegistry(container, singleNodeManifestRegistry(manifest));
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);
@@ -124,6 +152,8 @@ export async function createPurchaseApiRuntime(environment: PurchaseApiEnvironme
       container.bind(PURCHASE_QUOTE_KEY, quoteKey);
       container.bind(KMS_CLIENT, kms);
       container.bind(PAYMENT_GATEWAY, payment);
+      container.bind(NODE_MANIFEST, manifest);
+      container.bind(NODE_DATABASE_ROLE, databaseRole);
     },
     async close() {
       await extensions.stop();
@@ -132,7 +162,10 @@ export async function createPurchaseApiRuntime(environment: PurchaseApiEnvironme
   });
 }
 
-export async function purchaseRuntimeCompatibility(pool: DatabasePool): Promise<Readonly<CompatibilityRow>> {
+export async function purchaseRuntimeCompatibility(
+  pool: DatabasePool,
+  expectedRole = 'zhudatuanpurchaseapi',
+): Promise<Readonly<CompatibilityRow>> {
   const result = await pool.query<CompatibilityRow>(`select current_user,session_user,
     not exists(select 1 from pg_roles role where role.rolname=current_user
       and (role.rolsuper or role.rolcreatedb or role.rolcreaterole or role.rolinherit or role.rolreplication or role.rolbypassrls))
@@ -275,7 +308,7 @@ export async function purchaseRuntimeCompatibility(pool: DatabasePool): Promise<
           and has_function_privilege(current_user,procedure.oid,'EXECUTE')) forbidden_privileges`,
   [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, PURCHASE_SCHEMA_VERSION, PURCHASE_SCHEMA_CHECKSUM]);
   const state = result.rows[0];
-  if (!state || state.current_user !== 'zhudatuanpurchaseapi' || state.session_user !== 'zhudatuanpurchaseapi' || !state.role_safe
+  if (!state || state.current_user !== expectedRole || state.session_user !== expectedRole || !state.role_safe
     || !state.writable || !state.schema || !state.contract || !state.purchase || !state.relations || !state.functions
     || !state.selected_writes || !state.forbidden_privileges) {
     throw new Error(`PURCHASE_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
@@ -283,8 +316,47 @@ export async function purchaseRuntimeCompatibility(pool: DatabasePool): Promise<
   return Object.freeze(state);
 }
 
-export async function assertPurchaseRuntimeCompatibility(pool: DatabasePool): Promise<void> {
-  await purchaseRuntimeCompatibility(pool);
+export async function assertPurchaseRuntimeCompatibility(
+  pool: DatabasePool,
+  expectedRole = 'zhudatuanpurchaseapi',
+): Promise<void> {
+  await purchaseRuntimeCompatibility(pool, expectedRole);
+}
+
+export function assertPurchaseNodeManifest(manifest: NodeManifest, environment: PurchaseApiEnvironment): void {
+  if (manifest.node_profile !== 'operating_mall') throw new Error('PURCHASE_NODE_PROFILE_INVALID');
+  if (!nodeManifestHasFeature(manifest, 'checkout') || !nodeManifestHasSurface(manifest, 'api')
+    || !nodeManifestHasSurface(manifest, 'storefront')) throw new Error('PURCHASE_NODE_FEATURE_INVALID');
+  const expectedOrigins = manifest.domain_bindings
+    .filter((binding) => binding.surface_ref === 'surface:storefront')
+    .map((binding) => `https://${binding.host}`)
+    .sort();
+  const actualOrigins = required(environment.API_ALLOWED_ORIGINS, 'API_ALLOWED_ORIGINS_MISSING')
+    .split(',').map((origin) => origin.trim()).filter(Boolean).sort();
+  if (expectedOrigins.join(',') !== actualOrigins.join(',')) throw new Error('PURCHASE_NODE_ORIGIN_MISMATCH');
+  const secretPrefix = nodeBindingPrefix(manifest.secret_binding_set_ref.ref, 'secrets');
+  if (![environment.DATABASE_API_CONNECTION_REF, environment.QUOTE_KEY_REF]
+    .every((reference) => reference?.startsWith(secretPrefix))) throw new Error('PURCHASE_NODE_SECRET_BINDING_MISMATCH');
+  const paymentPrefix = nodeBindingPrefix(manifest.payment_binding_refs[0]?.ref, 'payment');
+  if (purchasePaymentProviderEnabled(environment)
+    && ![environment.WECHAT_APPLICATION_CONFIG_REF, environment.WECHAT_PAYMENT_CONFIG_REF]
+      .every((reference) => reference?.startsWith(paymentPrefix))) throw new Error('PURCHASE_NODE_PAYMENT_BINDING_MISMATCH');
+  if (environment.APP_ENV === 'production' && manifest.lifecycle_status !== 'active') throw new Error('PURCHASE_NODE_NOT_ACTIVE');
+}
+
+export function assertPurchasePaymentConfiguration(manifest: NodeManifest, configuration: WechatPayConfig): void {
+  const apiHosts = new Set(manifest.domain_bindings
+    .filter((binding) => binding.surface_ref === 'surface:api')
+    .map((binding) => binding.host));
+  const urls = [configuration.notifyUrl, ...Object.values(configuration.notifyUrlsByScope)];
+  if (urls.some((value) => !apiHosts.has(new URL(value).hostname))) throw new Error('PURCHASE_NODE_CALLBACK_HOST_MISMATCH');
+  const scopes = Object.keys(configuration.notifyUrlsByScope);
+  if (scopes.some((scope) => scope !== manifest.data_scope_ref.ref)) throw new Error('PURCHASE_NODE_CALLBACK_SCOPE_MISMATCH');
+}
+
+function nodeBindingPrefix(reference: string | undefined, suffix: string): string {
+  if (!reference) return '__missing__/';
+  return reference.endsWith(`/${suffix}`) ? reference.slice(0, -suffix.length) : `${reference}/`;
 }
 
 function required(value: string | undefined, code: string): string {

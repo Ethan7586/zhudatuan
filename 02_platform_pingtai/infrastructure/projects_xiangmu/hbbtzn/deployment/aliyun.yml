@@ -1,39 +1,96 @@
-schema: zhudatuan.project-deployment.v1
+schema: sfl.node-deployment.v1
 project: hbbtzn
 provider: aliyun
 enabled: true
-mode: node-isolated
+mode: node-scoped-shared-kernel
+deploymentState: compatibility-active-pending-sfl-1.6-cutover
+
+node:
+  nodeId: node:hbbtzn:l1
+  realmRef: realm:l1
+  mallId: mall:d1708f04df2dd8a61736852c4900fb43
+  manifest: ../../../../config/node-manifests/hbbtzn-l1.json
 
 domains:
   storefront: hbbtzn.com
-  storefrontAlias: www.hbbtzn.com
+  storefrontAliases:
+    - www.hbbtzn.com
+    - h5.hbbtzn.com
+    - mall.hbbtzn.com
   console: console.hbbtzn.com
   accounts: accounts.hbbtzn.com
   api: api.hbbtzn.com
 
-artifacts:
-  manifest: ../../../config/artifacts.json
-  nodeManifest: ../../../config/node-manifests/hbbtzn-l1.json
-  copySourceCode: false
-
 isolation:
-  compute: dedicated-namespace
-  database: dedicated-database
-  cache: dedicated-instance-or-prefix
-  objects: dedicated-bucket-or-prefix
-  secrets: dedicated-secret-scope
-  release: independent
-  rollback: independent
+  dataScope: realm-and-mall-scoped
+  databaseTopology: shared-registration-database
+  resourceBindings: node-scoped
+  secretBindings: node-scoped
+  paymentBindings: node-scoped
+  callbackBindings: node-scoped
+  releasePointer: independent
+  rollbackPointer: independent
 
 runtime:
-  nodeId: node:hbbtzn:l1
-  storefrontReleasePointer: /opt/sfl/nodes/hbbtzn-l1/storefront/current
-  storefrontService: sfl-storefront@hbbtzn-l1.service
-  storefrontPort: 4410
+  releasePointer: /opt/sfl/nodes/hbbtzn-l1/current
+  services:
+    - unit: sfl-storefront@hbbtzn-l1.service
+      responsibility: storefront
+    - unit: sfl-catalog-api@hbbtzn-l1.service
+      responsibility: catalog-api
+    - unit: sfl-catalog-jobs@hbbtzn-l1.service
+      responsibility: catalog-jobs
+    - unit: sfl-catalog-object-store@hbbtzn-l1.service
+      responsibility: catalog-object-store
+    - unit: sfl-web-api@hbbtzn-l1.service
+      responsibility: web-business-api
+    - unit: sfl-identity-api@hbbtzn-l1.service
+      responsibility: identity-api
+      port: 4433
+    - unit: sfl-purchase-api@hbbtzn-l1.service
+      responsibility: purchase-api
+      port: 4434
+    - unit: sfl-payment-webhook-api@hbbtzn-l1.service
+      responsibility: payment-webhook-api
+      port: 4436
+    - unit: sfl-payment-jobs@hbbtzn-l1.service
+      responsibility: node-scoped-payment-jobs
+    - unit: sfl-api-gateway@hbbtzn-l1.service
+      responsibility: node-local-tls-gateway
+      port: 4430
+    - unit: sfl-cloudflared@hbbtzn-l1.service
+      responsibility: node-owned-edge-tunnel
 
-legacyReferences:
-  - ../../../infrastructure/aliyun/delivery.yml
-  - ../../../infrastructure/storefront-compatibility/aliyun/Caddyfile
+targetEdge:
+  standard: SFL-1.6
+  publicHostname: api.hbbtzn.com
+  tunnelCredential: /opt/sfl/nodes/hbbtzn-l1/tunnel/credentials.json
+  tunnelConfiguration: /opt/sfl/nodes/hbbtzn-l1/runtime/cloudflared.yml
+  origin: https://127.0.0.1:4430
+  hostPolicy: preserve-node-host-and-sni
+  fallbackPolicy: fail-closed-no-cross-node-route
+  workerRouteCount: 0
+
+compatibility:
+  status: production-active-candidate-retired
+  boundary: SFL-COMPAT-01
+  edgeWorker: hbbtzn-alias
+  retirementOrder:
+    - verify-independent-l1-candidate
+    - bind-hbbtzn-hostnames-to-l1-tunnel
+    - prove-l1-traffic-and-l0-zero-change
+    - remove-worker-routes
+    - prove-worker-zero-traffic
+  productionCurrentSharedPhysicalRuntimes:
+    - responsibility: identity
+      unit: zhudatuan-internal-api.service
+      canonicalNodeResolution: trusted-entry-host-to-NodeContext
+    - responsibility: purchase
+      unit: zhudatuan-purchase-api.service
+      canonicalNodeResolution: trusted-public-host-to-NodeContext
+  forbiddenClaims:
+    - dedicated-physical-database
+    - production-worker-retired-before-cutover-evidence
 
 approval:
   owner: Ethan

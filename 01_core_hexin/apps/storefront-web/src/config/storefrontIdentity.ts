@@ -1,5 +1,4 @@
 import {
-  defaultIdentityNode,
   identityNodeForStorefrontHost,
   parseIdentityNodeRegistry,
   PRODUCTION_IDENTITY_NODE_REGISTRY_SOURCE,
@@ -14,7 +13,9 @@ export interface StorefrontPresentationIdentity {
 
 function currentStorefrontHostname(): string {
   if (typeof window !== 'undefined' && window.location?.hostname) return window.location.hostname;
-  return process.env.NEXT_PUBLIC_STOREFRONT_HOSTNAME || 'zhudatuan.com';
+  const configured = process.env.NEXT_PUBLIC_STOREFRONT_HOSTNAME?.trim();
+  if (!configured) throw new Error('商城身份节点主机缺失');
+  return configured;
 }
 
 export function storefrontIdentityNodeRegistry(
@@ -31,7 +32,7 @@ export function resolveStorefrontNode(
 ): IdentityNodeDefinition {
   const browserHostname = typeof window === 'undefined' ? undefined : window.location?.hostname;
   const selectedHostname = hostname ?? browserHostname ?? process.env.NEXT_PUBLIC_STOREFRONT_HOSTNAME;
-  if (selectedHostname === undefined || selectedHostname === '') return defaultIdentityNode(registry);
+  if (selectedHostname === undefined || selectedHostname === '') throw new Error('商城身份节点主机缺失');
   const node = identityNodeForStorefrontHost(registry, selectedHostname);
   if (node === null) throw new Error('商城身份节点无效');
   return node;

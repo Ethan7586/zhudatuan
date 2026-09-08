@@ -11,11 +11,19 @@ const valid = () => ({
   API_BIND_HOST: '127.0.0.1',
   APP_ENV: 'production',
   SERVICE_VERSION: 'release-one',
-  DATABASE_API_CONNECTION_REF: 'zhudatuan/payment-webhook/database/api',
+  DATABASE_API_CONNECTION_REF: 'zhudatuan/nodes/l0/database/payment-webhook-api',
+  DATABASE_API_ROLE: 'zhudatuanpaymentwebhookapi',
   SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8543',
   SECRET_STORE_BEARER_TOKEN: 's'.repeat(43),
-  WECHAT_APPLICATION_CONFIG_REF: 'zhudatuan/purchase/wechat/applications',
-  WECHAT_PAYMENT_CONFIG_REF: 'zhudatuan/purchase/payment/wechat',
+  WECHAT_APPLICATION_CONFIG_REF: 'zhudatuan/nodes/l0/payment/wechat-applications',
+  WECHAT_PAYMENT_CONFIG_REF: 'zhudatuan/nodes/l0/payment/wechat',
+  NODE_MANIFEST_PATH: '/opt/sfl/nodes/zhudatuan-l0/manifest.json',
+  NODE_MANIFEST_ID: 'manifest:zhudatuan:l0:v1',
+  NODE_MANIFEST_DIGEST: `sha256:${'a'.repeat(64)}`,
+  NODE_RUNTIME_INSTANCE_ID: 'runtime:zhudatuan:l0:commerce',
+  NODE_RUNTIME_CONFIG_REF: 'sfl/nodes/zhudatuan-l0/runtime/v1',
+  NODE_RESOURCE_BINDING_VERSION: '1',
+  NODE_RELEASE_POINTER_REF: '/opt/sfl/nodes/zhudatuan-l0/current',
 });
 
 describe('payment webhook API environment', () => {
@@ -26,9 +34,20 @@ describe('payment webhook API environment', () => {
     expect(environment).not.toHaveProperty('NODE_ENV');
   });
 
-  it('accepts the isolated internal webhook slot', () => {
-    const environment = paymentWebhookApiEnvironment({ ...valid(), API_PORT: '4426' });
-    expect(paymentWebhookApiPort(environment)).toBe(4426);
+  it('accepts the L1 node-owned webhook slot', () => {
+    const environment = paymentWebhookApiEnvironment({
+      ...valid(),
+      API_PORT: '4436',
+      DATABASE_API_CONNECTION_REF: 'hbbtzn/nodes/l1/database/payment-webhook-api',
+      WECHAT_APPLICATION_CONFIG_REF: 'hbbtzn/nodes/l1/payment/wechat-applications',
+      WECHAT_PAYMENT_CONFIG_REF: 'hbbtzn/nodes/l1/payment/wechat',
+      NODE_MANIFEST_PATH: '/opt/sfl/nodes/hbbtzn-l1/manifest.json',
+      NODE_MANIFEST_ID: 'manifest:hbbtzn:l1:v1',
+      NODE_RUNTIME_INSTANCE_ID: 'runtime:hbbtzn:l1:commerce',
+      NODE_RUNTIME_CONFIG_REF: 'sfl/nodes/hbbtzn-l1/runtime/v1',
+      NODE_RELEASE_POINTER_REF: '/opt/sfl/nodes/hbbtzn-l1/current',
+    });
+    expect(paymentWebhookApiPort(environment)).toBe(4436);
   });
 
   it('rejects foreign service configuration and partial configuration', () => {

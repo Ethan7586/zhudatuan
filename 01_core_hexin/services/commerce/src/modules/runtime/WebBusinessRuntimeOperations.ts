@@ -22,9 +22,9 @@ class WebBusinessRuntimeOperations implements OperationUsecase {
       manifestVersion: manifest.manifest_version,
       manifestDigest: manifest.manifest_digest,
       runtimeInstanceId: manifest.runtime_instance_id,
-      resourceBindingVersion: manifest.resource_binding_version,
+      resourceBindingVersion: manifest.resource_binding_set_ref.version,
       nodeId: manifest.node_id,
-      scopeId: manifest.data_scope_ref,
+      scopeId: manifest.data_scope_ref.ref,
     };
     if (request.type === 'runtime.health.live') {
       return { status: 200, body: { status: 'live', ...evidence } };

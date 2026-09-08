@@ -19,14 +19,11 @@ export function requestCookie(value: string | undefined, name: string): string |
 
 export function authTarget(value: string): AuthTarget {
   const target = value === 'operator' ? 'console' : value;
-  if (!['console', 'console-hbbtzn', 'storefront', 'storefront-hbbtzn', 'store', 'supplier'].includes(target)) throw new Error('AUTH_RETURN_TARGET_INVALID');
+  if (!['console', 'storefront', 'store', 'supplier'].includes(target)) throw new Error('AUTH_RETURN_TARGET_INVALID');
   return target as AuthTarget;
 }
 
-export function authMembershipTarget(target: AuthTarget): Exclude<AuthTarget, 'console-hbbtzn' | 'storefront-hbbtzn'> {
-  // SFL-D03：旧节点专用 target 只归一为业务入口类别；节点归属必须由已解析 realm/NodeContext 判定。
-  if (target === 'console-hbbtzn') return 'console';
-  if (target === 'storefront-hbbtzn') return 'storefront';
+export function authMembershipTarget(target: AuthTarget): AuthTarget {
   return target;
 }
 

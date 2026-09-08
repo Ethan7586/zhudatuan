@@ -97,6 +97,11 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             passwords.hash(secretField(body, 'password', 128)),
             kms.encrypt('identity/mobile', subject, { principal }),
           ]);
+          const authorization = body.authorization === undefined ? null : AuthTransaction.start(body.authorization);
+          const loginIntent = body.loginIntent === undefined ? undefined : secretField(body, 'loginIntent', 128);
+          if (loginIntent !== undefined && (!/^[A-Za-z0-9_-]{64}$/.test(loginIntent) || authorization === null)) {
+            throw new Error('LOGIN_INTENT_INVALID');
+          }
           return {
             body,
             subject,
@@ -104,7 +109,8 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             principal,
             account: `account:${randomUUID()}`,
             mobile,
-            authorization: body.authorization === undefined ? null : AuthTransaction.start(body.authorization),
+            authorization,
+            loginIntent,
             assurance: `assurance:${randomUUID()}`,
             member: `member:${randomUUID()}`,
             membership: `membership:${randomUUID()}`,
@@ -114,7 +120,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           };
         },
         execute: async (request, database, prepared) => atomicIdentityMutation(database, async () => {
-          const { body, subject, password, principal, account, mobile, authorization, assurance, member, membership, operatorMembership, credential, scopes } = prepared;
+          const { body, subject, password, principal, account, mobile, authorization, loginIntent, assurance, member, membership, operatorMembership, credential, scopes } = prepared;
           const realm = await resolveRealmNode(database, request.input.headers.host);
           const requestedReturnTarget = authorization === null || typeof body.target !== 'string' ? undefined : authTarget(body.target);
           if (authorization !== null && (requestedReturnTarget === undefined || authMembershipTarget(requestedReturnTarget) !== 'storefront')) {
@@ -173,6 +179,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
               target_client: 'storefront',
               terms_hash: storefront.terms_hash,
               storefront_organization_id: null,
+              storefront_role_id: storefront.role_id,
               governance_level: null,
             };
             await database.query(`select set_config('app.registration_mall_id',$1,true)`, [storefront.organization_id]);
@@ -257,7 +264,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
                   operatorOrganization: organization,
                   storefrontOrganization: registrationTarget.storefront_organization_id!,
                   operatorRole: registrationTarget.role_id,
-                  storefrontRole: 'role-zhudatuan-storefront-member',
+                  storefrontRole: registrationTarget.storefront_role_id,
                   storefrontScopes: [scopes[0], scopes[1], scopes[2]],
                   operatorScopes: [scopes[3], scopes[4]],
                 })
@@ -322,6 +329,15 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
               [`assurance:${randomUUID()}`, resolvedPrincipal, session, createHash('sha256').update(textField(body, 'challenge')).digest('hex'), realm.realmId, resolvedAccount]
             );
           }
+          const consumedIntent = loginIntent === undefined ? undefined : (await database.query<{
+            login_intent_id: string;
+            source_realm_id: string;
+            source_node_id: string;
+          }>('select * from identity.consume_login_intent($1,$2,$3,$4,$5,$6)', [
+            tokenHash(loginIntent), realm.realmId, applicationReturnTarget ?? requestedReturnTarget!,
+            registration.kind === 'storefront' ? registration.value : null, resolvedAccount, session,
+          ])).rows[0];
+          if (loginIntent !== undefined && consumedIntent === undefined) reject(403, 'LOGIN_INTENT_INVALID');
           await publishIdentityEvent(database, 'identity.session.created', session, registeredMembership, request.input.idempotency!, {
             principal: resolvedPrincipal,
             account: resolvedAccount,
@@ -329,6 +345,11 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             membership: registeredMembership,
             assurance: sessionAssurance,
             loginMethod: deferredPhoneVerification ? 'registration_password' : 'registration_otp',
+            ...(consumedIntent === undefined ? {} : {
+              loginIntent: consumedIntent.login_intent_id,
+              sourceRealm: consumedIntent.source_realm_id,
+              sourceNode: consumedIntent.source_node_id,
+            }),
           });
           const callback = await tickets.issue(database, session, realm.realmId, resolvedAccount,
             applicationReturnTarget ?? requestedReturnTarget!, authorization);

@@ -2,28 +2,27 @@ import { readFile } from 'node:fs/promises';
 import { describe, expect, it, vi } from 'vitest';
 import { clientEnvironment } from './ClientEnvironment';
 import { miniappEnvironment } from './MiniappEnvironment';
-import { API_ENVIRONMENT_KEYS, CATALOG_OPERATOR_API_ENVIRONMENT_KEYS, IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS, JOBS_ENVIRONMENT_KEYS, LOCAL_ENVIRONMENT_KEYS, REGISTRATION_MIGRATION_ENVIRONMENT_KEYS, WechatApplicationCatalog, apiBindHost, apiReturnTargets, bearerToken, catalogOperatorApiEnvironment, identityRegistrationApiEnvironment, integerValue, isPrivateIpv4Host, jobRuntimeProfile, localIdentityInfrastructureEnvironment, localInfrastructureEnvironment, localSeedEnvironment, parseNodeManifest, registrationMigrationEnvironment, requiredValue, validateApiEnvironment, validateJobsEnvironment } from './ServerEnvironment';
+import { API_ENVIRONMENT_KEYS, CATALOG_OPERATOR_API_ENVIRONMENT_KEYS, IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS, JOBS_ENVIRONMENT_KEYS, LOCAL_ENVIRONMENT_KEYS, REGISTRATION_MIGRATION_ENVIRONMENT_KEYS, WechatApplicationCatalog, apiBindHost, bearerToken, catalogOperatorApiEnvironment, identityRegistrationApiEnvironment, integerValue, isPrivateIpv4Host, jobRuntimeProfile, localIdentityInfrastructureEnvironment, localInfrastructureEnvironment, localSeedEnvironment, parseNodeManifest, registrationMigrationEnvironment, requiredValue, validateApiEnvironment, validateJobsEnvironment } from './ServerEnvironment';
 
 const secretStoreBearerToken = 's'.repeat(43);
 const kmsBearerToken = 'k'.repeat(43);
 const objectsBearerToken = 'o'.repeat(43);
 
 describe('runtime configuration schema', () => {
-  it('loads generated operating and consumer node profiles without inventing a consumer mall console', async () => {
+  it('loads both generated production nodes from the canonical SFL registry', async () => {
     const directory = new URL('../../../../02_platform_pingtai/config/node-manifests/', import.meta.url);
-    const l0 = parseNodeManifest(JSON.parse(await readFile(new URL('zhudatuan-l0.json', directory), 'utf8')));
-    const l1 = parseNodeManifest(JSON.parse(await readFile(new URL('hbbtzn-l1.json', directory), 'utf8')));
-    const l6 = parseNodeManifest(JSON.parse(await readFile(new URL('consumer-l6.fixture.json', directory), 'utf8')));
-    expect([l0.signed_level, l0.node_profile, l0.data_scope_ref]).toEqual(['L0', 'operating_mall', 'mall-zhudatuan']);
+    const l0 = await parseNodeManifest(JSON.parse(await readFile(new URL('zhudatuan-l0.json', directory), 'utf8')));
+    const l1 = await parseNodeManifest(JSON.parse(await readFile(new URL('hbbtzn-l1.json', directory), 'utf8')));
+    expect([l0.signed_level, l0.node_profile, l0.data_scope_ref.ref]).toEqual(['L0', 'operating_mall', 'organization-platform-root']);
     expect([l1.signed_level, l1.node_profile, l1.parent_node_id]).toEqual(['L1', 'operating_mall', l0.node_id]);
-    expect([l6.signed_level, l6.node_profile, l6.surfaces.includes('console')]).toEqual(['L6', 'consumer', false]);
+    expect(l1.data_scope_ref.ref).toBe('mall:d1708f04df2dd8a61736852c4900fb43');
   });
 
   it('rejects a generated node manifest whose published payload was changed', async () => {
     const path = new URL('../../../../02_platform_pingtai/config/node-manifests/hbbtzn-l1.json', import.meta.url);
     const manifest = JSON.parse(await readFile(path, 'utf8'));
-    expect(() => parseNodeManifest({ ...manifest, data_scope_ref: 'mall-zhudatuan' }))
-      .toThrow('NODE_MANIFEST_DIGEST_MISMATCH');
+    await expect(parseNodeManifest({ ...manifest, data_scope_ref: { ...manifest.data_scope_ref, ref: 'mall-zhudatuan' } }))
+      .rejects.toThrow('SFL_NODE_MANIFEST_DIGEST_MISMATCH');
   });
 
   it('keeps the private CA trust path in every registration-only HTTPS client env', async () => {
@@ -114,19 +113,26 @@ describe('runtime configuration schema', () => {
       APP_ENV: 'production',
       AUTH_MODE: 'membership',
       SERVICE_VERSION: '1.0.0',
-      API_ALLOWED_ORIGINS: 'https://accounts.zhudatuan.com,https://console.hbbtzn.com,https://console.zhudatuan.com,https://h5.hbbtzn.com,https://h5.zhudatuan.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://mini.zhudatuan.com,https://www.hbbtzn.com,https://zhudatuan.com',
-      AUTH_RETURN_TARGETS: '{"console":"https://console.zhudatuan.com","console-hbbtzn":"https://console.hbbtzn.com","storefront":"https://zhudatuan.com","storefront-hbbtzn":"https://hbbtzn.com","store":"https://console.zhudatuan.com/entrances/store","supplier":"https://console.zhudatuan.com/entrances/supplier"}',
-      DATABASE_API_CONNECTION_REF: 'zhudatuan/database/api',
-      SESSION_KEY_REF: 'zhudatuan/identity/session',
-      IDENTITY_KEY_REF: 'zhudatuan/identity/index',
-      WECHAT_APPLICATION_CONFIG_REF: 'zhudatuan/wechat/applications',
-      WECHAT_IDENTITY_CONFIG_REF: 'zhudatuan/wechat/identity',
+      API_ALLOWED_ORIGINS: 'https://accounts.zhudatuan.com,https://beta.zhudatuan.com,https://console.zhudatuan.com,https://h5.zhudatuan.com,https://internal.zhudatuan.com,https://mini.zhudatuan.com,https://www.zhudatuan.com,https://zhudatuan.com',
+      DATABASE_API_CONNECTION_REF: 'zhudatuan/nodes/l0/database/identity-api',
+      DATABASE_API_ROLE: 'zhudatuanidentityapi',
+      SESSION_KEY_REF: 'zhudatuan/nodes/l0/identity/session',
+      IDENTITY_KEY_REF: 'zhudatuan/nodes/l0/identity/index',
+      WECHAT_APPLICATION_CONFIG_REF: 'zhudatuan/nodes/l0/identity/wechat-applications',
+      WECHAT_IDENTITY_CONFIG_REF: 'zhudatuan/nodes/l0/identity/wechat',
       KMS_ENDPOINT: 'https://127.0.0.1:8544',
       KMS_BEARER_TOKEN: kmsBearerToken,
       OBJECT_STORE_ENDPOINT: 'https://127.0.0.1:8545',
       OBJECT_STORE_BEARER_TOKEN: 'o'.repeat(43),
       SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8543',
       SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
+      NODE_MANIFEST_PATH: '/opt/sfl/nodes/zhudatuan-l0/manifest.json',
+      NODE_MANIFEST_ID: 'manifest:zhudatuan:l0:v1',
+      NODE_MANIFEST_DIGEST: `sha256:${'a'.repeat(64)}`,
+      NODE_RUNTIME_INSTANCE_ID: 'runtime:zhudatuan:l0:commerce',
+      NODE_RUNTIME_CONFIG_REF: 'sfl/nodes/zhudatuan-l0/runtime/v1',
+      NODE_RESOURCE_BINDING_VERSION: '1',
+      NODE_RELEASE_POINTER_REF: '/opt/sfl/nodes/zhudatuan-l0/current',
     };
     expect(identityRegistrationApiEnvironment(registration).IDENTITY_REGISTRATION_API_PROFILE).toBe('registration-only');
     expect(() => identityRegistrationApiEnvironment({ ...registration, IDENTITY_REGISTRATION_API_PROFILE: 'full' }))
@@ -137,6 +143,7 @@ describe('runtime configuration schema', () => {
       .toThrow('IDENTITY_REGISTRATION_API_KEY_FORBIDDEN:WECHAT_PAYMENT_CONFIG_REF');
     expect(() => identityRegistrationApiEnvironment({ ...registration, API_BIND_HOST: '0.0.0.0' }))
       .toThrow('IDENTITY_REGISTRATION_API_BIND_HOST_INVALID');
+    expect(identityRegistrationApiEnvironment(registration).API_ALLOWED_ORIGINS).toContain('https://zhudatuan.com');
     expect(() => identityRegistrationApiEnvironment({ ...registration,
       API_ALLOWED_ORIGINS: 'https://accounts.zhudatuan.com,https://console.zhudatuan.com' }))
       .toThrow('IDENTITY_REGISTRATION_API_ORIGINS_INVALID');
@@ -144,8 +151,10 @@ describe('runtime configuration schema', () => {
       API_ALLOWED_ORIGINS: `${registration.API_ALLOWED_ORIGINS},https://preview.zhudatuan.com` }))
       .toThrow('IDENTITY_REGISTRATION_API_ORIGINS_INVALID');
     expect(() => identityRegistrationApiEnvironment({ ...registration,
-      AUTH_RETURN_TARGETS: '{"console":"https://console.zhudatuan.com","console-hbbtzn":"https://console.hbbtzn.com","storefront":"https://preview.zhudatuan.com","storefront-hbbtzn":"https://hbbtzn.com","store":"https://console.zhudatuan.com/entrances/store","supplier":"https://console.zhudatuan.com/entrances/supplier"}' }))
-      .toThrow('IDENTITY_REGISTRATION_API_RETURN_TARGETS_INVALID');
+      API_ALLOWED_ORIGINS: `${registration.API_ALLOWED_ORIGINS},https://evil.example.com` }))
+      .toThrow('IDENTITY_REGISTRATION_API_ORIGINS_INVALID');
+    expect(() => identityRegistrationApiEnvironment({ ...registration, AUTH_RETURN_TARGETS: '{}' }))
+      .toThrow('IDENTITY_REGISTRATION_API_KEY_FORBIDDEN:AUTH_RETURN_TARGETS');
     expect(() => identityRegistrationApiEnvironment({ ...registration, KMS_BEARER_TOKEN: secretStoreBearerToken }))
       .toThrow('WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
   });
@@ -309,12 +318,20 @@ describe('runtime configuration schema', () => {
       APP_ENV: 'production',
       SERVICE_VERSION: '1.0.0',
       JOB_RUNTIME_PROFILE: 'payment-only',
-      DATABASE_JOB_CONNECTION_REF: 'zhudatuan/payment/database/jobs',
+      DATABASE_JOB_CONNECTION_REF: 'zhudatuan/nodes/l0/database/payment-jobs',
+      DATABASE_JOB_ROLE: 'shopjob',
       SECRET_STORE_ENDPOINT: 'https://secrets.internal',
       SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
-      WECHAT_APPLICATION_CONFIG_REF: 'zhudatuan/purchase/wechat/applications',
-      WECHAT_PAYMENT_CONFIG_REF: 'zhudatuan/purchase/payment/wechat',
+      WECHAT_APPLICATION_CONFIG_REF: 'zhudatuan/nodes/l0/payment/wechat-applications',
+      WECHAT_PAYMENT_CONFIG_REF: 'zhudatuan/nodes/l0/payment/wechat',
       JOB_WORKER_ID: 'zhudatuan-payment-1',
+      NODE_MANIFEST_PATH: '/opt/sfl/nodes/zhudatuan-l0/manifest.json',
+      NODE_MANIFEST_ID: 'manifest:zhudatuan:l0:v1',
+      NODE_MANIFEST_DIGEST: `sha256:${'a'.repeat(64)}`,
+      NODE_RUNTIME_INSTANCE_ID: 'runtime:zhudatuan:l0:commerce',
+      NODE_RUNTIME_CONFIG_REF: 'sfl/nodes/zhudatuan-l0/runtime/v1',
+      NODE_RESOURCE_BINDING_VERSION: '1',
+      NODE_RELEASE_POINTER_REF: '/opt/sfl/nodes/zhudatuan-l0/current',
     };
     expect(jobRuntimeProfile(payment)).toBe('payment-only');
     expect(() => validateJobsEnvironment(payment)).not.toThrow();
@@ -331,8 +348,10 @@ describe('runtime configuration schema', () => {
     expect(clientEnvironment(client).clientVersion).toBe('2.4.1');
     const productionClient = { ...client, APP_ENV: 'production', VITE_API_BASE_URL: 'https://api.zhudatuan.com', VITE_AUTH_BASE_URL: 'https://accounts.zhudatuan.com' };
     expect(clientEnvironment(productionClient).apiBaseUrl).toBe('https://api.zhudatuan.com');
-    expect(() => clientEnvironment({ ...productionClient, VITE_API_BASE_URL: 'https://api.hbbtzn.com' })).toThrow('CLIENT_API_BASE_URL_INVALID');
-    expect(() => clientEnvironment({ ...productionClient, VITE_AUTH_BASE_URL: 'https://accounts.hbbtzn.com' })).toThrow('CLIENT_AUTH_BASE_URL_INVALID');
+    expect(clientEnvironment({ ...productionClient, VITE_API_BASE_URL: 'https://api.hbbtzn.com', VITE_AUTH_BASE_URL: 'https://accounts.hbbtzn.com' }).apiBaseUrl)
+      .toBe('https://api.hbbtzn.com');
+    expect(() => clientEnvironment({ ...productionClient, VITE_API_BASE_URL: 'https://api.hbbtzn.com' })).toThrow('CLIENT_NODE_BINDING_INVALID');
+    expect(() => clientEnvironment({ ...productionClient, VITE_AUTH_BASE_URL: 'https://accounts.hbbtzn.com' })).toThrow('CLIENT_NODE_BINDING_INVALID');
     expect(() => clientEnvironment({ ...client, VITE_CLIENT_VERSION: '' })).toThrow('CLIENT_VERSION_MISSING');
     expect(() => clientEnvironment({ NEXT_PUBLIC_API_BASE_URL: 'https://api.example.com', NEXT_PUBLIC_AUTH_BASE_URL: 'https://auth.example.com', NEXT_PUBLIC_CLIENT_VERSION: '2.4.1' })).toThrow('CLIENT_API_BASE_URL_MISSING');
     expect(() => miniappEnvironment({ apiBaseUrl: 'https://api.example.com', mallId: '', clientVersion: '2.4.1' })).toThrow('MINIAPP_MALL_ID_INVALID');
@@ -370,8 +389,6 @@ describe('runtime configuration schema', () => {
     expect(() => validateApiEnvironment({ ...valid, KMS_BEARER_TOKEN: '!' + 'k'.repeat(43) })).toThrow('KMS_BEARER_TOKEN_INVALID');
     expect(() => validateApiEnvironment({ ...valid, KMS_BEARER_TOKEN: secretStoreBearerToken }))
       .toThrow('WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
-    expect(apiReturnTargets(valid).storefront).toBe('https://storefront.example.com');
-    expect(() => apiReturnTargets({ ...valid, AUTH_RETURN_TARGETS: '{"storefront":"https://evil.example.com"}' })).toThrow('AUTH_RETURN_TARGETS_INVALID');
   });
 
   it('owns both WeChat application identities once and rejects duplicates', () => {

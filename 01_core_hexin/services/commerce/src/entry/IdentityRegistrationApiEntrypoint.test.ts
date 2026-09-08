@@ -35,7 +35,6 @@ import { IdentityOperatorReferralModule } from '../modules/referral/IdentityOper
 import { REFERRAL_OPERATOR_READ_OPERATION_IDS } from '../modules/referral/ReferralReadOperations';
 import { IdentityOperatorReportingModule } from '../modules/reporting/IdentityOperatorReportingModule';
 import { REPORTING_OPERATOR_READ_OPERATION_IDS } from '../modules/reporting/ReportingReadOperations';
-import { RETURN_TARGETS } from '../modules/identity';
 import { IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS } from '../modules/runtime/IdentityRegistrationRuntimeOperations';
 import { IdentityRegistrationRuntimeModule } from '../modules/runtime/IdentityRegistrationRuntimeModule';
 import { IdentityOperatorVoucherModule } from '../modules/voucher/05_interface_jieru/IdentityOperatorVoucherModule';
@@ -62,6 +61,7 @@ describe('identity registration API entrypoint', () => {
       'runtime.health.ready',
       'runtime.health.startup',
       'identity.sessions.create',
+      'identity.loginintents.create',
       'identity.tickets.exchange',
       'identity.session.read',
       'identity.session.delete',
@@ -179,14 +179,6 @@ describe('identity registration API entrypoint', () => {
           application: () => ({ applicationHash: 'application:test' }),
           authorize: () => 'https://wechat.example.test/authorize',
           exchange: async () => ({ subject: 'openid:test' }),
-        });
-        container.bind(RETURN_TARGETS, {
-          console: 'https://console.zhudatuan.com',
-          'console-hbbtzn': 'https://console.hbbtzn.com',
-          storefront: 'https://zhudatuan.com',
-          'storefront-hbbtzn': 'https://hbbtzn.com',
-          store: 'https://console.zhudatuan.com/entrances/store',
-          supplier: 'https://console.zhudatuan.com/entrances/supplier',
         });
       },
     });

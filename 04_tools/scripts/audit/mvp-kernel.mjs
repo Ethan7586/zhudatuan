@@ -15,7 +15,7 @@ import { orderOperations } from '../../../01_core_hexin/services/commerce/src/mo
 import { paymentOperations } from '../../../01_core_hexin/services/commerce/src/modules/payment_zhifu/05_interface_jieru/http/PaymentOperations.ts';
 import { PaymentJobProcessor } from '../../../01_core_hexin/services/commerce/src/modules/payment_zhifu/05_interface_jieru/jobs_renwu/PaymentJobs.ts';
 import { PAYMENT_GATEWAY } from '../../../01_core_hexin/services/commerce/src/modules/payment_zhifu/01_public_gongkai/ports_jiekou/PaymentGateway.ts';
-import { ReconciliationJobProcessor } from '../../../01_core_hexin/services/commerce/src/modules/finance/interface/job/ReconciliationJob.ts';
+import { ReconciliationJobProcessor } from '../../../01_core_hexin/services/commerce/src/modules/finance/05_interface_jieru/job/ReconciliationJob.ts';
 
 const fixture = Object.freeze({
   tenant: 'mvp:tenant', enterprise: 'mvp:enterprise', mall: 'mvp:mall', member: 'mvp:member', membership: 'mvp:membership',
@@ -105,11 +105,19 @@ async function verifyPayment(database, context, access, gateway, order) {
   assert(replay.status === 204, `MVP_PAYMENT_WEBHOOK_REPLAY_FAILED:${replay.status}`);
 
   const controller = new AbortController();
-  gateway.stop = () => controller.abort();
   const jobPool = pglitePool(database, 'shopjob');
   const runner = new JobRunner(jobPool, { worker: 'mvp:worker', owner: 'payment', batch: 1, lease: 30, concurrency: 1,
     attempts: 3, poll: 1, deadline: 30_000, retryMinimum: 10, retryMaximum: 100 });
-  await runner.run('paymentquery', new PaymentJobProcessor(jobPool, gateway, 'paymentquery'), controller.signal);
+  const paymentProcessor = new PaymentJobProcessor(jobPool, gateway, 'paymentquery');
+  let paymentFailure;
+  await runner.run('paymentquery', Object.freeze({
+    async process(job, signal) {
+      try { await paymentProcessor.process(job, signal); }
+      catch (cause) { paymentFailure = cause; throw cause; }
+      finally { controller.abort(); }
+    },
+  }), controller.signal);
+  if (paymentFailure) throw paymentFailure;
   await relayAvailableEvents(jobPool);
   await runReconciliation(database, jobPool);
   await relayAvailableEvents(jobPool);
@@ -162,7 +170,11 @@ async function relayAvailableEvents(jobPool) {
 
 async function runReconciliation(database, jobPool) {
   const queued = (await database.query("select count(*)::integer count from runtime.job where kind='reconciliation' and state='queued'")).rows[0]?.count;
-  assert(queued === 1, `MVP_FINANCE_JOB_INVALID:${String(queued)}`);
+  if (queued !== 1) {
+    const diagnostics = (await database.query(`select event_type,published_at is not null published,failed_at is not null failed,error_code
+      from runtime.outbox where event_type in('payment.succeeded','order.paid') order by event_type`)).rows;
+    throw new Error(`MVP_FINANCE_JOB_INVALID:${String(queued)}:${JSON.stringify(diagnostics)}`);
+  }
   const controller = new AbortController();
   const processor = new ReconciliationJobProcessor(jobPool, unavailableObjects());
   const guarded = Object.freeze({
@@ -193,7 +205,8 @@ function paymentBoundary() {
     async query(orderNumber, application) {
       assert(orderNumber === boundary.providerReference && application.applicationHash === fixture.applicationHash, 'MVP_PAYMENT_QUERY_CONTEXT_INVALID');
       boundary.stop?.();
-      return Object.freeze({ state: 'succeeded', transaction: 'mvp:wechat-transaction', amountMinor: 5180 });
+      return Object.freeze({ state: 'succeeded', transaction: 'mvp:wechat-transaction', amountMinor: 5180,
+        occurredAt: '2026-09-08T00:00:00.000Z' });
     },
     async close() {},
     async refund() { return Object.freeze({ state: 'succeeded', reference: 'mvp:refund' }); },
@@ -220,8 +233,12 @@ function accessContext() {
   return Object.freeze({
     actor: Object.freeze({ id: fixture.member, session: 'mvp:session', membership: fixture.membership, credentialVersion: 1,
       accessVersion: 1, target: 'storefront', assurance: Object.freeze({ level: 2 }) }),
-    membership: Object.freeze({ id: fixture.membership, active: true, accessVersion: 1, denies: Object.freeze([]), grants: Object.freeze([]) }),
+    membership: Object.freeze({ id: fixture.membership, active: true, accessVersion: 1, denies: Object.freeze([]), grants: Object.freeze([Object.freeze({
+      scope: Object.freeze({ kind: 'owner', id: fixture.member, path: Object.freeze([]) }),
+      permissions: Object.freeze([]), effective: '2026-09-08T00:00:00.000Z', expires: null,
+    })]) }),
     scope: Object.freeze({ kind: 'owner', id: fixture.member, path: Object.freeze([]) }),
+    mallContext: Object.freeze({ mall_id: fixture.mall }), mall_id: fixture.mall,
     accessVersion: 1, capabilities: Object.freeze(['cart.items.put','checkout.quote.create','order.orders.create']),
     assurance: Object.freeze({ level: 2 }), trace: 'mvp:kernel',
   });

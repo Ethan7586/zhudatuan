@@ -10,7 +10,7 @@ begin
   end if;
   if not exists(select 1 from runtime.schemaversion
       where version='20260907120000'
-        and checksum='d0a23337279f44c222ef1b385caaefe9562a20689caafde703dea6e9fed38b96')
+        and checksum='8bfcc7552e21b0c98a9f845d92ff58e52dbaf93ee63c462c5d4c0aed360e65e1')
     or exists(select 1 from runtime.schemaversion where version>'20260907120000') then
     raise exception 'IDENTITY_REALM_LIFECYCLE_PREDECESSOR_INVALID';
   end if;

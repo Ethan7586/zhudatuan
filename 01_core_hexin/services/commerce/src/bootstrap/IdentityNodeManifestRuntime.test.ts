@@ -12,8 +12,8 @@ describe('identity node manifest runtime parity', () => {
     await expect(assertIdentityNodeManifestRuntime(pool(expected))).resolves.toBeUndefined();
     await expect(assertIdentityNodeManifestRuntime(pool({
       ...expected,
-      targets: expected.targets.map((target) => target.target === 'console-hbbtzn'
-        ? { ...target, membership_client: 'storefront' }
+      targets: expected.targets.map((target, index) => index === 0
+        ? { ...target, membership_client: `${target.membership_client}-drifted` }
         : target),
     }))).rejects.toThrow('IDENTITY_NODE_MANIFEST_RUNTIME_DRIFT');
   });

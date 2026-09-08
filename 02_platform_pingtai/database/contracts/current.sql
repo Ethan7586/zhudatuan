@@ -8,6 +8,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('runtime.health.startup','runtime','GET','/health/startup','1.0.0'),
   ('runtime.health.dependency','runtime','GET','/health/dependency','1.0.0'),
   ('identity.sessions.create','identity','POST','/api/v1/identity/sessions','1.0.0'),
+  ('identity.loginintents.create','identity','POST','/api/v1/identity/login-intents','1.0.0'),
   ('identity.tickets.exchange','identity','POST','/api/v1/identity/tickets/exchange','1.0.0'),
   ('identity.session.read','identity','GET','/api/v1/identity/session','1.0.0'),
   ('identity.session.delete','identity','DELETE','/api/v1/identity/session','1.0.0'),
@@ -533,6 +534,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('runtime.health.startup','operation','runtime.health.startup',1,'active'),
   ('runtime.health.dependency','operation','runtime.health.dependency',1,'active'),
   ('identity.sessions.create','operation','identity.sessions.create',1,'active'),
+  ('identity.loginintents.create','operation','identity.loginintents.create',1,'active'),
   ('identity.tickets.exchange','operation','identity.tickets.exchange',1,'active'),
   ('identity.session.read','operation','identity.session.read',1,'active'),
   ('identity.session.delete','operation','identity.session.delete',1,'active'),
@@ -792,6 +794,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('runtime.health.startup','runtime.health.startup',null,'public'),
   ('runtime.health.dependency','runtime.health.dependency','runtime.health.read','operator'),
   ('identity.sessions.create','identity.sessions.create',null,'public'),
+  ('identity.loginintents.create','identity.loginintents.create','identity.session.read','member'),
   ('identity.tickets.exchange','identity.tickets.exchange',null,'public'),
   ('identity.session.read','identity.session.read','identity.session.read','member'),
   ('identity.session.delete','identity.session.delete','identity.session.manage','member'),
@@ -1359,6 +1362,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='private' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','09a9332cc8d8b3c2c0de4bea15b4295d9268dbd6c1357c3692bdbfad0da23687');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','1dbd7b622b326581818e9860e93cc0950ad72906ae7ee5d42acbdd44042122bc');
 
 commit;

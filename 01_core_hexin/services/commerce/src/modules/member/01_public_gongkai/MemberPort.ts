@@ -8,6 +8,7 @@ export interface MemberInvite {
   readonly target_client: 'storefront' | 'operator';
   readonly terms_hash: string;
   readonly storefront_organization_id: string | null;
+  readonly storefront_role_id: string;
   readonly governance_level: 'administrator' | 'senior_administrator' | null;
 }
 
@@ -43,9 +44,7 @@ export class MemberPort {
       join experience.binding binding on binding.application_id=application.id and binding.domain=application.public_slug
       join organization.organization organization on organization.id=binding.mall_id
         and organization.kind='mall' and organization.status='active'
-      join access.role role on role.id=case when binding.mall_id='mall-zhudatuan'
-        then 'role-zhudatuan-storefront-member' else 'role-zhudatuan-storefront-member:'||binding.mall_id end
-        and role.scope_id=binding.mall_id and role.status='active'
+      join access.role role on role.scope_id=binding.mall_id and role.name='商城会员' and role.status='active'
       cross join lateral(select registration.terms_title,registration.terms_body,registration.privacy_title,
         registration.privacy_body,registration.terms_hash from identity.registrationpolicy registration
         where registration.effective_at<=clock_timestamp()
@@ -106,6 +105,9 @@ export class MemberPort {
     acceptedOperatorMembershipId: string): Promise<MemberInvite> {
     const result = await database.query<MemberInvite>(`with candidate as materialized(
       select invite.id,invite.organization_id,invite.created_by,invite.role_id,invite.terms_hash,invite.target_client,invite.storefront_organization_id,
+        case when invite.target_client='operator' then (select role.id from access.role role
+          where role.scope_id=invite.storefront_organization_id and role.name='商城会员' and role.status='active'
+          order by role.id limit 1) else invite.role_id end storefront_role_id,
         case when invite.target_client='operator' and invite.role_id='role-senior-administrator-v1:'||invite.organization_id
           then 'senior_administrator' when invite.target_client='operator' then 'administrator' end governance_level
       from member.invite invite
@@ -123,8 +125,9 @@ export class MemberPort {
       version=invite.version+1
       from candidate where invite.id=candidate.id
       returning candidate.id,candidate.organization_id,candidate.created_by,candidate.role_id,candidate.terms_hash,candidate.target_client,
-        candidate.storefront_organization_id,candidate.governance_level)
-      select id,organization_id,created_by,role_id,terms_hash,target_client,storefront_organization_id,governance_level from consumed`,
+        candidate.storefront_organization_id,candidate.storefront_role_id,candidate.governance_level)
+      select id,organization_id,created_by,role_id,terms_hash,target_client,storefront_organization_id,storefront_role_id,governance_level
+      from consumed where storefront_role_id is not null`,
     [token, destinationHash, acceptedOperatorMembershipId]);
     const invitation = result.rows[0];
     if (!invitation) throw new Error('INVITE_INVALID');
@@ -160,9 +163,7 @@ export const memberPort = new MemberPort();
 function registrationInviteBoundary(): string {
   return `(access.registration_invite_role_allowed(invite.role_id,invite.organization_id,invite.target_client)
     and organization.status='active' and (
-    (invite.target_client='storefront' and invite.role_id=case when invite.organization_id='mall-zhudatuan'
-        then 'role-zhudatuan-storefront-member' else 'role-zhudatuan-storefront-member:'||invite.organization_id end
-      and invite.storefront_organization_id is null and organization.kind='mall')
+    (invite.target_client='storefront' and invite.storefront_organization_id is null and organization.kind='mall')
     or (invite.target_client='operator'
       and invite.storefront_organization_id is not null and organization.kind='tenant'
       and exists(select 1 from organization.organization storefront

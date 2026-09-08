@@ -104,7 +104,6 @@ async function buildRelease(buildToolchain) {
   };
   const identityNodeRegistry = JSON.stringify({
     version: 2,
-    defaultNodeId: 'staging',
     nodes: [{
       nodeId: 'staging', nodeProfile: 'operating_mall', mallId: 'mall-staging',
       displayName: '身份预发布节点', accountsOrigin: `https://${hosts.accounts}`,

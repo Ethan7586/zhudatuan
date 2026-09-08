@@ -6,6 +6,9 @@ import {
   RUNTIME_CONTRACT_CHECKSUM,
   TARGET_SCHEMA_HEAD,
   loadNodeManifest,
+  nodeManifestHasFeature,
+  nodeManifestHasSurface,
+  nodeManifestOrigins,
   webBusinessApiAllowedOrigins,
   type NodeManifest,
   type WebBusinessApiEnvironment,
@@ -100,7 +103,7 @@ export async function createWebBusinessApiRuntime(
     new PgAccessVersionResolver(pool),
     new NodeBoundScopeResolver(
       scopeResolver,
-      manifest.data_scope_ref,
+      manifest.data_scope_ref.ref,
       (actor) => scopeResolver.resolveStorefrontScope(actor),
     ),
     new PgCapabilityResolver(pool),
@@ -234,12 +237,16 @@ export function assertWebBusinessNodeManifest(
   appEnvironment: string | undefined,
 ): void {
   if (manifest.node_profile !== 'operating_mall') throw new Error('WEB_BUSINESS_NODE_PROFILE_INVALID');
-  if (!manifest.enabled_features.includes('catalog') || !manifest.surfaces.includes('storefront')
-    || !manifest.surfaces.includes('api')) throw new Error('WEB_BUSINESS_NODE_FEATURE_INVALID');
-  if (manifest.applications.length !== 1 || !manifest.applications[0]?.startsWith('application:')) {
+  if (!nodeManifestHasFeature(manifest, 'catalog') || !nodeManifestHasSurface(manifest, 'storefront')
+    || !nodeManifestHasSurface(manifest, 'api')) throw new Error('WEB_BUSINESS_NODE_FEATURE_INVALID');
+  const storefrontApplications = new Set(manifest.domain_bindings
+    .filter((binding) => binding.surface_ref === 'surface:storefront')
+    .map((binding) => binding.application_ref));
+  if (storefrontApplications.size !== 1
+    || !manifest.applications.some((application) => storefrontApplications.has(application.ref))) {
     throw new Error('WEB_BUSINESS_NODE_APPLICATION_INVALID');
   }
-  const boundOrigins = new Set(manifest.domain_bindings.map(({ origin }) => origin));
+  const boundOrigins = new Set(nodeManifestOrigins(manifest));
   if (allowedOrigins.length === 0 || allowedOrigins.some((origin) => !boundOrigins.has(origin))) {
     throw new Error('WEB_BUSINESS_NODE_ORIGIN_MISMATCH');
   }

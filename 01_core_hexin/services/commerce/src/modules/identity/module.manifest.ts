@@ -9,6 +9,7 @@ export const identityManifest = defineModuleManifest({
   requires: ['access.manage', 'member.manage', 'organization.manage'],
   operations: [
     'identity.sessions.create',
+    'identity.loginintents.create',
     'identity.tickets.exchange',
     'identity.session.read',
     'identity.session.delete',

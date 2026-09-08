@@ -1,8 +1,47 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const identityNodeManifest = JSON.parse(readFileSync(resolve(import.meta.dirname,
-  '../../../01_core_hexin/packages/config/src/identity-node-manifest.json'), 'utf8'));
+const registryDeclaration = JSON.parse(readFileSync(resolve(import.meta.dirname,
+  '../../../02_platform_pingtai/config/sfl-node-registry.declaration.json'), 'utf8'));
+const manifestsByNode = new Map(registryDeclaration.manifests.map((manifest) => [manifest.node_id, manifest]));
+const bindingKind = (binding) => binding.surface_ref === 'surface:api'
+  ? 'api'
+  : binding.surface_ref === 'surface:identity'
+    ? 'accounts'
+    : 'storefront';
+const bindingOrigin = (manifest, bindingRef) => {
+  const binding = manifest.domain_bindings.find((candidate) => candidate.binding_ref.ref === bindingRef);
+  if (!binding) throw new Error(`IDENTITY_NODE_BINDING_MISSING:${manifest.node_id}:${bindingRef}`);
+  return `https://${binding.host}`;
+};
+const identityNodeManifest = Object.freeze({
+  revision: registryDeclaration.registry_version,
+  nodes: registryDeclaration.node_bindings.map((nodeBinding) => {
+    const manifest = manifestsByNode.get(nodeBinding.node_id);
+    if (!manifest) throw new Error(`IDENTITY_NODE_MANIFEST_MISSING:${nodeBinding.node_id}`);
+    return Object.freeze({
+      nodeId: manifest.node_id,
+      realmId: manifest.realm_ref.ref,
+      status: manifest.lifecycle_status,
+      nodeProfile: manifest.node_profile,
+      mallId: manifest.mall_id,
+      hostNodeId: manifest.host_node_id,
+      entries: nodeBinding.identity_entry_binding_refs.map((bindingRef) => {
+        const binding = manifest.domain_bindings.find((candidate) => candidate.binding_ref.ref === bindingRef);
+        if (!binding) throw new Error(`IDENTITY_NODE_ENTRY_BINDING_MISSING:${manifest.node_id}:${bindingRef}`);
+        return Object.freeze({ host: binding.host, kind: bindingKind(binding), status: manifest.lifecycle_status });
+      }),
+      targets: nodeBinding.targets.map((target) => Object.freeze({
+        surface: target.surface,
+        target: target.target,
+        membershipClient: target.membership_client,
+        membershipOrganizationId: target.membership_organization_id,
+        application: target.application,
+        returnOrigin: `${bindingOrigin(manifest, target.return_binding_ref)}${target.return_path}`,
+      })),
+    });
+  }),
+});
 
 export async function verifyIdentityRealmIsolation(database) {
   await database.exec('begin');
@@ -28,15 +67,19 @@ export async function verifyIdentityRealmIsolation(database) {
         token_hash text not null
       );
       insert into identity_realm_fixture
-      select level,'l'||level,'realm:l'||level,
+      select level,case level
+          when 0 then 'node:zhudatuan:l0'
+          when 1 then 'node:hbbtzn:l1'
+          else 'node:fixture:l'||level
+        end,'realm:l'||level,
         case when level<=5 then 'operating_mall' else 'consumer' end,
         case when level=0 then 'mall-zhudatuan'
           when level=1 then 'mall:d1708f04df2dd8a61736852c4900fb43'
           when level<=5 then 'mall:realm-isolation:l'||level else null end,
-        case when level<=5 then null else 'l0' end,
+        case when level<=5 then null else 'node:zhudatuan:l0' end,
         case level when 0 then 'accounts.zhudatuan.com' when 1 then 'accounts.hbbtzn.com'
           else 'accounts.l'||level||'.identity.test' end,
-        case when level=1 then 'console-hbbtzn' when level<=5 then 'console' else 'storefront' end,
+        case when level<=5 then 'console' else 'storefront' end,
         case when level<=5 then 'operator' else 'storefront' end,
         case when level=0 then 'tenant-zhudatuan'
           when level=1 then 'mall:d1708f04df2dd8a61736852c4900fb43' else 'mall-zhudatuan' end,
@@ -140,7 +183,7 @@ export async function verifyIdentityRealmIsolation(database) {
         'membership:realm-isolation:l'||level||':consumer' membership_id,
         'session:realm-isolation:l'||level||':consumer' session_id,
         encode(public.digest('session-token:realm-isolation:l'||level||':consumer','sha256'),'hex') token_hash,
-        case level when 0 then 'storefront' else 'storefront-hbbtzn' end auth_target,
+        'storefront' auth_target,
         case level when 0 then 'mall-zhudatuan' else 'mall:d1708f04df2dd8a61736852c4900fb43' end organization_id
       from identity_realm_fixture where level in(0,1);
 
@@ -209,6 +252,59 @@ export async function verifyIdentityRealmIsolation(database) {
       from identity_realm_fixture;
     `);
 
+    await database.exec(`
+      create temporary table identity_login_intent_issued as
+      select issued.*
+      from identity_realm_fixture source
+      cross join lateral identity.issue_login_intent(
+        'loginintent:00000000-0000-0000-0000-000000000001',repeat('7',64),
+        source.session_id,source.account_id,source.realm_id,
+        'node:hbbtzn:l1','consumer','zdt-l1-verify'
+      ) issued
+      where source.level=0;
+
+      create temporary table identity_login_intent_wrong_target as
+      select consumed.*
+      from identity_realm_fixture target
+      cross join lateral identity.consume_login_intent(
+        repeat('7',64),target.realm_id,'storefront','zhudatuan-storefront',
+        target.account_id,target.session_id
+      ) consumed
+      where target.level=0;
+
+      create temporary table identity_login_intent_consumed as
+      select consumed.*
+      from identity_l0_l1_consumer_fixture target
+      cross join lateral identity.consume_login_intent(
+        repeat('7',64),target.realm_id,'storefront','zdt-l1-verify',
+        target.account_id,target.session_id
+      ) consumed
+      where target.level=1;
+
+      create temporary table identity_login_intent_replayed as
+      select consumed.*
+      from identity_l0_l1_consumer_fixture target
+      cross join lateral identity.consume_login_intent(
+        repeat('7',64),target.realm_id,'storefront','zdt-l1-verify',
+        target.account_id,target.session_id
+      ) consumed
+      where target.level=1;
+    `);
+
+    await expectScalar(database, `select count(*)::integer value from identity_login_intent_issued`, 1,
+      'IDENTITY_LOGIN_INTENT_ISSUE_FAILED');
+    await expectScalar(database, `select count(*)::integer value from identity_login_intent_wrong_target`, 0,
+      'IDENTITY_LOGIN_INTENT_WRONG_TARGET_ACCEPTED');
+    await expectScalar(database, `select count(*)::integer value from identity_login_intent_consumed`, 1,
+      'IDENTITY_LOGIN_INTENT_CONSUME_FAILED');
+    await expectScalar(database, `select count(*)::integer value from identity_login_intent_replayed`, 0,
+      'IDENTITY_LOGIN_INTENT_REPLAY_ACCEPTED');
+    await expectScalar(database, `select count(*)::integer value from identity.loginintent
+      where id='loginintent:00000000-0000-0000-0000-000000000001'
+        and source_node_id='node:zhudatuan:l0' and target_node_id='node:hbbtzn:l1'
+        and consumed_at is not null and target_session_id='session:realm-isolation:l1:consumer'`, 1,
+      'IDENTITY_LOGIN_INTENT_AUDIT_EVIDENCE_INVALID');
+
     await expectScalar(database, `select count(*)::integer value from identity.credential
       where provider='password' and subject_hash=repeat('b',64)`, 12, 'IDENTITY_REALM_CREDENTIAL_COUNT_INVALID');
     await expectScalar(database, `select count(distinct secret_hash)::integer value from identity.credential
@@ -276,7 +372,7 @@ export async function verifyIdentityRealmIsolation(database) {
 
     const entryMatrix = await database.query(`with matrix as(
         select level,'admin' surface,accounts_host,session_id,account_id,realm_id,
-          case level when 0 then 'console' else 'console-hbbtzn' end auth_target
+          'console' auth_target
         from identity_realm_fixture where level in(0,1)
         union all
         select level,'consumer',accounts_host,session_id,account_id,realm_id,auth_target
@@ -293,9 +389,9 @@ export async function verifyIdentityRealmIsolation(database) {
       || (row.surface === 'admin' && row.target !== 'console')
       || (row.surface === 'consumer' && row.target !== 'storefront')
       || (row.level === 0 && row.surface === 'admin' && row.auth_target !== 'console')
-      || (row.level === 1 && row.surface === 'admin' && row.auth_target !== 'console-hbbtzn')
+      || (row.level === 1 && row.surface === 'admin' && row.auth_target !== 'console')
       || (row.level === 0 && row.surface === 'consumer' && row.auth_target !== 'storefront')
-      || (row.level === 1 && row.surface === 'consumer' && row.auth_target !== 'storefront-hbbtzn')
+      || (row.level === 1 && row.surface === 'consumer' && row.auth_target !== 'storefront')
       || row.return_origin !== ({
         '0:admin': 'https://console.zhudatuan.com',
         '0:consumer': 'https://zhudatuan.com',

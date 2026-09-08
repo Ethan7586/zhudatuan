@@ -1,4 +1,11 @@
-import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD, loadNodeManifest, type NodeManifest } from '@shop/config/server';
+import {
+  CONTRACT_SCHEMA_HEAD,
+  RUNTIME_CONTRACT_CHECKSUM,
+  TARGET_SCHEMA_HEAD,
+  loadNodeManifest,
+  nodeManifestHasFeature,
+  type NodeManifest,
+} from '@shop/config/server';
 import type { Job } from '../foundation/application/Job';
 import type { JobRunnerConfig } from '../foundation/application/JobRunner';
 import { HttpObjectStore, type ObjectStore } from '../foundation/infrastructure/ObjectStore';
@@ -72,7 +79,7 @@ export async function createCatalogJobsRuntime(environment: CatalogJobsEnvironme
     resourceBindingVersion: environment.NODE_RESOURCE_BINDING_VERSION,
     releasePointerRef: environment.NODE_RELEASE_POINTER_REF,
   });
-  if (manifest.node_profile !== 'operating_mall' || !manifest.enabled_features.includes('catalog')) {
+  if (manifest.node_profile !== 'operating_mall' || !nodeManifestHasFeature(manifest, 'catalog')) {
     throw new Error('CATALOG_JOBS_NODE_MANIFEST_INVALID');
   }
   if (environment.APP_ENV === 'production' && manifest.lifecycle_status !== 'active') throw new Error('CATALOG_JOBS_NODE_NOT_ACTIVE');
@@ -89,7 +96,7 @@ export async function createCatalogJobsRuntime(environment: CatalogJobsEnvironme
   try {
     await catalogJobsDependenciesReady(pool, objects, environment.DATABASE_JOB_ROLE);
     return Object.freeze({
-      jobs: createCatalogJobs(pool, objects, required(environment.JOB_WORKER_ID, 'JOB_WORKER_ID_MISSING'), manifest.data_scope_ref),
+      jobs: createCatalogJobs(pool, objects, required(environment.JOB_WORKER_ID, 'JOB_WORKER_ID_MISSING'), manifest.data_scope_ref.ref),
       manifest,
       close: () => pool.end(),
     });

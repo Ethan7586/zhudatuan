@@ -13,7 +13,7 @@ describe('PgAuthTicket exchange', () => {
       queries.push({ text, values });
       return { rows: [], rowCount: 1 } as unknown as QueryResult;
     } } as OperationDatabase;
-    const tickets = new PgAuthTicket(new ReturnTargetSigner({ console: 'https://legacy.example' } as never, 'key'));
+    const tickets = new PgAuthTicket(new ReturnTargetSigner('key'));
     const transaction = AuthTransaction.start({
       state: 's'.repeat(32), nonce: 'n'.repeat(32), challenge: 'c'.repeat(43),
     });
@@ -44,19 +44,7 @@ describe('PgAuthTicket exchange', () => {
         } as unknown as QueryResult;
       },
     } as OperationDatabase;
-    const tickets = new PgAuthTicket(
-      new ReturnTargetSigner(
-        {
-          console: 'https://console.zhudatuan.com',
-          'console-hbbtzn': 'https://console.hbbtzn.com',
-          storefront: 'https://zhudatuan.com',
-          'storefront-hbbtzn': 'https://hbbtzn.com',
-          store: 'https://store.zhudatuan.com',
-          supplier: 'https://supplier.zhudatuan.com',
-        },
-        'return-target-signing-key'
-      )
-    );
+    const tickets = new PgAuthTicket(new ReturnTargetSigner('return-target-signing-key'));
     const exchange = {
       ticket: 't'.repeat(64),
       state: 's'.repeat(32),
