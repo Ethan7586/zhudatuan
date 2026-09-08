@@ -13,7 +13,7 @@ describe('catalog publication job', () => {
       async query<R extends QueryResultRow>(text: string, values: readonly unknown[] = []): Promise<QueryResult<R>> {
         mutableCalls.push({ text, values });
         if (text.startsWith('select count(*)')) return result([{ count: 25 }] as unknown as R[]);
-        if (text.startsWith('with eligible')) {
+        if (text.startsWith('with selected_pool')) {
           const size = batchSizes.shift() ?? 0;
           return result(Array.from({ length: size }, (_, index) => ({ id: `listing:${index}` })) as unknown as R[]);
         }
@@ -24,11 +24,14 @@ describe('catalog publication job', () => {
 
     await new CatalogPublicationProcessor(pool).process(job, new AbortController().signal);
 
-    const publications = calls.filter(({ text }) => text.startsWith('with eligible'));
+    const publications = calls.filter(({ text }) => text.startsWith('with selected_pool'));
     expect(publications).toHaveLength(3);
     expect(publications[0]?.values).toEqual(['mall:hongtai', 20]);
     expect(publications[0]?.text).toContain('pricing.pricebook');
     expect(publications[0]?.text).toContain('inventory.stockitem');
+    expect(publications[0]?.text).toContain('experience.binding');
+    expect(publications[0]?.text).toContain('coalesce(listing.pool_id,(select pool_id from selected_pool))');
+    expect(publications[0]?.text).toContain('insert into catalog.poolitem');
     const progress = calls.filter(({ text }) => text.startsWith('update runtime.job'));
     expect(progress.map(({ values }) => values.slice(1))).toEqual([
       [25, 0, 'publishing'], [25, 20, 'publishing'], [25, 25, 'publishing'], [25, 25, 'completed'],

@@ -3,6 +3,17 @@ import { rowResult, requireAccess, type OperationDatabase } from '../../../found
 import type { OperationRequest } from '../../../foundation/application/OperationHandler';
 import { bodyRecord } from '../../../foundation/interface/Validation';
 
+const SELECTED_STOREFRONT_POOL_CTE = `selected_pool as(
+  select binding.pool_id from experience.binding binding
+  join experience.application application on application.id=binding.application_id
+    and application.status='active' and binding.domain=application.public_slug
+  where binding.mall_id=$2 and exists(
+    select 1 from experience.release release where release.application_id=application.id
+      and release.state='active' and release.effective_at<=clock_timestamp()
+      and (release.retired_at is null or release.retired_at>clock_timestamp())
+  ) order by application.updated_at desc,application.id,binding.pool_id limit 1
+)`;
+
 export async function setListingPublication(
   request: OperationRequest,
   database: OperationDatabase,
@@ -13,7 +24,9 @@ export async function setListingPublication(
   if (expectedVersion === undefined) throw new Error('EXPECTED_VERSION_REQUIRED');
   const listing = request.input.path.listingid!;
   const result = await database.query(
-    `update catalog.listing set status=$4,
+    `with ${SELECTED_STOREFRONT_POOL_CTE}
+    update catalog.listing set pool_id=case when $4='published'
+        then coalesce(pool_id,(select pool_id from selected_pool)) else pool_id end,status=$4,
       effective_at=case when $4='published' then clock_timestamp() else effective_at end,
       expires_at=case when $4='unpublished' then clock_timestamp() else null end,
       version=version+1,updated_at=clock_timestamp()
@@ -41,10 +54,13 @@ export async function setListingBatchPublication(request: OperationRequest, data
   if (!Array.isArray(body.ids) || body.ids.some((id) => typeof id !== 'string')) throw new Error('VALIDATION_FAILED:ids');
   const state = body.action === 'publish' ? 'published' : 'unpublished';
   const result = await database.query(
-    `update catalog.listing set status=$3,effective_at=case when $3='published' then clock_timestamp() else effective_at end,
+    `with ${SELECTED_STOREFRONT_POOL_CTE}
+    update catalog.listing set pool_id=case when $3='published'
+      then coalesce(pool_id,(select pool_id from selected_pool)) else pool_id end,
+    status=$3,effective_at=case when $3='published' then clock_timestamp() else effective_at end,
     expires_at=case when $3='unpublished' then clock_timestamp() else null end,version=version+1,updated_at=clock_timestamp()
-    where scope_id=$1 and id=any($2::text[]) returning id,status,version`,
-    [access.scope.id, body.ids, state],
+    where scope_id=$2 and id=any($1::text[]) returning id,status,version`,
+    [body.ids, access.scope.id, state],
   );
   return { status: 200, body: { action: body.action, items: result.rows, count: result.rowCount } };
 }

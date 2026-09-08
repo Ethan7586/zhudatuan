@@ -79,10 +79,12 @@ describe('catalog mall command boundaries', () => {
     expect(summaryRead.values).toEqual(['mall:hongtai', '', '', '', '']);
 
     const publishCalls: QueryCall[] = [];
-    const publicationDatabase = recordingDatabase(publishCalls, (text) => text.startsWith('update catalog.listing')
+    const publicationDatabase = recordingDatabase(publishCalls, (text) => text.startsWith('with selected_pool')
       ? [{ id: 'listing:1', status: 'published', version: 4 }] : []);
     await setListingPublication(request('catalog.listings.publish', { listingid: 'listing:1' }, 3), publicationDatabase, 'published');
     expect(publishCalls[0]?.text).toContain('where id=$1 and scope_id=$2 and version=$3');
+    expect(publishCalls[0]?.text).toContain('experience.binding');
+    expect(publishCalls[0]?.text).toContain('coalesce(pool_id,(select pool_id from selected_pool))');
     expect(publishCalls[0]?.values).toEqual(['listing:1', 'mall:hongtai', 3, 'published']);
   });
 
@@ -100,6 +102,22 @@ describe('catalog mall command boundaries', () => {
     expect(calls[0]?.values[1]).toBe('mall:hongtai');
     expect(calls[0]?.text).toContain("'catalogpublication'");
     expect(calls[0]?.text).toContain('insert into runtime.job');
+  });
+
+  it('assigns the active storefront pool during an explicit batch publication', async () => {
+    const calls: QueryCall[] = [];
+    const database = recordingDatabase(calls, (text) => text.startsWith('with selected_pool')
+      ? [{ id: 'listing:1', status: 'published', version: 4 }] : []);
+
+    const result = await setListingBatchPublication(
+      request('catalog.listings.batch', {}, undefined, {}, { action: 'publish', ids: ['listing:1'] }),
+      database,
+    );
+
+    expect(result).toMatchObject({ status: 200, body: { action: 'publish', count: 1 } });
+    expect(calls[0]?.text).toContain('experience.binding');
+    expect(calls[0]?.text).toContain('coalesce(pool_id,(select pool_id from selected_pool))');
+    expect(calls[0]?.values).toEqual([['listing:1'], 'mall:hongtai', 'published']);
   });
 });
 

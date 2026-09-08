@@ -172,6 +172,7 @@ describe('Product governance workspace', () => {
     await waitFor(() => expect(batchActions).toEqual(['publish_ready']));
     expect(writes).toContain('POST');
     expect(await screen.findByRole('progressbar')).toBeTruthy();
+    expect(screen.getByRole('button', { name: '正在审核上架…' })).toBeTruthy();
     expect(screen.getByText('商品正在发布到前台：0/1')).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
     completed = true;

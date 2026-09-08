@@ -165,6 +165,7 @@ const REPAIR_FILES = [
   '20260908011000_canonicalize_sfl_identity_targets.sql',
   '20260908012000_create_sfl_login_intents.sql',
   '20260908013000_generalize_storefront_roles.sql',
+  '20260909010000_bind_published_listings_to_storefront_pool.sql',
 ];
 
 const mode = process.argv[2];

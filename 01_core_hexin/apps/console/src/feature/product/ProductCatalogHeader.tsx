@@ -50,7 +50,7 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
               <ProductIcon name="store" />
               {releaseProgress === undefined
                 ? releasePending ? '正在创建上架任务…' : `一键审核上架${page?.status_counts === undefined ? '' : ` ${formatCount(page.status_counts.pending_review)}`}`
-                : `正在上架 ${formatCount(releaseProgress.current)}/${formatCount(releaseProgress.total)}`}
+                : '正在审核上架…'}
             </button>
             {releaseProgress === undefined ? null : (
               <div id="productreleasestate" className="productreleaseprogress" role="status" aria-live="polite">
