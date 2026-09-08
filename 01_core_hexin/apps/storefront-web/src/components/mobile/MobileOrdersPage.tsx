@@ -1,6 +1,6 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, Package, PackageCheck, RefreshCw, RotateCcw, Store, Truck, WalletCards } from 'lucide-react';
-import type { FrontendOrder } from '../../adapters/frontendData';
+import { ChevronLeft, ChevronRight, Package, RefreshCw, RotateCcw, Store, Truck, WalletCards } from 'lucide-react';
+import type { FrontendOrder, FrontendOrderItem } from '../../adapters/frontendData';
 import { useMall, type MobileFulfillmentStage } from '../../context/MallContext';
 import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 import { MobileAfterSaleView } from './MobileAfterSaleView';
@@ -8,7 +8,7 @@ import { MobileOrderDetailView } from './MobileOrderDetailView';
 import { MobilePaymentSheet } from './MobilePaymentSheet';
 import { OrderFlowIcon } from './OrderFlowIcon';
 import { currentMobileOrderFilter, matchesMobileOrderFilter, selectMobileOrderFilter, type MobileOrderFilter } from './mobileOrderFilters';
-import { groupOrderPackages, mobileOrderPayableAmount } from './mobileOrderPresentation';
+import { groupOrderPackages, mobileOrderPayableAmount, type MobileMerchantPackage } from './mobileOrderPresentation';
 import {
   effectiveMobileFulfillmentStage,
   mobileFulfillmentSimulationAction,
@@ -130,11 +130,13 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
           <button type="button" onClick={goBack} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-slate-700 transition-transform duration-150 active:scale-90 active:bg-slate-100" aria-label="返回个人中心">
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-[15px] font-black tracking-[-0.01em] text-slate-950">我的订单</h1>
-            <p className="mt-0.5 text-[9px] tracking-wide text-slate-400">
-              {presentationOrders.length > 0 ? `${presentationOrders.length} 笔订单 · 进度实时同步` : '订单进度会及时同步'}
-            </p>
+          <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
+            <h1 className="text-[16px] font-black tracking-[-0.02em] text-slate-950">我的订单</h1>
+            {presentationOrders.length > 0 && (
+              <span aria-label={`共 ${presentationOrders.length} 笔订单`} className="text-[10px] font-semibold tabular-nums text-slate-400">
+                {presentationOrders.length > 99 ? '99+' : presentationOrders.length}
+              </span>
+            )}
           </div>
           {showPreviewControl && fulfillment.count > 0 && (
             <button
@@ -181,15 +183,8 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
           </div>
         ) : (
           visibleOrders.map((order, orderIndex) => {
-            const firstItem = order.items[0];
-            const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
-            const isPendingPayment = order.status === 'pending_payment' || order.status === 'pending_pay';
             const fulfillmentStage = effectiveMobileFulfillmentStage(order, mobileFulfillmentSimulationStage);
-            const displayStatusText = fulfillmentStage ? mobileFulfillmentStageLabel(fulfillmentStage) : order.statusText;
-            const displayAmount = isPendingPayment ? mobileOrderPayableAmount(order) : order.totalAmount;
-            const packages = groupOrderPackages(order, fulfillmentStage);
             const primaryAction = mobileOrderPrimaryAction(order.status, fulfillmentStage);
-            const statusTone = orderStatusTone(order.status, fulfillmentStage);
 
             const runPrimaryAction = () => {
               if (primaryAction.kind === 'payment') setPaymentOrder(order);
@@ -198,69 +193,15 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
             };
 
             return (
-              <article
+              <MobileOrderCard
                 key={order.id}
-                className="overflow-hidden rounded-[22px] border border-white bg-white shadow-[0_10px_28px_rgba(33,52,78,0.055)] [content-visibility:auto] [contain-intrinsic-size:184px] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-200"
-                style={{ animationDelay: `${Math.min(orderIndex, 3) * 24}ms` }}
-              >
-                <header className="flex items-start justify-between gap-3 px-3.5 pb-2.5 pt-3.5">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-[10px] bg-[#F0F5FB] text-[#56779F]">
-                      <Store className="h-3.5 w-3.5" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-[11px] font-black text-slate-800">{order.supplierName || order.mallName}</span>
-                      <span className="mt-0.5 block truncate font-mono text-[8px] tracking-[-0.01em] text-slate-400">{order.orderNo} · {order.createdAt}</span>
-                    </span>
-                  </div>
-                  <span className={`flex shrink-0 items-center gap-1.5 pt-1 text-[10px] font-bold ${statusTone.text}`}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${statusTone.dot}`} />
-                    {displayStatusText}
-                  </span>
-                </header>
-
-                <button type="button" onClick={() => openOrderView(order, 'detail')} className="flex w-full touch-manipulation items-center gap-3 border-t border-slate-100/80 px-3.5 py-3 text-left transition-[background-color,transform] duration-150 active:scale-[0.995] active:bg-[#F7F9FC]">
-                  {firstItem ? (
-                    <img
-                      src={storefrontImageUrl(firstItem.product.imageUrl, 144)}
-                      srcSet={`${storefrontImageUrl(firstItem.product.imageUrl, 72)} 1x, ${storefrontImageUrl(firstItem.product.imageUrl, 144)} 2x, ${storefrontImageUrl(firstItem.product.imageUrl, 216)} 3x`}
-                      alt={firstItem.productTitle}
-                      width={72}
-                      height={72}
-                      loading={orderIndex === 0 ? 'eager' : 'lazy'}
-                      fetchPriority={orderIndex === 0 ? 'high' : 'low'}
-                      decoding="async"
-                      className="h-[72px] w-[72px] shrink-0 rounded-[16px] bg-[#F5F7FA] object-cover"
-                    />
-                  ) : (
-                    <span className="grid h-[72px] w-[72px] shrink-0 place-items-center rounded-[16px] bg-[#F0F4F8] text-[#7C91AB]"><Package className="h-5 w-5" /></span>
-                  )}
-                  <span className="min-w-0 flex-1">
-                    <span className="line-clamp-2 block text-[11px] font-bold leading-[1.55] text-slate-800">{firstItem?.productTitle ?? '订单商品信息同步中'}</span>
-                    <span className="mt-1 block text-[9px] text-slate-400">
-                      {firstItem?.specText || '默认规格'} · 共 {itemCount} 件{order.items.length > 1 ? ` · ${order.items.length} 种商品` : ''}
-                    </span>
-                    <span className="mt-2 flex items-center gap-1.5 text-[9px] font-medium text-[#607B9B]">
-                      <Package className="h-3 w-3 shrink-0" />
-                      <span className="truncate">{packages.length > 1 ? `${packages.length} 个包裹 · 分别配送` : mobileOrderProgressHint(order.status, fulfillmentStage)}</span>
-                    </span>
-                  </span>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
-                </button>
-
-                <footer className="flex min-h-[54px] items-center justify-between gap-3 border-t border-slate-100/80 px-3.5 py-2.5">
-                  <div className="min-w-0">
-                    <p className="text-[8px] tracking-wide text-slate-400">{isPendingPayment ? '待支付' : '实付金额'}</p>
-                    <p className={`mt-0.5 text-[16px] font-black tracking-[-0.03em] ${isPendingPayment ? 'text-[#D9544F]' : 'text-slate-900'}`}>¥{displayAmount.toFixed(2)}</p>
-                  </div>
-                  <button type="button" onClick={runPrimaryAction} className={`flex min-h-9 shrink-0 touch-manipulation items-center gap-1.5 rounded-full px-4 text-[10px] font-bold transition-transform duration-150 active:scale-95 ${mobileOrderActionTone(primaryAction.tone)}`}>
-                    {primaryAction.kind === 'payment' && <WalletCards className="h-3.5 w-3.5" />}
-                    {primaryAction.kind === 'after-sale' && <RotateCcw className="h-3.5 w-3.5" />}
-                    {primaryAction.kind === 'detail' && <Truck className="h-3.5 w-3.5" />}
-                    {primaryAction.label}
-                  </button>
-                </footer>
-              </article>
+                order={order}
+                orderIndex={orderIndex}
+                fulfillmentStage={fulfillmentStage}
+                primaryAction={primaryAction}
+                onOpenDetail={() => openOrderView(order, 'detail')}
+                onPrimaryAction={runPrimaryAction}
+              />
             );
           })
         )}
@@ -269,6 +210,238 @@ export const MobileOrdersPage: React.FC<MobileOrdersPageProps> = ({ mode }) => {
     </div>
   );
 };
+
+interface MobileOrderCardProps {
+  order: FrontendOrder;
+  orderIndex: number;
+  fulfillmentStage: MobileFulfillmentStage | null;
+  primaryAction: MobileOrderAction;
+  onOpenDetail: () => void;
+  onPrimaryAction: () => void;
+}
+
+const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
+  order,
+  orderIndex,
+  fulfillmentStage,
+  primaryAction,
+  onOpenDetail,
+  onPrimaryAction,
+}) => {
+  const packages = groupOrderPackages(order, fulfillmentStage);
+  const isMultiMerchant = packages.length > 1;
+  const isPendingPayment = order.status === 'pending_payment' || order.status === 'pending_pay';
+  const displayStatusText = fulfillmentStage ? mobileFulfillmentStageLabel(fulfillmentStage) : order.statusText;
+  const displayAmount = isPendingPayment ? mobileOrderPayableAmount(order) : order.totalAmount;
+  const statusTone = orderStatusTone(order.status, fulfillmentStage);
+
+  return (
+    <article
+      className="overflow-hidden rounded-[22px] border border-white bg-white shadow-[0_10px_28px_rgba(33,52,78,0.055)] [content-visibility:auto] [contain-intrinsic-size:184px] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-200"
+      style={{ animationDelay: `${Math.min(orderIndex, 3) * 24}ms` }}
+    >
+      {isMultiMerchant ? (
+        <MultiMerchantOrder
+          order={order}
+          packages={packages}
+          displayAmount={displayAmount}
+          primaryAction={primaryAction}
+          onOpenDetail={onOpenDetail}
+          onPrimaryAction={onPrimaryAction}
+        />
+      ) : (
+        <SingleMerchantOrder
+          order={order}
+          orderIndex={orderIndex}
+          merchantPackage={packages[0]}
+          fulfillmentStage={fulfillmentStage}
+          displayStatusText={displayStatusText}
+          displayAmount={displayAmount}
+          statusTone={statusTone}
+          primaryAction={primaryAction}
+          isPendingPayment={isPendingPayment}
+          onOpenDetail={onOpenDetail}
+          onPrimaryAction={onPrimaryAction}
+        />
+      )}
+    </article>
+  );
+};
+
+interface SingleMerchantOrderProps {
+  order: FrontendOrder;
+  orderIndex: number;
+  merchantPackage: MobileMerchantPackage | undefined;
+  fulfillmentStage: MobileFulfillmentStage | null;
+  displayStatusText: string;
+  displayAmount: number;
+  statusTone: Readonly<{ text: string; dot: string }>;
+  primaryAction: MobileOrderAction;
+  isPendingPayment: boolean;
+  onOpenDetail: () => void;
+  onPrimaryAction: () => void;
+}
+
+const SingleMerchantOrder: React.FC<SingleMerchantOrderProps> = ({
+  order,
+  orderIndex,
+  merchantPackage,
+  fulfillmentStage,
+  displayStatusText,
+  displayAmount,
+  statusTone,
+  primaryAction,
+  isPendingPayment,
+  onOpenDetail,
+  onPrimaryAction,
+}) => {
+  const merchantName = merchantPackage?.merchantName || order.supplierName || order.mallName;
+  const firstItem = order.items[0];
+  const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+  const merchantBadge = mobileMerchantBadge(order.supplierType);
+
+  return (
+    <>
+      <header className="flex min-h-12 items-center gap-2 border-b border-slate-100/80 px-3.5">
+        <MerchantMark />
+        <span className="min-w-0 truncate text-[11px] font-black text-slate-900">{merchantName}</span>
+        {merchantBadge && <span className="shrink-0 rounded-md bg-[#EEF4FF] px-1.5 py-0.5 text-[8px] font-bold text-[var(--sw-brand)]">{merchantBadge}</span>}
+        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+        <span className={`ml-auto shrink-0 text-[10px] font-bold ${statusTone.text}`}>{displayStatusText}</span>
+      </header>
+
+      <button type="button" onClick={onOpenDetail} className="flex w-full touch-manipulation items-center gap-3 px-3.5 py-3 text-left transition-[background-color,transform] duration-150 active:scale-[0.995] active:bg-[#F7F9FC]">
+        <OrderProductImage item={firstItem} eager={orderIndex === 0} />
+        <span className="min-w-0 flex-1">
+          <span className="line-clamp-2 block text-[11px] font-bold leading-[1.55] text-slate-800">{firstItem?.productTitle ?? '订单商品信息同步中'}</span>
+          <span className="mt-1 block text-[9px] text-slate-400">
+            {firstItem?.specText || '默认规格'} · 共 {itemCount} 件{order.items.length > 1 ? ` · ${order.items.length} 种商品` : ''}
+          </span>
+          <span className="mt-2.5 flex items-baseline justify-between gap-2">
+            <span className="text-[13px] font-black tracking-[-0.02em] text-slate-900">¥{displayAmount.toFixed(2)}</span>
+            <span className="text-[9px] text-slate-400">订单详情</span>
+          </span>
+        </span>
+      </button>
+
+      <div className="mx-3.5 mb-2.5 flex min-h-9 items-center gap-2 rounded-[12px] bg-gradient-to-r from-[#F0F5FF] to-[#F8FBFF] px-3">
+        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusTone.dot} shadow-[0_0_0_4px_rgba(36,105,232,0.08)]`} />
+        <span className="min-w-0 flex-1 truncate text-[9px] font-semibold text-[#45688F]">{merchantPackage?.deliveryHint || mobileOrderProgressHint(order.status, fulfillmentStage)}</span>
+        <span className="shrink-0 text-[8px] text-[#91A1B6]">持续更新</span>
+      </div>
+
+      <footer className="flex min-h-[48px] items-center justify-between gap-3 border-t border-slate-100/80 px-3.5 py-2">
+        <span className="min-w-0 truncate text-[8px] text-slate-400">{isPendingPayment ? '付款后由商户安排配送' : `订单号 ${order.orderNo}`}</span>
+        <OrderActionButton action={primaryAction} onClick={onPrimaryAction} />
+      </footer>
+    </>
+  );
+};
+
+interface MultiMerchantOrderProps {
+  order: FrontendOrder;
+  packages: MobileMerchantPackage[];
+  displayAmount: number;
+  primaryAction: MobileOrderAction;
+  onOpenDetail: () => void;
+  onPrimaryAction: () => void;
+}
+
+const MultiMerchantOrder: React.FC<MultiMerchantOrderProps> = ({ order, packages, displayAmount, primaryAction, onOpenDetail, onPrimaryAction }) => (
+  <>
+    <header className="flex min-h-[52px] items-center gap-3 px-3.5">
+      <span className="min-w-0 flex-1">
+        <span className="block text-[12px] font-black text-slate-900">合并支付订单</span>
+        <span className="mt-0.5 block text-[8px] font-medium text-slate-400">来自 {packages.length} 家商户 · 分 {packages.length} 个包裹配送</span>
+      </span>
+      <span className="shrink-0 text-right">
+        <span className="block text-[8px] text-slate-400">合计</span>
+        <span className="block text-[13px] font-black tracking-[-0.02em] text-slate-900">¥{displayAmount.toFixed(2)}</span>
+      </span>
+    </header>
+
+    <div className="space-y-2 px-2.5 pb-2.5">
+      {packages.map((merchantPackage, packageIndex) => {
+        const firstItem = merchantPackage.items[0];
+        const packageItemCount = merchantPackage.items.reduce((sum, item) => sum + item.quantity, 0);
+        const packageType = firstItem?.product.supplierType;
+        const packageBadge = mobileMerchantBadge(packageType);
+        const packageTone = packageStatusTone(merchantPackage.statusLabel);
+        return (
+          <section key={merchantPackage.id} className="overflow-hidden rounded-[16px] border border-slate-100 bg-[#FBFCFE]">
+            <header className="flex min-h-10 items-center gap-2 border-b border-slate-100 bg-white px-2.5">
+              <MerchantMark tone={packageIndex % 2 === 0 ? 'warm' : 'green'} compact />
+              <span className="min-w-0 truncate text-[10px] font-black text-slate-800">{merchantPackage.merchantName}</span>
+              {packageBadge && <span className="shrink-0 rounded-md bg-slate-50 px-1.5 py-0.5 text-[7px] font-bold text-slate-500">{packageBadge}</span>}
+              <ChevronRight className="h-3 w-3 shrink-0 text-slate-300" />
+              <span className={`ml-auto shrink-0 text-[9px] font-bold ${packageTone.text}`}>{merchantPackage.statusLabel}</span>
+            </header>
+            <button type="button" onClick={onOpenDetail} className="flex w-full touch-manipulation items-center gap-2.5 px-2.5 py-2 text-left transition-colors duration-150 active:bg-slate-50">
+              <OrderProductImage item={firstItem} compact />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[10.5px] font-bold text-slate-800">{firstItem?.productTitle ?? '商品信息同步中'}</span>
+                <span className="mt-1 block text-[8px] text-slate-400">{firstItem?.specText || '默认规格'} · 共 {packageItemCount} 件</span>
+                <span className="mt-1.5 flex items-center gap-1.5 text-[8px] font-medium text-[#6F8198]">
+                  <span className={`h-1 w-1 shrink-0 rounded-full ${packageTone.dot}`} />
+                  <span className="truncate">{merchantPackage.deliveryHint}</span>
+                </span>
+              </span>
+            </button>
+          </section>
+        );
+      })}
+    </div>
+
+    <footer className="border-t border-slate-100/80 p-2.5">
+      <button type="button" onClick={onPrimaryAction} className={`flex min-h-10 w-full touch-manipulation items-center justify-center gap-1.5 rounded-[13px] text-[10px] font-bold transition-transform duration-150 active:scale-[0.985] ${mobileOrderActionTone(primaryAction.tone, true)}`}>
+        {primaryAction.kind === 'payment' && <WalletCards className="h-3.5 w-3.5" />}
+        {primaryAction.kind === 'after-sale' && <RotateCcw className="h-3.5 w-3.5" />}
+        {primaryAction.kind === 'detail' && <Truck className="h-3.5 w-3.5" />}
+        {primaryAction.kind === 'detail' ? `查看 ${packages.length} 个包裹进度` : primaryAction.label}
+        <ChevronRight className="h-3 w-3" />
+      </button>
+      <span className="sr-only">订单号 {order.orderNo}</span>
+    </footer>
+  </>
+);
+
+const MerchantMark: React.FC<{ tone?: 'brand' | 'warm' | 'green'; compact?: boolean }> = ({ tone = 'brand', compact = false }) => {
+  const toneClass = tone === 'warm' ? 'bg-amber-50 text-amber-600' : tone === 'green' ? 'bg-emerald-50 text-emerald-600' : 'bg-[#EDF4FF] text-[var(--sw-brand)]';
+  return (
+    <span className={`grid shrink-0 place-items-center rounded-[9px] ${compact ? 'h-6 w-6' : 'h-7 w-7'} ${toneClass}`}>
+      <Store className={compact ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
+    </span>
+  );
+};
+
+const OrderProductImage: React.FC<{ item: FrontendOrderItem | undefined; eager?: boolean; compact?: boolean }> = ({ item, eager = false, compact = false }) => {
+  const size = compact ? 54 : 72;
+  if (!item) {
+    return <span className={`grid shrink-0 place-items-center bg-[#F0F4F8] text-[#7C91AB] ${compact ? 'h-[54px] w-[54px] rounded-[13px]' : 'h-[72px] w-[72px] rounded-[16px]'}`}><Package className={compact ? 'h-4 w-4' : 'h-5 w-5'} /></span>;
+  }
+  return (
+    <img
+      src={storefrontImageUrl(item.product.imageUrl, size * 2)}
+      srcSet={`${storefrontImageUrl(item.product.imageUrl, size)} 1x, ${storefrontImageUrl(item.product.imageUrl, size * 2)} 2x, ${storefrontImageUrl(item.product.imageUrl, size * 3)} 3x`}
+      alt={item.productTitle}
+      width={size}
+      height={size}
+      loading={eager ? 'eager' : 'lazy'}
+      fetchPriority={eager ? 'high' : 'low'}
+      decoding="async"
+      className={`shrink-0 bg-[#F5F7FA] object-cover ${compact ? 'h-[54px] w-[54px] rounded-[13px]' : 'h-[72px] w-[72px] rounded-[16px]'}`}
+    />
+  );
+};
+
+const OrderActionButton: React.FC<{ action: MobileOrderAction; onClick: () => void }> = ({ action, onClick }) => (
+  <button type="button" onClick={onClick} className={`flex min-h-8 shrink-0 touch-manipulation items-center gap-1.5 rounded-full px-3.5 text-[9px] font-bold transition-transform duration-150 active:scale-95 ${mobileOrderActionTone(action.tone)}`}>
+    {action.kind === 'payment' && <WalletCards className="h-3 w-3" />}
+    {action.kind === 'after-sale' && <RotateCcw className="h-3 w-3" />}
+    {action.kind === 'detail' && <Truck className="h-3 w-3" />}
+    {action.label}
+  </button>
+);
 
 type MobileOrderAction = Readonly<{
   kind: 'payment' | 'after-sale' | 'detail';
@@ -285,17 +458,31 @@ function mobileOrderPrimaryAction(status: FrontendOrder['status'], fulfillmentSt
   return { kind: 'detail', label: '订单详情', tone: 'quiet' };
 }
 
-function mobileOrderActionTone(tone: MobileOrderAction['tone']): string {
-  if (tone === 'brand') return 'bg-[var(--sw-brand)] text-white shadow-[0_7px_16px_rgba(36,105,232,0.2)]';
+function mobileOrderActionTone(tone: MobileOrderAction['tone'], fullWidth = false): string {
+  if (tone === 'brand') return fullWidth ? 'bg-[#EEF4FF] text-[var(--sw-brand)]' : 'bg-[var(--sw-brand)] text-white shadow-[0_7px_16px_rgba(36,105,232,0.2)]';
   if (tone === 'service') return 'bg-[#F1EEFB] text-[#6E5B9C]';
-  return 'border border-[#D9E2ED] bg-white text-slate-700';
+  return fullWidth ? 'bg-slate-50 text-slate-700' : 'border border-[#D9E2ED] bg-white text-slate-700';
+}
+
+function mobileMerchantBadge(supplierType: FrontendOrder['supplierType'] | undefined): string | null {
+  if (supplierType === 'self_operated') return '自营';
+  if (supplierType === 'group_owned') return '集团';
+  return null;
+}
+
+function packageStatusTone(statusLabel: string): Readonly<{ text: string; dot: string }> {
+  if (statusLabel === '待付款' || statusLabel === '备货中') return { text: 'text-amber-600', dot: 'bg-amber-500' };
+  if (statusLabel === '运输中') return { text: 'text-[var(--sw-brand)]', dot: 'bg-[var(--sw-brand)]' };
+  if (statusLabel === '已收货' || statusLabel === '已签收') return { text: 'text-emerald-600', dot: 'bg-emerald-500' };
+  return { text: 'text-[#725EA1]', dot: 'bg-[#8A76B7]' };
 }
 
 function orderStatusTone(status: FrontendOrder['status'], fulfillmentStage: MobileFulfillmentStage | null): Readonly<{ text: string; dot: string }> {
   if (status === 'pending_payment' || status === 'pending_pay') return { text: 'text-amber-700', dot: 'bg-amber-500' };
   if (status === 'after_sale') return { text: 'text-[#725EA1]', dot: 'bg-[#8A76B7]' };
   if (status === 'completed' || fulfillmentStage === 'received') return { text: 'text-emerald-700', dot: 'bg-emerald-500' };
-  return { text: 'text-[#4E7098]', dot: 'bg-[#6F91B8]' };
+  if (fulfillmentStage === 'processing') return { text: 'text-amber-600', dot: 'bg-amber-500' };
+  return { text: 'text-[var(--sw-brand)]', dot: 'bg-[var(--sw-brand)]' };
 }
 
 function mobileOrderProgressHint(status: FrontendOrder['status'], fulfillmentStage: MobileFulfillmentStage | null): string {
