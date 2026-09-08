@@ -1,7 +1,7 @@
 import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto';
 import { Client } from 'pg';
 import { localSeedEnvironment, TARGET_SCHEMA_HEAD } from '@shop/config/server';
-import { COMMERCE_OPERATIONS, CONTRACT_VERSION } from '@shop/contract';
+import { COMMERCE_OPERATIONS, CONTRACT_VERSION, errorStatus } from '@shop/contract';
 import { HttpKmsClient } from '../../../services/commerce/src/platform/crypto/KmsClient';
 import type { KmsClient } from '../../../services/commerce/src/pipeline/KmsPort';
 import { HttpObjectStore } from '../../../services/commerce/src/platform/object/ObjectStore';
@@ -378,11 +378,11 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   const revokedResolution = await resolveInvitation(revocableCode);
   const revokedResolutionPayload: unknown = await revokedResolution.json();
   if (
-    revokedResolution.status !== 400 ||
+    revokedResolution.status !== errorStatus('INVITATION_REVOKED') ||
     revokedResolutionPayload === null ||
     typeof revokedResolutionPayload !== 'object' ||
     Array.isArray(revokedResolutionPayload) ||
-    (revokedResolutionPayload as Readonly<Record<string, unknown>>).code !== 'INVITATION_INVALID'
+    (revokedResolutionPayload as Readonly<Record<string, unknown>>).code !== 'INVITATION_REVOKED'
   )
     throw new Error(`LOCAL_REVOKED_INVITATION_RESOLUTION_INVALID:${revokedResolution.status}:${JSON.stringify(revokedResolutionPayload)}`);
   const ledger = await localFetch('http://127.0.0.1:3001/api/v1/benefits/ledgers', { headers: sessionHeaders(storefront) });
