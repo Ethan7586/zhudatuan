@@ -9,7 +9,7 @@ describe('worker readiness marker', () => {
     const directory = mkdtempSync(join(tmpdir(), 'shop-worker-'));
     const path = join(directory, 'ready');
     try {
-      const readiness = new WorkerReadiness(path);
+      const readiness = new WorkerReadiness('jobs', path);
       readiness.mark();
       expect(existsSync(path)).toBe(true);
       expect(() => readiness.mark()).toThrow();
@@ -21,6 +21,6 @@ describe('worker readiness marker', () => {
   });
 
   it('rejects a non-absolute marker path', () => {
-    expect(() => new WorkerReadiness('ready')).toThrow('WORKER_READINESS_PATH_INVALID');
+    expect(() => new WorkerReadiness('jobs', 'ready')).toThrow('WORKER_READINESS_PATH_INVALID');
   });
 });

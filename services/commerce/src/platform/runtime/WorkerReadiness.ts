@@ -1,9 +1,15 @@
 import { closeSync, openSync, rmSync } from 'node:fs';
-import { isAbsolute } from 'node:path';
+import { tmpdir } from 'node:os';
+import { isAbsolute, join } from 'node:path';
+
+export type WorkerWorkload = 'jobs' | 'provider';
 
 export class WorkerReadiness {
-  constructor(private readonly path = '/tmp/worker-ready') {
-    if (!isAbsolute(path) || path === '/') throw new Error('WORKER_READINESS_PATH_INVALID');
+  private readonly path: string;
+
+  constructor(workload: WorkerWorkload, configured?: string) {
+    this.path = configured ?? join(tmpdir(), `shop${workload}ready`);
+    if (!isAbsolute(this.path) || this.path === '/') throw new Error('WORKER_READINESS_PATH_INVALID');
   }
 
   mark(): void {

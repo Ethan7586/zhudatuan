@@ -20,7 +20,7 @@ if (registered.join(',') !== expected.join(',')) throw new Error('JOB_RUNTIME_CA
 await assertRuntimeReady(runtime.pool, runtime.extensions, 'jobs', runtime.invitationKeyVersions);
 
 const controller = new AbortController();
-const readiness = new WorkerReadiness(environment.WORKER_READY_FILE);
+const readiness = new WorkerReadiness('jobs', environment.WORKER_READY_FILE);
 readiness.mark();
 for (const signal of ['SIGINT', 'SIGTERM'] as const)
   process.once(signal, () => {

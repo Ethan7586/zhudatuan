@@ -19,7 +19,7 @@ if (registered.join(',') !== expected.join(',')) throw new Error('PROVIDER_RUNTI
 await assertProviderReady(runtime.pool, runtime.extensions);
 
 const controller = new AbortController();
-const readiness = new WorkerReadiness(environment.WORKER_READY_FILE);
+const readiness = new WorkerReadiness('provider', environment.WORKER_READY_FILE);
 readiness.mark();
 for (const signal of ['SIGINT', 'SIGTERM'] as const)
   process.once(signal, () => {
