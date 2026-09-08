@@ -88,6 +88,21 @@ test('Console 页名、品牌与管理范围在平板宽度完整可读', async 
   await expect.poll(() => textFits(page, '.scopepath li[aria-current="page"]')).toBe(true);
 });
 
+test('Console 会员与权限首页加载所属样式并按视口重排', async ({ page }) => {
+  await prepareVisual(page, { width: 1440, height: 900 });
+  await signInConsole(page);
+  await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consolesettings, 'enterprise')}`);
+  await expectUsable(page);
+  await expect(page.locator('.settingsworkspace')).toHaveCSS('display', 'grid');
+  await expect(page.locator('.settingshero')).toHaveCSS('display', 'grid');
+  await expect(page.locator('.settingsgrid')).toHaveCSS('display', 'grid');
+  expect(await columnCount(page, '.settingsgrid')).toBeGreaterThan(1);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => columnCount(page, '.settingsgrid')).toBe(1);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+});
+
 function canonicalScope(routeid: string): ScopeKind {
   const declared = authority.nodes.filter((node) => node.surface === 'console' && node.routeid === routeid).map(({ scope }) => scope);
   const preferred: readonly ScopeKind[] = routeid.startsWith('consolereferral')
@@ -104,4 +119,8 @@ function path(template: string, scope: ScopeKind): string {
 
 async function textFits(page: import('@playwright/test').Page, selector: string): Promise<boolean> {
   return page.locator(selector).evaluate((element) => element.scrollWidth <= element.clientWidth + 1 && element.scrollHeight <= element.clientHeight + 1);
+}
+
+async function columnCount(page: import('@playwright/test').Page, selector: string): Promise<number> {
+  return page.locator(selector).evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length);
 }

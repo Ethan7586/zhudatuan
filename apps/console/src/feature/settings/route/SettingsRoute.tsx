@@ -4,6 +4,7 @@ import type { ConsoleNavigationNode, ConsoleScope } from '../../../entity/sessio
 import { useRouteTitle } from '../../../shared/ui/RouteTitle';
 import { SettingsPage } from '../view/SettingsPage';
 import { createSettingsViewModel } from '../viewmodel/SettingsViewModel';
+import '../Settings.css';
 
 interface SettingsRouteContext {
   readonly nodes: readonly ConsoleNavigationNode[];
