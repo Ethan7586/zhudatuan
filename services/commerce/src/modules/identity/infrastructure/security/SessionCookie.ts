@@ -2,8 +2,11 @@ import type { AuthTarget } from '@shop/config/server';
 import type { SessionCookiePort } from '../../application/port/SessionCookiePort';
 
 export class SessionCookieAdapter implements SessionCookiePort {
+  constructor(private readonly maximumAgeSeconds: number) {
+    if (!Number.isSafeInteger(maximumAgeSeconds) || maximumAgeSeconds < 1 || maximumAgeSeconds > 43_200) throw new Error('SESSION_COOKIE_POLICY_INVALID');
+  }
   session(target: AuthTarget, token: string, csrf: string, maxAge: number): Readonly<Record<string, string>> {
-    return sessionCookies(target, token, csrf, maxAge);
+    return sessionCookies(target, token, csrf, maxAge, this.maximumAgeSeconds);
   }
   read(value: string | undefined, name: string): string | undefined {
     return requestCookie(value, name);
@@ -13,9 +16,18 @@ export class SessionCookieAdapter implements SessionCookiePort {
   }
 }
 
-export function sessionCookies(target: AuthTarget, token: string, csrf: string, maxAge: number): Readonly<Record<string, string>> {
+export function sessionCookies(target: AuthTarget, token: string, csrf: string, maxAge: number, maximumAgeSeconds: number): Readonly<Record<string, string>> {
   const clearing = maxAge === 0 && token === '' && csrf === '';
-  if ((!clearing && (!/^[A-Za-z0-9_-]{32,1024}$/.test(token) || !/^[A-Za-z0-9._~-]{32,2048}$/.test(csrf))) || !Number.isSafeInteger(maxAge) || maxAge < 0 || maxAge > 43_200) throw new Error('SESSION_COOKIE_INVALID');
+  if (
+    (!clearing && (!/^[A-Za-z0-9_-]{32,1024}$/.test(token) || !/^[A-Za-z0-9._~-]{32,2048}$/.test(csrf))) ||
+    !Number.isSafeInteger(maxAge) ||
+    maxAge < 0 ||
+    !Number.isSafeInteger(maximumAgeSeconds) ||
+    maximumAgeSeconds < 1 ||
+    maximumAgeSeconds > 43_200 ||
+    maxAge > maximumAgeSeconds
+  )
+    throw new Error('SESSION_COOKIE_INVALID');
   const expiry = maxAge === 0 ? '; Expires=Thu, 01 Jan 1970 00:00:00 GMT' : '';
   return Object.freeze({
     'set-cookie': `__Host-${target}-session=${encodeURIComponent(token)}; Path=/; Max-Age=${maxAge}; Secure; HttpOnly; SameSite=Strict${expiry}`,

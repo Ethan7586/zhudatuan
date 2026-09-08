@@ -8,6 +8,7 @@ import { SubjectHasher } from '../domain/service/SubjectHasher';
 import { ProviderInstance } from '../domain/model/ProviderInstance';
 import { SessionCookieAdapter } from '../infrastructure/security/SessionCookie';
 import { result, withReadTransaction, withWriteTransaction } from '../../../test/TransactionFixture';
+import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
 const PROVIDER = '11111111-1111-4111-8111-111111111111';
 const TENANT = '22222222-2222-4222-8222-222222222222';
@@ -78,7 +79,7 @@ describe('identity federation callback', () => {
       { verify: vi.fn(() => ({ url: 'https://console.fufu.wang/security', proof: 'proof', expiresAt: '2026-08-30T00:01:00.000Z', target: 'console' })) } as never,
       { directoryBindings: vi.fn() } as never,
       {} as never,
-      new SessionCookieAdapter(),
+      new SessionCookieAdapter(RUNTIME_LIMITS.authentication.session.ttlSeconds),
       links as never
     );
 
@@ -145,7 +146,7 @@ describe('identity federation callback', () => {
       { verify: vi.fn(() => ({ url: 'https://console.fufu.wang', proof: 'signed-return-target', expiresAt: '2026-08-30T00:01:00.000Z', target: 'console' })) } as never,
       { directoryBindings: vi.fn() } as never,
       {} as never,
-      new SessionCookieAdapter(),
+      new SessionCookieAdapter(RUNTIME_LIMITS.authentication.session.ttlSeconds),
       {} as never
     );
 
@@ -219,7 +220,7 @@ describe('identity federation callback', () => {
       {} as never,
       { directoryBindings: vi.fn() } as never,
       {} as never,
-      new SessionCookieAdapter(),
+      new SessionCookieAdapter(RUNTIME_LIMITS.authentication.session.ttlSeconds),
       {} as never
     );
 

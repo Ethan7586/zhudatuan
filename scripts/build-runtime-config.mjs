@@ -458,6 +458,8 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
     !Number.isSafeInteger(authentication.bootstrap?.ttlSeconds) ||
     authentication.bootstrap.ttlSeconds < 60 ||
     authentication.bootstrap.ttlSeconds > 900 ||
+    !Number.isSafeInteger(authentication.session?.ttlSeconds) ||
+    authentication.session.ttlSeconds !== 7200 ||
     !Number.isSafeInteger(password?.minimumLength) ||
     !Number.isSafeInteger(password?.maximumLength) ||
     password.minimumLength < 12 ||

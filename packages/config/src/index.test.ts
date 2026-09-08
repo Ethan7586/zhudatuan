@@ -36,11 +36,16 @@ import {
 } from './ServerEnvironment';
 import { relativeRoutePath } from './RoutePath';
 import { providerConnectionConfig } from './ProviderConfig';
+import { RUNTIME_LIMITS } from './RuntimeCatalog';
 
 const secretStoreBearerToken = 's'.repeat(43);
 const kmsBearerToken = 'k'.repeat(43);
 
 describe('canonical runtime configuration', () => {
+  it('keeps authenticated browser sessions at exactly two hours', () => {
+    expect(RUNTIME_LIMITS.authentication.session.ttlSeconds).toBe(7_200);
+  });
+
   it('parses provider configuration without exposing secrets and rejects unknown keys', () => {
     const value = {
       id: 'jd-main',

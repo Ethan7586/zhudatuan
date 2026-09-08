@@ -17,7 +17,7 @@ export class DefaultSessionIssuer implements SessionIssuer {
     private readonly access: IdentityAccessPort,
     private readonly cookies: SessionCookiePort,
     private readonly repository: SessionRepository,
-    private readonly policy = new SessionPolicy()
+    private readonly policy: SessionPolicy
   ) {
     if (identitykey.length < 32) throw new Error('SESSION_ISSUER_KEY_INVALID');
   }

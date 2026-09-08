@@ -83,6 +83,8 @@ import { InvitationFailure } from '../../application/service/InvitationFailure';
 import { InvitationLookup } from '../../application/service/InvitationLookup';
 import { PgStepupRequestRepository } from '../persistence/PgStepupRequestRepository';
 import { assembleOperations } from '../../application/service/OperationAssembly';
+import { RUNTIME_LIMITS } from '@shop/config/runtime';
+import { SessionPolicy } from '../../domain/policy/SessionPolicy';
 
 export function composeIdentity(context: ModuleContext) {
   const pool = context.service(DATABASE_POOL);
@@ -95,7 +97,8 @@ export function composeIdentity(context: ModuleContext) {
   const hasher = new InvitationHasher(keys.invitation);
   const returns = new ReturnTargetSigner(context.service(RETURN_TARGETS), keys.session);
   const invitationLookup = new InvitationLookup(repository, hasher);
-  const cookies = new SessionCookieAdapter();
+  const sessionPolicy = new SessionPolicy(RUNTIME_LIMITS.authentication.session.ttlSeconds);
+  const cookies = new SessionCookieAdapter(sessionPolicy.ttlSeconds);
   const assurances = new PgAssuranceRepository();
   const events = new PgIdentityEvent();
   const invitationFailures = new InvitationFailure(events);
@@ -109,7 +112,7 @@ export function composeIdentity(context: ModuleContext) {
   const identityAccess = context.ports.get(IDENTITY_ACCESS_PORT);
   const members = context.ports.get(IDENTITY_MEMBER_PORT);
   const sessionRepository = new PgSessionRepository();
-  const sessions = new DefaultSessionIssuer(csrf, keys.identity, identityAccess, cookies, sessionRepository);
+  const sessions = new DefaultSessionIssuer(csrf, keys.identity, identityAccess, cookies, sessionRepository, sessionPolicy);
   const challenges = new PgChallenge();
   const providerClient = new ProviderHttpClient(context.service(SECRET_STORE));
   const providers = new PgProviderRepository(providerClient, keys.identity);
@@ -186,7 +189,7 @@ export function composeIdentity(context: ModuleContext) {
   return assembleOperations({
     sessionsCreate: [authentication.action(), new StartFederation(federation).lifecycle()],
     sessionsComplete: [new CompleteSession(repository, redeemer, sessions, returns, keys.session, tickets, challenges, cookies, assurances, invitationFailures).lifecycle()],
-    ticketsExchange: [new ExchangeTicket(tickets, returns, csrf, cookies).action()],
+    ticketsExchange: [new ExchangeTicket(tickets, returns, csrf, cookies, sessionPolicy).action()],
     sessionRead: [new ReadSession(members, kms, cookies, credentials).lifecycle()],
     sessionDelete: [revocation.current()],
     handoversRead: [handovers],

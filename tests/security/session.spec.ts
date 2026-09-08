@@ -9,6 +9,7 @@ import { CsrfProtector } from '../../services/commerce/src/platform/security/Csr
 import { DomainError } from '../../services/commerce/src/platform/error/DomainError';
 import { sessionCookies } from '../../services/commerce/src/modules/identity/infrastructure/security/SessionCookie';
 import { NavigationKey } from '../../services/commerce/src/modules/navigation/domain/model/NavigationKey';
+import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
 test('optional session never downgrades an invalid credential to an anonymous request', async () => {
   let accessCalls = 0;
@@ -38,13 +39,16 @@ test('optional session never downgrades an invalid credential to an anonymous re
 });
 
 test('session cookies are host-only, secure, HttpOnly and SameSite Strict', () => {
-  const values = sessionCookies('storefront', 's'.repeat(32), 'c'.repeat(43), 3600);
+  const sessionSeconds = RUNTIME_LIMITS.authentication.session.ttlSeconds;
+  const values = sessionCookies('storefront', 's'.repeat(32), 'c'.repeat(43), sessionSeconds, sessionSeconds);
   assert.match(values['set-cookie']!, /^__Host-storefront-session=/);
   assert.match(values['set-cookie']!, /; Path=\/;.*; Secure; HttpOnly; SameSite=Strict/);
   assert.doesNotMatch(values['set-cookie']!, /Domain=/i);
   assert.match(values['x-set-cookie']!, /^__Host-storefront-csrf=/);
   assert.match(values['x-set-cookie']!, /; Secure; SameSite=Strict/);
   assert.doesNotMatch(values['x-set-cookie']!, /HttpOnly|Domain=/i);
+  assert.match(values['set-cookie']!, /Max-Age=7200/);
+  assert.throws(() => sessionCookies('storefront', 's'.repeat(32), 'c'.repeat(43), sessionSeconds + 1, sessionSeconds), /SESSION_COOKIE_INVALID/);
 });
 
 test('PII is rejected from URLs, redacted from telemetry and HMACed in cache keys', async () => {

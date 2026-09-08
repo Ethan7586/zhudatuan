@@ -3,6 +3,7 @@ import { AuthTransaction } from '../domain/model/AuthTransaction';
 import { MembershipSelector } from '../application/service/MembershipSelector';
 import { SessionCookieAdapter } from '../infrastructure/security/SessionCookie';
 import { result, withWriteTransaction } from '../../../test/TransactionFixture';
+import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
 describe('MembershipSelector', () => {
   it('binds a password selection to browser, device and PKCE and consumes it once', async () => {
@@ -29,7 +30,7 @@ describe('MembershipSelector', () => {
       { memberForPrincipal: async () => 'member-one' } as never,
       { complete: vi.fn() } as never,
       { verify: vi.fn(() => ({ url: 'https://fufu.wang/s/mall-one/orders', proof: returnTarget, expiresAt: '2099-01-01T00:00:00.000Z', target: 'storefront' })) } as never,
-      new SessionCookieAdapter()
+      new SessionCookieAdapter(RUNTIME_LIMITS.authentication.session.ttlSeconds)
     );
     const authorization = AuthTransaction.start({ state: 's'.repeat(32), nonce: 'n'.repeat(32), challenge: 'c'.repeat(43) });
 

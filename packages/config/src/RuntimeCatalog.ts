@@ -1,5 +1,5 @@
 // Generated from config/cache.yml and config/capacity.yml. Do not edit.
-export const CONFIG_CHECKSUM = '12b2d3dd6db74cc217fe1d8bffef93f25776e11ae709d6efcc83834f891bb1bf' as const;
+export const CONFIG_CHECKSUM = '35da7f1e3cf857c8d3cf8fa2c1bff6c1c4bb28123dbfa1ee86337046ee53e645' as const;
 
 export const BROWSER_QUERY_POLICY = Object.freeze({
   "query": {
@@ -325,6 +325,9 @@ export const RUNTIME_LIMITS = Object.freeze({
   "authentication": {
     "bootstrap": {
       "ttlSeconds": 600
+    },
+    "session": {
+      "ttlSeconds": 7200
     },
     "password": {
       "minimumLength": 12,

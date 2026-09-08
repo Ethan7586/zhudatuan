@@ -11,13 +11,15 @@ import type { ReturnTargetPort } from '../port/ReturnTargetPort';
 import { returnDestination } from './ReturnDestination';
 import { bodyRecord } from '../../../../pipeline/Validation';
 import { OPERATION_TARGETS } from '@shop/contract';
+import type { SessionPolicy } from '../../domain/policy/SessionPolicy';
 
 export class ExchangeTicket {
   constructor(
     private readonly tickets: AuthTicketPort,
     private readonly returns: ReturnTargetPort,
     private readonly csrf: CsrfProtector,
-    private readonly cookies: SessionCookiePort
+    private readonly cookies: SessionCookiePort,
+    private readonly policy: SessionPolicy
   ) {}
   action(): OperationAction {
     return async (request, database) => {
@@ -27,7 +29,7 @@ export class ExchangeTicket {
       const body = bodyRecord(request.input);
       const exchanged = await this.tickets.consume(requireWriteTransaction(database), body, current, token);
       const destination = returnDestination(this.returns, exchanged.target, body.returnTarget);
-      const expiresIn = Math.max(1, Math.min(43_200, Math.floor((exchanged.sessionExpiresAt.getTime() - Date.now()) / 1_000)));
+      const expiresIn = Math.max(1, Math.min(this.policy.ttlSeconds, Math.floor((exchanged.sessionExpiresAt.getTime() - Date.now()) / 1_000)));
       return { status: 200, body: { returnTarget: destination, expiresIn }, headers: this.cookies.session(exchanged.target, token, this.csrf.issue(token, exchanged.target, expiresIn), expiresIn) };
     };
   }

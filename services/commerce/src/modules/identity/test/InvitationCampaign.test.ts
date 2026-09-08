@@ -11,6 +11,7 @@ import { SessionCookieAdapter } from '../infrastructure/security/SessionCookie';
 import { EnrollIdentity } from '../application/service/EnrollIdentity';
 import { registrationPolicyView } from '../application/service/RegistrationPolicyView';
 import { withWriteTransaction } from '../../../test/TransactionFixture';
+import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
 describe('campaign enrollment invitation', () => {
   it('exposes only the public registration policy contract', () => {
@@ -149,7 +150,7 @@ describe('campaign enrollment invitation', () => {
     const count = vi.fn();
     const telemetry = { metrics: { count, duration: vi.fn() } } as never;
     const redeemer = new InvitationRedeemer(repository as never, access as never, telemetry);
-    const cookies = new SessionCookieAdapter();
+    const cookies = new SessionCookieAdapter(RUNTIME_LIMITS.authentication.session.ttlSeconds);
     const enrollments = { findPrincipal: async () => null, createPendingPrincipal: vi.fn(), activatePrincipal: vi.fn(), createPassword: vi.fn() };
     const assurances = { record: vi.fn() };
     const events = { publish: vi.fn() };

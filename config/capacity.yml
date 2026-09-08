@@ -114,6 +114,8 @@ runtime:
   authentication:
     bootstrap:
       ttlSeconds: 600
+    session:
+      ttlSeconds: 7200
     password:
       minimumLength: 12
       maximumLength: 128
