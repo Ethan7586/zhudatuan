@@ -52,8 +52,10 @@ export class PgTransactionManager implements TransactionManager {
       }) as unknown as ReadTransactionContext;
       const active = { client, context, mode, open: true };
       try {
+        assertAvailable(options);
         await client.query(mode === 'write' ? 'begin isolation level serializable' : 'begin read only');
         began = true;
+        assertAvailable(options);
         await applyContext(client, options);
         const result = await pgTransactionState.run(active, () => (work as (context: ReadTransactionContext) => Promise<T>)(context));
         active.open = false;
@@ -75,11 +77,22 @@ export class PgTransactionManager implements TransactionManager {
 }
 
 function applyContext(client: PoolClient, options: TransactionOptions): Promise<unknown> {
+  const statementTimeout = String(Math.max(1, Math.ceil(options.deadline - Date.now())));
   return client.query(
     `select set_config('app.tenant_id',$1,true),set_config('app.membership_id',$2,true),set_config('app.scope_id',$3,true),
     set_config('app.actor_id',$4,true),set_config('app.trace_id',$5,true),set_config('app.operation_id',$6,true),set_config('app.workload',$7,true),
-    set_config('app.authorization_snapshot',$8,true)`,
-    [options.tenant, options.membership, options.scope, options.actor, options.trace, options.operation, options.workload === 'jobs' ? 'jobs' : 'api', options.authorization === undefined ? '' : JSON.stringify(options.authorization)]
+    set_config('app.authorization_snapshot',$8,true),set_config('statement_timeout',$9,true)`,
+    [
+      options.tenant,
+      options.membership,
+      options.scope,
+      options.actor,
+      options.trace,
+      options.operation,
+      options.workload === 'jobs' ? 'jobs' : 'api',
+      options.authorization === undefined ? '' : JSON.stringify(options.authorization),
+      statementTimeout,
+    ]
   );
 }
 

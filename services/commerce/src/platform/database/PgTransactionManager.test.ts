@@ -20,6 +20,8 @@ describe('PgTransactionManager', () => {
     expect(client.statements[0]).toBe('begin read only');
     expect(client.statements).toContain('select 1');
     expect(client.statements.at(-1)).toBe('commit');
+    expect(Number(client.parameters.find(({ text }) => text.startsWith('select set_config('))?.values?.[8])).toBeGreaterThan(0);
+    expect(Number(client.parameters.find(({ text }) => text.startsWith('select set_config('))?.values?.[8])).toBeLessThanOrEqual(10_000);
     expect(client.release).toHaveBeenCalledOnce();
     expect(() => access.database(retained!)).toThrow('TRANSACTION_CONTEXT_INACTIVE');
   });
@@ -91,6 +93,25 @@ describe('PgTransactionManager', () => {
     expect(clients.slice(0, -1).every((client) => client.statements.includes('rollback'))).toBe(true);
     expect(clients.at(-1)?.statements).toContain('commit');
   });
+
+  it('does not begin work when the caller is cancelled while waiting for a connection', async () => {
+    const client = fakeClient();
+    const controller = new AbortController();
+    const base = fakePool(client);
+    const pool = {
+      ...base,
+      workload: () => pool,
+      connect: async () => {
+        controller.abort(new Error('CALLER_ABORTED'));
+        return client;
+      },
+    } as unknown as DatabasePool;
+    const manager = new PgTransactionManager(pool);
+
+    await expect(manager.read({ ...options(), signal: controller.signal }, async () => undefined)).rejects.toThrow('CALLER_ABORTED');
+    expect(client.statements).toEqual([]);
+    expect(client.release).toHaveBeenCalledOnce();
+  });
 });
 
 function options() {
@@ -123,11 +144,14 @@ function fakePool(...clients: ReturnType<typeof fakeClient>[]): DatabasePool {
 
 function fakeClient() {
   const statements: string[] = [];
+  const parameters: Array<{ text: string; values: readonly unknown[] | undefined }> = [];
   return {
     statements,
+    parameters,
     release: vi.fn(),
-    query: async <R extends QueryResultRow>(text: string): Promise<QueryResult<R>> => {
+    query: async <R extends QueryResultRow>(text: string, values?: readonly unknown[]): Promise<QueryResult<R>> => {
       statements.push(text);
+      parameters.push({ text, values });
       return result<R>();
     },
   };
