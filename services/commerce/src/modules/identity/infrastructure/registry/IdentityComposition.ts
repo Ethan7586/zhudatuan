@@ -40,20 +40,11 @@ import { ReadMemberships } from '../../application/service/ReadMemberships';
 import { SwitchMembership } from '../../application/service/SwitchMembership';
 import { ResolveInvitation } from '../../application/service/ResolveInvitation';
 import { DefaultSessionIssuer } from '../../application/service/DefaultSessionIssuer';
-import { FederateIdentity } from '../../application/service/FederateIdentity';
 import { IdentityLinker } from '../../application/service/IdentityLinker';
-import { MembershipSelector } from '../../application/service/MembershipSelector';
-import { ProviderResolver } from '../../application/service/ProviderResolver';
 import { PasswordPolicy } from '../../domain/policy/PasswordPolicy';
 import { FederationProtector } from '../../domain/service/FederationProtector';
-import { Nonce } from '../../domain/service/Nonce';
-import { SubjectHasher } from '../../domain/service/SubjectHasher';
 import { PgAuthTicket } from '../persistence/PgAuthTicket';
 import { PgInvitationRepository } from '../persistence/PgInvitationRepository';
-import { PgFederationRepository } from '../persistence/PgFederationRepository';
-import { PgIdentityLinkRepository } from '../persistence/PgIdentityLinkRepository';
-import { PgLinkCaseRepository } from '../persistence/PgLinkCaseRepository';
-import { PgProviderRepository } from '../persistence/PgProviderRepository';
 import { PgSessionRepository } from '../persistence/PgSessionRepository';
 import { PgHandoverRepository } from '../persistence/PgHandoverRepository';
 import { PgAssuranceRepository } from '../persistence/PgAssuranceRepository';
@@ -62,9 +53,8 @@ import { PgIdentityEvent } from '../persistence/PgIdentityEvent';
 import { PgCredentialRepository } from '../persistence/PgCredentialRepository';
 import { PgRegistrationPolicyRepository } from '../persistence/PgRegistrationPolicyRepository';
 import { PgRegistrationResetRepository } from '../persistence/PgRegistrationResetRepository';
-import { PgMembershipSelection } from '../persistence/PgMembershipSelection';
 import { CredentialRegistry } from './CredentialRegistry';
-import { identityProviderRegistry } from './IdentityProviderRegistry';
+import { composeFederation } from './FederationComposition';
 import { RETURN_TARGETS } from '../security/ReturnTargetCatalog';
 import { ReturnTargetSigner } from '../security/ReturnTargetSigner';
 import { InvitationGenerator } from '../security/InvitationGenerator';
@@ -75,7 +65,6 @@ import { PgInvitationRate } from '../persistence/PgInvitationRate';
 import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
 import { InvitationGuard } from '../../application/service/InvitationGuard';
 import { TELEMETRY } from '../../../../platform/telemetry/Telemetry';
-import { ProviderHttpClient } from '../security/ProviderHttpClient';
 import { InvitationRedeemer } from '../../application/service/InvitationRedeemer';
 import { SessionCookieAdapter } from '../security/SessionCookie';
 import { EnrollIdentity } from '../../application/service/EnrollIdentity';
@@ -114,33 +103,23 @@ export function composeIdentity(context: ModuleContext) {
   const sessionRepository = new PgSessionRepository();
   const sessions = new DefaultSessionIssuer(csrf, keys.identity, identityAccess, cookies, sessionRepository, sessionPolicy);
   const challenges = new PgChallenge();
-  const providerClient = new ProviderHttpClient(context.service(SECRET_STORE));
-  const providers = new PgProviderRepository(providerClient, keys.identity);
-  const resolver = new ProviderResolver(providers, identityProviderRegistry(providerClient, keys.identity));
   const invitationAccess = context.ports.get(INVITATION_ACCESS_PORT);
   const redeemer = new InvitationRedeemer(repository, invitationAccess, telemetry);
   const invited = context.ports.get(IDENTITY_REGISTRATION_PORT);
   const organizations = context.ports.get(IDENTITY_ORGANIZATION_PORT);
   const challengeCommands = new CreateChallenge(kms, context.service(RISK_GATE), challenges, keys.identity, keys.session, preauth, repository, hasher, events, credentials, members, invitationAccess, invited);
-  const federationRepository = new PgFederationRepository(members, identityAccess);
-  const selector = new MembershipSelector(new PgMembershipSelection(), sessions, protector, identityAccess, members, federationRepository, returns, cookies);
-  const linkcases = new PgLinkCaseRepository();
-  const linkRepository = new PgIdentityLinkRepository();
-  const federation = new FederateIdentity(
-    federationRepository,
-    linkcases,
-    resolver,
-    new SubjectHasher({ version: 'current', value: keys.identity }),
-    protector,
-    new Nonce(),
-    kms,
+  const { providers, resolver, selector, cases: linkcases, links: linkRepository, federation } = composeFederation({
+    secrets: context.service(SECRET_STORE),
+    identityKey: keys.identity,
+    members,
+    access: identityAccess,
     sessions,
+    protector,
+    kms,
     returns,
     organizations,
-    identityAccess,
     cookies,
-    linkRepository
-  );
+  });
   const authentication = new AuthenticateIdentity(
     new CredentialRegistry([
       new PasswordAuthenticator(keys.identity, sessions, returns, tickets, new PgLoginGuard(), identityAccess, members, selector, credentials),
