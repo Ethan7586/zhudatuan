@@ -160,6 +160,7 @@
                               "financeoperator",
                               "financereviewer",
                               "storeoperator",
+                              "supplieroperator",
                               "administrator",
                               "custom"
                             ],
@@ -352,6 +353,7 @@
                         "financeoperator",
                         "financereviewer",
                         "storeoperator",
+                        "supplieroperator",
                         "administrator",
                         "custom"
                       ],
@@ -425,6 +427,7 @@
                     "financeoperator",
                     "financereviewer",
                     "storeoperator",
+                    "supplieroperator",
                     "administrator",
                     "custom"
                   ],
@@ -1894,6 +1897,7 @@
                       "financeoperator",
                       "financereviewer",
                       "storeoperator",
+                      "supplieroperator",
                       "administrator",
                       "custom"
                     ],
@@ -2087,6 +2091,7 @@
                       "financeoperator",
                       "financereviewer",
                       "storeoperator",
+                      "supplieroperator",
                       "administrator",
                       "custom"
                     ],
@@ -79062,6 +79067,7 @@
                           "financeoperator",
                           "financereviewer",
                           "storeoperator",
+                          "supplieroperator",
                           "administrator",
                           "custom"
                         ],

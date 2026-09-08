@@ -163,6 +163,22 @@ describe('contract truth', () => {
     expect(() => schema.parse({ ...output, items: [withoutAccount] })).toThrow();
   });
 
+  it('accepts every published operational role template in access-center output', () => {
+    const schema = OPERATION_SCHEMAS['access.center.read'].output;
+    const templates = [
+      { code: 'storeoperator', name: '门店操作员', description: '门店履约', allows: [], denies: [], version: 1 },
+      { code: 'supplieroperator', name: '供应商操作员', description: '供应商履约', allows: [], denies: [], version: 1 },
+    ] as const;
+
+    expect(schema.parse({ items: [], count: 0, roles: [], templates, separationRules: [] })).toEqual({
+      items: [],
+      count: 0,
+      roles: [],
+      templates,
+      separationRules: [],
+    });
+  });
+
   it('requires readable parent names on organization layers', () => {
     const row = {
       id: 'enterprise:one',

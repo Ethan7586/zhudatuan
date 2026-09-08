@@ -18,6 +18,7 @@ export const ACCESS_ROLE_TEMPLATE_CODES = Object.freeze([
   'financeoperator',
   'financereviewer',
   'storeoperator',
+  'supplieroperator',
   'administrator',
   'custom',
 ] as const);

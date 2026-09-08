@@ -1801,7 +1801,8 @@ begin
     select 'self:'||profile.principal_id into resolved from access.membership membership join member.profile profile on profile.id=membership.member_id where membership.id=p_membership_id;
   elsif exists(select 1 from capability.operation where operation_id=p_operation and audience='storefront')
       or p_operation like 'cart.%' or p_operation like 'checkout.%' or p_operation in(
-      'order.orders.create','order.aftersales.apply','benefit.accounts.read',
+      'order.orders.create','order.aftersales.apply','benefit.accounts.read','invoice.profiles.manage',
+      'invoice.requests.create','invoice.requests.read','invoice.requests.cancel',
       'notification.notifications.read','notification.preferences.manage','notification.endpoints.manage') then
     select profile.id into resolved from access.membership membership join member.profile profile on profile.id=membership.member_id where membership.id=p_membership_id;
   elsif p_operation in('order.orders.read','order.aftersales.read','support.cases.read','support.messages.read')
@@ -2038,6 +2039,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='supplier' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','4cc37c26c8d37dc91fa1c54cc270cb548806af583a5065d9f2cb651653186669');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','64692fb8bed869388c3fdbef453406f0daef8824f3409c10cc0564fb6f3151e8');
 
 commit;
