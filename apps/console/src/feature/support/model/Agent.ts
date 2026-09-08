@@ -5,6 +5,7 @@ type AgentDto = OperationOutputFor<'support.agents.read'>['items'][number];
 export interface Agent {
   readonly id: string;
   readonly membershipId: string;
+  readonly displayName: string;
   readonly skills: readonly string[];
   readonly capacity: number;
   readonly state: AgentDto['state'];

@@ -1,18 +1,19 @@
 import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
-import type { MemberAccessPort } from '../../../access/public';
+import type { MemberAccessPort, MembershipReadPort } from '../../../access/public';
 import type { SupportBenefitPort } from '../../../benefit/public';
 import type { MemberReadPort } from '../../../member/public';
 import type { OrderSupportPort } from '../../../order/public';
 import type { OrganizationReadPort } from '../../../organization/public';
-import type { SupportContextPort, SupportContextView } from '../../application/port/SupportPersistence';
+import type { SupportAgentLabel, SupportContextPort, SupportContextView } from '../../application/port/SupportPersistence';
 
 export class PgSupportContextRepository implements SupportContextPort {
   constructor(
     private readonly orders: OrderSupportPort,
     private readonly organizations: OrganizationReadPort,
     private readonly members: MemberAccessPort,
+    private readonly memberships: MembershipReadPort,
     private readonly benefits: SupportBenefitPort,
     private readonly profiles: MemberReadPort,
     private readonly transactions = new PgTransactionAccess()
@@ -24,6 +25,24 @@ export class PgSupportContextRepository implements SupportContextPort {
 
   descendants(context: ReadTransactionContext, scope: string): Promise<readonly string[]> {
     return this.organizations.descendants(context, scope);
+  }
+
+  async agentLabels(context: ReadTransactionContext, memberships: readonly string[], scope: string): Promise<readonly SupportAgentLabel[]> {
+    const summaries = await this.memberships.summaries(context, memberships, scope);
+    const profiles = await this.profiles.profiles(
+      context,
+      summaries.map(({ member }) => member),
+      scope
+    );
+    const names = new Map(profiles.map(({ member, displayName }) => [member, displayName]));
+    return Object.freeze(
+      summaries.map((summary) =>
+        Object.freeze({
+          membership: summary.membership,
+          displayName: names.get(summary.member) ?? '未命名客服',
+        })
+      )
+    );
   }
 
   async benefit(context: ReadTransactionContext, type: string, id: string, scope: string, member: string): Promise<Readonly<Record<string, unknown>>> {

@@ -163,6 +163,38 @@ describe('contract truth', () => {
     expect(() => schema.parse({ ...output, items: [withoutAccount] })).toThrow();
   });
 
+  it('requires readable agent labels on support queues and settings', () => {
+    const agent = { id: 'agent:one', membership_id: 'membership:one', display_name: '王客服', skills: ['general'], capacity: 10, state: 'available', version: 2 } as const;
+    const ticket = {
+      id: 'case:one',
+      scope_id: 'mall:one',
+      priority: 'normal',
+      state: 'assigned',
+      assigned_agent_id: 'agent:one',
+      assigned_agent_name: '王客服',
+      response_due_at: '2026-09-09T01:00:00.000Z',
+      resolution_due_at: '2026-09-09T08:00:00.000Z',
+      created_at: '2026-09-09T00:00:00.000Z',
+      updated_at: '2026-09-09T00:30:00.000Z',
+      version: 2,
+      conversation_id: 'conversation:one',
+      skill: 'general',
+      member_id: 'member:one',
+      order_id: null,
+      channel: 'inapp',
+      subject: '配送时间咨询',
+      reference_type: null,
+      reference_id: null,
+      unread_count: 1,
+      sla_risk: 'normal',
+    } as const;
+
+    expect(OPERATION_SCHEMAS['support.agents.read'].output.parse({ items: [agent], count: 1 })).toEqual({ items: [agent], count: 1 });
+    expect(OPERATION_SCHEMAS['support.cases.read'].output.parse({ items: [ticket], count: 1 })).toEqual({ items: [ticket], count: 1 });
+    expect(() => OPERATION_SCHEMAS['support.agents.read'].output.parse({ items: [omit(agent, 'display_name')], count: 1 })).toThrow();
+    expect(() => OPERATION_SCHEMAS['support.cases.read'].output.parse({ items: [omit(ticket, 'assigned_agent_name')], count: 1 })).toThrow();
+  });
+
   it('accepts every published operational role template in access-center output', () => {
     const schema = OPERATION_SCHEMAS['access.center.read'].output;
     const templates = [

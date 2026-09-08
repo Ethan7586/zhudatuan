@@ -31,6 +31,7 @@ export interface SupportTicketOutputRow {
 }
 
 export interface SupportCaseReadRow extends SupportTicketOutputRow {
+  readonly assigned_agent_membership_id: string | null;
   readonly member_id: string | null;
   readonly order_id: string | null;
   readonly channel: ConversationChannel;
@@ -73,7 +74,13 @@ export function supportInstant(value: string | Date): string {
 }
 export function supportTicketDto(row: SupportTicketOutputRow) {
   return {
-    ...row,
+    id: row.id,
+    scope_id: row.scope_id,
+    priority: row.priority,
+    state: row.state,
+    assigned_agent_id: row.assigned_agent_id,
+    conversation_id: row.conversation_id,
+    skill: row.skill,
     version: Number(row.version),
     response_due_at: supportInstant(row.response_due_at),
     resolution_due_at: supportInstant(row.resolution_due_at),
@@ -81,9 +88,10 @@ export function supportTicketDto(row: SupportTicketOutputRow) {
     updated_at: supportInstant(row.updated_at),
   };
 }
-export function supportCaseDto(row: SupportCaseReadRow) {
+export function supportCaseDto(row: SupportCaseReadRow, assignedAgentName: string | null) {
   return {
     ...supportTicketDto(row),
+    assigned_agent_name: assignedAgentName,
     member_id: row.member_id,
     order_id: row.order_id,
     channel: row.channel,

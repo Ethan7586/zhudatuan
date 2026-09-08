@@ -13,9 +13,15 @@ export interface SupportContextView {
   readonly benefits: readonly Readonly<{ id: string; state: string; kind: string; currency: string; remainingMinor: number; expiresAt: string | null }>[];
 }
 
+export interface SupportAgentLabel {
+  readonly membership: string;
+  readonly displayName: string;
+}
+
 export interface SupportContextPort {
   member(context: ReadTransactionContext, membership: string): Promise<string>;
   descendants(context: ReadTransactionContext, scope: string): Promise<readonly string[]>;
+  agentLabels(context: ReadTransactionContext, memberships: readonly string[], scope: string): Promise<readonly SupportAgentLabel[]>;
   benefit(context: ReadTransactionContext, type: string, id: string, scope: string, member: string): Promise<Readonly<Record<string, unknown>>>;
   view(context: ReadTransactionContext, scope: string, member: string, memberOnly: boolean): Promise<SupportContextView>;
   collaborate(context: WriteTransactionContext, input: Readonly<{ order: string; supportCase: string; scopes: readonly string[]; member: string; memberOnly: boolean; actor: string; trace: string }>): Promise<void>;

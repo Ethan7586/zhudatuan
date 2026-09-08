@@ -84,6 +84,7 @@ function ticket(): Ticket {
     priority: 'high',
     state: 'assigned',
     assignedAgentId: 'agent:one',
+    assignedAgentName: '王客服',
     responseDueAt: '2026-09-04T01:00:00.000Z',
     resolutionDueAt: '2026-09-04T08:00:00.000Z',
     createdAt: '2026-09-04T00:00:00.000Z',

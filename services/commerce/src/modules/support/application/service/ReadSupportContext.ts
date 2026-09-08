@@ -1,7 +1,7 @@
 import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
 import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
-import type { SupportContextPort, SupportContextView } from '../port/SupportPersistence';
+import type { SupportAgentLabel, SupportContextPort, SupportContextView } from '../port/SupportPersistence';
 import { exactSupportScope, supportBoundary } from './SupportBoundary';
 
 export interface SupportActorContext {
@@ -26,6 +26,10 @@ export class ReadSupportContext {
 
   benefit(context: ReadTransactionContext, type: string, id: string, scope: string, member: string): Promise<Readonly<Record<string, unknown>>> {
     return this.repository.benefit(context, type, id, scope, member);
+  }
+
+  agentLabels(context: ReadTransactionContext, memberships: readonly string[], scope: string): Promise<readonly SupportAgentLabel[]> {
+    return this.repository.agentLabels(context, memberships, scope);
   }
 
   view(context: ReadTransactionContext, scope: string, member: string, memberOnly: boolean): Promise<SupportContextView> {

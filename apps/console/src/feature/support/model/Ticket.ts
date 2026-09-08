@@ -10,6 +10,7 @@ export interface Ticket {
   readonly priority: TicketPriority;
   readonly state: TicketState;
   readonly assignedAgentId: string | null;
+  readonly assignedAgentName: string | null;
   readonly responseDueAt: string;
   readonly resolutionDueAt: string;
   readonly createdAt: string;

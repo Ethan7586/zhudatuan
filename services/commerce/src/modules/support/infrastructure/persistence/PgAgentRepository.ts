@@ -53,7 +53,10 @@ export class PgAgentRepository implements AgentRepository, AgentStore {
       where scope_id=$1 and ($2::text is null or id>$2) order by id limit $3`,
       [actor.scope, page.id, page.fetch]
     );
-    const rows = result.rows.map((row) => ({ id: row.id, membership_id: row.membership_id, skills: row.skills, capacity: Number(row.capacity), state: row.state, version: Number(row.version) }));
+    const memberships = result.rows.map(({ membership_id: membership }) => membership);
+    const labels = memberships.length ? await this.support!.agentLabels(context, memberships, actor.scope) : [];
+    const names = new Map(labels.map(({ membership, displayName }) => [membership, displayName]));
+    const rows = result.rows.map((row) => ({ id: row.id, membership_id: row.membership_id, display_name: names.get(row.membership_id) ?? '不可用客服', skills: row.skills, capacity: Number(row.capacity), state: row.state, version: Number(row.version) }));
     const paged = keysetPage(rows, page, 'id');
     return { status: 200, body: { ...paged, items: [...paged.items] } };
   }
@@ -67,6 +70,8 @@ export class PgAgentRepository implements AgentRepository, AgentStore {
     const state = choice(body.state, states, 'SUPPORT_AGENT_INVALID') as AgentRow['state'];
     const skills = stringArray(body.skills);
     const membership = textField(body, 'membership');
+    const label = (await this.support!.agentLabels(context, [membership], actor.scope))[0];
+    if (!label) throw new DomainError('VALIDATION_FAILED', { field: 'membership' });
     const result = await this.transactions.database(context).query<AgentRow>(
       `insert into support.agent(id,scope_id,membership_id,skills,capacity,state,version,created_at,updated_at,last_assigned_at)
       select $1,$2,$3,$4::jsonb,$5,$6,1,clock_timestamp(),clock_timestamp(),null where $7=0
@@ -85,7 +90,7 @@ export class PgAgentRepository implements AgentRepository, AgentStore {
     return {
       status: 200,
       headers: { etag: `"${row.version}"` },
-      body: { id: row.id, scope_id: row.scope_id, membership_id: row.membership_id, skills: row.skills, capacity: Number(row.capacity), state: row.state, version: Number(row.version) },
+      body: { id: row.id, scope_id: row.scope_id, membership_id: row.membership_id, display_name: label.displayName, skills: row.skills, capacity: Number(row.capacity), state: row.state, version: Number(row.version) },
     };
   }
 

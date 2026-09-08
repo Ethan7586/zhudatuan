@@ -8,6 +8,7 @@ const ticket: Ticket = Object.freeze({
   priority: 'normal',
   state: 'open',
   assignedAgentId: null,
+  assignedAgentName: null,
   responseDueAt: '2026-08-26T01:00:00Z',
   resolutionDueAt: '2026-08-27T00:00:00Z',
   createdAt: '2026-08-26T00:00:00Z',

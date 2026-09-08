@@ -4,7 +4,7 @@ import { OBJECT_STORE } from '../runtime/public/ObjectPort';
 import { EVENT_REPLAY_PORT } from '../runtime/public';
 import { SECRET_STORE } from '../../platform/secret/SecretStore';
 import { EVENT_STREAM } from '../../platform/messaging/EventStream';
-import { MEMBER_ACCESS_PORT } from '../access/public';
+import { MEMBER_ACCESS_PORT, MEMBERSHIP_READ_PORT } from '../access/public';
 import { MEMBER_READ_PORT } from '../member/public';
 import { SUPPORT_BENEFIT_PORT } from '../benefit/public';
 import { SUPPORT_ORDER_PORT } from '../order/public';
@@ -57,6 +57,7 @@ export const SupportModule = defineModule(Manifest, {
       context.ports.get(SUPPORT_ORDER_PORT),
       context.ports.get(ORGANIZATION_READ_PORT),
       context.ports.get(MEMBER_ACCESS_PORT),
+      context.ports.get(MEMBERSHIP_READ_PORT),
       context.ports.get(SUPPORT_BENEFIT_PORT),
       context.ports.get(MEMBER_READ_PORT)
     );

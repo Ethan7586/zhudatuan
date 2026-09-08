@@ -65400,6 +65400,9 @@
             "minimum": 0,
             "type": "integer"
           },
+          "display_name": {
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -65434,6 +65437,7 @@
           "id",
           "scope_id",
           "membership_id",
+          "display_name",
           "skills",
           "capacity",
           "state",
@@ -65487,6 +65491,9 @@
                   "minimum": 0,
                   "type": "integer"
                 },
+                "display_name": {
+                  "type": "string"
+                },
                 "id": {
                   "type": "string"
                 },
@@ -65517,6 +65524,7 @@
               "required": [
                 "id",
                 "membership_id",
+                "display_name",
                 "skills",
                 "capacity",
                 "state",
@@ -66121,6 +66129,16 @@
                     }
                   ]
                 },
+                "assigned_agent_name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "channel": {
                   "enum": [
                     "inapp",
@@ -66252,6 +66270,7 @@
                 "version",
                 "conversation_id",
                 "skill",
+                "assigned_agent_name",
                 "member_id",
                 "order_id",
                 "channel",

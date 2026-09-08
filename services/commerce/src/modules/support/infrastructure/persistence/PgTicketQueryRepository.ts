@@ -70,6 +70,7 @@ export class PgTicketQueryRepository implements TicketMessageStore {
     const currentAgent = actor.target === 'console' ? await this.agents!.findByMembership(context, actor.membership, actor.scopes) : null;
     const result = await this.transactions.database(context).query<CaseReadRow>(
       `select ticket.id,ticket.conversation_id,ticket.scope_id,ticket.priority,ticket.skill,ticket.state,ticket.assigned_agent_id,
+      assignedagent.membership_id assigned_agent_membership_id,
       ticket.response_due_at,ticket.resolution_due_at,ticket.created_at,ticket.updated_at,ticket.version,conversation.member_id,
       conversation.order_id,conversation.channel,conversation.subject,conversation.reference_type,conversation.reference_id,
       greatest(conversation.latest_sequence-coalesce(readstate.last_sequence,0),0) unread_count,
@@ -78,6 +79,7 @@ export class PgTicketQueryRepository implements TicketMessageStore {
         when ticket.resolution_due_at<=clock_timestamp()+interval '30 minutes' then 'risk'
         else 'normal' end sla_risk
       from support.ticket ticket join support.conversation conversation on conversation.id=ticket.conversation_id
+      left join support.agent assignedagent on assignedagent.id=ticket.assigned_agent_id and assignedagent.scope_id=ticket.scope_id
       left join support.readstate readstate on readstate.conversation_id=conversation.id and readstate.membership_id=$3
       where ticket.scope_id=any($1::text[]) and (not $2::boolean or conversation.member_id=$4)
       and ($5::text[] is null or ticket.state=any($5::text[])) and ($6::text[] is null or ticket.priority=any($6::text[]))
@@ -110,7 +112,10 @@ export class PgTicketQueryRepository implements TicketMessageStore {
         page.fetch,
       ]
     );
-    const rows = result.rows.map(caseDto);
+    const assignedMemberships = result.rows.flatMap(({ assigned_agent_membership_id: membership }) => (membership ? [membership] : []));
+    const labels = assignedMemberships.length ? await this.support!.agentLabels(context, assignedMemberships, actor.scope) : [];
+    const names = new Map(labels.map(({ membership, displayName }) => [membership, displayName]));
+    const rows = result.rows.map((row) => caseDto(row, row.assigned_agent_id === null ? null : (names.get(row.assigned_agent_membership_id ?? '') ?? '客服人员')));
     const paged = keysetPage(rows, page, 'updated_at', 'id');
     return { status: 200, body: { ...paged, items: [...paged.items] } };
   }

@@ -100,7 +100,7 @@ export function SupportContextPanel({
           </ContextSection>
           <ContextSection title="处理与服务时限">
             <Row label="技能组" value={chineseDomainLabel(ticket.skill, '专属服务')} />
-            <Row label="当前客服" value={ticket.assignedAgentId ? chineseReference('客服', ticket.assignedAgentId) : '待分配'} />
+            <Row label="当前客服" value={ticket.assignedAgentName ?? (ticket.assignedAgentId ? '已分配客服' : '待分配')} />
             <Time label="响应期限" value={ticket.responseDueAt} />
             <Time label="解决期限" value={ticket.resolutionDueAt} />
           </ContextSection>
@@ -113,7 +113,7 @@ export function SupportContextPanel({
                   .filter((item) => item.state === 'available')
                   .map((item) => (
                     <option key={item.id} value={item.id}>
-                      {chineseReference('客服', item.membershipId)} · {chineseDomainList(item.skills, '专属服务') || '通用服务'}
+                      {item.displayName} · {chineseDomainList(item.skills, '专属服务') || '通用服务'}
                     </option>
                   ))}
               </select>

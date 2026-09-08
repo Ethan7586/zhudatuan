@@ -51,7 +51,7 @@ export class SupportMapper {
   }
 
   agents(value: OperationOutputFor<'support.agents.read'>): AgentPage {
-    return freezePage(value, (item) => Object.freeze({ id: item.id, membershipId: item.membership_id, skills: Object.freeze([...item.skills]), capacity: item.capacity, state: item.state, version: item.version }));
+    return freezePage(value, (item) => Object.freeze({ id: item.id, membershipId: item.membership_id, displayName: item.display_name, skills: Object.freeze([...item.skills]), capacity: item.capacity, state: item.state, version: item.version }));
   }
 
   accounts(value: OperationOutputFor<'support.accounts.read'>): ConfigPage<Account> {
@@ -100,6 +100,7 @@ export class SupportMapper {
       priority: value.priority,
       state: value.state,
       assignedAgentId: value.assigned_agent_id,
+      assignedAgentName: value.assigned_agent_name,
       responseDueAt: value.response_due_at,
       resolutionDueAt: value.resolution_due_at,
       createdAt: value.created_at,

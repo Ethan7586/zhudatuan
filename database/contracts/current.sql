@@ -2039,6 +2039,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='supplier' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','64692fb8bed869388c3fdbef453406f0daef8824f3409c10cc0564fb6f3151e8');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','8895bb8d1dbe8322f1c071ceda41418686a6eaf24ab081293a225e2c87b510b4');
 
 commit;

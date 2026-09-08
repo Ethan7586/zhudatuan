@@ -25,6 +25,7 @@ const ticket = strictObject({
 const ticketCreated = strictObject({ ...ticket.shape, subject: string(), channel, order_id: nullableText, member_id: string() });
 const ticketRead = strictObject({
   ...ticket.shape,
+  assigned_agent_name: nullableText,
   member_id: nullableText,
   order_id: nullableText,
   channel,
@@ -72,8 +73,8 @@ const supportContext = strictObject({
   benefits: array(strictObject({ id: string(), state: string(), kind: string(), currency: string(), remainingMinor: unsigned, expiresAt: nullableText })),
 });
 const assignment = strictObject({ id: string(), ticket_id: string(), agent_id: string(), reason: string(), assigned_at: isoUtc, released_at: union([isoUtc, nullSchema()]), scope_id: string() });
-const agent = strictObject({ id: string(), scope_id: string(), membership_id: string(), skills: array(string()), capacity: unsigned, state: literal(['offline', 'available', 'busy', 'disabled']), version });
-const agentRead = strictObject({ id: string(), membership_id: string(), skills: array(string()), capacity: unsigned, state: literal(['offline', 'available', 'busy', 'disabled']), version });
+const agent = strictObject({ id: string(), scope_id: string(), membership_id: string(), display_name: string(), skills: array(string()), capacity: unsigned, state: literal(['offline', 'available', 'busy', 'disabled']), version });
+const agentRead = strictObject({ id: string(), membership_id: string(), display_name: string(), skills: array(string()), capacity: unsigned, state: literal(['offline', 'available', 'busy', 'disabled']), version });
 const account = strictObject({ id: string(), scope_id: string(), provider: channel, display_name: string(), state: literal(['active', 'disabled']), validation_state: accountValidation, validation_code: string(), validated_at: union([isoUtc, nullSchema()]), version });
 const accountRead = strictObject({ id: string(), provider: channel, display_name: string(), state: literal(['active', 'disabled']), validation_state: accountValidation, validation_code: string(), validated_at: union([isoUtc, nullSchema()]), version });
 const rule = strictObject({ id: string(), scope_id: string(), name: string(), skill: string(), priorities: array(priority), weight: unsigned, state: literal(['active', 'disabled']), version, created_at: isoUtc, updated_at: isoUtc });

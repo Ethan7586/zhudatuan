@@ -1,5 +1,5 @@
 import { Button } from '@shop/design';
-import { chineseDomainLabel, chineseReference } from '@shop/presentation';
+import { chineseDomainLabel } from '@shop/presentation';
 import { useCallback, useEffect, useState } from 'react';
 import type { Agent } from '../model/Agent';
 import type { AgentChange } from '../model/SupportConfig';
@@ -52,15 +52,15 @@ export function AgentSettings({ rows, busy, disabled, onSave }: Readonly<{ rows:
           <option value={selected && !row ? selected : ''}>{selected && !row ? '新客服' : '请选择'}</option>
           {rows.map((item) => (
             <option key={item.id} value={item.id}>
-              {chineseReference('客服', item.membershipId)} · 第 {item.version} 版
+              {item.displayName} · 第 {item.version} 版
             </option>
           ))}
         </select>
       </label>
       <div className="supportsettingsgrid">
         <label>
-          {row ? '成员' : '成员编号'}
-          <input value={row ? chineseReference('成员', row.membershipId) : membership} onChange={(event) => setMembership(event.target.value)} readOnly={row !== undefined} disabled={disabled} placeholder="从成员管理复制成员编号" />
+          {row ? '客服姓名' : '成员唯一标识'}
+          <input value={row ? row.displayName : membership} onChange={(event) => setMembership(event.target.value)} readOnly={row !== undefined} disabled={disabled} placeholder="新增客服时从成员管理复制唯一标识" />
         </label>
         <label>
           服务技能
