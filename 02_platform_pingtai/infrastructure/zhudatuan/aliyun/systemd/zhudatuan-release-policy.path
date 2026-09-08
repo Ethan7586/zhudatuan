@@ -1,0 +1,11 @@
+[Unit]
+Description=Collect superseded releases after a production pointer changes
+
+[Path]
+PathChanged=/opt/zhudatuan/current
+PathChanged=/opt/sfl/nodes/hbbtzn-l1/current
+PathChanged=/opt/sfl/nodes/hbbtzn-l1/console/current
+Unit=zhudatuan-release-policy.service
+
+[Install]
+WantedBy=multi-user.target
