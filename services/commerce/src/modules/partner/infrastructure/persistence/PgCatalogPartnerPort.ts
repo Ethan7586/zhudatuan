@@ -9,4 +9,10 @@ export class PgCatalogPartnerPort implements CatalogPartnerPort {
     const result = await database.query<{ id: string; scope_id: string }>(`select id,scope_id from partner.partner where id=any($1::text[]) and status='active' order by id`, [partners]);
     return new Map(result.rows.map(({ id, scope_id }) => [id, scope_id]));
   }
+  async names(context: ReadTransactionContext, partners: readonly string[]): Promise<ReadonlyMap<string, string>> {
+    if (partners.length === 0) return new Map();
+    const database = this.transactions.database(context);
+    const result = await database.query<{ id: string; name: string }>(`select id,name from partner.partner where id=any($1::text[]) order by id`, [[...new Set(partners)]]);
+    return new Map(result.rows.map(({ id, name }) => [id, name]));
+  }
 }

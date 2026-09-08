@@ -1,6 +1,5 @@
 import type { OperationBodyFor, OperationOutputFor } from '@shop/contract';
 import { OP_CATALOG_LISTINGS_PRICE_SET, OP_CATALOG_LISTINGS_PUBLISH, OP_CATALOG_LISTINGS_UNPUBLISH, OP_CATALOG_PRODUCTS_ARCHIVE, OP_CATALOG_PRODUCTS_CREATE, OP_CATALOG_PRODUCTS_UPDATE } from '@shop/contract/ids';
-import { chineseReference } from './ChineseDomain';
 
 export type ProductStatus = NonNullable<OperationBodyFor<'CatalogProductsUpdateInput'>['status']>;
 export type ProductType = NonNullable<OperationBodyFor<'CatalogProductsCreateInput'>['type']>;
@@ -108,9 +107,9 @@ export function presentCatalogGap(value: string | null | undefined, fallback = '
   return value === null || value === undefined ? fallback : (gapViews[value] ?? fallback);
 }
 
-export function presentProductSource(source: string, partner: string | null | undefined): string {
+export function presentProductSource(source: string, partnerName: string | null | undefined): string {
   if (source === 'self') return '自营商品';
-  if (partner) return chineseReference('供应商', partner);
+  if (partnerName?.trim()) return `供应商：${partnerName.trim()}`;
   if (source === 'supplier' || source === 'partner') return '供应商商品';
   if (source === 'private') return '私有渠道商品';
   return '外部渠道商品';

@@ -11218,6 +11218,16 @@
                         }
                       ]
                     },
+                    "source_partner_name": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "status": {
                       "type": "string"
                     },
@@ -11265,6 +11275,7 @@
                     "category_name",
                     "source",
                     "source_partner_id",
+                    "source_partner_name",
                     "pool_name",
                     "sku_count",
                     "sku_total",
@@ -11467,6 +11478,16 @@
                         }
                       ]
                     },
+                    "source_partner_name": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "status": {
                       "type": "string"
                     },
@@ -11504,6 +11525,7 @@
                     "category_name",
                     "source",
                     "source_partner_id",
+                    "source_partner_name",
                     "pool_name",
                     "sku_count",
                     "sku_total",

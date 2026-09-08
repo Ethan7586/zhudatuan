@@ -3,6 +3,7 @@ import { readHandlerContext } from '../../../../test/HandlerFixture';
 import type { CatalogInventoryPort } from '../../../inventory/public';
 import type { CatalogPricingPort } from '../../../pricing/public';
 import type { CatalogQualificationPort } from '../../../qualification/public';
+import type { CatalogPartnerPort } from '../../../partner/public';
 import type { ListingRepository } from '../port/ListingRepository';
 import { ListingsReadHandler } from './ListingsReadHandler';
 
@@ -26,8 +27,8 @@ const row = Object.freeze({
   expires_at: null,
   category_id: 'category:food',
   category_name: '食品',
-  source: 'self',
-  source_partner_id: null,
+  source: 'partner',
+  source_partner_id: 'partner:one',
   sku_count: '1',
   sku_total: '2',
   mall_count: '1',
@@ -43,7 +44,8 @@ describe('ListingsReadHandler', () => {
       prices: vi.fn(async () => [{ sku: 'sku:one', scope: 'mall:one', amountMinor: '9800', currency: 'CNY', bookStatus: 'active', effectiveAt: '2020-01-01T00:00:00.000Z', expiresAt: null, priceVersion: 3 }]),
     } as CatalogPricingPort;
     const qualifications = { decisions: vi.fn(async () => [{ listing: 'listing:one', eligible: false, policyVersion: 4 }]) } as CatalogQualificationPort;
-    const reply = await new ListingsReadHandler(listings, inventory, pricing, qualifications).execute({ query: {} } as never, readHandlerContext('catalog.listings.read', {} as never));
+    const partners = { names: vi.fn(async () => new Map([['partner:one', '央企供应链']])) } as Pick<CatalogPartnerPort, 'names'>;
+    const reply = await new ListingsReadHandler(listings, inventory, pricing, qualifications, partners).execute({ query: {} } as never, readHandlerContext('catalog.listings.read', {} as never));
     expect(reply.body.items[0]).toMatchObject({
       sku_count: 1,
       sku_total: 2,
@@ -54,6 +56,7 @@ describe('ListingsReadHandler', () => {
       price_currency: 'CNY',
       saleable_stock: 9,
       qualification_eligible: false,
+      source_partner_name: '央企供应链',
       data_gaps: ['qualification_failed'],
     });
     expect(reply.body.items[0]).not.toHaveProperty('visible_scopes');
@@ -65,7 +68,7 @@ describe('ListingsReadHandler', () => {
       throw new Error('projection unavailable');
     };
     const listings = { read: vi.fn(async () => [{ ...row, pool_id: null, pool_name: null }]) } as unknown as ListingRepository;
-    const reply = await new ListingsReadHandler(listings, { stock: failure } as CatalogInventoryPort, { prices: failure } as CatalogPricingPort, { decisions: failure } as CatalogQualificationPort).execute(
+    const reply = await new ListingsReadHandler(listings, { stock: failure } as CatalogInventoryPort, { prices: failure } as CatalogPricingPort, { decisions: failure } as CatalogQualificationPort, { names: failure } as Pick<CatalogPartnerPort, 'names'>).execute(
       { query: {} } as never,
       readHandlerContext('catalog.listings.read', {} as never)
     );
@@ -75,6 +78,7 @@ describe('ListingsReadHandler', () => {
       price_version: null,
       saleable_stock: null,
       qualification_eligible: null,
+      source_partner_name: null,
       data_gaps: ['pool_missing', 'inventory_unavailable', 'pricing_unavailable', 'qualification_unavailable'],
     });
   });

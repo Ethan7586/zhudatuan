@@ -17,7 +17,8 @@ describe('product presentation', () => {
   it('does not expose unknown gaps, providers or missing status values', () => {
     expect(presentCatalogGap('VERSION_CONFLICT')).toBe('商品版本已变化，请重新预检');
     expect(presentCatalogGap('PRIVATE_SERVER_REASON')).toBe('服务端未能处理该商品');
-    expect(presentProductSource('partner', 'partner:one')).toMatch(/^供应商 \d{4} \d{4}$/);
+    expect(presentProductSource('partner', '央企供应链')).toBe('供应商：央企供应链');
+    expect(presentProductSource('partner', null)).toBe('供应商商品');
     expect(presentProductSource('provider', null)).toBe('外部渠道商品');
     expect(editableProductStatus(undefined)).toBe('draft');
   });

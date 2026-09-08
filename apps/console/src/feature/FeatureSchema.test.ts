@@ -37,6 +37,7 @@ describe('Console feature-owned response schemas', () => {
           category_name: '办公用品',
           source: 'self',
           source_partner_id: null,
+          source_partner_name: null,
           pool_name: null,
           sku_count: 1,
           sku_total: 2,

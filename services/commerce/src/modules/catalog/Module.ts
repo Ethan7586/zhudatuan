@@ -56,6 +56,7 @@ export const CatalogModule = defineModule(Manifest, {
     const pools = new PgPoolRepository(transactions, scopes);
     const products = new PgProductRepository(transactions, scopes, context.ports.get(CATALOG_PARTNER_PORT));
     const listings = new PgListingRepository(transactions, scopes);
+    const partners = context.ports.get(CATALOG_PARTNER_PORT);
     const imports = context.ports.get(RUNTIME_IMPORT_PORT);
     const objects = context.service(OBJECT_STORE);
     const publication = new ListingPublication(listings, context.ports.get(CATALOG_QUALIFICATION_PORT), context.ports.get(CATALOG_PRICING_PORT), context.ports.get(CATALOG_INVENTORY_PORT));
@@ -68,8 +69,8 @@ export const CatalogModule = defineModule(Manifest, {
       new ProductsCreateHandler(products),
       new ProductsUpdateHandler(products),
       new ProductsArchiveHandler(products),
-      new FacetsReadHandler(listings),
-      new ListingsReadHandler(listings, context.ports.get(CATALOG_INVENTORY_PORT), context.ports.get(CATALOG_PRICING_PORT), context.ports.get(CATALOG_QUALIFICATION_PORT)),
+      new FacetsReadHandler(listings, partners),
+      new ListingsReadHandler(listings, context.ports.get(CATALOG_INVENTORY_PORT), context.ports.get(CATALOG_PRICING_PORT), context.ports.get(CATALOG_QUALIFICATION_PORT), partners),
       new ListingsPublishHandler(publication),
       new ListingsPriceSetHandler(listings, context.ports.get(CATALOG_PRICE_COMMAND_PORT)),
       new ListingsPoolSetHandler(listings),

@@ -67,7 +67,7 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                 </td>
                 {visibleColumns.has('category') ? (
                   <td data-label="分类与来源">
-                    <CellPair primary={row.category_name ?? '分类待映射'} secondary={presentProductSource(row.source, row.source_partner_id)} />
+                    <CellPair primary={row.category_name ?? '分类待映射'} secondary={presentProductSource(row.source, row.source_partner_name)} />
                   </td>
                 ) : null}
                 {visibleColumns.has('sku') ? (

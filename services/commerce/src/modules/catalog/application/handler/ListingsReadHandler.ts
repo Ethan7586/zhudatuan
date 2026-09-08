@@ -7,6 +7,7 @@ import type { ListingRepository } from '../port/ListingRepository';
 import type { CatalogInventoryPort } from '../../../inventory/public';
 import type { CatalogPricingPort } from '../../../pricing/public';
 import type { CatalogQualificationPort } from '../../../qualification/public';
+import type { CatalogPartnerPort } from '../../../partner/public';
 import { currentListingPrice, saleableListingStock } from '../model/ListingAvailability';
 
 export class ListingsReadHandler implements OperationHandler<'catalog.listings.read', 'read'> {
@@ -16,7 +17,8 @@ export class ListingsReadHandler implements OperationHandler<'catalog.listings.r
     private readonly listings: ListingRepository,
     private readonly inventory: CatalogInventoryPort,
     private readonly pricing: CatalogPricingPort,
-    private readonly qualifications: CatalogQualificationPort
+    private readonly qualifications: CatalogQualificationPort,
+    private readonly partners: Pick<CatalogPartnerPort, 'names'>
   ) {}
   async execute(input: OperationInputFor<'catalog.listings.read'>, context: HandlerContext<'catalog.listings.read'>): Promise<OperationReply<OperationOutputFor<'catalog.listings.read'>>> {
     const access = requireSession(context.security);
@@ -35,7 +37,7 @@ export class ListingsReadHandler implements OperationHandler<'catalog.listings.r
       status: queryValue(query.status),
       page,
     });
-    const rows = await enrich(records, access.scope.id, context.transaction, this.inventory, this.pricing, this.qualifications);
+    const rows = await enrich(records, access.scope.id, context.transaction, this.inventory, this.pricing, this.qualifications, this.partners);
     return { status: 200, body: keysetPage(rows, page, 'cursor_sort') as unknown as OperationOutputFor<'catalog.listings.read'> };
   }
 }
@@ -46,11 +48,13 @@ async function enrich(
   context: Parameters<CatalogInventoryPort['stock']>[0],
   inventory: CatalogInventoryPort,
   pricing: CatalogPricingPort,
-  qualifications: CatalogQualificationPort
+  qualifications: CatalogQualificationPort,
+  partners: Pick<CatalogPartnerPort, 'names'>
 ): Promise<readonly Readonly<Record<string, unknown>>[]> {
   if (records.length === 0) return Object.freeze([]);
   const skus = [...new Set(records.flatMap((row) => (typeof row.sku_id === 'string' ? [row.sku_id] : [])))];
   const scopes = [...new Set(records.flatMap((row) => (Array.isArray(row.visible_scopes) ? row.visible_scopes.filter((item): item is string => typeof item === 'string') : [])))];
+  const partnerIds = [...new Set(records.flatMap((row) => (typeof row.source_partner_id === 'string' ? [row.source_partner_id] : [])))];
   const subjects = records.flatMap((row) =>
     typeof row.product_id === 'string' && typeof row.category_id === 'string'
       ? [
@@ -64,10 +68,16 @@ async function enrich(
         ]
       : []
   );
-  const [stockresult, priceresult, qualificationresult] = await Promise.allSettled([inventory.stock(context, skus, scopes), pricing.prices(context, skus, scopes), qualifications.decisions(context, accessScope, subjects)]);
+  const [stockresult, priceresult, qualificationresult, partnerresult] = await Promise.allSettled([
+    inventory.stock(context, skus, scopes),
+    pricing.prices(context, skus, scopes),
+    qualifications.decisions(context, accessScope, subjects),
+    partners.names(context, partnerIds),
+  ]);
   const stock = stockresult.status === 'fulfilled' ? stockresult.value : [];
   const prices = priceresult.status === 'fulfilled' ? priceresult.value : [];
   const decisions = qualificationresult.status === 'fulfilled' ? new Map(qualificationresult.value.map((item) => [item.listing, item])) : new Map();
+  const partnerNames = partnerresult.status === 'fulfilled' ? partnerresult.value : new Map<string, string>();
   const pricesByListing = new Map<string, Readonly<Record<string, unknown>>>();
   for (const price of prices) {
     if (typeof price.sku !== 'string' || typeof price.scope !== 'string' || !currentListingPrice(price)) continue;
@@ -100,6 +110,7 @@ async function enrich(
       const { visible_scopes: _scopes, region_ids: _regions, ...record } = row;
       return Object.freeze({
         ...record,
+        source_partner_name: typeof row.source_partner_id === 'string' ? (partnerNames.get(row.source_partner_id) ?? null) : null,
         sku_count: count(row.sku_count),
         sku_total: count(row.sku_total),
         mall_count: count(row.mall_count),

@@ -51,6 +51,7 @@ const server = setupServer(
           category_name: '办公用品',
           source: 'self',
           source_partner_id: null,
+          source_partner_name: null,
           sku_count: 1,
           sku_total: 1,
           mall_count: 1,

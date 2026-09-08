@@ -21,6 +21,7 @@ const summary = Object.freeze({
   category_name: '食品',
   source: 'self',
   source_partner_id: null,
+  source_partner_name: null,
   pool_name: '员工福利池',
   sku_count: 1,
   sku_total: 2,
