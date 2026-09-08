@@ -1,6 +1,7 @@
 import { Button, Dialog } from '@shop/design';
 import { useEffect, useMemo, useState } from 'react';
 import type { InvitationViewModel } from '../viewmodel/InvitationViewModel';
+import { invitationAuthUrl } from '../../../shared/url/AuthUrl';
 import { invitationKind, invitationTarget, invitationTime } from '../viewmodel/InvitationText';
 
 export function InvitationReceiptDialog({ receipt, organization, onDiscard }: Readonly<{ receipt?: InvitationViewModel['receipt']; organization: string; onDiscard: () => void }>) {
@@ -46,9 +47,22 @@ export function InvitationReceiptDialog({ receipt, organization, onDiscard }: Re
             <span>邀请码不会进入列表、网页地址、缓存或浏览器存储。</span>
           </div>
           <code aria-label="一次性邀请码">{displayCode}</code>
-          <Button tone="primary" onPress={() => void copy()}>
-            {copyState === 'copied' ? '已复制邀请码' : '复制邀请码'}
-          </Button>
+          <div className="invitationhandoff">
+            <strong>{receipt.kind === 'signin' ? '交给指定成员完成身份确认' : '交给接收人完成邀请注册'}</strong>
+            <ol>
+              <li>复制并通过可信渠道发送一次性邀请码</li>
+              <li>让接收人打开统一邀请页并输入邀请码</li>
+              <li>{receipt.kind === 'signin' ? '本人验证通过后按现有权限进入系统' : '本人验证并设置密码后完成注册'}</li>
+            </ol>
+          </div>
+          <div className="invitationreceiptcommands">
+            <Button tone="primary" onPress={() => void copy()}>
+              {copyState === 'copied' ? '已复制邀请码' : '复制邀请码'}
+            </Button>
+            <a className="shopbutton shopbuttondefault" href={invitationAuthUrl(receipt.target)} target="_blank" rel="noreferrer">
+              打开统一邀请页
+            </a>
+          </div>
           {copyState === 'failed' ? (
             <p className="invitationerror" role="alert">
               复制失败，请选中邀请码手动复制。

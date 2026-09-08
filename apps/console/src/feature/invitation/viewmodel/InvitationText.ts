@@ -1,6 +1,6 @@
 import type { Invitation } from '../model/Invitation';
 
-export const invitationKind = (value: Invitation['kind']): string => (value === 'enrollment' ? '员工注册' : value === 'campaign' ? '共享注册' : '登录邀请');
+export const invitationKind = (value: Invitation['kind']): string => (value === 'enrollment' ? '指定员工注册' : value === 'campaign' ? '共享员工注册' : '指定成员安全访问');
 const TARGET_LABELS: Readonly<Record<Invitation['target'], string>> = Object.freeze({
   console: '运营控制台',
   storefront: '消费者商城',
@@ -9,7 +9,11 @@ const TARGET_LABELS: Readonly<Record<Invitation['target'], string>> = Object.fre
   supplier: '供应链后台',
 });
 export const invitationTarget = (value: Invitation['target']): string => TARGET_LABELS[value];
-export const invitationStatus = (value: Invitation['status']): string => ({ draft: '草稿', active: '生效中', exhausted: '已用尽', revoked: '已撤销', expired: '已过期' })[value];
+export function invitationStatus(value: Invitation['status'], kind?: Invitation['kind']): string {
+  if (value === 'active') return kind === 'enrollment' ? '等待员工注册' : kind === 'campaign' ? '开放注册中' : '等待成员确认';
+  if (value === 'exhausted') return kind === 'enrollment' ? '员工已注册' : kind === 'campaign' ? '注册名额已用完' : '成员已确认';
+  return ({ draft: '准备中', revoked: '已撤销', expired: '已过期' } as const)[value];
+}
 export function invitationTime(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString('zh-CN', { hour12: false });

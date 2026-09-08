@@ -11,7 +11,7 @@ import type { InvitationDraft } from '../model/InvitationDraft';
 import { invitationTargets } from '../model/InvitationTarget';
 import { identityFor, invitationMembershipKey, invitationQueryKey, readFilter, type CommandIdentity } from './InvitationState';
 
-export type InvitationCreateKind = 'employee' | 'campaign' | 'signin';
+export type InvitationCreateKind = 'choice' | 'employee' | 'campaign' | 'signin';
 export interface InvitationDepartment {
   readonly id: string;
   readonly name: string;
@@ -114,6 +114,13 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
       setCreateKind(undefined);
     }
   }, [createMutation.isPending]);
+  const openChoice = useCallback(() => {
+    if (!createMutation.isPending) {
+      createIdentity.current = undefined;
+      resetCreate();
+      setCreateKind('choice');
+    }
+  }, [createMutation.isPending, resetCreate]);
   const openRevoke = useCallback(
     (invitation: Invitation) => {
       revokeIdentity.current = undefined;
@@ -141,6 +148,7 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
         next,
         first,
         openCreate,
+        openChoice,
         closeCreate,
         create: (draft: InvitationDraft) =>
           mutateCreate(draft).then(
@@ -156,7 +164,7 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
           ),
         discardReceipt: () => setReceipt(undefined),
       }),
-    [closeCreate, closeRevoke, first, mutateCreate, mutateRevoke, next, openCreate, openRevoke, refresh, updateFilter]
+    [closeCreate, closeRevoke, first, mutateCreate, mutateRevoke, next, openChoice, openCreate, openRevoke, refresh, updateFilter]
   );
   return Object.freeze({
     filter,
@@ -185,7 +193,7 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
       title: context.session.assurance.level < 2 ? '需要重新验证身份' : storefronts.length === 0 ? '当前范围没有可邀请商城' : '一次性安全回执',
       message:
         context.session.assurance.level < 2
-          ? '员工邀请至少需要双因素验证；登录和共享邀请需要更高强度验证。'
+          ? '指定员工注册至少需要双因素验证；共享注册和现有成员安全访问需要高强度验证。'
           : storefronts.length === 0
             ? '切换到包含已授权商城的集团或商城范围后再创建注册邀请。'
             : '创建失败会保留表单并复用同一请求编号；成功回执关闭后，邀请码无法恢复。',

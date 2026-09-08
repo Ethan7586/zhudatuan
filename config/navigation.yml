@@ -1073,7 +1073,7 @@ nodes:
     surface: console
     scope: enterprise
     parent: groupsettings
-    title: 员工邀请
+    title: 邀请管理
     icon: member
     order: 15
     entry: identity.invitations.read
@@ -1172,7 +1172,7 @@ nodes:
     surface: console
     scope: mall
     parent: mallsettings
-    title: 员工邀请
+    title: 邀请管理
     icon: member
     order: 15
     entry: identity.invitations.read

@@ -1,6 +1,7 @@
 import type { OperationOutputFor, OperationTarget } from '@shop/contract';
 
 type InvitationDto = OperationOutputFor<'identity.invitations.read'>['items'][number];
+type InvitationMembershipDto = OperationOutputFor<'access.center.read'>['items'][number];
 export type InvitationKind = InvitationDto['kind'];
 export type InvitationTargetKind = OperationTarget;
 export type InvitationStatus = InvitationDto['status'];
@@ -73,7 +74,7 @@ export interface InvitationMembership {
   readonly employeeNo: string | null;
   readonly mobileMasked: string | null;
   readonly client: InvitationTargetKind;
-  readonly status: 'invited' | 'active' | 'suspended' | 'left';
+  readonly status: InvitationMembershipDto['status'];
 }
 export interface InvitationMembershipPage {
   readonly items: readonly InvitationMembership[];

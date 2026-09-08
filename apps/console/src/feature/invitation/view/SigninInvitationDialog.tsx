@@ -11,8 +11,9 @@ export function SigninInvitationDialog({
   busy,
   error,
   onClose,
+  onBack,
   onSubmit,
-}: Readonly<{ open: boolean; memberships: InvitationMembershipPage['items']; busy: boolean; error?: string; onClose: () => void; onSubmit: (draft: InvitationDraft) => Promise<void> }>) {
+}: Readonly<{ open: boolean; memberships: InvitationMembershipPage['items']; busy: boolean; error?: string; onClose: () => void; onBack: () => void; onSubmit: (draft: InvitationDraft) => Promise<void> }>) {
   const [target, setTarget] = useState<OperationTarget>('console');
   const eligible = useMemo(() => memberships.filter((item) => item.client === target && item.status === 'active'), [memberships, target]);
   const [membership, setMembership] = useState('');
@@ -26,14 +27,15 @@ export function SigninInvitationDialog({
     await onSubmit({ kind: 'signin', target, membershipId: membership, expiresAt, reason: reason.trim() });
   };
   return (
-    <Dialog open={open} title="创建登录邀请" eyebrow="高风险操作 · 指定成员" onClose={onClose} dismissable={!busy}>
-      <Form label="登录邀请" className="invitationform" onSubmit={(event) => void submit(event)}>
+    <Dialog open={open} title="指定成员安全访问" eyebrow="现有成员 · 一次性身份确认" onClose={onClose} dismissable={!busy}>
+      <Form label="指定成员安全访问" className="invitationform" onSubmit={(event) => void submit(event)}>
+        <p className="invitationlead">此功能不会创建账号，也不是新的登录方式。指定成员核验本人身份后，系统按其现有权限签发一次会话。</p>
         {error === undefined ? null : (
           <p className="invitationerror" role="alert">
             {error}
           </p>
         )}
-        <label htmlFor="signinTarget">登录位置</label>
+        <label htmlFor="signinTarget">进入位置</label>
         <select id="signinTarget" value={target} onChange={(event) => setTarget(event.target.value as typeof target)} disabled={busy}>
           {OPERATION_TARGETS.map((value) => (
             <option key={value} value={value}>
@@ -55,11 +57,11 @@ export function SigninInvitationDialog({
         <label htmlFor="signinReason">邀请原因</label>
         <textarea id="signinReason" value={reason} onChange={(event) => setReason(event.target.value)} minLength={4} maxLength={500} disabled={busy} required />
         <footer className="invitationactions">
-          <Button onPress={onClose} isDisabled={busy}>
-            取消
+          <Button onPress={onBack} isDisabled={busy}>
+            返回选择
           </Button>
           <Button type="submit" tone="primary" isDisabled={busy || membership === '' || reason.trim().length < 4}>
-            {busy ? '正在创建…' : '确认创建'}
+            {busy ? '正在创建…' : '生成安全访问码'}
           </Button>
         </footer>
       </Form>

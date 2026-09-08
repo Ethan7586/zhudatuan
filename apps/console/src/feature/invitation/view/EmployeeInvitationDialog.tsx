@@ -15,6 +15,7 @@ export function EmployeeInvitationDialog({
   busy,
   error,
   onClose,
+  onBack,
   onSubmit,
 }: Readonly<{
   open: boolean;
@@ -23,6 +24,7 @@ export function EmployeeInvitationDialog({
   busy: boolean;
   error?: string;
   onClose: () => void;
+  onBack: () => void;
   onSubmit: (draft: InvitationDraft) => Promise<void>;
 }>) {
   const [draft, setDraft] = useState<EmployeeDraft>(() => initialEmployee(targets));
@@ -42,9 +44,9 @@ export function EmployeeInvitationDialog({
     await onSubmit(employeeInvitation(draft));
   };
   return (
-    <Dialog open={open} title="邀请员工注册" eyebrow="普通员工 · 员工商城" onClose={onClose} dismissable={!busy}>
-      <Form label="员工邀请" className="invitationform" onSubmit={(event) => void submit(event)} validationErrors={errors}>
-        <p className="invitationlead">创建待激活员工档案，并生成只显示一次的邀请码。</p>
+    <Dialog open={open} title="指定员工注册" eyebrow="邀请注册 · 一人一码" onClose={onClose} dismissable={!busy}>
+      <Form label="指定员工注册" className="invitationform" onSubmit={(event) => void submit(event)} validationErrors={errors}>
+        <p className="invitationlead">预先绑定员工资料。接收人将在统一邀请页验证本人手机号、设置密码并进入消费者商城。</p>
         {error === undefined ? null : (
           <p className="invitationerror" role="alert">
             {error}
@@ -135,11 +137,11 @@ export function EmployeeInvitationDialog({
           <small>员工不能通过邀请获得控制台权限，授权范围由服务端固定策略生成。</small>
         </section>
         <footer className="invitationactions">
-          <Button onPress={onClose} isDisabled={busy}>
-            取消
+          <Button onPress={onBack} isDisabled={busy}>
+            返回选择
           </Button>
           <Button type="submit" tone="primary" isDisabled={busy}>
-            {busy ? '正在创建…' : '创建员工邀请'}
+            {busy ? '正在创建…' : '生成员工注册码'}
           </Button>
         </footer>
       </Form>

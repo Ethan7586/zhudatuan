@@ -1,0 +1,117 @@
+@media (max-width: 64rem) {
+  .invitationguide ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .invitationfilters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .invitationfilters > span {
+    grid-column: 1 / -1;
+  }
+
+  .invitationrecords .tablewrap,
+  .invitationrecords table,
+  .invitationrecords tbody {
+    display: grid;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .invitationrecords thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .invitationrecords tbody {
+    gap: var(--sw-space-1-5);
+  }
+
+  .invitationrecords tbody tr {
+    display: grid;
+    min-width: 0;
+    overflow: hidden;
+    border: var(--sw-border-width) solid var(--sw-border);
+    border-radius: var(--sw-radius-md);
+    background: var(--sw-surface);
+  }
+
+  .invitationrecords tbody td {
+    display: grid;
+    min-width: 0;
+    min-height: var(--sw-control-touch-target);
+    height: auto;
+    grid-template-columns: minmax(7rem, 34%) minmax(0, 1fr);
+    align-items: center;
+    gap: var(--sw-space-1-5);
+    border-bottom: var(--sw-border-width) solid var(--sw-border-subtle);
+    padding: var(--sw-space-1) var(--sw-space-1-5);
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .invitationrecords tbody td::before {
+    color: var(--sw-muted);
+    content: attr(data-label);
+    font-size: var(--sw-font-size-caption);
+    font-weight: var(--sw-font-weight-bold);
+  }
+
+  .invitationrecords tbody td:last-child {
+    border-bottom: 0;
+  }
+
+  .invitationrecords tbody td:last-child .shopbutton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 48rem) {
+  .invitationgrid,
+  .invitationreceiptmeta,
+  .invitationchoicegrid,
+  .invitationfilters {
+    grid-template-columns: 1fr;
+  }
+
+  .invitationfilters > span {
+    grid-column: auto;
+  }
+
+  .invitationcommands > *,
+  .invitationactions > *,
+  .invitationreceiptcommands > * {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 30rem) {
+  .invitationguide ol {
+    grid-template-columns: 1fr;
+  }
+
+  .invitationchoicegroup {
+    padding: var(--sw-space-1-5);
+  }
+
+  .invitationchoicegroup > header {
+    grid-template-columns: var(--sw-icon-container) minmax(0, 1fr);
+  }
+
+  .invitationchoiceicon {
+    width: var(--sw-icon-container);
+    height: var(--sw-icon-container);
+  }
+
+  .invitationrecords tbody td {
+    grid-template-columns: 1fr;
+    gap: var(--sw-space-0-5);
+  }
+}

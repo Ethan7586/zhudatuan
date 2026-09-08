@@ -13,6 +13,10 @@ describe('InvitationReceiptDialog', () => {
     const view = render(<InvitationReceiptDialog receipt={receipt} organization="示例企业" onDiscard={discard} />);
 
     expect(screen.getByLabelText('一次性邀请码').textContent).toBe('ABCD EFGH IJKL MNOP QRST UVWX YZ12 3456');
+    const handoff = screen.getByRole<HTMLAnchorElement>('link', { name: '打开统一邀请页' });
+    expect(new URL(handoff.href).pathname).toBe('/invitation');
+    expect(new URL(handoff.href).searchParams.get('target')).toBe('storefront');
+    expect(handoff.href).not.toContain(receipt.code);
     fireEvent.click(screen.getByRole('button', { name: '复制邀请码' }));
     await waitFor(() => expect(writeText).toHaveBeenCalledWith(receipt.code));
     expect(screen.getByRole('button', { name: '已复制邀请码' })).toBeTruthy();

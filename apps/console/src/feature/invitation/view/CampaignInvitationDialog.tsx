@@ -9,8 +9,9 @@ export function CampaignInvitationDialog({
   busy,
   error,
   onClose,
+  onBack,
   onSubmit,
-}: Readonly<{ open: boolean; targets: readonly InvitationTarget[]; busy: boolean; error?: string; onClose: () => void; onSubmit: (draft: InvitationDraft) => Promise<void> }>) {
+}: Readonly<{ open: boolean; targets: readonly InvitationTarget[]; busy: boolean; error?: string; onClose: () => void; onBack: () => void; onSubmit: (draft: InvitationDraft) => Promise<void> }>) {
   const [organizationId, setOrganizationId] = useState(() => (targets.length === 1 ? targets[0]!.id : ''));
   const [maxUses, setMaxUses] = useState(100);
   const [expiresAt, setExpiresAt] = useState(() => new Date(Date.now() + 3 * 86_400_000).toISOString());
@@ -24,9 +25,9 @@ export function CampaignInvitationDialog({
     await onSubmit(campaignInvitation({ organizationId, maxUses, expiresAt, reason }));
   };
   return (
-    <Dialog open={open} title="创建共享注册邀请" eyebrow="高风险操作 · 仅员工商城" onClose={onClose} dismissable={!busy}>
-      <Form label="共享注册邀请" className="invitationform" onSubmit={(event) => void submit(event)}>
-        <p className="invitationwarning">共享邀请码可被多人使用，需要高强度二次验证。请仅在受控活动中发放。</p>
+    <Dialog open={open} title="共享员工注册" eyebrow="邀请注册 · 多人共用" onClose={onClose} dismissable={!busy}>
+      <Form label="共享员工注册" className="invitationform" onSubmit={(event) => void submit(event)}>
+        <p className="invitationwarning">同一码可供多人注册，请设置合理人数和有效期，并只在受控入职活动中发放。</p>
         {error === undefined ? null : (
           <p className="invitationerror" role="alert">
             {error}
@@ -48,11 +49,11 @@ export function CampaignInvitationDialog({
         <label htmlFor="campaignReason">邀请原因</label>
         <textarea id="campaignReason" value={reason} onChange={(event) => setReason(event.target.value)} minLength={4} maxLength={500} disabled={busy} required />
         <footer className="invitationactions">
-          <Button onPress={onClose} isDisabled={busy}>
-            取消
+          <Button onPress={onBack} isDisabled={busy}>
+            返回选择
           </Button>
           <Button type="submit" tone="primary" isDisabled={busy || organizationId === '' || reason.trim().length < 4}>
-            {busy ? '正在创建…' : '确认创建'}
+            {busy ? '正在创建…' : '生成共享注册码'}
           </Button>
         </footer>
       </Form>

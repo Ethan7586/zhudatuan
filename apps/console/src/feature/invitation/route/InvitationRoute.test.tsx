@@ -13,7 +13,7 @@ import { Component } from '../route/InvitationRoute';
 
 const server = setupServer(
   http.get('*/api/v1/identity/invitations', () => HttpResponse.json({ items: [], count: 0 })),
-  http.get('*/api/v1/access/center', () => HttpResponse.json({ items: [], count: 0 }))
+  http.get('*/api/v1/access/center', () => HttpResponse.json({ items: [], count: 0, roles: [], templates: [], separationRules: [] }))
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -25,20 +25,25 @@ afterAll(() => server.close());
 
 describe('InvitationRoute assurance boundary', () => {
   it('explains why all invitation actions are unavailable below AAL2', async () => {
+    const user = userEvent.setup();
     renderRoute(context(1));
-    expect(await screen.findByRole('heading', { level: 1, name: '员工邀请' })).toBeTruthy();
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: '邀请员工' }).disabled).toBe(true);
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: '登录邀请' }).disabled).toBe(true);
+    expect(await screen.findByRole('heading', { level: 1, name: '邀请管理' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '新建邀请' }));
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: /指定员工注册/ }).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: /共享员工注册/ }).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: /指定成员安全访问/ }).disabled).toBe(true);
     expect(await screen.findByText('需要重新验证身份')).toBeTruthy();
-    expect(screen.getByText(/员工邀请至少需要双因素验证/)).toBeTruthy();
+    expect(screen.getByText(/指定员工注册至少需要双因素验证/)).toBeTruthy();
   });
 
   it('enables employee enrollment at AAL2 while keeping signin and campaign at AAL3', async () => {
+    const user = userEvent.setup();
     renderRoute(context(2));
-    expect(await screen.findByRole('heading', { level: 1, name: '员工邀请' })).toBeTruthy();
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: '邀请员工' }).disabled).toBe(false);
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: '登录邀请' }).disabled).toBe(true);
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: '共享邀请' }).disabled).toBe(true);
+    expect(await screen.findByRole('heading', { level: 1, name: '邀请管理' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '新建邀请' }));
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: /指定员工注册/ }).disabled).toBe(false);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: /共享员工注册/ }).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: /指定成员安全访问/ }).disabled).toBe(true);
   });
 
   it('shows readable issuer and recipient accounts without exposing membership identifiers', async () => {
@@ -88,9 +93,11 @@ describe('InvitationRoute assurance boundary', () => {
     const user = userEvent.setup();
     renderRoute(context(3));
 
-    await user.click(await screen.findByRole('button', { name: '登录邀请' }));
+    await user.click(await screen.findByRole('button', { name: '新建邀请' }));
+    await user.click(screen.getByRole('button', { name: /指定成员安全访问/ }));
     expect(screen.getByRole('option', { name: '李小明 · 工号 E1002' })).toBeTruthy();
     expect(screen.queryByText(/membership:employee/)).toBeNull();
+    expect(screen.queryByText('登录邀请')).toBeNull();
   });
 
   it('reuses the infrastructure identity when the exact create command is retried', async () => {
@@ -118,14 +125,15 @@ describe('InvitationRoute assurance boundary', () => {
     );
     const user = userEvent.setup();
     renderRoute(context(2));
-    await user.click(await screen.findByRole('button', { name: '邀请员工' }));
+    await user.click(await screen.findByRole('button', { name: '新建邀请' }));
+    await user.click(screen.getByRole('button', { name: /指定员工注册/ }));
     await user.type(screen.getByLabelText('姓名'), '李小明');
     await user.type(screen.getByLabelText('手机号'), '13900139000');
     await user.type(screen.getByLabelText('邀请原因'), '新员工入职');
-    await user.click(screen.getByRole('button', { name: '创建员工邀请' }));
+    await user.click(screen.getByRole('button', { name: '生成员工注册码' }));
     await waitFor(() => expect(attempts).toBe(3));
     await screen.findByRole('alert');
-    await user.click(screen.getByRole('button', { name: '创建员工邀请' }));
+    await user.click(screen.getByRole('button', { name: '生成员工注册码' }));
     expect(await screen.findByLabelText('一次性邀请码')).toBeTruthy();
     expect(identities).toHaveLength(4);
     expect(identities[0]).toBeTruthy();
