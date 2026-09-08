@@ -11,7 +11,7 @@
   padding: 0 var(--sw-space-3);
   color: var(--sw-muted);
   font-size: var(--sw-font-size-caption);
-  line-height: 1;
+  line-height: var(--sw-line-height-caption);
   white-space: nowrap;
 }
 

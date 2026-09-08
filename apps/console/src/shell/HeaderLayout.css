@@ -23,13 +23,17 @@
 }
 
 .consolebreadcrumb > span {
+  min-width: 0;
+  overflow: hidden;
   font-weight: var(--sw-font-weight-semibold);
+  text-overflow: ellipsis;
 }
 .consolebreadcrumb > i {
   color: var(--sw-border-strong);
   font-style: normal;
 }
 .consolebreadcrumb > strong {
+  flex: 0 0 auto;
   overflow: hidden;
   font-weight: var(--sw-font-weight-bold);
   text-overflow: ellipsis;

@@ -77,6 +77,17 @@ test('Console 未登录、缺失资源和小屏状态均有可恢复反馈', asy
   await expect(page.locator('body')).not.toContainText(/Error:|TypeError|SQLSTATE|INTERNAL_ERROR/);
 });
 
+test('Console 页名、品牌与管理范围在平板宽度完整可读', async ({ page }) => {
+  await prepareVisual(page, { width: 1024, height: 768 });
+  await signInConsole(page);
+  await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleorders, 'enterprise')}`);
+  await expectUsable(page);
+  await expect(page.locator('.consolebreadcrumb > strong')).toHaveText('订单管理系统');
+  await expect.poll(() => textFits(page, '.consolebreadcrumb > strong')).toBe(true);
+  await expect.poll(() => textFits(page, '.sidebarbrandcopy strong')).toBe(true);
+  await expect.poll(() => textFits(page, '.scopepath li[aria-current="page"]')).toBe(true);
+});
+
 function canonicalScope(routeid: string): ScopeKind {
   const declared = authority.nodes.filter((node) => node.surface === 'console' && node.routeid === routeid).map(({ scope }) => scope);
   const preferred: readonly ScopeKind[] = routeid.startsWith('consolereferral')
@@ -89,4 +100,8 @@ function canonicalScope(routeid: string): ScopeKind {
 
 function path(template: string, scope: ScopeKind): string {
   return fillRoute(template, { scopeKind: scope, scopeId: scopes[scope], kind: 'catalog', jobId: 'job:visual:missing', productId: 'product:visual:care', orderId: 'order:visual:missing', view: 'settings', caseId: 'case:visual:missing' });
+}
+
+async function textFits(page: import('@playwright/test').Page, selector: string): Promise<boolean> {
+  return page.locator(selector).evaluate((element) => element.scrollWidth <= element.clientWidth + 1 && element.scrollHeight <= element.clientHeight + 1);
 }

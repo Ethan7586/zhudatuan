@@ -41,7 +41,7 @@
   display: grid;
   min-width: 0;
   gap: var(--sw-space-0-5);
-  line-height: var(--sw-line-height-label-sm);
+  line-height: var(--sw-line-height-caption);
   white-space: nowrap;
 }
 
