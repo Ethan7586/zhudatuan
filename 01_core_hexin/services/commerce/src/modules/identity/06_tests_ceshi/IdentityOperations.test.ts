@@ -368,6 +368,7 @@ function context(pool: DatabasePool): ModuleContext {
     application: () => ({ applicationHash: 'application' }),
     authorize: () => 'https://example.test',
     exchange: async () => ({ subject: 'subject' }),
+    jsSdkConfiguration: async () => { throw new Error('not used'); },
   });
   return { container } as unknown as ModuleContext;
 }

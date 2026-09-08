@@ -43,6 +43,10 @@ export class WechatOperations implements OperationUsecase {
     if (sceneValue !== 'miniapp' && sceneValue !== 'jsapi') throw new Error('WECHAT_SCENE_INVALID');
     const scene: WechatScene = sceneValue;
     const action = textField(body, 'action', 16);
+    if (action === 'jssdk_config') {
+      if (scene !== 'jsapi') throw new Error('WECHAT_AUTHORIZATION_SCENE_INVALID');
+      return { status: 200, body: await this.gateway.jsSdkConfiguration(textField(body, 'url', 2048)) };
+    }
     if (action === 'authorize') {
       if (scene !== 'jsapi') throw new Error('WECHAT_AUTHORIZATION_SCENE_INVALID');
       const authorization = AuthTransaction.start(body.authorization);

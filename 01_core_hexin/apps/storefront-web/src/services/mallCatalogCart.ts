@@ -181,4 +181,15 @@ export class MallCatalogCart extends MallState {
     this.saveToStorage(this.getScopedKey(STORAGE_KEYS.ADDRESSES), this.addresses);
     return this.getAddresses();
   }
+
+  public setDefaultAddress(addressId: string): DeliveryAddress[] {
+    const target = this.addresses.find((address) => address.id === addressId);
+    if (!target) return this.getAddresses();
+    this.addresses = [
+      { ...target, isDefault: true },
+      ...this.addresses.filter((address) => address.id !== addressId).map((address) => ({ ...address, isDefault: false })),
+    ];
+    this.saveToStorage(this.getScopedKey(STORAGE_KEYS.ADDRESSES), this.addresses);
+    return this.getAddresses();
+  }
 }

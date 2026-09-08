@@ -54,4 +54,34 @@ describe('wechat delivery address', () => {
 
     await expect(requestWechatDeliveryAddress()).rejects.toMatchObject({ code: 'cancelled' });
   });
+
+  it('keeps partial fields when the WeChat address is incomplete', async () => {
+    const openAddress = vi.fn((options: { success: (result: Record<string, string>) => void }) => options.success({
+      userName: '王五',
+      telNumber: '13600000000',
+      provinceName: '北京市',
+      cityName: '北京市',
+      detailInfo: '望京街 8 号',
+    }));
+    vi.stubGlobal('window', { wx: { openAddress } });
+
+    await expect(requestWechatDeliveryAddress()).rejects.toMatchObject({
+      code: 'incomplete',
+      partialAddress: { name: '王五', phone: '13600000000', province: '北京市', city: '北京市', district: '', detail: '望京街 8 号' },
+    });
+  });
+
+  it('falls back quietly when neither SDK nor Bridge is available', async () => {
+    vi.stubGlobal('window', {});
+    await expect(requestWechatDeliveryAddress()).rejects.toMatchObject({ code: 'unavailable' });
+  });
+
+  it('reports a Bridge failure without retrying in a loop', async () => {
+    const invoke = vi.fn((_operation: string, _parameters: Record<string, never>, callback: (result: Record<string, string>) => void) => callback({
+      err_msg: 'edit_address:fail',
+    }));
+    vi.stubGlobal('window', { WeixinJSBridge: { invoke } });
+    await expect(requestWechatDeliveryAddress()).rejects.toMatchObject({ code: 'failed' });
+    expect(invoke).toHaveBeenCalledOnce();
+  });
 });

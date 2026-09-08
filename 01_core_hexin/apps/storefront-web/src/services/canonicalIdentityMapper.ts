@@ -84,7 +84,7 @@ export function mapCanonicalBootstrap(
 }
 
 export function mapCanonicalAddresses(value: unknown): ApiDeliveryAddress[] {
-  return pageItems(value, 'member.addresses').map((item, index) => {
+  return pageItems(value, 'member.addresses').map((item) => {
     const region = optionalText(item.region_code) ?? '';
     const [province = region, city = '', district = ''] = region.split('/');
     return {
@@ -96,10 +96,10 @@ export function mapCanonicalAddresses(value: unknown): ApiDeliveryAddress[] {
       district,
       detail: optionalText(item.address_masked) ?? '地址已加密',
       tag: '已加密地址',
-      isDefault: index === 0,
+      isDefault: item.is_default === true,
       version: version(item.version, 'member.address.version'),
     };
-  });
+  }).sort((left, right) => Number(right.isDefault) - Number(left.isDefault) || left.id.localeCompare(right.id));
 }
 
 function mapScope(value: unknown, label: string): RequestScope {

@@ -1,6 +1,6 @@
 import type { DeliveryAddress } from '../types';
 
-type ImportedDeliveryAddress = Omit<DeliveryAddress, 'id' | 'isDefault' | 'tag'>;
+export type ImportedDeliveryAddress = Omit<DeliveryAddress, 'id' | 'isDefault' | 'tag' | 'version'>;
 
 type WechatAddressResult = Readonly<Record<string, unknown>>;
 
@@ -28,7 +28,7 @@ type WechatAddressWindow = Window & {
 export type WechatAddressErrorCode = 'cancelled' | 'unavailable' | 'failed' | 'incomplete';
 
 export class WechatAddressRequestError extends Error {
-  constructor(message: string, readonly code: WechatAddressErrorCode) {
+  constructor(message: string, readonly code: WechatAddressErrorCode, readonly partialAddress?: ImportedDeliveryAddress) {
     super(message);
     this.name = 'WechatAddressRequestError';
   }
@@ -40,8 +40,19 @@ export async function requestWechatDeliveryAddress(): Promise<ImportedDeliveryAd
   }
 
   const target = window as WechatAddressWindow;
-  if (target.wx?.openAddress) return requestFromSdk(target.wx);
-  if (target.WeixinJSBridge) return requestFromBridge(target.WeixinJSBridge);
+  const { ensureWechatAddressJsSdk, isWechatBrowser } = await import('./wechatJsSdk');
+  if (isWechatBrowser()) {
+    try {
+      await ensureWechatAddressJsSdk();
+    } catch {
+      if (!target.WeixinJSBridge) {
+        throw new WechatAddressRequestError('微信地址暂不可用，请手动填写', 'unavailable');
+      }
+    }
+  }
+  const configuredTarget = window as WechatAddressWindow;
+  if (configuredTarget.wx?.openAddress) return requestFromSdk(configuredTarget.wx);
+  if (configuredTarget.WeixinJSBridge) return requestFromBridge(configuredTarget.WeixinJSBridge);
   throw new WechatAddressRequestError('当前微信环境暂不能读取地址，请手动填写', 'unavailable');
 }
 
@@ -82,7 +93,7 @@ function completeAddressRequest(
     detail: value(result, 'detailInfo', 'addressDetailInfo'),
   };
   if (Object.values(address).some((item) => item.length === 0)) {
-    reject(new WechatAddressRequestError('微信地址信息不完整，请手动补充', 'incomplete'));
+    reject(new WechatAddressRequestError('微信地址信息不完整，请手动补充', 'incomplete', address));
     return;
   }
   resolve(address);

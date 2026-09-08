@@ -29,6 +29,7 @@ export function webMemberOperations(context: ModuleContext): ModuleOperations {
         const access = requireAccess(request);
         const body = bodyRecord(request);
         if (body.status === 'deleted') return { access, body, envelopes: null };
+        if (body.isDefault === true && body.recipient === undefined) return { access, body, envelopes: null };
         const recipient = textField(body, 'recipient', 128).trim();
         const mobile = textField(body, 'mobile', 32).trim();
         const address = textField(body, 'address', 1000).trim();
@@ -45,6 +46,11 @@ export function webMemberOperations(context: ModuleContext): ModuleOperations {
         if (body.status === 'deleted') {
           return rowResult(await addressPort.remove(database, request.input.path.addressid!, member, request.input.expectedVersion ?? null));
         }
+        if (body.isDefault === true && !envelopes) {
+          const result = await addressPort.setDefault(database, request.input.path.addressid!, member, request.input.expectedVersion ?? null);
+          if (!result.rows[0]) throw new Error('VERSION_CONFLICT');
+          return rowResult(result);
+        }
         if (!envelopes) throw new Error('ADDRESS_ENVELOPE_MISSING');
         const result = await addressPort.save(database, {
           id: request.input.path.addressid!,
@@ -56,6 +62,7 @@ export function webMemberOperations(context: ModuleContext): ModuleOperations {
           recipientEnvelope: envelopes.recipientEnvelope,
           mobileEnvelope: envelopes.mobileEnvelope,
           addressEnvelope: envelopes.addressEnvelope,
+          isDefault: body.isDefault === true,
           expectedVersion: request.input.expectedVersion ?? null,
         });
         if (!result.rows[0]) throw new Error('VERSION_CONFLICT');

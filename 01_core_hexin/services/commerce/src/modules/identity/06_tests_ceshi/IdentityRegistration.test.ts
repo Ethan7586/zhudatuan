@@ -1217,6 +1217,7 @@ function context(pool: DatabasePool, kms: KmsClient = {
     application: () => ({ applicationHash: 'application' }),
     authorize: () => 'https://example.test',
     exchange: async () => ({ subject: 'subject' }),
+    jsSdkConfiguration: async () => { throw new Error('not used'); },
   });
   return { container } as unknown as ModuleContext;
 }

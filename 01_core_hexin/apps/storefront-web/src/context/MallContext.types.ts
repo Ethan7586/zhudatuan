@@ -103,6 +103,7 @@ export interface MallContextType {
   toggleFavorite: (productId: string) => void;
   addresses: DeliveryAddress[];
   addAddress: (address: Omit<DeliveryAddress, 'id'>) => Promise<boolean>;
+  setDefaultAddress: (addressId: string) => Promise<boolean>;
   toasts: ToastMessage[];
   showToast: (text: string, type?: ToastMessage['type']) => void;
   removeToast: (id: string) => void;

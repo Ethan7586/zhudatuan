@@ -12,6 +12,7 @@ import { mapApiCartItems } from './mallMappers';
 import { guestStorefrontProfile } from './guestStorefrontProfile';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
 import { createCartQuantitySync, type CartQuantitySync } from './cartQuantitySync';
+import { switchDefaultAddressOptimistically } from './addressDefaultState';
 export type * from './MallContext.types';
 const MallContext = createContext<MallContextType | undefined>(undefined);
 const PaymentPhoneVerificationModal = React.lazy(() => import('../components/mobile/PaymentPhoneVerificationModal').then(({ PaymentPhoneVerificationModal }) => ({ default: PaymentPhoneVerificationModal })));
@@ -34,6 +35,7 @@ type ShowcaseService = {
   removeCartItem: (cartItemId: string) => CartItem[];
   toggleFavorite: (productId: string) => boolean;
   addAddress: (address: Omit<DeliveryAddress, 'id'>) => DeliveryAddress[];
+  setDefaultAddress: (addressId: string) => DeliveryAddress[];
 };
 
 type MallProviderProps = {
@@ -373,6 +375,11 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   };
 
   const handleAddAddress = async (address: Omit<DeliveryAddress, 'id'>): Promise<boolean> => {
+    if (showcaseService) {
+      setAddresses(showcaseService.addAddress(address));
+      showToast('新增展示收货地址成功', 'success');
+      return true;
+    }
     if (sessionStatus === 'authenticated') {
       try {
         const productionApi = await loadProductionApi();
@@ -385,10 +392,34 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
         return false;
       }
     }
+    showToast('请先登录后再管理收货地址', 'warning');
+    return false;
+  };
+
+  const handleSetDefaultAddress = async (addressId: string): Promise<boolean> => {
+    const target = addresses.find((address) => address.id === addressId);
+    if (!target || target.isDefault) return Boolean(target);
     if (showcaseService) {
-      setAddresses(showcaseService.addAddress(address));
-      showToast('新增展示收货地址成功', 'success');
+      setAddresses(showcaseService.setDefaultAddress(addressId));
+      showToast('默认收货地址已更新', 'success');
       return true;
+    }
+    if (sessionStatus === 'authenticated') {
+      try {
+        const productionApi = await loadProductionApi();
+        await switchDefaultAddressOptimistically(
+          addresses,
+          addressId,
+          (address) => productionApi.setDefaultAddress(address.id, address.version),
+          setAddresses,
+        );
+        showToast('默认收货地址已更新', 'success');
+        void refreshServerAddresses().catch(() => showToast('默认地址已保存，地址簿稍后自动同步', 'info'));
+        return true;
+      } catch (error) {
+        showToast(error instanceof ProductionApiError ? error.message : '默认地址更新失败，已恢复原状态', 'error');
+        return false;
+      }
     }
     showToast('请先登录后再管理收货地址', 'warning');
     return false;
@@ -434,6 +465,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
         toggleFavorite: handleToggleFavorite,
         addresses,
         addAddress: handleAddAddress,
+        setDefaultAddress: handleSetDefaultAddress,
         toasts,
         showToast,
         removeToast,

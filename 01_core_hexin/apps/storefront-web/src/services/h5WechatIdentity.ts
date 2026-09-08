@@ -1,7 +1,7 @@
 import { anonymousIdempotentContext, canonicalCall, canonicalClient, sessionContext } from './canonicalApiClient';
 import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
 import { createSecureId } from '@shop/sdk/context';
-import { record, text } from './canonicalShape';
+import { nonNegativeInteger, record, text } from './canonicalShape';
 import { ProductionApiError } from './productionApi.error';
 import { resolveStorefrontApplication, resolveStorefrontAuthTarget } from '../config/storefrontIdentity';
 
@@ -15,6 +15,14 @@ export type H5WechatExchange =
   | Readonly<{ kind: 'authenticated'; callback: Readonly<{ ticket: string; state: string }> }>;
 
 export type H5WechatSessionMode = 'anonymous' | 'authenticated';
+
+export interface H5WechatJsSdkConfiguration {
+  readonly appId: string;
+  readonly timestamp: number;
+  readonly nonceStr: string;
+  readonly signature: string;
+  readonly jsApiList: readonly ['openAddress'];
+}
 
 const WECHAT_NETWORK_RETRY_DELAYS = [600, 1_400] as const;
 
@@ -63,6 +71,22 @@ export async function bindH5WechatIdentity(bindingToken: string): Promise<void> 
     idempotencyKey: createSecureId(),
   });
   await retryH5WechatNetworkRequest(() => canonicalCall(() => canonicalClient().identity.wechatBind({ body: { bindingToken } }, context)));
+}
+
+export async function requestH5WechatJsSdkConfiguration(url: string): Promise<H5WechatJsSdkConfiguration> {
+  const value = record(await retryH5WechatNetworkRequest(() => canonicalCall(() => canonicalClient().identity.wechatSession({
+    body: { scene: 'jsapi', action: 'jssdk_config', url },
+  }, wechatSessionContext('authenticated')))), 'identity.wechat.jssdk');
+  if (!Array.isArray(value.jsApiList) || value.jsApiList.length !== 1 || value.jsApiList[0] !== 'openAddress') {
+    throw new Error('微信地址能力配置无效');
+  }
+  return Object.freeze({
+    appId: text(value.appId, 'identity.wechat.jssdk.appId'),
+    timestamp: nonNegativeInteger(value.timestamp, 'identity.wechat.jssdk.timestamp'),
+    nonceStr: text(value.nonceStr, 'identity.wechat.jssdk.nonceStr'),
+    signature: text(value.signature, 'identity.wechat.jssdk.signature'),
+    jsApiList: Object.freeze(['openAddress'] as const),
+  });
 }
 
 export async function retryH5WechatNetworkRequest<T>(

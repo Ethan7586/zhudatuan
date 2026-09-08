@@ -1,6 +1,6 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { isPrivateIpv4Host, WechatApplicationCatalog, type WechatScene } from '@shop/config/server';
-import type { WechatIdentity, WechatIdentityResult } from '../../01_public_gongkai/ports_jiekou/WechatIdentity';
+import type { WechatIdentity, WechatIdentityResult, WechatJsSdkConfiguration } from '../../01_public_gongkai/ports_jiekou/WechatIdentity';
 import { HttpClient } from '../../../../foundation/http/HttpClient';
 
 export interface WechatIdentitySecret {
@@ -23,6 +23,10 @@ interface IdentityApplication {
 export class WechatIdentityGateway implements WechatIdentity {
   private readonly applications: ReadonlyMap<WechatScene, IdentityApplication>;
   private readonly http: HttpClient;
+  private accessTokenCache?: CachedWechatValue;
+  private jsApiTicketCache?: CachedWechatValue;
+  private accessTokenRequest: Promise<CachedWechatValue> | undefined;
+  private jsApiTicketRequest: Promise<CachedWechatValue> | undefined;
 
   constructor(catalog: WechatApplicationCatalog, configuration: WechatIdentityConfiguration, fetcher: typeof fetch = fetch) {
     if (Object.keys(configuration).sort().join(',') !== 'applications' || !Array.isArray(configuration.applications)
@@ -73,11 +77,90 @@ export class WechatIdentityGateway implements WechatIdentity {
     return Object.freeze({ subject: value.openid, ...(typeof value.unionid === 'string' ? { union: value.unionid } : {}) });
   }
 
+  async jsSdkConfiguration(value: string): Promise<WechatJsSdkConfiguration> {
+    const url = jsSdkUrl(value);
+    const application = this.get('jsapi');
+    const timestamp = Math.floor(Date.now() / 1000);
+    const nonceStr = randomBytes(16).toString('hex');
+    const ticket = await this.jsApiTicket(application);
+    const source = `jsapi_ticket=${ticket}&noncestr=${nonceStr}&timestamp=${timestamp}&url=${url}`;
+    return Object.freeze({
+      appId: application.appId,
+      timestamp,
+      nonceStr,
+      signature: createHash('sha1').update(source).digest('hex'),
+      jsApiList: Object.freeze(['openAddress'] as const),
+    });
+  }
+
+  private async jsApiTicket(application: IdentityApplication): Promise<string> {
+    if (fresh(this.jsApiTicketCache)) return this.jsApiTicketCache.value;
+    this.jsApiTicketRequest ??= this.fetchJsApiTicket(application).finally(() => { this.jsApiTicketRequest = undefined; });
+    this.jsApiTicketCache = await this.jsApiTicketRequest;
+    return this.jsApiTicketCache.value;
+  }
+
+  private async accessToken(application: IdentityApplication): Promise<string> {
+    if (fresh(this.accessTokenCache)) return this.accessTokenCache.value;
+    this.accessTokenRequest ??= this.fetchAccessToken(application).finally(() => { this.accessTokenRequest = undefined; });
+    this.accessTokenCache = await this.accessTokenRequest;
+    return this.accessTokenCache.value;
+  }
+
+  private async fetchAccessToken(application: IdentityApplication): Promise<CachedWechatValue> {
+    const url = new URL('https://api.weixin.qq.com/cgi-bin/token');
+    url.searchParams.set('grant_type', 'client_credential');
+    url.searchParams.set('appid', application.appId);
+    url.searchParams.set('secret', application.appSecret);
+    const value = await this.wechatJson(url);
+    if (typeof value.access_token !== 'string' || value.access_token.length < 8) throw new Error('WECHAT_IDENTITY_RESPONSE_INVALID');
+    return cacheValue(value.access_token, value.expires_in);
+  }
+
+  private async fetchJsApiTicket(application: IdentityApplication): Promise<CachedWechatValue> {
+    const url = new URL('https://api.weixin.qq.com/cgi-bin/ticket/getticket');
+    url.searchParams.set('access_token', await this.accessToken(application));
+    url.searchParams.set('type', 'jsapi');
+    const value = await this.wechatJson(url);
+    if (value.errcode !== 0 || typeof value.ticket !== 'string' || value.ticket.length < 8) {
+      throw new Error('WECHAT_IDENTITY_RESPONSE_INVALID');
+    }
+    return cacheValue(value.ticket, value.expires_in);
+  }
+
+  private async wechatJson(url: URL): Promise<Record<string, unknown>> {
+    const response = await this.http.send(url, { headers: { accept: 'application/json' }, redirect: 'error' }, { mode: 'none' });
+    if (!response.ok) throw new Error('WECHAT_CODE_EXCHANGE_FAILED');
+    return response.json() as Promise<Record<string, unknown>>;
+  }
+
   private get(scene: WechatScene): IdentityApplication {
     const application = this.applications.get(scene);
     if (!application) invalid();
     return application;
   }
+}
+
+interface CachedWechatValue {
+  readonly value: string;
+  readonly expiresAt: number;
+}
+
+function fresh(value: CachedWechatValue | undefined): value is CachedWechatValue {
+  return value !== undefined && value.expiresAt > Date.now();
+}
+
+function cacheValue(value: string, expiresIn: unknown): CachedWechatValue {
+  const seconds = typeof expiresIn === 'number' && Number.isFinite(expiresIn) ? expiresIn : 7200;
+  return Object.freeze({ value, expiresAt: Date.now() + Math.max(60, seconds - 300) * 1000 });
+}
+
+function jsSdkUrl(value: string): string {
+  let url: URL;
+  try { url = new URL(value); } catch { throw new Error('WECHAT_AUTHORIZATION_URL_INVALID'); }
+  if (url.protocol !== 'https:' || url.username || url.password) throw new Error('WECHAT_AUTHORIZATION_URL_INVALID');
+  url.hash = '';
+  return url.toString();
 }
 
 function parseApplication(catalog: WechatApplicationCatalog, source: WechatIdentitySecret): IdentityApplication {

@@ -3,14 +3,22 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MOCK_ADDRESSES, MOCK_USER } from '../mock/base';
-import type { CartItem } from '../types';
-import { checkoutSelectedCartRequest, PaymentPhoneVerificationRequired } from './checkoutSelectedCart';
+import type { CartItem, DeliveryAddress } from '../types';
+import { checkoutDeliveryAddress, checkoutSelectedCartRequest, PaymentPhoneVerificationRequired } from './checkoutSelectedCart';
 
 const contextRoot = dirname(fileURLToPath(import.meta.url));
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe('checkout identity assurance', () => {
+  it('always selects the persisted default even when it is not the first item', () => {
+    const addresses: DeliveryAddress[] = [
+      { ...MOCK_ADDRESSES[0]!, id: 'address:ordinary', isDefault: false },
+      { ...MOCK_ADDRESSES[0]!, id: 'address:default', isDefault: true },
+    ];
+    expect(checkoutDeliveryAddress(addresses)?.id).toBe('address:default');
+  });
+
   it('explains the phone restriction before any order request leaves the browser', async () => {
     const network = vi.fn();
     vi.stubGlobal('fetch', network);

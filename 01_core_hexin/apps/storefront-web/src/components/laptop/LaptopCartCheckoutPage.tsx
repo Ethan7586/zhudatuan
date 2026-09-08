@@ -15,6 +15,7 @@ export const LaptopCartCheckoutPage: React.FC<LaptopCartCheckoutPageProps> = ({ 
   const [useWelfareDeduction, setUseWelfareDeduction] = useState<boolean>(true);
   const [useMealDeduction, setUseMealDeduction] = useState<boolean>(true);
   const [invoiceHeader, setInvoiceHeader] = useState<string>(user.enterpriseName);
+  const defaultAddress = addresses.find((address) => address.isDefault) ?? addresses[0];
 
   // Calculate totals
   const subtotal = cart.reduce((sum, item) => sum + item.product.priceWelfare * item.quantity, 0);
@@ -120,8 +121,8 @@ export const LaptopCartCheckoutPage: React.FC<LaptopCartCheckoutPageProps> = ({ 
                 <div className="space-y-1.5">
                   <div className="p-2 bg-blue-50/60 border border-blue-200 rounded flex items-center justify-between">
                     <div>
-                      <div className="font-bold text-gray-800">{addresses[0] ? `${addresses[0].name} ${addresses[0].phone}` : '暂无收货人'}</div>
-                      <div className="text-[11px] text-gray-600">{addresses[0] ? `${addresses[0].province}${addresses[0].city}${addresses[0].district}${addresses[0].detail}` : '请先新增收货地址'}</div>
+                      <div className="font-bold text-gray-800">{defaultAddress ? `${defaultAddress.name} ${defaultAddress.phone}` : '暂无收货人'}</div>
+                      <div className="text-[11px] text-gray-600">{defaultAddress ? `${defaultAddress.province}${defaultAddress.city}${defaultAddress.district}${defaultAddress.detail}` : '请先新增收货地址'}</div>
                     </div>
                     <span className="text-[10px] bg-[var(--sw-brand)] text-white px-1.5 py-0.5 rounded font-bold">默认办公地址</span>
                   </div>

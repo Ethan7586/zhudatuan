@@ -112,7 +112,7 @@ function context(pool: DatabasePool): ModuleContext {
   container.bind(IDENTITY_SECURITY_KEYS, { identity: 'identity-key', session: 'session-key' });
   container.bind(KMS_CLIENT, {} as KmsClient);
   container.bind(RISK_GATE, { evaluate: async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) });
-  container.bind(WECHAT_IDENTITY, { application: () => ({ applicationHash: 'application' }), authorize: () => 'https://example.test', exchange: async () => ({ subject: 'subject' }) });
+  container.bind(WECHAT_IDENTITY, { application: () => ({ applicationHash: 'application' }), authorize: () => 'https://example.test', exchange: async () => ({ subject: 'subject' }), jsSdkConfiguration: async () => { throw new Error('not used'); } });
   return { container } as unknown as ModuleContext;
 }
 

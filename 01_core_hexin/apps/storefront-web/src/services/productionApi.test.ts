@@ -147,6 +147,9 @@ describe('canonical storefront production API', () => {
 
     await productionApi.upsertCartItem({ listingId: 'listing:one', quantity: 2 });
     await productionApi.upsertAddress({ id: '', name: '张三', phone: '13800000000', province: '浙江省', city: '杭州市', district: '西湖区', detail: '文一路 1 号', isDefault: true });
+    await expect(productionApi.setDefaultAddress('address:two', 4)).resolves.toEqual({
+      id: 'address:two', isDefault: true, version: 5,
+    });
 
     const cart = requestInit(fetcher, '/api/v1/carts/current/items/listing%3Aone', 'PUT');
     expect(Object.fromEntries(new Headers(cart.headers).entries())).toMatchObject({
@@ -158,7 +161,10 @@ describe('canonical storefront production API', () => {
     expect(JSON.parse(String(cart.body))).toEqual({ quantity: 2 });
     const address = [...fetcher.mock.calls].find(([url, init]) => new URL(String(url)).pathname.startsWith('/api/v1/members/me/addresses/address%3A') && init?.method === 'PUT');
     expect(address).toBeTruthy();
-    expect(JSON.parse(String(address![1]?.body))).toEqual({ recipient: '张三', mobile: '13800000000', address: '文一路 1 号', region: '浙江省/杭州市/西湖区', status: 'active' });
+    expect(JSON.parse(String(address![1]?.body))).toEqual({ recipient: '张三', mobile: '13800000000', address: '文一路 1 号', region: '浙江省/杭州市/西湖区', isDefault: true, status: 'active' });
+    const defaultAddress = requestInit(fetcher, '/api/v1/members/me/addresses/address%3Atwo', 'PUT');
+    expect(JSON.parse(String(defaultAddress.body))).toEqual({ isDefault: true });
+    expect(new Headers(defaultAddress.headers).get('if-match')).toBe('"4"');
   });
 
   it('raises the current password session to phone assurance before payment', async () => {
@@ -221,6 +227,26 @@ describe('canonical storefront production API', () => {
     }
     expect(JSON.parse(String(sessions[1]?.[1]?.body))).toMatchObject({
       application: 'zdt-l1-verify', target: 'storefront',
+    });
+  });
+
+  it('requests a server-signed openAddress JS-SDK configuration for the exact page URL', async () => {
+    const fetcher = apiFetch();
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+    const { requestH5WechatJsSdkConfiguration } = await import('./h5WechatIdentity');
+    await productionApi.getHomeSnapshot();
+
+    await expect(requestH5WechatJsSdkConfiguration('https://hbbtzn.com/?source=wechat')).resolves.toEqual({
+      appId: 'wx4df4137881a1d2bd',
+      timestamp: 1_788_800_000,
+      nonceStr: 'nonce-one',
+      signature: 'a'.repeat(40),
+      jsApiList: ['openAddress'],
+    });
+    const request = requestInit(fetcher, '/api/v1/identity/wechat/sessions', 'POST');
+    expect(JSON.parse(String(request.body))).toMatchObject({
+      scene: 'jsapi', action: 'jssdk_config', url: 'https://hbbtzn.com/?source=wechat',
     });
   });
 
@@ -324,11 +350,17 @@ function apiFetch(options: { personalMinor?: number; paymentState?: string; prof
     if (path === '/api/v1/inventory/availability') return json({ items: [{ id: 'stock:one', sku_id: 'sku:one', available: '6' }] });
     if (path === '/api/v1/carts/current' && method === 'GET') return json({ id: 'cart:one', version: 3, items: [{ listing: 'listing:one', sku: 'sku:one', quantity: 1, version: 0 }] });
     if (path.startsWith('/api/v1/carts/current/items/') && method === 'PUT') return json({ id: 'cart:one', version: 4 });
-    if (path.startsWith('/api/v1/members/me/addresses/') && method === 'PUT') return json({ id: decodeURIComponent(path.split('/').at(-1)!), status: 'active', version: 0 });
+    if (path.startsWith('/api/v1/members/me/addresses/') && method === 'PUT') {
+      const body = JSON.parse(String(init?.body)) as { isDefault?: boolean; recipient?: string };
+      return json({ id: decodeURIComponent(path.split('/').at(-1)!), is_default: body.isDefault === true, status: 'active', version: body.recipient ? 0 : 5 });
+    }
     if (path === '/api/v1/identity/stepup/challenges' && method === 'POST') return json({ id: 'challenge:payment-stepup', expires_at: '2026-09-03T14:10:00.000Z' }, 202);
     if (path === '/api/v1/identity/stepup/verifications' && method === 'POST') return json({ id: 'session:one', assurance_level: 3 });
     if (path === '/api/v1/identity/wechat/sessions' && method === 'POST') {
       const body = JSON.parse(String(init?.body)) as { action: string };
+      if (body.action === 'jssdk_config') return json({
+        appId: 'wx4df4137881a1d2bd', timestamp: 1_788_800_000, nonceStr: 'nonce-one', signature: 'a'.repeat(40), jsApiList: ['openAddress'],
+      });
       return body.action === 'authorize'
         ? json({ authorizationUrl: 'https://open.weixin.qq.com/connect/oauth2/authorize' })
         : json({ bindingToken: 'wechat-binding-token', expiresIn: 600, state: 'registration_required' }, 202);

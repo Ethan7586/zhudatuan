@@ -179,6 +179,7 @@ describe('identity registration API entrypoint', () => {
           application: () => ({ applicationHash: 'application:test' }),
           authorize: () => 'https://wechat.example.test/authorize',
           exchange: async () => ({ subject: 'openid:test' }),
+          jsSdkConfiguration: async () => { throw new Error('not used'); },
         });
       },
     });

@@ -199,6 +199,50 @@ textarea {
   }
 }
 
+@keyframes sw-address-sheet-rise {
+  from {
+    opacity: 0.72;
+    transform: translate3d(0, 28px, 0) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes sw-address-sheet-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sw-address-sheet-backdrop {
+  animation: sw-address-sheet-fade 260ms ease-out both;
+}
+
+.sw-address-sheet-panel {
+  animation: sw-address-sheet-rise 440ms cubic-bezier(0.22, 0.82, 0.2, 1) both;
+  will-change: transform, opacity;
+}
+
+.sw-address-wheel {
+  -webkit-overflow-scrolling: touch;
+}
+
+.sw-address-wheel::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sw-address-sheet-backdrop,
+  .sw-address-sheet-panel {
+    animation: none;
+  }
+
+  .sw-address-wheel {
+    scroll-behavior: auto;
+  }
+}
+
 /*
  * Smart Wing consumer Web component standard.
  * Laptop and 27-inch desktop share one component tree; only density changes.

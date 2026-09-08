@@ -1,0 +1,47 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const requestConfiguration = vi.hoisted(() => vi.fn());
+
+vi.mock('./h5WechatIdentity', () => ({
+  requestH5WechatJsSdkConfiguration: requestConfiguration,
+}));
+
+beforeEach(() => {
+  vi.resetModules();
+  requestConfiguration.mockReset().mockResolvedValue({
+    appId: 'wx4df4137881a1d2bd',
+    timestamp: 1_788_800_000,
+    nonceStr: 'nonce-one',
+    signature: 'a'.repeat(40),
+    jsApiList: ['openAddress'],
+  });
+});
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe('WeChat JS-SDK address bootstrap', () => {
+  it('signs the actual URL without its hash and configures openAddress only once', async () => {
+    let ready: (() => void) | undefined;
+    const sdk = {
+      openAddress: vi.fn(),
+      ready: vi.fn((callback: () => void) => { ready = callback; }),
+      error: vi.fn(),
+      config: vi.fn(() => ready?.()),
+    };
+    vi.stubGlobal('navigator', { userAgent: 'MicroMessenger/8.0.50' });
+    vi.stubGlobal('window', {
+      location: { href: 'https://hbbtzn.com/?source=wechat#/address' },
+      setTimeout: globalThis.setTimeout.bind(globalThis),
+      clearTimeout: globalThis.clearTimeout.bind(globalThis),
+      wx: sdk,
+    });
+    const { ensureWechatAddressJsSdk } = await import('./wechatJsSdk');
+
+    await ensureWechatAddressJsSdk();
+    await ensureWechatAddressJsSdk();
+
+    expect(requestConfiguration).toHaveBeenCalledOnce();
+    expect(requestConfiguration).toHaveBeenCalledWith('https://hbbtzn.com/?source=wechat');
+    expect(sdk.config).toHaveBeenCalledWith(expect.objectContaining({ debug: false, jsApiList: ['openAddress'] }));
+  });
+});

@@ -1,5 +1,5 @@
 import type { PoolClient, QueryResult, QueryResultRow } from 'pg';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { AuditSink } from '../../../foundation/application/AuditSink';
 import type { OperationRequest } from '../../../foundation/application/OperationHandler';
 import type { KmsClient } from '../../../foundation/infrastructure/KmsClient';
@@ -9,6 +9,25 @@ import type { PgAuthTicket } from '../04_adapters_shixian/persistence_cunchu/PgA
 import { WechatOperations } from '../05_interface_jieru/http/WechatOperations';
 
 describe('wechat identity session', () => {
+  it('returns a server-signed JS-SDK configuration for the actual page URL', async () => {
+    const jsSdkConfiguration = vi.fn(async () => ({
+      appId: 'wx4df4137881a1d2bd', timestamp: 1_788_800_000, nonceStr: 'nonce', signature: 'a'.repeat(40), jsApiList: ['openAddress'] as const,
+    }));
+    const pool = { connect: async () => { throw new Error('database should not be used'); } } as unknown as DatabasePool;
+    const operation = new WechatOperations({ invoke: async () => ({ status: 404, body: {} }) }, pool, {
+      application: () => ({ applicationHash: 'application-hash' }),
+      authorize: () => 'https://example.test',
+      exchange: async () => ({ subject: 'openid-one' }),
+      jsSdkConfiguration,
+    }, {} as KmsClient, {} as AuditSink, 'identity-key', 'session-key', {} as PgAuthTicket);
+    const base = request();
+    const input: OperationRequest = { ...base, input: { ...base.input,
+      body: { scene: 'jsapi', action: 'jssdk_config', url: 'https://hbbtzn.com/?from=wechat' } } };
+
+    await expect(operation.invoke(input)).resolves.toMatchObject({ status: 200, body: { jsApiList: ['openAddress'] } });
+    expect(jsSdkConfiguration).toHaveBeenCalledWith('https://hbbtzn.com/?from=wechat');
+  });
+
   it('locks identity-owned rows without requiring membership update privilege', async () => {
     const queries: string[] = [];
     let requestHash = '';
@@ -47,6 +66,7 @@ describe('wechat identity session', () => {
       application: () => ({ applicationHash: 'application-hash' }),
       authorize: () => 'https://example.test',
       exchange: async () => ({ subject: 'openid-one' }),
+      jsSdkConfiguration: async () => { throw new Error('not used'); },
     };
     const kms = {
       encrypt: async () => ({ ciphertext: 'ciphertext', keyVersion: 'key:v1', fingerprint: 'fingerprint' }),
@@ -106,6 +126,7 @@ describe('wechat identity session', () => {
       application: () => ({ applicationHash: 'application-hash' }),
       authorize: () => 'https://example.test',
       exchange: async () => ({ subject: 'openid-one' }),
+      jsSdkConfiguration: async () => { throw new Error('not used'); },
     };
     const kms = {
       encrypt: async () => ({ ciphertext: 'ciphertext', keyVersion: 'key:v1', fingerprint: 'fingerprint' }),
@@ -161,6 +182,7 @@ describe('wechat identity session', () => {
       application: () => ({ applicationHash: 'application-hash' }),
       authorize: () => 'https://example.test',
       exchange: async () => ({ subject: 'openid-revoked' }),
+      jsSdkConfiguration: async () => { throw new Error('not used'); },
     }, {
       encrypt: async () => ({ ciphertext: 'ciphertext', keyVersion: 'key:v1', fingerprint: 'fingerprint' }),
     } as unknown as KmsClient, { record: async () => undefined, access: async () => undefined },
@@ -189,6 +211,7 @@ describe('wechat identity session', () => {
     const operation = new WechatOperations({ invoke: async () => ({ status: 404, body: {} }) }, pool, {
       application: () => ({ applicationHash: 'application-hash' }), authorize: () => 'https://example.test',
       exchange: async () => { throw new Error('must reject before WeChat code exchange'); },
+      jsSdkConfiguration: async () => { throw new Error('not used'); },
     }, {} as KmsClient, {} as AuditSink, 'identity-key', 'session-key', {} as PgAuthTicket);
 
     await expect(operation.invoke(request(null, { application: 'zdt-l1-verify', target: 'storefront' })))

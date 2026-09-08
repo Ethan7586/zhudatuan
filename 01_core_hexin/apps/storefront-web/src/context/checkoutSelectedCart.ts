@@ -16,9 +16,13 @@ export interface CheckoutResult {
   paymentState: 'captured' | 'authorizing' | 'reconciling';
 }
 
+export function checkoutDeliveryAddress(addresses: readonly DeliveryAddress[]): DeliveryAddress | undefined {
+  return addresses.find((item) => item.isDefault) ?? addresses[0];
+}
+
 export async function checkoutSelectedCartRequest(cart: CartItem[], addresses: DeliveryAddress[], user: UserProfile): Promise<CheckoutResult> {
   const selectedItems = cart.filter((item) => item.selected);
-  const address = addresses.find((item) => item.isDefault) ?? addresses[0];
+  const address = checkoutDeliveryAddress(addresses);
   if (!selectedItems.length) throw new Error('请先选择需要结算的商品');
   if (!address) throw new Error('请先设置有效的收货地址');
   if (!user.phoneVerified || !user.paymentEligible) {

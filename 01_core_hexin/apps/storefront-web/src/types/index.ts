@@ -120,6 +120,7 @@ export interface DeliveryAddress {
   district: string;
   detail: string;
   isDefault: boolean;
+  version?: number;
   tag?: string; // 如 "公司", "家庭"
 }
 

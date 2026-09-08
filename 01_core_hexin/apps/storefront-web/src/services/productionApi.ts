@@ -217,15 +217,37 @@ export const productionApi = {
     return { items: mapCanonicalAddresses(value) };
   },
 
-  async upsertAddress(input: ApiDeliveryAddress): Promise<{ id: string }> {
+  async upsertAddress(input: ApiDeliveryAddress): Promise<{ id: string; isDefault: boolean; version: number }> {
     const id = input.id || `address:${createSecureId()}`;
-    const body = { recipient: input.name, mobile: input.phone, address: input.detail, region: [input.province, input.city, input.district].filter(Boolean).join('/'), status: 'active' };
+    const body = { recipient: input.name, mobile: input.phone, address: input.detail, region: [input.province, input.city, input.district].filter(Boolean).join('/'), isDefault: input.isDefault, status: 'active' };
     const value = await canonicalCall(() => canonicalClient().member.addressesManage({ path: { addressid: id }, body }, sessionContext({
       write: true,
       idempotencyKey: createSecureId(),
       ...(input.version === undefined ? {} : { expectedVersion: input.version }),
     })));
-    return { id: text(record(value, 'member.address.manage').id, 'member.address.manage.id') };
+    const result = record(value, 'member.address.manage');
+    return {
+      id: text(result.id, 'member.address.manage.id'),
+      isDefault: boolean(result.is_default),
+      version: nonNegativeInteger(result.version, 'member.address.manage.version'),
+    };
+  },
+
+  async setDefaultAddress(addressId: string, expectedVersion?: number): Promise<{ id: string; isDefault: boolean; version: number }> {
+    const value = await canonicalCall(() => canonicalClient().member.addressesManage({
+      path: { addressid: addressId },
+      body: { isDefault: true },
+    }, sessionContext({
+      write: true,
+      idempotencyKey: createSecureId(),
+      ...(expectedVersion === undefined ? {} : { expectedVersion }),
+    })));
+    const result = record(value, 'member.address.default');
+    return {
+      id: text(result.id, 'member.address.default.id'),
+      isDefault: boolean(result.is_default),
+      version: nonNegativeInteger(result.version, 'member.address.default.version'),
+    };
   },
 
   async deleteAddress(addressId: string, expectedVersion?: number): Promise<{ removed: true }> {

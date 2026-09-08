@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { createHash } from 'node:crypto';
+import { describe, expect, it, vi } from 'vitest';
 import { WechatApplicationCatalog } from '@shop/config/server';
 import { WechatIdentityGateway } from '../04_adapters_shixian/providers_waibu/WechatIdentityGateway';
 
@@ -36,6 +37,28 @@ describe('WeChat application-scoped identity gateway', () => {
     expect(observed.map((url) => url.pathname)).toEqual(['/sns/jscode2session', '/sns/oauth2/access_token']);
     expect(observed[0]?.searchParams.get('appid')).toBe(applications.get('miniapp').appId);
     expect(observed[1]?.searchParams.get('appid')).toBe(applications.get('jsapi').appId);
+  });
+
+  it('caches the official-account token and ticket while signing the exact page URL', async () => {
+    const fetcher = vi.fn<typeof fetch>(async (input) => {
+      const url = new URL(String(input));
+      if (url.pathname === '/cgi-bin/token') {
+        return new Response(JSON.stringify({ access_token: 'official-access-token', expires_in: 7200 }));
+      }
+      return new Response(JSON.stringify({ errcode: 0, ticket: 'official-jsapi-ticket', expires_in: 7200 }));
+    });
+    const gateway = new WechatIdentityGateway(applications, configuration, fetcher);
+
+    const signed = await gateway.jsSdkConfiguration('https://hbbtzn.com/?from=wechat#/address');
+    await gateway.jsSdkConfiguration('https://hbbtzn.com/?from=wechat#/address');
+
+    expect(signed.appId).toBe(applications.get('jsapi').appId);
+    expect(signed.jsApiList).toEqual(['openAddress']);
+    expect(signed.signature).toBe(createHash('sha1').update(
+      `jsapi_ticket=official-jsapi-ticket&noncestr=${signed.nonceStr}&timestamp=${signed.timestamp}&url=https://hbbtzn.com/?from=wechat`,
+    ).digest('hex'));
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(new URL(String(fetcher.mock.calls[1]?.[0])).searchParams.get('type')).toBe('jsapi');
   });
 
   it.each([
