@@ -53,7 +53,7 @@ export class PgTransactionManager implements TransactionManager {
       const active = { client, context, mode, open: true };
       try {
         assertAvailable(options);
-        await client.query(mode === 'write' ? 'begin isolation level serializable' : 'begin read only');
+        await client.query(mode === 'write' ? `begin isolation level ${options.isolation ?? 'serializable'}` : 'begin read only');
         began = true;
         assertAvailable(options);
         await applyContext(client, options);

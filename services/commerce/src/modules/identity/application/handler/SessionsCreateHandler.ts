@@ -12,6 +12,7 @@ type PreparedSession = Readonly<{ kind: 'authentication'; request: OperationRequ
 export class SessionsCreateHandler implements DurableOperationHandler<'identity.sessions.create', PreparedSession, OperationResult, 'write', LoadedSession> {
   readonly operation = 'identity.sessions.create' as const;
   readonly mode = 'write' as const;
+  readonly isolation = 'read committed' as const;
 
   constructor(
     private readonly authenticate: IdentityAction,

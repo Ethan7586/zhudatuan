@@ -1,5 +1,7 @@
 import type { ReadTransactionContext, WriteTransactionContext } from './TransactionContext';
 
+export type TransactionIsolation = 'read committed' | 'serializable';
+
 export interface TransactionOptions {
   readonly tenant: string;
   readonly membership: string;
@@ -10,6 +12,7 @@ export interface TransactionOptions {
   readonly deadline: number;
   readonly signal: AbortSignal;
   readonly workload?: 'api' | 'jobs';
+  readonly isolation?: TransactionIsolation;
   /** Immutable server-issued authorization evidence inherited by deferred work. */
   readonly authorization?: Readonly<Record<string, unknown>>;
 }

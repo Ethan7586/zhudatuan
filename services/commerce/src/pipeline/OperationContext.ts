@@ -4,7 +4,7 @@ import { Redactor } from '@shop/telemetry';
 import type { DomainEvent } from '@shop/kernel';
 import { DomainError } from '../platform/error/DomainError';
 import type { WriteTransactionContext } from '../platform/database/TransactionContext';
-import type { TransactionManager, TransactionOptions } from '../platform/database/TransactionManager';
+import type { TransactionIsolation, TransactionManager, TransactionOptions } from '../platform/database/TransactionManager';
 import { sessionAccess } from '../platform/security/OperationSecurityContext';
 import { authorizationEvidence } from '../platform/security/AuthorizationEvidence';
 import type { AuditDecorator } from './AuditDecorator';
@@ -25,7 +25,7 @@ export function idempotencyResponse<TKey extends OperationId>(
   return handler.idempotencyResponse?.(response) ?? response;
 }
 
-export function transactionOptions(execution: ExecutionContext, scope?: string): TransactionOptions {
+export function transactionOptions(execution: ExecutionContext, scope?: string, isolation?: TransactionIsolation): TransactionOptions {
   const identity = executionIdentity(execution, scope);
   const access = sessionAccess(execution.security);
   return Object.freeze({
@@ -38,6 +38,7 @@ export function transactionOptions(execution: ExecutionContext, scope?: string):
     deadline: execution.deadline,
     signal: execution.signal,
     workload: 'api',
+    ...(isolation === undefined ? {} : { isolation }),
     ...(access ? { authorization: authorizationEvidence(access, execution.operation, new Date()) } : {}),
   });
 }

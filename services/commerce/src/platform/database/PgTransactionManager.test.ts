@@ -51,6 +51,15 @@ describe('PgTransactionManager', () => {
     expect(client.statements.filter((statement) => statement.startsWith('begin'))).toEqual(['begin isolation level serializable']);
   });
 
+  it('uses an explicitly bounded read committed write transaction', async () => {
+    const client = fakeClient();
+    const manager = new PgTransactionManager(fakePool(client));
+
+    await manager.write({ ...options(), isolation: 'read committed' }, async () => undefined);
+
+    expect(client.statements.filter((statement) => statement.startsWith('begin'))).toEqual(['begin isolation level read committed']);
+  });
+
   it('retries serialization failures with a bounded delay', async () => {
     const first = fakeClient();
     const second = fakeClient();

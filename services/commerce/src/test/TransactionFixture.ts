@@ -14,7 +14,7 @@ export function withWriteTransaction<T>(query: Query, work: (context: WriteTrans
 }
 
 function manager(query: Query): PgTransactionManager {
-  const control = new Set(['begin read only', 'begin isolation level serializable', 'commit', 'rollback']);
+  const control = new Set(['begin read only', 'begin isolation level read committed', 'begin isolation level serializable', 'commit', 'rollback']);
   const client = {
     query: async <R extends QueryResultRow = QueryResultRow>(text: string, values?: readonly unknown[]) => {
       if (control.has(text) || text.startsWith('select set_config(')) return result<R>([]);

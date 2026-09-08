@@ -55,9 +55,9 @@ export class OperationExecutor {
     assertHandlerMode(operation.method, handler);
     const auditedRead = operation.method === 'GET' && operation.permission !== null && ['high', 'critical'].includes(permissionDefinition(operation.permission).risk);
     if (handler.mode === 'read' && !auditedRead) {
-      return this.transactions.read(transactionOptions(execution), (transaction) => (handler as OperationHandler<TKey, 'read'>).execute(input, Object.freeze({ ...execution, transaction }) as HandlerContext<TKey>));
+      return this.transactions.read(transactionOptions(execution, undefined, handler.isolation), (transaction) => (handler as OperationHandler<TKey, 'read'>).execute(input, Object.freeze({ ...execution, transaction }) as HandlerContext<TKey>));
     }
-    return this.transactions.write(transactionOptions(execution), async (transaction) => {
+    return this.transactions.write(transactionOptions(execution, undefined, handler.isolation), async (transaction) => {
       const claim = requiresIdempotency(operation) ? idempotencyClaim(execution, input) : undefined;
       if (claim) {
         const state = await this.idempotency.claim(transaction, claim);
@@ -79,7 +79,7 @@ export class OperationExecutor {
   ): Promise<OperationReply<OperationOutputFor<TKey>>> {
     const operation = OperationCatalog.get(handler.operation);
     assertHandlerMode(operation.method, handler);
-    const loaded = handler.load ? await this.transactions.read(transactionOptions(execution), (transaction) => handler.load!(input, Object.freeze({ ...execution, transaction }))) : (undefined as TLoaded);
+    const loaded = handler.load ? await this.transactions.read(transactionOptions(execution, undefined, handler.isolation), (transaction) => handler.load!(input, Object.freeze({ ...execution, transaction }))) : (undefined as TLoaded);
     const prepared = await handler.prepare(input, execution, loaded);
     const routedScope = transactionScope(handler, input, prepared, execution);
     const claim = requiresIdempotency(operation) ? idempotencyClaim(execution, input) : undefined;
@@ -104,7 +104,7 @@ export class OperationExecutor {
         }
         return Object.freeze({ result });
       };
-      const committed = handler.mode === 'write' || auditedRead ? await this.transactions.write(transactionOptions(execution, routedScope), transact) : await this.transactions.read(transactionOptions(execution, routedScope), transact);
+      const committed = handler.mode === 'write' || auditedRead ? await this.transactions.write(transactionOptions(execution, routedScope, handler.isolation), transact) : await this.transactions.read(transactionOptions(execution, routedScope, handler.isolation), transact);
       if ('replay' in committed) return committed.replay;
       checkpointed = true;
 
@@ -117,7 +117,7 @@ export class OperationExecutor {
       });
       const reply = await handler.finalize(input, committed.result.checkpoint, finalizeContext);
       if (claim) {
-        await this.transactions.write(transactionOptions(execution, routedScope), async (transaction) => {
+        await this.transactions.write(transactionOptions(execution, routedScope, handler.isolation), async (transaction) => {
           await appendEvents(this.outbox, transaction, completionEvents);
           await appendEvents(this.outbox, transaction, reply.events);
           await this.idempotency.complete(transaction, claim, idempotencyResponse(handler, reply) as OperationReply<unknown>);
