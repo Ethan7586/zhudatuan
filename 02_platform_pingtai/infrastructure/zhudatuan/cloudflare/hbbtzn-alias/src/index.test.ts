@@ -23,9 +23,17 @@ describe('hbbtzn H5 alias worker', () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('<html>H5</html>'));
     vi.stubGlobal('fetch', fetchMock);
 
-    await worker.fetch(new Request('https://hbbtzn.com/desktop-1920?source=desktop'));
+    await worker.fetch(new Request('https://hbbtzn.com/desktop-1920?source=desktop', {
+      headers: {
+        'x-sfl-node-id': 'node:zhudatuan:l0',
+        'x-sfl-node-surface': 'web-business',
+      },
+    }));
 
-    expect((fetchMock.mock.calls[0][0] as Request).url).toBe('https://zhudatuan.com/h5?source=desktop');
+    const upstreamRequest = fetchMock.mock.calls[0][0] as Request;
+    expect(upstreamRequest.url).toBe('https://zhudatuan.com/h5?source=desktop');
+    expect(upstreamRequest.headers.get('x-sfl-node-id')).toBe('node:hbbtzn:l1');
+    expect(upstreamRequest.headers.get('x-sfl-node-surface')).toBe('storefront');
   });
 
   it('publishes storefront HTML metadata on the public H5 hostname', async () => {
@@ -50,6 +58,8 @@ describe('hbbtzn H5 alias worker', () => {
 
     expect((fetchMock.mock.calls[0][0] as Request).url).toBe('https://zhudatuan.com/assets/app.js');
     expect((fetchMock.mock.calls[1][0] as Request).url).toBe('https://api.zhudatuan.com/api/v1/catalog/listings');
+    expect((fetchMock.mock.calls[0][0] as Request).headers.get('x-sfl-node-surface')).toBe('storefront');
+    expect((fetchMock.mock.calls[1][0] as Request).headers.get('x-sfl-node-surface')).toBe('web-business');
   });
 
   it('sends the Hongtai storefront catalog to its L1 web runtime without rewriting its origin', async () => {
@@ -136,6 +146,7 @@ describe('hbbtzn H5 alias worker', () => {
     expect(upstreamRequest.headers.get('origin')).toBe('https://console.zhudatuan.com');
     expect(upstreamRequest.headers.get('x-sfl-node-id')).toBeNull();
     expect(upstreamRequest.headers.get('x-sfl-node-surface')).toBeNull();
+    expect(upstreamRequest.headers.get('x-zdt-identity-entry-host')).toBe('api.hbbtzn.com');
   });
 
   it.each([

@@ -29,6 +29,19 @@
       "scopeId": "mall:d1708f04df2dd8a61736852c4900fb43"
     }
   },
+  "tenantStorefronts": {
+    "hongtai": {
+      "nodeId": "node:hbbtzn:l1",
+      "publicOrigin": "https://hbbtzn.com",
+      "edgeGatewayOrigin": "https://zhudatuan.com",
+      "edgeSurface": "storefront",
+      "releasePointer": "/opt/sfl/nodes/hbbtzn-l1/storefront/current",
+      "service": "sfl-storefront@hbbtzn-l1.service",
+      "port": 4410,
+      "sharesCanonicalRelease": false,
+      "sharesCanonicalService": false
+    }
+  },
   "canonicalOrigins": {
     "storefrontOrigin": "https://zhudatuan.com"
   },
@@ -62,6 +75,7 @@
     "ownerApprovalRequired": true,
     "frontendDomainChangeDoesNotAuthorizeControlPlaneChange": true,
     "tenantControlPlaneAliasesAllowed": true,
+    "tenantStorefrontIsolationRequired": true,
     "globalDomainReplacementForbidden": true
   }
 }

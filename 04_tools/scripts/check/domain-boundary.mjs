@@ -88,6 +88,8 @@ export function validateDomainContract(contract) {
   const proxyAliases = requiredObject(contract.proxyAliases, 'PRODUCTION_DOMAIN_PROXY_ALIASES_MISSING');
   const tenantControlPlanes = requiredObject(contract.tenantControlPlanes, 'PRODUCTION_DOMAIN_TENANT_CONTROL_PLANES_MISSING');
   const hongtai = requiredObject(tenantControlPlanes.hongtai, 'PRODUCTION_DOMAIN_HONGTAI_CONTROL_PLANE_MISSING');
+  const tenantStorefronts = requiredObject(contract.tenantStorefronts, 'PRODUCTION_DOMAIN_TENANT_STOREFRONTS_MISSING');
+  const hongtaiStorefront = requiredObject(tenantStorefronts.hongtai, 'PRODUCTION_DOMAIN_HONGTAI_STOREFRONT_MISSING');
 
   const h5Origin = exactOrigin(h5.publicOrigin, 'PRODUCTION_DOMAIN_H5_ORIGIN_INVALID');
   const accountsOrigin = exactOrigin(controlPlane.accountsOrigin, 'PRODUCTION_DOMAIN_ACCOUNTS_ORIGIN_INVALID');
@@ -99,9 +101,22 @@ export function validateDomainContract(contract) {
   const hongtaiApiOrigin = exactOrigin(hongtai.apiOrigin, 'PRODUCTION_DOMAIN_HONGTAI_API_ORIGIN_INVALID');
   const hongtaiPlatformStorefrontOrigin = exactOrigin(hongtai.platformStorefrontOrigin, 'PRODUCTION_DOMAIN_HONGTAI_PLATFORM_STOREFRONT_ORIGIN_INVALID');
   const hongtaiPlatformConsoleOrigin = exactOrigin(hongtai.platformConsoleOrigin, 'PRODUCTION_DOMAIN_HONGTAI_PLATFORM_CONSOLE_ORIGIN_INVALID');
+  const hongtaiStorefrontOrigin = exactOrigin(hongtaiStorefront.publicOrigin, 'PRODUCTION_DOMAIN_HONGTAI_STOREFRONT_ORIGIN_INVALID');
+  const hongtaiEdgeGatewayOrigin = exactOrigin(hongtaiStorefront.edgeGatewayOrigin, 'PRODUCTION_DOMAIN_HONGTAI_STOREFRONT_GATEWAY_INVALID');
 
   if (new URL(h5Origin).hostname !== 'hbbtzn.com' || miniProgram.publicDomain !== 'hbbtzn.com') {
     fail('PRODUCTION_DOMAIN_CONSUMER_FRONTEND_INVALID');
+  }
+  if (hongtaiStorefrontOrigin !== h5Origin
+    || hongtaiEdgeGatewayOrigin !== storefrontOrigin
+    || hongtaiStorefront.nodeId !== 'node:hbbtzn:l1'
+    || hongtaiStorefront.edgeSurface !== 'storefront'
+    || hongtaiStorefront.releasePointer !== '/opt/sfl/nodes/hbbtzn-l1/storefront/current'
+    || hongtaiStorefront.service !== 'sfl-storefront@hbbtzn-l1.service'
+    || hongtaiStorefront.port !== 4410
+    || hongtaiStorefront.sharesCanonicalRelease !== false
+    || hongtaiStorefront.sharesCanonicalService !== false) {
+    fail('PRODUCTION_DOMAIN_HONGTAI_STOREFRONT_ISOLATION_INVALID');
   }
   if (h5.apiOrigin !== apiOrigin || miniProgram.apiOrigin !== apiOrigin
     || h5.authOrigin !== accountsOrigin || miniProgram.authOrigin !== accountsOrigin) {
@@ -156,6 +171,7 @@ export function validateDomainContract(contract) {
   if (contract.changePolicy?.ownerApprovalRequired !== true
     || contract.changePolicy?.frontendDomainChangeDoesNotAuthorizeControlPlaneChange !== true
     || contract.changePolicy?.tenantControlPlaneAliasesAllowed !== true
+    || contract.changePolicy?.tenantStorefrontIsolationRequired !== true
     || contract.changePolicy?.globalDomainReplacementForbidden !== true) {
     fail('PRODUCTION_DOMAIN_CHANGE_POLICY_INVALID');
   }
@@ -287,6 +303,15 @@ export function validateEdgeRedirects(source, contract) {
   if (!upstreamBlock.includes(`[ROOT_STOREFRONT_HOST]: '${contract.canonicalOrigins.storefrontOrigin}'`)) {
     fail('PRODUCTION_DOMAIN_EDGE_H5_UPSTREAM_DRIFT');
   }
+  const tenantStorefront = contract.tenantStorefronts.hongtai;
+  for (const token of [
+    `const HONGTAI_NODE_ID = '${tenantStorefront.nodeId}'`,
+    `return { nodeId: HONGTAI_NODE_ID, surface: '${tenantStorefront.edgeSurface}' };`,
+    "headers.delete('x-sfl-node-id')",
+    "headers.delete('x-sfl-node-surface')",
+  ]) {
+    if (!source.includes(token)) fail('PRODUCTION_DOMAIN_EDGE_STOREFRONT_ISOLATION_MISSING', token);
+  }
   for (const alias of Object.keys(contract.proxyAliases)) {
     const hostname = new URL(alias).hostname;
     if (!upstreamBlock.includes(`'${hostname}'`) && !upstreamBlock.includes(`[HONGTAI_CONSOLE_HOST]`)) {
@@ -410,6 +435,11 @@ function validateRequiredBindings(contract) {
     'authBaseUrl',
   ]);
   requireTokens('01_core_hexin/packages/config/src/IdentityRegistrationApiEnvironment.ts', ['IDENTITY_NODE_MANIFEST']);
+  requireTokens('02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/sfl-storefront@.service', [
+    contract.tenantStorefronts.hongtai.releasePointer.replace('/hbbtzn-l1/', '/%i/'),
+    '${STOREFRONT_PORT}',
+    'EnvironmentFile=/opt/sfl/nodes/%i/runtime/storefront.env',
+  ]);
 }
 
 function validateRuntimeSources(contract, identityNodeManifest) {

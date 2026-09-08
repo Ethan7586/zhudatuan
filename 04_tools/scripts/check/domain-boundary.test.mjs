@@ -28,6 +28,24 @@ test('accepts the owner-approved production domain contract and lock', () => {
   );
 });
 
+test('requires the L1 storefront to use its own release pointer and service', () => {
+  const sharedRelease = structuredClone(contract);
+  sharedRelease.tenantStorefronts.hongtai.releasePointer = '/opt/zhudatuan/current';
+  sharedRelease.tenantStorefronts.hongtai.sharesCanonicalRelease = true;
+  assert.throws(
+    () => validateDomainContract(sharedRelease),
+    /PRODUCTION_DOMAIN_HONGTAI_STOREFRONT_ISOLATION_INVALID/,
+  );
+
+  const sharedService = structuredClone(contract);
+  sharedService.tenantStorefronts.hongtai.service = 'zhudatuan-storefront.service';
+  sharedService.tenantStorefronts.hongtai.sharesCanonicalService = true;
+  assert.throws(
+    () => validateDomainContract(sharedService),
+    /PRODUCTION_DOMAIN_HONGTAI_STOREFRONT_ISOLATION_INVALID/,
+  );
+});
+
 test('keeps the canonical identity node manifest aligned with domains and SFL node profiles', () => {
   assert.equal(validateIdentityNodeManifest(identityNodeManifest, contract), identityNodeManifest);
   const invalid = structuredClone(identityNodeManifest);

@@ -64,7 +64,7 @@ const HONGTAI_WEB_BUSINESS_PATHS = Object.freeze([
   '/api/v1/orders',
 ] as const);
 
-type HongtaiNodeSurface = 'catalog-operator' | 'web-business';
+type HongtaiNodeSurface = 'catalog-operator' | 'storefront' | 'web-business';
 
 interface HongtaiNodeRoute {
   readonly nodeId: typeof HONGTAI_NODE_ID;
@@ -93,6 +93,11 @@ function belongsToPathFamily(pathname: string, root: string): boolean {
 function hongtaiNodeRoute(request: Request, incoming: URL, pathname: string): HongtaiNodeRoute | undefined {
   if (incoming.hostname === HONGTAI_CONSOLE_HOST) {
     return { nodeId: HONGTAI_NODE_ID, surface: 'catalog-operator' };
+  }
+  if (incoming.hostname === ROOT_STOREFRONT_HOST
+    && !isApiPath(pathname)
+    && !belongsToPathFamily(pathname, '/catalog-media')) {
+    return { nodeId: HONGTAI_NODE_ID, surface: 'storefront' };
   }
   const routedMethod = request.method === 'OPTIONS'
     ? request.headers.get('access-control-request-method')?.toUpperCase() ?? request.method
@@ -177,16 +182,8 @@ function upstreamRequest(request: Request, target: URL, nodeRoute?: HongtaiNodeR
     }
   }
   if (isApiPath(target.pathname)) {
-    headers.set(
-      IDENTITY_ENTRY_HOST_HEADER,
-      incoming.hostname === HONGTAI_CONSOLE_HOST ? HONGTAI_API_HOST : incoming.hostname,
-    );
-  } else {
-    headers.delete(IDENTITY_ENTRY_HOST_HEADER);
-  }
-  if (isApiPath(target.pathname)) {
     headers.set(IDENTITY_ENTRY_HOST_HEADER,
-      incoming.hostname === HONGTAI_CONSOLE_HOST ? 'api.hbbtzn.com' : incoming.hostname);
+      incoming.hostname === HONGTAI_CONSOLE_HOST ? HONGTAI_API_HOST : incoming.hostname);
   } else {
     headers.delete(IDENTITY_ENTRY_HOST_HEADER);
   }

@@ -1,14 +1,14 @@
 schema: zhudatuan.project-deployment.v1
 project: hbbtzn
 provider: aliyun
-enabled: false
-mode: preserve-existing
+enabled: true
+mode: node-isolated
 
 domains:
   storefront: hbbtzn.com
   storefrontAlias: www.hbbtzn.com
-  console: smart.hbbtzn.com
-  accounts: auth.hbbtzn.com
+  console: console.hbbtzn.com
+  accounts: accounts.hbbtzn.com
   api: api.hbbtzn.com
 
 artifacts:
@@ -24,10 +24,16 @@ isolation:
   release: independent
   rollback: independent
 
+runtime:
+  nodeId: node:hbbtzn:l1
+  storefrontReleasePointer: /opt/sfl/nodes/hbbtzn-l1/storefront/current
+  storefrontService: sfl-storefront@hbbtzn-l1.service
+  storefrontPort: 4410
+
 legacyReferences:
   - ../../../infrastructure/aliyun/delivery.yml
   - ../../../infrastructure/storefront-compatibility/aliyun/Caddyfile
 
 approval:
   owner: Ethan
-  deploymentApproved: false
+  deploymentApproved: true
