@@ -10,27 +10,27 @@
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 48rem) {
   .commercecontent {
     padding: 12px;
   }
   .commerceownership,
   .commerceboundarybanner {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
     align-items: flex-start;
   }
-  .commerceownership {
-    flex-wrap: wrap;
-  }
   .commerceversionrule {
-    max-width: calc(100% - 42px);
-    margin-left: 42px;
+    width: fit-content;
+    max-width: 100%;
+    grid-column: 2;
+    margin-left: 0;
     white-space: normal;
   }
-  .commerceboundarybanner {
-    flex-wrap: wrap;
-  }
   .commerceboundarybanner button {
-    margin-left: 42px;
+    width: fit-content;
+    grid-column: 2;
+    margin-left: 0;
   }
   .commerceflow {
     grid-template-columns: 1fr 1fr;
@@ -44,6 +44,106 @@
   }
   .commerceflowbody ol {
     grid-template-columns: 1fr;
+  }
+  .commerceboard .tablewrap {
+    overflow: visible;
+  }
+  .commerceboard table,
+  .commerceboard tbody {
+    display: grid;
+    min-width: 0;
+  }
+  .commerceboard thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .commerceboard tbody {
+    gap: 12px;
+    padding: 12px;
+  }
+  .commerceboard tbody tr {
+    display: grid;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--sw-border);
+    border-radius: 12px;
+    background: var(--sw-surface);
+  }
+  .commerceboard tbody td {
+    display: grid;
+    min-width: 0;
+    min-height: var(--sw-control-touch-target);
+    height: auto;
+    grid-template-columns: minmax(7rem, 32%) minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--sw-border);
+    padding: 8px 12px;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  .commerceboard tbody td::before {
+    color: var(--sw-muted);
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .commerceboard tbody td[data-column='identity'] {
+    display: block;
+    padding: 12px;
+  }
+  .commerceboard tbody td[data-column='identity']::before {
+    display: none;
+  }
+  .commerceboard tbody td:last-child {
+    border-bottom: 0;
+  }
+  .commerceidentity,
+  .commercebinding,
+  .commercepublication {
+    min-width: 0;
+  }
+  .commerceidentity button,
+  .commerceidentity code,
+  .commercebinding span,
+  .commercepublication span {
+    max-width: 100%;
+  }
+  .commerceactions {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    white-space: normal;
+  }
+  .commercerowaction,
+  .commerceactionmore summary {
+    width: 100%;
+    justify-content: center;
+  }
+  .commerceactionmore[open] {
+    grid-column: 1 / -1;
+  }
+  .commerceactionmore[open]::before {
+    display: none;
+  }
+  .commerceactionmore[open] button {
+    position: static;
+    width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .commerceactionmore[open] button:first-of-type {
+    margin-top: 6px;
+    border-radius: 8px 8px 0 0;
+  }
+  .commerceactionmore[open] button:last-of-type {
+    border-radius: 0 0 8px 8px;
   }
 }
 

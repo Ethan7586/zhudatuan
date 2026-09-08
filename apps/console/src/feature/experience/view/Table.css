@@ -52,6 +52,9 @@
 }
 
 .commerceidentity button {
+  display: inline-flex;
+  min-height: var(--sw-control-touch-target);
+  align-items: center;
   overflow: hidden;
   max-width: 180px;
   border: 0;
@@ -156,10 +159,11 @@
 }
 
 .commercerowaction {
-  min-height: 30px;
+  min-height: var(--sw-control-touch-target);
   border: 0;
   background: none;
   padding: 0 5px;
+  white-space: nowrap;
   color: var(--sw-brand);
   font: inherit;
   font-size: 10px;

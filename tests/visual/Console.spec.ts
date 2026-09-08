@@ -8,7 +8,9 @@ import { expectWcagAA } from '../browser/Accessibility';
 import { expectUsable, fillRoute, prepareVisual, resetVisual } from './Runtime';
 
 type ScopeKind = 'platform' | 'distributor' | 'enterprise' | 'mall';
-interface NavigationAuthority { readonly nodes: readonly Readonly<{ surface: string; scope: ScopeKind; routeid: string }>[] }
+interface NavigationAuthority {
+  readonly nodes: readonly Readonly<{ surface: string; scope: ScopeKind; routeid: string }>[];
+}
 
 const authority = parse(readFileSync('config/navigation.yml', 'utf8')) as NavigationAuthority;
 const scopes = Object.freeze({
@@ -18,12 +20,20 @@ const scopes = Object.freeze({
   mall: 'mall-zhudatuan',
 });
 const viewports = Object.freeze([
-  { width: 1440, height: 900 }, { width: 1280, height: 800 }, { width: 1024, height: 768 },
-  { width: 768, height: 1024 }, { width: 390, height: 844 },
+  { width: 1440, height: 900 },
+  { width: 1280, height: 800 },
+  { width: 1024, height: 768 },
+  { width: 768, height: 1024 },
+  { width: 390, height: 844 },
 ]);
 const core = Object.freeze([
-  ['platform', 'consoleproducts'], ['distributor', 'consolecontrol'], ['enterprise', 'consoleorders'],
-  ['mall', 'consolefinance'], ['mall', 'consoleaccess'], ['mall', 'consolevouchers'], ['mall', 'consoleexperience'],
+  ['platform', 'consoleproducts'],
+  ['distributor', 'consolecontrol'],
+  ['enterprise', 'consoleorders'],
+  ['mall', 'consolefinance'],
+  ['mall', 'consoleaccess'],
+  ['mall', 'consolevouchers'],
+  ['mall', 'consoleexperience'],
 ] as const);
 
 test('Console 路由由导航权威分配到四类 Scope 而非硬编码平台层', () => {
@@ -174,11 +184,29 @@ test('Console 数据报表在桌面、平板和手机保持可读且无需横向
   }
 });
 
+test('Console 商城管理在平板和手机将宽表转为可读卡片', async ({ page }) => {
+  test.slow();
+  await prepareVisual(page, { width: 768, height: 1024 });
+  await signInConsole(page);
+  for (const viewport of [
+    { width: 768, height: 1024 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleexperience, 'enterprise')}`);
+    await expectUsable(page);
+    await expect(page.locator('.commerceownership')).toHaveCSS('display', 'grid');
+    await expect.poll(() => minimumWidth(page, '.commerceownership > div')).toBeGreaterThan(160);
+    await expect(page.locator('.commerceboard tbody tr').first()).toHaveCSS('display', 'grid');
+    await expect.poll(() => page.locator('.commerceboard .tablewrap').evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+    await expect.poll(() => minimumHeight(page, '.commerceboard tbody .commerceactions > .commercerowaction')).toBeGreaterThanOrEqual(44);
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+  }
+});
+
 function canonicalScope(routeid: string): ScopeKind {
   const declared = authority.nodes.filter((node) => node.surface === 'console' && node.routeid === routeid).map(({ scope }) => scope);
-  const preferred: readonly ScopeKind[] = routeid.startsWith('consolereferral')
-    ? ['distributor', 'enterprise', 'mall', 'platform']
-    : ['enterprise', 'mall', 'platform', 'distributor'];
+  const preferred: readonly ScopeKind[] = routeid.startsWith('consolereferral') ? ['distributor', 'enterprise', 'mall', 'platform'] : ['enterprise', 'mall', 'platform', 'distributor'];
   const selected = preferred.find((scope) => declared.includes(scope));
   if (!selected) throw new Error(`VISUAL_SCOPE_MISSING:${routeid}`);
   return selected;
@@ -205,4 +233,8 @@ async function elementFitsParent(page: import('@playwright/test').Page, selector
 
 async function minimumHeight(page: import('@playwright/test').Page, selector: string): Promise<number> {
   return page.locator(selector).evaluateAll((elements) => Math.min(...elements.map((element) => element.getBoundingClientRect().height)));
+}
+
+async function minimumWidth(page: import('@playwright/test').Page, selector: string): Promise<number> {
+  return page.locator(selector).evaluateAll((elements) => Math.min(...elements.map((element) => element.getBoundingClientRect().width)));
 }

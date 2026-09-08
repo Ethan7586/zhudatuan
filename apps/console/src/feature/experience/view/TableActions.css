@@ -4,6 +4,11 @@
 }
 
 .commerceactionmore summary {
+  display: inline-flex;
+  min-height: var(--sw-control-touch-target);
+  align-items: center;
+  padding-inline: 6px;
+  white-space: nowrap;
   color: var(--sw-brand);
   font-size: 10px;
   font-weight: 750;
@@ -28,6 +33,7 @@
   width: 88px;
   border: 1px solid var(--sw-border);
   background: var(--sw-surface);
+  min-height: var(--sw-control-touch-target);
   padding: 8px 12px;
   box-shadow: var(--sw-shadow-overlay);
   color: var(--sw-text-secondary);
@@ -35,19 +41,20 @@
 }
 
 .commerceactionmore[open] button:nth-of-type(1) {
-  top: 22px;
+  top: var(--sw-control-touch-target);
   border-radius: 8px 8px 0 0;
 }
 .commerceactionmore[open] button:nth-of-type(2) {
-  top: 54px;
+  top: calc(var(--sw-control-touch-target) + var(--sw-control-touch-target));
 }
 .commerceactionmore[open] button:nth-of-type(3) {
-  top: 86px;
+  top: calc(var(--sw-control-touch-target) + var(--sw-control-touch-target) + var(--sw-control-touch-target));
   border-radius: 0 0 8px 8px;
 }
 
 .commerceentrybadge {
   display: inline-flex;
+  min-height: var(--sw-control-touch-target);
   align-items: center;
   gap: 6px;
   border: 0;

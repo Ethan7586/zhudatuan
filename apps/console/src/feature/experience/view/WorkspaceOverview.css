@@ -159,7 +159,7 @@
 }
 .commerceboundarybanner button,
 .commerceempty button {
-  min-height: 32px;
+  min-height: var(--sw-control-touch-target);
   border: 1px solid currentColor;
   border-radius: 9px;
   background: var(--sw-surface);
