@@ -7,26 +7,25 @@
   align-items: center;
   justify-content: center;
   gap: var(--sw-space-1);
-  border: var(--shop-button-border-width, var(--sw-border-width)) solid var(--shop-button-border, var(--sw-border-strong));
+  border: var(--shop-button-border-width, var(--sw-border-width)) solid var(--shop-button-border, var(--sw-border));
   border-radius: var(--shop-button-radius, var(--sw-radius-sm));
   background: var(--shop-button-background, var(--sw-surface));
-  color: var(--shop-button-color, var(--sw-text));
+  color: var(--shop-button-color, var(--sw-text-secondary));
   padding: var(--shop-button-padding, var(--sw-control-gap) var(--sw-control-padding));
   font-size: var(--sw-font-size-body-sm);
   font-weight: var(--sw-font-weight-bold);
   line-height: var(--sw-line-height-body);
   text-align: center;
-  overflow-wrap: anywhere;
-  white-space: normal;
+  overflow-wrap: normal;
+  white-space: nowrap;
   cursor: pointer;
   touch-action: manipulation;
-  box-shadow: var(--sw-shadow-control-rest), var(--sw-shadow-control-inset);
+  box-shadow: none;
   translate: 0 0;
   transition:
     border-color var(--sw-duration-fast) var(--sw-ease-standard),
     background var(--sw-duration-fast) var(--sw-ease-standard),
     color var(--sw-duration-fast) var(--sw-ease-standard),
-    box-shadow var(--sw-duration-fast) var(--sw-ease-standard),
     translate var(--sw-duration-micro) var(--sw-ease-standard);
 }
 
@@ -37,24 +36,23 @@
 }
 
 .shopbutton:is([data-hovered], :hover):where(:not(:disabled, [data-disabled], [data-pending])) {
-  border-color: var(--shop-button-hover-border, var(--sw-brand));
-  background: var(--shop-button-hover-background, var(--sw-surface-subtle));
-  color: var(--shop-button-hover-color, var(--shop-button-color, var(--sw-text)));
-  box-shadow: var(--sw-shadow-surface-low), var(--sw-shadow-control-inset);
-  translate: 0 -0.0625rem;
+  border-color: var(--shop-button-hover-border, var(--sw-brand-light));
+  background: var(--shop-button-hover-background, var(--sw-brand-faint));
+  color: var(--shop-button-hover-color, var(--shop-button-color, var(--sw-brand-dark)));
+  box-shadow: none;
 }
 
 .shopbuttonprimary {
-  border-color: var(--sw-brand);
-  background: var(--sw-brand-gradient);
+  border-color: transparent;
+  background: var(--sw-action-gradient);
   color: var(--sw-text-inverse);
-  box-shadow: var(--sw-shadow-brand-control), var(--sw-shadow-control-inset);
+  box-shadow: none;
 }
 
 .shopbuttonprimary:is([data-hovered], :hover):where(:not(:disabled, [data-disabled], [data-pending])) {
-  border-color: var(--sw-brand-hover);
-  background: var(--sw-brand-hover);
-  box-shadow: var(--sw-shadow-brand-control), var(--sw-shadow-control-inset);
+  border-color: transparent;
+  background: var(--sw-action-gradient-hover);
+  box-shadow: none;
 }
 
 .shopbuttonprimary:is([data-pressed], :active) {
@@ -62,14 +60,14 @@
 }
 
 .shopbuttonstrong {
-  border-color: var(--sw-brand-ink);
+  border-color: transparent;
   background: var(--sw-sidebar-gradient);
   color: var(--sw-text-inverse);
-  box-shadow: var(--sw-shadow-surface-low), var(--sw-shadow-control-inset);
+  box-shadow: none;
 }
 
 .shopbuttonstrong:is([data-hovered], :hover):where(:not(:disabled, [data-disabled], [data-pending])) {
-  border-color: var(--sw-sidebar-top);
+  border-color: transparent;
   background: var(--sw-sidebar-top);
 }
 
@@ -88,30 +86,30 @@
 }
 
 .shopbuttondanger {
-  border-color: var(--sw-danger);
+  border-color: transparent;
   background: var(--sw-danger);
   color: var(--sw-text-inverse);
-  box-shadow: var(--sw-shadow-danger-control), var(--sw-shadow-control-inset);
+  box-shadow: none;
 }
 
 .shopbuttondanger:is([data-hovered], :hover):where(:not(:disabled, [data-disabled], [data-pending])) {
-  border-color: var(--sw-danger-strong);
+  border-color: transparent;
   background: var(--sw-danger-strong);
-  box-shadow: var(--sw-shadow-danger-control), var(--sw-shadow-control-inset);
+  box-shadow: none;
 }
 
 .shopbutton:is([data-focus-visible], :focus-visible) {
   outline: var(--sw-focus-width) solid transparent;
   outline-offset: var(--sw-focus-offset);
-  box-shadow: var(--sw-shadow-focus), var(--sw-shadow-control-rest), var(--sw-shadow-control-inset);
+  box-shadow: var(--sw-shadow-focus);
 }
 
 .shopbuttondanger:is([data-focus-visible], :focus-visible) {
-  box-shadow: var(--sw-shadow-focus-danger), var(--sw-shadow-control-rest), var(--sw-shadow-control-inset);
+  box-shadow: var(--sw-shadow-focus-danger);
 }
 
 .shopbutton:is([data-pressed], :active) {
-  box-shadow: var(--sw-shadow-pressed);
+  box-shadow: none;
   translate: 0 0;
 }
 

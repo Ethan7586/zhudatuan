@@ -46,8 +46,14 @@ test('Auth 共享按钮原子保持主次层级、触控尺寸与完整中文', 
   }
   await expect.poll(() => textFits(primary)).toBe(true);
   await expect(primary).toHaveCSS('background-image', /linear-gradient/);
-  await expect(primary).not.toHaveCSS('box-shadow', 'none');
+  await expect(primary).toHaveCSS('box-shadow', 'none');
+  await expect(primary).toHaveCSS('border-top-color', 'rgba(0, 0, 0, 0)');
+  await expect(primary).toHaveCSS('white-space', 'nowrap');
+  expect(await primary.evaluate((element) => getComputedStyle(element).backgroundImage)).not.toContain('20, 58, 143');
   await expect(secondary).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await primary.focus();
+  await expect(primary).not.toHaveCSS('box-shadow', 'none');
+  await primary.blur();
 
   const revealTransform = await reveal.evaluate((element) => getComputedStyle(element).transform);
   await reveal.hover();
