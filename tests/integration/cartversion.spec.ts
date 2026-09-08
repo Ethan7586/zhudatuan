@@ -1,16 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { ItemsPutHandler } from '../../services/commerce/src/modules/cart/application/handler/ItemsPutHandler';
+import { CartActor } from '../../services/commerce/src/modules/cart/application/service/CartActor';
+import { CartReader } from '../../services/commerce/src/modules/cart/application/service/CartReader';
+import { ChangeCart } from '../../services/commerce/src/modules/cart/application/service/ChangeCart';
+import { Cart } from '../../services/commerce/src/modules/cart/domain/model/Cart';
+import type { CartLineMutation, CartOffer } from '../../services/commerce/src/modules/cart/domain/model/CartLine';
 
 test('two writes with the same cart version allow exactly one mutation', async () => {
   const carts = new SerialCart();
-  const handler = new ItemsPutHandler(
-    carts as never,
-    { resolve: async () => ({ member: 'member:one', mall: 'mall:one', application: 'application:one' }) } as never,
-    {
-      resolve: async () => new Map([['listing:one', { listing: 'listing:one', sku: 'sku:one', title: '福利商品', listingVersion: 'listing:3', unitMinor: 100, currency: 'CNY', priceVersion: 'price:one' }]]),
-    } as never
-  );
+  const offers = { resolve: async () => new Map([['listing:one', offer()]]) };
+  const actor = new CartActor({ member: async () => owner, anonymous: async () => ({ mall: owner.mall, application: owner.application }) } as never);
+  const handler = new ItemsPutHandler(actor, new ChangeCart(carts as never, offers as never, new CartReader(offers as never)));
   const writes = await Promise.allSettled([handler.execute(request().input, context()), handler.execute(request().input, context())]);
   assert.equal(writes.filter(({ status }) => status === 'fulfilled').length, 1);
   assert.equal(writes.filter(({ status }) => status === 'rejected').length, 1);
@@ -21,9 +22,10 @@ test('two writes with the same cart version allow exactly one mutation', async (
 class SerialCart {
   version = 0;
   mutations = 0;
+  private cart = new Cart({ id: 'cart:one', owner, version: 0, updatedAt: new Date(0), lines: [] });
   private tail = Promise.resolve();
   private release: (() => void) | null = null;
-  async lockOrCreate(_database: unknown, _member: string, _mall: string, _application: string, expected: number) {
+  async lockOrCreate(_context: unknown, _owner: unknown, expected: number) {
     let unlock!: () => void;
     const turn = new Promise<void>((resolve) => {
       unlock = resolve;
@@ -36,20 +38,31 @@ class SerialCart {
       throw new Error('CART_VERSION_CONFLICT');
     }
     this.release = unlock;
-    return 'cart:one';
+    return this.cart;
   }
-  async lineVersions() {
-    return new Map<string, number>();
-  }
-  async mutate() {
+  async mutate(_context: unknown, _cart: Cart, changes: readonly CartLineMutation[]) {
     this.mutations += 1;
     this.version += 1;
+    this.cart = new Cart({
+      id: this.cart.id,
+      owner: this.cart.owner,
+      version: this.version,
+      updatedAt: new Date(0),
+      lines: changes.filter(({ quantity }) => quantity > 0).map((line) => ({ ...line, version: (line.version ?? -1) + 1 })),
+    });
     this.release?.();
     this.release = null;
+    return this.cart;
   }
-  async snapshot() {
-    return { id: 'cart:one', mall_id: 'mall:one', application_id: 'application:one', version: this.version, updated_at: new Date(0), items: [] };
-  }
+}
+
+const owner = Object.freeze({ kind: 'member' as const, member: 'member:one', mall: 'mall:one', application: 'application:one' });
+
+function offer(): CartOffer {
+  return Object.freeze({
+    listing: 'listing:one', sku: 'sku:one', title: '福利商品', amountMinor: 100, currency: 'CNY', available: 10,
+    benefitApplicable: true, listingVersion: 'listing:3', priceVersion: 'price:one', inventoryVersion: 'stock:one', code: 'valid',
+  });
 }
 
 function request() {

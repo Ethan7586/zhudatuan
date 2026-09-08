@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { qrMatrix } from '@shop/design/qrcode';
+import { qrMatrix } from '@shop/design/atom/QrCode';
 import jsQR from 'jsqr';
 
 test('independent decoder recovers the exact canonical mall URL', () => {

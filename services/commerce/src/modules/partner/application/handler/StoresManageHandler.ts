@@ -1,11 +1,11 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
-import { organizationScope } from '../../../../foundation/security/OrganizationScope';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { bodyRecord, integerField, textField } from '../../../../pipeline/Validation';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
+import { organizationScope } from '../../../../platform/security/OrganizationScope';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { OrganizationHierarchyPort } from '../../../organization/public/HierarchyPort';
 import type { PartnerRepository } from '../port/PartnerRepository';
 const STATES = new Set(['pending', 'active', 'suspended', 'terminated']);

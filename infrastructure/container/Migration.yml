@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: shop-runtime
+  name: shop-migration
   namespace: SHOP_NAMESPACE
 automountServiceAccountToken: false
 ---
@@ -13,13 +13,23 @@ metadata:
   labels: { app.kubernetes.io/name: shop-migration, shop.release/id: SHOP_RELEASE_ID }
 spec:
   backoffLimit: 0
+  completions: 1
+  parallelism: 1
+  activeDeadlineSeconds: 1800
   ttlSecondsAfterFinished: 604800
   template:
     metadata:
       labels: { app.kubernetes.io/name: shop-migration, shop.release/id: SHOP_RELEASE_ID }
     spec:
       restartPolicy: Never
-      serviceAccountName: shop-runtime
+      serviceAccountName: shop-migration
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
       containers:
         - name: migration
           image: SHOP_COMMERCE_IMAGE
@@ -27,6 +37,13 @@ spec:
           args: ['services/commerce/dist/MigrationMain.js']
           envFrom:
             - configMapRef: { name: shop-migration }
+          env:
+            - { name: TMPDIR, value: /tmp }
+            - { name: MIGRATION_PHASE, value: SHOP_MIGRATION_PHASE }
+            - name: SECRET_STORE_BEARER_TOKEN
+              valueFrom: { secretKeyRef: { name: shop-migration-bootstrap, key: secretStoreBearerToken } }
+            - name: KMS_BEARER_TOKEN
+              valueFrom: { secretKeyRef: { name: shop-migration-bootstrap, key: kmsBearerToken } }
           resources:
             requests: { cpu: '1', memory: 1Gi }
             limits: { cpu: '4', memory: 4Gi }
@@ -36,3 +53,14 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             seccompProfile: { type: RuntimeDefault }
+          volumeMounts:
+            - { name: temporary, mountPath: /tmp }
+            - { name: migrationidentity, mountPath: /var/run/secrets/shop/identity, readOnly: true }
+      volumes:
+        - name: temporary
+          emptyDir: { sizeLimit: 1Gi }
+        - name: migrationidentity
+          projected:
+            defaultMode: 0400
+            sources:
+              - serviceAccountToken: { path: token, audience: shop-secret-manager, expirationSeconds: 1800 }

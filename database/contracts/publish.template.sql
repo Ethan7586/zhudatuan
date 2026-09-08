@@ -195,12 +195,12 @@ begin
     if resolved is null then select scope_id into resolved from verification.session where id=p_resource; end if;
     if resolved is null then select scope_id into resolved from verification.device where id=p_resource; end if;
     if resolved is null then select scope_id into resolved from payment.recoverycase where id=p_resource; end if;
-    if resolved is null then select scope_id into resolved from voucher.program where id=p_resource; end if;
-    if resolved is null then select scope_id into resolved from voucher.cardpool where id=p_resource; end if;
-    if resolved is null then select scope_id into resolved from voucher.reserverequest where id=p_resource; end if;
-    if resolved is null then select program.scope_id into resolved from voucher.issuebatch batch join voucher.program program on program.id=batch.program_id where batch.id=p_resource; end if;
-    if resolved is null then select program.scope_id into resolved from voucher.voucher voucher join voucher.program program on program.id=voucher.program_id where voucher.id=p_resource; end if;
-    if resolved is null then select program.scope_id into resolved from voucher.redemption redemption join voucher.voucher voucher on voucher.id=redemption.voucher_id join voucher.program program on program.id=voucher.program_id where redemption.id=p_resource; end if;
+    if resolved is null then select scope_id into resolved from voucher.product where id=p_resource; end if;
+    if resolved is null then select scope_id into resolved from voucher.credentialpool where id=p_resource; end if;
+    if resolved is null then select scope_id into resolved from voucher.stockrequest where id=p_resource; end if;
+    if resolved is null then select scope_id into resolved from voucher.issuebatch where id=p_resource; end if;
+    if resolved is null then select scope_id into resolved from voucher.voucher where id=p_resource; end if;
+    if resolved is null then select scope_id into resolved from voucher.redemption where id=p_resource; end if;
     if resolved is null then select scope_id into resolved from benefit.plan where id=p_resource; end if;
     if resolved is null then select plan.scope_id into resolved from benefit.budget budget join benefit.plan plan on plan.id=budget.plan_id where budget.id=p_resource; end if;
     if resolved is null then select plan.scope_id into resolved from benefit.grantbatch batch join benefit.plan plan on plan.id=batch.plan_id where batch.id=p_resource; end if;
@@ -211,7 +211,7 @@ begin
     if resolved is null then select reporting.resource_scope(p_resource) into resolved; end if;
     if resolved is null then select risk.resource_scope(p_resource) into resolved; end if;
     if resolved is null then select scope_id into resolved from extension.installation where id=p_resource; end if;
-    if resolved is null and p_operation in('access.roles.manage','access.scopes.manage','capability.assignments.manage','partner.partners.manage','qualification.policies.manage','experience.applications.update','notification.templates.manage','notification.announcements.manage','reporting.exports.create','risk.policies.manage','verification.devices.manage','voucher.programs.manage','benefit.plans.manage','benefit.budgets.manage')
+    if resolved is null and p_operation in('access.roles.manage','access.scopes.manage','capability.assignments.manage','partner.partners.manage','qualification.policies.manage','experience.applications.update','notification.templates.manage','notification.announcements.manage','reporting.exports.create','risk.policies.manage','verification.devices.manage','voucher.products.create','benefit.plans.manage','benefit.budgets.manage')
       then select organization_id into resolved from access.membership where id=p_membership_id; end if;
   end if;
   if resolved is null then raise exception 'RESOURCE_SCOPE_NOT_FOUND'; end if;

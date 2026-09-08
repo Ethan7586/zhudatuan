@@ -1,5 +1,5 @@
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 
 export interface OrderDetailSummary {
   readonly id: string;

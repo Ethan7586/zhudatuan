@@ -29,4 +29,4 @@ export function identitySubjectVariants(value: string): readonly string[] {
   if (/^\+861[3-9][0-9]{9}$/.test(canonical)) variants.add(canonical.slice(3));
   return Object.freeze([...variants]);
 }
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';

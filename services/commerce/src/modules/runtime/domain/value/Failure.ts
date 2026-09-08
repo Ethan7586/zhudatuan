@@ -18,4 +18,4 @@ export function importCode(cause: unknown, fallback: string): string {
 export function importDetail(cause: unknown): string {
   return cause instanceof ApplicationError || (cause instanceof Error && /^[A-Z][A-Z0-9_:.-]{0,99}$/.test(cause.message)) ? cause.message : '该行未通过校验';
 }
-import { ApplicationError } from '../../../../foundation/domain/ApplicationError';
+import { ApplicationError } from '../../../../platform/error/ApplicationError';

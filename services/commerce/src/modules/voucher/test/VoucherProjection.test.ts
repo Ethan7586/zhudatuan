@@ -8,10 +8,10 @@ describe('voucher query projections', () => {
   });
 
   it('normalizes PostgreSQL JSON timestamp offsets to contract UTC without altering free text', () => {
-    expect(normalize({ validity: { startsAt: '2026-09-05T08:00:00+08:00', expiresAt: '2026-09-06T00:00:00+00:00' },
-      redemption: { redeemedAt: '2026-09-05T00:30:00.123456+00:00' }, reason: '2026-09-05T08:00:00+08:00' })).toEqual({
+    expect(normalize({ validity: { startsAt: '2026-09-05T08:00:00+08:00', expiresAt: '2026-09-06T00:00:00+00:00' }, redemption: { redeemedAt: '2026-09-05T00:30:00.123456+00:00' }, reason: '2026-09-05T08:00:00+08:00' })).toEqual({
       validity: { startsAt: '2026-09-05T00:00:00.000Z', expiresAt: '2026-09-06T00:00:00.000Z' },
-      redemption: { redeemedAt: '2026-09-05T00:30:00.123Z' }, reason: '2026-09-05T08:00:00+08:00',
+      redemption: { redeemedAt: '2026-09-05T00:30:00.123Z' },
+      reason: '2026-09-05T08:00:00+08:00',
     });
   });
 });

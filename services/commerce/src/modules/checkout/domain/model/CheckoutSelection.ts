@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
 export interface SelectedCartLine {

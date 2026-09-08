@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import type { ContractJsonObject, OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, integerField } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { bodyRecord, integerField } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { RuleRepository } from '../port/RuleRepository';
 import { pricingRuleRecordEvent } from '../../domain/event/PricingEvents';
 import type { PricingRuleKind } from '../../domain/model/PricingRule';

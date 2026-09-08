@@ -1,11 +1,9 @@
-import { AppBoundary, RouteLoading } from '@shop/design';
+import { AppBoundary, Button, RouteLoading, useResourceQuery } from '@shop/design';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BROWSER_QUERY_POLICY } from '@shop/config/runtime';
-import { lazy, Suspense, useState } from 'react';
-import { createConsoleDependencies, type ConsoleDependencies } from './Dependencies';
+import { useCallback, useState } from 'react';
+import type { ConsoleDependencies } from './Dependencies';
 import { DependencyProvider } from './DependencyContext';
-
-const ConsoleApp = lazy(() => import('./ConsoleApp').then((module) => ({ default: module.ConsoleApp })));
 
 export function createConsoleQueryClient(): QueryClient {
   const policy = BROWSER_QUERY_POLICY.query;
@@ -25,16 +23,34 @@ export function createConsoleQueryClient(): QueryClient {
 
 export function Providers({ client, dependencies }: Readonly<{ client?: QueryClient; dependencies?: ConsoleDependencies }>) {
   const [defaultClient] = useState(createConsoleQueryClient);
-  const [defaultDependencies] = useState(createConsoleDependencies);
   return (
     <AppBoundary>
-      <DependencyProvider value={dependencies ?? defaultDependencies}>
-        <QueryClientProvider client={client ?? defaultClient}>
-          <Suspense fallback={<RouteLoading />}>
-            <ConsoleApp />
-          </Suspense>
-        </QueryClientProvider>
-      </DependencyProvider>
+      <QueryClientProvider client={client ?? defaultClient}>
+        <DependencyRuntime {...(dependencies === undefined ? {} : { dependencies })} />
+      </QueryClientProvider>
     </AppBoundary>
   );
+}
+
+function DependencyRuntime({ dependencies }: Readonly<{ dependencies?: ConsoleDependencies }>) {
+  const load = useCallback(async (signal: AbortSignal) => {
+    const module = await import('./LoadDependencies');
+    if (signal.aborted) throw signal.reason;
+    return module.loadConsoleApplication(dependencies);
+  }, [dependencies]);
+  const query = useResourceQuery('consoledependencies', load);
+  if (query.data === undefined) {
+    if (query.error !== undefined) {
+      return (
+        <main className="statemain" role="alert">
+          <strong>控制台初始化失败</strong>
+          <p>业务模块暂时未能载入，请重新尝试。</p>
+          <Button tone="primary" onPress={query.reload}>重新载入</Button>
+        </main>
+      );
+    }
+    return <RouteLoading />;
+  }
+  const { Component, dependencies: loaded } = query.data;
+  return <DependencyProvider value={loaded}><Component /></DependencyProvider>;
 }

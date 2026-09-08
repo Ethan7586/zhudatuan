@@ -112,7 +112,7 @@ update capability.capabilityset set version=version+1,updated_at=clock_timestamp
 update runtime.operation set contract_version='5.0.0' where owner='cart';
 update capability.capability set version=version+1 where id in(select id from runtime.operation where owner='cart');
 update runtime.contractcatalog set checksum='268a0f57009e52250d31fdec9b4688f1269016556f6f0150d625efd43b0189b0',
-  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event),published_at=clock_timestamp()
+  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event where retired_at is null),published_at=clock_timestamp()
 where artifact='commerce' and version='5.0.0' and status='active';
 
 select runtime.record_migration_evidence(
@@ -133,7 +133,7 @@ do $assert$ begin
   if exists(select 1 from cart.item item left join cart.cart target on target.id=item.cart_id where target.id is null)
     then raise exception 'CART_ORPHAN_INVALID'; end if;
   if (select count(*) from runtime.operation)<>313 then raise exception 'CART_OPERATION_COUNT_INVALID'; end if;
-  if (select count(*) from runtime.event)<>143 then raise exception 'CART_EVENT_COUNT_INVALID'; end if;
+  if (select count(*) from runtime.event where retired_at is null)<>143 then raise exception 'CART_EVENT_COUNT_INVALID'; end if;
 end $assert$;
 
 commit;

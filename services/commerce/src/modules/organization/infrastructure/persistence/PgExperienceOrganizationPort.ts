@@ -1,6 +1,6 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { databaseInteger } from '../../../../foundation/persistence/DatabaseInteger';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { databaseInteger } from '../../../../platform/database/DatabaseInteger';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { MallProvisionPort } from '../../public/MallProvisionPort';
 
 interface ProvisionRow {
@@ -44,19 +44,21 @@ export class PgExperienceOrganizationPort implements MallProvisionPort {
       ids.flatMap((id) => {
         const row = byId.get(id);
         return row
-          ? [Object.freeze({
-          id: row.id,
-          name: row.name,
-          code: row.code,
-          publicSlug: row.public_slug,
-          brandName: row.brand_name,
-          domain: row.domain_mode === 'custom' ? Object.freeze({ mode: 'custom' as const, customDomain: required(row.custom_domain) }) : Object.freeze({ mode: 'platform' as const }),
-          timezone: row.timezone,
-          currency: row.currency,
-          theme: Object.freeze({ preset: row.theme_preset, primaryColor: row.theme_primary_color, accentColor: row.theme_accent_color, logoObjectRef: row.theme_logo_object_ref, faviconObjectRef: row.theme_favicon_object_ref }),
-          status: row.status,
-          version: databaseInteger(row.version),
-            })]
+          ? [
+              Object.freeze({
+                id: row.id,
+                name: row.name,
+                code: row.code,
+                publicSlug: row.public_slug,
+                brandName: row.brand_name,
+                domain: row.domain_mode === 'custom' ? Object.freeze({ mode: 'custom' as const, customDomain: required(row.custom_domain) }) : Object.freeze({ mode: 'platform' as const }),
+                timezone: row.timezone,
+                currency: row.currency,
+                theme: Object.freeze({ preset: row.theme_preset, primaryColor: row.theme_primary_color, accentColor: row.theme_accent_color, logoObjectRef: row.theme_logo_object_ref, faviconObjectRef: row.theme_favicon_object_ref }),
+                status: row.status,
+                version: databaseInteger(row.version),
+              }),
+            ]
           : [];
       })
     );

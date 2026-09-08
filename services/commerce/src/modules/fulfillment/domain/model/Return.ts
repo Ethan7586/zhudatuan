@@ -1,6 +1,9 @@
 import { ReturnState } from './ReturnState';
 
-export interface ReturnLine { readonly line: string; readonly quantity: number }
+export interface ReturnLine {
+  readonly line: string;
+  readonly quantity: number;
+}
 export interface ReturnSnapshot {
   readonly id: string;
   readonly fulfillment: string;
@@ -23,6 +26,10 @@ export class Return {
     return new Return(Object.freeze({ ...value, lines: Object.freeze(value.lines.map((line) => Object.freeze({ ...line }))), fulfilled: Object.freeze(value.fulfilled.map((line) => Object.freeze({ ...line }))) }));
   }
 
-  receive(): Return { return Return.create({ ...this.value, state: ReturnState.from(this.value.state).receive(), version: this.value.version + 1 }); }
-  inspect(accepted: boolean): Return { return Return.create({ ...this.value, state: ReturnState.from(this.value.state).inspect(accepted), version: this.value.version + 1 }); }
+  receive(): Return {
+    return Return.create({ ...this.value, state: ReturnState.from(this.value.state).receive(), version: this.value.version + 1 });
+  }
+  inspect(accepted: boolean): Return {
+    return Return.create({ ...this.value, state: ReturnState.from(this.value.state).inspect(accepted), version: this.value.version + 1 });
+  }
 }

@@ -1,7 +1,7 @@
 import type { ProviderCapability, ProviderPortForCapability } from '@shop/contract';
-import type { ExtensionRegistry } from '../../../../bootstrap/ExtensionRegistry';
-import type { ManifestVerifier } from '../../../../bootstrap/SignatureVerifier';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ExtensionRegistry } from '../../../../composition/ExtensionRegistry';
+import type { ManifestVerifier } from '../../../../composition/SignatureVerifier';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import { DisableExtension } from '../../application/service/DisableExtension';
 import { EnableExtension } from '../../application/service/EnableExtension';
 import { InstallExtension } from '../../application/service/InstallExtension';
@@ -9,12 +9,7 @@ import type { ExtensionLoader, ExtensionRepository } from '../../application/por
 import { ContractPolicy } from '../../domain/policy/ContractPolicy';
 import type { ExtensionRegistryPort } from '../../public/ExtensionRegistry';
 
-export function extensionRegistryAdapter(
-  registry: ExtensionRegistry,
-  repository: ExtensionRepository,
-  verifier: ManifestVerifier,
-  loader: ExtensionLoader
-): ExtensionRegistryPort {
+export function extensionRegistryAdapter(registry: ExtensionRegistry, repository: ExtensionRepository, verifier: ManifestVerifier, loader: ExtensionLoader): ExtensionRegistryPort {
   return Object.freeze({
     strategy<C extends ProviderCapability>(provider: string, scope: string, capability: C | readonly C[]): ProviderPortForCapability<C> {
       return registry.strategy(provider, scope, capability);

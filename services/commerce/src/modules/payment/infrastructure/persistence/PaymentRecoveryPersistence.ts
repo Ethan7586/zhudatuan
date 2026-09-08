@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { PgRuntimeWriter, type RuntimeSql } from '../../../../adapter/database/PgRuntimeWriter';
-import { safeErrorCode } from '../../../../foundation/domain/SafeError';
+import { PgRuntimeWriter, type RuntimeSql } from '../../../../platform/database/PgRuntimeWriter';
+import { safeErrorCode } from '../../../../platform/error/SafeError';
 import type { PaymentGateway } from '../../application/port/PaymentGateway';
 import type { PaymentApplication } from '../../application/port/PaymentGateway';
 

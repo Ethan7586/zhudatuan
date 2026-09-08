@@ -1,7 +1,7 @@
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { PAYMENT_BENEFIT_PORT } from '../../../benefit/public';
 import { PAYMENT_CHANNEL_PORT } from '../../../channel/public';
 import { PAYMENT_INVENTORY_PORT } from '../../../inventory/public';

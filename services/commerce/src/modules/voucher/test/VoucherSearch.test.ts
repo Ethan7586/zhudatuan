@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { PgTransactionAccess, SqlExecutor } from '../../../adapter/database/PgTransactionAccess';
+import type { PgTransactionAccess, SqlExecutor } from '../../../platform/database/PgTransactionAccess';
 import type { VoucherSearch } from '../application/port/VoucherSearch';
 import { PgVoucherSearch } from '../infrastructure/persistence/PgVoucherSearch';
 
@@ -24,7 +24,17 @@ describe('PgVoucherSearch', () => {
 });
 
 function call(target: 'storefront' | 'console'): Parameters<VoucherSearch['read']>[0] {
-  return { input: { query: { limit: 100 } }, context: { transaction: {} }, scope: 'mall:one', actor: 'principal:one', member: 'member:one', target, idempotency: null, expectedVersion: null, now: new Date('2026-09-05T00:00:00.000Z') } as unknown as Parameters<VoucherSearch['read']>[0];
+  return {
+    input: { query: { limit: 100 } },
+    context: { transaction: {} },
+    scope: 'mall:one',
+    actor: 'principal:one',
+    member: 'member:one',
+    target,
+    idempotency: null,
+    expectedVersion: null,
+    now: new Date('2026-09-05T00:00:00.000Z'),
+  } as unknown as Parameters<VoucherSearch['read']>[0];
 }
 function access(query: ReturnType<typeof vi.fn>): PgTransactionAccess {
   return { database: () => ({ query }) as unknown as SqlExecutor } as unknown as PgTransactionAccess;

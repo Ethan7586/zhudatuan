@@ -1,9 +1,9 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { queryPage, queryText } from '../../../../foundation/application/Validation';
-import { organizationScope } from '../../../../foundation/security/OrganizationScope';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { queryPage, queryText } from '../../../../pipeline/Validation';
+import { organizationScope } from '../../../../platform/security/OrganizationScope';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { RecoveryRepository } from '../port/RecoveryRepository';
 
 export class RecoveriesReadHandler implements OperationHandler<'payment.recoveries.read', 'read'> {

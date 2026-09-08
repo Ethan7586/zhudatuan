@@ -57,6 +57,7 @@ const server = setupServer(
           mall_total: 1,
           price_amount_minor: 9900,
           price_currency: 'CNY',
+          price_version: 3,
           saleable_stock: 12,
           qualification_eligible: true,
           data_gaps: [],

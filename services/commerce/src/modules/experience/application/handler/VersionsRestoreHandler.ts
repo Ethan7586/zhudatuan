@@ -1,9 +1,9 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { VersionRepository } from '../port/VersionRepository';
 
 export class VersionsRestoreHandler implements OperationHandler<'experience.versions.restore', 'write'> {

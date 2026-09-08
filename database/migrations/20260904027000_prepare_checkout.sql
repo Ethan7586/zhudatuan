@@ -65,7 +65,7 @@ comment on table checkout.expiryreceipt is 'Idempotent completion receipt for ch
 update runtime.operation set contract_version='5.0.0' where owner='checkout';
 update capability.capability set version=version+1 where id in(select id from runtime.operation where owner='checkout');
 update runtime.contractcatalog set checksum='5930316e6e7c7f5134993577810047d87c544d1bfd0c69ed4719556a24437759',
-  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event),published_at=clock_timestamp()
+  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event where retired_at is null),published_at=clock_timestamp()
 where artifact='commerce' and version='5.0.0' and status='active';
 
 select runtime.record_migration_evidence(
@@ -84,7 +84,7 @@ do $assert$ begin
   if exists(select 1 from checkout.session where state='quoted' group by cart_id having count(*)>1)
     then raise exception 'CHECKOUT_CURRENT_INVARIANT_INVALID'; end if;
   if (select count(*) from runtime.operation)<>313 then raise exception 'CHECKOUT_OPERATION_COUNT_INVALID'; end if;
-  if (select count(*) from runtime.event)<>143 then raise exception 'CHECKOUT_EVENT_COUNT_INVALID'; end if;
+  if (select count(*) from runtime.event where retired_at is null)<>143 then raise exception 'CHECKOUT_EVENT_COUNT_INVALID'; end if;
 end $assert$;
 
 commit;

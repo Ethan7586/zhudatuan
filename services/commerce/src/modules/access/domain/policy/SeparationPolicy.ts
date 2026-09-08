@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export class SeparationPolicy {
   assertPermissions(rules: readonly Readonly<{ left: string; right: string }>[], allows: readonly string[], denies: readonly string[] = []): void {

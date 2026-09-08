@@ -2,8 +2,9 @@ import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node
 import { join, relative, resolve } from 'node:path';
 
 import { REQUIRED_PROVIDER_IDS } from '../../packages/contract/src/provider/ProviderCatalog.ts';
+import { CLIENT_SURFACES } from '../../packages/contract/src/Surface.ts';
 import { TARGET_SCHEMA_HEAD } from '@shop/config/server';
-import { JOB_CATALOG } from '../../services/commerce/src/foundation/application/JobCatalog.ts';
+import { JOB_CATALOG } from '../../services/commerce/src/pipeline/JobCatalog.ts';
 import { productionSources } from '../check/source.mjs';
 import { directoryHash, fileHash, hash, manifestHash } from './artifacts.mjs';
 
@@ -19,11 +20,7 @@ if (!/^[0-9a-f]{40}$/.test(commit ?? '')) throw new Error('CANDIDATE_COMMIT_INVA
 if (!/^oci-layout@sha256:[0-9a-f]{64}$/.test(image ?? '')) throw new Error('CANDIDATE_IMAGE_INVALID');
 if (!ociSource || !existsSync(ociSource) || !sbomSource || !existsSync(sbomSource) || !provenanceSource || !existsSync(provenanceSource)) throw new Error('CANDIDATE_EVIDENCE_SOURCE_MISSING');
 
-const sources = Object.freeze({
-  auth: 'apps/auth/dist',
-  console: 'apps/console/dist',
-  storefront: 'apps/storefront/dist',
-});
+const sources = Object.freeze(Object.fromEntries(CLIENT_SURFACES.map((client) => [client, client === 'miniapp' ? 'apps/miniapp/dist/miniprogram' : `apps/${client}/dist`])));
 mkdirSync(join(output, 'clients'), { recursive: true });
 cpSync(ociSource, join(output, 'commerce.oci.tar'), { errorOnExist: true });
 cpSync(sbomSource, join(output, 'sbom.cdx.json'), { errorOnExist: true });

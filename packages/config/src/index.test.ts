@@ -24,8 +24,10 @@ import {
   apiStorefrontOrigin,
   bearerToken,
   integerValue,
+  localComposeEnvironment,
   isPrivateIpv4Host,
   localInfrastructureEnvironment,
+  localProviderEnvironment,
   localSeedEnvironment,
   requiredValue,
   validateApiEnvironment,
@@ -146,6 +148,14 @@ describe('canonical runtime configuration', () => {
       LOCAL_OBJECTS_TOKEN: 'local-object-token-value',
     };
     expect(localInfrastructureEnvironment(infrastructure).objectsPort).toBe(8445);
+    expect(localComposeEnvironment({})).toEqual({ project: undefined, postgresPort: 5432, redisPort: 6379 });
+    expect(localComposeEnvironment({ LOCAL_COMPOSE_PROJECT: 'isolated', LOCAL_POSTGRES_PORT: '55432', LOCAL_REDIS_PORT: '56379' })).toEqual({
+      project: 'isolated',
+      postgresPort: 55432,
+      redisPort: 56379,
+    });
+    expect(() => localComposeEnvironment({ LOCAL_POSTGRES_PORT: '80' })).toThrow('LOCAL_POSTGRES_PORT_INVALID');
+    expect(localProviderEnvironment({}).providerPort).toBe(9080);
     const seed = {
       SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8443',
       LOCAL_ADMIN_DATABASE_CONNECTION_REF: 'shop/local/database/admin',

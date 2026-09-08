@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { MemberAccessPort } from '../../../access/public';
 import type { OrderPaymentPort } from '../../../order/public';
 import type { PaymentRepository } from '../../application/port/PaymentRepository';

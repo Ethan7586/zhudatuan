@@ -1,4 +1,4 @@
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import type { OrderExpiryInventoryPort } from '../../../inventory/public';
 import type { OrderExpiryPort } from '../../../order/public';
 import type { OrderExpiryPaymentPort, PaymentHoldReleasePort } from '../../../payment/public';

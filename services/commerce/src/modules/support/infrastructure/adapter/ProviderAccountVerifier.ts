@@ -1,8 +1,8 @@
-import type { SecretStore } from '../../../../foundation/infrastructure/SecretStore';
-import { HttpClient } from '../../../../foundation/http/HttpClient';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { SecretStore } from '../../../../platform/secret/SecretStore';
+import { HttpClient } from '../../../../platform/http/HttpClient';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { SupportAccountProvider, SupportAccountVerification, SupportAccountVerifier } from '../../application/port/SupportAccountVerifier';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
 
 interface ProbeCredential {
   readonly endpoint: string;
@@ -13,7 +13,10 @@ interface ProbeCredential {
 export class ProviderAccountVerifier implements SupportAccountVerifier {
   private readonly http: HttpClient;
 
-  constructor(private readonly secrets: SecretStore, fetcher: typeof fetch = fetch) {
+  constructor(
+    private readonly secrets: SecretStore,
+    fetcher: typeof fetch = fetch
+  ) {
     this.http = new HttpClient(fetcher);
   }
 

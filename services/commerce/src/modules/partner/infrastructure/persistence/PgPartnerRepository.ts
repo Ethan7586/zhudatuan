@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { PartnerRepository } from '../../application/port/PartnerRepository';
 export class PgPartnerRepository implements PartnerRepository {
   constructor(private readonly transactions: PgTransactionAccess) {}

@@ -18,7 +18,17 @@ describe('access version session revocation', () => {
     const execute = vi.fn(async () => undefined);
     const job = new SessionRevocationJob({ execute } as never);
     const signal = new AbortController().signal;
-    await job.process({ id: 'job:one', kind: 'sessionrevocation', scope: 'mall:one', attempts: 0, payload: { eventId: 'event:one', event: 'access.version.changed', scopeId: 'mall:one', payload: { membership: 'membership:one', version: 4, reason: 'roleassigned' } } } as never, signal, 20_000);
+    await job.process(
+      {
+        id: 'job:one',
+        kind: 'sessionrevocation',
+        scope: 'mall:one',
+        attempts: 0,
+        payload: { eventId: 'event:one', event: 'access.version.changed', scopeId: 'mall:one', payload: { membership: 'membership:one', version: 4, reason: 'roleassigned' } },
+      } as never,
+      signal,
+      20_000
+    );
     expect(execute).toHaveBeenCalledWith('event:one', { membership: 'membership:one', version: 4, reason: 'roleassigned' }, { scope: 'mall:one', trace: 'job:one', signal, deadline: 20_000 });
   });
 });

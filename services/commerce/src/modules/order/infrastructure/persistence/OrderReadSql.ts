@@ -41,6 +41,22 @@ export const ORDER_READ_FILTER_SQL = `
   and ($21='' or orders.id=$21)`;
 
 export function orderReadFilterValues(filter: OrderReadFilter, timezone: string, members: readonly string[], view = filter.view): readonly unknown[] {
-  return Object.freeze([filter.search, view, filter.placed, timezone, filter.from || null, filter.to || null,
-    filter.lifecycle, filter.payment, filter.fulfillment, filter.mall, filter.channel, filter.product, members, filter.minimumMinor, filter.maximumMinor, filter.order]);
+  return Object.freeze([
+    filter.search,
+    view,
+    filter.placed,
+    timezone,
+    filter.from || null,
+    filter.to || null,
+    filter.lifecycle,
+    filter.payment,
+    filter.fulfillment,
+    filter.mall,
+    filter.channel,
+    filter.product,
+    members,
+    filter.minimumMinor,
+    filter.maximumMinor,
+    filter.order,
+  ]);
 }

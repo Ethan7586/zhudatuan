@@ -1,6 +1,6 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { PrepareContext, WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { PrepareContext, WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
 import type { ActivationLookup } from '../port/ActivationRate';
 import type { VoucherApplication } from '../service/VoucherApplication';
 

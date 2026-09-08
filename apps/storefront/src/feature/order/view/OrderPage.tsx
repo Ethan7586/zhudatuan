@@ -1,7 +1,7 @@
-import { FileText, Package, Truck } from 'lucide-react';
+import { CircleAlert, FileText, LoaderCircle, Package, Truck } from 'lucide-react';
 import type { useOrderViewModel } from '../viewmodel/OrderViewModel';
 import { formatMinor } from '../../../shared/format/Money';
-import { orderStatusText, paymentStateText } from '../model/OrderText';
+import { afterSaleStateText, fulfillmentStateText, orderStatusText, paymentStateText } from '../model/OrderText';
 
 export function OrderPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof useOrderViewModel> }>) {
   const tabs = [
@@ -37,6 +37,8 @@ export function OrderPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof
           ))}
         </div>
         <section className="mt-4 space-y-3">
+          {viewmodel.listState === 'loading' ? <ListState icon={<LoaderCircle className="animate-spin" />} text="正在读取权威订单记录…" /> : null}
+          {viewmodel.listState === 'failed' ? <ListState icon={<CircleAlert />} text={viewmodel.listError ?? '订单读取失败'} action={<button type="button" onClick={viewmodel.refreshList} className="rounded-xl bg-brand px-4 py-2 font-bold text-inverse">重新读取</button>} /> : null}
           {viewmodel.visibleOrders.map((order) => (
             <article key={order.id} className="overflow-hidden rounded-3xl border border-edge bg-surface shadow-sm">
               <header className="flex flex-wrap items-center justify-between gap-2 border-b bg-subtle px-4 py-3 text-xs">
@@ -47,7 +49,7 @@ export function OrderPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof
                 <b>{orderStatusText(order.status)}</b>
               </header>
               <button type="button" onClick={() => viewmodel.actions.open(order.id)} className="block w-full p-4 text-left">
-                {order.items.map((line) => (
+                {order.lines.map((line) => (
                   <div key={line.id} className="flex items-center gap-3 py-2">
                     <span className="grid h-14 w-14 place-items-center rounded-xl bg-subtle">
                       <Package className="text-muted" />
@@ -63,20 +65,20 @@ export function OrderPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof
                 ))}
               </button>
               <footer className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
-                <span className="flex items-center gap-2 text-xs text-muted">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
                   <Truck size={15} />
-                  履约状态：{order.fulfillmentState}
-                </span>
+                  <span>支付：{paymentStateText(order.paymentState)}</span><span>履约：{fulfillmentStateText(order.fulfillmentState)}</span><span>售后：{afterSaleStateText(order.aftersaleState)}</span>
+                </div>
                 <div className="flex items-center gap-3">
                   <b>实付 ¥{formatMinor(order.totalMinor)}</b>
-                  <button type="button" onClick={() => viewmodel.actions.aftersale(order.id)} className="min-h-11 rounded-xl border px-4 text-xs font-bold">
+                  {['pending_receipt', 'completed', 'after_sale'].includes(order.status) ? <button type="button" onClick={() => viewmodel.actions.aftersale(order.id)} className="min-h-11 rounded-xl border px-4 text-xs font-bold">
                     申请/查看售后
-                  </button>
+                  </button> : null}
                 </div>
               </footer>
             </article>
           ))}
-          {viewmodel.visibleOrders.length === 0 ? (
+          {viewmodel.listState !== 'loading' && viewmodel.listState !== 'failed' && viewmodel.visibleOrders.length === 0 ? (
             <div role="status" className="grid min-h-64 place-items-center rounded-3xl border border-dashed bg-surface text-sm text-muted">
               当前筛选下暂无订单
             </div>
@@ -85,4 +87,8 @@ export function OrderPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof
       </div>
     </div>
   );
+}
+
+function ListState({ icon, text, action }: Readonly<{ icon: React.ReactNode; text: string; action?: React.ReactNode }>) {
+  return <div role="status" className="grid min-h-64 place-items-center rounded-3xl border border-dashed bg-surface text-center text-sm text-muted"><div>{icon}<p className="mt-3">{text}</p>{action ? <div className="mt-4">{action}</div> : null}</div></div>;
 }

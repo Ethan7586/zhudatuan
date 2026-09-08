@@ -1,9 +1,9 @@
-import { defineModule } from '../../bootstrap/DefinedModule';
-import { KMS_CLIENT } from '../../foundation/application/KmsPort';
+import { defineModule } from '../../composition/DefinedModule';
+import { KMS_CLIENT } from '../../pipeline/KmsPort';
 import { OBJECT_STORE } from '../runtime/public/ObjectPort';
 import { EVENT_REPLAY_PORT } from '../runtime/public';
-import { SECRET_STORE } from '../../foundation/infrastructure/SecretStore';
-import { EVENT_STREAM } from '../../foundation/stream/EventStream';
+import { SECRET_STORE } from '../../platform/secret/SecretStore';
+import { EVENT_STREAM } from '../../platform/messaging/EventStream';
 import { MEMBER_ACCESS_PORT } from '../access/public';
 import { MEMBER_READ_PORT } from '../member/public';
 import { SUPPORT_BENEFIT_PORT } from '../benefit/public';

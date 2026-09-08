@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { OperationCatalog, operationSchema, type OperationId } from '@shop/contract';
-import { ResourceResolver } from '../../services/commerce/src/foundation/application/ResourceResolver';
+import { ResourceResolver } from '../../services/commerce/src/pipeline/ResourceResolver';
 
 const resources = Object.freeze([
   ['identity.members.manage', 'identity.resource', 'membershipid', 'membership:foreign'],

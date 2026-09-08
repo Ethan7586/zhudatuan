@@ -62,15 +62,17 @@ export class RiskEngine {
       const contribution = observed.value >= scoreRule.minimum ? scoreRule.points : 0;
       score += contribution;
       if (contribution > 0) matched.push(`signal.${scoreRule.signal}`);
-      signalEvidence.push(Object.freeze({
-        type: observed.type,
-        version: observed.version,
-        source: observed.source,
-        sensitivity: observed.sensitivity,
-        observedAt: observed.observedAt,
-        contribution,
-        ...(observed.sensitivity === 'sensitive' ? {} : { value: observed.value }),
-      }));
+      signalEvidence.push(
+        Object.freeze({
+          type: observed.type,
+          version: observed.version,
+          source: observed.source,
+          sensitivity: observed.sensitivity,
+          observedAt: observed.observedAt,
+          contribution,
+          ...(observed.sensitivity === 'sensitive' ? {} : { value: observed.value }),
+        })
+      );
     }
     const scored: RiskOutcome = score >= policy.rule.thresholds.deny ? 'deny' : score >= policy.rule.thresholds.review ? 'review' : score >= policy.rule.thresholds.challenge ? 'challenge' : 'allow';
     if (OUTCOME_SEVERITY[scored] > OUTCOME_SEVERITY[outcome]) {

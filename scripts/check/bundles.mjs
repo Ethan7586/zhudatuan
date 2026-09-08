@@ -5,11 +5,14 @@ import { parse } from 'yaml';
 
 const root = resolve(import.meta.dirname, '../..');
 const budgets = parse(readFileSync(join(root, 'config/bundles.yml'), 'utf8')).budgets;
+const capacity = parse(readFileSync(join(root, 'config/capacity.yml'), 'utf8'));
 const telemetry = parse(readFileSync(join(root, 'config/telemetry.yml'), 'utf8'));
 const artifacts = [
-  ['console', 'apps/console/dist', budgets.consoleInitialGzipKb, budgets.lazyFeatureGzipKb],
-  ['auth', 'apps/auth/dist', budgets.authInitialGzipKb, budgets.lazyFeatureGzipKb],
-  ['storefront', 'apps/storefront/dist', budgets.storefrontInitialGzipKb, budgets.lazyFeatureGzipKb],
+  ['console', 'apps/console/dist', budgets.initialGzipKb.console, budgets.lazyFeatureGzipKb],
+  ['auth', 'apps/auth/dist', budgets.initialGzipKb.auth, budgets.lazyFeatureGzipKb],
+  ['storefront', 'apps/storefront/dist', budgets.initialGzipKb.storefront, budgets.lazyFeatureGzipKb],
+  ['store', 'apps/store/dist', budgets.initialGzipKb.store, budgets.lazyFeatureGzipKb],
+  ['supplier', 'apps/supplier/dist', budgets.initialGzipKb.supplier, budgets.lazyFeatureGzipKb],
   ['commerce', 'services/commerce/dist', null, null],
 ];
 const forbidden = [/@smart-wing\//, /storefront-web|admin-web|auth-web|commerce-api|core-read-cache/, /\/api\/(?:health|ready|ai)(?:\b|\/)/, /\b(?:MOCK_|SIMULATION_|FALLBACK_)\b/];
@@ -47,6 +50,7 @@ for (const [name, path, budget, lazyBudget] of artifacts) {
     }
   }
 }
+measureMiniapp();
 assertQrSplit();
 assertCommerceErrorContract();
 if (findings.length > 0) {
@@ -54,14 +58,52 @@ if (findings.length > 0) {
   for (const finding of findings) console.error(finding);
   process.exit(1);
 }
-console.log('bundle policy: three clients and one commerce artifact present, retired and substitute code absent, budgets satisfied');
+console.log('bundle policy: six clients and four-process commerce artifact present, retired and substitute code absent, budgets satisfied');
+
+function measureMiniapp() {
+  const directory = join(root, 'apps/miniapp/dist/miniprogram');
+  if (!existsSync(directory)) {
+    findings.push('BUNDLE_MISSING apps/miniapp/dist/miniprogram');
+    return;
+  }
+  const manifestPath = join(directory, 'app.json');
+  if (!existsSync(manifestPath)) {
+    findings.push('BUNDLE_MINIAPP_MANIFEST_MISSING');
+    return;
+  }
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  const subpackages = manifest.subPackages ?? [];
+  if (!Array.isArray(manifest.pages) || manifest.pages.length !== 1 || manifest.pages[0] !== 'feature/home/page' || !Array.isArray(subpackages) || subpackages.length < 1) findings.push('BUNDLE_MINIAPP_SPLIT_INVALID');
+  const entries = files(directory).filter((file) => !file.endsWith('.map'));
+  if (files(directory).some((file) => file.endsWith('.map'))) findings.push('BUNDLE_MINIAPP_SOURCEMAP_EXPOSED');
+  const roots = subpackages.map(({ root: value }) => `${value}/`);
+  const initial = entries.filter((file) => !roots.some((value) => relative(directory, file).startsWith(value)));
+  const initialBytes = compressed(initial);
+  const initialBudget = budgets.initialGzipKb.miniapp * 1024;
+  if (initialBytes > initialBudget) findings.push(`BUNDLE_BUDGET miniapp ${(initialBytes / 1024).toFixed(1)}KB-gzip>${budgets.initialGzipKb.miniapp}KB-gzip`);
+  const featureBudget = capacity.clients.miniapp.featureGzipKb * 1024;
+  for (const { root: value, pages } of subpackages) {
+    if (typeof value !== 'string' || !Array.isArray(pages) || pages.length < 1) {
+      findings.push('BUNDLE_MINIAPP_SUBPACKAGE_INVALID');
+      continue;
+    }
+    const feature = entries.filter((file) => relative(directory, file).startsWith(`${value}/`));
+    const size = compressed(feature);
+    if (size > featureBudget) findings.push(`BUNDLE_FEATURE_BUDGET miniapp:${value} ${(size / 1024).toFixed(1)}KB-gzip>${capacity.clients.miniapp.featureGzipKb}KB-gzip`);
+  }
+  for (const file of entries.filter((candidate) => ['.js', '.wxss'].includes(extname(candidate)))) {
+    const source = readFileSync(file, 'utf8');
+    for (const pattern of forbidden) if (pattern.test(source)) findings.push(`BUNDLE_FORBIDDEN ${relative(root, file)} ${pattern}`);
+    if (/sourceMappingURL=/.test(source)) findings.push(`BUNDLE_SOURCEMAP_LINKED ${relative(root, file)}`);
+  }
+}
 
 function assertCommerceErrorContract() {
   const artifact = join(root, 'services/commerce/dist/ApiMain.js');
   if (!existsSync(artifact)) return;
   const source = readFileSync(artifact, 'utf8');
   const initialization = source.indexOf('init_ErrorContract();');
-  const consumer = source.indexOf('var ErrorMapper');
+  const consumer = source.indexOf('var ErrorPresenter');
   if (initialization < 0 || consumer < 0 || initialization > consumer) findings.push('BUNDLE_ERROR_CONTRACT_UNINITIALIZED commerce');
 }
 
@@ -70,7 +112,7 @@ function assertQrSplit() {
   const manifestPath = join(directory, '.vite', 'manifest.json');
   if (!existsSync(manifestPath)) return;
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-  const qrKey = Object.keys(manifest).find((key) => key.endsWith('packages/design/src/QrCode.tsx'));
+  const qrKey = Object.keys(manifest).find((key) => key.endsWith('packages/design/src/atom/QrCode.tsx'));
   const experienceKey = Object.keys(manifest).find((key) => key.endsWith('src/feature/experience/route/ExperienceRoute.tsx'));
   const roots = Object.entries(manifest)
     .filter(([, item]) => item.isEntry)

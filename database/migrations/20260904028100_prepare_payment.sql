@@ -109,7 +109,7 @@ alter table runtime.errorcontract enable row level security;
 update runtime.operation set contract_version='5.0.0' where owner='payment';
 update capability.capability set version=version+1 where id in(select id from runtime.operation where owner='payment');
 update runtime.contractcatalog set checksum='e29fd1ba5c13d9319c7cfd4f461b2ed29d643887c2e70f0c7ecb44a50d9b35c4',
-  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event),published_at=clock_timestamp()
+  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event where retired_at is null),published_at=clock_timestamp()
 where artifact='commerce' and version='5.0.0' and status='active';
 
 select runtime.record_migration_evidence(
@@ -126,7 +126,7 @@ do $assert$ begin
   if exists(select 1 from payment.attempt where sequence<=0 or idempotency_key='') then raise exception 'PAYMENT_ATTEMPT_IDEMPOTENCY_INVALID'; end if;
   if not exists(select 1 from runtime.operation where id='payment.intents.create') then raise exception 'PAYMENT_INTENT_CREATE_OPERATION_MISSING'; end if;
   if (select count(*) from runtime.operation)<>318 then raise exception 'PAYMENT_OPERATION_COUNT_INVALID'; end if;
-  if (select count(*) from runtime.event)<>144 then raise exception 'PAYMENT_EVENT_COUNT_INVALID'; end if;
+  if (select count(*) from runtime.event where retired_at is null)<>144 then raise exception 'PAYMENT_EVENT_COUNT_INVALID'; end if;
 end $assert$;
 
 commit;

@@ -10,8 +10,13 @@ describe('DirectoryLeaseStore', () => {
     let current = lease();
     const leases = {
       acquire: vi.fn(async () => current),
-      renew: vi.fn(async () => { current = Object.freeze({ ...current, version: current.version + 1 }); return current; }),
-      assert: vi.fn(async (value: RuntimeLease) => { if (value.version !== current.version) throw new Error('LEASE_LOST'); }),
+      renew: vi.fn(async () => {
+        current = Object.freeze({ ...current, version: current.version + 1 });
+        return current;
+      }),
+      assert: vi.fn(async (value: RuntimeLease) => {
+        if (value.version !== current.version) throw new Error('LEASE_LOST');
+      }),
       release: vi.fn(async () => undefined),
     } as LeasePort;
     const store = new DirectoryLeaseStore(leases);
@@ -27,9 +32,13 @@ describe('DirectoryLeaseStore', () => {
     vi.useFakeTimers();
     const leases = {
       acquire: vi.fn(async () => lease()),
-      renew: vi.fn(async () => { throw new Error('LEASE_LOST'); }),
+      renew: vi.fn(async () => {
+        throw new Error('LEASE_LOST');
+      }),
       assert: vi.fn(async () => undefined),
-      release: vi.fn(async () => { throw new Error('LEASE_LOST'); }),
+      release: vi.fn(async () => {
+        throw new Error('LEASE_LOST');
+      }),
     } as LeasePort;
     const work = new DirectoryLeaseStore(leases).run('organization:one', 'directory:one', 'worker:one', 5, async (assertLease) => {
       await vi.advanceTimersByTimeAsync(2_100);
@@ -40,6 +49,5 @@ describe('DirectoryLeaseStore', () => {
 });
 
 function lease(): RuntimeLease {
-  return Object.freeze({ resource: 'directory:one', scope: 'organization:one', owner: 'worker:one',
-    token: 'lease:11111111-1111-4111-8111-111111111111', deadline: '2099-01-01T00:00:00.000Z', version: 1, fencingToken: 1 });
+  return Object.freeze({ resource: 'directory:one', scope: 'organization:one', owner: 'worker:one', token: 'lease:11111111-1111-4111-8111-111111111111', deadline: '2099-01-01T00:00:00.000Z', version: 1, fencingToken: 1 });
 }

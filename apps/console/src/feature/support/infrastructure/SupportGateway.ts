@@ -1,4 +1,6 @@
-import { createIdempotencyKey, EventStreamResyncError, uploadObject } from '@shop/sdk';
+import { createIdempotencyKey } from '@shop/sdk/context';
+import { EventStreamResyncError } from '@shop/sdk/events';
+import { uploadObject } from '@shop/sdk/objects';
 import type { ContractJsonObject, OperationBodyFor, SupportAttachmentType } from '@shop/contract';
 import { createFetchSupport } from '@shop/sdk/support';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';

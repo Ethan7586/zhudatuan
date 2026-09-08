@@ -1,5 +1,5 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { IdentityAccessPort, IdentityMembership } from '../../public/IdentityAccessPort';
 import type { ImportedMembership, MemberImportAccessPort } from '../../public/MemberImportAccessPort';
 import type { AccessVersionPublisher } from './AccessVersionPublisher';
@@ -10,11 +10,7 @@ export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberI
     private readonly repository: AccessRepository,
     private readonly versions: AccessVersionPublisher
   ) {}
-  async memberships(
-    context: ReadTransactionContext,
-    member: string,
-    target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'
-  ): Promise<readonly IdentityMembership[]> {
+  async memberships(context: ReadTransactionContext, member: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<readonly IdentityMembership[]> {
     const result = await this.repository.activeMemberships(context, member, target);
     return Object.freeze(result.map(toIdentityMembership));
   }

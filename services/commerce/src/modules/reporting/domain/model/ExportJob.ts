@@ -52,7 +52,29 @@ export function exportReport(value: string): ExportReport {
 }
 
 export function exportHeader(report: ExportReport): readonly string[] {
-  if (report === 'metrics') return Object.freeze(['metricCode', 'metricVersion', 'metricName', 'formula', 'availableDimensions', 'granularity', 'owner', 'scope', 'periodFrom', 'periodTo', 'timezone', 'dimensions', 'value', 'unit', 'currency', 'watermark', 'projectionVersion', 'filter', 'generatedAt']);
-  if (report === 'orders') return Object.freeze(['orderNumber', 'externalOrderNumber', 'sourceChannel', 'paymentState', 'fulfillmentState', 'aftersaleState', 'lifecycleState', 'verificationState', 'totalMinor', 'currency', 'orderedAt', 'exportWatermark']);
+  if (report === 'metrics')
+    return Object.freeze([
+      'metricCode',
+      'metricVersion',
+      'metricName',
+      'formula',
+      'availableDimensions',
+      'granularity',
+      'owner',
+      'scope',
+      'periodFrom',
+      'periodTo',
+      'timezone',
+      'dimensions',
+      'value',
+      'unit',
+      'currency',
+      'watermark',
+      'projectionVersion',
+      'filter',
+      'generatedAt',
+    ]);
+  if (report === 'orders')
+    return Object.freeze(['orderNumber', 'externalOrderNumber', 'sourceChannel', 'paymentState', 'fulfillmentState', 'aftersaleState', 'lifecycleState', 'verificationState', 'totalMinor', 'currency', 'orderedAt', 'exportWatermark']);
   return Object.freeze(['statementId', 'periodStart', 'periodEnd', 'currency', 'openingMinor', 'debitMinor', 'creditMinor', 'closingMinor', 'state']);
 }

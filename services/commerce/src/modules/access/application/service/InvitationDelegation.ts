@@ -1,5 +1,5 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { EmployeeInvitationPreparation, InvitationAccessPort, InvitationCampaignActivation, InvitationCampaignValidation, InvitationGrantPlan, PendingEmployeeAccess } from '../../public/InvitationAccessPort';
 import type { GrantPlan } from '../../domain/model/GrantPlan';
 import type { DelegationPolicy } from '../../domain/policy/DelegationPolicy';

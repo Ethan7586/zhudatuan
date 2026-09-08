@@ -1,16 +1,6 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
-export const APPROVAL_SUBJECT_KINDS = Object.freeze([
-  'voucherstock',
-  'voucherissue',
-  'financerepair',
-  'reconciliation',
-  'withdrawal',
-  'refund',
-  'experiencepublish',
-  'riskexception',
-  'riskaction',
-] as const);
+export const APPROVAL_SUBJECT_KINDS = Object.freeze(['voucherstock', 'voucherissue', 'financerepair', 'reconciliation', 'withdrawal', 'refund', 'experiencepublish', 'riskexception', 'riskaction', 'inventoryadjustment'] as const);
 
 export type ApprovalSubjectKind = (typeof APPROVAL_SUBJECT_KINDS)[number];
 

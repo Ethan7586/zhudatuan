@@ -1,10 +1,10 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { CipherEnvelope, KmsClient } from '../../../../foundation/application/KmsPort';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import type { CipherEnvelope, KmsClient } from '../../../../pipeline/KmsPort';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import { addressChangedEvent } from '../../domain/event/MemberEvents';
 import { AddressPolicy } from '../../domain/policy/AddressPolicy';
 import type { AddressRepository, MemberAddressSummary } from '../port/AddressRepository';

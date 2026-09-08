@@ -1,4 +1,4 @@
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
 import type { ExportExecution, ExportPageRow, ExportPlan, ExportRenderer, ExportResult } from '../../../runtime/public';
 import { exportHeader, type ExportJob } from '../../domain/model/ExportJob';
 import type { ReportingJobRepository } from '../port/ReportingJobRepository';

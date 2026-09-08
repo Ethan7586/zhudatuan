@@ -47,4 +47,13 @@ describe('storefront referral attribution', () => {
     expect(bind).not.toHaveBeenCalled();
     expect(referralCandidate(search)).toEqual({ status: 'candidate', value: TOKEN });
   });
+
+  it('allows a transiently failed attribution to be retried without retaining token fragments elsewhere', async () => {
+    const bind = vi.fn().mockRejectedValueOnce(new Error('CONNECTION_FAILED')).mockResolvedValueOnce({});
+    const coordinator = new ReferralAttributionCoordinator(bind);
+    const input = { search: `?referral=${TOKEN}`, mallId: 'mall:one', memberId: 'member:one' };
+    await expect(coordinator.capture(input)).resolves.toEqual({ status: 'failed' });
+    await expect(coordinator.capture(input)).resolves.toEqual({ status: 'bound', candidateWon: true });
+    expect(bind).toHaveBeenCalledTimes(2);
+  });
 });

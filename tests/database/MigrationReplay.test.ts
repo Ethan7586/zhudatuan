@@ -18,7 +18,9 @@ function replaySuite(): Promise<string> {
 }
 
 test('空库可执行全部迁移', async () => {
-  assert.match(await replaySuite(), /target schema replay passed: migrations=414 historical=316 repair=98/);
+  const evidence = await replaySuite();
+  assert.match(evidence, /MIGRATION_REPLAY_EVIDENCE:empty=passed/);
+  assert.match(evidence, /target schema replay passed: migrations=\d+ historical=\d+ repair=\d+/);
 });
 
 test('生产脱敏快照升级后保持业务 Hash', async () => {

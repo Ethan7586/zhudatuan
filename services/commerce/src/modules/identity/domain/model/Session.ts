@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export class Session {
   readonly id: string;
@@ -10,7 +10,9 @@ export class Session {
   readonly assurance: 1 | 2 | 3;
   readonly expiresAt: Date;
 
-  constructor(value: Readonly<{ id: string; principal: string; membership: string; credentialVersion: number; accessVersion: number; target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'; assurance: 1 | 2 | 3; expiresAt: Date }>) {
+  constructor(
+    value: Readonly<{ id: string; principal: string; membership: string; credentialVersion: number; accessVersion: number; target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'; assurance: 1 | 2 | 3; expiresAt: Date }>
+  ) {
     if (
       !value.id ||
       !value.principal ||

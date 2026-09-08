@@ -1,13 +1,13 @@
 import { WECOM_PROVIDER_CONFIGURATION } from '@shop/config/server';
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
 import type { DirectoryRepository } from '../port/DirectoryRepository';
 import type { DirectoryProviderRegistry } from './DirectoryProviderRegistry';
 import type { DirectoryReconciler } from './DirectoryReconciler';
 import type { DirectoryMapper } from '../port/DirectoryMapper';
 import type { DirectoryPolicy } from '../../domain/policy/DirectoryPolicy';
 import type { MembershipLifecycle } from './MembershipLifecycle';
-import { safeErrorCode } from '../../../../foundation/domain/SafeError';
+import { safeErrorCode } from '../../../../platform/error/SafeError';
 
 export class DirectorySynchronization {
   constructor(

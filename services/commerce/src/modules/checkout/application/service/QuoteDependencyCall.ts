@@ -1,7 +1,7 @@
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import type { ApiErrorCode } from '@shop/contract';
-import { Deadline } from '../../../../foundation/performance/Deadline';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { Deadline } from '@shop/kernel';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export type QuoteDependency = 'benefit' | 'cart' | 'catalog' | 'experience' | 'finance' | 'inventory' | 'marketing' | 'member' | 'order' | 'pricing' | 'qualification' | 'risk' | 'voucher';
 

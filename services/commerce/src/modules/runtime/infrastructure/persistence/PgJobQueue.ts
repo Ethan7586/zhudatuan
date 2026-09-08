@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ClaimedJob, JobClaim, JobQueuePort } from '../../public/JobProcess';
 import type { ObservabilityMetricPort } from '../../../observability/public';
 
@@ -34,16 +34,26 @@ export class PgJobQueue implements JobQueuePort {
     const queued = Number(capacity.rows[0]?.queued);
     if (!Number.isSafeInteger(active) || active < 0 || !Number.isSafeInteger(queued) || queued < 0) throw new Error('JOB_QUEUE_CAPACITY_INVALID');
     this.metrics?.count('commerce.queue.depth', queued, {
-      requestId: context.id, traceId: context.trace, actorId: context.actor, tenantId: context.tenant,
-      scopeId: context.scope, module: 'runtime', operation: context.operation, job: request.kind, queue: request.queue,
+      requestId: context.id,
+      traceId: context.trace,
+      actorId: context.actor,
+      tenantId: context.tenant,
+      scopeId: context.scope,
+      module: 'runtime',
+      operation: context.operation,
+      job: request.kind,
+      queue: request.queue,
       result: queued === 0 ? 'idle' : 'active',
     });
     const limit = Math.min(request.batch, Math.max(0, request.concurrency - active));
     if (limit === 0) return Object.freeze([]);
-    const result = await database.query<ClaimedJobRow>(
-      'select id,kind,scope_id,payload,authorization_snapshot,attempts,fencing_token from runtime.claim_job($1,$2,$3,$4,$5)',
-      [request.kind, request.worker, limit, request.lease, request.workload]
-    );
+    const result = await database.query<ClaimedJobRow>('select id,kind,scope_id,payload,authorization_snapshot,attempts,fencing_token from runtime.claim_job($1,$2,$3,$4,$5)', [
+      request.kind,
+      request.worker,
+      limit,
+      request.lease,
+      request.workload,
+    ]);
     if (result.rows.length > limit) throw new Error('JOB_QUEUE_CLAIM_OVERFLOW');
     return Object.freeze(result.rows.map((row) => claimedJob(row, request.kind)));
   }
@@ -114,10 +124,18 @@ export class PgJobQueue implements JobQueuePort {
 }
 
 function validateClaim(request: JobClaim): void {
-  if (!/^[a-z][a-z0-9]+$/.test(request.kind) || !/^[a-z]+$/.test(request.queue) ||
-    !/^[A-Za-z0-9][A-Za-z0-9:._-]{1,254}$/.test(request.worker) || !['jobs', 'provider'].includes(request.workload) ||
-    !Number.isSafeInteger(request.batch) || request.batch < 1 || request.batch > 1000 ||
-    !Number.isSafeInteger(request.concurrency) || request.concurrency < 1 || request.concurrency > 1000) {
+  if (
+    !/^[a-z][a-z0-9]+$/.test(request.kind) ||
+    !/^[a-z]+$/.test(request.queue) ||
+    !/^[A-Za-z0-9][A-Za-z0-9:._-]{1,254}$/.test(request.worker) ||
+    !['jobs', 'provider'].includes(request.workload) ||
+    !Number.isSafeInteger(request.batch) ||
+    request.batch < 1 ||
+    request.batch > 1000 ||
+    !Number.isSafeInteger(request.concurrency) ||
+    request.concurrency < 1 ||
+    request.concurrency > 1000
+  ) {
     throw new Error('JOB_CLAIM_ARGUMENT_INVALID');
   }
   validateLeaseSeconds(request.lease);
@@ -128,11 +146,19 @@ function validateLeaseSeconds(seconds: number): void {
 }
 
 function claimedJob(row: ClaimedJobRow, kind: string): ClaimedJob {
-  if (!row.id.startsWith('job:') || row.kind !== kind || (row.scope_id !== null && !row.scope_id) ||
-    row.authorization_snapshot === null || typeof row.authorization_snapshot !== 'object' || Array.isArray(row.authorization_snapshot) ||
-    !Number.isSafeInteger(Number(row.attempts)) || Number(row.attempts) < 1 || !Number.isSafeInteger(Number(row.fencing_token)) || Number(row.fencing_token) < 1) {
+  if (
+    !row.id.startsWith('job:') ||
+    row.kind !== kind ||
+    (row.scope_id !== null && !row.scope_id) ||
+    row.authorization_snapshot === null ||
+    typeof row.authorization_snapshot !== 'object' ||
+    Array.isArray(row.authorization_snapshot) ||
+    !Number.isSafeInteger(Number(row.attempts)) ||
+    Number(row.attempts) < 1 ||
+    !Number.isSafeInteger(Number(row.fencing_token)) ||
+    Number(row.fencing_token) < 1
+  ) {
     throw new Error('JOB_QUEUE_RECORD_INVALID');
   }
-  return Object.freeze({ id: row.id, kind: row.kind, scope: row.scope_id, payload: row.payload,
-    authorization: Object.freeze({ ...row.authorization_snapshot }), attempts: Number(row.attempts), token: Number(row.fencing_token) });
+  return Object.freeze({ id: row.id, kind: row.kind, scope: row.scope_id, payload: row.payload, authorization: Object.freeze({ ...row.authorization_snapshot }), attempts: Number(row.attempts), token: Number(row.fencing_token) });
 }

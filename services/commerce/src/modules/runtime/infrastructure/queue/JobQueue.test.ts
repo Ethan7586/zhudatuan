@@ -23,7 +23,7 @@ describe('PgJobQueue', () => {
   });
 
   it('applies backpressure when the global concurrency group has no free slot', async () => {
-    const query = vi.fn(async (text: string): Promise<QueryResult> => text.includes("filter(where state='running'") ? result([{ active: 4, queued: 12 }]) : result([]));
+    const query = vi.fn(async (text: string): Promise<QueryResult> => (text.includes("filter(where state='running'") ? result([{ active: 4, queued: 12 }]) : result([])));
     const count = vi.fn();
     const claimed = await withWriteTransaction(query, (context) => new PgJobQueue(undefined, { count, duration: vi.fn() }).claim(context, claim()));
     expect(claimed).toEqual([]);
@@ -66,6 +66,5 @@ function claim(): JobClaim {
 }
 
 function row(id: string, token: number) {
-  return { id, kind: 'catalogimport', scope_id: 'mall:one', payload: { import: 'import:one' },
-    authorization_snapshot: { kind: 'system' }, attempts: 2, fencing_token: token };
+  return { id, kind: 'catalogimport', scope_id: 'mall:one', payload: { import: 'import:one' }, authorization_snapshot: { kind: 'system' }, attempts: 2, fencing_token: token };
 }

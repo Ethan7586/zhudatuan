@@ -1,5 +1,5 @@
 import type { OperationRisk } from '@shop/contract';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { RiskActionKind, RiskActionState, RiskActionTarget } from '../../domain/model/RiskAction';
 import type { Signal } from '../../domain/model/Signal';
 

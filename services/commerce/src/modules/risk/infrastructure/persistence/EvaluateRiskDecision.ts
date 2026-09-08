@@ -1,7 +1,7 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import { OperationCatalog } from '@shop/contract';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 import { EvaluateRisk } from '../../application/service/EvaluateRisk';
 import { signal } from '../../domain/model/Signal';
 import type { RiskDecisionInput, RiskDecisionPort } from '../../public';
@@ -22,9 +22,18 @@ export class EvaluateRiskDecision implements RiskDecisionPort {
       scopes: input.scopes,
       trace: input.trace,
       amountMinor: input.amountMinor,
-      signals: Object.freeze(Object.entries(input.signals).map(([type, value]) => signal({
-        type, version: 1, value, source: `operation:${input.operation}`, sensitivity: 'personal', observedAt: new Date().toISOString(),
-      }))),
+      signals: Object.freeze(
+        Object.entries(input.signals).map(([type, value]) =>
+          signal({
+            type,
+            version: 1,
+            value,
+            source: `operation:${input.operation}`,
+            sensitivity: 'personal',
+            observedAt: new Date().toISOString(),
+          })
+        )
+      ),
       risk: operation.risk,
       mode: operation.executionMode === 'async' ? 'async' : 'sync',
       deadline: transaction.deadline,

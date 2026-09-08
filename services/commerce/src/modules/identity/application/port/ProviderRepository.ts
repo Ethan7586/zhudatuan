@@ -1,6 +1,6 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
 import type { ProviderInstance, ProviderInstanceValue } from '../../domain/model/ProviderInstance';
 export interface ProviderSummary {
   readonly id: string;

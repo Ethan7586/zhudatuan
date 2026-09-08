@@ -1,5 +1,5 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { EventStream } from '../../../../foundation/stream/EventStream';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { EventStream } from '../../../../platform/messaging/EventStream';
 import type { RealtimePort, SupportRealtimeEvent } from '../../application/port/RealtimePort';
 
 export class RedisSupportStream implements RealtimePort {

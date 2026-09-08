@@ -1,5 +1,5 @@
 import type { ReferralWritePort } from '../../public';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ReferralRepository } from '../../application/port/ReferralRepository';
 import { BindReferral } from '../../application/service/BindReferral';
 

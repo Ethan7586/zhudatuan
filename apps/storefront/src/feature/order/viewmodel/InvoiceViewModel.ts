@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
-import { presentError } from '@shop/presentation';
+import { hasFailureCode, presentError } from '@shop/presentation';
 import { useDependencies } from '../../../app/DependencyContext';
 import { useSession } from '../../../entity/session/viewmodel/SessionContext';
 import { DownloadInvoice } from '../application/DownloadInvoice';
 import { ReadInvoices } from '../application/ReadInvoices';
 import { invoiceQuery } from '../application/InvoiceQuery';
+import { startInvoiceDownload, verifyInvoiceDownload } from '../application/InvoiceDownloadPolicy';
+import { PendingAction } from '../../../shared/action/PendingAction';
 
 export function useInvoiceViewModel() {
   const dependencies = useDependencies();
@@ -14,20 +16,22 @@ export function useInvoiceViewModel() {
   const downloader = useRef(new DownloadInvoice(dependencies.invoice));
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const query = useQuery({ queryKey: invoiceQuery(session.scope || 'guest'), queryFn: ({ signal }) => reader.current.execute(required(session.session), signal), enabled: session.status === 'authenticated' });
-  const download = async (id: string) => {
+  const [verification, setVerification] = useState(false);
+  const pending = useRef(new PendingAction());
+  const query = useQuery({ queryKey: invoiceQuery(session.query.scoped), queryFn: ({ signal }) => reader.current.execute(required(session.session), signal), enabled: session.status === 'authenticated' });
+  const download = async (id: string, retry = false) => {
     if (!session.session) return;
     setBusy(id);
     setMessage(null);
     try {
-      const value = await downloader.current.execute(session.session, id);
-      const link = document.createElement('a');
-      link.href = value.url;
-      link.download = value.filename;
-      link.rel = 'noopener noreferrer';
-      link.click();
+      const value = verifyInvoiceDownload(await downloader.current.execute(session.session, id));
+      startInvoiceDownload(value);
+      pending.current.clear();
     } catch (cause) {
-      setMessage(presentError(cause).message);
+      if (!retry && hasFailureCode(cause, 'STEPUP_REQUIRED')) {
+        pending.current.schedule(() => download(id, true));
+        setVerification(true);
+      } else setMessage(presentError(cause).message);
     } finally {
       setBusy(null);
     }
@@ -37,7 +41,19 @@ export function useInvoiceViewModel() {
     invoices: query.data ?? Object.freeze([]),
     busy,
     message: message ?? (query.isError ? '发票记录加载失败' : null),
-    actions: Object.freeze({ download }),
+    verification,
+    actions: Object.freeze({
+      download,
+      retry: query.refetch,
+      verified: () => {
+        setVerification(false);
+        pending.current.resume();
+      },
+      closeVerification: () => {
+        pending.current.clear();
+        setVerification(false);
+      },
+    }),
   });
 }
 function required<T>(value: T | null): T {

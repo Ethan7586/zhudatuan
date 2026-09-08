@@ -35,7 +35,10 @@ export class ContractPolicy {
       for (const dependency of manifest.dependencies) {
         const target = manifests.get(dependencyKey(dependency.id, dependency.version));
         if (!target) {
-          const versions = [...manifests.values()].filter(({ id }) => id === dependency.id).map(({ version }) => version).sort();
+          const versions = [...manifests.values()]
+            .filter(({ id }) => id === dependency.id)
+            .map(({ version }) => version)
+            .sort();
           if (versions.length > 0) throw new Error(`EXTENSION_DEPENDENCY_VERSION_MISMATCH:${dependencyKey(dependency.id, dependency.version)}:${versions.join(',')}`);
           throw new Error('EXTENSION_DEPENDENCY_MISSING:' + dependencyKey(dependency.id, dependency.version));
         }

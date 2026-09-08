@@ -1,7 +1,10 @@
 import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
+import { moduleDatabaseRoles } from './DatabaseRoles';
 
-const compose = ['compose', '--env-file', 'infrastructure/container/local/.env.local', '-f', 'infrastructure/container/local/compose.yml', 'exec', '-T', 'postgres', 'sh', '-s'];
+const contract = await readFile(new URL('../../../database/contracts/objects.yml', import.meta.url), 'utf8');
+const roles = moduleDatabaseRoles(contract).join(' ');
+const compose = ['compose', '--env-file', 'infrastructure/container/local/.env.local', '-f', 'infrastructure/container/local/compose.yml', 'exec', '-T', '-e', `MODULE_DATABASE_ROLES=${roles}`, 'postgres', 'sh', '-s'];
 
 async function bootstrapDatabase(): Promise<void> {
   const script = await readFile(new URL('../../../infrastructure/container/local/Postgres.sh', import.meta.url), 'utf8');

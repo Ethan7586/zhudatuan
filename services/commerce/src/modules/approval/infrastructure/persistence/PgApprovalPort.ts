@@ -1,8 +1,8 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { ApiErrorCode } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { TransactionalEventWriter } from '../../../../foundation/application/OperationExecutor';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { TransactionalEventWriter } from '../../../../pipeline/OperationExecutor';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { approvalEvent } from '../../domain/event/ApprovalEvents';
 import { ApprovalSubject } from '../../domain/value/ApprovalSubject';
 import type { ApprovalRepository } from '../../application/port/ApprovalRepository';

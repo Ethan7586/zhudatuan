@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import type { OperationReply } from '../../../../pipeline/OperationHandler';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 export type PreparedSupportOperation = unknown;
 
@@ -61,11 +61,7 @@ export interface AssignmentRepository {
 }
 
 export interface ReadStateRepository {
-  manageReadState(
-    context: WriteTransactionContext,
-    input: OperationInputFor<'support.readstates.manage'>,
-    execution: ExecutionContext<'support.readstates.manage'>
-  ): Promise<OperationReply<OperationOutputFor<'support.readstates.manage'>>>;
+  manageReadState(context: WriteTransactionContext, input: OperationInputFor<'support.readstates.manage'>, execution: ExecutionContext<'support.readstates.manage'>): Promise<OperationReply<OperationOutputFor<'support.readstates.manage'>>>;
 }
 
 export interface AgentRepository {
@@ -87,5 +83,10 @@ export interface AccountRepository {
   loadAccount(context: ReadTransactionContext, input: OperationInputFor<'support.accounts.manage'>, execution: ExecutionContext<'support.accounts.manage'>): Promise<PreparedSupportOperation>;
   prepareAccount(input: OperationInputFor<'support.accounts.manage'>, execution: ExecutionContext<'support.accounts.manage'>, loaded: PreparedSupportOperation): Promise<PreparedSupportOperation>;
   readAccounts(context: ReadTransactionContext, input: OperationInputFor<'support.accounts.read'>, execution: ExecutionContext<'support.accounts.read'>): Promise<OperationReply<OperationOutputFor<'support.accounts.read'>>>;
-  manageAccount(context: WriteTransactionContext, input: OperationInputFor<'support.accounts.manage'>, execution: ExecutionContext<'support.accounts.manage'>, prepared: PreparedSupportOperation): Promise<OperationReply<OperationOutputFor<'support.accounts.manage'>>>;
+  manageAccount(
+    context: WriteTransactionContext,
+    input: OperationInputFor<'support.accounts.manage'>,
+    execution: ExecutionContext<'support.accounts.manage'>,
+    prepared: PreparedSupportOperation
+  ): Promise<OperationReply<OperationOutputFor<'support.accounts.manage'>>>;
 }

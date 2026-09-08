@@ -1,8 +1,8 @@
 import type { ExperienceAction, ExperienceBlock, ExperiencePage } from '@shop/contract';
-import { ArrowRight, Plus } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import type { useHomeViewModel } from '../viewmodel/HomeViewModel';
-import { ProductMedia } from '../../../shared/view/ProductMedia';
-import { formatMinor } from '../../../shared/format/Money';
+import { ProductCard } from '../../../entity/product';
+import { responsivePattern } from '../../../shared/view/ResponsivePattern';
 
 export function PublishedPage({ page, viewmodel }: Readonly<{ page: ExperiencePage; viewmodel: ReturnType<typeof useHomeViewModel> }>) {
   return <section className="space-y-4" aria-label="商城已发布页面">{page.blocks.map((block) => <PublishedBlock key={block.id} block={block} viewmodel={viewmodel} />)}</section>;
@@ -34,9 +34,9 @@ function Shortcuts({ block, action }: Readonly<{ block: ExperienceBlock; action:
 function ProductCollection({ block, viewmodel }: Readonly<{ block: ExperienceBlock; viewmodel: ReturnType<typeof useHomeViewModel> }>) {
   const ids = new Set([...contentList(block.content, 'listingIds'), ...contentList(block.content, 'productIds')]);
   const limit = Number(block.content.displayLimit) || 4;
-  const products = viewmodel.presentationProducts.filter((item) => ids.size === 0 || ids.has(item.id) || ids.has(item.skuId)).slice(0, limit);
+  const products = viewmodel.presentationProducts.filter((item) => ids.size === 0 || ids.has(item.listingId) || ids.has(item.productId) || ids.has(item.skuId)).slice(0, limit);
   return <section className="rounded-3xl border border-edge bg-surface p-4 shadow-sm"><div className="mb-4 flex items-end justify-between gap-3"><div><h2 className="text-lg font-black">{contentText(block.content, 'title') ?? '精选商品'}</h2>{contentText(block.content, 'subtitle') ? <p className="text-xs text-muted">{contentText(block.content, 'subtitle')}</p> : null}</div>{block.action ? <button type="button" onClick={() => viewmodel.navigateAction(block.action!)} className="text-xs font-bold text-brand">查看更多</button> : null}</div>
-    {products.length ? <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">{products.map((product) => <article key={product.id} className="overflow-hidden rounded-2xl border border-edge"><button type="button" onClick={() => viewmodel.openProduct(product.id)} className="block w-full text-left"><ProductMedia source={product.image} alt={product.title} className="aspect-square w-full object-cover" emptyClassName="grid aspect-square place-items-center bg-subtle text-xs text-muted" /><h3 className="line-clamp-2 min-h-12 p-3 text-sm font-bold">{product.title}</h3></button><div className="flex items-center justify-between px-3 pb-3"><b className="text-danger">¥{formatMinor(product.priceWelfareMinor)}</b><button type="button" disabled={!product.purchasable} onClick={() => viewmodel.addToCart(product, 1)} aria-label={`将${product.title}加入购物车`} className="grid h-10 w-10 place-items-center rounded-full bg-brand text-inverse disabled:bg-disabled"><Plus size={17} /></button></div></article>)}</div> : <p role="status" className="rounded-2xl border border-dashed p-6 text-center text-sm text-muted">当前装修引用的商品暂不可见，请浏览全部商品。</p>}
+    {products.length ? <div className={responsivePattern.productGrid}>{products.map((product) => <ProductCard key={product.listingId} product={product} open={viewmodel.openProduct} add={(item) => viewmodel.addToCart(item, 1)} />)}</div> : <p role="status" className="rounded-2xl border border-dashed p-6 text-center text-sm text-muted">当前装修引用的商品暂不可见，请浏览全部商品。</p>}
   </section>;
 }
 

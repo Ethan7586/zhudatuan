@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { SupportEventStore } from '../../application/port/SupportPersistence';
 
 export class PgSupportEventRepository implements SupportEventStore {

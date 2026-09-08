@@ -17,6 +17,7 @@ export const IDENTITY_BODY_SCHEMAS = Object.freeze({
   IdentitySessionsCompleteInput: strictObject({ code: string(), proof: string(), returnTarget, authorization }),
   IdentityTicketsExchangeInput: strictObject({ ticket: string(), state: string(), nonce: string(), verifier: string(), returnTarget }),
   IdentitySessionDeleteInput: empty,
+  IdentityHandoversCreateInput: strictObject({ note: string() }),
   IdentitySessionsRevokeInput: empty,
   IdentityMembershipsSwitchInput: strictObject({ membershipId: string() }),
   IdentityChallengesCreateInput: discriminatedUnion('purpose', [
@@ -62,6 +63,7 @@ export const IDENTITY_BODY_SCHEMAS = Object.freeze({
 
 export const IDENTITY_QUERY_SCHEMAS = Object.freeze({
   IdentitySessionReadInput: empty,
+  IdentityHandoversReadInput: strictObject(page),
   IdentitySessionsReadInput: strictObject(page),
   IdentityMembershipsReadInput: empty,
   IdentityInvitationsReadInput: strictObject({ ...page, target: optional(target), kind: optional(literal(['signin', 'enrollment', 'campaign'])), status: optional(literal(['draft', 'active', 'exhausted', 'revoked', 'expired'])) }),

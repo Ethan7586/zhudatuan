@@ -125,6 +125,65 @@ export function createSurfaceClient<TSurface extends ClientSurface>(surface: TSu
 `;
 }
 
+export function sdkMiniappSource(clients: readonly ClientDefinition[], operations: readonly OperationDefinition[]): string {
+  const client = clients.find(({ id }) => id === 'miniapp');
+  if (client === undefined) throw new Error('MINIAPP_CLIENT_DEFINITION_MISSING');
+  const groups = groupOperations(operations.filter((operation) => allowedOnSurface(client, operation)));
+  const imports = [...groups]
+    .map(([domain, values]) => `import { ${values.map((operation) => `bind${typeName(methodName(operation.id))} as bind${typeName(domain)}${typeName(methodName(operation.id))}`).join(', ')} } from './operations/${domain}';`)
+    .join('\n');
+  const fields = [...groups]
+    .map(([domain, values]) => `    ${domain}: Object.freeze({ ${values.map((operation) => `${methodName(operation.id)}: bind${typeName(domain)}${typeName(methodName(operation.id))}(executor)`).join(', ')} }),`)
+    .join('\n');
+  return `// Generated from config/clients.yml and definitions/operations.yml. Do not edit.
+import type { OperationExecutor } from './OperationDescriptor';
+import type { MiniappSurfaceClient } from './SurfaceCatalog';
+${imports}
+
+export function createMiniappClient(executor: OperationExecutor): MiniappSurfaceClient {
+  return Object.freeze({
+${fields}
+  });
+}
+`;
+}
+
+export function sdkBrowserClientSources(clients: readonly ClientDefinition[], operations: readonly OperationDefinition[]): ReadonlyMap<string, string> {
+  return new Map(
+    clients
+      .filter(({ transport }) => transport === 'browser')
+      .map((client) => [`${typeName(client.id)}Client`, sdkBrowserClientSource(client, operations)] as const)
+  );
+}
+
+function sdkBrowserClientSource(client: ClientDefinition, operations: readonly OperationDefinition[]): string {
+  const name = typeName(client.id);
+  const groups = groupOperations(operations.filter((operation) => allowedOnSurface(client, operation)));
+  const imports = [...groups]
+    .map(([domain, values]) => `import { ${values.map((operation) => `bind${typeName(methodName(operation.id))} as bind${typeName(domain)}${typeName(methodName(operation.id))}`).join(', ')} } from './operations/${domain}';`)
+    .join('\n');
+  const fields = [...groups]
+    .map(([domain, values]) => `    ${domain}: Object.freeze({ ${values.map((operation) => `${methodName(operation.id)}: bind${typeName(domain)}${typeName(methodName(operation.id))}(executor)`).join(', ')} }),`)
+    .join('\n');
+  return `// Generated from config/clients.yml and definitions/operations.yml. Do not edit.
+import { ApiClient } from './ApiClient';
+import { FetchTransport } from './FetchTransport';
+import type { OperationExecutor } from './OperationDescriptor';
+import type { ${name}SurfaceClient } from './SurfaceCatalog';
+${imports}
+
+export function create${name}Client(executor: OperationExecutor): ${name}SurfaceClient {
+  return Object.freeze({
+${fields}
+  });
+}
+
+export function createFetch${name}(baseUrl: string): ${name}SurfaceClient {
+  return create${name}Client(new ApiClient(baseUrl, new FetchTransport()));
+}
+`;
+}
+
 function allowedOnSurface(client: ClientDefinition, operation: OperationDefinition): boolean {
   const domainAllowed = client.domains.length === 0 || client.domains.includes(operation.id.split('.')[0]!);
   return domainAllowed && (client.target === null ? operation.audience === client.audience : operation.targets.includes(client.target));
@@ -300,17 +359,32 @@ function sdkDomainSource(domain: string, operations: readonly OperationDefinitio
       });
       const operationMethod = operation.responseMode === 'stream' ? 'EventOperationMethod' : 'OperationMethod';
       const binder = operation.responseMode === 'stream' ? 'bindEventOperation' : 'bindOperation';
+      const directSchema = DIRECT_SCHEMA_DOMAINS.has(domain);
+      const schemaNamespace = directSchema ? operationSchemaNamespace(domain, operation) : undefined;
       const schema =
         domain === 'identity'
           ? `, ...identityClientSchema(${JSON.stringify(operation.id)})`
-          : `, input: exactOperationInput(${JSON.stringify(operation.requestSchema)}, ${JSON.stringify(pathKeys(operation.path))} as const, ${operation.method !== 'GET'}), output: exactOperationOutput(${JSON.stringify(operation.responseSchema)})`;
-      return `export function createFetch${name}${method}(baseUrl: string): ${operationMethod}<${JSON.stringify(operation.id)}> { return bind${method}(new ApiClient(baseUrl, new FetchTransport())); }\n\nfunction bind${method}(client: OperationExecutor): ${operationMethod}<${JSON.stringify(operation.id)}> { return ${binder}(client, ${domain === 'identity' ? 'defineScopedOperation' : 'defineOperation'}({ ...${descriptor}${schema} })); }`;
+          : directSchema
+            ? `, input: exactOperationInputFrom(${schemaNamespace!.prefix}_${operation.method === 'GET' ? 'QUERY' : 'BODY'}_SCHEMAS.${operation.requestSchema}, ${JSON.stringify(pathKeys(operation.path))} as const, ${operation.method !== 'GET'}), output: exactOperationOutputFrom(${schemaNamespace!.prefix}_OUTPUT_SCHEMAS.${operation.responseSchema})`
+            : `, input: exactOperationInput(${JSON.stringify(operation.requestSchema)}, ${JSON.stringify(pathKeys(operation.path))} as const, ${operation.method !== 'GET'}), output: exactOperationOutput(${JSON.stringify(operation.responseSchema)})`;
+      return `export function createFetch${name}${method}(baseUrl: string): ${operationMethod}<${JSON.stringify(operation.id)}> { return bind${method}(new ApiClient(baseUrl, new FetchTransport())); }\n\nexport function bind${method}(client: OperationExecutor): ${operationMethod}<${JSON.stringify(operation.id)}> { return ${binder}(client, ${domain === 'identity' ? 'defineScopedOperation' : 'defineOperation'}({ ...${descriptor}${schema} })); }`;
     })
     .join('\n\n');
+  const directSchema = DIRECT_SCHEMA_DOMAINS.has(domain);
+  const schemaNamespaces = new Map<string, { module: string; kinds: Set<string> }>();
+  if (directSchema) for (const operation of operations) {
+    const namespace = operationSchemaNamespace(domain, operation);
+    const entry = schemaNamespaces.get(namespace.prefix) ?? { module: namespace.module, kinds: new Set<string>() };
+    entry.kinds.add(operation.method === 'GET' ? 'QUERY' : 'BODY');
+    schemaNamespaces.set(namespace.prefix, entry);
+  }
+  const directImports = [...schemaNamespaces].map(([prefix, { module, kinds }]) => `import { ${[...kinds].map((kind) => `${prefix}_${kind}_SCHEMAS`).join(', ')}, ${prefix}_OUTPUT_SCHEMAS } from '@shop/contract/schema/${module}';`).join('\n');
   const schemaImport =
     domain === 'identity'
       ? `import { identityClientSchema } from '@shop/contract/identityschema';\nimport { defineScopedOperation } from '../ScopedOperationDescriptor';`
-      : `import { exactOperationInput, exactOperationOutput } from '@shop/contract/schema';\nimport { defineOperation } from '../CatalogOperationDescriptor';`;
+      : directSchema
+        ? `import { exactOperationInputFrom, exactOperationOutputFrom } from '@shop/contract/operationschema';\n${directImports}\nimport { defineOperation } from '../CatalogOperationDescriptor';`
+        : `import { exactOperationInput, exactOperationOutput } from '@shop/contract/schema';\nimport { defineOperation } from '../CatalogOperationDescriptor';`;
   const hasEvents = operations.some(({ responseMode }) => responseMode === 'stream');
   const hasRequests = operations.some(({ responseMode }) => responseMode !== 'stream');
   const descriptorImports = [
@@ -321,6 +395,16 @@ function sdkDomainSource(domain: string, operations: readonly OperationDefinitio
     ...(hasRequests ? ['type OperationMethod'] : []),
   ].join(', ');
   return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport { ApiClient } from '../ApiClient';\nimport { FetchTransport } from '../FetchTransport';\nimport { ${descriptorImports} } from '../OperationDescriptor';\n${schemaImport}\n\nexport const ${domain.toUpperCase()}_OPERATION_IDS = Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface ${name}Operations {\n${methods}\n}\n\nexport const ${domain.toUpperCase()}_METHOD_BY_OPERATION = Object.freeze({\n${methodCatalog}\n} as const satisfies Readonly<Record<(typeof ${domain.toUpperCase()}_OPERATION_IDS)[number], keyof ${name}Operations>>);\n\nexport function createFetch${name}(baseUrl: string): ${name}Operations { return create${name}Operations(new ApiClient(baseUrl, new FetchTransport())); }\n\nexport function create${name}Operations(client: OperationExecutor): ${name}Operations { return Object.freeze({\n${bindings}\n  }); }\n\n${factories}\n`;
+}
+
+const DIRECT_SCHEMA_DOMAINS = new Set([
+  'member', 'pricing', 'inventory', 'experience', 'cart', 'checkout', 'order', 'fulfillment', 'payment', 'verification',
+  'voucher', 'benefit', 'finance', 'invoice', 'support', 'notification', 'observability', 'referral', 'storefront',
+]);
+
+function operationSchemaNamespace(domain: string, operation: OperationDefinition): Readonly<{ prefix: string; module: string }> {
+  if (domain === 'finance' && operation.requestSchema.startsWith('FinanceInvoices')) return Object.freeze({ prefix: 'INVOICE', module: 'Invoice' });
+  return Object.freeze({ prefix: domain.toUpperCase(), module: typeName(domain) });
 }
 
 function requestSchema(operation: OperationDefinition): unknown {

@@ -1,4 +1,4 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ProviderManifest } from '@shop/contract';
 
 export interface InstallationListItem extends Readonly<Record<string, unknown>> {

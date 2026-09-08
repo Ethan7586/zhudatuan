@@ -7,22 +7,26 @@ export function SupportComposer({
   value,
   unavailable,
   sending,
+  uploading,
   failed,
   attachments,
   onChange,
   onSend,
   onRetry,
   onFile,
+  onRemove,
 }: Readonly<{
   value: string;
   unavailable: string;
   sending: boolean;
+  uploading: boolean;
   failed: boolean;
   attachments: readonly PendingAttachment[];
   onChange: (value: string) => void;
   onSend: () => void;
   onRetry: () => void;
   onFile: (file: File) => void;
+  onRemove: (id: string) => void;
 }>) {
   const disabled = sending || unavailable !== '';
   const keyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -44,6 +48,7 @@ export function SupportComposer({
             <li key={item.id} data-state={item.state}>
               <span>{item.name}</span>
               <em>{attachmentLabel(item.state)}</em>
+              <button type="button" aria-label={`移除附件${item.name}`} onClick={() => onRemove(item.id)}>移除</button>
             </li>
           ))}
         </ul>
@@ -54,7 +59,7 @@ export function SupportComposer({
           <input
             type="file"
             accept={SUPPORT_ATTACHMENT_TYPES.join(',')}
-            disabled={disabled}
+            disabled={disabled || uploading}
             onChange={(event) => {
               const file = event.target.files?.[0];
               if (file) onFile(file);

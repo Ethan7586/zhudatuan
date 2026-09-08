@@ -1,10 +1,13 @@
 import { navigateMiniapp, type MiniappNavigationItem } from '../runtime/Navigation';
-import type { MembershipChoice, MiniappRuntime } from '../runtime/MiniappRuntime';
+import type { MembershipChoice, MiniappRuntime, MiniappSnapshot } from '../runtime/MiniappRuntime';
 import { routeFromOptions } from '../runtime/DeepLink';
 import { readMiniappRoute } from '../generated/PageBinding';
+import { miniappPagePath } from '../generated/PageBinding';
 import type { RouteId, RouteMatch } from '../generated/RouteBinding';
-import type { MiniappInstance } from '../platform/Wechat';
+import type { MiniappInstance, PageInstance } from '../platform/Wechat';
 import type { MiniappFeatureViewModel } from '../shared/FeatureViewModel';
+import type { MiniappAction } from '@shop/presentation/actions';
+import type { MiniappViewState } from '../generated/DesignBinding';
 
 interface DisplayRow {
   readonly key: string;
@@ -17,7 +20,7 @@ interface DisplayRow {
 interface PageData {
   readonly title: string;
   readonly description: string;
-  readonly state: 'loading' | 'ready' | 'empty' | 'error' | 'selection';
+  readonly state: MiniappViewState | 'selection';
   readonly rows: readonly DisplayRow[];
   readonly count: number;
   readonly error: string;
@@ -25,11 +28,16 @@ interface PageData {
   readonly authenticated: boolean;
   readonly navigation: readonly MiniappNavigationItem[];
   readonly memberships: readonly MembershipChoice[];
+  readonly actions: readonly MiniappAction[];
+  readonly commanding: boolean;
+  readonly commandMessage: string;
+  readonly commandError: string;
 }
 
 interface PageMethods {
   route?: RouteMatch;
   active?: AbortController;
+  actionInputs?: Record<string, string>;
   onLoad(options: Readonly<Record<string, string | undefined>>): void;
   onUnload(): void;
   onPullDownRefresh(): void;
@@ -38,6 +46,10 @@ interface PageMethods {
   onSignOut(): void;
   onSelectMembership(event: unknown): void;
   onNavigate(event: unknown): void;
+  onSelectRecord(event: unknown): void;
+  onActionInput(event: unknown): void;
+  onActionSubmit(event: unknown): void;
+  onShareAppMessage(): Readonly<{ title: string; path: string }>;
   load(): Promise<void>;
 }
 
@@ -52,6 +64,10 @@ const initial: PageData = Object.freeze({
   authenticated: false,
   navigation: Object.freeze([]),
   memberships: Object.freeze([]),
+  actions: Object.freeze([]),
+  commanding: false,
+  commandMessage: '',
+  commandError: '',
 });
 
 export function registerFeaturePage(feature: MiniappFeatureViewModel): void {
@@ -105,6 +121,46 @@ export function registerFeaturePage(feature: MiniappFeatureViewModel): void {
     onNavigate(event) {
       navigateMiniapp(eventDetail(event, 'path'));
     },
+    onSelectRecord(event) {
+      if (this.route === undefined) return;
+      const destination = currentRuntime().destination(feature, this.route, eventDetail(event, 'key'));
+      if (destination !== undefined) navigateMiniapp(destination);
+    },
+    onActionInput(event) {
+      const detail = eventRecord(event);
+      const key = recordText(detail, 'key', 512);
+      const value = recordText(detail, 'value', 2048, true);
+      (this.actionInputs ??= {})[key] = value;
+    },
+    onActionSubmit(event) {
+      const route = this.route;
+      const id = eventDetail(event, 'action');
+      const action = this.data.actions.find((candidate) => candidate.id === id);
+      if (route === undefined || action === undefined || this.data.commanding) return;
+      void confirmAction(action).then((confirmed) => {
+        if (!confirmed) return;
+        this.active?.abort(new Error('COMMAND_STARTED'));
+        const active = new AbortController();
+        this.active = active;
+        this.setData({ commanding: true, commandError: '', commandMessage: '' });
+        const input = Object.freeze(Object.fromEntries(action.fields.map(({ name }) => [name, this.actionInputs?.[`${id}:${name}`] ?? ''])));
+        void currentRuntime()
+          .command(feature, route, id, input, active.signal)
+          .then((result) => {
+            this.actionInputs = {};
+            if (result.destination !== undefined) navigateMiniapp(result.destination);
+            else if (result.snapshot !== undefined) publishSnapshot(this, result.snapshot, result.message);
+          })
+          .catch((cause: unknown) => this.setData({ commanding: false, commandError: safeMessage(cause) }));
+      });
+    },
+    onShareAppMessage() {
+      const route = this.route;
+      return Object.freeze({
+        title: this.data.title,
+        path: route === undefined ? miniappPagePath(feature.defaultRoute) : miniappPagePath(route.id, route.parameters as Readonly<Record<string, string>>),
+      });
+    },
     async load() {
       const route = this.route;
       if (route === undefined) return;
@@ -113,26 +169,39 @@ export function registerFeaturePage(feature: MiniappFeatureViewModel): void {
       this.active = active;
       this.setData({ state: 'loading', error: '', memberships: Object.freeze([]) });
       try {
-        const value = await currentRuntime().read(route, active.signal);
+        const value = await currentRuntime().read(feature, route, active.signal);
         if (active.signal.aborted) return;
-        wx.setNavigationBarTitle({ title: value.title });
-        this.setData({
-          title: value.title,
-          description: value.description,
-          state: value.data.rows.length === 0 ? 'empty' : 'ready',
-          rows: value.data.rows,
-          count: value.data.count,
-          stale: value.stale,
-          authenticated: value.authenticated,
-          navigation: value.navigation,
-        });
+        publishSnapshot(this, value);
       } catch (cause) {
         if (active.signal.aborted) return;
         const failure = currentRuntime().failure(cause);
-        this.setData({ state: 'error', error: failure.authenticationRequired ? '登录后即可查看这项内容。' : failure.message, authenticated: false, stale: false });
+        this.setData({ state: failure.state, error: failure.authenticationRequired ? '登录后即可查看这项内容。' : failure.message, authenticated: false, stale: false });
       }
     },
   });
+}
+
+function publishSnapshot(instance: PageInstance<PageData>, value: MiniappSnapshot, message = ''): void {
+  wx.setNavigationBarTitle({ title: value.title });
+  instance.setData({
+    title: value.title,
+    description: value.description,
+    state: value.stale ? 'partial' : value.data.rows.length === 0 ? 'empty' : 'success',
+    rows: value.data.rows,
+    count: value.data.count,
+    stale: value.stale,
+    authenticated: value.authenticated,
+    navigation: value.navigation,
+    actions: value.actions,
+    commanding: false,
+    commandMessage: message,
+    commandError: '',
+  });
+}
+
+function confirmAction(action: MiniappAction): Promise<boolean> {
+  if (action.confirmation === undefined) return Promise.resolve(true);
+  return new Promise((resolve, reject) => wx.showModal({ title: `确认${action.label}`, content: action.confirmation!, confirmText: '确认', cancelText: '返回', success: ({ confirm }) => resolve(confirm), fail: reject }));
 }
 
 function currentRuntime(): MiniappRuntime {
@@ -142,11 +211,19 @@ function currentRuntime(): MiniappRuntime {
 }
 
 function eventDetail(event: unknown, key: string): string {
+  return recordText(eventRecord(event), key, 512);
+}
+
+function eventRecord(event: unknown): object {
   if (event === null || typeof event !== 'object') throw new Error('MINIAPP_EVENT_INVALID');
   const detail = Reflect.get(event, 'detail');
   if (detail === null || typeof detail !== 'object') throw new Error('MINIAPP_EVENT_INVALID');
-  const value = Reflect.get(detail, key);
-  if (typeof value !== 'string' || value.length === 0 || value.length > 512) throw new Error('MINIAPP_EVENT_INVALID');
+  return detail;
+}
+
+function recordText(record: object, key: string, maximum: number, empty = false): string {
+  const value = Reflect.get(record, key);
+  if (typeof value !== 'string' || (!empty && value.length === 0) || value.length > maximum) throw new Error('MINIAPP_EVENT_INVALID');
   return value;
 }
 

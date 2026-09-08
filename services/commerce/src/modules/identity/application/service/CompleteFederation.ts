@@ -1,7 +1,7 @@
 import { identityLifecycle as operationLifecycle, type IdentityLifecycle as OperationLifecycle } from '../model/IdentityAction';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { OperationRequest } from '../../../../pipeline/OperationRequest';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 
 import type { FederateIdentity, FederationCallbackInput, LoadedFederationCallback, PreparedFederationCallback } from '../service/FederateIdentity';
 import { requestContext } from './StartFederation';

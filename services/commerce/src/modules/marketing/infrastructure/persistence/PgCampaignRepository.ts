@@ -1,6 +1,6 @@
 import type { ContractJsonObject } from '@shop/contract';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CampaignRecord, CampaignRepository } from '../../application/port/CampaignRepository';
 import { Campaign, type CampaignSnapshot } from '../../domain/model/Campaign';
 import { CampaignPolicy } from '../../domain/policy/CampaignPolicy';

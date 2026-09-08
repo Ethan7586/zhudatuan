@@ -4,7 +4,7 @@ import type { CartSnapshot } from '../model/CartSnapshot';
 
 export function projectCart(value: CartSnapshot | undefined, products: readonly Product[]): Cart {
   const lines = (value?.items ?? []).map((line) => {
-    const product = products.find((item) => item.id === line.listing && item.skuId === line.sku) ?? fallback(line);
+    const product = products.find((item) => item.listingId === line.listing && item.skuId === line.sku) ?? fallback(line);
     return Object.freeze({
       id: line.listing,
       listingId: line.listing,
@@ -28,7 +28,8 @@ export function projectCart(value: CartSnapshot | undefined, products: readonly 
 function fallback(line: CartSnapshot['items'][number]): Product {
   const amount = line.amountMinor ?? 0;
   return Object.freeze({
-    id: line.listing,
+    listingId: line.listing,
+    productId: line.listing,
     skuId: line.sku,
     title: line.title,
     subtitle: line.validity.message,
@@ -50,9 +51,10 @@ function fallback(line: CartSnapshot['items'][number]): Product {
     rating: 0,
     reviewCount: 0,
     deliverySla: '',
-    purchasable: line.validity.state === 'valid',
+    qualification: Object.freeze({ eligible: line.validity.state === 'valid', policyVersion: null }),
+    saleability: Object.freeze({ state: line.validity.state === 'valid' ? ('saleable' as const) : ('blocked' as const), reasons: Object.freeze(line.validity.state === 'valid' ? [] : ['inventory_unavailable' as const]) }),
     version: String(line.version),
     updatedAt: '',
-    skus: Object.freeze([{ id: line.sku, productId: line.listing, priceMinor: amount, compareMinor: null, currency: line.currency ?? 'CNY', available: line.available ?? 0, state: line.validity.state === 'valid' ? ('available' as const) : ('unavailable' as const), priceVersion: 'live', inventoryVersion: 'live' }]),
+    skus: Object.freeze([{ id: line.sku, listingId: line.listing, productId: line.listing, priceMinor: amount, compareMinor: null, currency: line.currency ?? 'CNY', available: line.available ?? 0, state: line.validity.state === 'valid' ? ('available' as const) : ('unavailable' as const), priceVersion: 'live', inventoryVersion: 'live', qualification: Object.freeze({ eligible: line.validity.state === 'valid', policyVersion: null }), saleability: Object.freeze({ state: line.validity.state === 'valid' ? ('saleable' as const) : ('blocked' as const), reasons: Object.freeze(line.validity.state === 'valid' ? [] : ['inventory_unavailable' as const]) }), specifications: Object.freeze({}) }]),
   });
 }

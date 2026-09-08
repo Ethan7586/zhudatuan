@@ -2,9 +2,10 @@ import { createHash, createHmac } from 'node:crypto';
 import { Client } from 'pg';
 import { localSeedEnvironment } from '@shop/config/server';
 import { PasswordPolicy } from '../../../services/commerce/src/modules/identity/domain/policy/PasswordPolicy';
-import { HttpKmsClient } from '../../../services/commerce/src/foundation/infrastructure/KmsClient';
+import { HttpKmsClient } from '../../../services/commerce/src/platform/crypto/KmsClient';
 import { localSecret } from './LocalSecrets';
 import { assertLocalOwnership, ensureLocalOwner, LOCAL_OWNER } from './LocalOwner';
+import { assertLocalSurfaceAccess, ensureLocalSurfaceAccess } from './LocalSurface';
 import { ensureLocalChecker } from './LocalChecker';
 import { assertLocalBenefitLedger, ensureLocalBenefits } from './LocalBenefits';
 import { syncMemberProjection } from './MemberProjection';
@@ -41,6 +42,7 @@ try {
   await client.query('begin');
   await removeReplayFixtures(client);
   await ensureLocalOwner(client);
+  await ensureLocalDistributor(client);
   await ensureLocalChecker(client, { passwordHash, identityKey, kms });
   const principalId = LOCAL_OWNER.principal;
   await client.query(
@@ -118,15 +120,18 @@ try {
   );
   await removeOrphanedLocalMembershipArtifacts(client);
   await ensureLocalStore(client);
+  await ensureLocalSurfaceAccess(client);
   await ensureLocalSupport(client);
   await ensureLocalBenefits(client);
   await ensureLocalMallCatalog(client);
   await ensureLocalQualification(client);
-  await ensureLocalListings(client);
+  await ensureLocalSourceListings(client);
   await ensureLocalCommercialCatalog(client);
+  await ensureLocalListings(client);
   await assertBaseline(client);
   await assertEmployeePermissions(client, storefrontMembership);
   await assertLocalOwnership(client);
+  await assertLocalSurfaceAccess(client);
   await client.query('commit');
   process.stdout.write('LOCAL_BASELINE_SEEDED tenant=1 enterprise=1 mall=1 store=1 supplier=1 ethan=1 checker=1\n');
 } catch (cause) {
@@ -149,7 +154,7 @@ async function ensureLocalListings(database: Client): Promise<void> {
   await database.query(`insert into catalog.listing(id,scope_id,pool_id,sku_id,title,status,effective_at,expires_at,version,created_at,updated_at)
     select distinct on(pool.scope_id,item.sku_id)
       'listing:'||pool.scope_id||':'||item.sku_id,pool.scope_id,pool.id,item.sku_id,product.title,'published',
-      '1970-01-01T00:00:00Z',null,0,clock_timestamp(),clock_timestamp()
+      '1970-01-01T00:00:00Z',null,1,clock_timestamp(),clock_timestamp()
     from catalog.pool pool
     join catalog.poolitem item on item.pool_id=pool.id and item.state='included'
     join catalog.sku sku on sku.id=item.sku_id and sku.status='active'
@@ -162,8 +167,24 @@ async function ensureLocalListings(database: Client): Promise<void> {
         is distinct from (excluded.pool_id,excluded.title,excluded.status,excluded.effective_at,excluded.expires_at) then 1 else 0 end,
       updated_at=case when (catalog.listing.pool_id,catalog.listing.title,catalog.listing.status,catalog.listing.effective_at,catalog.listing.expires_at)
         is distinct from (excluded.pool_id,excluded.title,excluded.status,excluded.effective_at,excluded.expires_at) then clock_timestamp() else catalog.listing.updated_at end`);
-  await database.query(`update cart.item item set listing_version=listing.version::text,version=item.version+1
-    from catalog.listing listing where item.listing_id=listing.id and item.listing_version<>listing.version::text`);
+}
+
+async function ensureLocalSourceListings(database: Client): Promise<void> {
+  await database.query(
+    `insert into catalog.sourcelisting(
+      id,provider,external_id,object_type,sku_id,scope_id,source_version,source_payload,source_hash,status,observed_at
+    )
+    select 'source:local:'||md5(item.sku_id),'supplier','local:'||item.sku_id,'sku',item.sku_id,product.owner_partner_id,
+      'local-v1',jsonb_build_object('skuId',item.sku_id,'productId',product.id,'source','local-supplier'),
+      encode(public.digest(item.sku_id||':'||product.id||':local-v1','sha256'),'hex'),'mapped',clock_timestamp()
+    from catalog.poolitem item
+    join catalog.sku sku on sku.id=item.sku_id
+    join catalog.product product on product.id=sku.product_id
+    where item.pool_id='pool-local-zhudatuan' and item.state='included' and product.owner_partner_id is not null
+    on conflict(provider,scope_id,object_type,external_id) do update set sku_id=excluded.sku_id,
+      source_version=excluded.source_version,source_payload=excluded.source_payload,source_hash=excluded.source_hash,
+      status='mapped',observed_at=excluded.observed_at`
+  );
 }
 
 async function ensureLocalQualification(database: Client): Promise<void> {
@@ -187,6 +208,8 @@ async function ensureLocalCommercialCatalog(database: Client): Promise<void> {
     on conflict(id) do update set scope_id=excluded.scope_id,currency=excluded.currency,name=excluded.name,status='active',
       version=pricing.pricebook.version+1`
   );
+  await database.query(`update pricing.pricebook set status='retired',version=version+1
+    where scope_id='mall-zhudatuan' and id<>'pricebook:local:zhudatuan' and status='active'`);
   await database.query(
     `insert into pricing.price(id,book_id,sku_id,amount_minor,compare_minor,effective_at,expires_at)
     select 'price:local:'||md5(item.sku_id),'pricebook:local:zhudatuan',item.sku_id,
@@ -237,7 +260,20 @@ async function ensureLocalMallCatalog(database: Client): Promise<void> {
     theme: { preset: 'shop', primaryColor: '#1F5EFF', accentColor: '#19A974', logoObjectRef: null, faviconObjectRef: null },
     navigation: [{ id: `${application}:navigation:home`, label: '首页', page: `${application}:home` }],
     assets: [],
-    pages: [{ blocks: [{ component: 'hero', content: { subtitle: '企业福利，温暖抵达', title: '主打团福利商城' }, id: `${application}:home:hero` }], id: `${application}:home`, path: 'home' }],
+    pages: [{ blocks: [
+      { component: 'hero', content: { subtitle: '企业福利，温暖抵达', title: '主打团福利商城' }, id: `${application}:home:hero` },
+      {
+        component: 'productcollection',
+        content: {
+          collectionId: 'pool-local-zhudatuan',
+          displayLimit: 4,
+          listingIds: ['listing:mall-zhudatuan:sku:visual:care', 'listing:mall-zhudatuan:sku:visual:meal', 'listing:mall-zhudatuan:sku:visual:movie'],
+          subtitle: '当前商城已发布、可购买的企业福利',
+          title: '员工严选',
+        },
+        id: `${application}:home:products`,
+      },
+    ], id: `${application}:home`, path: 'home' }],
     version: 2,
   });
   const contentHash = createHash('sha256').update(configuration).digest('hex');
@@ -296,6 +332,11 @@ async function ensureLocalMallCatalog(database: Client): Promise<void> {
     [release]
   );
   await database.query(
+    `update experience.publication set state='retired'
+    where application_id=$1 and state='active' and id<>$2`,
+    [application, publication]
+  );
+  await database.query(
     `insert into experience.publication(id,release_id,application_id,version_id,content_hash,object_key,object_ref,object_hash,
       object_size,state,staged_at,published_at,failure_code)
     select $1,$2,$3,$4,$5::char(64),
@@ -319,6 +360,21 @@ async function ensureLocalStore(database: Client): Promise<void> {
     values('store-local','mall-zhudatuan','310000',5000)
     on conflict(id) do update set mall_id=excluded.mall_id,region_code=excluded.region_code,
       service_radius_meters=excluded.service_radius_meters`);
+  await database.query(`insert into partner.partner(id,scope_id,kind,name,status,version,created_at,updated_at)
+    values('supplier-local','tenant-zhudatuan','supplier','本地验收供应商','active',0,clock_timestamp(),clock_timestamp())
+    on conflict(id) do update set scope_id=excluded.scope_id,kind=excluded.kind,name=excluded.name,status='active',
+      version=partner.partner.version+1,updated_at=clock_timestamp()`);
+}
+
+async function ensureLocalDistributor(database: Client): Promise<void> {
+  await database.query(`insert into organization.organization(id,kind,parent_id,name,timezone,status,version,created_at,updated_at)
+    values('distributor-local-zhudatuan','distributor','organization-platform-root','本地验收分销商','Asia/Shanghai','active',0,clock_timestamp(),clock_timestamp())
+    on conflict(id) do update set kind='distributor',parent_id='organization-platform-root',name='本地验收分销商',
+      timezone='Asia/Shanghai',status='active',version=organization.organization.version+1,updated_at=clock_timestamp()`);
+  await database.query(`insert into organization.unitclosure(ancestor_id,descendant_id,depth) values
+    ('distributor-local-zhudatuan','distributor-local-zhudatuan',0),
+    ('organization-platform-root','distributor-local-zhudatuan',1)
+    on conflict(ancestor_id,descendant_id) do update set depth=excluded.depth`);
 }
 
 async function ensureLocalSupport(database: Client): Promise<void> {

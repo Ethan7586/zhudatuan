@@ -1,4 +1,4 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import { PgExtensionRepository } from './PgExtensionRepository';
 
 export function extensionHealthRepository(): PgExtensionRepository {

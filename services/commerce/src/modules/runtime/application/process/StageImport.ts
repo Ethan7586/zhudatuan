@@ -2,7 +2,7 @@ import type { BatchImportProcessPort, ImportBatchConfiguration, ImportCandidate,
 import { importCode, importDetail, taskFailure } from '../../domain/value/Failure';
 import { ImportItem } from '../../domain/model/ImportItem';
 import type { StoredObject } from '../../public/ObjectPort';
-import { mapParallel } from '../../../../foundation/performance/Parallel';
+import { mapParallel } from '@shop/kernel';
 import { IMPORT_CAPACITY } from '@shop/config/runtime';
 
 export class RuntimeBatchImportProcess implements BatchImportProcessPort {
@@ -13,20 +13,23 @@ export class RuntimeBatchImportProcess implements BatchImportProcessPort {
   }
 
   find(id: string, execution: ImportExecution): Promise<ImportTarget | null> {
-    return this.value.transactions.read(options(this.value, { id, scope: execution.scope }, execution),
-      (context) => this.value.runtime.find(context, id, this.value.owner));
+    return this.value.transactions.read(options(this.value, { id, scope: execution.scope }, execution), (context) => this.value.runtime.find(context, id, this.value.owner));
   }
 
   authorize(target: ImportTarget, execution: ImportExecution): Promise<void> {
-    return this.value.transactions.read(options(this.value, target, execution),
-      (context) => this.value.authorization.assert(context, target.authorization));
+    return this.value.transactions.read(options(this.value, target, execution), (context) => this.value.authorization.assert(context, target.authorization));
   }
 
   async stage(target: ImportTarget, rows: Iterable<Readonly<Record<string, string>>> | AsyncIterable<Readonly<Record<string, string>>>, execution: ImportExecution): Promise<void> {
     const transaction = options(this.value, target, execution);
     const cursor = await this.value.transactions.write(transaction, (context) => this.value.runtime.begin(context, target.id, this.value.owner));
-    if (!Number.isSafeInteger(cursor.sequence) || cursor.sequence < 0 || !Number.isSafeInteger(cursor.staged) || cursor.staged < 0 ||
-      (cursor.size !== undefined && (!Number.isSafeInteger(cursor.size) || cursor.size < 1 || cursor.size > IMPORT_CAPACITY.chunkRows))) {
+    if (
+      !Number.isSafeInteger(cursor.sequence) ||
+      cursor.sequence < 0 ||
+      !Number.isSafeInteger(cursor.staged) ||
+      cursor.staged < 0 ||
+      (cursor.size !== undefined && (!Number.isSafeInteger(cursor.size) || cursor.size < 1 || cursor.size > IMPORT_CAPACITY.chunkRows))
+    ) {
       throw new Error('RUNTIME_IMPORT_STAGE_CONFLICT');
     }
     let total = 0;
@@ -55,8 +58,7 @@ export class RuntimeBatchImportProcess implements BatchImportProcessPort {
       await this.authorize(target, execution);
       await this.stageChunk(transaction, target, execution, sequence, candidates, size);
     }
-    await this.value.transactions.write(transaction,
-      (context) => this.value.runtime.ready(context, target.id, this.value.owner, total, columns));
+    await this.value.transactions.write(transaction, (context) => this.value.runtime.ready(context, target.id, this.value.owner, total, columns));
   }
 
   async process(target: ImportTarget, signal: AbortSignal, deadline: number): Promise<boolean> {
@@ -65,8 +67,7 @@ export class RuntimeBatchImportProcess implements BatchImportProcessPort {
     let nextSequence = 0;
     while (Date.now() < deadline - 2_000) {
       await this.authorize(target, execution);
-      const chunk = await this.value.transactions.write(transaction,
-        (context) => this.value.runtime.claim(context, target.id, this.value.owner, IMPORT_CAPACITY.chunkLeaseSeconds));
+      const chunk = await this.value.transactions.write(transaction, (context) => this.value.runtime.claim(context, target.id, this.value.owner, IMPORT_CAPACITY.chunkLeaseSeconds));
       if (!chunk) return true;
       nextSequence = chunk.sequence + 1;
       let outcomes: readonly (ImportFailure | null)[];
@@ -85,16 +86,16 @@ export class RuntimeBatchImportProcess implements BatchImportProcessPort {
           }
         });
       } catch (cause) {
-        await this.value.transactions.write(transaction, (context) => this.value.runtime.abandon(
-          context, target.id, this.value.owner, chunk.sequence, chunk.token, importDetail(cause))).catch(() => undefined);
+        await this.value.transactions.write(transaction, (context) => this.value.runtime.abandon(context, target.id, this.value.owner, chunk.sequence, chunk.token, importDetail(cause))).catch(() => undefined);
         throw cause;
       }
-      const failures = outcomes.filter((outcome): outcome is ImportFailure => outcome !== null).map((failure) => {
-        new ImportItem(failure.row, 'failed', taskFailure(failure.reason, false, new Date().toISOString()));
-        return failure;
-      });
-      const complete = await this.value.transactions.write(transaction,
-        (context) => this.value.runtime.finish(context, target.id, this.value.owner, chunk.sequence, chunk.token, chunk.rows.length - failures.length, failures));
+      const failures = outcomes
+        .filter((outcome): outcome is ImportFailure => outcome !== null)
+        .map((failure) => {
+          new ImportItem(failure.row, 'failed', taskFailure(failure.reason, false, new Date().toISOString()));
+          return failure;
+        });
+      const complete = await this.value.transactions.write(transaction, (context) => this.value.runtime.finish(context, target.id, this.value.owner, chunk.sequence, chunk.token, chunk.rows.length - failures.length, failures));
       if (complete) return true;
     }
     await this.value.transactions.write(transaction, (context) => this.value.continue(context, target, nextSequence));
@@ -118,7 +119,9 @@ export class RuntimeBatchImportProcess implements BatchImportProcessPort {
     return this.value.transactions.write(options(this.value, target, execution), (context) => this.value.runtime.fault(context, target.id, this.value.owner, detail));
   }
 
-  private concurrency(): number { return this.value.concurrency ?? IMPORT_CAPACITY.maximumConcurrentRows; }
+  private concurrency(): number {
+    return this.value.concurrency ?? IMPORT_CAPACITY.maximumConcurrentRows;
+  }
 
   private async stageChunk(
     transaction: ReturnType<typeof options>,
@@ -133,8 +136,7 @@ export class RuntimeBatchImportProcess implements BatchImportProcessPort {
     const prepared = this.value.prepare ? await this.value.prepare(target, source, execution) : identityBatch(source);
     assertPrepared(source, prepared);
     const chunk = Object.freeze({ sequence, rows: Object.freeze([...prepared.rows]) });
-    await this.value.transactions.write(transaction,
-      (context) => this.value.runtime.stage(context, target.id, this.value.owner, [chunk], prepared.failures));
+    await this.value.transactions.write(transaction, (context) => this.value.runtime.stage(context, target.id, this.value.owner, [chunk], prepared.failures));
     return adaptiveSize(size, performance.now() - started);
   }
 }
@@ -147,9 +149,13 @@ function assertPrepared(source: readonly ImportCandidate[], prepared: ImportPrep
   const expected = source.map(({ row }) => row);
   const actual = prepared.rows.map(({ row }) => row);
   const failures = prepared.failures.map(({ row, reason }) => `${row}:${reason}`);
-  if (actual.length !== expected.length || actual.some((row, index) => row !== expected[index]) || new Set(failures).size !== failures.length ||
-    prepared.failures.some(({ row }) => !expected.includes(row)) || prepared.failures.some(({ reason, field, detail }) =>
-      !/^[A-Z][A-Z0-9_]{2,127}$/.test(reason) || (field !== null && (field.length < 1 || field.length > 128)) || detail.length > 500)) {
+  if (
+    actual.length !== expected.length ||
+    actual.some((row, index) => row !== expected[index]) ||
+    new Set(failures).size !== failures.length ||
+    prepared.failures.some(({ row }) => !expected.includes(row)) ||
+    prepared.failures.some(({ reason, field, detail }) => !/^[A-Z][A-Z0-9_]{2,127}$/.test(reason) || (field !== null && (field.length < 1 || field.length > 128)) || detail.length > 500)
+  ) {
     throw new Error('IMPORT_PREFLIGHT_INVALID');
   }
 }
@@ -170,8 +176,16 @@ function ownedRowFailure(cause: unknown, owner: string): boolean {
   return code === 'VALIDATION_FAILED' || code.startsWith(`${owner.toUpperCase()}_`);
 }
 
-function options(configuration: Pick<ImportBatchConfiguration, 'owner'>, target: Pick<ImportTarget, 'id' | 'scope'>,
-  execution: Pick<ImportExecution, 'signal' | 'deadline'>) {
-  return { tenant: target.scope, membership: '', scope: target.scope, actor: `job:${configuration.owner}import`, trace: target.id,
-    operation: `job.${configuration.owner}.import`, workload: 'jobs' as const, signal: execution.signal, deadline: execution.deadline };
+function options(configuration: Pick<ImportBatchConfiguration, 'owner'>, target: Pick<ImportTarget, 'id' | 'scope'>, execution: Pick<ImportExecution, 'signal' | 'deadline'>) {
+  return {
+    tenant: target.scope,
+    membership: '',
+    scope: target.scope,
+    actor: `job:${configuration.owner}import`,
+    trace: target.id,
+    operation: `job.${configuration.owner}.import`,
+    workload: 'jobs' as const,
+    signal: execution.signal,
+    deadline: execution.deadline,
+  };
 }

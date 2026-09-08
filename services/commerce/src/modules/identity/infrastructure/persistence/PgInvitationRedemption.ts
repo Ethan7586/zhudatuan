@@ -1,15 +1,15 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { SystemClock, type Clock } from '../../../../foundation/domain/Clock';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { SystemClock, type Clock } from '@shop/kernel';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { Invitation, type InvitationState } from '../../domain/model/Invitation';
 import { InvitationClaim } from '../../domain/model/InvitationClaim';
 import { InvitationReceipt } from '../../domain/model/InvitationReceipt';
 export class PgInvitationRedemption {
   protected readonly transactions = new PgTransactionAccess();
-  constructor(protected readonly clock: Clock = SystemClock) {}
+  constructor(protected readonly clock: Clock = new SystemClock()) {}
   async reserve(
     context: WriteTransactionContext,
     invitation: Invitation,

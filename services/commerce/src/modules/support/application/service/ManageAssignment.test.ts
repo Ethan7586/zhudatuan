@@ -7,10 +7,17 @@ const ticket = { id: 'ticket:one', conversation: 'conversation:one', scope: 'mal
 
 describe('ManageAssignment', () => {
   it('checks the locked version and appends history plus an outbox fact', async () => {
-    const assignments = { lockTicket: vi.fn(async () => ticket), assign: vi.fn(async () => ({ id: 'assignment:one', ticket_id: 'ticket:one', agent_id: 'agent:one', reason: '技能升级转派', assigned_at: '2026-09-02T00:00:00.000Z', released_at: null, scope_id: 'mall:one' })) };
+    const assignments = {
+      lockTicket: vi.fn(async () => ticket),
+      assign: vi.fn(async () => ({ id: 'assignment:one', ticket_id: 'ticket:one', agent_id: 'agent:one', reason: '技能升级转派', assigned_at: '2026-09-02T00:00:00.000Z', released_at: null, scope_id: 'mall:one' })),
+    };
     const events = { history: vi.fn(), append: vi.fn() };
     const service = create(assignments, events);
-    const response = await service.manageAssignment({} as never, { path: { assignmentid: 'assignment:one' }, body: { case: 'ticket:one', agent: 'agent:one', reason: '技能升级转派' } } as never, { expectedVersion: 4, traceId: 'trace:one' } as never);
+    const response = await service.manageAssignment(
+      {} as never,
+      { path: { assignmentid: 'assignment:one' }, body: { case: 'ticket:one', agent: 'agent:one', reason: '技能升级转派' } } as never,
+      { expectedVersion: 4, traceId: 'trace:one' } as never
+    );
     expect(response.headers?.etag).toBe('"5"');
     expect(assignments.assign).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ ticket, expectedVersion: 4 }));
     expect(events.history).toHaveBeenCalledOnce();
@@ -20,14 +27,18 @@ describe('ManageAssignment', () => {
   it('rejects concurrent transfer on a stale ticket', async () => {
     const assignments = { lockTicket: vi.fn(async () => ticket), assign: vi.fn() };
     const service = create(assignments, { history: vi.fn(), append: vi.fn() });
-    await expect(service.manageAssignment({} as never, { path: { assignmentid: 'assignment:two' }, body: { case: 'ticket:one', agent: 'agent:two', reason: '并发转派测试' } } as never, { expectedVersion: 3, traceId: 'trace:one' } as never)).rejects.toThrow('VERSION_CONFLICT');
+    await expect(
+      service.manageAssignment({} as never, { path: { assignmentid: 'assignment:two' }, body: { case: 'ticket:one', agent: 'agent:two', reason: '并发转派测试' } } as never, { expectedVersion: 3, traceId: 'trace:one' } as never)
+    ).rejects.toThrow('VERSION_CONFLICT');
     expect(assignments.assign).not.toHaveBeenCalled();
   });
 
   it('rejects a requested agent that the shared automatic policy excludes', async () => {
     const assignments = { lockTicket: vi.fn(async () => ticket), assign: vi.fn() };
     const service = create(assignments, { history: vi.fn(), append: vi.fn() }, { load: 10, capacity: 10 });
-    await expect(service.manageAssignment({} as never, { path: { assignmentid: 'assignment:two' }, body: { case: 'ticket:one', agent: 'agent:one', reason: '人工转派' } } as never, { expectedVersion: 4, traceId: 'trace:one' } as never)).rejects.toThrow('SUPPORT_AGENT_INVALID');
+    await expect(
+      service.manageAssignment({} as never, { path: { assignmentid: 'assignment:two' }, body: { case: 'ticket:one', agent: 'agent:one', reason: '人工转派' } } as never, { expectedVersion: 4, traceId: 'trace:one' } as never)
+    ).rejects.toThrow('SUPPORT_AGENT_INVALID');
     expect(assignments.assign).not.toHaveBeenCalled();
   });
 });

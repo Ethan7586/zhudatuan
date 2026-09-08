@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { EncryptedSupportMessage, MessageStore, StoredSupportMessage } from '../../application/port/SupportPersistence';
 
 export class PgMessageRepository implements MessageStore {
@@ -16,7 +16,17 @@ export class PgMessageRepository implements MessageStore {
 
   async append(
     context: WriteTransactionContext,
-    input: Readonly<{ scope: string; conversation: string; authorType: MessageRow['author_type']; authorId: string; kind: MessageRow['kind']; visibility: MessageRow['visibility']; sequence: number; message: EncryptedSupportMessage; attachments: readonly string[] }>
+    input: Readonly<{
+      scope: string;
+      conversation: string;
+      authorType: MessageRow['author_type'];
+      authorId: string;
+      kind: MessageRow['kind'];
+      visibility: MessageRow['visibility'];
+      sequence: number;
+      message: EncryptedSupportMessage;
+      attachments: readonly string[];
+    }>
   ): Promise<StoredSupportMessage> {
     const database = this.transactions.database(context);
     const result = await database.query<MessageRow>(

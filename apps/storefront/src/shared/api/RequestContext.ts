@@ -1,4 +1,4 @@
-import { createRequestContext, type RequestContext } from '@shop/sdk';
+import { createRequestContext, type RequestContext } from '@shop/sdk/context';
 import type { StorefrontHandle } from '@shop/contract';
 import type { StorefrontSession } from '../../entity/session';
 

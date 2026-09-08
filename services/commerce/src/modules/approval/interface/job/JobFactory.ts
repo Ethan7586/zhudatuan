@@ -1,4 +1,4 @@
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
 import type { EscalateApproval } from '../../application/process/EscalateApproval';
 import { ApprovalEscalationJob } from './ApprovalEscalationJob';
 

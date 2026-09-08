@@ -1,6 +1,6 @@
 import type { IdentityInvitationsCreateBody } from '@shop/contract';
-import type { OperationResult } from '../../../../foundation/application/OperationRequest';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { OperationResult } from '../../../../pipeline/OperationRequest';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { InvitationDigest } from '../port/InvitationSecurity';
 import type { PreparedEmployeeInvitation } from './PrepareEmployeeInvitation';
 import type { OneTimeInvitationCode } from './PrepareEmployeeInvitation';
@@ -35,12 +35,7 @@ type InvitationReceiptRow = Readonly<{
   version: number;
 }>;
 
-export function invitationReceipt(
-  row: InvitationReceiptRow,
-  code: string,
-  recipientMasked?: string,
-  employee?: Readonly<{ displayName: string; employeeNo?: string }>
-): OperationResult {
+export function invitationReceipt(row: InvitationReceiptRow, code: string, recipientMasked?: string, employee?: Readonly<{ displayName: string; employeeNo?: string }>): OperationResult {
   if (row.status !== 'active') throw new Error('INVITATION_ACTIVATION_FAILED');
   return {
     status: 201,

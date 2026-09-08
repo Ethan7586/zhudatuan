@@ -1,6 +1,6 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
 import type { ReadStateRepository } from '../port/SupportRepositories';
 
 export class ReadstatesManageHandler implements OperationHandler<'support.readstates.manage', 'write'> {

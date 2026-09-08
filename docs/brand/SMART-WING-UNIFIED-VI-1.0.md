@@ -259,7 +259,7 @@ AI 功能使用智慧蓝圆形 `AI` 标记和翼形线纹，不额外建立紫�
 
 | 资产           | 路径                                                              |
 | -------------- | ----------------------------------------------------------------- |
-| Web/CSS 令牌   | `packages/design/src/tokens.css`                                  |
+| Web/CSS 令牌   | `packages/design/src/token/Tokens.css`                            |
 | 跨平台原始令牌 | `packages/design/src/tokens.json`                                 |
 | 三端映射       | `packages/design/src/mobile-platforms.json`                       |
 | 主标志         | `packages/design/src/brand/brand-mark.svg`                        |

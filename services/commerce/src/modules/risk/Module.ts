@@ -1,4 +1,4 @@
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { defineModule } from '../../composition/DefinedModule';
 import { Manifest } from './Manifest';
 import { createJobs } from './interface/job/JobFactory';
 import { EvaluateRiskDecision } from './infrastructure/persistence/EvaluateRiskDecision';
@@ -7,8 +7,8 @@ import { CenterReadHandler } from './application/handler/CenterReadHandler';
 import { PoliciesManageHandler } from './application/handler/PoliciesManageHandler';
 import { CasesReviewHandler } from './application/handler/CasesReviewHandler';
 import { PgRiskAdministrationRepository } from './infrastructure/persistence/PgRiskAdministrationRepository';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { PgJobScheduler } from '../../adapter/database/PgJobScheduler';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { PgJobScheduler } from '../../platform/database/PgJobScheduler';
 import { MEMBER_READ_PORT } from '../member/public';
 import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
 

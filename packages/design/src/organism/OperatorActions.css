@@ -1,0 +1,210 @@
+.operatoractions {
+  margin-bottom: var(--sw-space-3);
+  padding: 20px;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  box-shadow: var(--sw-shadow-card);
+}
+
+.operatoractions h2,
+.operatoractions p {
+  margin: 0;
+}
+
+.operatoractions > header p,
+.operatoractionchoice span,
+.operatoractionheading p {
+  color: var(--sw-text-secondary);
+  font-size: 14px;
+}
+
+.operatoractionchoices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.operatoractionchoice {
+  display: grid;
+  gap: 4px;
+  min-height: 64px;
+  padding: 12px 16px;
+  border: 1px solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  text-align: left;
+  background: var(--sw-surface);
+  cursor: pointer;
+}
+
+.operatoractionchoice:hover,
+.operatoractionchoice[aria-pressed='true'] {
+  border-color: var(--sw-primary);
+  background: var(--sw-surface-muted);
+}
+
+.operatoractionchoice:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.operatoractionprimary strong {
+  color: var(--sw-primary);
+}
+
+.operatoractiondanger strong {
+  color: var(--sw-danger-strong);
+}
+
+.operatoractionform {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-background);
+}
+
+.operatoractionheading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.operatoractionheading button,
+.camerascanner button {
+  min-height: 44px;
+  border: 0;
+  color: var(--sw-primary);
+  background: transparent;
+  cursor: pointer;
+}
+
+.operatorfields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.operatorfields label {
+  display: grid;
+  gap: 7px;
+  font-weight: 650;
+}
+
+.operatorfields input,
+.operatorfields select,
+.operatorfields textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  color: var(--sw-text);
+  background: var(--sw-surface);
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.operatorfields textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.operatorfieldinput {
+  display: flex;
+  gap: 8px;
+}
+
+.operatorfieldinput button {
+  min-width: 96px;
+  min-height: 48px;
+  border: 1px solid var(--sw-primary);
+  border-radius: var(--sw-radius-sm);
+  color: var(--sw-primary);
+  background: var(--sw-surface);
+}
+
+.operatorsubmit {
+  justify-self: start;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: var(--sw-radius-sm);
+  color: white;
+  background: var(--sw-primary);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.operatorsubmit.operatoractiondanger {
+  background: var(--sw-danger-strong);
+}
+
+.operatorsubmit:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.operatornotice {
+  margin-top: 14px !important;
+  padding: 12px 14px;
+  border-radius: var(--sw-radius-sm);
+}
+
+.operatornotice.success {
+  color: var(--sw-success-strong);
+  background: color-mix(in srgb, var(--sw-success-strong) 10%, white);
+}
+
+.operatornotice.error {
+  color: var(--sw-danger-strong);
+  background: color-mix(in srgb, var(--sw-danger-strong) 10%, white);
+}
+
+.camerascanner {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(0 0 0/0.64);
+}
+
+.camerascanner > div {
+  width: min(560px, 100%);
+  padding: 18px;
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+}
+
+.camerascanner header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.camerascanner video {
+  width: 100%;
+  max-height: 65vh;
+  margin-top: 12px;
+  border-radius: var(--sw-radius-sm);
+  background: #101820;
+}
+
+@media (max-width: 767px) {
+  .operatoractions {
+    padding: 16px;
+  }
+
+  .operatoractionchoices,
+  .operatorfields {
+    grid-template-columns: 1fr;
+  }
+
+  .operatorsubmit {
+    width: 100%;
+  }
+}

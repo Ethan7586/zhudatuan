@@ -1,21 +1,37 @@
 import { expect, type Page } from '@playwright/test';
-import { LOCAL_CONSOLE_ORIGIN, LOCAL_STOREFRONT_ORIGIN } from '@shop/config/client';
+import { LOCAL_AUTH_ORIGIN, LOCAL_CONSOLE_ORIGIN, LOCAL_STOREFRONT_ORIGIN, type AuthTarget } from '@shop/config/client';
 import { localSeedEnvironment } from '@shop/config/server';
 import { localSecret } from '../../tools/seed/src/LocalSecrets';
 
 const account = 'ethan';
 
 export async function signInStorefront(page: Page, path = '/cart'): Promise<void> {
-  const target = `${LOCAL_STOREFRONT_ORIGIN}/s/zhudatuan-local${path}`;
-  await page.goto(target);
+  const returnPath = `/s/zhudatuan-local${path}`;
+  const target = `${LOCAL_STOREFRONT_ORIGIN}${returnPath}`;
+  const login = new URL('/', LOCAL_AUTH_ORIGIN);
+  login.searchParams.set('target', 'storefront');
+  login.searchParams.set('returnpath', returnPath);
+  await page.goto(login.toString());
   await completePasswordSignIn(page);
   await page.waitForURL(target, { timeout: 20_000, waitUntil: 'commit' });
 }
 
 export async function signInConsole(page: Page): Promise<void> {
-  await page.goto(`${LOCAL_CONSOLE_ORIGIN}/scopes/platform/organization-platform-root/control`);
+  const target = `${LOCAL_CONSOLE_ORIGIN}/scopes/platform/organization-platform-root/control`;
+  await page.goto(target);
   await completePasswordSignIn(page);
+  await page.waitForURL(new RegExp(`^${escape(LOCAL_CONSOLE_ORIGIN)}(?:/|$)`), { timeout: 20_000, waitUntil: 'commit' });
+  if (!new URL(page.url()).pathname.startsWith('/scopes/')) await page.goto(target, { waitUntil: 'commit' });
   await page.waitForURL(new RegExp(`^${escape(LOCAL_CONSOLE_ORIGIN)}/scopes/`), { timeout: 20_000, waitUntil: 'commit' });
+}
+
+export async function signInSurface(page: Page, target: AuthTarget, origin: string, path: string): Promise<void> {
+  const destination = `${origin}${path}`;
+  await page.goto(destination);
+  await completePasswordSignIn(page);
+  await page.waitForURL(new RegExp(`^${escape(origin)}(?:/|$)`), { timeout: 20_000, waitUntil: 'commit' });
+  if (new URL(page.url()).pathname === '/') await page.goto(destination, { waitUntil: 'commit' });
+  await page.waitForURL(new RegExp(`^${escape(origin)}/`), { timeout: 20_000, waitUntil: 'commit' });
 }
 
 export async function completePasswordSignIn(page: Page): Promise<void> {

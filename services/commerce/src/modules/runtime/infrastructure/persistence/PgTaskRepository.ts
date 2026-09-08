@@ -1,6 +1,6 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { TaskConfirmation, TaskMutation, TaskQuery, TaskRepository } from '../../application/port/TaskRepository';
 import { ExportRegistry } from '../../application/registry/ExportRegistry';
 import { ImportRegistry } from '../../application/registry/ImportRegistry';
@@ -79,20 +79,25 @@ export class PgTaskRepository implements TaskRepository {
   ) {}
 
   async list(context: ReadTransactionContext, query: TaskQuery): Promise<readonly RuntimeTask[]> {
-    const result = await this.transactions.database(context).query<TaskRow>(`${taskSelect}
+    const result = await this.transactions.database(context).query<TaskRow>(
+      `${taskSelect}
       select id,type,owner,kind,state,processed,total,succeeded,failed,"retryableItems",version,"createdAt","updatedAt","expiresAt","fileName","downloadAvailable","cancelRequested","confirmationRequired","previewHash",columns,"validationErrors"
       from tasks where scope_id=$1 and $1=nullif(current_setting('app.scope_id',true),'') and created_by=$2
         and ($3::text is null or type=$3) and ($4::text is null or state=$4) and ($5::text is null or owner=$5)
         and ($6::timestamptz is null or ("createdAt",id)<($6::timestamptz,$7))
       order by "createdAt" desc,id desc limit $8`,
-    [query.scope, query.actor, query.type, query.state, query.owner, query.cursorTime, query.cursorId, query.fetch]);
+      [query.scope, query.actor, query.type, query.state, query.owner, query.cursorTime, query.cursorId, query.fetch]
+    );
     return Object.freeze(result.rows.map((row) => this.task(row)));
   }
 
   async read(context: ReadTransactionContext, id: string, scope: string, actor: string): Promise<RuntimeTask | null> {
-    const result = await this.transactions.database(context).query<TaskRow>(`${taskSelect}
+    const result = await this.transactions.database(context).query<TaskRow>(
+      `${taskSelect}
       select id,type,owner,kind,state,processed,total,succeeded,failed,"retryableItems",version,"createdAt","updatedAt","expiresAt","fileName","downloadAvailable","cancelRequested","confirmationRequired","previewHash",columns,"validationErrors"
-      from tasks where id=$1 and scope_id=$2 and $2=nullif(current_setting('app.scope_id',true),'') and created_by=$3`, [id, scope, actor]);
+      from tasks where id=$1 and scope_id=$2 and $2=nullif(current_setting('app.scope_id',true),'') and created_by=$3`,
+      [id, scope, actor]
+    );
     return result.rows[0] ? this.task(result.rows[0]) : null;
   }
 
@@ -102,25 +107,34 @@ export class PgTaskRepository implements TaskRepository {
     current.assertCancellation(input.expectedVersion);
     const database = this.transactions.database(context);
     if (input.id.startsWith('job:')) {
-      const changed = await database.query(`update runtime.jobs set state=case when state='queued' then 'cancelled' else state end,
+      const changed = await database.query(
+        `update runtime.jobs set state=case when state='queued' then 'cancelled' else state end,
         cancel_requested_at=clock_timestamp(),checkpoint=checkpoint||jsonb_build_object('cancelReason',$5::text),
         version=version+1,updated_by=$3,updated_at=clock_timestamp()
         where id=$1 and scope_id=$2 and created_by=$3 and version=$4 and state in('queued','running') and cancel_requested_at is null returning id`,
-      [input.id, input.scope, input.actor, input.expectedVersion, input.reason]);
+        [input.id, input.scope, input.actor, input.expectedVersion, input.reason]
+      );
       this.assertChanged(changed.rowCount);
     } else if (input.id.startsWith('import:')) {
-      await database.query(`update runtime.import_chunks set state='failed',lease_expires_at=null,
+      await database.query(
+        `update runtime.import_chunks set state='failed',lease_expires_at=null,
         checkpoint=checkpoint||jsonb_build_object('cancelled',true),version=version+1,updated_at=clock_timestamp()
-        where import_id=$1 and state='running'`, [input.id]);
-      const changed = await database.query(`update runtime.imports set state='cancelled',checkpoint=checkpoint||jsonb_build_object('cancelReason',$5::text),
+        where import_id=$1 and state='running'`,
+        [input.id]
+      );
+      const changed = await database.query(
+        `update runtime.imports set state='cancelled',checkpoint=checkpoint||jsonb_build_object('cancelReason',$5::text),
         version=version+1,updated_by=$3,updated_at=clock_timestamp()
         where id=$1 and scope_id=$2 and created_by=$3 and version=$4 and state in('uploaded','scanning','preflight','ready','running') returning id`,
-      [input.id, input.scope, input.actor, input.expectedVersion, input.reason]);
+        [input.id, input.scope, input.actor, input.expectedVersion, input.reason]
+      );
       this.assertChanged(changed.rowCount);
     } else if (input.id.startsWith('export:')) {
-      const changed = await database.query(`update runtime.exports set state='cancelled',version=version+1,updated_by=$3,updated_at=clock_timestamp()
+      const changed = await database.query(
+        `update runtime.exports set state='cancelled',version=version+1,updated_by=$3,updated_at=clock_timestamp()
         where id=$1 and scope_id=$2 and created_by=$3 and version=$4 and state in('queued','running') returning id`,
-      [input.id, input.scope, input.actor, input.expectedVersion]);
+        [input.id, input.scope, input.actor, input.expectedVersion]
+      );
       this.assertChanged(changed.rowCount);
     } else throw new DomainError('RESOURCE_NOT_FOUND');
     return this.read(context, input.id, input.scope, input.actor);
@@ -131,7 +145,8 @@ export class PgTaskRepository implements TaskRepository {
     const current = await this.read(context, input.id, input.scope, input.actor);
     if (!current) return null;
     current.assertRetry(input.expectedVersion);
-    const changed = await this.transactions.database(context).query(`with candidates as materialized(
+    const changed = await this.transactions.database(context).query(
+      `with candidates as materialized(
         select chunk.id,chunk.state,chunk.row_start,chunk.row_end,chunk.checkpoint from runtime.import_chunks chunk
         where chunk.import_id=$1 and (chunk.state='failed' or exists(select 1 from runtime.import_errors failure
           where failure.import_id=chunk.import_id and failure.row_number between chunk.row_start and chunk.row_end))
@@ -150,7 +165,8 @@ export class PgTaskRepository implements TaskRepository {
         'retryReason',$5::text,'retriedAt',clock_timestamp(),'resetChunks',(select count(*) from reset),'removedErrors',(select count(*) from removed)),
       version=version+1,updated_by=$3,updated_at=clock_timestamp()
       where id=$1 and scope_id=$2 and created_by=$3 and version=$4 and state in('failed','rejected') returning id`,
-    [input.id, input.scope, input.actor, input.expectedVersion, input.reason]);
+      [input.id, input.scope, input.actor, input.expectedVersion, input.reason]
+    );
     this.assertChanged(changed.rowCount);
     return this.read(context, input.id, input.scope, input.actor);
   }

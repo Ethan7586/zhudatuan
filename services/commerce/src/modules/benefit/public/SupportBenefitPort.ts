@@ -1,5 +1,5 @@
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
 
 export interface SupportBenefitPort {
   lot(context: ReadTransactionContext, id: string, member: string, scopes: readonly string[]): Promise<Readonly<Record<string, unknown>> | null>;

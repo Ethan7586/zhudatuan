@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { DatabasePool } from '../../../foundation/persistence/Pool';
+import type { DatabasePool } from '../../../platform/database/Pool';
 import { PgNavigationOrganization } from './persistence/PgNavigationOrganization';
 import { result, withReadTransaction } from '../../../test/TransactionFixture';
 

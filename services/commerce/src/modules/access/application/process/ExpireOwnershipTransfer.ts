@@ -1,4 +1,4 @@
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import type { OwnershipRepository } from '../port/OwnershipRepository';
 
 export interface OwnershipExpiryRequest {
@@ -11,7 +11,10 @@ export interface OwnershipExpiryRequest {
 }
 
 export class ExpireOwnershipTransfer {
-  constructor(private readonly transactions: TransactionManager, private readonly repository: Pick<OwnershipRepository, 'expire'>) {}
+  constructor(
+    private readonly transactions: TransactionManager,
+    private readonly repository: Pick<OwnershipRepository, 'expire'>
+  ) {}
 
   async execute(request: OwnershipExpiryRequest): Promise<void> {
     if (request.signal.aborted) throw request.signal.reason ?? new Error('JOB_ABORTED');

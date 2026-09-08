@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { PgRuntimeWriter, type RuntimeSql } from '../../../../adapter/database/PgRuntimeWriter';
+import { PgRuntimeWriter, type RuntimeSql } from '../../../../platform/database/PgRuntimeWriter';
 
 export async function enqueueFulfillment(database: RuntimeSql, kind: string, scope: string, payload: unknown, delay: number) {
   await new PgRuntimeWriter(database).schedule({ id: `job:${randomUUID()}`, kind, owner: 'fulfillment', scope, payload: jobPayload(payload), priority: 20, availableAt: new Date(Date.now() + delay * 1000).toISOString() });

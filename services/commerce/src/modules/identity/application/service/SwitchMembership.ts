@@ -1,10 +1,10 @@
 import { IdentityAction as OperationAction } from '../model/IdentityAction';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 
-import { reject } from '../../../../foundation/application/OperationRejection';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
+import { reject } from '../../../../pipeline/OperationRejection';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
 
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
 import type { IdentityAccessPort } from '../../../access/public';
 import type { IdentityMemberPort } from '../../../member/public';
 import type { IdentityEventRepository } from '../port/IdentityEventRepository';

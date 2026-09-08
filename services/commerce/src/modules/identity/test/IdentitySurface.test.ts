@@ -6,18 +6,28 @@ import { PgMembershipContext } from '../infrastructure/persistence/PgMembershipC
 import { withReadTransaction } from '../../../test/TransactionFixture';
 
 const publicSessionOperations = [
-  'identity.sessions.create', 'identity.sessions.complete', 'identity.tickets.exchange',
-  'identity.memberships.read', 'identity.memberships.switch', 'identity.bootstrap.read',
-  'identity.federations.start', 'identity.federations.callback', 'identity.federations.selection.read', 'identity.federations.complete',
+  'identity.sessions.create',
+  'identity.sessions.complete',
+  'identity.tickets.exchange',
+  'identity.memberships.read',
+  'identity.memberships.switch',
+  'identity.bootstrap.read',
+  'identity.federations.start',
+  'identity.federations.callback',
+  'identity.federations.selection.read',
+  'identity.federations.complete',
 ] as const;
 
 describe('identity capability and six-surface contract', () => {
-  it('publishes exactly the 37 canonical identity operations without LI compatibility aliases', () => {
+  it('publishes exactly the 39 canonical identity operations without LI compatibility aliases', () => {
     const operations = OperationCatalog.all().filter(({ module }) => module === 'identity');
-    expect(operations).toHaveLength(37);
+    expect(operations).toHaveLength(39);
     expect(new Set(IdentityCapabilities)).toEqual(new Set(['identity.federation', 'identity.registration.reset', ...operations.map(({ capability }) => capability)]));
     for (const alias of ['identity.storefronts.read', 'identity.wechat.session', 'identity.wechat.bind', 'identity.members.create', 'identity.members.reset']) {
-      expect(operations.some(({ id }) => id === alias), alias).toBe(false);
+      expect(
+        operations.some(({ id }) => id === alias),
+        alias
+      ).toBe(false);
     }
   });
 

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { JOB_CATALOG } from '../../services/commerce/src/foundation/application/JobCatalog';
+import { JOB_CATALOG } from '../../services/commerce/src/pipeline/JobCatalog';
 
 const root = process.cwd();
 const incidents = [
@@ -33,7 +33,7 @@ test('every registered job links to a complete owner runbook', () => {
     assert.equal(existsSync(path), true, `${job.id} runbook is missing`);
     const text = readFileSync(path, 'utf8').toLowerCase();
     for (const topic of topics) assert.match(text, new RegExp(topic.replace(' ', '.?')), `${job.id} lacks ${topic}`);
-    assert.equal(job.deadLetter, 'runtime.deadletter');
+    assert.equal(job.deadLetter, 'runtime.deadletters');
     assert.equal(job.idempotency, 'jobid');
   }
 });

@@ -1,11 +1,11 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ExtensionListRow, ExtensionRepository, InstallInput, RegisteredManifest } from '../../application/port/ExtensionLoader';
 import type { HealthRecord } from '../../domain/model/HealthRecord';
 import { Installation, type InstallationState } from '../../domain/model/Installation';
 import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
 
 interface InstallationRow {
   readonly id: string;

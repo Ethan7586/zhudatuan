@@ -1,6 +1,6 @@
 import { checkScope, precheck } from '@shop/authz';
 import { OperationCatalog } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { TaskAuthorizationPort } from '../../public/TaskAuthorizationPort';
 import type { AuthorizationRepository } from '../port/AuthorizationRepository';
 
@@ -22,22 +22,41 @@ export class TaskAuthorization implements TaskAuthorizationPort {
     const captured = Date.parse(text(evidence.capturedAt));
     if (!Number.isFinite(captured) || captured > now.getTime() + 5_000 || scope !== context.scope) deny();
     let definition;
-    try { definition = OperationCatalog.get(operation); } catch { deny(); }
+    try {
+      definition = OperationCatalog.get(operation);
+    } catch {
+      deny();
+    }
     if (definition.permission === null || !(definition.targets as readonly string[]).includes(target)) deny();
 
     // The authoritative snapshot includes principal and membership status, effective
     // roles/overrides/scopes and current entitlements. Do not cache this across pages.
     const current = await this.repository.snapshot(context, { membership, target, operation, resource: scope });
-    if (!current || !current.active || current.membership !== membership || current.target !== target || current.organization !== organization
-      || current.credentialVersion !== credentialVersion || current.capabilityVersion !== capabilityVersion
-      || current.resource.id !== scope || !current.operations.includes(operation)) deny();
-    const member = { id: current.membership, active: current.active, accessVersion: current.accessVersion,
-      permissions: { allows: new Set(current.allows), denies: new Set(current.denies) }, scopes: current.scopes };
-    if (precheck(member, definition.permission, { expectedAccessVersion: accessVersion, now }) !== null
-      || 'reason' in checkScope(member, definition.permission, current.resource, now)) deny();
+    if (
+      !current ||
+      !current.active ||
+      current.membership !== membership ||
+      current.target !== target ||
+      current.organization !== organization ||
+      current.credentialVersion !== credentialVersion ||
+      current.capabilityVersion !== capabilityVersion ||
+      current.resource.id !== scope ||
+      !current.operations.includes(operation)
+    )
+      deny();
+    const member = { id: current.membership, active: current.active, accessVersion: current.accessVersion, permissions: { allows: new Set(current.allows), denies: new Set(current.denies) }, scopes: current.scopes };
+    if (precheck(member, definition.permission, { expectedAccessVersion: accessVersion, now }) !== null || 'reason' in checkScope(member, definition.permission, current.resource, now)) deny();
   }
 }
 
-function deny(): never { throw new DomainError('AUTHORIZATION_DENIED'); }
-function text(value: unknown): string { if (typeof value !== 'string' || !value.trim() || value.length > 255) deny(); return value; }
-function version(value: unknown): number { if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1) deny(); return value; }
+function deny(): never {
+  throw new DomainError('AUTHORIZATION_DENIED');
+}
+function text(value: unknown): string {
+  if (typeof value !== 'string' || !value.trim() || value.length > 255) deny();
+  return value;
+}
+function version(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1) deny();
+  return value;
+}

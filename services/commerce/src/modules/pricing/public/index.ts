@@ -1,5 +1,5 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../platform/database/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
 export type { ProviderPrice } from './ProviderPrice';
 
 export interface CheckoutPricingPort {
@@ -57,7 +57,10 @@ export interface CatalogPricingPort {
   prices(context: ReadTransactionContext, skus: readonly string[], scopes: readonly string[]): Promise<readonly Readonly<Record<string, unknown>>[]>;
 }
 export interface CatalogPriceCommandPort {
-  setPrice(context: WriteTransactionContext, input: Readonly<{ scope: string; sku: string; amountMinor: number; currency: 'CNY'; expectedVersion: number }>): Promise<Readonly<{ sku: string; scope: string; amountMinor: number; currency: 'CNY'; version: number; effectiveAt: string; updatedAt: string }>>;
+  setPrice(
+    context: WriteTransactionContext,
+    input: Readonly<{ scope: string; sku: string; amountMinor: number; currency: 'CNY'; expectedVersion: number }>
+  ): Promise<Readonly<{ sku: string; scope: string; amountMinor: number; currency: 'CNY'; version: number; effectiveAt: string; updatedAt: string }>>;
 }
 export const CATALOG_PRICE_COMMAND_PORT = publicPort<CatalogPriceCommandPort>('pricing', 'catalogcommand');
 export const CHECKOUT_PRICING_PORT = publicPort<CheckoutPricingPort>('pricing', 'checkout');

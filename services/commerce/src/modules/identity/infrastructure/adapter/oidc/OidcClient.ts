@@ -1,6 +1,6 @@
-import { DomainError } from '../../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../../platform/error/DomainError';
 import { IDENTITY_PROVIDER_CONFIGURATION } from '@shop/config/server';
-import { Singleflight } from '../../../../../foundation/performance/Singleflight';
+import { Singleflight } from '@shop/kernel';
 import type { JsonWebKey as CryptoJsonWebKey } from 'node:crypto';
 import type { ProviderInstance } from '../../../domain/model/ProviderInstance';
 import type { ProviderHttpClient } from '../../security/ProviderHttpClient';
@@ -42,7 +42,7 @@ export class OidcClient {
       `jwks:${metadata.jwks}`,
       async () => {
         const response = await this.client.send(metadata.jwks, { headers: { accept: 'application/json' } }, { mode: 'read', signal, deadline });
-        const body = await this.client.json(response, 'IDENTITY_PROVIDER_UNAVAILABLE') as { keys?: unknown };
+        const body = (await this.client.json(response, 'IDENTITY_PROVIDER_UNAVAILABLE')) as { keys?: unknown };
         if (!Array.isArray(body.keys) || body.keys.length > 100) throw new DomainError('IDENTITY_PROVIDER_UNAVAILABLE');
         const keys = Object.freeze(body.keys.filter((key): key is OidcJwk => key !== null && typeof key === 'object').map((key) => Object.freeze(key)));
         this.keys.set(metadata.jwks, Object.freeze({ value: keys, expires: Date.now() + IDENTITY_PROVIDER_CONFIGURATION.jwksTtlSeconds * 1_000 }));

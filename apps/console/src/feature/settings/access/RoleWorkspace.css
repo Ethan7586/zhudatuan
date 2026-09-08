@@ -1,0 +1,125 @@
+.accessreceipt {
+  position: fixed;
+  right: var(--sw-space-3);
+  bottom: var(--sw-space-3);
+  z-index: 80;
+  display: grid;
+  max-width: 28rem;
+  gap: var(--sw-space-1);
+  border: 0.0625rem solid var(--sw-success-strong);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  padding: var(--sw-space-2);
+  box-shadow: var(--sw-shadow-lg);
+}
+.accesstasks {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sw-space-1);
+}
+.accesstasks button {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1-5);
+  color: var(--sw-text-secondary);
+  text-align: left;
+  cursor: pointer;
+}
+.accesstasks button[aria-current='page'] {
+  border-color: var(--sw-brand);
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-dark);
+}
+.accesstasks button > span { display: flex; align-items: center; justify-content: space-between; gap: var(--sw-space-1); font-weight: 800; }
+.accesstasks b { min-width: 1.5rem; border-radius: 999px; background: var(--sw-surface-subtle); padding: 0.15rem 0.45rem; text-align: center; }
+.accesstasks small { color: var(--sw-muted); }
+.roleworkspace { display: grid; gap: var(--sw-space-2); }
+.roleworkspace > header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sw-space-2); }
+.roleworkspace h2,
+.roleworkspace h3,
+.roleworkspace p,
+.roletemplates h2,
+.roletemplates p,
+.rolepermissions h2,
+.rolepermissions p,
+.rolereview h2,
+.rolereview p { margin: 0; }
+.rolecards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sw-space-2); }
+.rolecard { display: grid; align-content: start; gap: var(--sw-space-1-5); border: 0.0625rem solid var(--sw-border); border-radius: var(--sw-radius-md); background: var(--sw-surface); padding: var(--sw-space-2); }
+.rolecard > header { display: flex; justify-content: space-between; gap: var(--sw-space-1); }
+.rolecard > header > div { display: grid; gap: 0.25rem; }
+.rolecard > header span,
+.rolecard > header p,
+.rolecard small,
+.roleemptyline { color: var(--sw-muted); font-size: var(--sw-font-size-caption); }
+.rolecard > header b { align-self: flex-start; border-radius: 999px; padding: 0.25rem 0.6rem; font-size: var(--sw-font-size-caption); }
+.rolecard > header b.active { background: var(--sw-success-surface); color: var(--sw-success-strong); }
+.rolecard > header b.disabled { background: var(--sw-surface-subtle); color: var(--sw-muted); }
+.rolemetrics,
+.roleimpactgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sw-space-1); }
+.rolemetrics span,
+.roleimpactgrid span { display: grid; gap: 0.15rem; border-radius: var(--sw-radius-sm); background: var(--sw-surface-subtle); padding: var(--sw-space-1); color: var(--sw-muted); font-size: var(--sw-font-size-caption); }
+.rolemetrics strong,
+.roleimpactgrid strong { color: var(--sw-text); font-size: var(--sw-font-size-body); }
+.rolemembers { display: grid; gap: var(--sw-space-0-5); margin: 0; padding: 0; list-style: none; }
+.rolemembers li { display: flex; align-items: center; justify-content: space-between; gap: var(--sw-space-1); border-top: 0.0625rem solid var(--sw-border); padding-top: var(--sw-space-1); }
+.rolemembers li span { display: grid; }
+.roleassign { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--sw-space-1); }
+.roleassign label { display: grid; gap: var(--sw-space-0-5); color: var(--sw-text-secondary); font-weight: 700; }
+.roleassign select { min-height: 2.5rem; border: 0.0625rem solid var(--sw-border); border-radius: var(--sw-radius-sm); background: var(--sw-surface); padding: var(--sw-space-1); }
+.rolecard > footer { display: flex; flex-wrap: wrap; gap: var(--sw-space-1); border-top: 0.0625rem solid var(--sw-border); padding-top: var(--sw-space-1); }
+.roleempty { display: grid; gap: var(--sw-space-0-5); border: 0.0625rem dashed var(--sw-border); border-radius: var(--sw-radius-md); background: var(--sw-surface-subtle); padding: var(--sw-space-3); text-align: center; }
+.roleempty span { color: var(--sw-muted); }
+.rolejourney { min-width: min(52rem, 80vw); }
+.rolesteps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sw-space-1); }
+.rolesteps button { display: flex; align-items: center; gap: var(--sw-space-1); border: 0; border-radius: var(--sw-radius-sm); background: var(--sw-surface-subtle); padding: var(--sw-space-1); color: var(--sw-muted); cursor: pointer; }
+.rolesteps button[aria-current='step'] { background: var(--sw-brand-light); color: var(--sw-brand-dark); font-weight: 800; }
+.rolesteps button span { display: grid; width: 1.75rem; height: 1.75rem; place-items: center; border-radius: 999px; background: var(--sw-surface); }
+.roletemplates,
+.rolepermissions,
+.rolereview { display: grid; gap: var(--sw-space-2); }
+.roletemplates > header,
+.rolepermissions > header,
+.rolereview > header { display: grid; gap: var(--sw-space-0-5); }
+.roletemplates > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sw-space-1); }
+.roletemplates > div > button { display: grid; gap: var(--sw-space-0-5); border: 0.0625rem solid var(--sw-border); border-radius: var(--sw-radius-md); background: var(--sw-surface); padding: var(--sw-space-1-5); color: var(--sw-text-secondary); text-align: left; cursor: pointer; }
+.roletemplates > div > button.selected { border-color: var(--sw-brand); background: var(--sw-brand-light); color: var(--sw-brand-dark); }
+.roletemplates button span,
+.roletemplates button small { color: var(--sw-muted); }
+.rolescope { display: grid; gap: 0.2rem; border: 0.0625rem solid var(--sw-border); border-radius: var(--sw-radius-md); background: var(--sw-surface-subtle); padding: var(--sw-space-2); }
+.rolescope span,
+.rolescope small { color: var(--sw-muted); }
+.rolepermissionsummary { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sw-space-1); }
+.rolepermissionsummary > span { display: flex; align-items: baseline; gap: 0.3rem; border-radius: var(--sw-radius-sm); background: var(--sw-surface-subtle); padding: var(--sw-space-1); color: var(--sw-muted); }
+.roleadvanced { display: grid; gap: var(--sw-space-1); }
+.roleadvanced > label { display: grid; gap: var(--sw-space-0-5); color: var(--sw-text-secondary); font-weight: 700; }
+.roleadvanced details { border: 0.0625rem solid var(--sw-border); border-radius: var(--sw-radius-sm); background: var(--sw-surface); }
+.roleadvanced summary { display: flex; justify-content: space-between; padding: var(--sw-space-1); cursor: pointer; font-weight: 800; }
+.roleadvanced .accessmatrix { max-height: none; border: 0; border-top: 0.0625rem solid var(--sw-border); border-radius: 0; }
+.accessmatrixrow code { color: var(--sw-muted); font-size: var(--sw-font-size-caption); overflow-wrap: anywhere; }
+.roletemplatehint,
+.rolesafe { border-radius: var(--sw-radius-sm); background: var(--sw-success-surface); padding: var(--sw-space-1-5); color: var(--sw-success-strong); }
+.rolediff { display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: var(--sw-space-1); border-top: 0.0625rem solid var(--sw-border); padding-top: var(--sw-space-1); }
+.rolediff span { color: var(--sw-text-secondary); }
+.rolewarning,
+.accessconflict { display: grid; gap: var(--sw-space-0-5); border-radius: var(--sw-radius-sm); padding: var(--sw-space-1-5); }
+.rolewarning { background: var(--sw-brand-light); color: var(--sw-brand-dark); }
+.accessconflict { background: var(--sw-danger-surface); color: var(--sw-danger-strong); }
+@media (max-width: 44rem) {
+  .accesstasks,
+  .rolecards,
+  .roletemplates > div,
+  .rolemetrics,
+  .roleimpactgrid { grid-template-columns: 1fr; }
+  .rolesteps { grid-template-columns: 1fr; }
+  .roleworkspace > header { align-items: stretch; flex-direction: column; }
+  .rolejourney { min-width: 0; }
+  .rolediff { grid-template-columns: 1fr; }
+  .accessfieldgrid { grid-template-columns: 1fr; }
+  .accessownership { grid-template-columns: 1fr; }
+  .accessimpact > div { grid-template-columns: auto 1fr; }
+  .accessreceipt { right: var(--sw-space-2); bottom: var(--sw-space-2); left: var(--sw-space-2); }
+}

@@ -1,6 +1,6 @@
 import type { StatementFile, StatementPeriod } from '@shop/contract';
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
 
 export interface ChannelStatement extends StatementFile {
   readonly id: string;

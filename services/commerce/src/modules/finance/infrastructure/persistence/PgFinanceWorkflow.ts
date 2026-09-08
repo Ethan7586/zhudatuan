@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
 
 export type FinanceWorkflowFactory = (database: SqlExecutor) => PgFinanceWorkflow;
 

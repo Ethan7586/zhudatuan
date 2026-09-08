@@ -111,16 +111,36 @@ $function$;
 create trigger inventorymovementimmutable before update or delete on inventory.movement for each row execute function inventory.protect_movement();
 revoke all on function inventory.guard_stock(),inventory.guard_reservation(),inventory.protect_movement() from public;
 
-delete from runtime.event where type='inventory.stock.reserved';
+alter table runtime.event add column retired_at timestamptz;
+create unique index runtime_event_active on runtime.event(type) where retired_at is null;
+
+create function runtime.guard_event_version() returns trigger language plpgsql set search_path=runtime,pg_temp as $function$
+begin
+  if not exists(select 1 from runtime.event where type=new.event_type and version=new.event_version and retired_at is null) then
+    raise exception 'EVENT_VERSION_INACTIVE';
+  end if;
+  return new;
+end $function$;
+create trigger activeevent before insert on runtime.outbox for each row execute function runtime.guard_event_version();
+create trigger activeevent before insert on runtime.inbox for each row execute function runtime.guard_event_version();
+revoke all on function runtime.guard_event_version() from public;
+
 insert into runtime.event(type,version,owner,schema_ref) values
   ('inventory.reservation.created',1,'inventory','contract://events/inventory.reservation.created/v1'),
   ('inventory.reservation.confirmed',1,'inventory','contract://events/inventory.reservation.confirmed/v1'),
   ('inventory.reservation.released',1,'inventory','contract://events/inventory.reservation.released/v1'),
   ('inventory.reservation.expired',1,'inventory','contract://events/inventory.reservation.expired/v1');
+update runtime.outbox set event_type='inventory.reservation.created',payload=jsonb_build_object(
+  'owner',coalesce(payload->>'order',aggregate_id),'ownerKind','order','lines',coalesce(payload->'lines','[]'::jsonb))
+where event_type='inventory.stock.reserved' and event_version=1;
+update runtime.inbox set event_type='inventory.reservation.created',payload=jsonb_build_object(
+  'owner',coalesce(payload->>'order',payload->>'owner',event_id),'ownerKind','order','lines',coalesce(payload->'lines','[]'::jsonb))
+where event_type='inventory.stock.reserved' and event_version=1;
+delete from runtime.event where type='inventory.stock.reserved';
 update capability.capability set version=2 where id in('inventory.availability.read','inventory.imports.create','inventory.imports.read');
 
 update runtime.contractcatalog set checksum='59e06723a29d4ce8bb2c06821655224fc94d4ae4b92a728294d5458a9acb71c9',
-  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event),published_at=clock_timestamp()
+  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event where retired_at is null),published_at=clock_timestamp()
 where artifact='commerce' and version='5.0.0' and status='active';
 
 select runtime.record_migration_evidence(
@@ -138,7 +158,11 @@ do $assert$ begin
   if exists(select 1 from inventory.stockitem where version<1 or onhand<0 or safety<0) then raise exception 'INVENTORY_STOCK_INVARIANT_INVALID'; end if;
   if exists(select 1 from inventory.reservation where version<1 or expires_at<=created_at or owner_type not in('order','checkout'))
     then raise exception 'INVENTORY_RESERVATION_INVARIANT_INVALID'; end if;
-  if (select count(*) from runtime.event)<>133 then raise exception 'INVENTORY_EVENT_COUNT_INVALID'; end if;
+  if exists(select 1 from runtime.event where type='inventory.stock.reserved')
+    or exists(select 1 from runtime.outbox where event_type='inventory.stock.reserved')
+    or exists(select 1 from runtime.inbox where event_type='inventory.stock.reserved')
+    then raise exception 'LEGACY_INVENTORY_RESERVED_EVENT_REMAINS'; end if;
+  if (select count(*) from runtime.event where retired_at is null)<>133 then raise exception 'INVENTORY_EVENT_COUNT_INVALID'; end if;
 end $assert$;
 
 commit;

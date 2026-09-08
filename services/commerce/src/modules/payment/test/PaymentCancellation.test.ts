@@ -1,7 +1,7 @@
 import type { PoolClient, QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import { pgTransactionState } from '../../../adapter/database/PgTransactionState';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import { pgTransactionState } from '../../../platform/database/PgTransactionState';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 import type { ClaimedJob } from '../../runtime/public/JobProcess';
 import type { CancelPayment } from '../application/process/CancelPayment';
 import { PgPaymentCancellationProcess } from '../infrastructure/persistence/PgPaymentCancellationProcess';
@@ -13,11 +13,7 @@ describe('Payment cancellation event', () => {
     const processor = new PaymentCancellationJob({ execute } as unknown as CancelPayment);
     const signal = new AbortController().signal;
     await processor.process(claimed(), signal, 123);
-    expect(execute).toHaveBeenCalledWith(
-      { eventId: 'event:cancel', scopeId: 'mall:one', orderId: 'order:one', reason: 'memberrequest' },
-      signal,
-      123
-    );
+    expect(execute).toHaveBeenCalledWith({ eventId: 'event:cancel', scopeId: 'mall:one', orderId: 'order:one', reason: 'memberrequest' }, signal, 123);
     expect(() => processor.process({ ...claimed(), scope: 'mall:other' }, signal)).toThrow('PAYMENT_CANCELLATION_SCOPE_MISMATCH');
   });
 
@@ -45,30 +41,13 @@ describe('Payment cancellation event', () => {
     const release = vi.fn(async () => undefined);
     const process = new PgPaymentCancellationProcess(manager as never, { close } as never, { release });
     const signal = new AbortController().signal;
-    await expect(
-      process.process(
-        { eventId: 'event:cancel', scopeId: 'mall:one', orderId: 'order:one', reason: 'memberrequest' },
-        signal,
-        Date.now() + 10_000
-      )
-    ).resolves.toBeUndefined();
+    await expect(process.process({ eventId: 'event:cancel', scopeId: 'mall:one', orderId: 'order:one', reason: 'memberrequest' }, signal, Date.now() + 10_000)).resolves.toBeUndefined();
 
     expect(release).toHaveBeenCalledOnce();
-    expect(close).toHaveBeenCalledWith(expect.stringMatching(/^[A-F0-9]{32}$/), { scene: 'jsapi', applicationHash: 'application-hash' },
-      expect.objectContaining({ requestId: 'event:cancel', traceId: 'event:cancel', signal }));
+    expect(close).toHaveBeenCalledWith(expect.stringMatching(/^[A-F0-9]{32}$/), { scene: 'jsapi', applicationHash: 'application-hash' }, expect.objectContaining({ requestId: 'event:cancel', traceId: 'event:cancel', signal }));
     expect(statements.some(({ sql }) => sql.includes("set state='cancelled'"))).toBe(true);
     const scheduled = statements.find(({ sql }) => sql.includes('insert into runtime.job'));
-    expect(scheduled?.values).toEqual([
-      'job:cancelquery:event:cancel:intent:one',
-      'paymentquery',
-      'payment',
-      'mall:one',
-      JSON.stringify({ intent: 'intent:one' }),
-      1,
-      null,
-      'payment',
-      null,
-    ]);
+    expect(scheduled?.values).toEqual(['job:cancelquery:event:cancel:intent:one', 'paymentquery', 'payment', 'mall:one', JSON.stringify({ intent: 'intent:one' }), 1, null, 'payment', null]);
     expect(statements.some(({ sql }) => sql.includes('update runtime.inbox'))).toBe(true);
   });
 });

@@ -1,9 +1,9 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { latestWatermark } from '../../../../foundation/application/Watermark';
-import { queryIdentifiers, queryText } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { latestWatermark } from '../../../../pipeline/Watermark';
+import { queryIdentifiers, queryText } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { InventoryReadPort } from '../../public/InventoryReadPort';
 
 export class AvailabilityReadHandler implements OperationHandler<'inventory.availability.read', 'read'> {

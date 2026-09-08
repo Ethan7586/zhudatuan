@@ -1,5 +1,5 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 import type { ReferralSource } from '../domain/model/ReferralBinding';
 
 export interface ReferralWritePort {

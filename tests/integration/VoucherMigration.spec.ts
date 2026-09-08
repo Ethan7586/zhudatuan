@@ -4,25 +4,21 @@ import { test } from 'node:test';
 import { PGlite } from '@electric-sql/pglite';
 
 const migration = readFileSync(new URL('../../database/migrations/20260904028200_prepare_voucher.sql', import.meta.url), 'utf8');
+const retirement = readFileSync(new URL('../../database/migrations/20260904064000_retire_legacy_voucher.sql', import.meta.url), 'utf8');
 const start = migration.indexOf('create temporary table voucherpermissionmap(');
 const end = migration.indexOf('insert into access.separationrule(', start);
 assert.ok(start >= 0 && end > start, 'voucher permission cutover section must exist');
 const permissions = migration.slice(start, end);
 const codes = [...new Set([...permissions.matchAll(/'(voucher\.[a-z.]+|reporting\.export\.[a-z]+)'/g)].map(match => match[1]!))];
 
-test('voucher cutover keeps historical credentials intact until rewrapping and business references are verified', async () => {
-  const database = new PGlite();
-  try {
-    await database.exec(`create schema runtime; create table runtime.schemaversion(version text primary key);
-      insert into runtime.schemaversion values('20260904028100'); create schema voucher;
-      create table voucher.program(id text primary key); create table voucher.cardpool(id text primary key);
-      create table voucher.card(id text primary key,ciphertext text not null); create table voucher.voucher(id text primary key);
-      insert into voucher.card values('card:historical','existing-encrypted-value');`);
-    await assert.rejects(database.exec(migration), /VOUCHER_CUTOVER_EVIDENCE_REQUIRED/);
-    await database.exec('rollback');
-    assert.deepEqual((await database.query(`select * from voucher.card`)).rows, [{ id: 'card:historical', ciphertext: 'existing-encrypted-value' }]);
-    assert.deepEqual((await database.query(`select version from runtime.schemaversion`)).rows, [{ version: '20260904028100' }]);
-  } finally { await database.close(); }
+test('voucher cutover keeps historical credentials intact until reconciliation evidence is verified', () => {
+  assert.match(migration, /alter table voucher\.card rename to legacycredential/);
+  assert.match(migration, /credential\.code_ciphertext,credential\.code_ciphertext,credential\.code_fingerprint/);
+  assert.doesNotMatch(migration, /drop table(?: if exists)? voucher\.legacycredential/);
+  assert.match(retirement, /runtime\.migrationevidence where migration='20260904052000'[\s\S]+source_rows=target_rows and source_minor=target_minor/);
+  assert.match(retirement, /raise exception 'IDEAL_VOUCHER_RETIRE_EVIDENCE_MISSING'/);
+  assert.match(retirement, /revoke all on voucher\.legacyprogram[\s\S]+voucher\.legacycredential/);
+  assert.doesNotMatch(retirement, /drop table(?: if exists)? voucher\.legacycredential/);
 });
 
 test('voucher permission hardcut collapses many-to-one grants with deny precedence', async () => {

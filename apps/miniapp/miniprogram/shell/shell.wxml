@@ -23,9 +23,9 @@
       <view class="skeleton short"></view>
     </view>
 
-    <view wx:elif="{{state === 'error'}}" class="panel statepanel">
+    <view wx:elif="{{state === 'error' || state === 'forbidden' || state === 'expired'}}" class="panel statepanel">
       <text class="stateicon">!</text>
-      <text class="statetitle">暂时无法加载</text>
+      <text class="statetitle">{{state === 'forbidden' ? '当前身份无法访问' : state === 'expired' ? '登录状态已失效' : '暂时无法加载'}}</text>
       <text class="statecopy">{{error}}</text>
       <view class="actions">
         <button class="secondary" bindtap="retry">重新加载</button>
@@ -49,7 +49,41 @@
       <button wx:if="{{!authenticated}}" class="primary" bindtap="signIn">微信登录</button>
     </view>
 
-    <records wx:else rows="{{rows}}" count="{{count}}" />
+    <records wx:else rows="{{rows}}" count="{{count}}" bind:select="selectRecord" />
+
+    <view wx:if="{{(state === 'success' || state === 'empty' || state === 'partial') && actions.length > 0}}" class="actionlist">
+      <view wx:for="{{actions}}" wx:key="id" wx:for-item="action" class="actioncard">
+        <view class="actioncopy">
+          <text class="actiontitle">{{action.label}}</text>
+          <text class="actiondescription">{{action.description}}</text>
+        </view>
+        <label wx:for="{{action.fields}}" wx:key="name" wx:for-item="field" class="field">
+          <text class="fieldlabel">{{field.label}}{{field.required ? '（必填）' : ''}}</text>
+          <radio-group wx:if="{{field.kind === 'choice'}}" class="choices" data-action="{{action.id}}" data-name="{{field.name}}" bindchange="changeAction">
+            <label wx:for="{{field.options}}" wx:key="value" wx:for-item="option" class="fieldchoice">
+              <radio value="{{option.value}}" color="{{brandColor}}" />
+              <text>{{option.label}}</text>
+            </label>
+          </radio-group>
+          <input
+            wx:else
+            class="fieldinput"
+            type="{{field.kind === 'number' ? 'number' : 'text'}}"
+            password="{{field.kind === 'password'}}"
+            maxlength="{{field.maximumLength}}"
+            value="{{field.value}}"
+            placeholder="{{field.placeholder}}"
+            data-action="{{action.id}}"
+            data-name="{{field.name}}"
+            bindinput="changeAction"
+          />
+        </label>
+        <button class="actionbutton {{action.tone}}" disabled="{{commanding}}" loading="{{commanding}}" data-action="{{action.id}}" bindtap="submitAction">{{action.label}}</button>
+      </view>
+    </view>
+
+    <view wx:if="{{commandMessage}}" class="feedback success" role="status">{{commandMessage}}</view>
+    <view wx:if="{{commandError}}" class="feedback failure" role="alert">{{commandError}}</view>
   </view>
 
   <view class="navigation" role="navigation" aria-label="主要导航">

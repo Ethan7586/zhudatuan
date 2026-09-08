@@ -17,6 +17,12 @@ spec:
     spec:
       serviceAccountName: shop-provider
       terminationGracePeriodSeconds: 90
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: topology.kubernetes.io/zone
@@ -35,12 +41,21 @@ spec:
           args: ['services/commerce/dist/ProviderMain.js']
           envFrom:
             - configMapRef: { name: shop-provider }
-            - secretRef: { name: shop-provider-identity }
+          env:
+            - { name: TMPDIR, value: /tmp }
+            - { name: WORKER_READY_FILE, value: /tmp/worker-ready }
+            - name: SECRET_STORE_BEARER_TOKEN
+              valueFrom: { secretKeyRef: { name: shop-provider-bootstrap, key: secretStoreBearerToken } }
+            - name: KMS_BEARER_TOKEN
+              valueFrom: { secretKeyRef: { name: shop-provider-bootstrap, key: kmsBearerToken } }
+          startupProbe:
+            exec: { command: ['test', '-f', '/tmp/worker-ready'] }
+            failureThreshold: 90
+            periodSeconds: 2
           readinessProbe:
-            exec: { command: ['node', '-e', 'process.kill(1,0)'] }
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            failureThreshold: 3
+            exec: { command: ['test', '-f', '/tmp/worker-ready'] }
+            periodSeconds: 5
+            failureThreshold: 2
           livenessProbe:
             exec: { command: ['node', '-e', 'process.kill(1,0)'] }
             initialDelaySeconds: 15
@@ -55,6 +70,17 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             seccompProfile: { type: RuntimeDefault }
+          volumeMounts:
+            - { name: temporary, mountPath: /tmp }
+            - { name: provideridentity, mountPath: /var/run/secrets/shop/identity, readOnly: true }
+      volumes:
+        - name: temporary
+          emptyDir: { sizeLimit: 512Mi }
+        - name: provideridentity
+          projected:
+            defaultMode: 0400
+            sources:
+              - serviceAccountToken: { path: token, audience: shop-secret-manager, expirationSeconds: 3600 }
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -95,3 +121,8 @@ spec:
       external:
         metric: { name: shop_provider_rate_limit_saturation }
         target: { type: AverageValue, averageValue: '70' }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: shop-provider, namespace: SHOP_NAMESPACE }
+automountServiceAccountToken: false

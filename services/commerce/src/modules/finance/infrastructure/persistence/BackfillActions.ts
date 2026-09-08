@@ -1,6 +1,6 @@
-import { rowResult } from '../../../../adapter/database/DatabaseResult';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { bodyRecord, keysetResult, queryPage, textField } from '../../../../foundation/application/Validation';
+import { rowResult } from '../../../../platform/database/DatabaseResult';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { bodyRecord, keysetResult, queryPage, textField } from '../../../../pipeline/Validation';
 import type { FinanceScopeQuery } from './FinanceScopeQuery';
 import type { FinanceEntries } from './FinanceOperation';
 

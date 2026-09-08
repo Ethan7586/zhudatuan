@@ -1,10 +1,10 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord } from '../../../../foundation/application/Validation';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { bodyRecord } from '../../../../pipeline/Validation';
 import type { ApplicationRepository } from '../port/ApplicationRepository';
 import type { EntryCache } from '../port/EntryCache';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 
 export class ApplicationsUpdateHandler implements OperationHandler<'experience.applications.update', 'write'> {
   readonly operation = 'experience.applications.update' as const;

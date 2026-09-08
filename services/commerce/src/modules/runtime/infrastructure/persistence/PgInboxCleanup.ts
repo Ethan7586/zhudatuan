@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { InboxCleanup, InboxCleanupKey } from '../../application/port/CleanupPort';
 import { cleanupLimit } from './PgCleanupValue';
 import { retentionBoundary } from './PgMessageRetention';
@@ -32,7 +32,7 @@ export class PgInboxCleanup implements InboxCleanup {
 function inboxKeys(rows: readonly InboxCleanupKey[]): readonly InboxCleanupKey[] {
   const values = rows.map(({ consumer, event }) => Object.freeze({ consumer, event }));
   const identities = values.map(({ consumer, event }) => JSON.stringify([consumer, event]));
-  if (values.length > 5000 || new Set(identities).size !== values.length || values.some(({ consumer, event }) =>
-    [consumer, event].some((value) => typeof value !== 'string' || value.length < 1))) throw new Error('CLEANUP_INBOX_SET_INVALID');
+  if (values.length > 5000 || new Set(identities).size !== values.length || values.some(({ consumer, event }) => [consumer, event].some((value) => typeof value !== 'string' || value.length < 1)))
+    throw new Error('CLEANUP_INBOX_SET_INVALID');
   return Object.freeze(values);
 }

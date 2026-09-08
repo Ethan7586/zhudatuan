@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { DeferredRiskRecord, RiskActionRecord, RiskWorkRepository } from '../../application/port/RiskWorkRepository';
 import { signal, type SignalSensitivity } from '../../domain/model/Signal';
 
@@ -49,12 +49,24 @@ export class PgRiskWorkRepository implements RiskWorkRepository {
       [id]
     );
     const row = result.rows[0];
-    return row ? Object.freeze({
-      id: row.id, decision: row.decision, scope: row.scope, kind: row.kind,
-      target: Object.freeze({ module: row.targetModule, type: row.targetType, id: row.targetId }),
-      rationale: row.rationale, approvalRequired: row.approvalRequired, approvalInstance: row.approvalInstance,
-      approvalProof: row.approvalProof, evidenceHash: row.evidenceHash, state: row.state, version: Number(row.version), requester: row.requester, expiresAt: row.expiresAt,
-    }) : null;
+    return row
+      ? Object.freeze({
+          id: row.id,
+          decision: row.decision,
+          scope: row.scope,
+          kind: row.kind,
+          target: Object.freeze({ module: row.targetModule, type: row.targetType, id: row.targetId }),
+          rationale: row.rationale,
+          approvalRequired: row.approvalRequired,
+          approvalInstance: row.approvalInstance,
+          approvalProof: row.approvalProof,
+          evidenceHash: row.evidenceHash,
+          state: row.state,
+          version: Number(row.version),
+          requester: row.requester,
+          expiresAt: row.expiresAt,
+        })
+      : null;
   }
 
   async bindApproval(context: WriteTransactionContext, id: string, version: number, instance: string): Promise<boolean> {
@@ -104,17 +116,21 @@ export class PgRiskWorkRepository implements RiskWorkRepository {
     const row = result.rows[0];
     if (!row) return null;
     return Object.freeze({
-      id: row.id, scope: row.scope, actor: row.actor, operation: row.operation, resource: row.resource,
-      scopes: texts(row.scopes), amountMinor: row.amountMinor === null ? null : Number(row.amountMinor), signals: signals(row.signals),
-      risk: row.risk, trace: row.trace,
+      id: row.id,
+      scope: row.scope,
+      actor: row.actor,
+      operation: row.operation,
+      resource: row.resource,
+      scopes: texts(row.scopes),
+      amountMinor: row.amountMinor === null ? null : Number(row.amountMinor),
+      signals: signals(row.signals),
+      risk: row.risk,
+      trace: row.trace,
     });
   }
 
   async completeAssessment(context: WriteTransactionContext, id: string, succeeded: boolean): Promise<void> {
-    await this.transactions.database(context).query(
-      `update risk.assessment set state=$2,completed_at=clock_timestamp() where id=$1 and state='running'`,
-      [id, succeeded ? 'completed' : 'failed']
-    );
+    await this.transactions.database(context).query(`update risk.assessment set state=$2,completed_at=clock_timestamp() where id=$1 and state='running'`, [id, succeeded ? 'completed' : 'failed']);
   }
 }
 
@@ -125,15 +141,23 @@ function texts(value: unknown): readonly string[] {
 
 function signals(value: unknown) {
   if (!Array.isArray(value) || value.length > 500) throw new Error('RISK_ASSESSMENT_SIGNALS_INVALID');
-  return Object.freeze(value.flatMap((candidate) => {
-    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) throw new Error('RISK_ASSESSMENT_SIGNAL_INVALID');
-    const item = candidate as Record<string, unknown>;
-    if (typeof item.value !== 'number') return [];
-    return [signal({
-      type: required(item.type), version: positive(item.version), value: item.value, source: required(item.source),
-      sensitivity: sensitivity(item.sensitivity), observedAt: required(item.observedAt),
-    })];
-  }));
+  return Object.freeze(
+    value.flatMap((candidate) => {
+      if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) throw new Error('RISK_ASSESSMENT_SIGNAL_INVALID');
+      const item = candidate as Record<string, unknown>;
+      if (typeof item.value !== 'number') return [];
+      return [
+        signal({
+          type: required(item.type),
+          version: positive(item.version),
+          value: item.value,
+          source: required(item.source),
+          sensitivity: sensitivity(item.sensitivity),
+          observedAt: required(item.observedAt),
+        }),
+      ];
+    })
+  );
 }
 
 function required(value: unknown): string {

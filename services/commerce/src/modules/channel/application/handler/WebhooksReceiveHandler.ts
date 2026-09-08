@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableCommit, DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { CipherEnvelope, KmsClient } from '../../../../foundation/application/KmsPort';
+import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableCommit, DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import type { CipherEnvelope, KmsClient } from '../../../../pipeline/KmsPort';
 import type { WebhookConnection, WebhookRepository } from '../port/WebhookRepository';
 
 interface PreparedWebhook {
@@ -41,7 +41,9 @@ export class WebhooksReceiveHandler implements DurableOperationHandler<'channel.
     return Object.freeze({ connection: id, external, envelope, rawHash: digest(context.rawBody), signatureHash: digest(context.headers['x-provider-signature'] ?? ''), receivedAt, trace: context.traceId, scope: connection.scope });
   }
 
-  transactionScope(_input: OperationInputFor<'channel.webhooks.receive'>, prepared: PreparedWebhook): string { return prepared.scope; }
+  transactionScope(_input: OperationInputFor<'channel.webhooks.receive'>, prepared: PreparedWebhook): string {
+    return prepared.scope;
+  }
 
   async commit(
     _input: OperationInputFor<'channel.webhooks.receive'>,

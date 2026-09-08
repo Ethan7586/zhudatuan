@@ -1,10 +1,10 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ChallengeIssue, ChallengePort, IssuedChallenge, LoginGuardPort } from '../../application/port/ChallengePort';
-import { reject } from '../../../../foundation/application/OperationRejection';
+import { reject } from '../../../../pipeline/OperationRejection';
 
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
 const MAXIMUM_ATTEMPTS = RUNTIME_LIMITS.authentication.otp.maximumAttempts;

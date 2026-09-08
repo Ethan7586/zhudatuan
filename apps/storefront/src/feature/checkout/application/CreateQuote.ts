@@ -1,18 +1,13 @@
 import type { StorefrontSession } from '../../../entity/session';
-import type { CheckoutPort, PaymentScene } from '../public/CheckoutPort';
+import type { CheckoutPort } from '../public/CheckoutPort';
 import type { Quote } from '../model/Quote';
+import type { CheckoutDraft } from '../model/CheckoutDraft';
 
 export class CreateQuote {
   constructor(private readonly gateway: Pick<CheckoutPort, 'quote'>) {}
   async execute(
     session: StorefrontSession,
-    input: Readonly<{
-      cartVersion: number;
-      lines: readonly Readonly<{ listingId: string; quantity: number; lineVersion: number }>[];
-      addressId?: string;
-      benefits: readonly Readonly<{ id: string; status: string; availableMinor: number }>[];
-      paymentScene: PaymentScene;
-    }>
+    input: CheckoutDraft
   ): Promise<Quote> {
     return this.gateway.quote(
       session,
@@ -20,9 +15,14 @@ export class CreateQuote {
         cartVersion: input.cartVersion,
         lines: input.lines.map(({ listingId, quantity, lineVersion }) => ({ listingId, quantity, lineVersion })),
         ...(input.addressId ? { addressId: input.addressId } : {}),
-        delivery: {},
-        voucherIds: [],
-        benefits: input.benefits.filter(({ status, availableMinor }) => status === 'active' && availableMinor > 0).map(({ id, availableMinor }) => ({ accountId: id, amountMinor: availableMinor })),
+        ...(input.invoiceId ? { invoiceId: input.invoiceId } : {}),
+        delivery: {
+          method: input.delivery.method,
+          ...(input.delivery.note ? { note: input.delivery.note } : {}),
+          ...(input.delivery.scheduledAt ? { scheduledAt: input.delivery.scheduledAt } : {}),
+        },
+        voucherIds: input.voucherIds,
+        benefits: input.benefits,
         paymentScene: input.paymentScene,
       },
       crypto.randomUUID()

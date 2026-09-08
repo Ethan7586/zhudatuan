@@ -1,4 +1,5 @@
 export { ApiError, ClientError, TransportError, isCancelled } from './error';
+export { ApiClient } from './ApiClient';
 export { EventStreamResyncError } from './EventStream';
 export type { EventStream } from './EventStream';
 export type { EventOperationMethod } from './OperationDescriptor';
@@ -10,12 +11,15 @@ export { createIdempotencyKey, createRequestContext } from './RequestContextFact
 export type { RequestContextOptions } from './RequestContextFactory';
 export { FetchTransport } from './FetchTransport';
 export { HttpTransport } from './HttpTransport';
+export { hashFile, uploadImportFile, validateImportFile } from './ImportFile';
+export type { UploadedImport } from './ImportFile';
 export type { RequestContext, RequestScope } from './RequestContext';
 export type { StreamTransportResponse, Transport, TransportRequest, TransportResponse } from './Transport';
 export { WechatTransport } from './WechatTransport';
 export type { WechatRequest, WechatRequester, WechatRequestTask } from './WechatTransport';
 export { SDK_OPERATION_IDS } from './operations/CommerceClient';
 export type { CommerceClient, IdentityOperations, OperationMethod } from './operations/CommerceClient';
+export type { OperationExecutor } from './OperationDescriptor';
 export { createSurfaceClient, MINIAPP_TRANSPORT_POLICY, SURFACE_CATALOG, SURFACE_OPERATION_IDS } from './SurfaceCatalog';
 export type { MiniappSurfaceClient, StoreSurfaceClient, SupplierSurfaceClient, SurfaceClientMap } from './SurfaceCatalog';
 export { readSurfaceNavigation, readSurfaceSession, selectSurfaceScope, surfaceRequestContext } from './SurfaceSession';

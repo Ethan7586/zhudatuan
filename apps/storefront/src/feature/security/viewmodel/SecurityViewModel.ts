@@ -9,6 +9,7 @@ import { ReadSecurity } from '../application/ReadSecurity';
 import { RevokeSession } from '../application/RevokeSession';
 import { securityQuery } from './SecurityQueryKey';
 import { textValue } from '../../../shared/format/Text';
+import { PendingAction } from '../../../shared/action/PendingAction';
 
 export function useSecurityViewModel() {
   const dependencies = useDependencies();
@@ -23,7 +24,7 @@ export function useSecurityViewModel() {
   const [challenge, setChallenge] = useState('');
   const [mobileValue, setMobileValue] = useState('');
   const [verification, setVerification] = useState(false);
-  const retryAction = useRef<null | (() => Promise<void>)>(null);
+  const retryAction = useRef(new PendingAction());
   const query = useQuery({ queryKey: securityQuery(session.query.scoped), queryFn: ({ signal }) => reader.current.execute(required(session.session), signal), enabled: session.status === 'authenticated' });
   const refresh = () => cache.invalidateQueries({ queryKey: securityQuery(session.query.scoped) });
   async function run(key: string, action: () => Promise<void>, success?: () => void) {
@@ -35,7 +36,7 @@ export function useSecurityViewModel() {
       await refresh();
     } catch (cause) {
       if (hasFailureCode(cause, 'STEPUP_REQUIRED')) {
-        retryAction.current = () => run(key, action, success);
+        retryAction.current.schedule(() => run(key, action, success));
         setVerification(true);
       } else setMessage(presentError(cause).message);
     } finally {
@@ -69,9 +70,7 @@ export function useSecurityViewModel() {
   const revokeSession = (target: string) => run(`session:${target}`, () => revoke.current.execute(required(session.session), target).then(() => undefined));
   const verified = () => {
     setVerification(false);
-    const action = retryAction.current;
-    retryAction.current = null;
-    if (action) void action();
+    retryAction.current.resume();
   };
   return Object.freeze({
     state: query.isPending ? ('loading' as const) : query.isError ? ('failed' as const) : ('ready' as const),
@@ -85,11 +84,17 @@ export function useSecurityViewModel() {
       changePassword,
       changeMobile,
       changeMobileValue: setMobileValue,
+      cancelMobile: () => {
+        setChallenge('');
+        setMobileValue('');
+        setMessage(null);
+      },
       revokeSession,
+      retry: query.refetch,
       verified,
       closeVerification: () => {
         setVerification(false);
-        retryAction.current = null;
+        retryAction.current.clear();
       },
     }),
   });

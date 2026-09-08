@@ -5,9 +5,11 @@ import { TelemetryClientErrorRepository } from './TelemetryClientErrorRepository
 describe('TelemetryClientErrorRepository', () => {
   it('scrubs PII and secrets before emitting a bounded log reference', () => {
     const logs: Readonly<Record<string, unknown>>[] = [];
-    const repository = new TelemetryClientErrorRepository(createTelemetry((record) => {
-      logs.push(record);
-    }));
+    const repository = new TelemetryClientErrorRepository(
+      createTelemetry((record) => {
+        logs.push(record);
+      })
+    );
     const recorded = repository.record(input());
     expect(recorded.message).toBe('[REDACTED]');
     expect(recorded.stack).toBe('Bearer [REDACTED]');

@@ -36,11 +36,11 @@ describe('authorization policy', () => {
     const owner: Scope = { kind: 'owner', id: 'member-a', tenant: 'tenant-a', path: [] };
     const ownerAccess: MembershipAccess = {
       ...membership,
-      permissions: { allows: new Set(['cart.read', 'voucher.binding.read', 'access.center.read']), denies: new Set() },
+      permissions: { allows: new Set(['cart.read', 'voucher.holder.read', 'access.center.read']), denies: new Set() },
       scopes: [{ effect: 'allow', scope: owner, effective: '2026-01-01T00:00:00.000Z', expires: null }],
     };
     expect(decide(ownerAccess, 'cart.read', owner, { expectedAccessVersion: 3, now: new Date('2026-08-21T00:00:00.000Z') }).allowed).toBe(true);
-    expect(decide(ownerAccess, 'voucher.binding.read', owner, { expectedAccessVersion: 3, now: new Date('2026-08-21T00:00:00.000Z') }).allowed).toBe(true);
+    expect(decide(ownerAccess, 'voucher.holder.read', owner, { expectedAccessVersion: 3, now: new Date('2026-08-21T00:00:00.000Z') }).allowed).toBe(true);
     expect(decide(ownerAccess, 'access.center.read', owner, { expectedAccessVersion: 3, now: new Date('2026-08-21T00:00:00.000Z') })).toMatchObject({ allowed: false, reason: 'SCOPE_KIND_DENIED' });
   });
 

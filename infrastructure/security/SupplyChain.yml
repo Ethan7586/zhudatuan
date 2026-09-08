@@ -1,16 +1,79 @@
-version: 1
+version: 2
 owner: security
 ciCredential: oidc
+build:
+  network: lockedRegistryOnly
+  lockfile: package-lock.json
+  install: npm-ci-ignore-scripts
+  remoteScripts: forbidden
+  sourceDateEpoch: commitTimestamp
+  hermeticInputs: [source, lockfile, nodeDigest, generatedContracts, configuration]
 artifacts:
-  sbom: cyclonedx
+  image: oci
+  clients: [auth, console, storefront, miniapp, store, supplier]
+  sbom: cyclonedx-json
   licenseReport: required
-  signature: sigstore
-  provenance: slsaprovenance
+  signature: sigstore-keyless
+  provenance: slsa-v1
+  digest: sha256
+gates:
+  lock:
+    blocking: true
+    exactVersions: true
+    integrityRequired: true
+    workspaceLinksOnly: true
+  sbom:
+    blocking: true
+    include: [runtime, clients, extensions, baseImage]
+    bindToArtifactDigest: true
+  vulnerability:
+    blocking: true
+    scanners: [dependency, filesystem, image, iac]
+    maximum: { critical: 0, high: 0 }
+    medium: { owner: required, expiry: required, compensatingControl: required }
+  license:
+    blocking: true
+    authority: config/licenses.yml
+    unknown: reject
+    notices: THIRD_PARTY_NOTICES.md
+  signature:
+    blocking: true
+    algorithm: sigstore-keyless
+    identity: workflow-pinned
+    transparencyLog: required
+  provenance:
+    blocking: true
+    format: slsa-v1
+    builderIdentity: pinned
+    materialsExact: true
+  extension:
+    blocking: true
+    manifestSignature: ed25519
+    packageDigest: required
+    permissionsExact: true
+    sandboxContract: required
+  baseImage:
+    blocking: true
+    digestRequired: true
+    mutableTags: reject
+    supportedRuntime: node22
+  remoteScript:
+    blocking: true
+    curlPipeShell: forbidden
+    buildDownload: lockedRegistryOnly
 scanning:
+  sast: required
   sourceSecrets: required
   gitHistorySecrets: required
   logsSecrets: required
   backupSecrets: required
   retiredArtifactsSecrets: required
+  browserBundleSecrets: required
 response:
   revokeConfirmedCredentials: required
+  rotateAffectedKeys: required
+  purgeCachesAndArtifacts: required
+  incidentRunbook: docs/operations/securityincident.md
+evidence:
+  immutablePrefix: production-evidence/{releaseId}/supplychain
+  required: [lockHash, sbomHash, vulnerabilityReportHash, licenseReportHash, signatureBundleHash, provenanceHash, imageDigest, extensionDigests]

@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { JobScheduler } from '../../../../foundation/application/JobScheduler';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { JobScheduler } from '../../../../pipeline/JobScheduler';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
 import type { ImportObjectPort, ImportPort } from '../../../runtime/public';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import { authorizationEvidence } from '../../../../foundation/security/AuthorizationEvidence';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
+import { authorizationEvidence } from '../../../../platform/security/AuthorizationEvidence';
 
 interface PreparedImport {
   readonly scope: string;
@@ -33,9 +33,19 @@ export class ImportsCreateHandler implements DurableOperationHandler<'catalog.im
   async commit(_input: OperationInputFor<'catalog.imports.create'>, prepared: PreparedImport, context: CommitContext<'catalog.imports.create'>) {
     const access = requireSession(context.security);
     const id = `import:${randomUUID()}`;
-    const body = await this.imports.create(context.transaction, { id, scope: prepared.scope, owner: 'catalog', kind: 'product',
-      reference: prepared.reference, sha256: prepared.sha256, name: prepared.name, mediaType: prepared.mediaType, size: prepared.size, actor: access.actor.id,
-      authorization: authorizationEvidence(access, this.operation, new Date()) });
+    const body = await this.imports.create(context.transaction, {
+      id,
+      scope: prepared.scope,
+      owner: 'catalog',
+      kind: 'product',
+      reference: prepared.reference,
+      sha256: prepared.sha256,
+      name: prepared.name,
+      mediaType: prepared.mediaType,
+      size: prepared.size,
+      actor: access.actor.id,
+      authorization: authorizationEvidence(access, this.operation, new Date()),
+    });
     await this.jobs.schedule(context.transaction, { id: `job:${id}:0`, kind: 'catalogimport', owner: 'catalog', scope: prepared.scope, payload: { import: id }, priority: 100 });
     const response = { status: 202, body: body as unknown as OperationOutputFor<'catalog.imports.create'> } as const;
     return Object.freeze({ checkpoint: response.body, response });

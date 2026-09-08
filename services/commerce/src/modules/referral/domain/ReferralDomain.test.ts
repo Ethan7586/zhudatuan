@@ -50,31 +50,42 @@ describe('Referral domain', () => {
       ['line:b', 0n],
       ['line:c', 0n],
     ]);
-    expect([...policy.bases([{ id: 'line:a', amountMinor: 101n }, { id: 'line:b', amountMinor: 99n }], 51n)]).toEqual([
+    expect([
+      ...policy.bases(
+        [
+          { id: 'line:a', amountMinor: 101n },
+          { id: 'line:b', amountMinor: 99n },
+        ],
+        51n
+      ),
+    ]).toEqual([
       ['line:a', 75n],
       ['line:b', 74n],
     ]);
-    expect(
-      [...policy.refundDeltas([
-        { id: 'commission:a', lineId: 'line:a', baseMinor: 100n, refundedBaseMinor: 0n },
-        { id: 'reward:a', lineId: 'line:a', baseMinor: 100n, refundedBaseMinor: 0n },
-        { id: 'commission:b', lineId: 'line:b', baseMinor: 100n, refundedBaseMinor: 0n },
-      ], 50n)]
-    ).toEqual([
+    expect([
+      ...policy.refundDeltas(
+        [
+          { id: 'commission:a', lineId: 'line:a', baseMinor: 100n, refundedBaseMinor: 0n },
+          { id: 'reward:a', lineId: 'line:a', baseMinor: 100n, refundedBaseMinor: 0n },
+          { id: 'commission:b', lineId: 'line:b', baseMinor: 100n, refundedBaseMinor: 0n },
+        ],
+        50n
+      ),
+    ]).toEqual([
       ['commission:a', 25n],
       ['reward:a', 25n],
       ['commission:b', 25n],
     ]);
     expect(commission()).toMatchObject({ orderLineId: 'orderline:one', ruleId: 'referralproduct:one', ruleVersion: 3, attributionId: 'referralbinding:one', kind: 'commission', baseMinor: 10_000n, rateBasisPoints: 500 });
-    expect(
-      policy.recipients({ customerId: 'member:buyer', directMemberId: 'member:direct', inviterMemberId: 'member:inviter', rewardEnabled: true, commissionBasisPoints: 800, rewardBasisPoints: 200 })
-    ).toEqual([
+    expect(policy.recipients({ customerId: 'member:buyer', directMemberId: 'member:direct', inviterMemberId: 'member:inviter', rewardEnabled: true, commissionBasisPoints: 800, rewardBasisPoints: 200 })).toEqual([
       { beneficiaryId: 'member:direct', kind: 'commission', rateBasisPoints: 800 },
       { beneficiaryId: 'member:inviter', kind: 'reward', rateBasisPoints: 200 },
     ]);
     expect(policy.recipients({ customerId: 'member:buyer', directMemberId: 'member:direct', inviterMemberId: null, rewardEnabled: true, commissionBasisPoints: 800, rewardBasisPoints: 200 })).toHaveLength(1);
     expect(policy.recipients({ customerId: 'member:buyer', directMemberId: 'member:direct', inviterMemberId: 'member:third', rewardEnabled: false, commissionBasisPoints: 800, rewardBasisPoints: 200 })).toHaveLength(1);
-    expect(() => policy.recipients({ customerId: 'member:buyer', directMemberId: 'member:direct', inviterMemberId: 'member:third', rewardEnabled: true, commissionBasisPoints: 9900, rewardBasisPoints: 200 })).toThrow('REFERRAL_RATE_TOTAL_INVALID');
+    expect(() => policy.recipients({ customerId: 'member:buyer', directMemberId: 'member:direct', inviterMemberId: 'member:third', rewardEnabled: true, commissionBasisPoints: 9900, rewardBasisPoints: 200 })).toThrow(
+      'REFERRAL_RATE_TOTAL_INVALID'
+    );
   });
 
   it('separates freeze eligibility, approval and withdrawal balance decisions', () => {
@@ -106,5 +117,24 @@ function binding(overrides: Partial<{ id: string; promoterId: string; promoterMe
 }
 
 function commission() {
-  return new Commission('referralcommission:one', 'commission:one', 'mall:one', 'order:one', 'orderline:one', 'referralproduct:one', 3, 'referralbinding:one', 'member:promoter', 'commission', 10_000n, 0n, 500, 500n, 'CNY', 'pending', 0n, 1);
+  return new Commission(
+    'referralcommission:one',
+    'commission:one',
+    'mall:one',
+    'order:one',
+    'orderline:one',
+    'referralproduct:one',
+    3,
+    'referralbinding:one',
+    'member:promoter',
+    'commission',
+    10_000n,
+    0n,
+    500,
+    500n,
+    'CNY',
+    'pending',
+    0n,
+    1
+  );
 }

@@ -12,6 +12,9 @@ export interface RequirementAuthority {
   readonly parserVersion: number;
   readonly generatorVersion: number;
   readonly generatedAt: string;
+  readonly reviewedAt: string;
+  readonly selectionRange: string;
+  readonly authorityOrder: readonly string[];
   readonly sheets: Readonly<{
     requirements: number;
     mvp: number;
@@ -46,25 +49,43 @@ export async function loadRequirementAuthority(root: string): Promise<
   assertInsideRepository(repositoryRoot, candidatePath);
   const path = await realpath(candidatePath);
   assertInsideRepository(repositoryRoot, path);
-  if (authority.sheet !== 'MVP上线功能清单' || authority.range !== 'A1:F24' || authority.sheets.mvp !== 22 || authority.parserVersion !== 3 || authority.generatorVersion !== 4) {
+  if (
+    authority.sheet !== 'MVP上线功能清单' ||
+    authority.range !== 'A1:F24' ||
+    authority.selectionRange !== 'A3:F24' ||
+    authority.sheets.mvp !== 22 ||
+    authority.parserVersion !== 3 ||
+    authority.generatorVersion !== 5 ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(authority.reviewedAt)
+  ) {
     throw new Error('REQUIREMENT_AUTHORITY_BASELINE_INVALID');
   }
+  const expectedOrder = [
+    '当前用户明确要求',
+    'docs/福利商城功能清单.xlsx#MVP上线功能清单与接口',
+    '../zhudatuan_li/docs/当前代码业务功能清单-20260904.md',
+    '../zhudatuan_li/docs/zhudatuan-console-UX-acceptance-report-20260904.md',
+    'zhudatuan当前合同模块数据库与质量门',
+    'zhudatuan_li当前代码迁移来源',
+  ];
+  if (JSON.stringify(authority.authorityOrder) !== JSON.stringify(expectedOrder)) throw new Error('REQUIREMENT_AUTHORITY_ORDER_INVALID');
   const bytes = new Uint8Array(await readFile(path));
   const actualHash = createHash('sha256').update(bytes).digest('hex');
   if (actualHash !== authority.sha256) {
     throw new Error('REQUIREMENT_AUTHORITY_HASH_INVALID:' + actualHash);
   }
-  const architecturePaths = [
-    'docs/architecture/前端整体重构方案.md',
-    'docs/architecture/福利商城理想方案20260904.md',
-    'docs/architecture/福利商城代码修改清单20260904.md',
-  ];
+  const architecturePaths = ['docs/architecture/福利商城理想方案20260904.md', 'docs/architecture/福利商城代码修改清单20260904.md'];
   if (document.architecture?.length !== architecturePaths.length || document.architecture.some((item, index) => item.repositoryRelativePath !== architecturePaths[index])) {
     throw new Error('ARCHITECTURE_AUTHORITY_INVALID');
   }
   for (const architecture of document.architecture) await verifyAuthority(repositoryRoot, architecture);
   const expectedOwners = Object.freeze({ approval: 'approval', vouchercredential: 'voucher', financeimport: 'finance', storeaudience: 'identity', supplieraudience: 'identity' });
-  if (Object.keys(document.owners ?? {}).sort().join(',') !== Object.keys(expectedOwners).sort().join(',')) throw new Error('ARCHITECTURE_OWNER_SET_INVALID');
+  if (
+    Object.keys(document.owners ?? {})
+      .sort()
+      .join(',') !== Object.keys(expectedOwners).sort().join(',')
+  )
+    throw new Error('ARCHITECTURE_OWNER_SET_INVALID');
   for (const [fact, module] of Object.entries(expectedOwners)) {
     const owner = document.owners?.[fact];
     if (owner?.module !== module) throw new Error(`ARCHITECTURE_OWNER_INVALID:${fact}`);
@@ -85,7 +106,9 @@ async function verifyAuthority(root: string, authority: Readonly<{ repositoryRel
   assertRepositoryRelativePath(authority.repositoryRelativePath);
   const path = resolve(root, authority.repositoryRelativePath);
   assertInsideRepository(root, path);
-  const actual = createHash('sha256').update(await readFile(path)).digest('hex');
+  const actual = createHash('sha256')
+    .update(await readFile(path))
+    .digest('hex');
   if (actual !== authority.sha256) throw new Error(`AUTHORITY_HASH_INVALID:${authority.repositoryRelativePath}:${actual}`);
 }
 

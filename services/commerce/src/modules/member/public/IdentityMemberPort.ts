@@ -1,6 +1,6 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../platform/database/TransactionContext';
 
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import { publicPort } from '../../../composition/ModuleRegistry';
 
 export interface IdentityMemberPort {
   memberForPrincipal(context: ReadTransactionContext, principal: string): Promise<string>;

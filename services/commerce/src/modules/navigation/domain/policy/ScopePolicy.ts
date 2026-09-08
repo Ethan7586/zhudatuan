@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { NavigationScopeKind } from '@shop/authz';
 import type { OperationTarget } from '@shop/contract';
 import type { NavigationScopeValue } from '../model/NavigationContext';

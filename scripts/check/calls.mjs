@@ -28,6 +28,7 @@ const entryNames = new Set([
   'RequirementGenerator.ts',
   'Main.ts',
   'Prepare.ts',
+  'ProviderSandbox.ts',
   'Database.ts',
   'Run.ts',
   'Verify.ts',
@@ -35,7 +36,7 @@ const entryNames = new Set([
   'Seed.ts',
   'Visual.ts',
   'Journey.ts',
-  'Launch.mjs',
+  'Launch.ts',
 ]);
 const operationPattern = /^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){2,}$/;
 

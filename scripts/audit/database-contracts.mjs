@@ -146,6 +146,7 @@ try {
   }
   if (mode !== '--inventory-cutover-unsafe') {
     if (replayRole !== undefined) await execute(database, 'reset role', 'database verification elevation');
+    await execute(database, 'alter role shopmigration nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls', 'database migration role hardening');
     if (mode === '--registration-fresh') await reconcileRegistrationReplayBoundary(database);
     await verifyTarget(database);
     if (mode === '--mvp-kernel') {
@@ -629,7 +630,13 @@ async function verifyTarget(database) {
   const canonicalEvents = eventContract.events.map(event => ({ type: event.id, version: event.version, owner: event.owner, schema_ref: event.schema }))
     .sort((left, right) => left.type.localeCompare(right.type));
   if (JSON.stringify(actualEvents) !== JSON.stringify(canonicalEvents)) throw new Error('TARGET_EVENT_VERSION_DRIFT');
-  const retired = (await database.query(`select event.type,event.version from runtime.event event where event.retired_at is not null and (
+  const retired = (await database.query(`select event.type,event.version,
+    coalesce((select jsonb_agg(jsonb_build_object('id',pending.id,'payload',pending.payload) order by pending.id)
+      from runtime.outbox pending where pending.event_type=event.type and pending.event_version=event.version and pending.published_at is null),'[]'::jsonb) pending_outbox,
+    coalesce((select jsonb_agg(jsonb_build_object('consumer',pending.consumer,'eventId',pending.event_id,'payload',pending.payload)
+      order by pending.consumer,pending.event_id) from runtime.inbox pending
+      where pending.event_type=event.type and pending.event_version=event.version and pending.processed_at is null),'[]'::jsonb) pending_inbox
+    from runtime.event event where event.retired_at is not null and (
     not exists(select 1 from runtime.event active where active.type=event.type and active.version>event.version and active.retired_at is null)
     or exists(select 1 from runtime.outbox pending where pending.event_type=event.type and pending.event_version=event.version and pending.published_at is null)
     or exists(select 1 from runtime.inbox pending where pending.event_type=event.type and pending.event_version=event.version and pending.processed_at is null))`)).rows;
@@ -722,6 +729,7 @@ async function collectPrivilegeEvidence(database) {
   if (publicPrivileges.rows.length) throw new Error(`PUBLIC_DATABASE_PRIVILEGE:${publicPrivileges.rows[0].object}`);
   if (unsafeRoles.rows.length) throw new Error(`MODULE_ROLE_UNSAFE:${unsafeRoles.rows[0].rolname}`);
   return {
+    status: 'passed',
     schemas: schemas.rows.length,
     moduleWriters: new Set(schemas.rows.map((row) => row.writer_role)).size,
     moduleReaders: new Set(schemas.rows.map((row) => row.reader_role)).size,

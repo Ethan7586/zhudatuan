@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parse } from 'yaml';
+import { CLIENT_SURFACES } from '../packages/contract/src/Surface.ts';
 import { repositoryRoot } from './lib/RepositoryRoot.mjs';
 
 const root = repositoryRoot;
@@ -21,7 +22,8 @@ for (const requirement of requirements) {
     const evidence = requirement[field];
     if (typeof evidence !== 'string' || !existsSync(resolve(root, evidence))) throw new Error(`MVP_EVIDENCE_MISSING:${requirement.id}:${field}`);
   }
-  if (!['Designed', 'Implemented', 'Integrated', 'Accepted', 'Released'].includes(requirement.status)) throw new Error(`MVP_STATUS_INVALID:${requirement.id}`);
+  if (!['Designed', 'Implemented', 'Integrated', 'Verified', 'Released'].includes(requirement.status)) throw new Error(`MVP_STATUS_INVALID:${requirement.id}`);
+  if (requirement.release !== 'blocking') throw new Error(`MVP_RELEASE_POLICY_INVALID:${requirement.id}`);
 }
-if (JSON.stringify([...(delivery?.release?.clients ?? [])].sort()) !== JSON.stringify(['auth', 'console', 'storefront'])) throw new Error('CLIENT_DELIVERY_SET_INVALID');
-console.log(`platform delivery: ${expected.length} MVP requirements and three canonical client artifacts are traceable`);
+if (JSON.stringify([...(delivery?.release?.clients ?? [])].sort()) !== JSON.stringify([...CLIENT_SURFACES].sort())) throw new Error('CLIENT_DELIVERY_SET_INVALID');
+console.log(`platform delivery: ${expected.length} MVP requirements and ${CLIENT_SURFACES.length} canonical client artifacts are traceable`);

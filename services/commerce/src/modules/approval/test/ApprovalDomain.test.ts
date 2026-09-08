@@ -40,7 +40,14 @@ describe('Approval domain', () => {
 
   it('enforces assignment and requester-checker separation for permission, role, and membership policies', () => {
     const policy = new ApproverPolicy();
-    const context = { membership: 'membership:checker', requester: 'membership:maker', principal: 'principal:checker', requesterPrincipal: 'principal:maker', permissions: new Set(['finance.repair.decide']), roles: new Set(['role:finance']) };
+    const context = {
+      membership: 'membership:checker',
+      requester: 'membership:maker',
+      principal: 'principal:checker',
+      requesterPrincipal: 'principal:maker',
+      permissions: new Set(['finance.repair.decide']),
+      roles: new Set(['role:finance']),
+    };
     expect(() => policy.assertAssigned({ kind: 'permission', value: 'finance.repair.decide' }, context)).not.toThrow();
     expect(() => policy.assertAssigned({ kind: 'role', value: 'role:finance' }, context)).not.toThrow();
     expect(() => policy.assertAssigned({ kind: 'membership', value: 'membership:checker' }, context)).not.toThrow();

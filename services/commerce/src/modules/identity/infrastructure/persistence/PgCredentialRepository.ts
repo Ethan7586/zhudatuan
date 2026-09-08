@@ -1,7 +1,7 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { reject } from '../../../../foundation/application/OperationRejection';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { reject } from '../../../../pipeline/OperationRejection';
 
 import type { CredentialRepository, CredentialSecurity, CredentialVersion, PasswordCredential } from '../../application/port/CredentialRepository';
 interface CredentialRow {

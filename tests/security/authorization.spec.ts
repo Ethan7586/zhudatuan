@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { checkAssurance, decide, type MembershipAccess, type Scope } from '@shop/authz';
 import { InvitationRatePolicy } from '../../services/commerce/src/modules/identity/domain/policy/InvitationRatePolicy';
 import { PgInvitationRate } from '../../services/commerce/src/modules/identity/infrastructure/persistence/PgInvitationRate';
-import { StreamCapacity } from '../../services/commerce/src/foundation/stream/StreamCapacity';
+import { StreamCapacity } from '../../services/commerce/src/platform/messaging/StreamCapacity';
 import { result, withWriteTransaction } from '../../services/commerce/src/test/TransactionFixture';
 
 const mall: Scope = {

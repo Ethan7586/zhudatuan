@@ -33,10 +33,10 @@ const moduleRoot = join(root, 'services/commerce/src/modules');
 const authority = parse(readFileSync(join(root, 'packages/contract/definitions/operations.yml'), 'utf8'), { merge: true }) as { operations: readonly OperationAuthority[] };
 const handlerContract = readFileSync(join(root, 'services/commerce/tests/handler/Handler.test.ts'), 'utf8');
 const persistenceContract = readFileSync(join(root, 'services/commerce/tests/repository/Repository.test.ts'), 'utf8');
-const pipelineContract = readFileSync(join(root, 'services/commerce/src/foundation/application/OperationPipeline.test.ts'), 'utf8');
-const policyContract = readFileSync(join(root, 'services/commerce/src/foundation/application/OperationPolicy.test.ts'), 'utf8');
-const executorContract = readFileSync(join(root, 'services/commerce/src/foundation/application/OperationExecutor.test.ts'), 'utf8');
-const failureContract = readFileSync(join(root, 'services/commerce/src/foundation/domain/Failure.test.ts'), 'utf8');
+const pipelineContract = readFileSync(join(root, 'services/commerce/src/pipeline/OperationPipeline.test.ts'), 'utf8');
+const policyContract = readFileSync(join(root, 'services/commerce/src/pipeline/OperationPolicy.test.ts'), 'utf8');
+const executorContract = readFileSync(join(root, 'services/commerce/src/pipeline/OperationExecutor.test.ts'), 'utf8');
+const failureContract = readFileSync(join(root, 'services/commerce/src/platform/error/Failure.test.ts'), 'utf8');
 const concurrencyContract = [
   readFileSync(join(root, 'services/commerce/tests/repository/Repository.test.ts'), 'utf8'),
   readFileSync(join(root, 'services/commerce/tests/job/Job.test.ts'), 'utf8'),

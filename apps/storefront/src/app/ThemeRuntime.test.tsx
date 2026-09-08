@@ -6,13 +6,18 @@ import { ThemeRuntime } from './ThemeRuntime';
 afterEach(cleanup);
 
 describe('ThemeRuntime', () => {
-  it('maps a published theme to scoped design tokens without another component tree', () => {
-    render(<ThemeRuntime theme={{ preset: 'governance', primaryColor: '#2457C5', accentColor: '#E67E22', logoObjectRef: null, faviconObjectRef: null }}><main>商城内容</main></ThemeRuntime>);
+  it.each([
+    ['shop', '#1F5EFF', '#19A974'],
+    ['market', '#A23B32', '#C99A45'],
+    ['governance', '#E8502A', '#F2A65A'],
+  ] as const)('maps the %s publication to tokens without forking the component tree', (preset, primaryColor, accentColor) => {
+    render(<ThemeRuntime theme={{ preset, primaryColor, accentColor, logoObjectRef: null, faviconObjectRef: null }}><main data-testid="canonical-storefront">商城内容</main></ThemeRuntime>);
     const root = screen.getByText('商城内容').parentElement!;
-    expect(root.dataset.storefrontTheme).toBe('governance');
+    expect(root.dataset.storefrontTheme).toBe(preset);
     expect(root.dataset.publishedTheme).toBe('true');
-    expect(root.style.getPropertyValue('--storefront-primary')).toBe('#2457C5');
-    expect(root.style.getPropertyValue('--storefront-accent')).toBe('#E67E22');
+    expect(root.style.getPropertyValue('--storefront-primary')).toBe(primaryColor);
+    expect(root.style.getPropertyValue('--storefront-accent')).toBe(accentColor);
+    expect(screen.getAllByTestId('canonical-storefront')).toHaveLength(1);
   });
 
   it('uses the generated design defaults while publication is unavailable', () => {

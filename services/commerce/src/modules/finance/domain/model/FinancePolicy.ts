@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { AccountCode } from '../value/AccountCode';
 
 export interface FinanceEntryTemplate {

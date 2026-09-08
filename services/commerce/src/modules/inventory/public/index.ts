@@ -1,5 +1,5 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../platform/database/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
 export type { StockDemand } from './StockDemand';
 
 export interface CheckoutInventoryPort {
@@ -32,11 +32,4 @@ export const PAYMENT_INVENTORY_PORT = publicPort<PaymentInventoryPort>('inventor
 export const CATALOG_INVENTORY_PORT = publicPort<CatalogInventoryPort>('inventory', 'catalog');
 export const ORDER_EXPIRY_INVENTORY_PORT = publicPort<OrderExpiryInventoryPort>('inventory', 'orderexpiry');
 export const PROVIDER_INVENTORY_PORT = publicPort<ChannelInventoryPort>('inventory', 'providersync');
-export {
-  INVENTORY_READ_PORT,
-  type InventoryAvailabilityProjection,
-  type InventoryReadPort,
-  type ReservationProjection,
-  type StockSourceProjection,
-  type StorefrontAvailability,
-} from './InventoryReadPort';
+export { INVENTORY_READ_PORT, type InventoryAvailabilityProjection, type InventoryReadPort, type ReservationProjection, type StockSourceProjection, type StorefrontAvailability } from './InventoryReadPort';

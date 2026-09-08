@@ -1,5 +1,5 @@
 import { type IdentityAction as OperationAction } from '../model/IdentityAction';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
 
 import type { IdentityLinker } from '../service/IdentityLinker';
 export class ReadIdentityLinks {

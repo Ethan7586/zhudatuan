@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { IdentityPrincipal } from '../../../identity/public/index';
 import type { MemberImportAccessPort } from '../../../access/public/index';
 

@@ -1,8 +1,8 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { ExperienceChannel, ExperienceReadPort } from '../../public/ExperienceReadPort';
 
 export class PublishedReadHandler implements OperationHandler<'experience.published.read', 'read'> {

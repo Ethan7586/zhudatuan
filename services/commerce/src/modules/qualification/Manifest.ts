@@ -1,5 +1,5 @@
 import { CAPABILITY_CODES_BY_OWNER } from '@shop/contract';
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { AFTERSALE_POLICY_PORT, CATALOG_QUALIFICATION_PORT, CHECKOUT_QUALIFICATION_PORT } from './public';
 
 export const QualificationCapabilities = CAPABILITY_CODES_BY_OWNER.qualification;

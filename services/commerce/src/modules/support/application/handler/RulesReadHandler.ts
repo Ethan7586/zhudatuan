@@ -1,6 +1,6 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
 import type { RuleRepository } from '../port/SupportRepositories';
 
 export class RulesReadHandler implements OperationHandler<'support.rules.read', 'read'> {

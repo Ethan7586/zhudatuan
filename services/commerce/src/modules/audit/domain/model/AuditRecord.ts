@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { AuditWriteInput } from '../../../../foundation/domain/AuditEntry';
+import type { AuditWriteInput } from '../../../../platform/error/AuditEntry';
 
 export class AuditRecord {
   readonly id: string;

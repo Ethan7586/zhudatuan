@@ -1,6 +1,6 @@
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { keysetResult, queryPage } from '../../../../foundation/application/Validation';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { keysetResult, queryPage } from '../../../../pipeline/Validation';
 import { MEMBER_ACCESS_PORT } from '../../../access/public';
 import { BENEFIT_SETTLEMENT_READ_PORT } from '../../../finance/public';
 import { benefitAccountReader } from './BenefitAccountReader';
@@ -18,7 +18,10 @@ export function benefitReader(context: ModuleContext) {
       const accountByFinance = new Map(accounts.rows.map((account) => [account.finance_account_id, account] as const));
       const entries = await settlements.entries(database.transaction, [...accountByFinance.keys()], { occurredAt: page.sort, entry: page.id }, page.fetch);
       return keysetResult(
-        { rows: entries.map((entry) => ({ ...entry, account: accountByFinance.get(entry.accountId)!.id, kind: accountByFinance.get(entry.accountId)!.kind, currency: accountByFinance.get(entry.accountId)!.currency })), rowCount: entries.length } as never,
+        {
+          rows: entries.map((entry) => ({ ...entry, account: accountByFinance.get(entry.accountId)!.id, kind: accountByFinance.get(entry.accountId)!.kind, currency: accountByFinance.get(entry.accountId)!.currency })),
+          rowCount: entries.length,
+        } as never,
         page,
         'occurredAt'
       );

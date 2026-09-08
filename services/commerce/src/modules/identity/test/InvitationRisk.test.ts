@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PoolClient, QueryResult } from 'pg';
-import type { DatabasePool } from '../../../foundation/persistence/Pool';
+import type { DatabasePool } from '../../../platform/database/Pool';
 import { InvitationCode } from '../domain/model/InvitationCode';
 import { FederationProtector } from '../domain/service/FederationProtector';
 import { PgInvitationRate } from '../infrastructure/persistence/PgInvitationRate';
-import { PgTransactionManager } from '../../../adapter/database/PgTransactionManager';
+import { PgTransactionManager } from '../../../platform/database/PgTransactionManager';
 import { InvitationGuard } from '../application/service/InvitationGuard';
-import type { OperationRequest } from '../../../foundation/application/OperationRequest';
+import type { OperationRequest } from '../../../pipeline/OperationRequest';
 
 const code = InvitationCode.issue(Buffer.alloc(24, 7));
 

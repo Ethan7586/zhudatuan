@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { PoolPolicy } from '../policy/PoolPolicy';
 
 export interface CredentialPoolValue {
@@ -14,7 +14,9 @@ export interface CredentialPoolValue {
   readonly version: number;
 }
 export class CredentialPool {
-  constructor(readonly value: CredentialPoolValue) { new PoolPolicy().validate(value); }
+  constructor(readonly value: CredentialPoolValue) {
+    new PoolPolicy().validate(value);
+  }
   reserve(count: number): CredentialPool {
     new PoolPolicy().reserve(this.value, count);
     return new CredentialPool(Object.freeze({ ...this.value, generated: this.value.generated + count, version: this.value.version + 1 }));

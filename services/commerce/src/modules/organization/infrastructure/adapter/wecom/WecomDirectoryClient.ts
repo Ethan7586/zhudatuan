@@ -1,11 +1,11 @@
-import { DomainError } from '../../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../../platform/error/DomainError';
 import { WECOM_PROVIDER_CONFIGURATION } from '@shop/config/server';
-import type { SecretStore } from '../../../../../foundation/infrastructure/SecretStore';
-import { providerCredential } from '../../../../../foundation/infrastructure/ProviderSecret';
-import { HttpClient } from '../../../../../foundation/http/HttpClient';
-import { Failure } from '../../../../../foundation/domain/Failure';
-import { invalidExternalResponse, readExternalJson } from '../../../../../foundation/http/ExternalResponse';
-import { Singleflight } from '../../../../../foundation/performance/Singleflight';
+import type { SecretStore } from '../../../../../platform/secret/SecretStore';
+import { providerCredential } from '../../../../../platform/secret/ProviderSecret';
+import { HttpClient } from '../../../../../platform/http/HttpClient';
+import { Failure } from '../../../../../platform/error/Failure';
+import { invalidExternalResponse, readExternalJson } from '../../../../../platform/http/ExternalResponse';
+import { Singleflight } from '@shop/kernel';
 import type { DirectoryConnection } from '../../../domain/model/DirectoryConnection';
 
 export interface WecomDirectoryPayload {

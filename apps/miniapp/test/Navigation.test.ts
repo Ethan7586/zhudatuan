@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { MINIAPP_FEATURES } from '../miniprogram/runtime/FeatureCatalog';
 import { AccountManifest } from '../miniprogram/feature/account/Manifest';
 import { OrderManifest } from '../miniprogram/feature/order/Manifest';
-import { MINIAPP_PAGE_BY_ROUTE, MINIAPP_PAGES, miniappPagePath, readMiniappRoute } from '../miniprogram/generated/PageBinding';
+import { MINIAPP_MAIN_PAGES, MINIAPP_PAGE_BY_ROUTE, MINIAPP_PAGES, MINIAPP_SUBPACKAGES, miniappPagePath, readMiniappRoute } from '../miniprogram/generated/PageBinding';
 import { ROUTES } from '../miniprogram/generated/RouteBinding';
 import { miniappDeepLink, routeFromOptions } from '../miniprogram/runtime/DeepLink';
 import { miniappNavigation } from '../miniprogram/runtime/Navigation';
 
 describe('miniapp generated navigation', () => {
   it('binds every configured route to a real feature reader and page', () => {
-    expect(Object.keys(MINIAPP_FEATURES).sort()).toEqual(Object.keys(ROUTES).sort());
     expect(Object.keys(MINIAPP_PAGE_BY_ROUTE).sort()).toEqual(Object.keys(ROUTES).sort());
     expect(MINIAPP_PAGES[0]).toBe('/feature/home/page');
+    expect(MINIAPP_MAIN_PAGES).toEqual(['/feature/home/page']);
+    expect(MINIAPP_SUBPACKAGES.map(({ root }) => root)).toContain('feature/checkout');
     expect(MINIAPP_PAGE_BY_ROUTE.miniappsecurity).toBe('/feature/account/page');
-    expect(AccountManifest.viewModel).toBe(MINIAPP_FEATURES.miniappprofile);
+    expect(AccountManifest.routes.map(({ routeid }) => routeid)).toEqual(['miniappprofile', 'miniappsecurity']);
     expect(OrderManifest.routes.every((route) => route.scope === 'mall' && route.capability === route.operation && route.breadcrumbs.length > 0)).toBe(true);
   });
 

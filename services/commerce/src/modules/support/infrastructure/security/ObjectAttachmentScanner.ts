@@ -11,10 +11,7 @@ export class ObjectAttachmentScanner implements AttachmentScanPort {
     if (!allowed(item.contentType)) return rejected('TYPE_INVALID');
     if (!safeName(item.originalName)) return rejected('NAME_INVALID');
     try {
-      const [metadata, bytes] = await Promise.all([
-        this.objects.inspect(item.objectReference),
-        this.objects.read(item.objectReference, 10 * 1024 * 1024),
-      ]);
+      const [metadata, bytes] = await Promise.all([this.objects.inspect(item.objectReference), this.objects.read(item.objectReference, 10 * 1024 * 1024)]);
       if ((metadata as { scan: string }).scan !== 'clean') return rejected('VIRUS_DETECTED');
       if (metadata.size !== item.size || bytes.byteLength !== item.size) return rejected('SIZE_INVALID');
       if (metadata.contentType !== item.contentType || !signatureMatches(bytes, item.contentType)) return rejected('TYPE_INVALID');
@@ -48,7 +45,14 @@ function allowed(contentType: string): boolean {
 }
 
 function safeName(name: string): boolean {
-  return name === name.normalize('NFKC').replace(/[\u0000-\u001f\u007f/\\]/g, '').trim().slice(0, 255) && name.length > 0;
+  return (
+    name ===
+      name
+        .normalize('NFKC')
+        .replace(/[\u0000-\u001f\u007f/\\]/g, '')
+        .trim()
+        .slice(0, 255) && name.length > 0
+  );
 }
 
 function signatureMatches(bytes: Uint8Array, contentType: string): boolean {

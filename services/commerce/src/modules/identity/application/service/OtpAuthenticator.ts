@@ -1,12 +1,12 @@
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 import { createHmac } from 'node:crypto';
 import { isOperationTarget, type OperationTarget } from '@shop/contract';
 
-import { reject } from '../../../../foundation/application/OperationRejection';
+import { reject } from '../../../../pipeline/OperationRejection';
 
-import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
-import { textField } from '../../../../foundation/application/Validation';
+import type { OperationRequest } from '../../../../pipeline/OperationRequest';
+import { textField } from '../../../../pipeline/Validation';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';
 import type { SessionIssuer } from '../port/SessionIssuer';
 import type { ChallengePort } from '../port/ChallengePort';

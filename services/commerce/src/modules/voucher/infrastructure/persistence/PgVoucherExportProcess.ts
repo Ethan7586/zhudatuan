@@ -1,10 +1,10 @@
 import { randomBytes } from 'node:crypto';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { mapParallel } from '../../../../foundation/performance/Parallel';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { mapParallel } from '@shop/kernel';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { TaskAuthorizationPort } from '../../../access/public';
 import type { ExportExecution, ExportPageRow, ExportPlan, ExportPort, ExportRenderer, ExportResult, RuntimeExportWork } from '../../../runtime/public';
 import type { CredentialProtector } from '../../application/port/CredentialProtector';
@@ -50,7 +50,7 @@ export class PgVoucherExportProcess implements ExportRenderer<VoucherPlan> {
 
   async prepare(plan: VoucherPlan): Promise<number> {
     this.assertPlan(plan);
-    const snapshot = await this.manager.read(options(plan.id, plan.execution), async context => {
+    const snapshot = await this.manager.read(options(plan.id, plan.execution), async (context) => {
       await this.authorization.assert(context, plan.work.authorization);
       return this.snapshot(context, plan);
     });
@@ -59,13 +59,11 @@ export class PgVoucherExportProcess implements ExportRenderer<VoucherPlan> {
 
   async read(plan: VoucherPlan, cursor: string | null, fetch: number): Promise<readonly ExportPageRow[]> {
     available(plan.execution);
-    const page = await this.manager.read(options(plan.id, plan.execution), async context => {
+    const page = await this.manager.read(options(plan.id, plan.execution), async (context) => {
       await this.authorization.assert(context, plan.work.authorization);
       return readPage(this.transactions.database(context), plan.work, cursor, fetch);
     });
-    const rendered = plan.work.kind === 'credential'
-      ? await mapParallel(page, RUNTIME_LIMITS.voucherExport.revealConcurrency, (row) => this.reveal(plan.work, row as CredentialPage))
-      : page.map(({ cells }) => cells);
+    const rendered = plan.work.kind === 'credential' ? await mapParallel(page, RUNTIME_LIMITS.voucherExport.revealConcurrency, (row) => this.reveal(plan.work, row as CredentialPage)) : page.map(({ cells }) => cells);
     available(plan.execution);
     return Object.freeze(page.map((row, index) => Object.freeze({ cursor: row.cursor, cells: Object.freeze([...(rendered[index] ?? []), ...plan.watermark]) })));
   }
@@ -75,7 +73,7 @@ export class PgVoucherExportProcess implements ExportRenderer<VoucherPlan> {
   }
 
   async complete(plan: VoucherPlan, result: ExportResult): Promise<void> {
-    await this.manager.write(options(plan.id, plan.execution), async context => {
+    await this.manager.write(options(plan.id, plan.execution), async (context) => {
       await this.authorization.assert(context, plan.work.authorization);
       const snapshot = await this.snapshot(context, plan);
       const expiry = Math.min(Date.now() + RUNTIME_LIMITS.voucherExport.downloadTtlSeconds * 1000, Date.parse(snapshot.expiresAt));
@@ -99,10 +97,11 @@ export class PgVoucherExportProcess implements ExportRenderer<VoucherPlan> {
   }
 
   private snapshot(context: ReadTransactionContext, plan: VoucherPlan): Promise<Readonly<{ count: number; expiresAt: string }>> | Readonly<{ count: number; expiresAt: string }> {
-    if (plan.work.kind === 'search') return {
-      count: integer(plan.work.snapshot.count, 'VOUCHER_EXPORT_SNAPSHOT_INVALID'),
-      expiresAt: instant(plan.work.snapshot.expiresAt, 'VOUCHER_EXPORT_SNAPSHOT_INVALID'),
-    };
+    if (plan.work.kind === 'search')
+      return {
+        count: integer(plan.work.snapshot.count, 'VOUCHER_EXPORT_SNAPSHOT_INVALID'),
+        expiresAt: instant(plan.work.snapshot.expiresAt, 'VOUCHER_EXPORT_SNAPSHOT_INVALID'),
+      };
     return readExportSnapshot(this.transactions.database(context), plan.work);
   }
 
@@ -113,10 +112,7 @@ export class PgVoucherExportProcess implements ExportRenderer<VoucherPlan> {
 
   private async reveal(work: RuntimeExportWork, row: CredentialPage): Promise<readonly unknown[]> {
     const binding = Object.freeze({ scope: work.scope, pool: row.pool, credential: row.credential });
-    const [number, secret] = await Promise.all([
-      this.protector.reveal(row.numberCiphertext, 'number', binding),
-      this.protector.reveal(row.secretCiphertext, 'secret', binding),
-    ]);
+    const [number, secret] = await Promise.all([this.protector.reveal(row.numberCiphertext, 'number', binding), this.protector.reveal(row.secretCiphertext, 'secret', binding)]);
     return Object.freeze([row.cells[0], number, secret, ...row.cells.slice(1)]);
   }
 }
@@ -130,10 +126,20 @@ async function readPage(database: SqlExecutor, work: RuntimeExportWork, cursor: 
 async function searchPage(database: SqlExecutor, work: RuntimeExportWork, cursor: string | null, limit: number): Promise<readonly ExportPage[]> {
   const snapshot = text(work.snapshot.snapshot, 'VOUCHER_EXPORT_SNAPSHOT_REQUIRED');
   const evidence = await readSearchSnapshot(database, work.scope, snapshot, text(work.authorization.actor, 'VOUCHER_EXPORT_ACTOR_REQUIRED'), new Date());
-  if (evidence.filterHash !== work.snapshot.filterHash || evidence.watermark !== work.snapshot.watermark ||
-    evidence.count !== work.snapshot.count || evidence.expiresAt !== work.snapshot.expiresAt) throw new Error('VOUCHER_EXPORT_SNAPSHOT_INVALID');
+  if (evidence.filterHash !== work.snapshot.filterHash || evidence.watermark !== work.snapshot.watermark || evidence.count !== work.snapshot.count || evidence.expiresAt !== work.snapshot.expiresAt)
+    throw new Error('VOUCHER_EXPORT_SNAPSHOT_INVALID');
   const result = await database.query<{
-    ordinal: number; id: string; masked: string; product: string; holder: string | null; remaining: number; currency: string; state: string; starts: Date; expires: Date; version: number;
+    ordinal: number;
+    id: string;
+    masked: string;
+    product: string;
+    holder: string | null;
+    remaining: number;
+    currency: string;
+    state: string;
+    starts: Date;
+    expires: Date;
+    version: number;
   }>(
     `select item.ordinal::integer,item.voucher_id id,item.number_masked masked,item.product_id product,item.member_id holder,
       item.remaining_minor::integer remaining,item.currency,item.state,item.starts_at starts,item.expires_at expires,item.voucher_version::integer version
@@ -141,7 +147,14 @@ async function searchPage(database: SqlExecutor, work: RuntimeExportWork, cursor
      where item.snapshot_id=$1 and item.scope_id=$2 and ($3::bigint is null or item.ordinal>$3) order by item.ordinal limit $4`,
     [snapshot, work.scope, cursor ? Number(cursor) : null, limit]
   );
-  return Object.freeze(result.rows.map((row) => Object.freeze({ cursor: String(row.ordinal), cells: Object.freeze([row.id, row.masked, row.product, row.holder, row.remaining, row.currency, row.state, new Date(row.starts).toISOString(), new Date(row.expires).toISOString(), row.version]) })));
+  return Object.freeze(
+    result.rows.map((row) =>
+      Object.freeze({
+        cursor: String(row.ordinal),
+        cells: Object.freeze([row.id, row.masked, row.product, row.holder, row.remaining, row.currency, row.state, new Date(row.starts).toISOString(), new Date(row.expires).toISOString(), row.version]),
+      })
+    )
+  );
 }
 
 function header(kind: string): readonly string[] {
@@ -170,6 +183,5 @@ function available(execution: Pick<ExportExecution, 'signal' | 'deadline'>): voi
   if (Date.now() >= execution.deadline) throw new Error('DEADLINE_EXCEEDED');
 }
 function options(id: string, execution: ExportExecution): TransactionOptions {
-  return { tenant: execution.scope, membership: '', scope: execution.scope, actor: 'system:voucher', trace: execution.trace || id,
-    operation: 'job.voucher.export', workload: 'jobs', signal: execution.signal, deadline: execution.deadline };
+  return { tenant: execution.scope, membership: '', scope: execution.scope, actor: 'system:voucher', trace: execution.trace || id, operation: 'job.voucher.export', workload: 'jobs', signal: execution.signal, deadline: execution.deadline };
 }

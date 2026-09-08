@@ -24,6 +24,14 @@ export function SecurityPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typ
             <LoaderCircle className="animate-spin" size={17} />
             正在读取安全信息…
           </div>
+        ) : state === 'failed' ? (
+          <div role="alert" className="grid min-h-48 place-items-center rounded-xl border border-dashed bg-surface p-5 text-center text-muted">
+            <CircleAlert className="text-danger" />
+            <b>安全信息读取失败，当前不会展示推测数据</b>
+            <button type="button" onClick={() => void actions.retry()} className="rounded-lg bg-brand-light px-4 py-2 font-bold text-brand">
+              重试
+            </button>
+          </div>
         ) : (
           <>
             <div className="grid gap-4 md:grid-cols-2">
@@ -33,10 +41,10 @@ export function SecurityPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typ
                   修改密码
                 </h2>
                 <p className="mt-1 text-muted">最近修改：{security?.passwordChangedAt ? format(security.passwordChangedAt) : '尚未设置本地密码'}</p>
-                <input name="current" type="password" autoComplete="current-password" placeholder="当前密码" className="mt-4 w-full rounded-lg border px-3 py-2" />
-                <input name="next" type="password" autoComplete="new-password" placeholder="新密码（至少 12 位）" className="mt-2 w-full rounded-lg border px-3 py-2" />
-                <input name="confirmation" type="password" autoComplete="new-password" placeholder="再次输入新密码" className="mt-2 w-full rounded-lg border px-3 py-2" />
-                <button disabled={busy !== null} className="mt-3 rounded-lg bg-[var(--sw-brand)] px-4 py-2 font-bold text-inverse disabled:opacity-50">
+                <input name="current" required type="password" autoComplete="current-password" placeholder="当前密码" className="mt-4 w-full rounded-lg border px-3 py-2" />
+                <input name="next" required minLength={12} type="password" autoComplete="new-password" placeholder="新密码（至少 12 位）" className="mt-2 w-full rounded-lg border px-3 py-2" />
+                <input name="confirmation" required minLength={12} type="password" autoComplete="new-password" placeholder="再次输入新密码" className="mt-2 w-full rounded-lg border px-3 py-2" />
+                <button type="submit" disabled={busy !== null} className="mt-3 rounded-lg bg-[var(--sw-brand)] px-4 py-2 font-bold text-inverse disabled:opacity-50">
                   {busy === 'password' ? '正在保存…' : '确认修改'}
                 </button>
               </form>
@@ -52,13 +60,19 @@ export function SecurityPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typ
                   inputMode="numeric"
                   autoComplete="tel"
                   placeholder="新手机号"
+                  required
                   disabled={Boolean(challenge)}
                   className="mt-4 w-full rounded-lg border px-3 py-2 disabled:bg-subtle"
                 />
-                {challenge ? <input name="code" inputMode="numeric" autoComplete="one-time-code" placeholder="短信验证码" className="mt-2 w-full rounded-lg border px-3 py-2" /> : null}
-                <button disabled={busy !== null} className="mt-3 rounded-lg border border-brand bg-brand-light px-4 py-2 font-bold text-[var(--sw-brand)] disabled:opacity-50">
+                {challenge ? <input name="code" required minLength={6} maxLength={6} inputMode="numeric" autoComplete="one-time-code" placeholder="6 位短信验证码" className="mt-2 w-full rounded-lg border px-3 py-2" /> : null}
+                <button type="submit" disabled={busy !== null} className="mt-3 rounded-lg border border-brand bg-brand-light px-4 py-2 font-bold text-[var(--sw-brand)] disabled:opacity-50">
                   {busy === 'mobile' ? '正在处理…' : challenge ? '验证并更新' : '发送验证码'}
                 </button>
+                {challenge ? (
+                  <button type="button" disabled={busy !== null} onClick={actions.cancelMobile} className="ml-2 mt-3 rounded-lg border px-4 py-2 font-bold text-secondary">
+                    取消更换
+                  </button>
+                ) : null}
               </form>
             </div>
             <section className="mt-4 rounded-xl border bg-surface p-4 shadow-sm">

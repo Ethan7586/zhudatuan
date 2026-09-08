@@ -1,13 +1,41 @@
-# Support 实时事件中继
+# 客服实时流运行手册
 
-- Trigger：Redis 不可用、连续重试、Outbox 最老未投递事件超过 60 秒或游标写回失败。
-- Impact：HTTP 业务写入仍由 PostgreSQL 可靠提交，但在线客户端会延迟收到客服事实事件。
-- Owner：Support on-call 负责事件正确性，Runtime on-call 负责 Redis 和工作负载。
-- Stop loss：保留 Outbox 与任务租约，必要时限制新 SSE 连接；不得跳过事件、伪造游标或提前标记完成。
-- Diagnosis：检查 `runtime.outbox.realtime_error`、Job 租约、Redis 主从状态、Stream 保留窗口、事件目录版本和积压年龄。
-- Recovery：恢复 Redis 后按原事件 ID 重试；只有发布成功并在短事务中保存 Redis 游标后才标记实时投递完成。
-- Data repair：从 PostgreSQL Outbox 重放未完成事件；客户端游标过期时返回 410 并执行权威数据重同步。
-- Validation：核对事件 ID、scope、工单、会话、Sequence、Version，确认无正文或成员标识泄露、无重复副作用且积压归零。
-- Escalation：无法在十五分钟 RTO 内恢复、跨 scope 事件或 Outbox 缺失时立即升级 Reliability 与 Security incident commander。
-- Audit：归档请求链路、事件 ID、重试次数、Redis 游标、恢复时间、验证结果和操作人。
-- Postmortem：记录故障域、容量与保留窗口是否充足，并形成 owner/action/date 的改进项。
+## 触发症状、用户影响与严重级（Trigger / Impact / Severity）
+
+Redis/Stream 不可用、SSE 断线重连失败、LastEventId 过期、Outbox 实时事件积压、Cursor 写回失败或跨 Scope 事件时触发。权威消息已在 PostgreSQL 持久化，用户仅延迟看到；事件泄露或持久历史缺失为 P0。
+
+## Owner 与前置权限
+
+Support Owner 负责消息语义，Runtime/Reliability 负责 Relay/Redis。诊断需要 Conversation/Event/Outbox/Stream 水位只读权限；重放按 Scope 和 EventId 受审计执行，不读取消息正文除非获支持事件授权。
+
+## 只读诊断（Diagnosis）
+
+核对 PostgreSQL 持久 Event、Sequence/Version/Scope、Outbox、Relay Lease/Fencing、Redis Stream/Cursor/保留窗、SSE LastEventId、连接数/退避和客户端重同步。Redis 不是权威事实，不能以其缺失判断消息丢失。
+
+## 止血（Stop loss）
+
+限制新 SSE 连接和异常 Scope，保留 HTTP 消息写入与历史查询；跨 Scope 立即断开并撤销会话。禁止跳事件、伪造 Cursor、提前标投递或清空 Outbox/Stream。
+
+## 恢复（Recovery）
+
+Redis 恢复后按原 EventId 从 Outbox 重放，发布成功且 Cursor 短事务提交后标实时完成。LastEventId 在保留窗内增量续传；过期返回明确重同步状态，客户端拉 PostgreSQL 权威历史后再连接。重复事件只更新显示，不产生业务副作用。
+
+## 数据核对（Data repair / Validation / Escalation / Audit）
+
+Validation 对齐 EventId、Scope、Conversation、Sequence、Version、Outbox、Redis Cursor 和客户端水位，持久历史完整、重复副作用为 0、正文/成员标识不泄露。Data repair 从 Outbox 重建流；Escalation 跨 Scope/P0；Audit 保存 ID/水位/重试/Trace 不保存正文。
+
+## 回滚边界
+
+Relay/Redis 可重建，持久 Event/Outbox 不回退或删除；已发送事件只追加更正事件。会话撤销后不恢复旧 Token。
+
+## 沟通模板
+
+“客服实时流 `{incidentId}`，Scope `{scope}`，最旧事件 `{oldestAge}`，连接/积压 `{connections}/{depth}`，用户影响 `{impact}`，Owner `{owner}`，证据 `{evidenceRef}`。”
+
+## 关闭条件
+
+持久历史与 Stream 水位追平；断线重连/过期重同步通过；跨 Scope 与正文泄露为 0；积压/连接恢复 SLO；审计关闭。
+
+## 复盘链接（Postmortem）
+
+持久事件缺失、跨 Scope、重连风暴或积压越过 RTO 必须填写 `{postmortemUrl}`。

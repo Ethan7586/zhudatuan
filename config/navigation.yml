@@ -580,6 +580,12 @@ routes:
     feature: support
     requirements:
       - MVPMALLSUPPORT
+  - id: storeworkcase
+    surface: store
+    path: /scopes/:scopeKind/:scopeId/support/:caseId
+    feature: support
+    requirements:
+      - MVPMALLSUPPORT
   - id: storeaccountwork
     surface: store
     path: /scopes/:scopeKind/:scopeId/account
@@ -596,6 +602,12 @@ routes:
   - id: suppliercatalog
     surface: supplier
     path: /scopes/:scopeKind/:scopeId/catalog
+    feature: catalog
+    requirements:
+      - MVPGROUPPOOL
+  - id: supplierproduct
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/catalog/:productId
     feature: catalog
     requirements:
       - MVPGROUPPOOL
@@ -656,6 +668,12 @@ routes:
   - id: suppliersupport
     surface: supplier
     path: /scopes/:scopeKind/:scopeId/support
+    feature: support
+    requirements:
+      - MVPGROUPSUPPORT
+  - id: suppliercase
+    surface: supplier
+    path: /scopes/:scopeKind/:scopeId/support/:caseId
     feature: support
     requirements:
       - MVPGROUPSUPPORT
@@ -1641,7 +1659,7 @@ nodes:
     title: 今日任务
     icon: task
     order: 10
-    entry: order.orders.read
+    entry: fulfillment.workitems.read
     empty: showdisabled
     routeid: storetasks
     placement: primary
@@ -1652,7 +1670,7 @@ nodes:
     title: 接单与备货
     icon: order
     order: 20
-    entry: order.orders.read
+    entry: fulfillment.workitems.read
     empty: showdisabled
     routeid: storeorderswork
     placement: primary
@@ -1663,7 +1681,7 @@ nodes:
     title: 发货管理
     icon: fulfillment
     order: 30
-    entry: order.orders.read
+    entry: fulfillment.workitems.read
     empty: showdisabled
     routeid: storefulfillment
     placement: primary
@@ -1674,7 +1692,7 @@ nodes:
     title: 退货检验
     icon: return
     order: 35
-    entry: order.aftersales.read
+    entry: fulfillment.returns.read
     empty: showdisabled
     routeid: storereturnwork
     placement: primary
@@ -1744,6 +1762,17 @@ nodes:
     empty: hide
     routeid: storeaccountwork
     placement: primary
+  - id: storeworkcase
+    surface: store
+    scope: store
+    parent: storesupportwork
+    title: 客服会话
+    icon: support
+    order: 980
+    entry: support.messages.read
+    empty: hide
+    routeid: storeworkcase
+    placement: contextual
   - id: suppliertasks
     surface: supplier
     scope: supplier
@@ -1751,7 +1780,7 @@ nodes:
     title: 待办任务
     icon: task
     order: 10
-    entry: order.orders.read
+    entry: fulfillment.workitems.read
     empty: showdisabled
     routeid: suppliertasks
     placement: primary
@@ -1784,7 +1813,7 @@ nodes:
     title: 订单处理
     icon: order
     order: 40
-    entry: order.orders.read
+    entry: fulfillment.workitems.read
     empty: showdisabled
     routeid: supplierorders
     placement: primary
@@ -1795,7 +1824,7 @@ nodes:
     title: 发货管理
     icon: fulfillment
     order: 50
-    entry: order.orders.read
+    entry: fulfillment.workitems.read
     empty: showdisabled
     routeid: suppliershipments
     placement: primary
@@ -1806,7 +1835,7 @@ nodes:
     title: 退货处理
     icon: return
     order: 60
-    entry: order.aftersales.read
+    entry: fulfillment.returns.read
     empty: showdisabled
     routeid: supplierreturns
     placement: primary
@@ -1839,7 +1868,7 @@ nodes:
     title: 价格管理
     icon: finance
     order: 35
-    entry: pricing.offers.read
+    entry: catalog.listings.read
     empty: showdisabled
     routeid: supplierpricing
     placement: primary
@@ -1887,6 +1916,28 @@ nodes:
     empty: hide
     routeid: supplieraccount
     placement: primary
+  - id: supplierproduct
+    surface: supplier
+    scope: supplier
+    parent: suppliercatalog
+    title: 商品详情
+    icon: product
+    order: 910
+    entry: catalog.product.detail.read
+    empty: hide
+    routeid: supplierproduct
+    placement: contextual
+  - id: suppliercase
+    surface: supplier
+    scope: supplier
+    parent: suppliersupport
+    title: 客服会话
+    icon: support
+    order: 920
+    entry: support.messages.read
+    empty: hide
+    routeid: suppliercase
+    placement: contextual
   - id: platformproductdetail
     surface: console
     scope: platform

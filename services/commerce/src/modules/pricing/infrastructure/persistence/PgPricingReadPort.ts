@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
 import type { CurrencyCode } from '@shop/kernel';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { boundedIdentifiers } from '../../../../foundation/persistence/BoundedIdentifiers';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { allParallel } from '../../../../foundation/performance/Parallel';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { boundedIdentifiers } from '../../../../platform/database/BoundedIdentifiers';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
+import { allParallel } from '@shop/kernel';
 import type { EffectiveOffer, PricingReadPort, StorefrontPrice } from '../../public/PricingReadPort';
 import { Offer } from '../../domain/model/Offer';
 import { PriceBook, type PriceBookState } from '../../domain/model/PriceBook';

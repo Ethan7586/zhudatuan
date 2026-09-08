@@ -1,5 +1,5 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
 import type { MallDomain, MallPatch, MallTheme } from '../../domain/model/Mall';
 import type { MallOpeningValue } from '../../domain/model/MallOpening';
 

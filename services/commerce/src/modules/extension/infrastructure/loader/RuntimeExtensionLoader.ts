@@ -4,12 +4,12 @@ import type { IntegrationConnection } from '@shop/providercore';
 import type { ExtensionCandidate, ExtensionLoader, ExtensionLoadContext } from '../../application/port/ExtensionLoader';
 import { Manifest } from '../../domain/model/Manifest';
 import type { ExtensionRuntimeStore, RuntimeInstallation } from '../../application/port/ExtensionRuntimeStore';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { secretText, type SecretStore } from '../../../../foundation/infrastructure/SecretStore';
-import type { ExtensionRegistry } from '../../../../bootstrap/ExtensionRegistry';
+import type { DatabasePool } from '../../../../platform/database/Pool';
+import { secretText, type SecretStore } from '../../../../platform/secret/SecretStore';
+import type { ExtensionRegistry } from '../../../../composition/ExtensionRegistry';
 import { providerFactory } from './ProviderCatalog';
-import { PgLocalProviderRuntime } from '../../../../bootstrap/PgLocalProviderRuntime';
-import { mapParallel } from '../../../../foundation/performance/Parallel';
+import { PgLocalProviderRuntime } from '../../../../composition/PgLocalProviderRuntime';
+import { mapParallel } from '@shop/kernel';
 import { PgExtensionRuntimeStore } from '../persistence/PgExtensionRuntimeStore';
 
 export class RuntimeExtensionLoader implements ExtensionLoader {

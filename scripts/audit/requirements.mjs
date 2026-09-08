@@ -1,12 +1,17 @@
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { parse } from 'yaml';
 
 import { loadRequirementAuthority } from '../../tools/requirementgen/src/Authority.ts';
+import { loadJourneySource } from '../../tools/requirementgen/src/JourneySource.ts';
+import { DELIVERY_STATUSES } from '../../tools/requirementgen/src/DeliveryStatus.ts';
+import { isRequirementReleaseEvidence } from '../../tools/requirementgen/src/ReleaseEvidence.ts';
 import { report } from './report.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const names = Object.freeze({
+  source: 'docs/requirements/source.yml',
   mapping: 'docs/requirements/mapping.json',
   requirements: 'docs/requirements/requirements.yml',
   mvp: 'docs/requirements/mvp.yml',
@@ -24,12 +29,17 @@ const documents = Object.fromEntries(
 const mapping = JSON.parse(readFileSync(join(root, names.mapping), 'utf8'));
 const contractType = readFileSync(join(root, names.contract), 'utf8');
 const { authority } = await loadRequirementAuthority(root);
+const journeySource = await loadJourneySource(root);
+const journeyCatalogHash = createHash('sha256').update(journeySource.bytes).digest('hex');
 const operations = readYaml('packages/contract/definitions/operations.yml').operations ?? [];
+const clients = readYaml('config/clients.yml').clients ?? [];
 const navigationEvidence = JSON.parse(readFileSync(join(root, 'evidence/navigation/catalog.json'), 'utf8'));
 const operationById = new Map(operations.map((operation) => [operation.id, operation]));
+const validClients = new Set(clients.map(({ id }) => id));
+const scopedClients = new Set(clients.filter(({ audience }) => audience === 'console').map(({ id }) => id));
 const violations = [];
 const fail = (code, location, detail = '') => violations.push({ code, location, detail });
-const statusRank = new Map(['Designed', 'Implemented', 'Integrated', 'Accepted', 'Released'].map((status, index) => [status, index]));
+const statusRank = new Map(DELIVERY_STATUSES.map((status, index) => [status, index]));
 const requiredOperationFields = [
   'id',
   'owner',
@@ -60,6 +70,7 @@ const requiredOperationFields = [
 ];
 
 checkDocumentHeaders();
+checkSource();
 checkRequirements();
 checkMvp();
 checkProviders();
@@ -82,8 +93,29 @@ function checkDocumentHeaders() {
     }
     if (document.navigationCatalogSha256 !== navigationEvidence.hash) fail('NAVIGATION_HASH_DRIFT', 'docs/requirements', String(document.navigationCatalogSha256));
     if (typeof document.contractSha256 !== 'string' || document.contractSha256.length !== 64) fail('CONTRACT_HASH_MISSING', 'docs/requirements');
+    if (document.journeyCatalogSha256 !== journeyCatalogHash) fail('JOURNEY_HASH_DRIFT', 'docs/requirements', String(document.journeyCatalogSha256));
   }
   if (mapping.parserVersion !== authority.parserVersion || mapping.generatorVersion !== authority.generatorVersion || mapping.generatedAt !== authority.generatedAt) fail('REQUIREMENT_GENERATOR_METADATA_DRIFT', names.mapping);
+  const coverage = mapping.coverage;
+  if (coverage?.modules?.count !== 33 || coverage?.clients?.count !== 6 || coverage?.richVoucherOperations !== 57 || coverage?.approvalOperations !== 10 || coverage?.runtimeImportOperations !== 4 || coverage?.journeys !== 44) {
+    fail('REQUIREMENT_COVERAGE_INVALID', names.mapping);
+  }
+}
+
+function checkSource() {
+  const source = documents.source;
+  if (
+    source.authority?.path !== authority.repositoryRelativePath ||
+    source.authority?.sheet !== authority.sheet ||
+    source.authority?.sourceRange !== authority.range ||
+    source.authority?.selectedRange !== authority.selectionRange ||
+    source.authority?.sha256 !== authority.sha256 ||
+    source.authority?.readAt !== authority.reviewedAt ||
+    JSON.stringify(source.authority?.order) !== JSON.stringify(authority.authorityOrder)
+  )
+    fail('REQUIREMENT_SOURCE_AUTHORITY_INVALID', names.source);
+  if (source.counts?.mvp !== 22 || source.counts?.blocking !== 22 || source.counts?.providerRequired !== 11) fail('REQUIREMENT_SOURCE_COUNT_INVALID', names.source);
+  if ((source.mvp ?? []).some(({ release }) => release !== 'blocking') || 'clarifications' in source) fail('REQUIREMENT_SOURCE_POLICY_INVALID', names.source);
 }
 
 function checkRequirements() {
@@ -100,14 +132,14 @@ function checkRequirements() {
     checkStatus(requirement, location);
     if (!Array.isArray(requirement.clients) || requirement.clients.length === 0) fail('REQUIREMENT_CLIENT_MISSING', location);
     for (const client of requirement.clients ?? []) {
-      if (!['console', 'auth', 'storefront'].includes(client)) fail('REQUIREMENT_CLIENT_INVALID', location, client);
+      if (!validClients.has(client)) fail('REQUIREMENT_CLIENT_INVALID', location, client);
     }
     if (!Array.isArray(requirement.uiRoutes) || requirement.uiRoutes.length === 0) fail('REQUIREMENT_ROUTE_MISSING', location);
     if (!Array.isArray(requirement.frontend) || requirement.frontend.length === 0) fail('REQUIREMENT_FRONTEND_TRACE_MISSING', location);
     for (const frontend of requirement.frontend ?? []) {
-      if (!['console', 'auth', 'storefront'].includes(frontend.client)) fail('REQUIREMENT_CLIENT_INVALID', location, frontend.client);
+      if (!validClients.has(frontend.client)) fail('REQUIREMENT_CLIENT_INVALID', location, frontend.client);
       if (!String(frontend.route).startsWith('/')) fail('REQUIREMENT_ROUTE_INVALID', location, frontend.route);
-      if (frontend.client === 'console' && !String(frontend.route).startsWith('/scopes/:scopeKind/:scopeId/')) {
+      if (scopedClients.has(frontend.client) && !String(frontend.route).startsWith('/scopes/:scopeKind/:scopeId/')) {
         fail('ROUTE_OUTSIDE_SCOPE_WORKSPACE', location, frontend.route);
       }
     }
@@ -157,7 +189,9 @@ function checkMvp() {
     const expected = expectedIds[index];
     const location = `${names.mvp}:${record.id}`;
     if (record.id !== expected || record.row !== index + 3) fail('MVP_SEQUENCE_INVALID', location, expected);
+    if (record.release !== 'blocking') fail('MVP_RELEASE_POLICY_INVALID', location, record.release);
     checkStatus(record, location);
+    if (record.status === 'Designed') fail('MVP_DESIGNED_ONLY', location);
     if (!Array.isArray(record.navigation) || record.navigation.length === 0) fail('MVP_NAVIGATION_MISSING', location);
     if (!Array.isArray(record.routes) || record.routes.length === 0) fail('MVP_ROUTE_MISSING', location);
     for (const route of record.routes ?? []) if (!String(route).startsWith('/')) fail('MVP_ROUTE_INVALID', location, route);
@@ -165,18 +199,12 @@ function checkMvp() {
       const operation = operationById.get(operationId);
       if (!operation || !operation.requirements?.includes(record.id)) fail('MVP_OPERATION_TRACE_INVALID', location, operationId);
     }
-    if (record.status === 'Released') checkSignedEvidence(record.releaseEvidence, location);
+    if (!Array.isArray(record.journeys) || record.journeys.length === 0) fail('MVP_JOURNEY_MISSING', location);
+    if (!Array.isArray(record.journeyTests) || record.journeyTests.length === 0) fail('MVP_JOURNEY_TEST_MISSING', location);
+    if (!Array.isArray(record.events) || record.events.length === 0) fail('MVP_EVENT_MISSING', location);
+    if (record.status === 'Released') checkSignedEvidence(record.releaseEvidence, location, record.id);
   });
-  const blockers = records.flatMap((record) => (record.releaseBlockers ?? []).map((blocker) => ({ requirement: record.id, ...blocker })));
-  const expected = ['MVPGROUPSETTING', 'MVPGROUPVOUCHER', 'MVPMALLVOUCHER'];
-  if (
-    blockers
-      .map(({ requirement }) => requirement)
-      .sort()
-      .join() !== expected.join()
-  )
-    fail('MVP_RELEASE_BLOCKERS_INVALID', names.mvp);
-  for (const blocker of blockers) if (!['open', 'resolved'].includes(blocker.status) || !blocker.owner) fail('MVP_RELEASE_BLOCKER_POLICY_INVALID', names.mvp, blocker.requirement);
+  if (documents.mvp.releasePolicy !== 'blocking' || documents.mvp.statusPolicy !== 'derived-from-code-and-signed-release-evidence') fail('MVP_DELIVERY_POLICY_INVALID', names.mvp);
 }
 
 function checkProviders() {
@@ -196,11 +224,12 @@ function checkProviders() {
 
 function checkFrontend() {
   const records = documents.frontend.requirements ?? [];
-  if (records.length !== authority.sheets.requirements) fail('FRONTEND_COUNT_INVALID', names.frontend, String(records.length));
+  if (records.length !== documents.frontend.count) fail('FRONTEND_COUNT_INVALID', names.frontend, String(records.length));
+  if (new Set(records.map(({ requirement }) => requirement)).size !== authority.sheets.requirements) fail('FRONTEND_REQUIREMENT_COVERAGE_INVALID', names.frontend);
   for (const record of records) {
     const location = `${names.frontend}:${record.requirement}`;
     checkStatus(record, location);
-    if (!['console', 'auth', 'storefront'].includes(record.client)) fail('NON_MVP_CLIENT', location, record.client);
+    if (!validClients.has(record.client)) fail('NON_MVP_CLIENT', location, record.client);
     if (!Array.isArray(record.callers) || !Array.isArray(record.callees) || !record.files) fail('FRONTEND_TRACE_INCOMPLETE', location);
   }
 }
@@ -208,11 +237,33 @@ function checkFrontend() {
 function checkTrace() {
   const records = documents.trace.requirements ?? [];
   if (records.length !== 22) fail('MVP_TRACE_COUNT_INVALID', names.trace, String(records.length));
-  const expectedChain = ['WorkbookCell', 'Requirement', 'Route', 'Operation', 'Schema', 'Permission', 'Capability', 'Scope', 'Handler', 'Owner', 'Table', 'Test', 'Runbook', 'SignedEvidence'];
+  const expectedChain = ['WorkbookCell', 'Requirement', 'Journey', 'Route', 'Operation', 'Schema', 'Permission', 'Capability', 'Scope', 'Handler', 'Owner', 'Table', 'Event', 'Job', 'Test', 'Runbook', 'SignedEvidence'];
   if (JSON.stringify(documents.trace.chain) !== JSON.stringify(expectedChain)) fail('MVP_TRACE_CHAIN_INVALID', names.trace);
   for (const record of records) {
     const location = `${names.trace}:${record.requirement}`;
-    for (const field of ['workbookCell', 'requirement', 'navigation', 'routes', 'operations', 'schemas', 'modules', 'tables', 'tests', 'runbook', 'signedEvidence', 'releaseBlockers']) {
+    for (const field of [
+      'workbookCell',
+      'requirement',
+      'journeys',
+      'navigation',
+      'routeids',
+      'routes',
+      'operations',
+      'schemas',
+      'permissions',
+      'capabilities',
+      'scopes',
+      'handlers',
+      'owners',
+      'modules',
+      'tables',
+      'events',
+      'eventSchemas',
+      'jobs',
+      'tests',
+      'runbook',
+      'signedEvidence',
+    ]) {
       if (!(field in record)) fail('MVP_TRACE_FIELD_MISSING', location, field);
     }
   }
@@ -226,9 +277,9 @@ function checkStatus(record, location) {
   }
 }
 
-function checkSignedEvidence(path, location) {
+function checkSignedEvidence(path, location, requirement) {
   const absolute = join(root, path);
   if (!existsSync(absolute)) return fail('SIGNED_EVIDENCE_MISSING', location, path);
   const evidence = JSON.parse(readFileSync(absolute, 'utf8'));
-  if (evidence.requirement !== location.split(':').at(-1) || !evidence.signature || !evidence.sourceTreeHash || !evidence.contractHash || !evidence.migrationHead || !evidence.artifactDigest) fail('SIGNED_EVIDENCE_INVALID', location, path);
+  if (!isRequirementReleaseEvidence(evidence, requirement)) fail('SIGNED_EVIDENCE_INVALID', location, path);
 }

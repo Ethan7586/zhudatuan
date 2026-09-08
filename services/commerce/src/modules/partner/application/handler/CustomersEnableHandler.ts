@@ -1,6 +1,6 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
 import type { ChangeCustomerState } from '../process/ChangeCustomerState';
 
 export class CustomersEnableHandler implements OperationHandler<'partner.customers.enable', 'write'> {

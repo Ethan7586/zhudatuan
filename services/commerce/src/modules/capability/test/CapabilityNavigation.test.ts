@@ -30,7 +30,7 @@ describe('capability navigation projection', () => {
 
   it('returns a closed empty set for a scope with no surface-ready capabilities', async () => {
     const result = await withReadTransaction(
-      async () => ({ rows: [], rowCount: 0 } as unknown as QueryResult),
+      async () => ({ rows: [], rowCount: 0 }) as unknown as QueryResult,
       (context) => new PgNavigationCapability().read(context, ['mall:closed'], 'supplier')
     );
     expect(result).toEqual([{ scope: 'mall:closed', capabilities: new Set(), version: 0 }]);

@@ -1,19 +1,19 @@
 import { PgCheckoutQualificationPort } from './infrastructure/persistence/PgCheckoutQualificationPort';
 import { PgAfterSalePolicyPort } from './infrastructure/persistence/PgAfterSalePolicyPort';
 
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { defineModule } from '../../composition/DefinedModule';
 import { Manifest } from './Manifest';
 import { AFTERSALE_POLICY_PORT, CHECKOUT_QUALIFICATION_PORT } from './public';
 import { CenterReadHandler } from './application/handler/CenterReadHandler';
 import { DecisionsPreviewHandler } from './application/handler/DecisionsPreviewHandler';
 import { PoliciesManageHandler } from './application/handler/PoliciesManageHandler';
 import { PgQualificationRepository } from './infrastructure/persistence/PgQualificationRepository';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
 import { PgQualificationCaseRepository } from './infrastructure/persistence/PgQualificationCaseRepository';
 import { QualificationsPublishHandler } from './application/handler/QualificationsPublishHandler';
 import { QualificationsRevokeHandler } from './application/handler/QualificationsRevokeHandler';
 import { OBJECT_STORE } from '../runtime/public/ObjectPort';
-import { PgJobScheduler } from '../../adapter/database/PgJobScheduler';
+import { PgJobScheduler } from '../../platform/database/PgJobScheduler';
 import { createJobs } from './interface/job/JobFactory';
 import { EvidenceUploadsCreateHandler } from './application/handler/EvidenceUploadsCreateHandler';
 import { QualificationEvidence } from './application/service/QualificationEvidence';

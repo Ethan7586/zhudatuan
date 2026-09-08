@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { ValueObject } from '../../../../foundation/domain/ValueObject';
+import { ValueObject } from '@shop/kernel';
 
 type ReferenceKind = 'payment' | 'refund';
 

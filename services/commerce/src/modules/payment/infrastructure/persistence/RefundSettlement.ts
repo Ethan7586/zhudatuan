@@ -1,8 +1,8 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { OrderPaymentPort } from '../../../order/public';
 import type { OrganizationReadPort } from '../../../organization/public';
 import type { MarketingReservePort } from '../../../marketing/public';
@@ -81,8 +81,15 @@ export class RefundSettlement {
       member_id: order.member,
       line_id: sale?.line ?? null,
     });
-    const aggregate = new RefundAggregate({ id: refund.id, payment: refund.payment_id, amountMinor: refund.amount_minor,
-      currency: refund.currency, state: refund.state as RefundState, reason: refund.reason, version: refund.version }).transition('succeeded');
+    const aggregate = new RefundAggregate({
+      id: refund.id,
+      payment: refund.payment_id,
+      amountMinor: refund.amount_minor,
+      currency: refund.currency,
+      state: refund.state as RefundState,
+      reason: refund.reason,
+      version: refund.version,
+    }).transition('succeeded');
     const legs = (
       await database.query<RefundLeg>(
         `select sequence,kind,reference_id,amount_minor::float8 amount_minor
@@ -104,17 +111,24 @@ export class RefundSettlement {
     );
     const totals = payment.rows[0];
     if (!totals) throw new DomainError('PAYMENT_REFUND_EXCEEDS_AVAILABLE');
-    await database.query(`update payment.intent set state=case when $2=$3 then 'refunded' else 'partiallyrefunded' end,
+    await database.query(
+      `update payment.intent set state=case when $2=$3 then 'refunded' else 'partiallyrefunded' end,
       updated_at=clock_timestamp(),version=version+1 where id=(select intent_id from payment.payment where id=$1) and state in('captured','partiallyrefunded')`,
-      [refund.payment_id, totals.refunded_minor, totals.captured_minor]);
+      [refund.payment_id, totals.refunded_minor, totals.captured_minor]
+    );
     await this.marketing.refund(context, { refund: refund.id, order: refund.order_id, refundedMinor: totals.refunded_minor, capturedMinor: totals.captured_minor });
     await database.query(
       `update payment.refundtender set state='succeeded',provider_reference=case when kind='wechat' then $2 else provider_reference end
       where refund_id=$1 and state in('planned','processing')`,
       [refundid, providerReference]
     );
-    await database.query(`update payment.refund set state=$3,external_transaction=$2,completed_at=clock_timestamp(),version=$4 where id=$1 and version=$5`,
-      [refundid, providerReference, aggregate.value.state, aggregate.value.version, refund.version]);
+    await database.query(`update payment.refund set state=$3,external_transaction=$2,completed_at=clock_timestamp(),version=$4 where id=$1 and version=$5`, [
+      refundid,
+      providerReference,
+      aggregate.value.state,
+      aggregate.value.version,
+      refund.version,
+    ]);
     await database.query(
       `update payment.recoverycase set state='resolved',resolved_at=clock_timestamp(),version=version+1
       where state='open' and evidence->>'refund'=$1`,

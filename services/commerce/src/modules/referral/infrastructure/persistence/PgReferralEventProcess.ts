@@ -1,8 +1,8 @@
-import { PgOutbox } from '../../../../adapter/database/PgOutbox';
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgOutbox } from '../../../../platform/database/PgOutbox';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { referralEvent } from '../../domain/event/ReferralEvents';
 import { Commission } from '../../domain/model/Commission';
 import { ReferralRate } from '../../domain/value/ReferralRate';

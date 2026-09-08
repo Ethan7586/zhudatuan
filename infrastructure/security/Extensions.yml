@@ -1,0 +1,47 @@
+version: 1
+owner: extension
+catalog: config/providers.yml
+package:
+  digest: sha256-required
+  signature: ed25519
+  signer: approved-release-identity
+  provenance: required
+  mutableVersion: forbidden
+manifest:
+  apiVersion: exact
+  permissions: exact-allowlist
+  capabilities: exact-allowlist
+  configurationSchema: required
+  secretSchema: references-only
+  eventSubscriptions: exact
+  unknownFields: reject
+runtime:
+  process: provider
+  apiProcessLoad: forbidden
+  secretLease: { audience: provider+connection, ttlMinutes: 15, plaintextPersistence: forbidden }
+  egress: infrastructure/network/Egress.yml
+  bulkhead: provider+scope+capability
+  timeout: manifest-bounded
+  retry: idempotent-and-manifest-bounded
+  circuit: provider+capability
+  responseBytes: bounded
+  logs: metadata-only
+sandbox:
+  contractSuite: [Contract, Fixture, Mapping, Failure]
+  ci: required
+  stagingVendorSandbox: required
+  signedWebhook: required-when-declared
+  reconciliation: required
+  rollbackDrill: required
+enablement:
+  prerequisites: [signature, digest, manifest, configuration, secretLease, contractSuite, sandboxProbe, healthProbe]
+  makerChecker: true
+  canary: required
+disablement:
+  rejectNewWork: immediate
+  drainLeaseSeconds: 120
+  checkpointInflight: true
+  revokeSecretLease: after-drain
+  preserveInboxOutbox: true
+  reconciliation: required
+  evidence: immutable

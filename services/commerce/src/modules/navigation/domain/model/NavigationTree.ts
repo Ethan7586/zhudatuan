@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { NAVIGATION_CONFIGURATION } from '@shop/config/server';
 import type { NavigationScopeKind } from '@shop/authz';
 import type { OperationTarget } from '@shop/contract';
@@ -51,7 +51,7 @@ export class NavigationTree implements NavigationTreeValue {
       catalogVersion: this.catalogVersion,
       defaultKey: this.defaultKey,
       defaultRoute: this.defaultRoute,
-      nodes: Object.freeze(this.nodes.map(nodeValue)),
+      nodes: Object.freeze(this.nodes.map((node) => new NavigationNode(node).toValue())),
     });
   }
 }
@@ -88,16 +88,4 @@ function validate(value: NavigationTreeValue): void {
 
 function flatten(nodes: readonly NavigationNodeValue[]): readonly NavigationNodeValue[] {
   return nodes.flatMap((node) => [node, ...flatten(node.children)]);
-}
-
-function nodeValue(node: NavigationNodeValue): NavigationNodeValue {
-  return Object.freeze({
-    key: node.key,
-    title: node.title,
-    parent: node.parent,
-    order: node.order,
-    operation: node.operation,
-    experience: Object.freeze({ ...node.experience, breadcrumbs: Object.freeze(node.experience.breadcrumbs.map((item) => Object.freeze({ ...item }))) }),
-    children: Object.freeze(node.children.map(nodeValue)),
-  });
 }

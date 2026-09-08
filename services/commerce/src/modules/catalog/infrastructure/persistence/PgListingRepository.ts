@@ -1,10 +1,11 @@
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ListingFilter, ListingRepository } from '../../application/port/ListingRepository';
 import type { ListingFacet, ListingFacetFilter, ListingFacetRepository } from '../../application/port/ListingFacetRepository';
 import { isConsumerTarget } from '@shop/contract';
 import type { CatalogScopeReader } from './CatalogScopeReader';
+import { readSupplierListings } from './SupplierListingQuery';
 export class PgListingRepository implements ListingRepository, ListingFacetRepository {
   constructor(
     private readonly transactions: PgTransactionAccess,
@@ -13,22 +14,7 @@ export class PgListingRepository implements ListingRepository, ListingFacetRepos
   async read(context: ReadTransactionContext, filter: ListingFilter) {
     const database = this.transactions.database(context);
     if (filter.scopeKind === 'supplier') {
-      const result = await database.query(
-        `select source.id,source.scope_id,array[source.scope_id]::text[] visible_scopes,source.sku_id,coalesce(product.title,source.external_id) title,
-        source.status,source.source_version version,source.observed_at cursor_sort,sku.code,product.id product_id,product.product_type,
-        product.attributes->>'coverUrl' cover_url,product.attributes->>'subtitle' subtitle,product.category_id,category.name category_name,
-        source.provider source,product.owner_partner_id source_partner_id,null::text pool_id,null::text pool_name,
-        case when source.sku_id is null then 0 else 1 end::integer sku_count,case when source.sku_id is null then 0 else 1 end::integer sku_total,
-        0::integer mall_count,1::integer mall_total,coalesce(product.attributes->'regionIds','[]'::jsonb) region_ids
-        from catalog.sourcelisting source left join catalog.sku sku on sku.id=source.sku_id
-        left join catalog.product product on product.id=sku.product_id left join catalog.category category on category.id=product.category_id where source.scope_id=$1
-        and ($2='' or product.title ilike '%'||$2||'%' or sku.code ilike '%'||$2||'%' or source.external_id ilike '%'||$2||'%')
-        and ($3='' or product.category_id=$3) and ($4='' or product.id=$4)
-        and ($5='' or source.provider=$5) and ($6='' or source.scope_id=$6) and ($7='' or source.status=$7)
-        and ($8::timestamptz is null or (source.observed_at,source.id)<($8::timestamptz,$9)) order by source.observed_at desc,source.id desc limit $10`,
-        [filter.scope, filter.query, filter.category, filter.product, filter.supplier, filter.mall, filter.status, filter.page.sort, filter.page.id, filter.page.fetch]
-      );
-      return Object.freeze(result.rows.map((row) => Object.freeze({ ...row })));
+      return readSupplierListings(database, filter);
     }
     const scopes = await this.scopes.visible(context, filter.scope, filter.scopeKind === 'store');
     const result = await database.query(
@@ -180,21 +166,18 @@ export class PgListingRepository implements ListingRepository, ListingFacetRepos
   async priceTarget(context: WriteTransactionContext, listing: string, scope: string) {
     const database = this.transactions.database(context);
     const visible = await this.scopes.visible(context, scope, false);
-    const result = await database.query<{ id: string; sku_id: string; scope_id: string }>(
-      `select id,sku_id,scope_id from catalog.listing where id=$1 and scope_id=any($2::text[]) for update`,
-      [listing, visible]
-    );
-    const row = result.rows[0];
+    const result = await database.query<{ id: string; sku_id: string; scope_id: string }>(`select id,sku_id,scope_id from catalog.listing where id=$1 and scope_id=any($2::text[]) for update`, [listing, visible]);
+    const source = result.rows[0]
+      ? undefined
+      : await database.query<{ id: string; sku_id: string; scope_id: string }>(`select id,sku_id,scope_id from catalog.sourcelisting where id=$1 and scope_id=$2 and status='mapped' and sku_id is not null for update`, [listing, scope]);
+    const row = result.rows[0] ?? source?.rows[0];
     if (!row) throw new DomainError('LISTING_NOT_PURCHASABLE');
     return Object.freeze({ listing: row.id, sku: row.sku_id, scope: row.scope_id });
   }
   async changePool(context: WriteTransactionContext, listing: string, scope: string, pool: string | null, expectedVersion: number) {
     const database = this.transactions.database(context);
     const visible = await this.scopes.visible(context, scope, false);
-    const candidate = await database.query<{ id: string; sku_id: string; scope_id: string; status: string }>(
-      `select id,sku_id,scope_id,status from catalog.listing where id=$1 and scope_id=any($2::text[]) for update`,
-      [listing, visible]
-    );
+    const candidate = await database.query<{ id: string; sku_id: string; scope_id: string; status: string }>(`select id,sku_id,scope_id,status from catalog.listing where id=$1 and scope_id=any($2::text[]) for update`, [listing, visible]);
     const row = candidate.rows[0];
     if (!row || row.status === 'published' || row.status === 'retired') throw new DomainError('LISTING_NOT_PURCHASABLE', { reason: row?.status === 'published' ? 'UNPUBLISH_BEFORE_POOL_CHANGE' : 'LISTING_NOT_MANAGEABLE' });
     if (pool !== null) {

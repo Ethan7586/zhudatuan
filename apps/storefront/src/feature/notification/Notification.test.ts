@@ -17,9 +17,38 @@ describe('notification presentation', () => {
 
   it('maps published preferences without inventing browser defaults', () => {
     const input: OperationOutputFor<'notification.preferences.read'> = {
-      items: [{ channel: 'wechat', event_type: 'order.created', provider_template: 'template:one', enabled: true, authorization_state: 'accepted', authorized_at: '2026-08-31T01:01:00.000Z', consent_source: 'provider', quiet_start: '22:00:00', quiet_end: '07:00:00', quiet_timezone: 'Asia/Shanghai', version: 2, cursor_id: 'wechat:order.created' }],
+      items: [
+        {
+          channel: 'wechat',
+          event_type: 'order.created',
+          provider_template: 'template:one',
+          enabled: true,
+          authorization_state: 'accepted',
+          authorized_at: '2026-08-31T01:01:00.000Z',
+          consent_source: 'provider',
+          quiet_start: '22:00:00',
+          quiet_end: '07:00:00',
+          quiet_timezone: 'Asia/Shanghai',
+          version: 2,
+          cursor_id: 'wechat:order.created',
+        },
+      ],
       count: 1,
     };
-    expect(mapPreferences(input)).toEqual([{ channel: 'wechat', eventType: 'order.created', providerTemplate: 'template:one', enabled: true, authorization: 'accepted', authorizedAt: '2026-08-31T01:01:00.000Z', consentSource: 'provider', quietStart: '22:00:00', quietEnd: '07:00:00', quietTimezone: 'Asia/Shanghai', version: 2 }]);
+    expect(mapPreferences(input)).toEqual([
+      {
+        channel: 'wechat',
+        eventType: 'order.created',
+        providerTemplate: 'template:one',
+        enabled: true,
+        authorization: 'accepted',
+        authorizedAt: '2026-08-31T01:01:00.000Z',
+        consentSource: 'provider',
+        quietStart: '22:00:00',
+        quietEnd: '07:00:00',
+        quietTimezone: 'Asia/Shanghai',
+        version: 2,
+      },
+    ]);
   });
 });

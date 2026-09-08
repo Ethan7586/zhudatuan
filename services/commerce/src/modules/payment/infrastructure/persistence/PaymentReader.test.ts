@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { QueryResult } from 'pg';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import { withReadTransaction } from '../../../../test/TransactionFixture';
 import { PgPaymentRepository } from './PgPaymentRepository';
 
@@ -35,6 +35,7 @@ describe('PaymentReader', () => {
       state: 'pending',
       action: { timeStamp: '1', nonceStr: 'safe' },
       expiresAt: '2026-08-31T01:30:00.000Z',
+      retryAfter: 5,
     });
   });
 
@@ -44,6 +45,14 @@ describe('PaymentReader', () => {
     };
     const payments = new PgPaymentRepository(new PgTransactionAccess(), { member: vi.fn(async () => 'member:one') }, { payment: vi.fn(async () => order) });
     await expect(withReadTransaction(database.query, (context) => payments.read(context, 'membership:one', 'intent:one'))).resolves.toMatchObject({ state: 'recovery', retryAfter: 5 });
+  });
+
+  it('projects a provider capture even when the local intent had already expired', async () => {
+    const database = {
+      query: vi.fn(async () => result([{ intent_id: 'intent:one', order_id: 'order:one', intent_state: 'expired', expires_at: '2026-08-31T01:30:00.000Z', payment_id: 'payment:late', attempt_state: 'succeeded', action: null }])),
+    };
+    const payments = new PgPaymentRepository(new PgTransactionAccess(), { member: vi.fn(async () => 'member:one') }, { payment: vi.fn(async () => order) });
+    await expect(withReadTransaction(database.query, (context) => payments.read(context, 'membership:one', 'intent:one'))).resolves.toMatchObject({ paymentId: 'payment:late', state: 'captured', retryAfter: 0 });
   });
 
   it('hides another member payment as not found', async () => {

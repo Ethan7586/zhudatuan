@@ -1,10 +1,20 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { RefundPolicy } from '../policy/RefundPolicy';
 
-export interface RedemptionValue { readonly id: string; readonly voucher: string; readonly hold: string | null; readonly verification: string; readonly amountMinor: number; readonly refundedMinor: number; readonly state: 'succeeded' | 'partiallyrefunded' | 'refunded'; readonly version: number; }
+export interface RedemptionValue {
+  readonly id: string;
+  readonly voucher: string;
+  readonly hold: string | null;
+  readonly verification: string;
+  readonly amountMinor: number;
+  readonly refundedMinor: number;
+  readonly state: 'succeeded' | 'partiallyrefunded' | 'refunded';
+  readonly version: number;
+}
 export class Redemption {
   constructor(readonly value: RedemptionValue) {
-    if (!Number.isSafeInteger(value.amountMinor) || !Number.isSafeInteger(value.refundedMinor) || value.amountMinor <= 0 || value.refundedMinor < 0 || value.refundedMinor > value.amountMinor) throw new DomainError('VOUCHER_REDEMPTION_CONFLICT');
+    if (!Number.isSafeInteger(value.amountMinor) || !Number.isSafeInteger(value.refundedMinor) || value.amountMinor <= 0 || value.refundedMinor < 0 || value.refundedMinor > value.amountMinor)
+      throw new DomainError('VOUCHER_REDEMPTION_CONFLICT');
   }
   refund(amount: number): Redemption {
     new RefundPolicy().validate(this.value.amountMinor, this.value.refundedMinor, amount);

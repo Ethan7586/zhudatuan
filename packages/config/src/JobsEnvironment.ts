@@ -1,4 +1,5 @@
 import { bearerToken, distinctValues, enumValue, pickEnvironment, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
+import { WORKER_ENVIRONMENT_KEYS, type WorkerEnvironment } from './WorkerEnvironment';
 
 export const JOBS_ENVIRONMENT_KEYS = [
   'APP_ENV',
@@ -23,9 +24,10 @@ export const JOBS_ENVIRONMENT_KEYS = [
   'OBJECT_STORE_ENDPOINT',
   'OBJECT_STORE_TOKEN_REF',
   'JOB_WORKER_ID',
+  ...WORKER_ENVIRONMENT_KEYS,
 ] as const;
 
-export type JobsEnvironment = Readonly<Partial<Record<(typeof JOBS_ENVIRONMENT_KEYS)[number], string>>>;
+export type JobsEnvironment = Readonly<Partial<Record<(typeof JOBS_ENVIRONMENT_KEYS)[number], string>>> & WorkerEnvironment;
 export function jobsEnvironment(): JobsEnvironment {
   const source = processEnvironment();
   validateJobsEnvironment(source);

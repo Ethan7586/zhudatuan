@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
-import { organizationScope } from '../../../../foundation/security/OrganizationScope';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { bodyRecord, integerField, textField } from '../../../../pipeline/Validation';
+import { organizationScope } from '../../../../platform/security/OrganizationScope';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { RefundRepository } from '../port/RefundRepository';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export class RefundsRequestHandler implements OperationHandler<'payment.refunds.request', 'write'> {
   readonly operation = 'payment.refunds.request' as const;

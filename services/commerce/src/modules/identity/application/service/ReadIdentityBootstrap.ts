@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { IdentityAction } from '../model/IdentityAction';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';
 import type { RegistrationPolicyRepository } from '../port/RegistrationPolicyRepository';
@@ -11,7 +11,10 @@ import { isOperationTarget } from '@shop/contract';
 const METHODS = Object.freeze(['password', 'otp', 'invitation', 'federation'] as const);
 
 export class ReadIdentityBootstrap {
-  constructor(private readonly targets: ReturnTargetPort, private readonly registrations: RegistrationPolicyRepository) {}
+  constructor(
+    private readonly targets: ReturnTargetPort,
+    private readonly registrations: RegistrationPolicyRepository
+  ) {}
 
   action(): IdentityAction<'read'> {
     return async (request, database) => {

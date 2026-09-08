@@ -1,5 +1,5 @@
 import { REQUIRED_PROVIDER_IDS } from '@shop/contract';
-import { textField } from '../../../../foundation/application/Validation';
+import { textField } from '../../../../pipeline/Validation';
 import type { ConnectionConfiguration } from '../port/ConnectionRepository';
 
 const MAX_CONFIGURATION_BYTES = 32_768;

@@ -1,7 +1,7 @@
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import type { PgTransactionAccess, SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import type { PgTransactionAccess, SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { FulfillmentRepository } from '../../application/port/FulfillmentRepository';
 import type { ReturnRepository } from '../../application/port/ReturnRepository';
 import type { TrackingRepository } from '../../application/port/TrackingRepository';
@@ -64,10 +64,23 @@ export class PgFulfillmentRepository implements FulfillmentRepository, ReturnRep
     Shipment.create({ id: shipmentId, fulfillment: input.id, state: 'draft', limits: remaining, packages: [], version: 0 }).add(packageValue);
     const next = FulfillmentState.from(loaded.state).transition('ship');
     const changed = await database.query<{
-      id: string; order_id: string; suborder_id: string; provider: string | null; partner_id: string | null; store_id: string | null;
-      kind: 'shipment' | 'delivery' | 'pickup' | 'service' | 'digital'; route: string; state: string; external_reference: string | null;
-      payment_id: string | null; source_effect_id: string | null; amount_minor: number | null; idempotency_key: string | null;
-      created_at: string; updated_at: string; version: number;
+      id: string;
+      order_id: string;
+      suborder_id: string;
+      provider: string | null;
+      partner_id: string | null;
+      store_id: string | null;
+      kind: 'shipment' | 'delivery' | 'pickup' | 'service' | 'digital';
+      route: string;
+      state: string;
+      external_reference: string | null;
+      payment_id: string | null;
+      source_effect_id: string | null;
+      amount_minor: number | null;
+      idempotency_key: string | null;
+      created_at: string;
+      updated_at: string;
+      version: number;
     }>(
       `update fulfillment.fulfillmentorder set state=$2,version=version+1,updated_at=clock_timestamp()
       where id=$1 and state=$3 and version=$4 returning *,version::float8 version,amount_minor::float8 amount_minor`,
@@ -95,8 +108,12 @@ export class PgFulfillmentRepository implements FulfillmentRepository, ReturnRep
     await projectFulfillment(this.transactions, this.scopes.orders, context, input.id, loaded.order);
     await new PgRuntimeWriter(database).append({
       id: `event:fulfillment:shipped:${digest(`${input.id}:${input.idempotency}`)}`,
-      type: 'fulfillment.shipped', aggregateType: 'fulfillment', aggregate: input.id, scope: input.scope,
-      payload: { fulfillment: input.id, order: loaded.order, member: loaded.member, state: 'shipped' }, trace: input.trace,
+      type: 'fulfillment.shipped',
+      aggregateType: 'fulfillment',
+      aggregate: input.id,
+      scope: input.scope,
+      payload: { fulfillment: input.id, order: loaded.order, member: loaded.member, state: 'shipped' },
+      trace: input.trace,
     });
     return Object.freeze({ ...fulfillment, shipment_id: shipmentId, package_id: packageId, tracking: input.tracking, shipped_quantity: selected.reduce((sum, line) => sum + line.quantity, 0) });
   }
@@ -140,8 +157,15 @@ export class PgFulfillmentRepository implements FulfillmentRepository, ReturnRep
     );
     await this.scopes.orders.recordInspection(context, returned.aftersale_id, returned.id, input.accepted, input.actor);
     const runtime = new PgRuntimeWriter(database);
-    await runtime.append({ id: `event:return:inspected:${digest(inspectionId)}`, type: 'return.inspected', aggregateType: 'return', aggregate: returned.id,
-      scope: returned.scope_id, payload: { return: returned.id, aftersale: returned.aftersale_id, accepted: input.accepted }, trace: input.trace });
+    await runtime.append({
+      id: `event:return:inspected:${digest(inspectionId)}`,
+      type: 'return.inspected',
+      aggregateType: 'return',
+      aggregate: returned.id,
+      scope: returned.scope_id,
+      payload: { return: returned.id, aftersale: returned.aftersale_id, accepted: input.accepted },
+      trace: input.trace,
+    });
     if (input.accepted) {
       const pending = await database.query(`select id from fulfillment.returnrecord where aftersale_id=$1 and state<>'accepted' limit 1`, [returned.aftersale_id]);
       if (!pending.rows[0]) await this.scopes.orders.markRefunding(context, returned.aftersale_id, await readReturnEvidence(database, returned.aftersale_id), input.actor);

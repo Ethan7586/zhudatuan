@@ -1,7 +1,7 @@
 import type { QueryResultRow } from 'pg';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { EntryRepository, StorefrontEntry } from '../../application/port/EntryRepository';
 import type { StorefrontConfig } from '../../application/port/StorefrontConfig';
 import { EntryPolicy } from '../../domain/policy/EntryPolicy';

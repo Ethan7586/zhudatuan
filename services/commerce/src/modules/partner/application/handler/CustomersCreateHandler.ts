@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
 import type { CreateCustomerCommand, CustomerRepository } from '../port/CustomerRepository';
 import type { ProtectCustomerData } from '../process/ProtectCustomerData';
 
@@ -25,7 +25,11 @@ export class CustomersCreateHandler implements DurableOperationHandler<'partner.
     return Object.freeze({ checkpoint: response.body, response });
   }
 
-  finalize(_input: OperationInputFor<'partner.customers.create'>, checkpoint: OperationOutputFor<'partner.customers.create'>, _context: FinalizeContext<'partner.customers.create'>): Promise<OperationReply<OperationOutputFor<'partner.customers.create'>>> {
+  finalize(
+    _input: OperationInputFor<'partner.customers.create'>,
+    checkpoint: OperationOutputFor<'partner.customers.create'>,
+    _context: FinalizeContext<'partner.customers.create'>
+  ): Promise<OperationReply<OperationOutputFor<'partner.customers.create'>>> {
     return Promise.resolve({ status: 201, body: checkpoint, headers: { etag: `"${checkpoint.version}"` } });
   }
 }

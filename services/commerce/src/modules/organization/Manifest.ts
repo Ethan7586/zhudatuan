@@ -1,5 +1,5 @@
 import { CAPABILITY_CODES_BY_OWNER } from '@shop/contract';
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { ACCESS_ORGANIZATION_PORT, CHANNEL_ORGANIZATION_PORT, IDENTITY_ORGANIZATION_PORT, MALL_PROVISION_PORT, NAVIGATION_ORGANIZATION_PORT, ORGANIZATION_HIERARCHY_PORT, ORGANIZATION_READ_PORT } from './public';
 
 export const OrganizationCapabilities = CAPABILITY_CODES_BY_OWNER.organization;

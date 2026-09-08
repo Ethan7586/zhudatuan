@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 import { InvalidateNavigation } from '../application/process/InvalidateNavigation';
 
 describe('InvalidateNavigation', () => {

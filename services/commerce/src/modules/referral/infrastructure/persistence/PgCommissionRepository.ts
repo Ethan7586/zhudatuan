@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CommissionRepository } from '../../application/port/CommissionRepository';
 export class PgCommissionRepository implements CommissionRepository {
   constructor(private readonly transactions: PgTransactionAccess) {}
@@ -22,10 +22,7 @@ export class PgCommissionRepository implements CommissionRepository {
       coalesce(sum(amount_minor-reversed_minor) filter(where state='pending'),0) "pendingMinor",
       coalesce(sum(amount_minor-reversed_minor) filter(where state='settled'),0) "settledMinor",
       coalesce(sum(reversed_minor),0) "reversedMinor",coalesce(min(currency),'CNY') currency,
-      coalesce(max(version),1) version,coalesce(jsonb_agg(jsonb_build_object('id',id,'orderId',order_id,'orderLineId',order_line_id,
-      'ruleId',rule_id,'ruleVersion',rule_version,'attributionId',binding_id,'promoterId',beneficiary_id,'kind',kind,'status',state,
-      'amountMinor',amount_minor,'baseMinor',base_minor,'refundedBaseMinor',refunded_base_minor,'reversedMinor',reversed_minor,
-      'rateBasisPoints',rate_basis_points,'currency',currency,'availableAt',eligible_at,'settlementJournalId',settlement_journal_id,'version',version) order by id),'[]') items
+      coalesce(max(version),1) version
       from referral.commission where scope_id=$1 and beneficiary_id=$2`,
       [scope, beneficiary]
     );

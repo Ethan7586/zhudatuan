@@ -1,9 +1,9 @@
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
-import { OutboxRelay } from '../../../../adapter/messaging/OutboxRelay';
-import { RuntimeEventPublisher } from '../../../../adapter/messaging/RuntimeEventPublisher';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { ModuleWorker } from '../../../../foundation/application/ModuleWorker';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { OutboxRelay } from '../../../../platform/messaging/OutboxRelay';
+import { RuntimeEventPublisher } from '../../../../platform/messaging/RuntimeEventPublisher';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { ModuleWorker } from '../../../../pipeline/ModuleWorker';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { RuntimeScheduler } from './RuntimeScheduler';
 
 export function createWorkers(context: ModuleContext): readonly ModuleWorker[] {

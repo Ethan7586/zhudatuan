@@ -1,5 +1,5 @@
 import { Money } from '@shop/kernel';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { AccountingDate } from '../value/AccountingDate';
 
 export type StatementState = 'draft' | 'final' | 'replaced';

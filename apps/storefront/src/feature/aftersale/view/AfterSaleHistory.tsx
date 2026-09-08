@@ -16,7 +16,7 @@ export function AfterSaleHistory({ page }: Readonly<{ page: AfterSalePage | null
           </div>
           <p className="mt-2 text-muted">{sale.description}</p>
           <div className="mt-3 rounded-lg bg-subtle p-2">
-            <b>预计退款拆分</b>
+            <b>服务端预计退款拆分</b>
             {sale.expectedRefund.tenders.map((tender, index) => (
               <div key={`${tender.kind}:${tender.reference ?? index}`} className="mt-1 flex justify-between">
                 <span>{tenderLabel(tender.kind)}</span>

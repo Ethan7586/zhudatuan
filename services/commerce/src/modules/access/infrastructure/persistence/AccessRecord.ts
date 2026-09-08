@@ -11,7 +11,17 @@ export interface CenterRow {
   readonly client: string;
   readonly status: string;
   readonly access_version: number;
-  readonly roles: readonly Readonly<{ role: string; name: string; description: string; status: 'active' | 'disabled'; kind: RoleKind; template: RoleTemplateCode | null; version: number; allows: readonly string[]; denies: readonly string[] }>[];
+  readonly roles: readonly Readonly<{
+    role: string;
+    name: string;
+    description: string;
+    status: 'active' | 'disabled';
+    kind: RoleKind;
+    template: RoleTemplateCode | null;
+    version: number;
+    allows: readonly string[];
+    denies: readonly string[];
+  }>[];
   readonly scopes: readonly Readonly<{ id: string; kind: string; scope: string; effect: PermissionEffect; expires: string | null }>[];
   readonly overrides: readonly Readonly<{ permission: string; effect: PermissionEffect; expires: string | null }>[];
 }

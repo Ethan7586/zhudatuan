@@ -1,11 +1,11 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { organizationScope } from '../../../../foundation/security/OrganizationScope';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { organizationScope } from '../../../../platform/security/OrganizationScope';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { RecoveryAction, RecoveryRepository } from '../port/RecoveryRepository';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 const actions = new Set<RecoveryAction>(['replay', 'requery', 'retryrefund', 'resolve']);
 

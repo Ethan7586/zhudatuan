@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { CommitContext, FinalizeContext } from '../../../foundation/application/HandlerContext';
-import { DomainError } from '../../../foundation/domain/DomainError';
-import type { AccessContext } from '../../../foundation/security/AccessContext';
-import { authorizationEvidence } from '../../../foundation/security/AuthorizationEvidence';
+import type { CommitContext, FinalizeContext } from '../../../pipeline/HandlerContext';
+import { DomainError } from '../../../platform/error/DomainError';
+import type { AccessContext } from '../../../platform/security/AccessContext';
+import { authorizationEvidence } from '../../../platform/security/AuthorizationEvidence';
 import type { ObjectStore } from '../../runtime/public/ObjectPort';
 import { result, transactionManager, withWriteTransaction } from '../../../test/TransactionFixture';
 import type { ExportPort, RuntimeExportRecord, RuntimeExportWork } from '../../runtime/public';
@@ -27,7 +27,7 @@ describe('voucher export download authorization', () => {
     expect(seconds).toBeLessThanOrEqual(120);
   });
 
-  it.each(['actor', 'membership', 'scope'] as const)('denies another %s before consuming a download', async field => {
+  it.each(['actor', 'membership', 'scope'] as const)('denies another %s before consuming a download', async (field) => {
     const data = fixture({ evidence: { [field]: `${field}:other` } });
     await expect(data.commit()).rejects.toThrow('AUTHORIZATION_DENIED');
     expect(data.take).not.toHaveBeenCalled();
@@ -72,13 +72,29 @@ describe('voucher export download authorization', () => {
 });
 
 function fixture(options: { evidence?: Readonly<Record<string, unknown>>; level?: number; state?: RuntimeExportRecord['state']; remaining?: number } = {}) {
-  const access = { actor: { id: 'actor:test', membership: 'membership:test', target: 'console', credentialVersion: 1 },
-    scope: { id: 'scope:test' }, organization: 'organization:test', accessVersion: 1, capabilityVersion: 1,
-    assurance: { level: options.level ?? 3, verified: new Date() } } as AccessContext;
-  const record: RuntimeExportRecord = { id: 'export:test', kind: 'credential', state: options.state ?? 'completed',
-    expiresAt: new Date(Date.now() + (options.remaining ?? 120_000)).toISOString(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-  const work: RuntimeExportWork = { id: record.id, kind: record.kind, scope: access.scope.id, snapshot: {},
-    authorization: { ...authorizationEvidence(access, 'voucher.credentialexports.create', new Date()), reason: '凭证交付', ...options.evidence } };
+  const access = {
+    actor: { id: 'actor:test', membership: 'membership:test', target: 'console', credentialVersion: 1 },
+    scope: { id: 'scope:test' },
+    organization: 'organization:test',
+    accessVersion: 1,
+    capabilityVersion: 1,
+    assurance: { level: options.level ?? 3, verified: new Date() },
+  } as AccessContext;
+  const record: RuntimeExportRecord = {
+    id: 'export:test',
+    kind: 'credential',
+    state: options.state ?? 'completed',
+    expiresAt: new Date(Date.now() + (options.remaining ?? 120_000)).toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  const work: RuntimeExportWork = {
+    id: record.id,
+    kind: record.kind,
+    scope: access.scope.id,
+    snapshot: {},
+    authorization: { ...authorizationEvidence(access, 'voucher.credentialexports.create', new Date()), reason: '凭证交付', ...options.evidence },
+  };
   const take = vi.fn(async () => ({ record, reference: 'private/reference' }));
   const exports = { work: vi.fn(async () => work), read: vi.fn(async () => record), take } as unknown as ExportPort;
   const assert = vi.fn<TaskAuthorizationPort['assert']>(async () => undefined);
@@ -90,13 +106,28 @@ function fixture(options: { evidence?: Readonly<Record<string, unknown>>; level?
   const objects = { authorize } as unknown as ObjectStore;
   const query = async () => result([]);
   const manager = transactionManager(query);
-  const handler = new ExportsGetHandler(exports, objects, { assert: async (transaction, evidence) => {
-    inTransaction = true;
-    try { await assert(transaction, evidence); } finally { inTransaction = false; }
-  } }, manager);
-  const context = { security: { kind: 'session', access }, operation: 'voucher.exports.get', traceId: 'trace:test',
-    signal: new AbortController().signal, deadline: Date.now() + 10_000 } as Context;
-  return { assert, take, objects, authorize,
-    commit: () => withWriteTransaction(query, transaction => handler.commit(input, null, { ...context, transaction })),
-    finalize: (checkpoint: Awaited<ReturnType<ExportsGetHandler['commit']>>['checkpoint']) => handler.finalize(input, checkpoint, context as unknown as FinalizeContext<'voucher.exports.get'>) };
+  const handler = new ExportsGetHandler(
+    exports,
+    objects,
+    {
+      assert: async (transaction, evidence) => {
+        inTransaction = true;
+        try {
+          await assert(transaction, evidence);
+        } finally {
+          inTransaction = false;
+        }
+      },
+    },
+    manager
+  );
+  const context = { security: { kind: 'session', access }, operation: 'voucher.exports.get', traceId: 'trace:test', signal: new AbortController().signal, deadline: Date.now() + 10_000 } as Context;
+  return {
+    assert,
+    take,
+    objects,
+    authorize,
+    commit: () => withWriteTransaction(query, (transaction) => handler.commit(input, null, { ...context, transaction })),
+    finalize: (checkpoint: Awaited<ReturnType<ExportsGetHandler['commit']>>['checkpoint']) => handler.finalize(input, checkpoint, context as unknown as FinalizeContext<'voucher.exports.get'>),
+  };
 }

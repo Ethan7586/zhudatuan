@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { JobScheduler } from '../../../../foundation/application/JobScheduler';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { CommitContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { JobScheduler } from '../../../../pipeline/JobScheduler';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
 import type { ImportObjectPort, ImportPort } from '../../../runtime/public';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import { authorizationEvidence } from '../../../../foundation/security/AuthorizationEvidence';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
+import { authorizationEvidence } from '../../../../platform/security/AuthorizationEvidence';
 
 interface PreparedImport {
   readonly scope: string;
@@ -36,9 +36,19 @@ export class ImportsCreateHandler implements DurableOperationHandler<'inventory.
   async commit(_input: OperationInputFor<'inventory.imports.create'>, prepared: PreparedImport, context: CommitContext<'inventory.imports.create'>) {
     const access = requireSession(context.security);
     const id = `import:${randomUUID()}`;
-    const record = await this.imports.create(context.transaction, { id, scope: prepared.scope, owner: 'inventory', kind: 'stock',
-      reference: prepared.reference, sha256: prepared.sha256, name: prepared.name, mediaType: prepared.mediaType, size: prepared.size, actor: access.actor.id,
-      authorization: authorizationEvidence(access, this.operation, new Date()) });
+    const record = await this.imports.create(context.transaction, {
+      id,
+      scope: prepared.scope,
+      owner: 'inventory',
+      kind: 'stock',
+      reference: prepared.reference,
+      sha256: prepared.sha256,
+      name: prepared.name,
+      mediaType: prepared.mediaType,
+      size: prepared.size,
+      actor: access.actor.id,
+      authorization: authorizationEvidence(access, this.operation, new Date()),
+    });
     await this.jobs.schedule(context.transaction, { id: `job:${id}:0`, kind: 'inventoryimport', owner: 'inventory', scope: prepared.scope, payload: { import: id }, priority: 100 });
     const response = reply(record);
     return Object.freeze({ checkpoint: response, response });

@@ -1,6 +1,6 @@
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 
 export interface FinanceRequest extends OperationRequest {
   readonly transaction: ReadTransactionContext;

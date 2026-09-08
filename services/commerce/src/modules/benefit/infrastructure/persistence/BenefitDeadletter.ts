@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import type { ClaimedJob, JobDeadletter } from '../../../runtime/public/JobProcess';
-import { PgRuntimeWriter, type RuntimeSql } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter, type RuntimeSql } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 type Database = SqlExecutor;
 

@@ -1,5 +1,5 @@
-import { token } from '../../../../bootstrap/Container';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { token } from '../../../../composition/Container';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AccessRecord } from '../../domain/model/AccessRecord';
 import type { AuditRecord } from '../../domain/model/AuditRecord';
 import type { EvidenceEntry } from '../../domain/model/EvidenceBundle';

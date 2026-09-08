@@ -1,52 +1,79 @@
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata: { name: shop-api, namespace: SHOP_NAMESPACE }
-spec:
-  podSelector: { matchLabels: { app.kubernetes.io/name: shop-api } }
-  policyTypes: [Ingress, Egress]
-  ingress:
-    - from:
-        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: ingress-system } }
-      ports: [{ protocol: TCP, port: 3001 }]
-  egress:
-    - to:
-        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
-      ports: [{ protocol: UDP, port: 53 }, { protocol: TCP, port: 53 }]
-    - to:
-        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: platform-services } }
-      ports: [{ protocol: TCP, port: 443 }, { protocol: TCP, port: 5432 }, { protocol: TCP, port: 6379 }]
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata: { name: shop-jobs, namespace: SHOP_NAMESPACE }
-spec:
-  podSelector: { matchLabels: { app.kubernetes.io/name: shop-jobs } }
-  policyTypes: [Ingress, Egress]
-  ingress: []
-  egress:
-    - to:
-        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
-      ports: [{ protocol: UDP, port: 53 }, { protocol: TCP, port: 53 }]
-    - to:
-        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: platform-services } }
-      ports: [{ protocol: TCP, port: 443 }, { protocol: TCP, port: 5432 }, { protocol: TCP, port: 6379 }]
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata: { name: shop-provider, namespace: SHOP_NAMESPACE }
-spec:
-  podSelector: { matchLabels: { app.kubernetes.io/name: shop-provider } }
-  policyTypes: [Ingress, Egress]
-  ingress: []
-  egress:
-    - to:
-        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
-      ports: [{ protocol: UDP, port: 53 }, { protocol: TCP, port: 53 }]
-    - to:
-        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: platform-services } }
-      ports: [{ protocol: TCP, port: 443 }, { protocol: TCP, port: 5432 }, { protocol: TCP, port: 6379 }]
-    - to:
-        - ipBlock:
-            cidr: 0.0.0.0/0
-            except: [10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.168.0.0/16, 224.0.0.0/4]
-      ports: [{ protocol: TCP, port: 443 }]
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata: { name: shop-default-deny, namespace: SHOP_NAMESPACE }
+    spec:
+      podSelector: {}
+      policyTypes: [Ingress, Egress]
+  - apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata: { name: shop-api, namespace: SHOP_NAMESPACE }
+    spec:
+      podSelector: { matchLabels: { app.kubernetes.io/name: shop-api } }
+      policyTypes: [Ingress, Egress]
+      ingress:
+        - from:
+            - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: ingress-system } }
+              podSelector: { matchLabels: { app.kubernetes.io/name: shop-edge } }
+          ports: [{ protocol: TCP, port: 3001 }]
+      egress:
+        - &dns
+          to:
+            - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
+              podSelector: { matchLabels: { k8s-app: kube-dns } }
+          ports: [{ protocol: UDP, port: 53 }, { protocol: TCP, port: 53 }]
+        - &postgres
+          to:
+            - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: platform-services } }
+              podSelector: { matchLabels: { app.kubernetes.io/component: postgresql } }
+          ports: [{ protocol: TCP, port: 5432 }]
+        - &redis
+          to:
+            - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: platform-services } }
+              podSelector: { matchLabels: { app.kubernetes.io/component: redis } }
+          ports: [{ protocol: TCP, port: 6379 }]
+        - &internalhttps
+          to:
+            - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: platform-services } }
+              podSelector: { matchExpressions: [{ key: app.kubernetes.io/component, operator: In, values: [object, telemetry, secrets, kms] }] }
+          ports: [{ protocol: TCP, port: 443 }]
+  - apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata: { name: shop-jobs, namespace: SHOP_NAMESPACE }
+    spec:
+      podSelector: { matchLabels: { app.kubernetes.io/name: shop-jobs } }
+      policyTypes: [Ingress, Egress]
+      ingress: []
+      egress: [*dns, *postgres, *redis, *internalhttps]
+  - apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata: { name: shop-provider, namespace: SHOP_NAMESPACE }
+    spec:
+      podSelector: { matchLabels: { app.kubernetes.io/name: shop-provider } }
+      policyTypes: [Ingress, Egress]
+      ingress: []
+      egress:
+        - *dns
+        - *postgres
+        - *redis
+        - *internalhttps
+        - to:
+            - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: egress-system } }
+              podSelector: { matchLabels: { app.kubernetes.io/name: shop-provider-egress } }
+          ports: [{ protocol: TCP, port: 8443 }]
+  - apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata: { name: shop-migration, namespace: SHOP_NAMESPACE }
+    spec:
+      podSelector: { matchLabels: { app.kubernetes.io/name: shop-migration } }
+      policyTypes: [Ingress, Egress]
+      ingress: []
+      egress:
+        - *dns
+        - *postgres
+        - to:
+            - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: platform-services } }
+              podSelector: { matchExpressions: [{ key: app.kubernetes.io/component, operator: In, values: [telemetry, secrets, kms] }] }
+          ports: [{ protocol: TCP, port: 443 }]

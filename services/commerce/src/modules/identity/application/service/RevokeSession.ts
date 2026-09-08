@@ -1,6 +1,6 @@
 import { IdentityAction as OperationAction } from '../model/IdentityAction';
-import { reject } from '../../../../foundation/application/OperationRejection';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
+import { reject } from '../../../../pipeline/OperationRejection';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
 
 import type { SessionRepository } from '../port/SessionRepository';
 import type { SessionCookiePort } from '../port/SessionCookiePort';

@@ -1,17 +1,17 @@
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { randomUUID } from 'node:crypto';
 import type { OperationId, OperationInputFor } from '@shop/contract';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import { requestProjectionExport } from '../../../../adapter/database/PgProjectionExport';
-import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { SystemClock } from '../../../../foundation/domain/Clock';
-import { bodyRecord, keysetResult, queryPage, textField } from '../../../../foundation/application/Validation';
-import type { OutboxWriter } from '../../../../foundation/messaging/Outbox';
-import { organizationScope } from '../../../../foundation/security/OrganizationScope';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import { requestProjectionExport } from '../../../../platform/database/PgProjectionExport';
+import type { OperationRequest } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { SystemClock } from '@shop/kernel';
+import { bodyRecord, keysetResult, queryPage, textField } from '../../../../pipeline/Validation';
+import type { OutboxWriter } from '../../../../platform/messaging/Outbox';
+import { organizationScope } from '../../../../platform/security/OrganizationScope';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { OrganizationReadPort } from '../../../organization/public';
 import type { ExportRepository } from '../../application/port/ExportRepository';
 import type { OrderRepository } from '../../application/port/OrderRepository';
@@ -21,6 +21,7 @@ import { ReceiveOrder } from './ReceiveOrder';
 import { CancelOrder } from './CancelOrder';
 import { ORDER_READ_FILTER_SQL, orderExceptionSql, orderReadFilterValues } from './OrderReadSql';
 import type { MemberReadPort } from '../../../member/public';
+import { emptyOrderFacets, iso, orderRequest } from './OrderRequest';
 export class PgOrderRepository implements OrderRepository, ReminderRepository, ExportRepository {
   private readonly receiver: ReceiveOrder;
   private readonly canceller: CancelOrder;
@@ -30,8 +31,8 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
     private readonly organizations: Pick<OrganizationReadPort, 'descendants' | 'scope'>,
     private readonly members: Pick<MemberReadPort, 'search'>
   ) {
-    this.receiver = new ReceiveOrder(transactions, outbox, SystemClock);
-    this.canceller = new CancelOrder(transactions, outbox, SystemClock);
+    this.receiver = new ReceiveOrder(transactions, outbox, new SystemClock());
+    this.canceller = new CancelOrder(transactions, outbox, new SystemClock());
   }
   async read(context: ReadTransactionContext, input: OperationInputFor<'order.orders.read'>, execution: ExecutionContext<'order.orders.read'>) {
     const access = requireSession(execution.security);
@@ -45,8 +46,9 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
     const timezone = filter.placed === 'today' ? (await this.organizations.scope(context, access.organization)).timezone : 'UTC';
     const memberIds = filter.member ? await this.members.search(context, filter.member) : [];
     if (filter.member && memberIds.length === 0) return { status: 200, body: { items: [], count: 0, facets: emptyOrderFacets() } } as never;
-    const [result, facets] = await Promise.all([database.query(
-      `select orders.id,orders.order_number,orders.scope_id,orders.member_id,orders.mall_id,
+    const [result, facets] = await Promise.all([
+      database.query(
+        `select orders.id,orders.order_number,orders.scope_id,orders.member_id,orders.mall_id,
       orders.checkout_id,orders.currency,orders.total_minor::float8 total_minor,orders.payment_state,orders.fulfillment_state,orders.aftersale_state,
       orders.lifecycle_state,
       case when jsonb_typeof(orders.address_snapshot)='object' and orders.address_snapshot?'recipientMasked'
@@ -97,8 +99,10 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
       and ($22::timestamptz is null or (orders.created_at,orders.id)<($22::timestamptz,$23))
       group by orders.id,payment.payment_id,payment.version,payment.captured_minor,payment.refunded_minor,payment.updated_at,payment.tenders
       order by orders.created_at desc,orders.id desc limit $24`,
-      [owner, access.scope.id, supplier, store, scopes, ...orderReadFilterValues(filter, timezone, memberIds), page.sort, page.id, page.fetch]
-    ), orderFacets(database, [owner, access.scope.id, supplier, store, scopes, ...orderReadFilterValues(filter, timezone, memberIds, 'all')], execution.signal)]);
+        [owner, access.scope.id, supplier, store, scopes, ...orderReadFilterValues(filter, timezone, memberIds), page.sort, page.id, page.fetch]
+      ),
+      orderFacets(database, [owner, access.scope.id, supplier, store, scopes, ...orderReadFilterValues(filter, timezone, memberIds, 'all')], execution.signal),
+    ]);
     const pageResult = keysetResult(result, page, 'created_at');
     const body = pageResult.body as Readonly<Record<string, unknown>>;
     return { ...pageResult, body: Object.freeze({ ...body, facets }) } as never;
@@ -187,9 +191,18 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
 async function orderFacets(database: SqlExecutor, values: readonly unknown[], signal: AbortSignal) {
   try {
     const result = await database.query<{
-      all: number; unpaid: number; unshipped: number; active: number; completed: number; aftersale: number; exception: number;
-      orderWatermark: Date | null; paymentWatermark: Date | null; fulfillmentWatermark: Date | null;
-      aftersaleWatermark: Date | null; refundWatermark: Date | null;
+      all: number;
+      unpaid: number;
+      unshipped: number;
+      active: number;
+      completed: number;
+      aftersale: number;
+      exception: number;
+      orderWatermark: Date | null;
+      paymentWatermark: Date | null;
+      fulfillmentWatermark: Date | null;
+      aftersaleWatermark: Date | null;
+      refundWatermark: Date | null;
     }>(
       `with visible as materialized (
         select orders.id,orders.updated_at,orders.payment_state,orders.fulfillment_state,orders.aftersale_state,
@@ -221,8 +234,11 @@ async function orderFacets(database: SqlExecutor, values: readonly unknown[], si
       data: Object.freeze({
         counts: Object.freeze({ all: row.all, unpaid: row.unpaid, unshipped: row.unshipped, active: row.active, completed: row.completed, aftersale: row.aftersale, exception: row.exception }),
         watermarks: Object.freeze({
-          order: iso(row.orderWatermark), payment: iso(row.paymentWatermark), fulfillment: iso(row.fulfillmentWatermark),
-          aftersale: iso(row.aftersaleWatermark), refund: iso(row.refundWatermark),
+          order: iso(row.orderWatermark),
+          payment: iso(row.paymentWatermark),
+          fulfillment: iso(row.fulfillmentWatermark),
+          aftersale: iso(row.aftersaleWatermark),
+          refund: iso(row.refundWatermark),
         }),
       }),
     });
@@ -230,39 +246,4 @@ async function orderFacets(database: SqlExecutor, values: readonly unknown[], si
     if (signal.aborted) throw signal.reason ?? cause;
     return Object.freeze({ state: 'unavailable' as const, error: Object.freeze({ code: 'ORDER_FACET_UNAVAILABLE', message: '订单状态统计与数据水位暂时不可用，列表仍可继续使用。', retryable: true }) });
   }
-}
-
-function emptyOrderFacets() {
-  return Object.freeze({
-    state: 'ready' as const,
-    data: Object.freeze({
-      counts: Object.freeze({ all: 0, unpaid: 0, unshipped: 0, active: 0, completed: 0, aftersale: 0, exception: 0 }),
-      watermarks: Object.freeze({ order: null, payment: null, fulfillment: null, aftersale: null, refund: null }),
-    }),
-  });
-}
-
-function iso(value: Date | null): string | null { return value === null ? null : value.toISOString(); }
-export function orderRequest<TKey extends OperationId>(type: TKey, input: OperationInputFor<TKey>, execution: ExecutionContext<TKey>): OperationRequest {
-  const wire = input as Readonly<{
-    path?: Readonly<Record<string, string>>;
-    query?: Readonly<Record<string, string | readonly string[]>>;
-    body?: unknown;
-  }>;
-  return {
-    type,
-    input: {
-      path: wire.path ?? {},
-      query: wire.query ?? {},
-      headers: execution.headers,
-      body: wire.body,
-      rawBody: execution.rawBody,
-      deadline: execution.deadline,
-      signal: execution.signal,
-      ...(execution.publicActor === undefined ? {} : { publicActor: execution.publicActor }),
-      ...(execution.idempotencyKey === undefined ? {} : { idempotency: execution.idempotencyKey }),
-      ...(execution.expectedVersion === undefined ? {} : { expectedVersion: execution.expectedVersion }),
-    },
-    security: execution.security,
-  };
 }

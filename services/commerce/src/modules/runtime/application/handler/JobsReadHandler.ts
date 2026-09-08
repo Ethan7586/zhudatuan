@@ -1,8 +1,8 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { keysetPage, queryPage, queryText } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { keysetPage, queryPage, queryText } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { TaskRepository } from '../port/TaskRepository';
 import type { RuntimeTaskState, RuntimeTaskType } from '../../domain/model/Task';
 
@@ -24,6 +24,14 @@ export class JobsReadHandler implements OperationHandler<'runtime.jobs.read', 'r
       cursorId: page.id,
       fetch: page.fetch,
     });
-    return { status: 200, body: keysetPage(rows.map((task) => task.snapshot()), page, 'createdAt', 'id') as OperationOutputFor<'runtime.jobs.read'> };
+    return {
+      status: 200,
+      body: keysetPage(
+        rows.map((task) => task.snapshot()),
+        page,
+        'createdAt',
+        'id'
+      ) as OperationOutputFor<'runtime.jobs.read'>,
+    };
   }
 }

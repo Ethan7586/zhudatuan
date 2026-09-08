@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { DirectoryConnection, DirectoryConnectionValue } from '../../domain/model/DirectoryConnection';
 import type { SyncMode, SyncRun } from '../../domain/model/SyncRun';
 import type { Mall } from '../../domain/model/Mall';

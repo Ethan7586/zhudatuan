@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { DirectoryInboxPort } from '../../application/port/DirectoryInboxPort';
 export class PgDirectoryInbox implements DirectoryInboxPort {
   private readonly transactions = new PgTransactionAccess();

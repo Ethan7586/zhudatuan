@@ -1,8 +1,8 @@
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { keysetResult, queryPage } from '../../../../foundation/application/Validation';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { keysetResult, queryPage } from '../../../../pipeline/Validation';
 import { MEMBER_ACCESS_PORT } from '../../../access/public';
 
 export function benefitAccountReader(context: ModuleContext): (request: OperationRequest, database: SqlExecutor) => Promise<OperationResult> {

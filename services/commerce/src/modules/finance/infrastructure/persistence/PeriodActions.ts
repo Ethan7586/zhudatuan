@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { rowResult } from '../../../../adapter/database/DatabaseResult';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { bodyRecord, keysetResult, queryPage, textField } from '../../../../foundation/application/Validation';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { rowResult } from '../../../../platform/database/DatabaseResult';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { bodyRecord, keysetResult, queryPage, textField } from '../../../../pipeline/Validation';
 import { AccountingPeriod } from '../../domain/model/AccountingPeriod';
 import { AccountingDate } from '../../domain/value/AccountingDate';
 import type { FinanceScopeQuery } from './FinanceScopeQuery';
@@ -66,13 +66,13 @@ export function periodActions(scopes: FinanceScopeQuery): FinanceEntries<'period
         update finance.periodclose close set state=$3,approved_by=$4,decided_at=clock_timestamp(),reason=$5,evidence=evidence||$6::jsonb,
           version=version+1 from current where close.scope_id=$1 and close.period=$2 and close.state='pending' and close.requested_by<>$4
           and close.source_hash=current.hash and close.version=$7 returning close.*`,
-        [access.scope.id, period, decision, access.actor.id, textField(body, 'reason', 1000),
-          JSON.stringify({ decisionEvidence: evidence(body.evidence), trace: access.trace }), expectedVersion]
+        [access.scope.id, period, decision, access.actor.id, textField(body, 'reason', 1000), JSON.stringify({ decisionEvidence: evidence(body.evidence), trace: access.trace }), expectedVersion]
       );
       const close = result.rows[0];
       if (!close) throw new Error('FINANCE_PERIOD_CLOSE_CONFLICT_OR_HASH_MISMATCH');
-      const target = AccountingPeriod.restore({ scopeId: access.scope.id, period, state: 'closing', requestedBy: close.requested_by,
-        closedAt: null, closedBy: null, version: Number(close.version) - 1 }).decideClose(access.actor.id, decision === 'approved', AccountingDate.of(new Date())).snapshot();
+      const target = AccountingPeriod.restore({ scopeId: access.scope.id, period, state: 'closing', requestedBy: close.requested_by, closedAt: null, closedBy: null, version: Number(close.version) - 1 })
+        .decideClose(access.actor.id, decision === 'approved', AccountingDate.of(new Date()))
+        .snapshot();
       if (decision === 'approved') {
         await database.query(
           `update finance.period set state=$4,closed_at=clock_timestamp(),closed_by=$3
@@ -99,13 +99,32 @@ export function periodActions(scopes: FinanceScopeQuery): FinanceEntries<'period
 
 async function appendEvent(database: SqlExecutor, close: string, scope: string, period: string, sourceHash: string, statement: Readonly<Record<string, unknown>>): Promise<void> {
   const id = `event:${randomUUID()}`;
-  await new PgRuntimeWriter(database).append({ id, type: 'finance.period.closed', aggregateType: 'periodclose', aggregate: close, scope, payload: { period, close, sourceHash, statementSnapshot: {
-    statement: statement.id, periodStart: statement.period_start, periodEnd: statement.period_end, currency: statement.currency,
-    openingMinor: statement.opening_minor, debitMinor: statement.debit_minor, creditMinor: statement.credit_minor,
-    closingMinor: statement.closing_minor, state: statement.state,
-  } }, trace: id });
+  await new PgRuntimeWriter(database).append({
+    id,
+    type: 'finance.period.closed',
+    aggregateType: 'periodclose',
+    aggregate: close,
+    scope,
+    payload: {
+      period,
+      close,
+      sourceHash,
+      statementSnapshot: {
+        statement: statement.id,
+        periodStart: statement.period_start,
+        periodEnd: statement.period_end,
+        currency: statement.currency,
+        openingMinor: statement.opening_minor,
+        debitMinor: statement.debit_minor,
+        creditMinor: statement.credit_minor,
+        closingMinor: statement.closing_minor,
+        state: statement.state,
+      },
+    },
+    trace: id,
+  });
 }
 
 function evidence(value: unknown): Readonly<Record<string, unknown>> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : {};
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Readonly<Record<string, unknown>>) : {};
 }

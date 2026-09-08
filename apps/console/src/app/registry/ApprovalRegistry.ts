@@ -20,6 +20,7 @@ const LABELS: Readonly<Record<ApprovalSubject, string>> = Object.freeze({
   experiencepublish: '商城发布',
   riskexception: '风险例外',
   riskaction: '风险动作',
+  inventoryadjustment: '库存调整',
 });
 
 export function createApprovalRegistry(): ApprovalRegistryPort {

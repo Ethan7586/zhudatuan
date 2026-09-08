@@ -1,5 +1,5 @@
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { jobDefinition } from '../../../../foundation/application/JobCatalog';
+import type { DatabasePool } from '../../../../platform/database/Pool';
+import { jobDefinition } from '../../../../pipeline/JobCatalog';
 import { JobLease } from './JobLease';
 import { QueueAdmission } from './QueueAdmission';
 
@@ -28,8 +28,7 @@ export class RuntimeScheduler {
     private readonly owner: string,
     private readonly config: Readonly<{ leaseSeconds: number; pollMilliseconds: number }>
   ) {
-    if (!Number.isSafeInteger(config.leaseSeconds) || config.leaseSeconds < 5 || config.leaseSeconds > 900 ||
-      !Number.isSafeInteger(config.pollMilliseconds) || config.pollMilliseconds < 1_000 || config.pollMilliseconds > 300_000) {
+    if (!Number.isSafeInteger(config.leaseSeconds) || config.leaseSeconds < 5 || config.leaseSeconds > 900 || !Number.isSafeInteger(config.pollMilliseconds) || config.pollMilliseconds < 1_000 || config.pollMilliseconds > 300_000) {
       throw new Error('RUNTIME_SCHEDULER_CONFIG_INVALID');
     }
     this.leases = new JobLease(pool);
@@ -39,8 +38,12 @@ export class RuntimeScheduler {
     while (!signal.aborted) {
       const lease = await this.leases.acquire({ resource: 'runtime:scheduler', scope: 'organization-platform-root', owner: this.owner, seconds: this.config.leaseSeconds });
       if (lease) {
-        try { await this.ensure(new Date()); await this.leases.assert(lease); }
-        finally { await this.leases.release(lease); }
+        try {
+          await this.ensure(new Date());
+          await this.leases.assert(lease);
+        } finally {
+          await this.leases.release(lease);
+        }
       }
       await wait(this.config.pollMilliseconds, signal);
     }
@@ -69,6 +72,13 @@ function wait(milliseconds: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve) => {
     if (signal.aborted) return resolve();
     const timer = setTimeout(resolve, milliseconds);
-    signal.addEventListener('abort', () => { clearTimeout(timer); resolve(); }, { once: true });
+    signal.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      { once: true }
+    );
   });
 }

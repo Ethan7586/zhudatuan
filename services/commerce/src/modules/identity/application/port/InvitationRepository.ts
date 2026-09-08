@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 import type { Invitation, InvitationKind, InvitationStatus, InvitationTarget } from '../../domain/model/Invitation';
 import type { InvitationClaim } from '../../domain/model/InvitationClaim';

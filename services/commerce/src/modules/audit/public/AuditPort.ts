@@ -1,6 +1,6 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { AuditAccessInput, AuditWriteInput } from '../../../foundation/domain/AuditEntry';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
+import type { AuditAccessInput, AuditWriteInput } from '../../../platform/error/AuditEntry';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 
 export type AuditCommand = AuditWriteInput;
 export type AuditAccessCommand = AuditAccessInput;

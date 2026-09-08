@@ -1,10 +1,7 @@
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import type { AfterSaleReturnEvidence } from '../../../order/public';
 
-export async function readReturnEvidence(
-  database: ReturnType<PgTransactionAccess['database']>,
-  aftersale: string
-): Promise<readonly AfterSaleReturnEvidence[]> {
+export async function readReturnEvidence(database: ReturnType<PgTransactionAccess['database']>, aftersale: string): Promise<readonly AfterSaleReturnEvidence[]> {
   const result = await database.query<{
     id: string;
     state: string;

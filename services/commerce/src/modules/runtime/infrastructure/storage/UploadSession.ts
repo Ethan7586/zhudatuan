@@ -13,16 +13,13 @@ export class UploadSession implements UploadPort {
     validate(request, now);
     const retentionUntil = objectRetentionUntil(request.retentionDays, now);
     const path = objectPath(request.tenant, request.category, request.name, request.contentType, now);
-    const upload = await this.objects.authorizeUpload({ path, contentType: request.contentType, size: request.size,
-      sha256: request.sha256, expiresIn: RUNTIME_LIMITS.upload.authorizationSeconds, retentionUntil });
-    return Object.freeze({ reference: upload.reference, path, sha256: request.sha256, size: request.size,
-      contentType: request.contentType, retentionUntil, upload });
+    const upload = await this.objects.authorizeUpload({ path, contentType: request.contentType, size: request.size, sha256: request.sha256, expiresIn: RUNTIME_LIMITS.upload.authorizationSeconds, retentionUntil });
+    return Object.freeze({ reference: upload.reference, path, sha256: request.sha256, size: request.size, contentType: request.contentType, retentionUntil, upload });
   }
 
   async verify(record: Omit<UploadRecord, 'upload'>): Promise<ObjectMetadata> {
     const metadata = await this.objects.inspect(record.reference);
-    if (metadata.scan !== 'clean' || metadata.path !== record.path || metadata.sha256 !== record.sha256 ||
-      metadata.size !== record.size || metadata.contentType !== record.contentType || metadata.retentionUntil !== record.retentionUntil) {
+    if (metadata.scan !== 'clean' || metadata.path !== record.path || metadata.sha256 !== record.sha256 || metadata.size !== record.size || metadata.contentType !== record.contentType || metadata.retentionUntil !== record.retentionUntil) {
       throw new Error('UPLOAD_OBJECT_INVALID');
     }
     await verifyContent(this.objects, metadata);
@@ -31,12 +28,21 @@ export class UploadSession implements UploadPort {
 }
 
 function validate(request: UploadRequest, now: Date): void {
-  const maximum = request.category === 'import'
-    ? request.contentType.endsWith('spreadsheetml.sheet') ? IMPORT_CAPACITY.maximumSpreadsheetBytes : IMPORT_CAPACITY.maximumFileBytes
-    : RUNTIME_LIMITS.upload.maximumAttachmentBytes;
-  if (!Number.isFinite(now.getTime()) || !request.tenant || request.tenant.length > 255 || !Number.isSafeInteger(request.size) || request.size < 1 || request.size > maximum ||
-    !/^[a-f0-9]{64}$/.test(request.sha256) || !Number.isSafeInteger(request.retentionDays) || request.retentionDays < 1 || request.retentionDays > RUNTIME_LIMITS.upload.maximumRetentionDays ||
-    !allowedTypes(request.category).includes(request.contentType) || extension(request.name, request.contentType) === null) {
+  const maximum = request.category === 'import' ? (request.contentType.endsWith('spreadsheetml.sheet') ? IMPORT_CAPACITY.maximumSpreadsheetBytes : IMPORT_CAPACITY.maximumFileBytes) : RUNTIME_LIMITS.upload.maximumAttachmentBytes;
+  if (
+    !Number.isFinite(now.getTime()) ||
+    !request.tenant ||
+    request.tenant.length > 255 ||
+    !Number.isSafeInteger(request.size) ||
+    request.size < 1 ||
+    request.size > maximum ||
+    !/^[a-f0-9]{64}$/.test(request.sha256) ||
+    !Number.isSafeInteger(request.retentionDays) ||
+    request.retentionDays < 1 ||
+    request.retentionDays > RUNTIME_LIMITS.upload.maximumRetentionDays ||
+    !allowedTypes(request.category).includes(request.contentType) ||
+    extension(request.name, request.contentType) === null
+  ) {
     throw new Error('UPLOAD_SESSION_INVALID');
   }
 }
@@ -50,14 +56,17 @@ function objectPath(tenant: string, category: UploadCategory, name: string, cont
 }
 
 function safeExtension(name: string): string {
-  const normalized = name.normalize('NFKC').replace(/[\u0000-\u001f\u007f/\\]/gu, '').trim().toLowerCase();
+  const normalized = name
+    .normalize('NFKC')
+    .replace(/[\u0000-\u001f\u007f/\\]/gu, '')
+    .trim()
+    .toLowerCase();
   return normalized.match(/\.(csv|xlsx|pdf|png|jpe?g)$/u)?.[0] ?? '';
 }
 
 function extension(name: string, contentType: string): string | null {
   const suffix = safeExtension(name);
-  const expected = contentType === 'text/csv' ? ['.csv'] : contentType.endsWith('spreadsheetml.sheet') ? ['.xlsx'] :
-    contentType === 'application/pdf' ? ['.pdf'] : contentType === 'image/png' ? ['.png'] : ['.jpg', '.jpeg'];
+  const expected = contentType === 'text/csv' ? ['.csv'] : contentType.endsWith('spreadsheetml.sheet') ? ['.xlsx'] : contentType === 'application/pdf' ? ['.pdf'] : contentType === 'image/png' ? ['.png'] : ['.jpg', '.jpeg'];
   return expected.includes(suffix) ? suffix : null;
 }
 

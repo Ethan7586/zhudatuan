@@ -101,7 +101,7 @@ where mapping.permission_id=permission.id and mapping.effect='allow' and permiss
   );
 
 create function access.assert_role_separation()
-returns trigger language plpgsql security definer set search_path=access,pg_temp set row_security=off as $function$
+returns trigger language plpgsql security definer set search_path=access,pg_temp set row_security=on as $function$
 declare affected text:=coalesce(new.role_id,old.role_id);
 begin
   if exists(
@@ -372,8 +372,10 @@ begin
   end loop;
   create policy separationruleapp on access.separationrule for select to shopapp using(true);
   create policy separationrulejob on access.separationrule for select to shopjob using(true);
+  create policy migrationaccess on access.separationrule for all to shopmigration using(true) with check(true);
   create policy roletemplateapp on access.roletemplate for select to shopapp using(true);
   create policy roletemplatejob on access.roletemplate for select to shopjob using(true);
+  create policy migrationaccess on access.roletemplate for all to shopmigration using(true) with check(true);
   create policy ownershiptransferapp on access.ownershiptransfer for all to shopapp using(access.scope_allowed(scope_id)) with check(access.scope_allowed(scope_id));
   create policy ownershiptransferjob on access.ownershiptransfer for all to shopjob using(true) with check(true);
   create policy ownershipproofapp on access.ownershipproof for all to shopapp using(access.scope_allowed(scope_id)) with check(access.scope_allowed(scope_id));

@@ -1,4 +1,4 @@
-import { domainEvent, type DomainEvent } from '../../../../foundation/domain/DomainEvent';
+import { domainEvent, type DomainEvent } from '@shop/kernel';
 
 export function referralEvent(
   input: Readonly<{

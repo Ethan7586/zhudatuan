@@ -1,10 +1,10 @@
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import { jobDefinition } from '../../../../foundation/application/JobCatalog';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { IDENTITY_SECURITY_KEYS, SECRET_STORE } from '../../../../foundation/infrastructure/SecretStore';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
-import { TELEMETRY } from '../../../../foundation/telemetry/Telemetry';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import { jobDefinition } from '../../../../pipeline/JobCatalog';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { IDENTITY_SECURITY_KEYS, SECRET_STORE } from '../../../../platform/secret/SecretStore';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
+import { TELEMETRY } from '../../../../platform/telemetry/Telemetry';
 import { ProviderResolver } from '../../application/service/ProviderResolver';
 import { CleanupFederation } from '../../application/process/CleanupFederation';
 import { CleanupInvitations } from '../../application/process/CleanupInvitations';
@@ -18,7 +18,7 @@ import { ProviderHttpClient } from '../../infrastructure/security/ProviderHttpCl
 import { ProviderHealthJob } from './ProviderHealthJob';
 import { FederationCleanupJob } from './FederationCleanupJob';
 import { InvitationCleanupJob } from './InvitationCleanupJob';
-import { PgInbox } from '../../../../adapter/database/PgInbox';
+import { PgInbox } from '../../../../platform/database/PgInbox';
 import { RevokeStaleSessions } from '../../application/process/RevokeStaleSessions';
 import { PgSessionRevocationRepository } from '../../infrastructure/persistence/PgSessionRevocationRepository';
 import { SessionRevocationJob } from './SessionRevocationJob';

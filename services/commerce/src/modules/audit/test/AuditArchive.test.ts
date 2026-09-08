@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
-import type { KmsClient } from '../../../foundation/application/KmsPort';
+import type { KmsClient } from '../../../pipeline/KmsPort';
 import { transactionManager } from '../../../test/TransactionFixture';
 import type { ObjectStore } from '../../runtime/public/ObjectPort';
 import type { AuditRepository, ArchiveBatch } from '../application/port/AuditRepository';
@@ -10,12 +10,18 @@ import { EvidenceBundle } from '../domain/model/EvidenceBundle';
 const first = 'a'.repeat(64);
 const last = 'b'.repeat(64);
 const batch: ArchiveBatch = Object.freeze({
-  scope: 'mall:one', start: '2026-01-01T00:00:00.000Z', end: '2026-01-01T00:00:01.000Z', firstHash: first, lastHash: last,
+  scope: 'mall:one',
+  start: '2026-01-01T00:00:00.000Z',
+  end: '2026-01-01T00:00:01.000Z',
+  firstHash: first,
+  lastHash: last,
   rows: Object.freeze([
     Object.freeze({ kind: 'command', id: 'audit:one', record_hash: first, previous_hash: null, operation: 'catalog.publish' }),
     Object.freeze({ kind: 'access', id: 'access:two', record_hash: last, previous_hash: first, operation: 'audit.read' }),
   ]),
-  recordIds: Object.freeze(['audit:one']), accessIds: Object.freeze(['access:two']), archiveYears: 7,
+  recordIds: Object.freeze(['audit:one']),
+  accessIds: Object.freeze(['access:two']),
+  archiveYears: 7,
 });
 
 describe('audit evidence archive', () => {
@@ -28,7 +34,12 @@ describe('audit evidence archive', () => {
     const crypto = memoryKms();
     const completeArchive = vi.fn();
     const repository = archiveRepository({ completeArchive });
-    const archive = new ArchiveAudit(transactionManager(async () => empty()), storage.store, crypto.kms, repository);
+    const archive = new ArchiveAudit(
+      transactionManager(async () => empty()),
+      storage.store,
+      crypto.kms,
+      repository
+    );
     const signal = new AbortController().signal;
     await archive.execute('trace:one', signal, Date.now() + 30_000);
     await archive.execute('trace:two', signal, Date.now() + 30_000);
@@ -48,7 +59,12 @@ describe('audit evidence archive', () => {
       completeDisposal,
       scheduleArchive,
     });
-    const archive = new ArchiveAudit(transactionManager(async () => empty()), { remove } as unknown as ObjectStore, memoryKms().kms, repository);
+    const archive = new ArchiveAudit(
+      transactionManager(async () => empty()),
+      { remove } as unknown as ObjectStore,
+      memoryKms().kms,
+      repository
+    );
     await archive.execute('trace:disposal', new AbortController().signal, Date.now() + 30_000);
     expect(remove).toHaveBeenCalledWith('object:expired');
     expect(completeDisposal).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ archive: 'archive:one' }), 'trace:disposal');
@@ -97,12 +113,22 @@ function memoryObjects() {
     create: async (path: string, contentType: string) => {
       const chunks: Uint8Array[] = [];
       return {
-        append: async (bytes: Uint8Array) => { chunks.push(bytes); },
+        append: async (bytes: Uint8Array) => {
+          chunks.push(bytes);
+        },
         abort: async () => undefined,
         complete: async () => {
           const bytes = concat(chunks);
-          const metadata = { reference: `object:${createHash('sha256').update(path).digest('hex')}`, sha256: createHash('sha256').update(bytes).digest('hex'),
-            size: bytes.byteLength, scan: 'clean' as const, contentType, path, retentionUntil: null, lockedUntil: null };
+          const metadata = {
+            reference: `object:${createHash('sha256').update(path).digest('hex')}`,
+            sha256: createHash('sha256').update(bytes).digest('hex'),
+            size: bytes.byteLength,
+            scan: 'clean' as const,
+            contentType,
+            path,
+            retentionUntil: null,
+            lockedUntil: null,
+          };
           const value = { bytes, metadata };
           paths.set(path, value);
           references.set(metadata.reference, value);
@@ -124,8 +150,13 @@ function memoryObjects() {
 function concat(chunks: readonly Uint8Array[]): Uint8Array {
   const output = new Uint8Array(chunks.reduce((size, chunk) => size + chunk.byteLength, 0));
   let offset = 0;
-  for (const chunk of chunks) { output.set(chunk, offset); offset += chunk.byteLength; }
+  for (const chunk of chunks) {
+    output.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
   return output;
 }
 
-function empty() { return { rows: [], rowCount: 0, command: '', oid: 0, fields: [] } as never; }
+function empty() {
+  return { rows: [], rowCount: 0, command: '', oid: 0, fields: [] } as never;
+}

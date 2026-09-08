@@ -1,15 +1,15 @@
 import { IdentityAction as OperationAction } from '../model/IdentityAction';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 import { randomBytes } from 'node:crypto';
 
-import { reject } from '../../../../foundation/application/OperationRejection';
+import { reject } from '../../../../pipeline/OperationRejection';
 
-import type { CsrfProtector } from '../../../../foundation/security/CsrfProtector';
+import type { CsrfProtector } from '../../../../platform/security/CsrfProtector';
 import type { AuthTicketPort } from '../port/AuthTicketPort';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';
 import { returnDestination } from './ReturnDestination';
-import { bodyRecord } from '../../../../foundation/application/Validation';
+import { bodyRecord } from '../../../../pipeline/Validation';
 import { OPERATION_TARGETS } from '@shop/contract';
 
 export class ExchangeTicket {

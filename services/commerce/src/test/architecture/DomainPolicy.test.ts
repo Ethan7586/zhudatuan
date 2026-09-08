@@ -52,12 +52,23 @@ describe('high-risk domain invariants', () => {
 
   it('keeps inventory, order and voucher state machines final', () => {
     expect(available(10, 4, 2)).toBe(4);
-    const reservation = Reservation.reserve({ id: 'reservation:one', stockitem: 'stock:one', ownerKind: 'order', owner: 'order:one', quantity: 1,
-      createdAt: '2026-09-05T00:00:00.000Z', expiresAt: '2026-09-05T00:30:00.000Z' }).commit(new Date('2026-09-05T00:01:00.000Z'));
+    const reservation = Reservation.reserve({ id: 'reservation:one', stockitem: 'stock:one', ownerKind: 'order', owner: 'order:one', quantity: 1, createdAt: '2026-09-05T00:00:00.000Z', expiresAt: '2026-09-05T00:30:00.000Z' }).commit(
+      new Date('2026-09-05T00:01:00.000Z')
+    );
     expect(() => reservation.release()).toThrow('INVENTORY_RESERVATION_FINAL');
     expect(() => new Order('order', 'cancelled', 'paid', 'shipped', 'none').assertCancellable()).toThrow('ORDER_NOT_CANCELLABLE');
-    const voucher = new Voucher({ id: 'voucher', credential: 'credential', product: 'product', holder: 'holder', initialMinor: 100,
-      remainingMinor: 0, state: 'redeemed', startsAt: new Date('2026-09-04T00:00:00.000Z'), expiresAt: new Date('2026-09-06T00:00:00.000Z'), version: 2 });
+    const voucher = new Voucher({
+      id: 'voucher',
+      credential: 'credential',
+      product: 'product',
+      holder: 'holder',
+      initialMinor: 100,
+      remainingMinor: 0,
+      state: 'redeemed',
+      startsAt: new Date('2026-09-04T00:00:00.000Z'),
+      expiresAt: new Date('2026-09-06T00:00:00.000Z'),
+      version: 2,
+    });
     expect(() => voucher.activate(new Date('2026-09-05T00:00:00.000Z'))).toThrow('VOUCHER_STATE_INVALID');
   });
 
@@ -76,7 +87,9 @@ describe('high-risk domain invariants', () => {
     });
     expect(selected?.id).toBe('a');
     const rules = [new AssignmentRule('rule', 'mall', 'order', ['urgent'], 100, true, 1)];
-    expect(new AssignmentPolicy().decide({ agents: [{ id: 'a', online: true, state: 'available', load: 0, capacity: 10, skills: ['order'], scopes: ['mall'], lastAssignedAt: null }], rules, scope: 'mall', skill: 'order', priority: 'normal' })).toBeNull();
+    expect(
+      new AssignmentPolicy().decide({ agents: [{ id: 'a', online: true, state: 'available', load: 0, capacity: 10, skills: ['order'], scopes: ['mall'], lastAssignedAt: null }], rules, scope: 'mall', skill: 'order', priority: 'normal' })
+    ).toBeNull();
     const ticket = new Ticket('ticket', 'conversation', 'mall', 'urgent', 'resolved', null, null, 1);
     ticket.requireTransition('closed');
     expect(() => ticket.requireTransition('assigned')).toThrow('SUPPORT_TICKET_TRANSITION_INVALID');

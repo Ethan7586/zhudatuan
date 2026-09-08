@@ -1,5 +1,5 @@
 import { Money } from '@shop/kernel';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { AccountingDate } from '../value/AccountingDate';
 import type { PostingReference } from '../value/PostingReference';
 import type { Account } from './Account';
@@ -15,10 +15,22 @@ export class Ledger {
     if (!scopeId || accounts.some((account) => account.snapshot().scopeId !== scopeId) || journals.some((journal) => journal.snapshot().scopeId !== scopeId)) {
       throw new DomainError('VALIDATION_FAILED', { field: 'ledgerScope' });
     }
-    assertUnique(accounts.map((account) => account.snapshot().id), 'account');
-    assertUnique(journals.map((journal) => journal.snapshot().id), 'journal');
-    assertUnique(journals.map((journal) => referenceKey(journal)), 'postingReference');
-    assertUnique(journals.map((journal) => legKey(journal)), 'economicLeg');
+    assertUnique(
+      accounts.map((account) => account.snapshot().id),
+      'account'
+    );
+    assertUnique(
+      journals.map((journal) => journal.snapshot().id),
+      'journal'
+    );
+    assertUnique(
+      journals.map((journal) => referenceKey(journal)),
+      'postingReference'
+    );
+    assertUnique(
+      journals.map((journal) => legKey(journal)),
+      'economicLeg'
+    );
     Object.freeze(this.accounts);
     Object.freeze(this.journals);
     Object.freeze(this);

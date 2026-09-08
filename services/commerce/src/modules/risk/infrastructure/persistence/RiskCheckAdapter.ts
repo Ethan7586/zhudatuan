@@ -1,10 +1,10 @@
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import type { RiskAssessment, RiskGate } from '../../../../foundation/security/RiskGate';
+import type { DatabasePool } from '../../../../platform/database/Pool';
+import type { RiskAssessment, RiskGate } from '../../../../platform/security/RiskGate';
 import { signal } from '../../domain/model/Signal';
 import { EvaluateRisk } from '../../application/service/EvaluateRisk';
 import { PgRiskRepository } from './PgRiskRepository';
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import { OperationCatalog } from '@shop/contract';
 
 export class RiskCheckAdapter implements RiskGate {
@@ -29,10 +29,16 @@ export class RiskCheckAdapter implements RiskGate {
           scopes: Object.freeze([...new Set(hierarchy)]),
           trace: input.trace,
           amountMinor: input.amountMinor ?? null,
-          signals: Object.entries(input.signals ?? {}).map(([type, value]) => signal({
-            type, version: 1, value, source: `operation:${input.operation}`,
-            sensitivity: type.includes('device') || type.includes('ip') ? 'sensitive' : 'personal', observedAt: new Date().toISOString(),
-          })),
+          signals: Object.entries(input.signals ?? {}).map(([type, value]) =>
+            signal({
+              type,
+              version: 1,
+              value,
+              source: `operation:${input.operation}`,
+              sensitivity: type.includes('device') || type.includes('ip') ? 'sensitive' : 'personal',
+              observedAt: new Date().toISOString(),
+            })
+          ),
           risk: operation.risk,
           mode: operation.executionMode === 'async' ? 'async' : 'sync',
           deadline: input.deadline,

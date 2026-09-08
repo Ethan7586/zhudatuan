@@ -1,10 +1,10 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Client, Pool, type QueryResult, type QueryResultRow } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { DatabasePool } from '../../src/foundation/persistence/Pool';
-import type { TransactionOptions } from '../../src/foundation/persistence/TransactionManager';
-import { PgTransactionManager } from '../../src/adapter/database/PgTransactionManager';
-import { DomainError } from '../../src/foundation/domain/DomainError';
+import type { DatabasePool } from '../../src/platform/database/Pool';
+import type { TransactionOptions } from '../../src/platform/database/TransactionManager';
+import { PgTransactionManager } from '../../src/platform/database/PgTransactionManager';
+import { DomainError } from '../../src/platform/error/DomainError';
 import { PgEmployeeAccessRepository } from '../../src/modules/access/infrastructure/persistence/PgEmployeeAccessRepository';
 import { MemberPort } from '../../src/modules/member/infrastructure/persistence/MemberPort';
 import { PgAuthTicket } from '../../src/modules/identity/infrastructure/persistence/PgAuthTicket';
@@ -68,10 +68,10 @@ describe.runIf(endpointAvailable)('Identity single-consumption concurrency', () 
     await admin.query("delete from identity.session where id like $1", [`${prefix}%`]).catch(() => undefined);
     await admin.query("delete from access.scopegrant where membership_id like $1", [`${prefix}%`]).catch(() => undefined);
     await admin.query("delete from access.membershiprole where membership_id like $1", [`${prefix}%`]).catch(() => undefined);
-    await admin.query("delete from access.membership where id like $1", [`${prefix}%`]).catch(() => undefined);
-    await admin.query("delete from member.profile where id like $1", [`${prefix}%`]).catch(() => undefined);
-    await admin.query("delete from identity.credential where principal_id like $1", [`${prefix}%`]).catch(() => undefined);
-    await admin.query("delete from identity.principal where id like $1", [`${prefix}%`]).catch(() => undefined);
+    await admin.query("delete from access.membership where id like $1 or id like $2", [`${prefix}%`, `membership:${prefix}%`]).catch(() => undefined);
+    await admin.query("delete from member.profile where id like $1 or id like $2", [`${prefix}%`, `member:${prefix}%`]).catch(() => undefined);
+    await admin.query("delete from identity.credential where principal_id like $1 or principal_id like $2", [`${prefix}%`, `principal:${prefix}%`]).catch(() => undefined);
+    await admin.query("delete from identity.principal where id like $1 or id like $2", [`${prefix}%`, `principal:${prefix}%`]).catch(() => undefined);
     await Promise.allSettled([pool.end(), admin.end()]);
   });
 
@@ -100,6 +100,11 @@ describe.runIf(endpointAvailable)('Identity single-consumption concurrency', () 
       values($1,$2,$3,$4,1,1,'storefront',$5,'concurrency-test','concurrency-test',1,
       clock_timestamp()+interval '1 hour',clock_timestamp(),clock_timestamp())`,
       [session, issuerPrincipal, issuerMembership, hash(sessionToken), hash('peer')]
+    );
+    await admin.query(
+      `insert into identity.refreshtoken(id,family_id,session_id,parent_id,token_hash,sequence,issued_at)
+      values($1,$2,$3,null,$4,0,clock_timestamp())`,
+      [`refreshtoken:${hash(session)}`, `tokenfamily:${hash(`${session}:family`)}`, session, hash(sessionToken)]
     );
     const state = 's'.repeat(32);
     const nonce = 'n'.repeat(32);
@@ -189,9 +194,9 @@ describe.runIf(endpointAvailable)('Identity single-consumption concurrency', () 
       const existing = await enrollments.findPrincipal(context, subjectHash);
       const mobileOwner = await members.mobileOwner(context, mobileHash);
       if (existing !== null || mobileOwner !== null) throw new DomainError('IDENTITY_ALREADY_EXISTS');
-      const principal = `${prefix}:${request}:principal`;
-      const member = `${prefix}:${request}:member`;
-      const membership = `${prefix}:${request}:membership`;
+      const principal = `principal:${prefix}:${request}`;
+      const member = `member:${prefix}:${request}`;
+      const membership = `membership:${prefix}:${request}`;
       await enrollments.createPendingPrincipal(context, { principal, createdAt: new Date() });
       await members.createPending(context, { member, principal, display: '并发注册员工', mobileCiphertext: 'ciphertext', mobileFingerprint: mobileHash, mobileMasked: '138****0000' });
       await access.createStorefrontMembership(context, { membership, member, principal, organization, issuer: issuerMembership, issuerAccessVersion: 1, employeeNo: employee, department: null });
@@ -202,9 +207,9 @@ describe.runIf(endpointAvailable)('Identity single-consumption concurrency', () 
     const counts = await admin.query<{ principals: number; members: number; memberships: number }>(
       `select
       (select count(*)::int from identity.principal where id like $1) principals,
-      (select count(*)::int from member.profile where id like $1) members,
-      (select count(*)::int from access.membership where id like $1) memberships`,
-      [`${prefix}:enrollment-%`]
+      (select count(*)::int from member.profile where id like $2) members,
+      (select count(*)::int from access.membership where id like $3) memberships`,
+      [`principal:${prefix}:enrollment-%`, `member:${prefix}:enrollment-%`, `membership:${prefix}:enrollment-%`]
     );
     expect(counts.rows[0]).toEqual({ principals: 1, members: 1, memberships: 1 });
   });
@@ -229,8 +234,11 @@ function candidate(id: string, displayName: string) {
 
 async function expectExactlyOne(operations: readonly Promise<unknown>[]): Promise<void> {
   const results = await Promise.allSettled(operations);
-  expect(results.filter(({ status }) => status === 'fulfilled')).toHaveLength(1);
-  expect(results.filter(({ status }) => status === 'rejected')).toHaveLength(1);
+  const failures = results
+    .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+    .map(({ reason }) => reason instanceof Error ? `${reason.name}:${reason.message}` : String(reason));
+  expect(results.filter(({ status }) => status === 'fulfilled'), failures.join(', ')).toHaveLength(1);
+  expect(failures).toHaveLength(1);
 }
 
 function databaseConfiguration() {

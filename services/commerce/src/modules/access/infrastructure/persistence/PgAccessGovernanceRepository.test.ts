@@ -10,19 +10,19 @@ describe('access governance outbox persistence', () => {
       statements.push({ sql, values });
       if (sql.includes('with expired as')) {
         return {
-          rows: [{
-            active: false,
-            expired: [{ id: 'transfer:one', tenant: 'tenant:test', scope: 'mall:one', sourceMembership: 'membership:source', targetMembership: 'membership:target', version: 3 }],
-          }],
+          rows: [
+            {
+              active: false,
+              expired: [{ id: 'transfer:one', tenant: 'tenant:test', scope: 'mall:one', sourceMembership: 'membership:source', targetMembership: 'membership:target', version: 3 }],
+            },
+          ],
           rowCount: 1,
         } as unknown as QueryResult;
       }
       return { rows: [], rowCount: 1 } as unknown as QueryResult;
     };
 
-    const active = await withWriteTransaction(query, (context) =>
-      new PgAccessGovernanceRepository().activeTransfer(context, 'mall:one', 'trace:expiry')
-    );
+    const active = await withWriteTransaction(query, (context) => new PgAccessGovernanceRepository().activeTransfer(context, 'mall:one', 'trace:expiry'));
 
     expect(active).toBe(false);
     expect(statements[0]?.sql).toContain("state='expired'");

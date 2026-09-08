@@ -1,5 +1,5 @@
 // Generated from config/identityproviders.yml and infrastructure/network/Edge.yml. Do not edit.
-export const IDENTITY_PROVIDER_CHECKSUM = '37f9fe02b2c7cb8b57b138fd6b505c0b49e59e2ef8a74e40bc59b728007f3509' as const;
+export const IDENTITY_PROVIDER_CHECKSUM = '1a8fe0d381b9ecf0008f0799d80577f3c39b3d27e3bc18f8146cb3bb3255ae7f' as const;
 
 export const IDENTITY_PROVIDER_TYPES = Object.freeze(["oidc","wechat","wecomcorp","wecomsuite"] as const);
 export type IdentityProviderType = (typeof IDENTITY_PROVIDER_TYPES)[number];

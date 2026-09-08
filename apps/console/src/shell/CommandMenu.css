@@ -1,0 +1,66 @@
+.commandpopup {
+  right: auto;
+  left: 0;
+  width: min(28rem, calc(100vw - var(--sw-space-4)));
+}
+.commandpopup label {
+  font-weight: var(--sw-font-weight-bold);
+}
+.commandpopup input {
+  height: var(--sw-control-touch-target);
+  border: var(--sw-border-width) solid var(--sw-border-strong);
+  border-radius: var(--sw-radius-sm);
+  padding: 0 var(--sw-space-1);
+}
+
+.commandresults {
+  display: grid;
+  max-height: min(25rem, 60vh);
+  gap: var(--sw-space-0-5);
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.commandresults button {
+  display: grid;
+  width: 100%;
+  min-height: var(--sw-control-height-lg);
+  grid-template-columns: var(--sw-icon-size-md) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sw-control-gap-lg);
+  border-color: transparent;
+  background: transparent;
+  padding: var(--sw-space-1) var(--sw-space-1);
+  text-align: left;
+}
+
+.commandresults button:hover,
+.commandresults button:focus-visible {
+  border-color: var(--sw-border);
+  background: var(--sw-brand-light);
+}
+
+.commandresults svg {
+  width: var(--sw-icon-size-md);
+  height: var(--sw-icon-size-md);
+  color: var(--sw-brand);
+}
+
+.commandresults button > span {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-border-width-strong);
+}
+
+.commandresults strong,
+.commandresults small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commandresults small {
+  color: var(--sw-muted);
+}

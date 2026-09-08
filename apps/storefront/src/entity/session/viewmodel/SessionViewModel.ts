@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { useDependencies } from '../../../app/DependencyContext';
 import type { StorefrontEntryPath } from '../../../route/EntryPath';
 import { StorefrontQuery } from '../../../shared/api/Query';
@@ -79,6 +79,7 @@ export async function refreshSessionScope(client: Pick<QueryClient, 'cancelQueri
 export function useSessionViewModel(entry: StorefrontEntryPath): SessionState {
   const dependencies = useDependencies();
   const location = useLocation();
+  const navigate = useNavigate();
   const bootstrap = useBootstrapQuery(entry.handle, dependencies.home);
   const queryClient = useQueryClient();
   const toast = useToasts();
@@ -117,8 +118,14 @@ export function useSessionViewModel(entry: StorefrontEntryPath): SessionState {
     void refreshSessionScope(queryClient, previousQuery, entry.handle);
   }, [entry.handle, fingerprint, query.scoped, queryClient, scope]);
   useEffect(() => {
-    if (session) void referral.current.capture({ search: location.search, mallId: scope, memberId: session.membership });
-  }, [location.search, scope, session]);
+    if (!session) return;
+    void referral.current.capture({ search: location.search, mallId: scope, memberId: session.membership }).then((result) => {
+      if (result.status !== 'bound' && !(result.status === 'ignored' && result.reason === 'malformed')) return;
+      const query = new URLSearchParams(location.search);
+      query.delete('referral');
+      void navigate({ pathname: location.pathname, search: query.toString(), hash: location.hash }, { replace: true });
+    });
+  }, [location.hash, location.pathname, location.search, navigate, scope, session]);
   const logout = useCallback(async () => {
     if (!session) return;
     await new EndSession(dependencies.session).execute(session);

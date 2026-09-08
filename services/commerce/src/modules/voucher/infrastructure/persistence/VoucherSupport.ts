@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationId, OperationOutputFor } from '@shop/contract';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { requireWriteTransaction, type WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { requireWriteTransaction, type WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { VoucherCall } from '../../application/port/VoucherCall';
 
 export type RecordValue = Readonly<Record<string, unknown>>;
@@ -47,15 +47,21 @@ export function write<TKey extends OperationId>(call: VoucherCall<TKey>): WriteT
   return requireWriteTransaction(call.context.transaction);
 }
 
-export function entity(prefix: string): string { return `${prefix}:${randomUUID()}`; }
-export function number(prefix: string): string { return `${prefix}${Date.now().toString(36).toUpperCase()}${randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`; }
+export function entity(prefix: string): string {
+  return `${prefix}:${randomUUID()}`;
+}
+export function number(prefix: string): string {
+  return `${prefix}${Date.now().toString(36).toUpperCase()}${randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`;
+}
 
 export function limit(value: unknown, maximum = 100): number {
   const parsed = typeof value === 'string' ? Number.parseInt(value, 10) : value;
   return Number.isInteger(parsed) ? Math.min(Math.max(Number(parsed), 1), maximum) : 20;
 }
 
-export function cursor(value: unknown): string | null { return optionalText(value); }
+export function cursor(value: unknown): string | null {
+  return optionalText(value);
+}
 
 export function one<TKey extends OperationId>(status: number, row: unknown): OperationReply<OperationOutputFor<TKey>> {
   if (row === undefined || row === null) throw new DomainError('RESOURCE_NOT_FOUND');
@@ -64,7 +70,7 @@ export function one<TKey extends OperationId>(status: number, row: unknown): Ope
 
 export function page<TKey extends OperationId>(rows: readonly unknown[], fetch: number, cursorField = 'id'): OperationReply<OperationOutputFor<TKey>> {
   const hasMore = rows.length > fetch;
-  const items = rows.slice(0, fetch).map(item => normalize(item));
+  const items = rows.slice(0, fetch).map((item) => normalize(item));
   const last = items.at(-1);
   const nextCursor = hasMore && last && typeof last === 'object' && cursorField in last ? String((last as RecordValue)[cursorField]) : undefined;
   return { status: 200, body: { items, count: items.length, ...(nextCursor ? { nextCursor } : {}) } as OperationOutputFor<TKey> };
@@ -72,10 +78,9 @@ export function page<TKey extends OperationId>(rows: readonly unknown[], fetch: 
 
 export function normalize(value: unknown, field?: string): unknown {
   if (value instanceof Date) return value.toISOString();
-  if (typeof value === 'string' && field !== undefined && ['startsAt', 'expiresAt', 'redeemedAt'].includes(field)
-    && /^\d{4}-\d{2}-\d{2}T/.test(value) && Number.isFinite(Date.parse(value))) return new Date(value).toISOString();
+  if (typeof value === 'string' && field !== undefined && ['startsAt', 'expiresAt', 'redeemedAt'].includes(field) && /^\d{4}-\d{2}-\d{2}T/.test(value) && Number.isFinite(Date.parse(value))) return new Date(value).toISOString();
   if (typeof value === 'bigint') return Number(value);
-  if (Array.isArray(value)) return value.map(item => normalize(item));
+  if (Array.isArray(value)) return value.map((item) => normalize(item));
   if (value && typeof value === 'object') return Object.freeze(Object.fromEntries(Object.entries(value).map(([key, item]) => [key, normalize(item, key)])));
   return value;
 }

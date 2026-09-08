@@ -1,8 +1,8 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { CatalogInventoryPort } from '../../../inventory/public';
 import type { CatalogPricingPort } from '../../../pricing/public';
 import type { CatalogQualificationPort } from '../../../qualification/public';
@@ -75,9 +75,5 @@ function dependency(partitionValue: Partition<unknown>, field: string) {
 }
 
 function qualificationSubjects(detail: ProductDetailBase) {
-  return Object.freeze(
-    detail.listings.map((listing) =>
-      Object.freeze({ listing: listing.id, product: detail.id, category: detail.category_id, partner: detail.owner_partner_id, regions: detail.regionIds })
-    )
-  );
+  return Object.freeze(detail.listings.map((listing) => Object.freeze({ listing: listing.id, product: detail.id, category: detail.category_id, partner: detail.owner_partner_id, regions: detail.regionIds })));
 }

@@ -1,5 +1,5 @@
-import type { Inbox } from '../../../../foundation/messaging/Inbox';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import type { Inbox } from '../../../../platform/messaging/Inbox';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import type { SessionRevocationRepository } from '../port/SessionRevocationRepository';
 
 export interface SessionRevocationExecution {
@@ -10,7 +10,11 @@ export interface SessionRevocationExecution {
 }
 
 export class RevokeStaleSessions {
-  constructor(private readonly transactions: TransactionManager, private readonly inbox: Inbox, private readonly sessions: SessionRevocationRepository) {}
+  constructor(
+    private readonly transactions: TransactionManager,
+    private readonly inbox: Inbox,
+    private readonly sessions: SessionRevocationRepository
+  ) {}
 
   async execute(event: string, payload: Readonly<Record<string, unknown>>, execution: SessionRevocationExecution): Promise<void> {
     const membership = requiredText(payload.membership, 'ACCESS_VERSION_MEMBERSHIP_REQUIRED');

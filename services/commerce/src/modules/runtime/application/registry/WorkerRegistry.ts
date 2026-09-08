@@ -1,4 +1,4 @@
-import type { ModuleWorker } from '../../../../foundation/application/ModuleWorker';
+import type { ModuleWorker } from '../../../../pipeline/ModuleWorker';
 
 export interface RegisteredWorker extends ModuleWorker {
   readonly owner: string;

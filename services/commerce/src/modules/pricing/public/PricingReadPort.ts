@@ -1,5 +1,5 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
 import type { PriceComponent } from '../domain/value/PriceComponent';
 
 export type { PriceComponent, PriceComponentKind } from '../domain/value/PriceComponent';

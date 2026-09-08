@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { routePath, ROUTES } from '../../../generated/RouteBinding';
 import { useCartCommand } from '../../cart';
@@ -9,6 +9,8 @@ export function useCatalogViewModel() {
   const navigate = useNavigate();
   const filterState = useCatalogFilters();
   const [filterOpen, setFilterOpen] = useState(false);
+  const openFilters = useCallback(() => setFilterOpen(true), []);
+  const closeFilters = useCallback(() => setFilterOpen(false), []);
   const [query, setQuery] = useState(filterState.filters.query);
   useEffect(() => {
     const timer = window.setTimeout(() => setQuery(filterState.filters.query), 250);
@@ -24,6 +26,7 @@ export function useCatalogViewModel() {
   return Object.freeze({
     presentationProducts: catalog.presentationProducts,
     presentationCategories: catalog.presentationCategories,
+    state: catalog.state,
     addToCart: (product: Parameters<typeof cart.add>[0], quantity?: Parameters<typeof cart.add>[1]) => {
       void cart.add(product, quantity);
     },
@@ -33,9 +36,11 @@ export function useCatalogViewModel() {
     hasMore: catalog.hasMore,
     isLoadingMore: catalog.isLoadingMore,
     loadMore: catalog.loadMore,
+    refresh: catalog.refresh,
     filterOpen,
     actions: Object.freeze({
-      toggleFilters: () => setFilterOpen((value) => !value),
+      openFilters,
+      closeFilters,
       openProduct: (id: string) => void navigate(routePath('storeproduct', { productId: id })),
       home: () => void navigate(ROUTES.storehome),
     }),

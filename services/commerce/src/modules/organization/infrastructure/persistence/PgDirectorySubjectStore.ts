@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CurrentDirectorySubject, DirectoryApplyKind, DirectoryDeparture, StagedSubject } from '../../application/port/DirectoryRepository';
 import type { DirectoryConnection } from '../../domain/model/DirectoryConnection';
 import { DirectoryMembership } from '../../domain/model/DirectoryMembership';

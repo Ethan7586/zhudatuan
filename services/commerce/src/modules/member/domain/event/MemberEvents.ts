@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { domainEvent, type DomainEvent } from '../../../../foundation/domain/DomainEvent';
+import { domainEvent, type DomainEvent } from '@shop/kernel';
 
 interface EventContext {
   readonly member: string;

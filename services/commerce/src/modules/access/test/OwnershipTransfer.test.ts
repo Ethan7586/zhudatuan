@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it, vi } from 'vitest';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
-import type { WriteHandlerContext } from '../../../foundation/application/HandlerContext';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
+import type { WriteHandlerContext } from '../../../pipeline/HandlerContext';
 import { readHandlerContext } from '../../../test/HandlerFixture';
 import { OwnershipTransfer } from '../domain/model/OwnershipTransfer';
 import { Role } from '../domain/model/Role';
@@ -40,10 +40,23 @@ describe('access ownership transfer', () => {
 
   it('keeps acceptance closed during the 24-hour cooling period', () => {
     const pending = new OwnershipTransfer({
-      id: 'ownershiptransfer:cooling', scope: 'mall:one', role: 'role:owner', sourceMembership: 'membership:source', targetMembership: 'membership:target',
-      formerOwnerMode: 'retain_admin', formerOwnerRole: 'role:operator', formerOwnerRoleVersion: 3, ownershipVersion: 5, targetAccessVersion: 9,
-      sourceProof: null, targetProof: null, cancelProof: null, state: 'draft', version: 1,
-      coolingUntil: new Date('2026-09-05T00:00:00.000Z'), expiresAt: new Date('2026-09-11T00:00:00.000Z'),
+      id: 'ownershiptransfer:cooling',
+      scope: 'mall:one',
+      role: 'role:owner',
+      sourceMembership: 'membership:source',
+      targetMembership: 'membership:target',
+      formerOwnerMode: 'retain_admin',
+      formerOwnerRole: 'role:operator',
+      formerOwnerRoleVersion: 3,
+      ownershipVersion: 5,
+      targetAccessVersion: 9,
+      sourceProof: null,
+      targetProof: null,
+      cancelProof: null,
+      state: 'draft',
+      version: 1,
+      coolingUntil: new Date('2026-09-05T00:00:00.000Z'),
+      expiresAt: new Date('2026-09-11T00:00:00.000Z'),
     }).submit(sourceProof);
     expect(() => pending.accept('membership:target', targetProof, new Date('2026-09-04T23:59:59.999Z'))).toThrow('OWNER_TRANSFER_COOLING_PERIOD');
     expect(pending.accept('membership:target', targetProof, new Date('2026-09-05T00:00:00.000Z')).state).toBe('accepted');
@@ -66,7 +79,12 @@ describe('access ownership transfer', () => {
   it('computes role changes with explicit deny and people/scope impact', () => {
     const role = new Role({ id: 'role:one', scope: 'mall:one', name: '运营', status: 'active', version: 2, kind: 'custom' });
     expect(role.permissionDiff({ allows: ['order.read'], denies: [] }, { allows: ['catalog.read'], denies: ['order.read'] }, { people: 18, scopes: 4 })).toEqual({
-      addedAllows: ['catalog.read'], removedAllows: ['order.read'], addedDenies: ['order.read'], removedDenies: [], affectedPeople: 18, affectedScopes: 4,
+      addedAllows: ['catalog.read'],
+      removedAllows: ['order.read'],
+      addedDenies: ['order.read'],
+      removedDenies: [],
+      affectedPeople: 18,
+      affectedScopes: 4,
     });
   });
 
@@ -87,7 +105,16 @@ describe('access ownership transfer', () => {
       { body: { targetMembership: 'membership:target', targetAccessVersion: 9, formerOwnerMode: 'retain_admin', formerOwnerRole: 'role:operator', reason: '负责人岗位调整' } },
       context
     );
-    expect(preview).toMatchObject({ state: 'draft', affectedPeople: 2, affectedScopes: 7, ownershipVersion: 5, targetAccessVersion: 9, formerOwnerRoleVersion: 3, coolingUntil: '2026-09-05T00:00:00.000Z', expiresAt: '2026-09-11T00:00:00.000Z' });
+    expect(preview).toMatchObject({
+      state: 'draft',
+      affectedPeople: 2,
+      affectedScopes: 7,
+      ownershipVersion: 5,
+      targetAccessVersion: 9,
+      formerOwnerRoleVersion: 3,
+      coolingUntil: '2026-09-05T00:00:00.000Z',
+      expiresAt: '2026-09-11T00:00:00.000Z',
+    });
     expect(repository).not.toHaveProperty('create.mock.calls.0');
   });
 
@@ -103,20 +130,29 @@ describe('access ownership transfer', () => {
     const execute = vi.fn(async () => undefined);
     const job = new OwnershipExpiryJob({ execute } as never);
     const signal = new AbortController().signal;
-    await job.process(
-      { id: 'job:ownershipexpiry:one', kind: 'ownershipexpiry', scope: 'mall:one', payload: { transfer: 'ownershiptransfer:one', scope: 'mall:one', traceId: 'trace:one' }, attempts: 1 } as never,
-      signal,
-      1_800_000_000_000
-    );
+    await job.process({ id: 'job:ownershipexpiry:one', kind: 'ownershipexpiry', scope: 'mall:one', payload: { transfer: 'ownershiptransfer:one', scope: 'mall:one', traceId: 'trace:one' }, attempts: 1 } as never, signal, 1_800_000_000_000);
     expect(execute).toHaveBeenCalledWith({ job: 'job:ownershipexpiry:one', transfer: 'ownershiptransfer:one', scope: 'mall:one', trace: 'trace:one', signal, deadline: 1_800_000_000_000 });
   });
 });
 
 function draft(expiresAt = new Date('2026-09-05T00:00:00.000Z')): OwnershipTransfer {
   return new OwnershipTransfer({
-    id: 'ownershiptransfer:one', scope: 'mall:one', role: 'role:owner', sourceMembership: 'membership:source', targetMembership: 'membership:target',
-    formerOwnerMode: 'remove_admin', formerOwnerRole: null, formerOwnerRoleVersion: null, ownershipVersion: 5, targetAccessVersion: 9,
-    sourceProof: null, targetProof: null, cancelProof: null, state: 'draft', version: 1,
-    coolingUntil: new Date(expiresAt.getTime() - 8 * 24 * 60 * 60_000), expiresAt,
+    id: 'ownershiptransfer:one',
+    scope: 'mall:one',
+    role: 'role:owner',
+    sourceMembership: 'membership:source',
+    targetMembership: 'membership:target',
+    formerOwnerMode: 'remove_admin',
+    formerOwnerRole: null,
+    formerOwnerRoleVersion: null,
+    ownershipVersion: 5,
+    targetAccessVersion: 9,
+    sourceProof: null,
+    targetProof: null,
+    cancelProof: null,
+    state: 'draft',
+    version: 1,
+    coolingUntil: new Date(expiresAt.getTime() - 8 * 24 * 60 * 60_000),
+    expiresAt,
   });
 }

@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { AuthenticationResolver, AuthenticationStrategy } from '../../application/service/AuthenticationStrategy';
 import { AuthenticationPolicy } from '../../domain/policy/AuthenticationPolicy';
 

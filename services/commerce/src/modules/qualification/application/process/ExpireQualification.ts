@@ -1,5 +1,5 @@
-import type { TransactionalEventWriter } from '../../../../foundation/application/OperationExecutor';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionalEventWriter } from '../../../../pipeline/OperationExecutor';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import { qualificationExpiredEvent } from '../../domain/event/QualificationEvents';
 import { QualificationCase } from '../../domain/model/QualificationCase';
 import type { QualificationCaseRepository } from '../port/QualificationCaseRepository';

@@ -1,8 +1,8 @@
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
-import { ProviderMetrics } from '../../../../foundation/telemetry/ProviderMetrics';
-import { TELEMETRY } from '../../../../foundation/telemetry/Telemetry';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
+import { ProviderMetrics } from '../../../../platform/telemetry/ProviderMetrics';
+import { TELEMETRY } from '../../../../platform/telemetry/Telemetry';
 import { EXTENSION_LOADER } from '../../application/port/ExtensionLoader';
 import { extensionHealthRepository } from '../../infrastructure/persistence/ExtensionHealthRepository';
 import { EXTENSION_STATE_PORT } from '../../../channel/public';
@@ -25,4 +25,4 @@ export function createProviderJobs(context: ModuleContext): readonly ModuleJob[]
     },
   ]);
 }
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';

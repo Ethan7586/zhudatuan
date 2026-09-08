@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ReportRepository } from '../../application/port/ReportRepository';
 import type { ExportJob } from '../../domain/model/ExportJob';
 import type { CockpitProduct, CockpitQuery, CockpitSummary, MetricQuery, MetricRow } from '../../domain/model/Metric';
@@ -43,7 +43,8 @@ export class PgReportRepository implements ReportRepository {
         where projection='commerce' and scope_id=$1)
       select event,"occurredAt",version from current union all
       select 'reporting:empty',coalesce((select max(watermark) from reporting.fact where scope_id=$1),statement_timestamp()),1
-      where not exists(select 1 from current) limit 1`, [scope]
+      where not exists(select 1 from current) limit 1`,
+      [scope]
     );
     const row = required(result.rows[0], 'REPORT_WATERMARK_MISSING');
     return Object.freeze({ event: row.event, occurredAt: utcTime(row.occurredAt), version: Number(row.version) });
@@ -55,8 +56,7 @@ export class PgReportRepository implements ReportRepository {
         summary: CockpitSummary;
         products: readonly CockpitProduct[];
       } & Record<string, unknown>
-    >('select reporting.cockpit($1,$2,$3,$4,$5,$6) summary,reporting.cockpitproducts($1,$2,$3,$4,$5,$6) products',
-      [query.scope, query.period, query.application, query.watermarkAt, query.watermarkVersion, query.snapshotAt]);
+    >('select reporting.cockpit($1,$2,$3,$4,$5,$6) summary,reporting.cockpitproducts($1,$2,$3,$4,$5,$6) products', [query.scope, query.period, query.application, query.watermarkAt, query.watermarkVersion, query.snapshotAt]);
     const row = required(result.rows[0], 'REPORT_COCKPIT_FAILED');
     return cockpitSummary(row.summary, row.products);
   }
@@ -76,8 +76,19 @@ export class PgReportRepository implements ReportRepository {
         object_size "objectSize",scan_state "scanState",expires_at "expiresAt",created_at "createdAt",generated_at "generatedAt",
         jsonb_build_object('filter',query_snapshot,'watermark',jsonb_build_object('event',watermark_event,
           'occurredAt',watermark_at,'version',watermark_version),'generatedAt',snapshot_at,'generationVersion',generation_version) snapshot`,
-      [input.id, input.scope, input.report, JSON.stringify(input.filter), JSON.stringify(input.snapshot.filter), input.snapshot.watermark.event,
-        input.snapshot.watermark.occurredAt, input.snapshot.watermark.version, input.snapshot.generationVersion, authorization, input.snapshot.generatedAt]
+      [
+        input.id,
+        input.scope,
+        input.report,
+        JSON.stringify(input.filter),
+        JSON.stringify(input.snapshot.filter),
+        input.snapshot.watermark.event,
+        input.snapshot.watermark.occurredAt,
+        input.snapshot.watermark.version,
+        input.snapshot.generationVersion,
+        authorization,
+        input.snapshot.generatedAt,
+      ]
     );
     return exportJob(required(result.rows[0], 'REPORT_EXPORT_CREATE_FAILED'));
   }

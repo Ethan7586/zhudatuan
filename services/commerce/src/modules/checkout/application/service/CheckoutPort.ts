@@ -1,4 +1,4 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import { QuoteReader, quoteDigest } from './QuoteReader';
 import type { CheckoutQuote } from '../../domain/model/CheckoutQuote';
 import { checkoutSelection, type CheckoutSelection } from '../../domain/model/CheckoutSelection';

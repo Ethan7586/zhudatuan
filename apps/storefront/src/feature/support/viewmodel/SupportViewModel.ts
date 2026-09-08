@@ -18,6 +18,7 @@ const topics: Readonly<Record<string, Readonly<{ subject: string; message: strin
   delivery: { subject: '咨询配送时效与运费', message: '请提供订单号、收货区域和需要确认的问题。' },
   voucher: { subject: '申请虚拟卡券挂失或补发', message: '请提供相关订单号及卡券异常情况，请勿提交完整卡密。' },
   verification: { subject: '线下门店核销维权', message: '请提供订单号、门店、核销时间和问题说明。' },
+  order: { subject: '咨询订单进度或售后问题', message: '请说明需要协助核实的订单环节和期望处理方式。' },
 });
 
 export function useSupportViewModel() {
@@ -27,6 +28,7 @@ export function useSupportViewModel() {
   const [search] = useSearchParams();
   const cache = useQueryClient();
   const topic = topics[search.get('topic') ?? ''] ?? { subject: '', message: '' };
+  const order = search.get('order') || undefined;
   const creator = useRef(new CreateCase(dependencies.support));
   const reader = useRef(new ReadCases(dependencies.support));
   const [subject, setSubject] = useState(topic.subject);
@@ -47,7 +49,7 @@ export function useSupportViewModel() {
     setBusy(true);
     setError(null);
     try {
-      const id = await creator.current.execute(runtime.session, subject, message, priority);
+      const id = await creator.current.execute(runtime.session, subject, message, priority, order);
       await cache.invalidateQueries({ queryKey: key, exact: true });
       void navigate(routePath('storesupportcase', { caseId: id }));
     } catch (cause) {
@@ -63,6 +65,7 @@ export function useSupportViewModel() {
     subject,
     message,
     priority,
+    order,
     busy,
     error: error ?? (query.isError ? presentError(query.error).message : null),
     actions: Object.freeze({

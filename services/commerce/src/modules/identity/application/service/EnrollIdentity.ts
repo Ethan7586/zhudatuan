@@ -1,11 +1,11 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 import { createHmac, randomUUID } from 'node:crypto';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
-import { textField } from '../../../../foundation/application/Validation';
-import { requirePreauth } from '../../../../foundation/security/OperationSecurityContext';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
+import { textField } from '../../../../pipeline/Validation';
+import { requirePreauth } from '../../../../platform/security/OperationSecurityContext';
 import type { InvitationAccessPort } from '../../../access/public';
 import type { IdentityRegistrationPort } from '../../../member/public';
 import type { InvitationRepository } from '../port/InvitationRepository';

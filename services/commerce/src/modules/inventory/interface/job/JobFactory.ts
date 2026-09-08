@@ -1,7 +1,7 @@
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { INVENTORY_CATALOG_PORT, PROVIDER_CATALOG_PORT } from '../../../catalog/public';
 import { PROVIDER_SYNC_PORT } from '../../../channel/public';
 import { INVENTORY_RETURN_PORT } from '../../../fulfillment/public';

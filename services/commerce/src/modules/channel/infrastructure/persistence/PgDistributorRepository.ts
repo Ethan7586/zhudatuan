@@ -1,7 +1,7 @@
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ChannelCapabilityPort } from '../../../capability/public';
 import type { ChannelOrganizationPort, OrganizationReadPort } from '../../../organization/public';
 import type { DistributorRepository } from '../../application/port/DistributorRepository';
@@ -32,8 +32,18 @@ export class PgDistributorRepository implements DistributorRepository {
   ) {}
   async create(context: WriteTransactionContext, input: Parameters<DistributorRepository['create']>[1]) {
     const database = this.transactions.database(context);
-    new Distributor({ id: input.id, organization: input.id, code: input.code, name: input.name, settlementMode: input.settlementMode,
-      metadata: input.metadata, state: 'active', activeBindings: 0, hasContact: input.contact !== null, version: 0 });
+    new Distributor({
+      id: input.id,
+      organization: input.id,
+      code: input.code,
+      name: input.name,
+      settlementMode: input.settlementMode,
+      metadata: input.metadata,
+      state: 'active',
+      activeBindings: 0,
+      hasContact: input.contact !== null,
+      version: 0,
+    });
     await this.organization.createDistributor(context, { id: input.id, parent: input.scope, name: input.name, timezone: input.timezone });
     const result = await database.query(
       `insert into channel.distributor(id,organization_id,code,name,contact_ciphertext,contact_token,contact_key_version,
@@ -64,9 +74,14 @@ export class PgDistributorRepository implements DistributorRepository {
     const current = await this.lock(database, input.id);
     if (input.expectedVersion !== null && input.expectedVersion !== current.value.version) throw new DomainError('VERSION_CONFLICT');
     current.requireMutable();
-    new Distributor({ ...current.value, name: input.name ?? current.value.name, settlementMode: input.settlementMode ?? current.value.settlementMode,
-      metadata: input.metadata ?? current.value.metadata, hasContact: input.contactChanged ? input.contact !== null : current.value.hasContact,
-      version: current.value.version + 1 });
+    new Distributor({
+      ...current.value,
+      name: input.name ?? current.value.name,
+      settlementMode: input.settlementMode ?? current.value.settlementMode,
+      metadata: input.metadata ?? current.value.metadata,
+      hasContact: input.contactChanged ? input.contact !== null : current.value.hasContact,
+      version: current.value.version + 1,
+    });
     const result = await database.query(
       `update channel.distributor set name=coalesce($2,name),settlement_mode=coalesce($3,settlement_mode),
       metadata=coalesce($4::jsonb,metadata),contact_ciphertext=case when $5::boolean then $6 else contact_ciphertext end,
@@ -112,8 +127,7 @@ export class PgDistributorRepository implements DistributorRepository {
     if (!(await this.organization.bindingAllowed(context, input.root, input.distributor, input.tenant))) throw new Error('BINDING_SCOPE_INVALID');
     const effectiveAt = instant(input.effectiveAt) ?? new Date().toISOString();
     const expiresAt = instant(input.expiresAt);
-    new Binding({ id: input.id, distributor: input.distributor, tenant: input.tenant, state: input.state,
-      effectiveAt, expiresAt, version: input.expectedVersion ?? 0 });
+    new Binding({ id: input.id, distributor: input.distributor, tenant: input.tenant, state: input.state, effectiveAt, expiresAt, version: input.expectedVersion ?? 0 });
     const result = await database.query(
       `insert into channel.tenantbinding(id,distributor_id,tenant_id,state,evidence,effective_at,expires_at,created_at,updated_at,version)
       values($1,$2,$3,$4,$5::jsonb,$6,$7,clock_timestamp(),clock_timestamp(),0) on conflict(id) do update
@@ -129,8 +143,7 @@ export class PgDistributorRepository implements DistributorRepository {
   async manageQuota(context: WriteTransactionContext, input: Parameters<DistributorRepository['manageQuota']>[1]) {
     const effectiveAt = new Date().toISOString();
     const expiresAt = instant(input.expiresAt);
-    const quota = new Quota({ id: input.id, scope: input.scope, capability: input.capability, state: input.state, limit: input.quota,
-      effectiveAt, expiresAt, version: input.expectedVersion ?? 0 });
+    const quota = new Quota({ id: input.id, scope: input.scope, capability: input.capability, state: input.state, limit: input.quota, effectiveAt, expiresAt, version: input.expectedVersion ?? 0 });
     this.policy.requireQuotaConfiguration(quota);
     const result = await this.capability.save(requireWriteTransaction(this.transactions.database(context).transaction), input);
     if (!result) throw new DomainError('VERSION_CONFLICT');
@@ -147,9 +160,18 @@ export class PgDistributorRepository implements DistributorRepository {
     );
     const row = result.rows[0];
     if (!row) throw new DomainError('RESOURCE_NOT_FOUND');
-    return new Distributor({ id: row.id, organization: row.organization_id, code: row.code, name: row.name,
-      settlementMode: row.settlement_mode, metadata: row.metadata, state: row.status, activeBindings: Number(row.active_bindings),
-      hasContact: row.has_contact, version: Number(row.version) });
+    return new Distributor({
+      id: row.id,
+      organization: row.organization_id,
+      code: row.code,
+      name: row.name,
+      settlementMode: row.settlement_mode,
+      metadata: row.metadata,
+      state: row.status,
+      activeBindings: Number(row.active_bindings),
+      hasContact: row.has_contact,
+      version: Number(row.version),
+    });
   }
 }
 function required(row: Readonly<Record<string, unknown>> | undefined, code: string): Readonly<Record<string, unknown>> {

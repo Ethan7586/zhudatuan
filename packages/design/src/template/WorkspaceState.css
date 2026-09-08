@@ -1,0 +1,121 @@
+.filterform {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sw-space-2);
+}
+
+.filterform [data-rac] {
+  display: grid;
+  gap: var(--sw-space-0-5);
+}
+
+.filterform label,
+.inlinefield {
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: var(--sw-font-weight-bold);
+}
+
+.inlinefield {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sw-space-1);
+}
+
+.tablewrap {
+  width: 100%;
+  overflow: auto;
+}
+
+.pageheader,
+.filterbar,
+.drawerpanel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+}
+
+.pageheaderactions,
+.filterbaractions,
+.toastregion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sw-space-1);
+}
+
+.routeerror {
+  width: min(40rem, 100%);
+  margin: var(--sw-space-4) auto;
+  padding: var(--sw-space-2);
+}
+
+.resourcepanel > p[role='status'],
+.resourcepanel > section[role='status'],
+.resourcepanel > section[role='alert'] {
+  display: grid;
+  min-height: 13rem;
+  align-content: center;
+  justify-items: center;
+  margin: var(--sw-space-3);
+  border-style: dashed;
+  background: var(--sw-surface-subtle);
+  color: var(--sw-muted);
+  text-align: center;
+  box-shadow: none;
+}
+
+.resourcepanel > p[role='status']::before {
+  width: var(--sw-icon-size-lg);
+  height: var(--sw-icon-size-lg);
+  margin-bottom: var(--sw-space-2);
+  border: var(--sw-focus-width) solid var(--sw-border);
+  border-top-color: var(--sw-brand);
+  border-radius: var(--sw-radius-full);
+  content: '';
+  animation: sw-resource-spin 800ms linear infinite;
+}
+
+.resourcestatestale > section[role='status'] {
+  background: var(--sw-warning-surface);
+}
+
+.resourcestatebusy {
+  position: relative;
+  opacity: 0.66;
+}
+
+.resourcestatebusy::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: var(--sw-border-width-strong);
+  background: linear-gradient(90deg, transparent, var(--sw-brand), transparent);
+  background-size: 40% 100%;
+  content: '';
+  animation: sw-resource-progress 1.2s var(--sw-ease-standard) infinite;
+}
+
+@keyframes sw-resource-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sw-resource-progress {
+  from {
+    background-position: -60% 0;
+  }
+  to {
+    background-position: 160% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resourcepanel > p[role='status']::before,
+  .resourcestatebusy::after {
+    animation: none;
+  }
+}

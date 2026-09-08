@@ -1,4 +1,4 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { MemberAccessPort } from '../../../access/public';
 import type { CartExperiencePort, ExperienceReadPort } from '../../../experience/public';
 import type { CartOwnerRepository } from '../../application/port/CartOwnerRepository';

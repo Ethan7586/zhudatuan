@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ExperiencePage } from '../model/ExperiencePage';
 import type { ApplicationDetail, ApplicationSummary } from '../model/ApplicationSummary';
 

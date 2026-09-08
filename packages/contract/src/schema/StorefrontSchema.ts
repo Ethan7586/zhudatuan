@@ -49,6 +49,10 @@ const benefit = strictObject({ accounts: number(), availableMinor: number(), cur
 const orders = strictObject({ total: number(), awaitingPayment: number(), fulfilling: number(), aftersale: number(), version: number() });
 const price = strictObject({ sku: string(), amountMinor: number(), compareMinor: union([number(), nullSchema()]), currency: string(), version: string() });
 const availability = strictObject({ sku: string(), available: number(), state: literal(['available', 'unavailable']), version: string() });
+const qualification = strictObject({ eligible: boolean(), policyVersion: number() });
+const saleabilityReason = literal(['qualification_unavailable', 'qualification_failed', 'price_unavailable', 'inventory_unavailable', 'out_of_stock']);
+const saleability = strictObject({ state: literal(['saleable', 'blocked']), reasons: array(saleabilityReason) });
+const catalogCategoryFacet = strictObject({ id: string(), code: string(), name: string(), count: number() });
 const catalogCategory = strictObject({ id: string(), code: string(), name: string() });
 const catalogItem = strictObject({
   id: string(),
@@ -67,6 +71,8 @@ const catalogItem = strictObject({
   updatedAt: isoUtc,
   price: union([price, nullSchema()]),
   availability: union([availability, nullSchema()]),
+  qualification: union([qualification, nullSchema()]),
+  saleability,
 });
 
 export const STOREFRONT_QUERY_SCHEMAS = {
@@ -98,5 +104,5 @@ export const STOREFRONT_OUTPUT_SCHEMAS = {
     orders: section(orders),
     experience: section(record(string(), ContractJsonValueSchema)),
   }),
-  StorefrontCatalogReadOutput: strictObject({ items: array(catalogItem), nextCursor: nullableText, version: string(), asOf: isoUtc }),
+  StorefrontCatalogReadOutput: strictObject({ items: array(catalogItem), categories: array(catalogCategoryFacet), nextCursor: nullableText, version: string(), asOf: isoUtc }),
 } as const;

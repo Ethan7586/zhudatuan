@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import type { ApprovalPort } from '../../../approval/public';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ReconciliationOutcome } from '../../application/port/ReconciliationProcess';
 import type { ReconciliationReviewPort } from '../../application/port/ReconciliationReviewPort';
 import type { ReconciliationReviewRoute } from '../../domain/policy/ReconciliationPolicy';
@@ -26,10 +26,7 @@ export class PgReconciliationReview implements ReconciliationReviewPort {
     if (route === 'none') return;
     await this.transactions.write(options(outcome, signal, deadline), async (context) => {
       const database = this.access.database(context);
-      const selected = await database.query<ReviewState>(
-        `select state,version,approval_instance_id from finance.reconciliation where id=$1 and scope_id=$2 for update`,
-        [outcome.id, outcome.scopeId]
-      );
+      const selected = await database.query<ReviewState>(`select state,version,approval_instance_id from finance.reconciliation where id=$1 and scope_id=$2 for update`, [outcome.id, outcome.scopeId]);
       const current = selected.rows[0];
       if (!current || current.state !== 'difference' || Number(current.version) !== outcome.version) throw new DomainError('VERSION_CONFLICT');
       if (route === 'automatic') {
@@ -101,17 +98,19 @@ function options(outcome: ReconciliationOutcome, signal: AbortSignal, deadline: 
 
 function digest(outcome: ReconciliationOutcome): string {
   return createHash('sha256')
-    .update(JSON.stringify({
-      id: outcome.id,
-      scopeId: outcome.scopeId,
-      statementHash: outcome.statementHash,
-      version: outcome.version,
-      externalMinor: outcome.externalMinor,
-      internalMinor: outcome.internalMinor,
-      differenceMinor: outcome.differenceMinor,
-      differenceCount: outcome.differenceCount,
-      maximumDifferenceMinor: outcome.maximumDifferenceMinor,
-      thresholdMinor: outcome.thresholdMinor,
-    }))
+    .update(
+      JSON.stringify({
+        id: outcome.id,
+        scopeId: outcome.scopeId,
+        statementHash: outcome.statementHash,
+        version: outcome.version,
+        externalMinor: outcome.externalMinor,
+        internalMinor: outcome.internalMinor,
+        differenceMinor: outcome.differenceMinor,
+        differenceCount: outcome.differenceCount,
+        maximumDifferenceMinor: outcome.maximumDifferenceMinor,
+        thresholdMinor: outcome.thresholdMinor,
+      })
+    )
     .digest('hex');
 }

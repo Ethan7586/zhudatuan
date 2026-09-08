@@ -1,5 +1,5 @@
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { keysetResult, queryPage } from '../../../../foundation/application/Validation';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { keysetResult, queryPage } from '../../../../pipeline/Validation';
 import type { FinanceScopeQuery } from './FinanceScopeQuery';
 import type { FinanceEntries } from './FinanceOperation';
 

@@ -17,8 +17,11 @@ export class OrderSubscriber {
     const aftersale = text(payload.aftersale, 'FULFILLMENT_AFTERSALE_REQUIRED');
     if (aftersale !== sourceId) throw new Error('FULFILLMENT_AFTERSALE_CONTEXT_MISMATCH');
     return Object.freeze({
-      eventId: text(eventId, 'FULFILLMENT_EVENT_REQUIRED'), eventType: 'aftersale.changed' as const,
-      scopeId: text(scopeId, 'FULFILLMENT_SCOPE_REQUIRED'), sourceId: aftersale, resourceId: aftersale,
+      eventId: text(eventId, 'FULFILLMENT_EVENT_REQUIRED'),
+      eventType: 'aftersale.changed' as const,
+      scopeId: text(scopeId, 'FULFILLMENT_SCOPE_REQUIRED'),
+      sourceId: aftersale,
+      resourceId: aftersale,
       kind: text(payload.state, 'FULFILLMENT_AFTERSALE_STATE_REQUIRED'),
     });
   }

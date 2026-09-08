@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { PgTransactionAccess, SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess, SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { PgPriceWriter } from './PgPriceWriter';
 
 describe('PgPriceWriter', () => {
@@ -19,7 +19,7 @@ describe('PgPriceWriter', () => {
   });
 
   it('rejects a stale expected version before changing price data', async () => {
-    const query = vi.fn(async (sql: string) => sql.startsWith('select price.id') ? { rows: [{ id: 'price:one', version: 5 }], rowCount: 1 } : { rows: [], rowCount: 1 });
+    const query = vi.fn(async (sql: string) => (sql.startsWith('select price.id') ? { rows: [{ id: 'price:one', version: 5 }], rowCount: 1 } : { rows: [], rowCount: 1 }));
     await expect(new PgPriceWriter(access(query)).set(context, { scope: 'mall:one', sku: 'sku:one', amountMinor: 9900, currency: 'CNY', expectedVersion: 4 })).rejects.toMatchObject({ code: 'VERSION_CONFLICT' });
     expect(query).toHaveBeenCalledTimes(2);
   });

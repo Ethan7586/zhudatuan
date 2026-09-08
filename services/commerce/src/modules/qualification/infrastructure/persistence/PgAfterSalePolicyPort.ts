@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AfterSaleCandidate, AfterSaleDecision, AfterSalePolicyPort } from '../../public/AfterSalePolicyPort';
 export class PgAfterSalePolicyPort implements AfterSalePolicyPort {
   private readonly transactions = new PgTransactionAccess();

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { InvoiceGateway } from './InvoiceGateway';
 import { PayoutGateway } from './PayoutGateway';
-import { Failure } from '../../../../foundation/domain/Failure';
+import { Failure } from '../../../../platform/error/Failure';
 
 describe('finance provider gateways', () => {
   it('submits payout with the withdrawal idempotency key', async () => {
@@ -14,7 +14,11 @@ describe('finance provider gateways', () => {
       });
     });
     const gateway = new PayoutGateway({ endpoint: 'https://payout.example.invalid', bearer: 'x'.repeat(32), provider: 'bank' }, fetcher);
-    await expect(gateway.submit({ withdrawal: 'withdrawal:1', inputHash: 'a'.repeat(64), destination: 'secret:destination:1', amountMinor: 100, currency: 'CNY' })).resolves.toEqual({ provider: 'bank', reference: 'provider:1', state: 'paid' });
+    await expect(gateway.submit({ withdrawal: 'withdrawal:1', inputHash: 'a'.repeat(64), destination: 'secret:destination:1', amountMinor: 100, currency: 'CNY' })).resolves.toEqual({
+      provider: 'bank',
+      reference: 'provider:1',
+      state: 'paid',
+    });
     expect(fetcher).toHaveBeenCalledOnce();
   });
 
@@ -23,10 +27,7 @@ describe('finance provider gateways', () => {
   });
 
   it('maps provider rejection to a classified retryable failure', async () => {
-    const gateway = new PayoutGateway(
-      { endpoint: 'https://payout.example.invalid', bearer: 'x'.repeat(32), provider: 'bank' },
-      async () => new Response('{"code":"busy"}', { status: 503, headers: { 'content-type': 'application/json' } })
-    );
+    const gateway = new PayoutGateway({ endpoint: 'https://payout.example.invalid', bearer: 'x'.repeat(32), provider: 'bank' }, async () => new Response('{"code":"busy"}', { status: 503, headers: { 'content-type': 'application/json' } }));
 
     const failure = await gateway.submit({ withdrawal: 'withdrawal:1', inputHash: 'a'.repeat(64), destination: 'secret:destination:1', amountMinor: 100, currency: 'CNY' }).catch((cause: unknown) => cause);
     expect(failure).toBeInstanceOf(Failure);
@@ -34,12 +35,8 @@ describe('finance provider gateways', () => {
   });
 
   it('maps malformed provider JSON to a non-retryable response failure', async () => {
-    const gateway = new InvoiceGateway(
-      { endpoint: 'https://invoice.example.invalid', bearer: 'x'.repeat(32), provider: 'tax' },
-      async () => new Response('{', { status: 200, headers: { 'content-type': 'application/json' } })
-    );
-    const input = { request: 'invoice:1', inputHash: 'b'.repeat(64), kind: 'original' as const, title: '测试企业', taxid: '91310000TEST',
-      amountMinor: 100, currency: 'CNY', lines: [{ description: '商品', amountMinor: 100, taxMinor: 6 }] };
+    const gateway = new InvoiceGateway({ endpoint: 'https://invoice.example.invalid', bearer: 'x'.repeat(32), provider: 'tax' }, async () => new Response('{', { status: 200, headers: { 'content-type': 'application/json' } }));
+    const input = { request: 'invoice:1', inputHash: 'b'.repeat(64), kind: 'original' as const, title: '测试企业', taxid: '91310000TEST', amountMinor: 100, currency: 'CNY', lines: [{ description: '商品', amountMinor: 100, taxMinor: 6 }] };
 
     await expect(gateway.issue(input)).rejects.toMatchObject({ code: 'INVOICE_PROVIDER_RESPONSE_INVALID', kind: 'response', retryable: false });
   });
@@ -55,8 +52,7 @@ describe('finance provider gateways', () => {
       });
     });
     const gateway = new InvoiceGateway({ endpoint: 'https://invoice.example.invalid', bearer: 'x'.repeat(32), provider: 'tax' }, fetcher);
-    const input = { request: 'invoice:1', inputHash: 'b'.repeat(64), kind: 'original' as const, title: '测试企业', taxid: '91310000TEST',
-      amountMinor: 100, currency: 'CNY', lines: [{ description: '商品', amountMinor: 100, taxMinor: 6 }] };
+    const input = { request: 'invoice:1', inputHash: 'b'.repeat(64), kind: 'original' as const, title: '测试企业', taxid: '91310000TEST', amountMinor: 100, currency: 'CNY', lines: [{ description: '商品', amountMinor: 100, taxMinor: 6 }] };
 
     const first = await gateway.issue(input);
     const recovered = await gateway.issue(input);

@@ -103,7 +103,7 @@ function grantedLater(sql, offset, target, role, privilege) {
 }
 
 const callerMap = {
-  'identity.resolve_session': ['services/commerce/src/foundation/security/PgSessionResolver.ts'],
+  'identity.resolve_session': ['services/commerce/src/platform/security/PgSessionResolver.ts'],
   'identity.resolve_preauth': ['services/commerce/src/modules/identity/infrastructure/security/PgPreauthResolver.ts'],
   'identity.navigation_identity': ['services/commerce/src/modules/identity/infrastructure/persistence/PgMembershipContext.ts'],
   'access.authorization_snapshot': ['services/commerce/src/modules/access/infrastructure/persistence/PgAuthorizationRepository.ts'],
@@ -112,7 +112,7 @@ const callerMap = {
   'access.navigation_access': ['services/commerce/src/modules/access/infrastructure/persistence/PgAuthorizationRepository.ts'],
   'capability.navigation_capabilities': ['services/commerce/src/modules/capability/infrastructure/persistence/PgNavigationCapability.ts'],
   'organization.navigation_scopes': ['services/commerce/src/modules/organization/infrastructure/persistence/PgNavigationOrganization.ts'],
-  'runtime.accept_inbox': ['services/commerce/src/adapter/database/PgInbox.ts'],
+  'runtime.accept_inbox': ['services/commerce/src/platform/database/PgInbox.ts'],
   'runtime.claim_job': ['services/commerce/src/modules/runtime/infrastructure/persistence/PgJobQueue.ts'],
   'channel.authorize_supplier_return': ['extensions/channel/supplier/integration/Local.ts'],
   'channel.pull_supplier_catalog': ['extensions/channel/supplier/integration/Local.ts'],

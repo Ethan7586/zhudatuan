@@ -1,8 +1,8 @@
 import { createRoot } from 'react-dom/client';
 import { bootstrapApplication } from '@shop/design';
-import '@shop/design/tokens.css';
-import '@shop/design/base.css';
-import '@shop/design/workspace.css';
+import '@shop/design/token/Tokens.css';
+import '@shop/design/token/Base.css';
+import '@shop/design/template/Workspace.css';
 import './Style.css';
 
 const root = document.getElementById('root');

@@ -13,6 +13,7 @@ storybook-static/
 !**/.env.example
 !services/commerce/.env.jobs.example
 secrets.local.json
+credentials.local.json
 infrastructure/container/local/.tls/
 infrastructure/container/local/data/
 

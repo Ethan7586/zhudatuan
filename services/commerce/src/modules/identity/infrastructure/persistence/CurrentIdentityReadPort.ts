@@ -1,4 +1,4 @@
-import type { OperationSecurityContext } from '../../../../foundation/security/OperationSecurityContext';
+import type { OperationSecurityContext } from '../../../../platform/security/OperationSecurityContext';
 import type { StorefrontIdentity, IdentityReadPort } from '../../public/IdentityReadPort';
 import { requestCookie } from '../security/SessionCookie';
 import { isConsumerTarget } from '@shop/contract';

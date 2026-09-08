@@ -1,5 +1,5 @@
 import type { ExperienceDocument } from '@shop/contract';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ComponentIssue } from '../../domain/value/ComponentTree';
 import type { PublishEvidence } from '../../domain/value/PublishEvidence';
 

@@ -12,10 +12,14 @@ describe('runtime export kernel', () => {
     const renderer = strategy({
       advance,
       complete,
-      read: vi.fn(async (_plan, cursor) => cursor === null ? [
-        { cursor: 'one', cells: ['=2+3'] },
-        { cursor: 'two', cells: ['value,with delimiter'] },
-      ] : []),
+      read: vi.fn(async (_plan, cursor) =>
+        cursor === null
+          ? [
+              { cursor: 'one', cells: ['=2+3'] },
+              { cursor: 'two', cells: ['value,with delimiter'] },
+            ]
+          : []
+      ),
     });
 
     await new RunExport('export', output.objects).execute('export:one', job(1), signal(), Date.now() + 10_000, renderer);
@@ -31,7 +35,7 @@ describe('runtime export kernel', () => {
     const fail = vi.fn();
     const renderer = strategy({
       prepare: vi.fn(async () => 2),
-      read: vi.fn(async (_plan, cursor) => cursor === null ? [{ cursor: 'one', cells: ['only one'] }] : []),
+      read: vi.fn(async (_plan, cursor) => (cursor === null ? [{ cursor: 'one', cells: ['only one'] }] : [])),
       fail,
     });
 
@@ -44,9 +48,14 @@ describe('runtime export kernel', () => {
     const output = writer();
     const fail = vi.fn();
     const renderer = strategy({
-      read: vi.fn(async (_plan, cursor) => cursor === null
-        ? [{ cursor: 'one', cells: ['first'] }, { cursor: 'two', cells: ['second'] }]
-        : [{ cursor: 'one', cells: ['repeated'] }]),
+      read: vi.fn(async (_plan, cursor) =>
+        cursor === null
+          ? [
+              { cursor: 'one', cells: ['first'] },
+              { cursor: 'two', cells: ['second'] },
+            ]
+          : [{ cursor: 'one', cells: ['repeated'] }]
+      ),
       fail,
       retryable: vi.fn(() => false),
     });
@@ -73,17 +82,33 @@ function strategy(overrides: Partial<ExportRenderer<ExportPlan>> = {}): ExportRe
 function job(attempts: number) {
   return { id: 'job:export:one', kind: 'export', scope: 'mall:one', payload: { export: 'export:one' }, authorization: {}, attempts, token: 1 } as const;
 }
-function signal(): AbortSignal { return new AbortController().signal; }
+function signal(): AbortSignal {
+  return new AbortController().signal;
+}
 function writer() {
   let content = '';
   let path = '';
   const abort = vi.fn(async () => undefined);
-  const metadata = () => ({ reference: 'object:one', path, contentType: 'text/csv', scan: 'clean' as const,
-    sha256: createHash('sha256').update(content).digest('hex'), size: Buffer.byteLength(content), retentionUntil: null, lockedUntil: null });
+  const metadata = () => ({
+    reference: 'object:one',
+    path,
+    contentType: 'text/csv',
+    scan: 'clean' as const,
+    sha256: createHash('sha256').update(content).digest('hex'),
+    size: Buffer.byteLength(content),
+    retentionUntil: null,
+    lockedUntil: null,
+  });
   const objects = {
     create: vi.fn(async (destination: string) => {
       path = destination;
-      return { append: async (bytes: Uint8Array) => { content += new TextDecoder().decode(bytes); }, complete: async () => metadata(), abort };
+      return {
+        append: async (bytes: Uint8Array) => {
+          content += new TextDecoder().decode(bytes);
+        },
+        complete: async () => metadata(),
+        abort,
+      };
     }),
     inspect: vi.fn(async () => metadata()),
     remove: vi.fn(async () => undefined),

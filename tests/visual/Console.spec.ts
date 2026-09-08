@@ -1,0 +1,92 @@
+import { readFileSync } from 'node:fs';
+import { expect, test } from '@playwright/test';
+import { parse } from 'yaml';
+import { LOCAL_CONSOLE_ORIGIN } from '@shop/config/client';
+import { ROUTES } from '../../apps/console/src/generated/RouteBinding';
+import { signInConsole } from '../browser/Environment';
+import { expectWcagAA } from '../browser/Accessibility';
+import { expectUsable, fillRoute, prepareVisual, resetVisual } from './Runtime';
+
+type ScopeKind = 'platform' | 'distributor' | 'enterprise' | 'mall';
+interface NavigationAuthority { readonly nodes: readonly Readonly<{ surface: string; scope: ScopeKind; routeid: string }>[] }
+
+const authority = parse(readFileSync('config/navigation.yml', 'utf8')) as NavigationAuthority;
+const scopes = Object.freeze({
+  platform: 'organization-platform-root',
+  distributor: 'distributor-local-zhudatuan',
+  enterprise: 'enterprise-zhudatuan',
+  mall: 'mall-zhudatuan',
+});
+const viewports = Object.freeze([
+  { width: 1440, height: 900 }, { width: 1280, height: 800 }, { width: 1024, height: 768 },
+  { width: 768, height: 1024 }, { width: 390, height: 844 },
+]);
+const core = Object.freeze([
+  ['platform', 'consoleproducts'], ['distributor', 'consolecontrol'], ['enterprise', 'consoleorders'],
+  ['mall', 'consolefinance'], ['mall', 'consoleaccess'], ['mall', 'consolevouchers'], ['mall', 'consoleexperience'],
+] as const);
+
+test('Console 路由由导航权威分配到四类 Scope 而非硬编码平台层', () => {
+  const configured = new Set(authority.nodes.filter(({ surface }) => surface === 'console').map(({ routeid }) => routeid));
+  expect([...Object.keys(ROUTES)].every((routeid) => configured.has(routeid))).toBe(true);
+  expect(new Set(authority.nodes.filter(({ surface }) => surface === 'console').map(({ scope }) => scope))).toEqual(new Set(Object.keys(scopes)));
+});
+
+const routeShards = Object.freeze(Array.from({ length: 4 }, (_, shard) => Object.entries(ROUTES).filter((_, index) => index % 4 === shard)));
+
+for (const [shard, routes] of routeShards.entries()) {
+  test(`Console 所有正式路由可达（分片 ${shard + 1}/${routeShards.length}）`, async ({ page }) => {
+    test.slow();
+    await prepareVisual(page, { width: 1280, height: 800 });
+    await signInConsole(page);
+    expect(routes.length).toBeGreaterThan(0);
+    for (const [routeid, template] of routes) {
+      await test.step(routeid, async () => {
+        resetVisual(page);
+        const scope = canonicalScope(routeid);
+        await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(template, scope)}`);
+        await expectUsable(page);
+      });
+    }
+  });
+}
+
+for (const viewport of viewports) {
+  test(`Console 核心工作台在 ${viewport.width}px、四 Scope 和真实数据下可操作`, async ({ page }) => {
+    test.slow();
+    await prepareVisual(page, viewport);
+    await signInConsole(page);
+    for (const [scope, routeid] of core) {
+      await test.step(`${scope}:${routeid}`, async () => {
+        resetVisual(page);
+        await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES[routeid], scope)}`);
+        await expectUsable(page);
+        await expectWcagAA(page);
+      });
+    }
+  });
+}
+
+test('Console 未登录、缺失资源和小屏状态均有可恢复反馈', async ({ page }) => {
+  await prepareVisual(page, { width: 390, height: 844 });
+  await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleorders, 'mall')}`);
+  await expect(page).toHaveURL(/127\.0\.0\.1:3002/);
+  await signInConsole(page);
+  await page.goto(`${LOCAL_CONSOLE_ORIGIN}${fillRoute(ROUTES.consoleorderdetail, { scopeKind: 'mall', scopeId: scopes.mall, orderId: 'order:visual:missing' })}`);
+  await expectUsable(page);
+  await expect(page.locator('body')).not.toContainText(/Error:|TypeError|SQLSTATE|INTERNAL_ERROR/);
+});
+
+function canonicalScope(routeid: string): ScopeKind {
+  const declared = authority.nodes.filter((node) => node.surface === 'console' && node.routeid === routeid).map(({ scope }) => scope);
+  const preferred: readonly ScopeKind[] = routeid.startsWith('consolereferral')
+    ? ['distributor', 'enterprise', 'mall', 'platform']
+    : ['enterprise', 'mall', 'platform', 'distributor'];
+  const selected = preferred.find((scope) => declared.includes(scope));
+  if (!selected) throw new Error(`VISUAL_SCOPE_MISSING:${routeid}`);
+  return selected;
+}
+
+function path(template: string, scope: ScopeKind): string {
+  return fillRoute(template, { scopeKind: scope, scopeId: scopes[scope], kind: 'catalog', jobId: 'job:visual:missing', productId: 'product:visual:care', orderId: 'order:visual:missing', view: 'settings', caseId: 'case:visual:missing' });
+}

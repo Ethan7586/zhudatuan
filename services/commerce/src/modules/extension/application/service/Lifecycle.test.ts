@@ -14,7 +14,16 @@ describe('extension lifecycle', () => {
     const parsed = Manifest.parse(provider);
     const installed = new Installation('connection:1', 'sample', '1.0.0', 'scope:1', 'disabled', 0, 0);
     const repository = {
-      manifest: vi.fn(async () => ({ id: provider.id, version: provider.version, manifest: provider, manifest_hash: parsed.hash, signature: provider.signature, contract_version: provider.contractVersion, contract_status: 'verified', schema_hash: 'a'.repeat(64) })),
+      manifest: vi.fn(async () => ({
+        id: provider.id,
+        version: provider.version,
+        manifest: provider,
+        manifest_hash: parsed.hash,
+        signature: provider.signature,
+        contract_version: provider.contractVersion,
+        contract_status: 'verified',
+        schema_hash: 'a'.repeat(64),
+      })),
       install: vi.fn(async () => installed),
     } as unknown as ExtensionRepository;
     const { signature: _signature, ...definition } = provider;
@@ -22,10 +31,19 @@ describe('extension lifecycle', () => {
     const activate = vi.fn();
     const loader = { definition: () => definition, stage, activate } as unknown as ExtensionLoader;
     const service = new InstallExtension(repository, { verify: async () => true }, new ContractPolicy(), loader);
-    await expect(service.execute(context(), {
-      id: installed.id, provider: provider.id, scope: installed.scope, baseUrl: 'https://provider.example', endpoints: { health: '/health' },
-      secretRef: 'vault/channel/credential', healthOperation: 'health', actor: 'principal:1', trace: 'trace:1',
-    })).resolves.toMatchObject({ installation: installed });
+    await expect(
+      service.execute(context(), {
+        id: installed.id,
+        provider: provider.id,
+        scope: installed.scope,
+        baseUrl: 'https://provider.example',
+        endpoints: { health: '/health' },
+        secretRef: 'vault/channel/credential',
+        healthOperation: 'health',
+        actor: 'principal:1',
+        trace: 'trace:1',
+      })
+    ).resolves.toMatchObject({ installation: installed });
     expect(repository.install).toHaveBeenCalledOnce();
     expect(stage).not.toHaveBeenCalled();
     expect(activate).not.toHaveBeenCalled();
@@ -108,10 +126,26 @@ function extensionCandidate(current: Installation, state: 'healthy' | 'degraded'
 
 function manifest(): ProviderManifest {
   return {
-    id: 'sample', name: '示例', kind: 'channel', version: '1.0.0', apiVersion: '2026-08-21', contractVersion: 'sample.v1', dependencies: [],
-    healthOperation: 'health', capabilities: ['Catalog'], permissions: ['channel.sample.operate'], configSchema: 'provider.sample.v1', eventSubscriptions: [], secretRefs: ['credential'],
-    sandbox: { supported: true, mode: 'endpoint', endpointRef: 'provider.sample.sandboxurl' }, rateLimits: { requestsPerSecond: 1, maxConcurrency: 1 },
-    timeout: { connectionMs: 1, responseMs: 1, totalMs: 1 }, retryPolicy: { maxAttempts: 1 }, circuitPolicy: { failureThreshold: 1, recoveryMs: 100 }, webhookContract: null, signature: 'signed',
+    id: 'sample',
+    name: '示例',
+    kind: 'channel',
+    version: '1.0.0',
+    apiVersion: '2026-08-21',
+    contractVersion: 'sample.v1',
+    dependencies: [],
+    healthOperation: 'health',
+    capabilities: ['Catalog'],
+    permissions: ['channel.sample.operate'],
+    configSchema: 'provider.sample.v1',
+    eventSubscriptions: [],
+    secretRefs: ['credential'],
+    sandbox: { supported: true, mode: 'endpoint', endpointRef: 'provider.sample.sandboxurl' },
+    rateLimits: { requestsPerSecond: 1, maxConcurrency: 1 },
+    timeout: { connectionMs: 1, responseMs: 1, totalMs: 1 },
+    retryPolicy: { maxAttempts: 1 },
+    circuitPolicy: { failureThreshold: 1, recoveryMs: 100 },
+    webhookContract: null,
+    signature: 'signed',
   };
 }
 

@@ -73,17 +73,23 @@ describe('reporting event projection', () => {
     ['manual', null, null, ['mall:1', 'group:1']],
   ] as const)('projects %s voucher refund separately from gross redemptions using its frozen scopes and currency', async (channel, store, order, scopes) => {
     const repository = new MemoryReporting();
-    const event: ProjectionEvent = { id: 'event:voucher:refund', type: 'voucher.refunded', version: 1, aggregate: 'voucher:1', scope: 'mall:1',
-      occurredAt: '2026-09-06T10:00:00Z', payload: { voucher: 'voucher:1', redemption: 'redemption:1', refund: 'refund:1', ruleVersion: 1, amountMinor: 200,
-        currency: 'USD', scope: 'mall:1', store, order, channel, scopes, timezone: 'America/New_York' } };
+    const event: ProjectionEvent = {
+      id: 'event:voucher:refund',
+      type: 'voucher.refunded',
+      version: 1,
+      aggregate: 'voucher:1',
+      scope: 'mall:1',
+      occurredAt: '2026-09-06T10:00:00Z',
+      payload: { voucher: 'voucher:1', redemption: 'redemption:1', refund: 'refund:1', ruleVersion: 1, amountMinor: 200, currency: 'USD', scope: 'mall:1', store, order, channel, scopes, timezone: 'America/New_York' },
+    };
     const completed = await new ProjectEvent(repository).execute(event);
-    expect(completed.map(item => item.scope).sort()).toEqual([...scopes].sort());
+    expect(completed.map((item) => item.scope).sort()).toEqual([...scopes].sort());
     expect(repository.projected).toHaveLength(scopes.length * 2);
-    expect(repository.projected.filter(metric => metric.code === 'voucher.refund.amount')).toHaveLength(scopes.length);
-    expect(repository.projected.filter(metric => metric.code === 'voucher.refund.amount').every(metric => metric.value === 200)).toBe(true);
-    expect(repository.projected.filter(metric => metric.code === 'voucher.refunds').every(metric => metric.value === 1)).toBe(true);
-    expect(repository.projected.every(metric => metric.dimensions.currency === 'USD' && metric.period.timezone === 'America/New_York')).toBe(true);
-    expect(repository.projected.some(metric => metric.code === 'voucher.amount' || metric.code === 'voucher.redemptions')).toBe(false);
+    expect(repository.projected.filter((metric) => metric.code === 'voucher.refund.amount')).toHaveLength(scopes.length);
+    expect(repository.projected.filter((metric) => metric.code === 'voucher.refund.amount').every((metric) => metric.value === 200)).toBe(true);
+    expect(repository.projected.filter((metric) => metric.code === 'voucher.refunds').every((metric) => metric.value === 1)).toBe(true);
+    expect(repository.projected.every((metric) => metric.dimensions.currency === 'USD' && metric.period.timezone === 'America/New_York')).toBe(true);
+    expect(repository.projected.some((metric) => metric.code === 'voucher.amount' || metric.code === 'voucher.redemptions')).toBe(false);
   });
 
   it.each([
@@ -92,14 +98,20 @@ describe('reporting event projection', () => {
     ['manual', null, null, ['mall:1', 'group:1']],
   ] as const)('projects %s voucher redemption without inventing a store or querying a transaction table', async (channel, store, order, scopes) => {
     const repository = new MemoryReporting();
-    const event: ProjectionEvent = { id: 'event:voucher', type: 'voucher.redeemed', version: 2, aggregate: 'voucher:1', scope: 'mall:1',
-      occurredAt: '2026-09-05T10:00:00Z', payload: { voucher: 'voucher:1', redemption: 'redemption:1', amountMinor: 600, currency: 'CNY',
-        scope: 'mall:1', store, order, channel, scopes, timezone: 'Asia/Shanghai' } };
+    const event: ProjectionEvent = {
+      id: 'event:voucher',
+      type: 'voucher.redeemed',
+      version: 2,
+      aggregate: 'voucher:1',
+      scope: 'mall:1',
+      occurredAt: '2026-09-05T10:00:00Z',
+      payload: { voucher: 'voucher:1', redemption: 'redemption:1', amountMinor: 600, currency: 'CNY', scope: 'mall:1', store, order, channel, scopes, timezone: 'Asia/Shanghai' },
+    };
     const completed = await new ProjectEvent(repository).execute(event);
-    expect(completed.map(item => item.scope).sort()).toEqual([...scopes].sort());
+    expect(completed.map((item) => item.scope).sort()).toEqual([...scopes].sort());
     expect(repository.projected).toHaveLength(scopes.length * 2);
-    expect(repository.projected.filter(metric => metric.code === 'voucher.amount').every(metric => metric.value === 600)).toBe(true);
-    expect(repository.projected.every(metric => metric.dimensions.channel === channel && metric.dimensions.store === (store ?? undefined))).toBe(true);
+    expect(repository.projected.filter((metric) => metric.code === 'voucher.amount').every((metric) => metric.value === 600)).toBe(true);
+    expect(repository.projected.every((metric) => metric.dimensions.channel === channel && metric.dimensions.store === (store ?? undefined))).toBe(true);
     await expect(new ProjectEvent(repository).execute({ ...event, version: 1 })).rejects.toThrow('REPORT_EVENT_VERSION_UNSUPPORTED');
   });
 

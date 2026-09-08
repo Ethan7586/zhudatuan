@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { rowResult } from '../../../../adapter/database/DatabaseResult';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { rowResult } from '../../../../platform/database/DatabaseResult';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import type { OperationRequest } from '../../../../pipeline/OperationHandler';
+import { bodyRecord, integerField, textField } from '../../../../pipeline/Validation';
 import { SettlementPolicy } from '../../domain/policy/SettlementPolicy';
 import { financeEvidence } from './FinanceEvidence';
 import type { FinanceEntries } from './FinanceOperation';
@@ -49,7 +49,17 @@ async function adjust(request: OperationRequest, database: SqlExecutor, workflow
   return decideAdjustment(database, request.input.path.settlementid!, textField(body, 'adjustment'), action, access.actor.id, textField(body, 'reason', 1000), financeEvidence(body.evidence), access.scope.id, workflow);
 }
 
-async function decideAdjustment(database: SqlExecutor, settlement: string, adjustment: string, action: 'approve' | 'reject', actor: string, reason: string, evidence: Readonly<Record<string, unknown>>, scope: string, workflow: FinanceWorkflowFactory) {
+async function decideAdjustment(
+  database: SqlExecutor,
+  settlement: string,
+  adjustment: string,
+  action: 'approve' | 'reject',
+  actor: string,
+  reason: string,
+  evidence: Readonly<Record<string, unknown>>,
+  scope: string,
+  workflow: FinanceWorkflowFactory
+) {
   const source = await database.query<Adjustment>(
     `select adjustment.id,adjustment.settlement_id,adjustment.settlement_line_id,
     adjustment.scope_id,adjustment.direction,adjustment.amount_minor::float8 amount_minor,adjustment.tax_minor::float8 tax_minor,
@@ -80,7 +90,13 @@ async function decideAdjustment(database: SqlExecutor, settlement: string, adjus
     'frozen',$10,clock_timestamp())`,
     [`settlementline:${adjustment}`, settlement, selected.reconciliation_item_id, scope, adjustment, selected.amount_minor, invoice, selected.tax_minor, selected.direction, selected.settlement_line_id]
   );
-  await database.query(`update finance.settlement set gross_minor=$2,fee_minor=$3,amount_minor=$4,version=version+1,evidence=evidence||jsonb_build_object('lastAdjustment',$5) where id=$1`, [settlement, gross, split.feeMinor, split.netMinor, adjustment]);
+  await database.query(`update finance.settlement set gross_minor=$2,fee_minor=$3,amount_minor=$4,version=version+1,evidence=evidence||jsonb_build_object('lastAdjustment',$5) where id=$1`, [
+    settlement,
+    gross,
+    split.feeMinor,
+    split.netMinor,
+    adjustment,
+  ]);
   await database.query(`update finance.split set amount_minor=$2,basis_points=$3 where settlement_id=$1 and beneficiary_type='partner'`, [settlement, split.netMinor, 10_000 - split.basisPoints]);
   await database.query(
     `insert into finance.split(id,settlement_id,scope_id,beneficiary_type,beneficiary_id,amount_minor,basis_points,state,created_at)
@@ -88,7 +104,15 @@ async function decideAdjustment(database: SqlExecutor, settlement: string, adjus
     do update set amount_minor=excluded.amount_minor,basis_points=excluded.basis_points where finance.split.state='frozen'`,
     [`split:${settlement}:platform`, settlement, scope, split.feeMinor, split.basisPoints]
   );
-  await workflow(database).event('finance.settlement.adjusted', 'settlement', settlement, scope, { settlement, adjustment, direction: selected.direction, amountMinor: selected.amount_minor, grossMinor: gross, netMinor: split.netMinor, feeMinor: split.feeMinor });
+  await workflow(database).event('finance.settlement.adjusted', 'settlement', settlement, scope, {
+    settlement,
+    adjustment,
+    direction: selected.direction,
+    amountMinor: selected.amount_minor,
+    grossMinor: gross,
+    netMinor: split.netMinor,
+    feeMinor: split.feeMinor,
+  });
   return rowResult(result);
 }
 

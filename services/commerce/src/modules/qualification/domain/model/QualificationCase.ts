@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { Evidence, type EvidenceSnapshot } from './Evidence';
 
 export type QualificationTargetKind = 'partner' | 'product' | 'category' | 'region';
@@ -38,7 +38,9 @@ export class QualificationCase {
     return new QualificationCase(freeze(snapshot));
   }
 
-  static verified(input: Readonly<Omit<QualificationCaseSnapshot, 'state' | 'version' | 'reviewedAt' | 'reviewedBy' | 'publishedAt' | 'revokedAt' | 'revokedBy' | 'revokeReason'>> & Readonly<{ actor: string; now: string }>): QualificationCase {
+  static verified(
+    input: Readonly<Omit<QualificationCaseSnapshot, 'state' | 'version' | 'reviewedAt' | 'reviewedBy' | 'publishedAt' | 'revokedAt' | 'revokedBy' | 'revokeReason'>> & Readonly<{ actor: string; now: string }>
+  ): QualificationCase {
     return new QualificationCase(
       freeze({
         id: input.id,

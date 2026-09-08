@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import type { DomainEvent } from '../../../../foundation/domain/DomainEvent';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { DomainEvent } from '@shop/kernel';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CatalogInventoryPort } from '../../../inventory/public';
 import type { CatalogPricingPort } from '../../../pricing/public';
 import type { CatalogQualificationPort } from '../../../qualification/public/CatalogQualificationPort';
@@ -8,8 +8,8 @@ import type { ListingCandidate, ListingRecord, ListingRepository } from '../port
 import { Listing } from '../../domain/model/Listing';
 import { listingPublishedEvent, listingUnpublishedEvent } from '../../domain/event/CatalogEvents';
 import { ListingEligibility } from '../../domain/policy/ListingEligibility';
-import { ApplicationError } from '../../../../foundation/domain/ApplicationError';
-import { allParallel } from '../../../../foundation/performance/Parallel';
+import { ApplicationError } from '../../../../platform/error/ApplicationError';
+import { allParallel } from '@shop/kernel';
 import { currentListingPrice, saleableListingStock } from '../model/ListingAvailability';
 
 export interface PublicationCommand {

@@ -1,6 +1,6 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
 
 export class HealthLiveHandler implements OperationHandler<'runtime.health.live', 'read'> {
   readonly operation = 'runtime.health.live' as const;

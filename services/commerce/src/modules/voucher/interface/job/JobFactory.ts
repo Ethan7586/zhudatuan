@@ -1,9 +1,9 @@
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import { jobDefinition } from '../../../../foundation/application/JobCatalog';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { KMS_CLIENT } from '../../../../foundation/application/KmsPort';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import { jobDefinition } from '../../../../pipeline/JobCatalog';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { KMS_CLIENT } from '../../../../pipeline/KmsPort';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { VOUCHER_ACCOUNTING_PORT } from '../../../finance/public';
 import { TASK_AUTHORIZATION_PORT } from '../../../access/public';
 import { EXPORT_PORT, EXPORT_RUNNER_PORT, IMPORT_BATCH_FACTORY_PORT, IMPORT_RUNNER_PORT, JOB_PORT, RUNTIME_IMPORT_PORT } from '../../../runtime/public';
@@ -29,13 +29,21 @@ export function createJobs(context: ModuleContext): readonly ModuleJob[] {
   const jobs = context.ports.get(JOB_PORT);
   const exports = context.ports.get(EXPORT_PORT);
   const protector = new EnvelopeCredentialProtector(context.service(KMS_CLIENT));
-  const importing = new CredentialImportProcess(context.ports.get(IMPORT_RUNNER_PORT), createCredentialImportProcess(context.ports.get(IMPORT_BATCH_FACTORY_PORT),
-    manager, context.ports.get(RUNTIME_IMPORT_PORT), jobs, protector, context.ports.get(TASK_AUTHORIZATION_PORT)));
+  const importing = new CredentialImportProcess(
+    context.ports.get(IMPORT_RUNNER_PORT),
+    createCredentialImportProcess(context.ports.get(IMPORT_BATCH_FACTORY_PORT), manager, context.ports.get(RUNTIME_IMPORT_PORT), jobs, protector, context.ports.get(TASK_AUTHORIZATION_PORT))
+  );
   return Object.freeze([
     { id: 'credentialgenerate', processor: new CredentialGenerateJob(new CredentialGenerateProcess(new PgCredentialGenerateProcess(manager, protector, jobs))) },
     { id: 'credentialimport', processor: new CredentialImportJob(importing) },
     { id: 'voucherissue', processor: new IssueBatchJob(new IssueBatchProcess(new PgIssueBatchProcess(manager, jobs, context.ports.get(VOUCHER_ACCOUNTING_PORT)))) },
     { id: 'voucheraction', processor: new ActionBatchJob(new ActionBatchProcess(new PgActionBatchProcess(manager, jobs))) },
-    { id: 'voucherexport', processor: new VoucherExportJob(context.ports.get(EXPORT_RUNNER_PORT), new VoucherExportProcess(new PgVoucherExportProcess(manager, exports, protector, jobDefinition('voucherexport').retry.attempts, context.ports.get(TASK_AUTHORIZATION_PORT)))) },
+    {
+      id: 'voucherexport',
+      processor: new VoucherExportJob(
+        context.ports.get(EXPORT_RUNNER_PORT),
+        new VoucherExportProcess(new PgVoucherExportProcess(manager, exports, protector, jobDefinition('voucherexport').retry.attempts, context.ports.get(TASK_AUTHORIZATION_PORT)))
+      ),
+    },
   ]);
 }

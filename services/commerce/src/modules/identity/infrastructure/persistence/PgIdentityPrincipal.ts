@@ -1,5 +1,5 @@
 import type { IdentityPrincipal } from '../../public/IdentityPrincipalPort';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 
 export class PgIdentityPrincipal implements IdentityPrincipal {
   private readonly transactions = new PgTransactionAccess();

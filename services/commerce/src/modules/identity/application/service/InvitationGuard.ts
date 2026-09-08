@@ -1,9 +1,9 @@
-import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
-import type { RiskGate } from '../../../../foundation/security/RiskGate';
+import type { OperationRequest } from '../../../../pipeline/OperationRequest';
+import type { RiskGate } from '../../../../platform/security/RiskGate';
 import type { FederationProtector } from '../../domain/service/FederationProtector';
 import { InvitationRatePolicy } from '../../domain/policy/InvitationRatePolicy';
 import type { InvitationRatePort } from '../port/InvitationRatePort';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { assertPublicRisk } from './PublicRisk';
 
 export class InvitationGuard {

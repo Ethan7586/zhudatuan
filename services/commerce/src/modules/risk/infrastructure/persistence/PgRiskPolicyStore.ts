@@ -1,4 +1,4 @@
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import type { RiskOutcome } from '../../domain/model/RiskPolicy';
 
 /** Owns policy-version persistence so administration and replay share one immutable version model. */

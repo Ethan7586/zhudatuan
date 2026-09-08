@@ -1,5 +1,5 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AccessOrganizationPort } from '../../../organization/public';
 import type { AccessPartnerPort } from '../../../partner/public';
 import { GrantPlan, type GrantPermission, type GrantRole, type GrantScope } from '../../domain/model/GrantPlan';

@@ -53,6 +53,8 @@ export function useOrderDetailViewModel(orderId: string) {
       cancelConfirmed: (confirmed: boolean) => setCancel((current) => current ? { ...current, confirmed } : current),
       submitCancel: () => act('cancel'),
       aftersale: () => order && void navigate(routePath('storeaftersale', { orderId: order.id })),
+      support: () => order && void navigate(`${ROUTES.storesupport}?topic=order&order=${encodeURIComponent(order.id)}`),
+      payment: () => order?.payment?.id && void navigate(routePath('storepayment', { paymentId: order.payment.id })),
       closeVerification: () => setVerification(false),
       verified: () => {
         setVerification(false);

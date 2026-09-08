@@ -1,7 +1,7 @@
-import { ArrowRight, Plus, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import type { useHomeViewModel } from '../viewmodel/HomeViewModel';
-import { ProductMedia } from '../../../shared/view/ProductMedia';
-import { formatMinor } from '../../../shared/format/Money';
+import { ProductCard } from '../../../entity/product';
+import { responsivePattern } from '../../../shared/view/ResponsivePattern';
 
 export function DefaultHome({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof useHomeViewModel> }>) {
   const products = viewmodel.presentationProducts.slice(0, 8);
@@ -15,12 +15,7 @@ export function DefaultHome({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
     </section>
     <section className="rounded-3xl border border-edge bg-surface p-4 shadow-sm">
       <div className="mb-4 flex items-center justify-between"><div><h2 className="text-lg font-black">员工严选</h2><p className="text-xs text-muted">当前账号可见、可购商品</p></div><button type="button" onClick={() => viewmodel.navigatePage('catalog')} className="text-xs font-bold text-brand">查看全部</button></div>
-      {products.length ? <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">{products.map((product) => (
-        <article key={product.id} className="group overflow-hidden rounded-2xl border border-edge bg-surface shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-          <button type="button" onClick={() => viewmodel.openProduct(product.id)} className="block w-full text-left"><ProductMedia source={product.image} alt={product.title} className="aspect-square w-full object-cover" emptyClassName="grid aspect-square place-items-center bg-subtle text-xs text-muted" /><div className="p-3"><h3 className="line-clamp-2 min-h-10 text-sm font-bold">{product.title}</h3><span className="mt-2 flex items-center gap-1 text-[10px] text-success-strong"><ShieldCheck size={12} />{product.isEnterpriseExclusive ? '企业专享' : '当前商城已发布'}</span></div></button>
-          <div className="flex items-center justify-between px-3 pb-3"><b className="text-danger">¥{formatMinor(product.priceWelfareMinor)}</b><button type="button" disabled={!product.purchasable} onClick={() => viewmodel.addToCart(product, 1)} aria-label={`将${product.title}加入购物车`} className="grid h-10 w-10 place-items-center rounded-full bg-brand text-inverse disabled:bg-disabled"><Plus size={18} /></button></div>
-        </article>
-      ))}</div> : <div role="status" className="grid min-h-40 place-items-center rounded-2xl border border-dashed text-sm text-muted">{viewmodel.catalogState === 'loading' ? '正在同步商品…' : '当前商城尚未发布商品'}</div>}
+      {products.length ? <div className={responsivePattern.productGrid}>{products.map((product) => <ProductCard key={product.listingId} product={product} open={viewmodel.openProduct} add={(item) => viewmodel.addToCart(item, 1)} />)}</div> : <div role="status" className="grid min-h-40 place-items-center rounded-2xl border border-dashed text-sm text-muted">{viewmodel.catalogState === 'loading' ? '正在同步商品…' : '当前商城尚未发布商品'}</div>}
     </section>
   </>;
 }

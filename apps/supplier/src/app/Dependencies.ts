@@ -1,5 +1,6 @@
 import { supplierEnvironment } from '@shop/config/supplier';
-import { createFetchSurface, type SupplierSurfaceClient } from '@shop/sdk';
+import type { SupplierSurfaceClient } from '@shop/sdk/surfaces';
+import { createFetchSupplier } from '@shop/sdk/supplierclient';
 
 export interface SupplierDependencies {
   readonly client: SupplierSurfaceClient;
@@ -8,5 +9,5 @@ export interface SupplierDependencies {
 
 export function createSupplierDependencies(): SupplierDependencies {
   const environment = supplierEnvironment();
-  return Object.freeze({ environment, client: createFetchSurface('supplier', environment.apiOrigin) });
+  return Object.freeze({ environment, client: createFetchSupplier(environment.apiOrigin) });
 }

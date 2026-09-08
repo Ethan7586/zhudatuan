@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
+import type { DatabasePool } from '../../../../platform/database/Pool';
 import type { LeasePort, LeaseRequest, RuntimeLease } from '../../public/LeasePort';
 
 interface LeaseRow {
@@ -55,10 +55,14 @@ export class JobLease implements LeasePort {
 
   async release(lease: RuntimeLease): Promise<void> {
     validateLease(lease);
-    const result = await this.pool.query(
-      'delete from runtime.leases where resource=$1 and scope_id=$2 and owner=$3 and token=$4 and version=$5 and fencing_token=$6',
-      [lease.resource, lease.scope, lease.owner, lease.token, lease.version, lease.fencingToken]
-    );
+    const result = await this.pool.query('delete from runtime.leases where resource=$1 and scope_id=$2 and owner=$3 and token=$4 and version=$5 and fencing_token=$6', [
+      lease.resource,
+      lease.scope,
+      lease.owner,
+      lease.token,
+      lease.version,
+      lease.fencingToken,
+    ]);
     if (result.rowCount !== 1) throw new Error('LEASE_LOST');
   }
 }
@@ -69,9 +73,18 @@ function validateRequest(request: LeaseRequest): void {
 }
 
 function validateLease(lease: RuntimeLease): void {
-  if (!validText(lease.resource) || !validText(lease.scope) || !validText(lease.owner) || !/^lease:[a-f0-9-]{36}$/.test(lease.token) ||
-    !Number.isSafeInteger(lease.version) || lease.version < 1 || !Number.isSafeInteger(lease.fencingToken) || lease.fencingToken < 1 ||
-    !Number.isFinite(Date.parse(lease.deadline))) throw new Error('LEASE_ARGUMENT_INVALID');
+  if (
+    !validText(lease.resource) ||
+    !validText(lease.scope) ||
+    !validText(lease.owner) ||
+    !/^lease:[a-f0-9-]{36}$/.test(lease.token) ||
+    !Number.isSafeInteger(lease.version) ||
+    lease.version < 1 ||
+    !Number.isSafeInteger(lease.fencingToken) ||
+    lease.fencingToken < 1 ||
+    !Number.isFinite(Date.parse(lease.deadline))
+  )
+    throw new Error('LEASE_ARGUMENT_INVALID');
 }
 
 function validateSeconds(seconds: number): void {
@@ -83,8 +96,7 @@ function validText(value: string): boolean {
 }
 
 function projection(row: LeaseRow): RuntimeLease {
-  const lease = Object.freeze({ resource: row.resource, scope: row.scope, owner: row.owner, token: row.token,
-    deadline: new Date(row.deadline).toISOString(), version: Number(row.version), fencingToken: Number(row.fencingToken) });
+  const lease = Object.freeze({ resource: row.resource, scope: row.scope, owner: row.owner, token: row.token, deadline: new Date(row.deadline).toISOString(), version: Number(row.version), fencingToken: Number(row.fencingToken) });
   validateLease(lease);
   return lease;
 }

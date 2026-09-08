@@ -199,7 +199,7 @@ update runtime.operation set contract_version='5.0.0' where owner='referral';
 update capability.capability set version=version+1 where id in(select id from runtime.operation where owner='referral');
 
 update runtime.contractcatalog set checksum='312260ead9f0c459ed2c38623d8310de8b3ef3260c313d098302fb50015e7df0',
-  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event),published_at=clock_timestamp()
+  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event where retired_at is null),published_at=clock_timestamp()
 where artifact='commerce' and version='5.0.0' and status='active';
 
 select runtime.record_migration_evidence(
@@ -216,7 +216,7 @@ do $assert$ begin
     or kind not in('commission','reward') or jsonb_typeof(rule_snapshot)<>'object') then raise exception 'REFERRAL_COMMISSION_INVARIANT_INVALID'; end if;
   if exists(select 1 from referral.withdrawalclaim where state='processing' and (approved_at is null or approval_proof_id is null)) then raise exception 'REFERRAL_WITHDRAWAL_APPROVAL_INVALID'; end if;
   if (select count(*) from runtime.operation)<>312 then raise exception 'REFERRAL_OPERATION_COUNT_INVALID'; end if;
-  if (select count(*) from runtime.event)<>143 then raise exception 'REFERRAL_EVENT_COUNT_INVALID'; end if;
+  if (select count(*) from runtime.event where retired_at is null)<>143 then raise exception 'REFERRAL_EVENT_COUNT_INVALID'; end if;
 end $assert$;
 
 commit;

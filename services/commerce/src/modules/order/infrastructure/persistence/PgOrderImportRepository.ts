@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { OrderImportFinancePort } from '../../../finance/public';
 import type { MemberReadPort } from '../../../member/public';
 import type { OrganizationReadPort } from '../../../organization/public';
@@ -8,8 +8,9 @@ import type { OrderImportPaymentPort } from '../../../payment/public';
 import type { OrderImportRepository } from '../../application/port/OrderImportRepository';
 import { nextOrderNumber } from './OrderNumber';
 import { orderImportValue, type OrderImportValue } from './OrderImportRow';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
 import { Order, type AftersaleState, type CommerceState, type FulfillmentState, type PaymentState } from '../../domain/model/Order';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 interface Dependencies {
   readonly organizations: Pick<OrganizationReadPort, 'activeMalls'>;
@@ -19,7 +20,10 @@ interface Dependencies {
 }
 
 export class PgOrderImportRepository implements OrderImportRepository {
-  constructor(private readonly dependencies: Dependencies, private readonly transactions = new PgTransactionAccess()) {}
+  constructor(
+    private readonly dependencies: Dependencies,
+    private readonly transactions = new PgTransactionAccess()
+  ) {}
 
   async import(context: WriteTransactionContext, target: Readonly<{ id: string; scope: string }>, row: number, source: Readonly<Record<string, string>>): Promise<void> {
     const database = this.transactions.database(context);
@@ -29,7 +33,7 @@ export class PgOrderImportRepository implements OrderImportRepository {
     await this.assertMapping(context, target.scope, value);
     const evidence = await this.evidence(context, target.scope, value);
     const prior = await database.query(`select 1 from ordering.orderrecord where source_channel=$1 and external_reference=$2`, [value.source, value.externalOrderNo]);
-    if (prior.rows[0]) throw new Error('ORDER_IMPORT_DUPLICATE');
+    if (prior.rows[0]) throw new DomainError('ORDER_IMPORT_DUPLICATE');
     const identity = createHash('sha256').update(`${target.scope}:${value.source}:${value.externalOrderNo}`).digest('hex');
     const sourceHash = createHash('sha256').update(JSON.stringify(source)).digest('hex');
     const order = `order:import:${identity}`;
@@ -65,14 +69,48 @@ export class PgOrderImportRepository implements OrderImportRepository {
       created_at,updated_at,version)
       values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,'null'::jsonb,$15::jsonb,$16,$17,$18,$19,$20,$21,$22,$23::jsonb,
       $21,$21,0)`,
-      [order, number, target.scope, value.member, value.mall, `checkout:import:${identity}`, value.currency, value.totalMinor,
-        states.payment, states.fulfillment, states.aftersale, states.lifecycle, JSON.stringify({ source: value.source, externalOrderNo: value.externalOrderNo,
-          importedBy: context.actor, import: target.id, row, paymentReference: value.paymentReference, statementReference: value.statementReference,
-          verification: evidence, paymentSnapshot: snapshot.payment }), JSON.stringify(snapshot.address), JSON.stringify({ mode: 'external', source: value.source, ...snapshot.fulfillment }),
-        `external:${value.source}`, value.externalOrderNo, value.source, value.state, evidence.verified ? 'verified' : 'pending', value.orderedAt,
-        target.id, JSON.stringify({ subtotalMinor: value.lines.reduce((sum, line) => sum + line.totalMinor, 0),
-          discountMinor: value.lines.reduce((sum, line) => sum + line.discountMinor, 0), shippingMinor: 0, taxMinor: 0,
-          payableMinor: value.totalMinor, currency: value.currency })]
+      [
+        order,
+        number,
+        target.scope,
+        value.member,
+        value.mall,
+        `checkout:import:${identity}`,
+        value.currency,
+        value.totalMinor,
+        states.payment,
+        states.fulfillment,
+        states.aftersale,
+        states.lifecycle,
+        JSON.stringify({
+          source: value.source,
+          externalOrderNo: value.externalOrderNo,
+          importedBy: context.actor,
+          import: target.id,
+          row,
+          paymentReference: value.paymentReference,
+          statementReference: value.statementReference,
+          verification: evidence,
+          paymentSnapshot: snapshot.payment,
+        }),
+        JSON.stringify(snapshot.address),
+        JSON.stringify({ mode: 'external', source: value.source, ...snapshot.fulfillment }),
+        `external:${value.source}`,
+        value.externalOrderNo,
+        value.source,
+        value.state,
+        evidence.verified ? 'verified' : 'pending',
+        value.orderedAt,
+        target.id,
+        JSON.stringify({
+          subtotalMinor: value.lines.reduce((sum, line) => sum + line.totalMinor, 0),
+          discountMinor: value.lines.reduce((sum, line) => sum + line.discountMinor, 0),
+          shippingMinor: 0,
+          taxMinor: 0,
+          payableMinor: value.totalMinor,
+          currency: value.currency,
+        }),
+      ]
     );
     await insertLines(database, order, value);
     await database.query(
@@ -84,33 +122,57 @@ export class PgOrderImportRepository implements OrderImportRepository {
     await database.query(
       `insert into ordering.importreceipt(import_id,row_number,order_id,source_channel,external_reference,payment_reference,statement_reference,source_hash,created_at)
       values($1,$2,$3,$4,$5,$6,$7,$8,clock_timestamp())`,
-      [target.id, row, order, value.source, value.externalOrderNo, value.paymentReference, value.statementReference,
-        sourceHash]
+      [target.id, row, order, value.source, value.externalOrderNo, value.paymentReference, value.statementReference, sourceHash]
     );
     await new PgRuntimeWriter(database).append({
-      id: `event:orderimport:${identity}`, type: 'order.placed', aggregateType: 'order', aggregate: order, scope: target.scope,
-      aggregateVersion: 1, actor: context.actor, correlation: target.id, causation: target.id, trace: context.trace,
+      id: `event:orderimport:${identity}`,
+      type: 'order.placed',
+      aggregateType: 'order',
+      aggregate: order,
+      scope: target.scope,
+      aggregateVersion: 1,
+      actor: context.actor,
+      correlation: target.id,
+      causation: target.id,
+      trace: context.trace,
       payload: {
-        order, number, member: value.member, mall: value.mall, application: `external:${value.source}`,
-        scopes: [...new Set([target.scope, value.mall])], timezone: 'UTC', totalMinor: value.totalMinor, currency: value.currency,
-        evidenceHash: sourceHash, tenders: [], lines: value.lines.map((line, index) => ({
-          line: importedLineId(order, index + 1), sku: line.sku, product: line.product, category: line.category,
-          provider: line.provider, partner: line.partner, totalMinor: line.totalMinor, discountMinor: line.discountMinor,
+        order,
+        number,
+        member: value.member,
+        mall: value.mall,
+        application: `external:${value.source}`,
+        scopes: [...new Set([target.scope, value.mall])],
+        timezone: 'UTC',
+        totalMinor: value.totalMinor,
+        currency: value.currency,
+        evidenceHash: sourceHash,
+        tenders: [],
+        lines: value.lines.map((line, index) => ({
+          line: importedLineId(order, index + 1),
+          sku: line.sku,
+          product: line.product,
+          category: line.category,
+          provider: line.provider,
+          partner: line.partner,
+          totalMinor: line.totalMinor,
+          discountMinor: line.discountMinor,
           payableMinor: line.payableMinor,
         })),
-        paymentState: states.payment, fulfillmentState: states.fulfillment, aftersaleState: states.aftersale,
-        lifecycleState: states.lifecycle, verificationState: evidence.verified ? 'verified' : 'pending', sourceChannel: value.source,
-        externalOrderNo: value.externalOrderNo, orderedAt: value.orderedAt,
+        paymentState: states.payment,
+        fulfillmentState: states.fulfillment,
+        aftersaleState: states.aftersale,
+        lifecycleState: states.lifecycle,
+        verificationState: evidence.verified ? 'verified' : 'pending',
+        sourceChannel: value.source,
+        externalOrderNo: value.externalOrderNo,
+        orderedAt: value.orderedAt,
       },
     });
   }
 
   private async assertMapping(context: WriteTransactionContext, scope: string, value: OrderImportValue): Promise<void> {
-    const [malls, member] = await Promise.all([
-      this.dependencies.organizations.activeMalls(context, scope),
-      this.dependencies.members.summary(context, value.member, scope),
-    ]);
-    if (!malls.includes(value.mall) || !member || member.status !== 'active') throw new Error('ORDER_IMPORT_MAPPING_INVALID');
+    const [malls, member] = await Promise.all([this.dependencies.organizations.activeMalls(context, scope), this.dependencies.members.summary(context, value.member, scope)]);
+    if (!malls.includes(value.mall) || !member || member.status !== 'active') throw new DomainError('ORDER_IMPORT_MAPPING_INVALID');
   }
 
   private async evidence(context: WriteTransactionContext, scope: string, value: OrderImportValue) {

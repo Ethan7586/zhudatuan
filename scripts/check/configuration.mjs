@@ -6,73 +6,199 @@ import { join } from 'node:path';
 import { parseDocument } from 'yaml';
 import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 
-const names = ['authorities', 'bundles', 'cache', 'capacity', 'clients', 'identityproviders', 'licenses', 'naming', 'navigation', 'providers', 'requirements', 'telemetry', 'visuals'];
+const names = ['authorities', 'bundles', 'cache', 'capacity', 'changeplan', 'clients', 'fusion', 'identityproviders', 'licenses', 'modules', 'naming', 'navigation', 'providers', 'requirements', 'retirement', 'telemetry', 'visuals'];
 const documents = Object.fromEntries(names.map((name) => [name, load(name)]));
 const surfaces = ['auth', 'console', 'storefront', 'miniapp', 'store', 'supplier'];
 const providerIds = ['jdproduct', 'jdfresh', 'tmall', 'supplier', 'cake', 'flower', 'book', 'charge', 'foodvoucher', 'movie', 'meal'];
+const currentStatuses = ['已开放', '部分开放', '后台具备', '自动执行', '仅设计', '占位'];
+const businessModules = [
+  'identity',
+  'organization',
+  'access',
+  'approval',
+  'capability',
+  'partner',
+  'member',
+  'qualification',
+  'catalog',
+  'pricing',
+  'inventory',
+  'experience',
+  'marketing',
+  'cart',
+  'checkout',
+  'order',
+  'fulfillment',
+  'verification',
+  'payment',
+  'voucher',
+  'benefit',
+  'finance',
+  'channel',
+  'support',
+  'notification',
+  'reporting',
+  'referral',
+  'risk',
+  'audit',
+  'extension',
+];
 
 for (const [name, value] of Object.entries(documents)) {
   required(value?.version, `CONFIG_VERSION_MISSING:${name}`);
   required(value?.owner, `CONFIG_OWNER_MISSING:${name}`);
 }
 
-exact(documents.clients.clients.map(({ id }) => id), surfaces, 'CLIENT_SURFACE_SET_INVALID');
-unique(documents.clients.clients.map(({ workspace }) => workspace), 'CLIENT_WORKSPACE_DUPLICATE');
-unique(documents.clients.clients.map(({ path }) => path), 'CLIENT_PATH_DUPLICATE');
-unique(documents.clients.clients.map(({ localPort }) => localPort), 'CLIENT_PORT_DUPLICATE');
+if (documents.modules.count !== 33) fail('MODULE_CATALOG_COUNT_INVALID');
+exact(documents.modules.foundation, ['runtime', 'observability'], 'MODULE_FOUNDATION_SET_INVALID');
+exact(documents.modules.support, ['navigation'], 'MODULE_SUPPORT_SET_INVALID');
+exact(documents.modules.business, businessModules, 'MODULE_BUSINESS_SET_INVALID');
+unique([...documents.modules.foundation, ...documents.modules.support, ...documents.modules.business], 'MODULE_CATALOG_DUPLICATE');
+
+exact(
+  documents.clients.clients.map(({ id }) => id),
+  surfaces,
+  'CLIENT_SURFACE_SET_INVALID'
+);
+unique(
+  documents.clients.clients.map(({ workspace }) => workspace),
+  'CLIENT_WORKSPACE_DUPLICATE'
+);
+unique(
+  documents.clients.clients.map(({ path }) => path),
+  'CLIENT_PATH_DUPLICATE'
+);
+unique(
+  documents.clients.clients.map(({ localPort }) => localPort),
+  'CLIENT_PORT_DUPLICATE'
+);
 if (documents.clients.clients.some((client) => client.path !== `apps/${client.id}` || client.route !== client.id || !['browser', 'wechat'].includes(client.transport))) fail('CLIENT_RECORD_INVALID');
 
 const imports = documents.capacity.imports;
 exact(imports.kinds, ['member', 'product', 'inventory', 'vouchercredential', 'finance', 'order'], 'IMPORT_KIND_SET_INVALID');
-if (documents.capacity.model.voucherCredentials < 1_000_000 || imports.maximumRows < 1_000_000 || imports.chunkRows > 10_000 ||
-  imports.maximumConcurrentRows > imports.chunkRows || imports.chunkLeaseSeconds < 30 || imports.chunkLeaseSeconds > 900) fail('IMPORT_CAPACITY_INVALID');
+if (
+  documents.capacity.model.voucherCredentials < 1_000_000 ||
+  imports.maximumRows < 1_000_000 ||
+  imports.chunkRows > 10_000 ||
+  imports.maximumConcurrentRows > imports.chunkRows ||
+  imports.chunkLeaseSeconds < 30 ||
+  imports.chunkLeaseSeconds > 900
+)
+  fail('IMPORT_CAPACITY_INVALID');
 const upload = documents.capacity.runtime.upload;
 exact(Object.keys(upload), ['authorizationSeconds', 'maximumAuthorizationSeconds', 'maximumChunkBytes', 'maximumAttachmentBytes', 'maximumRetentionDays', 'retentionDays'], 'UPLOAD_CAPACITY_KEY_SET_INVALID');
 exact(Object.keys(upload.retentionDays), ['import', 'aftersale', 'support', 'qualification'], 'UPLOAD_RETENTION_CLASS_SET_INVALID');
-if (upload.authorizationSeconds < 60 || upload.authorizationSeconds > upload.maximumAuthorizationSeconds || upload.maximumAuthorizationSeconds > 900 ||
-  upload.maximumChunkBytes < 65_536 || upload.maximumChunkBytes > imports.maximumFileBytes || upload.maximumAttachmentBytes < 1_048_576 ||
-  upload.maximumAttachmentBytes > imports.maximumFileBytes || upload.maximumRetentionDays < 1 || upload.maximumRetentionDays > 3650 ||
-  Object.values(upload.retentionDays).some((days) => !Number.isSafeInteger(days) || days < 1 || days > upload.maximumRetentionDays)) fail('UPLOAD_CAPACITY_INVALID');
+if (
+  upload.authorizationSeconds < 60 ||
+  upload.authorizationSeconds > upload.maximumAuthorizationSeconds ||
+  upload.maximumAuthorizationSeconds > 900 ||
+  upload.maximumChunkBytes < 65_536 ||
+  upload.maximumChunkBytes > imports.maximumFileBytes ||
+  upload.maximumAttachmentBytes < 1_048_576 ||
+  upload.maximumAttachmentBytes > imports.maximumFileBytes ||
+  upload.maximumRetentionDays < 1 ||
+  upload.maximumRetentionDays > 3650 ||
+  Object.values(upload.retentionDays).some((days) => !Number.isSafeInteger(days) || days < 1 || days > upload.maximumRetentionDays)
+)
+  fail('UPLOAD_CAPACITY_INVALID');
 const queue = documents.capacity.runtime.queue;
 exact(Object.keys(queue), ['maximumDepth', 'reservedDepth', 'lowPriority', 'deferred', 'protected'], 'QUEUE_CAPACITY_KEY_SET_INVALID');
 unique(queue.deferred, 'QUEUE_DEFERRED_DUPLICATE');
 unique(queue.protected, 'QUEUE_PROTECTED_DUPLICATE');
-if (!Number.isSafeInteger(queue.maximumDepth) || queue.maximumDepth < 1 || !Number.isSafeInteger(queue.reservedDepth) || queue.reservedDepth < 1 ||
-  queue.reservedDepth >= queue.maximumDepth || !Number.isSafeInteger(queue.lowPriority) || queue.lowPriority < 0 || queue.lowPriority > 1000 ||
-  queue.deferred.some((name) => queue.protected.includes(name))) fail('QUEUE_CAPACITY_INVALID');
+if (
+  !Number.isSafeInteger(queue.maximumDepth) ||
+  queue.maximumDepth < 1 ||
+  !Number.isSafeInteger(queue.reservedDepth) ||
+  queue.reservedDepth < 1 ||
+  queue.reservedDepth >= queue.maximumDepth ||
+  !Number.isSafeInteger(queue.lowPriority) ||
+  queue.lowPriority < 0 ||
+  queue.lowPriority > 1000 ||
+  queue.deferred.some((name) => queue.protected.includes(name))
+)
+  fail('QUEUE_CAPACITY_INVALID');
 exact(Object.keys(documents.capacity.workers), ['provider', 'report', 'notification'], 'WORKER_POOL_SET_INVALID');
 exact(Object.keys(documents.capacity.clients), surfaces, 'CLIENT_BUDGET_SET_INVALID');
 
 const requiredCaches = ['publishedexperience', 'listing', 'accessversion', 'navigation', 'providerhealth', 'reportingwatermark'];
 for (const cache of requiredCaches) required(documents.cache.caches[cache], `CACHE_REQUIRED_ENTRY_MISSING:${cache}`);
-unique(Object.values(documents.cache.caches).map(({ key }) => key), 'CACHE_KEY_TEMPLATE_DUPLICATE');
+unique(
+  Object.values(documents.cache.caches).map(({ key }) => key),
+  'CACHE_KEY_TEMPLATE_DUPLICATE'
+);
 for (const [name, cache] of Object.entries(documents.cache.caches)) {
   if (!cache.key || cache.maximumSeconds < 1 || cache.staleSeconds < 0 || cache.staleSeconds > cache.maximumSeconds || !Array.isArray(cache.invalidatedBy) || cache.invalidatedBy.length === 0) fail(`CACHE_ENTRY_INVALID:${name}`);
   unique(cache.invalidatedBy, `CACHE_EVENT_DUPLICATE:${name}`);
 }
 
-exact(Object.keys(documents.telemetry.metrics), ['approval', 'voucherbatch', 'importing', 'reconciliation', 'providercapability', 'webvitals'], 'TELEMETRY_METRIC_SET_INVALID');
+exact(Object.keys(documents.telemetry.metrics), ['operation', 'job', 'provider', 'resource', 'approval', 'voucherbatch', 'importing', 'reconciliation', 'providercapability', 'webvitals'], 'TELEMETRY_METRIC_SET_INVALID');
 for (const [metric, dimensions] of Object.entries(documents.telemetry.metrics)) unique(dimensions, `TELEMETRY_DIMENSION_DUPLICATE:${metric}`);
 for (const [name, ratio] of Object.entries(documents.telemetry.sampling)) if (typeof ratio !== 'number' || ratio < 0 || ratio > 1) fail(`TELEMETRY_SAMPLING_INVALID:${name}`);
-for (const key of ['authorization', 'cardcode', 'cardsecret', 'credential', 'evidence', 'filename', 'mobile', 'password', 'privatekey', 'proof', 'secret', 'token']) if (!documents.telemetry.redaction.deny.includes(key)) fail(`REDACTION_KEY_MISSING:${key}`);
+for (const key of ['authorization', 'cardcode', 'cardsecret', 'credential', 'evidence', 'filename', 'mobile', 'password', 'privatekey', 'proof', 'secret', 'token'])
+  if (!documents.telemetry.redaction.deny.includes(key)) fail(`REDACTION_KEY_MISSING:${key}`);
 
 exact(documents.bundles.applications, surfaces, 'BUNDLE_APPLICATION_SET_INVALID');
 exact(documents.bundles.services, ['api', 'jobs', 'provider', 'migration'], 'BUNDLE_SERVICE_SET_INVALID');
 exact(Object.keys(documents.bundles.budgets.initialGzipKb), surfaces, 'BUNDLE_BUDGET_SET_INVALID');
-if (documents.bundles.sourceMaps !== 'hidden' || documents.bundles.budgets.duplicateDependencyKb !== 0 || !['demo', 'mock', 'showcase', 'sourceMapSecret'].every((item) => documents.bundles.forbidden.includes(item))) fail('BUNDLE_POLICY_INVALID');
+if (documents.bundles.sourceMaps !== 'hidden' || documents.bundles.budgets.duplicateDependencyKb !== 0 || !['demo', 'mock', 'showcase', 'sourceMapSecret'].every((item) => documents.bundles.forbidden.includes(item)))
+  fail('BUNDLE_POLICY_INVALID');
 
 if (documents.providers.generated !== true || !documents.providers.source.includes('extensions/channel/*/Manifest.ts')) fail('PROVIDER_AUTHORITY_INVALID');
-exact(documents.providers.providers.map(({ id }) => id), providerIds, 'PROVIDER_SET_INVALID');
+exact(
+  documents.providers.providers.map(({ id }) => id),
+  providerIds,
+  'PROVIDER_SET_INVALID'
+);
 for (const provider of documents.providers.providers) {
   const webhook = provider.capabilities.includes('Webhook');
-  if (!provider.name || !/^\d+\.\d+\.\d+$/.test(provider.version) || provider.apiVersion !== '2026-08-21' || !provider.sandbox?.supported || !provider.health?.operation || provider.rateLimit?.requestsPerSecond < 1 || provider.timeout?.totalMs < provider.timeout?.responseMs || provider.retry?.maxAttempts > 5 || webhook !== Boolean(provider.webhook?.contract)) fail(`PROVIDER_RECORD_INVALID:${provider.id}`);
+  if (
+    !provider.name ||
+    !/^\d+\.\d+\.\d+$/.test(provider.version) ||
+    provider.apiVersion !== '2026-08-21' ||
+    !provider.sandbox?.supported ||
+    !provider.health?.operation ||
+    provider.rateLimit?.requestsPerSecond < 1 ||
+    provider.timeout?.totalMs < provider.timeout?.responseMs ||
+    provider.retry?.maxAttempts > 5 ||
+    webhook !== Boolean(provider.webhook?.contract)
+  )
+    fail(`PROVIDER_RECORD_INVALID:${provider.id}`);
   unique(provider.capabilities, `PROVIDER_CAPABILITY_DUPLICATE:${provider.id}`);
   unique(provider.secretRefs, `PROVIDER_SECRET_REF_DUPLICATE:${provider.id}`);
 }
 
-if (documents.requirements.mvp.length !== 22 || documents.requirements.mvp.some((item) => item.release !== 'required')) fail('MVP_RELEASE_SET_INVALID');
-unique(documents.requirements.mvp.map(({ id }) => id), 'MVP_ID_DUPLICATE');
-if (documents.requirements.clarifications.some((item) => item.status !== 'resolved' || !item.acceptance || !item.resolvedby)) fail('MVP_CLARIFICATION_UNRESOLVED');
+if (documents.requirements.mvpPolicy?.count !== 22 || documents.requirements.mvpPolicy?.release !== 'blocking' || documents.requirements.mvp.length !== 22) fail('MVP_RELEASE_SET_INVALID');
+unique(
+  documents.requirements.mvp.map(({ id }) => id),
+  'MVP_ID_DUPLICATE'
+);
+if ('clarifications' in documents.requirements || documents.requirements.mvp.some((item) => 'clarifications' in item || 'status' in item || 'release' in item)) fail('MVP_HANDWRITTEN_DELIVERY_STATE');
+
+const currentAuthority = documents.authorities.currentFunctions;
+if (
+  documents.fusion.authority !== 'currentFunctions' ||
+  currentAuthority?.sourcePath !== '../zhudatuan_li/docs/当前代码业务功能清单-20260904.md' ||
+  currentAuthority?.sourceSha256 !== 'bc1e7d0730b21ea97d2561fad82341feac4113179f53c26e8e641c8ff25c9b94' ||
+  currentAuthority?.sourceCommit !== 'b763b7a12c9aa825c532a35c3cce06da4455ed98' ||
+  currentAuthority?.snapshot !== 'docs/requirements/current.yml' ||
+  currentAuthority?.trace !== 'docs/requirements/currenttrace.yml' ||
+  currentAuthority?.parserVersion !== 1 ||
+  currentAuthority?.count !== 462 ||
+  currentAuthority?.policy !== 'every-row-exactly-once'
+)
+  fail('CURRENT_FUNCTION_AUTHORITY_INVALID');
+exact(Object.keys(documents.fusion.statusCounts), currentStatuses, 'CURRENT_FUNCTION_STATUS_SET_INVALID');
+if (Object.values(documents.fusion.statusCounts).reduce((total, count) => total + count, 0) !== 462) fail('CURRENT_FUNCTION_STATUS_COUNT_INVALID');
+exact(Object.keys(documents.fusion.dispositions), currentStatuses, 'CURRENT_FUNCTION_DISPOSITION_SET_INVALID');
+if (new Set(Object.values(documents.fusion.dispositions)).size !== currentStatuses.length || Object.keys(documents.fusion.sections).length !== 52 || Object.keys(documents.fusion.overrides).length !== 20)
+  fail('CURRENT_FUNCTION_MAPPING_INVALID');
+exact(Object.values(documents.fusion.providerAliases), providerIds, 'CURRENT_FUNCTION_PROVIDER_SET_INVALID');
+const currentSnapshot = loadPath(currentAuthority.snapshot);
+if (currentSnapshot.count !== 462 || currentSnapshot.source.sha256 !== currentAuthority.sourceSha256 || currentSnapshot.rows?.length !== 462) fail('CURRENT_FUNCTION_SNAPSHOT_INVALID');
+const currentHash = createHash('sha256')
+  .update(readFileSync(join(repositoryRoot, currentAuthority.sourcePath)))
+  .digest('hex');
+if (currentHash !== currentAuthority.sourceSha256) fail('CURRENT_FUNCTION_SOURCE_HASH_INVALID');
 
 exact(Object.keys(documents.visuals.breakpoints), ['mobile', 'tablet', 'desktop', 'wide'], 'VISUAL_BREAKPOINT_SET_INVALID');
 exact(documents.visuals.themes, ['shop', 'market', 'governance'], 'VISUAL_THEME_SET_INVALID');
@@ -81,11 +207,18 @@ if (documents.visuals.journeys.count !== 44 || documents.visuals.authority.polic
 const providerSchema = documents.identityproviders.schema.provider;
 const wechatSchema = documents.identityproviders.schema.wechatapplication;
 if (providerSchema.secretRef !== 'secretreference' || providerSchema.keyVersion !== 'positiveinteger' || wechatSchema.secretRef !== 'secretreference' || wechatSchema.keyVersion !== 'positiveinteger') fail('IDENTITY_SECRET_SCHEMA_INVALID');
-if (documents.identityproviders.security.pkce !== 'S256' || documents.identityproviders.security.bindingConflict !== 'reject' || documents.identityproviders.security.accountLink !== 'explicitproof' || documents.identityproviders.security.redirectAllowlist.some((value) => !value.startsWith('https://'))) fail('IDENTITY_SECURITY_POLICY_INVALID');
+if (
+  documents.identityproviders.security.pkce !== 'S256' ||
+  documents.identityproviders.security.bindingConflict !== 'reject' ||
+  documents.identityproviders.security.accountLink !== 'explicitproof' ||
+  documents.identityproviders.security.redirectAllowlist.some((value) => !value.startsWith('https://'))
+)
+  fail('IDENTITY_SECURITY_POLICY_INVALID');
 
 for (const term of ['approval', 'credential', 'importing']) if (!documents.naming.requiredTerms.includes(term)) fail(`NAMING_TERM_MISSING:${term}`);
 for (const name of ['auth-web', 'storefront-web', 'admin-web', 'commerce-api']) if (!documents.naming.forbidden.runtimeDirectories.includes(name)) fail(`NAMING_RETIRED_DIRECTORY_MISSING:${name}`);
-if (!documents.licenses.assets.some(({ id }) => id === 'zhudatuanliwisdomwing') || !documents.licenses.nativeDependencies.some(({ id, secretBundling }) => id === 'wechatminiprogramruntime' && secretBundling === 'forbidden')) fail('LICENSE_PROVENANCE_INVALID');
+if (!documents.licenses.assets.some(({ id }) => id === 'zhudatuanliwisdomwing') || !documents.licenses.nativeDependencies.some(({ id, secretBundling }) => id === 'wechatminiprogramruntime' && secretBundling === 'forbidden'))
+  fail('LICENSE_PROVENANCE_INVALID');
 
 const owners = documents.authorities.owners;
 const expectedOwners = { approval: 'approval', vouchercredential: 'voucher', financeimport: 'finance', storeaudience: 'identity', supplieraudience: 'identity' };
@@ -106,8 +239,16 @@ function load(name) {
   return document.toJS();
 }
 
+function loadPath(name) {
+  const document = parseDocument(readFileSync(join(repositoryRoot, name), 'utf8'), { strict: true, uniqueKeys: true });
+  if (document.errors.length) fail(`CONFIG_YAML_INVALID:${name}:${document.errors.map(({ message }) => message).join('|')}`);
+  return document.toJS();
+}
+
 function verifyHash(authority) {
-  const actual = createHash('sha256').update(readFileSync(join(repositoryRoot, authority.repositoryRelativePath))).digest('hex');
+  const actual = createHash('sha256')
+    .update(readFileSync(join(repositoryRoot, authority.repositoryRelativePath)))
+    .digest('hex');
   if (actual !== authority.sha256) fail(`AUTHORITY_HASH_INVALID:${authority.repositoryRelativePath}`);
 }
 

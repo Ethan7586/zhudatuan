@@ -9,7 +9,7 @@ describe('navigation generator contract', () => {
   it('keeps every generated artifact synchronized with the six-surface source', async () => {
     const result = await generateNavigation(resolve(import.meta.dirname, '../../..'), true);
     assert.ok(result.routes >= 88);
-    assert.equal(result.nodes, 143);
+    assert.equal(result.nodes, 146);
     assert.match(result.hash, /^[a-f0-9]{64}$/);
   });
 

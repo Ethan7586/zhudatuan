@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord } from '../../../../foundation/application/Validation';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { bodyRecord } from '../../../../pipeline/Validation';
 import { cartInvalid } from '../../domain/error/CartError';
 import { cartConflict } from '../../domain/error/CartError';
 import { CartPolicy } from '../../domain/policy/CartPolicy';
@@ -23,12 +23,20 @@ export class ItemsBatchHandler implements OperationHandler<'cart.items.batch', '
       context.transaction,
       await this.actor.write(context),
       context.expectedVersion ?? cartConflict(),
-      this.policy.batch(items.map((item) => {
-        const value = bodyRecord({ body: item });
-        return { listing: value.listingId, quantity: value.quantity, selected: value.selected, lineVersion: value.lineVersion };
-      })),
+      this.policy.batch(
+        items.map((item) => {
+          const value = bodyRecord({ body: item });
+          return { listing: value.listingId, quantity: value.quantity, selected: value.selected, lineVersion: value.lineVersion };
+        })
+      ),
       false
     );
-    return { status: 200, body: Object.freeze({ ...changed.cart, results: changed.results.map((item) => Object.freeze({ requestedListing: item.requestedListing, listing: item.listing, outcome: item.outcome, reason: item.reason, lineVersion: item.lineVersion })) }) as OperationOutputFor<'cart.items.batch'> };
+    return {
+      status: 200,
+      body: Object.freeze({
+        ...changed.cart,
+        results: changed.results.map((item) => Object.freeze({ requestedListing: item.requestedListing, listing: item.listing, outcome: item.outcome, reason: item.reason, lineVersion: item.lineVersion })),
+      }) as OperationOutputFor<'cart.items.batch'>,
+    };
   }
 }

@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
 import { OperationCatalog } from '@shop/contract';
-import type { MakerCheckerGuard } from '../../../../foundation/application/OperationExecutor';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { MakerCheckerGuard } from '../../../../pipeline/OperationExecutor';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import { SeparationPolicy } from '../../domain/policy/SeparationPolicy';
 interface ConsumedProof extends Record<string, unknown> {
   readonly proof_id: string;

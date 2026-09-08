@@ -1,7 +1,7 @@
 import { IdentityAction as OperationAction } from '../model/IdentityAction';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
 import type { MembershipSelector } from '../service/MembershipSelector';
-import { requirePreauth } from '../../../../foundation/security/OperationSecurityContext';
+import { requirePreauth } from '../../../../platform/security/OperationSecurityContext';
 import { requestContext } from './StartFederation';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 export class SelectMembership {

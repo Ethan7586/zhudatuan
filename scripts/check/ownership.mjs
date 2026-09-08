@@ -16,13 +16,18 @@ export function schemaOwnership(objects = contract.objects ?? []) {
   for (const object of objects) {
     if (typeof object?.id !== 'string') continue;
     const schema = object.id.split('.')[0];
-    const owner = object.operationalOwner ?? object.owner;
+    const owner = object.operationalOwner ?? databaseRoleOwner(object.owner);
     if (typeof owner !== 'string' || !schema) continue;
     const schemas = owners.get(owner) ?? new Set();
     schemas.add(schema);
     owners.set(owner, schemas);
   }
   return owners;
+}
+
+function databaseRoleOwner(owner) {
+  const match = typeof owner === 'string' ? owner.match(/^shop([a-z][a-z0-9]*)owner$/) : null;
+  return match?.[1];
 }
 
 export function auditOwnership(sources = productionSources(), objects = contract.objects ?? []) {

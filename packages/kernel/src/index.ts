@@ -22,6 +22,7 @@ export * from './RateLimiter';
 export * from './Retry';
 export * from './Retention';
 export * from './Semaphore';
+export * from './Singleflight';
 export * from './Specification';
 export * from './SystemClock';
 export * from './ValueObject';

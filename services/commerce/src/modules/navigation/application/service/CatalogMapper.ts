@@ -2,6 +2,9 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { CatalogPosition, StorefrontListing } from '../../../catalog/public/CatalogReadPort';
 import type { StorefrontAvailability } from '../../../inventory/public/InventoryReadPort';
 import type { StorefrontPrice } from '../../../pricing/public/PricingReadPort';
+import type { CatalogQualificationDecision } from '../../../qualification/public';
+
+type DependencyState = Readonly<{ pricing: boolean; inventory: boolean; qualification: boolean }>;
 
 export class CatalogMapper {
   constructor(private readonly key: string) {
@@ -23,19 +26,37 @@ export class CatalogMapper {
     return Object.freeze({ sort: decoded.sort, id: decoded.id });
   }
 
-  items(listings: readonly StorefrontListing[], prices: readonly StorefrontPrice[], availability: readonly StorefrontAvailability[]): readonly Readonly<Record<string, unknown>>[] {
+  items(
+    listings: readonly StorefrontListing[],
+    prices: readonly StorefrontPrice[],
+    availability: readonly StorefrontAvailability[],
+    qualifications: readonly CatalogQualificationDecision[],
+    dependencies: DependencyState
+  ): readonly Readonly<Record<string, unknown>>[] {
     const priceBySku = new Map(prices.map((item) => [item.sku, item]));
     const stockBySku = new Map(availability.map((item) => [item.sku, item]));
+    const qualificationByListing = new Map(qualifications.map((item) => [item.listing, item]));
     return Object.freeze(
       listings.map((listing) => {
         const { categoryId, categoryCode, categoryName, brandId, supplierId, ...catalog } = listing;
+        const price = priceBySku.get(listing.sku) ?? null;
+        const stock = stockBySku.get(listing.sku) ?? null;
+        const qualificationDecision = qualificationByListing.get(listing.id) ?? null;
+        const qualification = qualificationDecision === null ? null : Object.freeze({ eligible: qualificationDecision.eligible, policyVersion: qualificationDecision.policyVersion });
+        const reasons = Object.freeze([
+          ...(!dependencies.qualification || qualification === null ? ['qualification_unavailable' as const] : qualification.eligible ? [] : ['qualification_failed' as const]),
+          ...(!dependencies.pricing || price === null ? ['price_unavailable' as const] : []),
+          ...(!dependencies.inventory || stock === null ? ['inventory_unavailable' as const] : stock.state !== 'available' || stock.available <= 0 ? ['out_of_stock' as const] : []),
+        ]);
         return Object.freeze({
           ...catalog,
           category: Object.freeze({ id: categoryId, code: categoryCode, name: categoryName }),
           brandId,
           supplierId,
-          price: priceBySku.get(listing.sku) ?? null,
-          availability: stockBySku.get(listing.sku) ?? null,
+          price,
+          availability: stock,
+          qualification,
+          saleability: Object.freeze({ state: reasons.length === 0 ? ('saleable' as const) : ('blocked' as const), reasons }),
         });
       })
     );

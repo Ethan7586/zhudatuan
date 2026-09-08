@@ -1,4 +1,4 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CartOwner } from '../../domain/model/Cart';
 
 export interface MemberCartOwner extends Extract<CartOwner, { kind: 'member' }> {}

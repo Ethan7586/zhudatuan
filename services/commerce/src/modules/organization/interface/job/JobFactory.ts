@@ -1,10 +1,10 @@
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import { jobDefinition } from '../../../../foundation/application/JobCatalog';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { KMS_CLIENT } from '../../../../foundation/application/KmsPort';
-import { IDENTITY_SECURITY_KEYS, SECRET_STORE } from '../../../../foundation/infrastructure/SecretStore';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import { jobDefinition } from '../../../../pipeline/JobCatalog';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { KMS_CLIENT } from '../../../../pipeline/KmsPort';
+import { IDENTITY_SECURITY_KEYS, SECRET_STORE } from '../../../../platform/secret/SecretStore';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { IDENTITY_ACCESS_PORT } from '../../../access/public';
 import { DirectoryProviderRegistry } from '../../application/service/DirectoryProviderRegistry';
 import { ReconcileDirectory } from '../../application/process/ReconcileDirectory';
@@ -31,7 +31,16 @@ export function createJobs(context: ModuleContext): readonly ModuleJob[] {
   const providers = new DirectoryProviderRegistry([new WecomDirectoryProvider('wecomcorp', client), new WecomDirectoryProvider('wecomsuite', client)]);
   const lifecycle = new MembershipLifecycle(context.ports.get(IDENTITY_ACCESS_PORT));
   const reconciler = new DirectoryReconciler(repository, lifecycle);
-  const synchronization = new DirectorySynchronization(transactions, repository, providers, new WecomDirectoryMapper(context.service(IDENTITY_SECURITY_KEYS).identity), reconciler, new DirectoryPolicy(), lifecycle, context.service(KMS_CLIENT));
+  const synchronization = new DirectorySynchronization(
+    transactions,
+    repository,
+    providers,
+    new WecomDirectoryMapper(context.service(IDENTITY_SECURITY_KEYS).identity),
+    reconciler,
+    new DirectoryPolicy(),
+    lifecycle,
+    context.service(KMS_CLIENT)
+  );
   const sync = jobDefinition('directorysync');
   const reconcile = jobDefinition('directoryreconcile');
   const leases = new DirectoryLeaseStore(context.ports.get(LEASE_PORT));

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AddressRepository, MemberAddressInput, MemberAddressSummary } from '../../application/port/AddressRepository';
 import { AddressBook } from '../../domain/model/AddressBook';
 import type { RemoveAddressDecision, SaveAddressDecision } from '../../domain/model/AddressBook';

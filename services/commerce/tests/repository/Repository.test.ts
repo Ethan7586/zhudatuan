@@ -54,12 +54,13 @@ describe.each(repositorySources)('Repository source contract: $name', ({ module,
   });
 });
 
-describe.runIf(endpointAvailable)('PostgreSQL repository contract', () => {
+describe('PostgreSQL repository contract', () => {
   it('enforces inbox replay, job lease exclusion and scope RLS on the real target schema', async () => {
+    if (!endpointAvailable) throw new Error('POSTGRES_REPOSITORY_ENDPOINT_REQUIRED');
     const client = new Client({ ...(connection === undefined ? {} : { connectionString: connection }), connectionTimeoutMillis: 5_000, statement_timeout: 15_000 });
     const second = new Client({ ...(connection === undefined ? {} : { connectionString: connection }), connectionTimeoutMillis: 5_000, statement_timeout: 15_000 });
     const suffix = randomUUID();
-    const job = `repository:${suffix}`;
+const job = `job:repository:${suffix}`;
     const event = `repository:${suffix}`;
     const harness = new DatabaseHarness({
       name: 'postgres-target',
@@ -69,7 +70,8 @@ describe.runIf(endpointAvailable)('PostgreSQL repository contract', () => {
       reset: async () => {
         await client.query('rollback').catch(() => undefined);
         await second.query('rollback').catch(() => undefined);
-        await client.query('delete from runtime.job where id=$1', [job]).catch(() => undefined);
+        await client.query('delete from runtime.job_attempts where job_id=$1', [job]).catch(() => undefined);
+        await client.query('delete from runtime.jobs where id=$1', [job]).catch(() => undefined);
         await client.query('delete from runtime.inbox where event_id=$1', [event]).catch(() => undefined);
         await Promise.allSettled([client.end(), second.end()]);
       },
@@ -81,8 +83,11 @@ describe.runIf(endpointAvailable)('PostgreSQL repository contract', () => {
       expect(replayedInbox.rows[0]?.accepted).toBe(false);
 
       await client.query(
-        `insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
-        values($1,'repositorycontract','runtime','{}','queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+        `insert into runtime.jobs(id,tenant_id,scope_id,kind,owner,queue,payload,state,priority,available_at,
+        idempotency_key,retention_until,version,created_by,updated_by,created_at,updated_at,authorization_snapshot)
+        values($1,'tenant:repository','rls-scope-a','repositorycontract','runtime','maintenance','{}','queued',1,
+        clock_timestamp(),$1,clock_timestamp()+interval '1 day',1,'repository-contract','repository-contract',
+        clock_timestamp(),clock_timestamp(),'{"kind":"system","actor":"repository-contract","scope":"rls-scope-a","operation":"test","source":"jobs","capturedAt":"2026-09-08T00:00:00.000Z"}')`,
         [job]
       );
       await client.query('begin');
@@ -99,12 +104,6 @@ describe.runIf(endpointAvailable)('PostgreSQL repository contract', () => {
       expect(policies.rows.every(({ scope_id }) => scope_id === 'rls-scope-a')).toBe(true);
       await client.query('rollback');
     });
-  });
-});
-
-describe.skipIf(endpointAvailable)('PostgreSQL repository contract', () => {
-  it('fails closed when the mandatory integration endpoint is absent', () => {
-    throw new Error('POSTGRES_REPOSITORY_ENDPOINT_REQUIRED');
   });
 });
 
@@ -138,13 +137,17 @@ function schemaOwnership(objects: readonly Readonly<{ id: string; owner?: string
   const result = new Map<string, Set<string>>();
   for (const object of objects) {
     const schema = object.id.split('.')[0];
-    const owner = object.operationalOwner ?? object.owner;
+    const owner = object.operationalOwner ?? databaseRoleOwner(object.owner);
     if (!schema || !owner) continue;
     const values = result.get(owner) ?? new Set<string>();
     values.add(schema);
     result.set(owner, values);
   }
   return result;
+}
+
+function databaseRoleOwner(owner: string | undefined): string | undefined {
+  return owner?.match(/^shop([a-z][a-z0-9]*)owner$/)?.[1];
 }
 
 function sqlLiterals(source: string): string {

@@ -1,12 +1,12 @@
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { randomUUID } from 'node:crypto';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { rowResult } from '../../../../adapter/database/DatabaseResult';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { rowResult } from '../../../../platform/database/DatabaseResult';
 
-import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
+import { bodyRecord, integerField, textField } from '../../../../pipeline/Validation';
 import { GrantPolicy, planState } from '../../domain/policy/GrantPolicy';
 import { actionRecord, cancelUnexecuted, digest, enqueue, instant, memberSnapshot, record } from './BenefitPersistenceActions';
 import { benefitReader } from './BenefitReader';

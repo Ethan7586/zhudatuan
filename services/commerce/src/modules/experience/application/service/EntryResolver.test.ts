@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Singleflight } from '../../../../foundation/performance/Singleflight';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { Singleflight } from '@shop/kernel';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { StorefrontEntry } from '../port/EntryRepository';
 import { EntryResolver } from './EntryResolver';
 

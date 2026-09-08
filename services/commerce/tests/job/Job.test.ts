@@ -2,11 +2,11 @@ import type { PoolClient, QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
 import { RunJob } from '../../src/modules/runtime/application/process/RunJob';
 import type { ClaimedJob, JobRunnerConfig } from '../../src/modules/runtime/public/JobProcess';
-import type { DatabasePool } from '../../src/foundation/persistence/Pool';
-import { PgTransactionManager } from '../../src/adapter/database/PgTransactionManager';
+import type { DatabasePool } from '../../src/platform/database/Pool';
+import { PgTransactionManager } from '../../src/platform/database/PgTransactionManager';
 import { PgJobQueue } from '../../src/modules/runtime/infrastructure/persistence/PgJobQueue';
-import { PgDeadletterStore } from '../../src/adapter/database/PgDeadletterStore';
-import { DomainError } from '../../src/foundation/domain/DomainError';
+import { PgDeadletterStore } from '../../src/platform/database/PgDeadletterStore';
+import { DomainError } from '../../src/platform/error/DomainError';
 
 describe('job claim, retry and dead letter', () => {
   it('completes only the job held by the configured lease owner', async () => {
@@ -99,7 +99,9 @@ function database(claimed: ClaimedJob) {
         authorization_snapshot: claimed.authorization, attempts: claimed.attempts, fencing_token: claimed.token };
       return { rows: claims++ === 0 ? [row] : [], rowCount: claims === 1 ? 1 : 0 } as unknown as QueryResult<T & never>;
     }
-    if (text.includes('count(*)::integer active')) return { rows: [{ active: 0 }], rowCount: 1 } as unknown as QueryResult<T & never>;
+    if (text.includes("count(*) filter(where state='running'") && text.includes("count(*) filter(where state='queued'")) {
+      return { rows: [{ active: 0, queued: 1 }], rowCount: 1 } as unknown as QueryResult<T & never>;
+    }
     return { rows: [], rowCount: 1 } as unknown as QueryResult;
   };
   const client = {

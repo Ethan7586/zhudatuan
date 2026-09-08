@@ -26,13 +26,24 @@ describe('report snapshot', () => {
 
   it('keeps later pages on the first page watermark', async () => {
     const metric = {
-      code: 'sales.amount', version: 1,
+      code: 'sales.amount',
+      version: 1,
       definition: { name: '成交金额', formula: '支付金额合计', dimensions: ['mall'], granularity: 'day', owner: 'reporting' },
-      scope: 'mall:one', period: { from: '2026-09-04T16:00:00.000Z', to: '2026-09-05T16:00:00.000Z', timezone: 'Asia/Shanghai' },
-      dimensions: { mall: 'mall:one' }, value: 100, unit: 'minor', currency: 'CNY', watermark: watermark.occurredAt,
-      projectionVersion: 2, cursorTime: '2026-09-05T16:00:00.000Z', cursorId: 'sales.amount:row',
+      scope: 'mall:one',
+      period: { from: '2026-09-04T16:00:00.000Z', to: '2026-09-05T16:00:00.000Z', timezone: 'Asia/Shanghai' },
+      dimensions: { mall: 'mall:one' },
+      value: 100,
+      unit: 'minor',
+      currency: 'CNY',
+      watermark: watermark.occurredAt,
+      projectionVersion: 2,
+      cursorTime: '2026-09-05T16:00:00.000Z',
+      cursorId: 'sales.amount:row',
     } as const;
-    const metrics = vi.fn().mockResolvedValueOnce([metric, { ...metric, cursorId: 'sales.amount:next' }]).mockResolvedValueOnce([]);
+    const metrics = vi
+      .fn()
+      .mockResolvedValueOnce([metric, { ...metric, cursorId: 'sales.amount:next' }])
+      .mockResolvedValueOnce([]);
     const waterline = vi.fn().mockResolvedValue(watermark);
     const reader = new MetricReader({ metrics, watermark: waterline, cockpit: vi.fn() } as never);
     const context = { operation: 'reporting.sales.read', transaction: {}, security: { kind: 'session', access: { scope: { id: 'mall:one' } } } } as never;

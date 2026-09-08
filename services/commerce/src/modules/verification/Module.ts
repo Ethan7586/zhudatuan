@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { defineModule } from '../../composition/DefinedModule';
 import { MEMBER_ACCESS_PORT } from '../access/public';
 import { ORGANIZATION_READ_PORT } from '../organization/public';
 import { VERIFICATION_CHANNEL_PORT } from '../notification/public';

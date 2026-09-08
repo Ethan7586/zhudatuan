@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AuditEvidence, AuditQueryReference, AuditReadPort } from '../../public/AuditReadPort';
 
 interface AuditEvidenceRow extends Omit<AuditEvidence, 'subject' | 'object' | 'actor' | 'evidence' | 'occurredAt'> {
@@ -16,13 +16,19 @@ interface AuditEvidenceRow extends Omit<AuditEvidence, 'subject' | 'object' | 'a
 export class PgAuditReadPort implements AuditReadPort {
   constructor(private readonly transactions = new PgTransactionAccess()) {}
 
-  async records(
-    context: ReadTransactionContext,
-    query: Readonly<{ scopes: readonly string[]; references: readonly AuditQueryReference[]; limit?: number }>
-  ): Promise<readonly AuditEvidence[]> {
+  async records(context: ReadTransactionContext, query: Readonly<{ scopes: readonly string[]; references: readonly AuditQueryReference[]; limit?: number }>): Promise<readonly AuditEvidence[]> {
     const limit = query.limit ?? 200;
-    if (query.scopes.length === 0 || query.scopes.length > 1_000 || query.references.length === 0 || query.references.length > 1_000 ||
-      !Number.isSafeInteger(limit) || limit < 1 || limit > 200 || query.scopes.some(invalid) || query.references.some((reference) => invalidReference(reference))) {
+    if (
+      query.scopes.length === 0 ||
+      query.scopes.length > 1_000 ||
+      query.references.length === 0 ||
+      query.references.length > 1_000 ||
+      !Number.isSafeInteger(limit) ||
+      limit < 1 ||
+      limit > 200 ||
+      query.scopes.some(invalid) ||
+      query.references.some((reference) => invalidReference(reference))
+    ) {
       throw new Error('AUDIT_REFERENCE_QUERY_INVALID');
     }
     const result = await this.transactions.database(context).query<AuditEvidenceRow>(
@@ -48,19 +54,34 @@ export class PgAuditReadPort implements AuditReadPort {
       order by history.occurred_at desc,history.id desc limit $3`,
       [query.scopes, JSON.stringify(query.references), limit]
     );
-    return Object.freeze(result.rows.map((row) => Object.freeze({
-      id: row.id, kind: row.kind, operation: row.operation,
-      subject: Object.freeze({ type: row.subjectType, id: row.subjectId }),
-      object: Object.freeze({ type: row.objectType, id: row.objectId }),
-      actor: Object.freeze({ type: row.actorType, id: row.actorId }),
-      request: row.request, outcome: row.outcome, reason: row.reason, beforeHash: row.beforeHash, afterHash: row.afterHash,
-      previousHash: row.previousHash, recordHash: row.recordHash, evidence: Object.freeze({ ...row.evidence }),
-      occurredAt: row.occurredAt.toISOString(), trace: row.trace,
-    })));
+    return Object.freeze(
+      result.rows.map((row) =>
+        Object.freeze({
+          id: row.id,
+          kind: row.kind,
+          operation: row.operation,
+          subject: Object.freeze({ type: row.subjectType, id: row.subjectId }),
+          object: Object.freeze({ type: row.objectType, id: row.objectId }),
+          actor: Object.freeze({ type: row.actorType, id: row.actorId }),
+          request: row.request,
+          outcome: row.outcome,
+          reason: row.reason,
+          beforeHash: row.beforeHash,
+          afterHash: row.afterHash,
+          previousHash: row.previousHash,
+          recordHash: row.recordHash,
+          evidence: Object.freeze({ ...row.evidence }),
+          occurredAt: row.occurredAt.toISOString(),
+          trace: row.trace,
+        })
+      )
+    );
   }
 }
 
-function invalid(value: string): boolean { return value.length < 1 || value.length > 512 || /\s/.test(value); }
+function invalid(value: string): boolean {
+  return value.length < 1 || value.length > 512 || /\s/.test(value);
+}
 function invalidReference(reference: AuditQueryReference): boolean {
-  return invalid(reference.id) || (reference.kind !== 'trace' && reference.type !== undefined && (!/^[a-z][a-z0-9.]{0,63}$/.test(reference.type)));
+  return invalid(reference.id) || (reference.kind !== 'trace' && reference.type !== undefined && !/^[a-z][a-z0-9.]{0,63}$/.test(reference.type));
 }

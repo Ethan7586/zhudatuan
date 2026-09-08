@@ -1,7 +1,7 @@
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { ORDER_IMPORT_FINANCE_PORT } from '../../../finance/public';
 import { MEMBER_READ_PORT } from '../../../member/public';
 import { ORGANIZATION_READ_PORT } from '../../../organization/public';
@@ -24,9 +24,10 @@ export function createJobs(context: ModuleContext): readonly ModuleJob[] {
     payments: context.ports.get(ORDER_IMPORT_PAYMENT_PORT),
     finance: context.ports.get(ORDER_IMPORT_FINANCE_PORT),
   });
-  const process = new OrderImportProcess(context.ports.get(IMPORT_RUNNER_PORT), createImportProcess(context.ports.get(IMPORT_BATCH_FACTORY_PORT), manager,
-    context.ports.get(RUNTIME_IMPORT_PORT), context.ports.get(JOB_PORT), repository,
-    context.ports.get(TASK_AUTHORIZATION_PORT)));
+  const process = new OrderImportProcess(
+    context.ports.get(IMPORT_RUNNER_PORT),
+    createImportProcess(context.ports.get(IMPORT_BATCH_FACTORY_PORT), manager, context.ports.get(RUNTIME_IMPORT_PORT), context.ports.get(JOB_PORT), repository, context.ports.get(TASK_AUTHORIZATION_PORT))
+  );
   return Object.freeze([
     { id: 'orderimport', processor: new OrderImportJob(process) },
     { id: 'orderevent', processor: new OrderEventJob(new ProcessOrderEvent(new PgOrderEventProcess(manager))) },

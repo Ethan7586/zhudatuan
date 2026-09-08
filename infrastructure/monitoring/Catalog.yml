@@ -1,45 +1,157 @@
-version: 1
+version: 2
 owner: reliability
-source: config/telemetry.yml
-probes: [live, ready, startup, dependency]
-dashboards: [runtime, database, queue, provider, security, storefrontentry]
-metrics:
-  - experience.entry.resolve.duration
-  - experience.entry.resolve.failure
-  - experience.entry.state
-  - experience.publication.activate.duration
-  - storefront.bootstrap.duration
-  - storefront.bootstrap.failure
-  - console.entry.dialog.open
-  - console.entry.copy.failure
-  - console.entry.download.failure
+purpose: operational-observability-only
+authorities:
+  operations: packages/contract/src/OperationIds.ts
+  jobs: services/commerce/src/pipeline/JobCatalog.ts
+  providers: packages/contract/src/RequirementCatalog.ts#PROVIDER_CATALOG_RECORDS[delivery=required]
+  modules: services/commerce/src/modules/*/Module.ts
+  surfaces: config/clients.yml
+  thresholds: config/telemetry.yml
+  businessDefinitions: docs/metrics/catalog.md
+  alertDefinitions: docs/alerts/catalog.md
+
+cardinality:
+  policy: reject-unknown-labels
+  allowed:
+    - environment
+    - release
+    - workload
+    - module
+    - operation
+    - job
+    - queue
+    - provider
+    - capability
+    - surface
+    - routeid
+    - resource
+    - result
+    - errorcode
+    - state
+    - phase
+    - le
+  catalogBounded: [module, operation, job, queue, provider, capability, surface, routeid, resource, result, errorcode, state, phase]
+  forbidden:
+    - requestid
+    - traceid
+    - correlationid
+    - actorid
+    - membershipid
+    - tenantid
+    - scopeid
+    - resourceid
+    - orderid
+    - paymentid
+    - voucherid
+    - filename
+    - objectref
+  exemplars: [traceid, correlationid]
+  maximumSeriesPerMetric: 50000
+
+coverage:
+  operations:
+    selection: every
+    countFrom: authorities.operations
+    instrumentation: services/commerce/src/platform/telemetry/OperationMetrics.ts
+    red:
+      rate: commerce.operation.count
+      errors: commerce.operation.count{result="failure"}
+      duration: commerce.operation.duration
+    labels: [environment, release, module, operation, result, errorcode]
+  jobs:
+    selection: every
+    countFrom: authorities.jobs
+    instrumentation: services/commerce/src/platform/telemetry/JobMetrics.ts
+    red:
+      rate: commerce.job.count
+      errors: commerce.job.count{result=~"retry|deadletter"}
+      duration: commerce.job.duration
+    state:
+      queueDepth: commerce.queue.depth
+      oldestSeconds: commerce.queue.oldest
+      leaseConflict: commerce.job.leaseconflict
+      checkpointAge: commerce.job.checkpointage
+    labels: [environment, release, module, job, queue, result, errorcode]
+  providers:
+    selection: every-required
+    countFrom: authorities.providers
+    instrumentation: services/commerce/src/platform/telemetry/ProviderMetrics.ts
+    red:
+      rate: commerce.provider.count
+      errors: commerce.provider.count{result="failure"}
+      duration: commerce.provider.duration
+    state:
+      circuit: commerce.provider.circuit
+      concurrency: commerce.provider.inflight
+      throttle: commerce.provider.throttled
+    labels: [environment, release, provider, capability, operation, result, errorcode]
+  modules:
+    selection: every
+    countFrom: authorities.modules
+    red:
+      rate: commerce.operation.count
+      errors: commerce.operation.count{result="failure"}
+      duration: commerce.operation.duration
+    use:
+      utilization: process.cpu.utilization
+      saturation: process.eventloop.lag
+      errors: process.runtime.errors
+    labels: [environment, release, workload, module, result]
+  surfaces:
+    selection: every
+    countFrom: authorities.surfaces
+    red:
+      rate: client.navigation.count
+      errors: client.navigation.count{result="failure"}
+      duration: client.navigation.duration
+    vitals: [client.webvital.lcp, client.webvital.inp, client.webvital.cls, client.webvital.fcp, client.webvital.ttfb]
+    state: [client.stream.reconnects, client.query.failure, client.mutation.failure, client.error.count]
+    labels: [environment, release, surface, routeid, result, errorcode]
+  resources:
+    selection: [postgres, redis, queue, object, cdn, api, jobs, provider, migration]
+    use:
+      utilization: resource.utilization
+      saturation: resource.saturation
+      errors: resource.errors
+    labels: [environment, release, workload, resource, result]
+
+businessResults:
+  orderSuccess: business.order.success
+  paymentUnknown: business.payment.unknown
+  inventoryConflict: business.inventory.conflict
+  providerOrderFailure: business.provider.orderfailure
+  voucherIssueCompletion: business.voucher.issuecompletion
+  voucherRedemptionConflict: business.voucher.redemptionconflict
+  reconciliationDifferenceMinor: business.finance.reconciliationdifference
+  ledgerImbalance: business.finance.ledgerimbalance
+  importError: business.import.error
+  supportSlaBreach: business.support.slabreach
+
+collection:
+  probes: [live, ready, startup, dependency]
+  scrapeSeconds: 15
+  evaluationSeconds: 30
+  tracePropagation: [requestid, traceid, correlationid, causationid]
+  redactionGate: redact-before-buffer-and-export
+  redactionFailure: drop-and-alert
+  configuration: config/telemetry.yml
+  retention:
+    source: config/telemetry.yml#retention
+  sampling:
+    source: config/telemetry.yml#sampling
+
+dashboards:
+  source: infrastructure/monitoring/Dashboard.yml
+  required: [identity, salechain, transaction, voucher, finance, provider, runtime, clients]
 alerts:
-  - readiness
-  - errorbudget
-  - outboxlag
-  - providerbreaker
-  - databasefencing
-  - backuprestore
-  - invitationbruteforce
-  - invitationreplay
-  - consoleprooffailure
-  - invitationstale
-  - invitationclaimbacklog
-  - invitationcleanuplag
-  - authorizationsnapshotlatency
-  - invitationkeyunavailable
-  - invitationreceiptconsistency
-  - invitationsessionconsistency
-  - navigationauthorizationdrift
-  - cacheunavailable
-  - jobqueuebacklog
-  - workloadavailability
-  - zonecapacity
-  - postgresfailover
-  - storefrontentryfailure
-  - storefrontentryinvalid
-  - storefrontentrycache
-  - publicationentryconsistency
-  - storefrontoriginmismatch
-  - mallqrsmoke
-  - storefrontsessionmismatch
+  source: infrastructure/monitoring/Alerts.yml
+  required: [servicelevelburn, paymentunknown, inventoryconflict, ledgerimbalance, voucherbatchfailure, importfailure, outboxbacklog, providercapabilityfailure, releasefailure, securityincident]
+
+evidence:
+  releaseSnapshot: required
+  dashboardLinks: required
+  recentChanges: required
+  traceExamples: required
+  owner: required
+  runbook: required

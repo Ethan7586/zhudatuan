@@ -1,6 +1,6 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableCommit, DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableCommit, DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
 import type { CaseRepository, PreparedSupportOperation } from '../port/SupportRepositories';
 
 type Reply = OperationReply<OperationOutputFor<'support.cases.create'>>;

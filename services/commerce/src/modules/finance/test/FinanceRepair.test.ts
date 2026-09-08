@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createHmac } from 'node:crypto';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 import type { ApprovalPort, ApprovalReadPort } from '../../approval/public';
 import type { ApprovalInstanceRecord } from '../../approval/application/port/ApprovalRepository';
 import { RepairApproval } from '../application/service/RepairApproval';
@@ -21,9 +21,7 @@ const proposal: RepairProposal = Object.freeze({
     Object.freeze({ account: 'expense.goods', debitMinor: 900, creditMinor: 0, currency: 'CNY', memo: '替代借方' }),
     Object.freeze({ account: 'liability.payable', debitMinor: 0, creditMinor: 900, currency: 'CNY', memo: '替代贷方' }),
   ]),
-  differences: Object.freeze([
-    Object.freeze({ id: 'reconciliationdifference:one', kind: 'statementbalance', expectedMinor: 900, actualMinor: 1_000, deltaMinor: 100, currency: 'CNY' }),
-  ]),
+  differences: Object.freeze([Object.freeze({ id: 'reconciliationdifference:one', kind: 'statementbalance', expectedMinor: 900, actualMinor: 1_000, deltaMinor: 100, currency: 'CNY' })]),
   makerId: 'membership:maker',
   reason: '替换错误入账',
 });
@@ -60,32 +58,46 @@ describe('finance repair completion', () => {
 
     await service.request(transaction, 'reconciliationrepair:one', 'c'.repeat(64), proposal);
 
-    expect(request).toHaveBeenCalledWith(transaction, expect.objectContaining({
-      requesterId: proposal.makerId,
-      subject: expect.objectContaining({ kind: 'financerepair', id: 'reconciliationrepair:one', version: 1 }),
-      action: 'finance.repair.apply',
-      evidenceHash: 'c'.repeat(64),
-      amountMinor: 1_000,
-      currency: 'CNY',
-      constraints: expect.objectContaining({ sourceJournalId: proposal.sourceJournalId, sourceJournalHash: proposal.sourceJournalHash }),
-    }));
+    expect(request).toHaveBeenCalledWith(
+      transaction,
+      expect.objectContaining({
+        requesterId: proposal.makerId,
+        subject: expect.objectContaining({ kind: 'financerepair', id: 'reconciliationrepair:one', version: 1 }),
+        action: 'finance.repair.apply',
+        evidenceHash: 'c'.repeat(64),
+        amountMinor: 1_000,
+        currency: 'CNY',
+        constraints: expect.objectContaining({ sourceJournalId: proposal.sourceJournalId, sourceJournalHash: proposal.sourceJournalHash }),
+      })
+    );
   });
 
   it('consumes an exact Approval Proof before approved execution', async () => {
     const current = repair();
-    const consume = vi.fn(async (_context, _proof, binding) => ({ proofId: 'approvalproof:one', instanceId: current.approvalInstanceId, checkerId: 'membership:checker', binding, issuedAt: now.toISOString(), expiresAt: new Date(now.getTime() + 60_000).toISOString() }));
+    const consume = vi.fn(async (_context, _proof, binding) => ({
+      proofId: 'approvalproof:one',
+      instanceId: current.approvalInstanceId,
+      checkerId: 'membership:checker',
+      binding,
+      issuedAt: now.toISOString(),
+      expiresAt: new Date(now.getTime() + 60_000).toISOString(),
+    }));
     const service = new RepairApproval({ consume } as unknown as ApprovalPort, {} as ApprovalReadPort);
 
     const authorized = await service.authorize(transaction, current, 'approved', 'p'.repeat(43), 'd'.repeat(64));
 
     expect(authorized).toEqual({ checkerId: 'membership:checker', proofId: 'approvalproof:one' });
-    expect(consume).toHaveBeenCalledWith(transaction, 'p'.repeat(43), expect.objectContaining({
-      subjectId: current.id,
-      subjectVersion: current.version,
-      evidenceHash: current.previewHash,
-      consumerOperation: 'finance.reconciliationrepairs.decide',
-      requestHash: 'd'.repeat(64),
-    }));
+    expect(consume).toHaveBeenCalledWith(
+      transaction,
+      'p'.repeat(43),
+      expect.objectContaining({
+        subjectId: current.id,
+        subjectVersion: current.version,
+        evidenceHash: current.previewHash,
+        consumerOperation: 'finance.reconciliationrepairs.decide',
+        requestHash: 'd'.repeat(64),
+      })
+    );
   });
 
   it('accepts rejection only from the bound rejected Approval instance', async () => {
@@ -102,22 +114,62 @@ describe('finance repair completion', () => {
 
 function repair(): RepairDecisionContext {
   return Object.freeze({
-    id: 'reconciliationrepair:one', scopeId: proposal.scopeId, status: 'submitted', makerId: proposal.makerId, version: 1,
-    statementId: proposal.statementId, sourceHash: proposal.sourceHash, sourceVersion: proposal.sourceVersion,
-    sourceJournalId: proposal.sourceJournalId, sourceJournalHash: proposal.sourceJournalHash, previewHash: 'c'.repeat(64),
-    approvalInstanceId: 'approvalinstance:one', approvalAmountMinor: 1_000,
-    sourceReversalJournalId: null, replacementJournalId: null, rollbackJournalId: null,
+    id: 'reconciliationrepair:one',
+    scopeId: proposal.scopeId,
+    status: 'submitted',
+    makerId: proposal.makerId,
+    version: 1,
+    statementId: proposal.statementId,
+    sourceHash: proposal.sourceHash,
+    sourceVersion: proposal.sourceVersion,
+    sourceJournalId: proposal.sourceJournalId,
+    sourceJournalHash: proposal.sourceJournalHash,
+    previewHash: 'c'.repeat(64),
+    approvalInstanceId: 'approvalinstance:one',
+    approvalAmountMinor: 1_000,
+    sourceReversalJournalId: null,
+    replacementJournalId: null,
+    rollbackJournalId: null,
   });
 }
 
 function approvalInstance(repair: RepairDecisionContext): ApprovalInstanceRecord {
   return {
-    id: repair.approvalInstanceId, scopeId: repair.scopeId, templateId: 'approvaltemplate:one', templateVersion: 1,
-    subjectKind: 'financerepair', subjectId: repair.id, subjectVersion: repair.version, subjectSnapshot: {},
-    action: 'finance.repair.apply', evidenceHash: repair.previewHash, amountMinor: repair.approvalAmountMinor, currency: 'CNY',
+    id: repair.approvalInstanceId,
+    scopeId: repair.scopeId,
+    templateId: 'approvaltemplate:one',
+    templateVersion: 1,
+    subjectKind: 'financerepair',
+    subjectId: repair.id,
+    subjectVersion: repair.version,
+    subjectSnapshot: {},
+    action: 'finance.repair.apply',
+    evidenceHash: repair.previewHash,
+    amountMinor: repair.approvalAmountMinor,
+    currency: 'CNY',
     constraints: { statementId: repair.statementId, sourceHash: repair.sourceHash, sourceVersion: repair.sourceVersion, sourceJournalId: repair.sourceJournalId, sourceJournalHash: repair.sourceJournalHash },
-    requesterId: repair.makerId, state: 'rejected', currentStep: 1, stepCount: 1, version: 2,
-    createdAt: now.toISOString(), decidedAt: now.toISOString(), expiresAt: null, tasks: [],
-    decisions: [{ id: 'approvaldecision:one', instanceId: repair.approvalInstanceId, taskId: 'approvaltask:one', outcome: 'rejected', reason: '证据不足', actorId: 'membership:checker', evidence: {}, proofId: null, proof: null, decidedAt: now.toISOString() }],
+    requesterId: repair.makerId,
+    state: 'rejected',
+    currentStep: 1,
+    stepCount: 1,
+    version: 2,
+    createdAt: now.toISOString(),
+    decidedAt: now.toISOString(),
+    expiresAt: null,
+    tasks: [],
+    decisions: [
+      {
+        id: 'approvaldecision:one',
+        instanceId: repair.approvalInstanceId,
+        taskId: 'approvaltask:one',
+        outcome: 'rejected',
+        reason: '证据不足',
+        actorId: 'membership:checker',
+        evidence: {},
+        proofId: null,
+        proof: null,
+        decidedAt: now.toISOString(),
+      },
+    ],
   };
 }

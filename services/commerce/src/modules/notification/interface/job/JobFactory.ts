@@ -1,8 +1,8 @@
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { KMS_CLIENT } from '../../../../foundation/application/KmsPort';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { KMS_CLIENT } from '../../../../pipeline/KmsPort';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { NOTIFICATION_IDENTITY_PORT } from '../../../identity/public';
 import { ORGANIZATION_READ_PORT } from '../../../organization/public';
 import { NotificationDeliveryProcess } from '../../application/process/NotificationDeliveryProcess';

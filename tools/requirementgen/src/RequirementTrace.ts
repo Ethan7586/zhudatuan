@@ -3,7 +3,12 @@ export interface OperationDefinition {
   readonly owner: string;
   readonly method: string;
   readonly path: string;
-  readonly permission?: string;
+  readonly permission: string | null;
+  readonly capability: string;
+  readonly scopeKinds: readonly string[];
+  readonly requestSchema: string;
+  readonly responseSchema: string;
+  readonly handler: string;
   readonly requirements: readonly string[];
 }
 

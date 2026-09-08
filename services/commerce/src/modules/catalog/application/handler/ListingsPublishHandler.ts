@@ -1,10 +1,10 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { ListingRepository } from '../port/ListingRepository';
 import type { ListingPublication } from '../service/ListingPublication';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export class ListingsPublishHandler implements OperationHandler<'catalog.listings.publish', 'write'> {
   readonly operation = 'catalog.listings.publish' as const;

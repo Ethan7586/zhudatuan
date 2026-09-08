@@ -1,6 +1,6 @@
 import { PGlite } from '@electric-sql/pglite';
 import { describe, expect, it } from 'vitest';
-import { PgTransactionAccess } from '../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../platform/database/PgTransactionAccess';
 import { result, withWriteTransaction } from '../../../test/TransactionFixture';
 import { PgNotificationRepository } from '../infrastructure/persistence/PgNotificationRepository';
 

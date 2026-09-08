@@ -1,20 +1,41 @@
-# 财务账单导入
+# 财务账单导入运行手册
 
-## 目标与所有者
+## 触发症状、用户影响与严重级（Trigger / Impact / Severity）
 
-`financeimport` 由财务模块所有，只把支付渠道或供应商账单发布为 `Statement`，随后触发对账；禁止写入账本分录或直接修改余额。
+Provider/供应商 Statement 预检或发布停滞、外部引用重复、币种/期间/期初期末/总额不守恒、账单 Hash 不一致时触发。未完成批次不可见且不能结算；错误 Statement 污染对账、Journal 不平或跨 Scope 为 P0。
 
-## 处理与恢复
+## Owner 与前置权限
 
-1. Runtime 校验租户范围、授权快照、文件扫描结果、SHA-256、类型和大小。
-2. Worker 流式预检并持久化分片、字段、行级错误和不可伪造的预检哈希，等待用户确认。
-3. 确认后按 Checkpoint 处理；进程退出时只重试未完成分片，已成功业务键保持幂等。
-4. 全部有效行、账期、币种、期初/期末和总额守恒后，在单一事务发布账单、明细和对账批次。
-5. 任一永久业务错误将任务置为失败并生成安全错误报告；基础设施错误退避重试，超过次数进入 Deadletter。
+Finance Owner 主责，Channel、Payment、Runtime 与 Security 协同。统一文件、任务、Checkpoint、取消与重试只遵循 `import.md`，本手册不复制其技术步骤。确认需要财务权限、Step-up、目标账期 ExpectedVersion 和职责分离。
 
-## 排障
+## 只读诊断（Diagnosis）
 
-- 核对 Runtime 任务、租约、授权快照、对象扫描与 Hash，不得下载或记录原始敏感文件内容。
-- 核对 `finance.statementimportline` 暂存行数、失败行数和账单总额；未完成批次不得有可见 Statement。
-- 修复可恢复依赖后只重试原任务；不得手工插入 Statement、Journal 或 Entry。
-- 若出现账本不平、跨 Scope 数据或重复外部引用，立即停止 Worker、保留 Trace 与审计证据并升级为安全/财务事故。
+核对 Statement 外部唯一键、Provider、Account、Scope、Period、Currency、Opening/Closing/Total、行 Hash 与冻结 Watermark；确认暂存行、失败行和对账批次。账单导入只能创建 Statement，不得直接写 Journal/Entry/Balance；不下载敏感源正文。
+
+## 止血（Stop loss）
+
+隔离对象和账期，阻断该 Statement 的 Reconciliation、Settlement、Withdrawal、Invoice 与 Close；其他账期继续。发现账务不平或引用冲突，保留源 Hash/Trace 并停止相关 Finance 写入。禁止手工插入 Statement/Journal/Entry。
+
+## 恢复（Recovery）
+
+Runtime 按 `import.md` 恢复未完成分片；只有所有有效行和总额守恒才在一个事务发布 Statement、明细与 Reconciliation Batch。永久错误修正源文件后新建任务；已发布错误账单通过审批修复批次和冲正处理，不改历史。
+
+## 数据核对（Data repair / Validation / Escalation / Audit）
+
+Validation 对齐对象 Hash、行 Hash、行数、金额、Currency、Period、Watermark、Statement 与对账批次，证明 Journal 借贷仍平、跨 Scope/重复来源为 0。Data repair 只用审批后的 Reconciliation Repair/Reverse；Escalation 对资金不平或泄露 P0；Audit 保存授权快照、摘要、审批和 Trace。
+
+## 回滚边界
+
+未发布批次可取消；已发布 Statement 不删除，以新修订/冲正并保留原 Watermark。Journal 永不由 Import 回退；技术边界见 `import.md`。
+
+## 沟通模板
+
+“账单导入 `{importId}`，Provider/账期 `{provider}/{period}`，金额 `{amountMinor} {currency}`，阶段 `{phase}`，对账/结算影响 `{impact}`，Owner `{owner}`，证据 `{evidenceRef}`。”
+
+## 关闭条件
+
+统一 Import 条件通过；Statement/行/金额/Hash/Watermark 一致；对账批次状态明确；Journal 不平为 0；职责分离和审计证据完成。
+
+## 复盘链接（Postmortem）
+
+资金不平、重复 Statement、跨 Scope、敏感泄露或账期契约失效必须填写 `{postmortemUrl}`。

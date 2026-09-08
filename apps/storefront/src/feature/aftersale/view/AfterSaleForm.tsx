@@ -4,7 +4,7 @@ import type { useAfterSaleViewModel } from '../viewmodel/AfterSaleViewModel';
 import { afterSaleReasonOptions } from '@shop/presentation';
 
 export function AfterSaleForm({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof useAfterSaleViewModel> }>) {
-  const { page, reason, description, quantities, attachments, selected, expectedMinor, busy, actions } = viewmodel;
+  const { page, reason, description, quantities, attachments, selected, busy, actions } = viewmodel;
   return (
     <>
       {page?.availableLines.map((line) => (
@@ -16,7 +16,7 @@ export function AfterSaleForm({ viewmodel }: Readonly<{ viewmodel: ReturnType<ty
                 已履约 {line.fulfilledQuantity} · 已售后 {line.claimedQuantity} · 最多 {line.maximumQuantity}
               </p>
             </div>
-            <b>预计 ¥{formatMinor(line.expectedRefundMinor)}</b>
+            <b>服务端可退上限 ¥{formatMinor(line.expectedRefundMinor)}</b>
           </div>
           {line.available ? (
             <label className="mt-3 flex items-center gap-2">
@@ -59,7 +59,7 @@ export function AfterSaleForm({ viewmodel }: Readonly<{ viewmodel: ReturnType<ty
       </label>
       <div>
         <b>图片/附件</b>
-        <p className="mt-1 text-muted">附件使用 5 分钟短期签名直传，平台复核文件类型、大小、SHA-256 指纹和恶意文件扫描结果；同时最多上传 2 个。</p>
+        <p className="mt-1 text-muted">附件使用短期签名直传，提交时服务端复核归属、文件类型、大小和 SHA-256 指纹；最多 6 个，单个不超过 1 MB、合计不超过 1.25 MB。</p>
         <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center rounded-lg border px-3 py-2 font-bold focus-within:ring-2 focus-within:ring-[var(--sw-brand)]">
           选择文件
           <input
@@ -77,7 +77,7 @@ export function AfterSaleForm({ viewmodel }: Readonly<{ viewmodel: ReturnType<ty
         {attachments.map((item) => (
           <div key={item.id} className="mt-1 flex items-center justify-between gap-3 rounded bg-subtle p-2">
             <span className="min-w-0 flex-1 truncate">{item.name}</span>
-            <span className={item.state === 'failed' ? 'text-danger' : 'text-muted'}>{item.state === 'uploading' ? '正在安全上传…' : item.state === 'ready' ? '已上传并校验' : (item.error ?? '上传失败')}</span>
+            <span className={item.state === 'failed' ? 'text-danger' : 'text-muted'}>{item.state === 'uploading' ? '正在安全上传…' : item.state === 'ready' ? '已上传，提交时服务端校验' : (item.error ?? '上传失败')}</span>
             <button type="button" onClick={() => actions.removeAttachment(item.id)} className="font-bold text-brand">
               移除
             </button>
@@ -87,7 +87,7 @@ export function AfterSaleForm({ viewmodel }: Readonly<{ viewmodel: ReturnType<ty
       <div className="rounded-lg bg-brand-light p-3">
         <div className="flex items-center justify-between">
           <span>预计原路退回</span>
-          <b className="text-lg text-[var(--sw-brand)]">¥{formatMinor(expectedMinor)}</b>
+          <b className="text-sm text-[var(--sw-brand)]">提交后由服务端确定</b>
         </div>
         <p className="mt-1 text-muted">最终按原支付媒介可退余额确定，拆分明细会写入退款时间线。</p>
       </div>

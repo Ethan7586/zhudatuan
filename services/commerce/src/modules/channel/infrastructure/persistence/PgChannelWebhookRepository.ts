@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ChannelWebhookOutcome, ChannelWebhookReceipt, ChannelWebhookRepository, StandardChannelWebhook } from '../../application/port/ChannelWebhookRepository';
 import type { ChannelFailure } from '../../domain/model/Failure';
 import { ProviderOperation, providerResponse, type ProviderOperationSnapshot } from '../../domain/model/ProviderOperation';
@@ -57,15 +57,38 @@ export class PgChannelWebhookRepository implements ChannelWebhookRepository {
       if (terminal.rows[0]?.state === 'verified') return null;
       throw new Error('CHANNEL_WEBHOOK_NOT_RUNNABLE');
     }
-    const model = new WebhookReceipt({ id: row.id, connection: row.connection_id, provider: row.provider, scope: row.scope_id,
-      externalId: row.external_id, state: 'processing', attempts: row.attempts, ciphertext: row.raw_ciphertext,
-      keyVersion: row.raw_key_version, rawHash: row.raw_hash, signatureHash: row.signature_hash,
-      receivedAt: new Date(row.received_at).toISOString(), trace: row.trace_id, failure: null, version: Number(row.version) });
-    return Object.freeze({ id: model.value.id, connection: model.value.connection, provider: model.value.provider,
-      scope: model.value.scope, external: model.value.externalId, attempts: model.value.attempts,
-      ciphertext: model.value.ciphertext, keyVersion: model.value.keyVersion, rawHash: model.value.rawHash,
-      signatureHash: model.value.signatureHash, trace: model.value.trace, receivedAt: model.value.receivedAt,
-      version: model.value.version });
+    const model = new WebhookReceipt({
+      id: row.id,
+      connection: row.connection_id,
+      provider: row.provider,
+      scope: row.scope_id,
+      externalId: row.external_id,
+      state: 'processing',
+      attempts: row.attempts,
+      ciphertext: row.raw_ciphertext,
+      keyVersion: row.raw_key_version,
+      rawHash: row.raw_hash,
+      signatureHash: row.signature_hash,
+      receivedAt: new Date(row.received_at).toISOString(),
+      trace: row.trace_id,
+      failure: null,
+      version: Number(row.version),
+    });
+    return Object.freeze({
+      id: model.value.id,
+      connection: model.value.connection,
+      provider: model.value.provider,
+      scope: model.value.scope,
+      external: model.value.externalId,
+      attempts: model.value.attempts,
+      ciphertext: model.value.ciphertext,
+      keyVersion: model.value.keyVersion,
+      rawHash: model.value.rawHash,
+      signatureHash: model.value.signatureHash,
+      trace: model.value.trace,
+      receivedAt: model.value.receivedAt,
+      version: model.value.version,
+    });
   }
 
   async apply(context: WriteTransactionContext, receipt: ChannelWebhookReceipt, webhook: StandardChannelWebhook): Promise<ChannelWebhookOutcome> {
@@ -79,14 +102,38 @@ export class PgChannelWebhookRepository implements ChannelWebhookRepository {
       normalized,raw_hash,signature_hash,state,received_at,watermark,trace_id,attempts,version)
       values($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10,$11,'processing',$12,$12,$13,$14,0)
       on conflict(connection_id,external_id) do nothing returning version`,
-      [inboxId, receipt.id, receipt.connection, receipt.provider, receipt.scope, receipt.external, webhook.eventType,
-        webhook.reference, JSON.stringify(webhook.normalized), receipt.rawHash, receipt.signatureHash, receipt.receivedAt,
-        receipt.trace, receipt.attempts]
+      [
+        inboxId,
+        receipt.id,
+        receipt.connection,
+        receipt.provider,
+        receipt.scope,
+        receipt.external,
+        webhook.eventType,
+        webhook.reference,
+        JSON.stringify(webhook.normalized),
+        receipt.rawHash,
+        receipt.signatureHash,
+        receipt.receivedAt,
+        receipt.trace,
+        receipt.attempts,
+      ]
     );
     if (!inserted.rows[0]) return this.replayed(database, receipt, inboxId);
-    new WebhookInbox({ id: inboxId, receipt: receipt.id, connection: receipt.connection, externalId: receipt.external,
-      eventType: webhook.eventType, state: 'processing', attempts: receipt.attempts, rawHash: receipt.rawHash,
-      signatureHash: receipt.signatureHash, watermark: receipt.receivedAt, failure: null, version: 0 });
+    new WebhookInbox({
+      id: inboxId,
+      receipt: receipt.id,
+      connection: receipt.connection,
+      externalId: receipt.external,
+      eventType: webhook.eventType,
+      state: 'processing',
+      attempts: receipt.attempts,
+      rawHash: receipt.rawHash,
+      signatureHash: receipt.signatureHash,
+      watermark: receipt.receivedAt,
+      failure: null,
+      version: 0,
+    });
     const operation = await this.operation(database, receipt, webhook.reference);
     if (!operation) {
       await this.completeInbox(database, inboxId, 0, 'failed');
@@ -98,9 +145,10 @@ export class PgChannelWebhookRepository implements ChannelWebhookRepository {
     await this.completeInbox(database, inboxId, 0, 'applied');
     await this.verifyReceipt(database, receipt);
     if (decision !== 'apply') return Object.freeze({ status: decision });
-    return Object.freeze({ status: 'applied', event: Object.freeze({ webhook: inboxId, provider: receipt.provider,
-      kind: webhook.kind, reference: webhook.reference, operation: operation.value.id,
-      internalReference: operation.value.internalReference, state: webhook.state }) });
+    return Object.freeze({
+      status: 'applied',
+      event: Object.freeze({ webhook: inboxId, provider: receipt.provider, kind: webhook.kind, reference: webhook.reference, operation: operation.value.id, internalReference: operation.value.internalReference, state: webhook.state }),
+    });
   }
 
   async fail(context: WriteTransactionContext, receipt: string, scope: string, failure: ChannelFailure): Promise<void> {
@@ -110,7 +158,7 @@ export class PgChannelWebhookRepository implements ChannelWebhookRepository {
       [receipt, scope, failure.classification, failure.code, failure.retryable]
     );
     if (!changed.rows[0]) {
-      const terminal = await this.transactions.database(context).query('select 1 from channel.webhookreceipt where id=$1 and scope_id=$2 and state in(\'verified\',\'failed\')', [receipt, scope]);
+      const terminal = await this.transactions.database(context).query("select 1 from channel.webhookreceipt where id=$1 and scope_id=$2 and state in('verified','failed')", [receipt, scope]);
       if (!terminal.rows[0]) throw new Error('CHANNEL_WEBHOOK_RECEIPT_NOT_FOUND');
     }
   }
@@ -124,10 +172,20 @@ export class PgChannelWebhookRepository implements ChannelWebhookRepository {
     );
     const row = selected.rows[0];
     if (!row || row.scope_id !== receipt.scope) return null;
-    return new ProviderOperation({ id: row.id, provider: row.provider, scope: row.scope_id, kind: row.kind,
-      idempotency: row.idempotency_key, internalReference: row.internal_reference, externalReference: row.external_reference,
-      state: row.state, requestHash: row.request_hash, responseSummary: row.response_summary,
-      responseHash: row.response_hash, version: Number(row.version) });
+    return new ProviderOperation({
+      id: row.id,
+      provider: row.provider,
+      scope: row.scope_id,
+      kind: row.kind,
+      idempotency: row.idempotency_key,
+      internalReference: row.internal_reference,
+      externalReference: row.external_reference,
+      state: row.state,
+      requestHash: row.request_hash,
+      responseSummary: row.response_summary,
+      responseHash: row.response_hash,
+      version: Number(row.version),
+    });
   }
 
   private async updateOperation(database: ReturnType<PgTransactionAccess['database']>, operation: ProviderOperation, webhook: StandardChannelWebhook): Promise<void> {
@@ -141,9 +199,7 @@ export class PgChannelWebhookRepository implements ChannelWebhookRepository {
   }
 
   private async replayed(database: ReturnType<PgTransactionAccess['database']>, receipt: ChannelWebhookReceipt, inbox: string): Promise<ChannelWebhookOutcome> {
-    const current = await database.query<{ receipt_id: string; raw_hash: string; signature_hash: string; state: string }>(
-      'select receipt_id,raw_hash,signature_hash,state from channel.webhookinbox where id=$1 for update', [inbox]
-    );
+    const current = await database.query<{ receipt_id: string; raw_hash: string; signature_hash: string; state: string }>('select receipt_id,raw_hash,signature_hash,state from channel.webhookinbox where id=$1 for update', [inbox]);
     const row = current.rows[0];
     if (!row || row.receipt_id !== receipt.id || row.raw_hash !== receipt.rawHash || row.signature_hash !== receipt.signatureHash) {
       throw new Error('CHANNEL_WEBHOOK_REPLAY_EVIDENCE_CONFLICT');

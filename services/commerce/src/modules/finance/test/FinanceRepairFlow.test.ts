@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { SqlExecutor } from '../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../platform/database/PgTransactionAccess';
 import type { ApprovalPort, ApprovalReadPort } from '../../approval/public';
 import type { RepairRepository, RepairView } from '../application/port/RepairRepository';
 import { RepairApproval } from '../application/service/RepairApproval';
@@ -12,9 +12,7 @@ const entries = Object.freeze([
   Object.freeze({ account: 'expense.goods', debitMinor: 900, creditMinor: 0, currency: 'CNY', memo: '替代借方' }),
   Object.freeze({ account: 'liability.payable', debitMinor: 0, creditMinor: 900, currency: 'CNY', memo: '替代贷方' }),
 ]);
-const differences = Object.freeze([
-  Object.freeze({ id: 'reconciliationdifference:one', kind: 'statementbalance', expectedMinor: 900, actualMinor: 1_000, deltaMinor: 100, currency: 'CNY' }),
-]);
+const differences = Object.freeze([Object.freeze({ id: 'reconciliationdifference:one', kind: 'statementbalance', expectedMinor: 900, actualMinor: 1_000, deltaMinor: 100, currency: 'CNY' })]);
 
 describe('finance repair application flow', () => {
   it('previews using reads only and never persists transient state', async () => {
@@ -24,9 +22,17 @@ describe('finance repair application flow', () => {
     const repository = { statement, sourceJournal, submit } as unknown as RepairRepository;
     const action = operations(repository).repairsPreview as FinanceAction;
 
-    const result = await action(request('finance.reconciliationrepairs.preview', {
-      statementId: 'statement:one', sourceJournalId: 'journal:source', sourceHash: 'a'.repeat(64), entries, reason: '替换错误入账', expectedVersion: 3,
-    }), {} as SqlExecutor);
+    const result = await action(
+      request('finance.reconciliationrepairs.preview', {
+        statementId: 'statement:one',
+        sourceJournalId: 'journal:source',
+        sourceHash: 'a'.repeat(64),
+        entries,
+        reason: '替换错误入账',
+        expectedVersion: 3,
+      }),
+      {} as SqlExecutor
+    );
 
     expect(result.status).toBe(200);
     expect(result.body).toMatchObject({ repair: { status: 'draft', sourceJournalId: 'journal:source', sourceJournalHash: 'b'.repeat(64) }, balanced: true });
@@ -37,9 +43,19 @@ describe('finance repair application flow', () => {
 
   it('submits exactly the proposal carried by the signed preview token', async () => {
     const policy = new RepairPolicy('k'.repeat(32));
-    const proposal = { scopeId: 'mall:one', statementId: 'statement:one', sourceHash: 'a'.repeat(64), sourceVersion: 3,
-      sourceJournalId: 'journal:source', sourceJournalHash: 'b'.repeat(64), sourceJournalDebitMinor: 1_000,
-      entries, differences, makerId: 'membership:maker', reason: '替换错误入账' } as const;
+    const proposal = {
+      scopeId: 'mall:one',
+      statementId: 'statement:one',
+      sourceHash: 'a'.repeat(64),
+      sourceVersion: 3,
+      sourceJournalId: 'journal:source',
+      sourceJournalHash: 'b'.repeat(64),
+      sourceJournalDebitMinor: 1_000,
+      entries,
+      differences,
+      makerId: 'membership:maker',
+      reason: '替换错误入账',
+    } as const;
     const preview = policy.preview(proposal, now);
     const stored = record({ id: 'reconciliationrepair:one', version: 1 });
     const submit = vi.fn(async () => stored);
@@ -52,12 +68,14 @@ describe('finance repair application flow', () => {
 
     expect(result.status).toBe(201);
     expect(approvalRequest).toHaveBeenCalledTimes(1);
-    expect(submit).toHaveBeenCalledWith(expect.objectContaining({
-      previewHash: preview.previewHash,
-      approvalInstanceId: 'approvalinstance:one',
-      approvalAmountMinor: 1_000,
-      proposal,
-    }));
+    expect(submit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        previewHash: preview.previewHash,
+        approvalInstanceId: 'approvalinstance:one',
+        approvalAmountMinor: 1_000,
+        proposal,
+      })
+    );
   });
 });
 

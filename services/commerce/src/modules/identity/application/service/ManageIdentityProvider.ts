@@ -1,10 +1,10 @@
 import { type IdentityAction as OperationAction } from '../model/IdentityAction';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { identityCallback, type IdentityProviderType } from '@shop/config/server';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
 
 import type { ProviderRepository } from '../port/ProviderRepository';
 export class ManageIdentityProvider {

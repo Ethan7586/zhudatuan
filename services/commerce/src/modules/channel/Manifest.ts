@@ -1,5 +1,5 @@
 import { CAPABILITY_CODES_BY_OWNER } from '@shop/contract';
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { EXTENSION_STATE_PORT, FINANCE_CHANNEL_PORT, FULFILLMENT_CHANNEL_PORT, PAYMENT_CHANNEL_PORT, PROVIDER_SYNC_PORT } from './public';
 
 export const ChannelCapabilities = CAPABILITY_CODES_BY_OWNER.channel;

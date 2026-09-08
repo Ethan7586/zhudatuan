@@ -1,11 +1,11 @@
 import type { PaymentApplication, PaymentGateway } from '../../application/port/PaymentGateway';
 import type { PaymentCancellationEvent, PaymentCancellationProcess } from '../../application/port/PaymentCancellationProcess';
 import { PaymentReference } from '../../domain/model/PaymentReference';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import type { PaymentHoldReleaser } from './PaymentSettlement';
-import { mapParallel } from '../../../../foundation/performance/Parallel';
+import { mapParallel } from '@shop/kernel';
 
 interface CancellationTarget {
   readonly intent: string;
@@ -66,8 +66,7 @@ export class PgPaymentCancellationProcess implements PaymentCancellationProcess 
     await mapParallel(targets, 4, async (target) => {
       if (!target.scene || !target.applicationHash) return;
       try {
-        await this.gateway.close(PaymentReference.payment(target.orderNumber).text, { scene: target.scene, applicationHash: target.applicationHash },
-          { requestId: event.eventId, traceId: event.eventId, signal, deadline });
+        await this.gateway.close(PaymentReference.payment(target.orderNumber).text, { scene: target.scene, applicationHash: target.applicationHash }, { requestId: event.eventId, traceId: event.eventId, signal, deadline });
       } catch {
         // The deterministic paymentquery job below is the source of truth for an
         // unknown provider outcome, including a close request that timed out.

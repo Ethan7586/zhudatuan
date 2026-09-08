@@ -1,6 +1,9 @@
 import { bearerToken, distinctValues, enumValue, requiredValue, type EnvironmentSource } from './Environment';
 import { MIGRATION_APPROVAL } from './Release';
 
+export const MIGRATION_PHASES = Object.freeze(['prepare', 'backfill', 'assert', 'cutover', 'retire'] as const);
+export type MigrationPhase = (typeof MIGRATION_PHASES)[number];
+
 export interface MigrationEnvironment {
   readonly approval: typeof MIGRATION_APPROVAL;
   readonly databaseConnectionRef: string;
@@ -10,6 +13,7 @@ export interface MigrationEnvironment {
   readonly kmsEndpoint: string;
   readonly kmsBearerToken: string;
   readonly partnerKeyRef: string;
+  readonly phase: MigrationPhase;
   readonly secretStoreEndpoint: string;
   readonly secretStoreBearerToken: string;
   readonly snapshotRef: string;
@@ -29,6 +33,7 @@ export function migrationEnvironment(source: EnvironmentSource): MigrationEnviro
     kmsEndpoint: requiredValue(source.KMS_ENDPOINT, 'KMS_ENDPOINT_MISSING'),
     kmsBearerToken,
     partnerKeyRef: requiredValue(source.MIGRATION_PARTNER_KEY_REF, 'MIGRATION_PARTNER_KEY_REF_MISSING'),
+    phase: enumValue(source.MIGRATION_PHASE, MIGRATION_PHASES, 'MIGRATION_PHASE_INVALID'),
     secretStoreEndpoint: requiredValue(source.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING'),
     secretStoreBearerToken,
     snapshotRef: requiredValue(source.MIGRATION_SOURCE_SNAPSHOT_REF, 'MIGRATION_SOURCE_SNAPSHOT_REF_MISSING'),

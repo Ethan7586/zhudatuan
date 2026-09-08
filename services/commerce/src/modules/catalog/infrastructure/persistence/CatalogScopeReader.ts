@@ -1,6 +1,6 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 import type { OrganizationReadPort } from '../../../organization/public';
 export class CatalogScopeReader {
@@ -9,6 +9,7 @@ export class CatalogScopeReader {
   async visible(context: ReadTransactionContext, scope: string, ancestors: boolean): Promise<readonly string[]> {
     const database = this.transactions.database(context);
     const selected = await this.organizations.scope(database.transaction, scope);
+    if (selected.scopeKind === 'supplier') return Object.freeze([selected.id]);
     return Object.freeze([...new Set([selected.id, ...selected.descendants, ...(ancestors ? selected.ancestors : [])])]);
   }
   async assert(context: ReadTransactionContext, accessScope: string, targetScope: string): Promise<void> {

@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ReadState } from '../../domain/model/ReadState';
 import type { Ticket, TicketPriority, TicketState } from '../../domain/model/Ticket';
 import type { Agent } from '../../domain/policy/AssignmentPolicy';
@@ -44,10 +44,7 @@ export interface AssignmentRecord {
 
 export interface AssignmentStore {
   lockTicket(context: WriteTransactionContext, ticket: string, scopes: readonly string[]): Promise<AssignmentTicket>;
-  assign(
-    context: WriteTransactionContext,
-    input: Readonly<{ assignment: string; ticket: AssignmentTicket; agent: string; reason: string; expectedVersion: number }>
-  ): Promise<AssignmentRecord>;
+  assign(context: WriteTransactionContext, input: Readonly<{ assignment: string; ticket: AssignmentTicket; agent: string; reason: string; expectedVersion: number }>): Promise<AssignmentRecord>;
 }
 
 export interface SupportMessageTarget {
@@ -143,12 +140,5 @@ export interface SupportEventStore {
       payload: Readonly<Record<string, unknown>>;
     }>
   ): Promise<void>;
-  enqueue(
-    context: WriteTransactionContext,
-    kind: 'supportsla' | 'supportscan' | 'supportreassign' | 'supportrelay',
-    scope: string,
-    payload: Readonly<Record<string, unknown>>,
-    availableAt?: Date | string,
-    stableId?: string
-  ): Promise<void>;
+  enqueue(context: WriteTransactionContext, kind: 'supportsla' | 'supportscan' | 'supportreassign' | 'supportrelay', scope: string, payload: Readonly<Record<string, unknown>>, availableAt?: Date | string, stableId?: string): Promise<void>;
 }

@@ -1,18 +1,31 @@
 import { OperatorWorkspace, RouteScroll, useBrowserPath, useResourceQuery } from '@shop/design';
 import { hasFailureCode, presentError, projectRecords } from '@shop/presentation';
-import { readSurfaceNavigation, readSurfaceSession, selectSurfaceScope, surfaceRequestContext, type SurfaceNavigation } from '@shop/sdk';
-import { useCallback, useEffect, useMemo } from 'react';
+import { actionField, requiredText, type ActionInput, type OperatorAction } from '@shop/presentation/actions';
+import { readSurfaceNavigation, readSurfaceSession, selectSurfaceScope, surfaceRequestContext, type SurfaceNavigation } from '@shop/sdk/session';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createStoreDependencies, type StoreDependencies } from './Dependencies';
 import { STORE_ROUTES } from './RouteRegistry';
 import { NAVIGATION_CATALOG_HASH } from '../generated/NavigationBinding';
 import { matchRoutePath, resolveRoutePath, type RouteId, type RouteMatch } from '../generated/RouteBinding';
+import { commandContext } from '../shared/Command';
+import type { StoreFeatureViewModel } from '../shared/FeatureViewModel';
 
 interface StoreSnapshot {
   readonly scopeLabel: string;
   readonly title: string;
   readonly description: string;
   readonly items: readonly Readonly<{ id: string; path: string; title: string }>[];
-  readonly data: ReturnType<typeof projectRecords>;
+  readonly employeeLabel: string;
+  readonly raw: unknown;
+  readonly route: RouteMatch;
+  readonly context: ReturnType<typeof surfaceRequestContext>;
+  readonly viewModel: StoreFeatureViewModel;
+}
+
+interface StepupState {
+  readonly action: string;
+  readonly selectedKey?: string;
+  readonly challenge: string;
 }
 
 export function StoreApp({ dependencies: supplied }: Readonly<{ dependencies?: StoreDependencies }>) {
@@ -20,19 +33,99 @@ export function StoreApp({ dependencies: supplied }: Readonly<{ dependencies?: S
   const location = useBrowserPath();
   const load = useCallback((signal: AbortSignal) => loadStore(dependencies, location.pathname, location.navigate, signal), [dependencies, location.pathname, location.navigate]);
   const query = useResourceQuery(location.pathname, load);
+  const [selectedKey, setSelectedKey] = useState<string>();
+  const [replacement, setReplacement] = useState<unknown>();
+  const [stepup, setStepup] = useState<StepupState>();
   const authenticationRequired = hasFailureCode(query.error, 'AUTHENTICATION_REQUIRED');
   useEffect(() => {
     if (authenticationRequired) window.location.replace(authHref(dependencies.environment.authOrigin, location.pathname));
   }, [authenticationRequired, dependencies.environment.authOrigin, location.pathname]);
   const error = query.error === undefined || authenticationRequired ? undefined : presentError(query.error).message;
   const value = query.data;
+  useEffect(() => {
+    setSelectedKey(undefined);
+    setReplacement(undefined);
+    setStepup(undefined);
+  }, [location.pathname, value]);
   if (value === undefined) {
-    return (<>
-      <RouteScroll entry={location.entry} />
-      <OperatorWorkspace product="门店工作台" scopeLabel="正在校验门店身份" pathname={location.pathname} title="正在加载" description="正在同步权限、导航和业务数据。" items={[]} data={undefined} {...(error === undefined ? {} : { error })} retry={query.reload} navigate={location.navigate} />
-    </>);
+    return (
+      <>
+        <RouteScroll entry={location.entry} />
+        <OperatorWorkspace
+          product="门店工作台"
+          scopeLabel="正在校验门店身份"
+          pathname={location.pathname}
+          title="正在加载"
+          description="正在同步权限、导航和业务数据。"
+          items={[]}
+          data={undefined}
+          {...(error === undefined ? {} : { error })}
+          retry={query.reload}
+          navigate={location.navigate}
+        />
+      </>
+    );
   }
-  return <><RouteScroll entry={location.entry} /><OperatorWorkspace product="门店工作台" pathname={location.pathname} {...value} {...(error === undefined ? {} : { error })} retry={query.reload} navigate={location.navigate} /></>;
+  const raw = replacement ?? value.raw;
+  const data = value.viewModel.project?.(raw, value.route) ?? projectRecords(raw);
+  const sourceActions = value.viewModel.actions?.(raw, value.route, selectedKey) ?? [];
+  const actions = sourceActions.map((action) => (stepup?.action === action.id && stepup.selectedKey === selectedKey ? withStepupCode(action) : action));
+  const execute = async (action: OperatorAction, input: ActionInput) => {
+    if (!navigator.onLine) throw new Error('网络不可用，操作尚未提交。请恢复网络后重试。');
+    const handler = value.viewModel.execute;
+    if (handler === undefined) throw new Error('当前页面没有可执行操作。');
+    const operationContext = commandContext(value.context, action.expectedVersion);
+    let commandInput = input;
+    if (stepup?.action === action.id && stepup.selectedKey === selectedKey) {
+      await dependencies.client.identity.stepupComplete({ body: { challenge: stepup.challenge, code: requiredText(input, 'stepupcode', 12) } }, identityContext(value.context));
+      commandInput = Object.freeze(Object.fromEntries(Object.entries(input).filter(([name]) => name !== 'stepupcode')));
+      setStepup(undefined);
+    }
+    let result;
+    try {
+      result = await handler(dependencies.client, operationContext, value.route, raw, selectedKey, action, commandInput);
+    } catch (cause) {
+      if (!hasFailureCode(cause, 'STEPUP_REQUIRED')) throw cause;
+      const challenge = await dependencies.client.identity.stepupStart({ body: {} }, identityContext(value.context));
+      setStepup(Object.freeze({ action: action.id, ...(selectedKey === undefined ? {} : { selectedKey }), challenge: challenge.id }));
+      return { message: '验证码已发送，请输入验证码后再次确认。', keepOpen: true };
+    }
+    if (result.sessionEnded) {
+      window.location.replace(authHref(dependencies.environment.authOrigin, location.pathname));
+      return { message: result.message };
+    }
+    if (result.destination) location.navigate(result.destination);
+    else if (result.data !== undefined) setReplacement(result.data);
+    else if (result.refresh !== false) setReplacement(await value.viewModel.read(dependencies.client, value.context, value.route));
+    setSelectedKey(undefined);
+    return { message: result.message, ...(result.destination === undefined ? {} : { destination: result.destination }) };
+  };
+  const select = (key: string) => {
+    setSelectedKey(key);
+    setStepup(undefined);
+  };
+  return (
+    <>
+      <RouteScroll entry={location.entry} />
+      <OperatorWorkspace
+        product="门店工作台"
+        pathname={location.pathname}
+        scopeLabel={value.scopeLabel}
+        title={value.title}
+        description={value.description}
+        items={value.items}
+        data={data}
+        {...(selectedKey === undefined ? {} : { selectedKey })}
+        actions={actions}
+        context={<span>{value.employeeLabel}</span>}
+        select={select}
+        execute={execute}
+        {...(error === undefined ? {} : { error })}
+        retry={query.reload}
+        navigate={location.navigate}
+      />
+    </>
+  );
 }
 
 async function loadStore(dependencies: StoreDependencies, pathname: string, navigate: (path: string, replace?: boolean) => void, signal: AbortSignal): Promise<StoreSnapshot> {
@@ -51,8 +144,19 @@ async function loadStore(dependencies: StoreDependencies, pathname: string, navi
   const binding = STORE_ROUTES[route.id];
   const manifest = await binding.load();
   const context = surfaceRequestContext(dependencies.environment, session, scope, NAVIGATION_CATALOG_HASH, signal);
-  const result = await manifest.viewModel.read(dependencies.client, context, route);
-  return Object.freeze({ scopeLabel: '当前门店', title: manifest.viewModel.title, description: manifest.viewModel.description, items, data: projectRecords(result) });
+  const [result, profile] = await Promise.all([manifest.viewModel.read(dependencies.client, context, route), dependencies.client.member.profileRead({}, context)]);
+  const employee = profile.employee_no ? `${profile.display_name} · 工号 ${profile.employee_no}` : profile.display_name;
+  return Object.freeze({
+    scopeLabel: `门店 · ${shortScope(scope.id)}`,
+    employeeLabel: employee,
+    title: manifest.viewModel.title,
+    description: manifest.viewModel.description,
+    items,
+    raw: result,
+    route,
+    context,
+    viewModel: manifest.viewModel,
+  });
 }
 
 function navigationItems(navigation: SurfaceNavigation, scopeKind: string, scopeId: string): readonly Readonly<{ id: string; path: string; title: string }>[] {
@@ -86,9 +190,26 @@ function scopeCandidate(route: RouteMatch): Readonly<{ kind: string; id: string 
   return Object.freeze({ kind, id });
 }
 
-function authHref(origin: string, returnPath: string): string {
+export function authHref(origin: string, returnPath: string): string {
   const target = new URL('/', origin);
   target.searchParams.set('target', 'store');
   target.searchParams.set('returnpath', returnPath);
   return target.toString();
+}
+
+function shortScope(value: string): string {
+  return value.length <= 20 ? value : `${value.slice(0, 12)}…${value.slice(-6)}`;
+}
+
+function withStepupCode(action: OperatorAction): OperatorAction {
+  return Object.freeze({
+    ...action,
+    confirmation: '本操作需要再次验证当前员工身份。请输入刚收到的验证码后提交。',
+    fields: Object.freeze([...action.fields, actionField('stepupcode', '身份验证码', { kind: 'password', maximumLength: 12 })]),
+  });
+}
+
+function identityContext(context: ReturnType<typeof surfaceRequestContext>) {
+  const { scope: _scope, expectedVersion: _expectedVersion, idempotencyKey: _idempotencyKey, ...identity } = context;
+  return commandContext(identity);
 }

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ApprovalPort, ApprovalRequestReceipt } from '../../../approval/public';
 import type { Withdrawal } from '../../domain/model/Withdrawal';
 

@@ -1,11 +1,11 @@
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 /** Finance journal persistence. */
 import { PgAccountingPort } from './PgAccountingPort';
 import type { FinancePaymentPort } from '../../../payment/public';
 
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 
 /** Converts accepted accounting events to idempotent journals; event owners never write ledger tables. */
 export class PostJournal {

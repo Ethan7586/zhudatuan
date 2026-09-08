@@ -35,20 +35,32 @@ describe('runtime retention repositories', () => {
       insert into runtime.deadletters values('deadletter:open','open','job:linked',null,null,clock_timestamp()-interval '2 days');
     `);
     const cleanup = createCleanupRepositories();
-    await withWriteTransaction(query, context => cleanup.jobs.recover(context, 'job:cleanup', 100));
-    await withWriteTransaction(query, context => cleanup.jobs.record(context, { id: 'job:cleanup', token: 1 }, {
-      hash: 'a'.repeat(64), createdAt: new Date().toISOString(), inboxBefore: new Date(0).toISOString(), outboxBefore: new Date(0).toISOString(),
-      counts: { jobs: 1, imports: 0, exports: 0, idempotency: 0, deadletters: 0, inbox: 0, outbox: 0, objects: 0 },
-    }));
-    expect((await database.query(`select checkpoint->'cleanup'->>'hash' hash from runtime.jobs where id='job:cleanup'`)).rows)
-      .toEqual([{ hash: 'a'.repeat(64) }]);
-    expect((await database.query(`select id,state,lease_owner from runtime.jobs where id in('job:recover','job:cancel') order by id`)).rows)
-      .toEqual([{ id: 'job:cancel', state: 'cancelled', lease_owner: null }, { id: 'job:recover', state: 'queued', lease_owner: null }]);
-    expect((await database.query(`select id,state,error_code from runtime.job_attempts where id in('attempt:recover','attempt:cancel') order by id`)).rows)
-      .toEqual([{ id: 'attempt:cancel', state: 'cancelled', error_code: null }, { id: 'attempt:recover', state: 'failed', error_code: 'JOB_LEASE_EXPIRED' }]);
-    const planned = await withReadTransaction(query, context => cleanup.jobs.plan(context, 100));
+    await withWriteTransaction(query, (context) => cleanup.jobs.recover(context, 'job:cleanup', 100));
+    await withWriteTransaction(query, (context) =>
+      cleanup.jobs.record(
+        context,
+        { id: 'job:cleanup', token: 1 },
+        {
+          hash: 'a'.repeat(64),
+          createdAt: new Date().toISOString(),
+          inboxBefore: new Date(0).toISOString(),
+          outboxBefore: new Date(0).toISOString(),
+          counts: { jobs: 1, imports: 0, exports: 0, idempotency: 0, deadletters: 0, inbox: 0, outbox: 0, objects: 0 },
+        }
+      )
+    );
+    expect((await database.query(`select checkpoint->'cleanup'->>'hash' hash from runtime.jobs where id='job:cleanup'`)).rows).toEqual([{ hash: 'a'.repeat(64) }]);
+    expect((await database.query(`select id,state,lease_owner from runtime.jobs where id in('job:recover','job:cancel') order by id`)).rows).toEqual([
+      { id: 'job:cancel', state: 'cancelled', lease_owner: null },
+      { id: 'job:recover', state: 'queued', lease_owner: null },
+    ]);
+    expect((await database.query(`select id,state,error_code from runtime.job_attempts where id in('attempt:recover','attempt:cancel') order by id`)).rows).toEqual([
+      { id: 'attempt:cancel', state: 'cancelled', error_code: null },
+      { id: 'attempt:recover', state: 'failed', error_code: 'JOB_LEASE_EXPIRED' },
+    ]);
+    const planned = await withReadTransaction(query, (context) => cleanup.jobs.plan(context, 100));
     expect(planned).toEqual(['job:terminal']);
-    await withWriteTransaction(query, async context => {
+    await withWriteTransaction(query, async (context) => {
       const deadletters = await cleanup.control.planDeadletters(context, 100);
       await cleanup.control.purgeDeadletters(context, deadletters);
       expect(await cleanup.jobs.purge(context, planned)).toBe(1);
@@ -72,14 +84,16 @@ describe('runtime retention repositories', () => {
         ('export:future','failed',null,clock_timestamp()+interval '1 day');
     `);
     const cleanup = createCleanupRepositories();
-    await withWriteTransaction(query, context => cleanup.imports.expire(context, 100));
-    expect((await database.query(`select id,state from runtime.imports where id in('import:abandoned','import:confirmed') order by id`)).rows)
-      .toEqual([{ id: 'import:abandoned', state: 'expired' }, { id: 'import:confirmed', state: 'ready' }]);
-    const imports = await withReadTransaction(query, context => cleanup.imports.plan(context, 10));
-    const exports = await withReadTransaction(query, context => cleanup.exports.plan(context, 10));
+    await withWriteTransaction(query, (context) => cleanup.imports.expire(context, 100));
+    expect((await database.query(`select id,state from runtime.imports where id in('import:abandoned','import:confirmed') order by id`)).rows).toEqual([
+      { id: 'import:abandoned', state: 'expired' },
+      { id: 'import:confirmed', state: 'ready' },
+    ]);
+    const imports = await withReadTransaction(query, (context) => cleanup.imports.plan(context, 10));
+    const exports = await withReadTransaction(query, (context) => cleanup.exports.plan(context, 10));
     expect(imports).toEqual({ ids: ['import:abandoned', 'import:expired'], objects: ['object:abandoned', 'object:source', 'object:report'] });
     expect(exports).toEqual({ ids: ['export:empty', 'export:ready'], objects: ['object:export'] });
-    await withWriteTransaction(query, async context => {
+    await withWriteTransaction(query, async (context) => {
       await cleanup.imports.purge(context, imports.ids);
       await cleanup.exports.purge(context, exports.ids);
     });
@@ -108,7 +122,7 @@ describe('runtime retention repositories', () => {
         ('outbox:recent',clock_timestamp(),clock_timestamp());
     `);
     const cleanup = createCleanupRepositories();
-    await withWriteTransaction(query, async context => {
+    await withWriteTransaction(query, async (context) => {
       const cutoff = new Date(Date.now() - 90 * 86_400_000);
       const idempotency = await cleanup.control.planIdempotency(context, 100);
       const deadletters = await cleanup.control.planDeadletters(context, 100);

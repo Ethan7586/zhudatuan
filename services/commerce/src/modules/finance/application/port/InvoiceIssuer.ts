@@ -1,4 +1,4 @@
-import { token } from '../../../../bootstrap/Container';
+import { token } from '../../../../composition/Container';
 
 export interface InvoiceInput {
   readonly request: string;

@@ -1,0 +1,175 @@
+.orderactiondialog,
+.orderwizardcontent {
+  display: grid;
+  gap: var(--sw-space-2);
+}
+.orderwizard {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--sw-space-0-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.orderwizard li {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  justify-items: center;
+  color: var(--sw-disabled);
+  font-size: var(--sw-font-size-caption);
+  text-align: center;
+}
+.orderwizard li span {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-subtle);
+}
+.orderwizard li.isactive,
+.orderwizard li.iscomplete {
+  color: var(--sw-brand);
+  font-weight: 700;
+}
+.orderwizard li.isactive span,
+.orderwizard li.iscomplete span {
+  background: var(--sw-brand-light);
+}
+.orderwizardcontent h3,
+.orderwizardcontent p,
+.orderactionsuccess p,
+.ordersnapshot h3,
+.ordersnapshot p {
+  margin: 0;
+}
+.orderwizardcontent details,
+.orderimportmapping,
+.orderimportchecks {
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-subtle);
+  padding: var(--sw-space-1-5);
+}
+.orderwizardcontent details summary,
+.orderimportmapping strong,
+.orderimportchecks strong {
+  color: var(--sw-text);
+  font-weight: 700;
+  cursor: pointer;
+}
+.orderwizardcontent details p,
+.orderimportmapping p,
+.orderimportchecks p,
+.orderimportchecks ul {
+  margin: var(--sw-space-1) 0 0;
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.orderimportchecks ul {
+  padding-inline-start: var(--sw-space-3);
+}
+.orderwizardcontent > label {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: 700;
+}
+.orderwizardcontent input:not([type='checkbox']),
+.orderwizardcontent textarea,
+.orderwizardcontent select {
+  width: 100%;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  color: var(--sw-text);
+  padding: var(--sw-space-1);
+  font: inherit;
+}
+.orderwizardcontent fieldset {
+  display: grid;
+  gap: var(--sw-space-1);
+  margin: 0;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  padding: var(--sw-space-1-5);
+}
+.orderwizardcontent fieldset label {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-1);
+}
+.orderwizardcontent input[type='radio'] {
+  accent-color: var(--sw-brand);
+}
+.orderprimaryaction,
+.orderreadcard button {
+  width: max-content;
+  min-height: 2.25rem;
+  border: 0.0625rem solid var(--sw-brand);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  color: var(--sw-brand);
+  padding: 0 var(--sw-space-1-5);
+  font: inherit;
+  font-weight: 700;
+}
+.orderprimaryaction {
+  background: var(--sw-brand);
+  color: var(--sw-surface);
+}
+.orderwizardcontent footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sw-space-1);
+}
+.orderactionconfirm {
+  grid-template-columns: auto 1fr !important;
+  align-items: start;
+  font-weight: 400 !important;
+}
+.orderactionconfirm input {
+  accent-color: var(--sw-brand);
+}
+.ordersnapshot,
+.orderactionsuccess {
+  display: grid;
+  gap: var(--sw-space-1);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-subtle);
+  padding: var(--sw-space-2);
+}
+.orderactionsuccess {
+  background: var(--sw-success-surface);
+  color: var(--sw-success-strong);
+}
+.orderactionsuccess dl,
+.orderactionsuccess dl > div {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  margin: 0;
+}
+.orderactionsuccess dl {
+  grid-template-columns: 1fr 1fr;
+}
+.orderactionsuccess dd {
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
+@media (max-width: 44rem) {
+  .orderwizard {
+    grid-template-columns: 1fr;
+  }
+  .orderwizard li {
+    grid-template-columns: auto 1fr;
+    justify-items: start;
+    text-align: left;
+  }
+  .orderactionsuccess dl {
+    grid-template-columns: 1fr;
+  }
+}

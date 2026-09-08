@@ -7,17 +7,27 @@ describe('QualificationCase', () => {
     const verified = QualificationCase.restore(snapshot());
     expect(verified.publish('2026-09-05T00:00:00.000Z').snapshot()).toMatchObject({ state: 'published', version: 1, publishedAt: '2026-09-05T00:00:00.000Z' });
 
-    const unverified = QualificationCase.restore(snapshot({
-      evidence: [{ ...snapshot().evidence[0]!, state: 'submitted', verifiedAt: null, verifiedBy: null }],
-    }));
+    const unverified = QualificationCase.restore(
+      snapshot({
+        evidence: [{ ...snapshot().evidence[0]!, state: 'submitted', verifiedAt: null, verifiedBy: null }],
+      })
+    );
     expect(() => unverified.publish('2026-09-05T00:00:00.000Z')).toThrow('VALIDATION_FAILED');
     expect(() => verified.publish('2026-10-01T00:00:00.000Z')).toThrow('VALIDATION_FAILED');
   });
 
   it('rejects an object reference, digest or scan result that differs from the reviewed material', () => {
     const input = { id: 'evidence:one', kind: 'license' as const, reference: 'object:license-one', sha256: 'a'.repeat(64), actor: 'principal:reviewer', now: '2026-09-05T00:00:00.000Z' };
-    const metadata = { reference: input.reference, sha256: input.sha256, size: 128, scan: 'clean' as const, contentType: 'application/pdf',
-      path: 'qualification/license-one.pdf', retentionUntil: '2036-09-05T00:00:00.000Z', lockedUntil: null };
+    const metadata = {
+      reference: input.reference,
+      sha256: input.sha256,
+      size: 128,
+      scan: 'clean' as const,
+      contentType: 'application/pdf',
+      path: 'qualification/license-one.pdf',
+      retentionUntil: '2036-09-05T00:00:00.000Z',
+      lockedUntil: null,
+    };
     expect(Evidence.verified(input, metadata).state).toBe('verified');
     expect(() => Evidence.verified(input, { ...metadata, sha256: 'b'.repeat(64) })).toThrow('VALIDATION_FAILED');
     expect(() => Evidence.verified(input, { ...metadata, reference: 'object:replaced' })).toThrow('VALIDATION_FAILED');

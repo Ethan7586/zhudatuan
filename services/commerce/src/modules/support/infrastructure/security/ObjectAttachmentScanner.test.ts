@@ -37,7 +37,14 @@ describe('ObjectAttachmentScanner', () => {
   });
 
   it('retries a missing upload before expiry and rejects it permanently after expiry', async () => {
-    const unavailable = { inspect: vi.fn(async () => { throw new Error('OBJECT_STORE_UNAVAILABLE'); }), read: vi.fn(async () => { throw new Error('OBJECT_STORE_UNAVAILABLE'); }) } as unknown as ObjectStore;
+    const unavailable = {
+      inspect: vi.fn(async () => {
+        throw new Error('OBJECT_STORE_UNAVAILABLE');
+      }),
+      read: vi.fn(async () => {
+        throw new Error('OBJECT_STORE_UNAVAILABLE');
+      }),
+    } as unknown as ObjectStore;
     const scanner = new ObjectAttachmentScanner(unavailable);
     await expect(scanner.scan(evidence(png, 'image/png'))).rejects.toThrow('OBJECT_STORE_UNAVAILABLE');
     await expect(scanner.scan({ ...evidence(png, 'image/png'), uploadExpiresAt: '2020-01-01T00:00:00.000Z' })).resolves.toMatchObject({ clean: false, reason: 'UPLOAD_MISSING', recovery: expect.stringContaining('重新上传') });
@@ -60,8 +67,7 @@ function evidence(bytes: Uint8Array, contentType: string, originalName = 'receip
 }
 
 function metadata(item: PendingEvidence) {
-  return { reference: item.objectReference, sha256: item.sha256, size: item.size, scan: 'clean' as const, contentType: item.contentType,
-    path: 'support/evidence/one', retentionUntil: '2099-01-01T00:00:00.000Z', lockedUntil: null };
+  return { reference: item.objectReference, sha256: item.sha256, size: item.size, scan: 'clean' as const, contentType: item.contentType, path: 'support/evidence/one', retentionUntil: '2099-01-01T00:00:00.000Z', lockedUntil: null };
 }
 
 function store(item: PendingEvidence, bytes: Uint8Array): ObjectStore {

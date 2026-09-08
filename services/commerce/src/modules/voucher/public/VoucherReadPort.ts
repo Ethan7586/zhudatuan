@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../platform/database/TransactionContext';
 
 export interface VoucherChoice {
   readonly id: string;
@@ -14,8 +14,5 @@ export interface CheckoutVoucherPort {
 
 export interface VerificationVoucherPort {
   redeemableScope(context: ReadTransactionContext, voucher: string, member: string): Promise<string | null>;
-  redeemVerification(
-    context: WriteTransactionContext,
-    input: Readonly<{ voucher: string; verification: string; scope: string; store: string; actor: string }>
-  ): Promise<Readonly<{ id: string; amountMinor: number }> | null>;
+  redeemVerification(context: WriteTransactionContext, input: Readonly<{ voucher: string; verification: string; scope: string; store: string; actor: string }>): Promise<Readonly<{ id: string; amountMinor: number }> | null>;
 }

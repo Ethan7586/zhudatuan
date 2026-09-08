@@ -1,5 +1,5 @@
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { QualificationCaseRecord, QualificationCaseRepository } from '../../application/port/QualificationCaseRepository';
 import type { EvidenceSnapshot } from '../../domain/model/Evidence';
 import type { QualificationCaseSnapshot, QualificationState, QualificationTarget, QualificationTargetKind } from '../../domain/model/QualificationCase';
@@ -41,10 +41,7 @@ export class PgQualificationCaseRepository implements QualificationCaseRepositor
   constructor(private readonly transactions: PgTransactionAccess = new PgTransactionAccess()) {}
 
   async cases(context: ReadTransactionContext, scope: string, limit: number): Promise<readonly QualificationCaseRecord[]> {
-    const result = await this.transactions.database(context).query<PresentedCaseRow>(
-      `${presentationSql} where target.scope_id=$1 order by target.updated_at desc,target.id desc limit $2`,
-      [scope, limit]
-    );
+    const result = await this.transactions.database(context).query<PresentedCaseRow>(`${presentationSql} where target.scope_id=$1 order by target.updated_at desc,target.id desc limit $2`, [scope, limit]);
     return Object.freeze(result.rows.map(present));
   }
 
@@ -97,10 +94,7 @@ export class PgQualificationCaseRepository implements QualificationCaseRepositor
     if (!row) return null;
     const [scopes, materials] = await Promise.all([
       database.query<{ kind: QualificationTargetKind; target_id: string } & Record<string, unknown>>(`select kind,target_id from qualification.casescope where case_id=$1 order by kind,target_id`, [row.id]),
-      database.query<EvidenceRow>(
-        `select id,kind,object_ref,sha256,state,verified_at,verified_by from qualification.casematerial where case_id=$1 order by id`,
-        [row.id]
-      ),
+      database.query<EvidenceRow>(`select id,kind,object_ref,sha256,state,verified_at,verified_by from qualification.casematerial where case_id=$1 order by id`, [row.id]),
     ]);
     return Object.freeze({
       id: row.id,

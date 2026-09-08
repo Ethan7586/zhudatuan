@@ -1,6 +1,7 @@
 import type { PaymentAction } from './PaymentAction';
+import type { OperationOutputFor } from '@shop/contract';
 
-export type PaymentState = 'captured' | 'pending' | 'preparing' | 'recovery' | 'failed' | 'expired';
+export type PaymentState = OperationOutputFor<'payment.intents.read'>['state'];
 
 export interface Payment {
   readonly intentId: string;
@@ -9,5 +10,5 @@ export interface Payment {
   readonly state: PaymentState;
   readonly action: PaymentAction | null;
   readonly expiresAt: string;
-  readonly retryAfter: number | null;
+  readonly retryAfter: number;
 }

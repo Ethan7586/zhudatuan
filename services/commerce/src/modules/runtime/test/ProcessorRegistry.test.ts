@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { jobDefinition, type JobKind } from '../../../foundation/application/JobCatalog';
+import { jobDefinition, type JobKind } from '../../../pipeline/JobCatalog';
 import { JobRegistry } from '../application/registry/JobRegistry';
 import { ProcessorRegistry } from '../application/registry/ProcessorRegistry';
 
-const processorJobs: readonly JobKind[] = Object.freeze([
-  'memberimport', 'catalogimport', 'inventoryimport', 'orderimport', 'credentialimport', 'financeimport', 'export', 'voucherexport',
-]);
+const processorJobs: readonly JobKind[] = Object.freeze(['memberimport', 'catalogimport', 'inventoryimport', 'orderimport', 'credentialimport', 'financeimport', 'export', 'voucherexport']);
 
 describe('Runtime ProcessorRegistry', () => {
   it('maps every import and export strategy to one registered business processor', () => {
@@ -26,8 +24,7 @@ function registry(ids: readonly JobKind[]): JobRegistry {
   const jobs = new JobRegistry();
   for (const id of ids) {
     const definition = jobDefinition(id);
-    jobs.register({ id, job: { id, execute: async () => undefined }, lease: definition.lease, batch: 10,
-      concurrency: definition.concurrency, deadline: definition.timeout });
+    jobs.register({ id, job: { id, execute: async () => undefined }, lease: definition.lease, batch: 10, concurrency: definition.concurrency, deadline: definition.timeout });
   }
   jobs.freeze();
   return jobs;

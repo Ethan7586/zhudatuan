@@ -1,11 +1,29 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { PgTransactionAccess, SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess, SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { PgListingRepository } from './PgListingRepository';
 
 const context = {} as WriteTransactionContext;
 
 describe('PgListingRepository publication persistence', () => {
+  it('reads supplier listings from the exact supplier scope without hierarchy expansion', async () => {
+    const query = vi.fn(async (_sql: string, _values?: readonly unknown[]) => result([]));
+    const visible = vi.fn();
+    const repository = new PgListingRepository({ database: () => ({ query }) as unknown as SqlExecutor } as unknown as PgTransactionAccess, { visible } as never);
+    await repository.read(context, { scope: 'supplier:one', scopeKind: 'supplier', actorTarget: 'supplier', query: '', category: '', product: '', pool: '', supplier: '', mall: '', status: '', page: { sort: null, id: null, fetch: 51 } });
+    expect(visible).not.toHaveBeenCalled();
+    expect(String(query.mock.calls[0]?.[0])).toContain('where listing.scope_id=$1');
+    expect(String(query.mock.calls[0]?.[0])).toContain('where source.scope_id=$1');
+    expect(query.mock.calls[0]?.[1]?.[0]).toBe('supplier:one');
+  });
+
+  it('resolves a mapped source listing only inside the exact supplier scope', async () => {
+    const query = vi.fn(async (sql: string, _values?: readonly unknown[]) => (sql.includes('catalog.sourcelisting') ? result([{ id: 'source:one', sku_id: 'sku:one', scope_id: 'supplier:one' }]) : result([])));
+    const repository = new PgListingRepository({ database: () => ({ query }) as unknown as SqlExecutor } as unknown as PgTransactionAccess, { visible: vi.fn(async () => ['supplier:one']) } as never);
+    await expect(repository.priceTarget(context, 'source:one', 'supplier:one')).resolves.toEqual({ listing: 'source:one', sku: 'sku:one', scope: 'supplier:one' });
+    expect(query.mock.calls[1]?.[1]).toEqual(['source:one', 'supplier:one']);
+  });
+
   it('loads all facet groups with one bounded catalog query', async () => {
     const query = vi.fn(async (_sql: string, _values?: readonly unknown[]) => ({
       rows: [{ categories: [{ value: 'category:food', label: '食品', count: '2' }], suppliers: [], malls: [{ value: 'mall:one', label: null, count: 2 }], statuses: [{ value: 'published', label: null, count: 1 }] }],

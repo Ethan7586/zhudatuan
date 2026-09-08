@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import type { ReferralProcessEvent } from '../../application/port/ReferralEventProcess';
 
 const SUPPORTED = new Set(['order.paid', 'order.received', 'refund.completed', 'approval.instance.approved']);

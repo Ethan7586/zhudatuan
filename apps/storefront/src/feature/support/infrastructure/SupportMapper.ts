@@ -21,6 +21,12 @@ export function mapConversation(value: ConversationOutput): Conversation {
     conversationVersion: value.conversationVersion,
     latestSequence: value.latestSequence,
     lastReadSequence: value.lastReadSequence,
+    context: Object.freeze({
+      member: Object.freeze({ ...value.context.member }),
+      organization: Object.freeze({ ...value.context.organization }),
+      orders: Object.freeze(value.context.orders.map((item) => Object.freeze({ ...item }))),
+      benefits: Object.freeze(value.context.benefits.map((item) => Object.freeze({ ...item }))),
+    }),
     ...(value.nextCursor ? { nextCursor: value.nextCursor } : {}),
   });
 }

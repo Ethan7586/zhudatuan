@@ -1,11 +1,9 @@
-import { defineModule } from '../../bootstrap/DefinedModule';
-import { EXTENSION_REGISTRY } from '../../bootstrap/ExtensionRegistry';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { CACHE } from '../../foundation/cache/Cache';
-import { INVITATION_KEY_VERSIONS } from '../../foundation/infrastructure/SecretStore';
-import { QUERY_METRICS } from '../../foundation/persistence/QueryMetrics';
-import { CAPABILITY_READINESS_PORT } from '../capability/public/ReadinessPort';
-import { IDENTITY_READINESS_PORT } from '../identity/public/ReadinessPort';
+import { defineModule } from '../../composition/DefinedModule';
+import { EXTENSION_REGISTRY } from '../../composition/ExtensionRegistry';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { CACHE } from '../../platform/cache/Cache';
+import { INVITATION_KEY_VERSIONS } from '../../platform/secret/SecretStore';
+import { QUERY_METRICS } from '../../platform/database/QueryMetrics';
 import { HealthDependencyHandler } from './application/handler/HealthDependencyHandler';
 import { HealthLiveHandler } from './application/handler/HealthLiveHandler';
 import { HealthReadyHandler } from './application/handler/HealthReadyHandler';
@@ -21,7 +19,7 @@ import { PgRuntimeImporting } from './infrastructure/persistence/PgRuntimeImport
 import { JOB_PORT, EXPORT_PORT } from './public';
 import { PgJobPort } from './infrastructure/persistence/PgJobPort';
 import { PgExportPort } from './infrastructure/persistence/PgExportPort';
-import { PgJobScheduler } from '../../adapter/database/PgJobScheduler';
+import { PgJobScheduler } from '../../platform/database/PgJobScheduler';
 import { OBJECT_STORE } from '../runtime/public/ObjectPort';
 import { ExportsCancelHandler } from './application/handler/ExportsCancelHandler';
 import { ExportsReadHandler } from './application/handler/ExportsReadHandler';
@@ -38,7 +36,7 @@ import { UploadSession } from './infrastructure/storage/UploadSession';
 import { RuntimeImportExecution } from './infrastructure/process/ImportExecution';
 import { RuntimeExportExecution } from './infrastructure/process/ExportExecution';
 import { JobLease } from './infrastructure/queue/JobLease';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
+import { DATABASE_POOL } from '../../platform/database/Pool';
 import { PrepareImportObject } from './application/service/PrepareImportObject';
 import { RuntimeTabularFiles } from './infrastructure/storage/RuntimeTabularFiles';
 import { PgEventEvidenceReadPort } from './infrastructure/persistence/PgEventEvidenceReadPort';
@@ -48,23 +46,34 @@ import { createWorkers } from './infrastructure/queue/WorkerFactory';
 export const RuntimeModule = defineModule(Manifest, {
   jobs: createJobs,
   workers: createWorkers,
-  ports: (context) => [{ token: RUNTIME_IMPORT_PORT, value: new PgRuntimeImporting() }, { token: JOB_PORT, value: new PgJobPort() }, { token: EXPORT_PORT, value: new PgExportPort() },
+  ports: (context) => [
+    { token: RUNTIME_IMPORT_PORT, value: new PgRuntimeImporting() },
+    { token: JOB_PORT, value: new PgJobPort() },
+    { token: EXPORT_PORT, value: new PgExportPort() },
     { token: IMPORT_OBJECT_PORT, value: new PrepareImportObject(context.service(OBJECT_STORE)) },
     { token: EVENT_EVIDENCE_READ_PORT, value: new PgEventEvidenceReadPort() },
-    { token: EVENT_REPLAY_PORT, value: new PgEventReplayPort() }],
+    { token: EVENT_REPLAY_PORT, value: new PgEventReplayPort() },
+  ],
   jobPorts: (context) => {
     const execution = new RuntimeImportExecution(context.service(OBJECT_STORE));
     const exporting = new RuntimeExportExecution(context.service(OBJECT_STORE));
-    return [{ token: OUTBOX_RELAY_PORT, value: new PgOutboxRelay() }, { token: RUNTIME_IMPORT_PORT, value: new PgRuntimeImporting() }, { token: JOB_PORT, value: new PgJobPort() }, { token: EXPORT_PORT, value: new PgExportPort() },
-      { token: IMPORT_BATCH_FACTORY_PORT, value: execution }, { token: IMPORT_RUNNER_PORT, value: execution },
+    return [
+      { token: OUTBOX_RELAY_PORT, value: new PgOutboxRelay() },
+      { token: RUNTIME_IMPORT_PORT, value: new PgRuntimeImporting() },
+      { token: JOB_PORT, value: new PgJobPort() },
+      { token: EXPORT_PORT, value: new PgExportPort() },
+      { token: IMPORT_BATCH_FACTORY_PORT, value: execution },
+      { token: IMPORT_RUNNER_PORT, value: execution },
       { token: TABULAR_FILE_PORT, value: new RuntimeTabularFiles(context.service(OBJECT_STORE)) },
-      { token: EXPORT_RUNNER_PORT, value: exporting }, { token: LEASE_PORT, value: new JobLease(context.service(DATABASE_POOL)) },
-      { token: EVENT_REPLAY_PORT, value: new PgEventReplayPort() }];
+      { token: EXPORT_RUNNER_PORT, value: exporting },
+      { token: LEASE_PORT, value: new JobLease(context.service(DATABASE_POOL)) },
+      { token: EVENT_REPLAY_PORT, value: new PgEventReplayPort() },
+    ];
   },
   handlers: (context) => {
     const transactions = new PgTransactionAccess();
     const runtime = new PgRuntimeRepository(transactions);
-    const readiness = new EvaluateReadiness(runtime, context.ports.get(CAPABILITY_READINESS_PORT), context.ports.get(IDENTITY_READINESS_PORT), context.service(EXTENSION_REGISTRY), context.service(INVITATION_KEY_VERSIONS));
+    const readiness = new EvaluateReadiness(context.service(EXTENSION_REGISTRY), context.service(INVITATION_KEY_VERSIONS));
     const tasks = new PgTaskRepository(transactions);
     const imports = new PgRuntimeImporting(transactions);
     const scheduler = new PgJobScheduler(transactions);

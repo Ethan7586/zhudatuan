@@ -1,7 +1,7 @@
 /** Finance overview persistence queries. */
 import type { FinanceEntries } from './FinanceOperation';
 
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
 
 import type { FinanceScopeQuery } from './FinanceScopeQuery';
 

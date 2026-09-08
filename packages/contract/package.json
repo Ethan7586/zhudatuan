@@ -21,10 +21,13 @@
     "./policies": "./src/OperationPolicyCatalog.ts",
     "./fingerprint": "./src/OperationFingerprint.ts",
     "./schema": "./src/schema/index.ts",
+    "./schema/*": "./src/schema/*Schema.ts",
+    "./operationschema": "./src/schema/OperationSchema.ts",
     "./version": "./src/ContractIdentity.ts",
     "./openapi.json": "./openapi.json",
     "./order": "./src/OrderContract.ts",
     "./voucher": "./src/VoucherCredential.ts",
+    "./vocabulary": "./src/Vocabulary.ts",
     "./events.json": "./events.json",
     "./catalog-taxonomy.json": "./src/catalog-taxonomy.json"
   },

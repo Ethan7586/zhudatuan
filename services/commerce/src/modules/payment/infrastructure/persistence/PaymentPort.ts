@@ -1,11 +1,11 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { PaymentReference } from '../../domain/model/PaymentReference';
 import { randomUUID } from 'node:crypto';
 import type { PaymentIntentReceipt, PaymentTenderPlan } from '../../public';
 import { PaymentIntent } from '../../domain/model/PaymentIntent';
 import { Allocation } from '../../domain/model/Allocation';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 export class PaymentPort {
   private readonly transactions = new PgTransactionAccess();
   async externalAmount(context: ReadTransactionContext, kind: 'payment' | 'refund', reference: string): Promise<number> {
@@ -87,7 +87,10 @@ export class PaymentPort {
   ): Promise<PaymentIntentReceipt> {
     const database = this.transactions.database(context);
     await database.query('select pg_advisory_xact_lock(hashtextextended($1,0))', [`payment:intent:${input.order}`]);
-    const plan = new Allocation(input.tenders.map((tender, sequence) => Object.freeze({ sequence: sequence + 1, ...tender })), input.amountMinor);
+    const plan = new Allocation(
+      input.tenders.map((tender, sequence) => Object.freeze({ sequence: sequence + 1, ...tender })),
+      input.amountMinor
+    );
     const current = await database.query<{ id: string; scope_id: string; member_id: string; currency: string; amount_minor: number; expires_at: string; external: boolean }>(
       `select intent.id,intent.scope_id,intent.member_id,intent.currency,intent.amount_minor::float8 amount_minor,intent.expires_at,
       exists(select 1 from payment.intenttender tender where tender.intent_id=intent.id and tender.kind='wechat' and tender.amount_minor>0) external
@@ -124,17 +127,34 @@ export class PaymentPort {
     );
     const failed = retryable.rows[0];
     if (failed) {
-      if (failed.scope_id !== input.scope || failed.mall_id !== input.mall || failed.member_id !== input.member || failed.currency !== input.currency || failed.amount_minor !== input.amountMinor) throw new DomainError('PAYMENT_INTENT_CONFLICT');
+      if (failed.scope_id !== input.scope || failed.mall_id !== input.mall || failed.member_id !== input.member || failed.currency !== input.currency || failed.amount_minor !== input.amountMinor)
+        throw new DomainError('PAYMENT_INTENT_CONFLICT');
       if (context.operation !== 'payment.intents.create' || failed.internal) throw new DomainError('PAYMENT_INTENT_NOT_PAYABLE');
       const now = new Date();
-      const retried = PaymentIntent.restore({ id: failed.id, order: input.order, scope: failed.scope_id, mall: failed.mall_id, member: failed.member_id,
-        currency: failed.currency, amountMinor: failed.amount_minor, state: 'failed', idempotency: failed.idempotency_key,
-        providerReference: failed.provider_reference, expiresAt: new Date(failed.expires_at), version: failed.version })
-        .retry(input.idempotency, new Date(now.getTime() + 30 * 60 * 1000), now).snapshot();
-      const updated = await database.query<{ expires_at: string }>(
-        `update payment.intent set state=$2,idempotency_key=$3,expires_at=$4,version=$5 where id=$1 and version=$6 and state='failed' returning expires_at`,
-        [retried.id, retried.state, retried.idempotency, retried.expiresAt, retried.version, failed.version]
-      );
+      const retried = PaymentIntent.restore({
+        id: failed.id,
+        order: input.order,
+        scope: failed.scope_id,
+        mall: failed.mall_id,
+        member: failed.member_id,
+        currency: failed.currency,
+        amountMinor: failed.amount_minor,
+        state: 'failed',
+        idempotency: failed.idempotency_key,
+        providerReference: failed.provider_reference,
+        expiresAt: new Date(failed.expires_at),
+        version: failed.version,
+      })
+        .retry(input.idempotency, new Date(now.getTime() + 30 * 60 * 1000), now)
+        .snapshot();
+      const updated = await database.query<{ expires_at: string }>(`update payment.intent set state=$2,idempotency_key=$3,expires_at=$4,version=$5 where id=$1 and version=$6 and state='failed' returning expires_at`, [
+        retried.id,
+        retried.state,
+        retried.idempotency,
+        retried.expiresAt,
+        retried.version,
+        failed.version,
+      ]);
       const expiresAt = updated.rows[0]?.expires_at;
       if (!expiresAt) throw new DomainError('PAYMENT_INTENT_CONFLICT');
       return Object.freeze({ intent: failed.id, external: failed.external, expiresAt: new Date(expiresAt).toISOString() });
@@ -142,9 +162,18 @@ export class PaymentPort {
     const intent = `intent:${randomUUID()}`;
     const external = plan.lines.some(({ kind, amountMinor }) => kind === 'wechat' && amountMinor > 0);
     const now = new Date();
-    const created = PaymentIntent.create({ id: intent, order: input.order, scope: input.scope, mall: input.mall, member: input.member,
-      currency: input.currency, amountMinor: input.amountMinor, idempotency: input.idempotency, providerReference: this.reference(input.orderNumber),
-      expiresAt: new Date(now.getTime() + 30 * 60 * 1000) });
+    const created = PaymentIntent.create({
+      id: intent,
+      order: input.order,
+      scope: input.scope,
+      mall: input.mall,
+      member: input.member,
+      currency: input.currency,
+      amountMinor: input.amountMinor,
+      idempotency: input.idempotency,
+      providerReference: this.reference(input.orderNumber),
+      expiresAt: new Date(now.getTime() + 30 * 60 * 1000),
+    });
     const aggregate = (external ? created.transition('preparing', now) : created).snapshot();
     const inserted = await database.query<{
       expires_at: string;
@@ -153,16 +182,16 @@ export class PaymentPort {
       purpose,expires_at,created_at,updated_at,version)
       values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'purchase',$12,clock_timestamp(),clock_timestamp(),0)
       returning expires_at`,
-      [aggregate.id, aggregate.order, aggregate.scope, aggregate.mall, input.orderNumber, aggregate.member, aggregate.currency, aggregate.amountMinor,
-        aggregate.state, aggregate.idempotency, aggregate.providerReference, aggregate.expiresAt]
+      [aggregate.id, aggregate.order, aggregate.scope, aggregate.mall, input.orderNumber, aggregate.member, aggregate.currency, aggregate.amountMinor, aggregate.state, aggregate.idempotency, aggregate.providerReference, aggregate.expiresAt]
     );
-    if (plan.lines.length > 0) await database.query(
-      `insert into payment.intenttender(intent_id,sequence,kind,reference_id,amount_minor,state)
+    if (plan.lines.length > 0)
+      await database.query(
+        `insert into payment.intenttender(intent_id,sequence,kind,reference_id,amount_minor,state)
       select $1,source.sequence,source.kind,source.reference,source.amount,
       case when source.kind='wechat' then 'planned' else 'held' end
       from unnest($2::integer[],$3::text[],$4::text[],$5::bigint[]) source(sequence,kind,reference,amount)`,
-      [intent, plan.lines.map(({ sequence }) => sequence), plan.lines.map(({ kind }) => kind), plan.lines.map(({ reference }) => reference), plan.lines.map(({ amountMinor }) => amountMinor)]
-    );
+        [intent, plan.lines.map(({ sequence }) => sequence), plan.lines.map(({ kind }) => kind), plan.lines.map(({ reference }) => reference), plan.lines.map(({ amountMinor }) => amountMinor)]
+      );
     const expiresAt = inserted.rows[0]?.expires_at;
     if (!expiresAt) {
       const selected = await database.query<{

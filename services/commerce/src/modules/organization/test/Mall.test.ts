@@ -18,22 +18,50 @@ describe('organization mall policies', () => {
 
   it('normalizes the complete profile once and rejects an unsafe custom domain', () => {
     const policy = new MallPolicy();
-    expect(policy.profile({
-      code: ' welfare01 ', publicSlug: ' Mall-One ', brandName: ' 主打团福利 ', domain: { mode: 'custom', customDomain: 'SHOP.EXAMPLE.COM.' },
-      ownerMembershipId: ' membership:owner ', currency: 'cny',
-      theme: { preset: 'shop', primaryColor: '#e8502a', accentColor: '#ff8a34', logoObjectRef: ' object:logo ', faviconObjectRef: null }, opening: completeOpening,
-    })).toEqual({
-      code: 'WELFARE01', publicSlug: 'mall-one', brandName: '主打团福利', domain: { mode: 'custom', customDomain: 'shop.example.com' },
-      ownerMembershipId: 'membership:owner', currency: 'CNY',
-      theme: { preset: 'shop', primaryColor: '#E8502A', accentColor: '#FF8A34', logoObjectRef: 'object:logo', faviconObjectRef: null }, opening: completeOpening,
+    expect(
+      policy.profile({
+        code: ' welfare01 ',
+        publicSlug: ' Mall-One ',
+        brandName: ' 主打团福利 ',
+        domain: { mode: 'custom', customDomain: 'SHOP.EXAMPLE.COM.' },
+        ownerMembershipId: ' membership:owner ',
+        currency: 'cny',
+        theme: { preset: 'shop', primaryColor: '#e8502a', accentColor: '#ff8a34', logoObjectRef: ' object:logo ', faviconObjectRef: null },
+        opening: completeOpening,
+      })
+    ).toEqual({
+      code: 'WELFARE01',
+      publicSlug: 'mall-one',
+      brandName: '主打团福利',
+      domain: { mode: 'custom', customDomain: 'shop.example.com' },
+      ownerMembershipId: 'membership:owner',
+      currency: 'CNY',
+      theme: { preset: 'shop', primaryColor: '#E8502A', accentColor: '#FF8A34', logoObjectRef: 'object:logo', faviconObjectRef: null },
+      opening: completeOpening,
     });
-    expect(() => policy.profile({
-      code: 'WELFARE01', publicSlug: 'mall-one', brandName: '主打团福利', domain: { mode: 'custom', customDomain: 'localhost' },
-      ownerMembershipId: 'membership:owner', currency: 'CNY', theme: { preset: 'shop', primaryColor: '#E8502A', accentColor: '#FF8A34', logoObjectRef: null, faviconObjectRef: null }, opening: completeOpening,
-    })).toThrow();
-    expect(() => policy.profile({
-      code: 'WELFARE01', publicSlug: 'mall-one', brandName: '主打团福利', domain: { mode: 'platform' },
-      ownerMembershipId: 'membership:owner', currency: 'CNY', theme: { preset: 'shop', primaryColor: '#E8502A', accentColor: '#FF8A34', logoObjectRef: 'https://attacker.example/logo', faviconObjectRef: null }, opening: completeOpening,
-    })).toThrow();
+    expect(() =>
+      policy.profile({
+        code: 'WELFARE01',
+        publicSlug: 'mall-one',
+        brandName: '主打团福利',
+        domain: { mode: 'custom', customDomain: 'localhost' },
+        ownerMembershipId: 'membership:owner',
+        currency: 'CNY',
+        theme: { preset: 'shop', primaryColor: '#E8502A', accentColor: '#FF8A34', logoObjectRef: null, faviconObjectRef: null },
+        opening: completeOpening,
+      })
+    ).toThrow();
+    expect(() =>
+      policy.profile({
+        code: 'WELFARE01',
+        publicSlug: 'mall-one',
+        brandName: '主打团福利',
+        domain: { mode: 'platform' },
+        ownerMembershipId: 'membership:owner',
+        currency: 'CNY',
+        theme: { preset: 'shop', primaryColor: '#E8502A', accentColor: '#FF8A34', logoObjectRef: 'https://attacker.example/logo', faviconObjectRef: null },
+        opening: completeOpening,
+      })
+    ).toThrow();
   });
 });

@@ -1,5 +1,5 @@
 import type { JsonObject, ProviderCapability } from '@shop/contract';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ConnectionState } from '../../domain/model/Connection';
 import type { ChannelFailure } from '../../domain/model/Failure';
 import type { SyncProgress } from '../../domain/model/SyncRun';

@@ -1,5 +1,5 @@
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { EvaluateRisk } from '../service/EvaluateRisk';
 import type { RiskWorkRepository } from '../port/RiskWorkRepository';
 import type { RiskRepository } from '../port/RiskCheck';
@@ -18,9 +18,18 @@ export class EvaluateDeferredRisk {
       if (!assessment) return;
       try {
         await new EvaluateRisk(this.risks(context)).check({
-          actor: assessment.actor, operation: assessment.operation, resource: assessment.resource, scope: assessment.scope,
-          scopes: assessment.scopes, trace: assessment.trace, amountMinor: assessment.amountMinor, signals: assessment.signals,
-          risk: assessment.risk, mode: 'async', deadline: execution.deadline, signal: execution.signal,
+          actor: assessment.actor,
+          operation: assessment.operation,
+          resource: assessment.resource,
+          scope: assessment.scope,
+          scopes: assessment.scopes,
+          trace: assessment.trace,
+          amountMinor: assessment.amountMinor,
+          signals: assessment.signals,
+          risk: assessment.risk,
+          mode: 'async',
+          deadline: execution.deadline,
+          signal: execution.signal,
         });
         await this.work.completeAssessment(context, id, true);
       } catch (cause) {
@@ -33,7 +42,14 @@ export class EvaluateDeferredRisk {
 
 function options(execution: RiskReplayExecution): TransactionOptions {
   return {
-    tenant: execution.scope, membership: '', scope: execution.scope, actor: 'job:riskscan', trace: execution.trace,
-    operation: 'job.risk.assessment', workload: 'jobs', signal: execution.signal, deadline: execution.deadline,
+    tenant: execution.scope,
+    membership: '',
+    scope: execution.scope,
+    actor: 'job:riskscan',
+    trace: execution.trace,
+    operation: 'job.risk.assessment',
+    workload: 'jobs',
+    signal: execution.signal,
+    deadline: execution.deadline,
   };
 }

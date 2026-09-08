@@ -1,4 +1,4 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CartOffer } from '../../domain/model/CartLine';
 
 export interface CartOfferReference {

@@ -37,13 +37,7 @@ export class CommissionPolicy {
     if (!input.directMemberId || input.directMemberId === input.customerId) return [];
     const recipients: CommissionRecipient[] = [];
     if (input.commissionBasisPoints > 0) recipients.push({ beneficiaryId: input.directMemberId, kind: 'commission', rateBasisPoints: input.commissionBasisPoints });
-    if (
-      input.rewardEnabled &&
-      input.rewardBasisPoints > 0 &&
-      input.inviterMemberId &&
-      input.inviterMemberId !== input.directMemberId &&
-      input.inviterMemberId !== input.customerId
-    ) {
+    if (input.rewardEnabled && input.rewardBasisPoints > 0 && input.inviterMemberId && input.inviterMemberId !== input.directMemberId && input.inviterMemberId !== input.customerId) {
       recipients.push({ beneficiaryId: input.inviterMemberId, kind: 'reward', rateBasisPoints: input.rewardBasisPoints });
     }
     return Object.freeze(recipients.map((recipient) => Object.freeze(recipient)));
@@ -60,8 +54,7 @@ export class CommissionPolicy {
   refundDeltas(positions: readonly RefundPosition[], refundedMinor: bigint): ReadonlyMap<string, bigint> {
     const byLine = new Map<string, Readonly<{ baseMinor: bigint; refundedBaseMinor: bigint }>>();
     for (const position of positions) {
-      if (!position.id || !position.lineId || position.baseMinor < 0n || position.refundedBaseMinor < 0n || position.refundedBaseMinor > position.baseMinor)
-        throw new Error('REFERRAL_REFUND_AMOUNT_INVALID');
+      if (!position.id || !position.lineId || position.baseMinor < 0n || position.refundedBaseMinor < 0n || position.refundedBaseMinor > position.baseMinor) throw new Error('REFERRAL_REFUND_AMOUNT_INVALID');
       const current = byLine.get(position.lineId);
       if (current && (current.baseMinor !== position.baseMinor || current.refundedBaseMinor !== position.refundedBaseMinor)) throw new Error('REFERRAL_COMMISSION_EVIDENCE_MISMATCH');
       byLine.set(position.lineId, { baseMinor: position.baseMinor, refundedBaseMinor: position.refundedBaseMinor });

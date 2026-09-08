@@ -1,10 +1,10 @@
-import { PgOutbox } from '../../adapter/database/PgOutbox';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { PgTransactionManager } from '../../adapter/database/PgTransactionManager';
-import { defineModule } from '../../bootstrap/DefinedModule';
-import { SystemClock } from '../../foundation/domain/Clock';
-import { SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
+import { PgOutbox } from '../../platform/database/PgOutbox';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { PgTransactionManager } from '../../platform/database/PgTransactionManager';
+import { defineModule } from '../../composition/DefinedModule';
+import { SystemClock } from '@shop/kernel';
+import { SECURITY_KEYS } from '../../platform/secret/SecretStore';
+import { DATABASE_POOL } from '../../platform/database/Pool';
 import { MEMBER_ACCESS_PORT } from '../access/public';
 import { CHECKOUT_BENEFIT_PORT } from '../benefit/public';
 import { CART_READ_PORT, CHECKOUT_CART_PORT } from '../cart/public';
@@ -72,21 +72,10 @@ export const CheckoutModule = defineModule(Manifest, {
     );
     const sessions = new PgCheckoutSessionStore();
     const outbox = new PgOutbox(new PgTransactionManager(pool));
-    const creator = new QuoteCreator(checkout, pricing, sessions, outbox, SystemClock);
+    const creator = new QuoteCreator(checkout, pricing, sessions, outbox, new SystemClock());
     const current = new CurrentQuoteReader(members, checkout, sessions, pricing);
     const reservations = new CheckoutReservations(inventory, voucher, marketing, benefit, context.ports.get(CHECKOUT_HOLD_PORT));
-    const confirmation = new ConfirmCheckout(
-      checkout,
-      members,
-      sessions,
-      pricing,
-      context.ports.get(CHECKOUT_CART_PORT),
-      reservations,
-      orders,
-      payment,
-      context.ports.get(ORGANIZATION_READ_PORT),
-      outbox
-    );
+    const confirmation = new ConfirmCheckout(checkout, members, sessions, pricing, context.ports.get(CHECKOUT_CART_PORT), reservations, orders, payment, context.ports.get(ORGANIZATION_READ_PORT), outbox);
     const quotes = new PgQuoteRepository(transactions, creator, current);
     const checkouts = new PgCheckoutRepository(transactions, confirmation);
     return [new QuoteCreateHandler(quotes), new QuotesCurrentReadHandler(quotes), new ConfirmQuoteHandler(checkouts, confirmation)];

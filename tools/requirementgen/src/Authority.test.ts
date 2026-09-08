@@ -15,6 +15,9 @@ describe('requirement authority', () => {
     expect(result.authority.repositoryRelativePath).toBe('docs/福利商城功能清单.xlsx');
     expect(result.authority.sha256).toBe('48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436');
     expect(result.authority.range).toBe('A1:F24');
+    expect(result.authority.selectionRange).toBe('A3:F24');
+    expect(result.authority.reviewedAt).toBe('2026-09-08');
+    expect(result.authority.authorityOrder).toHaveLength(6);
     expect(result.authority.sheets).toEqual({ requirements: 296, mvp: 22, providers: 20 });
     expect(result.bytes.length).toBeGreaterThan(0);
   });

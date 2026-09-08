@@ -1,8 +1,8 @@
 import { CONTRACT_VERSION, OperationCatalog } from '@shop/contract';
 import { describe, expect, it, vi } from 'vitest';
-import { RouteRegistry } from '../../src/bootstrap/RouteRegistry';
-import { HttpApp } from '../../src/foundation/interface/HttpApp';
-import { CsrfProtector } from '../../src/foundation/security/CsrfProtector';
+import { RouteRegistry } from '../../src/composition/RouteRegistry';
+import { HttpApp } from '../../src/platform/http/HttpApp';
+import { CsrfProtector } from '../../src/platform/security/CsrfProtector';
 
 const csrf = new CsrfProtector('contract-test-key-that-is-at-least-thirty-two-bytes', {
   console: 'https://console.example',

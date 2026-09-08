@@ -1,5 +1,5 @@
-import type { CipherEnvelope } from '../../../../foundation/application/KmsPort';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { CipherEnvelope } from '../../../../pipeline/KmsPort';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ContactKind } from '../../domain/model/Contact';
 import type { CustomerKind, CustomerState } from '../../domain/model/Customer';
 
@@ -97,7 +97,10 @@ export interface CustomerLock {
 export type CustomerWriteResult = CustomerProjection | 'identifierconflict' | 'notfound' | 'versionconflict';
 
 export interface CustomerRepository {
-  list(context: ReadTransactionContext, input: Readonly<{ scope: string; q: string | null; kind: CustomerKind | null; status: CustomerState | null; sort: string | null; id: string | null; fetch: number }>): Promise<readonly CustomerProjection[]>;
+  list(
+    context: ReadTransactionContext,
+    input: Readonly<{ scope: string; q: string | null; kind: CustomerKind | null; status: CustomerState | null; sort: string | null; id: string | null; fetch: number }>
+  ): Promise<readonly CustomerProjection[]>;
   get(context: ReadTransactionContext, scope: string, id: string): Promise<CustomerProjection | null>;
   create(context: WriteTransactionContext, command: CreateCustomerCommand): Promise<CustomerProjection | 'identifierconflict'>;
   update(context: WriteTransactionContext, command: UpdateCustomerCommand): Promise<CustomerWriteResult>;

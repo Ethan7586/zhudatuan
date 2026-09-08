@@ -460,6 +460,20 @@ export const CAPABILITY_CATALOG = Object.freeze([
     "audience": "public"
   },
   {
+    "code": "identity.handovers.read",
+    "kind": "operation",
+    "owner": "identity",
+    "permission": "identity.handover.read",
+    "audience": "console"
+  },
+  {
+    "code": "identity.handovers.create",
+    "kind": "operation",
+    "owner": "identity",
+    "permission": "identity.handover.create",
+    "audience": "console"
+  },
+  {
     "code": "identity.sessions.read",
     "kind": "operation",
     "owner": "identity",
@@ -1104,6 +1118,20 @@ export const CAPABILITY_CATALOG = Object.freeze([
     "audience": "public"
   },
   {
+    "code": "inventory.adjustments.read",
+    "kind": "operation",
+    "owner": "inventory",
+    "permission": "inventory.adjust.read",
+    "audience": "console"
+  },
+  {
+    "code": "inventory.adjustments.create",
+    "kind": "operation",
+    "owner": "inventory",
+    "permission": "inventory.adjust.request",
+    "audience": "console"
+  },
+  {
     "code": "inventory.imports.create",
     "kind": "operation",
     "owner": "inventory",
@@ -1428,6 +1456,27 @@ export const CAPABILITY_CATALOG = Object.freeze([
     "kind": "operation",
     "owner": "fulfillment",
     "permission": "fulfillment.ship",
+    "audience": "console"
+  },
+  {
+    "code": "fulfillment.workitems.read",
+    "kind": "operation",
+    "owner": "fulfillment",
+    "permission": "fulfillment.read",
+    "audience": "console"
+  },
+  {
+    "code": "fulfillment.workitems.transition",
+    "kind": "operation",
+    "owner": "fulfillment",
+    "permission": "fulfillment.work.manage",
+    "audience": "console"
+  },
+  {
+    "code": "fulfillment.returns.read",
+    "kind": "operation",
+    "owner": "fulfillment",
+    "permission": "fulfillment.read",
     "audience": "console"
   },
   {
@@ -2979,9 +3028,9 @@ export const CAPABILITY_CODES_BY_OWNER = Object.freeze({
   "experience": Object.freeze(["experience.applications.create","experience.applications.copy","experience.applications.detail.read","experience.applications.read","experience.applications.update","experience.versions.save","experience.versions.validate","experience.versions.publish","experience.versions.restore","experience.published.read"] as const),
   "extension": Object.freeze(["extension.installations.read"] as const),
   "finance": Object.freeze(["finance.overview.read","finance.facets.read","finance.audit.read","finance.entries.read","finance.statements.read","finance.statementimports.create","finance.statementimports.read","finance.statements.export","finance.reconciliations.manage","finance.reconciliations.read","finance.settlements.read","finance.settlements.decide","finance.settlements.adjust","finance.withdrawals.read","finance.withdrawals.create","finance.withdrawals.decide","finance.withdrawals.recover","finance.holds.read","finance.periods.read","finance.periods.manage","finance.backfills.read","finance.backfills.decide","finance.policies.manage","invoice.profiles.manage","invoice.profiles.read","invoice.requests.create","invoice.requests.read","invoice.requests.cancel","invoice.requests.decide","invoice.requests.red","finance.invoices.read","finance.invoices.download","finance.policies.read","finance.policies.preview","finance.reconciliationrepairs.read","finance.reconciliationrepairs.preview","finance.reconciliationrepairs.submit","finance.reconciliationrepairs.decide","finance.reconciliationrepairs.reverse"] as const),
-  "fulfillment": Object.freeze(["fulfillment.shipments.create","fulfillment.tracking.read","fulfillment.returns.receive","fulfillment.returns.inspect"] as const),
-  "identity": Object.freeze(["identity.federation","identity.registration.reset","identity.bootstrap.read","identity.providers.read","identity.federations.start","identity.federations.callback","identity.federations.selection.read","identity.federations.complete","identity.links.read","identity.links.create","identity.links.revoke","identity.providers.center.read","identity.providers.manage","identity.providers.test","identity.sessions.create","identity.sessions.complete","identity.tickets.exchange","identity.session.read","identity.session.delete","identity.sessions.read","identity.sessions.revoke","identity.memberships.read","identity.memberships.switch","identity.challenges.create","identity.mobile.challenges.create","identity.invitations.read","identity.invitations.resolve","identity.invitations.create","identity.invitations.revoke","identity.enrollments.read","identity.enrollments.complete","identity.members.manage","identity.password.change","identity.password.verify","identity.password.reset","identity.mobile.manage","identity.stepup.start","identity.stepup.complete","identity.stepup.disable"] as const),
-  "inventory": Object.freeze(["inventory.availability.read","inventory.imports.create","inventory.imports.read"] as const),
+  "fulfillment": Object.freeze(["fulfillment.shipments.create","fulfillment.workitems.read","fulfillment.workitems.transition","fulfillment.returns.read","fulfillment.tracking.read","fulfillment.returns.receive","fulfillment.returns.inspect"] as const),
+  "identity": Object.freeze(["identity.federation","identity.registration.reset","identity.bootstrap.read","identity.providers.read","identity.federations.start","identity.federations.callback","identity.federations.selection.read","identity.federations.complete","identity.links.read","identity.links.create","identity.links.revoke","identity.providers.center.read","identity.providers.manage","identity.providers.test","identity.sessions.create","identity.sessions.complete","identity.tickets.exchange","identity.session.read","identity.session.delete","identity.handovers.read","identity.handovers.create","identity.sessions.read","identity.sessions.revoke","identity.memberships.read","identity.memberships.switch","identity.challenges.create","identity.mobile.challenges.create","identity.invitations.read","identity.invitations.resolve","identity.invitations.create","identity.invitations.revoke","identity.enrollments.read","identity.enrollments.complete","identity.members.manage","identity.password.change","identity.password.verify","identity.password.reset","identity.mobile.manage","identity.stepup.start","identity.stepup.complete","identity.stepup.disable"] as const),
+  "inventory": Object.freeze(["inventory.availability.read","inventory.adjustments.read","inventory.adjustments.create","inventory.imports.create","inventory.imports.read"] as const),
   "marketing": Object.freeze(["marketing.campaigns.read","marketing.campaigns.create","marketing.campaigns.revise","marketing.campaigns.publish","marketing.campaigns.disable"] as const),
   "member": Object.freeze(["member.members.read","member.profile.read","member.addresses.read","member.addresses.manage","member.favorites.read","member.favorites.put","member.imports.create","member.imports.read"] as const),
   "navigation": Object.freeze(["navigation.tree.read","navigation.catalog.read","navigation.health.read","storefront.bootstrap.read","storefront.catalog.read"] as const),
@@ -3014,9 +3063,9 @@ export const OPERATION_CAPABILITY_CODES_BY_OWNER = Object.freeze({
   "experience": Object.freeze(["experience.applications.create","experience.applications.copy","experience.applications.detail.read","experience.applications.read","experience.applications.update","experience.versions.save","experience.versions.validate","experience.versions.publish","experience.versions.restore","experience.published.read"] as const),
   "extension": Object.freeze(["extension.installations.read"] as const),
   "finance": Object.freeze(["finance.overview.read","finance.facets.read","finance.audit.read","finance.entries.read","finance.statements.read","finance.statementimports.create","finance.statementimports.read","finance.statements.export","finance.reconciliations.manage","finance.reconciliations.read","finance.settlements.read","finance.settlements.decide","finance.settlements.adjust","finance.withdrawals.read","finance.withdrawals.create","finance.withdrawals.decide","finance.withdrawals.recover","finance.holds.read","finance.periods.read","finance.periods.manage","finance.backfills.read","finance.backfills.decide","finance.policies.manage","invoice.profiles.manage","invoice.profiles.read","invoice.requests.create","invoice.requests.read","invoice.requests.cancel","invoice.requests.decide","invoice.requests.red","finance.invoices.read","finance.invoices.download","finance.policies.read","finance.policies.preview","finance.reconciliationrepairs.read","finance.reconciliationrepairs.preview","finance.reconciliationrepairs.submit","finance.reconciliationrepairs.decide","finance.reconciliationrepairs.reverse"] as const),
-  "fulfillment": Object.freeze(["fulfillment.shipments.create","fulfillment.tracking.read","fulfillment.returns.receive","fulfillment.returns.inspect"] as const),
-  "identity": Object.freeze(["identity.bootstrap.read","identity.providers.read","identity.federations.start","identity.federations.callback","identity.federations.selection.read","identity.federations.complete","identity.links.read","identity.links.create","identity.links.revoke","identity.providers.center.read","identity.providers.manage","identity.providers.test","identity.sessions.create","identity.sessions.complete","identity.tickets.exchange","identity.session.read","identity.session.delete","identity.sessions.read","identity.sessions.revoke","identity.memberships.read","identity.memberships.switch","identity.challenges.create","identity.mobile.challenges.create","identity.invitations.read","identity.invitations.resolve","identity.invitations.create","identity.invitations.revoke","identity.enrollments.read","identity.enrollments.complete","identity.members.manage","identity.password.change","identity.password.verify","identity.password.reset","identity.mobile.manage","identity.stepup.start","identity.stepup.complete","identity.stepup.disable"] as const),
-  "inventory": Object.freeze(["inventory.availability.read","inventory.imports.create","inventory.imports.read"] as const),
+  "fulfillment": Object.freeze(["fulfillment.shipments.create","fulfillment.workitems.read","fulfillment.workitems.transition","fulfillment.returns.read","fulfillment.tracking.read","fulfillment.returns.receive","fulfillment.returns.inspect"] as const),
+  "identity": Object.freeze(["identity.bootstrap.read","identity.providers.read","identity.federations.start","identity.federations.callback","identity.federations.selection.read","identity.federations.complete","identity.links.read","identity.links.create","identity.links.revoke","identity.providers.center.read","identity.providers.manage","identity.providers.test","identity.sessions.create","identity.sessions.complete","identity.tickets.exchange","identity.session.read","identity.session.delete","identity.handovers.read","identity.handovers.create","identity.sessions.read","identity.sessions.revoke","identity.memberships.read","identity.memberships.switch","identity.challenges.create","identity.mobile.challenges.create","identity.invitations.read","identity.invitations.resolve","identity.invitations.create","identity.invitations.revoke","identity.enrollments.read","identity.enrollments.complete","identity.members.manage","identity.password.change","identity.password.verify","identity.password.reset","identity.mobile.manage","identity.stepup.start","identity.stepup.complete","identity.stepup.disable"] as const),
+  "inventory": Object.freeze(["inventory.availability.read","inventory.adjustments.read","inventory.adjustments.create","inventory.imports.create","inventory.imports.read"] as const),
   "marketing": Object.freeze(["marketing.campaigns.read","marketing.campaigns.create","marketing.campaigns.revise","marketing.campaigns.publish","marketing.campaigns.disable"] as const),
   "member": Object.freeze(["member.members.read","member.profile.read","member.addresses.read","member.addresses.manage","member.favorites.read","member.favorites.put","member.imports.create","member.imports.read"] as const),
   "navigation": Object.freeze(["navigation.tree.read","navigation.catalog.read","navigation.health.read","storefront.bootstrap.read","storefront.catalog.read"] as const),

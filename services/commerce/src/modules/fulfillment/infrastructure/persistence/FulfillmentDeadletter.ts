@@ -1,6 +1,6 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import type { ClaimedJob, JobDeadletter } from '../../../runtime/public/JobProcess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { PgFulfillmentSaga } from './PgFulfillmentSaga';
 
 export class FulfillmentDeadletter implements JobDeadletter {
@@ -16,7 +16,7 @@ export class FulfillmentDeadletter implements JobDeadletter {
 }
 
 function record(value: unknown): Readonly<Record<string, unknown>> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : {};
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Readonly<Record<string, unknown>>) : {};
 }
 
 function text(value: unknown): string | null {

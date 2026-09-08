@@ -1,4 +1,4 @@
-import type { CipherEnvelope } from '../../../../foundation/application/KmsPort';
+import type { CipherEnvelope } from '../../../../pipeline/KmsPort';
 import type { Invitation } from '../../domain/model/Invitation';
 import type { AuthTransaction } from '../../domain/model/AuthTransaction';
 import type { RegistrationPolicyRecord } from '../port/RegistrationPolicyRepository';

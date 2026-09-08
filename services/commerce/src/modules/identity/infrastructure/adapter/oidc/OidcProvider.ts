@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../../platform/error/DomainError';
 import { createHash, createPublicKey, verify } from 'node:crypto';
 import { IDENTITY_PROVIDER_CONFIGURATION } from '@shop/config/server';
 import type { FederatedIdentityProvider, FederationCallback, FederationStart } from '../../../application/port/FederatedIdentityProvider';

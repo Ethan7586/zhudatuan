@@ -1,9 +1,9 @@
 import { identityLifecycle as operationLifecycle, type IdentityLifecycle as OperationLifecycle } from '../model/IdentityAction';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
 
 import type { ProviderResolver } from '../service/ProviderResolver';
-import type { OperationResult } from '../../../../foundation/application/OperationRequest';
+import type { OperationResult } from '../../../../pipeline/OperationRequest';
 
 type LoadedProvider = Awaited<ReturnType<ProviderResolver['require']>>;
 

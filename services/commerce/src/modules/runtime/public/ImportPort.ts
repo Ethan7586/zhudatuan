@@ -1,6 +1,6 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import { publicPort } from '../../../composition/ModuleRegistry';
 import type { ImportRuntimeChunk, ImportRuntimeCoordinator, ImportStagedChunk, ImportState } from './ImportProcess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../platform/database/TransactionContext';
 
 export interface RuntimeImportError {
   readonly row_number: number;
@@ -41,7 +41,23 @@ export type RuntimeImportChunk = ImportRuntimeChunk;
 export type RuntimeStagedChunk = ImportStagedChunk;
 
 export interface ImportPort extends ImportRuntimeCoordinator {
-  create(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; owner: string; kind: string; reference: string; sha256: string; name: string; mediaType: string; size: number; actor: string; authorization: Readonly<Record<string, unknown>>; metadata?: Readonly<Record<string, unknown>> }>): Promise<RuntimeImportCreated>;
+  create(
+    context: WriteTransactionContext,
+    input: Readonly<{
+      id: string;
+      scope: string;
+      owner: string;
+      kind: string;
+      reference: string;
+      sha256: string;
+      name: string;
+      mediaType: string;
+      size: number;
+      actor: string;
+      authorization: Readonly<Record<string, unknown>>;
+      metadata?: Readonly<Record<string, unknown>>;
+    }>
+  ): Promise<RuntimeImportCreated>;
   read(context: ReadTransactionContext, id: string, scope: string, owner: string): Promise<RuntimeImportRecord | null>;
 }
 

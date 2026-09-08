@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { PaymentGateway } from '../../application/port/PaymentGateway';
 import { RefundPlanner } from '../../infrastructure/persistence/RefundPlanner';
 import { PaymentReference } from '../../domain/model/PaymentReference';
@@ -130,7 +130,10 @@ export class PgRefundRecoveryProcess {
     try {
       result =
         selected.state === 'requested'
-          ? await this.gateway.refund({ refundNumber: PaymentReference.refund(refundid).text, transaction: selected.transaction, refundMinor: selected.external_minor, totalMinor: selected.external_total, reason: selected.reason }, paymentProviderExecution(execution))
+          ? await this.gateway.refund(
+              { refundNumber: PaymentReference.refund(refundid).text, transaction: selected.transaction, refundMinor: selected.external_minor, totalMinor: selected.external_total, reason: selected.reason },
+              paymentProviderExecution(execution)
+            )
           : await this.gateway.queryRefund(PaymentReference.refund(refundid).text, paymentProviderExecution(execution));
       await this.write(execution, async (context, database) => {
         await database.query(

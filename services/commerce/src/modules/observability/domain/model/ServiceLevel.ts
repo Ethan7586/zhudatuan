@@ -2,9 +2,7 @@ export type ServiceLevelStatus = 'healthy' | 'atrisk' | 'breaching' | 'nodata';
 export type ServiceLevelSeverity = 'warning' | 'critical';
 export type ServiceLevelUnit = 'percent' | 'milliseconds' | 'seconds';
 
-export type ServiceIndicator =
-  | Readonly<{ metric: string; type: 'ratio'; goodResult: string }>
-  | Readonly<{ metric: string; type: 'percentile'; percentile: 50 | 90 | 95 | 99 }>;
+export type ServiceIndicator = Readonly<{ metric: string; type: 'ratio'; goodResult: string }> | Readonly<{ metric: string; type: 'percentile'; percentile: 50 | 90 | 95 | 99 }>;
 
 export interface ServiceLevelDefinition {
   readonly id: string;
@@ -74,7 +72,17 @@ export class ServiceLevel {
 }
 
 function assertDefinition(value: ServiceLevelDefinition): void {
-  if (!/^[a-z][a-z0-9]*$/.test(value.id) || !value.title.trim() || !metricPattern.test(value.indicator.metric) || !Number.isFinite(value.target) || value.target <= 0 || !Number.isSafeInteger(value.windowSeconds) || value.windowSeconds < 60 || !/^[a-z][a-z0-9]*$/.test(value.owner) || !runbookPattern.test(value.runbook)) {
+  if (
+    !/^[a-z][a-z0-9]*$/.test(value.id) ||
+    !value.title.trim() ||
+    !metricPattern.test(value.indicator.metric) ||
+    !Number.isFinite(value.target) ||
+    value.target <= 0 ||
+    !Number.isSafeInteger(value.windowSeconds) ||
+    value.windowSeconds < 60 ||
+    !/^[a-z][a-z0-9]*$/.test(value.owner) ||
+    !runbookPattern.test(value.runbook)
+  ) {
     throw new Error(`SERVICE_LEVEL_INVALID:${value.id}`);
   }
   if (!['minimum', 'maximum'].includes(value.direction) || !['percent', 'milliseconds', 'seconds'].includes(value.unit) || !['warning', 'critical'].includes(value.severity)) throw new Error(`SERVICE_LEVEL_INVALID:${value.id}`);

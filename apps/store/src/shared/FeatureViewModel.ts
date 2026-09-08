@@ -1,14 +1,10 @@
-import type { RequestContext, StoreSurfaceClient } from '@shop/sdk';
+import type { RequestContext } from '@shop/sdk/context';
+import type { StoreSurfaceClient } from '@shop/sdk/surfaces';
+import { defineOperatorFeature, type OperatorFeature } from '@shop/presentation/operator';
 import type { RouteId, RouteMatch } from '../generated/RouteBinding';
 
-export interface StoreFeatureViewModel {
-  readonly routes: readonly RouteId[];
-  readonly title: string;
-  readonly description: string;
-  readonly read: (client: StoreSurfaceClient, context: RequestContext, route: RouteMatch) => Promise<unknown>;
-}
+export type StoreFeatureViewModel = OperatorFeature<StoreSurfaceClient, RequestContext, RouteMatch> & Readonly<{ routes: readonly RouteId[] }>;
 
 export function defineStoreViewModel(definition: StoreFeatureViewModel): StoreFeatureViewModel {
-  if (definition.routes.length === 0) throw new Error('STORE_VIEWMODEL_ROUTE_MISSING');
-  return Object.freeze({ ...definition, routes: Object.freeze([...definition.routes]) });
+  return defineOperatorFeature(definition, 'STORE_VIEWMODEL_ROUTE_MISSING') as StoreFeatureViewModel;
 }

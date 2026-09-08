@@ -108,6 +108,7 @@ export function useVoucherViewModel() {
       closeVerification: () => setVerification(false),
       verified: () => {
         setVerification(false);
+        void activation.actions.submit();
         void list.refetch();
         if (selected) {
           void detail.refetch();

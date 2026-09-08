@@ -1,23 +1,36 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PoolClient } from 'pg';
-import { pgTransactionState } from '../../../../adapter/database/PgTransactionState';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { pgTransactionState } from '../../../../platform/database/PgTransactionState';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { ListingWithdrawal } from './ListingWithdrawal';
 
 describe('listing withdrawal qualification reaction', () => {
   it('unpublishes every affected listing and appends all outbox events in the same transaction with two set-based statements', async () => {
     const query = vi.fn(async (sql: string, _values?: readonly unknown[]) => ({
       rows: sql.startsWith('update catalog.listing')
-        ? [{ id: 'listing:one', version: 2 }, { id: 'listing:two', version: 3 }, { id: 'listing:three', version: 4 }]
+        ? [
+            { id: 'listing:one', version: 2 },
+            { id: 'listing:two', version: 3 },
+            { id: 'listing:three', version: 4 },
+          ]
         : [],
-      rowCount: 3, command: '', oid: 0, fields: [],
+      rowCount: 3,
+      command: '',
+      oid: 0,
+      fields: [],
     }));
     const context = { mode: 'write', signal: new AbortController().signal, deadline: Date.now() + 5_000 } as WriteTransactionContext;
     const service = new ListingWithdrawal();
     const count = await pgTransactionState.run({ client: { query } as unknown as PoolClient, context, mode: 'write', open: true }, () =>
       service.qualification(context, {
-        event: 'event:qualification:revoked', qualification: 'qualification:one', scope: 'mall:one',
-        subjectKind: 'partner', subjectId: 'partner:one', productIds: ['product:one'], categoryIds: ['category:food'], regionIds: [],
+        event: 'event:qualification:revoked',
+        qualification: 'qualification:one',
+        scope: 'mall:one',
+        subjectKind: 'partner',
+        subjectId: 'partner:one',
+        productIds: ['product:one'],
+        categoryIds: ['category:food'],
+        regionIds: [],
       })
     );
     expect(count).toBe(3);
@@ -34,8 +47,14 @@ describe('listing withdrawal qualification reaction', () => {
     const context = { mode: 'write', signal: new AbortController().signal, deadline: Date.now() + 5_000 } as WriteTransactionContext;
     await pgTransactionState.run({ client: { query } as unknown as PoolClient, context, mode: 'write', open: true }, () =>
       new ListingWithdrawal().qualification(context, {
-        event: 'event:qualification:expired', qualification: 'qualification:region', scope: 'mall:one',
-        subjectKind: 'region', subjectId: 'region:cn31', productIds: [], categoryIds: [], regionIds: ['region:cn31'],
+        event: 'event:qualification:expired',
+        qualification: 'qualification:region',
+        scope: 'mall:one',
+        subjectKind: 'region',
+        subjectId: 'region:cn31',
+        productIds: [],
+        categoryIds: [],
+        regionIds: ['region:cn31'],
       })
     );
     expect(query).toHaveBeenCalledTimes(1);

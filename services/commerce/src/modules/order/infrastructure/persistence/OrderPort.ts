@@ -1,39 +1,13 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { Money } from '@shop/kernel';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
 import { OrderProjectionPort } from './OrderProjectionPort';
 import { nextOrderNumber } from './OrderNumber';
 import type { CreateOrderIntent } from '../../public/OrderIntentPort';
-export class OrderPort extends OrderProjectionPort {
-  async purchases(context: ReadTransactionContext, member: string) {
-    const database = this.transactions.database(context);
-    const result = await database.query<{
-      listing: string;
-      dayQuantity: number;
-      weekQuantity: number;
-      monthQuantity: number;
-      lifetimeQuantity: number;
-      dayMinor: number;
-      weekMinor: number;
-      monthMinor: number;
-      lifetimeMinor: number;
-    }>(
-      `select line.listing_id listing,
-      coalesce(sum(line.quantity) filter(where orders.created_at>=date_trunc('day',clock_timestamp())),0)::float8 "dayQuantity",
-      coalesce(sum(line.quantity) filter(where orders.created_at>=date_trunc('week',clock_timestamp())),0)::float8 "weekQuantity",
-      coalesce(sum(line.quantity) filter(where orders.created_at>=date_trunc('month',clock_timestamp())),0)::float8 "monthQuantity",
-      coalesce(sum(line.quantity),0)::float8 "lifetimeQuantity",
-      coalesce(sum(line.payable_minor) filter(where orders.created_at>=date_trunc('day',clock_timestamp())),0)::float8 "dayMinor",
-      coalesce(sum(line.payable_minor) filter(where orders.created_at>=date_trunc('week',clock_timestamp())),0)::float8 "weekMinor",
-      coalesce(sum(line.payable_minor) filter(where orders.created_at>=date_trunc('month',clock_timestamp())),0)::float8 "monthMinor",
-      coalesce(sum(line.payable_minor),0)::float8 "lifetimeMinor"
-      from ordering.orderrecord orders join ordering.line line on line.order_id=orders.id
-      where orders.member_id=$1 and orders.lifecycle_state not in('cancelled','closed') group by line.listing_id`,
-      [member]
-    );
-    return Object.freeze(result.rows.map((row) => Object.freeze(row)));
-  }
+import { DomainError } from '../../../../platform/error/DomainError';
+import { OrderReadPort } from './OrderReadPort';
+export class OrderPort extends OrderReadPort {
   async create(
     context: WriteTransactionContext,
     input: CreateOrderIntent
@@ -48,7 +22,7 @@ export class OrderPort extends OrderProjectionPort {
     const accepted = input.lines.filter(({ accepted }) => accepted);
     const subtotalMinor = accepted.reduce((sum, line) => sum + line.totalMinor, 0);
     const discountMinor = accepted.reduce((sum, line) => sum + line.discountMinor, 0);
-    if (subtotalMinor - discountMinor !== input.money.minor) throw new Error('ORDER_SNAPSHOT_INVALID');
+    if (subtotalMinor - discountMinor !== input.money.minor) throw new DomainError('ORDER_SNAPSHOT_INVALID');
     const amount = Object.freeze({ subtotalMinor, discountMinor, shippingMinor: 0, taxMinor: 0, payableMinor: input.money.minor, currency: input.money.currency.code });
     const saved = await database.query(
       `insert into ordering.orderrecord(id,order_number,scope_id,member_id,mall_id,checkout_id,currency,total_minor,
@@ -194,62 +168,5 @@ export class OrderPort extends OrderProjectionPort {
       [order]
     );
     if (!changed.rows[0]) throw new Error('ORDER_NOT_FOUND');
-  }
-  async snapshot(context: ReadTransactionContext, order: string) {
-    const database = this.transactions.database(context);
-    const result = await database.query<{
-      id: string;
-      scope: string;
-      member: string;
-    }>(`select id,scope_id scope,member_id member from ordering.orderrecord where id=$1`, [order]);
-    const row = result.rows[0];
-    return row ? Object.freeze(row) : null;
-  }
-  async fulfillment(context: ReadTransactionContext, order: string) {
-    const database = this.transactions.database(context);
-    const result = await database.query<{
-      suborder: string;
-      provider: string | null;
-      partner: string | null;
-      lines: unknown;
-    }>(
-      `select suborder.id suborder,suborder.provider,suborder.partner_id partner,
-      jsonb_agg(jsonb_build_object('line',line.id,'quantity',line.quantity,'payableMinor',line.payable_minor,
-        'productType',coalesce(line.evidence->>'productType','physical')) order by line.id) lines
-      from ordering.suborder suborder join ordering.line line on line.order_id=suborder.order_id
-        and line.provider is not distinct from suborder.provider and line.partner_id is not distinct from suborder.partner_id
-      where suborder.order_id=$1 group by suborder.id,suborder.provider,suborder.partner_id order by suborder.id`,
-      [order]
-    );
-    const plans = result.rows.map((row) =>
-      Object.freeze({
-        ...row,
-        lines: Object.freeze(
-          (Array.isArray(row.lines) ? row.lines : []).flatMap((value) => {
-            if (!value || typeof value !== 'object' || Array.isArray(value)) return [];
-            const line = (value as Record<string, unknown>).line;
-            const quantity = Number((value as Record<string, unknown>).quantity);
-            const payableMinor = Number((value as Record<string, unknown>).payableMinor);
-            const productType = (value as Record<string, unknown>).productType;
-            return typeof line === 'string' && Number.isSafeInteger(quantity) && quantity > 0 && Number.isSafeInteger(payableMinor) && payableMinor >= 0 && typeof productType === 'string'
-              ? [Object.freeze({ line, quantity, payableMinor, productType })]
-              : [];
-          })
-        ),
-      })
-    );
-    if (plans.length === 0 || plans.some((plan) => plan.lines.length === 0)) throw new Error('ORDER_FULFILLMENT_PLAN_EMPTY');
-    return Object.freeze(plans);
-  }
-  async lineSkus(context: ReadTransactionContext, order: string, lines: readonly string[]) {
-    const database = this.transactions.database(context);
-    if (lines.length === 0) return Object.freeze([]);
-    const result = await database.query<{
-      line: string;
-      sku: string;
-      product: string;
-    }>(`select id line,sku_id sku,evidence->>'product' product from ordering.line where order_id=$1 and id=any($2::text[]) order by id`, [order, lines]);
-    if (result.rows.some(({ product }) => !product)) throw new Error('ORDER_FULFILLMENT_PRODUCT_MISSING');
-    return Object.freeze(result.rows.map((row) => Object.freeze(row)));
   }
 }

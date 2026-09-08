@@ -1,8 +1,8 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { AuditReadPort } from '../../../audit/public';
 import type { OrganizationReadPort } from '../../../organization/public';
 import type { EventEvidenceReadPort } from '../../../runtime/public';
@@ -40,14 +40,47 @@ export class AuditReadHandler implements OperationHandler<'finance.audit.read', 
       body: Object.freeze({
         reference: normalized,
         facts: [...projection.facts],
-        events: events.map((event) => ({ id: event.id, type: event.type, event_version: event.eventVersion, aggregate_type: event.aggregateType, aggregate_id: event.aggregateId, state: event.state, occurred_at: event.occurredAt, trace_id: event.traceId })),
-        records: records.map((record) => ({ id: record.id, kind: record.kind, action: record.operation, resource_type: record.object.type, resource_id: record.object.id, actor_id: record.actor.id, actor_type: record.actor.type, before_hash: record.beforeHash, after_hash: record.afterHash, record_hash: record.recordHash, evidence: record.evidence, occurred_at: record.occurredAt, trace_id: record.trace })),
-        watermark: watermark(projection.facts.map((fact) => fact.occurred_at), events.map((event) => event.occurredAt), records.map((record) => record.occurredAt)),
+        events: events.map((event) => ({
+          id: event.id,
+          type: event.type,
+          event_version: event.eventVersion,
+          aggregate_type: event.aggregateType,
+          aggregate_id: event.aggregateId,
+          state: event.state,
+          occurred_at: event.occurredAt,
+          trace_id: event.traceId,
+        })),
+        records: records.map((record) => ({
+          id: record.id,
+          kind: record.kind,
+          action: record.operation,
+          resource_type: record.object.type,
+          resource_id: record.object.id,
+          actor_id: record.actor.id,
+          actor_type: record.actor.type,
+          before_hash: record.beforeHash,
+          after_hash: record.afterHash,
+          record_hash: record.recordHash,
+          evidence: record.evidence,
+          occurred_at: record.occurredAt,
+          trace_id: record.trace,
+        })),
+        watermark: watermark(
+          projection.facts.map((fact) => fact.occurred_at),
+          events.map((event) => event.occurredAt),
+          records.map((record) => record.occurredAt)
+        ),
       }) as AuditOutput,
     };
   }
 }
 
 function watermark(...groups: readonly (readonly (string | null)[])[]): string | null {
-  return groups.flat().filter((value): value is string => value !== null).sort().at(-1) ?? null;
+  return (
+    groups
+      .flat()
+      .filter((value): value is string => value !== null)
+      .sort()
+      .at(-1) ?? null
+  );
 }

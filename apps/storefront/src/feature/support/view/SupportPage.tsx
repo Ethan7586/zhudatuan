@@ -4,7 +4,7 @@ import type { SupportPriority } from '../model/SupportCase';
 import './Support.css';
 
 export function SupportPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof useSupportViewModel> }>) {
-  const { state, items, subject, message, priority, busy, error, actions } = viewmodel;
+  const { state, items, subject, message, priority, order, busy, error, actions } = viewmodel;
   return (
     <section className="sw-web-container mx-auto max-w-[1240px] px-3 py-5 text-xs">
       <header className="mb-4">
@@ -29,6 +29,7 @@ export function SupportPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
             <MessageSquarePlus size={18} />
             创建工单
           </h2>
+          {order ? <p className="mt-3 rounded-lg bg-brand-light p-2 text-brand">本工单将安全关联您从订单详情选择的订单，客服只会看到授权后的脱敏上下文。</p> : null}
           <label className="mt-4 block font-bold">
             问题标题
             <input value={subject} maxLength={120} onChange={(event) => actions.changeSubject(event.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal" />
@@ -46,7 +47,7 @@ export function SupportPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
             详细描述
             <textarea value={message} maxLength={4000} rows={6} onChange={(event) => actions.changeMessage(event.target.value)} className="mt-1 w-full resize-y rounded-lg border px-3 py-2 font-normal" />
           </label>
-          <button disabled={busy || !subject.trim() || !message.trim()} className="mt-4 w-full rounded-lg bg-[var(--sw-brand)] px-4 py-2.5 font-bold text-inverse disabled:opacity-50">
+          <button type="submit" disabled={busy || !subject.trim() || !message.trim()} className="mt-4 w-full rounded-lg bg-[var(--sw-brand)] px-4 py-2.5 font-bold text-inverse disabled:opacity-50">
             {busy ? '正在提交…' : '提交工单'}
           </button>
         </form>
@@ -68,6 +69,7 @@ export function SupportPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
               <p className="mt-2 text-muted">
                 响应期限 {format(item.responseDueAt)} · 解决期限 {format(item.resolutionDueAt)}
               </p>
+              <p className={`mt-2 font-bold ${item.slaRisk === 'overdue' ? 'text-danger-strong' : item.slaRisk === 'risk' ? 'text-warning-strong' : 'text-success-strong'}`}>{item.slaRisk === 'overdue' ? '服务时限已超时，平台正在升级处理' : item.slaRisk === 'risk' ? '接近服务时限' : '服务时限正常'}{item.unreadCount > 0 ? ` · ${item.unreadCount} 条未读回复` : ''}</p>
             </button>
           ))}
           {state === 'empty' ? <State text="暂无服务工单，可在左侧创建" /> : null}

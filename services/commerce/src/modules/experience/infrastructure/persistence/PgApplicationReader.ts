@@ -1,7 +1,7 @@
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import { parseExperienceTheme } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { MallProvisionPort, MallProvisionSnapshot, OrganizationReadPort } from '../../../organization/public';
 import type { ApplicationDetail, ApplicationSummary } from '../../application/model/ApplicationSummary';
 import type { ApplicationRepository } from '../../application/port/ApplicationRepository';
@@ -19,7 +19,7 @@ import {
   type ApplicationDetailRow,
   type ApplicationSummaryRow,
 } from './ApplicationRecord';
-import { databaseInteger } from '../../../../foundation/persistence/DatabaseInteger';
+import { databaseInteger } from '../../../../platform/database/DatabaseInteger';
 
 export class PgApplicationReader {
   private readonly policy = new EntryPolicy();

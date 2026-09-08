@@ -1,5 +1,5 @@
-import type { QueryPage } from '../../../../foundation/application/Validation';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { QueryPage } from '../../../../pipeline/Validation';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ProviderOperationPort } from '../../public';
 
 export interface ProviderOperationRepository extends ProviderOperationPort {

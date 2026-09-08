@@ -1,6 +1,6 @@
 import type { OperationInputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler } from '../../../../pipeline/OperationHandler';
 import type { InvoiceProcessAdapter } from '../port/FinanceProcessAdapter';
 
 export class InvoicesDownloadHandler implements OperationHandler<'finance.invoices.download', 'read'> {

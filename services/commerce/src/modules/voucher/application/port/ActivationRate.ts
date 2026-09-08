@@ -14,4 +14,4 @@ export interface ActivationLookup {
   readonly secretFingerprint: string;
   readonly numberFingerprint: string | null;
 }
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';

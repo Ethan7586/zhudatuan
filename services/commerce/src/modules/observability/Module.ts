@@ -1,6 +1,6 @@
-import { defineModule } from '../../bootstrap/DefinedModule';
-import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
-import { OBSERVATIONS, TELEMETRY } from '../../foundation/telemetry/Telemetry';
+import { defineModule } from '../../composition/DefinedModule';
+import type { ModuleContext } from '../../composition/ModuleRegistry';
+import { OBSERVATIONS, TELEMETRY } from '../../platform/telemetry/Telemetry';
 import { ClientErrorsCreateHandler } from './application/handler/ClientErrorsCreateHandler';
 import { ClientErrorsReadHandler } from './application/handler/ClientErrorsReadHandler';
 import { HealthOverviewHandler } from './application/handler/HealthOverviewHandler';

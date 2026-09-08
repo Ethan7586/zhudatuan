@@ -1,9 +1,9 @@
-import { localInfrastructureEnvironment } from '@shop/config/server';
+import { localObjectEnvironment } from '@shop/config/server';
 import { IMPORT_CAPACITY } from '@shop/config/runtime';
 import { bytesResponse, jsonBody, jsonResponse, startLocalHttps, type LocalHandler } from '../../localinfra/src/Http';
 import { LocalObjects } from './LocalObjects';
 
-const environment = localInfrastructureEnvironment();
+const environment = localObjectEnvironment();
 const port = environment.objectsPort;
 const objects = new LocalObjects(environment.objectsDirectory, environment.objectsToken, `https://127.0.0.1:${port}`);
 await objects.initialize();

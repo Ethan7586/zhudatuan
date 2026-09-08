@@ -1,6 +1,6 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ProviderHealth, ProviderManifest, UnsignedProviderManifest } from '@shop/contract';
-import { token } from '../../../../bootstrap/Container';
+import { token } from '../../../../composition/Container';
 
 import type { HealthRecord } from '../../domain/model/HealthRecord';
 import type { Installation, InstallationState } from '../../domain/model/Installation';

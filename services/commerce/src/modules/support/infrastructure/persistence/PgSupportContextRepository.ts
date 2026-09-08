@@ -1,6 +1,6 @@
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { MemberAccessPort } from '../../../access/public';
 import type { SupportBenefitPort } from '../../../benefit/public';
 import type { MemberReadPort } from '../../../member/public';

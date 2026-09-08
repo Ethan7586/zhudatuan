@@ -1,7 +1,7 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { Singleflight } from '../../../../foundation/performance/Singleflight';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { AccessContext } from '../../../../foundation/security/AccessContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { Singleflight } from '@shop/kernel';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { AccessContext } from '../../../../platform/security/AccessContext';
 import { NAVIGATION_CONFIGURATION } from '@shop/config/server';
 import type { NavigationCacheRepository } from '../port/NavigationCacheRepository';
 import type { NavigationProjectionRepository } from '../port/NavigationProjectionRepository';

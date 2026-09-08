@@ -1,8 +1,24 @@
+import type { OperationOutputFor } from '@shop/contract';
+
+type ProductDto = OperationOutputFor<'storefront.catalog.read'>['items'][number];
+
 export type ProductKind = 'physical' | 'virtual_coupon' | 'movie_ticket' | 'supermarket' | 'life_service' | 'nearby_store' | 'unknown';
 export type WelfareAccount = 'welfare' | 'meal' | 'wechat' | 'cash';
+export type SaleabilityReason = ProductDto['saleability']['reasons'][number];
+
+export interface ProductQualification {
+  readonly eligible: boolean | null;
+  readonly policyVersion: number | null;
+}
+
+export interface ProductSaleability {
+  readonly state: ProductDto['saleability']['state'];
+  readonly reasons: readonly SaleabilityReason[];
+}
 
 export interface ProductSku {
   readonly id: string;
+  readonly listingId: string;
   readonly productId: string;
   readonly priceMinor: number;
   readonly compareMinor: number | null;
@@ -11,10 +27,14 @@ export interface ProductSku {
   readonly state: NonNullable<ProductDto['availability']>['state'];
   readonly priceVersion: string;
   readonly inventoryVersion: string;
+  readonly qualification: ProductQualification;
+  readonly saleability: ProductSaleability;
+  readonly specifications: Readonly<Record<string, string>>;
 }
 
 export interface Product {
-  readonly id: string;
+  readonly listingId: string;
+  readonly productId: string;
   readonly skuId: string;
   readonly title: string;
   readonly subtitle: string;
@@ -25,8 +45,6 @@ export interface Product {
   readonly currency: string;
   readonly categoryId: string;
   readonly categoryName: string;
-  readonly subCategoryId?: string;
-  readonly taxonomy?: Readonly<{ l1: string | null; l2: string | null; l3: string | null; status: string }>;
   readonly brand: string;
   readonly tags: readonly string[];
   readonly supplierId: string;
@@ -38,7 +56,8 @@ export interface Product {
   readonly rating: number;
   readonly reviewCount: number;
   readonly deliverySla: string;
-  readonly purchasable: boolean;
+  readonly qualification: ProductQualification;
+  readonly saleability: ProductSaleability;
   readonly version: string;
   readonly updatedAt: string;
   readonly skus: readonly ProductSku[];
@@ -46,10 +65,8 @@ export interface Product {
   readonly isDailySpecial?: boolean;
   readonly isHotRedeem?: boolean;
   readonly isNewArrival?: boolean;
-  readonly qualificationReason?: string;
   readonly specs?: readonly Readonly<{ name: string; options: readonly string[] }>[];
   readonly params?: readonly Readonly<{ key: string; value: string }>[];
-  readonly descriptionHtml?: string;
   readonly descriptionDetailText?: readonly string[];
   readonly nearbyStoreInfo?: Readonly<{ storeName: string; address: string; distance: string; businessHours: string; phone: string }>;
 }
@@ -75,11 +92,17 @@ export type PresentedProduct = Product &
     category: string;
   }>;
 
-export function inventoryStatus(stock: number) {
-  if (stock <= 0) return Object.freeze({ canPurchase: false, actionButtonStateText: '暂时缺货', availabilityText: '无可售库存' });
-  if (stock <= 5) return Object.freeze({ canPurchase: true, actionButtonStateText: '库存紧张', availabilityText: `仅余 ${stock} 件` });
-  return Object.freeze({ canPurchase: true, actionButtonStateText: '立即购买', availabilityText: '库存充足' });
-}
-import type { OperationOutputFor } from '@shop/contract';
+const REASON_TEXT: Readonly<Record<SaleabilityReason, string>> = Object.freeze({
+  qualification_unavailable: '经营资格正在核验，请稍后刷新',
+  qualification_failed: '当前商品不满足经营资格要求',
+  price_unavailable: '当前报价暂不可用',
+  inventory_unavailable: '库存状态暂不可用',
+  out_of_stock: '暂时缺货',
+});
 
-type ProductDto = OperationOutputFor<'storefront.catalog.read'>['items'][number];
+export function productAvailability(product: Pick<Product, 'saleability' | 'stock'>) {
+  const canPurchase = product.saleability.state === 'saleable';
+  const messages = Object.freeze(product.saleability.reasons.map((reason) => REASON_TEXT[reason]));
+  const availabilityText = canPurchase ? (product.stock <= 5 ? `库存紧张，仅余 ${product.stock} 件` : '价格、库存与经营资格均有效') : messages.join('；');
+  return Object.freeze({ canPurchase, availabilityText, actionButtonStateText: canPurchase ? '立即购买' : messages[0] ?? '暂不可购买', messages });
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { TransactionManager } from '../../../foundation/persistence/TransactionManager';
+import type { TransactionManager } from '../../../platform/database/TransactionManager';
 import type { RiskReplayRepository } from '../application/port/RiskReplayRepository';
 import { ReplayRiskPolicy } from '../application/process/ReplayRiskPolicy';
 
@@ -10,7 +10,11 @@ describe('ReplayRiskPolicy', () => {
       begin: vi.fn().mockResolvedValue({ scope: 'mall:one', rule: { maximumAmountMinor: 100 } }),
       sample: vi.fn().mockResolvedValue([
         {
-          actor: 'member:one', operation: 'catalog.listings.publish', resource: 'listing:one', outcome: 'allow', falsePositive: false,
+          actor: 'member:one',
+          operation: 'catalog.listings.publish',
+          resource: 'listing:one',
+          outcome: 'allow',
+          falsePositive: false,
           evidence: { context: { amountMinor: 101, velocity: 0, blocked: false }, signals: [] },
         },
       ]),

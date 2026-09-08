@@ -1,8 +1,8 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
 import type { ApprovalApplication } from '../service/ApprovalApplication';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import { approvalEvent } from '../../domain/event/ApprovalEvents';
 
 export class TasksApproveHandler implements OperationHandler<'approval.tasks.approve', 'write'> {

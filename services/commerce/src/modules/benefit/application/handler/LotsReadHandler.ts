@@ -1,6 +1,6 @@
 import type { OperationInputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler } from '../../../../pipeline/OperationHandler';
 import type { LotRepository } from '../port/LotRepository';
 export class LotsReadHandler implements OperationHandler<'benefit.lots.read', 'read'> {
   readonly operation = 'benefit.lots.read' as const;

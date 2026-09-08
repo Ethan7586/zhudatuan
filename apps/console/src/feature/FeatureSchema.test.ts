@@ -44,6 +44,7 @@ describe('Console feature-owned response schemas', () => {
           mall_total: 3,
           price_amount_minor: 31500,
           price_currency: 'CNY',
+          price_version: 3,
           saleable_stock: 8,
           qualification_eligible: true,
           data_gaps: [],

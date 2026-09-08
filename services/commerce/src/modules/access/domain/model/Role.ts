@@ -1,5 +1,5 @@
 import { ACCESS_ROLE_TEMPLATE_CODES, type AccessRoleTemplateCode } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export type RoleKind = 'custom' | 'system' | 'owner';
 export type PermissionEffect = 'allow' | 'deny';

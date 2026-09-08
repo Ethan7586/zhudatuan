@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 export type FederationState = 'created' | 'redirected' | 'callbackreceived' | 'verified' | 'selectionrequired' | 'linkrequired' | 'completed' | 'expired' | 'rejected';
 
 const NEXT: Readonly<Record<FederationState, readonly FederationState[]>> = Object.freeze({

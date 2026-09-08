@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { AccessContext } from '../../../foundation/security/AccessContext';
+import type { AccessContext } from '../../../platform/security/AccessContext';
 import type { NavigationCacheRepository } from '../application/port/NavigationCacheRepository';
 import { ReadNavigationTree } from '../application/service/ReadNavigationTree';
 import { NavigationKey } from '../domain/model/NavigationKey';
@@ -30,7 +30,10 @@ describe('ReadNavigationTree', () => {
       ],
     });
     const projector = {
-      project: async () => ({ key: new NavigationKey('s'.repeat(32), { catalog: 'catalog', target: 'console', principal: 'principal:1', membership: 'membership:1', scope: 'enterprise:1', accessVersion: 1, capabilityVersion: 1, featureVersion: 'feature' }), tree }),
+      project: async () => ({
+        key: new NavigationKey('s'.repeat(32), { catalog: 'catalog', target: 'console', principal: 'principal:1', membership: 'membership:1', scope: 'enterprise:1', accessVersion: 1, capabilityVersion: 1, featureVersion: 'feature' }),
+        tree,
+      }),
     };
     const query = new ReadNavigationTree(projector, cache, { run: async (_key: string, action: () => Promise<unknown>) => action() } as never, 's'.repeat(32), 'catalog', 'feature');
     const result = await query.execute({} as never, accessContext());

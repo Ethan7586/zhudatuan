@@ -1,8 +1,8 @@
-import { EXTENSION_REGISTRY } from '../../../../bootstrap/ExtensionRegistry';
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { EXTENSION_REGISTRY } from '../../../../composition/ExtensionRegistry';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { FULFILLMENT_CHANNEL_PORT } from '../../../channel/public';
 import { ORDER_FULFILLMENT_PORT } from '../../../order/public';
 import { ORGANIZATION_READ_PORT } from '../../../organization/public';
@@ -16,9 +16,7 @@ import { FulfillmentEventJob } from './FulfillmentEventJob';
 import { FulfillmentDeadletter } from '../../infrastructure/persistence/FulfillmentDeadletter';
 
 export function createJobs(context: ModuleContext): readonly ModuleJob[] {
-  const process = new ProcessFulfillmentEvent(
-    new PgFulfillmentEventProcess(new PgTransactionManager(context.service(DATABASE_POOL)), context.ports.get(ORDER_FULFILLMENT_PORT))
-  );
+  const process = new ProcessFulfillmentEvent(new PgFulfillmentEventProcess(new PgTransactionManager(context.service(DATABASE_POOL)), context.ports.get(ORDER_FULFILLMENT_PORT)));
   return Object.freeze([{ id: 'fulfillmentevent', processor: new FulfillmentEventJob(process) }]);
 }
 

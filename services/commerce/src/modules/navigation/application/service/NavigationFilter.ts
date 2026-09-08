@@ -67,7 +67,7 @@ export class NavigationFilter {
                 breadcrumbs,
               },
               children: descendants,
-            }),
+            }).toValue(),
           ];
         })
       );

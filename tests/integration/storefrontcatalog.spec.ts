@@ -6,7 +6,7 @@ import { result as databaseResult, withReadTransaction } from '../../services/co
 
 const mapper = new CatalogMapper('catalog-integration-signing-key-with-32-bytes');
 
-test('storefront catalog composes listing, price and inventory concurrently without accepting caller scope', async () => {
+test('storefront catalog composes listing, price, inventory and qualification concurrently without accepting caller scope', async () => {
   let active = 0;
   let maximum = 0;
   const parallel = async <T>(value: T) => {
@@ -36,13 +36,15 @@ test('storefront catalog composes listing, price and inventory concurrently with
         assert.equal(input.mall, 'mall:one');
         assert.equal(input.pool, 'pool:one');
         return {
-          items: [{ id: 'listing:one', sku: 'sku:one', product: 'product:one', title: '福利商品', subtitle: null, coverUrl: null, kind: 'physical', version: 'listing:1', updatedAt: '2026-08-31T00:00:00.000Z' }],
+          items: [{ id: 'listing:one', sku: 'sku:one', product: 'product:one', title: '福利商品', subtitle: null, coverUrl: null, kind: 'physical', categoryId: 'category:one', categoryCode: 'gift', categoryName: '员工好礼', brandId: null, supplierId: 'partner:one', attributes: {}, version: 'listing:1', updatedAt: '2026-08-31T00:00:00.000Z' }],
           next: { sort: '2026-08-31T00:00:00.000Z', id: 'listing:one' },
         };
       },
+      categories: async () => [],
     },
     { prices: async () => parallel([{ sku: 'sku:one', amountMinor: 100, compareMinor: 120, currency: 'CNY', version: 'price:1' }]) },
     { availability: async () => parallel([{ sku: 'sku:one', available: 8, state: 'available', version: 'stock:1' }]) },
+    { decisions: async () => parallel([{ listing: 'listing:one', eligible: true, policyVersion: 1 }]) },
     mapper
   );
   const response = await withReadTransaction(
@@ -53,7 +55,7 @@ test('storefront catalog composes listing, price and inventory concurrently with
   assert.equal(response.status, 200);
   assert.equal(body.items[0].price.amountMinor, 100);
   assert.equal(body.items[0].availability.available, 8);
-  assert.equal(maximum, 2);
+  assert.equal(maximum, 3);
   assert.deepEqual(mapper.decode(body.nextCursor), { sort: '2026-08-31T00:00:00.000Z', id: 'listing:one' });
 });
 

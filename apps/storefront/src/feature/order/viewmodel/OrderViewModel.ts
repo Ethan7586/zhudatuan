@@ -12,7 +12,7 @@ export function useOrderViewModel() {
   const [search, setSearch] = useSearchParams();
   const order = useOrderState(identity.currentMall);
   const status = search.get('status') ?? 'all';
-  const visibleOrders = order.presentationOrders.filter((item) => status === 'all' || (status === 'shipping' ? item.status === 'pending_shipment' || item.status === 'pending_receipt' : item.status === status));
+  const visibleOrders = order.orders.filter((item) => status === 'all' || (status === 'shipping' ? item.status === 'pending_shipment' || item.status === 'pending_receipt' : item.status === status));
   return Object.freeze({
     user: identity.user,
     ...order,

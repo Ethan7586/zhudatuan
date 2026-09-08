@@ -1,9 +1,9 @@
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { rowResult } from '../../../../adapter/database/DatabaseResult';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { rowResult } from '../../../../platform/database/DatabaseResult';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import type { OperationRequest } from '../../../../pipeline/OperationHandler';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 import { SettlementPolicy } from '../../domain/policy/SettlementPolicy';
 import type { FinanceEntries } from './FinanceOperation';
 import { PgAccountingPort } from './PgAccountingPort';
@@ -40,8 +40,12 @@ async function decide(request: OperationRequest, database: SqlExecutor, workflow
   if (approved) {
     await database.query(`update finance.split set state='paid' where settlement_id=$1 and beneficiary_type='platform' and state='frozen'`, [selected.id]);
     await workflow(database).event('finance.settlement.approved', 'settlement', selected.id, selected.scope_id, {
-      settlement: selected.id, partner: selected.partner_id, amountMinor: selected.amount_minor,
-      grossMinor: selected.gross_minor, feeMinor: selected.fee_minor, currency: selected.currency,
+      settlement: selected.id,
+      partner: selected.partner_id,
+      amountMinor: selected.amount_minor,
+      grossMinor: selected.gross_minor,
+      feeMinor: selected.fee_minor,
+      currency: selected.currency,
     });
   }
   return rowResult(result);
@@ -49,15 +53,24 @@ async function decide(request: OperationRequest, database: SqlExecutor, workflow
 
 async function postSettlement(database: SqlExecutor, selected: Settlement): Promise<void> {
   await finance.post(requireWriteTransaction(database.transaction), {
-    scopeId: selected.scope_id, source: { module: 'finance', aggregate: 'settlement', aggregateId: `${selected.id}:partner`, event: 'finance.settlement.approved', eventId: selected.id, leg: 'partner' },
-    currency: selected.currency, description: 'Settlement liability accrual', debit: { code: 'settlement.cost', kind: 'expense' },
-    credit: { code: `settlement.payable.${selected.partner_id}`, kind: 'liability' }, amountMinor: selected.amount_minor,
+    scopeId: selected.scope_id,
+    source: { module: 'finance', aggregate: 'settlement', aggregateId: `${selected.id}:partner`, event: 'finance.settlement.approved', eventId: selected.id, leg: 'partner' },
+    currency: selected.currency,
+    description: 'Settlement liability accrual',
+    debit: { code: 'settlement.cost', kind: 'expense' },
+    credit: { code: `settlement.payable.${selected.partner_id}`, kind: 'liability' },
+    amountMinor: selected.amount_minor,
   });
-  if (selected.fee_minor > 0) await finance.post(requireWriteTransaction(database.transaction), {
-    scopeId: selected.scope_id, source: { module: 'finance', aggregate: 'settlement', aggregateId: `${selected.id}:platform`, event: 'finance.settlement.approved', eventId: selected.id, leg: 'platform' },
-    currency: selected.currency, description: 'Settlement platform fee', debit: { code: 'settlement.cost', kind: 'expense' },
-    credit: { code: 'platform.fee', kind: 'income' }, amountMinor: selected.fee_minor,
-  });
+  if (selected.fee_minor > 0)
+    await finance.post(requireWriteTransaction(database.transaction), {
+      scopeId: selected.scope_id,
+      source: { module: 'finance', aggregate: 'settlement', aggregateId: `${selected.id}:platform`, event: 'finance.settlement.approved', eventId: selected.id, leg: 'platform' },
+      currency: selected.currency,
+      description: 'Settlement platform fee',
+      debit: { code: 'settlement.cost', kind: 'expense' },
+      credit: { code: 'platform.fee', kind: 'income' },
+      amountMinor: selected.fee_minor,
+    });
 }
 
 interface Settlement {

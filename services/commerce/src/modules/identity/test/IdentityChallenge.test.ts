@@ -1,6 +1,6 @@
 import type { QueryResult } from 'pg';
 import { describe, expect, it } from 'vitest';
-import { OperationRejection } from '../../../foundation/application/OperationRejection';
+import { OperationRejection } from '../../../pipeline/OperationRejection';
 import { PgChallenge } from '../infrastructure/persistence/PgChallenge';
 import { PgSessionRepository } from '../infrastructure/persistence/PgSessionRepository';
 import { withReadTransaction, withWriteTransaction } from '../../../test/TransactionFixture';

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { Allocation } from '../../domain/model/Allocation';
 
 export interface SettlementBenefit {
@@ -86,7 +86,10 @@ export class PaymentSettlementCore {
         [target.intent]
       )
     ).rows;
-    new Allocation(tenderPlans.map((plan) => Object.freeze({ sequence: plan.sequence, kind: plan.kind, reference: plan.reference_id, amountMinor: plan.amount_minor })), target.amountMinor);
+    new Allocation(
+      tenderPlans.map((plan) => Object.freeze({ sequence: plan.sequence, kind: plan.kind, reference: plan.reference_id, amountMinor: plan.amount_minor })),
+      target.amountMinor
+    );
     for (const plan of tenderPlans) {
       if (plan.kind === 'benefit') await this.consumeBenefit(context, target.order, plan);
       if (plan.kind === 'voucher') await this.consumeVoucher(context, target.order, target.member, plan);

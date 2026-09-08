@@ -4,9 +4,9 @@ import { test } from 'node:test';
 import { assertWechatPayTransactionMatchesExpected, verifyWechatPaySignedBody } from '@shop/wechatpayment';
 import { createPorts } from '@shop/providercore';
 import { createWechatPayTestKeys, signedProviderHeaders } from '../../extensions/payment/wechat/test/TestKeys';
-import { PgIdempotencyRepository } from '../../services/commerce/src/adapter/database/PgIdempotencyRepository';
-import { PgTransactionAccess } from '../../services/commerce/src/adapter/database/PgTransactionAccess';
-import { PgTransactionManager } from '../../services/commerce/src/adapter/database/PgTransactionManager';
+import { PgIdempotencyRepository } from '../../services/commerce/src/platform/database/PgIdempotencyRepository';
+import { PgTransactionAccess } from '../../services/commerce/src/platform/database/PgTransactionAccess';
+import { PgTransactionManager } from '../../services/commerce/src/platform/database/PgTransactionManager';
 
 test('an idempotency key replay with a different canonical request is rejected', async () => {
   const client = {

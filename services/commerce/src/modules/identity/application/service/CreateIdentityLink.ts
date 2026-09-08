@@ -1,8 +1,8 @@
 import { identityLifecycle as operationLifecycle, type IdentityLifecycle as OperationLifecycle } from '../model/IdentityAction';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 import type { FederateIdentity, LoadedFederationStart, PreparedFederationStart } from '../service/FederateIdentity';
 import { provider, requestContext } from './StartFederation';
 export class CreateIdentityLink {

@@ -1,6 +1,6 @@
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { AccessContext } from '../../../../foundation/security/AccessContext';
-import { organizationScope } from '../../../../foundation/security/OrganizationScope';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { AccessContext } from '../../../../platform/security/AccessContext';
+import { organizationScope } from '../../../../platform/security/OrganizationScope';
 import type { OrganizationReadPort } from '../../../organization/public';
 
 /** Shared scope query object used by every hierarchical finance projection. */
@@ -8,6 +8,7 @@ export class FinanceScopeQuery {
   constructor(private readonly organization: OrganizationReadPort) {}
 
   descendants(database: SqlExecutor, scope: AccessContext['scope']): Promise<readonly string[]> {
+    if (scope.kind === 'supplier' || scope.kind === 'store') return Promise.resolve(Object.freeze([scope.id]));
     return this.organization.descendants(database.transaction, organizationScope(scope));
   }
 

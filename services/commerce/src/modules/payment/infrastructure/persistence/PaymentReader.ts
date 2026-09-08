@@ -1,6 +1,6 @@
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { MemberAccessPort } from '../../../access/public';
 import type { OrderPaymentPort } from '../../../order/public';
 interface PaymentRow {
@@ -37,10 +37,10 @@ export class PaymentReader {
     if (!selected || !(await this.orders.payment(database.transaction, selected.order_id, member))) throw new DomainError('RESOURCE_NOT_FOUND');
     const expiresAt = new Date(selected.expires_at).toISOString();
     if (selected.payment_id || selected.intent_state === 'captured') {
-      return Object.freeze({ intentId: selected.intent_id, orderId: selected.order_id, paymentId: selected.payment_id ?? selected.intent_id, state: 'captured' as const, action: null, expiresAt });
+      return Object.freeze({ intentId: selected.intent_id, orderId: selected.order_id, paymentId: selected.payment_id ?? selected.intent_id, state: 'captured' as const, action: null, expiresAt, retryAfter: 0 as const });
     }
     if (selected.action && selected.intent_state === 'pending') {
-      return Object.freeze({ intentId: selected.intent_id, orderId: selected.order_id, paymentId: selected.intent_id, state: 'pending' as const, action: stringRecord(selected.action), expiresAt });
+      return Object.freeze({ intentId: selected.intent_id, orderId: selected.order_id, paymentId: selected.intent_id, state: 'pending' as const, action: stringRecord(selected.action), expiresAt, retryAfter: 5 });
     }
     const state = selected.attempt_state === 'unknown' ? 'recovery' : selected.intent_state === 'failed' ? 'failed' : selected.intent_state === 'expired' ? 'expired' : 'preparing';
     return Object.freeze({ intentId: selected.intent_id, orderId: selected.order_id, paymentId: selected.intent_id, state, action: null, expiresAt, retryAfter: state === 'failed' || state === 'expired' ? 0 : 5 });

@@ -13,6 +13,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./compact": "./src/CompactFailure.ts",
+    "./chinese": "./src/ChineseDomain.ts",
+    "./actions": "./src/Action.ts",
+    "./operator": "./src/Operator.ts",
     "./records": "./src/RecordProjection.ts"
   },
   "types": "./src/index.ts",

@@ -1,7 +1,7 @@
 import { OPERATION_SCHEMAS } from '@shop/contract';
 import { describe, expect, it, vi } from 'vitest';
-import type { CipherEnvelope } from '../../../foundation/application/KmsPort';
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { CipherEnvelope } from '../../../pipeline/KmsPort';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
 import { readHandlerContext } from '../../../test/HandlerFixture';
 import { result, withReadTransaction, withWriteTransaction } from '../../../test/TransactionFixture';
 import { CustomersGetHandler } from '../application/handler/CustomersGetHandler';
@@ -27,9 +27,9 @@ describe('partner customer fusion operations', () => {
   it('normalizes contact data, exposes only masks and rejects invalid agreement periods', () => {
     expect(new Contact('primary', { name: '张小明', phone: '13800138000', email: 'USER@example.com' }).masked()).toEqual({ name: '张**', phone: '138****8000', email: 'us***@example.com' });
     expect(() => new Contact('primary', { name: '张小明' })).toThrow('PARTNER_CONTACT_INVALID');
-    expect(
-      () => new Agreement({ contractRef: 'HT-1', contractHash: 'a'.repeat(64), capabilities: ['voucher.issue'], effectiveAt: '2026-09-05T00:00:00.000Z', expiresAt: '2026-09-04T00:00:00.000Z' })
-    ).toThrow('PARTNER_AGREEMENT_PERIOD_INVALID');
+    expect(() => new Agreement({ contractRef: 'HT-1', contractHash: 'a'.repeat(64), capabilities: ['voucher.issue'], effectiveAt: '2026-09-05T00:00:00.000Z', expiresAt: '2026-09-04T00:00:00.000Z' })).toThrow(
+      'PARTNER_AGREEMENT_PERIOD_INVALID'
+    );
   });
 
   it('protects identifier and contact fields before opening the write transaction', async () => {
@@ -37,7 +37,9 @@ describe('partner customer fusion operations', () => {
     const command = await new ProtectCustomerData({ encrypt } as never).create(
       {
         body: {
-          identifier: ' 9131 0000 abc ', name: '测试企业客户', kind: 'enterprise',
+          identifier: ' 9131 0000 abc ',
+          name: '测试企业客户',
+          kind: 'enterprise',
           contact: { name: '张小明', phone: '13800138000', email: 'USER@example.com' },
           agreement: { contractRef: 'HT-1', contractHash: 'b'.repeat(64), capabilities: ['voucher.issue'], effectiveAt: '2026-09-04T00:00:00.000Z', expiresAt: '2027-09-04T00:00:00.000Z' },
         },
@@ -112,10 +114,7 @@ describe('partner customer fusion operations', () => {
   it('returns lightweight options only and bounds search to the current scope', async () => {
     const transaction = {} as ReadTransactionContext;
     const options = vi.fn(async () => [{ id: 'partnercustomer:one', name: '测试企业客户', kind: 'enterprise' as const, agreementExpiresAt: '2027-09-04T00:00:00.000Z', version: 2 }]);
-    const reply = await new CustomerOptionsHandler({ options } as never).execute(
-      { query: { q: '测试', limit: '20' } } as never,
-      readHandlerContext('partner.customeroptions.list', transaction)
-    );
+    const reply = await new CustomerOptionsHandler({ options } as never).execute({ query: { q: '测试', limit: '20' } } as never, readHandlerContext('partner.customeroptions.list', transaction));
     expect(options).toHaveBeenCalledWith(transaction, { scope: 'mall:one', q: '测试', limit: 20 });
     expect(reply.body).toEqual({ items: [{ id: 'partnercustomer:one', name: '测试企业客户', kind: 'enterprise', agreementExpiresAt: '2027-09-04T00:00:00.000Z', version: 2 }], count: 1 });
     expect(JSON.stringify(reply.body)).not.toContain('contact');
@@ -128,8 +127,16 @@ function envelope(): CipherEnvelope {
 
 function createCommand() {
   return {
-    id: 'partnercustomer:one', tenant: 'tenant:one', scope: 'mall:one', identifier: envelope(), identifierMasked: '9131****0ABC', name: '测试企业客户', kind: 'enterprise' as const, actor: 'membership:one',
-    contact: { id: 'customercontact:one', kind: 'primary' as const, name: envelope(), phone: envelope(), email: null, nameMasked: '张**', phoneMasked: '138****8000', emailMasked: null }, agreement: null,
+    id: 'partnercustomer:one',
+    tenant: 'tenant:one',
+    scope: 'mall:one',
+    identifier: envelope(),
+    identifierMasked: '9131****0ABC',
+    name: '测试企业客户',
+    kind: 'enterprise' as const,
+    actor: 'membership:one',
+    contact: { id: 'customercontact:one', kind: 'primary' as const, name: envelope(), phone: envelope(), email: null, nameMasked: '张**', phoneMasked: '138****8000', emailMasked: null },
+    agreement: null,
   };
 }
 
@@ -139,10 +146,26 @@ function customerRow() {
 
 function projection() {
   return {
-    id: 'partnercustomer:one', scopeId: 'mall:one', identifierMasked: '9131****0ABC', name: '测试企业客户', kind: 'enterprise' as const, status: 'active' as const, version: 2,
+    id: 'partnercustomer:one',
+    scopeId: 'mall:one',
+    identifierMasked: '9131****0ABC',
+    name: '测试企业客户',
+    kind: 'enterprise' as const,
+    status: 'active' as const,
+    version: 2,
     contacts: [{ id: 'customercontact:one', kind: 'primary' as const, nameMasked: '张**', phoneMasked: '138****8000', emailMasked: null, configured: true as const, version: 1 }],
-    agreement: { id: 'customeragreement:one', contractRef: 'HT-1', contractHash: 'b'.repeat(64), capabilities: ['voucher.issue'], status: 'active' as const, effectiveAt: '2026-09-04T00:00:00.000Z', expiresAt: '2027-09-04T00:00:00.000Z', version: 2 },
-    createdAt: '2026-09-04T00:00:00.000Z', updatedAt: '2026-09-04T00:00:00.000Z',
+    agreement: {
+      id: 'customeragreement:one',
+      contractRef: 'HT-1',
+      contractHash: 'b'.repeat(64),
+      capabilities: ['voucher.issue'],
+      status: 'active' as const,
+      effectiveAt: '2026-09-04T00:00:00.000Z',
+      expiresAt: '2027-09-04T00:00:00.000Z',
+      version: 2,
+    },
+    createdAt: '2026-09-04T00:00:00.000Z',
+    updatedAt: '2026-09-04T00:00:00.000Z',
   };
 }
 

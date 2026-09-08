@@ -1,6 +1,6 @@
-import type { Cache } from '../../../../foundation/cache/Cache';
-import { VersionedKey } from '../../../../foundation/cache/VersionedKey';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import type { Cache } from '../../../../platform/cache/Cache';
+import { VersionedKey } from '../../../../platform/cache/VersionedKey';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import type { ReportingJobRepository } from '../port/ReportingJobRepository';
 
 export interface ReportingProjectionExecution {

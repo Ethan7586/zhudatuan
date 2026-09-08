@@ -21,6 +21,7 @@ import {
   OrderRecoveryResolveSchema,
 } from './OrderSchema';
 
+import { emptyPayment, masked, orderReturns } from './OrderMapValue';
 export class OrderMapper {
   page(value: unknown): OrderPage {
     return deepFreeze(OrderPageSchema.parse(value));
@@ -152,41 +153,4 @@ export class OrderMapper {
     const receipt = OrderRecoveryResolveSchema.parse(value);
     return deepFreeze({ id: receipt.case, state: receipt.state, requestId: receipt.request });
   }
-}
-
-function emptyPayment() {
-  return Object.freeze({ paymentId: null, version: 0, capturedMinor: 0, refundedMinor: 0, refundableMinor: 0, updatedAt: null, tenders: Object.freeze([]) });
-}
-
-function orderReturns(timeline: readonly Readonly<{ evidence: unknown }>[]) {
-  const latest = new Map<string, OrderReturn>();
-  for (const entry of timeline) {
-    const evidence = record(entry.evidence);
-    const values = Array.isArray(evidence?.returns) ? evidence.returns : [];
-    for (const value of values) {
-      const item = record(value);
-      if (!item || typeof item.id !== 'string' || !returnState(item.state) || !Number.isSafeInteger(item.version)) continue;
-      latest.set(item.id, Object.freeze({
-        id: item.id,
-        state: item.state,
-        provider: typeof item.provider === 'string' ? item.provider : null,
-        providerReferenceMasked: masked(item.providerReference),
-        trackingMasked: masked(item.trackingNumber),
-        version: Number(item.version),
-      }));
-    }
-  }
-  return Object.freeze([...latest.values()].sort((left, right) => left.id.localeCompare(right.id)));
-}
-
-function record(value: unknown): Readonly<Record<string, unknown>> | null {
-  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : null;
-}
-
-function returnState(value: unknown): value is OrderReturn['state'] {
-  return typeof value === 'string' && (FULFILLMENT_RETURN_STATES as readonly string[]).includes(value);
-}
-
-function masked(value: unknown): string | null {
-  return typeof value === 'string' && value.length > 0 ? `尾号 ${value.slice(-4)}` : null;
 }

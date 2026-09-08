@@ -1,15 +1,25 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ExportPort, RuntimeExportDownload, RuntimeExportRecord, RuntimeExportWork } from '../../public/ExportPort';
-interface Row { readonly id: string; readonly kind: string; readonly state: string; readonly objectKey: string | null; readonly expiresAt: Date | string | null; readonly createdAt: Date | string; readonly updatedAt: Date | string; }
+interface Row {
+  readonly id: string;
+  readonly kind: string;
+  readonly state: string;
+  readonly objectKey: string | null;
+  readonly expiresAt: Date | string | null;
+  readonly createdAt: Date | string;
+  readonly updatedAt: Date | string;
+}
 export class PgExportPort implements ExportPort {
   constructor(private readonly transactions = new PgTransactionAccess()) {}
   async create(context: WriteTransactionContext, input: Parameters<ExportPort['create']>[1]): Promise<RuntimeExportRecord> {
     if (input.scope !== context.scope || input.actor !== context.actor || input.authorization.actor !== input.actor) throw new DomainError('AUTHORIZATION_DENIED');
     const id = `export:${randomUUID()}`;
-    const idempotency = createHash('sha256').update(JSON.stringify([input.scope, input.owner, input.kind, input.actor, input.idempotency])).digest('hex');
+    const idempotency = createHash('sha256')
+      .update(JSON.stringify([input.scope, input.owner, input.kind, input.actor, input.idempotency]))
+      .digest('hex');
     const result = await this.transactions.database(context).query<Row>(
       `insert into runtime.exports(id,tenant_id,scope_id,owner,kind,filter_snapshot,authorization_snapshot,state,idempotency_key,version,created_by,updated_by,created_at,updated_at,retention_until)
        values($1,$2,$2,$3,$4,$5::jsonb,$6::jsonb,'queued',$7,1,$8,$8,clock_timestamp(),clock_timestamp(),clock_timestamp()+interval '90 days')
@@ -24,12 +34,18 @@ export class PgExportPort implements ExportPort {
     return projection(result.rows[0]!);
   }
   async read(context: ReadTransactionContext, id: string, scope: string, owner: string): Promise<RuntimeExportRecord | null> {
-    const result = await this.transactions.database(context).query<Row>(`select id,kind,state,object_key as "objectKey",download_expires_at as "expiresAt",created_at as "createdAt",updated_at as "updatedAt" from runtime.exports where id=$1 and scope_id=$2 and owner=$3`, [id, scope, owner]);
+    const result = await this.transactions
+      .database(context)
+      .query<Row>(`select id,kind,state,object_key as "objectKey",download_expires_at as "expiresAt",created_at as "createdAt",updated_at as "updatedAt" from runtime.exports where id=$1 and scope_id=$2 and owner=$3`, [id, scope, owner]);
     return result.rows[0] ? projection(result.rows[0]) : null;
   }
   async claim(context: WriteTransactionContext, id: string, scope: string, owner: string): Promise<RuntimeExportWork | null> {
     const result = await this.transactions.database(context).query<{
-      id: string; scope: string; kind: string; snapshot: Readonly<Record<string, unknown>>; authorization: Readonly<Record<string, unknown>>;
+      id: string;
+      scope: string;
+      kind: string;
+      snapshot: Readonly<Record<string, unknown>>;
+      authorization: Readonly<Record<string, unknown>>;
     }>(
       `update runtime.exports set state='running',version=version+1,updated_by='system:runtime',updated_at=clock_timestamp()
        where id=$1 and scope_id=$2 and owner=$3 and state='queued'
@@ -42,7 +58,9 @@ export class PgExportPort implements ExportPort {
   async work(context: ReadTransactionContext, id: string, scope: string, owner: string): Promise<RuntimeExportWork | null> {
     const result = await this.transactions.database(context).query<RuntimeExportWork>(
       `select id,scope_id scope,kind,filter_snapshot snapshot,authorization_snapshot authorization
-       from runtime.exports where id=$1 and scope_id=$2 and owner=$3 and created_by=$4`, [id, scope, owner, context.actor]);
+       from runtime.exports where id=$1 and scope_id=$2 and owner=$3 and created_by=$4`,
+      [id, scope, owner, context.actor]
+    );
     const row = result.rows[0];
     return row ? Object.freeze({ ...row, snapshot: Object.freeze({ ...row.snapshot }), authorization: Object.freeze({ ...row.authorization }) }) : null;
   }
@@ -59,7 +77,8 @@ export class PgExportPort implements ExportPort {
   async fail(context: WriteTransactionContext, id: string, scope: string, owner: string, terminal: boolean): Promise<void> {
     const result = await this.transactions.database(context).query(
       `update runtime.exports set state=$4,version=version+1,updated_by='system:runtime',updated_at=clock_timestamp()
-       where id=$1 and scope_id=$2 and owner=$3 and state='running'`, [id, scope, owner, terminal ? 'failed' : 'queued']
+       where id=$1 and scope_id=$2 and owner=$3 and state='running'`,
+      [id, scope, owner, terminal ? 'failed' : 'queued']
     );
     if (result.rowCount !== 1) throw new Error('RUNTIME_EXPORT_FAIL_CONFLICT');
   }
@@ -76,6 +95,14 @@ export class PgExportPort implements ExportPort {
 }
 function projection(row: Row): RuntimeExportRecord {
   const expired = row.expiresAt !== null && new Date(row.expiresAt).getTime() <= Date.now();
-  const state = row.state === 'ready' ? expired ? 'expired' : 'completed' : row.state === 'cancelled' ? 'failed' : row.state as RuntimeExportRecord['state'];
-  return Object.freeze({ id: row.id, kind: row.kind, state, expiresAt: new Date(row.expiresAt ?? Date.now() + 86_400_000).toISOString(), ...(row.objectKey ? { fileName: row.objectKey.split('/').at(-1) ?? row.objectKey } : {}), createdAt: new Date(row.createdAt).toISOString(), updatedAt: new Date(row.updatedAt).toISOString() });
+  const state = row.state === 'ready' ? (expired ? 'expired' : 'completed') : row.state === 'cancelled' ? 'failed' : (row.state as RuntimeExportRecord['state']);
+  return Object.freeze({
+    id: row.id,
+    kind: row.kind,
+    state,
+    expiresAt: new Date(row.expiresAt ?? Date.now() + 86_400_000).toISOString(),
+    ...(row.objectKey ? { fileName: row.objectKey.split('/').at(-1) ?? row.objectKey } : {}),
+    createdAt: new Date(row.createdAt).toISOString(),
+    updatedAt: new Date(row.updatedAt).toISOString(),
+  });
 }

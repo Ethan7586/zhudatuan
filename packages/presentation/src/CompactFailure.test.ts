@@ -3,8 +3,9 @@ import { compactFailure } from './CompactFailure';
 
 describe('compact failure presentation', () => {
   it('keeps authentication and retry semantics without exposing raw errors', () => {
-    expect(compactFailure({ kind: 'api', code: 'AUTHENTICATION_REQUIRED', retryable: false })).toEqual({ message: '登录状态已失效，请重新登录。', authenticationRequired: true, retryable: false });
+    expect(compactFailure({ kind: 'api', code: 'AUTHENTICATION_REQUIRED', retryable: false })).toEqual({ message: '登录状态已失效，请重新登录。', authenticationRequired: true, retryable: false, state: 'expired' });
     expect(compactFailure({ kind: 'transport', code: 'OFFLINE', retryable: true })).toMatchObject({ authenticationRequired: false, retryable: true });
+    expect(compactFailure({ kind: 'api', code: 'SCOPE_DENIED', retryable: false }).state).toBe('forbidden');
     expect(compactFailure(new Error('database password leaked')).message).not.toContain('password');
   });
 });

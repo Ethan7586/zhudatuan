@@ -405,6 +405,7 @@ surfaces:
       - { routeid: storeinventorywork, baseline: storeinventorywork, responsive: true, states: *a1 }
       - { routeid: storereturnwork, baseline: storereturnwork, responsive: true, states: *a1 }
       - { routeid: storesupportwork, baseline: storesupportwork, responsive: true, states: *a1 }
+      - { routeid: storeworkcase, baseline: storeworkcase, responsive: true, states: *a1 }
       - { routeid: storeaccountwork, baseline: storeaccountwork, responsive: true, states: *a1 }
   supplier:
     source: apps/supplier/src/generated/RouteBinding.ts
@@ -412,6 +413,7 @@ surfaces:
       - { routeid: suppliertasks, baseline: suppliertasks, responsive: true, states: *a1 }
       - { routeid: supplieraccount, baseline: supplieraccount, responsive: true, states: *a1 }
       - { routeid: suppliercatalog, baseline: suppliercatalog, responsive: true, states: *a1 }
+      - { routeid: supplierproduct, baseline: supplierproduct, responsive: true, states: *a1 }
       - { routeid: supplierpricing, baseline: supplierpricing, responsive: true, states: *a1 }
       - { routeid: supplierinventory, baseline: supplierinventory, responsive: true, states: *a1 }
       - { routeid: supplierorders, baseline: supplierorders, responsive: true, states: *a1 }
@@ -422,3 +424,4 @@ surfaces:
       - { routeid: supplierinvoice, baseline: supplierinvoice, responsive: true, states: *a1 }
       - { routeid: supplierconnections, baseline: supplierconnections, responsive: true, states: *a1 }
       - { routeid: suppliersupport, baseline: suppliersupport, responsive: true, states: *a1 }
+      - { routeid: suppliercase, baseline: suppliercase, responsive: true, states: *a1 }

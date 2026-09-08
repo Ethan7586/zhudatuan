@@ -1,12 +1,14 @@
-export type StatementImportMetadata = Readonly<Record<string, unknown> & {
-  readonly provider: string;
-  readonly partnerId: string;
-  readonly periodStart: string;
-  readonly periodEnd: string;
-  readonly currency: 'CNY';
-  readonly openingMinor: number;
-  readonly closingMinor: number;
-}>;
+export type StatementImportMetadata = Readonly<
+  Record<string, unknown> & {
+    readonly provider: string;
+    readonly partnerId: string;
+    readonly periodStart: string;
+    readonly periodEnd: string;
+    readonly currency: 'CNY';
+    readonly openingMinor: number;
+    readonly closingMinor: number;
+  }
+>;
 
 export function statementImportMetadata(value: Readonly<Record<string, unknown>>): StatementImportMetadata {
   const periodStart = date(value.periodStart, 'FINANCE_IMPORT_PERIOD_INVALID');

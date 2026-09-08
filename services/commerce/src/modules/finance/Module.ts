@@ -1,12 +1,12 @@
 import { PgReferralFinancePort } from './infrastructure/persistence/PgReferralFinancePort';
 
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { defineModule } from '../../composition/DefinedModule';
 import { Manifest } from './Manifest';
 import { InvoicePort } from './application/service/InvoicePort';
 import { BENEFIT_ACCOUNTING_PORT, BENEFIT_SETTLEMENT_READ_PORT, CHECKOUT_INVOICE_PORT, ORDER_IMPORT_FINANCE_PORT, PROVIDER_FINANCE_PORT, VOUCHER_ACCOUNTING_PORT } from './public/index';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
+import { DATABASE_POOL } from '../../platform/database/Pool';
 import { REFERRAL_FINANCE_PORT } from './public/ReferralFinancePort';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
 import { createFinanceAdapters } from './infrastructure/persistence/FinanceAdapters';
 import { OverviewReadHandler } from './application/handler/OverviewReadHandler';
 import { EntriesReadHandler } from './application/handler/EntriesReadHandler';
@@ -47,7 +47,7 @@ import { ImportsCreateHandler } from './application/handler/ImportsCreateHandler
 import { ImportsReadHandler } from './application/handler/ImportsReadHandler';
 import { FacetsReadHandler } from './application/handler/FacetsReadHandler';
 import { createJobs, createProviderJobs } from './interface/job/JobFactory';
-import { PgJobScheduler } from '../../adapter/database/PgJobScheduler';
+import { PgJobScheduler } from '../../platform/database/PgJobScheduler';
 import { IMPORT_OBJECT_PORT, RUNTIME_IMPORT_PORT } from '../runtime/public';
 import { OBJECT_STORE } from '../runtime/public/ObjectPort';
 import { PgFacetRepository } from './infrastructure/persistence/PgFacetRepository';
@@ -76,8 +76,7 @@ export const FinanceModule = defineModule(Manifest, {
       new FacetsReadHandler(new PgFacetRepository(transactions), context.ports.get(ORGANIZATION_READ_PORT), context.ports.get(FINANCE_CHANNEL_PORT)),
       new AuditReadHandler(new PgAuditProjectionRepository(transactions), context.ports.get(ORGANIZATION_READ_PORT), context.ports.get(EVENT_EVIDENCE_READ_PORT), context.ports.get(AUDIT_READ_PORT)),
       new EntriesReadHandler(finance.journalRead),
-      new ImportsCreateHandler(imports, new PgJobScheduler(transactions), context.ports.get(IMPORT_OBJECT_PORT),
-        context.ports.get(ORGANIZATION_READ_PORT), context.ports.get(FINANCE_CHANNEL_PORT)),
+      new ImportsCreateHandler(imports, new PgJobScheduler(transactions), context.ports.get(IMPORT_OBJECT_PORT), context.ports.get(ORGANIZATION_READ_PORT), context.ports.get(FINANCE_CHANNEL_PORT)),
       new ImportsReadHandler(imports, context.service(OBJECT_STORE)),
       new StatementsReadHandler(finance.statementRead),
       new StatementsExportHandler(finance.statementProcess),

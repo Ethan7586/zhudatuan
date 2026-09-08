@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
+import type { OperationRequest } from '../../../../pipeline/OperationRequest';
 import { AfterSalePersistence } from './AfterSalePersistence';
 
 describe('AfterSalePersistence read scope', () => {
@@ -49,7 +49,32 @@ describe('AfterSalePersistence read scope', () => {
     await service.read(filtered, { query, transaction: {} } as never);
 
     expect(scope).toHaveBeenCalledExactlyOnceWith(expect.anything(), 'enterprise:one');
-    expect(query.mock.calls[0]?.[1]).toEqual([false, 'enterprise:one', false, false, ['enterprise:one', 'mall:one'], 'ZD202609050001', 'all', 'today', 'Asia/Shanghai', null, null, 'paid', 'paid', 'allocated', 'mall:one', '', '', [], null, null, '', null, null, 51]);
+    expect(query.mock.calls[0]?.[1]).toEqual([
+      false,
+      'enterprise:one',
+      false,
+      false,
+      ['enterprise:one', 'mall:one'],
+      'ZD202609050001',
+      'all',
+      'today',
+      'Asia/Shanghai',
+      null,
+      null,
+      'paid',
+      'paid',
+      'allocated',
+      'mall:one',
+      '',
+      '',
+      [],
+      null,
+      null,
+      '',
+      null,
+      null,
+      51,
+    ]);
   });
 });
 

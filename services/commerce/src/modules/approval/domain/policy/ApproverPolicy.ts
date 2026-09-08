@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export interface ApprovalAssignment {
   readonly kind: 'permission' | 'role' | 'membership';

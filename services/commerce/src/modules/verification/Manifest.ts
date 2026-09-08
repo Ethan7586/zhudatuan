@@ -1,4 +1,4 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { RUNTIME_VERIFICATION_PORT, VERIFICATION_PORT } from './public';
 
 export const Manifest = defineModuleManifest({

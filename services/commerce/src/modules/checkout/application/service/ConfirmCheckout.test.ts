@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
+import type { OperationRequest } from '../../../../pipeline/OperationRequest';
 import { result, withWriteTransaction } from '../../../../test/TransactionFixture';
 import type { CheckoutQuote } from '../../domain/model/CheckoutQuote';
 import { ConfirmCheckout } from './ConfirmCheckout';
@@ -11,7 +11,12 @@ describe('checkout confirmation', () => {
     const scope = vi.fn().mockResolvedValue(scopeSnapshot());
     const usecase = service({ members: { profile }, session: { lockQuote }, organization: { scope } });
 
-    await expect(withWriteTransaction(async () => result([]), (transaction) => usecase.execute(request(), transaction))).rejects.toThrow('STOP_AFTER_SCOPE_ASSERTION');
+    await expect(
+      withWriteTransaction(
+        async () => result([]),
+        (transaction) => usecase.execute(request(), transaction)
+      )
+    ).rejects.toThrow('STOP_AFTER_SCOPE_ASSERTION');
     expect(scope).toHaveBeenCalledWith(expect.anything(), 'mall:one');
     expect(lockQuote).toHaveBeenCalledWith(expect.anything(), 'quote:one', 'member:one', 'mall:one', expect.stringMatching(/^[0-9a-f]{64}$/));
   });
@@ -29,7 +34,20 @@ describe('checkout confirmation', () => {
     const usecase = service({
       checkout: { selection: () => quote.selection, restore: () => quote, read: async () => quote },
       members: { profile: async () => ({ member: 'member:one', organization: 'mall:one' }) },
-      session: { lockQuote: async () => ({ checkout: 'checkout:one', cartId: 'cart:one', memberId: 'member:one', mallId: 'mall:one', applicationId: 'app:one', quoteId: 'quote:one', quoteHash: 'signed', expiresAt: new Date(Date.now() + 60_000), input: quote.selection, version: 0 }) },
+      session: {
+        lockQuote: async () => ({
+          checkout: 'checkout:one',
+          cartId: 'cart:one',
+          memberId: 'member:one',
+          mallId: 'mall:one',
+          applicationId: 'app:one',
+          quoteId: 'quote:one',
+          quoteHash: 'signed',
+          expiresAt: new Date(Date.now() + 60_000),
+          input: quote.selection,
+          version: 0,
+        }),
+      },
       pricing: { quote: async () => ({ id: 'quote:one', member: 'member:one', mall: 'mall:one', payload: quote, signature: 'signed' }) },
       cart: { lockActive: vi.fn() },
       reservations,
@@ -37,7 +55,12 @@ describe('checkout confirmation', () => {
       organization: { scope: async () => scopeSnapshot() },
     });
 
-    await expect(withWriteTransaction(async () => result([]), (transaction) => usecase.execute(request(), transaction))).rejects.toThrow('ORDER_WRITE_FAILED');
+    await expect(
+      withWriteTransaction(
+        async () => result([]),
+        (transaction) => usecase.execute(request(), transaction)
+      )
+    ).rejects.toThrow('ORDER_WRITE_FAILED');
     expect(reservations.inventoryHold).toHaveBeenCalledOnce();
     expect(reservations.voucherHold).toHaveBeenCalledOnce();
     expect(reservations.marketingHold).toHaveBeenCalledOnce();
@@ -53,7 +76,20 @@ describe('checkout confirmation', () => {
     const usecase = service({
       checkout: { selection: () => quote.selection, restore: () => quote, read: async () => quote },
       members: { profile: async () => ({ member: 'member:one', organization: 'mall:one' }) },
-      session: { lockQuote: async () => ({ checkout: 'checkout:one', cartId: 'cart:one', memberId: 'member:one', mallId: 'mall:one', applicationId: 'app:one', quoteId: 'quote:one', quoteHash: 'signed', expiresAt: new Date(Date.now() + 60_000), input: quote.selection, version: 0 }) },
+      session: {
+        lockQuote: async () => ({
+          checkout: 'checkout:one',
+          cartId: 'cart:one',
+          memberId: 'member:one',
+          mallId: 'mall:one',
+          applicationId: 'app:one',
+          quoteId: 'quote:one',
+          quoteHash: 'signed',
+          expiresAt: new Date(Date.now() + 60_000),
+          input: quote.selection,
+          version: 0,
+        }),
+      },
       pricing: { quote: async () => ({ id: 'quote:one', member: 'member:one', mall: 'mall:one', payload: quote, signature: 'signed' }) },
       cart: { lockActive: vi.fn() },
       reservations: { inventoryHold: vi.fn().mockRejectedValue(failure), voucherHold: vi.fn(), marketingHold: vi.fn(), benefitHold: vi.fn(), release },
@@ -61,7 +97,12 @@ describe('checkout confirmation', () => {
       organization: { scope: async () => scopeSnapshot() },
     });
 
-    await expect(withWriteTransaction(async () => result([]), (transaction) => usecase.execute(request(), transaction))).rejects.toBe(failure);
+    await expect(
+      withWriteTransaction(
+        async () => result([]),
+        (transaction) => usecase.execute(request(), transaction)
+      )
+    ).rejects.toBe(failure);
     expect(release).toHaveBeenCalledOnce();
     expect(orders.create).not.toHaveBeenCalled();
   });
@@ -126,14 +167,56 @@ function scopeSnapshot() {
 }
 
 function frozenQuote(): CheckoutQuote {
-  const selection = Object.freeze({ cartVersion: 2, lines: Object.freeze([{ listingId: 'listing:one', quantity: 1, lineVersion: 0 }]), addressId: null, invoiceId: null, delivery: Object.freeze({ method: 'digital' as const, note: null, scheduledAt: null }), voucherIds: Object.freeze([]), benefits: Object.freeze([]), paymentScene: 'jsapi' as const });
+  const selection = Object.freeze({
+    cartVersion: 2,
+    lines: Object.freeze([{ listingId: 'listing:one', quantity: 1, lineVersion: 0 }]),
+    addressId: null,
+    invoiceId: null,
+    delivery: Object.freeze({ method: 'digital' as const, note: null, scheduledAt: null }),
+    voucherIds: Object.freeze([]),
+    benefits: Object.freeze([]),
+    paymentScene: 'jsapi' as const,
+  });
   const shipping = Object.freeze({ method: 'digital' as const, amountMinor: 0, version: 'shipping:digital:1' });
   const tax = Object.freeze({ mode: 'included' as const, amountMinor: 0, version: 'tax:included:1' });
-  const evidence = Object.freeze({ cart: { version: 2 }, profile: { version: 1 }, address: null, invoice: null, experience: { version: 'release:1', hash: 'hash' }, qualification: [], marketing: [], vouchers: [], benefits: [], shipping, tax, risk: { outcome: 'allow', safeReason: '通过', decision: 'risk:one' } });
+  const evidence = Object.freeze({
+    cart: { version: 2 },
+    profile: { version: 1 },
+    address: null,
+    invoice: null,
+    experience: { version: 'release:1', hash: 'hash' },
+    qualification: [],
+    marketing: [],
+    vouchers: [],
+    benefits: [],
+    shipping,
+    tax,
+    risk: { outcome: 'allow', safeReason: '通过', decision: 'risk:one' },
+  });
   return Object.freeze({
     cart: Object.freeze({ id: 'cart:one', member: 'member:one', mall: 'mall:one', application: 'app:one', version: 2 }),
     selection,
-    lines: Object.freeze([{ listing: 'listing:one', sku: 'sku:one', product: 'product:one', productType: 'digital', category: 'category:one', title: '测试商品', quantity: 1, unitMinor: 100, totalMinor: 100, discountMinor: 0, payableMinor: 100, provider: null, partner: null, stockitem: 'stock:one', versions: Object.freeze({ cartLine: 0, listing: 1, product: 1, sku: 1, price: 'price:1', stock: 1 }), accepted: true, reasons: Object.freeze([]) }]),
+    lines: Object.freeze([
+      {
+        listing: 'listing:one',
+        sku: 'sku:one',
+        product: 'product:one',
+        productType: 'digital',
+        category: 'category:one',
+        title: '测试商品',
+        quantity: 1,
+        unitMinor: 100,
+        totalMinor: 100,
+        discountMinor: 0,
+        payableMinor: 100,
+        provider: null,
+        partner: null,
+        stockitem: 'stock:one',
+        versions: Object.freeze({ cartLine: 0, listing: 1, product: 1, sku: 1, price: 'price:1', stock: 1 }),
+        accepted: true,
+        reasons: Object.freeze([]),
+      },
+    ]),
     subtotalMinor: 100,
     discountMinor: 0,
     shippingMinor: 0,

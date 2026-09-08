@@ -159,6 +159,7 @@
                               "ordersupport",
                               "financeoperator",
                               "financereviewer",
+                              "storeoperator",
                               "administrator",
                               "custom"
                             ],
@@ -350,6 +351,7 @@
                         "ordersupport",
                         "financeoperator",
                         "financereviewer",
+                        "storeoperator",
                         "administrator",
                         "custom"
                       ],
@@ -422,6 +424,7 @@
                     "ordersupport",
                     "financeoperator",
                     "financereviewer",
+                    "storeoperator",
                     "administrator",
                     "custom"
                   ],
@@ -1890,6 +1893,7 @@
                       "ordersupport",
                       "financeoperator",
                       "financereviewer",
+                      "storeoperator",
                       "administrator",
                       "custom"
                     ],
@@ -2082,6 +2086,7 @@
                       "ordersupport",
                       "financeoperator",
                       "financereviewer",
+                      "storeoperator",
                       "administrator",
                       "custom"
                     ],
@@ -2652,7 +2657,8 @@
               "refund",
               "experiencepublish",
               "riskexception",
-              "riskaction"
+              "riskaction",
+              "inventoryadjustment"
             ],
             "type": "string"
           },
@@ -3214,7 +3220,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               },
@@ -3569,7 +3576,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               }
@@ -4105,7 +4113,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               },
@@ -4536,7 +4545,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               }
@@ -4688,7 +4698,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               },
@@ -4768,7 +4779,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               },
@@ -4979,7 +4991,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               },
@@ -5059,7 +5072,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               },
@@ -5270,7 +5284,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               },
@@ -5350,7 +5365,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               },
@@ -5472,7 +5488,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               },
@@ -5631,7 +5648,8 @@
                     "refund",
                     "experiencepublish",
                     "riskexception",
-                    "riskaction"
+                    "riskaction",
+                    "inventoryadjustment"
                   ],
                   "type": "string"
                 },
@@ -5703,7 +5721,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               }
@@ -5780,7 +5799,8 @@
                     "refund",
                     "experiencepublish",
                     "riskexception",
-                    "riskaction"
+                    "riskaction",
+                    "inventoryadjustment"
                   ],
                   "type": "string"
                 },
@@ -5944,7 +5964,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               }
@@ -6111,7 +6132,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               },
@@ -6191,7 +6213,8 @@
                   "refund",
                   "experiencepublish",
                   "riskexception",
-                  "riskaction"
+                  "riskaction",
+                  "inventoryadjustment"
                 ],
                 "type": "string"
               },
@@ -11126,6 +11149,18 @@
                         }
                       ]
                     },
+                    "price_version": {
+                      "anyOf": [
+                        {
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "product_id": {
                       "type": "string"
                     },
@@ -11237,6 +11272,7 @@
                     "mall_total",
                     "price_amount_minor",
                     "price_currency",
+                    "price_version",
                     "saleable_stock",
                     "qualification_eligible",
                     "data_gaps"
@@ -11335,6 +11371,18 @@
                       "anyOf": [
                         {
                           "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "price_version": {
+                      "anyOf": [
+                        {
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
                         },
                         {
                           "type": "null"
@@ -11463,6 +11511,7 @@
                     "mall_total",
                     "price_amount_minor",
                     "price_currency",
+                    "price_version",
                     "saleable_stock",
                     "qualification_eligible",
                     "data_gaps"
@@ -16647,6 +16696,164 @@
             },
             "type": "array"
           },
+          "selection": {
+            "additionalProperties": false,
+            "properties": {
+              "addressId": {
+                "anyOf": [
+                  {
+                    "minLength": 3,
+                    "pattern": "^[a-z][a-z0-9]*:[A-Za-z0-9][A-Za-z0-9.:/-]*$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "benefits": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "accountId": {
+                      "minLength": 3,
+                      "pattern": "^[a-z][a-z0-9]*:[A-Za-z0-9][A-Za-z0-9.:/-]*$",
+                      "type": "string"
+                    },
+                    "amountMinor": {
+                      "maximum": 9007199254740991,
+                      "minimum": 1,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "accountId",
+                    "amountMinor"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 10,
+                "type": "array"
+              },
+              "cartVersion": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "delivery": {
+                "additionalProperties": false,
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "standard",
+                      "express",
+                      "pickup",
+                      "digital"
+                    ],
+                    "type": "string"
+                  },
+                  "note": {
+                    "anyOf": [
+                      {
+                        "maxLength": 200,
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "scheduledAt": {
+                    "anyOf": [
+                      {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "method",
+                  "note",
+                  "scheduledAt"
+                ],
+                "type": "object"
+              },
+              "invoiceId": {
+                "anyOf": [
+                  {
+                    "minLength": 3,
+                    "pattern": "^[a-z][a-z0-9]*:[A-Za-z0-9][A-Za-z0-9.:/-]*$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lines": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "lineVersion": {
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "listingId": {
+                      "minLength": 3,
+                      "pattern": "^[a-z][a-z0-9]*:[A-Za-z0-9][A-Za-z0-9.:/-]*$",
+                      "type": "string"
+                    },
+                    "quantity": {
+                      "maximum": 9007199254740991,
+                      "minimum": 1,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "listingId",
+                    "quantity",
+                    "lineVersion"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 100,
+                "minItems": 1,
+                "type": "array"
+              },
+              "paymentScene": {
+                "enum": [
+                  "miniapp",
+                  "jsapi"
+                ],
+                "type": "string"
+              },
+              "voucherIds": {
+                "items": {
+                  "minLength": 3,
+                  "pattern": "^[a-z][a-z0-9]*:[A-Za-z0-9][A-Za-z0-9.:/-]*$",
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "type": "array"
+              }
+            },
+            "required": [
+              "cartVersion",
+              "lines",
+              "addressId",
+              "invoiceId",
+              "delivery",
+              "voucherIds",
+              "benefits",
+              "paymentScene"
+            ],
+            "type": "object"
+          },
           "shippingMinor": {
             "maximum": 9007199254740991,
             "minimum": 0,
@@ -16707,6 +16914,7 @@
           "confirmationToken",
           "evidenceHash",
           "expiresAt",
+          "selection",
           "cartVersion",
           "lines",
           "evidence",
@@ -16994,6 +17202,164 @@
                     },
                     "type": "array"
                   },
+                  "selection": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "addressId": {
+                        "anyOf": [
+                          {
+                            "minLength": 3,
+                            "pattern": "^[a-z][a-z0-9]*:[A-Za-z0-9][A-Za-z0-9.:/-]*$",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "benefits": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "accountId": {
+                              "minLength": 3,
+                              "pattern": "^[a-z][a-z0-9]*:[A-Za-z0-9][A-Za-z0-9.:/-]*$",
+                              "type": "string"
+                            },
+                            "amountMinor": {
+                              "maximum": 9007199254740991,
+                              "minimum": 1,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "accountId",
+                            "amountMinor"
+                          ],
+                          "type": "object"
+                        },
+                        "maxItems": 10,
+                        "type": "array"
+                      },
+                      "cartVersion": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "delivery": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "method": {
+                            "enum": [
+                              "standard",
+                              "express",
+                              "pickup",
+                              "digital"
+                            ],
+                            "type": "string"
+                          },
+                          "note": {
+                            "anyOf": [
+                              {
+                                "maxLength": 200,
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "scheduledAt": {
+                            "anyOf": [
+                              {
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "method",
+                          "note",
+                          "scheduledAt"
+                        ],
+                        "type": "object"
+                      },
+                      "invoiceId": {
+                        "anyOf": [
+                          {
+                            "minLength": 3,
+                            "pattern": "^[a-z][a-z0-9]*:[A-Za-z0-9][A-Za-z0-9.:/-]*$",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "lines": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "lineVersion": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "listingId": {
+                              "minLength": 3,
+                              "pattern": "^[a-z][a-z0-9]*:[A-Za-z0-9][A-Za-z0-9.:/-]*$",
+                              "type": "string"
+                            },
+                            "quantity": {
+                              "maximum": 9007199254740991,
+                              "minimum": 1,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "listingId",
+                            "quantity",
+                            "lineVersion"
+                          ],
+                          "type": "object"
+                        },
+                        "maxItems": 100,
+                        "minItems": 1,
+                        "type": "array"
+                      },
+                      "paymentScene": {
+                        "enum": [
+                          "miniapp",
+                          "jsapi"
+                        ],
+                        "type": "string"
+                      },
+                      "voucherIds": {
+                        "items": {
+                          "minLength": 3,
+                          "pattern": "^[a-z][a-z0-9]*:[A-Za-z0-9][A-Za-z0-9.:/-]*$",
+                          "type": "string"
+                        },
+                        "maxItems": 20,
+                        "type": "array"
+                      }
+                    },
+                    "required": [
+                      "cartVersion",
+                      "lines",
+                      "addressId",
+                      "invoiceId",
+                      "delivery",
+                      "voucherIds",
+                      "benefits",
+                      "paymentScene"
+                    ],
+                    "type": "object"
+                  },
                   "shippingMinor": {
                     "maximum": 9007199254740991,
                     "minimum": 0,
@@ -17054,6 +17420,7 @@
                   "confirmationToken",
                   "evidenceHash",
                   "expiresAt",
+                  "selection",
                   "cartVersion",
                   "lines",
                   "evidence",
@@ -28932,6 +29299,263 @@
         ],
         "type": "object"
       },
+      "FulfillmentReturnsReadInput": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "additionalProperties": false,
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "limit": {
+                "anyOf": [
+                  {
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "type": "integer"
+                  },
+                  {
+                    "pattern": "^[1-9]\\d*$",
+                    "type": "string"
+                  }
+                ]
+              },
+              "state": {
+                "items": {
+                  "enum": [
+                    "authorized",
+                    "intransit",
+                    "received",
+                    "accepted",
+                    "rejected"
+                  ],
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "FulfillmentReturnsReadOutput": {
+        "$defs": {
+          "__schema0": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              },
+              {
+                "items": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "type": "array"
+              },
+              {
+                "additionalProperties": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "propertyNames": {
+                  "type": "string"
+                },
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "aftersale_id": {
+                  "type": "string"
+                },
+                "created_at": {
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                  "type": "string"
+                },
+                "fulfillment_id": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "inspections": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "accepted": {
+                        "enum": [
+                          true,
+                          false
+                        ],
+                        "type": "boolean"
+                      },
+                      "actor": {
+                        "type": "string"
+                      },
+                      "evidence": {
+                        "$ref": "#/$defs/__schema0"
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "inspectedAt": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                        "type": "string"
+                      },
+                      "sequence": {
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "sequence",
+                      "accepted",
+                      "evidence",
+                      "actor",
+                      "inspectedAt"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "instruction": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "lines": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "line": {
+                        "type": "string"
+                      },
+                      "quantity": {
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "line",
+                      "quantity"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "member_masked": {
+                  "type": "string"
+                },
+                "order_number": {
+                  "type": "string"
+                },
+                "provider": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "provider_reference": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "scope_id": {
+                  "type": "string"
+                },
+                "state": {
+                  "enum": [
+                    "authorized",
+                    "intransit",
+                    "received",
+                    "accepted",
+                    "rejected"
+                  ],
+                  "type": "string"
+                },
+                "tracking_number": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "updated_at": {
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                  "type": "string"
+                },
+                "version": {
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "aftersale_id",
+                "fulfillment_id",
+                "scope_id",
+                "state",
+                "provider",
+                "provider_reference",
+                "instruction",
+                "tracking_number",
+                "created_at",
+                "updated_at",
+                "version",
+                "lines",
+                "inspections",
+                "order_number",
+                "member_masked"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "type": "object"
+      },
       "FulfillmentReturnsReceiveInput": {
         "additionalProperties": false,
         "properties": {
@@ -29705,6 +30329,575 @@
         "required": [
           "items",
           "count"
+        ],
+        "type": "object"
+      },
+      "FulfillmentWorkitemsReadInput": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "additionalProperties": false,
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "limit": {
+                "anyOf": [
+                  {
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "type": "integer"
+                  },
+                  {
+                    "pattern": "^[1-9]\\d*$",
+                    "type": "string"
+                  }
+                ]
+              },
+              "state": {
+                "items": {
+                  "enum": [
+                    "pending",
+                    "submitted",
+                    "accepted",
+                    "processing",
+                    "ready",
+                    "completed",
+                    "cancelled",
+                    "failed",
+                    "needsaction"
+                  ],
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "FulfillmentWorkitemsReadOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "amount_minor": {
+                  "anyOf": [
+                    {
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "created_at": {
+                  "anyOf": [
+                    {
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "external_reference": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "id": {
+                  "type": "string"
+                },
+                "idempotency_key": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "kind": {
+                  "enum": [
+                    "shipment",
+                    "delivery",
+                    "pickup",
+                    "service",
+                    "digital"
+                  ],
+                  "type": "string"
+                },
+                "lines": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "line": {
+                        "type": "string"
+                      },
+                      "packed": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "quantity": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "sku": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "line",
+                      "sku",
+                      "title",
+                      "quantity",
+                      "packed"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "member_masked": {
+                  "type": "string"
+                },
+                "order_id": {
+                  "type": "string"
+                },
+                "order_number": {
+                  "type": "string"
+                },
+                "partner_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "payment_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "priority": {
+                  "enum": [
+                    "normal",
+                    "risk",
+                    "overdue"
+                  ],
+                  "type": "string"
+                },
+                "provider": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "route": {
+                  "enum": [
+                    "physical",
+                    "digital",
+                    "voucher",
+                    "channel"
+                  ],
+                  "type": "string"
+                },
+                "source_effect_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "state": {
+                  "enum": [
+                    "pending",
+                    "submitted",
+                    "accepted",
+                    "processing",
+                    "ready",
+                    "completed",
+                    "cancelled",
+                    "failed",
+                    "needsaction"
+                  ],
+                  "type": "string"
+                },
+                "store_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "suborder_id": {
+                  "type": "string"
+                },
+                "updated_at": {
+                  "anyOf": [
+                    {
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "version": {
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "order_id",
+                "suborder_id",
+                "provider",
+                "partner_id",
+                "store_id",
+                "kind",
+                "route",
+                "state",
+                "external_reference",
+                "payment_id",
+                "source_effect_id",
+                "amount_minor",
+                "idempotency_key",
+                "created_at",
+                "updated_at",
+                "version",
+                "order_number",
+                "member_masked",
+                "priority",
+                "lines"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "type": "object"
+      },
+      "FulfillmentWorkitemsTransitionInput": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "additionalProperties": false,
+            "properties": {
+              "action": {
+                "enum": [
+                  "accept",
+                  "prepare",
+                  "ready",
+                  "complete"
+                ],
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "action"
+            ],
+            "type": "object"
+          },
+          "path": {
+            "additionalProperties": false,
+            "properties": {
+              "fulfillmentid": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "fulfillmentid"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "path",
+          "body"
+        ],
+        "type": "object"
+      },
+      "FulfillmentWorkitemsTransitionOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_minor": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "enum": [
+              "shipment",
+              "delivery",
+              "pickup",
+              "service",
+              "digital"
+            ],
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "line": {
+                  "type": "string"
+                },
+                "packed": {
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "quantity": {
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "sku": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "line",
+                "sku",
+                "title",
+                "quantity",
+                "packed"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "member_masked": {
+            "type": "string"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "order_number": {
+            "type": "string"
+          },
+          "partner_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "payment_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "priority": {
+            "enum": [
+              "normal",
+              "risk",
+              "overdue"
+            ],
+            "type": "string"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "route": {
+            "enum": [
+              "physical",
+              "digital",
+              "voucher",
+              "channel"
+            ],
+            "type": "string"
+          },
+          "source_effect_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "enum": [
+              "pending",
+              "submitted",
+              "accepted",
+              "processing",
+              "ready",
+              "completed",
+              "cancelled",
+              "failed",
+              "needsaction"
+            ],
+            "type": "string"
+          },
+          "store_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "suborder_id": {
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "order_id",
+          "suborder_id",
+          "provider",
+          "partner_id",
+          "store_id",
+          "kind",
+          "route",
+          "state",
+          "external_reference",
+          "payment_id",
+          "source_effect_id",
+          "amount_minor",
+          "idempotency_key",
+          "created_at",
+          "updated_at",
+          "version",
+          "order_number",
+          "member_masked",
+          "priority",
+          "lines"
         ],
         "type": "object"
       },
@@ -30537,6 +31730,140 @@
         },
         "required": [
           "location"
+        ],
+        "type": "object"
+      },
+      "IdentityHandoversCreateInput": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "additionalProperties": false,
+            "properties": {
+              "note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "note"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "type": "object"
+      },
+      "IdentityHandoversCreateOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "handedOverAt": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "membershipId": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "scopeId": {
+            "type": "string"
+          },
+          "sessionRevokedAt": {
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "scopeId",
+          "membershipId",
+          "note",
+          "handedOverAt",
+          "sessionRevokedAt",
+          "version"
+        ],
+        "type": "object"
+      },
+      "IdentityHandoversReadInput": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "additionalProperties": false,
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "limit": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "IdentityHandoversReadOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "handedOverAt": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "membershipId": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                },
+                "scopeId": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "id",
+                "scopeId",
+                "membershipId",
+                "note",
+                "handedOverAt",
+                "version"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "count"
         ],
         "type": "object"
       },
@@ -33667,6 +34994,239 @@
         "required": [
           "returnTarget",
           "expiresIn"
+        ],
+        "type": "object"
+      },
+      "InventoryAdjustmentsCreateInput": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "additionalProperties": false,
+            "properties": {
+              "expectedVersion": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "quantityDelta": {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "stockitem": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "stockitem",
+              "quantityDelta",
+              "reason",
+              "expectedVersion"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "type": "object"
+      },
+      "InventoryAdjustmentsCreateOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "approvalId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "quantityDelta": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "requestedBy": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "pending",
+              "approved",
+              "rejected",
+              "cancelled",
+              "applied"
+            ],
+            "type": "string"
+          },
+          "stockitem": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+            "type": "string"
+          },
+          "version": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "scope",
+          "stockitem",
+          "sku",
+          "location",
+          "quantityDelta",
+          "reason",
+          "state",
+          "approvalId",
+          "requestedBy",
+          "createdAt",
+          "updatedAt",
+          "version"
+        ],
+        "type": "object"
+      },
+      "InventoryAdjustmentsReadInput": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "additionalProperties": false,
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "limit": {
+                "anyOf": [
+                  {
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "type": "integer"
+                  },
+                  {
+                    "pattern": "^[1-9]\\d*$",
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "InventoryAdjustmentsReadOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "approvalId": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "location": {
+                  "type": "string"
+                },
+                "quantityDelta": {
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "requestedBy": {
+                  "type": "string"
+                },
+                "scope": {
+                  "type": "string"
+                },
+                "sku": {
+                  "type": "string"
+                },
+                "state": {
+                  "enum": [
+                    "pending",
+                    "approved",
+                    "rejected",
+                    "cancelled",
+                    "applied"
+                  ],
+                  "type": "string"
+                },
+                "stockitem": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                  "type": "string"
+                },
+                "version": {
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "scope",
+                "stockitem",
+                "sku",
+                "location",
+                "quantityDelta",
+                "reason",
+                "state",
+                "approvalId",
+                "requestedBy",
+                "createdAt",
+                "updatedAt",
+                "version"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "count"
         ],
         "type": "object"
       },
@@ -39851,13 +41411,6 @@
           "body": {
             "additionalProperties": false,
             "properties": {
-              "authorization": {
-                "enum": [
-                  "accepted",
-                  "rejected"
-                ],
-                "type": "string"
-              },
               "enabled": {
                 "type": "boolean"
               },
@@ -51300,6 +52853,10 @@
               "paymentId": {
                 "type": "string"
               },
+              "retryAfter": {
+                "const": 0,
+                "type": "number"
+              },
               "state": {
                 "const": "captured",
                 "type": "string"
@@ -51311,7 +52868,8 @@
               "paymentId",
               "state",
               "action",
-              "expiresAt"
+              "expiresAt",
+              "retryAfter"
             ],
             "type": "object"
           },
@@ -51340,6 +52898,11 @@
               "paymentId": {
                 "type": "string"
               },
+              "retryAfter": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
               "state": {
                 "const": "pending",
                 "type": "string"
@@ -51351,7 +52914,8 @@
               "paymentId",
               "state",
               "action",
-              "expiresAt"
+              "expiresAt",
+              "retryAfter"
             ],
             "type": "object"
           },
@@ -54019,7 +55583,17 @@
                 "type": "string"
               },
               "limit": {
-                "type": "string"
+                "anyOf": [
+                  {
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "type": "integer"
+                  },
+                  {
+                    "pattern": "^[1-9]\\d*$",
+                    "type": "string"
+                  }
+                ]
               }
             },
             "type": "object"
@@ -54034,6 +55608,11 @@
           "availableMinor": {
             "maximum": 9007199254740991,
             "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "count": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "currency": {
@@ -54177,6 +55756,9 @@
             },
             "type": "array"
           },
+          "nextCursor": {
+            "type": "string"
+          },
           "pendingMinor": {
             "maximum": 9007199254740991,
             "minimum": -9007199254740991,
@@ -54205,7 +55787,8 @@
           "reversedMinor",
           "currency",
           "version",
-          "items"
+          "items",
+          "count"
         ],
         "type": "object"
       },
@@ -62875,6 +64458,33 @@
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
             "type": "string"
           },
+          "categories": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "number"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "code",
+                "name",
+                "count"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "items": {
             "items": {
               "additionalProperties": false,
@@ -63014,6 +64624,59 @@
                 "product": {
                   "type": "string"
                 },
+                "qualification": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "eligible": {
+                          "type": "boolean"
+                        },
+                        "policyVersion": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "eligible",
+                        "policyVersion"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "saleability": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "reasons": {
+                      "items": {
+                        "enum": [
+                          "qualification_unavailable",
+                          "qualification_failed",
+                          "price_unavailable",
+                          "inventory_unavailable",
+                          "out_of_stock"
+                        ],
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "state": {
+                      "enum": [
+                        "saleable",
+                        "blocked"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "reasons"
+                  ],
+                  "type": "object"
+                },
                 "sku": {
                   "type": "string"
                 },
@@ -63073,7 +64736,9 @@
                 "version",
                 "updatedAt",
                 "price",
-                "availability"
+                "availability",
+                "qualification",
+                "saleability"
               ],
               "type": "object"
             },
@@ -63095,6 +64760,7 @@
         },
         "required": [
           "items",
+          "categories",
           "nextCursor",
           "version",
           "asOf"
@@ -77079,6 +78745,7 @@
                           "ordersupport",
                           "financeoperator",
                           "financereviewer",
+                          "storeoperator",
                           "administrator",
                           "custom"
                         ],
@@ -77837,7 +79504,8 @@
                 "refund",
                 "experiencepublish",
                 "riskexception",
-                "riskaction"
+                "riskaction",
+                "inventoryadjustment"
               ],
               "type": "string"
             }
@@ -78605,7 +80273,8 @@
                 "refund",
                 "experiencepublish",
                 "riskexception",
-                "riskaction"
+                "riskaction",
+                "inventoryadjustment"
               ],
               "type": "string"
             }
@@ -78733,7 +80402,9 @@
         "x-permission": "approval.read",
         "x-rate-class": "read",
         "x-requirements": [
+          "MVPGROUPVOUCHER",
           "MVPGROUPSETTING",
+          "MVPMALLVOUCHER",
           "MVPMALLSETTING"
         ],
         "x-resource-parameter": null,
@@ -78880,7 +80551,8 @@
                       "refund",
                       "experiencepublish",
                       "riskexception",
-                      "riskaction"
+                      "riskaction",
+                      "inventoryadjustment"
                     ],
                     "type": "string"
                   }
@@ -79452,7 +81124,9 @@
         "x-permission": "approval.template.manage",
         "x-rate-class": "critical",
         "x-requirements": [
+          "MVPGROUPVOUCHER",
           "MVPGROUPSETTING",
+          "MVPMALLVOUCHER",
           "MVPMALLSETTING"
         ],
         "x-resource-parameter": "templateid",
@@ -79682,7 +81356,9 @@
         "x-permission": "approval.template.manage",
         "x-rate-class": "critical",
         "x-requirements": [
+          "MVPGROUPVOUCHER",
           "MVPGROUPSETTING",
+          "MVPMALLVOUCHER",
           "MVPMALLSETTING"
         ],
         "x-resource-parameter": "templateid",
@@ -79846,7 +81522,8 @@
                       "refund",
                       "experiencepublish",
                       "riskexception",
-                      "riskaction"
+                      "riskaction",
+                      "inventoryadjustment"
                     ],
                     "type": "string"
                   }
@@ -80028,7 +81705,9 @@
         "x-permission": "approval.template.manage",
         "x-rate-class": "critical",
         "x-requirements": [
+          "MVPGROUPVOUCHER",
           "MVPGROUPSETTING",
+          "MVPMALLVOUCHER",
           "MVPMALLSETTING"
         ],
         "x-resource-parameter": "templateid",
@@ -85692,8 +87371,7 @@
         "x-sensitive-fields": [],
         "x-target-policy": "exact",
         "x-targets": [
-          "console",
-          "supplier"
+          "console"
         ],
         "x-timeout-ms": 800
       }
@@ -85898,7 +87576,7 @@
         "x-maker-checker": false,
         "x-operation-version": 1,
         "x-origin-policy": "sameorigin",
-        "x-permission": "catalog.listing.manage",
+        "x-permission": "catalog.price.manage",
         "x-rate-class": "write",
         "x-requirements": [
           "MVPGROUPPOOL",
@@ -86139,8 +87817,7 @@
         "x-sensitive-fields": [],
         "x-target-policy": "exact",
         "x-targets": [
-          "console",
-          "supplier"
+          "console"
         ],
         "x-timeout-ms": 800
       },
@@ -86354,8 +88031,7 @@
         "x-sensitive-fields": [],
         "x-target-policy": "exact",
         "x-targets": [
-          "console",
-          "supplier"
+          "console"
         ],
         "x-timeout-ms": 800
       }
@@ -86651,8 +88327,7 @@
         "x-sensitive-fields": [],
         "x-target-policy": "exact",
         "x-targets": [
-          "console",
-          "supplier"
+          "console"
         ],
         "x-timeout-ms": 800
       }
@@ -88012,8 +89687,7 @@
         "x-sensitive-fields": [],
         "x-target-policy": "exact",
         "x-targets": [
-          "console",
-          "supplier"
+          "console"
         ],
         "x-timeout-ms": 800
       },
@@ -88929,7 +90603,6 @@
           "enterprise",
           "mall",
           "department",
-          "store",
           "supplier"
         ],
         "x-sensitive-fields": [],
@@ -90097,7 +91770,6 @@
           "enterprise",
           "mall",
           "department",
-          "store",
           "supplier"
         ],
         "x-sensitive-fields": [],
@@ -99819,7 +101491,6 @@
           "enterprise",
           "mall",
           "department",
-          "store",
           "supplier"
         ],
         "x-sensitive-fields": [],
@@ -101545,7 +103216,6 @@
           "enterprise",
           "mall",
           "department",
-          "store",
           "supplier"
         ],
         "x-sensitive-fields": [],
@@ -101777,7 +103447,6 @@
           "enterprise",
           "mall",
           "department",
-          "store",
           "supplier"
         ],
         "x-sensitive-fields": [],
@@ -103029,6 +104698,442 @@
         "x-timeout-ms": 800
       }
     },
+    "/api/v1/fulfillments/{fulfillmentid}/transition": {
+      "put": {
+        "operationId": "fulfillment.workitems.transition",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "fulfillmentid",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "action": {
+                    "enum": [
+                      "accept",
+                      "prepare",
+                      "ready",
+                      "complete"
+                    ],
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "action"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FulfillmentWorkitemsTransitionOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "426": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "履约 · 门店工作项流转",
+        "tags": [
+          "fulfillment"
+        ],
+        "x-assurance-level": "mfa",
+        "x-audience": "console",
+        "x-audit-level": "critical",
+        "x-cache-policy": "none",
+        "x-capability": "fulfillment.workitems.transition",
+        "x-concurrency-policy": "optimistic",
+        "x-csrf-policy": "required",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "CONTENT_TYPE_UNSUPPORTED",
+          "CONTRACT_VERSION_UNSUPPORTED",
+          "CSRF_TOKEN_INVALID",
+          "DEADLINE_EXCEEDED",
+          "EXPECTED_VERSION_INVALID",
+          "EXPECTED_VERSION_REQUIRED",
+          "IDEMPOTENCY_CONFLICT",
+          "IDEMPOTENCY_KEY_REQUIRED",
+          "INTERNAL_ERROR",
+          "ORIGIN_REQUIRED",
+          "PERMISSION_DENIED",
+          "RATE_LIMITED",
+          "REQUEST_BODY_TOO_LARGE",
+          "REQUEST_JSON_INVALID",
+          "RESOURCE_NOT_FOUND",
+          "SCOPE_DENIED",
+          "STEPUP_REQUIRED",
+          "URL_SENSITIVE_DATA_FORBIDDEN",
+          "VALIDATION_FAILED",
+          "VERSION_CONFLICT"
+        ],
+        "x-execution-mode": "sync",
+        "x-expected-version": "required",
+        "x-idempotency-policy": "required",
+        "x-idempotency-scope": "actor-operation-scope",
+        "x-lifecycle": "active",
+        "x-maker-checker": false,
+        "x-operation-version": 1,
+        "x-origin-policy": "sameorigin",
+        "x-permission": "fulfillment.work.manage",
+        "x-rate-class": "critical",
+        "x-requirements": [
+          "MVPGROUPORDER",
+          "MVPMALLORDER"
+        ],
+        "x-resource-parameter": "fulfillmentid",
+        "x-resource-resolver": "fulfillment.resource",
+        "x-response-mode": "json",
+        "x-risk": "high",
+        "x-scope-kinds": [
+          "store",
+          "supplier"
+        ],
+        "x-sensitive-fields": [],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "console",
+          "store",
+          "supplier"
+        ],
+        "x-timeout-ms": 800
+      }
+    },
+    "/api/v1/fulfillments/returns": {
+      "get": {
+        "operationId": "fulfillment.returns.read",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                },
+                {
+                  "pattern": "^[1-9]\\d*$",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "items": {
+                "enum": [
+                  "authorized",
+                  "intransit",
+                  "received",
+                  "accepted",
+                  "rejected"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FulfillmentReturnsReadOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "426": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "履约 · 门店退货工作项查询",
+        "tags": [
+          "fulfillment"
+        ],
+        "x-assurance-level": "session",
+        "x-audience": "console",
+        "x-audit-level": "detailed",
+        "x-cache-policy": "private",
+        "x-capability": "fulfillment.returns.read",
+        "x-concurrency-policy": "none",
+        "x-csrf-policy": "none",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "CONTRACT_VERSION_UNSUPPORTED",
+          "DEADLINE_EXCEEDED",
+          "INTERNAL_ERROR",
+          "PERMISSION_DENIED",
+          "RATE_LIMITED",
+          "SCOPE_DENIED",
+          "URL_SENSITIVE_DATA_FORBIDDEN",
+          "VALIDATION_FAILED"
+        ],
+        "x-execution-mode": "sync",
+        "x-expected-version": "none",
+        "x-idempotency-policy": "none",
+        "x-idempotency-scope": "none",
+        "x-lifecycle": "active",
+        "x-maker-checker": false,
+        "x-operation-version": 1,
+        "x-origin-policy": "none",
+        "x-permission": "fulfillment.read",
+        "x-rate-class": "read",
+        "x-requirements": [
+          "MVPGROUPORDER",
+          "MVPMALLORDER"
+        ],
+        "x-resource-parameter": null,
+        "x-resource-resolver": "fulfillment.resource",
+        "x-response-mode": "json",
+        "x-risk": "high",
+        "x-scope-kinds": [
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department",
+          "store",
+          "supplier",
+          "brand"
+        ],
+        "x-sensitive-fields": [],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "console",
+          "store",
+          "supplier"
+        ],
+        "x-timeout-ms": 500
+      }
+    },
     "/api/v1/fulfillments/returns/{returnid}/inspection": {
       "put": {
         "operationId": "fulfillment.returns.inspect",
@@ -103694,6 +105799,209 @@
         "x-targets": [
           "storefront",
           "miniapp"
+        ],
+        "x-timeout-ms": 500
+      }
+    },
+    "/api/v1/fulfillments/workitems": {
+      "get": {
+        "operationId": "fulfillment.workitems.read",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                },
+                {
+                  "pattern": "^[1-9]\\d*$",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "items": {
+                "enum": [
+                  "pending",
+                  "submitted",
+                  "accepted",
+                  "processing",
+                  "ready",
+                  "completed",
+                  "cancelled",
+                  "failed",
+                  "needsaction"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FulfillmentWorkitemsReadOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "426": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "履约 · 门店工作项查询",
+        "tags": [
+          "fulfillment"
+        ],
+        "x-assurance-level": "session",
+        "x-audience": "console",
+        "x-audit-level": "detailed",
+        "x-cache-policy": "private",
+        "x-capability": "fulfillment.workitems.read",
+        "x-concurrency-policy": "none",
+        "x-csrf-policy": "none",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "CONTRACT_VERSION_UNSUPPORTED",
+          "DEADLINE_EXCEEDED",
+          "INTERNAL_ERROR",
+          "PERMISSION_DENIED",
+          "RATE_LIMITED",
+          "SCOPE_DENIED",
+          "URL_SENSITIVE_DATA_FORBIDDEN",
+          "VALIDATION_FAILED"
+        ],
+        "x-execution-mode": "sync",
+        "x-expected-version": "none",
+        "x-idempotency-policy": "none",
+        "x-idempotency-scope": "none",
+        "x-lifecycle": "active",
+        "x-maker-checker": false,
+        "x-operation-version": 1,
+        "x-origin-policy": "none",
+        "x-permission": "fulfillment.read",
+        "x-rate-class": "read",
+        "x-requirements": [
+          "MVPGROUPORDER",
+          "MVPMALLORDER"
+        ],
+        "x-resource-parameter": null,
+        "x-resource-resolver": "fulfillment.resource",
+        "x-response-mode": "json",
+        "x-risk": "high",
+        "x-scope-kinds": [
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department",
+          "store",
+          "supplier",
+          "brand"
+        ],
+        "x-sensitive-fields": [],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "console",
+          "store",
+          "supplier"
         ],
         "x-timeout-ms": 500
       }
@@ -105508,6 +107816,386 @@
           "supplier"
         ],
         "x-timeout-ms": 1000
+      }
+    },
+    "/api/v1/identity/handovers": {
+      "get": {
+        "operationId": "identity.handovers.read",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityHandoversReadOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "426": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "身份 · 门店交班记录",
+        "tags": [
+          "identity"
+        ],
+        "x-assurance-level": "session",
+        "x-audience": "console",
+        "x-audit-level": "detailed",
+        "x-cache-policy": "private",
+        "x-capability": "identity.handovers.read",
+        "x-concurrency-policy": "none",
+        "x-csrf-policy": "none",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "CONTRACT_VERSION_UNSUPPORTED",
+          "DEADLINE_EXCEEDED",
+          "INTERNAL_ERROR",
+          "PERMISSION_DENIED",
+          "RATE_LIMITED",
+          "SCOPE_DENIED",
+          "URL_SENSITIVE_DATA_FORBIDDEN",
+          "VALIDATION_FAILED"
+        ],
+        "x-execution-mode": "sync",
+        "x-expected-version": "none",
+        "x-idempotency-policy": "none",
+        "x-idempotency-scope": "none",
+        "x-lifecycle": "active",
+        "x-maker-checker": false,
+        "x-operation-version": 1,
+        "x-origin-policy": "none",
+        "x-permission": "identity.handover.read",
+        "x-rate-class": "read",
+        "x-requirements": [
+          "MVPIDENTITY",
+          "MVPMALLSETTING"
+        ],
+        "x-resource-parameter": null,
+        "x-resource-resolver": "identity.resource",
+        "x-response-mode": "json",
+        "x-risk": "low",
+        "x-scope-kinds": [
+          "store"
+        ],
+        "x-sensitive-fields": [],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "console",
+          "store"
+        ],
+        "x-timeout-ms": 500
+      },
+      "post": {
+        "operationId": "identity.handovers.create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "note": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "note"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityHandoversCreateOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "426": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "身份 · 门店交班",
+        "tags": [
+          "identity"
+        ],
+        "x-assurance-level": "mfa",
+        "x-audience": "console",
+        "x-audit-level": "critical",
+        "x-cache-policy": "none",
+        "x-capability": "identity.handovers.create",
+        "x-concurrency-policy": "serialized",
+        "x-csrf-policy": "required",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "CONTENT_TYPE_UNSUPPORTED",
+          "CONTRACT_VERSION_UNSUPPORTED",
+          "CSRF_TOKEN_INVALID",
+          "DEADLINE_EXCEEDED",
+          "IDEMPOTENCY_CONFLICT",
+          "IDEMPOTENCY_KEY_REQUIRED",
+          "INTERNAL_ERROR",
+          "ORIGIN_REQUIRED",
+          "PERMISSION_DENIED",
+          "RATE_LIMITED",
+          "REQUEST_BODY_TOO_LARGE",
+          "REQUEST_JSON_INVALID",
+          "RESOURCE_NOT_FOUND",
+          "SCOPE_DENIED",
+          "STEPUP_REQUIRED",
+          "URL_SENSITIVE_DATA_FORBIDDEN",
+          "VALIDATION_FAILED"
+        ],
+        "x-execution-mode": "sync",
+        "x-expected-version": "none",
+        "x-idempotency-policy": "required",
+        "x-idempotency-scope": "actor-operation-scope",
+        "x-lifecycle": "active",
+        "x-maker-checker": false,
+        "x-operation-version": 1,
+        "x-origin-policy": "sameorigin",
+        "x-permission": "identity.handover.create",
+        "x-rate-class": "write",
+        "x-requirements": [
+          "MVPIDENTITY",
+          "MVPMALLSETTING"
+        ],
+        "x-resource-parameter": null,
+        "x-resource-resolver": "identity.resource",
+        "x-response-mode": "json",
+        "x-risk": "high",
+        "x-scope-kinds": [
+          "store"
+        ],
+        "x-sensitive-fields": [],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "console",
+          "store"
+        ],
+        "x-timeout-ms": 800
       }
     },
     "/api/v1/identity/invitations": {
@@ -112198,6 +114886,424 @@
         "x-timeout-ms": 800
       }
     },
+    "/api/v1/inventory/adjustments": {
+      "get": {
+        "operationId": "inventory.adjustments.read",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                },
+                {
+                  "pattern": "^[1-9]\\d*$",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryAdjustmentsReadOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "426": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "库存 · 调整申请查询",
+        "tags": [
+          "inventory"
+        ],
+        "x-assurance-level": "session",
+        "x-audience": "console",
+        "x-audit-level": "detailed",
+        "x-cache-policy": "private",
+        "x-capability": "inventory.adjustments.read",
+        "x-concurrency-policy": "none",
+        "x-csrf-policy": "none",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "CONTRACT_VERSION_UNSUPPORTED",
+          "DEADLINE_EXCEEDED",
+          "INTERNAL_ERROR",
+          "PERMISSION_DENIED",
+          "RATE_LIMITED",
+          "SCOPE_DENIED",
+          "URL_SENSITIVE_DATA_FORBIDDEN",
+          "VALIDATION_FAILED"
+        ],
+        "x-execution-mode": "sync",
+        "x-expected-version": "none",
+        "x-idempotency-policy": "none",
+        "x-idempotency-scope": "none",
+        "x-lifecycle": "active",
+        "x-maker-checker": false,
+        "x-operation-version": 1,
+        "x-origin-policy": "none",
+        "x-permission": "inventory.adjust.read",
+        "x-rate-class": "read",
+        "x-requirements": [
+          "MVPGROUPPOOL",
+          "MVPMALLPOOL"
+        ],
+        "x-resource-parameter": null,
+        "x-resource-resolver": "inventory.resource",
+        "x-response-mode": "json",
+        "x-risk": "high",
+        "x-scope-kinds": [
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department",
+          "store",
+          "supplier",
+          "brand"
+        ],
+        "x-sensitive-fields": [],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "console",
+          "store"
+        ],
+        "x-timeout-ms": 500
+      },
+      "post": {
+        "operationId": "inventory.adjustments.create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "expectedVersion": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "quantityDelta": {
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "stockitem": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "stockitem",
+                  "quantityDelta",
+                  "reason",
+                  "expectedVersion"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryAdjustmentsCreateOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "426": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "库存 · 调整申请创建",
+        "tags": [
+          "inventory"
+        ],
+        "x-assurance-level": "mfa",
+        "x-audience": "console",
+        "x-audit-level": "critical",
+        "x-cache-policy": "none",
+        "x-capability": "inventory.adjustments.create",
+        "x-concurrency-policy": "optimistic",
+        "x-csrf-policy": "required",
+        "x-error-union": [
+          "APPROVAL_TEMPLATE_DISABLED",
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "CONTENT_TYPE_UNSUPPORTED",
+          "CONTRACT_VERSION_UNSUPPORTED",
+          "CSRF_TOKEN_INVALID",
+          "DEADLINE_EXCEEDED",
+          "IDEMPOTENCY_CONFLICT",
+          "IDEMPOTENCY_KEY_REQUIRED",
+          "INTERNAL_ERROR",
+          "INVENTORY_QUANTITY_INVALID",
+          "ORIGIN_REQUIRED",
+          "PERMISSION_DENIED",
+          "RATE_LIMITED",
+          "REQUEST_BODY_TOO_LARGE",
+          "REQUEST_JSON_INVALID",
+          "RESOURCE_NOT_FOUND",
+          "SCOPE_DENIED",
+          "STEPUP_REQUIRED",
+          "URL_SENSITIVE_DATA_FORBIDDEN",
+          "VALIDATION_FAILED",
+          "VERSION_CONFLICT"
+        ],
+        "x-execution-mode": "sync",
+        "x-expected-version": "none",
+        "x-idempotency-policy": "required",
+        "x-idempotency-scope": "actor-operation-scope",
+        "x-lifecycle": "active",
+        "x-maker-checker": false,
+        "x-operation-version": 1,
+        "x-origin-policy": "sameorigin",
+        "x-permission": "inventory.adjust.request",
+        "x-rate-class": "critical",
+        "x-requirements": [
+          "MVPGROUPPOOL",
+          "MVPMALLPOOL"
+        ],
+        "x-resource-parameter": null,
+        "x-resource-resolver": "inventory.resource",
+        "x-response-mode": "json",
+        "x-risk": "critical",
+        "x-scope-kinds": [
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department",
+          "store",
+          "supplier",
+          "brand"
+        ],
+        "x-sensitive-fields": [],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "console",
+          "store"
+        ],
+        "x-timeout-ms": 800
+      }
+    },
     "/api/v1/inventory/availability": {
       "get": {
         "operationId": "inventory.availability.read",
@@ -113389,7 +116495,6 @@
           "enterprise",
           "mall",
           "department",
-          "store",
           "supplier"
         ],
         "x-sensitive-fields": [],
@@ -119317,13 +122422,6 @@
               "schema": {
                 "additionalProperties": false,
                 "properties": {
-                  "authorization": {
-                    "enum": [
-                      "accepted",
-                      "rejected"
-                    ],
-                    "type": "string"
-                  },
                   "enabled": {
                     "type": "boolean"
                   },
@@ -130926,8 +134024,7 @@
         "x-sensitive-fields": [],
         "x-target-policy": "exact",
         "x-targets": [
-          "console",
-          "supplier"
+          "console"
         ],
         "x-timeout-ms": 800
       }
@@ -131146,8 +134243,7 @@
         "x-sensitive-fields": [],
         "x-target-policy": "exact",
         "x-targets": [
-          "console",
-          "supplier"
+          "console"
         ],
         "x-timeout-ms": 800
       }
@@ -133095,7 +136191,9 @@
           "owner",
           "self"
         ],
-        "x-sensitive-fields": [],
+        "x-sensitive-fields": [
+          "body.token"
+        ],
         "x-target-policy": "exact",
         "x-targets": [
           "console",
@@ -133313,7 +136411,17 @@
             "name": "limit",
             "required": false,
             "schema": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                },
+                {
+                  "pattern": "^[1-9]\\d*$",
+                  "type": "string"
+                }
+              ]
             }
           }
         ],
@@ -134486,7 +137594,9 @@
           "owner",
           "self"
         ],
-        "x-sensitive-fields": [],
+        "x-sensitive-fields": [
+          "body.mobile"
+        ],
         "x-target-policy": "exact",
         "x-targets": [
           "console",
@@ -135794,7 +138904,9 @@
           "owner",
           "self"
         ],
-        "x-sensitive-fields": [],
+        "x-sensitive-fields": [
+          "body.accountRef"
+        ],
         "x-target-policy": "exact",
         "x-targets": [
           "console",
@@ -140804,7 +143916,8 @@
         ],
         "x-target-policy": "exact",
         "x-targets": [
-          "console"
+          "console",
+          "supplier"
         ],
         "x-timeout-ms": 1000
       }
@@ -158100,7 +161213,7 @@
         "x-audit-level": "detailed",
         "x-cache-policy": "none",
         "x-capability": "voucher.redemptions.quote",
-        "x-concurrency-policy": "serialized",
+        "x-concurrency-policy": "none",
         "x-csrf-policy": "required",
         "x-error-union": [
           "AUTHENTICATION_REQUIRED",
@@ -158147,7 +161260,7 @@
         "x-operation-version": 1,
         "x-origin-policy": "sameorigin",
         "x-permission": "verification.verify",
-        "x-rate-class": "write",
+        "x-rate-class": "read",
         "x-requirements": [
           "MVPPLATFORM",
           "MVPDISTRIBUTION",

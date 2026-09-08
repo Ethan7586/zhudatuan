@@ -275,7 +275,7 @@ update capability.operation set audience='public',targets='{console,storefront,m
 update capability.capability set version=version+1 where id in(select id from runtime.operation where owner='order')
   and id not in('order.detail.read','order.imports.create','order.imports.read');
 update runtime.contractcatalog set checksum='0b1566a88761bdd06b69454989192a7cd41769d931d51d36a1250f3d2d9aa277',
-  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event),published_at=clock_timestamp()
+  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event where retired_at is null),published_at=clock_timestamp()
 where artifact='commerce' and version='5.0.0' and status='active';
 
 select runtime.record_migration_evidence(
@@ -295,7 +295,7 @@ do $assert$ begin
   if exists(select 1 from ordering.orderrecord where external_reference is not null group by source_channel,external_reference having count(*)>1)
     then raise exception 'ORDER_EXTERNAL_IDENTITY_INVALID'; end if;
   if (select count(*) from runtime.operation)<>316 then raise exception 'ORDER_OPERATION_COUNT_INVALID'; end if;
-  if (select count(*) from runtime.event)<>143 then raise exception 'ORDER_EVENT_COUNT_INVALID'; end if;
+  if (select count(*) from runtime.event where retired_at is null)<>143 then raise exception 'ORDER_EVENT_COUNT_INVALID'; end if;
 end $assert$;
 
 commit;

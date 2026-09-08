@@ -1,9 +1,9 @@
-import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import { type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import { createHash } from 'node:crypto';
 
 import type { RepairDifference } from '../../domain/model/RepairCase';
 import type { RepairDecisionContext, RepairRepository, RepairView } from '../../application/port/RepairRepository';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { RepairPolicy } from '../../domain/policy/RepairPolicy';
 
 const projection = `repair.id,repair.statement_id "statementId",repair.status,repair.source_hash "sourceHash",
@@ -79,9 +79,23 @@ export class PgRepairRepository implements RepairRepository {
           and journal.posted_at::date between statement.period_start and statement.period_end
         on conflict(scope_id,statement_id,preview_hash) do nothing returning *
       ) select ${projection} from created repair`,
-      [input.id, proposal.scopeId, proposal.statementId, proposal.sourceHash, proposal.sourceVersion, input.previewHash,
-        JSON.stringify(proposal.differences), JSON.stringify(proposal.entries), proposal.makerId, proposal.reason,
-        proposal.sourceJournalId, proposal.sourceJournalHash, proposal.sourceJournalDebitMinor, input.approvalInstanceId, input.approvalAmountMinor]
+      [
+        input.id,
+        proposal.scopeId,
+        proposal.statementId,
+        proposal.sourceHash,
+        proposal.sourceVersion,
+        input.previewHash,
+        JSON.stringify(proposal.differences),
+        JSON.stringify(proposal.entries),
+        proposal.makerId,
+        proposal.reason,
+        proposal.sourceJournalId,
+        proposal.sourceJournalHash,
+        proposal.sourceJournalDebitMinor,
+        input.approvalInstanceId,
+        input.approvalAmountMinor,
+      ]
     );
     return result.rows[0] ? Object.freeze(result.rows[0]) : null;
   }

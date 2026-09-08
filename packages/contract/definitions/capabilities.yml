@@ -305,6 +305,16 @@ capabilities:
     owner: identity
     permission: identity.session.manage
     audience: public
+  - code: identity.handovers.read
+    kind: operation
+    owner: identity
+    permission: identity.handover.read
+    audience: console
+  - code: identity.handovers.create
+    kind: operation
+    owner: identity
+    permission: identity.handover.create
+    audience: console
   - code: identity.sessions.read
     kind: operation
     owner: identity
@@ -757,6 +767,16 @@ capabilities:
     owner: inventory
     permission: inventory.read
     audience: public
+  - code: inventory.adjustments.read
+    kind: operation
+    owner: inventory
+    permission: inventory.adjust.read
+    audience: console
+  - code: inventory.adjustments.create
+    kind: operation
+    owner: inventory
+    permission: inventory.adjust.request
+    audience: console
   - code: inventory.imports.create
     kind: operation
     owner: inventory
@@ -985,6 +1005,21 @@ capabilities:
     kind: operation
     owner: fulfillment
     permission: fulfillment.ship
+    audience: console
+  - code: fulfillment.workitems.read
+    kind: operation
+    owner: fulfillment
+    permission: fulfillment.read
+    audience: console
+  - code: fulfillment.workitems.transition
+    kind: operation
+    owner: fulfillment
+    permission: fulfillment.work.manage
+    audience: console
+  - code: fulfillment.returns.read
+    kind: operation
+    owner: fulfillment
+    permission: fulfillment.read
     audience: console
   - code: fulfillment.tracking.read
     kind: operation

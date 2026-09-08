@@ -1,19 +1,19 @@
-import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import { type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import { randomUUID } from 'node:crypto';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { rowResult } from '../../../../adapter/database/DatabaseResult';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { rowResult } from '../../../../platform/database/DatabaseResult';
 
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
-import { bodyRecord, keysetRows, queryPage, textField } from '../../../../foundation/application/Validation';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
+import { bodyRecord, keysetRows, queryPage, textField } from '../../../../pipeline/Validation';
 import type { AfterSalePolicyPort, AfterSaleDecision } from '../../../qualification/public';
 import { AfterSale } from '../../domain/model/AfterSale';
 import { Order } from '../../domain/model/Order';
 import { AfterSaleRefundPolicy } from '../../domain/policy/AfterSaleRefundPolicy';
 import type { VerifiedAfterSaleAttachment } from '../../application/service/AfterSaleAttachment';
 import type { OrganizationReadPort } from '../../../organization/public';
-import { organizationScope } from '../../../../foundation/security/OrganizationScope';
+import { organizationScope } from '../../../../platform/security/OrganizationScope';
 import { availableAfterSaleLines, type LineRow } from './AfterSaleAvailability';
 import { requestedLines, type RequestedLine } from './AfterSaleInput';
 import { OrderReadFilter } from '../../application/model/OrderReadFilter';
@@ -212,5 +212,4 @@ export class AfterSalePersistence {
     if (finalState !== decision) await database.query(`update ordering.orderrecord set aftersale_state=$2,version=version+1,updated_at=clock_timestamp() where id=$1`, [sale.order_id, finalState]);
     return rowResult(await database.query(`select id,order_id "orderId",state,version::float8 version,updated_at "updatedAt" from ordering.aftersale where id=$1`, [sale.id]));
   }
-
 }

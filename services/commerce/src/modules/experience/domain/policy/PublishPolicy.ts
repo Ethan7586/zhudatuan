@@ -1,5 +1,5 @@
 import type { ExperienceDocument } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { ComponentTree, type ComponentIssue } from '../value/ComponentTree';
 import type { PublishEvidence } from '../value/PublishEvidence';
 import { Theme } from '../value/Theme';

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import type { AuditAccessInput, AuditSink, AuditWriteInput } from '../../../../foundation/application/AuditSink';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { AuditAccessInput, AuditSink, AuditWriteInput } from '../../../../pipeline/AuditSink';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { AccessRecord } from '../../domain/model/AccessRecord';
 import { AuditRecord } from '../../domain/model/AuditRecord';
 import { RedactionPolicy } from '../../domain/policy/RedactionPolicy';

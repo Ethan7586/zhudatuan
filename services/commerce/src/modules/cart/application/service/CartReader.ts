@@ -1,4 +1,4 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { Cart, CartView } from '../../domain/model/Cart';
 import { cartView } from '../../domain/model/Cart';
 import { CartPolicy } from '../../domain/policy/CartPolicy';
@@ -22,6 +22,10 @@ export class CartReader {
       cart.owner.mall,
       cart.lines.map(({ listing, sku }) => ({ listing, sku }))
     );
-    return cartView(cart, cart.lines.map((line) => this.policy.present(line, offers.get(line.listing))), notice);
+    return cartView(
+      cart,
+      cart.lines.map((line) => this.policy.present(line, offers.get(line.listing))),
+      notice
+    );
   }
 }

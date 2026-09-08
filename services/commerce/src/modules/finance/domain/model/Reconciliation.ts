@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export type ReconciliationState = 'received' | 'matching' | 'balanced' | 'difference' | 'resolved' | 'approved';
 
@@ -25,7 +25,12 @@ export class Reconciliation {
     if (!value.id || !value.scopeId || !value.provider || !value.partnerId || !value.statementRef || !value.requestedBy || !/^[a-f0-9]{64}$/.test(value.statementHash)) {
       throw new DomainError('VALIDATION_FAILED', { field: 'reconciliation' });
     }
-    if (![value.externalMinor, value.internalMinor, value.differenceMinor, value.differenceCount, value.version].every(Number.isSafeInteger) || value.differenceMinor !== value.externalMinor - value.internalMinor || value.differenceCount < 0 || value.version < 0) {
+    if (
+      ![value.externalMinor, value.internalMinor, value.differenceMinor, value.differenceCount, value.version].every(Number.isSafeInteger) ||
+      value.differenceMinor !== value.externalMinor - value.internalMinor ||
+      value.differenceCount < 0 ||
+      value.version < 0
+    ) {
       throw new DomainError('VALIDATION_FAILED', { field: 'reconciliationTotals' });
     }
     Object.freeze(this.value);

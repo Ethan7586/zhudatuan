@@ -8,6 +8,7 @@ export interface RouteTrace {
   readonly path: string;
   readonly feature: string;
   readonly requirements: readonly string[];
+  readonly source: string;
   readonly manifest: string;
   readonly viewmodel: string;
   readonly test: string;
@@ -16,35 +17,45 @@ export interface RouteTrace {
 export async function loadRouteTraces(root: string): Promise<readonly RouteTrace[]> {
   const document = parse(await readFile(resolve(root, 'config/navigation.yml'), 'utf8')) as {
     readonly version?: number;
-    readonly routes?: readonly Omit<RouteTrace, 'manifest' | 'viewmodel' | 'test'>[];
+    readonly routes?: readonly Omit<RouteTrace, 'source' | 'manifest' | 'viewmodel' | 'test'>[];
   };
   if (document.version !== 2 || !Array.isArray(document.routes)) throw new Error('ROUTE_CATALOG_INVALID');
   const manifests = await manifestCatalog(root);
   const keys = new Set<string>();
-  return Object.freeze(await Promise.all(
-    document.routes.map(async (route) => {
-      const key = `${route.surface}:${route.path}`;
-      if (keys.has(key)) throw new Error(`ROUTE_TRACE_DUPLICATE:${key}`);
-      keys.add(key);
-      const candidates = manifests.filter((manifest) => manifest.surface === route.surface && includesRoute(manifest.source, route.id));
-      if (candidates.length !== 1) throw new Error(`ROUTE_TRACE_MANIFEST_INVALID:${route.id}:${candidates.length}`);
-      const manifest = candidates[0]!;
-      const routeFile = await routeSource(root, manifest, route.id);
-      const viewmodel = await viewModelSource(root, routeFile, manifest.path, route.feature);
-      const test = await testSource(root, manifest.path, viewmodel, routeFile.path);
-      return Object.freeze({
-        ...route,
-        requirements: Object.freeze([...route.requirements]),
-        manifest: manifest.path,
-        viewmodel,
-        test,
-      });
-    })
-  ));
+  return Object.freeze(
+    await Promise.all(
+      document.routes.map(async (route) => {
+        const key = `${route.surface}:${route.path}`;
+        if (keys.has(key)) throw new Error(`ROUTE_TRACE_DUPLICATE:${key}`);
+        keys.add(key);
+        const candidates = manifests.filter((manifest) => manifest.surface === route.surface && includesRoute(manifest.source, route.id));
+        if (candidates.length !== 1) throw new Error(`ROUTE_TRACE_MANIFEST_INVALID:${route.id}:${candidates.length}`);
+        const manifest = candidates[0]!;
+        const routeFile = await routeSource(root, manifest, route.id);
+        const viewmodel = await viewModelSource(root, routeFile, manifest.path, route.feature);
+        const test = await testSource(root, manifest.path, viewmodel, routeFile.path);
+        return Object.freeze({
+          ...route,
+          requirements: Object.freeze([...route.requirements]),
+          source: routeFile.path,
+          manifest: manifest.path,
+          viewmodel,
+          test,
+        });
+      })
+    )
+  );
 }
 
-interface ManifestSource { readonly surface: RouteTrace['surface']; readonly path: string; readonly source: string }
-interface LoadedSource { readonly path: string; readonly source: string }
+interface ManifestSource {
+  readonly surface: RouteTrace['surface'];
+  readonly path: string;
+  readonly source: string;
+}
+interface LoadedSource {
+  readonly path: string;
+  readonly source: string;
+}
 
 async function manifestCatalog(root: string): Promise<readonly ManifestSource[]> {
   const result: ManifestSource[] = [];
@@ -123,8 +134,12 @@ async function viewModelSource(root: string, route: LoadedSource, manifest: stri
 async function testSource(root: string, manifest: string, viewmodel: string, route: string): Promise<string> {
   const direct = [viewmodel.replace(/\.ts$/, '.test.ts'), viewmodel.replace(/\.ts$/, '.test.tsx'), route.replace(/\.tsx?$/, '.test.tsx'), route.replace(/\.tsx?$/, '.test.ts')];
   for (const candidate of direct) {
-    try { await readFile(resolve(root, candidate), 'utf8'); return candidate; }
-    catch (cause) { if ((cause as NodeJS.ErrnoException).code !== 'ENOENT') throw cause; }
+    try {
+      await readFile(resolve(root, candidate), 'utf8');
+      return candidate;
+    } catch (cause) {
+      if ((cause as NodeJS.ErrnoException).code !== 'ENOENT') throw cause;
+    }
   }
   const feature = dirname(manifest);
   const candidates = (await files(resolve(root, feature))).filter((file) => /\.(?:test|spec)\.(?:ts|tsx)$/.test(file)).sort();
@@ -148,8 +163,12 @@ async function files(directory: string, exactName?: string, result: string[] = [
   return result;
 }
 
-function portable(value: string): string { return value.split('\\').join('/'); }
-function pascal(value: string): string { return value.slice(0, 1).toUpperCase() + value.slice(1); }
+function portable(value: string): string {
+  return value.split('\\').join('/');
+}
+function pascal(value: string): string {
+  return value.slice(0, 1).toUpperCase() + value.slice(1);
+}
 function escape(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

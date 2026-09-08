@@ -1,6 +1,9 @@
 import { TrackingEvent, type TrackingStatus } from './TrackingEvent';
 
-export interface PackageLine { readonly line: string; readonly quantity: number }
+export interface PackageLine {
+  readonly line: string;
+  readonly quantity: number;
+}
 export interface PackageSnapshot {
   readonly id: string;
   readonly shipment: string;

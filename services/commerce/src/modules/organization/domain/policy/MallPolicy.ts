@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { MallDomain, MallProfile, MallTheme } from '../model/Mall';
 import { MallOpening } from '../model/MallOpening';
 

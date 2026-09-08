@@ -1,4 +1,4 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 
 export type FinanceAuditFactKind = 'journal' | 'entry' | 'statement' | 'reconciliation' | 'settlement' | 'withdrawal' | 'invoice' | 'repair';
 

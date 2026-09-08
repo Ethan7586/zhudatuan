@@ -1,7 +1,7 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { OperationInputFor } from '@shop/contract';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
 import type { QuoteRepository } from '../../application/port/QuoteRepository';
 import { CurrentQuoteReader } from './CurrentQuoteReader';
 import { QuoteCreator } from './QuoteCreator';

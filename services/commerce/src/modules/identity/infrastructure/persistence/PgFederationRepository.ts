@@ -1,7 +1,7 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { CreateFederation, FederationCallbackRecord, FederationRepository, FederationResolution } from '../../application/port/FederationRepository';
 import type { FederatedSubject } from '../../domain/model/FederatedSubject';

@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export interface RefreshToken {
   readonly id: string;

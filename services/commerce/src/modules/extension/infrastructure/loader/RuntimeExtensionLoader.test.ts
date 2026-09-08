@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { PoolClient, QueryResult } from 'pg';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import type { DatabaseWorkload } from '../../../../foundation/persistence/QueryMetrics';
+import type { DatabasePool } from '../../../../platform/database/Pool';
+import type { DatabaseWorkload } from '../../../../platform/database/QueryMetrics';
 import { loadProviders } from './RuntimeExtensionLoader';
 
 describe('provider loader database workload', () => {

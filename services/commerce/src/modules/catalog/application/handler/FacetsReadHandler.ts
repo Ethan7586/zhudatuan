@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { ListingFacetRepository } from '../port/ListingFacetRepository';
 
 export class FacetsReadHandler implements OperationHandler<'catalog.facets.read', 'read'> {

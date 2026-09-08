@@ -1,4 +1,4 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { CART_CATALOG_PORT, CATALOG_READ_PORT, CHECKOUT_CATALOG_PORT, EXPERIENCE_CATALOG_PORT, INVENTORY_CATALOG_PORT, MEMBER_CATALOG_PORT, PROVIDER_CATALOG_PORT, REFERRAL_CATALOG_PORT, RISK_CATALOG_PORT } from './public';
 
 export const Manifest = defineModuleManifest({

@@ -1,10 +1,10 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, integerField, keysetPage, queryPage, textField } from '../../../../foundation/application/Validation';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import type { OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord, integerField, keysetPage, queryPage, textField } from '../../../../pipeline/Validation';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { AssignmentRule } from '../../domain/model/AssignmentRule';
 import { Sla } from '../../domain/model/Sla';
 import type { TicketPriority } from '../../domain/model/Ticket';
@@ -13,19 +13,38 @@ import type { SupportAccountProvider, SupportAccountVerification, SupportAccount
 import type { ReadSupportContext } from '../../application/service/ReadSupportContext';
 import type { AssignmentRuleStore } from '../../application/port/SupportPersistence';
 
-interface LoadedAccount { readonly scope: string; readonly current: Pick<AccountRow, 'secret_ref' | 'channel'> | null }
-type PreparedAccount = SupportAccountVerification;
+import {
+  account,
+  accountRead,
+  channels,
+  choice,
+  enabledStates,
+  expectedVersion,
+  priorities,
+  rule,
+  ruleRead,
+  sla,
+  slaRead,
+  stringArray,
+  type AccountReadRow,
+  type AccountRow,
+  type LoadedAccount,
+  type PreparedAccount,
+  type RuleReadRow,
+  type RuleRow,
+  type SlaRow,
+} from './SupportConfigRecord';
 
 export class PgSupportConfigRepository implements AccountRepository, RuleRepository, SlaRepository, AssignmentRuleStore {
   private readonly transactions = new PgTransactionAccess();
-  constructor(private readonly support: ReadSupportContext, private readonly verifier: SupportAccountVerifier) {}
+  constructor(
+    private readonly support: ReadSupportContext,
+    private readonly verifier: SupportAccountVerifier
+  ) {}
 
   async loadAccount(context: ReadTransactionContext, input: OperationInputFor<'support.accounts.manage'>, execution: ExecutionContext<'support.accounts.manage'>): Promise<PreparedSupportOperation> {
     const actor = await this.console(context, execution);
-    const result = await this.transactions.database(context).query<Pick<AccountRow, 'secret_ref' | 'channel'>>(
-      'select secret_ref,channel from support.account where id=$1 and scope_id=$2',
-      [input.path.accountid, actor.scope]
-    );
+    const result = await this.transactions.database(context).query<Pick<AccountRow, 'secret_ref' | 'channel'>>('select secret_ref,channel from support.account where id=$1 and scope_id=$2', [input.path.accountid, actor.scope]);
     return Object.freeze({ scope: actor.scope, current: result.rows[0] ?? null });
   }
 
@@ -34,7 +53,18 @@ export class PgSupportConfigRepository implements AccountRepository, RuleReposit
     const loaded = value as LoadedAccount;
     const provider = choice(body.provider, channels, 'SUPPORT_CHANNEL_INVALID') as SupportAccountProvider;
     const supplied = body.secretRef;
-    const secretRef = provider === 'inapp' ? (supplied === undefined ? null : supplied === null ? null : textField(body, 'secretRef')) : supplied === undefined ? loaded.current?.secret_ref ?? null : supplied === null ? null : textField(body, 'secretRef');
+    const secretRef =
+      provider === 'inapp'
+        ? supplied === undefined
+          ? null
+          : supplied === null
+            ? null
+            : textField(body, 'secretRef')
+        : supplied === undefined
+          ? (loaded.current?.secret_ref ?? null)
+          : supplied === null
+            ? null
+            : textField(body, 'secretRef');
     return this.verifier.verify({ provider, scope: loaded.scope, secretRef }, execution);
   }
 
@@ -50,7 +80,12 @@ export class PgSupportConfigRepository implements AccountRepository, RuleReposit
     return { status: 200, body: { ...paged, items: [...paged.items] } };
   }
 
-  async manageAccount(context: WriteTransactionContext, input: OperationInputFor<'support.accounts.manage'>, execution: ExecutionContext<'support.accounts.manage'>, value: PreparedSupportOperation): Promise<OperationReply<OperationOutputFor<'support.accounts.manage'>>> {
+  async manageAccount(
+    context: WriteTransactionContext,
+    input: OperationInputFor<'support.accounts.manage'>,
+    execution: ExecutionContext<'support.accounts.manage'>,
+    value: PreparedSupportOperation
+  ): Promise<OperationReply<OperationOutputFor<'support.accounts.manage'>>> {
     const actor = await this.console(context, execution);
     const expected = expectedVersion(execution);
     const body = bodyRecord(input);
@@ -78,7 +113,8 @@ export class PgSupportConfigRepository implements AccountRepository, RuleReposit
     const page = queryPage(input);
     const result = await this.transactions.database(context).query<RuleReadRow>(
       `select id,name,skill,priorities,weight,state,version,updated_at from support.assignmentrule
-      where scope_id=$1 and ($2::text is null or id>$2) order by id limit $3`, [actor.scope, page.id, page.fetch]
+      where scope_id=$1 and ($2::text is null or id>$2) order by id limit $3`,
+      [actor.scope, page.id, page.fetch]
     );
     const paged = keysetPage(result.rows.map(ruleRead), page, 'id');
     return { status: 200, body: { ...paged, items: [...paged.items] } };
@@ -112,7 +148,8 @@ export class PgSupportConfigRepository implements AccountRepository, RuleReposit
     const page = queryPage(input);
     const result = await this.transactions.database(context).query<SlaRow>(
       `select id,scope_id,priority,response_seconds,resolution_seconds,reopen_seconds,version from support.sla
-      where scope_id=$1 and ($2::text is null or id>$2) order by id limit $3`, [actor.scope, page.id, page.fetch]
+      where scope_id=$1 and ($2::text is null or id>$2) order by id limit $3`,
+      [actor.scope, page.id, page.fetch]
     );
     const paged = keysetPage(result.rows.map(slaRead), page, 'id');
     return { status: 200, body: { ...paged, items: [...paged.items] } };
@@ -141,7 +178,9 @@ export class PgSupportConfigRepository implements AccountRepository, RuleReposit
   }
 
   async resolveSla(context: ReadTransactionContext, scope: string, priority: TicketPriority): Promise<Readonly<{ response: number; resolution: number; reopen: number }>> {
-    const result = await this.transactions.database(context).query<{ response_seconds: number; resolution_seconds: number; reopen_seconds: number }>('select response_seconds,resolution_seconds,reopen_seconds from support.resolve_sla($1,$2)', [scope, priority]);
+    const result = await this.transactions
+      .database(context)
+      .query<{ response_seconds: number; resolution_seconds: number; reopen_seconds: number }>('select response_seconds,resolution_seconds,reopen_seconds from support.resolve_sla($1,$2)', [scope, priority]);
     const row = result.rows[0];
     if (!row) throw new Error('SUPPORT_SLA_NOT_CONFIGURED');
     return Object.freeze({ response: Number(row.response_seconds), resolution: Number(row.resolution_seconds), reopen: Number(row.reopen_seconds) });
@@ -150,7 +189,8 @@ export class PgSupportConfigRepository implements AccountRepository, RuleReposit
   async assignmentRules(context: ReadTransactionContext, scope: string): Promise<readonly AssignmentRule[]> {
     const result = await this.transactions.database(context).query<RuleRow>(
       `select id,scope_id,name,skill,priorities,weight,state,version,created_at,updated_at
-      from support.assignmentrule where scope_id=$1 and state='active' order by weight desc,id`, [scope]
+      from support.assignmentrule where scope_id=$1 and state='active' order by weight desc,id`,
+      [scope]
     );
     return Object.freeze(result.rows.map((row) => new AssignmentRule(row.id, row.scope_id, row.skill, row.priorities, Number(row.weight), true, Number(row.version))));
   }
@@ -160,24 +200,4 @@ export class PgSupportConfigRepository implements AccountRepository, RuleReposit
     if (actor.target !== 'console') throw new DomainError('AUTHORIZATION_DENIED');
     return actor;
   }
-
 }
-
-interface AccountRow { readonly id: string; readonly scope_id: string; readonly channel: SupportAccountProvider; readonly external_ref: string; readonly secret_ref: string | null; readonly state: 'active' | 'disabled'; readonly validation_state: 'verified' | 'notrequired' | 'unverified'; readonly validation_code: string; readonly validated_at: string | Date | null; readonly secret_version: string | null; readonly version: number }
-type AccountReadRow = Omit<AccountRow, 'scope_id' | 'secret_ref' | 'secret_version'>;
-interface RuleRow { readonly id: string; readonly scope_id: string; readonly name: string; readonly skill: string; readonly priorities: TicketPriority[]; readonly weight: number; readonly state: 'active' | 'disabled'; readonly version: number; readonly created_at: string; readonly updated_at: string }
-interface RuleReadRow { readonly id: string; readonly name: string; readonly skill: string; readonly priorities: TicketPriority[]; readonly weight: number; readonly state: 'active' | 'disabled'; readonly version: number; readonly updated_at: string }
-interface SlaRow { readonly id: string; readonly scope_id: string; readonly priority: TicketPriority; readonly response_seconds: number; readonly resolution_seconds: number; readonly reopen_seconds: number; readonly version: number }
-function rule(row: RuleRow) { return { ...row, weight: Number(row.weight), version: Number(row.version), created_at: instant(row.created_at), updated_at: instant(row.updated_at) }; }
-function ruleRead(row: RuleReadRow) { return { ...row, weight: Number(row.weight), version: Number(row.version), updated_at: instant(row.updated_at) }; }
-function sla(row: SlaRow) { return { ...row, response_seconds: Number(row.response_seconds), resolution_seconds: Number(row.resolution_seconds), reopen_seconds: Number(row.reopen_seconds), version: Number(row.version) }; }
-function slaRead(row: SlaRow) { const value = sla(row); return { id: value.id, priority: value.priority, response_seconds: value.response_seconds, resolution_seconds: value.resolution_seconds, reopen_seconds: value.reopen_seconds, version: value.version }; }
-function account(row: AccountRow) { return { id: row.id, scope_id: row.scope_id, provider: row.channel, display_name: row.external_ref, state: row.state, validation_state: row.validation_state, validation_code: row.validation_code, validated_at: row.validated_at === null ? null : instant(row.validated_at), version: Number(row.version) }; }
-function accountRead(row: AccountReadRow) { return { id: row.id, provider: row.channel, display_name: row.external_ref, state: row.state, validation_state: row.validation_state, validation_code: row.validation_code, validated_at: row.validated_at === null ? null : instant(row.validated_at), version: Number(row.version) }; }
-function expectedVersion(execution: ExecutionContext): number { if (execution.expectedVersion === undefined) throw new DomainError('VERSION_CONFLICT'); return execution.expectedVersion; }
-function choice(value: unknown, values: readonly string[], code: string): string { if (typeof value !== 'string' || !values.includes(value)) throw new Error(code); return value; }
-function stringArray(value: unknown): string[] { if (!Array.isArray(value) || value.length === 0 || !value.every((item) => typeof item === 'string' && item.trim())) throw new DomainError('VALIDATION_FAILED'); return [...new Set(value.map((item) => item.trim()))]; }
-function instant(value: string | Date): string { return new Date(value).toISOString(); }
-const priorities = ['low', 'normal', 'high', 'urgent'] as const;
-const channels = ['inapp', 'wechat', 'email', 'sms'] as const;
-const enabledStates = ['active', 'disabled'] as const;

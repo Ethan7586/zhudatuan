@@ -1,6 +1,6 @@
 import { OPERATION_SCHEMAS } from '@shop/contract';
 import { describe, expect, it, vi } from 'vitest';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
 import { readHandlerContext } from '../../../../test/HandlerFixture';
 import type { ListingPublication } from '../service/ListingPublication';
 import { ListingsBatchHandler } from './ListingsBatchHandler';

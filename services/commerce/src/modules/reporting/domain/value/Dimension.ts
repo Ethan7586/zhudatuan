@@ -1,5 +1,8 @@
 export class Dimension {
-  constructor(readonly name: string, readonly value: string) {
+  constructor(
+    readonly name: string,
+    readonly value: string
+  ) {
     if (!/^[a-z][A-Za-z0-9]*$/.test(name) || !value || value.length > 255) throw new Error('REPORT_DIMENSION_INVALID');
     Object.freeze(this);
   }

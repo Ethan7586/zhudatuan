@@ -4,6 +4,22 @@ import { currency, id, isoUtc, unsigned, version } from './Primitives';
 
 const positive = number().check(int(), minimum(1), maximum(Number.MAX_SAFE_INTEGER));
 const selectedLine = strictObject({ listingId: id<'listing'>(), quantity: positive, lineVersion: version });
+const benefitChoice = strictObject({ accountId: id<'benefitaccount'>(), amountMinor: positive });
+const deliveryChoice = strictObject({
+  method: literal(['standard', 'express', 'pickup', 'digital']),
+  note: union([string().check(maxLength(200)), nullSchema()]),
+  scheduledAt: union([isoUtc, nullSchema()]),
+});
+const quoteSelection = strictObject({
+  cartVersion: version,
+  lines: array(selectedLine).check(minLength(1), maxLength(100)),
+  addressId: union([id<'address'>(), nullSchema()]),
+  invoiceId: union([id<'invoiceprofile'>(), nullSchema()]),
+  delivery: deliveryChoice,
+  voucherIds: array(id<'voucher'>()).check(maxLength(20)),
+  benefits: array(benefitChoice).check(maxLength(10)),
+  paymentScene: literal(['miniapp', 'jsapi']),
+});
 const quoteLine = strictObject({
   listing: string(),
   sku: string(),
@@ -32,6 +48,7 @@ const quoteResult = strictObject({
   confirmationToken: union([string().check(minLength(43), maxLength(171)), nullSchema()]),
   evidenceHash: string().check(minLength(64), maxLength(64)),
   expiresAt: isoUtc,
+  selection: quoteSelection,
   cartVersion: version,
   lines: array(quoteLine),
   evidence: record(string(), ContractJsonValueSchema),
@@ -63,7 +80,7 @@ export const CHECKOUT_BODY_SCHEMAS = {
       scheduledAt: optional(isoUtc),
     }),
     voucherIds: array(id<'voucher'>()).check(maxLength(20)),
-    benefits: array(strictObject({ accountId: id<'benefitaccount'>(), amountMinor: positive })).check(maxLength(10)),
+    benefits: array(benefitChoice).check(maxLength(10)),
     paymentScene: literal(['miniapp', 'jsapi']),
   }),
 } as const;

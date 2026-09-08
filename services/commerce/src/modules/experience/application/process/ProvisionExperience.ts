@@ -1,4 +1,4 @@
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
 import type { MallProvisionPort } from '../../../organization/public';
 import type { ExperienceProvisionRepository } from '../port/ExperienceProvisionRepository';
 

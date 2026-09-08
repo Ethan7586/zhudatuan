@@ -1,15 +1,25 @@
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { KMS_CLIENT } from '../../../../foundation/application/KmsPort';
-import { SECURITY_KEYS } from '../../../../foundation/infrastructure/SecretStore';
-import { SystemClock } from '../../../../foundation/domain/Clock';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { KMS_CLIENT } from '../../../../pipeline/KmsPort';
+import { SECURITY_KEYS } from '../../../../platform/secret/SecretStore';
+import { SystemClock } from '@shop/kernel';
 import { MEMBER_ACCESS_PORT } from '../../../access/public';
 import { APPROVAL_PORT, APPROVAL_READ_PORT } from '../../../approval/public';
 import { ORGANIZATION_READ_PORT } from '../../../organization/public';
 import { OBJECT_STORE } from '../../../runtime/public/ObjectPort';
 import { FINANCE_ORDER_PORT } from '../../../order/public';
 import { FINANCE_PAYMENT_PORT } from '../../../payment/public';
-import type { AccountReadRepository, InvoiceReadRepository, JournalReadRepository, PolicyReadRepository, ReconciliationReadRepository, RepairReadRepository, SettlementReadRepository, StatementReadRepository, WithdrawalReadRepository } from '../../application/port/FinanceReadRepository';
+import type {
+  AccountReadRepository,
+  InvoiceReadRepository,
+  JournalReadRepository,
+  PolicyReadRepository,
+  ReconciliationReadRepository,
+  RepairReadRepository,
+  SettlementReadRepository,
+  StatementReadRepository,
+  WithdrawalReadRepository,
+} from '../../application/port/FinanceReadRepository';
 import type { InvoiceProfileRepository, InvoiceRequestRepository, PeriodRepository, PolicyCommandRepository, ReconciliationRepository, SettlementRepository, WithdrawalRepository } from '../../application/port/FinanceCommandRepository';
 import type { InvoiceProcessAdapter, PolicyProcessAdapter, RepairProcessAdapter, StatementProcessAdapter } from '../../application/port/FinanceProcessAdapter';
 import { RepairApproval } from '../../application/service/RepairApproval';
@@ -86,18 +96,22 @@ export function createFinanceAdapters(transactions: PgTransactionAccess, context
   const invoices = invoiceActions((database) => new PgFinanceWorkflow(database), context.ports.get(FINANCE_ORDER_PORT), context.ports.get(FINANCE_PAYMENT_PORT));
   const profiles = invoiceProfileActions(context.service(KMS_CLIENT));
   const policyPreview = new PolicyPreview(key);
-  const policies = financePolicyOperations({ scopes: (database, scopeId) => scopes.descendantsFromId(database, scopeId), repository: (database) => new PgPolicyRepository(database), preview: policyPreview, clock: SystemClock });
-  const policyWrites = policyCommands(scopes, policyPreview, SystemClock);
+  const policies = financePolicyOperations({ scopes: (database, scopeId) => scopes.descendantsFromId(database, scopeId), repository: (database) => new PgPolicyRepository(database), preview: policyPreview, clock: new SystemClock() });
+  const policyWrites = policyCommands(scopes, policyPreview, new SystemClock());
   const repairs = repairOperations({
     scopes: (database, scopeId) => scopes.descendantsFromId(database, scopeId),
     repository: (database) => new PgRepairRepository(database, repairPolicy),
     policy: repairPolicy,
     approval: new RepairApproval(context.ports.get(APPROVAL_PORT), context.ports.get(APPROVAL_READ_PORT)),
-    clock: SystemClock,
+    clock: new SystemClock(),
   });
 
   return Object.freeze({
-    accountRead: Object.freeze({ overviewRead: bind.bind<'finance.overview.read'>(overview.overviewRead), holdsRead: bind.bind<'finance.holds.read'>(accounts.holdsRead), periodsRead: bind.bind<'finance.periods.read'>(periods.periodsRead) }),
+    accountRead: Object.freeze({
+      overviewRead: bind.bind<'finance.overview.read'>(overview.overviewRead),
+      holdsRead: bind.bind<'finance.holds.read'>(accounts.holdsRead),
+      periodsRead: bind.bind<'finance.periods.read'>(periods.periodsRead),
+    }),
     journalRead: Object.freeze({ entriesRead: bind.bind<'finance.entries.read'>(statements.entriesRead) }),
     statementRead: Object.freeze({ statementsRead: bind.bind<'finance.statements.read'>(statements.statementsRead), backfillsRead: bind.bind<'finance.backfills.read'>(backfills.backfillsRead) }),
     statementProcess: Object.freeze({ statementsExport: bind.bind<'finance.statements.export'>(statements.statementsExport), backfillsDecide: bind.bind<'finance.backfills.decide'>(backfills.backfillsDecide) }),
@@ -107,15 +121,33 @@ export function createFinanceAdapters(transactions: PgTransactionAccess, context
     settlementRead: Object.freeze({ settlementsRead: bind.bind<'finance.settlements.read'>(settlementReads.settlementsRead) }),
     settlement: Object.freeze({ settlementsDecide: bind.bind<'finance.settlements.decide'>(settlementDecisions.settlementsDecide), settlementsAdjust: bind.bind<'finance.settlements.adjust'>(settlementAdjustments.settlementsAdjust) }),
     withdrawalRead: Object.freeze({ withdrawalsRead: bind.bind<'finance.withdrawals.read'>(withdrawalReads.withdrawalsRead) }),
-    withdrawal: Object.freeze({ withdrawalsCreate: bind.bind<'finance.withdrawals.create'>(withdrawals.withdrawalsCreate), withdrawalsDecide: bind.bind<'finance.withdrawals.decide'>(withdrawals.withdrawalsDecide), withdrawalsRecover: bind.bind<'finance.withdrawals.recover'>(withdrawals.withdrawalsRecover) }),
-    invoiceRead: Object.freeze({ invoicesRead: bind.bind<'finance.invoices.read'>(invoiceReads.invoicesRead), profilesRead: bind.bind<'invoice.profiles.read'>(invoiceReads.profilesRead), requestsRead: bind.bind<'invoice.requests.read'>(invoiceReads.requestsRead) }),
+    withdrawal: Object.freeze({
+      withdrawalsCreate: bind.bind<'finance.withdrawals.create'>(withdrawals.withdrawalsCreate),
+      withdrawalsDecide: bind.bind<'finance.withdrawals.decide'>(withdrawals.withdrawalsDecide),
+      withdrawalsRecover: bind.bind<'finance.withdrawals.recover'>(withdrawals.withdrawalsRecover),
+    }),
+    invoiceRead: Object.freeze({
+      invoicesRead: bind.bind<'finance.invoices.read'>(invoiceReads.invoicesRead),
+      profilesRead: bind.bind<'invoice.profiles.read'>(invoiceReads.profilesRead),
+      requestsRead: bind.bind<'invoice.requests.read'>(invoiceReads.requestsRead),
+    }),
     invoiceProcess: Object.freeze({ invoicesDownload: bind.bind<'finance.invoices.download'>(invoiceReads.invoicesDownload) }),
     invoiceProfile: Object.freeze({ profilesManage: bind.bind<'invoice.profiles.manage'>(profiles.profilesManage) }),
-    invoiceRequest: Object.freeze({ requestsCreate: bind.bind<'invoice.requests.create'>(invoices.requestsCreate), requestsCancel: bind.bind<'invoice.requests.cancel'>(invoices.requestsCancel), requestsDecide: bind.bind<'invoice.requests.decide'>(invoices.requestsDecide), redInvoice: bind.bind<'invoice.requests.red'>(invoices.redInvoice) }),
+    invoiceRequest: Object.freeze({
+      requestsCreate: bind.bind<'invoice.requests.create'>(invoices.requestsCreate),
+      requestsCancel: bind.bind<'invoice.requests.cancel'>(invoices.requestsCancel),
+      requestsDecide: bind.bind<'invoice.requests.decide'>(invoices.requestsDecide),
+      redInvoice: bind.bind<'invoice.requests.red'>(invoices.redInvoice),
+    }),
     policyRead: Object.freeze({ policiesRead: bind.bind<'finance.policies.read'>(policies.policiesRead) }),
     policyCommand: Object.freeze({ policiesManage: bind.bind<'finance.policies.manage'>(policyWrites.policiesManage) }),
     policyProcess: Object.freeze({ policiesPreview: bind.bind<'finance.policies.preview'>(policies.policiesPreview) }),
     repairRead: Object.freeze({ repairsRead: bind.bind<'finance.reconciliationrepairs.read'>(repairs.repairsRead) }),
-    repairProcess: Object.freeze({ repairsPreview: bind.bind<'finance.reconciliationrepairs.preview'>(repairs.repairsPreview), repairsSubmit: bind.bind<'finance.reconciliationrepairs.submit'>(repairs.repairsSubmit), repairsDecide: bind.bind<'finance.reconciliationrepairs.decide'>(repairs.repairsDecide), repairsReverse: bind.bind<'finance.reconciliationrepairs.reverse'>(repairs.repairsReverse) }),
+    repairProcess: Object.freeze({
+      repairsPreview: bind.bind<'finance.reconciliationrepairs.preview'>(repairs.repairsPreview),
+      repairsSubmit: bind.bind<'finance.reconciliationrepairs.submit'>(repairs.repairsSubmit),
+      repairsDecide: bind.bind<'finance.reconciliationrepairs.decide'>(repairs.repairsDecide),
+      repairsReverse: bind.bind<'finance.reconciliationrepairs.reverse'>(repairs.repairsReverse),
+    }),
   });
 }

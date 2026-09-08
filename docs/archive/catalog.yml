@@ -1,0 +1,20 @@
+version: 1
+owner: architecture
+status: superseded
+archivedAt: 2026-09-08
+supersededBy:
+  - docs/architecture/福利商城理想方案20260904.md
+  - docs/architecture/福利商城代码修改清单20260904.md
+  - docs/当前代码业务功能清单-20260904.md
+  - docs/福利商城功能清单.xlsx
+policy: 仅保留审计历史，不作为设计、实现、验收或发布事实源。
+batches:
+  - path: docs/archive/20260904/architecture
+    count: 17
+    reason: 被 2026-09-04 理想架构及代码修改清单完整取代
+  - path: docs/archive/20260904/root
+    count: 11
+    reason: 旧功能清单、旧工作簿及旧实施方案已失效
+  - path: docs/archive/20260904/evidence
+    count: 1
+    reason: 旧切换盘点的范围、数量及结论已失效

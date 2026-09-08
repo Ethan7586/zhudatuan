@@ -1,10 +1,10 @@
 import { createRoot } from 'react-dom/client';
 import { bootstrapApplication } from '@shop/design';
-import '@shop/design/tokens.css';
-import '@shop/design/base.css';
-import '@shop/design/workspace.css';
-import '@shop/design/shell.css';
-import '@shop/design/operator.css';
+import '@shop/design/token/Tokens.css';
+import '@shop/design/token/Base.css';
+import '@shop/design/template/Workspace.css';
+import '@shop/design/template/WorkspaceShell.css';
+import '@shop/design/template/OperatorWorkspace.css';
 
 const root = document.getElementById('root');
 if (root === null) throw new Error('APP_ROOT_MISSING');

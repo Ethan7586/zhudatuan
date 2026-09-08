@@ -7,8 +7,17 @@ requirements:
   sheet: MVP上线功能清单
   range: A1:F24
   parserVersion: 3
-  generatorVersion: 4
+  generatorVersion: 5
   generatedAt: 2026-08-31T12:35:48.000Z
+  reviewedAt: 2026-09-08
+  selectionRange: A3:F24
+  authorityOrder:
+    - 当前用户明确要求
+    - docs/福利商城功能清单.xlsx#MVP上线功能清单与接口
+    - ../zhudatuan_li/docs/当前代码业务功能清单-20260904.md
+    - ../zhudatuan_li/docs/zhudatuan-console-UX-acceptance-report-20260904.md
+    - zhudatuan当前合同模块数据库与质量门
+    - zhudatuan_li当前代码迁移来源
   sheets:
     requirements: 296
     mvp: 22
@@ -20,15 +29,23 @@ requirements:
     - docs/requirements/providers.yml
     - docs/requirements/frontend.yml
     - docs/requirements/trace.yml
+    - docs/requirements/currenttrace.yml
     - docs/requirements/mapping.json
+    - docs/当前代码业务功能清单-20260904.md
     - packages/contract/src/RequirementCatalog.ts
     - config/providers.yml
     - evidence/releases/index.json
+currentFunctions:
+  logicalSource: RepositoryAuthority ../zhudatuan_li/docs/当前代码业务功能清单-20260904.md
+  sourcePath: ../zhudatuan_li/docs/当前代码业务功能清单-20260904.md
+  sourceSha256: bc1e7d0730b21ea97d2561fad82341feac4113179f53c26e8e641c8ff25c9b94
+  sourceCommit: b763b7a12c9aa825c532a35c3cce06da4455ed98
+  snapshot: docs/requirements/current.yml
+  trace: docs/requirements/currenttrace.yml
+  parserVersion: 1
+  count: 462
+  policy: every-row-exactly-once
 architecture:
-  - logicalSource: RepositoryAuthority docs/architecture/前端整体重构方案.md
-    repositoryRelativePath: docs/architecture/前端整体重构方案.md
-    sha256: aad7b1fcfcf0afe8985af0a6614194d39ac7e93d6e1acc51fdd8b19cfe07827d
-    version: 1
   - logicalSource: RepositoryAuthority docs/architecture/福利商城理想方案20260904.md
     repositoryRelativePath: docs/architecture/福利商城理想方案20260904.md
     sha256: 8929aa3435d4c842405aecd4c6baf46163b25aa0bac6b798de8f44842bc67ec9
@@ -56,12 +73,12 @@ owners:
 visuals:
   logicalSource: RepositoryAuthority config/visuals.yml
   repositoryRelativePath: config/visuals.yml
-  sha256: 370090534a906f50e59063b6d92914f13ccabc550220f7b7c125ceb1d6f52393
+  sha256: dfb5268ef72290baa488c5eecfc603fbdade6eebdc0d3576a28990cdba7d7434
 navigation:
   logicalSource: RepositoryAuthority config/navigation.yml
   repositoryRelativePath: config/navigation.yml
   version: 3
-  sha256: bf892ccd70ea322b70de5dce9c71560bd5ccaf7221f6389ea894278aa03442ce
+  sha256: 4ea38c23ef1225d1cd6ffddec96ecf16ca7515165a7d9a65b47305a8ec90e398
   generator: tools/navigationgen
   outputs:
     - services/commerce/src/modules/navigation/infrastructure/registry/NavigationCatalog.ts
@@ -101,5 +118,5 @@ contract:
     - packages/authz/src/PermissionIds.ts
     - packages/sdk/src/operations
     - services/commerce/src/generated
-    - services/commerce/src/foundation/interface/OperationController.ts
+    - services/commerce/src/pipeline/OperationController.ts
     - database/contracts/current.sql

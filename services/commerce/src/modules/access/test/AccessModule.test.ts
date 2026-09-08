@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Token } from '../../../bootstrap/Container';
-import type { ModuleContext, PublicPortToken } from '../../../bootstrap/ModuleRegistry';
+import type { Token } from '../../../composition/Container';
+import type { ModuleContext, PublicPortToken } from '../../../composition/ModuleRegistry';
 import { AccessModule } from '../Module';
 import { IDENTITY_ACCESS_PORT, MEMBER_IMPORT_ACCESS_PORT, TASK_AUTHORIZATION_PORT } from '../public';
 
@@ -23,7 +23,7 @@ describe('AccessModule', () => {
       service,
     };
 
-    expect(AccessModule.bind(context).map(binding => binding.token)).toEqual([IDENTITY_ACCESS_PORT, MEMBER_IMPORT_ACCESS_PORT, TASK_AUTHORIZATION_PORT]);
+    expect(AccessModule.bind(context).map((binding) => binding.token)).toEqual([IDENTITY_ACCESS_PORT, MEMBER_IMPORT_ACCESS_PORT, TASK_AUTHORIZATION_PORT]);
     expect(serviceCalls).toBe(0);
   });
 });

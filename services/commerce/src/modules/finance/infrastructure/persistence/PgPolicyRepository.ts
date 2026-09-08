@@ -1,4 +1,4 @@
-import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import { type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import type { FinancePolicyView, PolicyRepository } from '../../application/port/PolicyRepository';
 
 export class PgPolicyRepository implements PolicyRepository {
@@ -19,7 +19,21 @@ export class PgPolicyRepository implements PolicyRepository {
     return result.rows[0]?.count ?? 0;
   }
 
-  manage(input: Readonly<{ id: string; scopeId: string; kind: string; rule: Readonly<Record<string, unknown>>; state: 'active' | 'retired'; name: string; trigger: string; entries: readonly unknown[]; effectiveAt: string; expiresAt: string | null; expectedVersion: number | null }>) {
+  manage(
+    input: Readonly<{
+      id: string;
+      scopeId: string;
+      kind: string;
+      rule: Readonly<Record<string, unknown>>;
+      state: 'active' | 'retired';
+      name: string;
+      trigger: string;
+      entries: readonly unknown[];
+      effectiveAt: string;
+      expiresAt: string | null;
+      expectedVersion: number | null;
+    }>
+  ) {
     return this.database.query(
       `insert into finance.policy(id,scope_id,kind,rule,state,version,name,"trigger",entries,effective_at,expires_at,updated_at)
       values($1,$2,$3,$4::jsonb,$5,1,$6,$7,$8::jsonb,$9,$10,clock_timestamp())

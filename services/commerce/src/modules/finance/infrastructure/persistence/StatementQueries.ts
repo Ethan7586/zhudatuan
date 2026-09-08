@@ -1,10 +1,10 @@
 /** Statement persistence queries. */
 import type { FinanceEntries } from './FinanceOperation';
 
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
 
-import { requestProjectionExport } from '../../../../adapter/database/PgProjectionExport';
-import { bodyRecord, keysetResult, queryPage } from '../../../../foundation/application/Validation';
+import { requestProjectionExport } from '../../../../platform/database/PgProjectionExport';
+import { bodyRecord, keysetResult, queryPage } from '../../../../pipeline/Validation';
 import type { FinanceScopeQuery } from './FinanceScopeQuery';
 
 export function statementQueries(scopes: FinanceScopeQuery): FinanceEntries<'entriesRead' | 'statementsRead' | 'statementsExport'> {

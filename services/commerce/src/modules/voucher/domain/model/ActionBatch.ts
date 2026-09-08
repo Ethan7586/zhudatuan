@@ -1,6 +1,17 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
-export interface ActionBatchValue { readonly id: string; readonly snapshot: string; readonly action: 'activate' | 'disable' | 'enable' | 'void' | 'extend'; readonly state: 'queued' | 'running' | 'completed' | 'failed'; readonly requested: number; readonly processed: number; readonly succeeded: number; readonly failed: number; readonly retryable: number; readonly version: number; }
+export interface ActionBatchValue {
+  readonly id: string;
+  readonly snapshot: string;
+  readonly action: 'activate' | 'disable' | 'enable' | 'void' | 'extend';
+  readonly state: 'queued' | 'running' | 'completed' | 'failed';
+  readonly requested: number;
+  readonly processed: number;
+  readonly succeeded: number;
+  readonly failed: number;
+  readonly retryable: number;
+  readonly version: number;
+}
 export class ActionBatch {
   constructor(readonly value: ActionBatchValue) {
     if (value.requested <= 0 || value.processed !== value.succeeded + value.failed || value.processed > value.requested || value.retryable > value.failed) throw new DomainError('VOUCHER_STATE_INVALID');

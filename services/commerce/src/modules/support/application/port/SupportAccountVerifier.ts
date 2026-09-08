@@ -1,4 +1,4 @@
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
 
 export type SupportAccountProvider = 'inapp' | 'wechat' | 'email' | 'sms';
 
@@ -11,9 +11,12 @@ export interface SupportAccountVerification {
 }
 
 export interface SupportAccountVerifier {
-  verify(input: Readonly<{
-    provider: SupportAccountProvider;
-    scope: string;
-    secretRef: string | null;
-  }>, execution: ExecutionContext<'support.accounts.manage'>): Promise<SupportAccountVerification>;
+  verify(
+    input: Readonly<{
+      provider: SupportAccountProvider;
+      scope: string;
+      secretRef: string | null;
+    }>,
+    execution: ExecutionContext<'support.accounts.manage'>
+  ): Promise<SupportAccountVerification>;
 }

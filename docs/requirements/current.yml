@@ -1,0 +1,3303 @@
+schema: zhudatuan.current-functions.v1
+generated: true
+importedAt: 2026-09-08
+source:
+  path: ../zhudatuan_li/docs/当前代码业务功能清单-20260904.md
+  sha256: bc1e7d0730b21ea97d2561fad82341feac4113179f53c26e8e641c8ff25c9b94
+  commit: b763b7a12c9aa825c532a35c3cce06da4455ed98
+count: 462
+statusCounts:
+  已开放: 177
+  部分开放: 19
+  占位: 29
+  后台具备: 167
+  自动执行: 41
+  仅设计: 29
+sectionCounts:
+  "8": 20
+  "10": 15
+  "13": 7
+  "14": 16
+  "15": 9
+  "17": 15
+  "19": 20
+  "2.1": 14
+  "2.2": 12
+  "2.3": 6
+  "2.4": 5
+  "2.5": 4
+  "3.1": 6
+  "3.2": 8
+  "3.3": 10
+  "3.4": 12
+  "3.5": 16
+  "4.1": 5
+  "4.2": 11
+  "4.3": 8
+  "4.4": 6
+  "4.5": 6
+  "4.6": 13
+  "4.7": 12
+  "5.1": 12
+  "5.2": 5
+  "5.3": 4
+  "5.4": 4
+  "6.1": 8
+  "6.2": 8
+  "6.3": 7
+  "7.1": 8
+  "7.2": 5
+  "9.1": 9
+  "9.2": 10
+  "9.3": 7
+  "9.4": 8
+  "11.1": 16
+  "11.2": 11
+  "12.1": 6
+  "12.2": 10
+  "12.3": 10
+  "12.4": 10
+  "16.1": 6
+  "16.2": 13
+  "18.1": 2
+  "18.2": 6
+  "18.3": 4
+  "18.4": 4
+  "18.5": 5
+  "18.6": 5
+  "18.7": 3
+rows:
+  - id: LI0001
+    line: 22
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 已开放
+    qualifier: null
+    text: 消费者商城与运营管理端共用统一账号体系。
+  - id: LI0002
+    line: 23
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 已开放
+    qualifier: null
+    text: 运营人员可使用账号密码登录。
+  - id: LI0003
+    line: 24
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 已开放
+    qualifier: null
+    text: 运营人员可使用手机验证码登录。
+  - id: LI0004
+    line: 25
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 已开放
+    qualifier: null
+    text: 消费者可使用账号密码登录。
+  - id: LI0005
+    line: 26
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 已开放
+    qualifier: null
+    text: 登录后读取当前会员身份、角色、授权范围和目标端，并进入对应商城或管理端。
+  - id: LI0006
+    line: 27
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 已开放
+    qualifier: null
+    text: 仅有一个有效会员身份时自动进入对应工作区。
+  - id: LI0007
+    line: 28
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 已开放
+    qualifier: null
+    text: 退出当前登录。
+  - id: LI0008
+    line: 29
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看当前账号的登录设备/会话。
+  - id: LI0009
+    line: 30
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 已开放
+    qualifier: null
+    text: 撤销指定会话。
+  - id: LI0010
+    line: 31
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 已开放
+    qualifier: null
+    text: 撤销其他设备的全部会话。
+  - id: LI0011
+    line: 32
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 已开放
+    qualifier: null
+    text: 首次登录被要求修改初始密码时，完成强制改密后再进入业务系统。
+  - id: LI0012
+    line: 33
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 账号拥有多个会员身份时可展示身份选择页；服务端权威身份切换令牌尚未接通，因此不会在不确定身份下继续进入业务系统。
+  - id: LI0013
+    line: 34
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 占位
+    qualifier: null
+    text: 身份选择页中的待接受邀请暂不能直接完成接受。
+  - id: LI0014
+    line: 35
+    section: "2.1"
+    heading: 登录与会话
+    sourceStatus: 占位
+    qualifier: null
+    text: 企业微信扫码登录、企业单点登录只有展示入口，不会创建登录会话。
+  - id: LI0015
+    line: 39
+    section: "2.2"
+    heading: 注册、邀请与找回账号
+    sourceStatus: 已开放
+    qualifier: null
+    text: 根据商城公开入口解析可注册的商城和企业归属。
+  - id: LI0016
+    line: 40
+    section: "2.2"
+    heading: 注册、邀请与找回账号
+    sourceStatus: 已开放
+    qualifier: null
+    text: 根据邀请凭证解析邀请对象、目标组织、角色、有效期和使用状态。
+  - id: LI0017
+    line: 41
+    section: "2.2"
+    heading: 注册、邀请与找回账号
+    sourceStatus: 已开放
+    qualifier: null
+    text: 消费者通过商城入口自助注册账号与密码。
+  - id: LI0018
+    line: 42
+    section: "2.2"
+    heading: 注册、邀请与找回账号
+    sourceStatus: 已开放
+    qualifier: null
+    text: 消费者自助注册可先完成入会，手机号认证延迟到首次付款前。
+  - id: LI0019
+    line: 43
+    section: "2.2"
+    heading: 注册、邀请与找回账号
+    sourceStatus: 已开放
+    qualifier: null
+    text: 消费者通过专属邀请注册；系统可生成展示名及安全初始密码。
+  - id: LI0020
+    line: 44
+    section: "2.2"
+    heading: 注册、邀请与找回账号
+    sourceStatus: 已开放
+    qualifier: null
+    text: 运营人员通过邀请注册，填写姓名、密码并完成短信验证。
+  - id: LI0021
+    line: 45
+    section: "2.2"
+    heading: 注册、邀请与找回账号
+    sourceStatus: 已开放
+    qualifier: null
+    text: 注册过程要求确认用户协议和隐私政策。
+  - id: LI0022
+    line: 46
+    section: "2.2"
+    heading: 注册、邀请与找回账号
+    sourceStatus: 已开放
+    qualifier: null
+    text: 通过手机验证码重置密码。
+  - id: LI0023
+    line: 47
+    section: "2.2"
+    heading: 注册、邀请与找回账号
+    sourceStatus: 已开放
+    qualifier: null
+    text: 密码重置后撤销旧设备会话，避免旧凭证继续使用。
+  - id: LI0024
+    line: 48
+    section: "2.2"
+    heading: 注册、邀请与找回账号
+    sourceStatus: 已开放
+    qualifier: null
+    text: 已注册凭证识别，用于判断账号应进入登录、改密或其他恢复流程。
+  - id: LI0025
+    line: 49
+    section: "2.2"
+    heading: 注册、邀请与找回账号
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建、查询和撤销邀请。
+  - id: LI0026
+    line: 50
+    section: "2.2"
+    heading: 注册、邀请与找回账号
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 批量导入会员并查询导入任务结果。
+  - id: LI0027
+    line: 54
+    section: "2.3"
+    heading: 手机与高风险身份核验
+    sourceStatus: 已开放
+    qualifier: null
+    text: 发送和校验短信验证码。
+  - id: LI0028
+    line: 55
+    section: "2.3"
+    heading: 手机与高风险身份核验
+    sourceStatus: 已开放
+    qualifier: null
+    text: 首次付款前校验并绑定手机号，成功后自动继续原结算流程。
+  - id: LI0029
+    line: 56
+    section: "2.3"
+    heading: 手机与高风险身份核验
+    sourceStatus: 已开放
+    qualifier: null
+    text: 已登录用户更换绑定手机号。
+  - id: LI0030
+    line: 57
+    section: "2.3"
+    heading: 手机与高风险身份核验
+    sourceStatus: 已开放
+    qualifier: null
+    text: 敏感操作可发起二次身份核验，并在核验完成后执行原操作。
+  - id: LI0031
+    line: 58
+    section: "2.3"
+    heading: 手机与高风险身份核验
+    sourceStatus: 已开放
+    qualifier: null
+    text: 商城内可查看手机号绑定状态、认证状态和付款资格。
+  - id: LI0032
+    line: 59
+    section: "2.3"
+    heading: 手机与高风险身份核验
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 登录流程中的通用“高权限二次核验阶段”尚未接通；商城付款、资格治理、财务策略和所有权转移等具体敏感动作已有独立核验闭环。
+  - id: LI0033
+    line: 63
+    section: "2.4"
+    heading: 微信身份
+    sourceStatus: 已开放
+    qualifier: null
+    text: H5 商城支持微信网页授权回跳。
+  - id: LI0034
+    line: 64
+    section: "2.4"
+    heading: 微信身份
+    sourceStatus: 已开放
+    qualifier: null
+    text: 用微信授权结果交换商城登录会话。
+  - id: LI0035
+    line: 65
+    section: "2.4"
+    heading: 微信身份
+    sourceStatus: 已开放
+    qualifier: null
+    text: 将微信身份绑定到既有商城账号。
+  - id: LI0036
+    line: 66
+    section: "2.4"
+    heading: 微信身份
+    sourceStatus: 已开放
+    qualifier: null
+    text: 微信首次进入时完成注册/绑定后返回原业务页面。
+  - id: LI0037
+    line: 67
+    section: "2.4"
+    heading: 微信身份
+    sourceStatus: 已开放
+    qualifier: null
+    text: 后续从微信再次进入时复用已绑定关系。
+  - id: LI0038
+    line: 71
+    section: "2.5"
+    heading: 会员码
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 已完成手机认证的会员生成短时有效、一次性使用的会员二维码。
+  - id: LI0039
+    line: 72
+    section: "2.5"
+    heading: 会员码
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 会员主动撤销尚未使用的会员码。
+  - id: LI0040
+    line: 73
+    section: "2.5"
+    heading: 会员码
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 具备权限的运营人员扫码核验会员身份。
+  - id: LI0041
+    line: 74
+    section: "2.5"
+    heading: 会员码
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 会员码限制刷新频率，并校验会员与会员身份是否仍有效。
+  - id: LI0042
+    line: 80
+    section: "3.1"
+    heading: 多层组织与工作区
+    sourceStatus: 已开放
+    qualifier: null
+    text: 按平台、企业/租户、商城等组织层级展示当前工作范围。
+  - id: LI0043
+    line: 81
+    section: "3.1"
+    heading: 多层组织与工作区
+    sourceStatus: 已开放
+    qualifier: null
+    text: 运营人员在自己获授权的工作区之间切换。
+  - id: LI0044
+    line: 82
+    section: "3.1"
+    heading: 多层组织与工作区
+    sourceStatus: 已开放
+    qualifier: null
+    text: 业务数据按组织和商城范围隔离读取。
+  - id: LI0045
+    line: 83
+    section: "3.1"
+    heading: 多层组织与工作区
+    sourceStatus: 已开放
+    qualifier: null
+    text: 展示当前治理角色、业务角色及其生效范围。
+  - id: LI0046
+    line: 84
+    section: "3.1"
+    heading: 多层组织与工作区
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取组织层级和组织关系。
+  - id: LI0047
+    line: 85
+    section: "3.1"
+    heading: 多层组织与工作区
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取当前范围的能力分配，并维护能力分配关系。
+  - id: LI0048
+    line: 89
+    section: "3.2"
+    heading: 商城创建与开通
+    sourceStatus: 已开放
+    qualifier: null
+    text: 具备治理权限的所有者从管理端创建新商城。
+  - id: LI0049
+    line: 90
+    section: "3.2"
+    heading: 商城创建与开通
+    sourceStatus: 已开放
+    qualifier: null
+    text: 创建流程采集所属企业、商城名称、商城编码和公开访问标识。
+  - id: LI0050
+    line: 91
+    section: "3.2"
+    heading: 商城创建与开通
+    sourceStatus: 已开放
+    qualifier: null
+    text: 创建前校验治理权限；必要时要求手机绑定和二次身份核验。
+  - id: LI0051
+    line: 92
+    section: "3.2"
+    heading: 商城创建与开通
+    sourceStatus: 已开放
+    qualifier: null
+    text: 创建完成后返回独立商城、应用及商品池草稿等开通结果。
+  - id: LI0052
+    line: 93
+    section: "3.2"
+    heading: 商城创建与开通
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 向导还采集商家联系人、品牌、域名、微信连接、支付和配送方案，但当前只保存核心商城身份字段，扩展资料尚未持久化。
+  - id: LI0053
+    line: 94
+    section: "3.2"
+    heading: 商城创建与开通
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 商城开通后可预览三种设计方案；选择结果只形成候选访问地址，不会保存或发布设计。
+  - id: LI0054
+    line: 95
+    section: "3.2"
+    heading: 商城创建与开通
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取已创建商城信息。
+  - id: LI0055
+    line: 96
+    section: "3.2"
+    heading: 商城创建与开通
+    sourceStatus: 占位
+    qualifier: null
+    text: “商家服务中心”可展示商家身份、品牌、默认商城、域名和微信生态等标准开通路径，但商家目录读取与创建按钮尚未接通。
+  - id: LI0056
+    line: 100
+    section: "3.3"
+    heading: 商城应用与页面版本
+    sourceStatus: 已开放
+    qualifier: null
+    text: 按当前范围查看商城应用列表。
+  - id: LI0057
+    line: 101
+    section: "3.3"
+    heading: 商城应用与页面版本
+    sourceStatus: 已开放
+    qualifier: null
+    text: 按全部、已发布、草稿、需处理状态筛选应用。
+  - id: LI0058
+    line: 102
+    section: "3.3"
+    heading: 商城应用与页面版本
+    sourceStatus: 已开放
+    qualifier: null
+    text: 按名称搜索应用并查看应用详情。
+  - id: LI0059
+    line: 103
+    section: "3.3"
+    heading: 商城应用与页面版本
+    sourceStatus: 已开放
+    qualifier: null
+    text: 在权限允许时创建、编辑、复制和停用商城应用。
+  - id: LI0060
+    line: 104
+    section: "3.3"
+    heading: 商城应用与页面版本
+    sourceStatus: 已开放
+    qualifier: null
+    text: 读取当前已发布应用版本。
+  - id: LI0061
+    line: 105
+    section: "3.3"
+    heading: 商城应用与页面版本
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 保存页面版本草稿。
+  - id: LI0062
+    line: 106
+    section: "3.3"
+    heading: 商城应用与页面版本
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 校验待发布版本。
+  - id: LI0063
+    line: 107
+    section: "3.3"
+    heading: 商城应用与页面版本
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 发布页面版本。
+  - id: LI0064
+    line: 108
+    section: "3.3"
+    heading: 商城应用与页面版本
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 恢复到历史页面版本。
+  - id: LI0065
+    line: 109
+    section: "3.3"
+    heading: 商城应用与页面版本
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 当前设计模式明确为只读预览，版本保存、校验、发布和恢复尚未接到可操作页面。
+  - id: LI0066
+    line: 113
+    section: "3.4"
+    heading: 成员、角色与权限治理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看管理成员列表，并按关键词搜索成员。
+  - id: LI0067
+    line: 114
+    section: "3.4"
+    heading: 成员、角色与权限治理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看成员的账号状态、工作身份、所属范围和权限版本。
+  - id: LI0068
+    line: 115
+    section: "3.4"
+    heading: 成员、角色与权限治理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看成员的直接授权、继承授权、显式拒绝和最终生效权限。
+  - id: LI0069
+    line: 116
+    section: "3.4"
+    heading: 成员、角色与权限治理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看权限控制中心，按当前业务范围判断哪些成员和角色可管理。
+  - id: LI0070
+    line: 117
+    section: "3.4"
+    heading: 成员、角色与权限治理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看自定义角色及其权限组合。
+  - id: LI0071
+    line: 118
+    section: "3.4"
+    heading: 成员、角色与权限治理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 在权限允许时创建自定义角色。
+  - id: LI0072
+    line: 119
+    section: "3.4"
+    heading: 成员、角色与权限治理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 编辑自定义角色的名称、说明和权限组合。
+  - id: LI0073
+    line: 120
+    section: "3.4"
+    heading: 成员、角色与权限治理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 启用或停用不再使用的自定义角色。
+  - id: LI0074
+    line: 121
+    section: "3.4"
+    heading: 成员、角色与权限治理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 将角色授予指定成员，并明确授权生效的组织/商城范围。
+  - id: LI0075
+    line: 122
+    section: "3.4"
+    heading: 成员、角色与权限治理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 撤销成员在指定范围内的角色。
+  - id: LI0076
+    line: 123
+    section: "3.4"
+    heading: 成员、角色与权限治理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 维护更细粒度的范围授权和能力分配。
+  - id: LI0077
+    line: 124
+    section: "3.4"
+    heading: 成员、角色与权限治理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 停用或离职处理成员身份；禁止对自己执行高风险自停用操作。
+  - id: LI0078
+    line: 128
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 创建管理成员邀请并查看邀请记录。
+  - id: LI0079
+    line: 129
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 邀请时指定普通治理层级或高级治理层级；只有当前唯一所有者可邀请高级治理成员。
+  - id: LI0080
+    line: 130
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 邀请可绑定指定手机号、限制一次使用，并选择 1、3、7、30 或 90 天有效期。
+  - id: LI0081
+    line: 131
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 邀请凭证只在创建成功后显示一次，可由操作员复制并安全交付被邀请人。
+  - id: LI0082
+    line: 132
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看邀请状态、创建人、有效期和接受时间。
+  - id: LI0083
+    line: 133
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 撤销尚未使用的管理员邀请。
+  - id: LI0084
+    line: 134
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 唯一所有者可重置已注册成员身份；操作前需再次验证密码、填写原因、确认影响并输入确认文本。
+  - id: LI0085
+    line: 135
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 身份重置会停用该成员的商城端和管理端身份、撤销会话并释放手机号。
+  - id: LI0086
+    line: 136
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 身份重置保留历史订单、卡券、资金和审计记录，不删除既有业务历史。
+  - id: LI0087
+    line: 137
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 禁止重置自己或受保护账号。
+  - id: LI0088
+    line: 138
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看当前唯一所有者状态和可接收转移的候选人。
+  - id: LI0089
+    line: 139
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 所有者发起转移，候选人预览并接受；发起方可在接受前取消。
+  - id: LI0090
+    line: 140
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 转移时决定原所有者保留已分配管理员角色，或退出管理权限。
+  - id: LI0091
+    line: 141
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 转移双方分别完成手机二次核验，最终原子交换唯一所有者身份。
+  - id: LI0092
+    line: 142
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 所有权转移完成后撤销新旧所有者的旧会话，要求按新权限重新登录。
+  - id: LI0093
+    line: 143
+    section: "3.5"
+    heading: 管理员邀请、账号重置与所有者转移
+    sourceStatus: 已开放
+    qualifier: null
+    text: 所有权治理流程提供手机号补录和重新登录引导。
+  - id: LI0094
+    line: 149
+    section: "4.1"
+    heading: 商城首页与公开浏览
+    sourceStatus: 已开放
+    qualifier: null
+    text: 访客无需登录即可识别当前商城并浏览公开商品。
+  - id: LI0095
+    line: 150
+    section: "4.1"
+    heading: 商城首页与公开浏览
+    sourceStatus: 已开放
+    qualifier: null
+    text: 已登录会员按自己的资格和商品池查看可见商品。
+  - id: LI0096
+    line: 151
+    section: "4.1"
+    heading: 商城首页与公开浏览
+    sourceStatus: 已开放
+    qualifier: null
+    text: 首页展示商城品牌、会员摘要、权益余额、分类和推荐商品。
+  - id: LI0097
+    line: 152
+    section: "4.1"
+    heading: 商城首页与公开浏览
+    sourceStatus: 已开放
+    qualifier: null
+    text: PC 与 H5 使用同一套真实商城、商品、账号、购物车、地址、订单和支付数据。
+  - id: LI0098
+    line: 153
+    section: "4.1"
+    heading: 商城首页与公开浏览
+    sourceStatus: 已开放
+    qualifier: null
+    text: 公开商品图片可随商品信息展示。
+  - id: LI0099
+    line: 157
+    section: "4.2"
+    heading: 商品查找与选购
+    sourceStatus: 已开放
+    qualifier: null
+    text: 按商品关键词搜索。
+  - id: LI0100
+    line: 158
+    section: "4.2"
+    heading: 商品查找与选购
+    sourceStatus: 已开放
+    qualifier: null
+    text: 按商品分类浏览和筛选。
+  - id: LI0101
+    line: 159
+    section: "4.2"
+    heading: 商品查找与选购
+    sourceStatus: 已开放
+    qualifier: null
+    text: PC 端可按福利/餐补适用性、价格区间等条件进一步筛选当前商品结果。
+  - id: LI0102
+    line: 160
+    section: "4.2"
+    heading: 商品查找与选购
+    sourceStatus: 已开放
+    qualifier: null
+    text: PC 端可按销量、价格和上新顺序排序当前商品结果。
+  - id: LI0103
+    line: 161
+    section: "4.2"
+    heading: 商品查找与选购
+    sourceStatus: 已开放
+    qualifier: null
+    text: 展示商品列表、商品详情、规格、价格、库存和可售状态。
+  - id: LI0104
+    line: 162
+    section: "4.2"
+    heading: 商品查找与选购
+    sourceStatus: 已开放
+    qualifier: null
+    text: 选择商品规格与购买数量。
+  - id: LI0105
+    line: 163
+    section: "4.2"
+    heading: 商品查找与选购
+    sourceStatus: 已开放
+    qualifier: null
+    text: 商品快速预览。
+  - id: LI0106
+    line: 164
+    section: "4.2"
+    heading: 商品查找与选购
+    sourceStatus: 已开放
+    qualifier: null
+    text: 加入购物车或立即购买。
+  - id: LI0107
+    line: 165
+    section: "4.2"
+    heading: 商品查找与选购
+    sourceStatus: 已开放
+    qualifier: null
+    text: 服务端判断会员是否具备商品购买资格，并返回不可购买原因。
+  - id: LI0108
+    line: 166
+    section: "4.2"
+    heading: 商品查找与选购
+    sourceStatus: 已开放
+    qualifier: null
+    text: 服务端执行限购校验，测试商品不可加入正式购物车。
+  - id: LI0109
+    line: 167
+    section: "4.2"
+    heading: 商品查找与选购
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 结合城市专区、商品池、供应关系、品牌/门店和员工标签计算商品资格。
+  - id: LI0110
+    line: 171
+    section: "4.3"
+    heading: 购物车
+    sourceStatus: 已开放
+    qualifier: null
+    text: 读取当前会员的服务端购物车。
+  - id: LI0111
+    line: 172
+    section: "4.3"
+    heading: 购物车
+    sourceStatus: 已开放
+    qualifier: null
+    text: 添加商品到购物车。
+  - id: LI0112
+    line: 173
+    section: "4.3"
+    heading: 购物车
+    sourceStatus: 已开放
+    qualifier: null
+    text: 修改购物车商品规格/数量。
+  - id: LI0113
+    line: 174
+    section: "4.3"
+    heading: 购物车
+    sourceStatus: 已开放
+    qualifier: null
+    text: 删除购物车商品。
+  - id: LI0114
+    line: 175
+    section: "4.3"
+    heading: 购物车
+    sourceStatus: 已开放
+    qualifier: null
+    text: 批量更新购物车商品。
+  - id: LI0115
+    line: 176
+    section: "4.3"
+    heading: 购物车
+    sourceStatus: 已开放
+    qualifier: null
+    text: H5 可单选、全选本次结算商品。
+  - id: LI0116
+    line: 177
+    section: "4.3"
+    heading: 购物车
+    sourceStatus: 已开放
+    qualifier: null
+    text: PC 可展示购物车商品的权益适用标记。
+  - id: LI0117
+    line: 178
+    section: "4.3"
+    heading: 购物车
+    sourceStatus: 已开放
+    qualifier: null
+    text: 结算前重新读取服务端购物车，避免使用过期的本地金额或商品状态。
+  - id: LI0118
+    line: 182
+    section: "4.4"
+    heading: 收货地址
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看收货地址列表。
+  - id: LI0119
+    line: 183
+    section: "4.4"
+    heading: 收货地址
+    sourceStatus: 已开放
+    qualifier: null
+    text: 新增收货地址；首个地址可成为默认地址。
+  - id: LI0120
+    line: 184
+    section: "4.4"
+    heading: 收货地址
+    sourceStatus: 已开放
+    qualifier: null
+    text: H5 实物商品结算前必须选择有效地址。
+  - id: LI0121
+    line: 185
+    section: "4.4"
+    heading: 收货地址
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 修改收货地址。
+  - id: LI0122
+    line: 186
+    section: "4.4"
+    heading: 收货地址
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 删除收货地址；兼容商城入口已可执行删除。
+  - id: LI0123
+    line: 187
+    section: "4.4"
+    heading: 收货地址
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 当前主要商城页面以新增、选择和列表展示为主，完整编辑/删除体验未全部呈现。
+  - id: LI0124
+    line: 191
+    section: "4.5"
+    heading: 账户中心与权益账户
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看会员基础资料、所属企业、员工编号和入会信息。
+  - id: LI0125
+    line: 192
+    section: "4.5"
+    heading: 账户中心与权益账户
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看已绑定手机号、认证状态和付款资格。
+  - id: LI0126
+    line: 193
+    section: "4.5"
+    heading: 账户中心与权益账户
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看福利、餐补、津贴等账户余额。
+  - id: LI0127
+    line: 194
+    section: "4.5"
+    heading: 账户中心与权益账户
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看权益账户收支明细。
+  - id: LI0128
+    line: 195
+    section: "4.5"
+    heading: 账户中心与权益账户
+    sourceStatus: 已开放
+    qualifier: null
+    text: 刷新账户数据和退出登录。
+  - id: LI0129
+    line: 196
+    section: "4.5"
+    heading: 账户中心与权益账户
+    sourceStatus: 占位
+    qualifier: null
+    text: 收藏夹、虚拟券钱包、部分账单入口、发票抬头和服务通知尚未形成真实业务闭环。
+  - id: LI0130
+    line: 200
+    section: "4.6"
+    heading: 结算、下单与支付
+    sourceStatus: 已开放
+    qualifier: null
+    text: 基于服务端商品、库存、资格、限购、地址和权益账户生成权威结算报价。
+  - id: LI0131
+    line: 201
+    section: "4.6"
+    heading: 结算、下单与支付
+    sourceStatus: 已开放
+    qualifier: null
+    text: 在结算页选择福利、餐补、津贴等可用权益账户参与支付。
+  - id: LI0132
+    line: 202
+    section: "4.6"
+    heading: 结算、下单与支付
+    sourceStatus: 已开放
+    qualifier: null
+    text: 展示各支付资金来源的分摊金额和不能使用的原因。
+  - id: LI0133
+    line: 203
+    section: "4.6"
+    heading: 结算、下单与支付
+    sourceStatus: 已开放
+    qualifier: null
+    text: 根据权威报价创建订单，避免前端自行决定应付金额。
+  - id: LI0134
+    line: 204
+    section: "4.6"
+    heading: 结算、下单与支付
+    sourceStatus: 已开放
+    qualifier: null
+    text: 创建支付意图并按所需资金来源发起支付。
+  - id: LI0135
+    line: 205
+    section: "4.6"
+    heading: 结算、下单与支付
+    sourceStatus: 已开放
+    qualifier: null
+    text: 纯内部权益足额覆盖时完成内部支付。
+  - id: LI0136
+    line: 206
+    section: "4.6"
+    heading: 结算、下单与支付
+    sourceStatus: 已开放
+    qualifier: null
+    text: 需要外部资金时发起微信 JSAPI 支付。
+  - id: LI0137
+    line: 207
+    section: "4.6"
+    heading: 结算、下单与支付
+    sourceStatus: 已开放
+    qualifier: null
+    text: 接收微信支付结果通知。
+  - id: LI0138
+    line: 208
+    section: "4.6"
+    heading: 结算、下单与支付
+    sourceStatus: 已开放
+    qualifier: null
+    text: 支付后轮询订单，识别已支付、待确认和对账处理中等状态。
+  - id: LI0139
+    line: 209
+    section: "4.6"
+    heading: 结算、下单与支付
+    sourceStatus: 已开放
+    qualifier: null
+    text: 支付结果不确定时查询支付渠道；根据渠道结果结算、继续查询、关闭、过期或进入恢复流程。
+  - id: LI0140
+    line: 210
+    section: "4.6"
+    heading: 结算、下单与支付
+    sourceStatus: 已开放
+    qualifier: null
+    text: H5 首次付款前若手机号/付款资格未验证，完成短信二次核验后恢复结算。
+  - id: LI0141
+    line: 211
+    section: "4.6"
+    heading: 结算、下单与支付
+    sourceStatus: 已开放
+    qualifier: null
+    text: 创建订单前返回资格、库存、限购或价格变化导致的拒绝项。
+  - id: LI0142
+    line: 212
+    section: "4.6"
+    heading: 结算、下单与支付
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 退款按原资金分摊的逆序和可退余额拆分，防止超额退款。
+  - id: LI0143
+    line: 216
+    section: "4.7"
+    heading: 订单与售后
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看自己的订单列表。
+  - id: LI0144
+    line: 217
+    section: "4.7"
+    heading: 订单与售后
+    sourceStatus: 已开放
+    qualifier: null
+    text: 按订单状态筛选。
+  - id: LI0145
+    line: 218
+    section: "4.7"
+    heading: 订单与售后
+    sourceStatus: 已开放
+    qualifier: null
+    text: 订单卡片展示商品、金额、支付和履约快照。
+  - id: LI0146
+    line: 219
+    section: "4.7"
+    heading: 订单与售后
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 按订单号读取订单及支付状态。
+  - id: LI0147
+    line: 220
+    section: "4.7"
+    heading: 订单与售后
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建订单付款提醒。
+  - id: LI0148
+    line: 221
+    section: "4.7"
+    heading: 订单与售后
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 提交售后申请。
+  - id: LI0149
+    line: 222
+    section: "4.7"
+    heading: 订单与售后
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看售后申请。
+  - id: LI0150
+    line: 223
+    section: "4.7"
+    heading: 订单与售后
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 审核通过或驳回售后申请。
+  - id: LI0151
+    line: 224
+    section: "4.7"
+    heading: 订单与售后
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 订单仅在业务状态允许且尚未进入不可逆履约阶段时取消。
+  - id: LI0152
+    line: 225
+    section: "4.7"
+    heading: 订单与售后
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 只有已付款且处于进行中/已完成的订单可进入售后；全额退款或正在处理售后的订单不可重复申请。
+  - id: LI0153
+    line: 226
+    section: "4.7"
+    heading: 订单与售后
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 当前消费者端以订单列表和卡片为主，完整订单详情页面未完全接入。
+  - id: LI0154
+    line: 227
+    section: "4.7"
+    heading: 订单与售后
+    sourceStatus: 占位
+    qualifier: null
+    text: H5 售后申请入口、PC 电子发票下载和物流追踪入口会提示待接入，不能视为前台已交付。
+  - id: LI0155
+    line: 233
+    section: "5.1"
+    heading: 商品管理
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 管理端读取商品/上架清单，展示名称、SKU、分类、供应商、规格数、商城覆盖、价格、库存、状态和更新时间等已有数据。
+  - id: LI0156
+    line: 234
+    section: "5.1"
+    heading: 商品管理
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 按商品名称或 SKU 搜索。
+  - id: LI0157
+    line: 235
+    section: "5.1"
+    heading: 商品管理
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 按当前页面数据导出 CSV。
+  - id: LI0158
+    line: 236
+    section: "5.1"
+    heading: 商品管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建商品主数据。
+  - id: LI0159
+    line: 237
+    section: "5.1"
+    heading: 商品管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 更新商品主数据。
+  - id: LI0160
+    line: 238
+    section: "5.1"
+    heading: 商品管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 归档商品。
+  - id: LI0161
+    line: 239
+    section: "5.1"
+    heading: 商品管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取商城商品上架关系。
+  - id: LI0162
+    line: 240
+    section: "5.1"
+    heading: 商品管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 发布、下架和批量调整商品上架关系。
+  - id: LI0163
+    line: 241
+    section: "5.1"
+    heading: 商品管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建商品导入任务并查询导入结果。
+  - id: LI0164
+    line: 242
+    section: "5.1"
+    heading: 商品管理
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 部分状态、供应商和范围筛选受当前页面契约限制。
+  - id: LI0165
+    line: 243
+    section: "5.1"
+    heading: 商品管理
+    sourceStatus: 占位
+    qualifier: null
+    text: 管理端“新建商品”和正式写入操作被禁用；导入弹窗只做本地预览，不会上传。
+  - id: LI0166
+    line: 244
+    section: "5.1"
+    heading: 商品管理
+    sourceStatus: 占位
+    qualifier: null
+    text: 当前缺少可用的单商品详情读取能力，行内详情抽屉只能展示已有列表快照，不能视为完整商品详情。
+  - id: LI0167
+    line: 248
+    section: "5.2"
+    heading: 商品池与商城供给
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看商品池。
+  - id: LI0168
+    line: 249
+    section: "5.2"
+    heading: 商品池与商城供给
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 将商品关联到商品池。
+  - id: LI0169
+    line: 250
+    section: "5.2"
+    heading: 商品池与商城供给
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 从商品池移除商品。
+  - id: LI0170
+    line: 251
+    section: "5.2"
+    heading: 商品池与商城供给
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 将商品池分配给商城或业务范围。
+  - id: LI0171
+    line: 252
+    section: "5.2"
+    heading: 商品池与商城供给
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 根据会员、商城和商品池关系决定可见商品。
+  - id: LI0172
+    line: 256
+    section: "5.3"
+    heading: 定价
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建定价规则。
+  - id: LI0173
+    line: 257
+    section: "5.3"
+    heading: 定价
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 发布定价规则。
+  - id: LI0174
+    line: 258
+    section: "5.3"
+    heading: 定价
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取面向具体商城/会员/商品的有效报价。
+  - id: LI0175
+    line: 259
+    section: "5.3"
+    heading: 定价
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 从外部供应商同步价格并刷新商城有效价格。
+  - id: LI0176
+    line: 263
+    section: "5.4"
+    heading: 库存
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取商品可用库存。
+  - id: LI0177
+    line: 264
+    section: "5.4"
+    heading: 库存
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建库存导入任务并查询结果。
+  - id: LI0178
+    line: 265
+    section: "5.4"
+    heading: 库存
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 从外部供应商同步库存。
+  - id: LI0179
+    line: 266
+    section: "5.4"
+    heading: 库存
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 下单、取消、退款和履约事件驱动库存占用与释放。
+  - id: LI0180
+    line: 272
+    section: "6.1"
+    heading: 订单工作台
+    sourceStatus: 已开放
+    qualifier: null
+    text: 管理端按当前业务范围读取订单并分页。
+  - id: LI0181
+    line: 273
+    section: "6.1"
+    heading: 订单工作台
+    sourceStatus: 已开放
+    qualifier: null
+    text: 按服务端支持条件筛选订单。
+  - id: LI0182
+    line: 274
+    section: "6.1"
+    heading: 订单工作台
+    sourceStatus: 已开放
+    qualifier: null
+    text: 统计当前结果中的已支付、待履约、售后/已取消订单。
+  - id: LI0183
+    line: 275
+    section: "6.1"
+    heading: 订单工作台
+    sourceStatus: 已开放
+    qualifier: null
+    text: 导出当前页订单 CSV。
+  - id: LI0184
+    line: 276
+    section: "6.1"
+    heading: 订单工作台
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看订单概览、商品与履约快照、支付与退款快照、售后状态和操作记录。
+  - id: LI0185
+    line: 277
+    section: "6.1"
+    heading: 订单工作台
+    sourceStatus: 已开放
+    qualifier: null
+    text: 数据缺失时明确显示缺口，不伪造订单详情。
+  - id: LI0186
+    line: 278
+    section: "6.1"
+    heading: 订单工作台
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 批量导出订单。
+  - id: LI0187
+    line: 279
+    section: "6.1"
+    heading: 订单工作台
+    sourceStatus: 占位
+    qualifier: null
+    text: 订单导入只做本地预览。
+  - id: LI0188
+    line: 283
+    section: "6.2"
+    heading: 履约
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 为订单创建发货记录。
+  - id: LI0189
+    line: 284
+    section: "6.2"
+    heading: 履约
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查询物流跟踪信息。
+  - id: LI0190
+    line: 285
+    section: "6.2"
+    heading: 履约
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 登记退货收货。
+  - id: LI0191
+    line: 286
+    section: "6.2"
+    heading: 履约
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 登记退货验收结果。
+  - id: LI0192
+    line: 287
+    section: "6.2"
+    heading: 履约
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 兼容管理入口可执行订单发货。
+  - id: LI0193
+    line: 288
+    section: "6.2"
+    heading: 履约
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 将待履约订单推送给供应商或自营履约流程。
+  - id: LI0194
+    line: 289
+    section: "6.2"
+    heading: 履约
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 定期同步物流轨迹和签收状态。
+  - id: LI0195
+    line: 290
+    section: "6.2"
+    heading: 履约
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 新版订单页面中的发货按钮尚未接通运行态动作。
+  - id: LI0196
+    line: 294
+    section: "6.3"
+    heading: 售后与退款
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取和受理售后申请。
+  - id: LI0197
+    line: 295
+    section: "6.3"
+    heading: 售后与退款
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 审批或驳回售后。
+  - id: LI0198
+    line: 296
+    section: "6.3"
+    heading: 售后与退款
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 发起退款并按原支付资金来源拆分。
+  - id: LI0199
+    line: 297
+    section: "6.3"
+    heading: 售后与退款
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取支付恢复事项并人工解决异常支付。
+  - id: LI0200
+    line: 298
+    section: "6.3"
+    heading: 售后与退款
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 兼容管理入口可执行售后退款。
+  - id: LI0201
+    line: 299
+    section: "6.3"
+    heading: 售后与退款
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 查询退款结果、处理失败重试和异常恢复。
+  - id: LI0202
+    line: 300
+    section: "6.3"
+    heading: 售后与退款
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 新版订单页面目前以只读快照为主，退款和售后处理按钮尚未接通。
+  - id: LI0203
+    line: 306
+    section: "7.1"
+    heading: 资格中心
+    sourceStatus: 已开放
+    qualifier: null
+    text: 管理端查看当前资格策略、启用状态、活动版本、规则字段、发布时间和更新人。
+  - id: LI0204
+    line: 307
+    section: "7.1"
+    heading: 资格中心
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 预览资格策略变更影响。
+  - id: LI0205
+    line: 308
+    section: "7.1"
+    heading: 资格中心
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 维护商品池、供应协议、品牌、门店、城市专区、权益和限购等资格配置。
+  - id: LI0206
+    line: 309
+    section: "7.1"
+    heading: 资格中心
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 高风险配置变更可进入审批，而非直接生效。
+  - id: LI0207
+    line: 310
+    section: "7.1"
+    heading: 资格中心
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 审核通过或驳回资格变更请求。
+  - id: LI0208
+    line: 311
+    section: "7.1"
+    heading: 资格中心
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看某项资格配置的历史版本。
+  - id: LI0209
+    line: 312
+    section: "7.1"
+    heading: 资格中心
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 经二次身份核验后回滚到历史配置。
+  - id: LI0210
+    line: 313
+    section: "7.1"
+    heading: 资格中心
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 新版资格页面的策略发布/写入被禁用，主要提供真实读取。
+  - id: LI0211
+    line: 317
+    section: "7.2"
+    heading: 员工资格治理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看员工当前资格事实、标签和状态。
+  - id: LI0212
+    line: 318
+    section: "7.2"
+    heading: 员工资格治理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 维护员工城市、资格属性、标签有效期和启停状态。
+  - id: LI0213
+    line: 319
+    section: "7.2"
+    heading: 员工资格治理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 修改员工资格前要求二次身份核验、版本校验和变更原因。
+  - id: LI0214
+    line: 320
+    section: "7.2"
+    heading: 员工资格治理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 针对指定员工、商品、数量和城市模拟购买资格。
+  - id: LI0215
+    line: 321
+    section: "7.2"
+    heading: 员工资格治理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 根据员工身份、标签、城市、商品池和限购规则给出最终可购结果及原因。
+  - id: LI0216
+    line: 325
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看营销活动及其当前状态。
+  - id: LI0217
+    line: 326
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 已开放
+    qualifier: null
+    text: 商城范围内查看招募、绑定、结算和提现设置。
+  - id: LI0218
+    line: 327
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看参与推广的商品及佣金比例、客户奖励比例。
+  - id: LI0219
+    line: 328
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看推广员/会员申请。
+  - id: LI0220
+    line: 329
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 已开放
+    qualifier: null
+    text: 具备权限时审批推广申请。
+  - id: LI0221
+    line: 330
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 已开放
+    qualifier: null
+    text: 具备权限时取消推广资格。
+  - id: LI0222
+    line: 331
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看推广绑定关系，采用首次触达的一层直接关系。
+  - id: LI0223
+    line: 332
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看订单行级佣金、客户奖励、冲正和结算最终状态。
+  - id: LI0224
+    line: 333
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看已结算且可提现的佣金；待确认、结算中、已冲正金额不计入可提现余额，已申请提现金额会扣除。
+  - id: LI0225
+    line: 334
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 维护推广设置。
+  - id: LI0226
+    line: 335
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 维护推广商品和佣金/奖励比例。
+  - id: LI0227
+    line: 336
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 会员主动申请成为推广员。
+  - id: LI0228
+    line: 337
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建推广绑定关系。
+  - id: LI0229
+    line: 338
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 生成/读取推广链接。
+  - id: LI0230
+    line: 339
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取推广收益明细。
+  - id: LI0231
+    line: 340
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建佣金提现申请。
+  - id: LI0232
+    line: 341
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 订单付款或确认收货后，按设置的结算触发点进入佣金结算。
+  - id: LI0233
+    line: 342
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 佣金只计算现金等可计佣部分，先剔除福利权益支付分摊。
+  - id: LI0234
+    line: 343
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 直接推广人获得佣金；启用客户奖励时，其直接邀请人最多再获得一层奖励。
+  - id: LI0235
+    line: 344
+    section: "8"
+    heading: 推荐推广与佣金
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 发生整单或明细退款时，按累计退款金额精确计算佣金冲正，避免多次部分退款产生累计误差。
+  - id: LI0236
+    line: 350
+    section: "9.1"
+    heading: 卡券方案与卡号库
+    sourceStatus: 已开放
+    qualifier: null
+    text: 管理端查看卡券方案。
+  - id: LI0237
+    line: 351
+    section: "9.1"
+    heading: 卡券方案与卡号库
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看卡号库、卡号数量和状态摘要。
+  - id: LI0238
+    line: 352
+    section: "9.1"
+    heading: 卡券方案与卡号库
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看备券申请及审批状态。
+  - id: LI0239
+    line: 353
+    section: "9.1"
+    heading: 卡券方案与卡号库
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看发行批次及执行状态。
+  - id: LI0240
+    line: 354
+    section: "9.1"
+    heading: 卡券方案与卡号库
+    sourceStatus: 已开放
+    qualifier: null
+    text: 按关键词和状态筛选，并查看当前记录详情。
+  - id: LI0241
+    line: 355
+    section: "9.1"
+    heading: 卡券方案与卡号库
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建卡号库。
+  - id: LI0242
+    line: 356
+    section: "9.1"
+    heading: 卡券方案与卡号库
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 向商城/业务范围分配卡号库。
+  - id: LI0243
+    line: 357
+    section: "9.1"
+    heading: 卡券方案与卡号库
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查询卡号导入任务。
+  - id: LI0244
+    line: 358
+    section: "9.1"
+    heading: 卡券方案与卡号库
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建和维护卡券方案。
+  - id: LI0245
+    line: 362
+    section: "9.2"
+    heading: 备券、发行与状态管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 提交备券申请。
+  - id: LI0246
+    line: 363
+    section: "9.2"
+    heading: 备券、发行与状态管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 审批或驳回备券申请。
+  - id: LI0247
+    line: 364
+    section: "9.2"
+    heading: 备券、发行与状态管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建发行批次。
+  - id: LI0248
+    line: 365
+    section: "9.2"
+    heading: 备券、发行与状态管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 执行发行并查询发行结果。
+  - id: LI0249
+    line: 366
+    section: "9.2"
+    heading: 备券、发行与状态管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 对失败发行批次重试。
+  - id: LI0250
+    line: 367
+    section: "9.2"
+    heading: 备券、发行与状态管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 批量调整卡券状态并查询处理批次。
+  - id: LI0251
+    line: 368
+    section: "9.2"
+    heading: 备券、发行与状态管理
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 处理卡券发行队列。
+  - id: LI0252
+    line: 369
+    section: "9.2"
+    heading: 备券、发行与状态管理
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 同步外部卡券状态。
+  - id: LI0253
+    line: 370
+    section: "9.2"
+    heading: 备券、发行与状态管理
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 将到期卡券置为过期状态。
+  - id: LI0254
+    line: 371
+    section: "9.2"
+    heading: 备券、发行与状态管理
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 批量导入卡券并记录导入结果。
+  - id: LI0255
+    line: 375
+    section: "9.3"
+    heading: 绑定、核销与冲正
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看卡券与会员的绑定关系。
+  - id: LI0256
+    line: 376
+    section: "9.3"
+    heading: 绑定、核销与冲正
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 绑定或解绑卡券。
+  - id: LI0257
+    line: 377
+    section: "9.3"
+    heading: 绑定、核销与冲正
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建卡券核销记录。
+  - id: LI0258
+    line: 378
+    section: "9.3"
+    heading: 绑定、核销与冲正
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查询卡券核销历史。
+  - id: LI0259
+    line: 379
+    section: "9.3"
+    heading: 绑定、核销与冲正
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 对符合条件的核销执行冲正。
+  - id: LI0260
+    line: 380
+    section: "9.3"
+    heading: 绑定、核销与冲正
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 卡券在创建、激活、绑定、预占、禁用、核销、过期和作废之间按允许的状态路径流转；已核销、已过期和已作废为终态。
+  - id: LI0261
+    line: 381
+    section: "9.3"
+    heading: 绑定、核销与冲正
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 新版卡券页面主要开放真实查询；新建、审批、发行、暂停和冲正等按钮仍是安全预览，没有接到运行态动作。
+  - id: LI0262
+    line: 385
+    section: "9.4"
+    heading: 现场会员/卡券核验
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 会员为会员身份核验生成 60 秒有效、一次性使用的动态核验挑战。
+  - id: LI0263
+    line: 386
+    section: "9.4"
+    heading: 现场会员/卡券核验
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 会员为可核销卡券生成一次性动态核验挑战。
+  - id: LI0264
+    line: 387
+    section: "9.4"
+    heading: 现场会员/卡券核验
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 会员查看自己发起的核验会话及状态。
+  - id: LI0265
+    line: 388
+    section: "9.4"
+    heading: 现场会员/卡券核验
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 只有登记为可信的核验设备可以验证挑战。
+  - id: LI0266
+    line: 389
+    section: "9.4"
+    heading: 现场会员/卡券核验
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 卡券挑战验证成功后，在同一业务流程内完成卡券核销。
+  - id: LI0267
+    line: 390
+    section: "9.4"
+    heading: 现场会员/卡券核验
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 同一挑战不可重复使用，重复核验会被拒绝并留下尝试记录。
+  - id: LI0268
+    line: 391
+    section: "9.4"
+    heading: 现场会员/卡券核验
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 运营人员查看核验历史、结果、原因和使用设备。
+  - id: LI0269
+    line: 392
+    section: "9.4"
+    heading: 现场会员/卡券核验
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看核验设备，并将设备设为可信、阻止或退役。
+  - id: LI0270
+    line: 396
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看会员权益账户及余额。
+  - id: LI0271
+    line: 397
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看权益收支台账。
+  - id: LI0272
+    line: 398
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建、修改、启用、暂停和退役权益方案。
+  - id: LI0273
+    line: 399
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 方案必须从草稿开始，并按允许状态流转。
+  - id: LI0274
+    line: 400
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 配置权益生效时间、到期时间和业务时区。
+  - id: LI0275
+    line: 401
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建和维护权益预算。
+  - id: LI0276
+    line: 402
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建权益发放批次。
+  - id: LI0277
+    line: 403
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 审批或驳回发放批次。
+  - id: LI0278
+    line: 404
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 发放申请人与审批人必须分离。
+  - id: LI0279
+    line: 405
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 暂停、恢复或取消符合状态条件的发放批次。
+  - id: LI0280
+    line: 406
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看发放形成的权益批次/有效期批次。
+  - id: LI0281
+    line: 407
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 撤销尚可撤回的权益。
+  - id: LI0282
+    line: 408
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 按审批结果和计划时间批量发放权益。
+  - id: LI0283
+    line: 409
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 到期前发送提醒，到期后失效并完成余额处理。
+  - id: LI0284
+    line: 410
+    section: "10"
+    heading: 福利、餐补与津贴权益
+    sourceStatus: 已开放
+    qualifier: null
+    text: 消费者结算时按资格使用福利、餐补和津贴余额，并展示资金分摊。
+  - id: LI0285
+    line: 416
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看和维护业务合作方。
+  - id: LI0286
+    line: 417
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看和维护合作门店。
+  - id: LI0287
+    line: 418
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建、查看、更新和停用分销商。
+  - id: LI0288
+    line: 419
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 维护分销商与商城/商品的绑定关系。
+  - id: LI0289
+    line: 420
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 维护渠道配额。
+  - id: LI0290
+    line: 421
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 管理端查看外部业务连接、连接状态和凭证是否配置；不展示凭证明文。
+  - id: LI0291
+    line: 422
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看当前已安装的供应商业务扩展及其启用状态。
+  - id: LI0292
+    line: 423
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看渠道同步批次及状态。
+  - id: LI0293
+    line: 424
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看外部操作回执和失败信息。
+  - id: LI0294
+    line: 425
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建和更新外部连接。
+  - id: LI0295
+    line: 426
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 测试连接可用性。
+  - id: LI0296
+    line: 427
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 启用或停用连接。
+  - id: LI0297
+    line: 428
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 启动、查看和取消渠道同步任务。
+  - id: LI0298
+    line: 429
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 接收供应商/渠道业务回调。
+  - id: LI0299
+    line: 430
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 对失败外部操作执行重放。
+  - id: LI0300
+    line: 431
+    section: "11.1"
+    heading: 分销与连接管理
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 新版渠道页面目前以真实读取为主，创建、测试、启停、同步和重放尚未接到页面按钮。
+  - id: LI0301
+    line: 435
+    section: "11.2"
+    heading: 已接入的供应商业务类型
+    sourceStatus: 后台具备
+    qualifier: 图书（文轩）
+    text: 商品目录、价格、库存、下单、取消、退货、物流/发货、退款、对账单和回调。
+  - id: LI0302
+    line: 436
+    section: "11.2"
+    heading: 已接入的供应商业务类型
+    sourceStatus: 后台具备
+    qualifier: 蛋糕
+    text: 商品目录、价格和库存查询；当前未开放供应商下单能力。
+  - id: LI0303
+    line: 437
+    section: "11.2"
+    heading: 已接入的供应商业务类型
+    sourceStatus: 后台具备
+    qualifier: 直充
+    text: 商品目录、充值发放、结果查询、退款、对账、核验和回调。
+  - id: LI0304
+    line: 438
+    section: "11.2"
+    heading: 已接入的供应商业务类型
+    sourceStatus: 后台具备
+    qualifier: 鲜花
+    text: 商品目录、价格和库存查询；当前未开放供应商下单能力。
+  - id: LI0305
+    line: 439
+    section: "11.2"
+    heading: 已接入的供应商业务类型
+    sourceStatus: 后台具备
+    qualifier: 餐券
+    text: 商品目录和价格查询；当前未开放供应商下单能力。
+  - id: LI0306
+    line: 440
+    section: "11.2"
+    heading: 已接入的供应商业务类型
+    sourceStatus: 后台具备
+    qualifier: 京东生鲜
+    text: 商品目录、区域库存、配送时段、下单、取消、退款、配送跟踪、对账单和回调。
+  - id: LI0307
+    line: 441
+    section: "11.2"
+    heading: 已接入的供应商业务类型
+    sourceStatus: 后台具备
+    qualifier: 京东商品
+    text: 商品目录、价格、库存、下单、取消、退货、物流、退款、对账单和回调。
+  - id: LI0308
+    line: 442
+    section: "11.2"
+    heading: 已接入的供应商业务类型
+    sourceStatus: 后台具备
+    qualifier: 餐饮品牌
+    text: 菜单目录和价格查询，可承载星巴克、肯德基、麦当劳、瑞幸等品牌数据；当前未开放供应商下单能力。
+  - id: LI0309
+    line: 443
+    section: "11.2"
+    heading: 已接入的供应商业务类型
+    sourceStatus: 后台具备
+    qualifier: 电影
+    text: 影院/场次查询、座位锁定、下单、出票、取消、退款、对账、核验和回调。
+  - id: LI0310
+    line: 444
+    section: "11.2"
+    heading: 已接入的供应商业务类型
+    sourceStatus: 后台具备
+    qualifier: 自营商品
+    text: 本地商品目录、库存、下单、发货、退货、退款和对账。
+  - id: LI0311
+    line: 445
+    section: "11.2"
+    heading: 已接入的供应商业务类型
+    sourceStatus: 后台具备
+    qualifier: 天猫超市
+    text: 商品目录、价格、库存、下单、取消、退货、物流、退款、对账单和回调。
+  - id: LI0312
+    line: 451
+    section: "12.1"
+    heading: 财务总览与账务
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看财务工作台总览。
+  - id: LI0313
+    line: 452
+    section: "12.1"
+    heading: 财务总览与账务
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看账务分录。
+  - id: LI0314
+    line: 453
+    section: "12.1"
+    heading: 财务总览与账务
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看账单/对账单。
+  - id: LI0315
+    line: 454
+    section: "12.1"
+    heading: 财务总览与账务
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建账单/对账单导出任务。
+  - id: LI0316
+    line: 455
+    section: "12.1"
+    heading: 财务总览与账务
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看财务审计记录和只读证据链。
+  - id: LI0317
+    line: 456
+    section: "12.1"
+    heading: 财务总览与账务
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 按业务范围读取资金账户、交易分录和关联业务凭证。
+  - id: LI0318
+    line: 460
+    section: "12.2"
+    heading: 支付与退款对账
+    sourceStatus: 已开放
+    qualifier: null
+    text: 在支付对账、退款对账、结算、账务分录、对账规则和审计之间切换。
+  - id: LI0319
+    line: 461
+    section: "12.2"
+    heading: 支付与退款对账
+    sourceStatus: 已开放
+    qualifier: null
+    text: 按期间、渠道、商城、状态和差异类型筛选对账结果。
+  - id: LI0320
+    line: 462
+    section: "12.2"
+    heading: 支付与退款对账
+    sourceStatus: 已开放
+    qualifier: null
+    text: 勾选对账记录并导出当前页。
+  - id: LI0321
+    line: 463
+    section: "12.2"
+    heading: 支付与退款对账
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看渠道金额、账务金额、差异类型和证据。
+  - id: LI0322
+    line: 464
+    section: "12.2"
+    heading: 支付与退款对账
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看差异修复预览。
+  - id: LI0323
+    line: 465
+    section: "12.2"
+    heading: 支付与退款对账
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取对账任务和差异。
+  - id: LI0324
+    line: 466
+    section: "12.2"
+    heading: 支付与退款对账
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 预览、提交和跟踪对账修复。
+  - id: LI0325
+    line: 467
+    section: "12.2"
+    heading: 支付与退款对账
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 同步供应商/支付渠道对账单。
+  - id: LI0326
+    line: 468
+    section: "12.2"
+    heading: 支付与退款对账
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 执行支付、退款和账务对账，生成差异及修复候选。
+  - id: LI0327
+    line: 469
+    section: "12.2"
+    heading: 支付与退款对账
+    sourceStatus: 占位
+    qualifier: null
+    text: 页面“导入账单”和“开始对账”只做预览；修复保存/提交未接通。
+  - id: LI0328
+    line: 473
+    section: "12.3"
+    heading: 结算、提现与期间
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取结算单。
+  - id: LI0329
+    line: 474
+    section: "12.3"
+    heading: 结算、提现与期间
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 预览结算金额、费率、费用、净额和开票口径。
+  - id: LI0330
+    line: 475
+    section: "12.3"
+    heading: 结算、提现与期间
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 审批或驳回结算。
+  - id: LI0331
+    line: 476
+    section: "12.3"
+    heading: 结算、提现与期间
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 调整结算结果。
+  - id: LI0332
+    line: 477
+    section: "12.3"
+    heading: 结算、提现与期间
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 结算提交人与审批人必须分离。
+  - id: LI0333
+    line: 478
+    section: "12.3"
+    heading: 结算、提现与期间
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取、申请、审批和异常恢复提现；审批后的付款由结算流程推进。
+  - id: LI0334
+    line: 479
+    section: "12.3"
+    heading: 结算、提现与期间
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取资金冻结/暂扣记录。
+  - id: LI0335
+    line: 480
+    section: "12.3"
+    heading: 结算、提现与期间
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取财务期间，执行关账和重开。
+  - id: LI0336
+    line: 481
+    section: "12.3"
+    heading: 结算、提现与期间
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看历史账务回补申请，并审批或驳回。
+  - id: LI0337
+    line: 482
+    section: "12.3"
+    heading: 结算、提现与期间
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 生成结算、推进审批后的付款及异常恢复。
+  - id: LI0338
+    line: 486
+    section: "12.4"
+    heading: 财务策略与发票
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看对账规则、税务规则和字段定义策略。
+  - id: LI0339
+    line: 487
+    section: "12.4"
+    heading: 财务策略与发票
+    sourceStatus: 已开放
+    qualifier: null
+    text: 在有权限时创建、编辑和退役税务/字段策略。
+  - id: LI0340
+    line: 488
+    section: "12.4"
+    heading: 财务策略与发票
+    sourceStatus: 已开放
+    qualifier: null
+    text: 策略变更先预览，再经短信二次核验、动作证明和提交后执行，并重新读取结果确认生效。
+  - id: LI0341
+    line: 489
+    section: "12.4"
+    heading: 财务策略与发票
+    sourceStatus: 已开放
+    qualifier: null
+    text: 高风险财务配置遵循提交人与审批人分离。
+  - id: LI0342
+    line: 490
+    section: "12.4"
+    heading: 财务策略与发票
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建、预览和维护财务策略。
+  - id: LI0343
+    line: 491
+    section: "12.4"
+    heading: 财务策略与发票
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看和维护开票资料、运营方开票资料。
+  - id: LI0344
+    line: 492
+    section: "12.4"
+    heading: 财务策略与发票
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建开票申请。
+  - id: LI0345
+    line: 493
+    section: "12.4"
+    heading: 财务策略与发票
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 取消尚可撤销的开票申请。
+  - id: LI0346
+    line: 494
+    section: "12.4"
+    heading: 财务策略与发票
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 审批、驳回和红冲发票。
+  - id: LI0347
+    line: 495
+    section: "12.4"
+    heading: 财务策略与发票
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 处理待开票申请及后续状态推进。
+  - id: LI0348
+    line: 499
+    section: "13"
+    heading: 风险与审计
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看风险中心概况。
+  - id: LI0349
+    line: 500
+    section: "13"
+    heading: 风险与审计
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 维护风险策略。
+  - id: LI0350
+    line: 501
+    section: "13"
+    heading: 风险与审计
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看和处置风险案件。
+  - id: LI0351
+    line: 502
+    section: "13"
+    heading: 风险与审计
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 按黑名单、禁止操作、单笔金额、操作频率和业务信号评分决定放行、二次核验、人工审核或拒绝。
+  - id: LI0352
+    line: 503
+    section: "13"
+    heading: 风险与审计
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 定期扫描并重新评估待处理风险业务。
+  - id: LI0353
+    line: 504
+    section: "13"
+    heading: 风险与审计
+    sourceStatus: 已开放
+    qualifier: null
+    text: 关键人员、权限、财务和业务变更保留审计记录。
+  - id: LI0354
+    line: 505
+    section: "13"
+    heading: 风险与审计
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 按业务范围读取审计记录。
+  - id: LI0355
+    line: 509
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看当前业务范围的客服工单队列。
+  - id: LI0356
+    line: 510
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看工单状态、来源渠道、业务上下文、服务时限和指派信息。
+  - id: LI0357
+    line: 511
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看真实会话消息并继续加载较早消息。
+  - id: LI0358
+    line: 512
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 已开放
+    qualifier: null
+    text: 向未关闭工单发送客服回复；单条回复限制 4000 字。
+  - id: LI0359
+    line: 513
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 已开放
+    qualifier: null
+    text: 已关闭工单禁止继续发送消息。
+  - id: LI0360
+    line: 514
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 消费者或运营人员创建客服工单。
+  - id: LI0361
+    line: 515
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 更新工单信息。
+  - id: LI0362
+    line: 516
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 关闭和重新打开工单。
+  - id: LI0363
+    line: 517
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 添加工单附件。
+  - id: LI0364
+    line: 518
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 转派/重新指派客服人员。
+  - id: LI0365
+    line: 519
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看和维护客服人员、服务账号、分配规则和服务时限规则。
+  - id: LI0366
+    line: 520
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 按在线状态、业务范围、技能和当前负载自动选择客服人员。
+  - id: LI0367
+    line: 521
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看工单操作历史。
+  - id: LI0368
+    line: 522
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 扫描临近或已经超出服务时限的工单并触发升级处理。
+  - id: LI0369
+    line: 523
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 扫描长时间未处理、异常或需重新分配的工单。
+  - id: LI0370
+    line: 524
+    section: "14"
+    heading: 客服与工单
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 新版客服页面尚未接入附件、转派、关闭和重开操作。
+  - id: LI0371
+    line: 528
+    section: "15"
+    heading: 通知与公告
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 查看站内通知。
+  - id: LI0372
+    line: 529
+    section: "15"
+    heading: 通知与公告
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 读取和维护个人通知偏好。
+  - id: LI0373
+    line: 530
+    section: "15"
+    heading: 通知与公告
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 维护消息接收端点。
+  - id: LI0374
+    line: 531
+    section: "15"
+    heading: 通知与公告
+    sourceStatus: 已开放
+    qualifier: null
+    text: 管理端查看通知模板的渠道、状态和版本。
+  - id: LI0375
+    line: 532
+    section: "15"
+    heading: 通知与公告
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看公告状态、发布时间和有效期。
+  - id: LI0376
+    line: 533
+    section: "15"
+    heading: 通知与公告
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建、更新和停用通知模板。
+  - id: LI0377
+    line: 534
+    section: "15"
+    heading: 通知与公告
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建、更新、发布和撤回公告。
+  - id: LI0378
+    line: 535
+    section: "15"
+    heading: 通知与公告
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 根据账号、订单、支付、权益、卡券、客服等业务事件发送通知。
+  - id: LI0379
+    line: 536
+    section: "15"
+    heading: 通知与公告
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 新版通知页面只开放真实读取，模板和公告写入/发布被禁用。
+  - id: LI0380
+    line: 542
+    section: "16.1"
+    heading: 经营驾驶舱
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看净销售额、已支付订单数、客单价和退款率。
+  - id: LI0381
+    line: 543
+    section: "16.1"
+    heading: 经营驾驶舱
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看上述指标相较前期的变化。
+  - id: LI0382
+    line: 544
+    section: "16.1"
+    heading: 经营驾驶舱
+    sourceStatus: 已开放
+    qualifier: null
+    text: 按时间粒度和期间查看销售额、订单量趋势。
+  - id: LI0383
+    line: 545
+    section: "16.1"
+    heading: 经营驾驶舱
+    sourceStatus: 已开放
+    qualifier: null
+    text: 比较不同商城的净销售额和退款率。
+  - id: LI0384
+    line: 546
+    section: "16.1"
+    heading: 经营驾驶舱
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看近期业务事件。
+  - id: LI0385
+    line: 547
+    section: "16.1"
+    heading: 经营驾驶舱
+    sourceStatus: 已开放
+    qualifier: null
+    text: 查看需要关注的经营洞察，并跳转到相关工作台。
+  - id: LI0386
+    line: 551
+    section: "16.2"
+    heading: 专题报表
+    sourceStatus: 已开放
+    qualifier: null
+    text: 销售报表。
+  - id: LI0387
+    line: 552
+    section: "16.2"
+    heading: 专题报表
+    sourceStatus: 已开放
+    qualifier: null
+    text: 商品报表。
+  - id: LI0388
+    line: 553
+    section: "16.2"
+    heading: 专题报表
+    sourceStatus: 已开放
+    qualifier: null
+    text: 商城报表。
+  - id: LI0389
+    line: 554
+    section: "16.2"
+    heading: 专题报表
+    sourceStatus: 已开放
+    qualifier: null
+    text: 品类报表。
+  - id: LI0390
+    line: 555
+    section: "16.2"
+    heading: 专题报表
+    sourceStatus: 已开放
+    qualifier: null
+    text: 渠道报表。
+  - id: LI0391
+    line: 556
+    section: "16.2"
+    heading: 专题报表
+    sourceStatus: 已开放
+    qualifier: null
+    text: 粉丝/推广等级报表。
+  - id: LI0392
+    line: 557
+    section: "16.2"
+    heading: 专题报表
+    sourceStatus: 已开放
+    qualifier: null
+    text: 卡券消费报表。
+  - id: LI0393
+    line: 558
+    section: "16.2"
+    heading: 专题报表
+    sourceStatus: 已开放
+    qualifier: null
+    text: 按实时、昨日、近 7 日和近 30 日查看报表。
+  - id: LI0394
+    line: 559
+    section: "16.2"
+    heading: 专题报表
+    sourceStatus: 已开放
+    qualifier: null
+    text: 展示统计维度、指标值、统计区间、数据水位和统计版本。
+  - id: LI0395
+    line: 560
+    section: "16.2"
+    heading: 专题报表
+    sourceStatus: 后台具备
+    qualifier: null
+    text: 创建报表导出任务并查询导出结果。
+  - id: LI0396
+    line: 561
+    section: "16.2"
+    heading: 专题报表
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 刷新经营统计投影和报表数据。
+  - id: LI0397
+    line: 562
+    section: "16.2"
+    heading: 专题报表
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 生成大批量业务导出文件。
+  - id: LI0398
+    line: 563
+    section: "16.2"
+    heading: 专题报表
+    sourceStatus: 部分开放
+    qualifier: null
+    text: 新版报表页面的正式导出按钮被禁用。
+  - id: LI0399
+    line: 569
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 供应商商品、价格和库存同步。
+  - id: LI0400
+    line: 570
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 供应商/渠道回调接收与后续业务推进。
+  - id: LI0401
+    line: 571
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 外部对账单同步。
+  - id: LI0402
+    line: 572
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 超时未支付订单关闭及已占资源释放。
+  - id: LI0403
+    line: 573
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 支付结果查询、支付恢复和自动退款。
+  - id: LI0404
+    line: 574
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 供应商履约下发和物流跟踪。
+  - id: LI0405
+    line: 575
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 权益发放、到期提醒、到期失效和撤销处理。
+  - id: LI0406
+    line: 576
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 卡券导入、发行、状态同步和到期处理。
+  - id: LI0407
+    line: 577
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 支付/退款对账、结算、提现和开票推进。
+  - id: LI0408
+    line: 578
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 推广佣金生成、结算和退款冲正。
+  - id: LI0409
+    line: 579
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 账号、交易、权益、卡券和客服业务通知。
+  - id: LI0410
+    line: 580
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 经营报表投影和导出任务。
+  - id: LI0411
+    line: 581
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 风险扫描和待审业务重评估。
+  - id: LI0412
+    line: 582
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 会员、商品和库存批量导入。
+  - id: LI0413
+    line: 583
+    section: "17"
+    heading: 业务自动化汇总
+    sourceStatus: 自动执行
+    qualifier: null
+    text: 客服服务时限升级和异常工单扫描。
+  - id: LI0414
+    line: 591
+    section: "18.1"
+    heading: 企业客户与储值券产品
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 企业客户创建、修改、启用、停用、详情、列表和下拉选项。
+  - id: LI0415
+    line: 592
+    section: "18.1"
+    heading: 企业客户与储值券产品
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 储值券产品创建、修订、启用、停用、详情、列表和下拉选项。
+  - id: LI0416
+    line: 596
+    section: "18.2"
+    heading: 凭证池与凭证生产
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 凭证池创建、关闭、详情和列表。
+  - id: LI0417
+    line: 597
+    section: "18.2"
+    heading: 凭证池与凭证生产
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 批量生成凭证。
+  - id: LI0418
+    line: 598
+    section: "18.2"
+    heading: 凭证池与凭证生产
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 批量导入凭证。
+  - id: LI0419
+    line: 599
+    section: "18.2"
+    heading: 凭证池与凭证生产
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 凭证列表和单凭证详情。
+  - id: LI0420
+    line: 600
+    section: "18.2"
+    heading: 凭证池与凭证生产
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 创建凭证导出任务。
+  - id: LI0421
+    line: 601
+    section: "18.2"
+    heading: 凭证池与凭证生产
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 查询生成、导入和导出作业状态。
+  - id: LI0422
+    line: 605
+    section: "18.3"
+    heading: 备券申请与多级审批
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 备券申请创建、修改、提交、取消、详情、列表和可选项。
+  - id: LI0423
+    line: 606
+    section: "18.3"
+    heading: 备券申请与多级审批
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 审批模板创建、修订、启用、停用、详情和列表。
+  - id: LI0424
+    line: 607
+    section: "18.3"
+    heading: 备券申请与多级审批
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 审批任务列表、通过和驳回。
+  - id: LI0425
+    line: 608
+    section: "18.3"
+    heading: 备券申请与多级审批
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 审批实例详情。
+  - id: LI0426
+    line: 612
+    section: "18.4"
+    heading: 发行订单、发行批次与批量动作
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 发行订单创建、修改、提交、取消、详情和列表。
+  - id: LI0427
+    line: 613
+    section: "18.4"
+    heading: 发行订单、发行批次与批量动作
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 发行批次详情和失败重试。
+  - id: LI0428
+    line: 614
+    section: "18.4"
+    heading: 发行订单、发行批次与批量动作
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 发行订单导出。
+  - id: LI0429
+    line: 615
+    section: "18.4"
+    heading: 发行订单、发行批次与批量动作
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 批量动作创建、详情、列表、失败重试和结果导出。
+  - id: LI0430
+    line: 619
+    section: "18.5"
+    heading: 持券人生命周期
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 使用密钥激活凭证。
+  - id: LI0431
+    line: 620
+    section: "18.5"
+    heading: 持券人生命周期
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 使用券号加密钥激活凭证。
+  - id: LI0432
+    line: 621
+    section: "18.5"
+    heading: 持券人生命周期
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 绑定最终持券人。
+  - id: LI0433
+    line: 622
+    section: "18.5"
+    heading: 持券人生命周期
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 解绑最终持券人。
+  - id: LI0434
+    line: 623
+    section: "18.5"
+    heading: 持券人生命周期
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 凭证详情、按券号查询和完整时间线。
+  - id: LI0435
+    line: 627
+    section: "18.6"
+    heading: 核销、冻结与退款
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 核销报价。
+  - id: LI0436
+    line: 628
+    section: "18.6"
+    heading: 核销、冻结与退款
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 创建核销冻结、消费冻结和释放冻结。
+  - id: LI0437
+    line: 629
+    section: "18.6"
+    heading: 核销、冻结与退款
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 直接核销。
+  - id: LI0438
+    line: 630
+    section: "18.6"
+    heading: 核销、冻结与退款
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 部分退款和全额退款。
+  - id: LI0439
+    line: 631
+    section: "18.6"
+    heading: 核销、冻结与退款
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 核销详情。
+  - id: LI0440
+    line: 635
+    section: "18.7"
+    heading: 统一检索与导出
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 新版凭证业务统一搜索和聚合筛选。
+  - id: LI0441
+    line: 636
+    section: "18.7"
+    heading: 统一检索与导出
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 冻结目标快照。
+  - id: LI0442
+    line: 637
+    section: "18.7"
+    heading: 统一检索与导出
+    sourceStatus: 仅设计
+    qualifier: null
+    text: 创建导出任务和查询导出作业。
+  - id: LI0443
+    line: 641
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 商城收藏功能。
+  - id: LI0444
+    line: 642
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 移动端自主售后申请页面。
+  - id: LI0445
+    line: 643
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 电子发票下载和商城端发票抬头管理。
+  - id: LI0446
+    line: 644
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 商城端完整物流追踪。
+  - id: LI0447
+    line: 645
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 优惠券选择和消费者虚拟券钱包。
+  - id: LI0448
+    line: 646
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 商城端完整账单中心。
+  - id: LI0449
+    line: 647
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 在线客服直接发起入口。
+  - id: LI0450
+    line: 648
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 基于位置的服务、商品分享等移动能力。
+  - id: LI0451
+    line: 649
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: Android 原生支付、生物识别、推送、原生地址和原生发票能力。
+  - id: LI0452
+    line: 650
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 管理端快捷命令、任务中心和顶部通知壳层。
+  - id: LI0453
+    line: 651
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 商家服务中心的商家目录和完整入驻资料保存。
+  - id: LI0454
+    line: 652
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 商城装修方案选择后的保存与发布。
+  - id: LI0455
+    line: 653
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 管理端商品新建、正式导入及完整商品详情。
+  - id: LI0456
+    line: 654
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 新版订单页的发货、退款和售后处理按钮。
+  - id: LI0457
+    line: 655
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 新版渠道页的连接创建、测试、启停、同步和重放按钮。
+  - id: LI0458
+    line: 656
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 新版卡券页的新建、审批、发行、暂停和冲正按钮。
+  - id: LI0459
+    line: 657
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 新版资格页的策略发布按钮。
+  - id: LI0460
+    line: 658
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 新版通知页的模板/公告写入和发布按钮。
+  - id: LI0461
+    line: 659
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 新版报表页的正式导出按钮。
+  - id: LI0462
+    line: 660
+    section: "19"
+    heading: 可见但不能计入已交付的业务入口
+    sourceStatus: 占位
+    qualifier: null
+    text: 设备展示、平板展示和小程序样例中的模拟数据页面；生产移动商城以 H5 真实数据链路为准。

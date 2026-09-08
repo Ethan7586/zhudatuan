@@ -220,7 +220,7 @@ insert into runtime.event(type,version,owner,schema_ref) values
   ('marketing.promotion.refunded',1,'marketing','contract://events/marketing.promotion.refunded/v1');
 
 update runtime.contractcatalog set checksum='312260ead9f0c459ed2c38623d8310de8b3ef3260c313d098302fb50015e7df0',
-  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event),published_at=clock_timestamp()
+  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event where retired_at is null),published_at=clock_timestamp()
 where artifact='commerce' and version='5.0.0' and status='active';
 
 select runtime.record_migration_evidence(
@@ -237,7 +237,7 @@ do $assert$ begin
   if exists(select 1 from marketing.redemption where version<1 or campaign_version<1 or restored_minor<0
     or restored_minor>amount_minor or expires_at<=created_at) then raise exception 'MARKETING_REDEMPTION_INVARIANT_INVALID'; end if;
   if (select count(*) from runtime.operation)<>312 then raise exception 'MARKETING_OPERATION_COUNT_INVALID'; end if;
-  if (select count(*) from runtime.event)<>143 then raise exception 'MARKETING_EVENT_COUNT_INVALID'; end if;
+  if (select count(*) from runtime.event where retired_at is null)<>143 then raise exception 'MARKETING_EVENT_COUNT_INVALID'; end if;
 end $assert$;
 
 commit;

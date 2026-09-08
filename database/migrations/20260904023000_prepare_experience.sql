@@ -149,17 +149,19 @@ insert into capability.entitlement(id,scope_id,capability_id,state,quota,effecti
 values('platform:experience.published.read','organization-platform-root','experience.published.read','enabled',null,'1970-01-01T00:00:00Z',null,1,
   clock_timestamp(),clock_timestamp(),'migration:experience','公开端读取不可变发布快照');
 
-delete from runtime.event where type='experience.published';
 insert into runtime.event(type,version,owner,schema_ref) values
   ('experience.release.requested',1,'experience','contract://events/experience.release.requested/v1'),
   ('experience.release.activated',1,'experience','contract://events/experience.release.activated/v1'),
   ('experience.release.failed',1,'experience','contract://events/experience.release.failed/v1');
+update runtime.outbox set event_type='experience.release.requested' where event_type='experience.published' and event_version=1;
+update runtime.inbox set event_type='experience.release.requested' where event_type='experience.published' and event_version=1;
+delete from runtime.event where type='experience.published';
 update capability.capability set version=2 where id in('experience.applications.create','experience.applications.copy',
   'experience.applications.detail.read','experience.applications.read','experience.applications.update','experience.versions.save',
   'experience.versions.validate','experience.versions.publish','experience.versions.restore');
 
 update runtime.contractcatalog set checksum='b82031cafdbbf4ced316d9c7db474cf94ccc78ffaa94946b4a27e819e50b550b',
-  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event),published_at=clock_timestamp()
+  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event where retired_at is null),published_at=clock_timestamp()
 where artifact='commerce' and version='5.0.0' and status='active';
 
 select runtime.record_migration_evidence('20260904023000',(select count(*) from experience.version),(select count(*) from experience.version),0,0,
@@ -172,8 +174,12 @@ do $assert$ begin
   if exists(select mall_id from experience.application where is_primary group by mall_id having count(*)<>1) then raise exception 'EXPERIENCE_PRIMARY_APPLICATION_INVALID'; end if;
   if exists(select 1 from experience.version where configuration_hash<>encode(public.digest(experience.canonical_json(configuration),'sha256'),'hex')) then raise exception 'EXPERIENCE_VERSION_HASH_INVALID'; end if;
   if exists(select 1 from experience.release where state in('scheduled','active','retired') and failure_code is not null) then raise exception 'EXPERIENCE_RELEASE_FAILURE_INVALID'; end if;
+  if exists(select 1 from runtime.event where type='experience.published')
+    or exists(select 1 from runtime.outbox where event_type='experience.published')
+    or exists(select 1 from runtime.inbox where event_type='experience.published')
+    then raise exception 'LEGACY_EXPERIENCE_PUBLISHED_EVENT_REMAINS'; end if;
   if (select count(*) from runtime.operation)<>308 then raise exception 'EXPERIENCE_OPERATION_COUNT_INVALID'; end if;
-  if (select count(*) from runtime.event)<>135 then raise exception 'EXPERIENCE_EVENT_COUNT_INVALID'; end if;
+  if (select count(*) from runtime.event where retired_at is null)<>135 then raise exception 'EXPERIENCE_EVENT_COUNT_INVALID'; end if;
 end $assert$;
 
 commit;

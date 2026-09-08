@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export type PaymentIntentState = 'created' | 'preparing' | 'pending' | 'captured' | 'partiallyrefunded' | 'refunded' | 'failed' | 'cancelled' | 'expired';
 
@@ -30,13 +30,17 @@ const transitions: Readonly<Record<PaymentIntentState, readonly PaymentIntentSta
 });
 
 export class PaymentIntent {
-  private constructor(private readonly value: PaymentIntentValue) { this.assert(); }
+  private constructor(private readonly value: PaymentIntentValue) {
+    this.assert();
+  }
 
   static create(value: Omit<PaymentIntentValue, 'state' | 'version'>): PaymentIntent {
     return new PaymentIntent(Object.freeze({ ...value, state: 'created', version: 0 }));
   }
 
-  static restore(value: PaymentIntentValue): PaymentIntent { return new PaymentIntent(Object.freeze({ ...value })); }
+  static restore(value: PaymentIntentValue): PaymentIntent {
+    return new PaymentIntent(Object.freeze({ ...value }));
+  }
 
   transition(next: PaymentIntentState, now: Date): PaymentIntent {
     if (next === this.value.state) return this;
@@ -48,16 +52,20 @@ export class PaymentIntent {
   retry(idempotency: string, expiresAt: Date, now: Date): PaymentIntent {
     if (this.value.state !== 'failed') throw new DomainError('PAYMENT_INTENT_CONFLICT');
     if (!idempotency || expiresAt.getTime() <= now.getTime()) throw new DomainError('PAYMENT_INTENT_NOT_PAYABLE');
-    return new PaymentIntent(Object.freeze({
-      ...this.value,
-      state: 'preparing',
-      idempotency,
-      expiresAt,
-      version: this.value.version + 1,
-    }));
+    return new PaymentIntent(
+      Object.freeze({
+        ...this.value,
+        state: 'preparing',
+        idempotency,
+        expiresAt,
+        version: this.value.version + 1,
+      })
+    );
   }
 
-  snapshot(): PaymentIntentValue { return this.value; }
+  snapshot(): PaymentIntentValue {
+    return this.value;
+  }
 
   private assert(): void {
     if (!this.value.id || !this.value.order || !this.value.scope || !this.value.member || !this.value.idempotency || !this.value.providerReference) throw new DomainError('VALIDATION_FAILED');

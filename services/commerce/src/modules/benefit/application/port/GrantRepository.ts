@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import type { OperationReply } from '../../../../pipeline/OperationHandler';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 export interface GrantRepository {
   readGrants(transaction: ReadTransactionContext, input: OperationInputFor<'benefit.grants.read'>, context: ExecutionContext<'benefit.grants.read'>): Promise<OperationReply<OperationOutputFor<'benefit.grants.read'>>>;
   createGrant(transaction: WriteTransactionContext, input: OperationInputFor<'benefit.grants.create'>, context: ExecutionContext<'benefit.grants.create'>): Promise<OperationReply<OperationOutputFor<'benefit.grants.create'>>>;

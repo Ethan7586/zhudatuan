@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 
 const sourceRoot = dirname(fileURLToPath(import.meta.url));
 const blockedSegments = ['/mock/', '/services/mallService', '/services/mallState', '/services/mallCatalogCart', '/services/mallOrders', '/screens/', '/components/home/', '/components/security/', '/features/architecture/'];
+const retiredSourcePath = /(?:^|\/)(?:mock|showcase|demo|desktop|laptop|tablet|mobile|miniprogram|android)(?:\/|[A-Z.])/i;
+const retiredSourceMarker = /PendingInterfaceModal|接口待接入|高保真交互预览|navigationBoundary\s*=\s*['"]showcase['"]/;
 const features = ['account', 'aftersale', 'benefit', 'cart', 'catalog', 'checkout', 'home', 'notification', 'order', 'payment', 'product', 'referral', 'security', 'support', 'voucher'];
 
 function resolveSourceImport(importer: string, specifier: string) {
@@ -63,6 +65,13 @@ describe('production storefront data boundary', () => {
       expect(files.some((file) => /\.test\.tsx?$/.test(file)), `${feature} must retain an executable test`).toBe(true);
       expect(files.filter((file) => /(?:^|\/)(?:desktop|laptop|tablet|mobile|android|miniprogram)(?:\/|[A-Z.])/i.test(file))).toEqual([]);
     }
+  });
+
+  it('contains no retired preview, placeholder, mock, or device-fork production source', () => {
+    const productionFiles = sourceFiles(sourceRoot).filter((file) => !/\.(?:test|spec)\.[cm]?[jt]sx?$/.test(file));
+
+    expect(productionFiles.filter((file) => retiredSourcePath.test(file.replaceAll('\\', '/')))).toEqual([]);
+    expect(productionFiles.filter((file) => retiredSourceMarker.test(readFileSync(file, 'utf8')))).toEqual([]);
   });
 });
 

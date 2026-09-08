@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export class AuthTransaction {
   private constructor(

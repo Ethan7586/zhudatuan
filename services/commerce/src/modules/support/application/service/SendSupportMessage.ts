@@ -1,26 +1,16 @@
 import { randomUUID } from 'node:crypto';
 import { isConsumerTarget, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import type { OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { Message } from '../../domain/model/Message';
 import { MessagePolicy } from '../../domain/policy/MessagePolicy';
 import { TicketPolicy } from '../../domain/policy/TicketPolicy';
 import type { MessageSender, PreparedSupportOperation } from '../port/SupportRepositories';
-import type {
-  AgentStore,
-  ConversationStore,
-  EncryptedSupportMessage,
-  EvidenceStore,
-  MessageStore,
-  StoredSupportMessage,
-  SupportEventStore,
-  SupportMessageTarget,
-  TicketMessageStore,
-} from '../port/SupportPersistence';
+import type { AgentStore, ConversationStore, EncryptedSupportMessage, EvidenceStore, MessageStore, StoredSupportMessage, SupportEventStore, SupportMessageTarget, TicketMessageStore } from '../port/SupportPersistence';
 import type { ReadSupportContext, SupportActorContext } from './ReadSupportContext';
 
 interface LoadedMessage {
@@ -75,7 +65,13 @@ export class SendSupportMessage implements MessageSender {
       conversation: loaded.target.conversation,
       messageId: id,
     });
-    return Object.freeze({ loaded, attachmentIds: body.attachmentIds, kind: body.kind, visibility: body.visibility, message: Object.freeze({ id, clientMessageId: body.clientMessageId, ciphertext: envelope.ciphertext, fingerprint: envelope.fingerprint, keyVersion: envelope.keyVersion, body: body.body }) });
+    return Object.freeze({
+      loaded,
+      attachmentIds: body.attachmentIds,
+      kind: body.kind,
+      visibility: body.visibility,
+      message: Object.freeze({ id, clientMessageId: body.clientMessageId, ciphertext: envelope.ciphertext, fingerprint: envelope.fingerprint, keyVersion: envelope.keyVersion, body: body.body }),
+    });
   }
 
   async sendMessage(
@@ -128,11 +124,7 @@ export class SendSupportMessage implements MessageSender {
     return reply(stored, ticket.id, ticket.state, ticket.version, conversation.version, prepared.message.body);
   }
 
-  async sendSystemMessage(
-    context: WriteTransactionContext,
-    target: SupportMessageTarget,
-    input: Readonly<{ body: string; clientMessageId: string; trace: string }>
-  ): Promise<StoredSupportMessage> {
+  async sendSystemMessage(context: WriteTransactionContext, target: SupportMessageTarget, input: Readonly<{ body: string; clientMessageId: string; trace: string }>): Promise<StoredSupportMessage> {
     const content = this.messagesPolicy.prepare({ body: input.body, clientMessageId: input.clientMessageId, attachmentIds: [], author: 'system', visibility: 'internal' });
     const id = `message:${randomUUID()}`;
     const envelope = await this.kms.encrypt('pii', 'support/message', content.body, { scope: target.ticket.scope, conversation: target.conversation, messageId: id });
@@ -159,7 +151,11 @@ export class SendSupportMessage implements MessageSender {
     new Message(stored.id, stored.clientMessageId, stored.conversationId, stored.authorType, stored.authorId, stored.kind, stored.visibility, stored.bodyHash, stored.sequence, stored.version, stored.createdAt);
     await this.events.history(context, target.ticket.id, target.ticket.scope, 'system.message', 'system', { message: stored.id, sequence: stored.sequence });
     await this.events.append(context, {
-      type: 'support.message.sent', aggregateType: 'conversation', aggregate: target.conversation, scope: target.ticket.scope, trace: input.trace,
+      type: 'support.message.sent',
+      aggregateType: 'conversation',
+      aggregate: target.conversation,
+      scope: target.ticket.scope,
+      trace: input.trace,
       payload: { ticketId: target.ticket.id, conversationId: target.conversation, messageId: stored.id, sequence: stored.sequence, version: conversation.version, memberId: target.member },
     });
     return stored;

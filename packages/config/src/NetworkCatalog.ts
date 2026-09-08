@@ -1,5 +1,5 @@
 // Generated from infrastructure/network/Edge.yml. Do not edit.
-export const NETWORK_CHECKSUM = '4e98aea08ce9e68fc46288b3807fa36a6d656e484da4d77302ca124d0e944717' as const;
+export const NETWORK_CHECKSUM = '99d9062d558f87da18b23a483577dc2466a3d456fe08eec387dfb2ac8349aef9' as const;
 
 export const NETWORK_CATALOG = Object.freeze({
   "origins": {

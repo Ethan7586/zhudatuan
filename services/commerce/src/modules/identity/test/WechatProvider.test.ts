@@ -10,8 +10,13 @@ describe('WechatProvider', () => {
 
     const started = await provider.start({ instance: instance(['miniapp']), state: 'state-value', nonce: 'nonce-value', challenge: 'c'.repeat(43) });
     const subject = await provider.callback({
-      instance: instance(['miniapp']), code: 'wx-login-code', state: 'state-value', noncehash: Buffer.alloc(32), verifier: 'v'.repeat(48),
-      signal: new AbortController().signal, deadline: Date.now() + 1_000,
+      instance: instance(['miniapp']),
+      code: 'wx-login-code',
+      state: 'state-value',
+      noncehash: Buffer.alloc(32),
+      verifier: 'v'.repeat(48),
+      signal: new AbortController().signal,
+      deadline: Date.now() + 1_000,
     });
 
     expect(started.location).toContain('method=wx.login');
@@ -35,16 +40,23 @@ describe('WechatProvider', () => {
     } as never);
     const started = await provider.start({ instance: instance(['jsapi']), state: 'state-value', nonce: 'nonce-value', challenge: 'c'.repeat(43) });
     expect(started.location).toContain('open.weixin.qq.com/connect/oauth2/authorize');
-    await expect(provider.callback({ instance: instance(['jsapi']), code: 'bad-code', state: 'state-value', noncehash: Buffer.alloc(32), verifier: 'v'.repeat(48) }))
-      .rejects.toMatchObject({ code: 'FEDERATION_CALLBACK_REJECTED' });
+    await expect(provider.callback({ instance: instance(['jsapi']), code: 'bad-code', state: 'state-value', noncehash: Buffer.alloc(32), verifier: 'v'.repeat(48) })).rejects.toMatchObject({ code: 'FEDERATION_CALLBACK_REJECTED' });
   });
 });
 
 function instance(scopes: readonly string[]): ProviderInstance {
   return new ProviderInstance({
-    id: '00000000-0000-0000-0000-000000000001', type: 'wechat', tenantid: '00000000-0000-0000-0000-000000000002', issuer: null,
-    clientid: 'wx1234567890abcdef', secretref: 'secret/identity/wechat', status: 'enabled',
-    redirecturi: 'https://passport.fufu.wang/api/v1/identity/federations/callback', scopes, version: 1,
-    createdat: '2026-09-04T00:00:00.000Z', updatedat: '2026-09-04T00:00:00.000Z',
+    id: '00000000-0000-0000-0000-000000000001',
+    type: 'wechat',
+    tenantid: '00000000-0000-0000-0000-000000000002',
+    issuer: null,
+    clientid: 'wx1234567890abcdef',
+    secretref: 'secret/identity/wechat',
+    status: 'enabled',
+    redirecturi: 'https://passport.fufu.wang/api/v1/identity/federations/callback',
+    scopes,
+    version: 1,
+    createdat: '2026-09-04T00:00:00.000Z',
+    updatedat: '2026-09-04T00:00:00.000Z',
   });
 }

@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 /** Order-owned payment views; callers never traverse Ordering repositories or tables. */
 export class OrderPaymentPort {
   protected readonly transactions = new PgTransactionAccess();
@@ -9,7 +9,7 @@ export class OrderPaymentPort {
   lockPayment(context: WriteTransactionContext, order: string, member?: string) {
     return this.paymentRecord(this.transactions.database(context), order, member, true);
   }
-  private async paymentRecord(database: import('../../../../adapter/database/PgTransactionAccess').SqlExecutor, order: string, member: string | undefined, lock: boolean) {
+  private async paymentRecord(database: import('../../../../platform/database/PgTransactionAccess').SqlExecutor, order: string, member: string | undefined, lock: boolean) {
     const result = await database.query<{
       id: string;
       number: string;
@@ -35,7 +35,7 @@ export class OrderPaymentPort {
   lockAfterSale(context: WriteTransactionContext, aftersale: string) {
     return this.afterSaleRecord(this.transactions.database(context), aftersale, true);
   }
-  private async afterSaleRecord(database: import('../../../../adapter/database/PgTransactionAccess').SqlExecutor, aftersale: string, lock: boolean) {
+  private async afterSaleRecord(database: import('../../../../platform/database/PgTransactionAccess').SqlExecutor, aftersale: string, lock: boolean) {
     const result = await database.query<{
       id: string;
       order: string;

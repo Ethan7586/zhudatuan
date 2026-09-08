@@ -1,12 +1,12 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { JobScheduler } from '../../../../foundation/application/JobScheduler';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { JobScheduler } from '../../../../pipeline/JobScheduler';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ObjectStore } from '../../../runtime/public/ObjectPort';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { mapParallel } from '../../../../foundation/performance/Parallel';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { mapParallel } from '@shop/kernel';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import { qualificationChangedEvent } from '../../domain/event/QualificationEvents';
 import { Evidence } from '../../domain/model/Evidence';
 import { QualificationCase, type QualificationCaseSnapshot } from '../../domain/model/QualificationCase';
@@ -39,11 +39,7 @@ export class QualificationsPublishHandler
     return this.cases.find(context.transaction, access.scope.id, input.path.qualificationid);
   }
 
-  async prepare(
-    input: OperationInputFor<'qualification.qualifications.publish'>,
-    context: PrepareContext<'qualification.qualifications.publish'>,
-    loaded: QualificationCaseSnapshot | null
-  ): Promise<PreparedQualification> {
+  async prepare(input: OperationInputFor<'qualification.qualifications.publish'>, context: PrepareContext<'qualification.qualifications.publish'>, loaded: QualificationCaseSnapshot | null): Promise<PreparedQualification> {
     const access = requireSession(context.security);
     const expectedVersion = context.expectedVersion;
     if (expectedVersion === undefined) throw new DomainError('EXPECTED_VERSION_REQUIRED');
@@ -54,10 +50,7 @@ export class QualificationsPublishHandler
     const source = loaded?.evidence ?? evidenceInput(body.evidence);
     const verified = await mapParallel(source, 4, async (item) => {
       const metadata = await this.objects.inspect(item.reference);
-      return Evidence.verified(
-        { id: item.id, kind: item.kind, reference: item.reference, sha256: item.sha256, actor: access.actor.id, now },
-        metadata
-      ).snapshot();
+      return Evidence.verified({ id: item.id, kind: item.kind, reference: item.reference, sha256: item.sha256, actor: access.actor.id, now }, metadata).snapshot();
     });
     const candidate = loaded
       ? QualificationCase.restore(loaded).snapshot()

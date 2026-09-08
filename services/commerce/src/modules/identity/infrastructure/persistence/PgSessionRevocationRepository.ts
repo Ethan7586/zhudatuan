@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import type { SessionRevocationRepository } from '../../application/port/SessionRevocationRepository';
 
 export class PgSessionRevocationRepository implements SessionRevocationRepository {

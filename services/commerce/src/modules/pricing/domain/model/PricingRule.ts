@@ -1,5 +1,5 @@
 import { Money } from '@shop/kernel';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export type PricingRuleKind = 'markup' | 'discount' | 'tax' | 'freight';
 export type PricingRuleState = 'draft' | 'published' | 'retired';

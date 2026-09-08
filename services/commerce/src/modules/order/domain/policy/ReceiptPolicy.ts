@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { CommerceState, FulfillmentState, PaymentState } from '../model/Order';
 
 export class ReceiptPolicy {

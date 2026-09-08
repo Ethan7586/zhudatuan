@@ -1,10 +1,10 @@
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ExperienceCatalogPort } from '../../../catalog/public';
 import type { ExperienceProvisionRepository } from '../../application/port/ExperienceProvisionRepository';
 import { parseExperience, serializeExperience } from '@shop/contract';
-import { databaseInteger } from '../../../../foundation/persistence/DatabaseInteger';
+import { databaseInteger } from '../../../../platform/database/DatabaseInteger';
 import { Application, type ApplicationSnapshot } from '../../domain/model/Application';
 import { ExperienceVersion, type ExperienceVersionSnapshot } from '../../domain/model/ExperienceVersion';
 import { applicationInitialConfiguration, restoreApplication } from './ApplicationRecord';

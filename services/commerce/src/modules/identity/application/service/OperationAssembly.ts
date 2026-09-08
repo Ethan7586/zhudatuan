@@ -1,4 +1,4 @@
-import type { RegisteredOperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { RegisteredOperationHandler } from '../../../../pipeline/OperationHandler';
 import { BootstrapReadHandler } from '../handler/BootstrapReadHandler';
 import { ChallengesCreateHandler } from '../handler/ChallengesCreateHandler';
 import { EnrollmentsCompleteHandler } from '../handler/EnrollmentsCompleteHandler';
@@ -6,6 +6,8 @@ import { EnrollmentsReadHandler } from '../handler/EnrollmentsReadHandler';
 import { FederationCallbackHandler } from '../handler/FederationCallbackHandler';
 import { FederationCompleteHandler } from '../handler/FederationCompleteHandler';
 import { FederationStartHandler } from '../handler/FederationStartHandler';
+import { HandoversCreateHandler } from '../handler/HandoversCreateHandler';
+import { HandoversReadHandler } from '../handler/HandoversReadHandler';
 import { InvitationsCreateHandler } from '../handler/InvitationsCreateHandler';
 import { InvitationsReadHandler } from '../handler/InvitationsReadHandler';
 import { InvitationsResolveHandler } from '../handler/InvitationsResolveHandler';
@@ -43,6 +45,8 @@ type IdentityHandlerArguments = Readonly<{
   ticketsExchange: ConstructorParameters<typeof TicketsExchangeHandler>;
   sessionRead: ConstructorParameters<typeof SessionReadHandler>;
   sessionDelete: ConstructorParameters<typeof SessionDeleteHandler>;
+  handoversRead: ConstructorParameters<typeof HandoversReadHandler>;
+  handoversCreate: ConstructorParameters<typeof HandoversCreateHandler>;
   sessionsRead: ConstructorParameters<typeof SessionsReadHandler>;
   sessionsRevoke: ConstructorParameters<typeof SessionsRevokeHandler>;
   membershipsRead: ConstructorParameters<typeof MembershipsReadHandler>;
@@ -84,6 +88,8 @@ export function assembleOperations(input: IdentityHandlerArguments): readonly Re
     new TicketsExchangeHandler(...input.ticketsExchange),
     new SessionReadHandler(...input.sessionRead),
     new SessionDeleteHandler(...input.sessionDelete),
+    new HandoversReadHandler(...input.handoversRead),
+    new HandoversCreateHandler(...input.handoversCreate),
     new SessionsReadHandler(...input.sessionsRead),
     new SessionsRevokeHandler(...input.sessionsRevoke),
     new MembershipsReadHandler(...input.membershipsRead),

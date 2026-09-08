@@ -15,6 +15,11 @@ export function mergeConversations(pages: readonly Conversation[]): Conversation
     conversationVersion: latest?.conversationVersion ?? 0,
     latestSequence: latest?.latestSequence ?? 0,
     lastReadSequence: latest?.lastReadSequence ?? 0,
+    context: latest?.context ?? emptyContext(),
     ...(pages.at(-1)?.nextCursor ? { nextCursor: pages.at(-1)!.nextCursor } : {}),
   });
+}
+
+function emptyContext(): Conversation['context'] {
+  return Object.freeze({ member: Object.freeze({ id: '', displayName: '', employeeNo: null, mobileMasked: null }), organization: Object.freeze({ id: '' }), orders: Object.freeze([]), benefits: Object.freeze([]) });
 }

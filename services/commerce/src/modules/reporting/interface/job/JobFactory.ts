@@ -1,9 +1,9 @@
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import { CACHE } from '../../../../foundation/cache/Cache';
-import { jobDefinition } from '../../../../foundation/application/JobCatalog';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import { CACHE } from '../../../../platform/cache/Cache';
+import { jobDefinition } from '../../../../pipeline/JobCatalog';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { ExportReport } from '../../application/process/ExportReport';
 import { ProjectReporting } from '../../application/process/ProjectReporting';
 import { PgReportingJobRepository } from '../../infrastructure/persistence/PgReportingJobRepository';

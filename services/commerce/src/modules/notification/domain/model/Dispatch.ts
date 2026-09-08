@@ -53,8 +53,7 @@ export function classifyDeliveryFailure(value: unknown): DeliveryFailure {
   const permanent = /(?:REQUEST_INVALID|RECIPIENT_INVALID|TEMPLATE_INVALID|VARIABLE_TOO_LONG|REJECTED|UNSUBSCRIBED|NOT_FOUND)$/.test(code);
   if (permanent) return Object.freeze({ kind: 'permanent', code, message: '通知内容或收件信息不符合要求，请检查后重试。' });
   const retryable = /(?:UNAVAILABLE|TIMEOUT|THROTTL|RATE_LIMIT|NETWORK|CONNECTION|CIRCUIT|5\d\d)/i.test(code);
-  return Object.freeze({ kind: retryable ? 'retryable' : 'ambiguous', code,
-    message: retryable ? '通知服务暂时不可用，系统会自动重试。' : '通知服务结果暂时无法确认，系统将继续核对。' });
+  return Object.freeze({ kind: retryable ? 'retryable' : 'ambiguous', code, message: retryable ? '通知服务暂时不可用，系统会自动重试。' : '通知服务结果暂时无法确认，系统将继续核对。' });
 }
 
 function assertAttempts(attempts: readonly DeliveryAttempt[]): void {
@@ -66,7 +65,8 @@ function assertAttempts(attempts: readonly DeliveryAttempt[]): void {
       Number.isNaN(Date.parse(attempt.attemptedAt)) ||
       (attempt.state === 'sent') !== (attempt.externalId !== null) ||
       (attempt.state === 'failed' || attempt.state === 'ambiguous') !== (attempt.errorCode !== null)
-    ) throw new Error('NOTIFICATION_ATTEMPT_INVALID');
+    )
+      throw new Error('NOTIFICATION_ATTEMPT_INVALID');
   });
   Object.freeze(attempts);
 }

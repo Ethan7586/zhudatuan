@@ -1,4 +1,4 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import { publicPort } from '../../../composition/ModuleRegistry';
 export interface ReceiveOrderInput {
   readonly orderId: string;
   readonly scopeId: string;

@@ -1,31 +1,11 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ActiveMembershipReference, DirectoryMembershipReference, MemberRecord } from '../../application/port/AccessRepository';
 import type { MemberProfileProjection } from '../../public/MemberAccessPort';
-import { isOperationTarget, type OperationTarget } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-interface MemberRow {
-  readonly id: string;
-  readonly member_id: string;
-  readonly organization_id: string;
-  readonly employee_no: string | null;
-  readonly status: string;
-  readonly access_version: number;
-  readonly joined_at: Date | null;
-  readonly registration_reset_allowed: boolean;
-  readonly registration_reset_block_reason: 'self' | 'protected' | 'inactive' | null;
-}
-interface IdentityMembershipRow {
-  readonly id: string;
-  readonly principal_id: string;
-  readonly client: string;
-  readonly organization_id: string;
-  readonly access_version: number;
-  readonly display_name: string;
-  readonly organization_name: string;
-  readonly scope_kind: string;
-  readonly role_label: string | null;
-}
+import type { OperationTarget } from '@shop/contract';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { identityMembership, memberRecord, type IdentityMembershipRow, type MemberRow } from './MemberRecord';
+import { membershipTarget } from './MembershipTarget';
 export class PgAccessMembershipRepository {
   protected readonly transactions = new PgTransactionAccess();
   async activeMemberships(context: ReadTransactionContext, member: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<readonly ActiveMembershipReference[]> {
@@ -259,37 +239,4 @@ export class PgAccessMembershipRepository {
       [input.grant, input.membership, input.department, input.accessVersion]
     );
   }
-}
-
-function identityMembership(row: IdentityMembershipRow, requested?: OperationTarget): ActiveMembershipReference {
-  return Object.freeze({
-    id: row.id,
-    client: requested ?? membershipTarget(row.client),
-    organization: row.organization_id,
-    accessVersion: Number(row.access_version),
-    displayName: row.display_name,
-    organizationName: row.organization_name,
-    scopeKind: row.scope_kind,
-    scopeId: row.organization_id,
-    roleLabel: row.role_label ?? '已授权成员',
-    logoUrl: null,
-  });
-}
-function membershipTarget(value: string): OperationTarget {
-  const target = value === 'operator' ? 'console' : value;
-  if (!isOperationTarget(target) || target === 'miniapp') throw new Error('MEMBERSHIP_CLIENT_INVALID');
-  return target;
-}
-function memberRecord(row: MemberRow): MemberRecord {
-  return Object.freeze({
-    id: row.id,
-    member: row.member_id,
-    organization: row.organization_id,
-    employee: row.employee_no,
-    status: row.status,
-    accessVersion: Number(row.access_version),
-    joinedAt: row.joined_at,
-    registrationResetAllowed: row.registration_reset_allowed,
-    registrationResetBlockReason: row.registration_reset_block_reason,
-  });
 }

@@ -1,9 +1,9 @@
 import { financeLifecycle, type FinanceEntries } from './FinanceOperation';
 /** Invoice persistence queries. */
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { keysetResult, queryPage } from '../../../../foundation/application/Validation';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { keysetResult, queryPage } from '../../../../pipeline/Validation';
 import type { ObjectStore } from '../../../runtime/public/ObjectPort';
 import type { MemberAccessPort } from '../../../access/public';
 

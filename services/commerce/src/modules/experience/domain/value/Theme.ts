@@ -1,5 +1,5 @@
 import type { ExperienceTheme } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export class Theme {
   private constructor(private readonly value: ExperienceTheme) {

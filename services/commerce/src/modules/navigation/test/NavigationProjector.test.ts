@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { AccessContext } from '../../../foundation/security/AccessContext';
+import type { AccessContext } from '../../../platform/security/AccessContext';
 import { NAVIGATION_CATALOG } from '../infrastructure/registry/NavigationCatalog';
 import { NavigationProjector } from '../application/service/NavigationProjector';
 import { result, withReadTransaction } from '../../../test/TransactionFixture';

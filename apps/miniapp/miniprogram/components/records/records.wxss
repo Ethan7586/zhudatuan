@@ -3,6 +3,7 @@
 .summarytitle { color: var(--shop-text); font-size: 28rpx; font-weight: 600; }
 .summarycopy { color: var(--shop-text-muted); font-size: 20rpx; }
 .record { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12rpx 20rpx; padding: 28rpx; background: var(--shop-surface); border: 1rpx solid var(--shop-border); border-radius: var(--shop-radius-large); box-shadow: var(--shop-shadow-raised); }
+.recordactive { background: var(--shop-brand-light); }
 .recordmain { display: flex; flex-direction: column; gap: 8rpx; min-width: 0; }
 .recordtitle { overflow: hidden; color: var(--shop-text); font-size: 30rpx; font-weight: 600; line-height: 42rpx; text-overflow: ellipsis; white-space: nowrap; }
 .recorddetail { overflow: hidden; color: var(--shop-text-secondary); font-size: 24rpx; line-height: 36rpx; text-overflow: ellipsis; white-space: nowrap; }

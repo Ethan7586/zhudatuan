@@ -7,7 +7,18 @@ test('storefront bootstrap resolves the trusted entry handle and returns one coh
   const calls: string[] = [];
   const query = new BootstrapQuery({
     identity: { resolve: () => ({ state: 'anonymous', member: null, membership: null, scope: null, version: 0 }) },
-    navigation: { storefront: () => ({ items: [{ id: 'storefront.home', title: '首页', icon: 'home', route: '/', order: 1 }], version: 'navigation:1' }) },
+    membership: {
+      member: async () => {
+        throw new Error('ANONYMOUS_MEMBERSHIP_LOOKUP_FORBIDDEN');
+      },
+    },
+    navigation: {
+      featureFlags: new Set<string>(),
+      read: () => ({ nodes: [{ id: 'storefront.home', title: '首页', icon: 'home', route: '/', order: 1 }], version: 'navigation:1' }),
+    },
+    capability: {
+      read: async () => [{ scope: 'mall:one', capabilities: new Set<string>(), version: 0 }],
+    },
     member: {
       summary: async () => {
         throw new Error('ANONYMOUS_MEMBER_LOOKUP_FORBIDDEN');

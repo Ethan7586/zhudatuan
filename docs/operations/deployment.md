@@ -1,62 +1,41 @@
-# 福利商城阿里云发布
+# 福利商城发布运行手册
 
-生产只接受 CI 生成、签名且已在预发布验收的同一份 Release Bundle；生产节点禁止拉源码、安装开发依赖或重新构建。
+## 触发症状、用户影响与严重级（Trigger / Impact / Severity）
 
-## 拓扑
+签名候选发布、紧急安全修复、Canary 异常、迁移失败或六端版本漂移时触发。正常发布为受控变更；签名/Hash/合同/数据不变量失败为 P0 发布阻断，线上 SLO 燃尽或交易不变量异常为 P0 事件。影响范围按内部 Tenant/Mall Canary 确定，不能用全量流量试错。
 
-- WAF/CDN：接入公网流量并执行 1% → 10% → 50% → 100% 分段放量。
-- OSS：保存 Console、Storefront、Auth 三份不可变客户端制品；`releases/current.json` 是唯一原子指针。
-- ALB：只把 `/api/v1/*` 与 `/health/*` 转发给 ACK 内的 `shop-api` Service。
-- ACK：至少三个 ApiMain Pod、两个 JobsMain Pod，跨可用区调度；MigrationMain 仅作为一次性 Job 运行。
-- RDS PostgreSQL：主备、持续 WAL、PITR、跨地域副本和客户管理 KMS 密钥。
-- Redis、队列、OSS、KMS、Secret Manager：仅通过工作负载身份与 Secret Reference 访问，不向 Pod 写入长期明文凭据。
+## Owner 与前置权限
 
-配置真值分别位于 `infrastructure/container/Runtime.yml`、`infrastructure/container/Migration.yml`、`infrastructure/cloud/Delivery.yml`、`infrastructure/network/Edge.yml` 与 `infrastructure/backup/Policy.yml`。不存在 PM2、Vite Preview、Caddy、独立缓存服务或旧 API/Job 进程。
+Release Commander 主责，Reliability、Database、Security、Api、Jobs、Provider、Frontend 与领域 Owner 分阶段签字。执行身份必须为短时工作负载身份并受双人审批；生产只接受同一 Release Bundle 中的代码、配置、迁移、Extension Manifest、SBOM、合同、Api/Jobs/Provider/Migration 镜像和 auth/console/storefront/miniapp/store/supplier 六端制品。禁止生产拉源码、重建、使用长期凭据或现场改供应商规则。
 
-## Release Bundle 合同
+## 只读诊断（Diagnosis）
 
-发布目录必须是绝对路径，并包含：
+以 `{releaseDirectory}` 运行 `infrastructure/cloud/Deploy.sh /absolute/path/to/signed-release` 的只读验证阶段，核对 Sigstore、`checksums.sha256`、镜像 Digest、合同 Hash、Schema Head、配置 Hash、Extension Hash、SBOM、Provenance、六端 Bundle、测试证据和批准签字。读取当前 Release Head、迁移 Phase、Canary Scope、Outbox/Inbox 水位、Job Lease 和十项业务不变量；不得输出 Secret。
 
-```text
-release.json
-release.sigstore.json
-checksums.sha256
-current.json
-sbom.cdx.json
-provenance.json
-clients/
-  auth/
-  console/
-  storefront/
-```
+## 止血（Stop loss）
 
-`release.json` 必须符合 `shop.release.v1`，同时绑定 Git Commit、Contract Hash、Target Schema Head、Commerce 镜像 Digest、三端文件 Hash、SBOM、Provenance、数据库快照、预发布结果、11 个 P1 Provider 正式沙箱结果与业务发布批准。`scripts/release/validate.mjs` 失败时发布关闭。
+任一 Gate 失败立即停止后续 Stage；Canary 失败冻结新 Scope 写入并保持健康版本服务其他 Scope。Migration Retire 前保留旧应用/结构的受控恢复能力；支付 Unknown、库存异常、账务不平、凭证重复或跨 Scope 立即暂停相关写入。不得双写、不得旧新实例共同访问硬切后的写模型、不得绕过门禁。
 
-## 硬切顺序
+## 恢复（Recovery）
 
-1. WAF/ALB 打开维护状态，拒绝新会话和写入；排空请求、Outbox、Queue 和 Job Lease。
-2. 创建并验证可恢复整库快照，记录不可变 OSS 引用。
-3. 停止旧 ApiMain 和 JobsMain，确认旧实例为零。
-4. `deploy.sh` 先验 Sigstore Bundle、文件 Hash、SBOM/Provenance、预发布与批准证据。
-5. 运行绑定同一 Commerce 镜像 Digest 的 MigrationMain，执行 Target Schema、Backfill、Reconciliation 与旧对象删除；失败保持维护状态。
-6. 上传三端不可变 OSS 目录，启动新的三副本 ApiMain 与双副本 JobsMain，通过 Startup、Readiness、Liveness、Dependency 和集群内 Smoke。
-7. 原子更新 `releases/current.json`；ALB 仅向新版本按 1%、10%、50%、100% 开流，其余流量继续看到维护页，不回流到旧版本。
-8. 每档核对 SLI、Error Budget、订单/支付/退款/库存/卡券/福利/账务、Provider Health、Audit 与 Trace；任一异常立即冻结新写并执行 `runbooks/releaserollback.md` 的整库快照和匹配旧制品原子恢复。
-9. 稳定窗口结束后关闭旧凭据、旧数据库角色、旧队列、旧域名和旧资源，只保留签名发布证据。
+严格由 `infrastructure/cloud/Delivery.yml` 执行：artifactverify → snapshot → migrationprepare → migrationbackfill → migrationassert → runtimecanary → contractcutover → clientpublish → fullrollout → migrationretire → evidencearchive。Api、Jobs、Provider 使用同一镜像不同入口，Migration 为单实例阶段任务；每个 Runtime 通过 Startup/Readiness/Liveness/Dependency，六端以同一签名 Manifest 原子发布。流量按 1/10/50/100 门禁推进，每档核对 SLO、Provider 和业务不变量。
 
-## 执行
+## 数据核对（Data repair / Validation / Escalation / Audit）
 
-发布账号必须使用短期工作负载身份，并预装 `cosign`、`jq`、`kubectl` 与 `ossutil`。`SHOP_CUTOVER_CONTROLLER` 指向经审计的绝对可执行 Adapter，统一封装 ALB/WAF 维护、排空、RDS 快照验证、各档 SLI/业务不变量验证以及“整库快照 + 匹配旧制品”原子回滚，发布脚本不重复云厂商规则：
+Validation 必须证明 Schema/Role/RLS/合同/配置 Hash 一致，订单金额、库存、支付、账本、凭证、福利、Scope、Outbox/Inbox、报表 Watermark 和审计链均正确，六端 Smoke/深链/缓存 Head 无漂移。Data repair 仅使用已准备的前向修复、事件重放位点或领域补偿。Escalation 按 P0/P1 路由对应 Owner；Audit 归档每个 Gate 的输入 Hash、结果、Actor、时间、Trace 和签字。
 
-```bash
-infrastructure/cloud/Deploy.sh /absolute/path/to/signed-release
-```
+## 回滚边界
 
-`SHOP_NAMESPACE`、`SHOP_RELEASE_IDENTITY` 和 `SHOP_RELEASE_ISSUER` 由受保护环境配置。Release 脚本不会读取 Git、不会运行 `npm ci`、不会构建，也不接受 Tag 或 Branch 作为发布输入。
+Retire 前可恢复无破坏性应用版本、六端 Bundle、Extension 启用状态、CDN Head 和配置版本，并停止未完成迁移；已成功的支付、退款、核销、分录、发放和审批只能补偿/冲正。Voucher 硬切后只读止血并前向修复。Retire 是显式不可逆点，之后数据库只前进修复，不能启动旧写模型。
 
-## 失败关闭
+## 沟通模板
 
-- 签名、Hash、镜像 Digest、Schema Head、Client Set、SBOM、Provenance、数据库快照、Provider Sandbox、Stage 或 Approval 任一缺失：不得停旧实例。
-- Migration 开始后失败：保持维护状态，不在新 Schema 上恢复旧进程。
-- Smoke 失败：不切换 OSS 指针，不开放公网流量。
-- 金丝雀异常：停止新写，整库恢复与旧签名制品必须作为一个原子回滚单元，禁止双写、兼容路由或旧新并行访问目标库。
+“发布 `{releaseId}`，阶段 `{stage}`，流量 `{percentage}`，影响 Scope `{scope}`，Gate `{gateResult}`，当前措施 `{containment}`，下一决策 `{decisionAt}`，Release Commander `{owner}`，证据 `{evidenceRef}`。”
+
+## 关闭条件
+
+所有声明式 Stage 与签字完成；四进程和六端版本一致；100% 流量观察窗无 SLO 燃尽；十项不变量、Provider、迁移和恢复证据通过；旧权限/Secret 租约/资源按计划退役；不可变证据包归档完成。
+
+## 复盘链接（Postmortem）
+
+门禁漏检、回滚、Retire 后修复、P0/P1、版本漂移或不变量异常必须填写 `{postmortemUrl}`，记录阶段时间线、决策、数据证据、恢复耗时、检测缺口和改进 Owner。

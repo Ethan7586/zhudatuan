@@ -1,18 +1,20 @@
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 
 export class PgInvoiceProfileRepository {
   constructor(private readonly database: SqlExecutor) {}
 
-  manage(input: Readonly<{
-    id: string;
-    ownerId: string;
-    title: Readonly<{ ciphertext: string; keyVersion: string }>;
-    taxid: Readonly<{ ciphertext: string; fingerprint: string; keyVersion: string }>;
-    address: Readonly<{ ciphertext: string; keyVersion: string }> | null;
-    titleMasked: string;
-    taxidMasked: string;
-    expectedVersion: number | null;
-  }>) {
+  manage(
+    input: Readonly<{
+      id: string;
+      ownerId: string;
+      title: Readonly<{ ciphertext: string; keyVersion: string }>;
+      taxid: Readonly<{ ciphertext: string; fingerprint: string; keyVersion: string }>;
+      address: Readonly<{ ciphertext: string; keyVersion: string }> | null;
+      titleMasked: string;
+      taxidMasked: string;
+      expectedVersion: number | null;
+    }>
+  ) {
     return this.database.query(
       `insert into invoice.profile(id,owner_id,title_ciphertext,title_key_version,taxid_ciphertext,taxid_token,
       taxid_key_version,address_ciphertext,address_key_version,title_masked,taxid_masked,status,version)
@@ -22,9 +24,20 @@ export class PgInvoiceProfileRepository {
       address_key_version=excluded.address_key_version,title_masked=excluded.title_masked,taxid_masked=excluded.taxid_masked,
       version=invoice.profile.version+1 where invoice.profile.owner_id=$2
       and ($12::bigint is null or invoice.profile.version=$12) returning id,owner_id,status,version`,
-      [input.id, input.ownerId, input.title.ciphertext, input.title.keyVersion, input.taxid.ciphertext, input.taxid.fingerprint,
-        input.taxid.keyVersion, input.address?.ciphertext ?? null, input.address?.keyVersion ?? null, input.titleMasked,
-        input.taxidMasked, input.expectedVersion]
+      [
+        input.id,
+        input.ownerId,
+        input.title.ciphertext,
+        input.title.keyVersion,
+        input.taxid.ciphertext,
+        input.taxid.fingerprint,
+        input.taxid.keyVersion,
+        input.address?.ciphertext ?? null,
+        input.address?.keyVersion ?? null,
+        input.titleMasked,
+        input.taxidMasked,
+        input.expectedVersion,
+      ]
     );
   }
 }

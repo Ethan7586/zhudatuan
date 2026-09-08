@@ -28,6 +28,7 @@ const summary = Object.freeze({
   mall_total: 3,
   price_amount_minor: 9800,
   price_currency: 'CNY',
+  price_version: 3,
   saleable_stock: 9,
   qualification_eligible: true,
   data_gaps: [],

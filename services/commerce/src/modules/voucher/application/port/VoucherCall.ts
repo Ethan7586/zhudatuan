@@ -1,6 +1,6 @@
 import type { OperationId, OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext, WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { HandlerContext, WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationReply } from '../../../../pipeline/OperationHandler';
 
 export interface VoucherCall<TKey extends OperationId> {
   readonly input: OperationInputFor<TKey>;

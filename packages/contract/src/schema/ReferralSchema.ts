@@ -1,4 +1,4 @@
-import { array, boolean, literal, null as nullSchema, optional, strictObject, string, union } from 'zod/mini';
+import { boolean, literal, null as nullSchema, optional, strictObject, string, union } from 'zod/mini';
 import { basisPoints, currency, expectedVersion, id, integer, isoUtc, pageOutput, pageQuery, unsigned, version } from './Primitives';
 
 const status = literal(['applied', 'active', 'disqualified']);
@@ -86,13 +86,27 @@ export const REFERRAL_QUERY_SCHEMAS = {
   ReferralMembersReadInput: filter,
   ReferralBindingsReadInput: filter,
   ReferralCommissionsReadInput: filter,
-  ReferralEarningsReadInput: strictObject({ cursor: optional(string()), limit: optional(string()) }),
+  ReferralEarningsReadInput: strictObject(pageQuery),
   ReferralLinksReadInput: strictObject({ productId: optional(id<'product'>()) }),
   ReferralWithdrawalsReadInput: filter,
 } as const;
 
 export const REFERRAL_BODY_SCHEMAS = {
-  ReferralSettingsManageInput: strictObject({ enabled: boolean(), recruitEnabled: boolean(), reviewRequired: boolean(), rewardEnabled: boolean(), bindingMode: literal(['permanent', 'days']), firstTouchDays: unsigned, freezeDays: unsigned, settlementTrigger: literal(['paid', 'received']), rateBasisPoints: basisPoints, minimumWithdrawalMinor: unsigned, monthlyWithdrawalLimit: union([unsigned, nullSchema()]), currency, ...expected }),
+  ReferralSettingsManageInput: strictObject({
+    enabled: boolean(),
+    recruitEnabled: boolean(),
+    reviewRequired: boolean(),
+    rewardEnabled: boolean(),
+    bindingMode: literal(['permanent', 'days']),
+    firstTouchDays: unsigned,
+    freezeDays: unsigned,
+    settlementTrigger: literal(['paid', 'received']),
+    rateBasisPoints: basisPoints,
+    minimumWithdrawalMinor: unsigned,
+    monthlyWithdrawalLimit: union([unsigned, nullSchema()]),
+    currency,
+    ...expected,
+  }),
   ReferralProductsManageInput: strictObject({ enabled: boolean(), rateBasisPoints: basisPoints, rewardBasisPoints: basisPoints, ...expected }),
   ReferralMembersApplyInput: strictObject({ displayName: string(), mobile: string(), reason: string() }),
   ReferralMembersApproveInput: strictObject(expected),
@@ -113,7 +127,7 @@ export const REFERRAL_OUTPUT_SCHEMAS = {
   ReferralBindingsReadOutput: pageOutput(binding),
   ReferralBindingsCreateOutput: binding,
   ReferralCommissionsReadOutput: pageOutput(commission),
-  ReferralEarningsReadOutput: strictObject({ availableMinor: integer, pendingMinor: integer, settledMinor: integer, reversedMinor: integer, currency, version, items: array(commission) }),
+  ReferralEarningsReadOutput: strictObject({ availableMinor: integer, pendingMinor: integer, settledMinor: integer, reversedMinor: integer, currency, version, ...pageOutput(commission).shape }),
   ReferralLinksReadOutput: strictObject({ token: string(), url: string(), expiresAt: isoUtc, productId: union([id<'product'>(), nullSchema()]) }),
   ReferralWithdrawalsReadOutput: pageOutput(withdrawal),
   ReferralWithdrawalsCreateOutput: withdrawal,

@@ -10,7 +10,18 @@ export class Sla {
     readonly reopenSeconds: number,
     readonly version: number
   ) {
-    if (!id || !scope || !Number.isSafeInteger(responseSeconds) || responseSeconds < 1 || !Number.isSafeInteger(resolutionSeconds) || resolutionSeconds < responseSeconds || !Number.isSafeInteger(reopenSeconds) || reopenSeconds < 1 || !Number.isSafeInteger(version) || version < 1)
+    if (
+      !id ||
+      !scope ||
+      !Number.isSafeInteger(responseSeconds) ||
+      responseSeconds < 1 ||
+      !Number.isSafeInteger(resolutionSeconds) ||
+      resolutionSeconds < responseSeconds ||
+      !Number.isSafeInteger(reopenSeconds) ||
+      reopenSeconds < 1 ||
+      !Number.isSafeInteger(version) ||
+      version < 1
+    )
       throw new Error('SUPPORT_SLA_INVALID');
     Object.freeze(this);
   }

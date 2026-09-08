@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationRequest } from '../../../foundation/application/OperationRequest';
+import type { OperationRequest } from '../../../pipeline/OperationRequest';
 import { ReadMemberships } from '../application/service/ReadMemberships';
 import { SwitchMembership } from '../application/service/SwitchMembership';
 import { result, withWriteTransaction } from '../../../test/TransactionFixture';
@@ -32,19 +32,16 @@ describe('storefront membership switching', () => {
   it('keeps the active surface and binds the replacement session to the refreshed access version', async () => {
     const memberships = vi.fn(async () => [{ ...membership('membership:store', 11), target: 'store' as const }]);
     const issue = vi.fn(async () => ({ session: 'session:new', membership: 'membership:store', target: 'store' as const, expiresin: 3600, headers: { 'set-cookie': 'store-rotated' } }));
-    const action = new SwitchMembership(
-      { memberForPrincipal: vi.fn(async () => 'member:one') } as never,
-      { memberships } as never,
-      { issue },
-      { revokeCurrent: vi.fn(async () => ({ id: 'session:old', revokedAt: new Date() })) } as never,
-      { publish: vi.fn(async () => undefined) }
-    ).action();
+    const action = new SwitchMembership({ memberForPrincipal: vi.fn(async () => 'member:one') } as never, { memberships } as never, { issue }, { revokeCurrent: vi.fn(async () => ({ id: 'session:old', revokedAt: new Date() })) } as never, {
+      publish: vi.fn(async () => undefined),
+    }).action();
     const storeRequest = request('identity.memberships.switch', { membershipId: 'membership:store' });
-    const security = storeRequest.security.kind === 'session'
-      ? { ...storeRequest.security, access: { ...storeRequest.security.access, actor: { ...storeRequest.security.access.actor, target: 'store' as const } } }
-      : storeRequest.security;
+    const security = storeRequest.security.kind === 'session' ? { ...storeRequest.security, access: { ...storeRequest.security.access, actor: { ...storeRequest.security.access.actor, target: 'store' as const } } } : storeRequest.security;
 
-    await withWriteTransaction(async () => result([]), (transaction) => action({ ...storeRequest, security }, transaction));
+    await withWriteTransaction(
+      async () => result([]),
+      (transaction) => action({ ...storeRequest, security }, transaction)
+    );
 
     expect(memberships).toHaveBeenCalledWith(expect.anything(), 'member:one', 'store');
     expect(issue).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ target: 'store', expectedAccessVersion: 11 }));

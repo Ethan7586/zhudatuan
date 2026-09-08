@@ -1,5 +1,5 @@
 import { Button } from '@shop/design';
-import { Brand } from '@shop/design/brand';
+import { Brand } from '@shop/design/atom/Brand';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 export function AuthCard({

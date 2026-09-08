@@ -1,7 +1,7 @@
 import type { PoolClient, QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import { pgTransactionState } from '../../../../adapter/database/PgTransactionState';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { pgTransactionState } from '../../../../platform/database/PgTransactionState';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { PgCommissionSettlementProcess } from './PgCommissionSettlementProcess';
 
 describe('Referral settlement persistence', () => {
@@ -30,10 +30,7 @@ describe('Referral settlement persistence', () => {
     };
     const post = vi.fn(async () => ({ journalId: 'journal:one' }));
     const process = new PgCommissionSettlementProcess(manager as never, { post } as never, { now: () => new Date('2026-09-05T08:00:00.000Z') });
-    const [first, second] = await Promise.all([
-      process.settle('mall:one', 'order:one', new AbortController().signal, Date.now() + 10_000),
-      process.settle('mall:one', 'order:one', new AbortController().signal, Date.now() + 10_000),
-    ]);
+    const [first, second] = await Promise.all([process.settle('mall:one', 'order:one', new AbortController().signal, Date.now() + 10_000), process.settle('mall:one', 'order:one', new AbortController().signal, Date.now() + 10_000)]);
 
     expect([...first.items, ...second.items].filter(({ outcome }) => outcome === 'succeeded')).toHaveLength(1);
     expect(post).toHaveBeenCalledOnce();

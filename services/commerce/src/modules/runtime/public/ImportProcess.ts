@@ -1,6 +1,6 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
-import type { TransactionManager } from '../../../foundation/persistence/TransactionManager';
+import { publicPort } from '../../../composition/ModuleRegistry';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../platform/database/TransactionContext';
+import type { TransactionManager } from '../../../platform/database/TransactionManager';
 import type { StoredObject } from './ObjectPort';
 
 export type ImportOwner = 'catalog' | 'finance' | 'inventory' | 'member' | 'order' | 'voucher';
@@ -57,9 +57,20 @@ export interface ImportPreparedBatch {
   readonly failures: readonly ImportFailure[];
 }
 
-export interface ImportRuntimeChunk extends ImportStagedChunk { readonly token: number }
-export interface ImportStageCursor { readonly sequence: number; readonly staged: number; readonly size?: number }
-export interface ImportProgress { readonly total: number; readonly processed: number; readonly succeeded: number; readonly failed: number }
+export interface ImportRuntimeChunk extends ImportStagedChunk {
+  readonly token: number;
+}
+export interface ImportStageCursor {
+  readonly sequence: number;
+  readonly staged: number;
+  readonly size?: number;
+}
+export interface ImportProgress {
+  readonly total: number;
+  readonly processed: number;
+  readonly succeeded: number;
+  readonly failed: number;
+}
 
 export interface ImportRuntimeCoordinator {
   find(context: ReadTransactionContext, id: string, owner: string): Promise<ImportTarget | null>;

@@ -1,11 +1,11 @@
 import { identityLifecycle as operationLifecycle, type IdentityLifecycle as OperationLifecycle } from '../model/IdentityAction';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { createHmac } from 'node:crypto';
 
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { requirePreauth } from '../../../../foundation/security/OperationSecurityContext';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { requirePreauth } from '../../../../platform/security/OperationSecurityContext';
 import type { InvitationRepository } from '../port/InvitationRepository';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';
 import type { SessionIssuer } from '../port/SessionIssuer';

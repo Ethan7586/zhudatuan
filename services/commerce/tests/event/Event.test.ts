@@ -1,12 +1,12 @@
 import { COMMERCE_EVENTS } from '@shop/contract';
 import type { PoolClient, QueryResult } from 'pg';
 import { describe, expect, it } from 'vitest';
-import { EVENT_SCHEMA_TYPES, eventVersion } from '../../src/app/events';
+import { EVENT_SCHEMA_TYPES, eventVersion } from '../../src/generated/EventCatalog';
 import { EVENT_SUBSCRIPTIONS } from '../../src/generated/EventSubscriptions';
-import type { DatabasePool } from '../../src/foundation/persistence/Pool';
-import { RuntimeEventPublisher } from '../../src/adapter/messaging/RuntimeEventPublisher';
-import type { OutboxMessage } from '../../src/foundation/messaging/Outbox';
-import { EventRegistry } from '../../src/bootstrap/EventRegistry';
+import type { DatabasePool } from '../../src/platform/database/Pool';
+import { RuntimeEventPublisher } from '../../src/platform/messaging/RuntimeEventPublisher';
+import type { OutboxMessage } from '../../src/platform/messaging/Outbox';
+import { EventRegistry } from '../../src/composition/EventRegistry';
 
 describe('event contract and replay', () => {
   it('has one exact runtime version and only declared event subscriptions', () => {

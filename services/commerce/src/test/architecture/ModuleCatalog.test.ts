@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { OperationCatalog } from '@shop/contract';
-import { BUSINESS_MODULES, COMMERCE_MODULES, SUPPORT_MODULES } from '../../app/modules';
+import { BUSINESS_MODULES, COMMERCE_MODULES, SUPPORT_MODULES } from '../../generated/ModuleCatalog';
 
 describe('bounded-context catalog', () => {
   it('contains exactly thirty business modules and one Navigation support module', () => {

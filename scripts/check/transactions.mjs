@@ -106,7 +106,7 @@ function followable(declaration) {
 function externalDeclaration(declaration) {
   if (!declaration) return true;
   const file = declaration.getSourceFile().fileName.split(path.sep).join('/');
-  return /\/foundation\/infrastructure\/(?:KmsClient|ObjectStore|ProviderSecret)\.ts$|\/application\/port\/(?:DirectoryProvider|FederatedIdentityProvider|PaymentGateway|PayoutGateway|RemoteRefundProvider)\.ts$|\/infrastructure\/(?:adapter|security)\//.test(
+  return /\/platform\/(?:crypto\/KmsClient|secret\/ProviderSecret|object\/ObjectStore)\.ts$|\/application\/port\/(?:DirectoryProvider|FederatedIdentityProvider|PaymentGateway|PayoutGateway|RemoteRefundProvider)\.ts$|\/infrastructure\/(?:adapter|security)\//.test(
     file
   );
 }

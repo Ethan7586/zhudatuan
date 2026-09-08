@@ -1,8 +1,8 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../platform/database/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
 export type { PaymentIntentCommand, PaymentIntentReceipt, PaymentPort, PaymentRefundCommand, PaymentScene, PaymentTenderPlan } from './PaymentPort';
 
-import type { OperationRequest } from '../../../foundation/application/OperationHandler';
+import type { OperationRequest } from '../../../pipeline/OperationHandler';
 import type { PaymentIntentReceipt, PaymentScene, PaymentTenderPlan } from './PaymentPort';
 
 export type PreparedPayment = PaymentIntentReceipt;

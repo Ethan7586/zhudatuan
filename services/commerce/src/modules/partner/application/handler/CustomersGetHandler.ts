@@ -1,8 +1,8 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { CustomerRepository } from '../port/CustomerRepository';
 
 export class CustomersGetHandler implements OperationHandler<'partner.customers.get', 'read'> {

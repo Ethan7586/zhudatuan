@@ -1,5 +1,5 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { QueryPage } from '../../../../foundation/application/Validation';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { QueryPage } from '../../../../pipeline/Validation';
 import type { ConnectionState } from '../../domain/model/Connection';
 
 export interface ConnectionConfiguration {

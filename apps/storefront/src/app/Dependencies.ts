@@ -4,6 +4,7 @@ import { createFetchBenefit } from '@shop/sdk/benefit';
 import { createFetchCart } from '@shop/sdk/cart';
 import { createFetchCheckout } from '@shop/sdk/checkout';
 import { createFetchFinance } from '@shop/sdk/finance';
+import { createFetchFulfillment } from '@shop/sdk/fulfillment';
 import { createFetchIdentity } from '@shop/sdk/identity';
 import { createFetchMember } from '@shop/sdk/member';
 import { createFetchNotification } from '@shop/sdk/notification';
@@ -14,6 +15,8 @@ import { createFetchStorefront } from '@shop/sdk/storefront';
 import { createFetchSupport } from '@shop/sdk/support';
 import { createFetchVoucher } from '@shop/sdk/voucher';
 import { createStorefrontContext } from '../shared/api/RequestContext';
+import { BrowserShareAdapter } from '../shared/platform/BrowserShareAdapter';
+import type { SharePort } from '../shared/platform/SharePort';
 import { SessionGateway } from '../entity/session';
 import { AccountGateway } from '../feature/account/infrastructure/AccountGateway';
 import { AfterSaleGateway } from '../feature/aftersale/infrastructure/AfterSaleGateway';
@@ -49,6 +52,7 @@ export interface Dependencies {
   readonly payment: PaymentGateway;
   readonly product: ProductGateway;
   readonly referral: ReferralGateway;
+  readonly share: SharePort;
   readonly security: SecurityGateway;
   readonly stepup: StepupGateway;
   readonly support: SupportGateway;
@@ -64,6 +68,7 @@ export function createDependencies(handle: StorefrontHandle): Dependencies {
     cart: createFetchCart(origin),
     checkout: createFetchCheckout(origin),
     finance: createFetchFinance(origin),
+    fulfillment: createFetchFulfillment(origin),
     identity: createFetchIdentity(origin),
     member: createFetchMember(origin),
     notification: createFetchNotification(origin),
@@ -85,10 +90,11 @@ export function createDependencies(handle: StorefrontHandle): Dependencies {
     home: new HomeGateway(api.storefront, context),
     notification: new NotificationGateway(api.notification, context),
     invoice: new InvoiceGateway(api.finance, context),
-    order: new OrderGateway(api.order, context),
+    order: new OrderGateway(api.order, api.fulfillment, context),
     payment: new PaymentGateway(api.payment, context),
     product: new ProductGateway(api.storefront, context),
     referral: new ReferralGateway(api.referral, context),
+    share: new BrowserShareAdapter(window.navigator),
     security: new SecurityGateway(api.identity, context),
     stepup: new StepupGateway(api.identity, context),
     support: new SupportGateway(api.support, context),

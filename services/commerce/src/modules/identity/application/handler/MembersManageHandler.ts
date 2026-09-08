@@ -1,21 +1,17 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
+import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
 import type { IdentityAction, IdentityLifecycle } from '../model/IdentityAction';
 import { identityReply, identityRequest } from '../model/IdentityExecution';
 import type { LoadedInvitation, PreparedInvitation } from '../service/CreateInvitation';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { PERM_IDENTITY_INVITATION_ISSUE } from '@shop/authz/ids';
 
 type LoadedMember = Readonly<{ kind: 'manage' }> | Readonly<{ kind: 'create'; value: LoadedInvitation }>;
-type PreparedMember =
-  | Readonly<{ kind: 'manage'; request: OperationRequest }>
-  | Readonly<{ kind: 'create'; request: OperationRequest; preparation: PreparedInvitation }>;
-type MemberCheckpoint =
-  | Readonly<{ kind: 'manage'; result: OperationResult }>
-  | Readonly<{ kind: 'create'; request: OperationRequest; preparation: PreparedInvitation; result: OperationResult }>;
+type PreparedMember = Readonly<{ kind: 'manage'; request: OperationRequest }> | Readonly<{ kind: 'create'; request: OperationRequest; preparation: PreparedInvitation }>;
+type MemberCheckpoint = Readonly<{ kind: 'manage'; result: OperationResult }> | Readonly<{ kind: 'create'; request: OperationRequest; preparation: PreparedInvitation; result: OperationResult }>;
 
 export class MembersManageHandler implements DurableOperationHandler<'identity.members.manage', PreparedMember, MemberCheckpoint, 'write', LoadedMember> {
   readonly operation = 'identity.members.manage' as const;
@@ -56,9 +52,7 @@ export class MembersManageHandler implements DurableOperationHandler<'identity.m
 
   async finalize(_input: OperationInputFor<'identity.members.manage'>, checkpoint: MemberCheckpoint, _context: FinalizeContext<'identity.members.manage'>): Promise<OperationReply<OperationOutputFor<'identity.members.manage'>>> {
     if (checkpoint.kind === 'manage') return identityReply<'identity.members.manage'>(checkpoint.result);
-    const result = this.create.finalize
-      ? await this.create.finalize(checkpoint.request, checkpoint.result, checkpoint.preparation)
-      : checkpoint.result;
+    const result = this.create.finalize ? await this.create.finalize(checkpoint.request, checkpoint.result, checkpoint.preparation) : checkpoint.result;
     return identityReply<'identity.members.manage'>(createdResult(result));
   }
 

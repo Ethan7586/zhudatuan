@@ -1,5 +1,5 @@
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AuditProjectionRepository, FinanceAuditFact, FinanceAuditFactKind, FinanceAuditProjection } from '../../application/port/AuditProjectionRepository';
 
 interface AuditFactRow {
@@ -21,17 +21,19 @@ export class PgAuditProjectionRepository implements AuditProjectionRepository {
   async read(context: ReadTransactionContext, scopes: readonly string[], reference: string): Promise<FinanceAuditProjection> {
     if (scopes.length === 0) return empty();
     const result = await this.transactions.database(context).query<AuditFactRow>(SQL, [scopes, reference]);
-    const facts = result.rows.map((row) => Object.freeze({
-      id: row.id,
-      kind: row.kind,
-      label: row.label,
-      business_reference: row.business_reference,
-      state: row.state,
-      amount_minor: integer(row.amount_minor),
-      currency: row.currency,
-      occurred_at: timestamp(row.occurred_at),
-      version: integer(row.version),
-    } satisfies FinanceAuditFact));
+    const facts = result.rows.map((row) =>
+      Object.freeze({
+        id: row.id,
+        kind: row.kind,
+        label: row.label,
+        business_reference: row.business_reference,
+        state: row.state,
+        amount_minor: integer(row.amount_minor),
+        currency: row.currency,
+        occurred_at: timestamp(row.occurred_at),
+        version: integer(row.version),
+      } satisfies FinanceAuditFact)
+    );
     return Object.freeze({ facts: Object.freeze(facts), resources: Object.freeze([...(result.rows[0]?.resources ?? [])]) });
   }
 }

@@ -1,8 +1,8 @@
-import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 import type { OrderFulfillmentPort } from '../../../order/public';
 import type { OrganizationReadPort } from '../../../organization/public';

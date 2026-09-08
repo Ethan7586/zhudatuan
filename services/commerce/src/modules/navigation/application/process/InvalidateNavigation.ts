@@ -1,5 +1,5 @@
-import type { Inbox } from '../../../../foundation/messaging/Inbox';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import type { Inbox } from '../../../../platform/messaging/Inbox';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 
 export interface NavigationInvalidator {
   handle(event: Readonly<{ id: string; type: string; scope: string; payload: Readonly<Record<string, unknown>> }>): Promise<boolean>;

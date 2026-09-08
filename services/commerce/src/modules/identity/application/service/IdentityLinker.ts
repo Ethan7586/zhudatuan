@@ -1,5 +1,5 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 
 import type { IdentityLinkRepository } from '../port/IdentityLinkRepository';
 export class IdentityLinker {

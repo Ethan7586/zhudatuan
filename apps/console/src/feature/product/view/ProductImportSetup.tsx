@@ -1,26 +1,4 @@
-import type { ProductImportStep, ProductImportViewModel } from '../viewmodel/ProductImportViewModel';
-
-const steps: readonly Readonly<{ step: ProductImportStep; label: string }>[] = Object.freeze([
-  { step: 1, label: '模板' },
-  { step: 2, label: '上传' },
-  { step: 3, label: '映射' },
-  { step: 4, label: '校验' },
-  { step: 5, label: '提交' },
-  { step: 6, label: '任务' },
-]);
-
-export function ProductImportSteps({ current }: Readonly<{ current: ProductImportStep }>) {
-  return (
-    <ol className="productimportsteps" aria-label="商品导入步骤">
-      {steps.map((item) => (
-        <li key={item.step} className={item.step === current ? 'isactive' : item.step < current ? 'iscomplete' : undefined}>
-          <span>{item.step}</span>
-          {item.label}
-        </li>
-      ))}
-    </ol>
-  );
-}
+import type { ProductImportViewModel } from '../viewmodel/ProductImportViewModel';
 
 export function ProductImportSetup({ viewmodel }: Readonly<{ viewmodel: ProductImportViewModel }>) {
   if (viewmodel.step === 1) return <TemplateStep viewmodel={viewmodel} />;

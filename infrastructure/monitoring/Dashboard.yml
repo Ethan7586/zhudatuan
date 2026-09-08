@@ -1,0 +1,62 @@
+version: 1
+owner: reliability
+source: infrastructure/monitoring/Catalog.yml
+thresholds: config/telemetry.yml
+defaults:
+  timeRange: 6h
+  refreshSeconds: 30
+  variables: [environment, release]
+  links: [recentchanges, tracequery, runbook]
+  freshnessPanel: required
+  noDataState: alert
+dashboards:
+  - id: identity
+    title: 身份与权限
+    owner: identity
+    runbook: docs/operations/sessioncompromise.md
+    panels: [operationred, loginresult, challengefailure, sessionrevocation, accessdenial, navigationdrift, dependencyuse]
+  - id: salechain
+    title: 商品可售链
+    owner: catalog
+    runbook: docs/operations/catalogimport.md
+    panels: [operationred, listingstate, qualificationexpiry, pricefailure, inventoryconflict, poolpublication, providerreadiness]
+  - id: transaction
+    title: 交易与履约
+    owner: order
+    runbook: docs/operations/paymentquery.md
+    panels: [operationred, checkoutlatency, orderresult, paymentunknown, paymentcallback, fulfillmentstate, refundresult, invariantfailures]
+  - id: voucher
+    title: 卡券全生命周期
+    owner: voucher
+    runbook: docs/operations/voucherissue.md
+    panels: [operationred, credentialcapacity, batchprogress, issuecompletion, holdstate, redemptionconflict, refundvalue, secretaccess]
+  - id: finance
+    title: 财务与对账
+    owner: finance
+    runbook: docs/operations/reconciliation.md
+    panels: [operationred, statementwatermark, reconciliationdifference, ledgerimbalance, settlementstate, withdrawalstate, invoicestate, closeperiod]
+  - id: provider
+    title: Provider 扩展
+    owner: extension
+    runbook: docs/operations/providerhealth.md
+    repeat:
+      source: packages/contract/src/RequirementCatalog.ts#PROVIDER_CATALOG_RECORDS[delivery=required]
+      variable: provider
+    panels: [providerred, capabilityhealth, circuitstate, inflight, throttle, syncwatermark, webhooklag, credentiallease]
+  - id: runtime
+    title: Runtime 与资源
+    owner: runtime
+    runbook: docs/operations/outbox.md
+    panels: [jobred, queuedepth, oldestmessage, leaseconflict, checkpointage, outboxlag, inboxduplicate, deadletter, postgresuse, redisuse, objectuse, workloaduse]
+  - id: clients
+    title: 六端体验
+    owner: frontend
+    runbook: docs/operations/deployment.md
+    repeat:
+      source: config/clients.yml
+      variable: surface
+      exact: [auth, console, storefront, miniapp, store, supplier]
+    panels: [navigationred, lcp, inp, cls, queryfailure, mutationfailure, streamreconnect, clienterror, releasecomparison]
+releaseEvidence:
+  export: immutable-json
+  include: [dashboard, query, range, release, thresholdversion, generatedat, hash]

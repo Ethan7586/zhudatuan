@@ -1,7 +1,7 @@
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { createHash, randomUUID } from 'node:crypto';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
 import type { RiskCheckInput, RiskPolicyRecord, RiskRepository } from '../../application/port/RiskCheck';
 import { RiskAction } from '../../domain/model/RiskAction';
 import { signal, type Signal, type SignalSensitivity } from '../../domain/model/Signal';
@@ -83,14 +83,31 @@ export class PgRiskRepository implements RiskRepository {
     await this.database.query(
       `insert into risk.decision(id,scope_id,operation,actor_id,resource_id,policy_id,policy_version,outcome,score,
       safe_reason,evidence,trace_id,decided_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb,$12,clock_timestamp())`,
-      [id, input.check.scope, input.check.operation, input.check.actor, input.check.resource, input.draft.policy.id, input.draft.policy.version,
-        input.draft.outcome, input.draft.score, input.draft.safeReason, JSON.stringify(evidence), input.check.trace]
+      [
+        id,
+        input.check.scope,
+        input.check.operation,
+        input.check.actor,
+        input.check.resource,
+        input.draft.policy.id,
+        input.draft.policy.version,
+        input.draft.outcome,
+        input.draft.score,
+        input.draft.safeReason,
+        JSON.stringify(evidence),
+        input.check.trace,
+      ]
     );
     const runtime = new PgRuntimeWriter(this.database);
     if (input.draft.outcome === 'deny') {
       await runtime.append({
-        id: `event:risk:block:${id}`, type: 'risk.transaction.blocked', aggregateType: 'riskdecision', aggregate: id,
-        scope: input.check.scope, payload: { decision: id, operation: input.check.operation, reason: input.draft.safeReason }, trace: input.check.trace,
+        id: `event:risk:block:${id}`,
+        type: 'risk.transaction.blocked',
+        aggregateType: 'riskdecision',
+        aggregate: id,
+        scope: input.check.scope,
+        payload: { decision: id, operation: input.check.operation, reason: input.draft.safeReason },
+        trace: input.check.trace,
       });
     }
     if (input.draft.outcome === 'review' || input.draft.outcome === 'deny') await this.openCase(id, input);
@@ -101,7 +118,11 @@ export class PgRiskRepository implements RiskRepository {
   async defer(input: RiskCheckInput): Promise<string> {
     const id = `riskassessment:${randomUUID()}`;
     const signals = input.signals.map((item) => ({
-      type: item.type, version: item.version, source: item.source, sensitivity: item.sensitivity, observedAt: item.observedAt,
+      type: item.type,
+      version: item.version,
+      source: item.source,
+      sensitivity: item.sensitivity,
+      observedAt: item.observedAt,
       ...(item.sensitivity === 'sensitive' ? {} : { value: item.value }),
     }));
     await this.database.query(
@@ -124,8 +145,7 @@ export class PgRiskRepository implements RiskRepository {
       `insert into risk.action(id,scope_id,decision_id,kind,target_module,target_type,target_id,rationale,approval_required,state,
       evidence_hash,version,requested_at,updated_at,expires_at)
       values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,1,clock_timestamp(),clock_timestamp(),clock_timestamp()+interval '24 hours')`,
-      [id, input.check.scope, decision, proposal.kind, proposal.target.module, proposal.target.type, proposal.target.id, proposal.rationale,
-        proposal.approvalRequired, state, evidenceHash]
+      [id, input.check.scope, decision, proposal.kind, proposal.target.module, proposal.target.type, proposal.target.id, proposal.rationale, proposal.approvalRequired, state, evidenceHash]
     );
     await runtime.schedule({ id: `job:risk:action:${id}`, kind: 'riskscan', owner: 'risk', scope: input.check.scope, payload: { action: id }, priority: 5 });
   }
@@ -138,8 +158,13 @@ export class PgRiskRepository implements RiskRepository {
       [id, input.check.scope, decision, input.draft.outcome, input.draft.safeReason]
     );
     await new PgRuntimeWriter(this.database).append({
-      id: `event:${randomUUID()}`, type: 'risk.case.opened', aggregateType: 'riskcase', aggregate: id, scope: input.check.scope,
-      payload: { case: id, decision, outcome: input.draft.outcome }, trace: input.check.trace,
+      id: `event:${randomUUID()}`,
+      type: 'risk.case.opened',
+      aggregateType: 'riskcase',
+      aggregate: id,
+      scope: input.check.scope,
+      payload: { case: id, decision, outcome: input.draft.outcome },
+      trace: input.check.trace,
     });
   }
 }

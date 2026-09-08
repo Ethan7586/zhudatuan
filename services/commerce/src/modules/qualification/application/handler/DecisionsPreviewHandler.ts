@@ -1,9 +1,9 @@
 import { ContractJsonValueSchema, type ContractJsonValue, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord, integerField, textField } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import { changedRuleFields, QualificationRule } from '../../domain/model/QualificationRule';
 import type { QualificationRepository } from '../port/QualificationRepository';
 

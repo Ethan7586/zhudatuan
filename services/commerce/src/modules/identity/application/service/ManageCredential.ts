@@ -1,12 +1,12 @@
 import { identityLifecycle as operationLifecycle, type IdentityAction as OperationAction, type IdentityLifecycle as OperationLifecycle } from '../model/IdentityAction';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 import { createHmac } from 'node:crypto';
 
-import { reject } from '../../../../foundation/application/OperationRejection';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import type { KmsClient, CipherEnvelope } from '../../../../foundation/application/KmsPort';
-import type { RiskGate } from '../../../../foundation/security/RiskGate';
+import { reject } from '../../../../pipeline/OperationRejection';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import type { KmsClient, CipherEnvelope } from '../../../../pipeline/KmsPort';
+import type { RiskGate } from '../../../../platform/security/RiskGate';
 import type { IdentityMemberPort } from '../../../member/public';
 import type { ChallengePort } from '../port/ChallengePort';
 import type { PasswordPolicy } from '../../domain/policy/PasswordPolicy';

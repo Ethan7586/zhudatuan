@@ -1,6 +1,6 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { ReadState } from '../../domain/model/ReadState';
 import type { ReadStateStore } from '../../application/port/SupportPersistence';
 

@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { Reservation, type ReservationSnapshot } from '../../domain/model/Reservation';
 import { StockItem, type StockItemSnapshot, type StockItemState } from '../../domain/model/StockItem';
 import type { ReservationDemand } from '../../domain/policy/ReservationPolicy';
@@ -42,18 +42,43 @@ export interface TransitionRow extends ReservationRow {
 }
 
 export function restoreStock(row: StockRow): StockItem {
-  return StockItem.restore({ id: row.id, scope: row.scope_id, sku: row.sku_id, location: row.location_id, onhand: Number(row.onhand),
-    safety: Number(row.safety), state: row.status, version: Number(row.version), updatedAt: inventoryTime(row.updated_at) });
+  return StockItem.restore({
+    id: row.id,
+    scope: row.scope_id,
+    sku: row.sku_id,
+    location: row.location_id,
+    onhand: Number(row.onhand),
+    safety: Number(row.safety),
+    state: row.status,
+    version: Number(row.version),
+    updatedAt: inventoryTime(row.updated_at),
+  });
 }
 
 export function restoreReservation(row: ReservationRow): Reservation {
-  return Reservation.restore({ id: row.id, stockitem: row.stockitem_id, ownerKind: row.owner_type, owner: row.owner_id,
-    quantity: Number(row.quantity), state: row.state, expiresAt: inventoryTime(row.expires_at), createdAt: inventoryTime(row.created_at), version: Number(row.version) });
+  return Reservation.restore({
+    id: row.id,
+    stockitem: row.stockitem_id,
+    ownerKind: row.owner_type,
+    owner: row.owner_id,
+    quantity: Number(row.quantity),
+    state: row.state,
+    expiresAt: inventoryTime(row.expires_at),
+    createdAt: inventoryTime(row.created_at),
+    version: Number(row.version),
+  });
 }
 
 export function stockEvent(context: WriteTransactionContext, stock: StockItemSnapshot, reserved: number) {
-  return { id: `event:${randomUUID()}`, type: 'inventory.stock.changed', aggregateType: 'stockitem', aggregate: stock.id, scope: stock.scope,
-    trace: context.trace, payload: { stockitem: stock.id, sku: stock.sku, available: Math.max(0, stock.onhand - stock.safety - reserved), reserved, version: stock.version } } as const;
+  return {
+    id: `event:${randomUUID()}`,
+    type: 'inventory.stock.changed',
+    aggregateType: 'stockitem',
+    aggregate: stock.id,
+    scope: stock.scope,
+    trace: context.trace,
+    payload: { stockitem: stock.id, sku: stock.sku, available: Math.max(0, stock.onhand - stock.safety - reserved), reserved, version: stock.version },
+  } as const;
 }
 
 export function eventLines(demands: readonly ReservationDemand[]) {

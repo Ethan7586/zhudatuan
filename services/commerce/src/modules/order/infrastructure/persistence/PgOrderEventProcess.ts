@@ -1,6 +1,6 @@
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import type { OrderEventProcess, OrderProcessEvent } from '../../application/port/OrderEventProcess';
 
 interface OrderRow extends Record<string, unknown> {
@@ -20,15 +20,19 @@ export class PgOrderEventProcess implements OrderEventProcess {
   constructor(private readonly manager: TransactionManager) {}
 
   process(input: OrderProcessEvent, signal: AbortSignal, deadline: number): Promise<void> {
-    return this.manager.write({ tenant: input.scopeId, membership: '', scope: input.scopeId, actor: 'system:order', trace: input.eventId,
-      operation: 'orderevent', workload: 'jobs', signal, deadline }, async (context) => {
+    return this.manager.write({ tenant: input.scopeId, membership: '', scope: input.scopeId, actor: 'system:order', trace: input.eventId, operation: 'orderevent', workload: 'jobs', signal, deadline }, async (context) => {
       const database = this.transactions.database(context);
       const runtime = new PgRuntimeWriter(database);
       const inbox = await runtime.claim('job:orderevent', input.eventId);
       if (!inbox) throw new Error('ORDER_EVENT_CONTEXT_MISSING');
       if (inbox.type !== input.eventType || inbox.version !== 1 || inbox.scope !== input.scopeId || inbox.aggregate !== input.sourceId) throw new Error('ORDER_EVENT_CONTEXT_MISMATCH');
-      const order = (await database.query<OrderRow>(`select id,scope_id,member_id,currency,total_minor::float8 total_minor,payment_state,
-        fulfillment_state,lifecycle_state,verification_state from ordering.orderrecord where id=$1 and scope_id=$2 for update`, [input.orderId, input.scopeId])).rows[0];
+      const order = (
+        await database.query<OrderRow>(
+          `select id,scope_id,member_id,currency,total_minor::float8 total_minor,payment_state,
+        fulfillment_state,lifecycle_state,verification_state from ordering.orderrecord where id=$1 and scope_id=$2 for update`,
+          [input.orderId, input.scopeId]
+        )
+      ).rows[0];
       if (!order) throw new Error('ORDER_EVENT_TARGET_MISSING');
       if (input.eventType === 'payment.captured') await captured(database, order, input);
       if (input.eventType === 'refund.completed') await refunded(database, order, input);
@@ -59,13 +63,12 @@ async function refunded(database: SqlExecutor, order: OrderRow, event: OrderProc
   const currency = text(event.payload.currency, 'ORDER_REFUND_EVENT_CURRENCY_INVALID');
   if (currency !== order.currency || amount > Number(order.total_minor)) throw new Error('ORDER_REFUND_EVENT_EVIDENCE_INVALID');
   await effect(database, event, 'refund', amount, currency);
-  const total = (await database.query<{ amount: number }>(
-    `select coalesce(sum(amount_minor),0)::float8 amount from ordering.paymenteffect where order_id=$1 and kind='refund'`, [order.id]
-  )).rows[0]?.amount ?? 0;
+  const total = (await database.query<{ amount: number }>(`select coalesce(sum(amount_minor),0)::float8 amount from ordering.paymenteffect where order_id=$1 and kind='refund'`, [order.id])).rows[0]?.amount ?? 0;
   if (total > Number(order.total_minor)) throw new Error('ORDER_REFUND_EVENT_EVIDENCE_INVALID');
   await database.query(
     `update ordering.orderrecord set payment_state=case when $2=total_minor then 'refunded' else 'partially_refunded' end,
-    version=version+1,updated_at=clock_timestamp() where id=$1 and payment_state in('paid','partially_refunded')`, [order.id, total]
+    version=version+1,updated_at=clock_timestamp() where id=$1 and payment_state in('paid','partially_refunded')`,
+    [order.id, total]
   );
 }
 
@@ -78,7 +81,8 @@ async function shipped(database: SqlExecutor, order: OrderRow, event: OrderProce
     lifecycle_state=case when $2='delivered' and not exists(select 1 from ordering.line where order_id=$1 and fulfilled_quantity<quantity) then 'shipped' else 'fulfilling' end,
     version=version+1,updated_at=clock_timestamp()
     where id=$1 and fulfillment_state in('allocated','processing','shipped','delivered') and lifecycle_state in('paid','fulfilling','shipped')
-      and verification_state='verified'`, [order.id, state]
+      and verification_state='verified'`,
+    [order.id, state]
   );
 }
 
@@ -89,5 +93,12 @@ async function effect(database: SqlExecutor, event: OrderProcessEvent, kind: 'ca
     [event.eventId, event.orderId, event.scopeId, event.sourceId, kind, amount, currency, JSON.stringify({ sourceId: event.sourceId, ...event.payload })]
   );
 }
-function text(value: unknown, code: string): string { if (typeof value !== 'string' || !value) throw new Error(code); return value; }
-function integer(value: unknown, code: string): number { const result = Number(value); if (!Number.isSafeInteger(result) || result <= 0) throw new Error(code); return result; }
+function text(value: unknown, code: string): string {
+  if (typeof value !== 'string' || !value) throw new Error(code);
+  return value;
+}
+function integer(value: unknown, code: string): number {
+  const result = Number(value);
+  if (!Number.isSafeInteger(result) || result <= 0) throw new Error(code);
+  return result;
+}

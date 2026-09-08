@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { voucherNumber } from '@shop/contract/voucher';
 
 export class VoucherNumber {
@@ -8,5 +8,7 @@ export class VoucherNumber {
     if (normalized === null) throw new DomainError('VALIDATION_FAILED', { field: 'number' });
     this.value = normalized;
   }
-  masked(): string { return `${this.value.slice(0, 4)}${'*'.repeat(Math.max(4, this.value.length - 8))}${this.value.slice(-4)}`; }
+  masked(): string {
+    return `${this.value.slice(0, 4)}${'*'.repeat(Math.max(4, this.value.length - 8))}${this.value.slice(-4)}`;
+  }
 }

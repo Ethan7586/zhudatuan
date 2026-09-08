@@ -69,5 +69,16 @@ describe('voucher domain invariants', () => {
 });
 
 function activeVoucher(): Voucher {
-  return new Voucher({ id: 'voucher:one', credential: 'credential:one', product: 'product:one', holder: 'holder:one', initialMinor: 1000, remainingMinor: 1000, state: 'active', startsAt: new Date(NOW.getTime() - 60_000), expiresAt: new Date(NOW.getTime() + 60_000), version: 1 });
+  return new Voucher({
+    id: 'voucher:one',
+    credential: 'credential:one',
+    product: 'product:one',
+    holder: 'holder:one',
+    initialMinor: 1000,
+    remainingMinor: 1000,
+    state: 'active',
+    startsAt: new Date(NOW.getTime() - 60_000),
+    expiresAt: new Date(NOW.getTime() + 60_000),
+    version: 1,
+  });
 }

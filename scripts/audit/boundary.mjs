@@ -140,9 +140,9 @@ function auditDomainDependencies(owner, layer, rel, sourceFile, add) {
     }
     if (!reference.target) continue;
     const target = relative(reference.target);
-    const foundation = target.match(/^services\/commerce\/src\/foundation\/([^/]+)\//);
-    if (foundation && foundation[1] !== 'domain') {
-      add('DOMAIN_LAYER_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, `domain->foundation/${foundation[1]}`);
+    const platform = target.match(/^services\/commerce\/src\/platform\/([^/]+)\//);
+    if (platform && platform[1] !== 'error') {
+      add('DOMAIN_LAYER_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, `domain->platform/${platform[1]}`);
     }
     const module = target.match(/^services\/commerce\/src\/modules\/([^/]+)\/([^/]+)\//);
     if (!module) continue;
@@ -193,9 +193,9 @@ function auditInterfaceBoundary(owner, parts, rel, sourceFile, add) {
     if (module?.[1] === owner && ['domain', 'infrastructure'].includes(module[2])) {
       add('INTERFACE_LAYER_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, `interface->${module[2]}`);
     }
-    const foundation = target.match(/^services\/commerce\/src\/foundation\/([^/]+)\//);
-    if (foundation && ['persistence', 'infrastructure'].includes(foundation[1])) {
-      add('INTERFACE_LAYER_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, `interface->foundation/${foundation[1]}`);
+    const platform = target.match(/^services\/commerce\/src\/platform\/([^/]+)\//);
+    if (platform && ['database', 'object', 'secret'].includes(platform[1])) {
+      add('INTERFACE_LAYER_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, `interface->platform/${platform[1]}`);
     }
   }
 }
@@ -273,9 +273,9 @@ function auditImports(owner, layer, rel, sourceFile, add) {
     if (!reference.target) continue;
     const target = relative(reference.target);
     if (layer === 'application') {
-      const foundation = target.match(/^services\/commerce\/src\/foundation\/([^/]+)\//);
-      if (foundation && ['infrastructure', 'interface'].includes(foundation[1])) {
-        add('APPLICATION_LAYER_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, `application->foundation/${foundation[1]}`);
+      const platform = target.match(/^services\/commerce\/src\/platform\/([^/]+)\//);
+      if (platform && ['http', 'object', 'runtime', 'secret'].includes(platform[1])) {
+        add('APPLICATION_LAYER_DEPENDENCY_FORBIDDEN', `${rel}:${reference.line}`, `application->platform/${platform[1]}`);
       }
     }
     const targetMatch = target.match(/^services\/commerce\/src\/modules\/([^/]+)\/(.+)$/);
@@ -375,13 +375,13 @@ function auditTransactionSafety(parts, rel, sourceFile, source, add) {
 function auditInfrastructureFailure(parts, rel, sourceFile, add) {
   if (parts[1] !== 'infrastructure') return;
   const references = moduleReferences(sourceFile);
-  const importsHttp = references.some((reference) => reference.target && relative(reference.target) === 'services/commerce/src/foundation/http/HttpClient.ts');
+  const importsHttp = references.some((reference) => reference.target && relative(reference.target) === 'services/commerce/src/platform/http/HttpClient.ts');
   if (!importsHttp) return;
   const importsStandardMapper = references.some((reference) => reference.target && [
-    'services/commerce/src/foundation/domain/Failure.ts',
-    'services/commerce/src/foundation/http/ExternalResponse.ts',
+    'services/commerce/src/platform/error/Failure.ts',
+    'services/commerce/src/platform/http/ExternalResponse.ts',
   ].includes(relative(reference.target)));
-  const mapsPublicFailure = references.some((reference) => reference.target && relative(reference.target) === 'services/commerce/src/foundation/domain/DomainError.ts') &&
+  const mapsPublicFailure = references.some((reference) => reference.target && relative(reference.target) === 'services/commerce/src/platform/error/DomainError.ts') &&
     containsNode(sourceFile, ts.isCatchClause);
   if (!importsStandardMapper && !mapsPublicFailure) add('EXTERNAL_FAILURE_MAPPING_MISSING', rel, 'HttpClient exception or response is not mapped to a standard Failure');
 }

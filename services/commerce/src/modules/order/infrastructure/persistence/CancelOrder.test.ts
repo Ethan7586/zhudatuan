@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import { result, withWriteTransaction } from '../../../../test/TransactionFixture';
 import { CancelOrder } from './CancelOrder';
 
@@ -12,7 +12,8 @@ describe('CancelOrder', () => {
     const query = vi.fn(async (sql: string) => {
       statements.push(sql);
       if (sql.includes('from ordering.orderrecord orders')) return result([activeOrder()]);
-      if (sql.startsWith("update ordering.orderrecord set lifecycle_state='cancelled'")) return result([{ ...activeOrder(), lifecycle_state: 'cancelled', fulfillment_state: 'cancelled', cancelled_at: now, cancellation_event_id: eventId(), version: 4 }]);
+      if (sql.startsWith("update ordering.orderrecord set lifecycle_state='cancelled'"))
+        return result([{ ...activeOrder(), lifecycle_state: 'cancelled', fulfillment_state: 'cancelled', cancelled_at: now, cancellation_event_id: eventId(), version: 4 }]);
       if (sql.includes('insert into ordering.cancellation')) return result([]);
       throw new Error(`UNEXPECTED_QUERY:${sql}`);
     });
@@ -48,7 +49,18 @@ describe('CancelOrder', () => {
 });
 
 function activeOrder() {
-  return { id: 'order:one', scope_id: 'mall:one', member_id: 'member:one', lifecycle_state: 'awaitingpayment', payment_state: 'unpaid', fulfillment_state: 'unallocated', aftersale_state: 'none', cancelled_at: null, cancellation_event_id: null, version: 3 };
+  return {
+    id: 'order:one',
+    scope_id: 'mall:one',
+    member_id: 'member:one',
+    lifecycle_state: 'awaitingpayment',
+    payment_state: 'unpaid',
+    fulfillment_state: 'unallocated',
+    aftersale_state: 'none',
+    cancelled_at: null,
+    cancellation_event_id: null,
+    version: 3,
+  };
 }
 
 function eventId(): string {

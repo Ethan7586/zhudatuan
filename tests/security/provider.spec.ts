@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { HttpClient } from '../../services/commerce/src/foundation/http/HttpClient';
-import { NetworkPolicy } from '../../services/commerce/src/foundation/security/NetworkPolicy';
+import { HttpClient } from '../../services/commerce/src/platform/http/HttpClient';
+import { NetworkPolicy } from '../../services/commerce/src/platform/security/NetworkPolicy';
 import { AfterSaleAttachment } from '../../services/commerce/src/modules/order/application/service/AfterSaleAttachment';
 
 test('provider egress rejects SSRF, DNS rebinding and oversized responses', async () => {
@@ -32,11 +32,11 @@ test('attachments reject spoofed type, excessive size and malicious scan state',
 });
 
 test('API runtime cannot load extension provider credentials', () => {
-  const api = readFileSync('services/commerce/src/bootstrap/CommerceRuntime.ts', 'utf8');
-  const worker = readFileSync('services/commerce/src/bootstrap/ProviderRuntime.ts', 'utf8');
-  assert.match(api, /providerCatalogLoader/);
+  const api = readFileSync('services/commerce/src/composition/Application.ts', 'utf8');
+  const worker = readFileSync('services/commerce/src/composition/ProviderRuntime.ts', 'utf8');
+  assert.match(api, /extensionCatalog/);
   assert.doesNotMatch(api, /loadProviders|RuntimeExtensionLoader|PROVIDER_SECRET_REF/);
-  assert.match(worker, /loadProviders/);
+  assert.match(worker, /extensionLoader/);
   assert.match(worker, /DATABASE_PROVIDER_CONNECTION_REF/);
   assert.match(worker, /DATABASE_ROLE_INVALID:shopprovider/);
 });

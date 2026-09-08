@@ -26,5 +26,16 @@ function registry(): ObservationRegistry {
 }
 
 function level(): ServiceLevel {
-  return new ServiceLevel({ id: 'availability', title: '可用率', indicator: { metric: 'commerce.operation.count', type: 'ratio', goodResult: 'success' }, target: 99.95, unit: 'percent', direction: 'minimum', windowSeconds: 300, severity: 'critical', owner: 'reliability', runbook: 'docs/operations/deployment.md' });
+  return new ServiceLevel({
+    id: 'availability',
+    title: '可用率',
+    indicator: { metric: 'commerce.operation.count', type: 'ratio', goodResult: 'success' },
+    target: 99.95,
+    unit: 'percent',
+    direction: 'minimum',
+    windowSeconds: 300,
+    severity: 'critical',
+    owner: 'reliability',
+    runbook: 'docs/operations/deployment.md',
+  });
 }

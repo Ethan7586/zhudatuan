@@ -1,8 +1,8 @@
 import type { Telemetry } from '@shop/telemetry';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { InvitationRateInput, InvitationRatePort } from '../../application/port/InvitationRatePort';
 
 export class PgInvitationRate implements InvitationRatePort {

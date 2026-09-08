@@ -26,12 +26,18 @@ export interface ProviderOperationSnapshot {
 
 export class ProviderOperation {
   constructor(readonly value: ProviderOperationSnapshot) {
-    if ([value.id, value.provider, value.scope, value.idempotency, value.internalReference].some((item) => !item.trim()) ||
+    if (
+      [value.id, value.provider, value.scope, value.idempotency, value.internalReference].some((item) => !item.trim()) ||
       !(['order', 'return', 'refund'] as const).includes(value.kind) ||
       !(['queued', 'submitted', 'processing', 'succeeded', 'failed', 'unknown'] as const).includes(value.state) ||
-      !/^[a-f0-9]{64}$/.test(value.requestHash) || !/^[a-f0-9]{64}$/.test(value.responseHash) ||
-      !Number.isSafeInteger(value.version) || value.version < 0 || value.externalReference !== null && !value.externalReference.trim() ||
-      digest(value.responseSummary) !== value.responseHash) throw new Error('CHANNEL_PROVIDER_OPERATION_INVALID');
+      !/^[a-f0-9]{64}$/.test(value.requestHash) ||
+      !/^[a-f0-9]{64}$/.test(value.responseHash) ||
+      !Number.isSafeInteger(value.version) ||
+      value.version < 0 ||
+      (value.externalReference !== null && !value.externalReference.trim()) ||
+      digest(value.responseSummary) !== value.responseHash
+    )
+      throw new Error('CHANNEL_PROVIDER_OPERATION_INVALID');
     this.value = Object.freeze({ ...value, responseSummary: Object.freeze({ ...value.responseSummary }) });
     Object.freeze(this);
   }
@@ -40,16 +46,23 @@ export class ProviderOperation {
 export function providerResult(value: ProviderOperationResult | null): ProviderOperationResult | null {
   if (value === null) return null;
   const allowed = new Set(['accepted', 'code', 'externalReference', 'itemCount', 'state']);
-  if (Object.keys(value).some((key) => !allowed.has(key)) || !text(value.state, 64) ||
-    value.externalReference !== null && !text(value.externalReference, 255) ||
-    value.code !== undefined && !/^[A-Z][A-Z0-9_]{2,127}$/.test(value.code) ||
-    value.accepted !== undefined && typeof value.accepted !== 'boolean' ||
-    value.itemCount !== undefined && (!Number.isSafeInteger(value.itemCount) || value.itemCount < 0)) {
+  if (
+    Object.keys(value).some((key) => !allowed.has(key)) ||
+    !text(value.state, 64) ||
+    (value.externalReference !== null && !text(value.externalReference, 255)) ||
+    (value.code !== undefined && !/^[A-Z][A-Z0-9_]{2,127}$/.test(value.code)) ||
+    (value.accepted !== undefined && typeof value.accepted !== 'boolean') ||
+    (value.itemCount !== undefined && (!Number.isSafeInteger(value.itemCount) || value.itemCount < 0))
+  ) {
     throw new Error('CHANNEL_PROVIDER_RESULT_INVALID');
   }
-  return Object.freeze({ state: value.state.trim(), externalReference: value.externalReference === null ? null : value.externalReference.trim(),
-    ...(value.code === undefined ? {} : { code: value.code }), ...(value.accepted === undefined ? {} : { accepted: value.accepted }),
-    ...(value.itemCount === undefined ? {} : { itemCount: value.itemCount }) });
+  return Object.freeze({
+    state: value.state.trim(),
+    externalReference: value.externalReference === null ? null : value.externalReference.trim(),
+    ...(value.code === undefined ? {} : { code: value.code }),
+    ...(value.accepted === undefined ? {} : { accepted: value.accepted }),
+    ...(value.itemCount === undefined ? {} : { itemCount: value.itemCount }),
+  });
 }
 
 export function providerResponse(value: unknown): Readonly<{ summary: ProviderResponseSummary; hash: string }> {
@@ -72,7 +85,7 @@ export function requestSummary(hash: string): Readonly<{ hash: string }> {
 }
 
 function object(value: unknown): Readonly<Record<string, unknown>> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : Object.freeze({});
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Readonly<Record<string, unknown>>) : Object.freeze({});
 }
 
 function copyText(source: Readonly<Record<string, unknown>>, target: Record<string, string | number | boolean>, key: string, output = key): void {
@@ -87,7 +100,7 @@ function copyCode(source: Readonly<Record<string, unknown>>, target: Record<stri
 
 function copyScalar(source: Readonly<Record<string, unknown>>, target: Record<string, string | number | boolean>, key: string): void {
   const value = source[key];
-  if (typeof value === 'boolean' || typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) target[key] = value;
+  if (typeof value === 'boolean' || (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0)) target[key] = value;
 }
 
 function text(value: string, maximum: number): boolean {
@@ -95,6 +108,7 @@ function text(value: string, maximum: number): boolean {
 }
 
 function digest(value: Readonly<Record<string, unknown>>): string {
-  return createHash('sha256').update(['state', 'externalReference', 'code', 'accepted', 'itemCount']
-    .map((key) => value[key] === undefined ? '' : String(value[key])).join('\u001f')).digest('hex');
+  return createHash('sha256')
+    .update(['state', 'externalReference', 'code', 'accepted', 'itemCount'].map((key) => (value[key] === undefined ? '' : String(value[key]))).join('\u001f'))
+    .digest('hex');
 }

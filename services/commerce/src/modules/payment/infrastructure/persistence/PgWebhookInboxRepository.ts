@@ -1,7 +1,8 @@
 import type { PaymentScene } from '../../public';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { systemAuthorizationEvidence } from '../../../../platform/security/AuthorizationEvidence';
 import type { OrderPaymentPort } from '../../../order/public';
 import type { VerifiedPaymentWebhook, WebhookInboxRepository } from '../../application/port/WebhookInboxRepository';
 
@@ -40,6 +41,7 @@ export class PgWebhookInboxRepository implements WebhookInboxRepository {
       scope: reference.scope_id,
       payload,
       priority: 1,
+      authorization: systemAuthorizationEvidence(context, 'provider', new Date()),
     });
     return Object.freeze({ replayed: false });
   }

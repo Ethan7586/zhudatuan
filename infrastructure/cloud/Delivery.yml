@@ -1,12 +1,105 @@
-version: 1
+version: 2
 owner: platform
+authority: infrastructure/cloud/Delivery.yml
 network: infrastructure/network/Edge.yml
 topology: infrastructure/cloud/Topology.yml
+
 release:
-  clients: [auth, console, storefront]
+  clients: [auth, console, storefront, miniapp, store, supplier]
+  services: [api, jobs, provider, migration, smoke]
   staticPrefix: releases/{releaseId}/{client}
   evidencePrefix: production-evidence/{releaseId}
   pointer: releases/current.json
   immutableCache: public,max-age=31536000,immutable
   pointerCache: no-store
   canaryPercent: [1, 10, 50, 100]
+  contentIdentity: [commit, code, configuration, contract, migration, extensions, sbom, provenance, commerce, clients]
+
+artifact:
+  candidateSchema: shop.candidate.v1
+  releaseSchema: shop.release.v1
+  signature: sigstore-keyless
+  digest: sha256
+  requiredEvidence: [checksums, sbom, provenance, stage, approval, databaseSnapshot, providerSandbox, requirementEvidence]
+  rejectMutableImage: true
+  rejectContentDrift: true
+
+pipeline:
+  - id: artifactverify
+    action: release.verify
+    inputs: [release.json, release.sigstore.json, checksums.sha256, sbom.cdx.json, provenance.intoto.jsonl]
+    gates: [signatureValid, digestExact, sbomAccepted, provenanceBound, sixClientHashesExact, extensionHashesExact]
+    rollback: stop
+  - id: snapshot
+    after: [artifactverify]
+    action: database.snapshot
+    gates: [snapshotRestorable, encryptionKeyAvailable, rpoSatisfied]
+    rollback: stop
+  - id: migrationprepare
+    after: [snapshot]
+    action: kubernetes.job
+    manifest: infrastructure/container/Migration.yml
+    parameters: { phase: prepare, parallelism: 1 }
+    gates: [schemaExpandOnly, historicalHashesExact, migrationLockExclusive]
+    rollback: application
+  - id: migrationbackfill
+    after: [migrationprepare]
+    action: kubernetes.job
+    manifest: infrastructure/container/Migration.yml
+    parameters: { phase: backfill, parallelism: 1 }
+    gates: [checkpointComplete, sourceTargetCountsEqual, secretStageEncrypted, duplicateEffectsZero]
+    rollback: application
+  - id: migrationassert
+    after: [migrationbackfill]
+    action: kubernetes.job
+    manifest: infrastructure/container/Migration.yml
+    parameters: { phase: assert, parallelism: 1 }
+    gates: [migrationEvidenceExact, financeBalanced, inventoryNonnegative, voucherUnique, scopeLeaksZero]
+    rollback: application
+  - id: runtimecanary
+    after: [migrationassert]
+    action: workload.canary
+    manifests: [infrastructure/container/Runtime.yml, infrastructure/container/Provider.yml, infrastructure/network/Policy.yml]
+    traffic: [1]
+    gates: [startupReady, providerCanary, smokePassed, errorBudgetHealthy, queueLagHealthy]
+    rollback: automatic
+  - id: contractcutover
+    after: [runtimecanary]
+    action: kubernetes.job
+    manifest: infrastructure/container/Migration.yml
+    parameters: { phase: cutover, parallelism: 1 }
+    gates: [writesDrained, contractHashExact, newWriteModelExclusive, oldWriteModelFrozen]
+    rollback: application
+  - id: clientpublish
+    after: [contractcutover]
+    action: object.publish
+    clients: [auth, console, storefront, miniapp, store, supplier]
+    gates: [bundleHashesExact, sourceMapsPrivate, cspExact, pointerUnchanged]
+    rollback: pointer
+  - id: fullrollout
+    after: [clientpublish]
+    action: traffic.promote
+    traffic: [10, 50, 100]
+    gates: [latency, errorRate, databasePool, databaseLockWait, queueLag, outboxLag, providerErrorRate, transactionReconciliation, financeBalance, scopeAlerts]
+    rollback: automatic
+  - id: migrationretire
+    after: [fullrollout]
+    action: kubernetes.job
+    manifest: infrastructure/container/Migration.yml
+    parameters: { phase: retire, parallelism: 1 }
+    gates: [trafficAtOneHundred, observationWindowComplete, legacyReadersZero, legacyWritersZero, finalInvariantExact, approvalRecorded]
+    irreversible: true
+    rollback: forwardfix
+  - id: evidencearchive
+    after: [migrationretire]
+    action: release.evidence.archive
+    gates: [cutoverEvidenceValid, requirementEvidenceGenerated, immutableArchiveWritten, requirementsReleased]
+    rollback: forwardfix
+
+boundaries:
+  reversibleBefore: migrationretire
+  reversible: [application, clients, extensionEnablement, cdnPointer, configuration]
+  compensateOnly: [payment, redemption, refund, journal, issuance, approvalDecision]
+  voucherFailureMode: readonly
+  databaseAfterRetire: forwardfix
+  automaticRollback: [runtimecanary, fullrollout]

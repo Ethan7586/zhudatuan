@@ -1,9 +1,7 @@
 import type { CartPolicy } from '../policy/CartPolicy';
 import type { CartChange, CartLine, CartLineView, CartMergePlan, CartOffer, CartPlan } from './CartLine';
 
-export type CartOwner =
-  | Readonly<{ kind: 'member'; member: string; mall: string; application: string }>
-  | Readonly<{ kind: 'anonymous'; tokenDigest: string; mall: string; application: string }>;
+export type CartOwner = Readonly<{ kind: 'member'; member: string; mall: string; application: string }> | Readonly<{ kind: 'anonymous'; tokenDigest: string; mall: string; application: string }>;
 
 export class Cart {
   readonly id: string;

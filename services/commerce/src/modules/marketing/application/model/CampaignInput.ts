@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { CampaignKind, CampaignRevision, CampaignRule, MarketingChannel } from '../../domain/model/Campaign';
 
 export function campaignRevision(value: Readonly<Record<string, unknown>>, actor: string): CampaignRevision {

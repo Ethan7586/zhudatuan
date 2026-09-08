@@ -1,6 +1,6 @@
 import type { OperationInputFor } from '@shop/contract';
-import type { FinalizeContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
+import type { FinalizeContext } from '../../../../pipeline/HandlerContext';
+import type { OperationRequest } from '../../../../pipeline/OperationHandler';
 
 export function checkoutOperationRequest(input: OperationInputFor<'order.orders.create'>, context: FinalizeContext<'order.orders.create'>): OperationRequest {
   return {

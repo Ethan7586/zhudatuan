@@ -1,6 +1,6 @@
 import type { ContractJsonValue } from '@shop/contract';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { RiskAdministrationRepository, RiskCaseRecord, RiskCenterRecord } from '../../application/port/RiskAdministrationRepository';
 import { PgRiskPolicyStore } from './PgRiskPolicyStore';
 

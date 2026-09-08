@@ -5,6 +5,7 @@ export * from './ChineseProvider';
 export * from './CompactFailure';
 export * from './Failure';
 export * from './Message';
+export * from './Operator';
 export * from './PresentFailure';
 export * from './Product';
 export * from './ProductImport';

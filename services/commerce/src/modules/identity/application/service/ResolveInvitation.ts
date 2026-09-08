@@ -3,11 +3,11 @@ import type { IdentityInvitationsResolveBody } from '@shop/contract';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import type { Telemetry } from '@shop/telemetry';
 
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
-import { bodyRecord } from '../../../../foundation/application/Validation';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
+import { bodyRecord } from '../../../../pipeline/Validation';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
 import type { InvitationAccessPort } from '../../../access/public';
 import type { IdentityRegistrationPort } from '../../../member/public';
 import type { IdentityOrganizationPort } from '../../../organization/public/IdentityOrganizationPort';
@@ -105,10 +105,7 @@ export class ResolveInvitation {
       const challenge = `challenge:${randomUUID()}`;
       const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
       const purpose = 'invitation_login';
-      const [codeEnvelope, destinationEnvelope] = await Promise.all([
-        this.kms.encrypt('pii', 'identity/challenge', code, { challenge, purpose }),
-        this.kms.encrypt('pii', 'identity/destination', mobile, { challenge, purpose }),
-      ]);
+      const [codeEnvelope, destinationEnvelope] = await Promise.all([this.kms.encrypt('pii', 'identity/challenge', code, { challenge, purpose }), this.kms.encrypt('pii', 'identity/destination', mobile, { challenge, purpose })]);
       return Object.freeze({ ...prepared, proof: Object.freeze({ challenge, code, codeEnvelope, destinationEnvelope }) });
     } catch (cause) {
       this.recordFailure(request, cause);

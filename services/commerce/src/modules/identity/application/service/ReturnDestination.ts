@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ReturnTargetPort, SignedReturnTarget } from '../port/ReturnTargetPort';
 
 export function returnDestination(returns: ReturnTargetPort, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier', value: unknown): SignedReturnTarget {

@@ -1,6 +1,6 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ReferralMemberPort } from '../../../member/public';
 import type { ReferralRepository } from '../../application/port/ReferralRepository';
 export class PgReferralRepository implements ReferralRepository {
@@ -35,7 +35,23 @@ export class PgReferralRepository implements ReferralRepository {
       returning id,scope_id "scopeId",enabled,recruit_enabled "recruitEnabled",review_required "reviewRequired",reward_enabled "rewardEnabled",
       binding_mode "bindingMode",first_touch_days "firstTouchDays",freeze_days "freezeDays",settlement_trigger "settlementTrigger",rate_basis_points "rateBasisPoints",
       minimum_withdrawal_minor "minimumWithdrawalMinor",monthly_withdrawal_limit "monthlyWithdrawalLimit",currency,version,updated_at "updatedAt"`,
-      [input.id, input.scopeId, input.enabled, input.recruitEnabled, input.reviewRequired, input.rewardEnabled, input.bindingMode, input.firstTouchDays, input.freezeDays, input.settlementTrigger, input.rateBasisPoints, input.minimumWithdrawalMinor, input.monthlyWithdrawalLimit, input.currency, input.expectedVersion]
+      [
+        input.id,
+        input.scopeId,
+        input.enabled,
+        input.recruitEnabled,
+        input.reviewRequired,
+        input.rewardEnabled,
+        input.bindingMode,
+        input.firstTouchDays,
+        input.freezeDays,
+        input.settlementTrigger,
+        input.rateBasisPoints,
+        input.minimumWithdrawalMinor,
+        input.monthlyWithdrawalLimit,
+        input.currency,
+        input.expectedVersion,
+      ]
     );
     return required(result.rows[0], 'VERSION_CONFLICT');
   }

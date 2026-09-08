@@ -1,4 +1,5 @@
 import { bearerToken, distinctValues, enumValue, pickEnvironment, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
+import { WORKER_ENVIRONMENT_KEYS, type WorkerEnvironment } from './WorkerEnvironment';
 
 export const PROVIDER_WORKER_ENVIRONMENT_KEYS = [
   'APP_ENV',
@@ -10,9 +11,10 @@ export const PROVIDER_WORKER_ENVIRONMENT_KEYS = [
   'KMS_ENDPOINT',
   'KMS_BEARER_TOKEN',
   'PROVIDER_WORKER_ID',
+  ...WORKER_ENVIRONMENT_KEYS,
 ] as const;
 
-export type ProviderWorkerEnvironment = Readonly<Partial<Record<(typeof PROVIDER_WORKER_ENVIRONMENT_KEYS)[number], string>>>;
+export type ProviderWorkerEnvironment = Readonly<Partial<Record<(typeof PROVIDER_WORKER_ENVIRONMENT_KEYS)[number], string>>> & WorkerEnvironment;
 
 export function providerWorkerEnvironment(): ProviderWorkerEnvironment {
   const source = processEnvironment();

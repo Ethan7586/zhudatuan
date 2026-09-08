@@ -8,7 +8,13 @@ const DEVICE_KEY = 'zhudatuan:miniapp:device:v1';
 export async function miniappContext(
   environment: MiniappRuntimeEnvironment,
   session?: OperationOutputFor<'identity.session.read'>,
-  options: Readonly<{ signal?: AbortSignal | undefined; csrf?: string | undefined; command?: boolean | undefined }> = {}
+  options: Readonly<{
+    signal?: AbortSignal | undefined;
+    csrf?: string | undefined;
+    command?: boolean | undefined;
+    expectedVersion?: number | undefined;
+    includeScope?: boolean | undefined;
+  }> = {}
 ): Promise<RequestContext> {
   if (session !== undefined && session.target !== 'miniapp') throw new Error('MINIAPP_SESSION_TARGET_INVALID');
   return createRequestContext(environment.clientVersion, {
@@ -16,9 +22,10 @@ export async function miniappContext(
     storefrontHandle: environment.storefrontHandle,
     traceId: await randomToken(16),
     deviceId: await deviceId(),
-    ...(session === undefined ? {} : { scope: session.scope, accessVersion: session.accessVersion }),
+    ...(session === undefined || options.includeScope === false ? {} : { scope: session.scope, accessVersion: session.accessVersion }),
     ...(options.signal === undefined ? {} : { signal: options.signal }),
     ...(options.csrf === undefined ? {} : { csrfToken: options.csrf }),
+    ...(options.expectedVersion === undefined ? {} : { expectedVersion: options.expectedVersion }),
     ...(options.command ? { idempotencyKey: await randomToken(32) } : {}),
   });
 }

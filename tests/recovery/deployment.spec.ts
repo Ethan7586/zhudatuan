@@ -5,6 +5,9 @@ import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { TARGET_SCHEMA_HEAD } from '@shop/config/server';
+import { parse } from 'yaml';
+import { CLIENT_SURFACES } from '../../packages/contract/src/Surface';
+import { JOB_CATALOG } from '../../services/commerce/src/pipeline/JobCatalog';
 
 const root = resolve(import.meta.dirname, '../..');
 const validator = resolve(root, 'scripts/release/validate.mjs');
@@ -24,7 +27,7 @@ function release() {
       operationHash: sha,
       eventHash: sha,
       jobHash: sha,
-      jobCount: 48,
+      jobCount: JOB_CATALOG.length,
       requirementHash: sha,
       migrationHead: TARGET_SCHEMA_HEAD,
       migrationHash: sha,
@@ -39,7 +42,7 @@ function release() {
     buildProvenance: { path: 'provenance.intoto.jsonl', sha256: sha },
     provenance: { path: 'stage.json', sha256: sha },
     static: { bucket: 'shop-production' },
-    clients: Object.fromEntries(['auth', 'console', 'storefront'].map((client) => [client, { path: `clients/${client}`, sha256: sha }])),
+    clients: Object.fromEntries(CLIENT_SURFACES.map((client) => [client, { path: `clients/${client}`, sha256: sha }])),
     evidence: { databaseSnapshot: 'oss://shop-evidence/snapshot', releaseApproval: sha, providerSandboxAccepted: true, stagePassed: true },
     rollback: { releaseId: 'release122', databaseSnapshot: 'oss://shop-evidence/previous', pointerSha256: sha },
   };
@@ -56,7 +59,7 @@ function validate(value: unknown) {
   }
 }
 
-test('release validator accepts only the three canonical clients and complete signed facts', () => {
+test('release validator accepts only the six canonical clients and complete signed facts', () => {
   const result = validate(release());
   assert.equal(result.status, 0, result.stderr);
 });
@@ -70,14 +73,19 @@ test('release validator fails closed when external acceptance or rollback eviden
   assert.notEqual(validate(missingRollback).status, 0);
 });
 
-test('deployment topology has no retired runtime and keeps migration before runtime apply', () => {
+test('declarative delivery stages migration, hard cut, full traffic and irreversible retirement in order', () => {
   const script = readFileSync(resolve(root, 'infrastructure/cloud/Deploy.sh'), 'utf8');
+  const delivery = parse(readFileSync(resolve(root, 'infrastructure/cloud/Delivery.yml'), 'utf8'));
   const topology = readFileSync(resolve(root, 'infrastructure/container/Runtime.yml'), 'utf8');
-  assert.ok(script.indexOf('Migration.yml') < script.indexOf('Runtime.yml'));
-  assert.match(script, /for percentage in 1 10 50 100/);
-  assert.match(script, /trap rollback ERR/);
-  assert.match(script, /evidence export/);
+  assert.deepEqual(delivery.pipeline.map(({ id }: { id: string }) => id), [
+    'artifactverify', 'snapshot', 'migrationprepare', 'migrationbackfill', 'migrationassert', 'runtimecanary', 'contractcutover', 'clientpublish', 'fullrollout', 'migrationretire', 'evidencearchive',
+  ]);
+  assert.deepEqual(delivery.release.canaryPercent, [1, 10, 50, 100]);
+  assert.deepEqual(delivery.pipeline.filter(({ parameters }: { parameters?: { phase?: string } }) => parameters?.phase).map(({ parameters }: { parameters: { phase: string } }) => parameters.phase), ['prepare', 'backfill', 'assert', 'cutover', 'retire']);
+  assert.equal(delivery.pipeline.find(({ id }: { id: string }) => id === 'migrationretire').irreversible, true);
+  assert.match(script, /"\$controller" apply --delivery/);
   assert.match(script, /cutover\.mjs/);
+  assert.doesNotMatch(script, /kubectl|ossutil|for percentage|trap rollback/);
   assert.match(topology, /replicas: 3/);
   assert.match(topology, /replicas: 2/);
   assert.doesNotMatch(`${script}\n${topology}`.toLowerCase(), /pm2|vite preview|core-read-cache|commerce-api/);

@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableCommit, DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableCommit, DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import { QualificationEvidence, type PreparedEvidenceUpload } from '../service/QualificationEvidence';
 
 type Reply = OperationReply<OperationOutputFor<'qualification.evidenceuploads.create'>>;

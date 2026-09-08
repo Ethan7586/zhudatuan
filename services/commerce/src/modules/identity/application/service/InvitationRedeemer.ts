@@ -1,12 +1,12 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 
 import type { InvitationAccessPort } from '../../../access/public';
 import type { Invitation } from '../../domain/model/Invitation';
 import type { InvitationReceipt } from '../../domain/model/InvitationReceipt';
 import type { InvitationRepository } from '../port/InvitationRepository';
 import type { Telemetry } from '@shop/telemetry';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export class InvitationRedeemer {
   constructor(

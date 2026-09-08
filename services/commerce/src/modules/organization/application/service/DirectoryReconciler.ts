@@ -1,4 +1,4 @@
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { DirectoryConnection } from '../../domain/model/DirectoryConnection';
 import { LifecyclePolicy } from '../../domain/policy/LifecyclePolicy';
 import type { DirectoryRepository, DirectoryCounts, StagedSubject } from '../port/DirectoryRepository';
@@ -45,11 +45,13 @@ export class DirectoryReconciler {
       connection.id,
       subjects.map((item) => item.hash)
     );
-    return Object.freeze(subjects.map((source) => {
-      const existing = current.get(source.hash.toString('hex')) ?? null;
-      const kind = this.policy.decide(existing, { status: source.status, sourceversion: source.sourceversion, explicitdeparture: source.explicitdeparture });
-      const subject = { ...source, membership: existing?.membership ?? source.membership };
-      return Object.freeze({ subject: Object.freeze(subject), kind });
-    }));
+    return Object.freeze(
+      subjects.map((source) => {
+        const existing = current.get(source.hash.toString('hex')) ?? null;
+        const kind = this.policy.decide(existing, { status: source.status, sourceversion: source.sourceversion, explicitdeparture: source.explicitdeparture });
+        const subject = { ...source, membership: existing?.membership ?? source.membership };
+        return Object.freeze({ subject: Object.freeze(subject), kind });
+      })
+    );
   }
 }

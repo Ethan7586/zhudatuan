@@ -3,7 +3,7 @@ import { chineseReference } from '@shop/presentation';
 import type { usePaymentViewModel } from '../viewmodel/PaymentViewModel';
 
 export function PaymentResultPage({ viewmodel, openOrder }: Readonly<{ viewmodel: ReturnType<typeof usePaymentViewModel>; openOrder: (id: string) => void }>) {
-  const { valid, continuing, payment, state, actions } = viewmodel;
+  const { valid, continuing, continuationMessage, payment, state, actions } = viewmodel;
   if (!valid) return <State icon={<CircleAlert />} title="支付链接无效" detail="请从订单详情重新进入支付结果页。" />;
   if (state === 'loading') return <State icon={<LoaderCircle className="animate-spin" />} title="正在核验支付状态" detail="请勿关闭页面，系统正在读取权威支付记录。" />;
   if (!payment)
@@ -28,6 +28,7 @@ export function PaymentResultPage({ viewmodel, openOrder }: Readonly<{ viewmodel
       </div>
       <h1 className="mt-5 text-xl font-black">{title(payment.state)}</h1>
       <p className="mt-2 text-sm text-muted">{detail(payment.state)}</p>
+      {continuationMessage ? <p role="alert" className="mt-4 rounded-xl bg-warning-surface p-3 text-sm text-warning-strong">{continuationMessage}</p> : null}
       <dl className="mt-6 rounded-xl border bg-surface p-4 text-left text-xs">
         <div className="flex justify-between">
           <dt className="text-muted">支付编号</dt>
@@ -37,6 +38,7 @@ export function PaymentResultPage({ viewmodel, openOrder }: Readonly<{ viewmodel
           <dt className="text-muted">订单编号</dt>
           <dd>{chineseReference('内部订单', payment.orderId)}</dd>
         </div>
+        {!terminal && payment.retryAfter > 0 ? <div className="mt-3 flex justify-between"><dt className="text-muted">自动核验</dt><dd>{payment.retryAfter} 秒后按服务端建议重查</dd></div> : null}
         <div className="mt-3 flex justify-between">
           <dt className="text-muted">支付有效期</dt>
           <dd>{new Date(payment.expiresAt).toLocaleString('zh-CN')}</dd>

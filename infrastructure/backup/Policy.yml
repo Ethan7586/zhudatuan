@@ -1,5 +1,6 @@
-version: 1
+version: 2
 owner: reliability
+classification: restricted
 database:
   engine: apsaradb-rds-postgresql
   automatedFullBackup: daily
@@ -10,12 +11,51 @@ database:
   immutableRetentionDays: 35
   rpoMinutes: 0
   rtoMinutes: 15
+  transactionLogShippingSeconds: 30
+  fullRetentionDays: 35
+  monthlyRetentionMonths: 13
+  annualRetentionYears: 7
+  deleteProtection: true
+  restoreTarget: new-isolated-cluster
 objectStorage:
   versioning: true
   retentionMode: compliance
   crossRegionReplication: true
+  encryption: customer-managed-kms
+  deleteMarkersReplicated: true
+  replicationLagAlertMinutes: 5
+configuration:
+  sources: [config, infrastructure, contract, navigation, providerManifest]
+  format: signed-content-addressed-archive
+  capture: every-release
+  retentionDays: 2555
+keyMetadata:
+  include: [keyId, version, algorithm, purpose, state, createdAt, retiredAt]
+  values: forbidden
+  escrow: provider-managed
+  restorePreflight: required
+evidence:
+  sources: [release, migration, reconciliation, auditarchive, security, recovery]
+  immutable: true
+  retentionDays: 2555
+  legalHold: supported
 verification:
   restoreDrill: monthly
+  disasterRecoveryDrill: quarterly
   integrityCheck: sha256
+  databaseChecks: [schemaHead, roleMatrix, rls, invariants, auditChain]
+  objectChecks: [version, digest, lock, encryptionKeyMetadata]
+  configurationChecks: [signature, digest, releaseBinding]
   evidenceRetentionDays: 400
-  runbook: runbooks/databasefailover.md
+  runbooks: [docs/operations/backup.md, docs/operations/restore.md, docs/operations/disasterrecovery.md]
+capacity:
+  alertAtPercent: 70
+  blockRiskAtPercent: 85
+  forecastDays: 90
+  owner: reliability
+failure:
+  missedRecoveryPointSeverity: critical
+  integrityMismatchSeverity: critical
+  replicationLagSeverity: high
+  keyUnavailableSeverity: critical
+  notification: infrastructure/monitoring/Alerts.yml

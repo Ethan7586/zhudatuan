@@ -1,13 +1,13 @@
 import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto';
-import type { CsrfProtector } from '../../../../foundation/security/CsrfProtector';
+import type { CsrfProtector } from '../../../../platform/security/CsrfProtector';
 import type { SessionIssue, SessionIssuer, IssuedSession } from '../port/SessionIssuer';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import { SessionPolicy } from '../../domain/policy/SessionPolicy';
 import type { IdentityAccessPort } from '../../../access/public';
 import { Session } from '../../domain/model/Session';
 import type { SessionRepository } from '../port/SessionRepository';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { RefreshTokenFamily } from '../../domain/model/RefreshTokenFamily';
 
 export class DefaultSessionIssuer implements SessionIssuer {

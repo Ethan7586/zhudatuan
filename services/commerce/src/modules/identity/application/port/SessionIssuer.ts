@@ -1,4 +1,4 @@
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 export interface SessionIssue {
   readonly principal: string;

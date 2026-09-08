@@ -1,5 +1,5 @@
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { FavoriteRepository } from '../../application/port/FavoriteRepository';
 import type { FavoriteEntry, FavoriteState } from '../../domain/model/FavoriteList';
 

@@ -39,7 +39,6 @@ export function useCartViewModel() {
     navigateTo,
     selected: selectedLines,
     allSelected: cartView.lines.length > 0 && selectedLines.length === cartView.lines.length,
-    estimateMinor: selectedLines.reduce((sum, item) => sum + (item.amountMinor ?? item.product.priceWelfareMinor) * item.quantity, 0),
     actions: Object.freeze({
       browse: () => void navigate(ROUTES.storecatalog),
       checkout: () => navigateTo('checkout'),

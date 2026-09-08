@@ -1,4 +1,4 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { RISK_DECISION_PORT } from './public';
 
 export const Manifest = defineModuleManifest({

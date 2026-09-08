@@ -49,6 +49,21 @@ describe('contract truth', () => {
     expect(operation.errorUnion).toContain('STEPUP_REQUIRED');
   });
 
+  it('keeps provider authorization out of member-controlled notification preferences', () => {
+    const preference = OPERATION_SCHEMAS['notification.preferences.manage'].input;
+    expect(preference.parse({ path: { channel: 'wechat', eventtype: 'order.created' }, body: { enabled: true, quietHours: null } })).toEqual({
+      path: { channel: 'wechat', eventtype: 'order.created' },
+      body: { enabled: true, quietHours: null },
+    });
+    expect(() => preference.parse({ path: { channel: 'wechat', eventtype: 'order.created' }, body: { enabled: true, authorization: 'accepted' } })).toThrow();
+  });
+
+  it('bounds self-service referral earnings with the canonical cursor contract', () => {
+    const earnings = OPERATION_SCHEMAS['referral.earnings.read'];
+    expect(earnings.input.parse({ query: { limit: 50, cursor: 'referralcommission:one' } })).toEqual({ query: { limit: 50, cursor: 'referralcommission:one' } });
+    expect(() => earnings.input.parse({ query: { limit: 0 } })).toThrow();
+  });
+
   it('keeps every operation on explicit request and response schemas', () => {
     for (const operation of OperationCatalog.all()) {
       expect(operation.method === 'GET' ? definedOperationQuerySchema(operation.requestSchema) : definedOperationBodySchema(operation.requestSchema), `${operation.id} request schema`).toBeDefined();
@@ -59,7 +74,19 @@ describe('contract truth', () => {
   it('publishes bounded server-authoritative order list filters', () => {
     const orders = OPERATION_SCHEMAS['order.orders.read'].input;
     const aftersales = OPERATION_SCHEMAS['order.aftersales.read'].input;
-    const filters = { search: 'ZD202609050001', placed: '7days', lifecycle: 'paid', payment: 'paid', fulfillment: 'allocated', mall: 'mall:one', channel: 'jdproduct', product: '福利礼盒', member: '张三', minimumMinor: 100, maximumMinor: 10000 } as const;
+    const filters = {
+      search: 'ZD202609050001',
+      placed: '7days',
+      lifecycle: 'paid',
+      payment: 'paid',
+      fulfillment: 'allocated',
+      mall: 'mall:one',
+      channel: 'jdproduct',
+      product: '福利礼盒',
+      member: '张三',
+      minimumMinor: 100,
+      maximumMinor: 10000,
+    } as const;
 
     expect(orders.parse({ query: { ...filters, view: 'unshipped', limit: 50 } })).toEqual({ query: { ...filters, view: 'unshipped', limit: 50 } });
     expect(aftersales.parse({ query: filters })).toEqual({ query: filters });
@@ -400,13 +427,7 @@ describe('contract truth', () => {
     for (const id of ['identity.members.create', 'identity.members.reset', 'identity.wechat.session', 'identity.wechat.bind', 'invoice.operatorprofiles.read']) {
       expect(() => OperationCatalog.get(id as never)).toThrow('OPERATION_UNKNOWN');
     }
-    for (const id of [
-      'referral.settings.manage',
-      'referral.products.manage',
-      'referral.members.approve',
-      'referral.members.disqualify',
-      'finance.reconciliationrepairs.reverse',
-    ]) {
+    for (const id of ['referral.settings.manage', 'referral.products.manage', 'referral.members.approve', 'referral.members.disqualify', 'finance.reconciliationrepairs.reverse']) {
       expect(OperationCatalog.get(id as never)).toMatchObject({ assuranceLevel: 'stepup', makerChecker: true, expectedVersion: 'required', idempotencyPolicy: 'required' });
     }
     for (const id of ['finance.reconciliationrepairs.submit', 'finance.reconciliationrepairs.decide'] as const) {
@@ -449,7 +470,9 @@ describe('contract truth', () => {
     expect(() => OPERATION_SCHEMAS['checkout.quotes.current.read'].output.parse({ quote: { internalSecret: 'forbidden' } })).toThrow();
     expect(() => OPERATION_SCHEMAS['finance.reconciliationrepairs.preview'].input.parse({ body: { statementId: 'statement:one', sourceHash: 'a'.repeat(64), entries: [], reason: '修复', expectedVersion: 1 } })).toThrow();
     expect(() => OPERATION_SCHEMAS['finance.reconciliationrepairs.decide'].input.parse({ path: { repairid: 'reconciliationrepair:one' }, body: { decision: 'approve', expectedVersion: 1, reason: '同意' } })).toThrow();
-    expect(() => OPERATION_SCHEMAS['finance.reconciliationrepairs.decide'].input.parse({ path: { repairid: 'reconciliationrepair:one' }, body: { decision: 'reject', approvalProof: 'p'.repeat(43), expectedVersion: 1, reason: '拒绝' } })).toThrow();
+    expect(() =>
+      OPERATION_SCHEMAS['finance.reconciliationrepairs.decide'].input.parse({ path: { repairid: 'reconciliationrepair:one' }, body: { decision: 'reject', approvalProof: 'p'.repeat(43), expectedVersion: 1, reason: '拒绝' } })
+    ).toThrow();
   });
 
   it('exposes every employee journey operation to the storefront target', () => {

@@ -1,0 +1,227 @@
+.financeauditworkspace > .resourcepanel {
+  min-width: 0;
+}
+
+.financeauditsearch {
+  display: grid;
+  grid-template-columns: minmax(220px, 420px) auto auto;
+  align-items: end;
+  gap: 8px;
+}
+
+.financeauditsearch label {
+  grid-column: 1 / -1;
+  color: var(--sw-text-secondary);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.financeauditsearch input,
+.financeauditsearch button {
+  min-height: 44px;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.financeauditsearch input {
+  min-width: 0;
+  background: var(--sw-surface);
+  color: var(--sw-text);
+  padding: 0 12px;
+}
+
+.financeauditsearch button {
+  background: var(--sw-surface);
+  color: var(--sw-brand);
+  padding: 0 16px;
+  font-weight: 750;
+}
+
+.financeauditsearch button[type='submit'] {
+  border-color: var(--sw-brand);
+  background: var(--sw-brand);
+  color: var(--sw-on-brand);
+}
+
+.financeauditsearch button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.financeauditguide,
+.financeauditempty {
+  display: grid;
+  gap: 5px;
+  border: 1px dashed var(--sw-border-strong);
+  border-radius: 10px;
+  background: var(--sw-surface-subtle);
+  color: var(--sw-muted);
+  padding: 20px;
+}
+
+.financeauditguide strong {
+  color: var(--sw-text);
+}
+
+.financeauditresult {
+  display: grid;
+  gap: 24px;
+}
+
+.financeauditsummary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--sw-border);
+  border-radius: 10px;
+  background: var(--sw-border);
+  gap: 1px;
+}
+
+.financeauditsummary > div {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  background: var(--sw-surface-subtle);
+  padding: 14px;
+}
+
+.financeauditsummary span,
+.financeauditsection > header p,
+.financeauditcards > li > p {
+  color: var(--sw-muted);
+  font-size: 12px;
+}
+
+.financeauditsummary strong {
+  overflow: hidden;
+  color: var(--sw-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.financeauditsection {
+  display: grid;
+  gap: 12px;
+}
+
+.financeauditsection > header h2,
+.financeauditsection > header p {
+  margin: 0;
+}
+
+.financeauditsection > header h2 {
+  color: var(--sw-text);
+  font-size: 17px;
+}
+
+.financeauditsection > header p {
+  margin-top: 4px;
+}
+
+.financeaudittimeline,
+.financeauditcards {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.financeaudittimeline > li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.financeaudittimeline > li:not(:last-child)::before {
+  position: absolute;
+  top: 19px;
+  bottom: -12px;
+  left: 8px;
+  width: 2px;
+  background: var(--sw-border);
+  content: '';
+}
+
+.financeaudittimeline > li > i {
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  margin-top: 18px;
+  border: 4px solid var(--sw-surface);
+  border-radius: 50%;
+  background: var(--sw-brand);
+  box-shadow: 0 0 0 1px var(--sw-border-strong);
+}
+
+.financeaudittimeline article,
+.financeauditcards > li {
+  min-width: 0;
+  border: 1px solid var(--sw-border);
+  border-radius: 10px;
+  background: var(--sw-surface);
+  padding: 14px;
+}
+
+.financeaudittimeline article > header,
+.financeauditcards > li > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.financeaudittimeline article > header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.financeaudittimeline article > header span {
+  color: var(--sw-brand);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.financeaudittimeline article > header strong,
+.financeauditcards > li > header strong {
+  color: var(--sw-text);
+}
+
+.financeaudittimeline time {
+  color: var(--sw-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.financeaudittimeline dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.financeaudittimeline dl > div {
+  min-width: 0;
+}
+
+.financeaudittimeline dt {
+  color: var(--sw-muted);
+  font-size: 10px;
+}
+
+.financeaudittimeline dd {
+  overflow: hidden;
+  margin: 3px 0 0;
+  color: var(--sw-text-secondary);
+  font-size: 12px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.financeauditcards {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}

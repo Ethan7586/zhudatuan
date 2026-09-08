@@ -11,6 +11,8 @@ const schemas = Object.freeze({
   "identity.tickets.exchange": Object.freeze({ input: identityInputSchema("IdentityTicketsExchangeInput", [], true), output: identityOutputSchema("IdentityTicketsExchangeOutput") }),
   "identity.session.read": Object.freeze({ input: identityInputSchema("IdentitySessionReadInput", [], false), output: identityOutputSchema("IdentitySessionReadOutput") }),
   "identity.session.delete": Object.freeze({ input: identityInputSchema("IdentitySessionDeleteInput", [], true), output: identityOutputSchema("IdentitySessionDeleteOutput") }),
+  "identity.handovers.read": Object.freeze({ input: identityInputSchema("IdentityHandoversReadInput", [], false), output: identityOutputSchema("IdentityHandoversReadOutput") }),
+  "identity.handovers.create": Object.freeze({ input: identityInputSchema("IdentityHandoversCreateInput", [], true), output: identityOutputSchema("IdentityHandoversCreateOutput") }),
   "identity.sessions.read": Object.freeze({ input: identityInputSchema("IdentitySessionsReadInput", [], false), output: identityOutputSchema("IdentitySessionsReadOutput") }),
   "identity.sessions.revoke": Object.freeze({ input: identityInputSchema("IdentitySessionsRevokeInput", ["sessionid"], true), output: identityOutputSchema("IdentitySessionsRevokeOutput") }),
   "identity.memberships.read": Object.freeze({ input: identityInputSchema("IdentityMembershipsReadInput", [], false), output: identityOutputSchema("IdentityMembershipsReadOutput") }),

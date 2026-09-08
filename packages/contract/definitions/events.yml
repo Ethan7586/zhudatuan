@@ -10,7 +10,7 @@ events:
     version: 1
     schema: contract://events/identity.federation.linked/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [navigation]
     payload: { principalId: id, membershipId: id, scopeId: id, provider: string, subjectHash: string }
   - id: identity.federation.rejected
@@ -18,7 +18,7 @@ events:
     version: 1
     schema: contract://events/identity.federation.rejected/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { scopeId: id, provider: string, reason: string, traceId: id }
   - id: identity.provider.changed
@@ -26,7 +26,7 @@ events:
     version: 1
     schema: contract://events/identity.provider.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [navigation]
     payload: { providerId: id, scopeId: id, state: string, version: positiveinteger }
   - id: organization.directory.changed
@@ -34,7 +34,7 @@ events:
     version: 1
     schema: contract://events/organization.directory.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [navigation]
     payload: { scopeId: id, directoryId: id, changeId: id, subjectId: id, kind: string }
   - id: organization.directory.synced
@@ -42,7 +42,7 @@ events:
     version: 1
     schema: contract://events/organization.directory.synced/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [navigation]
     payload: { scopeId: id, directoryId: id, runId: id, accepted: integer, rejected: integer }
   - id: organization.membership.changed
@@ -50,7 +50,7 @@ events:
     version: 1
     schema: contract://events/organization.membership.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [navigation]
     payload: { scopeId: id, membershipId: id, principalId: id, state: string, version: positiveinteger }
   - id: organization.mall.created
@@ -58,7 +58,7 @@ events:
     version: 1
     schema: contract://events/organization.mall.created/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [experienceprovision]
     payload: { mallId: id, parentId: id, ownerMembershipId: id, code: string, publicSlug: string, version: positiveinteger }
   - id: organization.mall.updated
@@ -66,7 +66,7 @@ events:
     version: 1
     schema: contract://events/organization.mall.updated/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [experienceprovision]
     payload: { mallId: id, parentId: id, ownerMembershipId: id, code: string, publicSlug: string, version: positiveinteger }
   - id: member.address.changed
@@ -74,7 +74,7 @@ events:
     version: 1
     schema: contract://events/member.address.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { memberId: id, addressId: id, state: string, isDefault: boolean, version: positiveinteger }
   - id: member.favorite.changed
@@ -82,7 +82,7 @@ events:
     version: 1
     schema: contract://events/member.favorite.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { memberId: id, listingId: id, state: string, version: positiveinteger }
   - id: qualification.changed
@@ -90,7 +90,7 @@ events:
     version: 1
     schema: contract://events/qualification.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [riskscan]
     payload: { qualificationId: id, subjectKind: string, subjectId: id, productIds: idarray, categoryIds: idarray, regionIds: idarray, state: string, expiresAt: string, version: positiveinteger }
   - id: qualification.expired
@@ -98,7 +98,7 @@ events:
     version: 1
     schema: contract://events/qualification.expired/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [riskscan]
     payload: { qualificationId: id, subjectKind: string, subjectId: id, productIds: idarray, categoryIds: idarray, regionIds: idarray, state: string, expiresAt: string, version: positiveinteger }
   - id: qualification.revoked
@@ -106,7 +106,7 @@ events:
     version: 1
     schema: contract://events/qualification.revoked/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [riskscan]
     payload: { qualificationId: id, subjectKind: string, subjectId: id, productIds: idarray, categoryIds: idarray, regionIds: idarray, state: string, expiresAt: string, version: positiveinteger }
   - id: capability.changed
@@ -114,7 +114,7 @@ events:
     version: 1
     schema: contract://events/capability.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [navigation]
     payload: { scopeId: id, capability: string, state: string, version: positiveinteger }
   - id: navigation.catalog.changed
@@ -122,7 +122,7 @@ events:
     version: 1
     schema: contract://events/navigation.catalog.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [navigation]
     payload: { catalogVersion: string, hash: string }
   - id: identity.session.created
@@ -130,7 +130,7 @@ events:
     version: 1
     schema: contract://events/identity.session.created/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { principalId: id, membershipId: id, assurance: integer }
   - id: identity.session.revoked
@@ -138,7 +138,7 @@ events:
     version: 1
     schema: contract://events/identity.session.revoked/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { sessions: idarray, reason: string }
   - id: identity.membership.switched
@@ -146,7 +146,7 @@ events:
     version: 1
     schema: contract://events/identity.membership.switched/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { principalId: id, previousMembershipId: id, membershipId: id, previousSessionId: id, sessionId: id }
   - id: identity.challenge.started
@@ -154,7 +154,7 @@ events:
     version: 1
     schema: contract://events/identity.challenge.started/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { challenge: id, destination: optionalstring, purpose: string }
   - id: identity.member.registered
@@ -162,7 +162,7 @@ events:
     version: 1
     schema: contract://events/identity.member.registered/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { principalId: id, membershipId: id, scopeId: id, target: string }
   - id: identity.invitation.issued
@@ -170,7 +170,7 @@ events:
     version: 1
     schema: contract://events/identity.invitation.issued/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { invitationId: id, kind: string, target: string, membershipId: nullableid }
   - id: identity.invitation.reserved
@@ -178,7 +178,7 @@ events:
     version: 1
     schema: contract://events/identity.invitation.reserved/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { invitationId: id, target: string, kind: string }
   - id: identity.invitation.redeemed
@@ -186,7 +186,7 @@ events:
     version: 1
     schema: contract://events/identity.invitation.redeemed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [navigation, projection]
     payload: { invitationId: id, membershipId: id, target: string }
   - id: identity.invitation.revoked
@@ -194,7 +194,7 @@ events:
     version: 1
     schema: contract://events/identity.invitation.revoked/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { invitationId: id, actorMembershipId: id }
   - id: identity.invitation.expired
@@ -202,7 +202,7 @@ events:
     version: 1
     schema: contract://events/identity.invitation.expired/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { invitationId: id, kind: string, target: string }
   - id: identity.invitation.failed
@@ -210,7 +210,7 @@ events:
     version: 1
     schema: contract://events/identity.invitation.failed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { invitationId: id, operation: string, reason: string }
   - id: identity.enrollment.completed
@@ -218,7 +218,7 @@ events:
     version: 1
     schema: contract://events/identity.enrollment.completed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [navigation, projection]
     payload: { invitationId: id, membershipId: id }
   - id: identity.link.required
@@ -226,7 +226,7 @@ events:
     version: 1
     schema: contract://events/identity.link.required/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { linkCase: id, invitation: id, reason: string }
   - id: access.version.changed
@@ -234,7 +234,7 @@ events:
     version: 1
     schema: contract://events/access.version.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [sessionrevocation, navigation, projection]
     payload: { membership: id, version: positiveinteger, reason: string }
   - id: access.membership.invited
@@ -242,7 +242,7 @@ events:
     version: 1
     schema: contract://events/access.membership.invited/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { membershipId: id, scopeId: id, invitationId: id, target: string }
   - id: access.membership.activated
@@ -250,7 +250,7 @@ events:
     version: 1
     schema: contract://events/access.membership.activated/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [navigation, projection]
     payload: { membershipId: id, accessVersion: positiveinteger, invitationId: id, target: string, grantDigest: string }
   - id: access.owner.transfer.initiated
@@ -258,7 +258,7 @@ events:
     version: 1
     schema: contract://events/access.owner.transfer.initiated/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { transfer: id, scope: id, sourceMembership: id, targetMembership: id, version: positiveinteger }
   - id: access.owner.transferred
@@ -266,7 +266,7 @@ events:
     version: 1
     schema: contract://events/access.owner.transferred/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [navigation, projection]
     payload: { scope: id, previousMembership: id, membership: id, version: positiveinteger }
   - id: access.owner.transfer.cancelled
@@ -274,7 +274,7 @@ events:
     version: 1
     schema: contract://events/access.owner.transfer.cancelled/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { transfer: id, scope: id, sourceMembership: id, targetMembership: id, version: positiveinteger }
   - id: access.owner.transfer.expired
@@ -282,7 +282,7 @@ events:
     version: 1
     schema: contract://events/access.owner.transfer.expired/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { transfer: id, scope: id, sourceMembership: id, targetMembership: id, version: positiveinteger }
   - id: catalog.listing.published
@@ -290,7 +290,7 @@ events:
     version: 1
     schema: contract://events/catalog.listing.published/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { listing: id, sku: id, scope: id, version: positiveinteger }
   - id: pricing.rule.created
@@ -298,7 +298,7 @@ events:
     version: 1
     schema: contract://events/pricing.rule.created/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { rule: id, scope: id, status: string, version: positiveinteger }
   - id: pricing.rule.published
@@ -306,7 +306,7 @@ events:
     version: 1
     schema: contract://events/pricing.rule.published/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { rule: id, scope: id, status: string, version: positiveinteger }
   - id: pricing.offer.changed
@@ -314,7 +314,7 @@ events:
     version: 1
     schema: contract://events/pricing.offer.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { offer: id, book: id, sku: id, scope: id, version: positiveinteger }
   - id: catalog.product.created
@@ -322,7 +322,7 @@ events:
     version: 1
     schema: contract://events/catalog.product.created/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { product: id, scope: id, status: string, version: positiveinteger }
   - id: catalog.product.updated
@@ -330,7 +330,7 @@ events:
     version: 1
     schema: contract://events/catalog.product.updated/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { product: id, scope: id, status: string, version: positiveinteger }
   - id: catalog.product.archived
@@ -338,7 +338,7 @@ events:
     version: 1
     schema: contract://events/catalog.product.archived/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { product: id, scope: id, status: string, version: positiveinteger }
   - id: inventory.stock.changed
@@ -346,7 +346,7 @@ events:
     version: 1
     schema: contract://events/inventory.stock.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { stockitem: id, sku: id, available: integer, reserved: integer, version: positiveinteger }
   - id: inventory.reservation.created
@@ -354,7 +354,7 @@ events:
     version: 1
     schema: contract://events/inventory.reservation.created/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { owner: id, ownerKind: string, lines: reservationlines }
   - id: inventory.reservation.confirmed
@@ -362,7 +362,7 @@ events:
     version: 1
     schema: contract://events/inventory.reservation.confirmed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { owner: id, ownerKind: string, lines: reservationlines }
   - id: inventory.reservation.released
@@ -370,7 +370,7 @@ events:
     version: 1
     schema: contract://events/inventory.reservation.released/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { owner: id, ownerKind: string, lines: reservationlines }
   - id: inventory.reservation.expired
@@ -378,7 +378,7 @@ events:
     version: 1
     schema: contract://events/inventory.reservation.expired/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { owner: id, ownerKind: string, lines: reservationlines }
   - id: experience.release.requested
@@ -386,7 +386,7 @@ events:
     version: 1
     schema: contract://events/experience.release.requested/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [experiencepublish, projection]
     payload: { release: id, application: id, version: id, hash: string, key: string }
   - id: experience.release.activated
@@ -394,7 +394,7 @@ events:
     version: 1
     schema: contract://events/experience.release.activated/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { release: id, application: id, version: id, hash: string, key: string }
   - id: experience.release.failed
@@ -402,7 +402,7 @@ events:
     version: 1
     schema: contract://events/experience.release.failed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { release: id, application: id, version: id, code: string }
   - id: marketing.campaign.created
@@ -410,7 +410,7 @@ events:
     version: 1
     schema: contract://events/marketing.campaign.created/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { campaign: id, scope: id, state: string, version: positiveinteger }
   - id: marketing.campaign.revised
@@ -418,7 +418,7 @@ events:
     version: 1
     schema: contract://events/marketing.campaign.revised/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { campaign: id, scope: id, state: string, version: positiveinteger }
   - id: marketing.campaign.published
@@ -426,7 +426,7 @@ events:
     version: 1
     schema: contract://events/marketing.campaign.published/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { campaign: id, scope: id, state: string, version: positiveinteger }
   - id: marketing.campaign.disabled
@@ -434,7 +434,7 @@ events:
     version: 1
     schema: contract://events/marketing.campaign.disabled/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { campaign: id, scope: id, state: string, version: positiveinteger }
   - id: marketing.promotion.reserved
@@ -442,7 +442,7 @@ events:
     version: 1
     schema: contract://events/marketing.promotion.reserved/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { reservation: id, campaign: id, member: id, order: id, amountMinor: integer, campaignVersion: positiveinteger }
   - id: marketing.promotion.committed
@@ -450,7 +450,7 @@ events:
     version: 1
     schema: contract://events/marketing.promotion.committed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { reservation: id, campaign: id, member: id, order: id, amountMinor: integer, campaignVersion: positiveinteger }
   - id: marketing.promotion.released
@@ -458,7 +458,7 @@ events:
     version: 1
     schema: contract://events/marketing.promotion.released/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { reservation: id, campaign: id, member: id, order: id, amountMinor: integer, campaignVersion: positiveinteger }
   - id: marketing.promotion.refunded
@@ -466,7 +466,7 @@ events:
     version: 1
     schema: contract://events/marketing.promotion.refunded/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { reservation: id, campaign: id, member: id, order: id, amountMinor: integer, campaignVersion: positiveinteger }
   - id: checkout.quote.created
@@ -474,7 +474,7 @@ events:
     version: 1
     schema: contract://events/checkout.quote.created/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { checkout: id, quote: id, member: id, mall: id, payableMinor: integer, personalMinor: integer, currency: currency, expiresAt: iso8601utc, evidenceHash: string }
   - id: checkout.quote.confirmed
@@ -482,7 +482,7 @@ events:
     version: 1
     schema: contract://events/checkout.quote.confirmed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { checkout: id, quote: id, order: id, intent: id }
   - id: order.placed
@@ -490,15 +490,37 @@ events:
     version: 1
     schema: contract://events/order.placed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
-    payload: { order: id, number: string, member: id, mall: id, application: id, scopes: idarray, timezone: string, totalMinor: integer, currency: currency, evidenceHash: string, tenders: ordertenders, lines: orderlines, paymentState: optionalstring, fulfillmentState: optionalstring, aftersaleState: optionalstring, lifecycleState: optionalstring, verificationState: optionalstring, sourceChannel: optionalstring, externalOrderNo: optionalstring, orderedAt: optionaliso8601utc }
+    payload:
+      {
+        order: id,
+        number: string,
+        member: id,
+        mall: id,
+        application: id,
+        scopes: idarray,
+        timezone: string,
+        totalMinor: integer,
+        currency: currency,
+        evidenceHash: string,
+        tenders: ordertenders,
+        lines: orderlines,
+        paymentState: optionalstring,
+        fulfillmentState: optionalstring,
+        aftersaleState: optionalstring,
+        lifecycleState: optionalstring,
+        verificationState: optionalstring,
+        sourceChannel: optionalstring,
+        externalOrderNo: optionalstring,
+        orderedAt: optionaliso8601utc,
+      }
   - id: order.paid
     owner: order
     version: 1
     schema: contract://events/order.paid/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, referralevent, fulfillmentevent]
     payload: { payment: id, order: id, amountMinor: integer, currency: currency, member: id, snapshot: nullableordersnapshot }
   - id: order.cancelled
@@ -506,7 +528,7 @@ events:
     version: 1
     schema: contract://events/order.cancelled/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, paymentcancel]
     payload: { order: id, reason: string, providerState: optionalstring }
   - id: payment.captured
@@ -514,7 +536,7 @@ events:
     version: 1
     schema: contract://events/payment.captured/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification, reconciliation, orderevent]
     payload: { payment: id, order: id, amountMinor: integer, currency: currency, member: id, snapshot: nullableordersnapshot }
   - id: aftersale.applied
@@ -522,7 +544,7 @@ events:
     version: 1
     schema: contract://events/aftersale.applied/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { aftersale: id, order: id, member: id, state: string, amountMinor: integer, currency: currency, requiresReturn: boolean }
   - id: aftersale.changed
@@ -530,7 +552,7 @@ events:
     version: 1
     schema: contract://events/aftersale.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification, fulfillmentevent]
     payload: { aftersale: id, order: id, member: id, previousState: string, state: string }
   - id: return.inspected
@@ -538,7 +560,7 @@ events:
     version: 1
     schema: contract://events/return.inspected/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { return: id, aftersale: id, accepted: boolean }
   - id: refund.completed
@@ -546,7 +568,7 @@ events:
     version: 1
     schema: contract://events/refund.completed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification, reconciliation, referralevent, orderevent]
     payload: { refund: id, payment: id, amountMinor: integer, currency: currency, member: id, order: id, mall: id, tenders: refundtenders, lineId: nullableid, scopes: idarray, timezone: string }
   - id: payment.late.detected
@@ -554,7 +576,7 @@ events:
     version: 1
     schema: contract://events/payment.late.detected/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification, reconciliation]
     payload: { intent: id, order: id, payment: id, refund: id, transaction: string, providerMinor: integer, detectedAt: iso8601utc }
   - id: payment.attempt.failed
@@ -562,7 +584,7 @@ events:
     version: 1
     schema: contract://events/payment.attempt.failed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { intent: id, order: id, providerState: string }
   - id: payment.provider.observed
@@ -570,7 +592,7 @@ events:
     version: 1
     schema: contract://events/payment.provider.observed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { providerEvent: id, kind: string, evidence: providerevidence }
   - id: payment.autorefund.requested
@@ -578,7 +600,7 @@ events:
     version: 1
     schema: contract://events/payment.autorefund.requested/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification, reconciliation]
     payload: { intent: id, order: id, payment: id, refund: id, transaction: string, providerMinor: integer, detectedAt: iso8601utc }
   - id: payment.recovery.opened
@@ -586,7 +608,7 @@ events:
     version: 1
     schema: contract://events/payment.recovery.opened/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { recovery: id, reason: string, evidence: recoveryevidence }
   - id: fulfillment.shipped
@@ -594,7 +616,7 @@ events:
     version: 1
     schema: contract://events/fulfillment.shipped/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification, orderevent]
     payload: { fulfillment: id, order: id, member: id, state: string }
   - id: verification.completed
@@ -602,7 +624,7 @@ events:
     version: 1
     schema: contract://events/verification.completed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, fulfillmentevent]
     payload: { verification: id, subjectType: string, subject: id, purpose: string, record: id }
   - id: voucher.issued
@@ -610,7 +632,7 @@ events:
     version: 1
     schema: contract://events/voucher.issued/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { batch: id, count: integer, amountMinor: integer }
   - id: voucher.issue.failed
@@ -618,7 +640,7 @@ events:
     version: 1
     schema: contract://events/voucher.issue.failed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { batch: id, error: string }
   - id: voucher.import.failed
@@ -626,7 +648,7 @@ events:
     version: 1
     schema: contract://events/voucher.import.failed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { import: id, error: string }
   - id: voucher.status.failed
@@ -634,7 +656,7 @@ events:
     version: 1
     schema: contract://events/voucher.status.failed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { batch: id, error: string }
   - id: voucher.redeemed
@@ -642,7 +664,7 @@ events:
     version: 2
     schema: contract://events/voucher.redeemed/v2
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { voucher: id, redemption: id, amountMinor: integer, currency: currency, scope: id, store: nullableid, order: nullableid, channel: string, scopes: idarray, timezone: string }
   - id: voucher.refunded
@@ -650,7 +672,7 @@ events:
     version: 1
     schema: contract://events/voucher.refunded/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { voucher: id, redemption: id, refund: id, ruleVersion: integer, amountMinor: integer, currency: currency, scope: id, store: nullableid, order: nullableid, channel: string, scopes: idarray, timezone: string }
   - id: benefit.granted
@@ -658,7 +680,7 @@ events:
     version: 1
     schema: contract://events/benefit.granted/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { batch: id, account: id, member: id, amountMinor: integer, currency: currency, kind: string }
   - id: benefit.expired
@@ -666,7 +688,7 @@ events:
     version: 1
     schema: contract://events/benefit.expired/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { lot: id, batch: id, account: id, member: id, amountMinor: integer, currency: currency }
   - id: benefit.expiry.reminded
@@ -674,7 +696,7 @@ events:
     version: 1
     schema: contract://events/benefit.expiry.reminded/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { lot: id, batch: id, account: id, member: id, remainingMinor: integer, currency: currency, expiresAt: iso8601utc }
   - id: benefit.revoked
@@ -682,7 +704,7 @@ events:
     version: 1
     schema: contract://events/benefit.revoked/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { batch: id }
   - id: benefit.grant.failed
@@ -690,7 +712,7 @@ events:
     version: 1
     schema: contract://events/benefit.grant.failed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { batch: id, error: string }
   - id: benefit.revoke.failed
@@ -698,7 +720,7 @@ events:
     version: 1
     schema: contract://events/benefit.revoke.failed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { batch: id, error: string }
   - id: benefit.expiry.failed
@@ -706,7 +728,7 @@ events:
     version: 1
     schema: contract://events/benefit.expiry.failed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { job: id, error: string }
   - id: finance.entry.posted
@@ -714,7 +736,7 @@ events:
     version: 1
     schema: contract://events/finance.entry.posted/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { journal: id, referenceType: string, referenceId: id, amountMinor: integer, currency: currency, debit: string, credit: string }
   - id: finance.reconciliation.difference
@@ -722,7 +744,7 @@ events:
     version: 1
     schema: contract://events/finance.reconciliation.difference/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { reconciliation: id, differenceMinor: integer, itemCount: integer }
   - id: finance.settlement.approved
@@ -730,7 +752,7 @@ events:
     version: 1
     schema: contract://events/finance.settlement.approved/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { settlement: id, partner: id, amountMinor: integer, grossMinor: integer, feeMinor: integer, currency: currency }
   - id: finance.settlement.adjusted
@@ -738,7 +760,7 @@ events:
     version: 1
     schema: contract://events/finance.settlement.adjusted/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { settlement: id, adjustment: id, direction: string, amountMinor: integer, grossMinor: integer, netMinor: integer, feeMinor: integer }
   - id: finance.period.closed
@@ -746,7 +768,7 @@ events:
     version: 1
     schema: contract://events/finance.period.closed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { period: string, close: id, sourceHash: optionalstring, statementSnapshot: statementsnapshot }
   - id: finance.withdrawal.paid
@@ -754,7 +776,7 @@ events:
     version: 1
     schema: contract://events/finance.withdrawal.paid/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { withdrawal: id, settlement: id, amountMinor: integer, currency: currency }
   - id: finance.withdrawal.uncertain
@@ -762,7 +784,7 @@ events:
     version: 1
     schema: contract://events/finance.withdrawal.uncertain/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { withdrawal: id, settlement: id, error: string, deadletter: id }
   - id: invoice.issued
@@ -770,7 +792,7 @@ events:
     version: 1
     schema: contract://events/invoice.issued/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { request: id, kind: string, amountMinor: integer, currency: currency, documentHash: string }
   - id: invoice.red.issued
@@ -778,7 +800,7 @@ events:
     version: 1
     schema: contract://events/invoice.red.issued/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { request: id, kind: string, amountMinor: integer, currency: currency, documentHash: string }
   - id: support.message.sent
@@ -786,7 +808,7 @@ events:
     version: 1
     schema: contract://events/support.message.sent/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { scope: id, ticket: id, conversation: id, message: id, authorType: string, member: id, sequence: positiveinteger, version: positiveinteger }
   - id: support.ticket.assigned
@@ -794,7 +816,7 @@ events:
     version: 1
     schema: contract://events/support.ticket.assigned/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { scope: id, ticket: id, conversation: id, agent: id, member: id, version: positiveinteger }
   - id: support.sla.escalated
@@ -802,7 +824,7 @@ events:
     version: 1
     schema: contract://events/support.sla.escalated/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { scope: id, ticket: id, conversation: id, member: id, reason: string, escalation: id, version: positiveinteger }
   - id: support.ticket.updated
@@ -810,7 +832,7 @@ events:
     version: 1
     schema: contract://events/support.ticket.updated/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { scope: id, ticket: id, conversation: id, state: string, version: positiveinteger }
   - id: support.ticket.closed
@@ -818,7 +840,7 @@ events:
     version: 1
     schema: contract://events/support.ticket.closed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { scope: id, ticket: id, conversation: id, version: positiveinteger }
   - id: support.ticket.reopened
@@ -826,7 +848,7 @@ events:
     version: 1
     schema: contract://events/support.ticket.reopened/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { scope: id, ticket: id, conversation: id, version: positiveinteger }
   - id: support.readstate.updated
@@ -834,7 +856,7 @@ events:
     version: 1
     schema: contract://events/support.readstate.updated/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { scope: id, conversation: id, member: id, sequence: positiveinteger, version: positiveinteger }
   - id: support.attachment.ready
@@ -842,7 +864,7 @@ events:
     version: 1
     schema: contract://events/support.attachment.ready/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { scope: id, ticket: id, conversation: id, evidence: id, version: positiveinteger }
   - id: support.attachment.rejected
@@ -850,7 +872,7 @@ events:
     version: 1
     schema: contract://events/support.attachment.rejected/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { scope: id, ticket: id, conversation: id, evidence: id, version: positiveinteger }
   - id: channel.sync.completed
@@ -858,7 +880,7 @@ events:
     version: 1
     schema: contract://events/channel.sync.completed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { run: id, kind: string, provider: string, accepted: integer, rejected: integer }
   - id: channel.webhook.applied
@@ -866,7 +888,7 @@ events:
     version: 1
     schema: contract://events/channel.webhook.applied/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, fulfillmentevent]
     payload: { webhook: id, provider: string, kind: string, reference: nullablestring, operation: nullableid, internalReference: nullableid, state: string }
   - id: channel.refund.changed
@@ -874,7 +896,7 @@ events:
     version: 1
     schema: contract://events/channel.refund.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { webhook: id, provider: string, kind: string, reference: nullablestring, operation: nullableid, internalReference: nullableid, state: string }
   - id: notification.delivered
@@ -882,7 +904,7 @@ events:
     version: 1
     schema: contract://events/notification.delivered/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { dispatch: id, channel: string }
   - id: risk.policy.activated
@@ -890,7 +912,7 @@ events:
     version: 1
     schema: contract://events/risk.policy.activated/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { policy: id, version: positiveinteger, rolloutPercent: integer }
   - id: catalog.listing.unpublished
@@ -898,7 +920,7 @@ events:
     version: 1
     schema: contract://events/catalog.listing.unpublished/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { listing: id, reason: string, decision: id }
   - id: risk.case.opened
@@ -906,7 +928,7 @@ events:
     version: 1
     schema: contract://events/risk.case.opened/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { case: id, decision: id, outcome: string }
   - id: risk.case.resolved
@@ -914,7 +936,7 @@ events:
     version: 1
     schema: contract://events/risk.case.resolved/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { case: id, state: string }
   - id: risk.transaction.blocked
@@ -922,7 +944,7 @@ events:
     version: 1
     schema: contract://events/risk.transaction.blocked/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { decision: id, operation: string, reason: string }
   - id: extension.enabled
@@ -930,7 +952,7 @@ events:
     version: 1
     schema: contract://events/extension.enabled/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [navigation, projection]
     payload: { installation: id, provider: string, state: string, version: positiveinteger }
   - id: extension.disabled
@@ -938,7 +960,7 @@ events:
     version: 1
     schema: contract://events/extension.disabled/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [navigation, projection]
     payload: { installation: id, provider: string, state: string, version: positiveinteger }
   - id: extension.degraded
@@ -946,7 +968,7 @@ events:
     version: 1
     schema: contract://events/extension.degraded/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { installation: id, provider: string, state: string, version: positiveinteger }
   - id: order.export.requested
@@ -954,7 +976,7 @@ events:
     version: 1
     schema: contract://events/order.export.requested/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { export: id, report: string, filter: orderexportfilter, authorization: authorizationsnapshot, watermark: iso8601utc }
   - id: finance.export.requested
@@ -962,7 +984,7 @@ events:
     version: 1
     schema: contract://events/finance.export.requested/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { export: id, report: string, filter: financeexportfilter, authorization: authorizationsnapshot }
   - id: identity.member.reset
@@ -970,7 +992,7 @@ events:
     version: 1
     schema: contract://events/identity.member.reset/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { memberId: id, credentialVersion: positiveinteger, reason: string }
   - id: order.received
@@ -978,7 +1000,7 @@ events:
     version: 1
     schema: contract://events/order.received/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, referralevent, notification]
     payload: { orderId: id, receivedAt: iso8601utc, fulfillmentState: string }
   - id: referral.setting.changed
@@ -986,7 +1008,7 @@ events:
     version: 1
     schema: contract://events/referral.setting.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { settingId: id, enabled: boolean, rateBasisPoints: integer }
   - id: referral.product.changed
@@ -994,7 +1016,7 @@ events:
     version: 1
     schema: contract://events/referral.product.changed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { productId: id, enabled: boolean, rateBasisPoints: integer }
   - id: referral.member.applied
@@ -1002,7 +1024,7 @@ events:
     version: 1
     schema: contract://events/referral.member.applied/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { referralMemberId: id, memberId: id, status: string }
   - id: referral.member.approved
@@ -1010,7 +1032,7 @@ events:
     version: 1
     schema: contract://events/referral.member.approved/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { referralMemberId: id, memberId: id, approvedBy: id }
   - id: referral.member.disqualified
@@ -1018,7 +1040,7 @@ events:
     version: 1
     schema: contract://events/referral.member.disqualified/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { referralMemberId: id, memberId: id, reason: string }
   - id: referral.binding.created
@@ -1026,7 +1048,7 @@ events:
     version: 1
     schema: contract://events/referral.binding.created/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { bindingId: id, promoterId: id, memberId: id, boundAt: iso8601utc }
   - id: referral.commission.created
@@ -1034,7 +1056,7 @@ events:
     version: 1
     schema: contract://events/referral.commission.created/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection]
     payload: { commissionId: id, orderId: id, amountMinor: integer, currency: currency }
   - id: referral.commission.settled
@@ -1042,7 +1064,7 @@ events:
     version: 1
     schema: contract://events/referral.commission.settled/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { commissionId: id, settledAt: iso8601utc, amountMinor: integer, currency: currency }
   - id: referral.commission.reversed
@@ -1050,7 +1072,7 @@ events:
     version: 1
     schema: contract://events/referral.commission.reversed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { commissionId: id, reversalId: id, amountMinor: integer, currency: currency, reason: string }
   - id: referral.withdrawal.requested
@@ -1058,7 +1080,7 @@ events:
     version: 1
     schema: contract://events/referral.withdrawal.requested/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { withdrawalId: id, memberId: id, amountMinor: integer, currency: currency }
   - id: referral.withdrawal.paid
@@ -1066,7 +1088,7 @@ events:
     version: 1
     schema: contract://events/referral.withdrawal.paid/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { withdrawalId: id, providerReference: string, paidAt: iso8601utc }
   - id: referral.withdrawal.failed
@@ -1074,7 +1096,7 @@ events:
     version: 1
     schema: contract://events/referral.withdrawal.failed/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [projection, notification]
     payload: { withdrawalId: id, reason: string, failedAt: iso8601utc }
   - id: approval.template.created
@@ -1082,7 +1104,7 @@ events:
     version: 1
     schema: contract://events/approval.template.created/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { templateId: id, subjectKind: string, templateVersion: positiveinteger }
   - id: approval.template.revised
@@ -1090,7 +1112,7 @@ events:
     version: 1
     schema: contract://events/approval.template.revised/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { templateId: id, subjectKind: string, templateVersion: positiveinteger }
   - id: approval.template.statechanged
@@ -1098,7 +1120,7 @@ events:
     version: 1
     schema: contract://events/approval.template.statechanged/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { templateId: id, state: string, templateVersion: positiveinteger }
   - id: approval.instance.created
@@ -1106,7 +1128,7 @@ events:
     version: 1
     schema: contract://events/approval.instance.created/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { instanceId: id, subjectKind: string, subjectId: string, subjectVersion: integer, action: string }
   - id: approval.instance.approved
@@ -1114,7 +1136,7 @@ events:
     version: 1
     schema: contract://events/approval.instance.approved/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [referralevent, riskscan, voucherissue]
     payload: { instanceId: id, subjectKind: string, subjectId: string, subjectVersion: integer, action: string, proofId: id }
   - id: approval.instance.rejected
@@ -1122,7 +1144,7 @@ events:
     version: 1
     schema: contract://events/approval.instance.rejected/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification, riskscan, voucherissue]
     payload: { instanceId: id, subjectKind: string, subjectId: string, subjectVersion: integer, action: string, reason: string }
   - id: approval.instance.cancelled
@@ -1130,7 +1152,7 @@ events:
     version: 1
     schema: contract://events/approval.instance.cancelled/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { instanceId: id, subjectKind: string, subjectId: string, reason: string }
   - id: approval.instance.expired
@@ -1138,7 +1160,7 @@ events:
     version: 1
     schema: contract://events/approval.instance.expired/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { instanceId: id, subjectKind: string, subjectId: string, expiredAt: iso8601utc }
   - id: approval.task.assigned
@@ -1146,7 +1168,7 @@ events:
     version: 1
     schema: contract://events/approval.task.assigned/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { taskId: id, instanceId: id, assigneeKind: string, assignee: string, dueAt: nullableiso8601utc }
   - id: approval.task.decided
@@ -1154,7 +1176,7 @@ events:
     version: 1
     schema: contract://events/approval.task.decided/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: []
     payload: { taskId: id, instanceId: id, outcome: string, actorId: id, decidedAt: iso8601utc }
   - id: approval.task.escalated
@@ -1162,6 +1184,6 @@ events:
     version: 1
     schema: contract://events/approval.task.escalated/v1
     serializer: packages/contract/src/EventSerializer.ts
-    schemaRegistry: services/commerce/src/app/events.ts
+    schemaRegistry: services/commerce/src/generated/EventCatalog.ts
     handlers: [notification]
     payload: { taskId: id, instanceId: id, action: string, target: optionalstring, escalatedAt: iso8601utc }

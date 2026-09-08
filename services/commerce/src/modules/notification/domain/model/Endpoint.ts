@@ -20,7 +20,8 @@ export class Endpoint {
       (revokedAt !== null && Number.isNaN(Date.parse(revokedAt))) ||
       !Number.isSafeInteger(version) ||
       version < 1
-    ) throw new Error('NOTIFICATION_ENDPOINT_INVALID');
+    )
+      throw new Error('NOTIFICATION_ENDPOINT_INVALID');
     Object.freeze(this);
   }
 

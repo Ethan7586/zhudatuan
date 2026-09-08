@@ -1,13 +1,6 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type {
-  CreateCustomerCommand,
-  CustomerLock,
-  CustomerProjection,
-  CustomerRepository,
-  CustomerWriteResult,
-  UpdateCustomerCommand,
-} from '../../application/port/CustomerRepository';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { CreateCustomerCommand, CustomerLock, CustomerProjection, CustomerRepository, CustomerWriteResult, UpdateCustomerCommand } from '../../application/port/CustomerRepository';
 
 interface CustomerRow extends Omit<CustomerProjection, 'createdAt' | 'updatedAt'> {
   readonly createdAt: Date | string;
@@ -70,7 +63,19 @@ export class PgCustomerRepository implements CustomerRepository {
           identifier_masked=case when $4 then $8 else identifier_masked end,
           name=coalesce($9,name),kind=coalesce($10,kind),version=version+1,updated_by=$11,updated_at=clock_timestamp()
          where id=$1 and scope_id=$2 and version=$3 returning tenant_id tenant`,
-        [command.id, command.scope, command.expectedVersion, command.identifier !== undefined, command.identifier?.ciphertext ?? null, command.identifier?.fingerprint ?? null, command.identifier?.keyVersion ?? null, command.identifierMasked ?? null, command.name ?? null, command.kind ?? null, command.actor]
+        [
+          command.id,
+          command.scope,
+          command.expectedVersion,
+          command.identifier !== undefined,
+          command.identifier?.ciphertext ?? null,
+          command.identifier?.fingerprint ?? null,
+          command.identifier?.keyVersion ?? null,
+          command.identifierMasked ?? null,
+          command.name ?? null,
+          command.kind ?? null,
+          command.actor,
+        ]
       );
     } catch (cause) {
       if (databaseCode(cause) === '23505') return 'identifierconflict';
@@ -138,7 +143,26 @@ export class PgCustomerRepository implements CustomerRepository {
          phone_ciphertext=excluded.phone_ciphertext,phone_hash=excluded.phone_hash,phone_key_version=excluded.phone_key_version,phone_masked=excluded.phone_masked,
          email_ciphertext=excluded.email_ciphertext,email_hash=excluded.email_hash,email_key_version=excluded.email_key_version,email_masked=excluded.email_masked,
          version=partner.customercontact.version+1,updated_by=excluded.updated_by,updated_at=clock_timestamp()`,
-      [contact.id, tenant, scope, customer, contact.kind, contact.name.ciphertext, contact.name.fingerprint, contact.name.keyVersion, contact.nameMasked, contact.phone?.ciphertext ?? null, contact.phone?.fingerprint ?? null, contact.phone?.keyVersion ?? null, contact.phoneMasked, contact.email?.ciphertext ?? null, contact.email?.fingerprint ?? null, contact.email?.keyVersion ?? null, contact.emailMasked, actor]
+      [
+        contact.id,
+        tenant,
+        scope,
+        customer,
+        contact.kind,
+        contact.name.ciphertext,
+        contact.name.fingerprint,
+        contact.name.keyVersion,
+        contact.nameMasked,
+        contact.phone?.ciphertext ?? null,
+        contact.phone?.fingerprint ?? null,
+        contact.phone?.keyVersion ?? null,
+        contact.phoneMasked,
+        contact.email?.ciphertext ?? null,
+        contact.email?.fingerprint ?? null,
+        contact.email?.keyVersion ?? null,
+        contact.emailMasked,
+        actor,
+      ]
     );
   }
 
@@ -162,10 +186,7 @@ function customerProjection(row: CustomerRow): CustomerProjection {
   return Object.freeze({
     ...row,
     contacts: Object.freeze(row.contacts.map((contact) => Object.freeze({ ...contact }))),
-    agreement:
-      row.agreement === null
-        ? null
-        : Object.freeze({ ...row.agreement, capabilities: Object.freeze([...row.agreement.capabilities]), effectiveAt: iso(row.agreement.effectiveAt), expiresAt: iso(row.agreement.expiresAt) }),
+    agreement: row.agreement === null ? null : Object.freeze({ ...row.agreement, capabilities: Object.freeze([...row.agreement.capabilities]), effectiveAt: iso(row.agreement.effectiveAt), expiresAt: iso(row.agreement.expiresAt) }),
     createdAt: iso(row.createdAt),
     updatedAt: iso(row.updatedAt),
   });

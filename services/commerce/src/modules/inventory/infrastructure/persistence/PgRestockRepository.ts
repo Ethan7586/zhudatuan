@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { RestockRepository, RestockRequest } from '../../application/port/RestockRepository';
 import { StockItem, type StockItemState } from '../../domain/model/StockItem';
 
@@ -50,18 +50,34 @@ export class PgRestockRepository implements RestockRepository {
         [`movement:${digest(`${line.stockitem_id}:${request.id}`)}`, line.stockitem_id, line.quantity, request.id]
       );
       if (movement.rows[0]) {
-        const current = StockItem.restore({ id: line.stockitem_id, scope: line.scope_id, sku: line.sku_id, location: line.location_id,
-          onhand: line.onhand, safety: line.safety, state: line.status, version: line.version, updatedAt: iso(line.updated_at) });
+        const current = StockItem.restore({
+          id: line.stockitem_id,
+          scope: line.scope_id,
+          sku: line.sku_id,
+          location: line.location_id,
+          onhand: line.onhand,
+          safety: line.safety,
+          state: line.status,
+          version: line.version,
+          updatedAt: iso(line.updated_at),
+        });
         const next = current.restock(line.quantity, new Date().toISOString()).snapshot();
-        const saved = await database.query(`update inventory.stockitem set onhand=$2,version=$3,updated_at=$4 where id=$1 and version=$5 returning id`,
-          [next.id, next.onhand, next.version, next.updatedAt, current.snapshot().version]);
+        const saved = await database.query(`update inventory.stockitem set onhand=$2,version=$3,updated_at=$4 where id=$1 and version=$5 returning id`, [next.id, next.onhand, next.version, next.updatedAt, current.snapshot().version]);
         if (!saved.rows[0]) throw new Error('INVENTORY_RETURN_VERSION_CONFLICT');
         changed.push({ ...next, reserved: line.reserved });
       }
     }
-    await new PgRuntimeWriter(database).appendMany(changed.map((stock) => ({ id: `event:${randomUUID()}`, type: 'inventory.stock.changed',
-      aggregateType: 'stockitem', aggregate: stock.id, scope: stock.scope, trace: context.trace, payload: { stockitem: stock.id,
-        sku: stock.sku, available: Math.max(0, stock.onhand - stock.safety - stock.reserved), reserved: stock.reserved, version: stock.version } })));
+    await new PgRuntimeWriter(database).appendMany(
+      changed.map((stock) => ({
+        id: `event:${randomUUID()}`,
+        type: 'inventory.stock.changed',
+        aggregateType: 'stockitem',
+        aggregate: stock.id,
+        scope: stock.scope,
+        trace: context.trace,
+        payload: { stockitem: stock.id, sku: stock.sku, available: Math.max(0, stock.onhand - stock.safety - stock.reserved), reserved: stock.reserved, version: stock.version },
+      }))
+    );
   }
 }
 

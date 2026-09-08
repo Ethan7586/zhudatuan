@@ -39,16 +39,22 @@ describe('NavigationFilter', () => {
     const nodes = new NavigationFilter().apply(catalog, context);
     expect(nodes).toHaveLength(1);
     expect(nodes[0]?.children).toHaveLength(49);
-    const tree = new NavigationTree({ scope: { id: scope.id, kind: scope.kind }, target: 'console', version: 'v', etag: '"v"', generatedAt: new Date(0).toISOString(), catalogVersion: 'catalog', defaultKey: 'node0', defaultRoute: '/node/0', nodes });
+    const tree = new NavigationTree({
+      scope: { id: scope.id, kind: scope.kind },
+      target: 'console',
+      version: 'v',
+      etag: '"v"',
+      generatedAt: new Date(0).toISOString(),
+      catalogVersion: 'catalog',
+      defaultKey: 'node0',
+      defaultRoute: '/node/0',
+      nodes,
+    });
     expect(JSON.stringify(tree)).not.toContain('denied');
   });
 
   it('keeps allowed descendants under an explained disabled parent and produces stable deep-link breadcrumbs', () => {
-    const catalog = [
-      catalogNode('rootb', null, 10, '/b'),
-      catalogNode('roota', null, 10, '/a', { permission: 'parent.denied' }),
-      catalogNode('child', 'roota', 1, '/a/:recordId', { placement: 'contextual' }),
-    ];
+    const catalog = [catalogNode('rootb', null, 10, '/b'), catalogNode('roota', null, 10, '/a', { permission: 'parent.denied' }), catalogNode('child', 'roota', 1, '/a/:recordId', { placement: 'contextual' })];
     const nodes = new NavigationFilter().apply(catalog, context());
     expect(nodes.map(({ key }) => key)).toEqual(['roota', 'rootb']);
     expect(nodes[0]?.experience).toMatchObject({ disabled: true, disabledReason: '当前身份无此权限' });

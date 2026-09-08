@@ -11,8 +11,7 @@ describe('PgFinanceOrderPort', () => {
       return result([{ id: 'order:one' }, { id: 'order:two' }]);
     });
 
-    await expect(withReadTransaction(query, (context) => new PgFinanceOrderPort().verified(context, ['order:two', 'order:one'])))
-      .resolves.toEqual(['order:one', 'order:two']);
+    await expect(withReadTransaction(query, (context) => new PgFinanceOrderPort().verified(context, ['order:two', 'order:one']))).resolves.toEqual(['order:one', 'order:two']);
   });
 
   it('does not query the database for an empty request', async () => {

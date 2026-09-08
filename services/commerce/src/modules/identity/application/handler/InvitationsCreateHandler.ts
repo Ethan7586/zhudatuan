@@ -1,13 +1,11 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
 import type { IdentityLifecycle } from '../model/IdentityAction';
 import { identityReply, identityRequest, type IdentityLifecycleCheckpoint, type PreparedIdentityLifecycle } from '../model/IdentityExecution';
 import type { LoadedInvitation, PreparedInvitation } from '../service/CreateInvitation';
 
-export class InvitationsCreateHandler
-  implements DurableOperationHandler<'identity.invitations.create', PreparedIdentityLifecycle<PreparedInvitation>, IdentityLifecycleCheckpoint<PreparedInvitation>, 'write', LoadedInvitation>
-{
+export class InvitationsCreateHandler implements DurableOperationHandler<'identity.invitations.create', PreparedIdentityLifecycle<PreparedInvitation>, IdentityLifecycleCheckpoint<PreparedInvitation>, 'write', LoadedInvitation> {
   readonly operation = 'identity.invitations.create' as const;
   readonly mode = 'write' as const;
 

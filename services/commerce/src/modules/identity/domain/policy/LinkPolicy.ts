@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 export class LinkPolicy {
   assertRevocable(activeLinks: number): void {
     if (!Number.isSafeInteger(activeLinks) || activeLinks <= 1) throw new DomainError('FEDERATION_LINK_REQUIRED');

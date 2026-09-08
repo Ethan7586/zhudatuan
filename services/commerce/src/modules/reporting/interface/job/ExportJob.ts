@@ -3,7 +3,10 @@ import type { ExportRunnerPort } from '../../../runtime/public';
 import type { ExportReport } from '../../application/process/ExportReport';
 
 export class ExportJob implements JobProcessor {
-  constructor(private readonly runtime: ExportRunnerPort, private readonly exporter: ExportReport) {}
+  constructor(
+    private readonly runtime: ExportRunnerPort,
+    private readonly exporter: ExportReport
+  ) {}
 
   process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
     const id = text(object(job.payload).export, 'REPORT_EXPORT_REQUIRED');

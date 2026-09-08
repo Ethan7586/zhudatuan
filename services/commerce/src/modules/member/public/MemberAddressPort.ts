@@ -1,5 +1,5 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
 
 export interface MemberAddressSnapshot {
   readonly id: string;

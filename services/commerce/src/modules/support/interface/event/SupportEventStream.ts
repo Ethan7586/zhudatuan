@@ -1,5 +1,5 @@
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
-import { HttpStream } from '../../../../foundation/interface/HttpStream';
+import { HttpStream } from '../../../../platform/http/HttpStream';
 import type { RealtimePort, SupportRealtimeEvent, SupportStreamPresenter } from '../../application/port/RealtimePort';
 
 export class SupportEventStream implements SupportStreamPresenter {

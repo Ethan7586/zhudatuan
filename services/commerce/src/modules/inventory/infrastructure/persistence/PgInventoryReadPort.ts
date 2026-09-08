@@ -1,7 +1,7 @@
 import type { QueryResultRow } from 'pg';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { boundedIdentifiers } from '../../../../foundation/persistence/BoundedIdentifiers';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { boundedIdentifiers } from '../../../../platform/database/BoundedIdentifiers';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import { available } from '../../domain/model/StockItem';
 import type { InventoryAvailabilityProjection, InventoryReadPort, StockSourceProjection, StorefrontAvailability } from '../../public/InventoryReadPort';
 
@@ -82,7 +82,10 @@ function project(rows: readonly AvailabilityRow[]): readonly InventoryAvailabili
         state: active.length === 0 && stock.some(({ status }) => status === 'blocked') ? ('blocked' as const) : quantity > 0 ? ('available' as const) : ('unavailable' as const),
         reservation: Object.freeze({ activeCount: sum(stock, 'active_count'), activeQuantity: reserved, earliestExpiry: expiry.length === 0 ? null : expiry.sort()[0]! }),
         sources,
-        version: sources.map(({ version }) => version).sort().join(':'),
+        version: sources
+          .map(({ version }) => version)
+          .sort()
+          .join(':'),
         watermark,
       });
     })

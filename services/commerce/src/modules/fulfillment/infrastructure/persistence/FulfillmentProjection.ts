@@ -1,14 +1,8 @@
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { OrderFulfillmentPort } from '../../../order/public';
 
-export async function projectFulfillment(
-  transactions: PgTransactionAccess,
-  orders: OrderFulfillmentPort,
-  context: WriteTransactionContext,
-  id: string,
-  order: string
-): Promise<void> {
+export async function projectFulfillment(transactions: PgTransactionAccess, orders: OrderFulfillmentPort, context: WriteTransactionContext, id: string, order: string): Promise<void> {
   const database = transactions.database(context);
   const fulfillment = await database.query<{
     id: string;
@@ -30,7 +24,10 @@ export async function projectFulfillment(
     `select event.id,'tracking'::text kind,event.state,package.tracking_number tracking,event.occurred_at "occurredAt"
     from fulfillment.trackingevent event join fulfillment.package package on package.id=event.package_id
     join fulfillment.shipment shipment on shipment.id=package.shipment_id
-    where shipment.fulfillment_id=$1 order by event.occurred_at,event.id`,
+    where shipment.fulfillment_id=$1 union all
+    select action.id,'store'::text kind,action.state,null tracking,action.occurred_at "occurredAt"
+    from fulfillment.storeaction action where action.fulfillment_id=$1
+    order by "occurredAt",id`,
     [id]
   );
   await orders.recordFulfillmentMilestones(context, order, id, milestones.rows);

@@ -1,5 +1,5 @@
 import { IdentityAction as OperationAction } from '../model/IdentityAction';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
 
 import type { IdentityAccessPort } from '../../../access/public';
 import type { IdentityMemberPort } from '../../../member/public';

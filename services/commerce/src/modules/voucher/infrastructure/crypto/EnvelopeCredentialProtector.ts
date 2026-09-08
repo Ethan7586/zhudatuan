@@ -1,4 +1,4 @@
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
 import type { CredentialBinding, CredentialProtector, ProtectedCredential } from '../../application/port/CredentialProtector';
 import { CredentialSecret } from '../../domain/value/CredentialSecret';
 import { VoucherNumber } from '../../domain/value/VoucherNumber';
@@ -11,10 +11,7 @@ export class EnvelopeCredentialProtector implements CredentialProtector {
   async protect(value: string, purpose: 'number' | 'secret', binding: CredentialBinding): Promise<ProtectedCredential> {
     const normalized = credentialValue(value, purpose);
     const context = encryptionContext(purpose, binding);
-    const [envelope, fingerprint] = await Promise.all([
-      this.kms.encrypt('pii', `voucher/credential/${purpose}`, normalized, context),
-      this.fingerprint(normalized, purpose, binding.scope),
-    ]);
+    const [envelope, fingerprint] = await Promise.all([this.kms.encrypt('pii', `voucher/credential/${purpose}`, normalized, context), this.fingerprint(normalized, purpose, binding.scope)]);
     return Object.freeze({
       ciphertext: envelope.ciphertext,
       fingerprint,

@@ -1,12 +1,12 @@
 import { CACHE_CATALOG } from '@shop/config/runtime';
-import type { Cache } from '../../../../foundation/cache/Cache';
-import { VersionedKey } from '../../../../foundation/cache/VersionedKey';
+import type { Cache } from '../../../../platform/cache/Cache';
+import { VersionedKey } from '../../../../platform/cache/VersionedKey';
 import type { StoredObject } from '../../../runtime/public/ObjectPort';
-import { mapParallel } from '../../../../foundation/performance/Parallel';
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
+import { mapParallel } from '@shop/kernel';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
 import type { ExperiencePublicationRepository, PublicationTarget } from '../port/ExperiencePublicationRepository';
 import type { ExperienceObserver } from '../port/ExperienceObserver';
-import { safeErrorCode } from '../../../../foundation/domain/SafeError';
+import { safeErrorCode } from '../../../../platform/error/SafeError';
 import type { ExperienceDocument } from '@shop/contract';
 
 export interface ExperiencePublisher {

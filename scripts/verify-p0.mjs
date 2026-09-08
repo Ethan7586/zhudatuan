@@ -26,18 +26,23 @@ const objects = readFileSync(resolve(root, 'database/contracts/objects.yml'), 'u
 for (const object of ['runtime.outbox', 'runtime.inbox', 'runtime.idempotency', 'inventory.reservation', 'payment.intent', 'payment.refund', 'finance.journal', 'finance.entry']) {
   if (!objects.includes(object)) throw new Error(`P0_DATABASE_OBJECT_MISSING:${object}`);
 }
-for (const path of ['services/commerce/src/app/ApiMain.ts', 'services/commerce/src/app/JobsMain.ts', 'services/commerce/src/app/MigrationMain.ts', 'services/commerce/src/app/SmokeMain.ts']) {
+for (const path of ['services/commerce/src/entry/ApiMain.ts', 'services/commerce/src/entry/JobsMain.ts', 'services/commerce/src/entry/MigrationMain.ts', 'services/commerce/src/entry/SmokeMain.ts']) {
   if (!existsSync(resolve(root, path))) throw new Error(`P0_ENTRY_MISSING:${path}`);
 }
 const compose = parse(readFileSync(resolve(root, 'infrastructure/container/local/compose.yml'), 'utf8'));
 if (compose?.services?.postgres?.image !== 'postgres:17-alpine' || compose?.services?.redis?.image !== 'redis:7.4-alpine') {
   throw new Error('P0_LOCAL_DEPENDENCY_VERSION_INVALID');
 }
-for (const [service, port] of [
-  ['postgres', '127.0.0.1:5432:5432'],
-  ['redis', '127.0.0.1:6379:6379'],
+const localPortVariables = new Set();
+for (const [service, containerPort] of [
+  ['postgres', 5432],
+  ['redis', 6379],
 ]) {
-  if (!compose.services[service].ports?.includes(port)) throw new Error(`P0_LOCAL_PORT_INVALID:${service}`);
+  const ports = compose.services[service].ports;
+  if (!Array.isArray(ports) || ports.length !== 1) throw new Error(`P0_LOCAL_PORT_INVALID:${service}`);
+  const match = new RegExp(`^127\\.0\\.0\\.1:\\$\\{([A-Z][A-Z0-9_]*)\\}:${containerPort}$`).exec(ports[0]);
+  if (!match || localPortVariables.has(match[1])) throw new Error(`P0_LOCAL_PORT_INVALID:${service}`);
+  localPortVariables.add(match[1]);
 }
 for (const path of ['tools/localsecrets/src/Main.ts', 'tools/localkms/src/Main.ts', 'tools/localobjects/src/Main.ts', 'tools/seed/src/Migrate.ts', 'tools/seed/src/Seed.ts', 'tools/seed/src/Verify.ts'])
   if (!existsSync(resolve(root, path))) throw new Error(`P0_LOCAL_CONTRACT_MISSING:${path}`);
@@ -58,7 +63,7 @@ for (const path of ['apps/console/.env.example', 'apps/storefront/.env.example',
 }
 const commerceExample = readFileSync(resolve(root, 'services/commerce/.env.example'), 'utf8');
 for (const port of [3000, 3002, 4173]) if (!commerceExample.includes(`:${port}`)) throw new Error(`P0_CORS_PORT_MISSING:${port}`);
-for (const path of ['services/commerce/src/foundation/infrastructure/SecretStore.ts', 'services/commerce/src/foundation/infrastructure/KmsClient.ts', 'services/commerce/src/modules/runtime/infrastructure/storage/ObjectStore.ts']) {
+for (const path of ['services/commerce/src/platform/secret/SecretStore.ts', 'services/commerce/src/platform/crypto/KmsClient.ts', 'services/commerce/src/platform/object/ObjectStore.ts']) {
   const source = readFileSync(resolve(root, path), 'utf8');
   if (/secrets\.local|LOCAL_(?:SECRETS|KMS|OBJECTS)|readFile|node:fs/.test(source)) throw new Error(`P0_PRODUCTION_CLIENT_LOCAL_BRANCH:${path}`);
 }

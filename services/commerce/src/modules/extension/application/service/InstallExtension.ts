@@ -1,7 +1,7 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ProviderManifest } from '@shop/contract';
-import type { ManifestVerifier } from '../../../../bootstrap/SignatureVerifier';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ManifestVerifier } from '../../../../composition/SignatureVerifier';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { Extension } from '../../domain/model/Extension';
 import { Manifest } from '../../domain/model/Manifest';
 import type { Installation } from '../../domain/model/Installation';

@@ -1,6 +1,6 @@
 import { PgCatalogPartnerPort } from './infrastructure/persistence/PgCatalogPartnerPort';
 
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { defineModule } from '../../composition/DefinedModule';
 import { Manifest } from './Manifest';
 import { PartnerPort } from './infrastructure/persistence/PartnerPort';
 import { ACCESS_PARTNER_PORT } from './public';
@@ -10,9 +10,9 @@ import { PartnersManageHandler } from './application/handler/PartnersManageHandl
 import { StoresReadHandler } from './application/handler/StoresReadHandler';
 import { StoresManageHandler } from './application/handler/StoresManageHandler';
 import { PgPartnerRepository } from './infrastructure/persistence/PgPartnerRepository';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
 import { ORGANIZATION_HIERARCHY_PORT } from '../organization/public/HierarchyPort';
-import { KMS_CLIENT } from '../../foundation/application/KmsPort';
+import { KMS_CLIENT } from '../../pipeline/KmsPort';
 import { CustomersCreateHandler } from './application/handler/CustomersCreateHandler';
 import { CustomersDisableHandler } from './application/handler/CustomersDisableHandler';
 import { CustomersEnableHandler } from './application/handler/CustomersEnableHandler';

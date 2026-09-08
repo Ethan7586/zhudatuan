@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { EventEvidenceReadPort, RuntimeEventEvidence } from '../../public';
 
 interface EventEvidenceRow extends Omit<RuntimeEventEvidence, 'occurredAt'> {

@@ -1,10 +1,11 @@
-import { createCoreDependencies, type CoreDependencies } from './dependency/CoreDependencies';
-import { createServiceDependencies, type ServiceDependencies } from './dependency/ServiceDependencies';
-import { createSettingsDependencies, type SettingsDependencies } from './dependency/SettingsDependencies';
-import { createSessionDependencies, type SessionDependencies } from './dependency/SessionDependencies';
+import { createCoreDependencies } from './dependency/CoreDependencies';
+import { createServiceDependencies } from './dependency/ServiceDependencies';
+import { createSettingsDependencies } from './dependency/SettingsDependencies';
+import { createSessionDependencies } from './dependency/SessionDependencies';
 import { consoleRegistries, type ConsoleRegistries } from './registry/Registries';
+import { composeConsoleDependencies, type ConsoleDependencies } from './ComposeDependencies';
 
-export type ConsoleDependencies = CoreDependencies & ServiceDependencies & SettingsDependencies & Readonly<{ session: SessionDependencies }>;
+export type { ConsoleDependencies } from './ComposeDependencies';
 
 export type { CockpitDependencies, ControlDependencies, ExperienceDependencies, FinanceDependencies, OrderDependencies, ProductDependencies, TaskDependencies } from './dependency/CoreDependencies';
 export type { ApprovalDependencies, ChannelDependencies, InvitationDependencies, ReferralDependencies, ReportingDependencies, SupportDependencies, VoucherDependencies } from './dependency/ServiceDependencies';
@@ -15,5 +16,10 @@ export type { ImportRegistryPort } from './registry/ImportRegistry';
 export type { ExtensionRegistryPort } from './registry/ExtensionRegistry';
 
 export function createConsoleDependencies(registries: ConsoleRegistries = consoleRegistries): ConsoleDependencies {
-  return Object.freeze({ ...createCoreDependencies(registries.imports), ...createServiceDependencies(registries.approval, registries.extensions), ...createSettingsDependencies(), ...createSessionDependencies() });
+  return composeConsoleDependencies(
+    createCoreDependencies(registries.imports),
+    createServiceDependencies(registries.approval, registries.extensions),
+    createSettingsDependencies(),
+    createSessionDependencies()
+  );
 }

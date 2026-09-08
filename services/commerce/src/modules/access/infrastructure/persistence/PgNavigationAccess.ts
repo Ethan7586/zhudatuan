@@ -1,6 +1,6 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { DatabasePool } from '../../../../platform/database/Pool';
 import type { NavigationAccess, NavigationAccessPort } from '../../public/NavigationAccessPort';
 import type { AuthorizationRepository } from '../../application/port/AuthorizationRepository';
 import { PgAuthorizationRepository } from './PgAuthorizationRepository';

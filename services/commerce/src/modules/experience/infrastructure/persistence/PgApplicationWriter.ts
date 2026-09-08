@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { parseExperience, serializeExperience, type ExperienceDocument } from '@shop/contract';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ExperienceCatalogPort } from '../../../catalog/public';
 import type { MallProvisionPort } from '../../../organization/public';
 import type { ApplicationRepository } from '../../application/port/ApplicationRepository';

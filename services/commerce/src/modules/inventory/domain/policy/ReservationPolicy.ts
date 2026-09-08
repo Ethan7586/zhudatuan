@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { StockDemand } from '../model/StockDemand';
 import type { StockItem } from '../model/StockItem';
 

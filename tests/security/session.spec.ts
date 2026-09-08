@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { CONTRACT_VERSION, OperationCatalog } from '@shop/contract';
 import { Redactor } from '@shop/telemetry';
-import { RouteRegistry } from '../../services/commerce/src/bootstrap/RouteRegistry';
-import { SecureOperationPolicy } from '../../services/commerce/src/foundation/application/OperationPolicy';
-import { HttpApp } from '../../services/commerce/src/foundation/interface/HttpApp';
-import { CsrfProtector } from '../../services/commerce/src/foundation/security/CsrfProtector';
-import { DomainError } from '../../services/commerce/src/foundation/domain/DomainError';
+import { RouteRegistry } from '../../services/commerce/src/composition/RouteRegistry';
+import { SecureOperationPolicy } from '../../services/commerce/src/pipeline/OperationPolicy';
+import { HttpApp } from '../../services/commerce/src/platform/http/HttpApp';
+import { CsrfProtector } from '../../services/commerce/src/platform/security/CsrfProtector';
+import { DomainError } from '../../services/commerce/src/platform/error/DomainError';
 import { sessionCookies } from '../../services/commerce/src/modules/identity/infrastructure/security/SessionCookie';
 import { NavigationKey } from '../../services/commerce/src/modules/navigation/domain/model/NavigationKey';
 

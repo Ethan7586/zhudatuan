@@ -1,8 +1,8 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { createHash, createHmac } from 'node:crypto';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
 import type { ProviderRepository, ProviderSummary } from '../../application/port/ProviderRepository';
 import { ProviderInstance, type ProviderInstanceValue } from '../../domain/model/ProviderInstance';
 import type { ProviderHttpClient } from '../security/ProviderHttpClient';

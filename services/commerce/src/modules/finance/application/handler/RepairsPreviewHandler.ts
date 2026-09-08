@@ -1,6 +1,6 @@
 import type { OperationInputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler } from '../../../../pipeline/OperationHandler';
 import type { RepairProcessAdapter } from '../port/FinanceProcessAdapter';
 
 export class RepairsPreviewHandler implements OperationHandler<'finance.reconciliationrepairs.preview', 'write'> {

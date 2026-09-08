@@ -25,10 +25,16 @@ export interface WechatApi {
   getStorageSync(key: string): unknown;
   setStorageSync(key: string, value: unknown): void;
   removeStorageSync(key: string): void;
+  getPrivacySetting?(options: Readonly<{ success: (value: Readonly<{ needAuthorization: boolean }>) => void; fail: (cause: unknown) => void }>): void;
+  requirePrivacyAuthorize?(options: Readonly<{ success: () => void; fail: (cause: unknown) => void }>): void;
+  requestPayment(options: Readonly<{ timeStamp: string; nonceStr: string; package: string; signType: string; paySign: string; success: () => void; fail: (cause: unknown) => void }>): void;
+  scanCode(options: Readonly<{ onlyFromCamera: boolean; scanType: readonly ['qrCode']; success: (value: Readonly<{ result: string }>) => void; fail: (cause: unknown) => void }>): void;
+  setClipboardData(options: Readonly<{ data: string; success: () => void; fail: (cause: unknown) => void }>): void;
   navigateTo(options: Readonly<{ url: string; fail?: (cause: unknown) => void }>): void;
   redirectTo(options: Readonly<{ url: string; fail?: (cause: unknown) => void }>): void;
   setNavigationBarTitle(options: Readonly<{ title: string }>): void;
   stopPullDownRefresh(): void;
+  showModal(options: Readonly<{ title: string; content: string; confirmText: string; cancelText: string; success: (value: Readonly<{ confirm: boolean }>) => void; fail: (cause: unknown) => void }>): void;
 }
 
 export interface MiniappInstance {

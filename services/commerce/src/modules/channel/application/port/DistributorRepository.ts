@@ -1,6 +1,6 @@
-import type { CipherEnvelope } from '../../../../foundation/application/KmsPort';
-import type { QueryPage } from '../../../../foundation/application/Validation';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { CipherEnvelope } from '../../../../pipeline/KmsPort';
+import type { QueryPage } from '../../../../pipeline/Validation';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ChannelEntitlement } from '../../../capability/public';
 import type { BindingState } from '../../domain/model/Distributor';
 

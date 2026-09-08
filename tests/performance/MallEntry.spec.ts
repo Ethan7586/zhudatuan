@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { performance } from 'node:perf_hooks';
 import { test } from 'node:test';
-import { qrMatrix } from '@shop/design/qrcode';
+import { qrMatrix } from '@shop/design/atom/QrCode';
 import { EntryResolver } from '../../services/commerce/src/modules/experience/application/service/EntryResolver';
 import type { EntryCache } from '../../services/commerce/src/modules/experience/application/port/EntryCache';
 import type { EntryRepository, StorefrontEntry } from '../../services/commerce/src/modules/experience/application/port/EntryRepository';
-import { Singleflight } from '../../services/commerce/src/foundation/performance/Singleflight';
-import type { ReadTransactionContext } from '../../services/commerce/src/foundation/persistence/TransactionContext';
+import { Singleflight } from '@shop/kernel';
+import type { ReadTransactionContext } from '../../services/commerce/src/platform/database/TransactionContext';
 
 test('QR generation p95 stays within the 30ms interaction budget', () => {
   qrMatrix('https://fufu.wang/s/warmup');

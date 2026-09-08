@@ -12,24 +12,43 @@ const requirements = parse(readFileSync(join(root, 'config/requirements.yml'), '
 const providerAuthority = parse(readFileSync(join(root, 'config/providers.yml'), 'utf8'));
 const boundaryFixtures = parse(readFileSync(join(root, 'scripts/check/fixtures/Boundary.yml'), 'utf8'));
 const operationAuthority = parse(readFileSync(join(root, 'packages/contract/definitions/operations.yml'), 'utf8'), { merge: true });
-const browserRoot = join(root, 'tests/browser');
+const uiRoots = ['tests/browser', 'tests/visual', 'tests/accessibility'].map((path) => join(root, path));
 
 for (const legacy of ['tests/browser/ConsoleMock.ts', 'tests/browser/OperationMock.ts', 'tests/browser/Fixtures.ts', 'tests/browser/OrderFixtures.ts', 'tests/browser/ProductFixtures.ts']) {
   if (existsSync(join(root, legacy))) failures.push(`BROWSER_COMMERCE_MOCK_PRESENT:${legacy}`);
 }
-for (const file of allFiles(browserRoot).filter((name) => /\.(?:ts|tsx)$/.test(name))) {
+for (const file of uiRoots.flatMap((directory) => allFiles(directory)).filter((name) => /\.(?:ts|tsx)$/.test(name))) {
   if (/\bpage\.route\s*\(/.test(readFileSync(file, 'utf8'))) failures.push(`BROWSER_HTTP_MOCK_PRESENT:${short(file)}`);
 }
-for (const required of ['tests/browser/GlobalSetup.ts', 'tests/browser/Environment.ts', 'tests/browser/RealJourneys.spec.ts', 'tests/browser/VisualAcceptance.spec.ts', 'tools/seed/src/Visual.ts', 'tools/seed/src/Journey.ts']) {
+const targetTests = [
+  'tests/contract/OperationContract.test.ts', 'tests/contract/EventContract.test.ts', 'tests/contract/ErrorContract.test.ts', 'tests/contract/ExtensionContract.test.ts',
+  'tests/architecture/ModuleBoundary.test.ts', 'tests/architecture/ClientBoundary.test.ts', 'tests/architecture/DependencyCycle.test.ts', 'tests/architecture/DuplicateTruth.test.ts',
+  'tests/database/MigrationReplay.test.ts', 'tests/database/Ownership.test.ts', 'tests/database/Rls.test.ts', 'tests/database/Invariant.test.ts',
+  'tests/integration/OutboxInbox.test.ts', 'tests/integration/ImportRuntime.test.ts', 'tests/integration/ExtensionRuntime.test.ts', 'tests/integration/Recovery.test.ts',
+  'tests/performance/Checkout.test.ts', 'tests/performance/VoucherBatch.test.ts', 'tests/performance/OrderQuery.test.ts', 'tests/performance/FinanceQuery.test.ts', 'tests/performance/ImportMillion.test.ts',
+  'tests/security/ScopeIsolation.test.ts', 'tests/security/Authorization.test.ts', 'tests/security/Stepup.test.ts', 'tests/security/SecretLeak.test.ts', 'tests/security/ContentSafety.test.ts',
+  'tests/visual/Console.spec.ts', 'tests/visual/Storefront.spec.ts', 'tests/visual/Auth.spec.ts', 'tests/visual/Store.spec.ts', 'tests/visual/Supplier.spec.ts', 'tests/visual/Miniapp.spec.ts',
+  'tests/accessibility/Keyboard.spec.ts', 'tests/accessibility/ScreenReader.spec.ts', 'tests/accessibility/Contrast.spec.ts',
+  'tests/e2e/identity.spec.ts', 'tests/e2e/governance.spec.ts', 'tests/e2e/experience.spec.ts', 'tests/e2e/salechain.spec.ts', 'tests/e2e/transaction.spec.ts',
+  'tests/e2e/voucher.spec.ts', 'tests/e2e/finance.spec.ts', 'tests/e2e/channel.spec.ts', 'tests/e2e/support.spec.ts', 'tests/e2e/reporting.spec.ts', 'tests/e2e/no-placeholder.spec.ts',
+];
+for (const required of ['tests/browser/GlobalSetup.ts', 'tests/browser/Environment.ts', 'tests/browser/RealJourneys.spec.ts', 'tools/seed/src/Visual.ts', 'tools/seed/src/Journey.ts', ...targetTests]) {
   if (!existsSync(join(root, required))) failures.push(`REAL_BROWSER_ASSET_MISSING:${required}`);
 }
-const visualAcceptancePath = join(browserRoot, 'VisualAcceptance.spec.ts');
-const visualAcceptance = existsSync(visualAcceptancePath) ? readFileSync(visualAcceptancePath, 'utf8') : '';
-for (const proof of ['AUTH_ROUTES', 'CONSOLE_ROUTES', 'STOREFRONT_ROUTES', 'expectWcagAA']) {
-  if (!visualAcceptance.includes(proof)) failures.push(`ROUTABLE_A11Y_MATRIX_PROOF_MISSING:${proof}`);
-}
-for (const routes of ['AUTH_ROUTES', 'CONSOLE_ROUTES', 'STOREFRONT_ROUTES']) {
-  if (!new RegExp(`Object\\.(?:entries|values)\\(\\s*${routes}\\s*\\)`).test(visualAcceptance)) failures.push(`ROUTABLE_A11Y_MATRIX_PROOF_MISSING:Object.enumerate(${routes})`);
+const visualProofs = {
+  'tests/visual/Console.spec.ts': ['Object.entries(ROUTES)', 'platform', 'distributor', 'enterprise', 'mall', 'expectWcagAA'],
+  'tests/visual/Storefront.spec.ts': ['Object.entries(ROUTES)', '1920', '360', '200%', 'expectWcagAA'],
+  'tests/visual/Auth.spec.ts': ['Object.entries(ROUTES)', '登录', '邀请', 'expectWcagAA'],
+  'tests/visual/Store.spec.ts': ['Object.entries(ROUTES)', '1024', '390', 'expectWcagAA'],
+  'tests/visual/Supplier.spec.ts': ['Object.entries(ROUTES)', '1440', '768', 'expectWcagAA'],
+  'tests/visual/Miniapp.spec.ts': ['MINIAPP_DEVICE_SCENARIOS', 'MINIAPP_DEVICE_EVIDENCE_REQUIRED'],
+  'tests/accessibility/Keyboard.spec.ts': ['Tab', 'Escape', 'toBeFocused'],
+  'tests/accessibility/ScreenReader.spec.ts': ['heading', 'aria-live', 'expectWcagAA'],
+  'tests/accessibility/Contrast.spec.ts': ['200%', 'reducedMotion', 'expectWcagAA'],
+};
+for (const [path, proofs] of Object.entries(visualProofs)) {
+  const source = existsSync(join(root, path)) ? readFileSync(join(root, path), 'utf8') : '';
+  for (const proof of proofs) if (!source.includes(proof)) failures.push(`ROUTABLE_A11Y_MATRIX_PROOF_MISSING:${path}:${proof}`);
 }
 
 const fixtureCodes = (boundaryFixtures.cases ?? []).map(({ code }) => code);
@@ -109,21 +128,30 @@ for (const evidence of ['main path', 'forbidden path', 'retry and concurrency pa
 const providers = Array.isArray(providerAuthority?.providers) ? providerAuthority.providers.map(({ id }) => id).sort() : [];
 if (providers.length !== 11) failures.push(`P1_PROVIDER_COUNT_INVALID:${providers.length}`);
 for (const provider of providers) {
-  const test = join(providerRoot, provider, 'tests/Provider.test.ts');
-  if (!existsSync(test)) failures.push(`PROVIDER_CONTRACT_TEST_MISSING:${provider}`);
+  for (const name of ['Contract.test.ts', 'Fixture.test.ts', 'Mapping.test.ts', 'Failure.test.ts']) {
+    const test = join(providerRoot, provider, 'test', name);
+    if (!existsSync(test)) failures.push(`PROVIDER_CONTRACT_TEST_MISSING:${provider}:${name}`);
+  }
 }
 
-for (const app of ['auth', 'console', 'storefront']) {
+const clientTests = Object.freeze({
+  auth: { assembly: 'src/route/Router.test.ts', proofs: ['RouteRegistry', 'ROUTES'] },
+  console: { assembly: 'src/route/Routes.test.ts', proofs: ['RouteRegistry', 'COMPONENT_KEYS'] },
+  storefront: { assembly: 'src/route/Router.test.tsx', proofs: ['RouteRegistry', 'ROUTES'] },
+  miniapp: { assembly: 'test/Navigation.test.ts', proofs: ['MINIAPP_PAGE_BY_ROUTE', 'ROUTES'] },
+  store: { assembly: 'src/app/StoreApp.test.tsx', proofs: ['STORE_ROUTES', 'ROUTES'] },
+  supplier: { assembly: 'src/app/SupplierApp.test.tsx', proofs: ['SUPPLIER_ROUTES', 'ROUTES'] },
+});
+for (const [app, contract] of Object.entries(clientTests)) {
   const appRoot = join(root, 'apps', app);
   const manifest = JSON.parse(readFileSync(join(appRoot, 'package.json'), 'utf8'));
   if (typeof manifest.scripts?.['test:component'] !== 'string') failures.push(`APP_COMPONENT_SCRIPT_MISSING:${app}`);
-  if (!allFiles(appRoot).some((name) => name.endsWith('.test.tsx'))) failures.push(`APP_COMPONENT_TEST_MISSING:${app}`);
-  const assembly = join(appRoot, 'src/route', app === 'console' ? 'Routes.test.ts' : 'Router.test.tsx');
-  const fallbackAssembly = app === 'auth' ? join(appRoot, 'src/route/Router.test.ts') : assembly;
-  const assemblySource = existsSync(fallbackAssembly) ? readFileSync(fallbackAssembly, 'utf8') : '';
-  for (const proof of ['RouteRegistry', app === 'console' ? 'COMPONENT_KEYS' : 'ROUTES']) if (!assemblySource.includes(proof)) failures.push(`ROUTE_ASSEMBLY_TEST_MISSING:${app}:${proof}`);
+  if (!allFiles(appRoot).some((name) => /\.test\.tsx?$/.test(name))) failures.push(`APP_COMPONENT_TEST_MISSING:${app}`);
+  const assembly = join(appRoot, contract.assembly);
+  const assemblySource = existsSync(assembly) ? readFileSync(assembly, 'utf8') : '';
+  for (const proof of contract.proofs) if (!assemblySource.includes(proof)) failures.push(`ROUTE_ASSEMBLY_TEST_MISSING:${app}:${proof}`);
 }
-const matrix = join(root, 'packages/design/src/ResourceState.component.test.tsx');
+const matrix = join(root, 'packages/design/src/organism/ResourceState.component.test.tsx');
 if (!existsSync(matrix)) failures.push('COMPONENT_STATE_MATRIX_MISSING');
 else
   for (const state of ['loading', 'empty', 'denied', 'offline', 'conflict', 'stale', 'failure']) {
@@ -143,7 +171,7 @@ if (failures.length > 0) {
   for (const failure of failures) console.error(failure);
   process.exit(1);
 }
-console.log(`test topology accepted: commerce=6 modules=33 categories=7 handlers=${operations.length} repositories=${repositoryImplementations.length} mvp=22 providers=11 clients=3 browserMocks=0 routes=53 viewports=8 productionTestingImports=0`);
+console.log(`test topology accepted: commerce=6 modules=33 categories=7 handlers=${operations.length} repositories=${repositoryImplementations.length} mvp=22 providers=11 clients=6 browserMocks=0 targetTests=${targetTests.length} productionTestingImports=0`);
 
 function manifests(directory, result = []) {
   if (!existsSync(directory)) return result;

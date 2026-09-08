@@ -8,6 +8,7 @@ type OrderDto = OperationOutputFor<'order.orders.read'>['items'][number];
 type OrderDetailDto = OperationOutputFor<'order.detail.read'>;
 
 export function mapOrder(item: OrderDto, mall: EnterpriseMall, timeline: readonly Timeline[] = []): Order {
+  const fulfillmentTimeline = item.fulfillments.flatMap((value) => value.milestones.map(mapMilestone));
   return Object.freeze({
     id: item.id,
     orderNo: item.order_number,
@@ -25,21 +26,23 @@ export function mapOrder(item: OrderDto, mall: EnterpriseMall, timeline: readonl
     aftersaleState: item.aftersale_state,
     lifecycleState: item.lifecycle_state,
     lines: Object.freeze(item.lines.map(mapLine)),
-    timeline: Object.freeze([...timeline]),
+    timeline: mergeTimeline(fulfillmentTimeline, timeline),
+    audit: Object.freeze(item.timeline.map(mapAudit)),
     receivedAt: item.receivedAt,
     sourceChannel: null,
     externalOrderNo: null,
-    payment: Object.freeze({ capturedMinor: item.payment.capturedMinor, refundedMinor: item.payment.refundedMinor, refundableMinor: item.payment.refundableMinor }),
+    payment: Object.freeze({ id: item.payment.paymentId, capturedMinor: item.payment.capturedMinor, refundedMinor: item.payment.refundedMinor, refundableMinor: item.payment.refundableMinor }),
     sections: allReady(),
     version: Number(item.version),
   });
 }
 
-export function mapOrderDetail(value: OrderDetailDto, mall: EnterpriseMall): Order {
+export function mapOrderDetail(value: OrderDetailDto, mall: EnterpriseMall, tracking: OperationOutputFor<'fulfillment.tracking.read'> | null = null): Order {
   const lines = value.products.state === 'ready' ? value.products.data : [];
   const payment = value.payment.state === 'ready' ? value.payment.data : undefined;
   const fulfillments = value.fulfillment.state === 'ready' ? value.fulfillment.data : [];
-  const timeline = fulfillments.flatMap((item) => item.milestones.map((milestone) => Object.freeze({ id: milestone.id, kind: milestone.kind, state: milestone.state, tracking: milestone.trackingMasked, occurredAt: milestone.occurredAt, evidence: Object.freeze({}) })));
+  const timeline = fulfillments.flatMap((item) => item.milestones.map(mapMilestone));
+  const tracked = tracking ? mapTimeline(tracking) : Object.freeze([]);
   return Object.freeze({
     id: value.summary.id,
     orderNo: value.summary.orderNumber,
@@ -57,13 +60,14 @@ export function mapOrderDetail(value: OrderDetailDto, mall: EnterpriseMall): Ord
     aftersaleState: value.summary.aftersaleState,
     lifecycleState: value.summary.lifecycleState,
     lines: Object.freeze(lines.map(mapLine)),
-    timeline: Object.freeze(timeline),
+    timeline: mergeTimeline(timeline, tracked),
+    audit: Object.freeze(value.audit.state === 'ready' ? value.audit.data.map(mapAudit) : []),
     ...(value.summary.address === null ? {} : { address: { recipient: value.summary.address.recipientMasked, mobile: value.summary.address.mobileMasked, detail: value.summary.address.addressMasked, regionCode: value.summary.address.regionCode } }),
     receivedAt: value.summary.receivedAt,
     sourceChannel: value.summary.sourceChannel,
     externalOrderNo: value.summary.externalOrderNo,
-    payment: Object.freeze({ capturedMinor: payment?.capturedMinor ?? 0, refundedMinor: payment?.refundedMinor ?? 0, refundableMinor: payment?.refundableMinor ?? 0 }),
-    sections: Object.freeze({ products: section(value.products), payment: section(value.payment), fulfillment: section(value.fulfillment), aftersale: section(value.aftersale), audit: section(value.audit) }),
+    payment: payment ? Object.freeze({ id: payment.paymentId, capturedMinor: payment.capturedMinor, refundedMinor: payment.refundedMinor, refundableMinor: payment.refundableMinor }) : null,
+    sections: Object.freeze({ products: section(value.products), payment: section(value.payment), fulfillment: tracked.length > 0 ? Object.freeze({ state: 'ready' as const }) : section(value.fulfillment), aftersale: section(value.aftersale), audit: section(value.audit) }),
     version: Number(value.summary.version),
   });
 }
@@ -113,6 +117,20 @@ function mapLine(line: OrderDto['lines'][number]) {
     provider: line.provider,
     partner: line.partner,
   });
+}
+
+function mapMilestone(value: OrderDto['fulfillments'][number]['milestones'][number]): Timeline {
+  return Object.freeze({ id: value.id, kind: value.kind, state: value.state, tracking: value.trackingMasked, occurredAt: value.occurredAt, evidence: Object.freeze({}) });
+}
+
+function mapAudit(value: OrderDto['timeline'][number]) {
+  return Object.freeze({ id: value.id, action: value.action, resourceType: value.resourceType, resource: value.resourceMasked, actor: value.actorMasked, occurredAt: value.occurredAt });
+}
+
+function mergeTimeline(...groups: readonly (readonly Timeline[])[]): readonly Timeline[] {
+  const values = new Map<string, Timeline>();
+  for (const group of groups) for (const item of group) values.set(item.id, item);
+  return Object.freeze([...values.values()].sort((left, right) => Date.parse(left.occurredAt) - Date.parse(right.occurredAt) || left.id.localeCompare(right.id)));
 }
 
 function section(value: Readonly<{ state: string; error?: Readonly<{ message: string; retryable: boolean }> }>) {

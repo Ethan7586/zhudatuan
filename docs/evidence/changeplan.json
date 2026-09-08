@@ -1,0 +1,779 @@
+{
+  "schema": "zhudatuan.change-plan.v1",
+  "generated": true,
+  "count": 24,
+  "checkOrder": [
+    "authority",
+    "generate",
+    "domain",
+    "tests",
+    "client",
+    "quality",
+    "operations",
+    "evidence"
+  ],
+  "topology": [
+    [
+      "P00"
+    ],
+    [
+      "P01",
+      "P04"
+    ],
+    [
+      "P02",
+      "P03",
+      "P05"
+    ],
+    [
+      "P06"
+    ],
+    [
+      "P07"
+    ],
+    [
+      "P08"
+    ],
+    [
+      "P09",
+      "P18"
+    ],
+    [
+      "P10"
+    ],
+    [
+      "P11"
+    ],
+    [
+      "P12"
+    ],
+    [
+      "P13"
+    ],
+    [
+      "P14"
+    ],
+    [
+      "P15"
+    ],
+    [
+      "P16",
+      "P17"
+    ],
+    [
+      "P19",
+      "P21",
+      "P22"
+    ],
+    [
+      "P20"
+    ],
+    [
+      "P23"
+    ]
+  ],
+  "packages": [
+    {
+      "id": "P00",
+      "name": "事实冻结",
+      "dependencies": [],
+      "paths": [
+        "docs/requirements/source.yml",
+        "docs/requirements/current.yml",
+        "SOURCE-MANIFEST.md",
+        "docs/evidence/fusion"
+      ],
+      "checks": [
+        "check:requirements",
+        "check:current"
+      ]
+    },
+    {
+      "id": "P01",
+      "name": "合同模型",
+      "dependencies": [
+        "P00"
+      ],
+      "paths": [
+        "packages/contract/definitions",
+        "packages/contract/src/schema"
+      ],
+      "checks": [
+        "check:operations",
+        "check:events",
+        "check:errors"
+      ]
+    },
+    {
+      "id": "P02",
+      "name": "生成器",
+      "dependencies": [
+        "P01"
+      ],
+      "paths": [
+        "tools/contractgen",
+        "tools/navigationgen",
+        "tools/providergen",
+        "tools/requirementgen",
+        "packages/sdk/src/operations",
+        "services/commerce/src/generated"
+      ],
+      "checks": [
+        "check:generation",
+        "check:generated"
+      ]
+    },
+    {
+      "id": "P03",
+      "name": "配置导航",
+      "dependencies": [
+        "P01"
+      ],
+      "paths": [
+        "config",
+        "docs/requirements",
+        "evidence/navigation"
+      ],
+      "checks": [
+        "check:configuration",
+        "check:navigation",
+        "check:trace",
+        "check:current"
+      ]
+    },
+    {
+      "id": "P04",
+      "name": "设计与呈现",
+      "dependencies": [
+        "P00"
+      ],
+      "paths": [
+        "packages/design",
+        "packages/presentation"
+      ],
+      "checks": [
+        "check:visuals",
+        "check:frontend"
+      ]
+    },
+    {
+      "id": "P05",
+      "name": "内核与管道",
+      "dependencies": [
+        "P01"
+      ],
+      "paths": [
+        "packages/kernel",
+        "services/commerce/src/pipeline",
+        "services/commerce/src/platform/http",
+        "services/commerce/src/platform/security"
+      ],
+      "checks": [
+        "check:boundaries",
+        "check:duplicates",
+        "check:performance",
+        "check:security"
+      ]
+    },
+    {
+      "id": "P06",
+      "name": "运行内核",
+      "dependencies": [
+        "P01",
+        "P05"
+      ],
+      "paths": [
+        "services/commerce/src/modules/runtime",
+        "services/commerce/src/pipeline/JobCatalog.ts",
+        "services/commerce/src/composition",
+        "services/commerce/src/entry",
+        "services/commerce/src/generated"
+      ],
+      "checks": [
+        "check:jobs",
+        "check:runtimegraph",
+        "check:transactions"
+      ]
+    },
+    {
+      "id": "P07",
+      "name": "数据库准备",
+      "dependencies": [
+        "P01",
+        "P06"
+      ],
+      "paths": [
+        "database/migrations",
+        "database/contracts",
+        "database/tools"
+      ],
+      "checks": [
+        "check:migrations",
+        "check:database",
+        "check:ownership"
+      ]
+    },
+    {
+      "id": "P08",
+      "name": "治理域",
+      "dependencies": [
+        "P01",
+        "P05",
+        "P07"
+      ],
+      "paths": [
+        "services/commerce/src/modules/identity",
+        "services/commerce/src/modules/organization",
+        "services/commerce/src/modules/access",
+        "services/commerce/src/modules/capability",
+        "services/commerce/src/modules/approval"
+      ],
+      "checks": [
+        "check:operations",
+        "check:security",
+        "check:ownership"
+      ]
+    },
+    {
+      "id": "P09",
+      "name": "主数据域",
+      "dependencies": [
+        "P08"
+      ],
+      "paths": [
+        "services/commerce/src/modules/partner",
+        "services/commerce/src/modules/member",
+        "services/commerce/src/modules/qualification"
+      ],
+      "checks": [
+        "check:operations",
+        "check:ownership",
+        "check:transactions"
+      ]
+    },
+    {
+      "id": "P10",
+      "name": "可售链",
+      "dependencies": [
+        "P06",
+        "P07",
+        "P09"
+      ],
+      "paths": [
+        "services/commerce/src/modules/catalog",
+        "services/commerce/src/modules/pricing",
+        "services/commerce/src/modules/inventory",
+        "services/commerce/src/modules/marketing",
+        "services/commerce/src/modules/experience"
+      ],
+      "checks": [
+        "check:operations",
+        "check:performance",
+        "check:transactions"
+      ]
+    },
+    {
+      "id": "P11",
+      "name": "交易链",
+      "dependencies": [
+        "P10"
+      ],
+      "paths": [
+        "services/commerce/src/modules/cart",
+        "services/commerce/src/modules/checkout",
+        "services/commerce/src/modules/order"
+      ],
+      "checks": [
+        "check:operations",
+        "check:performance",
+        "check:transactions"
+      ]
+    },
+    {
+      "id": "P12",
+      "name": "履约支付",
+      "dependencies": [
+        "P11"
+      ],
+      "paths": [
+        "services/commerce/src/modules/fulfillment",
+        "services/commerce/src/modules/verification",
+        "services/commerce/src/modules/payment"
+      ],
+      "checks": [
+        "check:operations",
+        "check:security",
+        "check:transactions"
+      ]
+    },
+    {
+      "id": "P13",
+      "name": "Rich Voucher",
+      "dependencies": [
+        "P06",
+        "P08",
+        "P09",
+        "P12"
+      ],
+      "paths": [
+        "services/commerce/src/modules/voucher",
+        "database/migrations"
+      ],
+      "checks": [
+        "check:operations",
+        "check:jobs",
+        "check:current",
+        "check:database"
+      ]
+    },
+    {
+      "id": "P14",
+      "name": "福利与推荐",
+      "dependencies": [
+        "P11",
+        "P12",
+        "P13"
+      ],
+      "paths": [
+        "services/commerce/src/modules/benefit",
+        "services/commerce/src/modules/referral"
+      ],
+      "checks": [
+        "check:operations",
+        "check:jobs",
+        "check:transactions"
+      ]
+    },
+    {
+      "id": "P15",
+      "name": "财务",
+      "dependencies": [
+        "P06",
+        "P08",
+        "P12",
+        "P14"
+      ],
+      "paths": [
+        "services/commerce/src/modules/finance",
+        "database/migrations",
+        "database/contracts"
+      ],
+      "checks": [
+        "check:operations",
+        "check:jobs",
+        "check:database",
+        "check:transactions"
+      ]
+    },
+    {
+      "id": "P16",
+      "name": "扩展",
+      "dependencies": [
+        "P02",
+        "P06",
+        "P10",
+        "P12",
+        "P15"
+      ],
+      "paths": [
+        "services/commerce/src/modules/channel",
+        "services/commerce/src/modules/extension",
+        "extensions/channel",
+        "extensions/payment",
+        "extensions/notification"
+      ],
+      "checks": [
+        "check:providers",
+        "check:extensions",
+        "test:providers",
+        "test:extensions"
+      ]
+    },
+    {
+      "id": "P17",
+      "name": "运营支撑",
+      "dependencies": [
+        "P03",
+        "P06",
+        "P08",
+        "P11",
+        "P15"
+      ],
+      "paths": [
+        "services/commerce/src/modules/support",
+        "services/commerce/src/modules/notification",
+        "services/commerce/src/modules/reporting",
+        "services/commerce/src/modules/risk",
+        "services/commerce/src/modules/audit",
+        "services/commerce/src/modules/navigation",
+        "services/commerce/src/modules/observability"
+      ],
+      "checks": [
+        "check:operations",
+        "check:monitoring",
+        "check:runbooks"
+      ]
+    },
+    {
+      "id": "P18",
+      "name": "认证与控制台壳层",
+      "dependencies": [
+        "P02",
+        "P03",
+        "P04",
+        "P08"
+      ],
+      "paths": [
+        "apps/auth",
+        "apps/console/src/app",
+        "apps/console/src/shell",
+        "apps/console/src/shared"
+      ],
+      "checks": [
+        "test:clients",
+        "check:frontend",
+        "check:placeholders"
+      ]
+    },
+    {
+      "id": "P19",
+      "name": "控制台核心",
+      "dependencies": [
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "paths": [
+        "apps/console/src/feature/product",
+        "apps/console/src/feature/order",
+        "apps/console/src/feature/finance",
+        "apps/console/src/feature/experience",
+        "apps/console/src/feature/settings",
+        "apps/console/src/feature/approval",
+        "apps/console/src/feature/voucher"
+      ],
+      "checks": [
+        "test:clients",
+        "check:frontend",
+        "check:placeholders",
+        "check:current"
+      ]
+    },
+    {
+      "id": "P20",
+      "name": "控制台其余功能",
+      "dependencies": [
+        "P16",
+        "P17",
+        "P18",
+        "P19"
+      ],
+      "paths": [
+        "apps/console/src/feature/channel",
+        "apps/console/src/feature/task",
+        "apps/console/src/feature/cockpit",
+        "apps/console/src/feature/control",
+        "apps/console/src/feature/referral",
+        "apps/console/src/feature/reporting",
+        "apps/console/src/feature/support"
+      ],
+      "checks": [
+        "test:clients",
+        "check:frontend",
+        "check:placeholders",
+        "check:current"
+      ]
+    },
+    {
+      "id": "P21",
+      "name": "消费者商城",
+      "dependencies": [
+        "P04",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17"
+      ],
+      "paths": [
+        "apps/storefront"
+      ],
+      "checks": [
+        "test:clients",
+        "check:frontend",
+        "check:placeholders",
+        "check:visuals"
+      ]
+    },
+    {
+      "id": "P22",
+      "name": "新客户端",
+      "dependencies": [
+        "P02",
+        "P04",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17"
+      ],
+      "paths": [
+        "apps/miniapp",
+        "apps/store",
+        "apps/supplier"
+      ],
+      "checks": [
+        "test:clients",
+        "test:miniapp-device",
+        "check:frontend",
+        "check:visuals"
+      ]
+    },
+    {
+      "id": "P23",
+      "name": "硬切与发布",
+      "dependencies": [
+        "P00",
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18",
+        "P19",
+        "P20",
+        "P21",
+        "P22"
+      ],
+      "paths": [
+        "database/tools",
+        "tests",
+        "infrastructure",
+        "docs/operations",
+        "evidence"
+      ],
+      "checks": [
+        "check:authority",
+        "check:architecture",
+        "check:quality",
+        "check:retirement",
+        "check:release"
+      ]
+    }
+  ],
+  "parallelGroups": [
+    [
+      "P02",
+      "P03",
+      "P04",
+      "P05"
+    ],
+    [
+      "P04",
+      "P06"
+    ],
+    [
+      "P16",
+      "P17",
+      "P18"
+    ],
+    [
+      "P19",
+      "P21",
+      "P22"
+    ],
+    [
+      "P20",
+      "P21",
+      "P22"
+    ]
+  ],
+  "internalParallel": {
+    "P08": {
+      "contractOwner": "P01",
+      "lanes": [
+        [
+          "services/commerce/src/modules/identity",
+          "services/commerce/src/modules/organization"
+        ],
+        [
+          "services/commerce/src/modules/access",
+          "services/commerce/src/modules/capability"
+        ],
+        [
+          "services/commerce/src/modules/approval"
+        ]
+      ]
+    },
+    "P10": {
+      "collaboration": "public-port-and-test-fixture",
+      "lanes": [
+        [
+          "services/commerce/src/modules/catalog"
+        ],
+        [
+          "services/commerce/src/modules/pricing"
+        ],
+        [
+          "services/commerce/src/modules/inventory"
+        ],
+        [
+          "services/commerce/src/modules/experience"
+        ]
+      ]
+    },
+    "P13": {
+      "lanes": [
+        [
+          "product",
+          "pool",
+          "credential"
+        ],
+        [
+          "request",
+          "issue"
+        ],
+        [
+          "holder",
+          "tender",
+          "redemption"
+        ],
+        [
+          "search",
+          "export"
+        ]
+      ],
+      "singleOwners": [
+        "aggregate-table",
+        "operation-definition"
+      ]
+    },
+    "P16": {
+      "lanes": [
+        [
+          "core"
+        ],
+        [
+          "jdcore"
+        ],
+        [
+          "cakecore"
+        ],
+        [
+          "wanliancore"
+        ]
+      ],
+      "isolation": "provider-package"
+    }
+  },
+  "coordination": {
+    "designExportOwner": "P04",
+    "compositionOwner": "P06",
+    "runtimeRegistryOwner": "P06",
+    "migrationOwner": "P07",
+    "migrationCollaboration": "schema-proposal",
+    "clientWave": {
+      "packages": [
+        "P19",
+        "P20",
+        "P21",
+        "P22"
+      ],
+      "orderingExceptions": [
+        "P20-after-P19"
+      ]
+    }
+  },
+  "conflicts": {
+    "contract": {
+      "owner": "P01",
+      "paths": [
+        "packages/contract/definitions/operations.yml",
+        "packages/contract/definitions/events.yml",
+        "packages/contract/definitions/errors.yml"
+      ]
+    },
+    "governance": {
+      "owner": "P01",
+      "paths": [
+        "packages/contract/definitions/permissions.yml",
+        "packages/contract/definitions/capabilities.yml"
+      ]
+    },
+    "navigation": {
+      "owner": "P03",
+      "paths": [
+        "config/navigation.yml"
+      ]
+    },
+    "design": {
+      "owner": "P04",
+      "paths": [
+        "packages/design/src/tokens.json",
+        "packages/design/src/index.ts"
+      ]
+    },
+    "composition": {
+      "owner": "P06",
+      "paths": [
+        "services/commerce/src/composition"
+      ]
+    },
+    "runtime": {
+      "owner": "P06",
+      "paths": [
+        "services/commerce/src/pipeline/JobCatalog.ts"
+      ]
+    },
+    "voucherdata": {
+      "owner": "P13",
+      "paths": [
+        "services/commerce/src/modules/voucher",
+        "database/migrations"
+      ]
+    },
+    "financedata": {
+      "owner": "P15",
+      "paths": [
+        "services/commerce/src/modules/finance",
+        "database/contracts"
+      ]
+    },
+    "lock": {
+      "owner": "P23",
+      "paths": [
+        "package-lock.json"
+      ]
+    },
+    "requirements": {
+      "owner": "P02",
+      "paths": [
+        "docs/requirements"
+      ]
+    }
+  }
+}

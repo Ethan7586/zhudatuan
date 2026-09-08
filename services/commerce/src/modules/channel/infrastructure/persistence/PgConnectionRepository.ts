@@ -1,8 +1,8 @@
 import type { ProviderCapability } from '@shop/contract';
 import { providerLimit } from '@shop/providercore';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { DisableExtensionPort, EnableExtensionPort, ExtensionRegistryPort, InstallExtensionPort } from '../../../extension/public';
 import type { ConnectionRepository } from '../../application/port/ConnectionRepository';
 import { Connection, type ConnectionLimits, type ConnectionState } from '../../domain/model/Connection';

@@ -23,6 +23,7 @@ export class ReferralAttributionCoordinator {
       return { status: 'bound', candidateWon: true };
     } catch (cause) {
       if (hasFailureCode(cause, 'REFERRAL_ALREADY_BOUND')) return { status: 'bound', candidateWon: false };
+      this.attempted.delete(attempt);
       return { status: 'failed' };
     }
   }

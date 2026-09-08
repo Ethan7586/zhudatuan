@@ -1,17 +1,17 @@
 import { identityLifecycle as operationLifecycle, type IdentityLifecycle as OperationLifecycle } from '../model/IdentityAction';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { createHmac, randomInt, randomUUID } from 'node:crypto';
 import { isConsumerTarget, OperationCatalog } from '@shop/contract';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
-import { reject } from '../../../../foundation/application/OperationRejection';
-import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import type { KmsClient, CipherEnvelope } from '../../../../foundation/application/KmsPort';
-import type { RiskGate } from '../../../../foundation/security/RiskGate';
-import { sessionAccess } from '../../../../foundation/security/OperationSecurityContext';
-import type { PreauthResolver } from '../../../../foundation/security/PreauthResolver';
+import { reject } from '../../../../pipeline/OperationRejection';
+import type { OperationRequest } from '../../../../pipeline/OperationRequest';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import type { KmsClient, CipherEnvelope } from '../../../../pipeline/KmsPort';
+import type { RiskGate } from '../../../../platform/security/RiskGate';
+import { sessionAccess } from '../../../../platform/security/OperationSecurityContext';
+import type { PreauthResolver } from '../../../../platform/security/PreauthResolver';
 import type { ChallengePort } from '../port/ChallengePort';
 import type { InvitationRepository } from '../port/InvitationRepository';
 import type { InvitationHashPort } from '../port/InvitationSecurity';
@@ -81,7 +81,15 @@ export class CreateChallenge {
           if (invitation.state.kind !== 'enrollment' || !invitation.state.membership || !invitation.state.recipientHash) throw new DomainError('INVITATION_INVALID');
           const pending = await this.invitationMembers.pending(database, await this.invitationAccess.pending(database, invitation.state.membership));
           if (preauth.principal !== pending.principal || !pending.mobileCiphertext) throw new DomainError('INVITATION_INVALID');
-          return Object.freeze({ principal: pending.principal, mobileCiphertext: pending.mobileCiphertext, enrollment: preauth.reference, invitation: invitation.state.id, recipientHash: invitation.state.recipientHash.toString('hex'), scope: invitation.state.organization, mode: 'bound' as const });
+          return Object.freeze({
+            principal: pending.principal,
+            mobileCiphertext: pending.mobileCiphertext,
+            enrollment: preauth.reference,
+            invitation: invitation.state.id,
+            recipientHash: invitation.state.recipientHash.toString('hex'),
+            scope: invitation.state.organization,
+            mode: 'bound' as const,
+          });
         }
         const destinationHash = input.destinationHash!;
         const principal = await this.credentials.principalForSubject(database, destinationHash);

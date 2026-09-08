@@ -1,7 +1,10 @@
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 export interface ChallengeRepository {
-  issue(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; membership: string; purpose: 'member_code' | 'voucher_redeem'; voucher: string | null; tokenHash: string; now: Date }>): Promise<Readonly<Record<string, unknown>>>;
+  issue(
+    context: WriteTransactionContext,
+    input: Readonly<{ id: string; scope: string; membership: string; purpose: 'member_code' | 'voucher_redeem'; voucher: string | null; tokenHash: string; now: Date }>
+  ): Promise<Readonly<Record<string, unknown>>>;
   verify(
     context: WriteTransactionContext,
     input: Readonly<{ challenge: string; scope: string; actor: string; trace: string; tokenHash: string; proofId: string; proofHash: string; deviceHash: string; now: Date }>

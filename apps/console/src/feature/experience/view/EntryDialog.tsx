@@ -4,7 +4,7 @@ import type { Experience } from '../model/Experience';
 import { entryView } from '../model/EntryState';
 import './Entry.css';
 
-const QrCode = lazy(() => import('@shop/design/qrcode').then((module) => ({ default: module.QrCode })));
+const QrCode = lazy(() => import('@shop/design/atom/QrCode').then((module) => ({ default: module.QrCode })));
 
 export function EntryDialog({ record, onClose }: Readonly<{ record: Experience | null; onClose: () => void }>) {
   const container = useRef<HTMLDivElement>(null);

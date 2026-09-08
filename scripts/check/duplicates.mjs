@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 
 import { createProgram, location, productionSources, relative, root, sourceFileMap, sourceRoots, ts } from './source.mjs';
 
-const allowedHttpPrefixes = ['packages/sdk/', 'services/commerce/src/foundation/http/', 'extensions/vendors/', 'tools/localinfra/src/'];
+const allowedHttpPrefixes = ['packages/sdk/', 'services/commerce/src/platform/http/', 'extensions/vendors/', 'tools/localinfra/src/'];
 const businessIdentifierPattern = /^[a-z][a-z0-9]*(?:[.:][a-z][a-z0-9]*){1,}$/;
 const constantPattern = /^[A-Z][A-Z0-9_]{4,}$/;
 const violation = (code, location, detail) => ({ code, location, detail });

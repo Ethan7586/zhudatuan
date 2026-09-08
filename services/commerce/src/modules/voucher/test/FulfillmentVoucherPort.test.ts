@@ -14,10 +14,11 @@ describe('FulfillmentVoucherPort', () => {
   it('atomically allocates active vouchers from the configured voucher product', async () => {
     const query = vi.fn(async (sql: string) => {
       if (sql.includes('event.reason=$1')) return result([]);
-      if (sql.includes("voucher.state in('available','allocated')")) return result([
-        { id: 'voucher:one', state: 'available', activation: 'automatic', version: 1 },
-        { id: 'voucher:two', state: 'allocated', activation: 'automatic', version: 4 },
-      ]);
+      if (sql.includes("voucher.state in('available','allocated')"))
+        return result([
+          { id: 'voucher:one', state: 'available', activation: 'automatic', version: 1 },
+          { id: 'voucher:two', state: 'allocated', activation: 'automatic', version: 4 },
+        ]);
       if (sql.includes('update voucher.voucher')) return result([{ id: 'changed' }]);
       return result([]);
     });

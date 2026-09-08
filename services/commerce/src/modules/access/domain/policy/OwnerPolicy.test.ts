@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { OwnerPolicy, type OwnerTransferState } from './OwnerPolicy';
 
 const valid: OwnerTransferState = {

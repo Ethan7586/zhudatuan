@@ -1,7 +1,7 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
 
 import type { DeliveryReceipt } from '../../application/port/DeliveryChannel';
 import type { ChallengeRecord, DeliveryRepository, DispatchRecord, EndpointRecord, QueuedDispatch, TemplateRecord } from '../../application/port/DeliveryRepository';
@@ -25,11 +25,15 @@ export class PgDeliveryRepository implements DeliveryRepository {
     const result = await this.transactions.database(context).query<TemplateRecord>(
       `select distinct on(template.channel) template.id,template.scope_id,template.channel,template.event_type,template.version,
       template.variable_schema,template.provider_template,template.subject,template.body,template.status,template.created_at,template.purpose,template.mandatory,
-      coalesce(preference.enabled,true) preference_enabled,coalesce(preference.authorization_state,'unknown') authorization_state,
-      coalesce(preference.consent_source,'system') consent_source,preference.quiet_start::text,preference.quiet_end::text,
+      coalesce(preference.enabled,true) preference_enabled,
+      case when template.channel='wechat' then case when endpoint.member_id is null then 'unknown'
+        when endpoint.revoked_at is null then 'accepted' else 'rejected' end else 'unknown' end authorization_state,
+      case when template.channel='wechat' and endpoint.member_id is not null then endpoint.consent_source
+        else coalesce(preference.consent_source,'system') end consent_source,preference.quiet_start::text,preference.quiet_end::text,
       preference.quiet_timezone,coalesce(preference.version,0) preference_version
       from notification.template template left join notification.preference preference
       on preference.member_id=$2 and preference.channel=template.channel and preference.event_type=template.event_type
+      left join notification.endpoint endpoint on endpoint.member_id=$2 and endpoint.channel=template.channel
       where template.scope_id=any($1::text[]) and template.event_type=$3 and template.status='active'
       and($2::text is not null or template.channel='inapp')
       order by template.channel,array_position($1::text[],template.scope_id),template.version desc`,
@@ -60,11 +64,38 @@ export class PgDeliveryRepository implements DeliveryRepository {
       variable_schema,purpose,mandatory,state,idempotency_key,available_at,attempt_count,max_attempts,created_at)
       values($1,$2,$3,$4,(select channel from notification.template where id=$4),$5,$6,$7,$8,$9::jsonb,$10,$11,$12,$13,$14,
       $15::jsonb,$16,$17,'queued',$18,$19,0,5,clock_timestamp()) on conflict(scope_id,idempotency_key) do nothing returning id`,
-      [input.id, input.scope, input.member, input.template, input.recipientToken, input.recipientCiphertext, input.recipientKeyVersion, input.recipientRef,
-        JSON.stringify(input.variables), input.subject, input.body, input.event, input.templateVersion, input.providerTemplate,
-        JSON.stringify(input.variableSchema), input.purpose, input.mandatory, input.idempotency, input.availableAt]
+      [
+        input.id,
+        input.scope,
+        input.member,
+        input.template,
+        input.recipientToken,
+        input.recipientCiphertext,
+        input.recipientKeyVersion,
+        input.recipientRef,
+        JSON.stringify(input.variables),
+        input.subject,
+        input.body,
+        input.event,
+        input.templateVersion,
+        input.providerTemplate,
+        JSON.stringify(input.variableSchema),
+        input.purpose,
+        input.mandatory,
+        input.idempotency,
+        input.availableAt,
+      ]
     );
-    if (queued.rows[0]) await new PgRuntimeWriter(database).schedule({ id: `job:notification:${randomUUID()}`, kind: 'notification', owner: 'notification', scope: input.scope, payload: { dispatch: queued.rows[0].id }, priority: 20, availableAt: input.availableAt });
+    if (queued.rows[0])
+      await new PgRuntimeWriter(database).schedule({
+        id: `job:notification:${randomUUID()}`,
+        kind: 'notification',
+        owner: 'notification',
+        scope: input.scope,
+        payload: { dispatch: queued.rows[0].id },
+        priority: 20,
+        availableAt: input.availableAt,
+      });
   }
 
   async completeInbox(context: WriteTransactionContext, event: string): Promise<void> {
@@ -82,11 +113,15 @@ export class PgDeliveryRepository implements DeliveryRepository {
         claimed.template_version,claimed.provider_template,claimed.variable_schema,claimed.subject,claimed.body,claimed.payload,
         claimed.recipient_ciphertext,claimed.recipient_ref,claimed.purpose,claimed.mandatory,claimed.attempt_sequence,claimed.max_attempts,
         coalesce(preference.enabled,true) preference_enabled,
-        coalesce(preference.authorization_state,'unknown') authorization_state,coalesce(preference.consent_source,'system') consent_source,
+        case when claimed.channel='wechat' then case when endpoint.member_id is null then 'unknown'
+          when endpoint.revoked_at is null then 'accepted' else 'rejected' end else 'unknown' end authorization_state,
+        case when claimed.channel='wechat' and endpoint.member_id is not null then endpoint.consent_source
+          else coalesce(preference.consent_source,'system') end consent_source,
         preference.quiet_start::text,preference.quiet_end::text,preference.quiet_timezone,
         coalesce(preference.version,0) preference_version
       from claimed left join notification.preference preference on preference.member_id=claimed.member_id
-        and preference.channel=claimed.channel and preference.event_type=claimed.event_type`,
+        and preference.channel=claimed.channel and preference.event_type=claimed.event_type
+      left join notification.endpoint endpoint on endpoint.member_id=claimed.member_id and endpoint.channel=claimed.channel`,
       [id]
     );
     return result.rows[0] ? Object.freeze(result.rows[0]) : null;
@@ -148,7 +183,8 @@ export class PgDeliveryRepository implements DeliveryRepository {
   async cancel(context: WriteTransactionContext, dispatch: DispatchRecord, reason: string): Promise<void> {
     const result = await this.transactions.database(context).query(
       `update notification.dispatch set state='cancelled',attempt_count=greatest(0,attempt_count-1),last_error_class='permanent',last_error_code=$2
-      where id=$1 and state='sending'`, [dispatch.id, `NOTIFICATION_${reason.toUpperCase()}`]
+      where id=$1 and state='sending'`,
+      [dispatch.id, `NOTIFICATION_${reason.toUpperCase()}`]
     );
     if (result.rowCount !== 1) throw new Error('NOTIFICATION_DELIVERY_STATE_LOST');
   }
@@ -157,11 +193,11 @@ export class PgDeliveryRepository implements DeliveryRepository {
     const database = this.transactions.database(context);
     const result = await database.query(
       `update notification.dispatch set state='retrying',attempt_count=greatest(0,attempt_count-1),available_at=$2,last_error_class=null,last_error_code=null
-      where id=$1 and state='sending'`, [dispatch.id, availableAt]
+      where id=$1 and state='sending'`,
+      [dispatch.id, availableAt]
     );
     if (result.rowCount !== 1) throw new Error('NOTIFICATION_DELIVERY_STATE_LOST');
-    await new PgRuntimeWriter(database).schedule({ id: `job:notification:defer:${randomUUID()}`, kind: 'notification', owner: 'notification',
-      scope: dispatch.scope_id, payload: { dispatch: dispatch.id }, priority: 30, availableAt });
+    await new PgRuntimeWriter(database).schedule({ id: `job:notification:defer:${randomUUID()}`, kind: 'notification', owner: 'notification', scope: dispatch.scope_id, payload: { dispatch: dispatch.id }, priority: 30, availableAt });
   }
 
   async challenge(context: ReadTransactionContext, id: string): Promise<ChallengeRecord | null> {

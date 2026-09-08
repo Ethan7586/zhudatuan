@@ -30,9 +30,14 @@ describe('Catalog aggregates', () => {
   it('refuses publication when any centrally evaluated dependency has a gap', () => {
     const listing = Listing.draft({ id: 'listing:one', scope: 'mall:one', pool: 'pool:one', sku: 'sku:one', title: '早餐' });
     const decision = new ListingEligibility().decide({
-      productState: 'active', skuState: 'active', poolReady: true, scopeReady: true,
-      qualification: { eligible: true, version: 3 }, price: { eligible: false, version: null },
-      inventory: { eligible: true, version: 5 }, channelReady: true,
+      productState: 'active',
+      skuState: 'active',
+      poolReady: true,
+      scopeReady: true,
+      qualification: { eligible: true, version: 3 },
+      price: { eligible: false, version: null },
+      inventory: { eligible: true, version: 5 },
+      channelReady: true,
     });
     expect(decision.gaps).toEqual(['PRICE_MISSING']);
     expect(() => listing.publish(1, decision, '2026-09-05T00:00:00.000Z')).toThrow();

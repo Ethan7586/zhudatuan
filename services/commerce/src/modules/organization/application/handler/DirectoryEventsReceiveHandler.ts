@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
 import type { DirectoryConnection } from '../../domain/model/DirectoryConnection';
 import type { OrganizationRepository } from '../port/OrganizationRepository';
 import type { DirectoryProviderRegistry } from '../service/DirectoryProviderRegistry';

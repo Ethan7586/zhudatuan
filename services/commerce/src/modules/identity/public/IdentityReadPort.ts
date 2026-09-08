@@ -1,5 +1,5 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { OperationSecurityContext } from '../../../foundation/security/OperationSecurityContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
+import type { OperationSecurityContext } from '../../../platform/security/OperationSecurityContext';
 export interface StorefrontIdentity {
   readonly state: 'anonymous' | 'member';
   readonly member: string | null;

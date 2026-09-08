@@ -30,7 +30,7 @@ export function AfterSalePage({ viewmodel }: Readonly<{ viewmodel: ReturnType<ty
             </div>
           ) : null}
           {page && page.availableLines.length === 0 ? <Status icon={ShieldAlert} text="此订单当前没有可申请售后的商品" /> : null}
-          {page ? <AfterSaleForm viewmodel={viewmodel} /> : null}
+          {page && page.availableLines.length > 0 ? <AfterSaleForm viewmodel={viewmodel} /> : null}
         </div>
         <AfterSaleHistory page={page} />
       </div>

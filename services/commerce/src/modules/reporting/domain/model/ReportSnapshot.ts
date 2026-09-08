@@ -42,7 +42,8 @@ export class ReportSnapshot {
       Date.parse(watermark.occurredAt) > Date.parse(generatedAt) ||
       !Number.isSafeInteger(generationVersion) ||
       generationVersion < 1
-    ) throw new Error('REPORT_SNAPSHOT_INVALID');
+    )
+      throw new Error('REPORT_SNAPSHOT_INVALID');
     this.query = Object.freeze({ ...query });
     this.watermark = Object.freeze({ ...watermark });
     this.queryHash = queryDigest(this.query);
@@ -51,26 +52,35 @@ export class ReportSnapshot {
 
   cursor(sort: string, row: string): string {
     if (!sort || sort.length > 64 || !row || row.length > 255) throw new Error('REPORT_CURSOR_ROW_INVALID');
-    return Buffer.from(JSON.stringify({
-      v: this.generationVersion,
-      q: this.queryHash,
-      s: sort,
-      r: row,
-      e: this.watermark.event,
-      w: this.watermark.occurredAt,
-      x: this.watermark.version,
-      g: this.generatedAt,
-    }), 'utf8').toString('base64url');
+    return Buffer.from(
+      JSON.stringify({
+        v: this.generationVersion,
+        q: this.queryHash,
+        s: sort,
+        r: row,
+        e: this.watermark.event,
+        w: this.watermark.occurredAt,
+        x: this.watermark.version,
+        g: this.generatedAt,
+      }),
+      'utf8'
+    ).toString('base64url');
   }
 
   static resume(value: string, query: ReportQuery): SnapshotCursor {
     try {
       const parsed = JSON.parse(Buffer.from(value, 'base64url').toString('utf8')) as Record<string, unknown>;
-      const snapshot = new ReportSnapshot(query, {
-        event: text(parsed.e), occurredAt: text(parsed.w), version: integer(parsed.x),
-      }, text(parsed.g), integer(parsed.v));
-      if (parsed.q !== snapshot.queryHash || typeof parsed.s !== 'string' || !parsed.s || parsed.s.length > 64 ||
-        typeof parsed.r !== 'string' || !parsed.r || parsed.r.length > 255 || snapshot.cursor(parsed.s, parsed.r) !== value) {
+      const snapshot = new ReportSnapshot(
+        query,
+        {
+          event: text(parsed.e),
+          occurredAt: text(parsed.w),
+          version: integer(parsed.x),
+        },
+        text(parsed.g),
+        integer(parsed.v)
+      );
+      if (parsed.q !== snapshot.queryHash || typeof parsed.s !== 'string' || !parsed.s || parsed.s.length > 64 || typeof parsed.r !== 'string' || !parsed.r || parsed.r.length > 255 || snapshot.cursor(parsed.s, parsed.r) !== value) {
         throw new Error('REPORT_CURSOR_INVALID');
       }
       return Object.freeze({ sort: parsed.s, row: parsed.r, snapshot });
@@ -86,19 +96,27 @@ export class ReportSnapshot {
       const source = value as Readonly<Record<string, unknown>>;
       const suppliedQuery = source.query;
       const watermark = source.watermark;
-      if (suppliedQuery === null || typeof suppliedQuery !== 'object' || Array.isArray(suppliedQuery) ||
-        watermark === null || typeof watermark !== 'object' || Array.isArray(watermark)) throw new Error('REPORT_SNAPSHOT_INVALID');
-      const selected = new ReportSnapshot(query, {
-        event: text((watermark as Record<string, unknown>).event),
-        occurredAt: text((watermark as Record<string, unknown>).occurredAt),
-        version: integer((watermark as Record<string, unknown>).version),
-      }, text(source.generatedAt), integer(source.generationVersion));
+      if (suppliedQuery === null || typeof suppliedQuery !== 'object' || Array.isArray(suppliedQuery) || watermark === null || typeof watermark !== 'object' || Array.isArray(watermark)) throw new Error('REPORT_SNAPSHOT_INVALID');
+      const selected = new ReportSnapshot(
+        query,
+        {
+          event: text((watermark as Record<string, unknown>).event),
+          occurredAt: text((watermark as Record<string, unknown>).occurredAt),
+          version: integer((watermark as Record<string, unknown>).version),
+        },
+        text(source.generatedAt),
+        integer(source.generationVersion)
+      );
       const restoredQuery = suppliedQuery as Readonly<Record<string, unknown>>;
-      if (Object.keys(restoredQuery).sort().join(',') !== 'application,dimension,period,scope' ||
-        restoredQuery.scope !== selected.query.scope || restoredQuery.dimension !== selected.query.dimension ||
-        restoredQuery.period !== selected.query.period || restoredQuery.application !== selected.query.application ||
+      if (
+        Object.keys(restoredQuery).sort().join(',') !== 'application,dimension,period,scope' ||
+        restoredQuery.scope !== selected.query.scope ||
+        restoredQuery.dimension !== selected.query.dimension ||
+        restoredQuery.period !== selected.query.period ||
+        restoredQuery.application !== selected.query.application ||
         Object.keys(watermark).sort().join(',') !== 'event,occurredAt,version' ||
-        Object.keys(source).sort().join(',') !== 'generatedAt,generationVersion,query,watermark') {
+        Object.keys(source).sort().join(',') !== 'generatedAt,generationVersion,query,watermark'
+      ) {
         throw new Error('REPORT_SNAPSHOT_INVALID');
       }
       return selected;

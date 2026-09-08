@@ -14,25 +14,18 @@ test('ideal journey catalog freezes all forty four acceptance journeys', () => {
   assert.equal(new Set(IDEAL_JOURNEYS.map(({ suite, scenario }) => `${suite}:${scenario}`)).size, IDEAL_JOURNEYS.length);
 });
 
-test('every ideal journey points to a canonical MVP requirement and executable test target', () => {
+test('every ideal journey points to canonical MVP requirements and an executable test target', () => {
   const requirements = new Set<string>(MVP_REQUIREMENT_IDS);
   for (const journey of IDEAL_JOURNEYS) {
-    assert.ok(requirements.has(journey.requirement), `${journey.id} has unknown requirement ${journey.requirement}`);
-    assert.match(journey.test, /^tests\/e2e\/[a-z]+\.spec\.ts$/);
+    assert.ok(journey.requirements.length > 0, `${journey.id} has no requirement`);
+    for (const requirement of journey.requirements) assert.ok(requirements.has(requirement), `${journey.id} has unknown requirement ${requirement}`);
+    assert.match(journey.test, /^tests\/e2e\/[a-z]+(?:-[a-z]+)*\.spec\.ts$/);
+    assert.equal(journey.status, 'required');
+    assert.ok(journey.assertions.length >= 2);
   }
 });
 
-test('all twenty two MVP requirements are represented by the current or ideal journey catalog', () => {
-  const requirements = new Set(IDEAL_JOURNEYS.map(({ requirement }) => requirement));
-  const coveredByCurrentRequirementJourneys = [
-    'MVPDISTRIBUTION',
-    'MVPGROUPDASHBOARD',
-    'MVPGROUPAPPLICATION',
-    'MVPGROUPREPORT',
-    'MVPMALLDASHBOARD',
-    'MVPMALLREPORT',
-    'MVPMALLSUPPORT',
-  ];
-  for (const requirement of coveredByCurrentRequirementJourneys) requirements.add(requirement);
+test('all twenty two MVP requirements are represented directly by the ideal journey catalog', () => {
+  const requirements = new Set(IDEAL_JOURNEYS.flatMap(({ requirements }) => requirements));
   assert.deepEqual([...requirements].sort(), [...MVP_REQUIREMENT_IDS].sort());
 });

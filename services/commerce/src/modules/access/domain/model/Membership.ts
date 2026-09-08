@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { isOperationTarget, type OperationTarget } from '@shop/contract';
 
 export type MembershipClient = OperationTarget;

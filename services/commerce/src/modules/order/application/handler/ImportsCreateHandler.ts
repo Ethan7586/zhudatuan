@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
+import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../pipeline/HandlerContext';
 import type { ImportObjectPort, ImportPort } from '../../../runtime/public';
-import type { JobScheduler } from '../../../../foundation/application/JobScheduler';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import { authorizationEvidence } from '../../../../foundation/security/AuthorizationEvidence';
+import type { JobScheduler } from '../../../../pipeline/JobScheduler';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
+import { authorizationEvidence } from '../../../../platform/security/AuthorizationEvidence';
 
 interface PreparedImport {
   readonly scope: string;
@@ -19,7 +19,11 @@ interface PreparedImport {
 export class ImportsCreateHandler implements DurableOperationHandler<'order.imports.create', PreparedImport, OperationOutputFor<'order.imports.create'>, 'write'> {
   readonly operation = 'order.imports.create' as const;
   readonly mode = 'write' as const;
-  constructor(private readonly imports: ImportPort, private readonly jobs: JobScheduler, private readonly objects: ImportObjectPort) {}
+  constructor(
+    private readonly imports: ImportPort,
+    private readonly jobs: JobScheduler,
+    private readonly objects: ImportObjectPort
+  ) {}
 
   async prepare(input: OperationInputFor<'order.imports.create'>, context: PrepareContext<'order.imports.create'>): Promise<PreparedImport> {
     const access = requireSession(context.security);
@@ -29,16 +33,25 @@ export class ImportsCreateHandler implements DurableOperationHandler<'order.impo
   async commit(_input: OperationInputFor<'order.imports.create'>, prepared: PreparedImport, context: CommitContext<'order.imports.create'>) {
     const access = requireSession(context.security);
     const id = `import:${randomUUID()}`;
-    const record = await this.imports.create(context.transaction, { id, scope: prepared.scope, owner: 'order', kind: 'externalorder',
-      reference: prepared.reference, sha256: prepared.sha256, name: prepared.name, mediaType: prepared.mediaType, size: prepared.size, actor: access.actor.id,
-      authorization: authorizationEvidence(access, this.operation, new Date()) });
+    const record = await this.imports.create(context.transaction, {
+      id,
+      scope: prepared.scope,
+      owner: 'order',
+      kind: 'externalorder',
+      reference: prepared.reference,
+      sha256: prepared.sha256,
+      name: prepared.name,
+      mediaType: prepared.mediaType,
+      size: prepared.size,
+      actor: access.actor.id,
+      authorization: authorizationEvidence(access, this.operation, new Date()),
+    });
     await this.jobs.schedule(context.transaction, { id: `job:${id}:0`, kind: 'orderimport', owner: 'order', scope: prepared.scope, payload: { import: id }, priority: 100 });
     const response = { status: 202, body: record as unknown as OperationOutputFor<'order.imports.create'> } as const;
     return Object.freeze({ checkpoint: response.body, response });
   }
 
-  finalize(_input: OperationInputFor<'order.imports.create'>, checkpoint: OperationOutputFor<'order.imports.create'>,
-    _context: FinalizeContext<'order.imports.create'>): Promise<OperationReply<OperationOutputFor<'order.imports.create'>>> {
+  finalize(_input: OperationInputFor<'order.imports.create'>, checkpoint: OperationOutputFor<'order.imports.create'>, _context: FinalizeContext<'order.imports.create'>): Promise<OperationReply<OperationOutputFor<'order.imports.create'>>> {
     return Promise.resolve({ status: 202, body: checkpoint });
   }
 }

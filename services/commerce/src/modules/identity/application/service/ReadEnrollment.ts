@@ -1,5 +1,5 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { requirePreauth } from '../../../../foundation/security/OperationSecurityContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { requirePreauth } from '../../../../platform/security/OperationSecurityContext';
 import type { InvitationAccessPort } from '../../../access/public';
 import type { IdentityRegistrationPort } from '../../../member/public';
 import type { IdentityOrganizationPort } from '../../../organization/public/IdentityOrganizationPort';

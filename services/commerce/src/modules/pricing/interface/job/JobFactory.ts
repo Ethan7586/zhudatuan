@@ -1,5 +1,5 @@
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
 import { PROVIDER_CATALOG_PORT } from '../../../catalog/public';
 import { PROVIDER_SYNC_PORT } from '../../../channel/public';
 import { PROVIDER_PRICING_PORT } from '../../public';

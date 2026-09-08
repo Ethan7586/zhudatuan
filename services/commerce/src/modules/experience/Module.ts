@@ -1,11 +1,11 @@
 import { PgExperienceReadPort } from './infrastructure/persistence/PgExperienceReadPort';
 import { PgCheckoutExperiencePort } from './infrastructure/persistence/PgCheckoutExperiencePort';
 import { PgCartExperiencePort } from './infrastructure/persistence/PgCartExperiencePort';
-import { CACHE } from '../../foundation/cache/Cache';
-import { Singleflight } from '../../foundation/performance/Singleflight';
+import { CACHE } from '../../platform/cache/Cache';
+import { Singleflight } from '@shop/kernel';
 
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { defineModule } from '../../composition/DefinedModule';
 import { EXPERIENCE_CATALOG_PORT } from '../catalog/public';
 import { MARKETING_READ_PORT } from '../marketing/public';
 import { ORGANIZATION_READ_PORT } from '../organization/public';
@@ -31,7 +31,7 @@ import { CART_EXPERIENCE_PORT, CHECKOUT_EXPERIENCE_PORT } from './public';
 import { EXPERIENCE_READ_PORT } from './public/ExperienceReadPort';
 import { createJobs } from './interface/job/JobFactory';
 import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
-import { TELEMETRY } from '../../foundation/telemetry/Telemetry';
+import { TELEMETRY } from '../../platform/telemetry/Telemetry';
 import { ExperienceTelemetry } from './infrastructure/adapter/ExperienceTelemetry';
 import { STOREFRONT_CONFIG } from './application/port/StorefrontConfig';
 import { ExperienceValidator } from './application/service/ExperienceValidator';

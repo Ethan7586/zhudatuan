@@ -1118,7 +1118,7 @@ on conflict(code) do update set status=excluded.status,retryable=excluded.retrya
 alter table runtime.errorcontract enable row level security;
 
 update runtime.contractcatalog set checksum='f52c095d7f81a423575e327072693d0356b261d05d5b7138f01d867cf89505bd',operation_count=(select count(*) from runtime.operation),
-  event_count=(select count(*) from runtime.event),published_at=clock_timestamp() where artifact='commerce' and version='5.0.0' and status='active';
+  event_count=(select count(*) from runtime.event where retired_at is null),published_at=clock_timestamp() where artifact='commerce' and version='5.0.0' and status='active';
 select runtime.record_migration_evidence('20260904028200',(select count(*) from voucher.voucher),(select count(*) from voucher.voucher),0,0,
   'select state,count(*),sum(remaining_minor) remaining_minor from voucher.voucher group by state;',
   'select state,count(*),sum(amount_minor) amount_minor from voucher.redemption group by state;');
@@ -1129,7 +1129,7 @@ do $assert$ begin
   if exists(select 1 from voucher.credential where number_ciphertext='' or secret_ciphertext='' or number_fingerprint!~'^[0-9a-f]{64}$') then raise exception 'VOUCHER_CREDENTIAL_PROTECTION_INVALID'; end if;
   if exists(select 1 from voucher.issuebatch where processed<>succeeded+failed or retryable>failed) then raise exception 'VOUCHER_BATCH_PROGRESS_INVALID'; end if;
   if (select count(*) from runtime.operation)<>356 then raise exception 'VOUCHER_OPERATION_COUNT_INVALID'; end if;
-  if (select count(*) from runtime.event)<>144 then raise exception 'VOUCHER_EVENT_COUNT_INVALID'; end if;
+  if (select count(*) from runtime.event where retired_at is null)<>144 then raise exception 'VOUCHER_EVENT_COUNT_INVALID'; end if;
 end $assert$;
 
 commit;

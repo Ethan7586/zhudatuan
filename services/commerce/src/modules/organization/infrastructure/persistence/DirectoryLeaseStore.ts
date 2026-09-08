@@ -12,8 +12,13 @@ export class DirectoryLeaseStore implements DirectoryLease {
     let renewal: Promise<void> = Promise.resolve();
     let lost: unknown;
     const pulse = () => {
-      renewal = renewal.then(async () => { if (lost === undefined) lease = await this.leases.renew(lease, seconds); })
-        .catch((cause: unknown) => { lost = cause; });
+      renewal = renewal
+        .then(async () => {
+          if (lost === undefined) lease = await this.leases.renew(lease, seconds);
+        })
+        .catch((cause: unknown) => {
+          lost = cause;
+        });
     };
     const timer = setInterval(pulse, Math.max(1_000, seconds * 400));
     const assertLease = async () => {

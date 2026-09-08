@@ -4,8 +4,18 @@ import { EvaluateRisk } from '../application/service/EvaluateRisk';
 
 const request = (risk: 'low' | 'elevated' | 'high' | 'critical' = 'high') =>
   Object.freeze({
-    actor: 'actor', operation: 'order.orders.create', resource: 'order', scope: 'mall', scopes: ['group', 'mall'], trace: 'trace', amountMinor: 101,
-    signals: [], risk, mode: 'sync' as const, deadline: Date.now() + 1_000, signal: new AbortController().signal,
+    actor: 'actor',
+    operation: 'order.orders.create',
+    resource: 'order',
+    scope: 'mall',
+    scopes: ['group', 'mall'],
+    trace: 'trace',
+    amountMinor: 101,
+    signals: [],
+    risk,
+    mode: 'sync' as const,
+    deadline: Date.now() + 1_000,
+    signal: new AbortController().signal,
   });
 
 describe('EvaluateRisk', () => {

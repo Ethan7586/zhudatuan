@@ -1,8 +1,8 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { OperationId, OperationInputFor } from '@shop/contract';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import type { OperationRequest } from '../../../../pipeline/OperationHandler';
 import type { CheckoutRepository } from '../../application/port/CheckoutRepository';
 import type { ConfirmCheckout } from '../../application/service/ConfirmCheckout';
 export class PgCheckoutRepository implements CheckoutRepository {

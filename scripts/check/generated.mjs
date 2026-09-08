@@ -11,6 +11,7 @@ for (const workspace of ['@shop/contractgen', '@shop/navigationgen', '@shop/requ
 }
 for (const [script, loader] of [
   ['scripts/build-web-tokens.mjs', false],
+  ['scripts/build-miniapp-theme.mjs', false],
   ['scripts/build-runtime-config.mjs', false],
 ]) {
   const result = spawnSync(process.execPath, [...(loader ? ['--import', 'tsx'] : []), script, '--check'], { cwd: root, encoding: 'utf8', stdio: 'pipe' });

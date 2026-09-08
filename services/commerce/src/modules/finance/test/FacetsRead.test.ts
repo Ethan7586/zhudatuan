@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
 import { readHandlerContext } from '../../../test/HandlerFixture';
 import { FacetsReadHandler } from '../application/handler/FacetsReadHandler';
 
@@ -9,13 +9,19 @@ describe('finance facets', () => {
   it('aggregates only descendant scopes and merges active Channel Catalog providers', async () => {
     const read = vi.fn(async (_context, scopes: readonly string[]) => ({
       periods: [{ value: '2026-08-01/2026-08-31', count: 4 }],
-      providers: [{ value: 'jd', count: 3 }, { value: 'retired', count: 1 }],
+      providers: [
+        { value: 'jd', count: 3 },
+        { value: 'retired', count: 1 },
+      ],
       malls: [{ value: 'mall:one', count: 4 }],
       states: [{ value: 'difference', count: 2 }],
       differenceTypes: [{ value: 'AMOUNT_MISMATCH', count: 2 }],
       watermark: '2026-09-05T10:00:00.000Z',
     }));
-    const providers = vi.fn(async (_context, scopes: readonly string[]) => [{ id: 'jd', label: '京东', count: 1 }, { id: 'supplier', label: '自有供应商', count: 1 }]);
+    const providers = vi.fn(async (_context, scopes: readonly string[]) => [
+      { id: 'jd', label: '京东', count: 1 },
+      { id: 'supplier', label: '自有供应商', count: 1 },
+    ]);
     const handler = new FacetsReadHandler(
       { read },
       {

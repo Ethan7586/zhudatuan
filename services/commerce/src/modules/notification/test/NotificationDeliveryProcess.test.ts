@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { KmsClient } from '../../../foundation/application/KmsPort';
+import type { KmsClient } from '../../../pipeline/KmsPort';
 import { DeliveryRegistry } from '../infrastructure/registry/DeliveryRegistry';
 import type { DeliveryRepository, QueuedDispatch } from '../application/port/DeliveryRepository';
 import type { DeliveryChannel } from '../application/port/DeliveryChannel';
@@ -85,27 +85,37 @@ describe('identity challenge notification delivery safety', () => {
 describe('notification outbox delivery', () => {
   it('uses the frozen dispatch snapshot and records permanent failures without retrying the runtime job', async () => {
     const fail = vi.fn(async () => true);
-    const send = vi.fn(async () => { throw new Error('EMAIL_DELIVERY_REQUEST_INVALID'); });
+    const send = vi.fn(async () => {
+      throw new Error('EMAIL_DELIVERY_REQUEST_INVALID');
+    });
     const command = deliveryCommand({ claim: vi.fn(async () => dispatchRecord()), fail } as unknown as DeliveryRepository, send);
 
     await expect(command.dispatch('dispatch:one', execution())).resolves.toBeUndefined();
     expect(send).toHaveBeenCalledWith(expect.objectContaining({ providerTemplate: 'paid-v4', variables: { order: 'O1' }, idempotency: 'dispatch:one' }));
-    expect(fail).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ template_version: 4 }), 'email.1', 1,
-      expect.objectContaining({ kind: 'permanent', code: 'EMAIL_DELIVERY_REQUEST_INVALID', message: expect.stringMatching(/[\u3400-\u9fff]/u) }));
+    expect(fail).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ template_version: 4 }),
+      'email.1',
+      1,
+      expect.objectContaining({ kind: 'permanent', code: 'EMAIL_DELIVERY_REQUEST_INVALID', message: expect.stringMatching(/[\u3400-\u9fff]/u) })
+    );
   });
 
   it('separates retryable provider failures so Runtime can apply its durable retry policy', async () => {
     const fail = vi.fn(async () => false);
-    const send = vi.fn(async () => { throw new Error('EMAIL_PROVIDER_UNAVAILABLE'); });
+    const send = vi.fn(async () => {
+      throw new Error('EMAIL_PROVIDER_UNAVAILABLE');
+    });
     const command = deliveryCommand({ claim: vi.fn(async () => dispatchRecord()), fail } as unknown as DeliveryRepository, send);
 
     await expect(command.dispatch('dispatch:one', execution())).rejects.toThrow('EMAIL_PROVIDER_UNAVAILABLE');
-    expect(fail).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'email.1', 1,
-      expect.objectContaining({ kind: 'retryable', code: 'EMAIL_PROVIDER_UNAVAILABLE', message: expect.stringMatching(/[\u3400-\u9fff]/u) }));
+    expect(fail).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'email.1', 1, expect.objectContaining({ kind: 'retryable', code: 'EMAIL_PROVIDER_UNAVAILABLE', message: expect.stringMatching(/[\u3400-\u9fff]/u) }));
   });
 
   it('degrades to the next registered strategy after recording a retryable primary failure', async () => {
-    const primary = vi.fn(async () => { throw new Error('PRIMARY_UNAVAILABLE'); });
+    const primary = vi.fn(async () => {
+      throw new Error('PRIMARY_UNAVAILABLE');
+    });
     const secondary = vi.fn(async () => ({ provider: 'mail.secondary', externalId: 'mail:one' }));
     const recordFailure = vi.fn(async () => undefined);
     const complete = vi.fn(async () => undefined);
@@ -114,13 +124,16 @@ describe('notification outbox delivery', () => {
       { id: 'email', provider: 'mail.primary', priority: 10, send: primary },
       { id: 'email', provider: 'mail.secondary', priority: 20, send: secondary },
     ] as unknown as DeliveryChannel[]);
-    const command = new NotificationDeliveryProcess(transactionManager(async () => result([])), repository,
-      { decrypt: vi.fn(async () => 'member@example.test') } as unknown as KmsClient, registry);
+    const command = new NotificationDeliveryProcess(
+      transactionManager(async () => result([])),
+      repository,
+      { decrypt: vi.fn(async () => 'member@example.test') } as unknown as KmsClient,
+      registry
+    );
 
     await command.dispatch('dispatch:one', execution());
 
-    expect(recordFailure).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'mail.primary', 1,
-      expect.objectContaining({ kind: 'retryable', code: 'PRIMARY_UNAVAILABLE', message: expect.stringMatching(/[\u3400-\u9fff]/u) }));
+    expect(recordFailure).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'mail.primary', 1, expect.objectContaining({ kind: 'retryable', code: 'PRIMARY_UNAVAILABLE', message: expect.stringMatching(/[\u3400-\u9fff]/u) }));
     expect(secondary).toHaveBeenCalledOnce();
     expect(complete).toHaveBeenCalledWith(expect.anything(), expect.anything(), { provider: 'mail.secondary', externalId: 'mail:one' }, 2);
   });
@@ -143,13 +156,17 @@ describe('notification outbox delivery', () => {
     vi.setSystemTime(new Date('2026-09-05T15:00:00Z'));
     try {
       const blockedQueue = queueMock();
-      await eventCommand(eventRepository(templateRecord({ purpose: 'marketing', preference_enabled: false }), blockedQueue))
-        .event({ job: 'job:event', id: 'event:blocked', type: 'order.paid', payload: { member: 'member:one', order: 'O1' } }, execution());
+      await eventCommand(eventRepository(templateRecord({ purpose: 'marketing', preference_enabled: false }), blockedQueue)).event(
+        { job: 'job:event', id: 'event:blocked', type: 'order.paid', payload: { member: 'member:one', order: 'O1' } },
+        execution()
+      );
       expect(blockedQueue).not.toHaveBeenCalled();
 
       const deferredQueue = queueMock();
-      await eventCommand(eventRepository(templateRecord({ quiet_start: '22:00:00', quiet_end: '07:00:00', quiet_timezone: 'Asia/Shanghai' }), deferredQueue))
-        .event({ job: 'job:event', id: 'event:quiet', type: 'order.paid', payload: { member: 'member:one', order: 'O1' } }, execution());
+      await eventCommand(eventRepository(templateRecord({ quiet_start: '22:00:00', quiet_end: '07:00:00', quiet_timezone: 'Asia/Shanghai' }), deferredQueue)).event(
+        { job: 'job:event', id: 'event:quiet', type: 'order.paid', payload: { member: 'member:one', order: 'O1' } },
+        execution()
+      );
       expect(deferredQueue.mock.calls[0]![1].availableAt).toBe('2026-09-05T23:00:00.000Z');
     } finally {
       vi.useRealTimers();
@@ -158,7 +175,9 @@ describe('notification outbox delivery', () => {
 
   it('redacts arbitrary provider text before persistence and retry propagation', async () => {
     const fail = vi.fn(async () => false);
-    const send = vi.fn(async () => { throw new Error('send failed for member@example.test'); });
+    const send = vi.fn(async () => {
+      throw new Error('send failed for member@example.test');
+    });
     const command = deliveryCommand({ claim: vi.fn(async () => dispatchRecord()), fail } as unknown as DeliveryRepository, send);
     await expect(command.dispatch('dispatch:one', execution())).rejects.toThrow('NOTIFICATION_DELIVERY_FAILED');
     expect(JSON.stringify(fail.mock.calls)).not.toContain('member@example.test');
@@ -199,17 +218,41 @@ function deliveryCommand(repository: DeliveryRepository, send: DeliveryChannel['
 
 function dispatchRecord() {
   return Object.freeze({
-    id: 'dispatch:one', scope_id: 'mall:one', member_id: 'member:one', template_id: 'template:one', channel: 'email' as const,
-    event_type: 'order.paid', template_version: 4, provider_template: 'paid-v4', variable_schema: { order: 'string' as const },
-    subject: '支付成功', body: '订单已支付', payload: { order: 'O1' }, recipient_ciphertext: 'ciphertext', recipient_ref: null,
-    purpose: 'transactional' as const, mandatory: false, attempt_sequence: 1, max_attempts: 5, preference_enabled: true,
-    authorization_state: 'accepted' as const, consent_source: 'member' as const, quiet_start: null, quiet_end: null,
-    quiet_timezone: null, preference_version: 1,
+    id: 'dispatch:one',
+    scope_id: 'mall:one',
+    member_id: 'member:one',
+    template_id: 'template:one',
+    channel: 'email' as const,
+    event_type: 'order.paid',
+    template_version: 4,
+    provider_template: 'paid-v4',
+    variable_schema: { order: 'string' as const },
+    subject: '支付成功',
+    body: '订单已支付',
+    payload: { order: 'O1' },
+    recipient_ciphertext: 'ciphertext',
+    recipient_ref: null,
+    purpose: 'transactional' as const,
+    mandatory: false,
+    attempt_sequence: 1,
+    max_attempts: 5,
+    preference_enabled: true,
+    authorization_state: 'accepted' as const,
+    consent_source: 'member' as const,
+    quiet_start: null,
+    quiet_end: null,
+    quiet_timezone: null,
+    preference_version: 1,
   });
 }
 
 function eventCommand(repository: DeliveryRepository) {
-  return new NotificationDeliveryProcess(transactionManager(async () => result([])), repository, {} as KmsClient, new DeliveryRegistry([]));
+  return new NotificationDeliveryProcess(
+    transactionManager(async () => result([])),
+    repository,
+    {} as KmsClient,
+    new DeliveryRegistry([])
+  );
 }
 
 function eventRepository(record: ReturnType<typeof templateRecord>, queue: ReturnType<typeof queueMock>) {
@@ -225,15 +268,39 @@ function queueMock() {
   return vi.fn(async (_context: unknown, _input: QueuedDispatch) => undefined);
 }
 
-function templateRecord(overrides: Partial<Readonly<{
-  purpose: 'transactional' | 'marketing'; preference_enabled: boolean; quiet_start: string | null; quiet_end: string | null; quiet_timezone: string | null;
-}>> = {}) {
+function templateRecord(
+  overrides: Partial<
+    Readonly<{
+      purpose: 'transactional' | 'marketing';
+      preference_enabled: boolean;
+      quiet_start: string | null;
+      quiet_end: string | null;
+      quiet_timezone: string | null;
+    }>
+  > = {}
+) {
   return Object.freeze({
-    id: 'template:one', scope_id: 'mall:one', channel: 'inapp' as const, event_type: 'order.paid', version: 4,
-    variable_schema: { order: 'string' as const }, provider_template: null, subject: '订单 {{order}}', body: '已支付', status: 'active' as const,
-    created_at: '2026-09-05T00:00:00Z', purpose: 'transactional' as const, mandatory: false, preference_enabled: true,
-    authorization_state: 'accepted' as const, consent_source: 'member' as const, quiet_start: null, quiet_end: null,
-    quiet_timezone: null, preference_version: 1, ...overrides,
+    id: 'template:one',
+    scope_id: 'mall:one',
+    channel: 'inapp' as const,
+    event_type: 'order.paid',
+    version: 4,
+    variable_schema: { order: 'string' as const },
+    provider_template: null,
+    subject: '订单 {{order}}',
+    body: '已支付',
+    status: 'active' as const,
+    created_at: '2026-09-05T00:00:00Z',
+    purpose: 'transactional' as const,
+    mandatory: false,
+    preference_enabled: true,
+    authorization_state: 'accepted' as const,
+    consent_source: 'member' as const,
+    quiet_start: null,
+    quiet_end: null,
+    quiet_timezone: null,
+    preference_version: 1,
+    ...overrides,
   });
 }
 

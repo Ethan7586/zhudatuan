@@ -1,26 +1,31 @@
 import { ArrowLeft, CircleAlert, MapPin, Pencil, Plus, Trash2 } from 'lucide-react';
 import { hasFailureCode, presentError } from '@shop/presentation';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import type { Address, AddressDraft } from '../model/Address';
 import { StorefrontStepup } from '../../security';
+import { PendingAction } from '../../../shared/action/PendingAction';
 
 interface AddressPanelProps {
   readonly addresses: readonly Address[];
-  readonly save: (addressId: string | null, draft: AddressDraft, expectedVersion?: number) => Promise<void>;
-  readonly remove: (addressId: string, expectedVersion: number) => Promise<void>;
+  readonly save: (addressId: string | null, draft: AddressDraft, expectedVersion?: number, idempotencyKey?: string) => Promise<void>;
+  readonly remove: (addressId: string, expectedVersion: number, idempotencyKey?: string) => Promise<void>;
   readonly notify: (text: string, type?: 'success' | 'error' | 'info') => void;
   readonly back: () => void;
+  readonly state: 'loading' | 'failed' | 'empty' | 'ready';
+  readonly message: string | null;
+  readonly retry: () => void;
 }
 
 const EMPTY: AddressDraft = Object.freeze({ recipient: '', mobile: '', province: '', city: '', district: '', detail: '', isDefault: false });
 
-export function AddressPanel({ addresses, save, remove, notify, back }: AddressPanelProps) {
+export function AddressPanel({ addresses, save, remove, notify, back, state, message, retry }: AddressPanelProps) {
   const [editing, setEditing] = useState<Readonly<{ id: string | null; version: number }> | null>(null);
   const [draft, setDraft] = useState<AddressDraft>(EMPTY);
   const [confirming, setConfirming] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [verification, setVerification] = useState(false);
+  const pending = useRef(new PendingAction());
   const change = (field: Exclude<keyof AddressDraft, 'isDefault'>, value: string) => setDraft((current) => ({ ...current, [field]: value }));
   const start = (address?: Address) => {
     setEditing({ id: address?.id ?? null, version: address?.version ?? 0 });
@@ -29,37 +34,44 @@ export function AddressPanel({ addresses, save, remove, notify, back }: AddressP
     setError(null);
   };
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    if (!editing) return;
+  async function execute(action: () => Promise<void>, success: () => void) {
     setBusy(true);
     setError(null);
     try {
-      await save(editing.id, draft, editing.version);
-      setEditing(null);
-      setDraft(EMPTY);
-      notify(editing.id ? '收货地址已安全更新' : '收货地址已新增', 'success');
+      await action();
+      pending.current.clear();
+      success();
     } catch (cause) {
       if (hasFailureCode(cause, 'STEPUP_REQUIRED')) {
+        pending.current.schedule(() => execute(action, success));
         setVerification(true);
-        setError(null);
       } else setError(presentError(cause).message);
     } finally {
       setBusy(false);
     }
   }
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!editing) return;
+    const key = crypto.randomUUID();
+    await execute(
+      () => save(editing.id, draft, editing.version, key),
+      () => {
+        setEditing(null);
+        setDraft(EMPTY);
+        notify(editing.id ? '收货地址已安全更新' : '收货地址已新增', 'success');
+      }
+    );
+  }
   async function erase(item: Address) {
-    setBusy(true);
-    setError(null);
-    try {
-      await remove(item.id, item.version);
-      setConfirming(null);
-      notify('收货地址已删除', 'success');
-    } catch (cause) {
-      setError(presentError(cause).message);
-    } finally {
-      setBusy(false);
-    }
+    const key = crypto.randomUUID();
+    await execute(
+      () => remove(item.id, item.version, key),
+      () => {
+        setConfirming(null);
+        notify('收货地址已删除', 'success');
+      }
+    );
   }
 
   return (
@@ -69,7 +81,12 @@ export function AddressPanel({ addresses, save, remove, notify, back }: AddressP
           <ArrowLeft size={16} />
           返回个人中心
         </button>
-        <button type="button" onClick={() => start()} className="inline-flex items-center gap-1 rounded-xl bg-[var(--sw-brand)] px-4 py-2 text-xs font-bold text-inverse">
+        <button
+          type="button"
+          disabled={state === 'loading' || state === 'failed'}
+          onClick={() => start()}
+          className="inline-flex items-center gap-1 rounded-xl bg-[var(--sw-brand)] px-4 py-2 text-xs font-bold text-inverse disabled:opacity-50"
+        >
           <Plus size={15} />
           新增收货地址
         </button>
@@ -89,10 +106,13 @@ export function AddressPanel({ addresses, save, remove, notify, back }: AddressP
       ) : null}
       <StorefrontStepup
         open={verification}
-        onClose={() => setVerification(false)}
+        onClose={() => {
+          pending.current.clear();
+          setVerification(false);
+        }}
         onVerified={() => {
           setVerification(false);
-          notify('二次验证已完成，请再次点击“安全保存”', 'success');
+          pending.current.resume();
         }}
       />
       {editing ? (
@@ -115,52 +135,67 @@ export function AddressPanel({ addresses, save, remove, notify, back }: AddressP
             <button type="button" disabled={busy} onClick={() => setEditing(null)} className="rounded-lg border px-4 py-2 text-xs font-bold">
               取消
             </button>
-            <button disabled={busy} className="rounded-lg bg-[var(--sw-brand)] px-4 py-2 text-xs font-bold text-inverse disabled:opacity-50">
+            <button type="submit" disabled={busy} className="rounded-lg bg-[var(--sw-brand)] px-4 py-2 text-xs font-bold text-inverse disabled:opacity-50">
               {busy ? '保存中…' : '安全保存'}
             </button>
           </div>
         </form>
       ) : null}
+      {state === 'loading' ? <PanelState text="正在读取收货地址…" /> : null}
+      {state === 'failed' ? <PanelState text={message ?? '收货地址加载失败'} retry={retry} /> : null}
       <section className="space-y-2">
-        {addresses.map((item) => (
-          <article key={item.id} className="rounded-2xl border bg-surface p-4 text-xs shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <b className="text-sm">
-                  {item.recipient} · {item.mobile}
-                </b>
-                {item.isDefault ? <span className="ml-2 rounded-full bg-brand-light px-2 py-0.5 text-[10px] font-bold text-brand">默认地址</span> : null}
-                <p className="mt-2 text-secondary">
-                  {item.province}
-                  {item.city}
-                  {item.district}
-                  {item.detail}
-                </p>
-                <p className="mt-1 text-muted">
-                  {item.tag} · 版本 {item.version}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button type="button" disabled={busy} onClick={() => start(item)} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 font-bold text-brand">
-                  <Pencil size={14} />
-                  更新
-                </button>
-                {confirming === item.id ? (
-                  <button type="button" disabled={busy} onClick={() => void erase(item)} className="rounded-lg bg-danger px-3 py-2 font-bold text-inverse">
-                    确认删除
-                  </button>
-                ) : (
-                  <button type="button" disabled={busy} onClick={() => setConfirming(item.id)} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 font-bold text-danger">
-                    <Trash2 size={14} />
-                    删除
-                  </button>
-                )}
-              </div>
-            </div>
-          </article>
-        ))}
-        {addresses.length === 0 ? <div className="grid min-h-40 place-items-center rounded-2xl border border-dashed bg-surface text-sm text-muted">尚未维护收货地址</div> : null}
+        {state === 'ready'
+          ? addresses.map((item) => (
+              <article key={item.id} className="rounded-2xl border bg-surface p-4 text-xs shadow-sm">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <b className="text-sm">
+                      {item.recipient} · {item.mobile}
+                    </b>
+                    {item.isDefault ? <span className="ml-2 rounded-full bg-brand-light px-2 py-0.5 text-[10px] font-bold text-brand">默认地址</span> : null}
+                    <p className="mt-2 text-secondary">
+                      {item.province}
+                      {item.city}
+                      {item.district}
+                      {item.detail}
+                    </p>
+                    <p className="mt-1 text-muted">{item.tag}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="button" disabled={busy} onClick={() => start(item)} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 font-bold text-brand">
+                      <Pencil size={14} />
+                      更新
+                    </button>
+                    {confirming === item.id ? (
+                      <button type="button" disabled={busy} onClick={() => void erase(item)} className="rounded-lg bg-danger px-3 py-2 font-bold text-inverse">
+                        确认删除
+                      </button>
+                    ) : (
+                      <button type="button" disabled={busy} onClick={() => setConfirming(item.id)} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 font-bold text-danger">
+                        <Trash2 size={14} />
+                        删除
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </article>
+            ))
+          : null}
+        {state === 'empty' ? <div className="grid min-h-40 place-items-center rounded-2xl border border-dashed bg-surface text-sm text-muted">尚未维护收货地址</div> : null}
       </section>
+    </div>
+  );
+}
+
+function PanelState({ text, retry }: Readonly<{ text: string; retry?: () => void }>) {
+  return (
+    <div role={retry ? 'alert' : 'status'} className="grid min-h-32 place-items-center rounded-2xl border border-dashed bg-surface text-sm text-muted">
+      <span>{text}</span>
+      {retry ? (
+        <button type="button" onClick={retry} className="rounded-lg bg-brand-light px-3 py-2 font-bold text-brand">
+          重试
+        </button>
+      ) : null}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
 import { NAVIGATION_CONFIGURATION } from '@shop/config/server';
 import type { Telemetry } from '@shop/telemetry';
-import type { Cache } from '../../../../foundation/cache/Cache';
+import type { Cache } from '../../../../platform/cache/Cache';
 import type { NavigationCacheRepository } from '../../application/port/NavigationCacheRepository';
 import type { NavigationKey } from '../../domain/model/NavigationKey';
 import { NavigationTree, type NavigationTreeValue } from '../../domain/model/NavigationTree';

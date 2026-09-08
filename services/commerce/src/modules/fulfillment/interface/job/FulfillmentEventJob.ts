@@ -21,15 +21,16 @@ export class FulfillmentEventJob implements JobProcessor {
     const sourceId = text(envelope.aggregateId, 'FULFILLMENT_AGGREGATE_REQUIRED');
     if (job.scope !== scopeId) throw new Error('FULFILLMENT_SCOPE_MISMATCH');
     const payload = object(envelope.payload);
-    const event = eventType === 'order.paid'
-      ? this.orders.receive(eventId, scopeId, payload)
-      : eventType === 'aftersale.changed'
-        ? this.orders.return(eventId, scopeId, sourceId, payload)
-      : eventType === 'channel.webhook.applied'
-        ? this.channels.receive(eventId, scopeId, sourceId, payload)
-        : eventType === 'verification.completed'
-          ? this.verifications.receive(eventId, scopeId, sourceId, payload)
-          : null;
+    const event =
+      eventType === 'order.paid'
+        ? this.orders.receive(eventId, scopeId, payload)
+        : eventType === 'aftersale.changed'
+          ? this.orders.return(eventId, scopeId, sourceId, payload)
+          : eventType === 'channel.webhook.applied'
+            ? this.channels.receive(eventId, scopeId, sourceId, payload)
+            : eventType === 'verification.completed'
+              ? this.verifications.receive(eventId, scopeId, sourceId, payload)
+              : null;
     if (!event) throw new Error('FULFILLMENT_EVENT_UNSUPPORTED');
     return this.events.execute(event, signal, deadline);
   }

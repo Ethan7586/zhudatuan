@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export type CustomerKind = 'enterprise' | 'institution' | 'government';
 export type CustomerState = 'draft' | 'active' | 'disabled';

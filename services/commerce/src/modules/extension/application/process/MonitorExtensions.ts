@@ -1,10 +1,10 @@
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import type { ProviderHealth } from '@shop/contract';
-import { CircuitBreaker } from '../../../../foundation/performance/CircuitBreaker';
-import { Deadline } from '../../../../foundation/performance/Deadline';
-import type { ProviderMetrics } from '../../../../foundation/telemetry/ProviderMetrics';
-import { safeErrorCode } from '../../../../foundation/domain/SafeError';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import { CircuitBreaker } from '@shop/kernel';
+import { Deadline } from '@shop/kernel';
+import type { ProviderMetrics } from '../../../../platform/telemetry/ProviderMetrics';
+import { safeErrorCode } from '../../../../platform/error/SafeError';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import { HealthRecord } from '../../domain/model/HealthRecord';
 import type { ExtensionCandidate, ExtensionLoader, ExtensionRepository } from '../port/ExtensionLoader';
 import type { ExtensionStateSink } from '../../public';
@@ -34,7 +34,13 @@ export class MonitorExtensions {
     private readonly metrics: ProviderMetrics,
     private readonly policy: ExtensionMonitorPolicy = DEFAULT_POLICY
   ) {
-    if (![policy.timeout, policy.failures, policy.recovery, policy.interval].every((value) => Number.isSafeInteger(value) && value > 0) || policy.timeout > 300_000 || policy.failures > 100 || policy.recovery > 3_600_000 || policy.interval > 86_400_000) {
+    if (
+      ![policy.timeout, policy.failures, policy.recovery, policy.interval].every((value) => Number.isSafeInteger(value) && value > 0) ||
+      policy.timeout > 300_000 ||
+      policy.failures > 100 ||
+      policy.recovery > 3_600_000 ||
+      policy.interval > 86_400_000
+    ) {
       throw new Error('EXTENSION_MONITOR_POLICY_INVALID');
     }
   }
@@ -118,12 +124,22 @@ export class MonitorExtensions {
   private async stage(installation: string, scope: string, trace: string, signal: AbortSignal, deadline: number): Promise<ExtensionCandidate> {
     const bounded = Deadline.at(Math.min(deadline, Date.now() + this.policy.timeout), signal);
     const operation = this.loader.stage(installation, {
-      tenant: '', membership: '', scope, actor: 'system:extensionhealth', trace, workload: 'worker', signal: bounded.signal, deadline: bounded.expiresAt,
+      tenant: '',
+      membership: '',
+      scope,
+      actor: 'system:extensionhealth',
+      trace,
+      workload: 'worker',
+      signal: bounded.signal,
+      deadline: bounded.expiresAt,
     });
     try {
       return await bounded.run(() => operation);
     } catch (cause) {
-      void operation.then((candidate) => this.loader.discard(candidate).catch(() => undefined), () => undefined);
+      void operation.then(
+        (candidate) => this.loader.discard(candidate).catch(() => undefined),
+        () => undefined
+      );
       if (!signal.aborted && cause instanceof Error && cause.message === 'DEADLINE_EXCEEDED') throw new ProbeTimeout(cause);
       throw cause;
     } finally {
@@ -131,15 +147,7 @@ export class MonitorExtensions {
     }
   }
 
-  private async recordFailure(
-    installation: string,
-    scope: string,
-    trace: string,
-    signal: AbortSignal,
-    deadline: number,
-    candidate: ExtensionCandidate | undefined,
-    reason: string
-  ): Promise<void> {
+  private async recordFailure(installation: string, scope: string, trace: string, signal: AbortSignal, deadline: number, candidate: ExtensionCandidate | undefined, reason: string): Promise<void> {
     await this.transactions.write(options(trace, scope, signal, deadline), async (context) => {
       const current = await this.repository.lock(context, installation, scope);
       if (!current || !['testing', 'enabled', 'degraded'].includes(current.state)) {

@@ -1,4 +1,4 @@
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { defineModule } from '../../composition/DefinedModule';
 import { Manifest } from './Manifest';
 import { createJobs } from './interface/job/JobFactory';
 import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
@@ -13,7 +13,7 @@ import { ExportsCreateHandler } from './application/handler/ExportsCreateHandler
 import { ExportsReadHandler } from './application/handler/ExportsReadHandler';
 import { PgReportRepository } from './infrastructure/persistence/PgReportRepository';
 import { MetricReader } from './application/service/MetricReader';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
 import { JOB_PORT, OBJECT_STORE } from '../runtime/public';
 
 export const ReportingModule = defineModule(Manifest, {

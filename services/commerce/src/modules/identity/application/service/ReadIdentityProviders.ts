@@ -1,5 +1,5 @@
 import { IdentityAction as OperationAction } from '../model/IdentityAction';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 import type { ProviderRepository } from '../port/ProviderRepository';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';

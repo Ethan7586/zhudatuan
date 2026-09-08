@@ -285,20 +285,20 @@ export function auditExtensions(sourceFiles) {
   }
   const retiredPaymentGateway = path.join(root, 'services/commerce/src/modules/payment/infrastructure/adapter/WechatGateway.ts');
   if (sourceFiles.has(retiredPaymentGateway) || fs.existsSync(retiredPaymentGateway)) values.push(violation('PAYMENT_RUNTIME_ADAPTER_PRESENT', relative(retiredPaymentGateway), 'move gateway into payment extension'));
-  const runtime = sourceFiles.get(path.join(root, 'services/commerce/src/bootstrap/CommerceRuntime.ts'))?.text ?? '';
+  const runtime = sourceFiles.get(path.join(root, 'services/commerce/src/composition/Application.ts'))?.text ?? '';
   for (const retired of ['AliyunSmsChannel', 'InappChannel']) {
-    if (runtime.includes(retired)) values.push(violation('NOTIFICATION_RUNTIME_ADAPTER_PRESENT', relative(path.join(root, 'services/commerce/src/bootstrap/CommerceRuntime.ts')), retired));
+    if (runtime.includes(retired)) values.push(violation('NOTIFICATION_RUNTIME_ADAPTER_PRESENT', relative(path.join(root, 'services/commerce/src/composition/Application.ts')), retired));
   }
   for (const factory of ['WechatPaymentFactory', 'SmsFactory', 'InappFactory', 'EmailFactory', 'WechatFactory']) {
-    if (!runtime.includes(factory)) values.push(violation('EXTENSION_RUNTIME_FACTORY_MISSING', relative(path.join(root, 'services/commerce/src/bootstrap/CommerceRuntime.ts')), factory));
+    if (!runtime.includes(factory)) values.push(violation('EXTENSION_RUNTIME_FACTORY_MISSING', relative(path.join(root, 'services/commerce/src/composition/Application.ts')), factory));
   }
   const executorTest = sourceFiles.get(path.join(providerRoot, 'core/test/RequestExecutor.test.ts'))?.text ?? '';
   for (const criterion of ['PROVIDER_CONNECTION_TIMEOUT', 'PROVIDER_REQUEST_CANCELLED', 'x-trace-id', 'redacts secrets']) {
     if (!executorTest.includes(criterion)) values.push(violation('EXTENSION_FAULT_TEST_MISSING', relative(path.join(providerRoot, 'core/test/RequestExecutor.test.ts')), criterion));
   }
-  const registryTest = sourceFiles.get(path.join(root, 'services/commerce/src/bootstrap/ExtensionRegistry.test.ts'))?.text ?? '';
+  const registryTest = sourceFiles.get(path.join(root, 'services/commerce/src/composition/ExtensionRegistry.test.ts'))?.text ?? '';
   for (const criterion of ['rotation canary', 'in-flight work to drain', 'product, order and finance capabilities']) {
-    if (!registryTest.includes(criterion)) values.push(violation('EXTENSION_LIFECYCLE_TEST_MISSING', relative(path.join(root, 'services/commerce/src/bootstrap/ExtensionRegistry.test.ts')), criterion));
+    if (!registryTest.includes(criterion)) values.push(violation('EXTENSION_LIFECYCLE_TEST_MISSING', relative(path.join(root, 'services/commerce/src/composition/ExtensionRegistry.test.ts')), criterion));
   }
   const webhookTest = sourceFiles.get(path.join(root, 'services/commerce/src/modules/channel/test/ApplyChannelWebhook.test.ts'))?.text ?? '';
   for (const criterion of ['deduplicates a replay', 'unknown external mapping', 'task has already been cancelled']) {

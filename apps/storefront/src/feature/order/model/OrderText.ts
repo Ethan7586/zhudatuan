@@ -52,6 +52,10 @@ export function fulfillmentStateText(state: string): string {
   return FULFILLMENT_STATE_TEXT[state] ?? '履约处理中';
 }
 
+export function afterSaleStateText(state: string): string {
+  return ({ none: '暂无售后', applied: '已申请', reviewing: '审核中', approved: '已批准', returning: '退货中', received: '退货已收', refunding: '退款中', resolved: '售后完成', rejected: '申请未通过' } as Readonly<Record<string, string>>)[state] ?? '售后状态更新中';
+}
+
 export function timelineStateText(state: string): string {
   return TIMELINE_STATE_TEXT[state] ?? fulfillmentStateText(state);
 }

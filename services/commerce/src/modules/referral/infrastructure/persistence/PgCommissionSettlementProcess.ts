@@ -1,13 +1,13 @@
 import type { QueryResultRow } from 'pg';
-import { PgOutbox } from '../../../../adapter/database/PgOutbox';
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgOutbox } from '../../../../platform/database/PgOutbox';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { referralEvent } from '../../domain/event/ReferralEvents';
 import type { ReferralFinancePort } from '../../../finance/public';
-import type { Clock } from '../../../../foundation/domain/Clock';
-import { SystemClock } from '../../../../foundation/domain/Clock';
+import type { Clock } from '@shop/kernel';
+import { SystemClock } from '@shop/kernel';
 import { Commission, type CommissionState } from '../../domain/model/Commission';
 import { Withdrawal } from '../../domain/model/Withdrawal';
 import { SettlementPolicy } from '../../domain/policy/SettlementPolicy';
@@ -56,7 +56,7 @@ export class PgCommissionSettlementProcess implements CommissionSettlementProces
   constructor(
     private readonly manager: TransactionManager,
     private readonly finance: ReferralFinancePort,
-    private readonly clock: Clock = SystemClock
+    private readonly clock: Clock = new SystemClock()
   ) {
     this.outbox = new PgOutbox(manager);
   }

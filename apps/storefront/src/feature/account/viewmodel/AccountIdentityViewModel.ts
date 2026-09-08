@@ -11,6 +11,7 @@ import { ChangeFavorite } from '../application/ChangeFavorite';
 import { ChangeAddress } from '../application/ChangeAddress';
 import type { AddressDraft } from '../model/Address';
 import { useDependencies } from '../../../app/DependencyContext';
+import { presentError } from '@shop/presentation';
 
 export function useAccountIdentity() {
   const session = useSession();
@@ -107,14 +108,14 @@ export function useAccountIdentity() {
       .then(() => client.invalidateQueries({ queryKey: StorefrontQuery.favorites(session.query.scoped) }))
       .catch(() => session.showToast('收藏状态保存失败，请稍后重试', 'error'));
   };
-  const saveAddress = async (addressId: string | null, address: AddressDraft, expectedVersion = 0) => {
+  const saveAddress = async (addressId: string | null, address: AddressDraft, expectedVersion = 0, idempotencyKey?: string) => {
     if (!session.session) throw new Error('AUTHENTICATION_REQUIRED');
-    await addressCommand.current.save(session.session, addressId ?? `address:${crypto.randomUUID()}`, address, expectedVersion);
+    await addressCommand.current.save(session.session, addressId ?? `address:${idempotencyKey ?? crypto.randomUUID()}`, address, expectedVersion, idempotencyKey);
     await client.invalidateQueries({ queryKey: StorefrontQuery.addresses(session.query.scoped) });
   };
-  const removeAddress = async (addressId: string, expectedVersion: number) => {
+  const removeAddress = async (addressId: string, expectedVersion: number, idempotencyKey?: string) => {
     if (!session.session) throw new Error('AUTHENTICATION_REQUIRED');
-    await addressCommand.current.remove(session.session, addressId, expectedVersion);
+    await addressCommand.current.remove(session.session, addressId, expectedVersion, idempotencyKey);
     await client.invalidateQueries({ queryKey: StorefrontQuery.addresses(session.query.scoped) });
   };
   return Object.freeze({
@@ -124,11 +125,23 @@ export function useAccountIdentity() {
     addresses: addressQuery.data ?? Object.freeze([]),
     favorites,
     favoriteItems,
+    profileState: profileQuery.isPending ? ('loading' as const) : profileQuery.isError ? ('failed' as const) : ('ready' as const),
+    membershipState: membershipQuery.isPending ? ('loading' as const) : membershipQuery.isError ? ('failed' as const) : ('ready' as const),
+    addressState: addressQuery.isPending ? ('loading' as const) : addressQuery.isError ? ('failed' as const) : addressQuery.data?.length === 0 ? ('empty' as const) : ('ready' as const),
+    favoriteState: favoriteQuery.isPending ? ('loading' as const) : favoriteQuery.isError ? ('failed' as const) : favoriteItems.length === 0 ? ('empty' as const) : ('ready' as const),
+    profileMessage: profileQuery.isError ? presentError(profileQuery.error).message : null,
+    membershipMessage: membershipQuery.isError ? presentError(membershipQuery.error).message : null,
+    addressMessage: addressQuery.isError ? presentError(addressQuery.error).message : null,
+    favoriteMessage: favoriteQuery.isError ? presentError(favoriteQuery.error).message : null,
     switchMall,
     toggleFavorite,
     saveAddress,
     removeAddress,
     logout: session.logout,
     showToast: session.showToast,
+    retryProfile: profileQuery.refetch,
+    retryMemberships: membershipQuery.refetch,
+    retryAddresses: addressQuery.refetch,
+    retryFavorites: favoriteQuery.refetch,
   });
 }

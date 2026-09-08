@@ -1,5 +1,5 @@
 import type { TabularFilePort } from '../../../runtime/public';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import type { FinanceChannelPort } from '../../../channel/public';
 import type { FinanceFulfillmentPort } from '../../../fulfillment/public';
 import type { FinancePaymentPort } from '../../../payment/public';

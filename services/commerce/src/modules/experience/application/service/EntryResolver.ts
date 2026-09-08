@@ -1,9 +1,9 @@
-import type { Singleflight } from '../../../../foundation/performance/Singleflight';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { Singleflight } from '@shop/kernel';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { EntryCache } from '../port/EntryCache';
 import type { EntryRepository, StorefrontEntry } from '../port/EntryRepository';
 import type { ExperienceObserver } from '../port/ExperienceObserver';
-import { safeErrorCode } from '../../../../foundation/domain/SafeError';
+import { safeErrorCode } from '../../../../platform/error/SafeError';
 
 export class EntryResolver {
   constructor(

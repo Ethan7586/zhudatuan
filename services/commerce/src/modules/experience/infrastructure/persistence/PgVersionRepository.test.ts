@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import { parseExperience, serializeExperience } from '@shop/contract';
 import { describe, expect, it, vi } from 'vitest';
-import type { PgTransactionAccess, SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess, SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ExperienceCatalogPort } from '../../../catalog/public';
 import { PUBLISH_DEPENDENCIES } from '../../domain/value/PublishEvidence';
 import { PgVersionRepository } from './PgVersionRepository';

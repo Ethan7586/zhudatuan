@@ -1,12 +1,12 @@
 import type { FinanceAction, FinanceEntries } from './FinanceOperation';
-import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import { type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 /** Withdrawal persistence actions. */
 import { randomUUID } from 'node:crypto';
 
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { rowResult } from '../../../../adapter/database/DatabaseResult';
-import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { rowResult } from '../../../../platform/database/DatabaseResult';
+import type { OperationRequest } from '../../../../pipeline/OperationHandler';
+import { bodyRecord, integerField, textField } from '../../../../pipeline/Validation';
 import type { FinanceWorkflowFactory } from './PgFinanceWorkflow';
 import { SettlementPolicy } from '../../domain/policy/SettlementPolicy';
 import { Withdrawal, type WithdrawalState } from '../../domain/model/Withdrawal';
@@ -37,14 +37,24 @@ const create: FinanceAction = async (request, database) => {
   const settlement = source.rows[0];
   if (!settlement) throw new Error('FINANCE_WITHDRAWAL_SETTLEMENT_NOT_PAYABLE');
   policy.assertWithdrawal(Number(settlement.amount_minor), Number(settlement.withdrawn_minor), amount);
-  const proposal = Withdrawal.submit({ id, scopeId: settlement.scope_id, settlementId: settlement.id, amountMinor: amount,
-    currency: settlement.currency, destinationRef, requestedBy: access.actor.id }).snapshot();
+  const proposal = Withdrawal.submit({ id, scopeId: settlement.scope_id, settlementId: settlement.id, amountMinor: amount, currency: settlement.currency, destinationRef, requestedBy: access.actor.id }).snapshot();
   const result = await database.query(
     `insert into finance.withdrawal(id,scope_id,settlement_id,amount_minor,currency,destination_ref,state,
     requested_by,reason,evidence,created_at,updated_at,version) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,
     clock_timestamp(),clock_timestamp(),$11) returning *`,
-    [proposal.id, proposal.scopeId, proposal.settlementId, proposal.amountMinor, proposal.currency, proposal.destinationRef,
-      proposal.state, proposal.requestedBy, textField(body, 'reason', 1000), JSON.stringify(record(body.evidence)), proposal.version]
+    [
+      proposal.id,
+      proposal.scopeId,
+      proposal.settlementId,
+      proposal.amountMinor,
+      proposal.currency,
+      proposal.destinationRef,
+      proposal.state,
+      proposal.requestedBy,
+      textField(body, 'reason', 1000),
+      JSON.stringify(record(body.evidence)),
+      proposal.version,
+    ]
   );
   if (!result.rows[0]) throw new Error('FINANCE_WITHDRAWAL_EXCEEDS_PAYABLE');
   return rowResult(result, 201);
@@ -62,8 +72,7 @@ async function decide(request: OperationRequest, database: SqlExecutor, reposito
   const result = await database.query(
     `update finance.withdrawal set state=$2,approved_by=$3,evidence=evidence||$4::jsonb,updated_at=clock_timestamp(),version=$5
     where id=$1 and scope_id=$6 and state=$7 and version=$8 returning *`,
-    [target.id, target.state, target.approvedBy, JSON.stringify({ decisionReason: textField(body, 'reason', 1000), decisionEvidence: record(body.evidence) }),
-      target.version, access.scope.id, selected.state, selected.version]
+    [target.id, target.state, target.approvedBy, JSON.stringify({ decisionReason: textField(body, 'reason', 1000), decisionEvidence: record(body.evidence) }), target.version, access.scope.id, selected.state, selected.version]
   );
   if (!result.rows[0]) throw new Error('FINANCE_WITHDRAWAL_CONFLICT_OR_SEPARATION');
   if (decision === 'approved') await repository(database).enqueue('settlement', access.scope.id, { withdrawal: request.input.path.withdrawalid! }, `job:withdrawal:${request.input.path.withdrawalid!}`);
@@ -80,8 +89,7 @@ async function recover(request: OperationRequest, database: SqlExecutor, reposit
   const result = await database.query(
     `update finance.withdrawal set state='approved',evidence=evidence||$3::jsonb,
     updated_at=clock_timestamp(),version=$4 where id=$1 and scope_id=$2 and state=$5 and version=$6 returning *`,
-    [id, access.scope.id, JSON.stringify({ recoveryReason: textField(body, 'reason', 1000), recoveryEvidence: record(body.evidence), recoveredBy: access.actor.id, trace: access.trace }),
-      target.version, selected.state, selected.version]
+    [id, access.scope.id, JSON.stringify({ recoveryReason: textField(body, 'reason', 1000), recoveryEvidence: record(body.evidence), recoveredBy: access.actor.id, trace: access.trace }), target.version, selected.state, selected.version]
   );
   if (!result.rows[0]) throw new Error('FINANCE_WITHDRAWAL_NOT_RECOVERABLE');
   await repository(database).enqueue('settlement', access.scope.id, { withdrawal: id }, `job:withdrawal:${id}`, true);
@@ -112,9 +120,19 @@ async function withdrawal(database: SqlExecutor, id: string, scope: string, lock
 }
 
 function model(row: WithdrawalRow): Withdrawal {
-  return Withdrawal.restore({ id: row.id, scopeId: row.scope_id, settlementId: row.settlement_id, amountMinor: Number(row.amount_minor),
-    currency: row.currency, destinationRef: row.destination_ref, state: row.state, requestedBy: row.requested_by,
-    approvedBy: row.approved_by, providerReference: row.provider_reference, version: Number(row.version) });
+  return Withdrawal.restore({
+    id: row.id,
+    scopeId: row.scope_id,
+    settlementId: row.settlement_id,
+    amountMinor: Number(row.amount_minor),
+    currency: row.currency,
+    destinationRef: row.destination_ref,
+    state: row.state,
+    requestedBy: row.requested_by,
+    approvedBy: row.approved_by,
+    providerReference: row.provider_reference,
+    version: Number(row.version),
+  });
 }
 
 function record(value: unknown): Readonly<Record<string, unknown>> {

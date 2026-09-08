@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { OwnershipTransfer, FormerOwnerMode } from '../model/OwnershipTransfer';
 
 interface OwnershipPolicyState {
@@ -19,7 +19,9 @@ interface OwnershipPolicyMember {
 }
 
 export class OwnershipPolicy {
-  assertDraft(input: Readonly<{ actor: string; source: OwnershipPolicyMember; target: OwnershipPolicyMember; ownership: OwnershipPolicyState; expectedVersion: number; targetVersion: number; mode: FormerOwnerMode; formerRole: string | null }>): void {
+  assertDraft(
+    input: Readonly<{ actor: string; source: OwnershipPolicyMember; target: OwnershipPolicyMember; ownership: OwnershipPolicyState; expectedVersion: number; targetVersion: number; mode: FormerOwnerMode; formerRole: string | null }>
+  ): void {
     if (
       input.ownership.roleKind !== 'owner' ||
       input.actor !== input.ownership.membership ||
@@ -40,7 +42,8 @@ export class OwnershipPolicy {
 
   assertAccept(transfer: OwnershipTransfer, actor: OwnershipPolicyMember, ownership: OwnershipPolicyState, expectedVersion: number): void {
     if (actor.id !== transfer.targetMembership || actor.status !== 'active' || actor.client !== 'console' || actor.organization !== transfer.scope || !actor.mobileReady) throw new DomainError('OWNER_TRANSFER_REQUIRED');
-    if (ownership.membership !== transfer.sourceMembership || ownership.version !== transfer.ownershipVersion || actor.accessVersion !== transfer.targetAccessVersion || transfer.version !== expectedVersion) throw new DomainError('VERSION_CONFLICT');
+    if (ownership.membership !== transfer.sourceMembership || ownership.version !== transfer.ownershipVersion || actor.accessVersion !== transfer.targetAccessVersion || transfer.version !== expectedVersion)
+      throw new DomainError('VERSION_CONFLICT');
   }
 
   assertCancel(transfer: OwnershipTransfer, actor: string, expectedVersion: number): void {

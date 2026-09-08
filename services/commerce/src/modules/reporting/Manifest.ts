@@ -1,5 +1,5 @@
 import { CAPABILITY_CODES_BY_OWNER } from '@shop/contract';
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { REPORTING_PORTS } from './public';
 
 export const ReportingCapabilities = CAPABILITY_CODES_BY_OWNER.reporting;

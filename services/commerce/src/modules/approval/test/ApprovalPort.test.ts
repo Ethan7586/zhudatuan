@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
-import type { TransactionalEventWriter } from '../../../foundation/application/OperationExecutor';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { TransactionalEventWriter } from '../../../pipeline/OperationExecutor';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 import type { ApprovalRepository } from '../application/port/ApprovalRepository';
 import { PgApprovalPort } from '../infrastructure/persistence/PgApprovalPort';
 
@@ -63,10 +63,7 @@ describe('Approval public port', () => {
     });
 
     expect(receipt).toMatchObject({ templateVersion: 3, state: 'pending' });
-    expect(createInstance).toHaveBeenCalledWith(
-      context,
-      expect.objectContaining({ subjectVersion: 4, action: 'finance.withdrawal.pay', amountMinor: 50_000, currency: 'CNY', evidenceHash: 'a'.repeat(64) })
-    );
+    expect(createInstance).toHaveBeenCalledWith(context, expect.objectContaining({ subjectVersion: 4, action: 'finance.withdrawal.pay', amountMinor: 50_000, currency: 'CNY', evidenceHash: 'a'.repeat(64) }));
     expect(append).toHaveBeenCalledTimes(2);
   });
 
@@ -105,10 +102,7 @@ describe('Approval public port', () => {
     const proof = await port.consume(context, token, binding);
 
     expect(proof.binding).toEqual(binding);
-    expect(consumeProof).toHaveBeenCalledWith(
-      context,
-      expect.objectContaining({ tokenHash: createHash('sha256').update(token).digest(), amountMinor: 1_200, currency: 'CNY' })
-    );
+    expect(consumeProof).toHaveBeenCalledWith(context, expect.objectContaining({ tokenHash: createHash('sha256').update(token).digest(), amountMinor: 1_200, currency: 'CNY' }));
     expect(JSON.stringify(proof)).not.toContain(createHash('sha256').update(token).digest('hex'));
   });
 

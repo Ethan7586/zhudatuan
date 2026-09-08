@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ActivationAttempt, ActivationRate } from '../../application/port/ActivationRate';
 
 export class PgActivationRate implements ActivationRate {
@@ -14,8 +14,11 @@ export class PgActivationRate implements ActivationRate {
       [attempt.scope, attempt.actor, attempt.attemptedAt]
     );
     if ((counted.rows[0]?.attempts ?? 5) >= 5) return false;
-    await database.query(`insert into voucher.activationattempt(id,scope_id,actor_id,fingerprint,accepted,attempted_at)
-      values($1,$2,$3,$4,false,$5)`, [attempt.id, attempt.scope, attempt.actor, attempt.fingerprint, attempt.attemptedAt]);
+    await database.query(
+      `insert into voucher.activationattempt(id,scope_id,actor_id,fingerprint,accepted,attempted_at)
+      values($1,$2,$3,$4,false,$5)`,
+      [attempt.id, attempt.scope, attempt.actor, attempt.fingerprint, attempt.attemptedAt]
+    );
     return true;
   }
 }

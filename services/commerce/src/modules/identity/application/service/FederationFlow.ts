@@ -1,4 +1,4 @@
-import type { CipherEnvelope } from '../../../../foundation/application/KmsPort';
+import type { CipherEnvelope } from '../../../../pipeline/KmsPort';
 import type { FederatedSubject } from '../../domain/model/FederatedSubject';
 import type { CreateFederation, FederationCallbackRecord } from '../port/FederationRepository';
 import type { ProviderResolver } from './ProviderResolver';

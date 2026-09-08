@@ -1,4 +1,4 @@
-import type { AuditAccessInput } from '../../../../foundation/domain/AuditEntry';
+import type { AuditAccessInput } from '../../../../platform/error/AuditEntry';
 import { canonical, digest, immutable } from './AuditRecord';
 
 export class AccessRecord {

@@ -30,9 +30,15 @@ describe('generic audit reference query', () => {
         return { ...result(response.rows), rowCount: response.affectedRows ?? response.rows.length };
       };
       const port = new PgAuditReadPort();
-      const records = await withReadTransaction(query, (context) => port.records(context, {
-        scopes: ['mall:one'], references: [{ kind: 'object', type: 'journal', id: 'journal:one' }, { kind: 'subject', id: 'member:one' }],
-      }));
+      const records = await withReadTransaction(query, (context) =>
+        port.records(context, {
+          scopes: ['mall:one'],
+          references: [
+            { kind: 'object', type: 'journal', id: 'journal:one' },
+            { kind: 'subject', id: 'member:one' },
+          ],
+        })
+      );
       expect(records).toHaveLength(1);
       expect(records[0]).toMatchObject({ id: 'audit:one', operation: 'finance.post', object: { type: 'journal', id: 'journal:one' }, subject: { type: 'member', id: 'member:one' }, trace: 'trace:one' });
       await expect(withReadTransaction(query, (context) => port.records(context, { scopes: ['mall:one'], references: [{ kind: 'object', id: 'bad id' }] }))).rejects.toThrow('AUDIT_REFERENCE_QUERY_INVALID');

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "hash": "7985155f4ed97c07691d327316ca572f35d526bfc30a1b4c1d0d9454d897c30e",
+  "hash": "5e0f9e0392988840260989a3a247ed58da63c8347a1d244d26dc191cbee83cb6",
   "routes": [
     {
       "id": "authlogin",
@@ -779,6 +779,17 @@
       ]
     },
     {
+      "id": "storeworkcase",
+      "surface": "store",
+      "path": "/scopes/:scopeKind/:scopeId/support/:caseId",
+      "feature": "support",
+      "group": null,
+      "default": false,
+      "requirements": [
+        "MVPMALLSUPPORT"
+      ]
+    },
+    {
       "id": "storetasks",
       "surface": "store",
       "path": "/scopes/:scopeKind/:scopeId/tasks",
@@ -1011,6 +1022,17 @@
       ]
     },
     {
+      "id": "supplierproduct",
+      "surface": "supplier",
+      "path": "/scopes/:scopeKind/:scopeId/catalog/:productId",
+      "feature": "catalog",
+      "group": null,
+      "default": false,
+      "requirements": [
+        "MVPGROUPPOOL"
+      ]
+    },
+    {
       "id": "supplierconnections",
       "surface": "supplier",
       "path": "/scopes/:scopeKind/:scopeId/connections",
@@ -1113,6 +1135,17 @@
       "id": "suppliersupport",
       "surface": "supplier",
       "path": "/scopes/:scopeKind/:scopeId/support",
+      "feature": "support",
+      "group": null,
+      "default": false,
+      "requirements": [
+        "MVPGROUPSUPPORT"
+      ]
+    },
+    {
+      "id": "suppliercase",
+      "surface": "supplier",
+      "path": "/scopes/:scopeKind/:scopeId/support/:caseId",
       "feature": "support",
       "group": null,
       "default": false,
@@ -3614,10 +3647,10 @@
       "parent": null,
       "title": "今日任务",
       "order": 10,
-      "operation": "order.orders.read",
-      "owner": "order",
-      "permission": "order.read",
-      "capability": "order.orders.read",
+      "operation": "fulfillment.workitems.read",
+      "owner": "fulfillment",
+      "permission": "fulfillment.read",
+      "capability": "fulfillment.workitems.read",
       "featureFlags": [
         "MVPMALLORDER"
       ],
@@ -3637,10 +3670,10 @@
       "parent": null,
       "title": "接单与备货",
       "order": 20,
-      "operation": "order.orders.read",
-      "owner": "order",
-      "permission": "order.read",
-      "capability": "order.orders.read",
+      "operation": "fulfillment.workitems.read",
+      "owner": "fulfillment",
+      "permission": "fulfillment.read",
+      "capability": "fulfillment.workitems.read",
       "featureFlags": [
         "MVPMALLORDER"
       ],
@@ -3660,10 +3693,10 @@
       "parent": null,
       "title": "发货管理",
       "order": 30,
-      "operation": "order.orders.read",
-      "owner": "order",
-      "permission": "order.read",
-      "capability": "order.orders.read",
+      "operation": "fulfillment.workitems.read",
+      "owner": "fulfillment",
+      "permission": "fulfillment.read",
+      "capability": "fulfillment.workitems.read",
       "featureFlags": [
         "MVPMALLORDER"
       ],
@@ -3683,10 +3716,10 @@
       "parent": null,
       "title": "退货检验",
       "order": 35,
-      "operation": "order.aftersales.read",
-      "owner": "order",
-      "permission": "order.aftersale.read",
-      "capability": "order.aftersales.read",
+      "operation": "fulfillment.returns.read",
+      "owner": "fulfillment",
+      "permission": "fulfillment.read",
+      "capability": "fulfillment.returns.read",
       "featureFlags": [
         "MVPMALLORDER"
       ],
@@ -3856,6 +3889,29 @@
         "routeKey": "storeorderwork",
         "route": "/scopes/:scopeKind/:scopeId/orders/:orderId",
         "component": "order",
+        "placement": "contextual",
+        "empty": "hide"
+      }
+    },
+    {
+      "key": "storeworkcase",
+      "surface": "store",
+      "scope": "store",
+      "parent": "storesupportwork",
+      "title": "客服会话",
+      "order": 980,
+      "operation": "support.messages.read",
+      "owner": "support",
+      "permission": "support.message.read",
+      "capability": "support.messages.read",
+      "featureFlags": [
+        "MVPMALLSUPPORT"
+      ],
+      "experience": {
+        "icon": "support",
+        "routeKey": "storeworkcase",
+        "route": "/scopes/:scopeKind/:scopeId/support/:caseId",
+        "component": "support",
         "placement": "contextual",
         "empty": "hide"
       }
@@ -4235,10 +4291,10 @@
       "parent": null,
       "title": "待办任务",
       "order": 10,
-      "operation": "order.orders.read",
-      "owner": "order",
-      "permission": "order.read",
-      "capability": "order.orders.read",
+      "operation": "fulfillment.workitems.read",
+      "owner": "fulfillment",
+      "permission": "fulfillment.read",
+      "capability": "fulfillment.workitems.read",
       "featureFlags": [
         "MVPGROUPORDER"
       ],
@@ -4304,10 +4360,10 @@
       "parent": null,
       "title": "价格管理",
       "order": 35,
-      "operation": "pricing.offers.read",
-      "owner": "pricing",
-      "permission": "pricing.offer.read",
-      "capability": "pricing.offers.read",
+      "operation": "catalog.listings.read",
+      "owner": "catalog",
+      "permission": "catalog.listing.read",
+      "capability": "catalog.listings.read",
       "featureFlags": [
         "MVPGROUPPOOL"
       ],
@@ -4327,10 +4383,10 @@
       "parent": null,
       "title": "订单处理",
       "order": 40,
-      "operation": "order.orders.read",
-      "owner": "order",
-      "permission": "order.read",
-      "capability": "order.orders.read",
+      "operation": "fulfillment.workitems.read",
+      "owner": "fulfillment",
+      "permission": "fulfillment.read",
+      "capability": "fulfillment.workitems.read",
       "featureFlags": [
         "MVPGROUPORDER"
       ],
@@ -4350,10 +4406,10 @@
       "parent": null,
       "title": "发货管理",
       "order": 50,
-      "operation": "order.orders.read",
-      "owner": "order",
-      "permission": "order.read",
-      "capability": "order.orders.read",
+      "operation": "fulfillment.workitems.read",
+      "owner": "fulfillment",
+      "permission": "fulfillment.read",
+      "capability": "fulfillment.workitems.read",
       "featureFlags": [
         "MVPGROUPORDER"
       ],
@@ -4373,10 +4429,10 @@
       "parent": null,
       "title": "退货处理",
       "order": 60,
-      "operation": "order.aftersales.read",
-      "owner": "order",
-      "permission": "order.aftersale.read",
-      "capability": "order.aftersales.read",
+      "operation": "fulfillment.returns.read",
+      "owner": "fulfillment",
+      "permission": "fulfillment.read",
+      "capability": "fulfillment.returns.read",
       "featureFlags": [
         "MVPGROUPORDER"
       ],
@@ -4524,6 +4580,52 @@
         "route": "/scopes/:scopeKind/:scopeId/account",
         "component": "account",
         "placement": "primary",
+        "empty": "hide"
+      }
+    },
+    {
+      "key": "supplierproduct",
+      "surface": "supplier",
+      "scope": "supplier",
+      "parent": "suppliercatalog",
+      "title": "商品详情",
+      "order": 910,
+      "operation": "catalog.product.detail.read",
+      "owner": "catalog",
+      "permission": "catalog.product.read",
+      "capability": "catalog.product.detail.read",
+      "featureFlags": [
+        "MVPGROUPPOOL"
+      ],
+      "experience": {
+        "icon": "product",
+        "routeKey": "supplierproduct",
+        "route": "/scopes/:scopeKind/:scopeId/catalog/:productId",
+        "component": "catalog",
+        "placement": "contextual",
+        "empty": "hide"
+      }
+    },
+    {
+      "key": "suppliercase",
+      "surface": "supplier",
+      "scope": "supplier",
+      "parent": "suppliersupport",
+      "title": "客服会话",
+      "order": 920,
+      "operation": "support.messages.read",
+      "owner": "support",
+      "permission": "support.message.read",
+      "capability": "support.messages.read",
+      "featureFlags": [
+        "MVPGROUPSUPPORT"
+      ],
+      "experience": {
+        "icon": "support",
+        "routeKey": "suppliercase",
+        "route": "/scopes/:scopeKind/:scopeId/support/:caseId",
+        "component": "support",
+        "placement": "contextual",
         "empty": "hide"
       }
     }

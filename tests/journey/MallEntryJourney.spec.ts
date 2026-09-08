@@ -17,5 +17,5 @@ journey('MVPGROUPAPPLICATION', {
   workstation: 'mallentry',
   operations: entryOperations,
   tables: entryTables,
-  event: 'experience.published',
+  event: 'experience.release.activated',
 });

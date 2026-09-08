@@ -44,7 +44,9 @@ const redactionSource =
   `export const TELEMETRY_SLO = Object.freeze(${JSON.stringify(telemetry.slo, null, 2)} as const);\n\n` +
   `export const TELEMETRY_SERVICE_LEVELS = Object.freeze(${JSON.stringify(serviceLevels, null, 2)} as const);\n\n` +
   `export const TELEMETRY_ALERTS = Object.freeze(${JSON.stringify(telemetry.alerts, null, 2)} as const);\n\n` +
-  `export const TELEMETRY_SAMPLING = Object.freeze(${JSON.stringify(telemetry.sampling, null, 2)} as const);\n`;
+  `export const TELEMETRY_SAMPLING = Object.freeze(${JSON.stringify(telemetry.sampling, null, 2)} as const);\n\n` +
+  `export const TELEMETRY_RETENTION = Object.freeze(${JSON.stringify(telemetry.retention, null, 2)} as const);\n\n` +
+  `export const TELEMETRY_EXPORT = Object.freeze(${JSON.stringify(telemetry.export, null, 2)} as const);\n`;
 await emit(resolve(root, 'packages/telemetry/src/RedactionCatalog.ts'), redactionSource);
 
 const origins = Object.freeze({ api: origin(network.routes.api.host), ...Object.fromEntries(clients.clients.map((client) => [client.id, origin(network.routes[client.route].host)])) });
@@ -313,24 +315,44 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
       || (level.unit === 'percent' && telemetryDocument.slo[level.targetKey] >= 100)) throw new Error(`TELEMETRY_SERVICE_LEVEL_INVALID:${id}`);
   }
   if (Object.keys(telemetryDocument.serviceLevels ?? {}).length < 1) throw new Error('TELEMETRY_SERVICE_LEVEL_MISSING');
+  const alertFields = 'dashboard,measure,mitigation,owner,recentChanges,runbook,severity,signal,threshold,title,traceQuery,windowSeconds';
+  const dashboards = new Set(['identity', 'salechain', 'transaction', 'voucher', 'finance', 'provider', 'runtime', 'clients']);
   for (const [id, rule] of Object.entries(telemetryDocument.alerts ?? {})) {
     if (!/^[a-z][a-z0-9]*$/.test(id)
-      || Object.keys(rule ?? {}).sort().join(',') !== 'measure,owner,runbook,severity,signal,threshold,title,windowSeconds'
+      || Object.keys(rule ?? {}).sort().join(',') !== alertFields
       || typeof rule.title !== 'string' || !rule.title.trim()
       || !/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+$/.test(rule.signal)
-      || !['count', 'percent', 'burnrate'].includes(rule.measure)
+      || !['count', 'percent', 'burnrate', 'inversepercent', 'failurepercent', 'seconds'].includes(rule.measure)
       || !Number.isFinite(rule.threshold) || rule.threshold < 0
       || !Number.isSafeInteger(rule.windowSeconds) || rule.windowSeconds < 60 || rule.windowSeconds > telemetryBuffer.retentionSeconds
       || !['warning', 'critical'].includes(rule.severity)
       || !/^[a-z][a-z0-9]*$/.test(rule.owner)
-      || !/^docs\/operations\/[a-z0-9]+\.md$/.test(rule.runbook)) throw new Error(`TELEMETRY_ALERT_INVALID:${id}`);
+      || !/^docs\/operations\/[a-z0-9]+\.md$/.test(rule.runbook)
+      || !dashboards.has(rule.dashboard)
+      || !/^[a-z][a-z0-9]*$/.test(rule.recentChanges)
+      || !/^[a-z][a-z0-9]*$/.test(rule.traceQuery)
+      || !/^[a-z][a-z0-9]*$/.test(rule.mitigation)) throw new Error(`TELEMETRY_ALERT_INVALID:${id}`);
   }
-  if (Object.keys(telemetryDocument.alerts ?? {}).length < 1) throw new Error('TELEMETRY_ALERT_MISSING');
-  for (const metric of ['approval', 'voucherbatch', 'importing', 'reconciliation', 'providercapability', 'webvitals']) {
+  const requiredAlerts = ['servicelevelburn', 'paymentunknown', 'inventoryconflict', 'ledgerimbalance', 'voucherbatchfailure', 'importfailure', 'outboxbacklog', 'providercapabilityfailure', 'releasefailure', 'securityincident'];
+  if (requiredAlerts.some((id) => telemetryDocument.alerts?.[id] === undefined)) throw new Error('TELEMETRY_ALERT_MISSING');
+  for (const metric of ['operation', 'job', 'provider', 'resource', 'approval', 'voucherbatch', 'importing', 'reconciliation', 'providercapability', 'webvitals']) {
     const dimensions = telemetryDocument.metrics?.[metric];
     if (!Array.isArray(dimensions) || dimensions.length === 0 || new Set(dimensions).size !== dimensions.length) throw new Error(`TELEMETRY_METRIC_INVALID:${metric}`);
   }
   for (const [name, ratio] of Object.entries(telemetryDocument.sampling ?? {})) if (typeof ratio !== 'number' || ratio < 0 || ratio > 1) throw new Error(`TELEMETRY_SAMPLING_INVALID:${name}`);
+  const retention = telemetryDocument.retention;
+  if (Object.keys(retention ?? {}).sort().join(',') !== 'errorTraceDays,highRiskTraceDays,metricsDays,operationalLogDays,securityLogDays,successfulTraceDays'
+    || Object.values(retention ?? {}).some((days) => !Number.isSafeInteger(days) || days < 1)
+    || retention.errorTraceDays < retention.successfulTraceDays
+    || retention.highRiskTraceDays < retention.errorTraceDays
+    || retention.securityLogDays < retention.operationalLogDays) throw new Error('TELEMETRY_RETENTION_INVALID');
+  const telemetryExport = telemetryDocument.export;
+  if (Object.keys(telemetryExport ?? {}).sort().join(',') !== 'metricUnknownLabel,onRedactionFailure,piiAllowed,redactionOrder,traceIdentifiersAs'
+    || telemetryExport.redactionOrder !== 'before-buffer-and-export'
+    || telemetryExport.onRedactionFailure !== 'drop-and-alert'
+    || telemetryExport.piiAllowed !== false
+    || telemetryExport.metricUnknownLabel !== 'reject-and-alert'
+    || telemetryExport.traceIdentifiersAs !== 'exemplar') throw new Error('TELEMETRY_EXPORT_INVALID');
   if (
     networkDocument?.version !== 1 ||
     networkDocument.owner !== 'platform' ||

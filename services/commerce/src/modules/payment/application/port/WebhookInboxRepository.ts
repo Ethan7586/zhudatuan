@@ -1,5 +1,5 @@
 import type { PaymentScene } from '../../public';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 export type VerifiedPaymentWebhook =
   | Readonly<{

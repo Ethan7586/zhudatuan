@@ -1,7 +1,7 @@
 import type { IdentityEnrollmentsCompleteBody } from '@shop/contract';
-import { ApplicationError } from '../../../../foundation/domain/ApplicationError';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { CipherEnvelope } from '../../../../foundation/application/KmsPort';
+import { ApplicationError } from '../../../../platform/error/ApplicationError';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { CipherEnvelope } from '../../../../pipeline/KmsPort';
 import type { AuthTransaction } from '../../domain/model/AuthTransaction';
 
 export interface EnrollmentDraft {

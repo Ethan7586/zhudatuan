@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CheckoutExperienceRelease, CheckoutExperiencePort } from '../../public/CheckoutExperiencePort';
 export class PgCheckoutExperiencePort implements CheckoutExperiencePort {
   private readonly transactions = new PgTransactionAccess();

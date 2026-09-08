@@ -1,4 +1,4 @@
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ManageEntitlement } from '../../application/service/ManageEntitlement';
 import type { EntitlementInput } from '../../public/Entitlement';
 

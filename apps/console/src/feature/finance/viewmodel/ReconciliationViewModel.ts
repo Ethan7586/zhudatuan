@@ -1,25 +1,18 @@
 import { presentError, queryCondition, safeQueryError, type Receipt } from '@shop/presentation';
 import { OP_FINANCE_FACETS_READ, OP_FINANCE_RECONCILIATIONS_READ } from '@shop/contract/ids';
-import { FINANCE_RECONCILIATION_STATES } from '@shop/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FinanceDependencies } from '../../../app/Dependencies';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import { defineQueryState, integerQuery, optionalQuery, trimmedQuery } from '../../../shared/query/QueryState';
 import { canUseOperation } from '../../../shared/security/OperationAccess';
-import { defaultFinanceColumns, financeOperations, type FinanceColumnKey, type FinanceReconciliation, type FinanceReconciliationAction, type FinanceReconciliationQuery } from '../model/Finance';
+import { defaultFinanceColumns, financeOperations, type FinanceColumnKey, type FinanceReconciliation, type FinanceReconciliationAction } from '../model/Finance';
 import { availableReconciliationCommands, reconciliationMessage, validateReconciliationCommand } from '../model/ReconciliationPolicy';
 import { financeFacetKey, financeReconciliationKey } from './FinanceQueryKey';
 import { useFinancePrefetch } from './FinancePrefetch';
 import { useFinanceNavigationViewModel } from './NavigationViewModel';
-
-const removedQueryKeys = ['q', 'tab'] as const;
-const reconciliationStates = FINANCE_RECONCILIATION_STATES;
-const reconciliationQuery = defineQueryState({
-  cursor: optionalQuery(), reconPeriod: trimmedQuery(), channel: trimmedQuery(), mall: trimmedQuery(), status: trimmedQuery(), difference: trimmedQuery(),
-  limit: integerQuery(50, [20, 50]), selected: optionalQuery(255), item: optionalQuery(255), q: optionalQuery(255), tab: optionalQuery(64),
-});
+import { reconciliationInput, reconciliationQuery, reconciliationStates, removedReconciliationQueryKeys } from './ReconciliationQuery';
+import { togglePageSelection, toggleSelection } from './ReconciliationSelection';
 
 export function useReconciliationViewModel(context: ConsoleContext, dependencies: FinanceDependencies, requestStepup: () => void) {
   const [search, setSearch] = useSearchParams();
@@ -39,18 +32,9 @@ export function useReconciliationViewModel(context: ConsoleContext, dependencies
   const period = url.reconPeriod;
   const provider = url.channel;
   const mall = url.mall;
-  const stateValue = url.status;
-  const state = reconciliationStates.find((value) => value === stateValue);
+  const state = reconciliationStates.find((value) => value === url.status);
   const differenceType = url.difference;
-  const queryInput: FinanceReconciliationQuery = {
-    limit: url.limit as 20 | 50,
-    ...(cursor === undefined ? {} : { cursor }),
-    ...(period === undefined ? {} : { period }),
-    ...(provider === undefined ? {} : { provider }),
-    ...(mall === undefined ? {} : { mall }),
-    ...(state === undefined ? {} : { state }),
-    ...(differenceType === undefined ? {} : { differenceType }),
-  };
+  const queryInput = reconciliationInput(url);
   const facetAllowed = canUseOperation(context, OP_FINANCE_FACETS_READ);
   const readAllowed = canUseOperation(context, OP_FINANCE_RECONCILIATIONS_READ);
   const facetQuery = useQuery({ queryKey: financeFacetKey(context), queryFn: ({ signal }) => dependencies.readFacets.execute(context, signal), enabled: facetAllowed, staleTime: 30_000 });
@@ -67,7 +51,7 @@ export function useReconciliationViewModel(context: ConsoleContext, dependencies
   useEffect(() => {
     const scopeChanged = previousScope.current !== scope;
     previousScope.current = scope;
-    const stale = removedQueryKeys.some((key) => search.has(key)) || (search.has('limit') && url.limit === 50);
+    const stale = removedReconciliationQueryKeys.some((key) => search.has(key)) || (search.has('limit') && url.limit === 50);
     if (!scopeChanged && !stale) return;
     setSearch(
       (current) => reconciliationQuery.patch(current, { q: undefined, tab: undefined, limit: url.limit, ...(scopeChanged ? { cursor: undefined, selected: undefined, item: undefined } : {}) }),
@@ -136,31 +120,9 @@ export function useReconciliationViewModel(context: ConsoleContext, dependencies
     setIdentity(dependencies.createIdentity());
     setReceipt(undefined);
   };
-  const toggleRow = (id: string) =>
-    setSelectedRows((current) => {
-      const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  const toggleAll = () =>
-    setSelectedRows((current) => {
-      if (!page) return current;
-      const next = new Set(current);
-      const all = page.items.every((row) => next.has(row.id));
-      page.items.forEach((row) => {
-        if (all) next.delete(row.id);
-        else next.add(row.id);
-      });
-      return next;
-    });
-  const toggleColumn = (key: FinanceColumnKey) =>
-    setVisibleColumns((current) => {
-      const next = new Set(current);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+  const toggleRow = (id: string) => setSelectedRows((current) => toggleSelection(current, id));
+  const toggleAll = () => setSelectedRows((current) => togglePageSelection(current, page?.items.map((row) => row.id) ?? []));
+  const toggleColumn = (key: FinanceColumnKey) => setVisibleColumns((current) => toggleSelection(current, key));
   const setCursor = (nextCursor?: string) =>
     updateSearch({ cursor: nextCursor, selected: undefined, item: undefined });
   const setLimit = (limit: 20 | 50) =>

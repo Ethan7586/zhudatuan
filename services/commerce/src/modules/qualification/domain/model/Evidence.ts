@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export interface EvidenceObject {
   readonly reference: string;
@@ -48,8 +48,7 @@ export class Evidence {
   }
 
   static verified(input: Readonly<{ id: string; kind: EvidenceKind; reference: string; sha256: string; actor: string; now: string }>, metadata: EvidenceObject): Evidence {
-    if (metadata.reference !== input.reference || metadata.sha256 !== input.sha256 || metadata.scan !== 'clean' || metadata.retentionUntil === null ||
-      Date.parse(metadata.retentionUntil) <= Date.parse(input.now)) {
+    if (metadata.reference !== input.reference || metadata.sha256 !== input.sha256 || metadata.scan !== 'clean' || metadata.retentionUntil === null || Date.parse(metadata.retentionUntil) <= Date.parse(input.now)) {
       throw new DomainError('VALIDATION_FAILED', { field: 'evidence', reason: 'OBJECT_INTEGRITY_MISMATCH' });
     }
     return new Evidence({ ...input, state: 'verified', verifiedAt: input.now, verifiedBy: input.actor });

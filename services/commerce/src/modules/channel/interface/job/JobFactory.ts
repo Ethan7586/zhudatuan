@@ -1,10 +1,10 @@
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import { PgDeadletterStore } from '../../../../adapter/database/PgDeadletterStore';
-import { EXTENSION_REGISTRY } from '../../../../bootstrap/ExtensionRegistry';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { KMS_CLIENT } from '../../../../foundation/application/KmsPort';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import { PgDeadletterStore } from '../../../../platform/database/PgDeadletterStore';
+import { EXTENSION_REGISTRY } from '../../../../composition/ExtensionRegistry';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { KMS_CLIENT } from '../../../../pipeline/KmsPort';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { ApplyChannelWebhook } from '../../application/process/ApplyChannelWebhook';
 import { PgChannelWebhookRepository } from '../../infrastructure/persistence/PgChannelWebhookRepository';
 import { PgChannelWebhookEventPort } from '../../infrastructure/persistence/PgChannelWebhookEventPort';

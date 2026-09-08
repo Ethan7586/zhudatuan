@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { IdentityProviderType } from '@shop/config/server';
 
 export interface FederatedSubjectValue {
@@ -20,11 +20,7 @@ export class FederatedSubject implements FederatedSubjectValue {
   constructor(value: FederatedSubjectValue) {
     const subject = value.subject.normalize('NFKC').trim();
     if (!subject || subject.length > 512 || !value.tenant || value.tenant.length > 512 || !Number.isSafeInteger(value.assurance) || value.assurance < 1 || value.assurance > 3) invalid();
-    const claims = Object.fromEntries(
-      Object.entries(value.claims).filter(
-        ([key, item]) => ['displayname', 'email', 'phone', 'openid', 'unionid'].includes(key) && typeof item === 'string' && item.length <= 255
-      )
-    );
+    const claims = Object.fromEntries(Object.entries(value.claims).filter(([key, item]) => ['displayname', 'email', 'phone', 'openid', 'unionid'].includes(key) && typeof item === 'string' && item.length <= 255));
     this.provider = value.provider;
     this.instance = value.instance;
     this.tenant = value.tenant;

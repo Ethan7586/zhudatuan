@@ -1,8 +1,8 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { BudgetExpiryRepository } from '../../application/port/BudgetExpiryRepository';
 import { Budget } from '../../domain/model/Budget';
 import type { MarketingRefund, MarketingReservation, MarketingReservePort } from '../../public';
@@ -58,7 +58,7 @@ export class PgMarketingReservePort implements MarketingReservePort, BudgetExpir
   async commit(context: WriteTransactionContext, order: string): Promise<void> {
     const database = this.transactions.database(context);
     const rows = await database.query<ReservationRow>(
-      `update marketing.redemption redemption set state='committed',version=version+1,updated_at=clock_timestamp()
+      `update marketing.redemption redemption set state='committed',version=redemption.version+1,updated_at=clock_timestamp()
        from marketing.campaign campaign where redemption.campaign_id=campaign.id and redemption.order_id=$1 and redemption.state='reserved'
        returning redemption.id,redemption.campaign_id,redemption.member_id,redemption.order_id,redemption.amount_minor::float8 amount_minor,
        redemption.restored_minor::float8 restored_minor,redemption.state,redemption.campaign_version::integer,redemption.expires_at,
@@ -114,7 +114,7 @@ export class PgMarketingReservePort implements MarketingReservePort, BudgetExpir
   private async releaseRows(context: WriteTransactionContext, order: string, expiredAt: Date | null): Promise<void> {
     const database = this.transactions.database(context);
     const rows = await database.query<ReservationRow>(
-      `update marketing.redemption redemption set state='released',version=version+1,updated_at=clock_timestamp()
+      `update marketing.redemption redemption set state='released',version=redemption.version+1,updated_at=clock_timestamp()
        from marketing.campaign campaign where redemption.campaign_id=campaign.id and redemption.order_id=$1 and redemption.state='reserved'
        and ($2::timestamptz is null or redemption.expires_at<=$2) returning redemption.id,redemption.campaign_id,redemption.member_id,
        redemption.order_id,redemption.amount_minor::float8 amount_minor,redemption.restored_minor::float8 restored_minor,

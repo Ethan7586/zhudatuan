@@ -1,9 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ObjectStore, UploadAuthorization } from '../../../runtime/public/ObjectPort';
 import { retentionUntil as objectRetentionUntil } from '@shop/kernel';
-import { bodyRecord, integerField, textField, type OperationWireInput } from '../../../../foundation/application/Validation';
+import { bodyRecord, integerField, textField, type OperationWireInput } from '../../../../pipeline/Validation';
 import type { EvidenceKind } from '../../domain/model/Evidence';
 
 type EvidenceContentType = 'image/jpeg' | 'image/png' | 'application/pdf';
@@ -23,7 +23,10 @@ export class QualificationEvidence {
     const body = bodyRecord(input);
     const kind = textField(body, 'kind') as EvidenceKind;
     if (!['license', 'certificate', 'authorization', 'agreement', 'other'].includes(kind)) invalid('kind');
-    const name = textField(body, 'name').normalize('NFKC').replace(/[\u0000-\u001f\u007f/\\]/g, '').trim();
+    const name = textField(body, 'name')
+      .normalize('NFKC')
+      .replace(/[\u0000-\u001f\u007f/\\]/g, '')
+      .trim();
     const contentType = textField(body, 'contentType') as EvidenceContentType;
     if (!['image/jpeg', 'image/png', 'application/pdf'].includes(contentType)) invalid('contentType');
     const size = integerField(body, 'sizeBytes', 1);
@@ -33,8 +36,14 @@ export class QualificationEvidence {
     const extension = extensionFor(name, contentType);
     const owner = createHash('sha256').update(scope).digest('hex').slice(0, 32);
     const evidenceId = `evidence:${randomUUID()}`;
-    const upload = await this.objects.authorizeUpload({ path: `qualification/${owner}/${randomUUID()}${extension}`, contentType, size, sha256,
-      expiresIn: RUNTIME_LIMITS.upload.authorizationSeconds, retentionUntil: objectRetentionUntil(RUNTIME_LIMITS.upload.retentionDays.qualification) });
+    const upload = await this.objects.authorizeUpload({
+      path: `qualification/${owner}/${randomUUID()}${extension}`,
+      contentType,
+      size,
+      sha256,
+      expiresIn: RUNTIME_LIMITS.upload.authorizationSeconds,
+      retentionUntil: objectRetentionUntil(RUNTIME_LIMITS.upload.retentionDays.qualification),
+    });
     return Object.freeze({ evidenceId, kind, sha256, objectId: upload.reference, upload });
   }
 }

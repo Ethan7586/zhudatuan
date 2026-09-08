@@ -67,7 +67,11 @@ function validateProjectionFilter(report: Exclude<ExportReport, 'metrics'>, sour
     for (const key of ['from', 'to'] as const) if (source[key] !== undefined && !isoTime(source[key])) throw new Error('REPORT_FILTER_INVALID');
     if (typeof source.from === 'string' && typeof source.to === 'string' && source.from >= source.to) throw new Error('REPORT_FILTER_INVALID');
     if (source.timezone !== undefined) {
-      try { new Intl.DateTimeFormat('en-US', { timeZone: source.timezone as string }).format(); } catch { throw new Error('REPORT_FILTER_INVALID'); }
+      try {
+        new Intl.DateTimeFormat('en-US', { timeZone: source.timezone as string }).format();
+      } catch {
+        throw new Error('REPORT_FILTER_INVALID');
+      }
     }
   } else {
     if (source.currency !== undefined && !/^[A-Z]{3}$/.test(source.currency as string)) throw new Error('REPORT_FILTER_INVALID');

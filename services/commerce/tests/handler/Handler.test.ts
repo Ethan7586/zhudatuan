@@ -19,8 +19,8 @@ interface OperationAuthority {
 const root = resolve(import.meta.dirname, '../../../..');
 const authority = parse(readFileSync(join(root, 'packages/contract/definitions/operations.yml'), 'utf8'), { merge: true }) as { operations: readonly OperationAuthority[] };
 const operations = authority.operations;
-const executor = readFileSync(join(root, 'services/commerce/src/foundation/application/OperationExecutor.ts'), 'utf8');
-const pipeline = readFileSync(join(root, 'services/commerce/src/foundation/application/OperationPipeline.ts'), 'utf8');
+const executor = readFileSync(join(root, 'services/commerce/src/pipeline/OperationExecutor.ts'), 'utf8');
+const pipeline = readFileSync(join(root, 'services/commerce/src/pipeline/OperationPipeline.ts'), 'utf8');
 
 describe('single-use-case Handler contract', () => {
   it('covers the complete authoritative operation catalog', () => {

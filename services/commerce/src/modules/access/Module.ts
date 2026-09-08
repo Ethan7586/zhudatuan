@@ -2,7 +2,7 @@ import { PgMembershipReadPort } from './infrastructure/persistence/PgMembershipR
 import { PgAuthorizationPort } from './infrastructure/persistence/PgAuthorizationPort';
 import { PgActionProofPort } from './infrastructure/persistence/PgActionProofPort';
 
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { defineModule } from '../../composition/DefinedModule';
 import { Manifest } from './Manifest';
 import { AccessPort } from './application/service/AccessPort';
 import { IDENTITY_ACCESS_PORT } from './public/IdentityAccessPort';
@@ -18,7 +18,7 @@ import { MEMBERSHIP_READ_PORT } from './public/MembershipReadPort';
 import { PgAccessRepository } from './infrastructure/persistence/PgAccessRepository';
 import { PgAuthorizationRepository } from './infrastructure/persistence/PgAuthorizationRepository';
 import { AccessVersionPublisher } from './application/service/AccessVersionPublisher';
-import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
+import type { ModuleContext } from '../../composition/ModuleRegistry';
 import { DelegationPolicy } from './domain/policy/DelegationPolicy';
 import { ActivateMembership } from './application/service/ActivateMembership';
 import { CreateInvitationGrant } from './application/service/CreateInvitationGrant';

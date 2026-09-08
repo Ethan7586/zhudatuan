@@ -37,7 +37,19 @@ describe('Audit integrity records', () => {
     const command = new AuditRecord('audit:00000000-0000-4000-8000-000000000003', write, write.evidence, null, '2026-08-21T00:00:00.000Z');
     const access = new AccessRecord(
       'access:00000000-0000-4000-8000-000000000004',
-      { scope: 'mall:1', actor: 'principal:1', actorType: 'console', request: 'request:2', operation: 'member.profile.read', subject: { type: 'member', id: 'principal:1' }, object: { type: 'member', id: 'member:1' }, outcome: 'succeeded', reason: 'profile support', fields: { projection: ['id'] }, trace: 'trace:2' },
+      {
+        scope: 'mall:1',
+        actor: 'principal:1',
+        actorType: 'console',
+        request: 'request:2',
+        operation: 'member.profile.read',
+        subject: { type: 'member', id: 'principal:1' },
+        object: { type: 'member', id: 'member:1' },
+        outcome: 'succeeded',
+        reason: 'profile support',
+        fields: { projection: ['id'] },
+        trace: 'trace:2',
+      },
       { projection: ['id'] },
       command.recordHash,
       '2026-08-21T00:00:01.000Z'

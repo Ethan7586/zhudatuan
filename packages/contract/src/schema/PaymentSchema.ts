@@ -51,8 +51,8 @@ export const PAYMENT_OUTPUT_SCHEMAS = {
     strictObject({ intentId: string(), orderId: string(), paymentId: string(), state: literal(['preparing', 'recovery', 'failed']), action: nullSchema(), expiresAt: isoUtc, retryAfter: unsigned }),
   ]),
   PaymentIntentsReadOutput: union([
-    strictObject({ intentId: string(), orderId: string(), paymentId: string(), state: literal('captured'), action: nullSchema(), expiresAt: isoUtc }),
-    strictObject({ intentId: string(), orderId: string(), paymentId: string(), state: literal('pending'), action: record(string(), string()), expiresAt: isoUtc }),
+    strictObject({ intentId: string(), orderId: string(), paymentId: string(), state: literal('captured'), action: nullSchema(), expiresAt: isoUtc, retryAfter: literal(0) }),
+    strictObject({ intentId: string(), orderId: string(), paymentId: string(), state: literal('pending'), action: record(string(), string()), expiresAt: isoUtc, retryAfter: unsigned }),
     strictObject({ intentId: string(), orderId: string(), paymentId: string(), state: literal(['preparing', 'recovery', 'failed', 'expired']), action: nullSchema(), expiresAt: isoUtc, retryAfter: unsigned }),
   ]),
   PaymentRefundsRequestOutput: refund,

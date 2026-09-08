@@ -51,10 +51,33 @@ export class NavigationNode implements NavigationNodeValue {
     this.children = Object.freeze((value.children ?? []).map((child) => new NavigationNode(child)));
     Object.freeze(this);
   }
+
+  toValue(): NavigationNodeValue {
+    return Object.freeze({
+      key: this.key,
+      title: this.title,
+      parent: this.parent,
+      order: this.order,
+      operation: this.operation,
+      experience: Object.freeze({
+        ...this.experience,
+        breadcrumbs: Object.freeze(this.experience.breadcrumbs.map((item) => Object.freeze({ ...item }))),
+      }),
+      children: Object.freeze(this.children.map((child) => (child instanceof NavigationNode ? child.toValue() : new NavigationNode(child).toValue()))),
+    });
+  }
 }
 
 function validateExperience(value: NavigationExperience, key: string, title: string): void {
-  if (!/^[a-z][a-z0-9]*$/.test(value.icon) || !validKey(value.routeKey) || !value.route.startsWith('/') || value.route.includes('?') || value.route.includes('#') || !validKey(value.component) || !['primary', 'secondary', 'contextual'].includes(value.placement)) {
+  if (
+    !/^[a-z][a-z0-9]*$/.test(value.icon) ||
+    !validKey(value.routeKey) ||
+    !value.route.startsWith('/') ||
+    value.route.includes('?') ||
+    value.route.includes('#') ||
+    !validKey(value.component) ||
+    !['primary', 'secondary', 'contextual'].includes(value.placement)
+  ) {
     throw new Error('NAVIGATION_NODE_EXPERIENCE_INVALID');
   }
   if ((value.disabled && !chineseTitle(value.disabledReason ?? '')) || (!value.disabled && value.disabledReason !== null)) throw new Error('NAVIGATION_NODE_DISABLED_REASON_INVALID');

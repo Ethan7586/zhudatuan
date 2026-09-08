@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { TransactionManager } from '../../../foundation/persistence/TransactionManager';
+import type { TransactionManager } from '../../../platform/database/TransactionManager';
 import type { ApprovalPort } from '../../approval/public';
 import type { CatalogRiskDecisionPort } from '../../catalog/public';
 import { ApplyQualificationRisk } from '../application/process/ApplyQualificationRisk';
@@ -12,10 +12,21 @@ const transactions = { write: vi.fn(async (_options, operation) => operation(con
 
 function action(value: Partial<RiskActionRecord> = {}): RiskActionRecord {
   return Object.freeze({
-    id: 'riskaction:one', decision: 'riskdecision:one', scope: 'mall:one', kind: 'suggestunlist',
-    target: Object.freeze({ module: 'catalog', type: 'resource', id: 'listing:one' }), rationale: 'risk.deny.catalog',
-    approvalRequired: true, approvalInstance: null, approvalProof: null, evidenceHash: 'a'.repeat(64), state: 'approvalrequired', version: 1,
-    requester: 'member:one', expiresAt: '2099-01-01T00:00:00.000Z', ...value,
+    id: 'riskaction:one',
+    decision: 'riskdecision:one',
+    scope: 'mall:one',
+    kind: 'suggestunlist',
+    target: Object.freeze({ module: 'catalog', type: 'resource', id: 'listing:one' }),
+    rationale: 'risk.deny.catalog',
+    approvalRequired: true,
+    approvalInstance: null,
+    approvalProof: null,
+    evidenceHash: 'a'.repeat(64),
+    state: 'approvalrequired',
+    version: 1,
+    requester: 'member:one',
+    expiresAt: '2099-01-01T00:00:00.000Z',
+    ...value,
   });
 }
 
@@ -38,8 +49,12 @@ describe('ApplyRiskAction', () => {
     const execute = vi.fn().mockResolvedValue(undefined);
     await new ApplyRiskAction(transactions, repository, {} as ApprovalPort, { execute } as unknown as CatalogRiskDecisionPort).apply(approved.id, execution());
     expect(execute).toHaveBeenCalledWith(context, {
-      decision: approved.decision, scope: approved.scope, listing: approved.target.id,
-      proof: approved.approvalProof, action: 'suggestunlist', evidenceHash: approved.evidenceHash,
+      decision: approved.decision,
+      scope: approved.scope,
+      listing: approved.target.id,
+      proof: approved.approvalProof,
+      action: 'suggestunlist',
+      evidenceHash: approved.evidenceHash,
     });
     expect(applied).toHaveBeenCalledWith(context, approved.id, approved.version);
   });

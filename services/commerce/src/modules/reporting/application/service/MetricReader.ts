@@ -1,8 +1,8 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import { limit } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationReply } from '../../../../pipeline/OperationHandler';
+import { limit } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { CockpitSummary, Metric, ReportDimension, ReportPeriod } from '../../domain/model/Metric';
 import { ReportSnapshot, type ReportQuery } from '../../domain/model/ReportSnapshot';
 import { timezoneName } from '../../domain/value/Dimension';
@@ -31,31 +31,38 @@ export class MetricReader {
         cursorId: resumed?.row ?? null,
         fetch: requested + 1,
       }),
-      dimension === null ? this.reports.cockpit(context.transaction, {
-        scope,
-        period: selectedPeriod,
-        application,
-        watermarkAt: snapshot.watermark.occurredAt,
-        watermarkVersion: snapshot.watermark.version,
-        snapshotAt: snapshot.generatedAt,
-      }) : Promise.resolve(undefined),
+      dimension === null
+        ? this.reports.cockpit(context.transaction, {
+            scope,
+            period: selectedPeriod,
+            application,
+            watermarkAt: snapshot.watermark.occurredAt,
+            watermarkVersion: snapshot.watermark.version,
+            snapshotAt: snapshot.generatedAt,
+          })
+        : Promise.resolve(undefined),
     ]);
     const more = rows.length > requested;
     const visible = more ? rows.slice(0, requested) : rows;
     const last = visible.at(-1);
     const items = visible.map(({ cursorTime: _time, cursorId: _id, ...metric }) => present(metric, scope, snapshot.watermark.occurredAt));
     const nextCursor = more && last ? snapshot.cursor(last.cursorTime, last.cursorId) : undefined;
-    const body = { items, count: items.length, ...(nextCursor ? { nextCursor } : {}), snapshot: snapshot.toJSON(),
-      ...(summary === undefined ? {} : { summary: presentSummary(summary, snapshot.watermark.occurredAt) }) };
+    const body = { items, count: items.length, ...(nextCursor ? { nextCursor } : {}), snapshot: snapshot.toJSON(), ...(summary === undefined ? {} : { summary: presentSummary(summary, snapshot.watermark.occurredAt) }) };
     return { status: 200, body: body as OperationOutputFor<TKey> };
   }
 }
 
 function present<T extends Metric>(metric: T, scope: string, watermark: string): T {
-  if (metric.scope !== scope || metric.definition.owner !== 'reporting' || !Number.isFinite(metric.value) ||
-    Number.isNaN(Date.parse(metric.watermark)) || Date.parse(metric.watermark) > Date.parse(watermark) ||
-    Number.isNaN(Date.parse(metric.period.from)) || Number.isNaN(Date.parse(metric.period.to)) ||
-    Date.parse(metric.period.from) >= Date.parse(metric.period.to)) {
+  if (
+    metric.scope !== scope ||
+    metric.definition.owner !== 'reporting' ||
+    !Number.isFinite(metric.value) ||
+    Number.isNaN(Date.parse(metric.watermark)) ||
+    Date.parse(metric.watermark) > Date.parse(watermark) ||
+    Number.isNaN(Date.parse(metric.period.from)) ||
+    Number.isNaN(Date.parse(metric.period.to)) ||
+    Date.parse(metric.period.from) >= Date.parse(metric.period.to)
+  ) {
     throw new Error('REPORT_METRIC_RESULT_INVALID');
   }
   timezoneName(metric.period.timezone);
@@ -66,8 +73,7 @@ function present<T extends Metric>(metric: T, scope: string, watermark: string):
 
 function presentSummary(summary: CockpitSummary, watermark: string): CockpitSummary {
   const sales = summary.sales;
-  const integerKeys = ['cumulativeSalesCents', 'paidOrderCount', 'averageOrderValueCents', 'periodSalesCents', 'periodPaidOrderCount',
-    'refundedCents', 'activeProductCount', 'soldProductCount', 'unsoldActiveProductCount'] as const;
+  const integerKeys = ['cumulativeSalesCents', 'paidOrderCount', 'averageOrderValueCents', 'periodSalesCents', 'periodPaidOrderCount', 'refundedCents', 'activeProductCount', 'soldProductCount', 'unsoldActiveProductCount'] as const;
   const normalized: Record<string, unknown> = { ...sales, asOf: watermark };
   for (const key of integerKeys) {
     const value = sales[key];
@@ -119,14 +125,7 @@ function nullableRatio(value: number | null): number | null {
   return value === null ? null : ratio(value);
 }
 
-export type MetricOperation =
-  | 'reporting.dashboard.read'
-  | 'reporting.sales.read'
-  | 'reporting.products.read'
-  | 'reporting.malls.read'
-  | 'reporting.categories.read'
-  | 'reporting.channels.read'
-  | 'reporting.voucherconsumption.read';
+export type MetricOperation = 'reporting.dashboard.read' | 'reporting.sales.read' | 'reporting.products.read' | 'reporting.malls.read' | 'reporting.categories.read' | 'reporting.channels.read' | 'reporting.voucherconsumption.read';
 
 function period(value: string | null): ReportPeriod {
   if (value === null || value === 'realtime') return 'realtime';

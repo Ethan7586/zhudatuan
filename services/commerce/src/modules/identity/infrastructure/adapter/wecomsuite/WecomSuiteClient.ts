@@ -1,7 +1,7 @@
-import { DomainError } from '../../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../../platform/error/DomainError';
 import { WECOM_PROVIDER_CONFIGURATION } from '@shop/config/server';
 import { createHmac } from 'node:crypto';
-import { Singleflight } from '../../../../../foundation/performance/Singleflight';
+import { Singleflight } from '@shop/kernel';
 import type { ProviderInstance } from '../../../domain/model/ProviderInstance';
 import type { ProviderHttpClient } from '../../security/ProviderHttpClient';
 export class WecomSuiteClient {

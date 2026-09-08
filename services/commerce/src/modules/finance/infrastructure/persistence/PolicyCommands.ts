@@ -1,7 +1,7 @@
-import { rowResult } from '../../../../adapter/database/DatabaseResult';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
+import { rowResult } from '../../../../platform/database/DatabaseResult';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
 import { ReconciliationPolicy } from '../../domain/policy/ReconciliationPolicy';
 import { SettlementPolicy } from '../../domain/policy/SettlementPolicy';
 import { PgPolicyRepository } from './PgPolicyRepository';
@@ -10,7 +10,7 @@ import type { FinanceEntries } from './FinanceOperation';
 import { financeEntries, positive, text, time } from './PolicyActions';
 import { FinancePolicy } from '../../domain/model/FinancePolicy';
 import type { PolicyPreview } from '../../domain/policy/PolicyPreview';
-import type { Clock } from '../../../../foundation/domain/Clock';
+import type { Clock } from '@shop/kernel';
 
 const settlementPolicy = new SettlementPolicy();
 const reconciliationPolicy = new ReconciliationPolicy();
@@ -29,14 +29,28 @@ export function policyCommands(scopes: FinanceScopeQuery, previews: PolicyPrevie
       const scope = await scopes.describe(database, access.scope.id);
       const repository = new PgPolicyRepository(database);
       await validateMallPolicy(repository, scope, kind, rule as Readonly<Record<string, unknown>>);
-      const persistedRule = accounting === null ? rule as Readonly<Record<string, unknown>> : Object.freeze({
-        name: accounting.name, trigger: accounting.trigger, entries: accounting.entries, effectiveAt: accounting.effectiveAt,
-        expiresAt: accounting.expiresAt, targetStatus: accounting.status,
-      });
+      const persistedRule =
+        accounting === null
+          ? (rule as Readonly<Record<string, unknown>>)
+          : Object.freeze({
+              name: accounting.name,
+              trigger: accounting.trigger,
+              entries: accounting.entries,
+              effectiveAt: accounting.effectiveAt,
+              expiresAt: accounting.expiresAt,
+              targetStatus: accounting.status,
+            });
       const result = await repository.manage({
-        id: request.input.path.policyid!, scopeId: access.scope.id, kind, rule: persistedRule,
-        state: accounting?.status === 'retired' ? 'retired' : 'active', name: accounting?.name ?? kind, trigger: accounting?.trigger ?? kind,
-        entries: accounting?.entries ?? [], effectiveAt: accounting?.effectiveAt ?? clock.now().toISOString(), expiresAt: accounting?.expiresAt ?? null,
+        id: request.input.path.policyid!,
+        scopeId: access.scope.id,
+        kind,
+        rule: persistedRule,
+        state: accounting?.status === 'retired' ? 'retired' : 'active',
+        name: accounting?.name ?? kind,
+        trigger: accounting?.trigger ?? kind,
+        entries: accounting?.entries ?? [],
+        effectiveAt: accounting?.effectiveAt ?? clock.now().toISOString(),
+        expiresAt: accounting?.expiresAt ?? null,
         expectedVersion: request.input.expectedVersion ?? null,
       });
       if (!result.rows[0]) throw new DomainError('VERSION_CONFLICT');
@@ -51,7 +65,16 @@ function accountingPolicy(id: string, rule: unknown, expectedVersion: number | u
   const version = positive(expectedVersion, 'expectedVersion');
   const status = value.targetStatus === 'active' || value.targetStatus === 'retired' ? value.targetStatus : null;
   if (status === null) throw new DomainError('VALIDATION_FAILED', { field: 'targetStatus' });
-  const policy = new FinancePolicy(id, text(value.name, 'name'), status, text(value.trigger, 'trigger'), financeEntries(value.entries), time(value.effectiveAt, 'effectiveAt'), value.expiresAt === null ? null : time(value.expiresAt, 'expiresAt'), version);
+  const policy = new FinancePolicy(
+    id,
+    text(value.name, 'name'),
+    status,
+    text(value.trigger, 'trigger'),
+    financeEntries(value.entries),
+    time(value.effectiveAt, 'effectiveAt'),
+    value.expiresAt === null ? null : time(value.expiresAt, 'expiresAt'),
+    version
+  );
   const sample = Object.freeze({ from: time(value.sampleFrom, 'sampleFrom'), to: time(value.sampleTo, 'sampleTo'), affectedCount: positiveOrZero(value.affectedCount) });
   previews.verify(text(value.previewToken, 'previewToken'), { policy, sample, previewHash: hash(value.previewHash) }, clock.now());
   return policy;

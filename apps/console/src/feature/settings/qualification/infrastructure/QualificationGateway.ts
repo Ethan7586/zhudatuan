@@ -1,5 +1,5 @@
 import { createIdempotencyKey } from '@shop/sdk/context';
-import { uploadObject } from '@shop/sdk';
+import { uploadObject } from '@shop/sdk/objects';
 import { createFetchQualification, type QualificationOperations } from '@shop/sdk/qualification';
 import type { ConsoleContext } from '../../../../entity/session/ConsoleSession';
 import { consoleCommand, consoleRequest } from '../../../../shared/api/RequestContext';

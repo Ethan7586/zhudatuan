@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { AccountingDate } from '../value/AccountingDate';
 
 export type AccountingPeriodState = 'open' | 'closing' | 'closed' | 'reopening';

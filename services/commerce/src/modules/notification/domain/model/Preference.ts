@@ -28,7 +28,8 @@ export class Preference {
       !['member', 'provider', 'operator', 'system'].includes(consentSource) ||
       !Number.isSafeInteger(version) ||
       version < 0
-    ) throw new Error('NOTIFICATION_PREFERENCE_INVALID');
+    )
+      throw new Error('NOTIFICATION_PREFERENCE_INVALID');
     if (channel === 'wechat' && enabled && authorization === 'rejected') throw new Error('NOTIFICATION_SUBSCRIPTION_REJECTED');
     if (quietHours !== null) validateQuietHours(quietHours);
     Object.freeze(this);

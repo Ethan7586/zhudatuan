@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { OutboxWriter } from '../../../../foundation/messaging/Outbox';
-import { domainEvent } from '../../../../foundation/domain/DomainEvent';
-import type { Clock } from '../../../../foundation/domain/Clock';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { OutboxWriter } from '../../../../platform/messaging/Outbox';
+import { domainEvent } from '@shop/kernel';
+import type { Clock } from '@shop/kernel';
 import type { CommerceState, FulfillmentState, PaymentState } from '../../domain/model/Order';
 import { ReceiptPolicy } from '../../domain/policy/ReceiptPolicy';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ReceiveOrderInput, ReceiveOrderOutput } from '../../public/OrderReceiptPort';
 
 interface ReceiptRow extends Record<string, unknown> {

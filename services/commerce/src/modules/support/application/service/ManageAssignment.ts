@@ -1,9 +1,9 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import type { OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { AssignmentPolicy } from '../../domain/policy/AssignmentPolicy';
 import type { AgentStore, AssignmentRuleStore, AssignmentStore, SupportEventStore } from '../port/SupportPersistence';
 import type { AssignmentRepository } from '../port/SupportRepositories';
@@ -32,10 +32,7 @@ export class ManageAssignment implements AssignmentRepository {
     const ticket = await this.assignments.lockTicket(context, textField(body, 'case'), actor.scopes);
     if (ticket.version !== execution.expectedVersion) throw new DomainError('VERSION_CONFLICT');
     const requested = textField(body, 'agent');
-    const [candidates, rules] = await Promise.all([
-      this.agents.candidates(context, ticket.scope),
-      this.rules.assignmentRules(context, ticket.scope),
-    ]);
+    const [candidates, rules] = await Promise.all([this.agents.candidates(context, ticket.scope), this.rules.assignmentRules(context, ticket.scope)]);
     if (!this.policy.select({ agents: candidates, rules, scope: ticket.scope, skill: ticket.skill, priority: ticket.priority }, requested)) {
       throw new DomainError('SUPPORT_AGENT_INVALID');
     }

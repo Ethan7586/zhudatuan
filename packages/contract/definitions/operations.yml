@@ -17,7 +17,7 @@ templates:
     resourceResolver: referral.resource
     idempotent: true
     requirements: [MVPDISTRIBUTION]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     sdk: packages/sdk/src/operations/referral.ts
     originPolicy: none
     csrfPolicy: none
@@ -68,7 +68,7 @@ templates:
     resourceResolver: referral.resource
     idempotent: false
     requirements: [MVPDISTRIBUTION]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     sdk: packages/sdk/src/operations/referral.ts
     resourceParameter: null
     originPolicy: sameorigin
@@ -128,7 +128,7 @@ templates:
     resourceResolver: finance.resource
     idempotent: true
     requirements: [MVPGROUPFINANCE, MVPMALLFINANCE]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
     originPolicy: none
@@ -224,7 +224,7 @@ templates:
     resourceResolver: partner.resource
     idempotent: true
     requirements: &vouchermvp [MVPPLATFORM, MVPDISTRIBUTION, MVPGROUPVOUCHER, MVPMALLVOUCHER]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     sdk: packages/sdk/src/operations/partner.ts
     resourceParameter: null
     originPolicy: none
@@ -296,7 +296,7 @@ templates:
     resourceResolver: access.resource
     idempotent: true
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     sdk: packages/sdk/src/operations/access.ts
     resourceParameter: null
     originPolicy: none
@@ -432,7 +432,7 @@ operations:
       - MVPMALLSETTING
       - MVPIDENTITY
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/runtime/application/handler/HealthLiveHandler.ts
     sdk: packages/sdk/src/operations/runtime.ts
     resourceParameter: null
@@ -475,7 +475,7 @@ operations:
     resourceResolver: none
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/runtime/application/handler/HealthReadyHandler.ts
     sdk: packages/sdk/src/operations/runtime.ts
     resourceParameter: null
@@ -518,7 +518,7 @@ operations:
     resourceResolver: none
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/runtime/application/handler/HealthStartupHandler.ts
     sdk: packages/sdk/src/operations/runtime.ts
     resourceParameter: null
@@ -576,7 +576,7 @@ operations:
     resourceResolver: runtime.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/runtime/application/handler/HealthDependencyHandler.ts
     sdk: packages/sdk/src/operations/runtime.ts
     resourceParameter: null
@@ -615,7 +615,7 @@ operations:
     resourceResolver: runtime.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/runtime/application/handler/JobsReadHandler.ts
     sdk: packages/sdk/src/operations/runtime.ts
     resourceParameter: null
@@ -674,7 +674,7 @@ operations:
     resourceResolver: runtime.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/runtime/application/handler/JobsCancelHandler.ts
     sdk: packages/sdk/src/operations/runtime.ts
     resourceParameter: jobid
@@ -696,7 +696,7 @@ operations:
     method: POST
     path: /api/v1/runtime/uploads
     audience: console
-    targets: [console]
+    targets: [console, supplier]
     permission: runtime.import.manage
     capability: runtime.uploads.create
     scopeKinds: *a4
@@ -732,7 +732,7 @@ operations:
     resourceResolver: runtime.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/runtime/application/handler/UploadsCreateHandler.ts
     sdk: packages/sdk/src/operations/runtime.ts
     resourceParameter: null
@@ -790,7 +790,7 @@ operations:
     resourceResolver: runtime.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/runtime/application/handler/ImportsCreateHandler.ts
     sdk: packages/sdk/src/operations/runtime.ts
     resourceParameter: null
@@ -829,7 +829,7 @@ operations:
     resourceResolver: runtime.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/runtime/application/handler/ImportsReadHandler.ts
     sdk: packages/sdk/src/operations/runtime.ts
     resourceParameter: importid
@@ -888,7 +888,7 @@ operations:
     resourceResolver: runtime.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/runtime/application/handler/ImportsConfirmHandler.ts
     sdk: packages/sdk/src/operations/runtime.ts
     resourceParameter: importid
@@ -947,7 +947,7 @@ operations:
     resourceResolver: runtime.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/runtime/application/handler/ImportsRetryHandler.ts
     sdk: packages/sdk/src/operations/runtime.ts
     resourceParameter: importid
@@ -986,7 +986,7 @@ operations:
     resourceResolver: runtime.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/runtime/application/handler/ExportsReadHandler.ts
     sdk: packages/sdk/src/operations/runtime.ts
     resourceParameter: exportid
@@ -1045,7 +1045,7 @@ operations:
     resourceResolver: runtime.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/runtime/application/handler/ExportsCancelHandler.ts
     sdk: packages/sdk/src/operations/runtime.ts
     resourceParameter: exportid
@@ -1097,7 +1097,7 @@ operations:
     resourceResolver: none
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/SessionsCreateHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1151,7 +1151,7 @@ operations:
     resourceResolver: none
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/SessionsCompleteHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1198,7 +1198,7 @@ operations:
     resourceResolver: none
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/TicketsExchangeHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1247,7 +1247,7 @@ operations:
     resourceResolver: identity.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/SessionReadHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1294,8 +1294,105 @@ operations:
     resourceResolver: identity.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/SessionDeleteHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+    resourceParameter: null
+    originPolicy: sameorigin
+    csrfPolicy: required
+    responseMode: json
+    cachePolicy: none
+    targetPolicy: exact
+    idempotencyPolicy: required
+  - id: identity.handovers.read
+    version: 1
+    title: '身份 · 门店交班记录'
+    concurrencyPolicy: none
+    executionMode: sync
+    auditLevel: detailed
+    sensitiveFields: []
+    lifecycle: active
+    owner: identity
+    method: GET
+    path: /api/v1/identity/handovers
+    audience: console
+    targets: [console, store]
+    permission: identity.handover.read
+    capability: identity.handovers.read
+    scopeKinds: [store]
+    assuranceLevel: session
+    makerChecker: false
+    requestSchema: IdentityHandoversReadInput
+    responseSchema: IdentityHandoversReadOutput
+    errorUnion:
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - CONTRACT_VERSION_UNSUPPORTED
+      - INTERNAL_ERROR
+      - RATE_LIMITED
+      - SCOPE_DENIED
+      - VALIDATION_FAILED
+    idempotencyScope: none
+    expectedVersion: none
+    timeout: 500
+    rateClass: read
+    risk: low
+    resourceResolver: identity.resource
+    idempotent: true
+    requirements: [MVPIDENTITY, MVPMALLSETTING]
+    controller: services/commerce/src/pipeline/OperationController.ts
+    handler: services/commerce/src/modules/identity/application/handler/HandoversReadHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+    resourceParameter: null
+    originPolicy: none
+    csrfPolicy: none
+    responseMode: json
+    cachePolicy: private
+    targetPolicy: exact
+    idempotencyPolicy: none
+  - id: identity.handovers.create
+    version: 1
+    title: '身份 · 门店交班'
+    concurrencyPolicy: serialized
+    executionMode: sync
+    auditLevel: critical
+    sensitiveFields: []
+    lifecycle: active
+    owner: identity
+    method: POST
+    path: /api/v1/identity/handovers
+    audience: console
+    targets: [console, store]
+    permission: identity.handover.create
+    capability: identity.handovers.create
+    scopeKinds: [store]
+    assuranceLevel: mfa
+    makerChecker: false
+    requestSchema: IdentityHandoversCreateInput
+    responseSchema: IdentityHandoversCreateOutput
+    errorUnion:
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - CONTRACT_VERSION_UNSUPPORTED
+      - IDEMPOTENCY_CONFLICT
+      - INTERNAL_ERROR
+      - RATE_LIMITED
+      - RESOURCE_NOT_FOUND
+      - SCOPE_DENIED
+      - STEPUP_REQUIRED
+      - VALIDATION_FAILED
+    idempotencyScope: actor-operation-scope
+    expectedVersion: none
+    timeout: 800
+    rateClass: write
+    risk: high
+    resourceResolver: identity.resource
+    idempotent: true
+    requirements: [MVPIDENTITY, MVPMALLSETTING]
+    controller: services/commerce/src/pipeline/OperationController.ts
+    handler: services/commerce/src/modules/identity/application/handler/HandoversCreateHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
     originPolicy: sameorigin
@@ -1343,7 +1440,7 @@ operations:
     requirements:
       - MVPMALLSUPPORT
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/SessionsReadHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1395,7 +1492,7 @@ operations:
     idempotent: true
     requirements:
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/SessionsRevokeHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: sessionid
@@ -1443,7 +1540,7 @@ operations:
     resourceResolver: identity.resource
     idempotent: true
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/MembershipsReadHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1494,7 +1591,7 @@ operations:
     resourceResolver: identity.resource
     idempotent: false
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/MembershipsSwitchHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1547,7 +1644,7 @@ operations:
     resourceResolver: none
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/ChallengesCreateHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1598,7 +1695,7 @@ operations:
     resourceResolver: identity.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/MobileChallengesCreateHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1651,7 +1748,7 @@ operations:
     resourceResolver: none
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/InvitationsResolveHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1702,7 +1799,7 @@ operations:
       - MVPDISTRIBUTION
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/InvitationsReadHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1761,7 +1858,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/InvitationsCreateHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1815,7 +1912,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/InvitationsRevokeHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: id
@@ -1867,7 +1964,7 @@ operations:
       - MVPGROUPSETTING
       - MVPMALLSETTING
       - MVPIDENTITY
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/EnrollmentsReadHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1928,7 +2025,7 @@ operations:
       - MVPGROUPSETTING
       - MVPMALLSETTING
       - MVPIDENTITY
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/EnrollmentsCompleteHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -1981,7 +2078,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/MembersManageHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: membershipid
@@ -2034,7 +2131,7 @@ operations:
     resourceResolver: identity.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/PasswordChangeHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -2086,7 +2183,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/PasswordVerifyHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -2135,7 +2232,7 @@ operations:
     resourceResolver: none
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/PasswordResetHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -2186,7 +2283,7 @@ operations:
     resourceResolver: identity.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/MobileManageHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -2238,7 +2335,7 @@ operations:
     resourceResolver: identity.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/StepUpStartHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -2290,7 +2387,7 @@ operations:
     resourceResolver: identity.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/StepUpCompleteHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -2340,7 +2437,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/StepUpDisableHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -2396,7 +2493,7 @@ operations:
     idempotent: true
     requirements:
       - MVPPLATFORM
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/organization/application/handler/LayersReadHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
     resourceParameter: null
@@ -2469,7 +2566,7 @@ operations:
     resourceResolver: organization.resource
     idempotent: false
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/organization/application/handler/MallsCreateHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
     resourceParameter: null
@@ -2508,7 +2605,7 @@ operations:
     resourceResolver: organization.resource
     idempotent: true
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/organization/application/handler/MallsReadHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
     resourceParameter: mallid
@@ -2581,7 +2678,7 @@ operations:
     resourceResolver: organization.resource
     idempotent: false
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/organization/application/handler/MallsUpdateHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
     resourceParameter: mallid
@@ -2631,7 +2728,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/access/application/handler/CenterReadHandler.ts
     sdk: packages/sdk/src/operations/access.ts
     resourceParameter: null
@@ -2751,7 +2848,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/access/application/handler/RolesManageHandler.ts
     sdk: packages/sdk/src/operations/access.ts
     resourceParameter: roleid
@@ -2810,7 +2907,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/access/application/handler/OverridesManageHandler.ts
     sdk: packages/sdk/src/operations/access.ts
     resourceParameter: null
@@ -2866,7 +2963,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/access/application/handler/ScopesManageHandler.ts
     sdk: packages/sdk/src/operations/access.ts
     resourceParameter: null
@@ -2917,7 +3014,7 @@ operations:
       - MVPDISTRIBUTION
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/capability/application/handler/AssignmentsReadHandler.ts
     sdk: packages/sdk/src/operations/capability.ts
     resourceParameter: null
@@ -2977,7 +3074,7 @@ operations:
       - MVPDISTRIBUTION
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/capability/application/handler/AssignmentsManageHandler.ts
     sdk: packages/sdk/src/operations/capability.ts
     resourceParameter: assignmentid
@@ -3026,7 +3123,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/partner/application/handler/PartnersReadHandler.ts
     sdk: packages/sdk/src/operations/partner.ts
     resourceParameter: null
@@ -3144,7 +3241,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/partner/application/handler/PartnersManageHandler.ts
     sdk: packages/sdk/src/operations/partner.ts
     resourceParameter: partnerid
@@ -3193,7 +3290,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/partner/application/handler/StoresReadHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
     resourceParameter: null
@@ -3245,7 +3342,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/partner/application/handler/StoresManageHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
     resourceParameter: storeid
@@ -3295,7 +3392,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/member/application/handler/MembersReadHandler.ts
     sdk: packages/sdk/src/operations/member.ts
     resourceParameter: null
@@ -3353,7 +3450,7 @@ operations:
     resourceResolver: member.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/member/application/handler/ProfileReadHandler.ts
     sdk: packages/sdk/src/operations/member.ts
     resourceParameter: null
@@ -3401,7 +3498,7 @@ operations:
     resourceResolver: member.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/member/application/handler/AddressesReadHandler.ts
     sdk: packages/sdk/src/operations/member.ts
     resourceParameter: null
@@ -3452,7 +3549,7 @@ operations:
     resourceResolver: member.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/member/application/handler/AddressesManageHandler.ts
     sdk: packages/sdk/src/operations/member.ts
     resourceParameter: addressid
@@ -3499,7 +3596,7 @@ operations:
     resourceResolver: member.resource
     idempotent: true
     requirements: [MVPMALLPOOL]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/member/application/handler/FavoritesReadHandler.ts
     sdk: packages/sdk/src/operations/member.ts
     resourceParameter: null
@@ -3548,7 +3645,7 @@ operations:
     resourceResolver: member.resource
     idempotent: true
     requirements: [MVPMALLPOOL]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/member/application/handler/FavoritesPutHandler.ts
     sdk: packages/sdk/src/operations/member.ts
     resourceParameter: listingid
@@ -3599,7 +3696,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/member/application/handler/ImportsCreateHandler.ts
     sdk: packages/sdk/src/operations/member.ts
     resourceParameter: null
@@ -3649,7 +3746,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/member/application/handler/ImportsReadHandler.ts
     sdk: packages/sdk/src/operations/member.ts
     resourceParameter: importid
@@ -3698,7 +3795,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/qualification/application/handler/CenterReadHandler.ts
     sdk: packages/sdk/src/operations/qualification.ts
     resourceParameter: null
@@ -3748,7 +3845,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/qualification/application/handler/DecisionsPreviewHandler.ts
     sdk: packages/sdk/src/operations/qualification.ts
     resourceParameter: null
@@ -3800,7 +3897,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/qualification/application/handler/PoliciesManageHandler.ts
     sdk: packages/sdk/src/operations/qualification.ts
     resourceParameter: policyid
@@ -3852,7 +3949,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/qualification/application/handler/QualificationsPublishHandler.ts
     sdk: packages/sdk/src/operations/qualification.ts
     resourceParameter: qualificationid
@@ -3904,7 +4001,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/qualification/application/handler/QualificationsRevokeHandler.ts
     sdk: packages/sdk/src/operations/qualification.ts
     resourceParameter: qualificationid
@@ -3955,7 +4052,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/qualification/application/handler/EvidenceUploadsCreateHandler.ts
     sdk: packages/sdk/src/operations/qualification.ts
     resourceParameter: null
@@ -4006,7 +4103,7 @@ operations:
     idempotent: false
     requirements:
       - MVPDISTRIBUTION
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/DistributorsCreateHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: null
@@ -4054,7 +4151,7 @@ operations:
     idempotent: true
     requirements:
       - MVPDISTRIBUTION
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/DistributorsReadHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: null
@@ -4105,7 +4202,7 @@ operations:
     idempotent: false
     requirements:
       - MVPDISTRIBUTION
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/DistributorsUpdateHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: distributorid
@@ -4156,7 +4253,7 @@ operations:
     idempotent: true
     requirements:
       - MVPDISTRIBUTION
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/DistributorsDisableHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: distributorid
@@ -4207,7 +4304,7 @@ operations:
     idempotent: true
     requirements:
       - MVPDISTRIBUTION
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/BindingsManageHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: bindingid
@@ -4258,7 +4355,7 @@ operations:
     idempotent: true
     requirements:
       - MVPDISTRIBUTION
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/QuotasManageHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: quotaid
@@ -4309,7 +4406,7 @@ operations:
       - MVPPLATFORM
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/PoolsReadHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: null
@@ -4361,7 +4458,7 @@ operations:
     idempotent: true
     requirements:
       - MVPPLATFORM
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/PoolsAttachHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: scopeid
@@ -4413,7 +4510,7 @@ operations:
     idempotent: true
     requirements:
       - MVPPLATFORM
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/PoolsDetachHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: scopeid
@@ -4464,7 +4561,7 @@ operations:
     idempotent: false
     requirements:
       - MVPDISTRIBUTION
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/PoolsAllocateHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: poolid
@@ -4514,7 +4611,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/ProductDetailReadHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: null
@@ -4566,7 +4663,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/ProductsCreateHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: null
@@ -4619,7 +4716,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/ProductsUpdateHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: null
@@ -4641,7 +4738,7 @@ operations:
     method: DELETE
     path: /api/v1/catalog/products/{productid}
     audience: console
-    targets: [console, supplier]
+    targets: [console]
     permission: catalog.product.manage
     capability: catalog.products.archive
     scopeKinds: *a4
@@ -4672,7 +4769,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/ProductsArchiveHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: null
@@ -4733,7 +4830,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/ListingsReadHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: null
@@ -4782,7 +4879,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/FacetsReadHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: null
@@ -4804,7 +4901,7 @@ operations:
     method: PUT
     path: /api/v1/catalog/listings/{listingid}/publication
     audience: console
-    targets: [console, supplier]
+    targets: [console]
     permission: catalog.listing.manage
     capability: catalog.listings.publish
     scopeKinds: *a4
@@ -4835,7 +4932,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/ListingsPublishHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: listingid
@@ -4858,7 +4955,7 @@ operations:
     path: /api/v1/catalog/listings/{listingid}/price
     audience: console
     targets: [console, supplier]
-    permission: catalog.listing.manage
+    permission: catalog.price.manage
     capability: catalog.listings.price.set
     scopeKinds: *a4
     assuranceLevel: mfa
@@ -4888,7 +4985,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/ListingsPriceSetHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: listingid
@@ -4910,7 +5007,7 @@ operations:
     method: PUT
     path: /api/v1/catalog/listings/{listingid}/pool
     audience: console
-    targets: [console, supplier]
+    targets: [console]
     permission: catalog.listing.manage
     capability: catalog.listings.pool.set
     scopeKinds: *a4
@@ -4941,7 +5038,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/ListingsPoolSetHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: listingid
@@ -4963,7 +5060,7 @@ operations:
     method: DELETE
     path: /api/v1/catalog/listings/{listingid}/publication
     audience: console
-    targets: [console, supplier]
+    targets: [console]
     permission: catalog.listing.manage
     capability: catalog.listings.unpublish
     scopeKinds: *a4
@@ -4994,7 +5091,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/ListingsUnpublishHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: listingid
@@ -5016,7 +5113,7 @@ operations:
     method: POST
     path: /api/v1/catalog/listings/batches
     audience: console
-    targets: [console, supplier]
+    targets: [console]
     permission: catalog.listing.manage
     capability: catalog.listings.batch
     scopeKinds: *a4
@@ -5047,7 +5144,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/ListingsBatchHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: null
@@ -5099,7 +5196,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/ImportsCreateHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: null
@@ -5149,7 +5246,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/catalog/application/handler/ImportsReadHandler.ts
     sdk: packages/sdk/src/operations/catalog.ts
     resourceParameter: importid
@@ -5171,7 +5268,7 @@ operations:
     method: POST
     path: /api/v1/pricing/rules
     audience: console
-    targets: [console, supplier]
+    targets: [console]
     permission: pricing.rule.manage
     capability: pricing.rules.create
     scopeKinds: *a4
@@ -5200,7 +5297,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/pricing/application/handler/RulesCreateHandler.ts
     sdk: packages/sdk/src/operations/pricing.ts
     resourceParameter: null
@@ -5222,7 +5319,7 @@ operations:
     method: PUT
     path: /api/v1/pricing/rules/{ruleid}/publication
     audience: console
-    targets: [console, supplier]
+    targets: [console]
     permission: pricing.rule.manage
     capability: pricing.rules.publish
     scopeKinds: *a4
@@ -5256,7 +5353,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/pricing/application/handler/RulesPublishHandler.ts
     sdk: packages/sdk/src/operations/pricing.ts
     resourceParameter: ruleid
@@ -5305,7 +5402,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/pricing/application/handler/OffersReadHandler.ts
     sdk: packages/sdk/src/operations/pricing.ts
     resourceParameter: null
@@ -5357,7 +5454,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/inventory/application/handler/AvailabilityReadHandler.ts
     sdk: packages/sdk/src/operations/inventory.ts
     resourceParameter: null
@@ -5367,6 +5464,106 @@ operations:
     cachePolicy: none
     targetPolicy: exact
     idempotencyPolicy: none
+  - id: inventory.adjustments.read
+    version: 1
+    title: '库存 · 调整申请查询'
+    concurrencyPolicy: none
+    executionMode: sync
+    auditLevel: detailed
+    sensitiveFields: []
+    lifecycle: active
+    owner: inventory
+    method: GET
+    path: /api/v1/inventory/adjustments
+    audience: console
+    targets: [console, store]
+    permission: inventory.adjust.read
+    capability: inventory.adjustments.read
+    scopeKinds: *a4
+    assuranceLevel: session
+    makerChecker: false
+    requestSchema: InventoryAdjustmentsReadInput
+    responseSchema: InventoryAdjustmentsReadOutput
+    errorUnion:
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - CONTRACT_VERSION_UNSUPPORTED
+      - INTERNAL_ERROR
+      - RATE_LIMITED
+      - SCOPE_DENIED
+      - VALIDATION_FAILED
+    idempotencyScope: none
+    expectedVersion: none
+    timeout: 500
+    rateClass: read
+    risk: high
+    resourceResolver: inventory.resource
+    idempotent: true
+    requirements: [MVPGROUPPOOL, MVPMALLPOOL]
+    controller: services/commerce/src/pipeline/OperationController.ts
+    handler: services/commerce/src/modules/inventory/application/handler/AdjustmentsReadHandler.ts
+    sdk: packages/sdk/src/operations/inventory.ts
+    resourceParameter: null
+    originPolicy: none
+    csrfPolicy: none
+    responseMode: json
+    cachePolicy: private
+    targetPolicy: exact
+    idempotencyPolicy: none
+  - id: inventory.adjustments.create
+    version: 1
+    title: '库存 · 调整申请创建'
+    concurrencyPolicy: optimistic
+    executionMode: sync
+    auditLevel: critical
+    sensitiveFields: []
+    lifecycle: active
+    owner: inventory
+    method: POST
+    path: /api/v1/inventory/adjustments
+    audience: console
+    targets: [console, store]
+    permission: inventory.adjust.request
+    capability: inventory.adjustments.create
+    scopeKinds: *a4
+    assuranceLevel: mfa
+    makerChecker: false
+    requestSchema: InventoryAdjustmentsCreateInput
+    responseSchema: InventoryAdjustmentsCreateOutput
+    errorUnion:
+      - APPROVAL_TEMPLATE_DISABLED
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - CONTRACT_VERSION_UNSUPPORTED
+      - IDEMPOTENCY_CONFLICT
+      - INTERNAL_ERROR
+      - INVENTORY_QUANTITY_INVALID
+      - RATE_LIMITED
+      - RESOURCE_NOT_FOUND
+      - SCOPE_DENIED
+      - STEPUP_REQUIRED
+      - VALIDATION_FAILED
+      - VERSION_CONFLICT
+    idempotencyScope: actor-operation-scope
+    expectedVersion: none
+    timeout: 800
+    rateClass: critical
+    risk: critical
+    resourceResolver: inventory.resource
+    idempotent: true
+    requirements: [MVPGROUPPOOL, MVPMALLPOOL]
+    controller: services/commerce/src/pipeline/OperationController.ts
+    handler: services/commerce/src/modules/inventory/application/handler/AdjustmentsCreateHandler.ts
+    sdk: packages/sdk/src/operations/inventory.ts
+    resourceParameter: null
+    originPolicy: sameorigin
+    csrfPolicy: required
+    responseMode: json
+    cachePolicy: none
+    targetPolicy: exact
+    idempotencyPolicy: required
   - id: inventory.imports.create
     version: 1
     title: '库存 · 导入创建'
@@ -5412,7 +5609,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/inventory/application/handler/ImportsCreateHandler.ts
     sdk: packages/sdk/src/operations/inventory.ts
     resourceParameter: null
@@ -5465,7 +5662,7 @@ operations:
     requirements:
       - MVPGROUPPOOL
       - MVPMALLPOOL
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/inventory/application/handler/ImportsReadHandler.ts
     sdk: packages/sdk/src/operations/inventory.ts
     resourceParameter: null
@@ -5512,7 +5709,7 @@ operations:
     resourceResolver: marketing.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/marketing/application/handler/CampaignsReadHandler.ts
     sdk: packages/sdk/src/operations/marketing.ts
     resourceParameter: null
@@ -5563,7 +5760,7 @@ operations:
     resourceResolver: marketing.resource
     idempotent: false
     requirements: [MVPGROUPVOUCHER, MVPMALLVOUCHER]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/marketing/application/handler/CampaignsCreateHandler.ts
     sdk: packages/sdk/src/operations/marketing.ts
     resourceParameter: null
@@ -5615,7 +5812,7 @@ operations:
     resourceResolver: marketing.resource
     idempotent: true
     requirements: [MVPGROUPVOUCHER, MVPMALLVOUCHER]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/marketing/application/handler/CampaignsReviseHandler.ts
     sdk: packages/sdk/src/operations/marketing.ts
     resourceParameter: campaignid
@@ -5671,7 +5868,7 @@ operations:
     resourceResolver: marketing.resource
     idempotent: true
     requirements: [MVPGROUPVOUCHER, MVPMALLVOUCHER]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/marketing/application/handler/CampaignsPublishHandler.ts
     sdk: packages/sdk/src/operations/marketing.ts
     resourceParameter: campaignid
@@ -5723,7 +5920,7 @@ operations:
     resourceResolver: marketing.resource
     idempotent: true
     requirements: [MVPGROUPVOUCHER, MVPMALLVOUCHER]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/marketing/application/handler/CampaignsDisableHandler.ts
     sdk: packages/sdk/src/operations/marketing.ts
     resourceParameter: campaignid
@@ -5772,7 +5969,7 @@ operations:
     requirements:
       - MVPGROUPDASHBOARD
       - MVPMALLDASHBOARD
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
     sdk: packages/sdk/src/operations/reporting.ts
     resourceParameter: null
@@ -5821,7 +6018,7 @@ operations:
     requirements:
       - MVPGROUPREPORT
       - MVPMALLREPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/reporting/application/handler/SalesReadHandler.ts
     sdk: packages/sdk/src/operations/reporting.ts
     resourceParameter: null
@@ -5870,7 +6067,7 @@ operations:
     requirements:
       - MVPGROUPREPORT
       - MVPMALLREPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/reporting/application/handler/ProductsReadHandler.ts
     sdk: packages/sdk/src/operations/reporting.ts
     resourceParameter: null
@@ -5919,7 +6116,7 @@ operations:
     requirements:
       - MVPGROUPREPORT
       - MVPMALLREPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
     sdk: packages/sdk/src/operations/reporting.ts
     resourceParameter: null
@@ -5968,7 +6165,7 @@ operations:
     requirements:
       - MVPGROUPREPORT
       - MVPMALLREPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
     sdk: packages/sdk/src/operations/reporting.ts
     resourceParameter: null
@@ -6017,7 +6214,7 @@ operations:
     requirements:
       - MVPGROUPREPORT
       - MVPMALLREPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
     sdk: packages/sdk/src/operations/reporting.ts
     resourceParameter: null
@@ -6066,7 +6263,7 @@ operations:
     requirements:
       - MVPGROUPREPORT
       - MVPMALLREPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/reporting/application/handler/VoucherConsumptionReadHandler.ts
     sdk: packages/sdk/src/operations/reporting.ts
     resourceParameter: null
@@ -6117,7 +6314,7 @@ operations:
     requirements:
       - MVPGROUPREPORT
       - MVPMALLREPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
     sdk: packages/sdk/src/operations/reporting.ts
     resourceParameter: null
@@ -6167,7 +6364,7 @@ operations:
     requirements:
       - MVPGROUPREPORT
       - MVPMALLREPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
     sdk: packages/sdk/src/operations/reporting.ts
     resourceParameter: exportid
@@ -6219,7 +6416,7 @@ operations:
     requirements:
       - MVPGROUPAPPLICATION
       - MVPMALLDESIGN
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/experience/application/handler/ApplicationsCreateHandler.ts
     sdk: packages/sdk/src/operations/experience.ts
     resourceParameter: null
@@ -6271,7 +6468,7 @@ operations:
     requirements:
       - MVPGROUPAPPLICATION
       - MVPMALLDESIGN
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/experience/application/handler/ApplicationsCopyHandler.ts
     sdk: packages/sdk/src/operations/experience.ts
     resourceParameter: applicationid
@@ -6310,7 +6507,7 @@ operations:
     resourceResolver: experience.resource
     idempotent: true
     requirements: [MVPGROUPAPPLICATION, MVPMALLDESIGN]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/experience/application/handler/ApplicationDetailHandler.ts
     sdk: packages/sdk/src/operations/experience.ts
     resourceParameter: applicationid
@@ -6360,7 +6557,7 @@ operations:
     requirements:
       - MVPGROUPAPPLICATION
       - MVPMALLDESIGN
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/experience/application/handler/ApplicationsReadHandler.ts
     sdk: packages/sdk/src/operations/experience.ts
     resourceParameter: null
@@ -6413,7 +6610,7 @@ operations:
     requirements:
       - MVPGROUPAPPLICATION
       - MVPMALLDESIGN
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/experience/application/handler/ApplicationsUpdateHandler.ts
     sdk: packages/sdk/src/operations/experience.ts
     resourceParameter: applicationid
@@ -6468,7 +6665,7 @@ operations:
     requirements:
       - MVPGROUPAPPLICATION
       - MVPMALLDESIGN
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/experience/application/handler/VersionsSaveHandler.ts
     sdk: packages/sdk/src/operations/experience.ts
     resourceParameter: applicationid
@@ -6520,7 +6717,7 @@ operations:
     requirements:
       - MVPGROUPAPPLICATION
       - MVPMALLDESIGN
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/experience/application/handler/VersionsValidateHandler.ts
     sdk: packages/sdk/src/operations/experience.ts
     resourceParameter: versionid
@@ -6573,7 +6770,7 @@ operations:
     requirements:
       - MVPGROUPAPPLICATION
       - MVPMALLDESIGN
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/experience/application/handler/VersionsPublishHandler.ts
     sdk: packages/sdk/src/operations/experience.ts
     resourceParameter: versionid
@@ -6628,7 +6825,7 @@ operations:
     requirements:
       - MVPGROUPAPPLICATION
       - MVPMALLDESIGN
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/experience/application/handler/VersionsRestoreHandler.ts
     sdk: packages/sdk/src/operations/experience.ts
     resourceParameter: versionid
@@ -6677,7 +6874,7 @@ operations:
     resourceResolver: none
     idempotent: true
     requirements: [MVPMALLDESIGN]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/experience/application/handler/PublishedReadHandler.ts
     sdk: packages/sdk/src/operations/experience.ts
     resourceParameter: null
@@ -6733,7 +6930,7 @@ operations:
     resourceResolver: cart.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/cart/application/handler/CurrentReadHandler.ts
     sdk: packages/sdk/src/operations/cart.ts
     resourceParameter: null
@@ -6783,7 +6980,7 @@ operations:
     resourceResolver: cart.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/cart/application/handler/MergeCartHandler.ts
     sdk: packages/sdk/src/operations/cart.ts
     resourceParameter: null
@@ -6842,7 +7039,7 @@ operations:
     resourceResolver: cart.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/cart/application/handler/ItemsPutHandler.ts
     sdk: packages/sdk/src/operations/cart.ts
     resourceParameter: listingid
@@ -6899,7 +7096,7 @@ operations:
     resourceResolver: cart.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/cart/application/handler/ItemsBatchHandler.ts
     sdk: packages/sdk/src/operations/cart.ts
     resourceParameter: null
@@ -6971,7 +7168,7 @@ operations:
     resourceResolver: checkout.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/checkout/application/handler/QuoteCreateHandler.ts
     sdk: packages/sdk/src/operations/checkout.ts
     resourceParameter: null
@@ -7046,7 +7243,7 @@ operations:
     resourceResolver: checkout.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/checkout/application/handler/ConfirmQuoteHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: null
@@ -7099,7 +7296,7 @@ operations:
     resourceResolver: order.resource
     idempotent: true
     requirements: [MVPGROUPORDER, MVPMALLORDER]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/order/application/handler/OrdersCancelHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: orderid
@@ -7150,7 +7347,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/order/application/handler/OrdersReadHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: null
@@ -7200,7 +7397,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/order/application/handler/OrderDetailReadHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: orderid
@@ -7251,7 +7448,7 @@ operations:
     resourceResolver: order.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/order/application/handler/RemindersCreateHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: orderid
@@ -7304,7 +7501,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/order/application/handler/OrdersExportHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: null
@@ -7359,7 +7556,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/order/application/handler/ImportsCreateHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: null
@@ -7409,7 +7606,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/order/application/handler/ImportsReadHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: importid
@@ -7460,7 +7657,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/order/application/handler/AfterSalesReadHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: null
@@ -7511,7 +7708,7 @@ operations:
     idempotent: false
     requirements:
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/order/application/handler/AfterSaleAttachmentsCreateHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: orderid
@@ -7565,7 +7762,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/order/application/handler/AfterSalesApplyHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: orderid
@@ -7619,7 +7816,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/order/application/handler/AfterSalesApproveHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: aftersaleid
@@ -7673,7 +7870,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/order/application/handler/AfterSalesRejectHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: aftersaleid
@@ -7683,6 +7880,151 @@ operations:
     cachePolicy: none
     targetPolicy: exact
     idempotencyPolicy: required
+  - id: fulfillment.workitems.read
+    version: 1
+    title: '履约 · 门店工作项查询'
+    concurrencyPolicy: none
+    executionMode: sync
+    auditLevel: detailed
+    sensitiveFields: []
+    lifecycle: active
+    owner: fulfillment
+    method: GET
+    path: /api/v1/fulfillments/workitems
+    audience: console
+    targets: [console, store, supplier]
+    permission: fulfillment.read
+    capability: fulfillment.workitems.read
+    scopeKinds: *a4
+    assuranceLevel: session
+    makerChecker: false
+    requestSchema: FulfillmentWorkitemsReadInput
+    responseSchema: FulfillmentWorkitemsReadOutput
+    errorUnion:
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - CONTRACT_VERSION_UNSUPPORTED
+      - INTERNAL_ERROR
+      - RATE_LIMITED
+      - SCOPE_DENIED
+      - VALIDATION_FAILED
+    idempotencyScope: none
+    expectedVersion: none
+    timeout: 500
+    rateClass: read
+    risk: high
+    resourceResolver: fulfillment.resource
+    idempotent: true
+    requirements: [MVPGROUPORDER, MVPMALLORDER]
+    controller: services/commerce/src/pipeline/OperationController.ts
+    handler: services/commerce/src/modules/fulfillment/application/handler/WorkitemsReadHandler.ts
+    sdk: packages/sdk/src/operations/fulfillment.ts
+    resourceParameter: null
+    originPolicy: none
+    csrfPolicy: none
+    responseMode: json
+    cachePolicy: private
+    targetPolicy: exact
+    idempotencyPolicy: none
+  - id: fulfillment.workitems.transition
+    version: 1
+    title: '履约 · 门店工作项流转'
+    concurrencyPolicy: optimistic
+    executionMode: sync
+    auditLevel: critical
+    sensitiveFields: []
+    lifecycle: active
+    owner: fulfillment
+    method: PUT
+    path: /api/v1/fulfillments/{fulfillmentid}/transition
+    audience: console
+    targets: [console, store, supplier]
+    permission: fulfillment.work.manage
+    capability: fulfillment.workitems.transition
+    scopeKinds: [store, supplier]
+    assuranceLevel: mfa
+    makerChecker: false
+    requestSchema: FulfillmentWorkitemsTransitionInput
+    responseSchema: FulfillmentWorkitemsTransitionOutput
+    errorUnion:
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - CONTRACT_VERSION_UNSUPPORTED
+      - IDEMPOTENCY_CONFLICT
+      - INTERNAL_ERROR
+      - RATE_LIMITED
+      - RESOURCE_NOT_FOUND
+      - SCOPE_DENIED
+      - STEPUP_REQUIRED
+      - VALIDATION_FAILED
+      - VERSION_CONFLICT
+    idempotencyScope: actor-operation-scope
+    expectedVersion: required
+    timeout: 800
+    rateClass: critical
+    risk: high
+    resourceResolver: fulfillment.resource
+    idempotent: true
+    requirements: [MVPGROUPORDER, MVPMALLORDER]
+    controller: services/commerce/src/pipeline/OperationController.ts
+    handler: services/commerce/src/modules/fulfillment/application/handler/WorkitemsTransitionHandler.ts
+    sdk: packages/sdk/src/operations/fulfillment.ts
+    resourceParameter: fulfillmentid
+    originPolicy: sameorigin
+    csrfPolicy: required
+    responseMode: json
+    cachePolicy: none
+    targetPolicy: exact
+    idempotencyPolicy: required
+  - id: fulfillment.returns.read
+    version: 1
+    title: '履约 · 门店退货工作项查询'
+    concurrencyPolicy: none
+    executionMode: sync
+    auditLevel: detailed
+    sensitiveFields: []
+    lifecycle: active
+    owner: fulfillment
+    method: GET
+    path: /api/v1/fulfillments/returns
+    audience: console
+    targets: [console, store, supplier]
+    permission: fulfillment.read
+    capability: fulfillment.returns.read
+    scopeKinds: *a4
+    assuranceLevel: session
+    makerChecker: false
+    requestSchema: FulfillmentReturnsReadInput
+    responseSchema: FulfillmentReturnsReadOutput
+    errorUnion:
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - CONTRACT_VERSION_UNSUPPORTED
+      - INTERNAL_ERROR
+      - RATE_LIMITED
+      - SCOPE_DENIED
+      - VALIDATION_FAILED
+    idempotencyScope: none
+    expectedVersion: none
+    timeout: 500
+    rateClass: read
+    risk: high
+    resourceResolver: fulfillment.resource
+    idempotent: true
+    requirements: [MVPGROUPORDER, MVPMALLORDER]
+    controller: services/commerce/src/pipeline/OperationController.ts
+    handler: services/commerce/src/modules/fulfillment/application/handler/ReturnsReadHandler.ts
+    sdk: packages/sdk/src/operations/fulfillment.ts
+    resourceParameter: null
+    originPolicy: none
+    csrfPolicy: none
+    responseMode: json
+    cachePolicy: private
+    targetPolicy: exact
+    idempotencyPolicy: none
   - id: fulfillment.shipments.create
     version: 1
     title: '履约 · 发货创建'
@@ -7724,7 +8066,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/fulfillment/application/handler/ShipmentsCreateHandler.ts
     sdk: packages/sdk/src/operations/fulfillment.ts
     resourceParameter: fulfillmentid
@@ -7771,7 +8113,7 @@ operations:
     resourceResolver: fulfillment.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/fulfillment/application/handler/TrackingReadHandler.ts
     sdk: packages/sdk/src/operations/fulfillment.ts
     resourceParameter: null
@@ -7823,7 +8165,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/fulfillment/application/handler/ReturnsReceiveHandler.ts
     sdk: packages/sdk/src/operations/fulfillment.ts
     resourceParameter: returnid
@@ -7875,7 +8217,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/fulfillment/application/handler/ReturnsInspectHandler.ts
     sdk: packages/sdk/src/operations/fulfillment.ts
     resourceParameter: returnid
@@ -7933,7 +8275,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/payment/application/handler/IntentsCreateHandler.ts
     sdk: packages/sdk/src/operations/payment.ts
     resourceParameter: null
@@ -7982,7 +8324,7 @@ operations:
     resourceResolver: payment.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/payment/application/handler/IntentsReadHandler.ts
     sdk: packages/sdk/src/operations/payment.ts
     resourceParameter: paymentid
@@ -8034,7 +8376,7 @@ operations:
     resourceResolver: verification.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/verification/application/handler/ChallengesIssueHandler.ts
     sdk: packages/sdk/src/operations/verification.ts
     resourceParameter: null
@@ -8082,7 +8424,7 @@ operations:
     resourceResolver: verification.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
     sdk: packages/sdk/src/operations/verification.ts
     resourceParameter: null
@@ -8135,7 +8477,7 @@ operations:
     resourceResolver: verification.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/verification/application/handler/ChallengesVerifyHandler.ts
     sdk: packages/sdk/src/operations/verification.ts
     resourceParameter: challengeid
@@ -8183,7 +8525,7 @@ operations:
     resourceResolver: verification.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
     sdk: packages/sdk/src/operations/verification.ts
     resourceParameter: null
@@ -8231,7 +8573,7 @@ operations:
     resourceResolver: verification.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
     sdk: packages/sdk/src/operations/verification.ts
     resourceParameter: null
@@ -8281,7 +8623,7 @@ operations:
     resourceResolver: verification.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
     sdk: packages/sdk/src/operations/verification.ts
     resourceParameter: deviceid
@@ -8337,7 +8679,7 @@ operations:
     requirements:
       - MVPGROUPORDER
       - MVPMALLORDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/payment/application/handler/RefundsRequestHandler.ts
     sdk: packages/sdk/src/operations/payment.ts
     resourceParameter: null
@@ -8389,7 +8731,7 @@ operations:
       - MVPGROUPORDER
       - MVPMALLORDER
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/payment/application/handler/RecoveriesReadHandler.ts
     sdk: packages/sdk/src/operations/payment.ts
     resourceParameter: null
@@ -8446,7 +8788,7 @@ operations:
       - MVPGROUPORDER
       - MVPMALLORDER
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/payment/application/handler/RecoveriesResolveHandler.ts
     sdk: packages/sdk/src/operations/payment.ts
     resourceParameter: caseid
@@ -8492,7 +8834,7 @@ operations:
     idempotent: true
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/payment/application/handler/WebhooksWechatHandler.ts
     sdk: packages/sdk/src/operations/payment.ts
     resourceParameter: null
@@ -8566,7 +8908,7 @@ operations:
     resourceParameter: null
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ProductsCreateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -8639,7 +8981,7 @@ operations:
     resourceParameter: productid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ProductsReviseHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -8712,7 +9054,7 @@ operations:
     resourceParameter: productid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ProductsEnableHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -8785,7 +9127,7 @@ operations:
     resourceParameter: productid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ProductsDisableHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -8857,7 +9199,7 @@ operations:
     resourceParameter: productid
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ProductsGetHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -8929,7 +9271,7 @@ operations:
     resourceParameter: null
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ProductsListHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -9001,7 +9343,7 @@ operations:
     resourceParameter: null
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ProductOptionsListHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -9073,7 +9415,7 @@ operations:
       - MVPPLATFORM
       - MVPGROUPVOUCHER
       - MVPMALLVOUCHER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/CredentialPoolsCreateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -9145,7 +9487,7 @@ operations:
       - MVPPLATFORM
       - MVPGROUPVOUCHER
       - MVPMALLVOUCHER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/CredentialsGenerateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -9217,7 +9559,7 @@ operations:
       - MVPPLATFORM
       - MVPGROUPVOUCHER
       - MVPMALLVOUCHER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/CredentialsImportHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -9289,7 +9631,7 @@ operations:
       - MVPPLATFORM
       - MVPGROUPVOUCHER
       - MVPMALLVOUCHER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/CredentialPoolsCloseHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -9360,7 +9702,7 @@ operations:
       - MVPPLATFORM
       - MVPGROUPVOUCHER
       - MVPMALLVOUCHER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/CredentialPoolsGetHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -9431,7 +9773,7 @@ operations:
       - MVPPLATFORM
       - MVPGROUPVOUCHER
       - MVPMALLVOUCHER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/CredentialPoolsListHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -9502,7 +9844,7 @@ operations:
       - MVPPLATFORM
       - MVPGROUPVOUCHER
       - MVPMALLVOUCHER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/CredentialsListHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -9573,7 +9915,7 @@ operations:
       - MVPPLATFORM
       - MVPGROUPVOUCHER
       - MVPMALLVOUCHER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/CredentialsGetHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -9650,7 +9992,7 @@ operations:
       - MVPPLATFORM
       - MVPGROUPVOUCHER
       - MVPMALLVOUCHER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/CredentialExportsCreateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -9726,7 +10068,7 @@ operations:
       - MVPPLATFORM
       - MVPGROUPVOUCHER
       - MVPMALLVOUCHER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/JobsGetHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -9799,7 +10141,7 @@ operations:
     resourceParameter: null
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/StockRequestsCreateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -9872,7 +10214,7 @@ operations:
     resourceParameter: requestid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/StockRequestsUpdateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -9946,7 +10288,7 @@ operations:
     resourceParameter: requestid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/StockRequestsSubmitHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -10020,7 +10362,7 @@ operations:
     resourceParameter: requestid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/StockRequestsCancelHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -10093,7 +10435,7 @@ operations:
     resourceParameter: requestid
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/StockRequestsGetHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -10166,7 +10508,7 @@ operations:
     resourceParameter: null
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/StockRequestsListHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -10239,7 +10581,7 @@ operations:
     resourceParameter: null
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/StockRequestOptionsListHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -10312,7 +10654,7 @@ operations:
     resourceParameter: null
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/IssueOrdersCreateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -10385,7 +10727,7 @@ operations:
     resourceParameter: orderid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/IssueOrdersUpdateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -10459,7 +10801,7 @@ operations:
     resourceParameter: orderid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/IssueOrdersSubmitHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -10533,7 +10875,7 @@ operations:
     resourceParameter: orderid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/IssueOrdersCancelHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -10606,7 +10948,7 @@ operations:
     resourceParameter: orderid
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/IssueOrdersGetHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -10679,7 +11021,7 @@ operations:
     resourceParameter: null
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/IssueOrdersListHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -10752,7 +11094,7 @@ operations:
     resourceParameter: batchid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/IssueBatchesRetryHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -10825,7 +11167,7 @@ operations:
     resourceParameter: batchid
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/IssueBatchesGetHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -10899,7 +11241,7 @@ operations:
     resourceParameter: null
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/IssueOrderExportsCreateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -10972,7 +11314,7 @@ operations:
     resourceParameter: null
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ActionBatchesCreateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -11045,7 +11387,7 @@ operations:
     resourceParameter: actionbatchid
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ActionBatchesGetHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -11118,7 +11460,7 @@ operations:
     resourceParameter: null
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ActionBatchesListHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -11191,7 +11533,7 @@ operations:
     resourceParameter: actionbatchid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ActionBatchesRetryHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -11265,7 +11607,7 @@ operations:
     resourceParameter: null
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ActionExportsCreateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -11332,7 +11674,7 @@ operations:
     resourceParameter: null
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/SearchReadHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -11403,7 +11745,7 @@ operations:
     resourceParameter: null
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ActivationsSecretHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -11475,7 +11817,7 @@ operations:
     resourceParameter: null
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ActivationsNumberSecretHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -11550,7 +11892,7 @@ operations:
     resourceParameter: voucherid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/VouchersBindHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -11625,7 +11967,7 @@ operations:
     resourceParameter: voucherid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/VouchersUnbindHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -11691,7 +12033,7 @@ operations:
     resourceParameter: voucherid
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/VouchersGetHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -11767,7 +12109,7 @@ operations:
     resourceParameter: number
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/VouchersGetByNumberHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -11833,7 +12175,7 @@ operations:
     resourceParameter: voucherid
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/VouchersTimelineHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -11845,7 +12187,7 @@ operations:
   - id: voucher.redemptions.quote
     version: 1
     title: 卡券 · 核销报价校验
-    concurrencyPolicy: serialized
+    concurrencyPolicy: none
     executionMode: sync
     auditLevel: detailed
     sensitiveFields: []
@@ -11896,13 +12238,13 @@ operations:
     idempotencyScope: none
     expectedVersion: none
     timeout: 800
-    rateClass: write
+    rateClass: read
     risk: high
     resourceResolver: voucher.resource
     resourceParameter: null
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/RedemptionsQuoteHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -11971,7 +12313,7 @@ operations:
     resourceParameter: null
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/TenderHoldsCreateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -12040,7 +12382,7 @@ operations:
     resourceParameter: holdid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/TenderHoldsConsumeHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -12109,7 +12451,7 @@ operations:
     resourceParameter: holdid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/TenderHoldsReleaseHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -12178,7 +12520,7 @@ operations:
     resourceParameter: null
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -12253,7 +12595,7 @@ operations:
     resourceParameter: redemptionid
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/RefundsCreateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -12319,7 +12661,7 @@ operations:
     resourceParameter: redemptionid
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/RedemptionsGetHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -12393,7 +12735,7 @@ operations:
     resourceParameter: null
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/SearchFacetsReadHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -12467,7 +12809,7 @@ operations:
     resourceParameter: null
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/SearchSnapshotsCreateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -12541,7 +12883,7 @@ operations:
     resourceParameter: null
     idempotent: false
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/SearchExportsCreateHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: sameorigin
@@ -12615,7 +12957,7 @@ operations:
     resourceParameter: exportid
     idempotent: true
     requirements: *vouchermvp
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/voucher/application/handler/ExportsGetHandler.ts
     sdk: packages/sdk/src/operations/voucher.ts
     originPolicy: none
@@ -12662,7 +13004,7 @@ operations:
     resourceResolver: benefit.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/benefit/application/handler/AccountsReadHandler.ts
     sdk: packages/sdk/src/operations/benefit.ts
     resourceParameter: null
@@ -12711,7 +13053,7 @@ operations:
     idempotent: true
     requirements:
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/benefit/application/handler/LedgersReadHandler.ts
     sdk: packages/sdk/src/operations/benefit.ts
     resourceParameter: null
@@ -12759,7 +13101,7 @@ operations:
     resourceResolver: benefit.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/benefit/application/handler/PlansReadHandler.ts
     sdk: packages/sdk/src/operations/benefit.ts
     resourceParameter: null
@@ -12810,7 +13152,7 @@ operations:
     resourceResolver: benefit.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/benefit/application/handler/PlansManageHandler.ts
     sdk: packages/sdk/src/operations/benefit.ts
     resourceParameter: planid
@@ -12859,7 +13201,7 @@ operations:
     resourceResolver: benefit.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/benefit/application/handler/BudgetsReadHandler.ts
     sdk: packages/sdk/src/operations/benefit.ts
     resourceParameter: null
@@ -12914,7 +13256,7 @@ operations:
     resourceResolver: benefit.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/benefit/application/handler/BudgetsManageHandler.ts
     sdk: packages/sdk/src/operations/benefit.ts
     resourceParameter: budgetid
@@ -12968,7 +13310,7 @@ operations:
     resourceResolver: benefit.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/benefit/application/handler/GrantsCreateHandler.ts
     sdk: packages/sdk/src/operations/benefit.ts
     resourceParameter: null
@@ -13023,7 +13365,7 @@ operations:
     resourceResolver: benefit.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/benefit/application/handler/GrantsDecideHandler.ts
     sdk: packages/sdk/src/operations/benefit.ts
     resourceParameter: batchid
@@ -13072,7 +13414,7 @@ operations:
     resourceResolver: benefit.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/benefit/application/handler/GrantsReadHandler.ts
     sdk: packages/sdk/src/operations/benefit.ts
     resourceParameter: null
@@ -13126,7 +13468,7 @@ operations:
     resourceResolver: benefit.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/benefit/application/handler/GrantsControlHandler.ts
     sdk: packages/sdk/src/operations/benefit.ts
     resourceParameter: batchid
@@ -13180,7 +13522,7 @@ operations:
     resourceResolver: benefit.resource
     idempotent: false
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/benefit/application/handler/GrantsRevokeHandler.ts
     sdk: packages/sdk/src/operations/benefit.ts
     resourceParameter: batchid
@@ -13229,7 +13571,7 @@ operations:
     resourceResolver: benefit.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/benefit/application/handler/LotsReadHandler.ts
     sdk: packages/sdk/src/operations/benefit.ts
     resourceParameter: null
@@ -13285,7 +13627,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/OverviewReadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -13335,7 +13677,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/FacetsReadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -13386,7 +13728,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/AuditReadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -13442,7 +13784,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/EntriesReadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -13500,7 +13842,7 @@ operations:
     resourceResolver: finance.resource
     idempotent: false
     requirements: [MVPGROUPFINANCE, MVPMALLFINANCE]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/ImportsCreateHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -13539,7 +13881,7 @@ operations:
     resourceResolver: finance.resource
     idempotent: true
     requirements: [MVPGROUPFINANCE, MVPMALLFINANCE]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/ImportsReadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: importid
@@ -13564,7 +13906,7 @@ operations:
     targets: [console, supplier]
     permission: finance.statement.read
     capability: finance.statements.read
-    scopeKinds: *a7
+    scopeKinds: [platform, distributor, tenant, enterprise, mall, department, supplier]
     assuranceLevel: mfa
     makerChecker: false
     requestSchema: FinanceStatementsReadInput
@@ -13595,7 +13937,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/StatementsReadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -13620,7 +13962,7 @@ operations:
     targets: [console, supplier]
     permission: finance.statement.export
     capability: finance.statements.export
-    scopeKinds: *a7
+    scopeKinds: [platform, distributor, tenant, enterprise, mall, department, supplier]
     assuranceLevel: stepup
     makerChecker: true
     requestSchema: FinanceStatementsExportInput
@@ -13656,7 +13998,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/StatementsExportHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -13718,7 +14060,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/ReconciliationsManageHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: reconciliationid
@@ -13743,7 +14085,7 @@ operations:
     targets: [console, supplier]
     permission: finance.reconciliation.read
     capability: finance.reconciliations.read
-    scopeKinds: *a7
+    scopeKinds: [platform, distributor, tenant, enterprise, mall, department, supplier]
     assuranceLevel: mfa
     makerChecker: false
     requestSchema: FinanceReconciliationsReadInput
@@ -13774,7 +14116,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/ReconciliationsReadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -13830,7 +14172,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/SettlementsReadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -13891,7 +14233,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/SettlementsDecideHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: settlementid
@@ -13952,7 +14294,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/SettlementsAdjustHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: settlementid
@@ -14008,7 +14350,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/WithdrawalsReadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -14069,7 +14411,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/WithdrawalsCreateHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -14130,7 +14472,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/WithdrawalsDecideHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: withdrawalid
@@ -14191,7 +14533,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/WithdrawalsRecoverHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: withdrawalid
@@ -14247,7 +14589,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/HoldsReadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -14303,7 +14645,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/PeriodsReadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -14364,7 +14706,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/PeriodsManageHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: period
@@ -14420,7 +14762,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/BackfillsReadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -14481,7 +14823,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/BackfillsDecideHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: backfillid
@@ -14543,7 +14885,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/PoliciesManageHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: policyid
@@ -14582,7 +14924,7 @@ operations:
     resourceResolver: finance.resource
     idempotent: true
     requirements: [MVPMALLORDER, MVPMALLFINANCE]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/InvoicesReadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: null
@@ -14621,7 +14963,7 @@ operations:
     resourceResolver: finance.resource
     idempotent: true
     requirements: [MVPMALLORDER, MVPMALLFINANCE]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/InvoicesDownloadHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
     resourceParameter: invoiceid
@@ -14679,7 +15021,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/ProfilesManageHandler.ts
     sdk: packages/sdk/src/operations/invoice.ts
     resourceParameter: profileid
@@ -14736,7 +15078,7 @@ operations:
       - MVPGROUPFINANCE
       - MVPMALLORDER
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/ProfilesReadHandler.ts
     sdk: packages/sdk/src/operations/invoice.ts
     resourceParameter: null
@@ -14793,7 +15135,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/RequestsCreateHandler.ts
     sdk: packages/sdk/src/operations/invoice.ts
     resourceParameter: null
@@ -14818,7 +15160,7 @@ operations:
     targets: [console, supplier]
     permission: invoice.request.read
     capability: invoice.requests.read
-    scopeKinds: *a7
+    scopeKinds: [platform, distributor, tenant, enterprise, mall, department, supplier]
     assuranceLevel: mfa
     makerChecker: false
     requestSchema: InvoiceRequestsReadInput
@@ -14849,7 +15191,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/RequestsReadHandler.ts
     sdk: packages/sdk/src/operations/invoice.ts
     resourceParameter: null
@@ -14907,7 +15249,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/RequestsCancelHandler.ts
     sdk: packages/sdk/src/operations/invoice.ts
     resourceParameter: requestid
@@ -14964,7 +15306,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/RequestsDecideHandler.ts
     sdk: packages/sdk/src/operations/invoice.ts
     resourceParameter: requestid
@@ -15021,7 +15363,7 @@ operations:
     requirements:
       - MVPGROUPFINANCE
       - MVPMALLFINANCE
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/finance/application/handler/RedInvoiceHandler.ts
     sdk: packages/sdk/src/operations/invoice.ts
     resourceParameter: requestid
@@ -15071,7 +15413,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/CasesCreateHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: null
@@ -15120,7 +15462,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/CasesReadHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: null
@@ -15172,7 +15514,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/CasesUpdateHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: caseid
@@ -15224,7 +15566,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/CasesCloseHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: caseid
@@ -15276,7 +15618,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/CasesReopenHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: caseid
@@ -15332,7 +15674,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/MessagesSendHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: caseid
@@ -15381,7 +15723,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/MessagesReadHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: caseid
@@ -15431,7 +15773,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/AttachmentsCreateHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: caseid
@@ -15483,7 +15825,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/AssignmentsManageHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: assignmentid
@@ -15535,7 +15877,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/AgentsManageHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: agentid
@@ -15585,7 +15927,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/AgentsReadHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: null
@@ -15637,7 +15979,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/AccountsManageHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: accountid
@@ -15687,7 +16029,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/AccountsReadHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: null
@@ -15737,7 +16079,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/RulesReadHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: null
@@ -15789,7 +16131,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/RulesManageHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: ruleid
@@ -15839,7 +16181,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/SlaReadHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: null
@@ -15891,7 +16233,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/SlaManageHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: slaid
@@ -15941,7 +16283,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/HistoryReadHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: caseid
@@ -15992,7 +16334,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/EventsReadHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: null
@@ -16042,7 +16384,7 @@ operations:
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/support/application/handler/ReadstatesManageHandler.ts
     sdk: packages/sdk/src/operations/support.ts
     resourceParameter: conversationid
@@ -16091,7 +16433,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/notification/application/handler/NotificationsReadHandler.ts
     sdk: packages/sdk/src/operations/notification.ts
     resourceParameter: null
@@ -16140,7 +16482,7 @@ operations:
     resourceResolver: notification.resource
     idempotent: true
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/notification/application/handler/NotificationsAckHandler.ts
     sdk: packages/sdk/src/operations/notification.ts
     resourceParameter: notificationid
@@ -16188,7 +16530,7 @@ operations:
     resourceResolver: notification.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/notification/application/handler/PreferencesReadHandler.ts
     sdk: packages/sdk/src/operations/notification.ts
     resourceParameter: null
@@ -16238,7 +16580,7 @@ operations:
     resourceResolver: notification.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/notification/application/handler/PreferencesManageHandler.ts
     sdk: packages/sdk/src/operations/notification.ts
     resourceParameter: eventtype
@@ -16289,7 +16631,7 @@ operations:
     resourceResolver: notification.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/notification/application/handler/EndpointsManageHandler.ts
     sdk: packages/sdk/src/operations/notification.ts
     resourceParameter: channel
@@ -16345,7 +16687,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/notification/application/handler/TemplatesManageHandler.ts
     sdk: packages/sdk/src/operations/notification.ts
     resourceParameter: templateid
@@ -16395,7 +16737,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/notification/application/handler/TemplatesReadHandler.ts
     sdk: packages/sdk/src/operations/notification.ts
     resourceParameter: null
@@ -16445,7 +16787,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/notification/application/handler/AnnouncementsReadHandler.ts
     sdk: packages/sdk/src/operations/notification.ts
     resourceParameter: null
@@ -16501,7 +16843,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/notification/application/handler/AnnouncementsManageHandler.ts
     sdk: packages/sdk/src/operations/notification.ts
     resourceParameter: announcementid
@@ -16551,7 +16893,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/risk/application/handler/CenterReadHandler.ts
     sdk: packages/sdk/src/operations/risk.ts
     resourceParameter: null
@@ -16607,7 +16949,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/risk/application/handler/PoliciesManageHandler.ts
     sdk: packages/sdk/src/operations/risk.ts
     resourceParameter: policyid
@@ -16663,7 +17005,7 @@ operations:
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/risk/application/handler/CasesReviewHandler.ts
     sdk: packages/sdk/src/operations/risk.ts
     resourceParameter: caseid
@@ -16711,7 +17053,7 @@ operations:
     resourceResolver: audit.resource
     idempotent: true
     requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/audit/application/handler/RecordsReadHandler.ts
     sdk: packages/sdk/src/operations/audit.ts
     resourceParameter: null
@@ -16763,7 +17105,7 @@ operations:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/observability/application/handler/ClientErrorsCreateHandler.ts
     sdk: packages/sdk/src/operations/observability.ts
     resourceParameter: null
@@ -16814,7 +17156,7 @@ operations:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/observability/application/handler/ClientErrorsReadHandler.ts
     sdk: packages/sdk/src/operations/observability.ts
     resourceParameter: null
@@ -16865,7 +17207,7 @@ operations:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/observability/application/handler/HealthOverviewHandler.ts
     sdk: packages/sdk/src/operations/observability.ts
     resourceParameter: null
@@ -16916,7 +17258,7 @@ operations:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
       - MVPMALLSETTING
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/observability/application/handler/SloReadHandler.ts
     sdk: packages/sdk/src/operations/observability.ts
     resourceParameter: null
@@ -16941,7 +17283,7 @@ operations:
     targets: [console, supplier]
     permission: channel.connection.read
     capability: channel.connections.read
-    scopeKinds: *a7
+    scopeKinds: [platform, distributor, tenant, enterprise, mall, department, supplier]
     assuranceLevel: mfa
     makerChecker: false
     requestSchema: ChannelConnectionsReadInput
@@ -16965,7 +17307,7 @@ operations:
     idempotent: true
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/ConnectionsReadHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: null
@@ -17015,7 +17357,7 @@ operations:
     idempotent: false
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/ConnectionsCreateHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: null
@@ -17066,7 +17408,7 @@ operations:
     idempotent: false
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/ConnectionsUpdateHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: connectionid
@@ -17091,7 +17433,7 @@ operations:
     targets: [console, supplier]
     permission: channel.connection.manage
     capability: channel.connections.test
-    scopeKinds: *a7
+    scopeKinds: [platform, distributor, tenant, enterprise, mall, department, supplier]
     assuranceLevel: stepup
     makerChecker: false
     requestSchema: ChannelConnectionsTestInput
@@ -17116,7 +17458,7 @@ operations:
     idempotent: false
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/ConnectionsTestHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: connectionid
@@ -17167,7 +17509,7 @@ operations:
     idempotent: true
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/ConnectionsEnableHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: connectionid
@@ -17218,7 +17560,7 @@ operations:
     idempotent: true
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/ConnectionsDisableHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: connectionid
@@ -17263,7 +17605,7 @@ operations:
     idempotent: true
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/WebhooksReceiveHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: null
@@ -17313,7 +17655,7 @@ operations:
     idempotent: false
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/SyncRunsStartHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: null
@@ -17361,7 +17703,7 @@ operations:
     idempotent: true
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/SyncRunsReadHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: null
@@ -17412,7 +17754,7 @@ operations:
     idempotent: true
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/SyncRunsCancelHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: runid
@@ -17461,7 +17803,7 @@ operations:
     idempotent: true
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/OperationsReadHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: null
@@ -17511,7 +17853,7 @@ operations:
     idempotent: false
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/channel/application/handler/OperationsReplayHandler.ts
     sdk: packages/sdk/src/operations/channel.ts
     resourceParameter: operationid
@@ -17561,7 +17903,7 @@ operations:
     idempotent: true
     requirements:
       - MVPPROVIDER
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/extension/application/handler/InstallationsReadHandler.ts
     sdk: packages/sdk/src/operations/extension.ts
     resourceParameter: null
@@ -17623,7 +17965,7 @@ operations:
         MVPMALLSETTING,
         MVPPROVIDER,
       ]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/navigation/application/handler/TreeReadHandler.ts
     sdk: packages/sdk/src/operations/navigation.ts
     resourceParameter: null
@@ -17662,7 +18004,7 @@ operations:
     resourceResolver: navigation.resource
     idempotent: true
     requirements: [MVPPLATFORM]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/navigation/application/handler/NavigationCatalogReadHandler.ts
     sdk: packages/sdk/src/operations/navigation.ts
     resourceParameter: null
@@ -17701,7 +18043,7 @@ operations:
     resourceResolver: none
     idempotent: true
     requirements: [MVPPLATFORM]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/navigation/application/handler/HealthReadHandler.ts
     sdk: packages/sdk/src/operations/navigation.ts
     resourceParameter: null
@@ -17740,7 +18082,7 @@ operations:
     resourceResolver: none
     idempotent: true
     requirements: [MVPIDENTITY]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/BootstrapReadHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -17779,7 +18121,7 @@ operations:
     resourceResolver: none
     idempotent: true
     requirements: [MVPGROUPSETTING, MVPMALLSETTING, MVPIDENTITY]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/ProvidersReadHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -17831,7 +18173,7 @@ operations:
     resourceResolver: none
     idempotent: false
     requirements: [MVPGROUPSETTING, MVPMALLSETTING, MVPIDENTITY]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/FederationStartHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -17885,7 +18227,7 @@ operations:
     resourceResolver: none
     idempotent: true
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/FederationCallbackHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -17924,7 +18266,7 @@ operations:
     resourceResolver: none
     idempotent: true
     requirements: [MVPGROUPSETTING, MVPMALLSETTING, MVPIDENTITY]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/MembershipSelectionReadHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -17975,7 +18317,7 @@ operations:
     resourceResolver: none
     idempotent: false
     requirements: [MVPGROUPSETTING, MVPMALLSETTING, MVPIDENTITY]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/FederationCompleteHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -18014,7 +18356,7 @@ operations:
     resourceResolver: identity.resource
     idempotent: true
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/LinksReadHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -18068,7 +18410,7 @@ operations:
     resourceResolver: identity.resource
     idempotent: false
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/LinksCreateHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -18107,7 +18449,7 @@ operations:
     resourceResolver: identity.resource
     idempotent: false
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/LinksRevokeHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: linkid
@@ -18146,7 +18488,7 @@ operations:
     resourceResolver: none
     idempotent: true
     requirements: [MVPGROUPSETTING, MVPMALLSETTING, MVPIDENTITY]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/ProvidersCenterReadHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
@@ -18203,7 +18545,7 @@ operations:
     resourceResolver: identity.resource
     idempotent: false
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/ProvidersManageHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: providerid
@@ -18256,7 +18598,7 @@ operations:
     resourceResolver: identity.resource
     idempotent: false
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/ProvidersTestHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: providerid
@@ -18295,7 +18637,7 @@ operations:
     resourceResolver: organization.resource
     idempotent: true
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/organization/application/handler/DirectoriesReadHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
     resourceParameter: null
@@ -18352,7 +18694,7 @@ operations:
     resourceResolver: organization.resource
     idempotent: false
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/organization/application/handler/DirectoriesManageHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
     resourceParameter: directoryid
@@ -18391,7 +18733,7 @@ operations:
     resourceResolver: organization.resource
     idempotent: false
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/organization/application/handler/DirectoriesSyncHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
     resourceParameter: directoryid
@@ -18430,7 +18772,7 @@ operations:
     resourceResolver: organization.resource
     idempotent: true
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/organization/application/handler/DirectorySyncRunsReadHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
     resourceParameter: directoryid
@@ -18469,7 +18811,7 @@ operations:
     resourceResolver: none
     idempotent: false
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/organization/application/handler/DirectoryEventsReceiveHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
     resourceParameter: null
@@ -18568,7 +18910,7 @@ operations:
     concurrencyPolicy: serialized
     executionMode: sync
     auditLevel: detailed
-    sensitiveFields: []
+    sensitiveFields: [body.mobile]
     lifecycle: active
     path: /api/v1/referral/members/applications
     permission: referral.member.apply
@@ -18631,7 +18973,7 @@ operations:
     concurrencyPolicy: serialized
     executionMode: sync
     auditLevel: detailed
-    sensitiveFields: []
+    sensitiveFields: [body.token]
     lifecycle: active
     path: /api/v1/referral/bindings
     permission: referral.binding.create
@@ -18712,7 +19054,7 @@ operations:
     concurrencyPolicy: optimistic
     executionMode: sync
     auditLevel: detailed
-    sensitiveFields: []
+    sensitiveFields: [body.accountRef]
     lifecycle: active
     path: /api/v1/referral/withdrawals
     permission: referral.withdrawal.create
@@ -18916,7 +19258,7 @@ operations:
     resourceParameter: null
     idempotent: false
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/approval/application/handler/TemplatesCreateHandler.ts
     sdk: packages/sdk/src/operations/approval.ts
     originPolicy: sameorigin
@@ -18968,8 +19310,8 @@ operations:
     resourceResolver: approval.resource
     resourceParameter: templateid
     idempotent: false
-    requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    requirements: [MVPGROUPVOUCHER, MVPGROUPSETTING, MVPMALLVOUCHER, MVPMALLSETTING]
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/approval/application/handler/TemplatesReviseHandler.ts
     sdk: packages/sdk/src/operations/approval.ts
     originPolicy: sameorigin
@@ -19022,8 +19364,8 @@ operations:
     resourceResolver: approval.resource
     resourceParameter: templateid
     idempotent: true
-    requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    requirements: [MVPGROUPVOUCHER, MVPGROUPSETTING, MVPMALLVOUCHER, MVPMALLSETTING]
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/approval/application/handler/TemplatesEnableHandler.ts
     sdk: packages/sdk/src/operations/approval.ts
     originPolicy: sameorigin
@@ -19075,8 +19417,8 @@ operations:
     resourceResolver: approval.resource
     resourceParameter: templateid
     idempotent: true
-    requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    requirements: [MVPGROUPVOUCHER, MVPGROUPSETTING, MVPMALLVOUCHER, MVPMALLSETTING]
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/approval/application/handler/TemplatesDisableHandler.ts
     sdk: packages/sdk/src/operations/approval.ts
     originPolicy: sameorigin
@@ -19115,7 +19457,7 @@ operations:
     resourceParameter: templateid
     idempotent: true
     requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/approval/application/handler/TemplatesGetHandler.ts
     sdk: packages/sdk/src/operations/approval.ts
     originPolicy: none
@@ -19153,8 +19495,8 @@ operations:
     resourceResolver: approval.resource
     resourceParameter: null
     idempotent: true
-    requirements: [MVPGROUPSETTING, MVPMALLSETTING]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    requirements: [MVPGROUPVOUCHER, MVPGROUPSETTING, MVPMALLVOUCHER, MVPMALLSETTING]
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/approval/application/handler/TemplatesListHandler.ts
     sdk: packages/sdk/src/operations/approval.ts
     originPolicy: none
@@ -19193,7 +19535,7 @@ operations:
     resourceParameter: null
     idempotent: true
     requirements: [MVPGROUPVOUCHER, MVPMALLVOUCHER, MVPGROUPFINANCE, MVPMALLFINANCE, MVPGROUPORDER, MVPMALLORDER, MVPMALLDESIGN]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/approval/application/handler/TasksListHandler.ts
     sdk: packages/sdk/src/operations/approval.ts
     originPolicy: none
@@ -19250,7 +19592,7 @@ operations:
     resourceParameter: taskid
     idempotent: true
     requirements: [MVPGROUPVOUCHER, MVPMALLVOUCHER, MVPGROUPFINANCE, MVPMALLFINANCE, MVPGROUPORDER, MVPMALLORDER, MVPMALLDESIGN]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/approval/application/handler/TasksApproveHandler.ts
     sdk: packages/sdk/src/operations/approval.ts
     originPolicy: sameorigin
@@ -19307,7 +19649,7 @@ operations:
     resourceParameter: taskid
     idempotent: true
     requirements: [MVPGROUPVOUCHER, MVPMALLVOUCHER, MVPGROUPFINANCE, MVPMALLFINANCE, MVPGROUPORDER, MVPMALLORDER, MVPMALLDESIGN]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/approval/application/handler/TasksRejectHandler.ts
     sdk: packages/sdk/src/operations/approval.ts
     originPolicy: sameorigin
@@ -19346,7 +19688,7 @@ operations:
     resourceParameter: instanceid
     idempotent: true
     requirements: [MVPGROUPVOUCHER, MVPMALLVOUCHER, MVPGROUPFINANCE, MVPMALLFINANCE, MVPGROUPORDER, MVPMALLORDER, MVPMALLDESIGN]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/approval/application/handler/InstancesGetHandler.ts
     sdk: packages/sdk/src/operations/approval.ts
     originPolicy: none
@@ -19399,7 +19741,7 @@ operations:
     resourceResolver: order.resource
     idempotent: true
     requirements: [MVPGROUPORDER, MVPMALLORDER]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/order/application/handler/OrdersReceiveHandler.ts
     sdk: packages/sdk/src/operations/order.ts
     resourceParameter: orderid
@@ -19455,7 +19797,7 @@ operations:
     resourceResolver: checkout.resource
     idempotent: true
     requirements: [MVPMALLPOOL, MVPMALLORDER]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/checkout/application/handler/QuotesCurrentReadHandler.ts
     sdk: packages/sdk/src/operations/checkout.ts
     resourceParameter: null
@@ -19510,7 +19852,7 @@ operations:
     resourceResolver: none
     idempotent: true
     requirements: [MVPGROUPAPPLICATION, MVPMALLDESIGN, MVPMALLPOOL, MVPMALLORDER]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/navigation/application/handler/BootstrapReadHandler.ts
     sdk: packages/sdk/src/operations/storefront.ts
     resourceParameter: null
@@ -19565,7 +19907,7 @@ operations:
     resourceResolver: none
     idempotent: true
     requirements: [MVPMALLPOOL]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
+    controller: services/commerce/src/pipeline/OperationController.ts
     handler: services/commerce/src/modules/navigation/application/handler/CatalogReadHandler.ts
     sdk: packages/sdk/src/operations/storefront.ts
     resourceParameter: null

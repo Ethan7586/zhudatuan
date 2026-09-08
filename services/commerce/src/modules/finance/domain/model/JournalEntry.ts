@@ -1,5 +1,5 @@
 import { Money } from '@shop/kernel';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { Account } from './Account';
 import { AccountingDate } from '../value/AccountingDate';
 import type { AccountKind } from '../value/AccountCode';
@@ -31,8 +31,15 @@ export class JournalEntry {
   }
 
   static restore(input: Readonly<Omit<JournalEntryValue, 'amount' | 'createdAt'> & { amountMinor: number; currency: string; createdAt: string }>): JournalEntry {
-    return new JournalEntry({ id: input.id, accountId: input.accountId, accountCode: input.accountCode, accountKind: input.accountKind, side: input.side,
-      amount: Money.of(input.amountMinor, input.currency as 'CNY'), createdAt: AccountingDate.of(input.createdAt) });
+    return new JournalEntry({
+      id: input.id,
+      accountId: input.accountId,
+      accountCode: input.accountCode,
+      accountKind: input.accountKind,
+      side: input.side,
+      amount: Money.of(input.amountMinor, input.currency as 'CNY'),
+      createdAt: AccountingDate.of(input.createdAt),
+    });
   }
 
   reverse(id: string, createdAt: AccountingDate): JournalEntry {

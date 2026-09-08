@@ -1,7 +1,7 @@
 import type { PoolClient, QueryResult, QueryResultRow } from 'pg';
-import { PgTransactionManager } from '../adapter/database/PgTransactionManager';
-import type { DatabasePool } from '../foundation/persistence/Pool';
-import type { ReadTransactionContext, WriteTransactionContext } from '../foundation/persistence/TransactionContext';
+import { PgTransactionManager } from '../platform/database/PgTransactionManager';
+import type { DatabasePool } from '../platform/database/Pool';
+import type { ReadTransactionContext, WriteTransactionContext } from '../platform/database/TransactionContext';
 
 type Query = (text: string, values?: readonly unknown[]) => Promise<QueryResult<any>>;
 

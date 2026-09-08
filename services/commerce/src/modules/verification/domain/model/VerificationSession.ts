@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export type VerificationPurpose = 'member_code' | 'voucher_redeem' | 'login' | 'sensitive_action' | 'financial_approval';
 export type VerificationChannel = 'qrcode' | 'sms' | 'app';

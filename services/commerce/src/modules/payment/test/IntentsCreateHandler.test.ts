@@ -28,16 +28,43 @@ describe('payment intent creation', () => {
   });
 });
 
-function paymentHandler(prepare: ReturnType<typeof vi.fn>, continuation: Readonly<{ continue: ReturnType<typeof vi.fn> }>, override: Readonly<Record<string, unknown>> = {}, gateways = { require: vi.fn(() => ({ application: vi.fn(() => ({ scene: 'miniapp', applicationHash: 'a'.repeat(64) })) })) }) {
+function paymentHandler(
+  prepare: ReturnType<typeof vi.fn>,
+  continuation: Readonly<{ continue: ReturnType<typeof vi.fn> }>,
+  override: Readonly<Record<string, unknown>> = {},
+  gateways = { require: vi.fn(() => ({ application: vi.fn(() => ({ scene: 'miniapp', applicationHash: 'a'.repeat(64) })) })) }
+) {
   return new IntentsCreateHandler(
     { member: vi.fn(async () => 'member:one') },
     { payment: vi.fn(async () => ({ id: 'order:one', number: 'SW-1', scope: 'mall:one', mall: 'mall:one', member: 'member:one', currency: 'CNY', totalMinor: 12_300, paymentState: 'unpaid', lifecycleState: 'created', ...override })) },
-    { prepare } as never, gateways as never, continuation as never
+    { prepare } as never,
+    gateways as never,
+    continuation as never
   );
 }
 
-function input() { return { body: { order: 'order:one', scene: 'miniapp' } } as never; }
-function access() { return { kind: 'session', access: { actor: { id: 'principal:one' }, membership: { id: 'membership:one' }, scope: { id: 'owner:one' }, trace: 'trace:one' } }; }
-function baseContext() { return { requestId: 'request:one', traceId: 'trace:one', deadline: Date.now() + 10_000, signal: new AbortController().signal, operation: 'payment.intents.create', security: access(), headers: {}, rawBody: '{}', idempotencyKey: 'request:one' }; }
-function readContext() { return { ...baseContext(), transaction: {} }; }
-function writeContext() { return { ...baseContext(), transaction: {} }; }
+function input() {
+  return { body: { order: 'order:one', scene: 'miniapp' } } as never;
+}
+function access() {
+  return { kind: 'session', access: { actor: { id: 'principal:one' }, membership: { id: 'membership:one' }, scope: { id: 'owner:one' }, trace: 'trace:one' } };
+}
+function baseContext() {
+  return {
+    requestId: 'request:one',
+    traceId: 'trace:one',
+    deadline: Date.now() + 10_000,
+    signal: new AbortController().signal,
+    operation: 'payment.intents.create',
+    security: access(),
+    headers: {},
+    rawBody: '{}',
+    idempotencyKey: 'request:one',
+  };
+}
+function readContext() {
+  return { ...baseContext(), transaction: {} };
+}
+function writeContext() {
+  return { ...baseContext(), transaction: {} };
+}

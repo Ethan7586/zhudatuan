@@ -1,5 +1,5 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { ReferralBinding, type ReferralSource } from '../../domain/model/ReferralBinding';
 import { AttributionPolicy } from '../../domain/policy/AttributionPolicy';
 import type { ReferralRepository } from '../port/ReferralRepository';
@@ -27,19 +27,7 @@ export class BindReferral {
     if (setting?.enabled !== true || !periodValid) throw new DomainError('REFERRAL_INVALID_TOKEN');
     const relation = await this.referrals.attribution(context, input.scopeId, input.promoterId, input.boundAt);
     if (!relation) throw new DomainError('REFERRAL_INVALID_TOKEN');
-    const candidate = new ReferralBinding(
-      input.id,
-      input.scopeId,
-      input.customerId,
-      input.promoterId,
-      relation.promoterMemberId,
-      input.fingerprint,
-      input.source,
-      input.boundAt,
-      input.expiresAt,
-      'active',
-      1
-    );
+    const candidate = new ReferralBinding(input.id, input.scopeId, input.customerId, input.promoterId, relation.promoterMemberId, input.fingerprint, input.source, input.boundAt, input.expiresAt, 'active', 1);
     const current = await this.referrals.binding(context, input.scopeId, input.customerId);
     const existing = current ? referralBinding(current) : undefined;
     const selected = this.policy.choose(existing, candidate, relation.ancestors, new Date(input.boundAt));

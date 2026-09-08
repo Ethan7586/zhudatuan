@@ -1,9 +1,9 @@
-import { PgOutbox } from '../../../../adapter/database/PgOutbox';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import { SystemClock } from '../../../../foundation/domain/Clock';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import type { WriteDatabaseWorkload } from '../../../../foundation/persistence/Workload';
+import { PgOutbox } from '../../../../platform/database/PgOutbox';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import { SystemClock } from '@shop/kernel';
+import type { DatabasePool } from '../../../../platform/database/Pool';
+import type { WriteDatabaseWorkload } from '../../../../platform/database/Workload';
 import { ReceiveOrder } from './ReceiveOrder';
 import type { ReceiveOrderInput, ReceiveOrderOutput } from '../../public/OrderReceiptPort';
 import type { OrderReceiptPort } from '../../public/OrderReceiptPort';
@@ -15,7 +15,7 @@ export class PgOrderReceiptPort implements OrderReceiptPort {
     private readonly workload: WriteDatabaseWorkload = 'command'
   ) {
     this.transactions = new PgTransactionManager(pool);
-    this.command = new ReceiveOrder(new PgTransactionAccess(), new PgOutbox(this.transactions), SystemClock);
+    this.command = new ReceiveOrder(new PgTransactionAccess(), new PgOutbox(this.transactions), new SystemClock());
   }
   receive(input: ReceiveOrderInput): Promise<Readonly<ReceiveOrderOutput>> {
     const deadline = Date.now() + 15_000;

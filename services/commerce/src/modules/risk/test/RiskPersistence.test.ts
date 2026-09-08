@@ -9,7 +9,7 @@ describe('Risk persistence contract', () => {
   it('makes policy versions and decisions append-only', () => {
     expect(migration).toContain('risk_policyversion_immutable');
     expect(migration).toContain('risk_decision_immutable');
-    expect(migration).toContain("revoke update,delete on risk.policyversion,risk.decision");
+    expect(migration).toContain('revoke update,delete on risk.policyversion,risk.decision');
     expect(policyStore).not.toMatch(/update risk\.policyversion/);
   });
 

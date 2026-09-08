@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import type { Clock } from '../../../../foundation/domain/Clock';
-import { domainEvent } from '../../../../foundation/domain/DomainEvent';
-import type { OutboxWriter } from '../../../../foundation/messaging/Outbox';
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { bodyRecord } from '../../../../foundation/application/Validation';
+import type { Clock } from '@shop/kernel';
+import { domainEvent } from '@shop/kernel';
+import type { OutboxWriter } from '../../../../platform/messaging/Outbox';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { bodyRecord } from '../../../../pipeline/Validation';
 import type { CheckoutPricingPort } from '../../../pricing/public';
 import type { CheckoutPort } from '../../application/service/CheckoutPort';
 import { quoteResult } from '../../application/service/QuoteResult';

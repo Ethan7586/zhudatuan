@@ -15,11 +15,7 @@ describe('PgTicketRepository order lookup', () => {
       {} as never
     );
 
-    await withReadTransaction(query, (context) => repository.readCases(
-      context,
-      { query: { limit: 50, orderId: 'order:one' } },
-      {} as never
-    ));
+    await withReadTransaction(query, (context) => repository.readCases(context, { query: { limit: 50, orderId: 'order:one' } }, {} as never));
 
     const read = query.mock.calls.find(([sql]) => sql.includes('from support.ticket'));
     expect(read?.[0]).toContain('conversation.order_id=$17');

@@ -5,37 +5,51 @@ import { isTest, location, moduleReferences, relative, root, ts } from '../sourc
 import { literalText, objectProperties, target, unique, violation } from './catalog.mjs';
 
 export function auditJobs(sourceFiles, sourceSet) {
-  const registryName = path.join(root, 'services/commerce/src/foundation/application/JobCatalog.ts');
+  const registryName = path.join(root, 'services/commerce/src/pipeline/JobCatalog.ts');
   if (!fs.existsSync(registryName)) return [violation('JOB_REGISTRY_MISSING', relative(registryName), 'jobs')];
   const sourceFile = sourceFiles.get(registryName);
   if (!sourceFile) return [violation('JOB_REGISTRY_UNPARSED', relative(registryName), 'not in TypeScript program')];
   const values = [];
   const seen = new Set();
+  const visited = new Set();
   let registrations = 0;
-  const visit = (node) => {
-    if (ts.isCallExpression(node)) {
-      const expressionName = ts.isIdentifier(node.expression) ? node.expression.text : ts.isPropertyAccessExpression(node.expression) ? node.expression.name.text : undefined;
-      if (['registerJob', 'defineJob'].includes(expressionName) && ts.isObjectLiteralExpression(node.arguments[0])) {
-        registrations += 1;
-        const properties = objectProperties(node.arguments[0], sourceFile);
-        const id = literalText(properties.get('id'));
-        const position = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
-        const location = `${relative(registryName)}:${position.line + 1}`;
-        if (!unique(values, seen, 'JOB', location, id)) return;
-        for (const field of ['owner', 'queue', 'concurrency', 'timeout', 'retry', 'lease', 'idempotency', 'deadLetter', 'runbook', 'worker']) {
-          if (!properties.has(field)) values.push(violation('JOB_FIELD_MISSING', location, `${id}:${field}`));
-        }
-        const runbook = literalText(properties.get('runbook'));
-        if (!runbook || !runbook.startsWith('docs/operations/') || !fs.existsSync(path.join(root, runbook))) {
-          values.push(violation('JOB_RUNBOOK_INVALID', location, `${id}:${runbook ?? 'missing'}`));
-        }
-        const worker = literalText(properties.get('worker'));
-        if (worker) target(values, 'JOB_WORKER', location, id, worker, sourceSet, { name: 'worker', bind: false });
-      }
+  const visitFile = (fileName) => {
+    if (visited.has(fileName)) return;
+    visited.add(fileName);
+    const current = sourceFiles.get(fileName);
+    if (!current) {
+      values.push(violation('JOB_REGISTRY_UNPARSED', relative(fileName), 'catalog dependency is not in TypeScript program'));
+      return;
     }
-    ts.forEachChild(node, visit);
+    const visit = (node) => {
+      if (ts.isCallExpression(node)) {
+        const expressionName = ts.isIdentifier(node.expression) ? node.expression.text : ts.isPropertyAccessExpression(node.expression) ? node.expression.name.text : undefined;
+        if (['registerJob', 'defineJob'].includes(expressionName) && ts.isObjectLiteralExpression(node.arguments[0])) {
+          registrations += 1;
+          const properties = objectProperties(node.arguments[0], current);
+          const id = literalText(properties.get('id'));
+          const position = current.getLineAndCharacterOfPosition(node.getStart(current));
+          const definitionLocation = `${relative(fileName)}:${position.line + 1}`;
+          if (!unique(values, seen, 'JOB', definitionLocation, id)) return;
+          for (const field of ['owner', 'queue', 'concurrency', 'timeout', 'retry', 'lease', 'idempotency', 'deadLetter', 'runbook', 'worker']) {
+            if (!properties.has(field)) values.push(violation('JOB_FIELD_MISSING', definitionLocation, `${id}:${field}`));
+          }
+          const runbook = literalText(properties.get('runbook'));
+          if (!runbook || !runbook.startsWith('docs/operations/') || !fs.existsSync(path.join(root, runbook))) {
+            values.push(violation('JOB_RUNBOOK_INVALID', definitionLocation, `${id}:${runbook ?? 'missing'}`));
+          }
+          const worker = literalText(properties.get('worker'));
+          if (worker) target(values, 'JOB_WORKER', definitionLocation, id, worker, sourceSet, { name: 'worker', bind: false });
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(current);
+    for (const reference of moduleReferences(current)) {
+      if (reference.target && path.dirname(reference.target) === path.dirname(registryName)) visitFile(reference.target);
+    }
   };
-  visit(sourceFile);
+  visitFile(registryName);
   if (!registrations) values.push(violation('JOB_REGISTRY_EMPTY', relative(registryName), 'registerJob/defineJob'));
   auditModuleJobs(values, sourceFiles);
   return values;
@@ -51,7 +65,7 @@ function auditModuleJobs(values, sourceFiles) {
       values.push(violation('JOB_FACTORY_PATH_INVALID', name, 'must be under interface/job'));
     }
     for (const reference of moduleReferences(sourceFile)) {
-      if (isJobEntry && (reference.specifier.includes('/infrastructure/') || /foundation\/persistence\/(?:Pool|TransactionContext|TransactionManager)$/.test(reference.specifier))) {
+      if (isJobEntry && (reference.specifier.includes('/infrastructure/') || /platform\/database\/(?:Pool|TransactionContext|TransactionManager)$/.test(reference.specifier))) {
         values.push(violation('JOB_ENTRY_DEPENDENCY_INVALID', `${name}:${reference.line}`, reference.specifier));
       }
     }

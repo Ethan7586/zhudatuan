@@ -1,6 +1,6 @@
 import type { OperationInputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler } from '../../../../pipeline/OperationHandler';
 import type { AccountReadRepository } from '../port/FinanceReadRepository';
 
 export class OverviewReadHandler implements OperationHandler<'finance.overview.read', 'read'> {

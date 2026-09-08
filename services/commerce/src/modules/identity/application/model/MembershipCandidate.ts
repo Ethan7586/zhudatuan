@@ -28,7 +28,6 @@ export function membershipCandidate(value: IdentityMembership): MembershipCandid
   });
 }
 
-
 export function membershipView(value: MembershipCandidate): MembershipView {
   return Object.freeze({
     id: value.id,

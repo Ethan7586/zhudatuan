@@ -14,7 +14,8 @@ export class Shipment {
 
   static create(value: ShipmentSnapshot): Shipment {
     if (!value.id || !value.fulfillment || !Number.isSafeInteger(value.version) || value.version < 0 || value.limits.length === 0) throw new Error('FULFILLMENT_SHIPMENT_INVALID');
-    if (new Set(value.limits.map(({ line }) => line)).size !== value.limits.length || value.limits.some(({ line, quantity }) => !line || !Number.isSafeInteger(quantity) || quantity <= 0)) throw new Error('FULFILLMENT_SHIPMENT_LINES_INVALID');
+    if (new Set(value.limits.map(({ line }) => line)).size !== value.limits.length || value.limits.some(({ line, quantity }) => !line || !Number.isSafeInteger(quantity) || quantity <= 0))
+      throw new Error('FULFILLMENT_SHIPMENT_LINES_INVALID');
     const shipment = new Shipment(Object.freeze({ ...value, limits: Object.freeze(value.limits.map((line) => Object.freeze({ ...line }))), packages: Object.freeze([...value.packages]) }));
     shipment.assertQuantity();
     return shipment;

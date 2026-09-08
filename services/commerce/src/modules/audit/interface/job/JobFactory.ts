@@ -1,9 +1,9 @@
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { KMS_CLIENT } from '../../../../foundation/application/KmsPort';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { KMS_CLIENT } from '../../../../pipeline/KmsPort';
 import { OBJECT_STORE } from '../../../runtime/public/ObjectPort';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { ArchiveAudit } from '../../application/process/ArchiveAudit';
 import { PgAuditRepository } from '../../infrastructure/persistence/PgAuditRepository';
 import { AuditArchiveJob } from './AuditArchiveJob';

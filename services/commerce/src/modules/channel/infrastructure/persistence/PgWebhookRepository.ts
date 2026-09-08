@@ -1,6 +1,7 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { systemAuthorizationEvidence } from '../../../../platform/security/AuthorizationEvidence';
 import type { WebhookRepository } from '../../application/port/WebhookRepository';
 export class PgWebhookRepository implements WebhookRepository {
   constructor(private readonly transactions: PgTransactionAccess) {}
@@ -21,8 +22,7 @@ export class PgWebhookRepository implements WebhookRepository {
       id: string;
       state: string;
       replayed: boolean;
-    }>(`select id,state,replayed from channel.accept_webhook($1,$2,$3,$4,$5,$6,$7,$8)`, [input.connection, input.external,
-      input.ciphertext, input.keyVersion, input.rawHash, input.signatureHash, input.receivedAt, input.trace]);
+    }>(`select id,state,replayed from channel.accept_webhook($1,$2,$3,$4,$5,$6,$7,$8)`, [input.connection, input.external, input.ciphertext, input.keyVersion, input.rawHash, input.signatureHash, input.receivedAt, input.trace]);
     if (!result.rows[0]) throw new Error('CHANNEL_WEBHOOK_ACCEPT_FAILED');
     const accepted = result.rows[0];
     if (!accepted.replayed) {
@@ -33,8 +33,7 @@ export class PgWebhookRepository implements WebhookRepository {
         scope: context.scope,
         payload: { receipt: accepted.id },
         priority: 10,
-        authorization: { kind: 'system', actor: context.actor, scope: context.scope, operation: context.operation,
-          source: 'provider', capturedAt: new Date().toISOString() },
+        authorization: systemAuthorizationEvidence(context, 'provider', new Date()),
       });
     }
     return Object.freeze({ ...accepted });

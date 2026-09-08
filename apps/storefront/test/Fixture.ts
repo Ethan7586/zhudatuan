@@ -4,7 +4,8 @@ import type { Profile } from '../src/feature/account/model/Profile';
 
 export function productFixture(overrides: Partial<Product> = {}): Product {
   return {
-    id: 'product-one',
+    listingId: 'listing-one',
+    productId: 'product-one',
     skuId: 'sku-one',
     title: '测试商品',
     subtitle: '生产数据映射测试',
@@ -26,7 +27,8 @@ export function productFixture(overrides: Partial<Product> = {}): Product {
     rating: 5,
     reviewCount: 0,
     deliverySla: '次日达',
-    purchasable: true,
+    qualification: { eligible: true, policyVersion: 1 },
+    saleability: { state: 'saleable', reasons: [] },
     version: '1',
     updatedAt: '2026-08-31T00:00:00.000Z',
     skus: [],

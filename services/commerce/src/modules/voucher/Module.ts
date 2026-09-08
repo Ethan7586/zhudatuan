@@ -1,7 +1,7 @@
-import { defineModule } from '../../bootstrap/DefinedModule';
-import { PgTransactionManager } from '../../adapter/database/PgTransactionManager';
-import { KMS_CLIENT } from '../../foundation/application/KmsPort';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
+import { defineModule } from '../../composition/DefinedModule';
+import { PgTransactionManager } from '../../platform/database/PgTransactionManager';
+import { KMS_CLIENT } from '../../pipeline/KmsPort';
+import { DATABASE_POOL } from '../../platform/database/Pool';
 import { OBJECT_STORE } from '../runtime/public/ObjectPort';
 import { MEMBER_ACCESS_PORT, TASK_AUTHORIZATION_PORT } from '../access/public';
 import { APPROVAL_PORT, APPROVAL_READ_PORT } from '../approval/public';
@@ -47,17 +47,9 @@ export const VoucherModule = defineModule(Manifest, {
     const vouchers = new PgVoucherRepository(new PgActivationRate(), members, organizations, finance);
     const application = new VoucherApplication(
       members,
-      new PgVoucherProductRepository(new VoucherProductReference(
-        context.ports.get(VOUCHER_CUSTOMER_PORT),
-        context.ports.get(CHECKOUT_QUALIFICATION_PORT),
-      )),
+      new PgVoucherProductRepository(new VoucherProductReference(context.ports.get(VOUCHER_CUSTOMER_PORT), context.ports.get(CHECKOUT_QUALIFICATION_PORT))),
       new PgCredentialPoolRepository(),
-      new PgCredentialRepository(
-        jobs,
-        context.ports.get(RUNTIME_IMPORT_PORT),
-        exports,
-        context.ports.get(IMPORT_OBJECT_PORT),
-      ),
+      new PgCredentialRepository(jobs, context.ports.get(RUNTIME_IMPORT_PORT), exports, context.ports.get(IMPORT_OBJECT_PORT)),
       new PgStockRequestRepository(approval, decisions),
       new PgIssueOrderRepository(approval, decisions, jobs, exports),
       new PgActionBatchRepository(jobs, exports),
@@ -65,17 +57,9 @@ export const VoucherModule = defineModule(Manifest, {
       new PgTenderRepository(finance, organizations),
       new PreparedVoucherSearch(new PgVoucherSearch(), protector),
       new PgVoucherExport(exports, jobs),
-      new VoucherActivation(vouchers, protector),
+      new VoucherActivation(vouchers, protector)
     );
-    return [
-      ...createVoucherHandlers(application),
-      new ExportsGetHandler(
-        exports,
-        context.service(OBJECT_STORE),
-        context.ports.get(TASK_AUTHORIZATION_PORT),
-        new PgTransactionManager(context.service(DATABASE_POOL)),
-      ),
-    ];
+    return [...createVoucherHandlers(application), new ExportsGetHandler(exports, context.service(OBJECT_STORE), context.ports.get(TASK_AUTHORIZATION_PORT), new PgTransactionManager(context.service(DATABASE_POOL)))];
   },
   jobs: createJobs,
   events: [{ handler: 'voucherissue', events: EVENT_SUBSCRIPTIONS.voucherissue }],

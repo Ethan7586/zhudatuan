@@ -1,8 +1,6 @@
 export type AuditDetail = 'summary' | 'evidence';
 
-const SUMMARY_FIELDS = Object.freeze([
-  'id', 'kind', 'scope', 'operation', 'subject', 'object', 'outcome', 'reason', 'beforeHash', 'afterHash', 'recordHash', 'occurredAt',
-]);
+const SUMMARY_FIELDS = Object.freeze(['id', 'kind', 'scope', 'operation', 'subject', 'object', 'outcome', 'reason', 'beforeHash', 'afterHash', 'recordHash', 'occurredAt']);
 const EVIDENCE_FIELDS = Object.freeze([...SUMMARY_FIELDS, 'actor', 'request', 'evidence', 'trace', 'previousHash']);
 
 export class AuditFieldPolicy {

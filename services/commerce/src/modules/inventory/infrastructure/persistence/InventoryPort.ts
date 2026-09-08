@@ -1,7 +1,7 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { Clock } from '../../../../foundation/domain/Clock';
-import { SystemClock } from '../../../../foundation/domain/Clock';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { Clock } from '@shop/kernel';
+import { SystemClock } from '@shop/kernel';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { ReservationPolicy } from '../../domain/policy/ReservationPolicy';
 import type { StockDemand } from '../../public/StockDemand';
 import { PgReservationRepository } from './PgReservationRepository';
@@ -11,7 +11,7 @@ export class InventoryPort {
   private readonly stocks: PgStockRepository;
   private readonly reservations: PgReservationRepository;
 
-  constructor(transactions = new PgTransactionAccess(), clock: Clock = SystemClock, policy = new ReservationPolicy()) {
+  constructor(transactions = new PgTransactionAccess(), clock: Clock = new SystemClock(), policy = new ReservationPolicy()) {
     this.stocks = new PgStockRepository(transactions, clock);
     this.reservations = new PgReservationRepository(transactions, clock, policy);
   }
@@ -24,8 +24,7 @@ export class InventoryPort {
     return this.stocks.stock(context, skus, scopes);
   }
 
-  observe(context: WriteTransactionContext,
-    input: Readonly<{ id: string; scope: string; sku: string; location: string; onhand: number; safety: number; provider: string; version: string }>): Promise<void> {
+  observe(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; sku: string; location: string; onhand: number; safety: number; provider: string; version: string }>): Promise<void> {
     return this.stocks.observe(context, input);
   }
 

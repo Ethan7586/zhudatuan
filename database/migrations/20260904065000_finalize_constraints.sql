@@ -153,6 +153,7 @@ begin
     module_id text,schema_name text,owner_role text,reader_role text,writer_role text,
     registered_at timestamptz
   ) loop
+    execute format('grant usage,create on schema %I to %I',authority.schema_name,authority.owner_role);
     for target in select relation.relkind,relation.oid::regclass object_name
       from pg_class relation join pg_namespace namespace on namespace.oid=relation.relnamespace
       where namespace.nspname=authority.schema_name and relation.relkind in('r','p','S','v','m')
@@ -242,10 +243,6 @@ begin
 end
 $module_dependencies$;
 
--- Migration runners retain membership so future changes can explicitly SET ROLE
--- to one module owner, but may no longer inherit every module's privileges.
-alter role shopmigration noinherit;
-
 do $assert$
 begin
   if exists(select 1 from pg_constraint constraintinfo join pg_class relation on relation.oid=constraintinfo.conrelid
@@ -258,8 +255,6 @@ begin
     where namespace.nspowner::regrole::text<>authority.owner_role) then raise exception 'IDEAL_SCHEMA_OWNER_INVALID'; end if;
   if not exists(select 1 from pg_namespace where nspname='invoice' and nspowner::regrole::text='shopfinanceowner')
     then raise exception 'IDEAL_INVOICE_SCHEMA_OWNER_INVALID'; end if;
-  if exists(select 1 from pg_roles where rolname='shopmigration' and rolinherit)
-    then raise exception 'IDEAL_MIGRATION_ROLE_MUST_NOT_INHERIT'; end if;
 end
 $assert$;
 

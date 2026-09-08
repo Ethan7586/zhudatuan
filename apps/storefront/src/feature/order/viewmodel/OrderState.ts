@@ -8,7 +8,6 @@ import { ReadOrder } from '../application/ReadOrder';
 import { ReceiveOrder } from '../application/ReceiveOrder';
 import { RemindOrder } from '../application/RemindOrder';
 import { CancelOrder } from '../application/CancelOrder';
-import { toFrontendOrders } from './OrderPresentation';
 import { useDependencies } from '../../../app/DependencyContext';
 import { presentError } from '@shop/presentation';
 
@@ -35,7 +34,10 @@ export function useOrderState(mall: EnterpriseMall, orderId?: string) {
   const receiveOrder = async (id: string, version: number) => {
     if (!session.session) throw new Error('AUTHENTICATION_REQUIRED');
     await receiveCommand.current.execute(session.session, id, version);
-    await client.invalidateQueries({ queryKey: StorefrontQuery.orders(session.query.scoped) });
+    await Promise.all([
+      client.invalidateQueries({ queryKey: StorefrontQuery.orders(session.query.scoped) }),
+      client.invalidateQueries({ queryKey: StorefrontQuery.order(session.query.scoped, id) }),
+    ]);
   };
   const remindOrder = async (id: string) => {
     if (!session.session) throw new Error('AUTHENTICATION_REQUIRED');
@@ -52,7 +54,9 @@ export function useOrderState(mall: EnterpriseMall, orderId?: string) {
   };
   return Object.freeze({
     orders,
-    presentationOrders: toFrontendOrders(orders, []),
+    listState: list.isPending ? ('loading' as const) : list.isError ? ('failed' as const) : orders.length === 0 ? ('empty' as const) : ('ready' as const),
+    listError: list.error ? presentError(list.error).message : null,
+    refreshList: () => void list.refetch(),
     detail: detail.data ?? null,
     detailState: detail.isPending ? ('loading' as const) : detail.isError ? ('failed' as const) : detail.data === null ? ('empty' as const) : ('ready' as const),
     detailError: detail.error ? presentError(detail.error).message : null,

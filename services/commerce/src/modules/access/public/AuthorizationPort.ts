@@ -1,8 +1,8 @@
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
 import type { Scope, ScopeGrant } from '@shop/authz';
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import { publicPort } from '../../../composition/ModuleRegistry';
 
-import type { AuthorizationRole } from '../../../foundation/security/AuthorizationSnapshot';
+import type { AuthorizationRole } from '../../../platform/security/AuthorizationSnapshot';
 export interface AuthorizationSnapshot {
   readonly membership: string;
   readonly active: boolean;

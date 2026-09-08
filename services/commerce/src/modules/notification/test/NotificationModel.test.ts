@@ -21,9 +21,20 @@ describe('notification domain invariants', () => {
   });
 
   it('requires ordered attempt evidence and an immutable deduplication key', () => {
-    expect(() => new Dispatch('dispatch:one', 'mall:one', 'member:one', 'template:one', 'email', 'token', {}, '标题', '正文', 'retrying', 'event:one:email', [{
-      sequence: 2, provider: 'mail', state: 'failed', errorClass: 'retryable', errorCode: 'TIMEOUT', externalId: null, attemptedAt: '2026-09-05T00:00:00Z',
-    }])).toThrow('NOTIFICATION_ATTEMPT_INVALID');
+    expect(
+      () =>
+        new Dispatch('dispatch:one', 'mall:one', 'member:one', 'template:one', 'email', 'token', {}, '标题', '正文', 'retrying', 'event:one:email', [
+          {
+            sequence: 2,
+            provider: 'mail',
+            state: 'failed',
+            errorClass: 'retryable',
+            errorCode: 'TIMEOUT',
+            externalId: null,
+            attemptedAt: '2026-09-05T00:00:00Z',
+          },
+        ])
+    ).toThrow('NOTIFICATION_ATTEMPT_INVALID');
   });
 
   it('only allows forward announcement transitions', () => {

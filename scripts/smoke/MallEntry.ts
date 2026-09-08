@@ -1,6 +1,6 @@
 import { NETWORK_CATALOG } from '@shop/config/networkcatalog';
 import { parseStorefrontEntryUrl, parseStorefrontHandle } from '@shop/contract';
-import { qrMatrix } from '@shop/design/qrcode';
+import { qrMatrix } from '@shop/design/atom/QrCode';
 import jsQR from 'jsqr';
 
 const target = process.env.SHOP_SMOKE_MALL_URL;

@@ -5,8 +5,23 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const output = join(root, 'docs/evidence/frontend/files.json');
-const sourceRoots = ['apps/auth', 'apps/console', 'apps/storefront', 'apps/miniapp', 'apps/store', 'apps/supplier', 'packages/design', 'packages/presentation', 'packages/sdk', 'packages/contract', 'packages/testing', 'packages/authz', 'packages/config', 'packages/telemetry'];
-const authorityFiles = ['config/visuals.yml', 'config/navigation.yml', 'docs/architecture/前端整体重构方案.md', 'docs/architecture/福利商城理想方案20260904.md', 'docs/architecture/福利商城代码修改清单20260904.md'];
+const sourceRoots = [
+  'apps/auth',
+  'apps/console',
+  'apps/storefront',
+  'apps/miniapp',
+  'apps/store',
+  'apps/supplier',
+  'packages/design',
+  'packages/presentation',
+  'packages/sdk',
+  'packages/contract',
+  'packages/testing',
+  'packages/authz',
+  'packages/config',
+  'packages/telemetry',
+];
+const authorityFiles = ['config/visuals.yml', 'config/navigation.yml', 'docs/architecture/福利商城理想方案20260904.md', 'docs/architecture/福利商城代码修改清单20260904.md'];
 const excludedDirectories = new Set(['.next', '.vinext', '.wrangler', 'coverage', 'dist', 'node_modules', 'storybook-static']);
 
 const entries = [];

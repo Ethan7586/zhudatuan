@@ -1,4 +1,4 @@
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import type { SettlementOutcome, SettlementReceipt } from '../../application/port/CommissionSettlementProcess';
 
 export async function recordSettlementReceipt(

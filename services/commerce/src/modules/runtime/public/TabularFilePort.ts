@@ -1,4 +1,4 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import { publicPort } from '../../../composition/ModuleRegistry';
 
 export interface TabularFilePort {
   batches(reference: string, sha256: string): AsyncIterable<readonly Readonly<Record<string, string>>[]>;

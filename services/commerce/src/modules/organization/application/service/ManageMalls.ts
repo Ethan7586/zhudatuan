@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { Mall, type MallPatch } from '../../domain/model/Mall';
 import { Membership } from '../../domain/model/Membership';
 import { HierarchyPolicy } from '../../domain/policy/HierarchyPolicy';

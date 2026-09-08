@@ -1,8 +1,8 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
 import type { ExperienceValidator } from '../service/ExperienceValidator';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 
 export class VersionsValidateHandler implements OperationHandler<'experience.versions.validate', 'write'> {
   readonly operation = 'experience.versions.validate' as const;

@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../../platform/error/DomainError';
 import { WECOM_PROVIDER_CONFIGURATION } from '@shop/config/server';
 import type { FederatedIdentityProvider, FederationCallback, FederationStart, ProviderHealth } from '../../../application/port/FederatedIdentityProvider';
 import { FederatedSubject } from '../../../domain/model/FederatedSubject';

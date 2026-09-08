@@ -20,7 +20,7 @@ test('匿名用户读取真实发布目录且不依赖 Commerce Mock', async ({ 
   await expect(page.getByText('暖心生活关怀礼盒').first()).toBeVisible();
   await expect(page.getByText('工作日营养餐券').first()).toBeVisible();
   await expect(page.getByText('全国通兑电影票').first()).toBeVisible();
-  expect(new Set(operations)).toEqual(new Set(['/api/v1/storefront/bootstrap', '/api/v1/storefront/catalog']));
+  expect(new Set(operations)).toEqual(new Set(['/api/v1/storefront/bootstrap', '/api/v1/storefront/catalog', '/api/v1/carts/current']));
   await expectResponsivePage(page);
   await expectWcagAA(page);
 });
@@ -35,7 +35,7 @@ test('员工深链登录后读取真实购物车与商品权威信息', async ({
   await expect(page.getByText('暖心生活关怀礼盒')).toBeVisible();
   await expect(page.getByText('正在读取购物车…')).toHaveCount(0);
   expect(operations).toContain('/api/v1/carts/current');
-  expect(operations).toContain('/api/v1/storefront/catalog');
+  await expect.poll(() => operations).toContain('/api/v1/storefront/catalog');
   await expectResponsivePage(page);
   await expectWcagAA(page);
 });

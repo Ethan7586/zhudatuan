@@ -8,7 +8,10 @@ describe('Runtime WorkerRegistry', () => {
     const registry = new WorkerRegistry();
     registry.register('runtime', ['outboxrelay', 'scheduler'], { id: 'outboxrelay', worker });
     registry.register('runtime', ['outboxrelay', 'scheduler'], { id: 'scheduler', worker });
-    registry.freeze([{ owner: 'runtime', id: 'outboxrelay' }, { owner: 'runtime', id: 'scheduler' }]);
+    registry.freeze([
+      { owner: 'runtime', id: 'outboxrelay' },
+      { owner: 'runtime', id: 'scheduler' },
+    ]);
     expect(registry.all().map(({ id }) => id)).toEqual(['outboxrelay', 'scheduler']);
     expect(() => registry.register('runtime', ['cleanup'], { id: 'cleanup', worker })).toThrow('WORKER_REGISTRY_FROZEN');
   });
@@ -19,7 +22,11 @@ describe('Runtime WorkerRegistry', () => {
     const duplicate = new WorkerRegistry();
     duplicate.register('runtime', ['scheduler'], { id: 'scheduler', worker });
     expect(() => duplicate.register('runtime', ['scheduler'], { id: 'scheduler', worker })).toThrow('WORKER_DUPLICATE');
-    expect(() => duplicate.freeze([{ owner: 'runtime', id: 'scheduler' }, { owner: 'runtime', id: 'outboxrelay' }]))
-      .toThrow('WORKER_REGISTRY_INCOMPLETE:1:2');
+    expect(() =>
+      duplicate.freeze([
+        { owner: 'runtime', id: 'scheduler' },
+        { owner: 'runtime', id: 'outboxrelay' },
+      ])
+    ).toThrow('WORKER_REGISTRY_INCOMPLETE:1:2');
   });
 });

@@ -1,5 +1,5 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
 
 export interface TaskAuthorizationPort {
   assert(context: ReadTransactionContext, evidence: Readonly<Record<string, unknown>>): Promise<void>;

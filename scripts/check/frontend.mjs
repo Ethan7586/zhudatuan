@@ -305,24 +305,24 @@ function auditManifestContracts() {
 
 function auditCommonExperienceContracts() {
   const proofs = Object.freeze([
-    ['packages/design/src/ResourcePanel.tsx', ['SectionBoundary', 'ResourceState']],
-    ['packages/design/src/Drawer.tsx', ['SectionBoundary']],
+    ['packages/design/src/organism/ResourcePanel.tsx', ['SectionBoundary', 'ResourceState']],
+    ['packages/design/src/organism/Drawer.tsx', ['SectionBoundary']],
     ['packages/design/src/organism/Dialog.tsx', ['SectionBoundary']],
-    ['packages/design/src/RouteScroll.tsx', ['maximumEntries', 'scrollRestoration', 'positions.get(entry)']],
+    ['packages/design/src/molecule/RouteScroll.tsx', ['maximumEntries', 'scrollRestoration', 'positions.get(entry)']],
     ['apps/auth/src/route/Router.tsx', ['RouteScroll', 'location.key']],
     ['apps/console/src/shell/ScopeShell.tsx', ['RouteScroll', 'location.key']],
     ['apps/storefront/src/route/Scroll.tsx', ['RouteScroll', 'key']],
     ['apps/store/src/app/StoreApp.tsx', ['RouteScroll', 'location.entry']],
     ['apps/supplier/src/app/SupplierApp.tsx', ['RouteScroll', 'location.entry']],
-    ['packages/design/src/tokens.css', ['--sw-min-touch-target: 2.75rem']],
+    ['packages/design/src/token/Tokens.css', ['--sw-min-touch-target: 2.75rem']],
   ]);
   for (const [file, tokens] of proofs) {
     const source = fs.readFileSync(path.join(root, file), 'utf8');
     for (const token of tokens) if (!source.includes(token)) add('COMMON_EXPERIENCE_CONTRACT_MISSING', file, token);
   }
-  const stateSource = fs.readFileSync(path.join(root, 'packages/design/src/ResourceState.tsx'), 'utf8');
+  const stateSource = fs.readFileSync(path.join(root, 'packages/design/src/organism/ResourceState.tsx'), 'utf8');
   for (const state of ['loading', 'empty', 'forbidden', 'unavailable', 'notconfigured', 'notfound']) {
-    if (!stateSource.includes(`'${state}'`)) add('RESOURCE_STATE_CONFLATED', 'packages/design/src/ResourceState.tsx', state);
+    if (!stateSource.includes(`'${state}'`)) add('RESOURCE_STATE_CONFLATED', 'packages/design/src/organism/ResourceState.tsx', state);
   }
 }
 

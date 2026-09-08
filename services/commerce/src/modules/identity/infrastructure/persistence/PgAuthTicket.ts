@@ -1,8 +1,8 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { AuthTarget } from '@shop/config/server';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { AuthTicketBinding, AuthTicketPort } from '../../application/port/AuthTicketPort';
 import { AuthTransaction } from '../../domain/model/AuthTransaction';
 export class PgAuthTicket implements AuthTicketPort {

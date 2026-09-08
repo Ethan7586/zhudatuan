@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ProviderOperationRepository } from '../../application/port/ProviderOperationRepository';
 import { ChannelOperationPort, operation, type ProviderOperationRow } from './ChannelOperationPort';
 import { ChannelPolicy } from '../../domain/policy/ChannelPolicy';

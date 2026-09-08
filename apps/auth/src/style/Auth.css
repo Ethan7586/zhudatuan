@@ -1,8 +1,8 @@
 @layer reset, shell, component, feature, state, responsive;
 
-@import '@shop/design/tokens.css' layer(reset);
-@import '@shop/design/base.css' layer(reset);
-@import '@shop/design/command.css' layer(component);
+@import '@shop/design/token/Tokens.css' layer(reset);
+@import '@shop/design/token/Base.css' layer(reset);
+@import '@shop/design/organism/CommandDialog.css' layer(component);
 @import './Reset.css';
 @import './Shell.css';
 @import './Form.css';

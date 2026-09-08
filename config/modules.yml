@@ -1,0 +1,36 @@
+version: 1
+owner: composition
+count: 33
+foundation: [runtime, observability]
+support: [navigation]
+business:
+  - identity
+  - organization
+  - access
+  - approval
+  - capability
+  - partner
+  - member
+  - qualification
+  - catalog
+  - pricing
+  - inventory
+  - experience
+  - marketing
+  - cart
+  - checkout
+  - order
+  - fulfillment
+  - verification
+  - payment
+  - voucher
+  - benefit
+  - finance
+  - channel
+  - support
+  - notification
+  - reporting
+  - referral
+  - risk
+  - audit
+  - extension

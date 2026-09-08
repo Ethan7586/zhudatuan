@@ -1,8 +1,8 @@
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { SupportContextPort, SupportContextView } from '../port/SupportPersistence';
-import { supportBoundary } from './SupportBoundary';
+import { exactSupportScope, supportBoundary } from './SupportBoundary';
 
 export interface SupportActorContext {
   readonly actor: string;
@@ -20,7 +20,7 @@ export class ReadSupportContext {
   async actor(context: ReadTransactionContext, execution: ExecutionContext): Promise<SupportActorContext> {
     const access = requireSession(execution.security);
     const scope = supportBoundary(access);
-    const [member, scopes] = await Promise.all([this.repository.member(context, access.membership.id), this.repository.descendants(context, scope)]);
+    const [member, scopes] = await Promise.all([this.repository.member(context, access.membership.id), exactSupportScope(access) ? Promise.resolve(Object.freeze([scope])) : this.repository.descendants(context, scope)]);
     return Object.freeze({ actor: access.actor.id, membership: access.membership.id, member, target: access.actor.target, scope, scopes, trace: access.trace });
   }
 

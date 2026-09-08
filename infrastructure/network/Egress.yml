@@ -1,0 +1,50 @@
+version: 1
+owner: security
+gateway: shop-provider-egress
+default: deny
+dns:
+  resolver: managed
+  dnssec: validate-when-published
+  rebinding: deny-private-and-linklocal
+  cacheMaximumSeconds: 300
+tls:
+  minimumVersion: '1.2'
+  verifyHostname: true
+  publicTrustOnly: true
+  certificateExpiryAlertDays: 21
+  redirects: sameApprovedHostOnly
+providers:
+  authority: config/providers.yml
+  hosts:
+    - { id: jdproduct, source: provider.jdproduct.endpoint, sandboxSource: provider.jdproduct.sandboxurl }
+    - { id: jdfresh, source: provider.jdfresh.endpoint, sandboxSource: provider.jdfresh.sandboxurl }
+    - { id: tmall, source: provider.tmall.endpoint, sandboxSource: provider.tmall.sandboxurl }
+    - { id: supplier, transport: local, egress: forbidden }
+    - { id: cake, source: provider.cake.endpoint, sandboxSource: provider.cake.sandboxurl }
+    - { id: flower, source: provider.flower.endpoint, sandboxSource: provider.flower.sandboxurl }
+    - { id: book, source: provider.book.endpoint, sandboxSource: provider.book.sandboxurl }
+    - { id: charge, source: provider.charge.endpoint, sandboxSource: provider.charge.sandboxurl }
+    - { id: foodvoucher, source: provider.foodvoucher.endpoint, sandboxSource: provider.foodvoucher.sandboxurl }
+    - { id: movie, source: provider.movie.endpoint, sandboxSource: provider.movie.sandboxurl }
+    - { id: meal, source: provider.meal.endpoint, sandboxSource: provider.meal.sandboxurl }
+services:
+  - { id: wechatpay, hosts: [api.mch.weixin.qq.com], ports: [443] }
+  - { id: wechatnotification, hosts: [api.weixin.qq.com], ports: [443] }
+  - { id: sms, hosts: [dysmsapi.aliyuncs.com], ports: [443] }
+  - { id: email, source: notification.email.endpoint, ports: [443] }
+validation:
+  dynamicHost: exact-host-from-approved-secret-version
+  privateAddress: forbidden
+  ipLiteral: forbidden
+  credentialsInUrl: forbidden
+  queryCredential: forbidden
+  resolvedAddressPinning: request-lifetime
+bulkhead:
+  authority: config/providers.yml#providers
+  partition: provider+scope+capability
+  queueOverflow: reject
+circuit:
+  authority: config/providers.yml#providers
+  halfOpenProbe: single
+  failureIsolation: provider+capability
+audit: [provider, scope, capability, destinationHost, certificateFingerprint, result, durationBucket, trace]

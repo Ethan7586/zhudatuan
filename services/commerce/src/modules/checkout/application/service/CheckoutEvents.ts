@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { domainEvent } from '../../../../foundation/domain/DomainEvent';
-import type { OutboxWriter } from '../../../../foundation/messaging/Outbox';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { OperationRequest } from '../../../../pipeline/OperationHandler';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { domainEvent } from '@shop/kernel';
+import type { OutboxWriter } from '../../../../platform/messaging/Outbox';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CheckoutQuote } from '../../domain/model/CheckoutQuote';
 
 export async function appendCheckoutEvents(

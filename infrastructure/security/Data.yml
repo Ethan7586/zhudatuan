@@ -1,0 +1,62 @@
+version: 1
+owner: privacy
+classification:
+  public:
+    examples: [published product title, public mall theme, public help text]
+    encryption: platform-default
+    log: allowed-with-volume-control
+    retention: business-lifecycle
+  internal:
+    examples: [operation code, configuration version, provider health, aggregate id]
+    encryption: at-rest-and-transit
+    log: low-cardinality-only
+    retention: operational-policy
+  sensitive:
+    examples: [mobile, email, address, employee number, device risk, invoice profile]
+    encryption: envelope-kms
+    tokenization: searchable-fields
+    display: masked
+    log: forbidden
+    retention: purpose-bound
+  restricted:
+    examples: [voucher code, payment private key, provider credential, identity subject, action proof]
+    encryption: envelope-kms-distinct-context
+    tokenization: required-when-searchable
+    display: never-or-last-four
+    log: forbidden
+    export: stepup-and-watermark
+    retention: legal-and-domain-minimum
+purposes:
+  transaction: [order, payment, fulfillment, refund, finance]
+  employmentbenefit: [member, qualification, benefit, voucher]
+  support: [ticket, message, attachment]
+  security: [session, device, risk, audit]
+  legal: [invoice, settlement, auditarchive]
+controls:
+  collection: minimum-fields-for-declared-purpose
+  purposeChange: privacy-review
+  fieldClassification: contract-required
+  encryptionContext: [tenant, scope, aggregate, field]
+  keyVersionStorage: reference-only
+  plaintextCache: forbidden
+  traceAttributes: allowlist
+  analytics: deidentified-projection-only
+  testData: synthetic
+  crossBorder: explicit-approval
+logs:
+  deny: [password, otp, token, cookie, authorization, mobile, email, address, voucherCode, paymentPayload, providerBody, secretRefValue]
+  identifiers: [requestId, traceId, operation, tenantHash, scopeKind, result, errorCode]
+  sanitizer: before-buffer-and-export
+  sanitizerFailure: drop-event-and-alert
+retention:
+  authority: privacy-policy-version
+  expiryEnforcement: scheduled-job
+  legalHold: immutable-reference
+  backups: expire-by-backup-policy
+  exports: short-lived
+deidentification:
+  directIdentifiers: erase-or-tokenize
+  quasiIdentifiers: generalize
+  financialFacts: retain-with-subject-detachment
+  auditFacts: retain-minimum-pseudonymous-proof
+  verification: reidentification-risk-review

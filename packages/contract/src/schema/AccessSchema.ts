@@ -4,147 +4,30 @@ import { OPERATION_TARGETS } from '../Surface';
 import { ACCESS_ROLE_TEMPLATE_CODES } from '../Vocabulary';
 import { createdInvitation } from './IdentitySchema';
 
-const text = string();
-const nullableText = union([text, nullSchema()]);
-const target = literal(OPERATION_TARGETS);
-const scopeKind = literal(OPERATION_SCOPE_KINDS);
-const count = number();
-const redirect = strictObject({ location: text });
-const page = <T>(item: ZodMiniType<T>) => strictObject({ items: array(item), count, nextCursor: optional(text) });
-
-const scope = strictObject({ kind: scopeKind, id: text, tenant: optional(text), name: optional(text), path: optional(array(strictObject({ kind: scopeKind, id: text }))) });
-const identityLink = strictObject({ id: text, provider: text, status: literal(['active', 'revoked']), version: number() });
-const providerType = literal(['wechat', 'wecomcorp', 'wecomsuite', 'oidc']);
-const providerStatus = literal(['draft', 'enabled', 'disabled', 'revoked']);
-const provider = strictObject({
-  id: text,
-  type: providerType,
-  tenantid: text,
-  issuer: nullableText,
-  clientid: text,
-  secretref: text,
-  status: providerStatus,
-  redirecturi: text,
-  scopes: array(text),
-  version: number(),
-  createdat: text,
-  updatedat: text,
-});
-const directoryStatus = literal(['draft', 'enabled', 'paused', 'disabled', 'revoked']);
-const directory = strictObject({ id: text, tenantid: text, organizationid: text, providerid: text, providertype: literal(['wecomcorp', 'wecomsuite']), status: directoryStatus, successfulversion: number(), version: number() });
-const directoryRun = strictObject({
-  id: text,
-  mode: literal(['full', 'incremental', 'event', 'reconcile']),
-  preview: boolean(),
-  state: literal(['queued', 'running', 'completed', 'failed', 'cancelled']),
-  read_count: number(),
-  applied_count: number(),
-  create_count: number(),
-  update_count: number(),
-  freeze_count: number(),
-  restore_count: number(),
-  conflict_count: number(),
-  ignored_count: number(),
-  watermark: nullableText,
-  started_at: nullableText,
-  completed_at: nullableText,
-  created_at: text,
-});
-
-interface NavigationContractNode {
-  readonly key: string;
-  readonly title: string;
-  readonly parent: string | null;
-  readonly order: number;
-  readonly operation: string;
-  readonly experience: Readonly<{
-    icon: string;
-    routeKey: string;
-    route: string;
-    component: string;
-    placement: 'primary' | 'secondary' | 'contextual';
-    disabled: boolean;
-    disabledReason: string | null;
-    breadcrumbs: readonly Readonly<{ key: string; title: string }>[];
-  }>;
-  readonly children: readonly NavigationContractNode[];
-}
-const navigationNode: ZodMiniType<NavigationContractNode> = lazy(() =>
-  strictObject({
-    key: text,
-    title: text,
-    parent: nullableText,
-    order: number(),
-    operation: text,
-    experience: strictObject({ icon: text, routeKey: text, route: text, component: text, placement: literal(['primary', 'secondary', 'contextual']), disabled: boolean(), disabledReason: nullableText, breadcrumbs: array(strictObject({ key: text, title: text })) }),
-    children: array(navigationNode),
-  })
-) as ZodMiniType<NavigationContractNode>;
-const ownerIdentity = strictObject({ membership: text, member: text, principal: text, displayName: text });
-const ownershipTransfer = strictObject({
-  id: text,
-  state: literal(['draft', 'pending', 'accepted', 'cancelled', 'expired']),
-  sourceMembership: text,
-  targetMembership: text,
-  targetMember: text,
-  targetPrincipal: text,
-  targetDisplayName: text,
-  formerOwnerMode: literal(['retain_admin', 'remove_admin']),
-  formerOwnerRole: nullableText,
-  formerOwnerRoleVersion: union([number(), nullSchema()]),
-  coolingUntil: text,
-  expiresAt: text,
-  version: number(),
-});
-const ownershipImpact = strictObject({
-  sourceMembership: text,
-  targetMembership: text,
-  ownershipVersion: number(),
-  targetAccessVersion: number(),
-  formerOwnerRoleVersion: union([number(), nullSchema()]),
-  affectedPeople: number(),
-  affectedScopes: number(),
-  warnings: array(text),
-});
-const roleImpact = strictObject({ affectedPeople: number(), affectedScopes: number(), addedAllows: array(text), removedAllows: array(text), addedDenies: array(text), removedDenies: array(text) });
-const capabilityDisabledReason = literal(['explicitdisabled', 'parentnotgranted', 'dependencyunhealthy', 'notgranted', 'expired', 'retired']);
-const capabilityImpact = strictObject({ operations: number(), dependentCapabilities: number(), descendantScopes: number(), navigationAffected: boolean() });
-const capabilityDependency = strictObject({ capabilityId: text, name: text, healthy: boolean(), reason: union([capabilityDisabledReason, nullSchema()]) });
-const capabilityAssignment = strictObject({
-  id: text,
-  scopeId: text,
-  capabilityId: text,
-  name: text,
-  kind: literal(['operation', 'feature', 'uiblock', 'quota', 'entitlement']),
-  state: literal(['enabled', 'disabled']),
-  configuredState: union([literal(['enabled', 'disabled']), nullSchema()]),
-  inheritedFrom: nullableText,
-  quota: union([number(), nullSchema()]),
-  effectiveAt: nullableText,
-  expiresAt: nullableText,
-  version: number(),
-  capabilityVersion: number(),
-  dependencyHealthy: boolean(),
-  disabledReason: union([capabilityDisabledReason, nullSchema()]),
-  dependencies: array(capabilityDependency),
-  impact: capabilityImpact,
-});
-const roleTemplateCode = literal(ACCESS_ROLE_TEMPLATE_CODES);
-const roleTemplate = strictObject({ code: roleTemplateCode, name: text, description: text, allows: array(text), denies: array(text), version: number() });
-const accessRole = strictObject({
-  id: text,
-  name: text,
-  description: text,
-  status: literal(['active', 'disabled']),
-  kind: literal(['custom', 'system', 'owner']),
-  template: union([roleTemplateCode, nullSchema()]),
-  version: number(),
-  allows: array(text),
-  denies: array(text),
-  affectedPeople: number(),
-  affectedScopes: number(),
-  members: array(strictObject({ membership: text, displayName: text, accessVersion: number() })),
-});
+import {
+  accessRole,
+  capabilityAssignment,
+  count,
+  directory,
+  directoryRun,
+  directoryStatus,
+  identityLink,
+  navigationNode,
+  nullableText,
+  ownerIdentity,
+  ownershipImpact,
+  ownershipTransfer,
+  page,
+  provider,
+  redirect,
+  roleImpact,
+  roleTemplate,
+  roleTemplateCode,
+  scope,
+  scopeKind,
+  target,
+  text,
+} from './AccessSchemaModel';
 
 export const SECURITY_BODY_SCHEMAS = {
   AccessOwnershipTransfersPreviewInput: strictObject({ targetMembership: string(), targetAccessVersion: number(), formerOwnerMode: literal(['retain_admin', 'remove_admin']), formerOwnerRole: optional(string()), reason: string() }),
@@ -214,8 +97,16 @@ export const SECURITY_OUTPUT_SCHEMAS = {
     strictObject({ action: literal('enable'), membershipId: text, status: literal('active'), accessVersion: number() }),
     strictObject({ action: literal('offboard'), membershipId: text, status: literal('left'), accessVersion: number() }),
     strictObject({
-      action: literal('registrationReset'), memberId: text, principalId: text, status: literal('reset'), loginIdentityReleased: literal(true),
-      historyRetained: literal(true), memberships: array(text), accessVersion: number(), profileVersion: number(), principalVersion: number(),
+      action: literal('registrationReset'),
+      memberId: text,
+      principalId: text,
+      status: literal('reset'),
+      loginIdentityReleased: literal(true),
+      historyRetained: literal(true),
+      memberships: array(text),
+      accessVersion: number(),
+      profileVersion: number(),
+      principalVersion: number(),
     }),
   ]),
   IdentityPasswordChangeOutput: strictObject({ credentialVersion: number(), version: number() }),
@@ -233,18 +124,32 @@ export const SECURITY_OUTPUT_SCHEMAS = {
 
   OrganizationLayersReadOutput: page(strictObject({ id: text, kind: scopeKind, parent_id: nullableText, parent_name: nullableText, name: text, timezone: text, status: literal(['draft', 'active', 'disabled']), version: number() })),
   AccessCenterReadOutput: strictObject({
-    items: array(strictObject({
-      id: text,
-      display_name: text,
-      employee_no: nullableText,
-      mobile_masked: nullableText,
-      client: target,
-      status: literal(['invited', 'active', 'suspended', 'left']),
-      access_version: number(),
-      roles: array(strictObject({ role: text, name: text, description: text, status: literal(['active', 'disabled']), kind: literal(['custom', 'system', 'owner']), template: union([roleTemplateCode, nullSchema()]), version: number(), allows: array(text), denies: array(text) })),
-      scopes: array(strictObject({ id: text, kind: scopeKind, scope: text, effect: literal(['allow', 'deny']), expires: nullableText })),
-      overrides: array(strictObject({ permission: text, effect: literal(['allow', 'deny']), expires: nullableText })),
-    })),
+    items: array(
+      strictObject({
+        id: text,
+        display_name: text,
+        employee_no: nullableText,
+        mobile_masked: nullableText,
+        client: target,
+        status: literal(['invited', 'active', 'suspended', 'left']),
+        access_version: number(),
+        roles: array(
+          strictObject({
+            role: text,
+            name: text,
+            description: text,
+            status: literal(['active', 'disabled']),
+            kind: literal(['custom', 'system', 'owner']),
+            template: union([roleTemplateCode, nullSchema()]),
+            version: number(),
+            allows: array(text),
+            denies: array(text),
+          })
+        ),
+        scopes: array(strictObject({ id: text, kind: scopeKind, scope: text, effect: literal(['allow', 'deny']), expires: nullableText })),
+        overrides: array(strictObject({ permission: text, effect: literal(['allow', 'deny']), expires: nullableText })),
+      })
+    ),
     count,
     nextCursor: optional(text),
     roles: array(accessRole),
@@ -263,15 +168,34 @@ export const SECURITY_OUTPUT_SCHEMAS = {
   AccessOwnershipTransfersPreviewOutput: strictObject({ ...ownershipImpact.shape, state: literal('draft'), formerOwnerMode: literal(['retain_admin', 'remove_admin']), formerOwnerRole: nullableText, coolingUntil: text, expiresAt: text }),
   AccessOwnershipTransfersCreateOutput: ownershipTransfer,
   AccessOwnershipTransfersAcceptPreviewOutput: strictObject({ transfer: ownershipTransfer, impact: ownershipImpact }),
-  AccessOwnershipTransfersAcceptOutput: strictObject({ ownership: strictObject({
-    state: literal('active'), version: number(), mobileReady: boolean(), owner: ownerIdentity,
-    candidates: array(strictObject({ membership: text, member: text, principal: text, displayName: text, roles: array(text), accessVersion: number(), mobileReady: boolean() })),
-    formerOwnerRoles: array(strictObject({ id: text, name: text, version: number() })), pending: union([ownershipTransfer, nullSchema()]),
-  }), transfer: ownershipTransfer }),
+  AccessOwnershipTransfersAcceptOutput: strictObject({
+    ownership: strictObject({
+      state: literal('active'),
+      version: number(),
+      mobileReady: boolean(),
+      owner: ownerIdentity,
+      candidates: array(strictObject({ membership: text, member: text, principal: text, displayName: text, roles: array(text), accessVersion: number(), mobileReady: boolean() })),
+      formerOwnerRoles: array(strictObject({ id: text, name: text, version: number() })),
+      pending: union([ownershipTransfer, nullSchema()]),
+    }),
+    transfer: ownershipTransfer,
+  }),
   AccessOwnershipTransfersCancelPreviewOutput: strictObject({ transfer: ownershipTransfer, impact: ownershipImpact, reason: text }),
   AccessOwnershipTransfersCancelOutput: ownershipTransfer,
   AccessRolesManageOutput: union([
-    strictObject({ action: literal('save'), id: text, scopeId: text, name: text, description: text, status: literal(['active', 'disabled']), version: number(), allowCount: number(), denyCount: number(), template: union([roleTemplateCode, nullSchema()]), impact: roleImpact }),
+    strictObject({
+      action: literal('save'),
+      id: text,
+      scopeId: text,
+      name: text,
+      description: text,
+      status: literal(['active', 'disabled']),
+      version: number(),
+      allowCount: number(),
+      denyCount: number(),
+      template: union([roleTemplateCode, nullSchema()]),
+      impact: roleImpact,
+    }),
     strictObject({ action: literal('status'), id: text, status: literal(['active', 'disabled']), version: number(), impact: roleImpact }),
     strictObject({ action: literal(['assign', 'revoke']), id: text, targetMembership: text, accessVersion: number(), changed: literal(true) }),
     strictObject({ action: literal('delete'), id: text, version: number(), deleted: literal(true), impact: roleImpact }),
@@ -281,7 +205,17 @@ export const SECURITY_OUTPUT_SCHEMAS = {
   CapabilityAssignmentsReadOutput: page(capabilityAssignment),
   CapabilityAssignmentsManageOutput: capabilityAssignment,
 
-  NavigationTreeReadOutput: strictObject({ scope: strictObject({ id: text, kind: scopeKind }), target, version: text, etag: text, generatedAt: text, catalogVersion: text, defaultKey: text, defaultRoute: text, nodes: array(navigationNode) }),
+  NavigationTreeReadOutput: strictObject({
+    scope: strictObject({ id: text, kind: scopeKind }),
+    target,
+    version: text,
+    etag: text,
+    generatedAt: text,
+    catalogVersion: text,
+    defaultKey: text,
+    defaultRoute: text,
+    nodes: array(navigationNode),
+  }),
   NavigationCatalogReadOutput: strictObject({
     version: text,
     hash: text,

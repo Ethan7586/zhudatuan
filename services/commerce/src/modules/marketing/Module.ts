@@ -1,4 +1,4 @@
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { defineModule } from '../../composition/DefinedModule';
 import { CampaignsCreateHandler } from './application/handler/CampaignsCreateHandler';
 import { CampaignsDisableHandler } from './application/handler/CampaignsDisableHandler';
 import { CampaignsPublishHandler } from './application/handler/CampaignsPublishHandler';

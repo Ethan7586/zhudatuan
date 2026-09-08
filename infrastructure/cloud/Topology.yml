@@ -1,18 +1,53 @@
-version: 1
+version: 2
 owner: reliability
+
+boundaries:
+  public:
+    ingress: [dns, tls, waf, cdn]
+    routes: [auth, console, storefront, miniapp, store, supplier, api]
+    target: edge
+  application:
+    ingress: [edge]
+    workloads: [api]
+    egress: [postgresql, redis, object, telemetry, secrets, kms]
+  worker:
+    ingress: []
+    workloads: [jobs]
+    egress: [postgresql, redis, object, telemetry, secrets, kms]
+  provider:
+    ingress: []
+    workloads: [provider]
+    egress: [postgresql, redis, object, telemetry, secrets, kms, approvedProviders]
+  migration:
+    ingress: []
+    workloads: [migration]
+    egress: [postgresql, telemetry, secrets, kms]
+
 regions:
   primary:
     mode: active
     zones: 2
-    api: { mode: activeactive, normalReplicas: 3, minimumReplicas: 2 }
-    jobs: { mode: activeactive, minimumReplicas: 2, lease: postgresql, fencing: monotonic }
-    provider: { mode: activeactive, zones: 2, minimumReplicas: 2, lease: postgresql, fencing: monotonic, autoscale: queueandratelimit }
-    postgresql: { writer: 1, synchronousStandby: true, readReplica: true }
-    redis: { primary: 1, replica: 1, authoritative: false }
-    queue: { quorum: 3 }
-    object: { private: true, versioned: true, crossRegionReplication: true }
+    workloads:
+      api: { mode: activeactive, normalReplicas: 3, minimumReplicas: 2, entry: ApiMain.js }
+      jobs: { mode: activeactive, normalReplicas: 2, minimumReplicas: 2, entry: JobsMain.js, lease: postgresql, fencing: monotonic }
+      provider: { mode: activeactive, normalReplicas: 2, minimumReplicas: 2, entry: ProviderMain.js, lease: postgresql, fencing: monotonic, autoscale: queueandratelimit }
+      migration: { mode: singleton, replicas: 1, entry: MigrationMain.js, concurrent: false }
+      smoke: { mode: ephemeral, replicas: 1, entry: SmokeMain.js }
+    data:
+      postgresql: { writer: 1, synchronousStandby: true, readReplica: true, pitr: true, encryption: kms }
+      redis: { primary: 1, replica: 1, authoritative: false, persistence: appendonly }
+      queue: { quorum: 3, authoritative: false, durable: true }
+      object: { private: true, versioned: true, crossRegionReplication: true, encryption: kms }
+    platform:
+      cdn: { mode: multipop, immutableArtifacts: true, atomicPointer: true }
+      secrets: { manager: managed, versioned: true, workloadIdentity: oidc }
+      kms: { mode: managed, audit: true, rotation: scheduled }
+      telemetry: { traces: managed, metrics: managed, logs: managed, piiFilter: beforeExport }
   recovery:
     mode: warmstandby
     separateRegion: true
-edge: { waf: multipop, cdn: multipop }
-secrets: { manager: managed, kms: managed, workloadIdentity: oidc }
+    activation: operatorApproved
+    data: [postgresql, object, configuration, manifests, keyMetadata]
+
+edge: { waf: multipop, cdn: multipop, originAuthentication: mtls, healthFailClosed: true }
+recovery: { rpoMinutes: 0, rtoMinutes: 15, exercise: quarterly }

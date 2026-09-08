@@ -1,10 +1,10 @@
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { Clock } from '../../../../foundation/domain/Clock';
-import { SystemClock } from '../../../../foundation/domain/Clock';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { boundedIdentifiers } from '../../../../foundation/persistence/BoundedIdentifiers';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { Clock } from '@shop/kernel';
+import { SystemClock } from '@shop/kernel';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { boundedIdentifiers } from '../../../../platform/database/BoundedIdentifiers';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { StockItem } from '../../domain/model/StockItem';
 import { StockSource } from '../../domain/model/StockSource';
 import { appendMovements } from './InventoryLedger';
@@ -13,14 +13,19 @@ import { inventoryDigest, restoreStock, stockEvent, type StockRow } from './Inve
 export class PgStockRepository {
   constructor(
     private readonly transactions = new PgTransactionAccess(),
-    private readonly clock: Clock = SystemClock
+    private readonly clock: Clock = new SystemClock()
   ) {}
 
   async availability(context: ReadTransactionContext, scope: string, skus: readonly string[]) {
     const selected = boundedIdentifiers(skus, 200, 'INVENTORY_AVAILABILITY_SKUS_INVALID');
     if (selected.length === 0) return Object.freeze([]);
     const result = await this.transactions.database(context).query<{
-      sku: string; stockitem: string; onhand: number; safety: number; reserved: number; version: number;
+      sku: string;
+      stockitem: string;
+      onhand: number;
+      safety: number;
+      reserved: number;
+      version: number;
     }>(
       `select distinct on(stock.sku_id) stock.sku_id sku,stock.id stockitem,stock.onhand::float8 onhand,
       stock.safety::float8 safety,coalesce(sum(reservation.quantity) filter(where reservation.state='reserved'
@@ -50,8 +55,7 @@ export class PgStockRepository {
     return Object.freeze(result.rows.map((row) => Object.freeze(row)));
   }
 
-  async observe(context: WriteTransactionContext,
-    input: Readonly<{ id: string; scope: string; sku: string; location: string; onhand: number; safety: number; provider: string; version: string }>): Promise<void> {
+  async observe(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; sku: string; location: string; onhand: number; safety: number; provider: string; version: string }>): Promise<void> {
     const database = this.transactions.database(context);
     const now = this.clock.now().toISOString();
     const current = await database.query<StockRow>(
@@ -59,18 +63,26 @@ export class PgStockRepository {
        coalesce(reservation.quantity,0)::float8 reserved,stock.version::integer,stock.status,stock.updated_at
        from inventory.stockitem stock left join lateral(select sum(value.quantity) quantity from inventory.reservation value
          where value.stockitem_id=stock.id and value.state='reserved' and value.expires_at>clock_timestamp()) reservation on true
-       where stock.scope_id=$1 and stock.sku_id=$2 and stock.location_id=$3 for update of stock`, [input.scope, input.sku, input.location]
+       where stock.scope_id=$1 and stock.sku_id=$2 and stock.location_id=$3 for update of stock`,
+      [input.scope, input.sku, input.location]
     );
     const existing = current.rows[0];
-    const stock = existing ? restoreStock(existing) : StockItem.create({ id: input.id, scope: input.scope, sku: input.sku,
-      location: input.location, onhand: input.onhand, safety: input.safety, state: 'active', updatedAt: now });
-    const source = StockSource.observe({ id: `source:${inventoryDigest(`${stock.snapshot().id}:${input.provider}:${input.version}`)}`,
-      stockitem: stock.snapshot().id, provider: input.provider, reference: input.version, onhand: input.onhand, observedAt: now }).snapshot();
+    const stock = existing ? restoreStock(existing) : StockItem.create({ id: input.id, scope: input.scope, sku: input.sku, location: input.location, onhand: input.onhand, safety: input.safety, state: 'active', updatedAt: now });
+    const source = StockSource.observe({
+      id: `source:${inventoryDigest(`${stock.snapshot().id}:${input.provider}:${input.version}`)}`,
+      stockitem: stock.snapshot().id,
+      provider: input.provider,
+      reference: input.version,
+      onhand: input.onhand,
+      observedAt: now,
+    }).snapshot();
     if (!existing) {
       const created = stock.snapshot();
-      await database.query(`insert into inventory.stockitem(id,scope_id,sku_id,location_id,onhand,safety,version,status,updated_at)
-        values($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [created.id, created.scope, created.sku, created.location, created.onhand,
-        created.safety, created.version, created.state, created.updatedAt]);
+      await database.query(
+        `insert into inventory.stockitem(id,scope_id,sku_id,location_id,onhand,safety,version,status,updated_at)
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [created.id, created.scope, created.sku, created.location, created.onhand, created.safety, created.version, created.state, created.updatedAt]
+      );
     }
     const observation = await database.query(
       `insert into inventory.snapshot(stockitem_id,observed_at,source,onhand,source_version)
@@ -82,12 +94,15 @@ export class PgStockRepository {
     const delta = input.onhand - (existing?.onhand ?? 0);
     if (existing && changed !== stock) {
       const next = changed.snapshot();
-      const result = await database.query(`update inventory.stockitem set onhand=$2,safety=$3,status=$4,version=$5,updated_at=$6
-        where id=$1 and version=$7 returning id`, [next.id, next.onhand, next.safety, next.state, next.version, next.updatedAt, stock.snapshot().version]);
+      const result = await database.query(
+        `update inventory.stockitem set onhand=$2,safety=$3,status=$4,version=$5,updated_at=$6
+        where id=$1 and version=$7 returning id`,
+        [next.id, next.onhand, next.safety, next.state, next.version, next.updatedAt, stock.snapshot().version]
+      );
       if (!result.rows[0]) throw new DomainError('VERSION_CONFLICT');
     }
-    if (delta !== 0) await appendMovements(database, [{ id: `movement:${source.id.slice('source:'.length)}`, stockitem: source.stockitem,
-      kind: 'adjust', quantity: delta, referenceKind: 'provider', reference: `${input.provider}:${input.version}` }]);
+    if (delta !== 0)
+      await appendMovements(database, [{ id: `movement:${source.id.slice('source:'.length)}`, stockitem: source.stockitem, kind: 'adjust', quantity: delta, referenceKind: 'provider', reference: `${input.provider}:${input.version}` }]);
     await new PgRuntimeWriter(database).append(stockEvent(context, changed.snapshot(), existing?.reserved ?? 0));
   }
 }

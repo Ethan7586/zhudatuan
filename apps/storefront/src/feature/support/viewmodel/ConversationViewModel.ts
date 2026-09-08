@@ -12,11 +12,9 @@ import { ReadConversation } from '../application/ReadConversation';
 import { SendMessage } from '../application/SendMessage';
 import { UpdateReadState } from '../application/UpdateReadState';
 import { UploadAttachment } from '../application/UploadAttachment';
-import { ListenSupportEvents } from '../application/ListenSupportEvents';
 import { mergeConversations } from '../model/ConversationMerge';
 import type { Conversation, MessageDraft } from '../model/Message';
-import { initialSupportEventState, reduceSupportEvent } from './SupportEventReducer';
-import { reconnectDelay } from './ReconnectDelay';
+import { useConversationRealtime } from './ConversationRealtime';
 
 export function useConversationViewModel(caseId: string) {
   const dependencies = useDependencies();
@@ -30,16 +28,13 @@ export function useConversationViewModel(caseId: string) {
   const sender = useRef(new SendMessage(dependencies.support));
   const uploader = useRef(new UploadAttachment(dependencies.support));
   const readUpdater = useRef(new UpdateReadState(dependencies.support));
-  const events = useRef(new ListenSupportEvents(dependencies.support));
   const ticketKey = useMemo(() => ['storefront', scope, 'support.ticket', caseId] as const, [caseId, scope]);
   const conversationKey = useMemo(() => ['storefront', scope, 'support.conversation', caseId] as const, [caseId, scope]);
   const [draft, setDraft] = useState(() => conversationDrafts.read(caseId));
   const [failed, setFailed] = useState<MessageDraft | null>(null);
-  const [connected, setConnected] = useState(false);
   const [notice, setNotice] = useState('');
   const [newMessage, setNewMessage] = useState(false);
   const lastRead = useRef(0);
-  const eventState = useRef(initialSupportEventState);
 
   const ticket = useQuery({
     queryKey: ticketKey,
@@ -71,7 +66,6 @@ export function useConversationViewModel(caseId: string) {
     setNotice('');
     setNewMessage(false);
     lastRead.current = 0;
-    eventState.current = initialSupportEventState;
   }, [caseId]);
 
   useEffect(() => {
@@ -85,48 +79,17 @@ export function useConversationViewModel(caseId: string) {
   const refreshLatest = useCallback(async () => {
     if (!session) return;
     const latest = await reader.current.execute(session, caseId);
+    const evidence = new Map(latest.attachments.map((item) => [item.id, item]));
+    const currentDraft = conversationDrafts.read(caseId);
+    updateDraft({ ...currentDraft, attachments: currentDraft.attachments.map((item) => {
+      const authoritative = evidence.get(item.id);
+      return authoritative ? { id: authoritative.id, name: authoritative.name, state: authoritative.state } : item;
+    }) });
     cache.setQueryData<InfiniteData<Conversation, string | undefined>>(conversationKey, (current) => (current ? { ...current, pages: [latest, ...current.pages.slice(1)] } : { pages: [latest], pageParams: [undefined] }));
-  }, [cache, caseId, conversationKey, session]);
+  }, [cache, caseId, conversationKey, session, updateDraft]);
 
-  useEffect(() => {
-    const conversationId = ticket.data?.conversationId;
-    if (!session || !conversationId) return;
-    const controller = new AbortController();
-    let reconnect = 0;
-    const listen = async () => {
-      while (!controller.signal.aborted) {
-        try {
-          setConnected(true);
-          await events.current.execute(
-            session,
-            conversationId,
-            (event) => {
-              const decision = reduceSupportEvent(eventState.current, event);
-              eventState.current = decision.state;
-              if (!decision.accepted || event.ticketId !== caseId) return;
-              if (event.evidenceId && (event.type === 'support.attachment.ready' || event.type === 'support.attachment.rejected')) {
-                const current = conversationDrafts.read(caseId);
-                updateDraft({ ...current, attachments: current.attachments.map((item) => (item.id === event.evidenceId ? { ...item, state: event.type === 'support.attachment.ready' ? 'clean' : 'rejected' } : item)) });
-              }
-              void Promise.all([refreshLatest(), refreshTicket()]);
-            },
-            controller.signal,
-            eventState.current.cursor
-          );
-          reconnect = 0;
-        } catch {
-          if (controller.signal.aborted) break;
-          setConnected(false);
-          setNotice('实时连接正在恢复，已同步服务器最新状态。');
-          await Promise.allSettled([refreshLatest(), refreshTicket()]);
-          await reconnectDelay(Math.min(5_000, 500 * 2 ** reconnect), controller.signal);
-          reconnect += 1;
-        }
-      }
-    };
-    void listen();
-    return () => controller.abort();
-  }, [caseId, refreshLatest, refreshTicket, session, ticket.data?.conversationId, updateDraft]);
+  const realtime = useMemo(() => ({ session, caseId, conversationId: ticket.data?.conversationId, refreshLatest, refreshTicket, updateDraft, notify: setNotice }), [caseId, refreshLatest, refreshTicket, session, ticket.data?.conversationId, updateDraft]);
+  const connected = useConversationRealtime(realtime);
 
   const send = useMutation({
     mutationFn: (value: MessageDraft) => sender.current.execute(requireSession(session), value),
@@ -189,11 +152,13 @@ export function useConversationViewModel(caseId: string) {
     state: conversation.isPending ? ('loading' as const) : conversation.isError ? ('failed' as const) : merged.items.length ? ('ready' as const) : ('empty' as const),
     messages: merged.items,
     attachments: merged.attachments,
+    context: merged.context,
     hasEarlier: Boolean(conversation.hasNextPage),
     loadingEarlier: conversation.isFetchingNextPage,
     draft,
     failed,
     sending: send.isPending,
+    uploading: upload.isPending,
     sendingDraft: send.variables ?? null,
     unavailable,
     newMessage,
@@ -211,6 +176,7 @@ export function useConversationViewModel(caseId: string) {
       upload: (file: File) => {
         if (!upload.isPending) upload.mutate({ file, localId: `upload:${crypto.randomUUID()}` });
       },
+      removeAttachment: (id: string) => updateDraft({ ...conversationDrafts.read(caseId), attachments: conversationDrafts.read(caseId).attachments.filter((item) => item.id !== id) }),
     }),
   });
 }

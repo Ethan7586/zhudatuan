@@ -47,9 +47,7 @@ describe('login challenge destination resolution', () => {
 
     expect(response).toMatchObject({ status: 202, body: { purpose: 'phone_change' } });
     expect(issued).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ principal: 'principal:one', purpose: 'phone_change', destinationHash: expect.stringMatching(/^[a-f0-9]{64}$/), queueDelivery: true, scope: 'mall:one' }));
-    expect((throttle.mock.calls[0]![1] as readonly (readonly [string, string])[]).map(([, bucket]) => bucket)).toEqual([
-      'send:phone_change', 'network:send:phone_change', 'device:send:phone_change',
-    ]);
+    expect((throttle.mock.calls[0]![1] as readonly (readonly [string, string])[]).map(([, bucket]) => bucket)).toEqual(['send:phone_change', 'network:send:phone_change', 'device:send:phone_change']);
   });
 });
 

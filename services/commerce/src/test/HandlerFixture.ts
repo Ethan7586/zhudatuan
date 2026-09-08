@@ -1,6 +1,6 @@
 import type { OperationId } from '@shop/contract';
-import type { HandlerContext } from '../foundation/application/HandlerContext';
-import type { ReadTransactionContext } from '../foundation/persistence/TransactionContext';
+import type { HandlerContext } from '../pipeline/HandlerContext';
+import type { ReadTransactionContext } from '../platform/database/TransactionContext';
 
 export function readHandlerContext<TKey extends OperationId>(operation: TKey, transaction: ReadTransactionContext, scope = 'mall:one'): HandlerContext<TKey> {
   return {

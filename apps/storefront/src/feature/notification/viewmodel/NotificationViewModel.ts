@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { presentError } from '@shop/presentation';
 import { useDependencies } from '../../../app/DependencyContext';
@@ -6,7 +6,8 @@ import { useSession } from '../../../entity/session/viewmodel/SessionContext';
 import { ChangePreference } from '../application/ChangePreference';
 import { MarkNotification } from '../application/MarkNotification';
 import { ReadNotifications } from '../application/ReadNotifications';
-import { notificationQuery } from './NotificationQueryKey';
+import { ReadPreferences } from '../application/ReadPreferences';
+import { notificationItemsQuery, notificationPreferenceQuery, notificationQuery } from './NotificationQueryKey';
 import type { Notification } from '../model/Notification';
 import type { NotificationPreference } from '../model/NotificationPreference';
 
@@ -15,15 +16,26 @@ export function useNotificationViewModel() {
   const session = useSession();
   const cache = useQueryClient();
   const reader = useRef(new ReadNotifications(dependencies.notification));
+  const preferenceReader = useRef(new ReadPreferences(dependencies.notification));
   const mark = useRef(new MarkNotification(dependencies.notification));
   const change = useRef(new ChangePreference(dependencies.notification));
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const query = useQuery({
-    queryKey: notificationQuery(session.query.scoped),
+  const notifications = useInfiniteQuery({
+    queryKey: notificationItemsQuery(session.query.scoped),
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ signal, pageParam }) => {
+      if (!session.session) throw new Error('AUTHENTICATION_REQUIRED');
+      return reader.current.execute(session.session, pageParam, signal);
+    },
+    getNextPageParam: (page) => page.nextCursor ?? undefined,
+    enabled: session.status === 'authenticated',
+  });
+  const preferences = useQuery({
+    queryKey: notificationPreferenceQuery(session.query.scoped),
     queryFn: ({ signal }) => {
       if (!session.session) throw new Error('AUTHENTICATION_REQUIRED');
-      return reader.current.execute(session.session, undefined, signal);
+      return preferenceReader.current.execute(session.session, signal);
     },
     enabled: session.status === 'authenticated',
   });
@@ -34,12 +46,14 @@ export function useNotificationViewModel() {
     });
   const toggle = async (preference: NotificationPreference, enabled: boolean) =>
     run(`preference:${preference.channel}:${preference.eventType}`, async () => {
+      if (preference.channel === 'wechat' && enabled && preference.authorization !== 'accepted') {
+        throw new Error('请先在微信端完成服务通知授权，再开启该消息');
+      }
       if (session.session) await change.current.execute(session.session, preference, { enabled });
     });
   const quiet = async (preference: NotificationPreference, start: string, end: string, enabled: boolean) =>
     run(`preference:${preference.channel}:${preference.eventType}`, async () => {
-      if (session.session) await change.current.execute(session.session, preference,
-        { quietHours: enabled ? { start, end, timezone: 'Asia/Shanghai' } : null });
+      if (session.session) await change.current.execute(session.session, preference, { quietHours: enabled ? { start, end, timezone: 'Asia/Shanghai' } : null });
     });
   async function run(key: string, action: () => Promise<void>) {
     setBusy(key);
@@ -54,12 +68,25 @@ export function useNotificationViewModel() {
     }
   }
   return Object.freeze({
-    state: query.isPending ? ('loading' as const) : query.isError ? ('failed' as const) : query.data?.notifications.items.length === 0 ? ('empty' as const) : ('ready' as const),
-    notifications: query.data?.notifications.items ?? Object.freeze([]),
-    preferences: query.data?.preferences ?? Object.freeze([]),
+    notificationState: notifications.isPending ? ('loading' as const) : notifications.isError ? ('failed' as const) : notifications.data.pages.every((page) => page.items.length === 0) ? ('empty' as const) : ('ready' as const),
+    preferenceState: preferences.isPending ? ('loading' as const) : preferences.isError ? ('failed' as const) : preferences.data.length === 0 ? ('empty' as const) : ('ready' as const),
+    notifications: notifications.data?.pages.flatMap((page) => page.items) ?? Object.freeze([]),
+    preferences: preferences.data ?? Object.freeze([]),
     busy,
-    message: error ?? (query.isError ? '通知信息加载失败，请重试' : null),
-    fetching: query.isFetching,
-    actions: Object.freeze({ refresh, acknowledge, toggle, quiet }),
+    message: error,
+    notificationMessage: notifications.isError ? presentError(notifications.error).message : null,
+    preferenceMessage: preferences.isError ? presentError(preferences.error).message : null,
+    fetching: notifications.isFetching || preferences.isFetching,
+    loadingMore: notifications.isFetchingNextPage,
+    hasMore: notifications.hasNextPage,
+    actions: Object.freeze({
+      refresh,
+      retryNotifications: notifications.refetch,
+      retryPreferences: preferences.refetch,
+      loadMore: notifications.fetchNextPage,
+      acknowledge,
+      toggle,
+      quiet,
+    }),
   });
 }

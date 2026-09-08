@@ -1,6 +1,6 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { DeviceRepository } from '../../application/port/DeviceRepository';
 import { TrustedDevice } from '../../domain/model/TrustedDevice';
 
@@ -15,10 +15,12 @@ export class PgDeviceRepository implements DeviceRepository {
     );
     const current = existing.rows[0];
     const device = current
-      ? new TrustedDevice({ id: current.id, scope: current.scope_id, label: current.label, fingerprintHash: current.fingerprint_hash, publicKey: current.public_key, state: current.status, version: current.version })
-          .revise({ label: input.label, fingerprintHash: input.fingerprintHash, publicKey: input.publicKey, state: input.status }, requiredVersion(input.expectedVersion)).value
+      ? new TrustedDevice({ id: current.id, scope: current.scope_id, label: current.label, fingerprintHash: current.fingerprint_hash, publicKey: current.public_key, state: current.status, version: current.version }).revise(
+          { label: input.label, fingerprintHash: input.fingerprintHash, publicKey: input.publicKey, state: input.status },
+          requiredVersion(input.expectedVersion)
+        ).value
       : new TrustedDevice({ id: input.id, scope: input.scope, label: input.label, fingerprintHash: input.fingerprintHash, publicKey: input.publicKey, state: input.status, version: 0 }).value;
-    if (!current && input.expectedVersion !== null) throw new DomainError('VERSION_CONFLICT');
+    if (!current && input.expectedVersion !== 0) throw new DomainError('VERSION_CONFLICT');
     const result = await database.query(
       `insert into verification.device(id,scope_id,label,fingerprint_hash,public_key,status,trusted_at,retired_at,last_used_at,created_at,version)
       values($1,$2,$3,$4,$5,$6,case when $6='trusted' then $7 else null end,case when $6='retired' then $7 else null end,null,$7,$8)

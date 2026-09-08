@@ -2,7 +2,21 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { parse } from 'yaml';
-import { buildOpenapi, identityClientSchemaSource, operationSource, schemaSource, sdkDomainSources, sdkSource, sdkSurfaceSource, stable, surfaceSource, type ClientDefinition, type OperationDefinition } from './ClientArtifacts';
+import {
+  buildOpenapi,
+  identityClientSchemaSource,
+  operationSource,
+  schemaSource,
+  sdkDomainSources,
+  sdkBrowserClientSources,
+  sdkMiniappSource,
+  sdkSource,
+  sdkSurfaceSource,
+  stable,
+  surfaceSource,
+  type ClientDefinition,
+  type OperationDefinition,
+} from './ClientArtifacts';
 
 interface EventDefinition {
   readonly id: string;
@@ -100,6 +114,7 @@ const capabilities = await catalog<CapabilityDefinition>('capabilities.yml', 'ca
 const errorCatalog = await readErrorCatalog();
 const errors = errorCatalog.api;
 const permissions = await catalog<PermissionDefinition>('permissions.yml', 'permissions', 3);
+const modules = await readModuleCatalog();
 validateOperations(operations, clients);
 validateEvents(events);
 validatePermissions(operations, permissions);
@@ -145,8 +160,10 @@ await emit(
 );
 await emit(resolve(root, 'packages/sdk/src/operations/CommerceClient.ts'), sdkSource(operations));
 await emit(resolve(root, 'packages/sdk/src/SurfaceCatalog.ts'), sdkSurfaceSource(clients, operations));
+await emit(resolve(root, 'packages/sdk/src/MiniappClient.ts'), sdkMiniappSource(clients, operations));
+for (const [client, source] of sdkBrowserClientSources(clients, operations)) await emit(resolve(root, `packages/sdk/src/${client}.ts`), source);
 for (const [domain, source] of sdkDomainSources(operations)) await emit(resolve(root, `packages/sdk/src/operations/${domain}.ts`), source);
-await emit(resolve(root, 'services/commerce/src/foundation/interface/OperationController.ts'), operationControllerSource(operations));
+await emit(resolve(root, 'services/commerce/src/pipeline/OperationController.ts'), operationControllerSource(operations));
 await emitRuntimeContract(contractChecksum);
 
 async function catalog<T>(name: string, key: string, version: number): Promise<readonly T[]> {
@@ -199,6 +216,18 @@ async function readClients(): Promise<readonly ClientDefinition[]> {
     ports.add(client.localPort);
   }
   return Object.freeze(clients.map((client) => Object.freeze({ ...client })));
+}
+
+async function readModuleCatalog(): Promise<ModuleCatalogDefinition> {
+  const payload = parse(await readFile(resolve(root, 'config/modules.yml'), 'utf8')) as ModuleCatalogDefinition;
+  const all = [...(payload.foundation ?? []), ...(payload.support ?? []), ...(payload.business ?? [])];
+  if (payload.version !== 1 || payload.owner !== 'composition' || payload.count !== 33 || all.length !== 33 || new Set(all).size !== 33) {
+    throw new Error('MODULE_CATALOG_INVALID');
+  }
+  if (payload.foundation.join(',') !== 'runtime,observability' || payload.support.join(',') !== 'navigation' || payload.business.length !== 30) {
+    throw new Error('MODULE_CATALOG_CLASSIFICATION_INVALID');
+  }
+  return Object.freeze({ ...payload, foundation: Object.freeze(payload.foundation), support: Object.freeze(payload.support), business: Object.freeze(payload.business) });
 }
 
 function withBoundaryErrors(operation: OperationDefinition): OperationDefinition {
@@ -484,7 +513,8 @@ async function emit(path: string, content: string): Promise<void> {
 
 async function emitRuntimeContract(contractChecksum: string): Promise<void> {
   await emit(resolve(root, 'services/commerce/src/generated/EventSubscriptions.ts'), eventRegistrySource(events));
-  await emit(resolve(root, 'services/commerce/src/app/events.ts'), eventAppSource(events));
+  await emit(resolve(root, 'services/commerce/src/generated/EventCatalog.ts'), eventAppSource(events));
+  await emit(resolve(root, 'services/commerce/src/generated/ModuleCatalog.ts'), moduleCatalogSource(modules));
   const template = await readFile(resolve(root, 'database/contracts/publish.template.sql'), 'utf8');
   const operationRows = operations.map((item) => sqlRow([item.id, item.owner, item.method, item.path, contractVersion])).join(',\n');
   const eventRows = events.map((item) => sqlRow([item.id, item.version, item.owner, item.schema])).join(',\n');
@@ -509,6 +539,26 @@ async function emitRuntimeContract(contractChecksum: string): Promise<void> {
       .replace('{{PERMISSIONS}}', permissionRows)
       .replace('{{CONTRACTCHECKSUM}}', contractChecksum)
   );
+}
+
+interface ModuleCatalogDefinition {
+  readonly version: number;
+  readonly owner: string;
+  readonly count: number;
+  readonly foundation: readonly string[];
+  readonly support: readonly string[];
+  readonly business: readonly string[];
+}
+
+function moduleCatalogSource(catalog: ModuleCatalogDefinition): string {
+  const all = [...catalog.foundation, ...catalog.support, ...catalog.business];
+  const imports = all.map((id) => `import { ${pascal(id)}Module } from '../modules/${id}/Module';`).join('\n');
+  const values = (ids: readonly string[]) => ids.map((id) => `  ${pascal(id)}Module,`).join('\n');
+  return `// Generated from config/modules.yml. Do not edit.\n${imports}\nimport type { CommerceModule } from '../composition/ModuleRegistry';\n\nexport const FOUNDATION_MODULES: readonly CommerceModule[] = Object.freeze([\n${values(catalog.foundation)}\n]);\nexport const SUPPORT_MODULES: readonly CommerceModule[] = Object.freeze([\n${values(catalog.support)}\n]);\nexport const BUSINESS_MODULES: readonly CommerceModule[] = Object.freeze([\n${values(catalog.business)}\n]);\nexport const COMMERCE_MODULES: readonly CommerceModule[] = Object.freeze([...FOUNDATION_MODULES, ...SUPPORT_MODULES, ...BUSINESS_MODULES]);\nif (COMMERCE_MODULES.length !== 33 || new Set(COMMERCE_MODULES.map(({ id }) => id)).size !== 33) throw new Error('MODULE_CATALOG_INVALID');\n`;
+}
+
+function pascal(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function capabilitySource(values: readonly CapabilityDefinition[]): string {

@@ -1,7 +1,7 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
-import { ApplicationError } from '../../../../foundation/domain/ApplicationError';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { ApplicationError } from '../../../../platform/error/ApplicationError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { Invitation } from '../../domain/model/Invitation';
 import { InvitationCode } from '../../domain/model/InvitationCode';
 import type { InvitationRepository } from '../port/InvitationRepository';

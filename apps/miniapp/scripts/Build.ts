@@ -1,5 +1,5 @@
 import { build, context, type BuildOptions } from 'esbuild';
-import { cp, mkdir, readdir, rm } from 'node:fs/promises';
+import { cp, mkdir, readdir, rename, rm } from 'node:fs/promises';
 import { extname, join, relative, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
@@ -15,10 +15,11 @@ const options: BuildOptions = {
   bundle: true,
   format: 'cjs',
   platform: 'browser',
-  target: 'es2020',
+  target: 'es2022',
   sourcemap: 'external',
   sourcesContent: false,
   minify: true,
+  legalComments: 'none',
   define: { 'import.meta.env': '{}' },
   logLevel: 'info',
 };
@@ -33,7 +34,16 @@ if (watch) {
   console.log('miniapp build: watching');
 } else {
   await build(options);
+  await isolateSourceMaps();
   console.log(`miniapp build: ${entries.length} entries`);
+}
+
+async function isolateSourceMaps(): Promise<void> {
+  for (const file of (await files(output)).filter((path) => path.endsWith('.map'))) {
+    const target = join(root, 'dist/sourcemaps', relative(output, file));
+    await mkdir(resolve(target, '..'), { recursive: true });
+    await rename(file, target);
+  }
 }
 
 async function copyStatic(): Promise<void> {

@@ -1,6 +1,6 @@
 import type { QueryResultRow } from 'pg';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { MemberProfileLabel, MemberSummary, MemberReadPort, PrincipalSummary } from '../../public/MemberReadPort';
 interface MemberRow extends QueryResultRow {
   readonly id: string;

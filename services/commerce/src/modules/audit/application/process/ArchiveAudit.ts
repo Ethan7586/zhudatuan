@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import { TextDecoder, TextEncoder } from 'node:util';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
 import type { ObjectStore, StoredObject } from '../../../runtime/public/ObjectPort';
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
 import { EvidenceBundle } from '../../domain/model/EvidenceBundle';
 import type { ArchiveObject, AuditRepository, ArchiveBatch } from '../port/AuditRepository';
 
@@ -108,11 +108,7 @@ export class ArchiveAudit {
     return { object, content: content as StoredArchive, bundle };
   }
 
-  private async verifyAndLock(
-    path: string,
-    sealed: Readonly<{ object: StoredObject; content: StoredArchive; bundle: EvidenceBundle }>,
-    expiresAt: string
-  ): Promise<ArchiveObject> {
+  private async verifyAndLock(path: string, sealed: Readonly<{ object: StoredObject; content: StoredArchive; bundle: EvidenceBundle }>, expiresAt: string): Promise<ArchiveObject> {
     const lock = await this.objects.lock(sealed.object.reference, expiresAt);
     const verified = await this.objects.inspect(sealed.object.reference);
     if (verified.path !== path || verified.contentType !== 'application/json' || verified.sha256 !== sealed.object.sha256 || verified.size !== sealed.object.size || verified.scan !== 'clean') {

@@ -1,15 +1,15 @@
-import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import { type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import type { FinanceEntries } from './FinanceOperation';
 import { createHash } from 'node:crypto';
 
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { bodyRecord, keysetRows, queryPage } from '../../../../foundation/application/Validation';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { bodyRecord, keysetRows, queryPage } from '../../../../pipeline/Validation';
 import type { FinanceEntryTemplate } from '../../domain/model/FinancePolicy';
 import { FinancePolicy } from '../../domain/model/FinancePolicy';
 import type { PolicyRepository } from '../../application/port/PolicyRepository';
 import type { PolicyPreview } from '../../domain/policy/PolicyPreview';
-import type { Clock } from '../../../../foundation/domain/Clock';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { Clock } from '@shop/kernel';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export function financePolicyOperations(
   dependencies: Readonly<{

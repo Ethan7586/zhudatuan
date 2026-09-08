@@ -1,9 +1,9 @@
-import { Singleflight } from '../../foundation/performance/Singleflight';
-import { CACHE } from '../../foundation/cache/Cache';
-import { NAVIGATION_SECURITY_KEY } from '../../foundation/infrastructure/SecretStore';
-import { TELEMETRY } from '../../foundation/telemetry/Telemetry';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { Singleflight } from '@shop/kernel';
+import { CACHE } from '../../platform/cache/Cache';
+import { NAVIGATION_SECURITY_KEY } from '../../platform/secret/SecretStore';
+import { TELEMETRY } from '../../platform/telemetry/Telemetry';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { defineModule } from '../../composition/DefinedModule';
 import { MEMBERSHIP_READ_PORT, NAVIGATION_ACCESS_PORT } from '../access/public';
 import { BENEFIT_READ_PORT } from '../benefit/public';
 import { NAVIGATION_CAPABILITY_PORT } from '../capability/public';
@@ -15,6 +15,7 @@ import { MEMBER_READ_PORT } from '../member/public';
 import { ORDER_READ_PORT } from '../order/public';
 import { NAVIGATION_ORGANIZATION_PORT } from '../organization/public';
 import { PRICING_READ_PORT } from '../pricing/public';
+import { CATALOG_QUALIFICATION_PORT } from '../qualification/public';
 import { BootstrapReadHandler } from './application/handler/BootstrapReadHandler';
 import { CatalogReadHandler } from './application/handler/CatalogReadHandler';
 import { HealthReadHandler } from './application/handler/HealthReadHandler';
@@ -69,7 +70,14 @@ export const NavigationModule = defineModule(Manifest, {
       order: context.ports.get(ORDER_READ_PORT),
       experience: context.ports.get(EXPERIENCE_READ_PORT),
     });
-    const catalog = new CatalogQuery(context.ports.get(EXPERIENCE_READ_PORT), context.ports.get(CATALOG_READ_PORT), context.ports.get(PRICING_READ_PORT), context.ports.get(INVENTORY_READ_PORT), new CatalogMapper(secret));
+    const catalog = new CatalogQuery(
+      context.ports.get(EXPERIENCE_READ_PORT),
+      context.ports.get(CATALOG_READ_PORT),
+      context.ports.get(PRICING_READ_PORT),
+      context.ports.get(INVENTORY_READ_PORT),
+      context.ports.get(CATALOG_QUALIFICATION_PORT),
+      new CatalogMapper(secret)
+    );
     return [
       new TreeReadHandler(tree),
       new NavigationCatalogReadHandler(new ReadNavigationCatalog(NAVIGATION_CATALOG, NAVIGATION_CATALOG_HASH)),

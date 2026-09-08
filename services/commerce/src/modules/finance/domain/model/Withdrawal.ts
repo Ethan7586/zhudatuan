@@ -1,5 +1,5 @@
 import { Money } from '@shop/kernel';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { SettlementPolicy } from '../policy/SettlementPolicy';
 
 export type WithdrawalState = 'submitted' | 'approved' | 'processing' | 'paid' | 'rejected' | 'failed' | 'uncertain' | 'cancelled';

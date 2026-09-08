@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AuthorizationRepository } from '../../application/port/AuthorizationRepository';
 import type { AuthorizationSnapshot, AuthorizationPort } from '../../public/AuthorizationPort';
 export class PgAuthorizationPort implements AuthorizationPort {

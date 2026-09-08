@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { IdentityInvitationsCreateBody } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
 import type { InvitationCodePort, InvitationDigest, InvitationHashPort } from '../port/InvitationSecurity';
 import { canonicalMobile } from '../../domain/value/IdentitySubject';
 

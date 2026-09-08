@@ -1,5 +1,5 @@
 import { Money } from '@shop/kernel';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { SettlementPolicy, type SettlementSplit } from '../policy/SettlementPolicy';
 
 export type SettlementState = 'draft' | 'approved' | 'payable' | 'paid' | 'cancelled';

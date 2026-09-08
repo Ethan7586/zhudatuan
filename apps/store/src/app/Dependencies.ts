@@ -1,5 +1,6 @@
 import { storeEnvironment } from '@shop/config/store';
-import { createFetchSurface, type StoreSurfaceClient } from '@shop/sdk';
+import type { StoreSurfaceClient } from '@shop/sdk/surfaces';
+import { createFetchStore } from '@shop/sdk/storeclient';
 
 export interface StoreDependencies {
   readonly client: StoreSurfaceClient;
@@ -8,5 +9,5 @@ export interface StoreDependencies {
 
 export function createStoreDependencies(): StoreDependencies {
   const environment = storeEnvironment();
-  return Object.freeze({ environment, client: createFetchSurface('store', environment.apiOrigin) });
+  return Object.freeze({ environment, client: createFetchStore(environment.apiOrigin) });
 }

@@ -1,5 +1,5 @@
-import type { TransactionalEventWriter } from '../../../../foundation/application/OperationExecutor';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionalEventWriter } from '../../../../pipeline/OperationExecutor';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import { approvalEvent } from '../../domain/event/ApprovalEvents';
 import { EscalationPolicy } from '../../domain/policy/EscalationPolicy';
 import type { ApprovalRepository } from '../port/ApprovalRepository';

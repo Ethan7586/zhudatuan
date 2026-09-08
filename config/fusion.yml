@@ -1,0 +1,395 @@
+version: 1
+owner: architecture
+authority: currentFunctions
+statusCounts:
+  已开放: 177
+  部分开放: 19
+  后台具备: 167
+  自动执行: 41
+  仅设计: 29
+  占位: 29
+dispositions:
+  已开放: Retained
+  部分开放: Completed
+  后台具备: Connected
+  自动执行: Unified
+  仅设计: Implemented
+  占位: Replaced
+providerAliases:
+  图书（文轩）: book
+  蛋糕: cake
+  直充: charge
+  鲜花: flower
+  餐券: foodvoucher
+  京东生鲜: jdfresh
+  京东商品: jdproduct
+  餐饮品牌: meal
+  电影: movie
+  自营商品: supplier
+  天猫超市: tmall
+primaryOperations:
+  LI0002: identity.sessions.create
+  LI0003: identity.sessions.create
+  LI0004: identity.sessions.create
+  LI0005: identity.memberships.read
+  LI0006: identity.memberships.read
+  LI0011: identity.password.change
+  LI0012: identity.memberships.switch
+  LI0013: identity.enrollments.complete
+  LI0014: identity.federations.start
+  LI0049: organization.malls.create
+  LI0050: organization.malls.create
+  LI0051: organization.malls.create
+  LI0052: organization.malls.update
+  LI0053: experience.versions.publish
+  LI0055: organization.malls.read
+  LI0125: member.profile.read
+  LI0128: member.profile.read
+  LI0129: member.favorites.read
+  LI0140: identity.mobile.manage
+  LI0142: payment.refunds.request
+  LI0155: catalog.listings.read
+  LI0162: catalog.listings.batch
+  LI0163: catalog.imports.create
+  LI0197: order.aftersales.approve
+  LI0200: payment.refunds.request
+  LI0202: order.aftersales.apply
+  LI0236: voucher.products.list
+  LI0240: voucher.search.read
+  LI0242: voucher.stockrequests.create
+  LI0243: voucher.jobs.get
+  LI0244: voucher.products.revise
+  LI0318: finance.reconciliations.read
+  LI0325: finance.statements.read
+  LI0326: finance.reconciliations.manage
+  LI0414: partner.customers.create
+  LI0415: voucher.products.create
+  LI0416: voucher.credentialpools.create
+  LI0419: voucher.credentials.list
+  LI0423: approval.templates.create
+  LI0424: approval.tasks.list
+  LI0425: approval.instances.get
+  LI0426: voucher.issueorders.create
+  LI0427: voucher.issuebatches.get
+  LI0429: voucher.actionbatches.create
+  LI0434: voucher.vouchers.timeline
+  LI0440: voucher.search.read
+  LI0442: voucher.searchexports.create
+  LI0451: payment.intents.create
+  LI0452: navigation.tree.read
+  LI0455: catalog.products.create
+  LI0456: fulfillment.shipments.create
+  LI0458: voucher.actionbatches.create
+sections:
+  '2.1':
+    modules: [identity]
+    routes: [authlogin, authmembership, storesecurity, miniappsecurity]
+    operationRoots: [identity.sessions, identity.session, identity.tickets, identity.memberships, identity.bootstrap, identity.invitations, identity.enrollments, identity.password, identity.mobile, identity.stepup, identity.providers, identity.federations]
+    journeys: [J01, J04, J06]
+  '2.2':
+    modules: [identity, member, runtime]
+    routes: [authinvitation, authlogin, consoleinvitations, consolemembers, consoleimporttask]
+    operationRoots: [identity.invitations, identity.enrollments, identity.password.reset, member.imports, runtime.imports]
+    journeys: [J02, J07, J08]
+    jobs: [memberimport, sessionrevocation]
+  '2.3':
+    modules: [identity]
+    routes: [authlogin, storesecurity, miniappsecurity]
+    operationRoots: [identity.challenges, identity.mobile, identity.stepup]
+    journeys: [J03]
+  '2.4':
+    modules: [identity]
+    routes: [authlink, consolefederation]
+    operationRoots: [identity.providers, identity.federations, identity.links]
+    journeys: [J05]
+    jobs: [federationcleanup]
+  '2.5':
+    modules: [verification]
+    routes: [storeverification, storedevices]
+    operationRoots: [verification.challenges, verification.sessions, verification.history, verification.devices]
+    journeys: [J37, J44]
+  '3.1':
+    modules: [organization, access, capability, navigation]
+    routes: [consolecontrol, consolesettings, consoleaccess]
+    operationRoots: [organization.layers, capability.assignments, access.scopes, access.center, navigation.tree]
+    journeys: [J09]
+  '3.2':
+    modules: [organization, experience]
+    routes: [consolecontrol, consoleexperience]
+    operationRoots: [organization.malls, experience.applications, experience.versions]
+    journeys: [J13]
+    jobs: [experienceprovision]
+  '3.3':
+    modules: [experience]
+    routes: [consoleexperience]
+    operationRoots: [experience]
+    journeys: [J14, J15, J16, J17, J18]
+    jobs: [experiencepublish]
+  '3.4':
+    modules: [access, capability, identity, member]
+    routes: [consoleaccess, consolemembers, consolesettings]
+    operationRoots: [access.center, access.roles, access.overrides, access.scopes, capability.assignments, identity.members.manage, member.members]
+    journeys: [J07, J09]
+  '3.5':
+    modules: [identity, access]
+    routes: [authinvitation, consoleinvitations, consolemembers, consoleaccess]
+    operationRoots: [identity.invitations, identity.members.manage, identity.stepup, identity.sessions.revoke, access.ownership]
+    journeys: [J02, J10]
+    jobs: [sessionrevocation, ownershipexpiry]
+  '4.1':
+    modules: [navigation, catalog, experience, member, benefit]
+    routes: [storehome, storecatalog, miniapphome, miniappcatalog]
+    operationRoots: [storefront.bootstrap, storefront.catalog, catalog.listings, catalog.facets, experience.published, member.profile, benefit.accounts]
+    journeys: [J25]
+  '4.2':
+    modules: [navigation, catalog, pricing, inventory, qualification]
+    routes: [storecatalog, storeproduct, miniappcatalog, miniappproduct]
+    operationRoots: [storefront.catalog, catalog.product.detail, catalog.facets, pricing.offers, inventory.availability, qualification.decisions]
+    journeys: [J23, J24, J25]
+  '4.3':
+    modules: [cart]
+    routes: [storecart, miniappcart]
+    operationRoots: [cart]
+    journeys: [J25]
+  '4.4':
+    modules: [member]
+    routes: [storeprofile, storecheckout, miniappprofile, miniappcheckout]
+    operationRoots: [member.addresses]
+    journeys: [J25]
+  '4.5':
+    modules: [identity, member, benefit, voucher, finance, notification, support]
+    routes: [storeprofile, storevouchers, storebenefits, storenotifications, storesupport, miniappprofile, miniappvouchers, miniappbenefits, miniappnotifications, miniappsupport]
+    operationRoots: [identity.mobile, member.profile, member.favorites, benefit.accounts, benefit.ledgers, voucher.vouchers, voucher.search, finance.entries, finance.invoices, notification.notifications, support.cases]
+    journeys: [J26, J27, J42]
+  '4.6':
+    modules: [identity, checkout, payment, inventory, pricing, benefit, voucher]
+    routes: [storecheckout, storepayment, miniappcheckout, miniapppayment]
+    operationRoots: [identity.mobile, identity.stepup, checkout, order.orders.create, payment.intents, payment.refunds, payment.webhooks, payment.recoveries, benefit.accounts, voucher.tenderholds]
+    journeys: [J25, J26, J27, J28]
+    jobs: [paymentquery, paymentcancel, orderexpiry, reservationexpiry]
+  '4.7':
+    modules: [order, fulfillment, payment, support, finance]
+    routes: [storeorders, storeorder, storeaftersale, miniapporders, miniapporder, miniappaftersale]
+    operationRoots: [order.orders.read, order.detail, order.reminders, order.aftersales, order.orders.cancel, order.orders.receive, fulfillment, payment.refunds, finance.invoices]
+    journeys: [J29, J30]
+    jobs: [fulfillment, tracking, paymentrefund]
+  '5.1':
+    modules: [catalog, reporting, runtime]
+    routes: [consoleproducts, consoleproductdetail, consoleimporttask, suppliercatalog, supplierproduct]
+    operationRoots: [catalog.product, catalog.products, catalog.listings, catalog.facets, catalog.imports, reporting.exports, runtime.imports, runtime.exports]
+    journeys: [J19, J20]
+    jobs: [catalogimport]
+  '5.2':
+    modules: [catalog]
+    routes: [consoleproducts]
+    operationRoots: [catalog.pools, catalog.listings]
+    journeys: [J24]
+  '5.3':
+    modules: [pricing, catalog]
+    routes: [consoleproducts, supplierpricing]
+    operationRoots: [pricing, catalog.listings.price]
+    journeys: [J23]
+    jobs: [pricesync]
+  '5.4':
+    modules: [inventory, runtime]
+    routes: [consoleproducts, consoleimporttask, storeinventorywork, supplierinventory]
+    operationRoots: [inventory, runtime.imports]
+    journeys: [J21]
+    jobs: [inventoryimport, inventorysync, reservationexpiry]
+  '6.1':
+    modules: [order, runtime]
+    routes: [consoleorders, consoleorderdetail, consoleimporttask]
+    operationRoots: [order.orders.read, order.detail, order.orders.export, order.imports, runtime.imports, runtime.exports]
+    journeys: [J31]
+    jobs: [orderimport]
+  '6.2':
+    modules: [fulfillment, channel]
+    routes: [consoleorderdetail, storeorderswork, storeorderwork, storefulfillment, supplierorders, suppliershipments]
+    operationRoots: [fulfillment, channel.operations, channel.webhooks]
+    journeys: [J29]
+    jobs: [fulfillment, fulfillmentevent, tracking]
+  '6.3':
+    modules: [order, fulfillment, payment, finance]
+    routes: [consoleorderdetail, storeaftersale, miniappaftersale, storereturnwork, supplierreturns]
+    operationRoots: [order.aftersales, order.aftersaleattachments, fulfillment.returns, payment.refunds, finance.reconciliationrepairs]
+    journeys: [J30]
+    jobs: [paymentrefund, fulfillmentevent]
+  '7.1':
+    modules: [qualification]
+    routes: [consolequalification]
+    operationRoots: [qualification]
+    journeys: [J22]
+    jobs: [qualificationexpiry]
+  '7.2':
+    modules: [qualification, organization]
+    routes: [consolequalification, consolemembers]
+    operationRoots: [qualification, organization.layers]
+    journeys: [J22]
+    jobs: [qualificationexpiry]
+  '8':
+    modules: [referral, finance]
+    routes: [consolereferral, consolereferralview, miniappreferral]
+    operationRoots: [referral, finance.entries, finance.withdrawals]
+    journeys: [J30, J44]
+    jobs: [referralevent, referralsettlement]
+  '9.1':
+    modules: [voucher, partner]
+    routes: [consolevouchers]
+    operationRoots: [voucher.products, voucher.productoptions, voucher.credentialpools, voucher.credentials, voucher.jobs, voucher.stockrequests, voucher.stockrequestoptions, voucher.issuebatches, voucher.search, partner.customers]
+    journeys: [J32, J33, J34]
+  '9.2':
+    modules: [voucher, approval, runtime]
+    routes: [consolevouchers, consoleapprovals, consoletasks]
+    operationRoots: [voucher.stockrequests, voucher.issueorders, voucher.issuebatches, voucher.actionbatches, approval.tasks, runtime.jobs]
+    journeys: [J34, J35, J36]
+    jobs: [voucherissue, voucheraction]
+  '9.3':
+    modules: [voucher]
+    routes: [consolevouchers, storevouchers, miniappvouchers]
+    operationRoots: [voucher.vouchers, voucher.redemptions, voucher.tenderholds, voucher.refunds]
+    journeys: [J36, J37]
+  '9.4':
+    modules: [verification, voucher]
+    routes: [storeverification, storevoucherswork, storedevices]
+    operationRoots: [verification, voucher.redemptions]
+    journeys: [J37]
+  '10':
+    modules: [benefit]
+    routes: [storebenefits, miniappbenefits]
+    operationRoots: [benefit]
+    journeys: [J26]
+    jobs: [benefitgrant, benefitexpiry]
+  '11.1':
+    modules: [partner, channel, extension]
+    routes: [consolechannels, supplierconnections]
+    operationRoots: [partner.partners, organization.stores, channel.connections, channel.syncruns, channel.operations, channel.webhooks, extension.installations]
+    journeys: [J41]
+    jobs: [catalogsync, pricesync, inventorysync, channelwebhook, extensionhealth]
+  '11.2':
+    modules: [channel, extension]
+    routes: [consolechannels, suppliercatalog, supplierinventory, supplierorders, suppliershipments, supplierreturns, supplierstatements, supplierconnections, supplierpricing, supplierreconciliation, supplierinvoice]
+    operationRoots: [channel.connections, channel.syncruns, channel.operations, channel.webhooks, extension.installations]
+    journeys: [J41]
+    jobs: [catalogsync, pricesync, inventorysync, channelwebhook, extensionhealth]
+  '12.1':
+    modules: [finance]
+    routes: [consolefinance, consolefinanceentry, consolefinancestatement, consolefinanceaudit]
+    operationRoots: [finance.overview, finance.facets, finance.audit, finance.entries, finance.statements]
+    journeys: [J38, J39, J40]
+  '12.2':
+    modules: [finance, payment, channel, runtime]
+    routes: [consolefinancestatement, consolefinancereconciliation, consoleimporttask, supplierstatements, supplierreconciliation]
+    operationRoots: [finance.statementimports, finance.statements, finance.reconciliations, finance.reconciliationrepairs, payment, channel.operations, runtime.imports]
+    journeys: [J38, J39]
+    jobs: [financeimport, statementsync, reconciliation]
+  '12.3':
+    modules: [finance]
+    routes: [consolefinancesettlement, consolefinancewithdrawal]
+    operationRoots: [finance.settlements, finance.withdrawals, finance.holds, finance.periods, finance.backfills]
+    journeys: [J40]
+    jobs: [settlement]
+  '12.4':
+    modules: [finance, approval]
+    routes: [consolefinancegovernance, consolefinanceinvoice, consoleapprovals, consoleapprovaltemplate, supplierinvoice]
+    operationRoots: [finance.policies, finance.invoices, invoice, approval]
+    journeys: [J11, J12, J40]
+    jobs: [invoice]
+  '13':
+    modules: [risk, audit]
+    routes: [consolerisk, consolefinanceaudit]
+    operationRoots: [risk, audit]
+    journeys: [J44]
+    jobs: [riskscan, auditarchive]
+  '14':
+    modules: [support]
+    routes: [consolesupport, consolesupportcase, storesupport, storesupportcase, miniappsupport, miniappsupportcase, storesupportwork, storeworkcase, suppliersupport, suppliercase]
+    operationRoots: [support]
+    journeys: [J42]
+    jobs: [supportsla, supportscan, supportrelay, supportreassign]
+  '15':
+    modules: [notification]
+    routes: [consolenotifications, storenotifications, miniappnotifications]
+    operationRoots: [notification]
+    journeys: [J44]
+    jobs: [notification]
+  '16.1':
+    modules: [reporting]
+    routes: [consolecockpit]
+    operationRoots: [reporting.dashboard, reporting.sales, reporting.malls]
+    journeys: [J43]
+    jobs: [projection]
+  '16.2':
+    modules: [reporting, runtime]
+    routes: [consolereporting, consoletasks]
+    operationRoots: [reporting, runtime.exports]
+    journeys: [J43]
+    jobs: [projection, export]
+  '17':
+    modules: [runtime]
+    routes: [consoleimporttask, consoletasks, storetasks, suppliertasks]
+    operationRoots: [runtime.jobs, runtime.imports, runtime.exports]
+    journeys: [J44]
+    jobs: all
+  '18.1':
+    modules: [partner, voucher]
+    routes: [consolepartners, consolevouchers]
+    operationRoots: [partner.customers, voucher.products, voucher.productoptions]
+    journeys: [J32]
+  '18.2':
+    modules: [voucher, runtime]
+    routes: [consolevouchers, consoletasks]
+    operationRoots: [voucher.credentialpools, voucher.credentials, voucher.credentialexports, voucher.jobs, runtime.jobs]
+    journeys: [J32, J33]
+    jobs: [credentialgenerate, credentialimport, voucherexport]
+  '18.3':
+    modules: [voucher, approval]
+    routes: [consolevouchers, consoleapprovals, consoleapprovaltemplate]
+    operationRoots: [voucher.stockrequests, voucher.stockrequestoptions, approval]
+    journeys: [J11, J12, J34]
+  '18.4':
+    modules: [voucher]
+    routes: [consolevouchers]
+    operationRoots: [voucher.issueorders, voucher.issuebatches, voucher.issueorderexports, voucher.actionbatches, voucher.actionexports]
+    journeys: [J35, J36]
+    jobs: [voucherissue, voucheraction, voucherexport]
+  '18.5':
+    modules: [voucher]
+    routes: [consolevouchers, storevouchers, miniappvouchers]
+    operationRoots: [voucher.activations, voucher.vouchers]
+    journeys: [J36]
+  '18.6':
+    modules: [voucher]
+    routes: [consolevouchers, storevoucherswork]
+    operationRoots: [voucher.redemptions, voucher.tenderholds, voucher.refunds]
+    journeys: [J37]
+  '18.7':
+    modules: [voucher]
+    routes: [consolevouchers]
+    operationRoots: [voucher.search, voucher.searchfacets, voucher.searchsnapshots, voucher.searchexports, voucher.exports]
+    journeys: [J33]
+  '19':
+    modules: [navigation]
+    routes: [storehome, miniapphome]
+    operationRoots: [storefront.bootstrap]
+    journeys: [J44]
+overrides:
+  LI0443: { modules: [member], routes: [storeproduct, miniappproduct, storeprofile, miniappprofile], operationRoots: [member.favorites], journeys: [J25] }
+  LI0444: { modules: [order], routes: [storeaftersale, miniappaftersale], operationRoots: [order.aftersales, order.aftersaleattachments], journeys: [J30] }
+  LI0445: { modules: [finance], routes: [storeprofile, miniappprofile], operationRoots: [finance.invoices, invoice.profiles, invoice.requests], journeys: [J40] }
+  LI0446: { modules: [fulfillment], routes: [storeorder, miniapporder], operationRoots: [fulfillment.tracking], journeys: [J29] }
+  LI0447: { modules: [voucher], routes: [storevouchers, miniappvouchers, storecheckout, miniappcheckout], operationRoots: [voucher.vouchers, voucher.search, voucher.tenderholds], journeys: [J27] }
+  LI0448: { modules: [finance], routes: [storeprofile, miniappprofile], operationRoots: [finance.entries, finance.statements], journeys: [J40] }
+  LI0449: { modules: [support], routes: [storesupport, miniappsupport], operationRoots: [support.cases, support.messages], journeys: [J42] }
+  LI0450: { modules: [member, partner, navigation], routes: [storeproduct, miniappproduct], operationRoots: [member.addresses, organization.stores, storefront.bootstrap], journeys: [J25] }
+  LI0451: { modules: [payment, identity, notification, member, finance], routes: [miniapppayment, miniappsecurity, miniappnotifications, miniappprofile], operationRoots: [payment.intents, identity.stepup, notification.notifications, member.addresses, finance.invoices], journeys: [J03, J25, J40] }
+  LI0452: { modules: [navigation, runtime, notification], routes: [consolecockpit, consoletasks, consolenotifications], operationRoots: [navigation.tree, runtime.jobs, notification.notifications], journeys: [J44] }
+  LI0453: { modules: [organization, partner, channel], routes: [consolecontrol, consolepartners, consolechannels], operationRoots: [organization.malls, partner.partners, channel.connections], journeys: [J13, J41] }
+  LI0454: { modules: [experience], routes: [consoleexperience], operationRoots: [experience.versions, experience.published], journeys: [J15, J16, J17, J18], jobs: [experiencepublish] }
+  LI0455: { modules: [catalog, runtime], routes: [consoleproducts, consoleproductdetail, consoleimporttask], operationRoots: [catalog.products, catalog.product.detail, catalog.imports, runtime.imports], journeys: [J19, J20], jobs: [catalogimport] }
+  LI0456: { modules: [order, fulfillment, payment], routes: [consoleorderdetail], operationRoots: [order.aftersales, fulfillment.shipments, payment.refunds], journeys: [J29, J30], jobs: [fulfillment, paymentrefund] }
+  LI0457: { modules: [channel], routes: [consolechannels], operationRoots: [channel.connections, channel.syncruns, channel.operations], journeys: [J41], jobs: [channelwebhook] }
+  LI0458: { modules: [voucher, approval], routes: [consolevouchers, consoleapprovals], operationRoots: [voucher.products, voucher.stockrequests, voucher.issueorders, voucher.actionbatches, voucher.refunds, approval.tasks], journeys: [J12, J34, J35, J36, J37], jobs: [voucherissue, voucheraction] }
+  LI0459: { modules: [qualification], routes: [consolequalification], operationRoots: [qualification.policies, qualification.qualifications], journeys: [J22], jobs: [qualificationexpiry] }
+  LI0460: { modules: [notification], routes: [consolenotifications], operationRoots: [notification.templates, notification.announcements], journeys: [J44], jobs: [notification] }
+  LI0461: { modules: [reporting, runtime], routes: [consolereporting, consoletasks], operationRoots: [reporting.exports, runtime.exports], journeys: [J43], jobs: [export] }
+  LI0462: { modules: [navigation], routes: [storehome, miniapphome], operationRoots: [storefront.bootstrap, storefront.catalog], journeys: [J25, J44] }

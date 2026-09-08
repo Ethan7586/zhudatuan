@@ -1,5 +1,5 @@
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
 
 export type { EntitlementInput } from './Entitlement';
 export interface ChannelEntitlement {
@@ -17,4 +17,3 @@ export interface ChannelCapabilityPort {
 }
 export const CHANNEL_CAPABILITY_PORT = publicPort<ChannelCapabilityPort>('capability', 'channel');
 export { NAVIGATION_CAPABILITY_PORT, type NavigationCapability, type NavigationCapabilityPort } from './NavigationCapabilityPort';
-export { CAPABILITY_READINESS_PORT, type CapabilityReadinessPort } from './ReadinessPort';

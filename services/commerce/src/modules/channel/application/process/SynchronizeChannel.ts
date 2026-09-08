@@ -1,7 +1,7 @@
 import type { ProviderCapability } from '@shop/contract';
-import type { ExtensionRegistry } from '../../../../bootstrap/ExtensionRegistry';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
+import type { ExtensionRegistry } from '../../../../composition/ExtensionRegistry';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
 import { ChannelPolicy } from '../../domain/policy/ChannelPolicy';
 import { SyncPolicy } from '../../domain/policy/SyncPolicy';
 import type { ChannelJobRepository, ChannelSyncKind, ChannelSyncRun } from '../port/ChannelJobRepository';

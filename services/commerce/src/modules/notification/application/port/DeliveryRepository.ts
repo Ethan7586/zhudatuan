@@ -2,7 +2,7 @@ import type { DeliveryChannelId, DeliveryVariables, VariableSchema } from '../..
 import type { ConsentSource } from '../../domain/model/Preference';
 import type { DeliveryFailureClass } from '../../domain/model/Dispatch';
 import type { DeliveryReceipt } from './DeliveryChannel';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 export interface TemplateRecord {
   readonly id: string;

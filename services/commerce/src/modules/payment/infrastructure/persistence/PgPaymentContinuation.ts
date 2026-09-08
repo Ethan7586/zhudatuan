@@ -1,52 +1,27 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationHandler';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationHandler';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
+import type { DatabasePool } from '../../../../platform/database/Pool';
 import type { PaymentContinuation } from '../../application/port/PaymentContinuation';
 import type { PaymentGateway } from '../../application/port/PaymentGateway';
 import { PaymentHoldReleaser, PaymentSettlement } from './PaymentSettlement';
 import type { SettlementOrders } from './PaymentSettlementCore';
 import { PaymentReference } from '../../domain/model/PaymentReference';
 import { PaymentAttempt } from '../../domain/model/PaymentAttempt';
-import { transportErrorCode } from '../../../../foundation/domain/SafeError';
+import { transportErrorCode } from '../../../../platform/error/SafeError';
 import type { PaymentScene } from '../../public';
 import type { MemberAccessPort } from '../../../access/public';
 import type { OrderPaymentPort } from '../../../order/public';
 import type { PaymentIdentityPort } from '../../../identity/public';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { sessionAccess } from '../../../../foundation/security/OperationSecurityContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { authorizationEvidence } from '../../../../platform/security/AuthorizationEvidence';
 
-interface IntentState {
-  readonly intent: string;
-  readonly attempt: string | null;
-  readonly sequence: number | null;
-  readonly order_id: string;
-  readonly order_number: string;
-  readonly scope_id: string;
-  readonly mall_id: string;
-  readonly member_id: string;
-  readonly total_minor: number;
-  readonly amount_minor: number;
-  readonly payer_identity: string | null;
-  readonly payer_ciphertext: string | null;
-  readonly state: string | null;
-  readonly parameters: unknown | null;
-  readonly scene: PaymentScene | null;
-  readonly application_hash: string | null;
-  readonly expires_at: string;
-}
-export interface PaymentOrders extends SettlementOrders {
-  payment: OrderPaymentPort['payment'];
-  lockPayment: OrderPaymentPort['lockPayment'];
-  markAuthorizing(context: WriteTransactionContext, order: string): Promise<void>;
-  resetPayment(context: WriteTransactionContext, order: string): Promise<void>;
-}
-
+import { providerExecution, providerOutcomeUnknown, wechatTime, type IntentState, type PaymentOrders } from './PaymentContinuationValue';
 export class PgPaymentContinuation implements PaymentContinuation {
   private readonly transactions: PgTransactionManager;
   private readonly access = new PgTransactionAccess();
@@ -129,8 +104,17 @@ export class PgPaymentContinuation implements PaymentContinuation {
       } else {
         const attempt = `attempt:${randomUUID()}`;
         const sequence = (prior.sequence ?? 0) + 1;
-        const started = new PaymentAttempt({ id: attempt, intent: prior.intent, provider: 'wechat', scene, applicationHash: application.applicationHash,
-          state: 'started', externalTransaction: null, requestedAt: new Date(), completedAt: null }).value;
+        const started = new PaymentAttempt({
+          id: attempt,
+          intent: prior.intent,
+          provider: 'wechat',
+          scene,
+          applicationHash: application.applicationHash,
+          state: 'started',
+          externalTransaction: null,
+          requestedAt: new Date(),
+          completedAt: null,
+        }).value;
         await client.query(
           `insert into payment.attempt(id,intent_id,tender_id,provider,scene,application_hash,state,sequence,idempotency_key,requested_at)
           values($1,$2,'tender:wechat','wechat',$3,$4,'started',$5,$6,clock_timestamp())`,
@@ -154,14 +138,17 @@ export class PgPaymentContinuation implements PaymentContinuation {
           [state.attempt!, payerHash]
         )
       );
-      const parameters = await this.gateway.prepay({
-        description: `智慧翼福利商城-${state.order_number}`,
-        orderNumber: PaymentReference.payment(state.order_number).text,
-        amountMinor: state.amount_minor,
-        payer,
-        application,
-        expiresAt: wechatTime(state.expires_at),
-      }, providerExecution(request));
+      const parameters = await this.gateway.prepay(
+        {
+          description: `智慧翼福利商城-${state.order_number}`,
+          orderNumber: PaymentReference.payment(state.order_number).text,
+          amountMinor: state.amount_minor,
+          payer,
+          application,
+          expiresAt: wechatTime(state.expires_at),
+        },
+        providerExecution(request)
+      );
       const response = { status: 201, body: { intent: state.intent, parameters } } satisfies OperationResult;
       await this.write(request, async (_context, database) => {
         await database.query(
@@ -206,34 +193,20 @@ export class PgPaymentContinuation implements PaymentContinuation {
   }
 
   private write<T>(request: OperationRequest, work: (context: WriteTransactionContext, database: SqlExecutor) => Promise<T>): Promise<T> {
-    const current = sessionAccess(request.security);
+    const current = requireAccess(request);
     return this.transactions.write(
       {
-        tenant: current?.scope.tenant ?? '',
-        membership: current?.membership.id ?? '',
-        scope: current?.scope.id ?? 'public:payment',
-        actor: current?.actor.id ?? 'provider:wechat',
-        trace: current?.trace ?? request.input.headers['request-id'] ?? request.type,
+        tenant: current.scope.tenant ?? '',
+        membership: current.membership.id,
+        scope: current.scope.id,
+        actor: current.actor.id,
+        trace: current.trace,
         operation: request.type,
         deadline: request.input.deadline,
         signal: request.input.signal,
+        authorization: authorizationEvidence(current, request.type, new Date()),
       },
       async (context) => work(context, this.access.database(context))
     );
   }
-}
-
-function providerExecution(request: OperationRequest) {
-  const trace = sessionAccess(request.security)?.trace ?? request.input.headers['request-id'] ?? request.type;
-  return Object.freeze({ requestId: request.input.headers['request-id'] ?? trace, traceId: trace, deadline: request.input.deadline, signal: request.input.signal });
-}
-
-function wechatTime(value: string): string {
-  const time = new Date(value);
-  if (!Number.isFinite(time.getTime())) throw new Error('PAYMENT_EXPIRY_INVALID');
-  return time.toISOString().replace('Z', '+00:00');
-}
-
-function providerOutcomeUnknown(cause: unknown): boolean {
-  return /(?:NETWORK|TIMEOUT|DEADLINE|TRANSPORT)/.test(transportErrorCode(cause) ?? '');
 }

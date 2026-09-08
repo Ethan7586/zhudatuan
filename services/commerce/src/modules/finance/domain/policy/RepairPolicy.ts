@@ -5,7 +5,7 @@ import { validateEntry } from '../model/FinancePolicy';
 import type { RepairDifference } from '../model/RepairCase';
 import type { RepairProposal } from '../model/RepairProposal';
 import { digest } from './PolicyPreview';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { PostingPolicy } from './PostingPolicy';
 import { AccountCode } from '../value/AccountCode';
 
@@ -15,16 +15,11 @@ export class RepairPolicy {
     if (Buffer.byteLength(key) < 32) throw new Error('FINANCE_PREVIEW_KEY_INVALID');
   }
 
-  preview(
-    input: RepairProposal,
-    now: Date
-  ): Readonly<{ balanced: boolean; previewToken: string; previewHash: string; expiresAt: string }> {
+  preview(input: RepairProposal, now: Date): Readonly<{ balanced: boolean; previewToken: string; previewHash: string; expiresAt: string }> {
     this.assertProposal(input);
     const previewHash = digest(input);
     const expiresAt = new Date(now.getTime() + 10 * 60_000).toISOString();
-    const claims = Buffer.from(
-      JSON.stringify({ kind: 'repair', proposal: input, previewHash, expiresAt })
-    ).toString('base64url');
+    const claims = Buffer.from(JSON.stringify({ kind: 'repair', proposal: input, previewHash, expiresAt })).toString('base64url');
     return Object.freeze({ balanced: true, previewToken: `${claims}.${this.sign(claims)}`, previewHash, expiresAt });
   }
 
@@ -40,13 +35,7 @@ export class RepairPolicy {
     } catch {
       throw new DomainError('FINANCE_REPAIR_HASH_MISMATCH');
     }
-    if (
-      value.kind !== 'repair' ||
-      value.previewHash !== expected.previewHash ||
-      !isRecord(value.proposal) ||
-      typeof value.expiresAt !== 'string'
-    )
-      throw new DomainError('FINANCE_REPAIR_HASH_MISMATCH');
+    if (value.kind !== 'repair' || value.previewHash !== expected.previewHash || !isRecord(value.proposal) || typeof value.expiresAt !== 'string') throw new DomainError('FINANCE_REPAIR_HASH_MISMATCH');
     const expiresAt = Date.parse(value.expiresAt);
     if (!Number.isFinite(expiresAt)) throw new DomainError('FINANCE_REPAIR_HASH_MISMATCH');
     if (expiresAt <= now.getTime()) throw new DomainError('FINANCE_REPAIR_CONFLICT');
@@ -84,7 +73,8 @@ export class RepairPolicy {
       input.sourceVersion < 1 ||
       !Number.isSafeInteger(input.sourceJournalDebitMinor) ||
       input.sourceJournalDebitMinor <= 0
-    ) throw new DomainError('VALIDATION_FAILED', { field: 'repair' });
+    )
+      throw new DomainError('VALIDATION_FAILED', { field: 'repair' });
     const postings = input.entries.map((entry) => {
       validateEntry(entry);
       const debit = entry.debitMinor > 0;
@@ -127,7 +117,14 @@ function entryOf(value: unknown): FinanceEntryTemplate {
 
 function differenceOf(value: unknown): RepairDifference {
   if (!isRecord(value)) throw new DomainError('FINANCE_REPAIR_HASH_MISMATCH');
-  const difference = Object.freeze({ id: stringClaim(value.id), kind: stringClaim(value.kind), expectedMinor: numberClaim(value.expectedMinor), actualMinor: numberClaim(value.actualMinor), deltaMinor: numberClaim(value.deltaMinor), currency: stringClaim(value.currency) });
+  const difference = Object.freeze({
+    id: stringClaim(value.id),
+    kind: stringClaim(value.kind),
+    expectedMinor: numberClaim(value.expectedMinor),
+    actualMinor: numberClaim(value.actualMinor),
+    deltaMinor: numberClaim(value.deltaMinor),
+    currency: stringClaim(value.currency),
+  });
   assertDifference(difference);
   return difference;
 }

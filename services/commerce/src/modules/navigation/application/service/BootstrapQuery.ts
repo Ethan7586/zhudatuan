@@ -1,7 +1,7 @@
 import { isConsumerTarget, type OperationInputFor } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import { allParallel } from '../../../../foundation/performance/Parallel';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import { allParallel } from '@shop/kernel';
 import type { MembershipReadPort } from '../../../access/public/MembershipReadPort';
 import type { BenefitReadPort } from '../../../benefit/public/BenefitReadPort';
 import type { NavigationCapabilityPort } from '../../../capability/public';
@@ -104,7 +104,6 @@ export class BootstrapQuery {
     });
     return { status: 200, body, headers: { 'cache-control': 'private,no-store' } };
   }
-
 }
 
 function effectivePermissions(access: Extract<HandlerContext<'storefront.bootstrap.read'>['security'], { kind: 'session' }>['access']): ReadonlySet<string> {

@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react';
 import { Dialog as AriaDialog, Heading, Modal, ModalOverlay } from 'react-aria-components';
 import { Button } from '../atom/Button';
-import { SectionBoundary } from '../SectionBoundary';
+import { SectionBoundary } from './SectionBoundary';
 import './Dialog.css';
 
 export interface DialogProps {

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ReleaseRepository } from '../../application/port/ReleaseRepository';
 import { Release } from '../../domain/model/Release';
 export class PgReleaseRepository implements ReleaseRepository {

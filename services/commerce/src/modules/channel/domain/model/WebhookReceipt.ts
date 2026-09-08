@@ -24,10 +24,16 @@ export class WebhookReceipt {
   readonly value: Readonly<WebhookReceiptSnapshot>;
 
   constructor(value: WebhookReceiptSnapshot) {
-    if ([value.id, value.connection, value.provider, value.scope, value.externalId, value.ciphertext, value.keyVersion, value.trace]
-      .some((item) => !item.trim()) || !Number.isSafeInteger(value.attempts) || value.attempts < 0 ||
-      !/^[a-f0-9]{64}$/.test(value.rawHash) || !/^[a-f0-9]{64}$/.test(value.signatureHash) ||
-      Number.isNaN(Date.parse(value.receivedAt)) || !Number.isSafeInteger(value.version) || value.version < 0) {
+    if (
+      [value.id, value.connection, value.provider, value.scope, value.externalId, value.ciphertext, value.keyVersion, value.trace].some((item) => !item.trim()) ||
+      !Number.isSafeInteger(value.attempts) ||
+      value.attempts < 0 ||
+      !/^[a-f0-9]{64}$/.test(value.rawHash) ||
+      !/^[a-f0-9]{64}$/.test(value.signatureHash) ||
+      Number.isNaN(Date.parse(value.receivedAt)) ||
+      !Number.isSafeInteger(value.version) ||
+      value.version < 0
+    ) {
       throw new Error('CHANNEL_WEBHOOK_RECEIPT_INVALID');
     }
     const failure = channelFailure(value.failure);

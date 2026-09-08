@@ -1,4 +1,5 @@
-import { createIdempotencyKey, uploadObject } from '@shop/sdk';
+import { createIdempotencyKey } from '@shop/sdk/context';
+import { uploadObject } from '@shop/sdk/objects';
 import type { SupportOperations } from '@shop/sdk/support';
 import type { RequestContextFactory } from '../../../shared/api/RequestContext';
 import type { StorefrontSession } from '../../../entity/session';

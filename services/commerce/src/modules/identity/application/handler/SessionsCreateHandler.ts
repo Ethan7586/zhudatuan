@@ -1,15 +1,13 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
+import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
 import type { IdentityAction, IdentityLifecycle } from '../model/IdentityAction';
 import { identityReply, identityRequest } from '../model/IdentityExecution';
 import type { LoadedFederationStart, PreparedFederationStart } from '../service/FederateIdentity';
 
 type LoadedSession = Readonly<{ kind: 'authentication' }> | Readonly<{ kind: 'federation'; value: LoadedFederationStart }>;
-type PreparedSession =
-  | Readonly<{ kind: 'authentication'; request: OperationRequest }>
-  | Readonly<{ kind: 'federation'; request: OperationRequest; preparation: PreparedFederationStart }>;
+type PreparedSession = Readonly<{ kind: 'authentication'; request: OperationRequest }> | Readonly<{ kind: 'federation'; request: OperationRequest; preparation: PreparedFederationStart }>;
 
 export class SessionsCreateHandler implements DurableOperationHandler<'identity.sessions.create', PreparedSession, OperationResult, 'write', LoadedSession> {
   readonly operation = 'identity.sessions.create' as const;
@@ -39,10 +37,7 @@ export class SessionsCreateHandler implements DurableOperationHandler<'identity.
   }
 
   async commit(_input: OperationInputFor<'identity.sessions.create'>, prepared: PreparedSession, context: CommitContext<'identity.sessions.create'>) {
-    const result =
-      prepared.kind === 'federation'
-        ? await this.federation.execute(prepared.request, context.transaction, prepared.preparation)
-        : await this.authenticate(prepared.request, context.transaction);
+    const result = prepared.kind === 'federation' ? await this.federation.execute(prepared.request, context.transaction, prepared.preparation) : await this.authenticate(prepared.request, context.transaction);
     return Object.freeze({ checkpoint: result, response: identityReply<'identity.sessions.create'>(result) });
   }
 

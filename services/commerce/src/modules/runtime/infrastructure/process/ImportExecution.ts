@@ -6,7 +6,9 @@ import { StoredImportFiles } from '../storage/StoredImportFiles';
 
 export class RuntimeImportExecution implements ImportRunnerPort, ImportBatchFactoryPort {
   private readonly files: StoredImportFiles;
-  constructor(objects: ObjectStore) { this.files = new StoredImportFiles(objects); }
+  constructor(objects: ObjectStore) {
+    this.files = new StoredImportFiles(objects);
+  }
 
   create(configuration: ImportBatchConfiguration): BatchImportProcessPort {
     return new RuntimeBatchImportProcess(configuration);

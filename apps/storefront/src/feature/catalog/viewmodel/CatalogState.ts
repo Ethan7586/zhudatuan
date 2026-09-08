@@ -19,10 +19,11 @@ export function useCatalogState(filter: CatalogFilter = {}, enabled = true) {
     enabled: Boolean(session.scope) && enabled,
   });
   const products = Object.freeze((query.data?.pages ?? []).flatMap(({ items }) => items.map(({ product }) => product)));
+  const categories = query.data?.pages[0]?.categories ?? Object.freeze([]);
   return Object.freeze({
     products,
     presentationProducts: toFrontendProducts(products),
-    presentationCategories: toFrontendCategories(products),
+    presentationCategories: toFrontendCategories(categories),
     state: query.isPending ? ('loading' as const) : query.isError ? ('error' as const) : ('ready' as const),
     hasMore: query.hasNextPage,
     isLoadingMore: query.isFetchingNextPage,

@@ -1,7 +1,7 @@
 import { createCipheriv, createHash, randomBytes } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
 import type { SecretMaterial } from '@shop/contract';
-import type { SecretStore } from '../../../foundation/infrastructure/SecretStore';
+import type { SecretStore } from '../../../platform/secret/SecretStore';
 import { LifecyclePolicy } from '../domain/policy/LifecyclePolicy';
 import { DirectoryPolicy } from '../domain/policy/DirectoryPolicy';
 import { DirectoryConnection } from '../domain/model/DirectoryConnection';
@@ -115,8 +115,17 @@ function material(value: string): SecretMaterial {
 }
 function staged(kind: string, index: number): StagedSubject {
   return Object.freeze({
-    id: `subject:${kind}`, hash: Buffer.alloc(32, index + 1), type: 'user', status: kind === 'freeze' ? 'inactive' : 'active', attributes: null,
-    sourceversion: 2, organization: 'enterprise:root', parentorganization: null, displayname: kind, membership: null, explicitdeparture: false,
+    id: `subject:${kind}`,
+    hash: Buffer.alloc(32, index + 1),
+    type: 'user',
+    status: kind === 'freeze' ? 'inactive' : 'active',
+    attributes: null,
+    sourceversion: 2,
+    organization: 'enterprise:root',
+    parentorganization: null,
+    displayname: kind,
+    membership: null,
+    explicitdeparture: false,
   });
 }
 function encrypt(xml: string, key: Buffer, recipient: string): string {

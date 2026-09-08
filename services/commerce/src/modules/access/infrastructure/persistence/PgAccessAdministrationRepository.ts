@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { AccessVersionPublisher } from '../../application/service/AccessVersionPublisher';
 import type { AccessAdministrationRepository } from '../../application/port/AccessAdministrationRepository';
 import { PgAccessRepository } from './PgAccessRepository';

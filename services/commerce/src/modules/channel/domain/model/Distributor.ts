@@ -16,9 +16,18 @@ export interface DistributorSnapshot {
 
 export class Distributor {
   constructor(readonly value: DistributorSnapshot) {
-    if (!value.id.trim() || !value.organization.trim() || !/^[A-Za-z0-9][A-Za-z0-9.-]{1,63}$/.test(value.code) ||
-      !value.name.trim() || !value.settlementMode.trim() || !Number.isSafeInteger(value.activeBindings) || value.activeBindings < 0 ||
-      !Number.isSafeInteger(value.version) || value.version < 0) throw new Error('CHANNEL_DISTRIBUTOR_INVALID');
+    if (
+      !value.id.trim() ||
+      !value.organization.trim() ||
+      !/^[A-Za-z0-9][A-Za-z0-9.-]{1,63}$/.test(value.code) ||
+      !value.name.trim() ||
+      !value.settlementMode.trim() ||
+      !Number.isSafeInteger(value.activeBindings) ||
+      value.activeBindings < 0 ||
+      !Number.isSafeInteger(value.version) ||
+      value.version < 0
+    )
+      throw new Error('CHANNEL_DISTRIBUTOR_INVALID');
     if (value.state === 'terminated' && value.activeBindings !== 0) throw new Error('CHANNEL_DISTRIBUTOR_BINDING_ACTIVE');
     this.value = Object.freeze({ ...value, metadata: Object.freeze({ ...value.metadata }) });
     Object.freeze(this);
@@ -48,8 +57,8 @@ export class Binding {
   constructor(readonly value: BindingSnapshot) {
     const effective = Date.parse(value.effectiveAt);
     const expires = value.expiresAt === null ? null : Date.parse(value.expiresAt);
-    if (!value.id.trim() || !value.distributor.trim() || !value.tenant.trim() || Number.isNaN(effective) ||
-      expires !== null && (Number.isNaN(expires) || expires <= effective) || !Number.isSafeInteger(value.version) || value.version < 0) throw new Error('CHANNEL_BINDING_INVALID');
+    if (!value.id.trim() || !value.distributor.trim() || !value.tenant.trim() || Number.isNaN(effective) || (expires !== null && (Number.isNaN(expires) || expires <= effective)) || !Number.isSafeInteger(value.version) || value.version < 0)
+      throw new Error('CHANNEL_BINDING_INVALID');
     this.value = Object.freeze({ ...value });
     Object.freeze(this);
   }

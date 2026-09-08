@@ -1,6 +1,6 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 import type { SessionIssuer } from '../port/SessionIssuer';
 import type { FederationProtector } from '../../domain/service/FederationProtector';

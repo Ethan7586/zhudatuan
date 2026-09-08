@@ -1,5 +1,5 @@
-import type { CipherEnvelope } from '../../../../foundation/application/KmsPort';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { CipherEnvelope } from '../../../../pipeline/KmsPort';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AddressBook, RemoveAddressDecision, SaveAddressDecision } from '../../domain/model/AddressBook';
 
 export interface MemberAddressInput {

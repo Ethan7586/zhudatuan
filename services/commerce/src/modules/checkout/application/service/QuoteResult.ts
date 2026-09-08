@@ -11,6 +11,7 @@ export function quoteResult(stored: StoredCurrentQuote, quote: CheckoutQuote, co
     confirmationToken,
     evidenceHash: quoteHash(quote.evidence),
     expiresAt: stored.expiresAt,
+    selection: quote.selection,
     cartVersion: quote.cart.version,
     lines: quote.lines,
     evidence: quote.evidence,

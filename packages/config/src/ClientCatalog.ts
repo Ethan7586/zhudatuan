@@ -1,5 +1,5 @@
 // Generated from config/clients.yml and infrastructure/network/Edge.yml. Do not edit.
-export const CLIENT_CATALOG_CHECKSUM = '456ba6847009d55a8535cb251723dbc83be6a36f2da1b80a35739a6a53e083a8' as const;
+export const CLIENT_CATALOG_CHECKSUM = '63e080b64fb680c0183886c669fe2a58cad5c6fa8caa3190f2f3d2311fbdb50d' as const;
 const CLIENT_SOURCE = [
   {
     "id": "auth",

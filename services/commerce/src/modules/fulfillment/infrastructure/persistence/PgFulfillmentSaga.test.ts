@@ -10,7 +10,7 @@ describe('PgFulfillmentSaga', () => {
   });
 
   it('moves an exhausted step and its aggregate to manual takeover', async () => {
-    const query = vi.fn(async (sql: string) => sql.includes('select attempts') ? result([{ attempts: 5 }]) : sql.includes('returning state') ? result([{ state: 'needsaction' }]) : result([]));
+    const query = vi.fn(async (sql: string) => (sql.includes('select attempts') ? result([{ attempts: 5 }]) : sql.includes('returning state') ? result([{ state: 'needsaction' }]) : result([])));
     await expect(new PgFulfillmentSaga().fail({ query } as never, 'fulfillment:one', 'submit', new Error('PROVIDER_TIMEOUT'))).resolves.toBe('needsaction');
     expect(query.mock.calls.some(([sql]) => String(sql).includes("set state='needsaction'"))).toBe(true);
   });

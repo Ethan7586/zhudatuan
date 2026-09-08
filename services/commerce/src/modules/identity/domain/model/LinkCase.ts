@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 export type LinkCaseReason = 'unlinked' | 'ambiguous' | 'principalconflict' | 'tenantunknown' | 'subjectconflict';
 export class LinkCase {
   constructor(

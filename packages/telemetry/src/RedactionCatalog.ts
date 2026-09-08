@@ -39,6 +39,36 @@ export const REDACTION_KEYS = Object.freeze([
 export const REDACTION_KEY_PATTERN = new RegExp(`(?:${REDACTION_KEYS.join('|')})`, 'i');
 
 export const TELEMETRY_METRICS = Object.freeze({
+  "operation": [
+    "module",
+    "operation",
+    "result",
+    "errorcode",
+    "durationms"
+  ],
+  "job": [
+    "module",
+    "job",
+    "queue",
+    "result",
+    "errorcode",
+    "durationms"
+  ],
+  "provider": [
+    "provider",
+    "capability",
+    "operation",
+    "result",
+    "errorcode",
+    "durationms"
+  ],
+  "resource": [
+    "workload",
+    "resource",
+    "utilization",
+    "saturation",
+    "errors"
+  ],
   "approval": [
     "template",
     "state",
@@ -108,7 +138,12 @@ export const TELEMETRY_HEALTH = Object.freeze({
 export const TELEMETRY_SLO = Object.freeze({
   "catalogP95Ms": 150,
   "queryP95Ms": 300,
+  "facetP95Ms": 600,
   "detailP95Ms": 500,
+  "writeP95Ms": 500,
+  "jobReceiptP95Ms": 2000,
+  "checkoutQuoteP95Ms": 800,
+  "checkoutConfirmP95Ms": 1000,
   "applicationListP95Ms": 250,
   "entryCacheHitP95Ms": 20,
   "entryDatabaseP95Ms": 80,
@@ -174,7 +209,7 @@ export const TELEMETRY_SERVICE_LEVELS = Object.freeze({
     "windowSeconds": 300,
     "severity": "critical",
     "owner": "runtime",
-    "runbook": "docs/operations/projection.md",
+    "runbook": "docs/operations/outbox.md",
     "target": 30
   }
 } as const);
@@ -188,7 +223,11 @@ export const TELEMETRY_ALERTS = Object.freeze({
     "threshold": 1,
     "severity": "critical",
     "owner": "experience",
-    "runbook": "docs/operations/mallentry.md"
+    "runbook": "docs/operations/mallentry.md",
+    "dashboard": "salechain",
+    "recentChanges": "release",
+    "traceQuery": "entryfailure",
+    "mitigation": "keepoldhead"
   },
   "entryinvalid": {
     "title": "商城入口配置无效",
@@ -198,7 +237,11 @@ export const TELEMETRY_ALERTS = Object.freeze({
     "threshold": 0,
     "severity": "critical",
     "owner": "experience",
-    "runbook": "docs/operations/mallentry.md"
+    "runbook": "docs/operations/mallentry.md",
+    "dashboard": "salechain",
+    "recentChanges": "release",
+    "traceQuery": "entryinvalid",
+    "mitigation": "blockheadswitch"
   },
   "sessionmallmismatch": {
     "title": "会话商城范围不匹配",
@@ -208,7 +251,11 @@ export const TELEMETRY_ALERTS = Object.freeze({
     "threshold": 20,
     "severity": "warning",
     "owner": "identity",
-    "runbook": "docs/operations/sessioncompromise.md"
+    "runbook": "docs/operations/sessioncompromise.md",
+    "dashboard": "identity",
+    "recentChanges": "identity",
+    "traceQuery": "scopeddenial",
+    "mitigation": "revokesession"
   },
   "approvaloverdue": {
     "title": "审批任务超时",
@@ -218,47 +265,67 @@ export const TELEMETRY_ALERTS = Object.freeze({
     "threshold": 0,
     "severity": "warning",
     "owner": "approval",
-    "runbook": "docs/operations/approval.md"
+    "runbook": "docs/operations/approval.md",
+    "dashboard": "identity",
+    "recentChanges": "approval",
+    "traceQuery": "approvaloverdue",
+    "mitigation": "escalatealternate"
   },
   "voucherbatchfailure": {
     "title": "卡券批次失败率过高",
-    "signal": "voucher.batch.failure",
-    "measure": "percent",
+    "signal": "business.voucher.issuecompletion",
+    "measure": "inversepercent",
     "windowSeconds": 300,
     "threshold": 1,
     "severity": "critical",
     "owner": "voucher",
-    "runbook": "docs/operations/voucherissue.md"
+    "runbook": "docs/operations/voucherissue.md",
+    "dashboard": "voucher",
+    "recentChanges": "voucher",
+    "traceQuery": "voucherbatch",
+    "mitigation": "pausebatch"
   },
   "importfailure": {
-    "title": "导入失败率过高",
-    "signal": "runtime.import.failure",
+    "title": "导入失败或积压过高",
+    "signal": "business.import.error",
     "measure": "percent",
     "windowSeconds": 300,
     "threshold": 1,
     "severity": "warning",
     "owner": "runtime",
-    "runbook": "docs/operations/catalogimport.md"
+    "runbook": "docs/operations/catalogimport.md",
+    "dashboard": "runtime",
+    "recentChanges": "import",
+    "traceQuery": "importfailure",
+    "mitigation": "limitlowpriorityimports"
   },
   "reconciliationdifference": {
     "title": "对账差异未清零",
-    "signal": "finance.reconciliation.difference",
+    "signal": "business.finance.reconciliationdifference",
     "measure": "count",
     "windowSeconds": 900,
     "threshold": 0,
     "severity": "critical",
     "owner": "finance",
-    "runbook": "docs/operations/reconciliation.md"
+    "runbook": "docs/operations/reconciliation.md",
+    "dashboard": "finance",
+    "recentChanges": "finance",
+    "traceQuery": "reconciliationdifference",
+    "mitigation": "blocksettlementperiod"
   },
   "providercapabilityfailure": {
     "title": "Provider 能力失败率过高",
-    "signal": "extension.provider.failure",
-    "measure": "percent",
+    "signal": "commerce.provider.count",
+    "measure": "failurepercent",
     "windowSeconds": 300,
     "threshold": 5,
     "severity": "warning",
     "owner": "extension",
-    "runbook": "docs/operations/providerhealth.md"
+    "runbook": "docs/operations/providerhealth.md",
+    "dashboard": "provider",
+    "recentChanges": "extension",
+    "traceQuery": "providerfailure",
+    "mitigation": "isolateconnection"
   },
   "servicelevelburn": {
     "title": "核心操作错误预算消耗过快",
@@ -268,15 +335,122 @@ export const TELEMETRY_ALERTS = Object.freeze({
     "threshold": 2,
     "severity": "critical",
     "owner": "reliability",
-    "runbook": "docs/operations/deployment.md"
+    "runbook": "docs/operations/deployment.md",
+    "dashboard": "runtime",
+    "recentChanges": "release",
+    "traceQuery": "operationfailure",
+    "mitigation": "stoprollout"
+  },
+  "paymentunknown": {
+    "title": "支付未知结果超过恢复时限",
+    "signal": "business.payment.unknown",
+    "measure": "percent",
+    "windowSeconds": 300,
+    "threshold": 0.1,
+    "severity": "critical",
+    "owner": "payment",
+    "runbook": "docs/operations/paymentquery.md",
+    "dashboard": "transaction",
+    "recentChanges": "payment",
+    "traceQuery": "paymentunknown",
+    "mitigation": "querywithoutrecharge"
+  },
+  "inventoryconflict": {
+    "title": "库存冲突或超卖",
+    "signal": "business.inventory.conflict",
+    "measure": "percent",
+    "windowSeconds": 300,
+    "threshold": 1,
+    "severity": "critical",
+    "owner": "inventory",
+    "runbook": "docs/operations/inventoryimport.md",
+    "dashboard": "salechain",
+    "recentChanges": "inventory",
+    "traceQuery": "inventoryconflict",
+    "mitigation": "freezelistingwrites"
+  },
+  "ledgerimbalance": {
+    "title": "账本借贷不平",
+    "signal": "business.finance.ledgerimbalance",
+    "measure": "count",
+    "windowSeconds": 60,
+    "threshold": 0,
+    "severity": "critical",
+    "owner": "finance",
+    "runbook": "docs/operations/reconciliation.md",
+    "dashboard": "finance",
+    "recentChanges": "finance",
+    "traceQuery": "ledgerimbalance",
+    "mitigation": "blockfinancewrites"
+  },
+  "outboxbacklog": {
+    "title": "Outbox 或 Deadletter 积压",
+    "signal": "commerce.outbox.lag",
+    "measure": "seconds",
+    "windowSeconds": 300,
+    "threshold": 30,
+    "severity": "critical",
+    "owner": "runtime",
+    "runbook": "docs/operations/outbox.md",
+    "dashboard": "runtime",
+    "recentChanges": "runtime",
+    "traceQuery": "outboxbacklog",
+    "mitigation": "pauseaffectedpartition"
+  },
+  "releasefailure": {
+    "title": "发布门禁失败",
+    "signal": "release.gate.failure",
+    "measure": "count",
+    "windowSeconds": 60,
+    "threshold": 0,
+    "severity": "critical",
+    "owner": "reliability",
+    "runbook": "docs/operations/deployment.md",
+    "dashboard": "runtime",
+    "recentChanges": "release",
+    "traceQuery": "releasefailure",
+    "mitigation": "stoporrollbackbeforeretire"
+  },
+  "securityincident": {
+    "title": "安全不变量异常",
+    "signal": "security.invariant.failure",
+    "measure": "count",
+    "windowSeconds": 60,
+    "threshold": 0,
+    "severity": "critical",
+    "owner": "security",
+    "runbook": "docs/operations/securityincident.md",
+    "dashboard": "identity",
+    "recentChanges": "security",
+    "traceQuery": "securityincident",
+    "mitigation": "revokeandpreserveevidence"
   }
 } as const);
 
 export const TELEMETRY_SAMPLING = Object.freeze({
   "errors": 1,
   "critical": 1,
+  "highrisk": 1,
+  "slow": 1,
   "commands": 1,
   "reads": 0.1,
   "webvitals": 1,
   "providerhealth": 0.1
+} as const);
+
+export const TELEMETRY_RETENTION = Object.freeze({
+  "metricsDays": 30,
+  "successfulTraceDays": 7,
+  "errorTraceDays": 30,
+  "highRiskTraceDays": 180,
+  "operationalLogDays": 30,
+  "securityLogDays": 365
+} as const);
+
+export const TELEMETRY_EXPORT = Object.freeze({
+  "redactionOrder": "before-buffer-and-export",
+  "onRedactionFailure": "drop-and-alert",
+  "piiAllowed": false,
+  "metricUnknownLabel": "reject-and-alert",
+  "traceIdentifiersAs": "exemplar"
 } as const);

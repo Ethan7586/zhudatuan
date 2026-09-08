@@ -1,4 +1,4 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 
 export interface AuditHistoryRecord extends Record<string, unknown> {
   readonly id: string;
@@ -6,11 +6,5 @@ export interface AuditHistoryRecord extends Record<string, unknown> {
 }
 
 export interface AuditHistoryRepository {
-  records(
-    context: ReadTransactionContext,
-    scope: string,
-    cursor: Readonly<{ sort: string | null; id: string | null }>,
-    watermark: string,
-    fetch: number
-  ): Promise<readonly AuditHistoryRecord[]>;
+  records(context: ReadTransactionContext, scope: string, cursor: Readonly<{ sort: string | null; id: string | null }>, watermark: string, fetch: number): Promise<readonly AuditHistoryRecord[]>;
 }

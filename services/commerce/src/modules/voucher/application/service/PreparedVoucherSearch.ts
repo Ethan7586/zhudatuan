@@ -1,13 +1,16 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, optionalText } from '../../../../foundation/application/Validation';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord, optionalText } from '../../../../pipeline/Validation';
 import { VoucherNumber } from '../../domain/value/VoucherNumber';
 import type { CredentialProtector } from '../port/CredentialProtector';
 import type { SearchFilter, SearchInput } from '../port/SearchFilter';
 import type { VoucherSearch } from '../port/VoucherSearch';
 export class PreparedVoucherSearch implements VoucherSearch {
-  constructor(private readonly search: VoucherSearch, private readonly protector: Pick<CredentialProtector, 'fingerprint'>) {}
+  constructor(
+    private readonly search: VoucherSearch,
+    private readonly protector: Pick<CredentialProtector, 'fingerprint'>
+  ) {}
   async prepare(input: SearchInput, scope: string): Promise<SearchFilter> {
-    const raw = 'body' in input ? bodyRecord(input).filter : input.query ?? {};
+    const raw = 'body' in input ? bodyRecord(input).filter : (input.query ?? {});
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new DomainError('VALIDATION_FAILED', { field: 'filter' });
     const source = raw as Readonly<Record<string, unknown>>;
     const criteria: Record<string, string> = {};
@@ -27,8 +30,16 @@ export class PreparedVoucherSearch implements VoucherSearch {
     const fingerprint = indexed && indexed.length >= 6 ? await this.protector.fingerprint(indexed, 'number', scope) : null;
     return Object.freeze({ criteria: Object.freeze(criteria), query, fingerprint });
   }
-  number(value: string, scope: string): Promise<string> { return this.protector.fingerprint(new VoucherNumber(value).value, 'number', scope); }
-  read(call: Parameters<VoucherSearch['read']>[0], filter: SearchFilter) { return this.search.read(call, filter); }
-  facets(call: Parameters<VoucherSearch['facets']>[0], filter: SearchFilter) { return this.search.facets(call, filter); }
-  snapshot(call: Parameters<VoucherSearch['snapshot']>[0], filter: SearchFilter) { return this.search.snapshot(call, filter); }
+  number(value: string, scope: string): Promise<string> {
+    return this.protector.fingerprint(new VoucherNumber(value).value, 'number', scope);
+  }
+  read(call: Parameters<VoucherSearch['read']>[0], filter: SearchFilter) {
+    return this.search.read(call, filter);
+  }
+  facets(call: Parameters<VoucherSearch['facets']>[0], filter: SearchFilter) {
+    return this.search.facets(call, filter);
+  }
+  snapshot(call: Parameters<VoucherSearch['snapshot']>[0], filter: SearchFilter) {
+    return this.search.snapshot(call, filter);
+  }
 }

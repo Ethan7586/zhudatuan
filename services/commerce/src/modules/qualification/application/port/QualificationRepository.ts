@@ -1,5 +1,5 @@
 import type { ContractJsonValue } from '@shop/contract';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 export interface QualificationPolicyRecord extends Record<string, unknown> {
   readonly id: string;

@@ -1,11 +1,11 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { Money } from '@shop/kernel';
 import { PaymentReference } from '../../domain/model/PaymentReference';
 import { AllocationPolicy } from '../../domain/policy/AllocationPolicy';
 import type { OrderPaymentPort } from '../../../order/public';
 import { Refund } from '../../domain/model/Refund';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 export interface RefundRequest {
   readonly id: string;
   readonly payment: string;
@@ -115,8 +115,7 @@ export class RefundPlanner {
     const external = legs.some(({ kind }) => kind === 'wechat');
     const internal = legs.some(({ kind }) => kind !== 'wechat');
     const provider = external && internal ? 'mixed' : external ? 'wechat' : 'internal';
-    new Refund({ id: request.id, payment: request.payment, amountMinor: request.amountMinor, currency: payment.currency,
-      state: 'requested', reason: request.reason, version: 0 });
+    new Refund({ id: request.id, payment: request.payment, amountMinor: request.amountMinor, currency: payment.currency, state: 'requested', reason: request.reason, version: 0 });
     const inserted = await database.query<PlannedRefund>(
       `insert into payment.refund(id,payment_id,provider,provider_reference,idempotency_key,
       amount_minor,currency,state,reason,aftersale_id,requested_at,completed_at,version)

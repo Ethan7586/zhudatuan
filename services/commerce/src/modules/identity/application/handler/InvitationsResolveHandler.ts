@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
+import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
 import { identityReply, identityRequest } from '../model/IdentityExecution';
 import type { LoadedInvitationResolution, PreparedInvitationResolution, ResolveInvitation } from '../service/ResolveInvitation';
 

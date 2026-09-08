@@ -1,6 +1,6 @@
 import { IdentityAction as OperationAction } from '../model/IdentityAction';
 import type { MembershipSelector } from '../service/MembershipSelector';
-import { requirePreauth } from '../../../../foundation/security/OperationSecurityContext';
+import { requirePreauth } from '../../../../platform/security/OperationSecurityContext';
 import { membershipView } from '../model/MembershipCandidate';
 export class ReadMembershipSelection {
   constructor(private readonly selector: MembershipSelector) {}

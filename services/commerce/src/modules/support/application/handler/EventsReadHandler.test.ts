@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { EventsReadHandler } from './EventsReadHandler';
 
 const actor = { actor: 'actor:one', membership: 'membership:one', member: 'member:one', target: 'storefront', scope: 'mall:one', scopes: ['mall:one'], trace: 'trace:one' } as const;
@@ -10,7 +10,11 @@ describe('EventsReadHandler', () => {
     const replay = { replay: vi.fn(async () => ({ events: [event], resumeCursor: '12-0' })) };
     const handler = new EventsReadHandler(
       { actor: vi.fn(async () => actor) } as never,
-      { validate: vi.fn(async () => { throw new DomainError('SUPPORT_EVENT_CURSOR_EXPIRED'); }) } as never,
+      {
+        validate: vi.fn(async () => {
+          throw new DomainError('SUPPORT_EVENT_CURSOR_EXPIRED');
+        }),
+      } as never,
       replay as never,
       { present: vi.fn() } as never
     );

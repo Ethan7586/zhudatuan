@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 import type { OrganizationReadPort } from '../../organization/public';
 import { ManageEntitlement } from '../application/service/ManageEntitlement';
 import type { Assignment, AssignmentRepository } from '../application/port/AssignmentRepository';
@@ -53,11 +53,15 @@ describe('manage capability entitlement', () => {
     } as unknown as AssignmentRepository);
 
     await expect(action.execute(transaction, command({ state: 'disabled', expectedVersion: 4 }))).resolves.toEqual(saved);
-    expect(save).toHaveBeenCalledWith(transaction, expect.objectContaining({
-      entitlement: expect.objectContaining({ id: 'entitlement:one', state: 'disabled', version: 5 }),
-      setVersion: 9,
-      impact: { operations: 12, dependentCapabilities: 2, descendantScopes: 3, navigationAffected: true },
-    }), expect.objectContaining({ expectedSetVersion: 8, reason: '下线卡券能力' }));
+    expect(save).toHaveBeenCalledWith(
+      transaction,
+      expect.objectContaining({
+        entitlement: expect.objectContaining({ id: 'entitlement:one', state: 'disabled', version: 5 }),
+        setVersion: 9,
+        impact: { operations: 12, dependentCapabilities: 2, descendantScopes: 3, navigationAffected: true },
+      }),
+      expect.objectContaining({ expectedSetVersion: 8, reason: '下线卡券能力' })
+    );
   });
 });
 

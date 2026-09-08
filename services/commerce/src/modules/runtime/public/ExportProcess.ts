@@ -1,4 +1,4 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import { publicPort } from '../../../composition/ModuleRegistry';
 import type { ClaimedJob } from './JobProcess';
 import type { StoredObject } from './ObjectPort';
 

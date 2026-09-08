@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { PendingEvidence, SupportJobRepository } from '../../application/port/SupportJobRepository';
 import type { AttachmentScanResult } from '../../application/port/AttachmentScanPort';
 import { AssignmentRule } from '../../domain/model/AssignmentRule';
@@ -26,10 +26,24 @@ export class PgSupportJobRepository implements SupportJobRepository {
       `select evidence.object_ref,evidence.sha256,evidence.size_bytes::float8 size_bytes,evidence.kind,
       evidence.original_name,evidence.upload_expires_at,evidence.scope_id,evidence.conversation_id,ticket.id ticket_id
       from support.evidence evidence join support.ticket ticket on ticket.conversation_id=evidence.conversation_id
-      where evidence.id=$1 and evidence.state='pending'`, [id]
+      where evidence.id=$1 and evidence.state='pending'`,
+      [id]
     );
     const row = selected.rows[0];
-    return row ? Object.freeze({ id, objectReference: row.object_ref, sha256: row.sha256, size: Number(row.size_bytes), contentType: row.kind, originalName: row.original_name, uploadExpiresAt: new Date(row.upload_expires_at).toISOString(), scope: row.scope_id, ticket: row.ticket_id, conversation: row.conversation_id }) : undefined;
+    return row
+      ? Object.freeze({
+          id,
+          objectReference: row.object_ref,
+          sha256: row.sha256,
+          size: Number(row.size_bytes),
+          contentType: row.kind,
+          originalName: row.original_name,
+          uploadExpiresAt: new Date(row.upload_expires_at).toISOString(),
+          scope: row.scope_id,
+          ticket: row.ticket_id,
+          conversation: row.conversation_id,
+        })
+      : undefined;
   }
 
   async completeEvidence(context: WriteTransactionContext, evidence: PendingEvidence, scan: AttachmentScanResult): Promise<void> {
@@ -40,10 +54,21 @@ export class PgSupportJobRepository implements SupportJobRepository {
       [evidence.id, scan.clean ? 'clean' : 'rejected', scan.reason, scan.recovery]
     );
     if (updated.rowCount !== 1) return;
-    await this.append(database, scan.clean ? 'support.attachment.ready' : 'support.attachment.rejected', 'evidence', evidence.id, evidence.scope, {
-      ticketId: evidence.ticket, conversationId: evidence.conversation, evidenceId: evidence.id, version: 2,
-      ...(scan.clean ? {} : { reason: scan.reason, recovery: scan.recovery }),
-    }, `supportscan:${evidence.id}`);
+    await this.append(
+      database,
+      scan.clean ? 'support.attachment.ready' : 'support.attachment.rejected',
+      'evidence',
+      evidence.id,
+      evidence.scope,
+      {
+        ticketId: evidence.ticket,
+        conversationId: evidence.conversation,
+        evidenceId: evidence.id,
+        version: 2,
+        ...(scan.clean ? {} : { reason: scan.reason, recovery: scan.recovery }),
+      },
+      `supportscan:${evidence.id}`
+    );
   }
 
   async escalate(context: WriteTransactionContext, ticket: string, reason: 'response' | 'resolution'): Promise<void> {
@@ -70,10 +95,21 @@ export class PgSupportJobRepository implements SupportJobRepository {
       [ticket, JSON.stringify({ reason, escalation: escalation.id }), escalation.scope_id]
     );
     const conversation = await database.query<{ conversation_id: string }>('select conversation_id from support.ticket where id=$1', [ticket]);
-    await this.append(database, 'support.sla.escalated', 'ticket', ticket, escalation.scope_id, {
-      ticketId: ticket, conversationId: conversation.rows[0]?.conversation_id ?? ticket,
-      ...(escalation.member_id === null ? {} : { memberId: escalation.member_id }), reason, escalationId: escalation.id,
-    }, `supportsla:${ticket}:${reason}`);
+    await this.append(
+      database,
+      'support.sla.escalated',
+      'ticket',
+      ticket,
+      escalation.scope_id,
+      {
+        ticketId: ticket,
+        conversationId: conversation.rows[0]?.conversation_id ?? ticket,
+        ...(escalation.member_id === null ? {} : { memberId: escalation.member_id }),
+        reason,
+        escalationId: escalation.id,
+      },
+      `supportsla:${ticket}:${reason}`
+    );
   }
 
   async reassign(context: WriteTransactionContext, agent: string, cursor: string | null): Promise<void> {
@@ -85,7 +121,8 @@ export class PgSupportJobRepository implements SupportJobRepository {
       `select ticket.id,ticket.conversation_id,conversation.member_id,ticket.priority,ticket.skill,ticket.version
       from support.ticket ticket join support.conversation conversation on conversation.id=ticket.conversation_id
       where ticket.assigned_agent_id=$1 and ticket.scope_id=$2 and ticket.state in('assigned','waiting')
-      and ($3::text is null or ticket.id>$3) order by ticket.id for update of ticket skip locked limit 50`, [agent, scope, cursor]
+      and ($3::text is null or ticket.id>$3) order by ticket.id for update of ticket skip locked limit 50`,
+      [agent, scope, cursor]
     );
     if (tickets.rows.length === 0) return;
     const [candidateRows, ruleRows] = await Promise.all([
@@ -93,32 +130,54 @@ export class PgSupportJobRepository implements SupportJobRepository {
         `select target.id,target.state,target.skills,target.capacity,target.last_assigned_at,
         count(ticket.id) filter(where ticket.state in('assigned','waiting'))::integer load
         from support.agent target left join support.ticket ticket on ticket.assigned_agent_id=target.id
-        where target.scope_id=$1 and target.state='available' group by target.id order by target.id`, [scope]
+        where target.scope_id=$1 and target.state='available' group by target.id order by target.id`,
+        [scope]
       ),
       database.query<{ id: string; scope_id: string; skill: string; priorities: TicketPriority[]; weight: number; version: number }>(
-        `select id,scope_id,skill,priorities,weight,version from support.assignmentrule where scope_id=$1 and state='active' order by weight desc,id`, [scope]
+        `select id,scope_id,skill,priorities,weight,version from support.assignmentrule where scope_id=$1 and state='active' order by weight desc,id`,
+        [scope]
       ),
     ]);
-    let candidates: readonly Agent[] = candidateRows.rows.map((row) => ({ id: row.id, online: true, state: row.state, load: Number(row.load), capacity: Number(row.capacity), skills: row.skills, scopes: [scope], lastAssignedAt: row.last_assigned_at }));
+    let candidates: readonly Agent[] = candidateRows.rows.map((row) => ({
+      id: row.id,
+      online: true,
+      state: row.state,
+      load: Number(row.load),
+      capacity: Number(row.capacity),
+      skills: row.skills,
+      scopes: [scope],
+      lastAssignedAt: row.last_assigned_at,
+    }));
     const rules = ruleRows.rows.map((row) => new AssignmentRule(row.id, row.scope_id, row.skill, row.priorities, Number(row.weight), true, Number(row.version)));
     const policy = new AssignmentPolicy();
     for (const ticket of tickets.rows) {
       await database.query('select id from support.assignment where ticket_id=$1 and released_at is null for update', [ticket.id]);
       const selected = policy.decide({ agents: candidates, rules, scope, skill: ticket.skill, priority: ticket.priority });
       await database.query('update support.assignment set released_at=clock_timestamp() where ticket_id=$1 and released_at is null', [ticket.id]);
-      if (selected) await database.query(`insert into support.assignment(id,ticket_id,agent_id,reason,assigned_at,scope_id) values($1,$2,$3,'agent-disabled',clock_timestamp(),$4)`, [`assignment:${randomUUID()}`, ticket.id, selected.id, scope]);
-      const updated = await database.query(
-        `update support.ticket set assigned_agent_id=$2,state=$3,updated_at=clock_timestamp(),version=version+1 where id=$1 and version=$4`,
-        [ticket.id, selected?.id ?? null, selected ? 'assigned' : 'open', ticket.version]
-      );
+      if (selected)
+        await database.query(`insert into support.assignment(id,ticket_id,agent_id,reason,assigned_at,scope_id) values($1,$2,$3,'agent-disabled',clock_timestamp(),$4)`, [`assignment:${randomUUID()}`, ticket.id, selected.id, scope]);
+      const updated = await database.query(`update support.ticket set assigned_agent_id=$2,state=$3,updated_at=clock_timestamp(),version=version+1 where id=$1 and version=$4`, [
+        ticket.id,
+        selected?.id ?? null,
+        selected ? 'assigned' : 'open',
+        ticket.version,
+      ]);
       if (updated.rowCount !== 1) throw new Error('SUPPORT_REASSIGN_VERSION_CONFLICT');
       await database.query(
         `insert into support.history(ticket_id,sequence,kind,actor_id,evidence,occurred_at,scope_id)
         select $1,coalesce(max(sequence),0)+1,$2,'system',$3::jsonb,clock_timestamp(),$4 from support.history where ticket_id=$1`,
         [ticket.id, selected ? 'reassigned' : 'unassigned', JSON.stringify({ disabledAgent: agent, assigned: selected?.id ?? null }), scope]
       );
-      await this.append(database, 'support.ticket.assigned', 'ticket', ticket.id, scope, { ticketId: ticket.id, conversationId: ticket.conversation_id, memberId: ticket.member_id, agentId: selected?.id ?? null, version: Number(ticket.version) + 1 }, `supportreassign:${ticket.id}`);
-      if (selected) candidates = candidates.map((item) => item.id === selected.id ? { ...item, load: item.load + 1, lastAssignedAt: new Date().toISOString() } : item);
+      await this.append(
+        database,
+        'support.ticket.assigned',
+        'ticket',
+        ticket.id,
+        scope,
+        { ticketId: ticket.id, conversationId: ticket.conversation_id, memberId: ticket.member_id, agentId: selected?.id ?? null, version: Number(ticket.version) + 1 },
+        `supportreassign:${ticket.id}`
+      );
+      if (selected) candidates = candidates.map((item) => (item.id === selected.id ? { ...item, load: item.load + 1, lastAssignedAt: new Date().toISOString() } : item));
     }
     if (tickets.rows.length === 50) {
       const next = tickets.rows.at(-1)!.id;

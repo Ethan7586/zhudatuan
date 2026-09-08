@@ -8,6 +8,8 @@
     "build": "node ../../scripts/build-miniapp-theme.mjs && node --import tsx scripts/Build.ts",
     "test": "vitest run --config vitest.config.ts",
     "test:component": "vitest run --config vitest.config.ts test/Page.test.ts",
+    "test:device": "npm run build && node --import tsx scripts/DeviceGate.ts",
+    "device:hash": "npm run build && node --import tsx scripts/DeviceGate.ts --hash",
     "typecheck": "tsc --noEmit",
     "lint": "npm run typecheck"
   },
@@ -15,10 +17,10 @@
     "@shop/config": "1.0.0",
     "@shop/contract": "1.0.0",
     "@shop/presentation": "1.0.0",
-    "@shop/sdk": "1.0.0"
+    "@shop/sdk": "1.0.0",
+    "esbuild": "0.28.1"
   },
   "devDependencies": {
-    "esbuild": "0.28.1",
     "tsx": "4.23.12",
     "typescript": "5.9.3",
     "vitest": "4.1.10"

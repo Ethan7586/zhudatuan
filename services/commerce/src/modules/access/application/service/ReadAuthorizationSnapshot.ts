@@ -1,7 +1,7 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import type { Actor } from '../../../../foundation/security/AccessContext';
-import type { AuthorizationSnapshot, AuthorizationSnapshotResolver } from '../../../../foundation/security/AuthorizationSnapshot';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
+import type { Actor } from '../../../../platform/security/AccessContext';
+import type { AuthorizationSnapshot, AuthorizationSnapshotResolver } from '../../../../platform/security/AuthorizationSnapshot';
 import type { AuthorizationRepository } from '../port/AuthorizationRepository';
 import type { Telemetry } from '@shop/telemetry';
 

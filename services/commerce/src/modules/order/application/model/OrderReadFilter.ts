@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { ORDER_FULFILLMENT_STATES, ORDER_LIFECYCLE_STATES, ORDER_LIST_VIEWS, ORDER_PAYMENT_STATES, ORDER_PLACED_FILTERS } from '@shop/contract/order';
 
 export type OrderListView = (typeof ORDER_LIST_VIEWS)[number];
@@ -33,8 +33,7 @@ export class OrderReadFilter {
   ) {}
 
   static from(input: Readonly<{ query?: Readonly<Record<string, unknown>>; body?: unknown }>): OrderReadFilter {
-    const values = input.body && typeof input.body === 'object' && !Array.isArray(input.body)
-      ? input.body as Readonly<Record<string, unknown>> : input.query ?? {};
+    const values = input.body && typeof input.body === 'object' && !Array.isArray(input.body) ? (input.body as Readonly<Record<string, unknown>>) : (input.query ?? {});
     const search = text(values.search, 128);
     const order = text(values.order, 255);
     const view = choice(values.view, views, 'all');
@@ -56,11 +55,26 @@ export class OrderReadFilter {
   }
 
   snapshot(): Readonly<Record<string, string | number>> {
-    return Object.freeze(Object.fromEntries(Object.entries({
-      search: this.search, view: this.view === 'all' ? '' : this.view, placed: this.placed, from: this.from, to: this.to,
-      lifecycle: this.lifecycle, payment: this.payment, fulfillment: this.fulfillment, mall: this.mall, channel: this.channel,
-      product: this.product, member: this.member, minimumMinor: this.minimumMinor, maximumMinor: this.maximumMinor,
-    }).filter(([, value]) => value !== '' && value !== null)) as Record<string, string | number>);
+    return Object.freeze(
+      Object.fromEntries(
+        Object.entries({
+          search: this.search,
+          view: this.view === 'all' ? '' : this.view,
+          placed: this.placed,
+          from: this.from,
+          to: this.to,
+          lifecycle: this.lifecycle,
+          payment: this.payment,
+          fulfillment: this.fulfillment,
+          mall: this.mall,
+          channel: this.channel,
+          product: this.product,
+          member: this.member,
+          minimumMinor: this.minimumMinor,
+          maximumMinor: this.maximumMinor,
+        }).filter(([, value]) => value !== '' && value !== null)
+      ) as Record<string, string | number>
+    );
   }
 }
 

@@ -36,6 +36,22 @@ export const MINIAPP_PAGES = Object.freeze([
   '/feature/support/page',
   '/feature/voucher/page',
 ]) as readonly string[];
+export const MINIAPP_MAIN_PAGES = Object.freeze(['/feature/home/page']) as readonly string[];
+export const MINIAPP_SUBPACKAGES = Object.freeze([
+  { root: 'feature/benefit', pages: ['page'] },
+  { root: 'feature/cart', pages: ['page'] },
+  { root: 'feature/checkout', pages: ['page'] },
+  { root: 'feature/notification', pages: ['page'] },
+  { root: 'feature/order', pages: ['page'] },
+  { root: 'feature/aftersale', pages: ['page'] },
+  { root: 'feature/payment', pages: ['page'] },
+  { root: 'feature/catalog', pages: ['page'] },
+  { root: 'feature/product', pages: ['page'] },
+  { root: 'feature/account', pages: ['page'] },
+  { root: 'feature/referral', pages: ['page'] },
+  { root: 'feature/support', pages: ['page'] },
+  { root: 'feature/voucher', pages: ['page'] },
+]) as readonly Readonly<{ root: string; pages: readonly string[] }>[];
 
 export function miniappPagePath(route: RouteId, parameters: Readonly<Record<string, string>> = {}): string {
   const expected = ROUTE_PARAMETERS[route];

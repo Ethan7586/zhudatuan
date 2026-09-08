@@ -54,7 +54,8 @@ if (failures.length > 0) {
 console.log('product source line budget passed: route=80 viewmodel=220 view=220 gateway=180 application=120 model=150 other=250');
 
 function lineLimit(file) {
-  const frontendCode = /^apps\/(?:auth|console|storefront)\/src\//.test(file) && /\.(?:ts|tsx|js|jsx|mjs|cjs)$/.test(file);
+  const frontendCode = /^apps\/(?:auth|console|storefront|store|supplier)\/src\//.test(file) || /^apps\/miniapp\/miniprogram\//.test(file);
+  if (frontendCode && !/\.(?:ts|tsx|js|jsx|mjs|cjs)$/.test(file)) return 250;
   if (!frontendCode) return 250;
   if (/\/route\//.test(file)) return 80;
   if (/\/viewmodel\//.test(file)) return 220;

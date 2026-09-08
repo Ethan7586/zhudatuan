@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { MemberAccessPort } from '../../../access/public';
 import type { NotificationIdentityPort } from '../../../identity/public';
 import type { OrganizationReadPort } from '../../../organization/public';
@@ -28,7 +28,6 @@ export class PgNotificationRepository implements NotificationRepository {
     private readonly organizations: OrganizationReadPort
   ) {}
   async member(context: ReadTransactionContext, membership: string) {
-    const database = this.transactions.database(context);
     const member = await this.members.profile(context, membership);
     if (member.status !== 'active') throw new Error('MEMBERSHIP_NOT_FOUND');
     return Object.freeze({ member: member.member, organization: member.organization });
@@ -37,44 +36,60 @@ export class PgNotificationRepository implements NotificationRepository {
     const database = this.transactions.database(context);
     const scopes = await this.notificationScopes(context, organization);
     const result = await database.query(
-      `select selected.channel,selected.event_type,selected.provider_template,selected.enabled,
-      selected.authorization_state,selected.authorized_at,selected.cursor_id from(
+      `select selected.channel,selected.event_type,selected.provider_template,selected.enabled,selected.authorization_state,
+      selected.authorized_at,selected.consent_source,selected.quiet_start,selected.quiet_end,selected.quiet_timezone,selected.version,selected.cursor_id from(
       select distinct on(template.channel,template.event_type) template.channel,template.event_type,
-      template.provider_template,coalesce(preference.enabled,true) enabled,coalesce(preference.authorization_state,'unknown') authorization_state,
-      preference.authorized_at,coalesce(preference.consent_source,'system') consent_source,preference.quiet_start::text,
+      template.provider_template,coalesce(preference.enabled,true) enabled,
+      case when template.channel='wechat' then case when endpoint.member_id is null then 'unknown'
+        when endpoint.revoked_at is null then 'accepted' else 'rejected' end else 'unknown' end authorization_state,
+      case when template.channel='wechat' and endpoint.revoked_at is null then endpoint.consent_at else null end authorized_at,
+      case when template.channel='wechat' and endpoint.member_id is not null then endpoint.consent_source
+        else coalesce(preference.consent_source,'system') end consent_source,preference.quiet_start::text,
       preference.quiet_end::text,preference.quiet_timezone,coalesce(preference.version,0) version,
       template.channel||':'||template.event_type cursor_id from notification.template template
       left join notification.preference preference on preference.member_id=$1 and preference.channel=template.channel
-      and preference.event_type=template.event_type where template.scope_id=any($2::text[]) and template.status='active'
+      and preference.event_type=template.event_type left join notification.endpoint endpoint on endpoint.member_id=$1
+      and endpoint.channel=template.channel where template.scope_id=any($2::text[]) and template.status='active'
       order by template.channel,template.event_type,array_position($2::text[],template.scope_id),template.version desc) selected
       where($3::text is null or cursor_id>$3) order by cursor_id limit $4`,
       [member, scopes, cursor, fetch]
     );
     return result.rows.map((row) => Object.freeze({ ...row }));
   }
-  async changePreference(context: WriteTransactionContext, member: string, organization: string, channel: DeliveryChannelId, event: string, enabled: boolean, authorization: string, consentSource: import('../../domain/model/Preference').ConsentSource, quietHours: import('../../domain/model/Preference').QuietHours | null, expectedVersion: number) {
+  async changePreference(
+    context: WriteTransactionContext,
+    member: string,
+    organization: string,
+    channel: DeliveryChannelId,
+    event: string,
+    enabled: boolean,
+    quietHours: import('../../domain/model/Preference').QuietHours | null,
+    expectedVersion: number
+  ) {
     const database = this.transactions.database(context);
     const scopes = await this.notificationScopes(context, organization);
     const result = await database.query(
-      `insert into notification.preference(member_id,channel,event_type,enabled,authorization_state,authorized_at,consent_source,
+      `with consent as(select case when $3='wechat' then coalesce((select case when revoked_at is null then 'accepted' else 'rejected' end
+        from notification.endpoint where member_id=$1 and channel=$3),'unknown') else 'unknown' end authorization_state,
+        case when $3='wechat' then (select consent_at from notification.endpoint where member_id=$1 and channel=$3 and revoked_at is null) else null end authorized_at,
+        case when $3='wechat' then coalesce((select consent_source from notification.endpoint where member_id=$1 and channel=$3),'member') else 'member' end consent_source)
+      insert into notification.preference(member_id,channel,event_type,enabled,authorization_state,authorized_at,consent_source,
       quiet_start,quiet_end,quiet_timezone,version,updated_at)
-      select $1,$3,$4,$5,$6,case when $6='accepted' then clock_timestamp() else null end,$7,$8::time,$9::time,$10,1,clock_timestamp()
-      where $11=0 and exists(select 1 from notification.template template where template.scope_id=any($2::text[])
+      select $1,$3,$4,$5,consent.authorization_state,consent.authorized_at,consent.consent_source,$6::time,$7::time,$8,1,clock_timestamp()
+      from consent where $9=0 and exists(select 1 from notification.template template where template.scope_id=any($2::text[])
         and template.channel=$3 and template.event_type=$4 and template.status='active')
       on conflict(member_id,channel,event_type) do update set enabled=excluded.enabled,authorization_state=excluded.authorization_state,
       authorized_at=excluded.authorized_at,consent_source=excluded.consent_source,quiet_start=excluded.quiet_start,quiet_end=excluded.quiet_end,
       quiet_timezone=excluded.quiet_timezone,version=notification.preference.version+1,updated_at=excluded.updated_at
-      where notification.preference.version=$11 returning *`,
-      [member, scopes, channel, event, enabled, authorization, consentSource, quietHours?.start ?? null, quietHours?.end ?? null, quietHours?.timezone ?? null, expectedVersion]
+      where notification.preference.version=$9 returning *`,
+      [member, scopes, channel, event, enabled, quietHours?.start ?? null, quietHours?.end ?? null, quietHours?.timezone ?? null, expectedVersion]
     );
     return result.rows[0] ? Object.freeze({ ...result.rows[0] }) : null;
   }
   async wechatRecipient(context: ReadTransactionContext, membership: string): Promise<WechatRecipient | null> {
-    const database = this.transactions.database(context);
     return this.identity.recipient(context, membership);
   }
   async revokeEndpoint(context: WriteTransactionContext, member: string, channel: DeliveryChannelId, expectedVersion: number) {
-    const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query<SavedEndpoint>(
       `update notification.endpoint set revoked_at=clock_timestamp(),version=version+1 where member_id=$1 and channel=$2
       and revoked_at is null and version=$3 returning member_id,channel,address_token,consent_source,consent_at,revoked_at,version`,
@@ -94,7 +109,6 @@ export class PgNotificationRepository implements NotificationRepository {
     consentSource: import('../../domain/model/Preference').ConsentSource,
     expectedVersion: number
   ) {
-    const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query<SavedEndpoint>(
       `insert into notification.endpoint(member_id,channel,address_ciphertext,address_token,address_key_version,consent_source,consent_at,revoked_at,version)
       select $1,$2,$3,$4,$5,$6,clock_timestamp(),null,1 where $7=0 on conflict(member_id,channel) do update set address_ciphertext=excluded.address_ciphertext,
@@ -106,7 +120,6 @@ export class PgNotificationRepository implements NotificationRepository {
     return result.rows[0] ? Object.freeze({ ...result.rows[0] }) : null;
   }
   async notifications(context: ReadTransactionContext, membership: string, device: string, includeScope: boolean, cursorTime: string | null, cursorId: string | null, fetch: number) {
-    const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query(
       `select visible.id,visible.kind,visible.event_type,visible.channel,visible.subject,visible.body,visible.state,
       visible.created_at,case when (visible.created_at,visible.id)<=(watermark.notification_time,watermark.notification_id)
@@ -120,7 +133,6 @@ export class PgNotificationRepository implements NotificationRepository {
     return result.rows.map((row) => Object.freeze({ ...row }));
   }
   async acknowledge(context: WriteTransactionContext, membership: string, device: string, notification: string) {
-    const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query<{
       id: string;
       readAt: Date;
@@ -143,7 +155,6 @@ export class PgNotificationRepository implements NotificationRepository {
     return row ? Object.freeze({ id: row.id, readAt: row.readAt.toISOString() }) : null;
   }
   async templates(context: ReadTransactionContext, scope: string, channel: DeliveryChannelId | null, cursor: string | null, fetch: number) {
-    const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query<TemplateRow>(
       `select id,scope_id,channel,event_type,version,variable_schema,provider_template,subject,body,purpose,mandatory,status,created_at
       from notification.template where scope_id=$1 and($2::text is null or channel=$2) and($3::text is null or id>$3) order by id limit $4`,
@@ -152,7 +163,6 @@ export class PgNotificationRepository implements NotificationRepository {
     return result.rows.map(template);
   }
   async saveTemplate(context: WriteTransactionContext, input: Omit<NotificationTemplate, 'createdAt'> & Readonly<{ expectedVersion: number }>): Promise<SavedTemplate | null> {
-    const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query<
       TemplateRow & {
         matches: boolean;
@@ -179,7 +189,6 @@ export class PgNotificationRepository implements NotificationRepository {
     return row ? Object.freeze({ ...template(row), matches: row.matches, inserted: row.inserted }) : null;
   }
   async announcements(context: ReadTransactionContext, scope: string, cursor: string | null, fetch: number) {
-    const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query(
       `select id,title,body,audience,state,starts_at,ends_at,version,created_at,updated_at
       from notification.announcement where scope_id=$1 and($2::text is null or id>$2) order by id limit $3`,
@@ -201,7 +210,6 @@ export class PgNotificationRepository implements NotificationRepository {
       expected: number | null;
     }>
   ) {
-    const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query(
       `insert into notification.announcement(id,scope_id,title,body,audience,state,starts_at,ends_at,version,created_at,updated_at)
       values($1,$2,$3,$4,$5::jsonb,$6,$7,$8,0,clock_timestamp(),clock_timestamp()) on conflict(id) do update set title=excluded.title,

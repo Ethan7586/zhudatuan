@@ -1,9 +1,10 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { CHECKOUT_VOUCHER_PORT, FULFILLMENT_VOUCHER_PORT, PAYMENT_VOUCHER_PORT, VERIFICATION_VOUCHER_PORT } from './public';
 
 export const Manifest = defineModuleManifest({
   id: 'voucher',
   dependencies: ['access', 'approval', 'finance', 'organization', 'partner', 'qualification', 'runtime'],
+  bindings: ['finance', 'organization'],
   services: ['database.pool', 'kms.client', 'object.store'],
   ports: [CHECKOUT_VOUCHER_PORT, VERIFICATION_VOUCHER_PORT, PAYMENT_VOUCHER_PORT],
   workloads: {

@@ -1,9 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { OperationId, OperationInputFor } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { HandlerContext, WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { HandlerContext, WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import { bodyRecord, integerField, textField } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import { OwnershipTransfer, type FormerOwnerMode } from '../../domain/model/OwnershipTransfer';
 import { OwnershipPolicy } from '../../domain/policy/OwnershipPolicy';
 import type { OwnershipImpact, OwnershipRepository, OwnershipTransferView, OwnershipView } from '../port/OwnershipRepository';
@@ -19,7 +19,10 @@ export interface OwnershipPreview extends OwnershipImpact {
 export class ManageOwnershipTransfer {
   private readonly policy = new OwnershipPolicy();
 
-  constructor(private readonly repository: OwnershipRepository, private readonly now: () => Date = () => new Date()) {}
+  constructor(
+    private readonly repository: OwnershipRepository,
+    private readonly now: () => Date = () => new Date()
+  ) {}
 
   async read(input: OperationInputFor<'access.ownership.read'>, context: HandlerContext<'access.ownership.read'>): Promise<OwnershipView> {
     void input;
@@ -43,7 +46,10 @@ export class ManageOwnershipTransfer {
     return created;
   }
 
-  async previewAccept<TKey extends 'access.ownership.transfers.accept.preview' | 'access.ownership.transfers.accept'>(input: OperationInputFor<TKey>, context: WriteHandlerContext<TKey>): Promise<Readonly<{ transfer: OwnershipTransferView; impact: OwnershipImpact }>> {
+  async previewAccept<TKey extends 'access.ownership.transfers.accept.preview' | 'access.ownership.transfers.accept'>(
+    input: OperationInputFor<TKey>,
+    context: WriteHandlerContext<TKey>
+  ): Promise<Readonly<{ transfer: OwnershipTransferView; impact: OwnershipImpact }>> {
     const prepared = await this.prepareExisting(input.path.transferid, context, 'accept');
     return Object.freeze({ transfer: transferView(prepared.transfer), impact: prepared.impact });
   }
@@ -56,7 +62,10 @@ export class ManageOwnershipTransfer {
     return result;
   }
 
-  async previewCancel<TKey extends 'access.ownership.transfers.cancel.preview' | 'access.ownership.transfers.cancel'>(input: OperationInputFor<TKey>, context: WriteHandlerContext<TKey>): Promise<Readonly<{ transfer: OwnershipTransferView; impact: OwnershipImpact; reason: string }>> {
+  async previewCancel<TKey extends 'access.ownership.transfers.cancel.preview' | 'access.ownership.transfers.cancel'>(
+    input: OperationInputFor<TKey>,
+    context: WriteHandlerContext<TKey>
+  ): Promise<Readonly<{ transfer: OwnershipTransferView; impact: OwnershipImpact; reason: string }>> {
     const reason = reasonFrom(input);
     const prepared = await this.prepareExisting(input.path.transferid, context, 'cancel');
     return Object.freeze({ transfer: transferView(prepared.transfer), impact: prepared.impact, reason });
@@ -149,16 +158,20 @@ export class ManageOwnershipTransfer {
       this.policy.assertCancel(active, access.membership.id, requiredVersion(context.expectedVersion));
     }
     const impact = await this.repository.impact(context.transaction, active.scope, [active.sourceMembership, active.targetMembership]);
-    return Object.freeze({ transfer: active, actor: access.membership.id, impact: Object.freeze({
-      sourceMembership: active.sourceMembership,
-      targetMembership: active.targetMembership,
-      ownershipVersion: active.ownershipVersion,
-      targetAccessVersion: active.targetAccessVersion,
-      formerOwnerRoleVersion: await this.repository.roleVersion(context.transaction, active.formerOwnerRole, active.scope),
-      affectedPeople: impact.people,
-      affectedScopes: impact.scopes,
-      warnings: action === 'accept' ? ['接受后所有权立即切换', '旧会话将在权限版本更新后失效'] : ['取消后当前所有者保持不变'],
-    }) });
+    return Object.freeze({
+      transfer: active,
+      actor: access.membership.id,
+      impact: Object.freeze({
+        sourceMembership: active.sourceMembership,
+        targetMembership: active.targetMembership,
+        ownershipVersion: active.ownershipVersion,
+        targetAccessVersion: active.targetAccessVersion,
+        formerOwnerRoleVersion: await this.repository.roleVersion(context.transaction, active.formerOwnerRole, active.scope),
+        affectedPeople: impact.people,
+        affectedScopes: impact.scopes,
+        warnings: action === 'accept' ? ['接受后所有权立即切换', '旧会话将在权限版本更新后失效'] : ['取消后当前所有者保持不变'],
+      }),
+    });
   }
 }
 

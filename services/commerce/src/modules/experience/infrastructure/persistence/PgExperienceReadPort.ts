@@ -1,10 +1,10 @@
 import { parseExperience, serializeExperience } from '@shop/contract';
 import { createHash } from 'node:crypto';
 import { CACHE_CATALOG } from '@shop/config/runtime';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { Cache } from '../../../../foundation/cache/Cache';
-import { VersionedKey } from '../../../../foundation/cache/VersionedKey';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { Cache } from '../../../../platform/cache/Cache';
+import { VersionedKey } from '../../../../platform/cache/VersionedKey';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { EntryResolver } from '../../application/service/EntryResolver';
 import type { ExperienceChannel, ExperienceReadPort, PublishedExperience, PublishedStorefront, StorefrontEntry } from '../../public/ExperienceReadPort';
 

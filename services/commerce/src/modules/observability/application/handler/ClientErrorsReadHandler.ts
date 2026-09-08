@@ -1,8 +1,8 @@
 import { isClientSurface, type ClientSurface, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { limit } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { limit } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { ClientErrorRepository } from '../port/ClientErrorRepository';
 
 export class ClientErrorsReadHandler implements OperationHandler<'observability.clienterrors.read', 'read'> {

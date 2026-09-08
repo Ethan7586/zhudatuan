@@ -1,10 +1,24 @@
 generated: true
 source: RepositoryAuthority docs/福利商城功能清单.xlsx
 workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
+authority:
+  path: docs/福利商城功能清单.xlsx
+  sheet: MVP上线功能清单
+  sourceRange: A1:F24
+  selectedRange: A3:F24
+  sha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
+  readAt: 2026-09-08
+  order:
+    - 当前用户明确要求
+    - docs/福利商城功能清单.xlsx#MVP上线功能清单与接口
+    - ../zhudatuan_li/docs/当前代码业务功能清单-20260904.md
+    - ../zhudatuan_li/docs/zhudatuan-console-UX-acceptance-report-20260904.md
+    - zhudatuan当前合同模块数据库与质量门
+    - zhudatuan_li当前代码迁移来源
+  changePolicy: 工作簿内容或哈希变化时必须重新进行产品、架构、数据与发布评审
 counts:
   mvp: 22
-  required: 22
-  nonblocking: 0
+  blocking: 22
   providerRequired: 11
 mvp:
   - id: MVPPLATFORM
@@ -13,180 +27,178 @@ mvp:
       sheet: MVP上线功能清单
       row: 3
       range: A3:F3
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: 忽略
   - id: MVPDISTRIBUTION
     title: 分销层
     source:
       sheet: MVP上线功能清单
       row: 4
       range: A4:F4
-    release: required
-    clarifications:
-      - distributiondefinition
+    release: blocking
+    historicalWorkbookNote: 忽略
   - id: MVPGROUPDASHBOARD
     title: 集团数据大屏
     source:
       sheet: MVP上线功能清单
       row: 5
       range: A5:F5
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
   - id: MVPGROUPAPPLICATION
     title: 集团应用管理
     source:
       sheet: MVP上线功能清单
       row: 6
       range: A6:F6
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
   - id: MVPGROUPPOOL
     title: 集团商品池
     source:
       sheet: MVP上线功能清单
       row: 7
       range: A7:F7
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: |-
+      1. 商品池可以投放到自营、分销等商城
+      2. 商品池与商城关系 M:N ，商品与商品池关系 M:N
   - id: MVPGROUPORDER
     title: 集团订单管理
     source:
       sheet: MVP上线功能清单
       row: 8
       range: A8:F8
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
   - id: MVPGROUPVOUCHER
     title: 集团卡券中心
     source:
       sheet: MVP上线功能清单
       row: 9
       range: A9:F9
-    release: required
-    clarifications:
-      - voucherarchive
+    release: blocking
+    historicalWorkbookNote: 第1点待确认
   - id: MVPGROUPFINANCE
     title: 集团财务
     source:
       sheet: MVP上线功能清单
       row: 10
       range: A10:F10
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: 忽略
   - id: MVPGROUPREPORT
     title: 集团数据统计
     source:
       sheet: MVP上线功能清单
       row: 11
       range: A11:F11
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
   - id: MVPGROUPSUPPORT
     title: 集团客服中心
     source:
       sheet: MVP上线功能清单
       row: 12
       range: A12:F12
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
   - id: MVPGROUPSETTING
     title: 集团设置
     source:
       sheet: MVP上线功能清单
       row: 13
       range: A13:F13
-    release: required
-    clarifications:
-      - grouprisk
+    release: blocking
+    historicalWorkbookNote: 风控设置待确认
   - id: MVPMALLDASHBOARD
     title: 商城数据大屏
     source:
       sheet: MVP上线功能清单
       row: 14
       range: A14:F14
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
   - id: MVPMALLDESIGN
     title: 商城装修
     source:
       sheet: MVP上线功能清单
       row: 15
       range: A15:F15
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
   - id: MVPMALLPOOL
     title: 商城商品池
     source:
       sheet: MVP上线功能清单
       row: 16
       range: A16:F16
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
   - id: MVPMALLORDER
     title: 商城订单管理
     source:
       sheet: MVP上线功能清单
       row: 17
       range: A17:F17
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
   - id: MVPMALLVOUCHER
     title: 商城卡券中心
     source:
       sheet: MVP上线功能清单
       row: 18
       range: A18:F18
-    release: required
-    clarifications:
-      - voucherarchive
+    release: blocking
+    historicalWorkbookNote: 第1点待确认
   - id: MVPMALLFINANCE
     title: 商城财务
     source:
       sheet: MVP上线功能清单
       row: 19
       range: A19:F19
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: 忽略
   - id: MVPMALLREPORT
     title: 商城数据统计
     source:
       sheet: MVP上线功能清单
       row: 20
       range: A20:F20
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
   - id: MVPMALLSUPPORT
     title: 商城客服中心
     source:
       sheet: MVP上线功能清单
       row: 21
       range: A21:F21
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
   - id: MVPMALLSETTING
     title: 商城设置
     source:
       sheet: MVP上线功能清单
       row: 22
       range: A22:F22
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
   - id: MVPIDENTITY
     title: 用户注册与登录
     source:
       sheet: MVP上线功能清单
       row: 23
       range: A23:F23
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
   - id: MVPPROVIDER
     title: 优先级一接口接入
     source:
       sheet: MVP上线功能清单
       row: 24
       range: A24:F24
-    release: required
-    clarifications: []
+    release: blocking
+    historicalWorkbookNote: OK
 providers:
   - id: jdproduct
     row: 2
@@ -243,35 +255,3 @@ providers:
     label: 在线点餐(肯德基、麦当劳、瑞幸、星巴克。 新增：库迪)
     priority: 1
     core: cakecore
-clarifications:
-  - id: distributiondefinition
-    requirements:
-      - MVPDISTRIBUTION
-    term: 分销层
-    status: resolved
-    blocking: false
-    owner: product
-    acceptance: 分销层定义为平台与租户之间的业务范围，拥有集团绑定、配额、佣金和渠道治理职责
-    resolvedby: docs/architecture/福利商城理想方案20260904.md
-    reason: 理想方案已给出唯一范围模型和分销层职责，历史“忽略”备注不再降低发布要求
-  - id: voucherarchive
-    requirements:
-      - MVPGROUPVOUCHER
-      - MVPMALLVOUCHER
-    term: 客户管理与产品档案
-    status: resolved
-    blocking: true
-    owner: product
-    acceptance: 客户归 Partner Customer 子域，产品档案归 Rich Voucher Product 与 Catalog，不在 Voucher 建第二份客户或商品主数据
-    resolvedby: docs/architecture/福利商城理想方案20260904.md
-    reason: 理想方案已经裁决归属，历史待确认项转换为必须通过的实现与迁移验收
-  - id: grouprisk
-    requirements:
-      - MVPGROUPSETTING
-    term: 集团风控设置
-    status: resolved
-    blocking: true
-    owner: product
-    acceptance: 集团风控使用 Risk Policy 和 Case 聚合，策略启用需 Step-up、MakerChecker 与 Approval 证据
-    resolvedby: docs/architecture/福利商城理想方案20260904.md
-    reason: 理想方案已经定义风险策略对象、审批边界和质量门，历史待确认项不再开放

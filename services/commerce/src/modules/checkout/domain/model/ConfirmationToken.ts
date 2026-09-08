@@ -1,6 +1,6 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43,171}$/;
 

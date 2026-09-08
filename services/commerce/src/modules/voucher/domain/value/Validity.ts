@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export class Validity {
   readonly startsAt: Date;
@@ -8,5 +8,7 @@ export class Validity {
     this.startsAt = startsAt;
     this.expiresAt = expiresAt;
   }
-  active(now: Date): boolean { return this.startsAt <= now && now < this.expiresAt; }
+  active(now: Date): boolean {
+    return this.startsAt <= now && now < this.expiresAt;
+  }
 }

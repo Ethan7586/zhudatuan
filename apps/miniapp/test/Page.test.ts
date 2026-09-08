@@ -13,6 +13,8 @@ describe('miniapp page controller', () => {
         data: { rows: [{ key: 'one', title: '节日福利', detail: '企业福利', status: '可使用', timestamp: '' }], count: 1, nextCursor: null },
         authenticated: true,
         stale: false,
+        actions: [],
+        navigation: [],
       })),
       failure: vi.fn(() => ({ message: '安全提示', authenticationRequired: false })),
     };
@@ -30,8 +32,8 @@ describe('miniapp page controller', () => {
     const onLoad = definition?.onLoad as ((this: Record<string, unknown>, options: Record<string, string>) => void) | undefined;
     expect(onLoad).toBeTypeOf('function');
     onLoad!.call(instance, {});
-    await vi.waitFor(() => expect(state.state).toBe('ready'));
-    expect(runtime.read).toHaveBeenCalledOnce();
+    await vi.waitFor(() => expect(state.state).toBe('success'));
+    expect(runtime.read).toHaveBeenCalledWith(homeViewModel, expect.objectContaining({ id: 'miniapphome' }), expect.any(AbortSignal));
     expect(state).toMatchObject({ title: '今日福利', authenticated: true, count: 1 });
     expect(setNavigationBarTitle).toHaveBeenCalledWith({ title: '今日福利' });
   });

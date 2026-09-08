@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PoolClient, QueryResult } from 'pg';
 import type { ClaimedJob } from '../../src/modules/runtime/public/JobProcess';
-import type { DatabasePool } from '../../src/foundation/persistence/Pool';
-import { PgTransactionManager } from '../../src/adapter/database/PgTransactionManager';
+import type { DatabasePool } from '../../src/platform/database/Pool';
+import { PgTransactionManager } from '../../src/platform/database/PgTransactionManager';
 import { RunFulfillment } from '../../src/modules/fulfillment/application/process/RunFulfillment';
 import { PgFulfillmentJobProcess } from '../../src/modules/fulfillment/infrastructure/persistence/PgFulfillmentJobProcess';
 import { FulfillmentJob } from '../../src/modules/fulfillment/interface/job/FulfillmentJob';
@@ -36,7 +36,7 @@ describe('aftersale return authorization job', () => {
     };
     const fixture = database(calls);
     const operations = { record: vi.fn(async () => calls.push('operation')), replayReference: vi.fn() };
-    const extensions = { has: vi.fn(() => true), require: vi.fn(() => ({ authorize })) };
+    const extensions = { has: vi.fn(() => true), strategy: vi.fn(() => ({ authorize })) };
     const processor = new FulfillmentJob(
       'fulfillment',
       new RunFulfillment(
@@ -75,6 +75,11 @@ function database(calls: string[]) {
     if (normalized === 'commit') calls.push('commit');
     if (normalized === 'rollback') calls.push('rollback');
     if (normalized.includes('from fulfillment.fulfillmentorder')) return result([{ fulfillment: 'fulfillment:one', provider: 'jdproduct', line: 'line:one', quantity: 1 }]);
+    if (normalized.startsWith('insert into fulfillment.sagastep')) return result([{ state: 'running' }]);
+    if (normalized.startsWith('update fulfillment.sagastep') && normalized.includes('returning fulfillment_id')) return result([{ fulfillment_id: 'fulfillment:one' }]);
+    if (normalized.includes('from fulfillment.returnrecord')) {
+      return result([{ id: 'return:one', state: 'authorized', provider: 'jdproduct', providerReference: 'JD-R-1', trackingNumber: null, instruction: { address: '北京市退货中心' }, version: 0 }]);
+    }
     return result([]);
   };
   const client = { query, release: () => undefined } as unknown as PoolClient;

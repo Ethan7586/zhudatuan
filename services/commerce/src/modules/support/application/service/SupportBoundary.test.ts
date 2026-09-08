@@ -1,24 +1,36 @@
-import { describe, expect, it } from 'vitest';
-import { supportBoundary } from './SupportBoundary';
+import { describe, expect, it, vi } from 'vitest';
+import type { AccessContext } from '../../../../platform/security/AccessContext';
+import { ReadSupportContext } from './ReadSupportContext';
+import { exactSupportScope, supportBoundary } from './SupportBoundary';
 
-describe('supportBoundary', () => {
-  it('places a storefront member conversation in the membership organization', () => {
-    expect(
-      supportBoundary({
-        actor: { target: 'storefront' },
-        organization: 'mall-one',
-        scope: { kind: 'owner', id: 'member-one', path: [] },
-      } as never)
-    ).toBe('mall-one');
+describe('SupportBoundary', () => {
+  it.each([
+    ['supplier', 'supplier', 'supplier:one'],
+    ['store', 'store', 'store:one'],
+  ] as const)('keeps the %s client inside its exact %s scope', (target, kind, id) => {
+    const access = { actor: { target }, organization: 'enterprise:one', scope: { kind, id, path: [{ kind: 'enterprise', id: 'enterprise:one' }] } } as unknown as AccessContext;
+    expect(exactSupportScope(access)).toBe(true);
+    expect(supportBoundary(access)).toBe(id);
   });
 
-  it('keeps the selected organization boundary for console operators', () => {
-    expect(
-      supportBoundary({
-        actor: { target: 'console' },
-        organization: 'mall-one',
-        scope: { kind: 'department', id: 'department-one', tenant: 'tenant-one', path: [] },
-      } as never)
-    ).toBe('department-one');
+  it('keeps console support hierarchical at its organization scope', () => {
+    const access = { actor: { target: 'console' }, organization: 'enterprise:one', scope: { kind: 'enterprise', id: 'enterprise:one', path: [] } } as unknown as AccessContext;
+    expect(exactSupportScope(access)).toBe(false);
+    expect(supportBoundary(access)).toBe('enterprise:one');
+  });
+
+  it('does not ask the organization graph to widen a supplier scope', async () => {
+    const descendants = vi.fn(async () => ['enterprise:one', 'mall:one']);
+    const reader = new ReadSupportContext({ member: vi.fn(async () => 'member:one'), descendants } as never);
+    const access = {
+      actor: { id: 'actor:one', target: 'supplier' },
+      membership: { id: 'membership:one' },
+      organization: 'enterprise:one',
+      scope: { kind: 'supplier', id: 'supplier:one', path: [] },
+      trace: 'trace:one',
+    } as unknown as AccessContext;
+
+    await expect(reader.actor({} as never, { security: { kind: 'session', access } } as never)).resolves.toMatchObject({ scope: 'supplier:one', scopes: ['supplier:one'] });
+    expect(descendants).not.toHaveBeenCalled();
   });
 });

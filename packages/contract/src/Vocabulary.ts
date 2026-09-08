@@ -8,6 +8,7 @@ export const APPROVAL_SUBJECT_KINDS = Object.freeze([
   'experiencepublish',
   'riskexception',
   'riskaction',
+  'inventoryadjustment',
 ] as const);
 
 export const ACCESS_ROLE_TEMPLATE_CODES = Object.freeze([
@@ -16,6 +17,7 @@ export const ACCESS_ROLE_TEMPLATE_CODES = Object.freeze([
   'ordersupport',
   'financeoperator',
   'financereviewer',
+  'storeoperator',
   'administrator',
   'custom',
 ] as const);

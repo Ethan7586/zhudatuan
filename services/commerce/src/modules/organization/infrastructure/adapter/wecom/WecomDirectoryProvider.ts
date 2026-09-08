@@ -1,10 +1,10 @@
-import { DomainError } from '../../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../../platform/error/DomainError';
 import { createDecipheriv, createHash, timingSafeEqual } from 'node:crypto';
 import { WECOM_PROVIDER_CONFIGURATION } from '@shop/config/server';
 import type { DirectoryProvider, DirectoryPage, ExternalDirectorySubject } from '../../../application/port/DirectoryProvider';
 import type { DirectoryConnection } from '../../../domain/model/DirectoryConnection';
 import type { WecomDirectoryClient, WecomDirectoryPayload } from './WecomDirectoryClient';
-import { invalidExternalResponse } from '../../../../../foundation/http/ExternalResponse';
+import { invalidExternalResponse } from '../../../../../platform/http/ExternalResponse';
 
 export class WecomDirectoryProvider implements DirectoryProvider {
   readonly type: 'wecomcorp' | 'wecomsuite';

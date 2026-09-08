@@ -13,7 +13,7 @@ describe('PublishedPage', () => {
     const navigateAction = vi.fn();
     const openProduct = vi.fn();
     const addToCart = vi.fn();
-    const product = productFixture({ id: 'listing:one', title: '中秋关怀礼盒' });
+    const product = productFixture({ listingId: 'listing:one', productId: 'product:one', title: '中秋关怀礼盒' });
     const viewmodel = { presentationProducts: [product], navigateAction, openProduct, addToCart } as unknown as ReturnType<typeof useHomeViewModel>;
     render(<PublishedPage page={page} viewmodel={viewmodel} />);
 
@@ -25,8 +25,8 @@ describe('PublishedPage', () => {
     expect(navigateAction).toHaveBeenCalledWith({ type: 'category', target: 'category:care' });
     fireEvent.click(screen.getByRole('button', { name: '查看订单' }));
     expect(navigateAction).toHaveBeenCalledWith({ type: 'link', target: '/pages/orders' });
-    fireEvent.click(screen.getByRole('button', { name: '暂无商品图片 中秋关怀礼盒' }));
-    expect(openProduct).toHaveBeenCalledWith('listing:one');
+    fireEvent.click(screen.getByRole('button', { name: /暂无商品图片 中秋关怀礼盒/ }));
+    expect(openProduct).toHaveBeenCalledWith('product:one');
     fireEvent.click(screen.getByRole('button', { name: '将中秋关怀礼盒加入购物车' }));
     expect(addToCart).toHaveBeenCalledWith(product, 1);
   });

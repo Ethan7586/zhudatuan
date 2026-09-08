@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { Clock } from '../port/Clock';
 import type { ReferralRepository } from '../port/ReferralRepository';
 import type { ReferralToken } from '../../domain/value/ReferralToken';
@@ -25,7 +25,9 @@ export class LinksReadHandler implements OperationHandler<'referral.links.read',
     const expiresAt = new Date(this.clock.now().getTime() + Math.min(active.firstTouchDays, 30) * 86_400_000).toISOString();
     const token = this.tokens.issue({ scopeId: member.scopeId, promoterId: active.promoterId, expiresAt, nonce: randomUUID(), settingVersion: active.settingVersion });
     const product = queryValue(input.query?.productId);
-    return { status: 200, body: { token, url: `/referral/${encodeURIComponent(token)}`, expiresAt, productId: product || null } as OperationOutputFor<'referral.links.read'> };
+    const query = new URLSearchParams({ referral: token });
+    if (product) query.set('product', product);
+    return { status: 200, body: { token, url: `?${query.toString()}`, expiresAt, productId: product || null } as OperationOutputFor<'referral.links.read'> };
   }
 }
 

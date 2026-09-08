@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { cartConflict } from '../../domain/error/CartError';
 import type { CartReadPort, CartSnapshot } from '../../public/CartReadPort';
 import type { CartWritePort } from '../../public/CartWritePort';
@@ -9,10 +9,7 @@ export class PgCartPublicPort implements CartReadPort, CartWritePort {
 
   async current(context: ReadTransactionContext, member: string, mall: string): Promise<CartSnapshot> {
     const database = this.transactions.database(context);
-    const selected = await database.query<{ id: string }>(
-      `select id from cart.cart where owner_kind='member' and member_id=$1 and mall_id=$2 and state='active' order by updated_at desc,id limit 1`,
-      [member, mall]
-    );
+    const selected = await database.query<{ id: string }>(`select id from cart.cart where owner_kind='member' and member_id=$1 and mall_id=$2 and state='active' order by updated_at desc,id limit 1`, [member, mall]);
     if (!selected.rows[0]) return cartConflict();
     return this.read(context, selected.rows[0].id, member, mall);
   }
@@ -39,10 +36,7 @@ export class PgCartPublicPort implements CartReadPort, CartWritePort {
 
   async lockActive(context: WriteTransactionContext, cart: string, member: string, mall: string, expectedVersion: number): Promise<void> {
     const database = this.transactions.database(context);
-    const locked = await database.query(
-      `select id from cart.cart where id=$1 and owner_kind='member' and member_id=$2 and mall_id=$3 and state='active' and version=$4 for update`,
-      [cart, member, mall, expectedVersion]
-    );
+    const locked = await database.query(`select id from cart.cart where id=$1 and owner_kind='member' and member_id=$2 and mall_id=$3 and state='active' and version=$4 for update`, [cart, member, mall, expectedVersion]);
     if (!locked.rows[0]) cartConflict();
   }
 

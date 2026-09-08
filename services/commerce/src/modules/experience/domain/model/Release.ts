@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export type ReleaseState = 'scheduled' | 'active' | 'retired' | 'failed';
 export interface ReleaseSnapshot {

@@ -1,8 +1,8 @@
 import { isConsumerTarget, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
-import type { FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableCommit, DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { StreamCapacity, type StreamLease } from '../../../../foundation/stream/StreamCapacity';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { FinalizeContext, HandlerContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableCommit, DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { StreamCapacity, type StreamLease } from '../../../../platform/messaging/StreamCapacity';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { RealtimePort, SupportRealtimeEvent, SupportReplayPort, SupportStreamPresenter } from '../port/RealtimePort';
 import type { ReadSupportContext, SupportActorContext } from '../service/ReadSupportContext';
 
@@ -55,15 +55,17 @@ export class EventsReadHandler implements DurableOperationHandler<'support.event
 
   finalize(_input: OperationInputFor<'support.events.read'>, prepared: PreparedStream, _context: FinalizeContext<'support.events.read'>): Promise<Reply> {
     try {
-      return Promise.resolve(this.presenter.present({
-        scopes: prepared.actor.scopes,
-        member: prepared.actor.member,
-        storefront: isConsumerTarget(prepared.actor.target),
-        conversation: prepared.conversation,
-        cursor: prepared.cursor,
-        replay: prepared.replay,
-        release: () => prepared.lease.release(),
-      }));
+      return Promise.resolve(
+        this.presenter.present({
+          scopes: prepared.actor.scopes,
+          member: prepared.actor.member,
+          storefront: isConsumerTarget(prepared.actor.target),
+          conversation: prepared.conversation,
+          cursor: prepared.cursor,
+          replay: prepared.replay,
+          release: () => prepared.lease.release(),
+        })
+      );
     } catch (cause) {
       prepared.lease.release();
       throw cause;

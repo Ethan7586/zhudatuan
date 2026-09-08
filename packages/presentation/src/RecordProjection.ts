@@ -37,8 +37,17 @@ function projectRecord(value: unknown, index: number): DisplayRow {
     title,
     detail: first(item, detailKeys) || shortReference(identity),
     status: chineseDomainLabel(first(item, statusKeys), '已同步'),
-    timestamp: first(item, timestampKeys),
+    timestamp: displayTime(first(item, timestampKeys)),
   });
+}
+
+function displayTime(value: string): string {
+  if (!value) return '';
+  const parsed = Date.parse(value);
+  if (!Number.isFinite(parsed)) return '';
+  const date = new Date(parsed + 8 * 60 * 60 * 1_000);
+  const part = (number: number) => String(number).padStart(2, '0');
+  return `${date.getUTCFullYear()}-${part(date.getUTCMonth() + 1)}-${part(date.getUTCDate())} ${part(date.getUTCHours())}:${part(date.getUTCMinutes())}`;
 }
 
 function first(source: Readonly<Record<string, unknown>>, keys: readonly string[]): string {

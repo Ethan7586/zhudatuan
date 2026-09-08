@@ -1,4 +1,4 @@
-import type { JobKind } from '../../../../foundation/application/JobCatalog';
+import type { JobKind } from '../../../../pipeline/JobCatalog';
 
 export interface ExportDescriptor {
   readonly owner: 'reporting' | 'voucher';

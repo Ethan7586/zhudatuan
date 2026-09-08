@@ -1,0 +1,186 @@
+.orderexceptiondetail {
+  display: grid;
+  align-content: start;
+  gap: var(--sw-space-3);
+  padding: var(--sw-space-3);
+}
+.orderexceptiondetail > section {
+  display: grid;
+  gap: var(--sw-space-1-5);
+}
+.orderexceptionfacts {
+  display: grid;
+  gap: var(--sw-space-1);
+}
+.orderexceptionfacts article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sw-space-1-5);
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  padding: var(--sw-space-1-5);
+}
+.orderexceptionfacts p {
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+}
+.orderexceptionfacts button,
+.orderexceptiongrid button,
+.orderexceptionerror button {
+  min-height: 2.5rem;
+  border: 0;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-brand);
+  color: var(--sw-surface);
+  padding-inline: var(--sw-space-1-5);
+  font-weight: 700;
+}
+.orderexceptionstates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  overflow: hidden;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+}
+.orderexceptionstates > div {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  border-bottom: 0.0625rem solid var(--sw-border);
+  padding: var(--sw-space-1-5);
+}
+.orderexceptionstates > div:nth-child(odd) {
+  border-right: 0.0625rem solid var(--sw-border);
+}
+.orderexceptionstates dt {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+.orderexceptionstates dd {
+  margin: 0;
+  color: var(--sw-text-secondary);
+}
+.orderexceptiondetail > footer {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+  border-top: 0.0625rem dashed var(--sw-border);
+  padding-top: var(--sw-space-1-5);
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+.orderexceptionempty {
+  display: grid;
+  min-height: 14rem;
+  place-content: center;
+  justify-items: center;
+  gap: var(--sw-space-1);
+  padding: var(--sw-space-2);
+  color: var(--sw-muted);
+  text-align: center;
+}
+.orderexceptionempty svg {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+.orderexceptionrecovery {
+  display: grid;
+  gap: var(--sw-space-1-5);
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-subtle);
+  padding: var(--sw-space-2);
+}
+.orderexceptionrecovery > header,
+.orderexceptionrecovery h3,
+.orderexceptionrecovery p {
+  margin: 0;
+}
+.orderexceptionerror {
+  display: grid;
+  justify-items: start;
+  gap: var(--sw-space-1);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-danger-surface);
+  padding: var(--sw-space-1-5);
+}
+.orderexceptiongrid article {
+  display: grid;
+  gap: var(--sw-space-1);
+  border: 0.0625rem solid var(--sw-border);
+  border-left: 0.25rem solid var(--sw-warning);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  padding: var(--sw-space-2);
+  box-shadow: var(--sw-shadow-card);
+}
+.orderexceptiongrid header,
+.orderexceptiongrid dl,
+.orderexceptiongrid dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+}
+.orderexceptiongrid h3,
+.orderexceptiongrid p,
+.orderexceptiongrid dl {
+  margin: 0;
+}
+.orderexceptiongrid p,
+.orderexceptiongrid dt,
+.orderexceptiongrid small {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+.orderexceptiongrid dl {
+  flex-direction: column;
+}
+.orderexceptiongrid dd {
+  margin: 0;
+  color: var(--sw-text-secondary);
+}
+
+@media (max-width: 64rem) {
+  .orderexceptionintro,
+  .orderexceptionworkbench {
+    grid-template-columns: 1fr;
+  }
+  .orderexceptionmetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .orderexceptionworkbench > aside {
+    border-right: 0;
+    border-bottom: 0.0625rem solid var(--sw-border);
+  }
+  .orderexceptionlist {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 44rem) {
+  .orderexceptionstack {
+    padding-inline: var(--sw-space-1);
+  }
+  .orderexceptionintro ol,
+  .orderexceptionlist,
+  .orderexceptionmetrics,
+  .orderexceptionstates {
+    grid-template-columns: 1fr;
+  }
+  .orderexceptionintro ol {
+    display: grid;
+  }
+  .orderexceptionintro li {
+    display: flex;
+  }
+  .orderexceptionfacts article {
+    grid-template-columns: 1fr;
+  }
+  .orderexceptionstates > div:nth-child(odd) {
+    border-right: 0;
+  }
+  .orderexceptiondetail > footer {
+    flex-direction: column;
+  }
+}

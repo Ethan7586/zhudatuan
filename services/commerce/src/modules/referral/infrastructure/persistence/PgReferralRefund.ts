@@ -1,8 +1,8 @@
 import type { QueryResultRow } from 'pg';
-import { PgOutbox } from '../../../../adapter/database/PgOutbox';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgOutbox } from '../../../../platform/database/PgOutbox';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ReferralFinancePort } from '../../../finance/public';
 import type { ReferralProcessEvent } from '../../application/port/ReferralEventProcess';
 import { ReverseCommissions } from '../../application/service/ReverseCommissions';

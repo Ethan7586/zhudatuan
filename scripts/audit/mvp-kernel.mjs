@@ -1,30 +1,33 @@
 import { createHash } from 'node:crypto';
-import { OperationCatalog } from '@shop/contract';
+import { OperationCatalog, serializeExperience } from '@shop/contract';
 import { NETWORK_CATALOG } from '@shop/config/networkcatalog';
-import { Container } from '../../services/commerce/src/bootstrap/Container.ts';
-import { AUDIT_SINK } from '../../services/commerce/src/foundation/application/AuditSink.ts';
-import { DATABASE_POOL } from '../../services/commerce/src/foundation/persistence/Pool.ts';
-import { SECURITY_KEYS } from '../../services/commerce/src/foundation/infrastructure/SecretStore.ts';
-import { KMS_CLIENT } from '../../services/commerce/src/foundation/infrastructure/KmsClient.ts';
+import { Singleflight } from '@shop/kernel';
+import { WechatPaymentManifest } from '@shop/wechatpayment';
+import { Container } from '../../services/commerce/src/composition/Container.ts';
+import { AUDIT_SINK } from '../../services/commerce/src/pipeline/AuditSink.ts';
+import { DATABASE_POOL } from '../../services/commerce/src/platform/database/Pool.ts';
+import { SECURITY_KEYS } from '../../services/commerce/src/platform/secret/SecretStore.ts';
+import { KMS_CLIENT } from '../../services/commerce/src/pipeline/KmsPort.ts';
 import { RunJob } from '../../services/commerce/src/modules/runtime/application/process/RunJob.ts';
-import { HandlerRegistry } from '../../services/commerce/src/foundation/application/HandlerRegistry.ts';
-import { OperationExecutor } from '../../services/commerce/src/foundation/application/OperationExecutor.ts';
-import { AuditDecorator } from '../../services/commerce/src/foundation/application/AuditDecorator.ts';
-import { OutboxRelay } from '../../services/commerce/src/adapter/messaging/OutboxRelay.ts';
-import { RuntimeEventPublisher } from '../../services/commerce/src/adapter/messaging/RuntimeEventPublisher.ts';
-import { EventRegistry } from '../../services/commerce/src/bootstrap/EventRegistry.ts';
-import { EVENT_SCHEMA_TYPES } from '../../services/commerce/src/app/events.ts';
+import { jobDefinition } from '../../services/commerce/src/pipeline/JobCatalog.ts';
+import { HandlerRegistry } from '../../services/commerce/src/pipeline/HandlerRegistry.ts';
+import { OperationExecutor } from '../../services/commerce/src/pipeline/OperationExecutor.ts';
+import { AuditDecorator } from '../../services/commerce/src/pipeline/AuditDecorator.ts';
+import { OutboxRelay } from '../../services/commerce/src/platform/messaging/OutboxRelay.ts';
+import { RuntimeEventPublisher } from '../../services/commerce/src/platform/messaging/RuntimeEventPublisher.ts';
+import { EventRegistry } from '../../services/commerce/src/composition/EventRegistry.ts';
+import { EVENT_SCHEMA_TYPES } from '../../services/commerce/src/generated/EventCatalog.ts';
 import { EVENT_SUBSCRIPTIONS } from '../../services/commerce/src/generated/EventSubscriptions.ts';
 import { RecordAudit } from '../../services/commerce/src/modules/audit/application/service/RecordAudit.ts';
 import { PgAuditRepository } from '../../services/commerce/src/modules/audit/infrastructure/persistence/PgAuditRepository.ts';
 import { PgAuditAppender } from '../../services/commerce/src/modules/audit/infrastructure/persistence/PgAuditAppender.ts';
 import { PgMakerCheckerGuard } from '../../services/commerce/src/modules/access/infrastructure/persistence/PgMakerCheckerGuard.ts';
-import { PgIdempotencyRepository } from '../../services/commerce/src/adapter/database/PgIdempotencyRepository.ts';
-import { PgTransactionalOutbox } from '../../services/commerce/src/adapter/database/PgTransactionalOutbox.ts';
-import { PgTransactionAccess } from '../../services/commerce/src/adapter/database/PgTransactionAccess.ts';
-import { PgTransactionManager } from '../../services/commerce/src/adapter/database/PgTransactionManager.ts';
+import { PgIdempotencyRepository } from '../../services/commerce/src/platform/database/PgIdempotencyRepository.ts';
+import { PgTransactionalOutbox } from '../../services/commerce/src/platform/database/PgTransactionalOutbox.ts';
+import { PgTransactionAccess } from '../../services/commerce/src/platform/database/PgTransactionAccess.ts';
+import { PgTransactionManager } from '../../services/commerce/src/platform/database/PgTransactionManager.ts';
 import { PgJobQueue } from '../../services/commerce/src/modules/runtime/infrastructure/persistence/PgJobQueue.ts';
-import { PgDeadletterStore } from '../../services/commerce/src/adapter/database/PgDeadletterStore.ts';
+import { PgDeadletterStore } from '../../services/commerce/src/platform/database/PgDeadletterStore.ts';
 import { CartModule } from '../../services/commerce/src/modules/cart/Module.ts';
 import { CheckoutModule } from '../../services/commerce/src/modules/checkout/Module.ts';
 import { PaymentModule } from '../../services/commerce/src/modules/payment/Module.ts';
@@ -37,11 +40,20 @@ import { PgReconciliationProcess } from '../../services/commerce/src/modules/fin
 import { ReconciliationJob } from '../../services/commerce/src/modules/finance/interface/job/ReconciliationJob.ts';
 import { BenefitPort } from '../../services/commerce/src/modules/benefit/infrastructure/persistence/BenefitPort.ts';
 import { VoucherPort } from '../../services/commerce/src/modules/voucher/infrastructure/persistence/VoucherPort.ts';
-import { FinancePort } from '../../services/commerce/src/modules/finance/infrastructure/persistence/FinancePort.ts';
+import { PgAccountingPort } from '../../services/commerce/src/modules/finance/infrastructure/persistence/PgAccountingPort.ts';
 import { InventoryPort } from '../../services/commerce/src/modules/inventory/infrastructure/persistence/InventoryPort.ts';
-import { MarketingPort } from '../../services/commerce/src/modules/marketing/infrastructure/persistence/MarketingPort.ts';
+import { PgInventoryReadPort } from '../../services/commerce/src/modules/inventory/infrastructure/persistence/PgInventoryReadPort.ts';
+import { PgMarketingReadPort } from '../../services/commerce/src/modules/marketing/infrastructure/persistence/PgMarketingReadPort.ts';
+import { PgMarketingReservePort } from '../../services/commerce/src/modules/marketing/infrastructure/persistence/PgMarketingReservePort.ts';
 import { FulfillmentPort } from '../../services/commerce/src/modules/fulfillment/infrastructure/persistence/FulfillmentPort.ts';
+import { ProcessFulfillmentEvent } from '../../services/commerce/src/modules/fulfillment/application/process/ProcessFulfillmentEvent.ts';
+import { PgFulfillmentEventProcess } from '../../services/commerce/src/modules/fulfillment/infrastructure/persistence/PgFulfillmentEventProcess.ts';
+import { FulfillmentEventJob } from '../../services/commerce/src/modules/fulfillment/interface/job/FulfillmentEventJob.ts';
 import { OrderPort } from '../../services/commerce/src/modules/order/infrastructure/persistence/OrderPort.ts';
+import { PgOrderReadPort } from '../../services/commerce/src/modules/order/infrastructure/persistence/PgOrderReadPort.ts';
+import { ProcessOrderEvent } from '../../services/commerce/src/modules/order/application/process/ProcessOrderEvent.ts';
+import { PgOrderEventProcess } from '../../services/commerce/src/modules/order/infrastructure/persistence/PgOrderEventProcess.ts';
+import { OrderEventJob } from '../../services/commerce/src/modules/order/interface/job/OrderEventJob.ts';
 import { ChannelOperationPort } from '../../services/commerce/src/modules/channel/infrastructure/persistence/ChannelOperationPort.ts';
 import { PgFinanceChannelPort } from '../../services/commerce/src/modules/channel/infrastructure/persistence/PgFinanceChannelPort.ts';
 import { PaymentHoldReleaser, PaymentSettlement } from '../../services/commerce/src/modules/payment/infrastructure/persistence/PaymentSettlement.ts';
@@ -51,31 +63,32 @@ import { PricingPort } from '../../services/commerce/src/modules/pricing/infrast
 import { CHECKOUT_BENEFIT_PORT, PAYMENT_BENEFIT_PORT } from '../../services/commerce/src/modules/benefit/public/index.ts';
 import { CHECKOUT_VOUCHER_PORT, PAYMENT_VOUCHER_PORT } from '../../services/commerce/src/modules/voucher/public/index.ts';
 import { CHECKOUT_INVENTORY_PORT, PAYMENT_INVENTORY_PORT } from '../../services/commerce/src/modules/inventory/public/index.ts';
-import { CHECKOUT_MARKETING_PORT, PAYMENT_MARKETING_PORT } from '../../services/commerce/src/modules/marketing/public/index.ts';
+import { INVENTORY_READ_PORT } from '../../services/commerce/src/modules/inventory/public/InventoryReadPort.ts';
+import { MARKETING_READ_PORT, MARKETING_RESERVE_PORT } from '../../services/commerce/src/modules/marketing/public/index.ts';
 import { CART_READ_PORT, CHECKOUT_CART_PORT } from '../../services/commerce/src/modules/cart/public/index.ts';
 import { CART_CATALOG_PORT, CHECKOUT_CATALOG_PORT } from '../../services/commerce/src/modules/catalog/public/index.ts';
-import { PgCartCatalogPort } from '../../services/commerce/src/modules/catalog/infrastructure/persistence/PgCartCatalogPort.ts';
-import { PgCheckoutCatalogPort } from '../../services/commerce/src/modules/catalog/infrastructure/persistence/PgCheckoutCatalogPort.ts';
+import { PgCatalogFacade } from '../../services/commerce/src/modules/catalog/infrastructure/persistence/PgCatalogFacade.ts';
 import { CART_EXPERIENCE_PORT, CHECKOUT_EXPERIENCE_PORT } from '../../services/commerce/src/modules/experience/public/index.ts';
 import { PgCartExperiencePort } from '../../services/commerce/src/modules/experience/infrastructure/persistence/PgCartExperiencePort.ts';
 import { PgCheckoutExperiencePort } from '../../services/commerce/src/modules/experience/infrastructure/persistence/PgCheckoutExperiencePort.ts';
+import { EXPERIENCE_READ_PORT } from '../../services/commerce/src/modules/experience/public/ExperienceReadPort.ts';
+import { EntryResolver } from '../../services/commerce/src/modules/experience/application/service/EntryResolver.ts';
+import { PgEntryRepository } from '../../services/commerce/src/modules/experience/infrastructure/persistence/PgEntryRepository.ts';
+import { PgExperienceReadPort } from '../../services/commerce/src/modules/experience/infrastructure/persistence/PgExperienceReadPort.ts';
 import { MEMBER_ACCESS_PORT } from '../../services/commerce/src/modules/access/public/index.ts';
 import { AccessPort } from '../../services/commerce/src/modules/access/application/service/AccessPort.ts';
 import { PgAccessRepository } from '../../services/commerce/src/modules/access/infrastructure/persistence/PgAccessRepository.ts';
 import { AccessVersionPublisher } from '../../services/commerce/src/modules/access/application/service/AccessVersionPublisher.ts';
 import { CHECKOUT_QUALIFICATION_PORT } from '../../services/commerce/src/modules/qualification/public/index.ts';
 import { PgCheckoutQualificationPort } from '../../services/commerce/src/modules/qualification/infrastructure/persistence/PgCheckoutQualificationPort.ts';
-import { CHECKOUT_RISK_PORT } from '../../services/commerce/src/modules/risk/public/index.ts';
-import { CheckoutRisk } from '../../services/commerce/src/modules/risk/infrastructure/persistence/CheckoutRisk.ts';
+import { RISK_DECISION_PORT } from '../../services/commerce/src/modules/risk/public/index.ts';
+import { EvaluateRiskDecision } from '../../services/commerce/src/modules/risk/infrastructure/persistence/EvaluateRiskDecision.ts';
 import { ORGANIZATION_READ_PORT } from '../../services/commerce/src/modules/organization/public/index.ts';
 import { PgOrganizationReadPort } from '../../services/commerce/src/modules/organization/infrastructure/persistence/PgOrganizationReadPort.ts';
-import { CHECKOUT_ORDER_PORT, PAYMENT_ORDER_PORT, PAYMENT_WEBHOOK_ORDER_PORT } from '../../services/commerce/src/modules/order/public/index.ts';
-import { ResolvePaymentWebhookScope } from '../../services/commerce/src/modules/order/application/service/ResolvePaymentWebhookScope.ts';
-import { PgPaymentWebhookScopeReader } from '../../services/commerce/src/modules/order/infrastructure/persistence/PgPaymentWebhookScopeReader.ts';
+import { ORDER_INTENT_PORT, ORDER_PAYMENT_PORT, ORDER_READ_PORT } from '../../services/commerce/src/modules/order/public/index.ts';
 import { CHECKOUT_PAYMENT_PORT } from '../../services/commerce/src/modules/payment/public/index.ts';
 import { PaymentPort } from '../../services/commerce/src/modules/payment/infrastructure/persistence/PaymentPort.ts';
 import { CHECKOUT_INVOICE_PORT } from '../../services/commerce/src/modules/finance/public/index.ts';
-import { PAYMENT_FULFILLMENT_PORT } from '../../services/commerce/src/modules/fulfillment/public/index.ts';
 import { InvoicePort } from '../../services/commerce/src/modules/finance/application/service/InvoicePort.ts';
 import { PAYMENT_IDENTITY_PORT } from '../../services/commerce/src/modules/identity/public/index.ts';
 import { PgPaymentIdentityPort } from '../../services/commerce/src/modules/identity/infrastructure/persistence/PgPaymentIdentityPort.ts';
@@ -95,16 +108,26 @@ const fixture = Object.freeze({
   publication: 'mvp:publication',
   category: 'mvp:category',
   product: 'mvp:product',
-  sku: 'mvp:sku',
+  sku: 'sku:mvp',
   pool: 'mvp:pool',
   listing: 'mvp:listing',
-  pricebook: 'mvp:pricebook',
-  price: 'mvp:price',
-  stock: 'mvp:stock',
+  pricebook: 'pricebook:mvp',
+  price: 'price:mvp',
+  stock: 'stock:mvp',
   address: 'mvp:address',
   applicationHash: 'e'.repeat(64),
   payer: 'openid:mvp-kernel',
 });
+const experienceDocument = Object.freeze({
+  version: 2,
+  application: fixture.application,
+  theme: Object.freeze({ preset: 'shop', primaryColor: '#1F5EFF', accentColor: '#19A974', logoObjectRef: null, faviconObjectRef: null }),
+  navigation: Object.freeze([{ id: `${fixture.application}:navigation:home`, label: '首页', page: 'home' }]),
+  assets: Object.freeze([]),
+  pages: Object.freeze([{ id: 'home', path: '/', blocks: Object.freeze([]) }]),
+});
+const experienceConfiguration = serializeExperience(experienceDocument);
+const experienceHash = createHash('sha256').update(experienceConfiguration).digest('hex');
 
 export async function verifyMvpKernel(database) {
   await seed(database);
@@ -122,16 +145,28 @@ export async function verifyMvpKernel(database) {
     })
   );
   const gateway = paymentBoundary();
-  const finance = new FinancePort();
+  const finance = new PgAccountingPort();
   const checkoutBenefitPort = new BenefitPort();
   const paymentBenefitPort = new BenefitPort(finance);
   const checkoutVoucherPort = new VoucherPort();
   const paymentVoucherPort = new VoucherPort(finance);
   const pricingPort = new PricingPort();
   const inventoryPort = new InventoryPort();
-  const marketingPort = new MarketingPort();
+  const marketingReadPort = new PgMarketingReadPort();
+  const marketingReservePort = new PgMarketingReservePort();
   const orderPort = new OrderPort();
-  const fulfillmentPort = new FulfillmentPort(orderPort);
+  const catalogPort = new PgCatalogFacade(pool);
+  const cache = authoritativeCache();
+  const experienceReadPort = new PgExperienceReadPort(
+    new EntryResolver(
+      new PgEntryRepository({ origin: NETWORK_CATALOG.origins.storefront, entryPath: NETWORK_CATALOG.storefront.entryPath }),
+      authoritativeEntryCache(),
+      new Singleflight(),
+      { resolve: () => undefined, states: () => undefined, publication: () => undefined }
+    ),
+    cache,
+    new PgTransactionAccess()
+  );
   const transactionAccess = new PgTransactionAccess();
   const accessRepository = new PgAccessRepository();
   const memberAccessPort = new AccessPort(accessRepository, new AccessVersionPublisher(accessRepository));
@@ -140,28 +175,29 @@ export async function verifyMvpKernel(database) {
   container.bind(PAYMENT_GATEWAY, gateway);
   const ports = new Map([
     [MEMBER_ACCESS_PORT.key, memberAccessPort],
-    [CART_CATALOG_PORT.key, new PgCartCatalogPort()],
-    [CHECKOUT_CATALOG_PORT.key, new PgCheckoutCatalogPort()],
+    [CART_CATALOG_PORT.key, catalogPort],
+    [CHECKOUT_CATALOG_PORT.key, catalogPort],
     [CART_EXPERIENCE_PORT.key, new PgCartExperiencePort()],
     [CHECKOUT_EXPERIENCE_PORT.key, new PgCheckoutExperiencePort()],
+    [EXPERIENCE_READ_PORT.key, experienceReadPort],
     [CART_PRICING_PORT.key, pricingPort],
     [CHECKOUT_PRICING_PORT.key, pricingPort],
     [CHECKOUT_BENEFIT_PORT.key, checkoutBenefitPort],
     [CHECKOUT_VOUCHER_PORT.key, checkoutVoucherPort],
     [CHECKOUT_INVENTORY_PORT.key, inventoryPort],
-    [CHECKOUT_MARKETING_PORT.key, marketingPort],
-    [CHECKOUT_ORDER_PORT.key, orderPort],
+    [INVENTORY_READ_PORT.key, new PgInventoryReadPort()],
+    [MARKETING_READ_PORT.key, marketingReadPort],
+    [MARKETING_RESERVE_PORT.key, marketingReservePort],
+    [ORDER_INTENT_PORT.key, orderPort],
     [CHECKOUT_INVOICE_PORT.key, invoicePort],
     [CHECKOUT_QUALIFICATION_PORT.key, new PgCheckoutQualificationPort()],
-    [CHECKOUT_RISK_PORT.key, new CheckoutRisk()],
+    [RISK_DECISION_PORT.key, new EvaluateRiskDecision()],
     [ORGANIZATION_READ_PORT.key, new PgOrganizationReadPort()],
     [PAYMENT_BENEFIT_PORT.key, paymentBenefitPort],
     [PAYMENT_VOUCHER_PORT.key, paymentVoucherPort],
     [PAYMENT_INVENTORY_PORT.key, inventoryPort],
-    [PAYMENT_MARKETING_PORT.key, marketingPort],
-    [PAYMENT_FULFILLMENT_PORT.key, fulfillmentPort],
-    [PAYMENT_ORDER_PORT.key, orderPort],
-    [PAYMENT_WEBHOOK_ORDER_PORT.key, new ResolvePaymentWebhookScope(new PgPaymentWebhookScopeReader(new PgTransactionManager(pool)))],
+    [ORDER_PAYMENT_PORT.key, orderPort],
+    [ORDER_READ_PORT.key, new PgOrderReadPort(new PgTransactionManager(pool))],
     [PAYMENT_IDENTITY_PORT.key, new PgPaymentIdentityPort()],
     [MEMBER_ADDRESS_PORT.key, new PgAddressRepository(transactionAccess)],
   ]);
@@ -210,7 +246,7 @@ export async function verifyMvpKernel(database) {
         lines: [{ listingId: fixture.listing, quantity: 2, lineVersion: 0 }],
         addressId: fixture.address,
         invoiceId: null,
-        delivery: { mode: 'express' },
+        delivery: { method: 'express' },
         voucherIds: [],
         benefits: [],
         paymentScene: 'jsapi',
@@ -220,8 +256,13 @@ export async function verifyMvpKernel(database) {
     )
   );
   const quoteid = quote.body?.quoteId;
-  assert(quote.status === 201 && typeof quoteid === 'string', `MVP_QUOTE_FAILED:${quote.status}`);
-  const order = await invoke(handlers, operations, request('order.orders.create', access, { quoteId: quoteid, paymentScene: 'jsapi' }, {}, 'mvp-order-create'));
+  const confirmationToken = quote.body?.confirmationToken;
+  assert(quote.status === 201 && typeof quoteid === 'string' && typeof confirmationToken === 'string', `MVP_QUOTE_FAILED:${quote.status}`);
+  const order = await invoke(
+    handlers,
+    operations,
+    request('order.orders.create', access, { quoteId: quoteid, confirmationToken, paymentScene: 'jsapi' }, {}, 'mvp-order-create')
+  );
   const orderid = order.body?.order?.id;
   assert(order.status === 201 && typeof orderid === 'string', `MVP_ORDER_FAILED:${order.status}`);
   assert(order.body?.payment?.state === 'pending' && order.body.payment.action?.package === 'prepay_id=mvp-kernel', `MVP_PAYMENT_PREPARATION_FAILED:${String(order.body?.payment?.state)}`);
@@ -249,7 +290,7 @@ export async function verifyMvpKernel(database) {
     (select amount_minor::float8 from payment.intent where order_id=$4) intent_minor,
     (select tender.state from payment.intenttender tender join payment.intent intent on intent.id=tender.intent_id where intent.order_id=$4 and tender.kind='wechat') tender_state,
     (select count(*)::integer from runtime.outbox where aggregate_id in($4,(select id from checkout.session where quote_id=$3))) outbox_events,
-    (select count(*)::integer from audit.record where actor_id=$5 and action in('cart.items.put','checkout.quote.create','order.orders.create')) audits,
+    (select count(*)::integer from audit.record where actor_id=$5 and operation in('cart.items.put','checkout.quote.create','order.orders.create')) audits,
     (select count(*)::integer from runtime.idempotency where actor_id=$5 and state='completed') idempotency_records`,
     [fixture.member, fixture.mall, quoteid, orderid, fixture.principal]
   );
@@ -296,9 +337,9 @@ async function verifyStorefrontEntry(database) {
     application_status: 'active',
     validation_state: 'valid',
     publication_state: 'active',
-    content_hash: 'd'.repeat(64),
-    configuration_hash: 'd'.repeat(64),
-    object_key: `experience/${fixture.application}/${'d'.repeat(64)}.json`,
+    content_hash: experienceHash,
+    configuration_hash: experienceHash,
+    object_key: `experience/${fixture.application}/${experienceHash}.json`,
   };
   for (const [field, value] of Object.entries(expected)) assert(entry?.[field] === value, `MVP_STOREFRONT_ENTRY_INVALID:${field}:${String(entry?.[field])}`);
   const missing = await database.query(`select application from experience.resolve_storefront_entry($1)`, ['missing-mall']);
@@ -330,36 +371,18 @@ async function verifyPayment(database, handlers, operations, gateway, order) {
   const replay = await invoke(handlers, operations, webhookRequest());
   assert(replay.status === 204, `MVP_PAYMENT_WEBHOOK_REPLAY_FAILED:${replay.status}`);
 
-  const controller = new AbortController();
   const jobPool = pglitePool(database, 'shopjob');
-  let processorFailure;
   const paymentProcessor = new PaymentRecoveryJob('paymentquery', new RecoverPayment(new PgPaymentRecoveryProcess(new PgTransactionManager(jobPool), gateway, paymentJobDependencies())));
-  const guardedPaymentProcessor = Object.freeze({
-    async process(job, signal) {
-      try {
-        await paymentProcessor.process(job, signal);
-      } catch (cause) {
-        processorFailure = cause;
-        throw cause;
-      }
-    },
-  });
-  const runner = new JobRunner(new PgTransactionManager(jobPool), singleJobRepository(controller), new PgDeadletterStore(), {
-    worker: 'mvp:worker',
-    workload: 'jobs',
-    owner: 'payment',
-    batch: 1,
-    lease: 30,
-    concurrency: 1,
-    attempts: 3,
-    poll: 1,
-    deadline: 30_000,
-    retryMinimum: 10,
-    retryMaximum: 100,
-  });
-  await runner.run('paymentquery', guardedPaymentProcessor, controller.signal);
-  if (processorFailure) throw processorFailure;
+  await runOneJob(jobPool, 'paymentquery', 'mvp:payment', paymentProcessor);
   await relayAvailableEvents(jobPool);
+  await runOneJob(jobPool, 'orderevent', 'mvp:order', new OrderEventJob(new ProcessOrderEvent(new PgOrderEventProcess(new PgTransactionManager(jobPool)))));
+  await relayAvailableEvents(jobPool);
+  await runOneJob(
+    jobPool,
+    'fulfillmentevent',
+    'mvp:fulfillment',
+    new FulfillmentEventJob(new ProcessFulfillmentEvent(new PgFulfillmentEventProcess(new PgTransactionManager(jobPool), new OrderPort())))
+  );
   await runReconciliation(database, jobPool);
   await relayAvailableEvents(jobPool);
 
@@ -391,7 +414,7 @@ async function verifyPayment(database, handlers, operations, gateway, order) {
     (select count(*)::integer from runtime.outbox event where event.event_type='finance.entry.posted' and event.published_at is not null
       and event.payload->>'referenceId'=(select payment.id from payment.payment payment join payment.intent intent on intent.id=payment.intent_id
         where intent.order_id=$1)) finance_events,
-    (select count(*)::integer from audit.record where actor_id='provider:wechat' and action='payment.webhooks.wechat') payment_audits`,
+    (select count(*)::integer from audit.record where actor_id='provider:wechat' and operation='payment.webhooks.wechat') payment_audits`,
       [order]
     )
   ).rows[0];
@@ -421,14 +444,14 @@ async function verifyPayment(database, handlers, operations, gateway, order) {
 }
 
 function paymentJobDependencies() {
-  const finance = new FinancePort();
+  const finance = new PgAccountingPort();
   const benefit = new BenefitPort(finance);
   const voucher = new VoucherPort(finance);
   const orders = new OrderPort();
   const inventory = new InventoryPort();
-  const marketing = new MarketingPort();
+  const marketing = new PgMarketingReservePort();
   return Object.freeze({
-    settlement: new PaymentSettlement(benefit, voucher, inventory, marketing, new FulfillmentPort(orders), orders),
+    settlement: new PaymentSettlement(benefit, voucher, inventory, marketing, orders),
     refundSettlement: new RefundSettlement(benefit, voucher, orders, new PgOrganizationReadPort()),
     orders,
     operations: new ChannelOperationPort(),
@@ -468,7 +491,6 @@ async function runReconciliation(database, jobPool) {
     ]);
     throw new Error(`MVP_FINANCE_JOB_INVALID:${String(queued)}:${JSON.stringify({ events: events.rows, jobs: jobs.rows, intents: intents.rows })}`);
   }
-  const controller = new AbortController();
   const processor = new ReconciliationJob(
     new ReconcileFinance(
       new PgReconciliationProcess(new PgTransactionManager(jobPool), unavailableObjects(), {
@@ -478,6 +500,12 @@ async function runReconciliation(database, jobPool) {
       })
     )
   );
+  await runOneJob(jobPool, 'reconciliation', 'mvp:finance', processor);
+}
+
+async function runOneJob(jobPool, kind, worker, processor) {
+  const controller = new AbortController();
+  const definition = jobDefinition(kind);
   let processorFailure;
   const guarded = Object.freeze({
     async process(job, signal) {
@@ -490,20 +518,20 @@ async function runReconciliation(database, jobPool) {
     },
   });
   const runner = new RunJob(new PgTransactionManager(jobPool), singleJobRepository(controller), new PgDeadletterStore(), {
-    worker: 'mvp:finance',
+    worker,
     workload: 'jobs',
-    owner: 'finance',
-    queue: 'finance',
+    owner: definition.owner,
+    queue: definition.queue,
     batch: 1,
-    lease: 30,
+    lease: definition.lease,
     concurrency: 1,
-    attempts: 3,
+    attempts: definition.retry.attempts,
     poll: 1,
-    deadline: 30_000,
-    retryMinimum: 10,
-    retryMaximum: 100,
-  });
-  await runner.execute('reconciliation', guarded, controller.signal);
+    deadline: definition.timeout,
+    retryMinimum: definition.retry.minimum,
+    retryMaximum: definition.retry.maximum,
+  }, Object.freeze({ assert: async () => { throw new Error('MVP_USER_AUTHORIZATION_UNEXPECTED'); } }));
+  await runner.execute(kind, guarded, controller.signal);
   if (processorFailure) throw processorFailure;
 }
 
@@ -538,6 +566,7 @@ function unavailableObjects() {
 
 function paymentBoundary() {
   const boundary = {
+    manifest: WechatPaymentManifest,
     application(scene) {
       return Object.freeze({ scene, applicationHash: fixture.applicationHash });
     },
@@ -602,6 +631,8 @@ function accessContext() {
       permissions: Object.freeze({ allows: new Set(), denies: new Set() }),
       scopes: Object.freeze([]),
     }),
+    roles: Object.freeze([]),
+    organization: fixture.mall,
     scope: Object.freeze({ kind: 'mall', id: fixture.mall, tenant: fixture.tenant, path: Object.freeze([]) }),
     accessVersion: 1,
     capabilities: new Set(['cart.items.put', 'checkout.quote.create', 'order.orders.create']),
@@ -649,6 +680,23 @@ function invoke(handlers, operations, request) {
     ...(request.input.idempotency === undefined ? {} : { idempotencyKey: request.input.idempotency }),
     ...(request.input.expectedVersion === undefined ? {} : { expectedVersion: request.input.expectedVersion }),
   });
+}
+
+function authoritativeCache() {
+  return Object.freeze({
+    start: async () => undefined,
+    get: async () => null,
+    put: async () => true,
+    setnx: async () => true,
+    compareDelete: async () => true,
+    remove: async () => true,
+    state: () => Object.freeze({ available: false, reason: 'MVP_DATABASE_AUTHORITY' }),
+    close: async () => undefined,
+  });
+}
+
+function authoritativeEntryCache() {
+  return Object.freeze({ read: async () => null, write: async () => undefined, remove: async () => undefined });
 }
 
 function pglitePool(database, role = 'shopapp') {
@@ -702,7 +750,6 @@ function assert(condition, code) {
 }
 
 async function seed(database) {
-  const hash = 'd'.repeat(64);
   await database.exec(`
     insert into organization.organization(id,kind,parent_id,name,timezone,status,version,created_at,updated_at) values
       ('${fixture.tenant}','tenant','organization-platform-root','MVP tenant','Asia/Shanghai','active',0,clock_timestamp(),clock_timestamp()),
@@ -732,32 +779,35 @@ async function seed(database) {
     insert into catalog.category(id,code,name,status,sort_order) values('${fixture.category}','mvp-milk','乳品','active',1);
     insert into catalog.product(id,scope_id,category_id,title,product_type,attributes,status,version,created_at,updated_at)
       values('${fixture.product}','${fixture.mall}','${fixture.category}','纯牛奶','physical','{"subtitle":"MVP kernel product"}','active',1,clock_timestamp(),clock_timestamp());
-    insert into catalog.sku(id,product_id,code,specifications,status,version)
-      values('${fixture.sku}','${fixture.product}','MVP-MILK-250','{"size":"250ml"}','active',1);
+    insert into catalog.sku(id,scope_id,product_id,code,specifications,status,version)
+      values('${fixture.sku}','${fixture.mall}','${fixture.product}','MVP-MILK-250','{"size":"250ml"}','active',1);
     insert into catalog.pool(id,scope_id,kind,name,status,version) values('${fixture.pool}','${fixture.mall}','private','MVP pool','active',1);
     insert into catalog.poolitem(pool_id,sku_id,state,source_version,added_at) values('${fixture.pool}','${fixture.sku}','included','1',clock_timestamp());
     insert into catalog.poolbinding(mall_id,pool_id,listing_kind,status,effective_at,created_at)
       values('${fixture.mall}','${fixture.pool}','selected','active',clock_timestamp(),clock_timestamp());
-    insert into catalog.listing(id,scope_id,pool_id,sku_id,title,status,effective_at,version,created_at,updated_at)
-      values('${fixture.listing}','${fixture.mall}','${fixture.pool}','${fixture.sku}','纯牛奶','published',clock_timestamp(),1,clock_timestamp(),clock_timestamp());
     insert into pricing.pricebook(id,scope_id,currency,name,status,version) values('${fixture.pricebook}','${fixture.mall}','CNY','MVP pricebook','active',1);
     insert into pricing.price(id,book_id,sku_id,amount_minor,compare_minor,effective_at)
       values('${fixture.price}','${fixture.pricebook}','${fixture.sku}',2590,2990,'1970-01-01T00:00:00Z');
     insert into inventory.stockitem(id,scope_id,sku_id,location_id,onhand,safety,version,status,updated_at)
       values('${fixture.stock}','${fixture.mall}','${fixture.sku}','mvp:warehouse',100,5,1,'active',clock_timestamp());
+    insert into catalog.listing(id,scope_id,pool_id,sku_id,title,status,effective_at,version,created_at,updated_at)
+      values('${fixture.listing}','${fixture.mall}','${fixture.pool}','${fixture.sku}','纯牛奶','published',clock_timestamp(),1,clock_timestamp(),clock_timestamp());
     insert into experience.application(id,mall_id,name,status,created_at,updated_at,version,code,public_slug)
       values('${fixture.application}','${fixture.mall}','MVP storefront','active',clock_timestamp(),clock_timestamp(),1,'MVP_APPLICATION','mvp-application');
-    insert into experience.version(id,application_id,sequence,schema_version,configuration,configuration_hash,validation_state,created_by,created_at)
-      values('${fixture.version}','${fixture.application}',1,'2','{"version":2,"application":"${fixture.application}","pages":[{"id":"home","path":"/","blocks":[]}]}','${hash}','valid','mvp:kernel',clock_timestamp());
-    update experience.application set head_version_id='${fixture.version}' where id='${fixture.application}';
+    insert into experience.version(id,application_id,sequence,schema_version,configuration,configuration_hash,validation_state,
+      validation_issues,publish_evidence,frozen_at,created_by,created_at)
+      values('${fixture.version}','${fixture.application}',1,'2',$experience$${experienceConfiguration}$experience$::jsonb,'${experienceHash}','valid',
+        '[]'::jsonb,'{"dependencies":{},"issues":[]}'::jsonb,clock_timestamp(),'mvp:kernel',clock_timestamp());
+    update experience.application set head_version_id='${fixture.version}',version=version+1,updated_at=clock_timestamp() where id='${fixture.application}';
     insert into experience.release(id,application_id,version_id,pool_id,state,effective_at,published_by)
-      values('${fixture.release}','${fixture.application}','${fixture.version}','${fixture.pool}','active',clock_timestamp(),'mvp:kernel');
+      values('${fixture.release}','${fixture.application}','${fixture.version}','${fixture.pool}','scheduled',clock_timestamp(),'mvp:kernel');
     insert into experience.publication(id,release_id,application_id,version_id,content_hash,object_key,object_ref,object_hash,object_size,state,staged_at,published_at)
-      values('${fixture.publication}','${fixture.release}','${fixture.application}','${fixture.version}','${hash}',
-        'experience/${fixture.application}/${hash}.json','mvp:object','${hash}',1,'active',clock_timestamp(),clock_timestamp());
-    insert into member.address(id,member_id,recipient_ciphertext,mobile_ciphertext,address_ciphertext,region_token,address_token,status,version,
+      values('${fixture.publication}','${fixture.release}','${fixture.application}','${fixture.version}','${experienceHash}',
+        'experience/${fixture.application}/${experienceHash}.json','mvp:object','${experienceHash}',1,'active',clock_timestamp(),clock_timestamp());
+    update experience.release set state='active' where id='${fixture.release}';
+    insert into member.address(id,member_id,recipient_ciphertext,mobile_ciphertext,address_ciphertext,region_token,address_token,status,version,is_default,
       recipient_masked,mobile_masked,address_masked,region_code)
-      values('${fixture.address}','${fixture.member}','cipher:recipient','cipher:mobile','cipher:address',repeat('a',64),repeat('b',64),'active',1,
+      values('${fixture.address}','${fixture.member}','cipher:recipient','cipher:mobile','cipher:address',repeat('a',64),repeat('b',64),'active',1,true,
         'M**','138****0000','上海市***','310000');
   `);
 }

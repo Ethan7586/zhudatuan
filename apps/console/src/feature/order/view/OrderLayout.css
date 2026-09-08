@@ -1,0 +1,198 @@
+.orderworkspace {
+  position: relative;
+  min-height: calc(100vh - 8rem);
+  overflow: visible;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  box-shadow: var(--sw-shadow-card);
+}
+
+.orderpageheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-3);
+  padding: var(--sw-space-3) var(--sw-space-3) var(--sw-space-2);
+}
+.orderpageidentity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--sw-space-2);
+}
+.orderpageidentity > .swbrand {
+  flex: 0 0 auto;
+  border-right: 0.0625rem solid var(--sw-divider);
+  padding-right: var(--sw-space-2);
+}
+.orderpageidentity > div {
+  min-width: 0;
+}
+
+.orderpageheader p {
+  margin: 0 0 var(--sw-space-0-5);
+  color: var(--sw-brand);
+  font-size: var(--sw-font-size-caption);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.orderpageheader h1 {
+  margin: 0;
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-h1);
+}
+.orderpageheader h1[tabindex='-1']:focus {
+  outline: none;
+}
+.orderpageidentity > div > span {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-body-sm);
+}
+.orderpageidentity small {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sw-space-1-5);
+  margin-top: var(--sw-space-0-5);
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+.orderpageidentity small span + span::before {
+  margin-right: var(--sw-space-1-5);
+  color: var(--sw-border-strong);
+  content: '·';
+}
+.orderpageactions {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-1);
+}
+
+.orderpageactions button,
+.ordertoolbutton,
+.ordersearchsubmit,
+.ordercolumnsettings button,
+.orderpagination button,
+.orderliststate button {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sw-space-1);
+  border: 0.0625rem solid var(--sw-border-strong);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  color: var(--sw-text-secondary);
+  padding: 0 var(--sw-space-2);
+  font-size: var(--sw-font-size-body-sm);
+}
+
+.orderpageactions button:last-child {
+  border-color: var(--sw-brand);
+  color: var(--sw-brand);
+}
+.orderpageactions button:disabled {
+  border-color: var(--sw-border);
+  color: var(--sw-disabled);
+  cursor: not-allowed;
+}
+.orderpageactions svg,
+.ordertoolbutton svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.ordercontractnote {
+  margin: 0 var(--sw-space-3) var(--sw-space-1);
+  border-left: 0.1875rem solid var(--sw-warning);
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+  padding: var(--sw-space-1) var(--sw-space-1-5);
+  font-size: var(--sw-font-size-caption);
+}
+
+.orderstatustabs {
+  display: flex;
+  min-height: 3.25rem;
+  align-items: flex-end;
+  gap: var(--sw-space-3);
+  overflow-x: auto;
+  border-bottom: 0.0625rem solid var(--sw-border);
+  padding: 0 var(--sw-space-3);
+}
+
+.orderstatustabs button {
+  position: relative;
+  display: inline-flex;
+  min-height: 3.25rem;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--sw-space-1);
+  border: 0;
+  background: transparent;
+  color: var(--sw-text-secondary);
+  padding: 0 var(--sw-space-0-5);
+  font-size: var(--sw-font-size-body-sm);
+}
+
+.orderstatustabs button[aria-pressed='true'] {
+  color: var(--sw-brand);
+  font-weight: 700;
+}
+.orderstatustabs button[aria-pressed='true']::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 0.1875rem;
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-brand);
+  content: '';
+}
+
+.orderstatustabs button > span {
+  color: var(--sw-brand);
+  font-weight: 700;
+}
+.orderstatustabs button > span.isexception {
+  display: grid;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  place-items: center;
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-danger);
+  color: var(--sw-surface);
+  font-size: 0.6875rem;
+}
+
+.orderdetailtabs {
+  display: flex;
+  gap: var(--sw-space-0-5);
+  overflow-x: auto;
+  border-bottom: 0.0625rem solid var(--sw-border);
+  padding: 0 var(--sw-space-0-5);
+  scrollbar-width: thin;
+}
+
+.orderdetailtabs button {
+  flex: 0 0 auto;
+  border: 0;
+  border-bottom: 0.1875rem solid transparent;
+  background: transparent;
+  color: var(--sw-muted);
+  padding: var(--sw-space-1) var(--sw-space-1-5);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.orderdetailtabs button:hover,
+.orderdetailtabs button:focus-visible {
+  color: var(--sw-text);
+}
+
+.orderdetailtabs button[aria-selected='true'] {
+  border-bottom-color: var(--sw-brand);
+  color: var(--sw-brand);
+}

@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CampaignRevision, CampaignSnapshot } from '../../domain/model/Campaign';
 
 export interface CampaignRecord extends Record<string, unknown> {

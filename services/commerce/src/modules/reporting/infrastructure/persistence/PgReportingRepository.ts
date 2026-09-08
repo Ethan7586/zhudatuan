@@ -4,7 +4,7 @@ import type { MetricContribution } from '../../domain/model/Metric';
 import type { OrderProjection, ProjectionEvent } from '../../domain/model/Projection';
 import { PgReportingExportRepository } from './PgReportingExportRepository';
 import { integer, object, required, text, utcTime } from './ReportingRecord';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
 import { exportFilter } from '../../domain/value/ExportFilter';
 
 export class PgReportingRepository extends PgReportingExportRepository implements ReportingPort {
@@ -123,7 +123,7 @@ export class PgReportingRepository extends PgReportingExportRepository implement
       on conflict(order_id,scope_id) do nothing`,
       [value.order, value.scopes, value.number, value.totalMinor, value.currency, value.occurredAt, JSON.stringify(value.snapshot)]
     );
-    if (await this.recordOrder(value.order, value.sourceEvent) === 0) throw new Error('REPORT_ORDER_PROJECTION_MISSING');
+    if ((await this.recordOrder(value.order, value.sourceEvent)) === 0) throw new Error('REPORT_ORDER_PROJECTION_MISSING');
   }
 
   async payOrder(order: string, amountMinor: number, currency: string, snapshot: Readonly<Record<string, unknown>>, watermark: string, event: string): Promise<void> {
@@ -132,7 +132,7 @@ export class PgReportingRepository extends PgReportingExportRepository implement
       total_minor=$2,currency=$3,snapshot=$4::jsonb,watermark=$5,projection_version=projection_version+1 where order_id=$1 and watermark<=$5`,
       [order, amountMinor, currency, JSON.stringify(snapshot), watermark]
     );
-    if (await this.recordOrder(order, event) === 0) throw new Error('REPORT_ORDER_PROJECTION_MISSING');
+    if ((await this.recordOrder(order, event)) === 0) throw new Error('REPORT_ORDER_PROJECTION_MISSING');
   }
 
   async cancelOrder(order: string, watermark: string, event: string): Promise<void> {
@@ -141,7 +141,7 @@ export class PgReportingRepository extends PgReportingExportRepository implement
       watermark=$2,projection_version=projection_version+1 where order_id=$1 and watermark<=$2`,
       [order, watermark]
     );
-    if (await this.recordOrder(order, event) === 0) throw new Error('REPORT_ORDER_PROJECTION_MISSING');
+    if ((await this.recordOrder(order, event)) === 0) throw new Error('REPORT_ORDER_PROJECTION_MISSING');
   }
 
   async shipOrder(order: string, state: string, watermark: string, event: string): Promise<void> {
@@ -151,7 +151,7 @@ export class PgReportingRepository extends PgReportingExportRepository implement
       watermark=$4,projection_version=projection_version+1 where order_id=$1 and watermark<=$4`,
       [order, delivered ? 'delivered' : 'shipped', delivered, watermark]
     );
-    if (await this.recordOrder(order, event) === 0) throw new Error('REPORT_ORDER_PROJECTION_MISSING');
+    if ((await this.recordOrder(order, event)) === 0) throw new Error('REPORT_ORDER_PROJECTION_MISSING');
   }
 
   async saveStatement(scope: string, payload: Readonly<Record<string, unknown>>, watermark: string, event: string): Promise<void> {
@@ -180,7 +180,8 @@ export class PgReportingRepository extends PgReportingExportRepository implement
       select statement_id,scope_id,period_start,period_end,currency,opening_minor,debit_minor,credit_minor,closing_minor,state,
         watermark,coalesce((select version from reporting.watermark where projection='commerce' and scope_id=reporting.financeprojection.scope_id),0)+1,
         projection_version,$2,clock_timestamp() from reporting.financeprojection where statement_id=$1
-      on conflict(event_id,statement_id) do nothing`, [text(payload.statement, 'REPORT_STATEMENT_REQUIRED'), event]
+      on conflict(event_id,statement_id) do nothing`,
+      [text(payload.statement, 'REPORT_STATEMENT_REQUIRED'), event]
     );
     if (revision.rowCount !== 1) throw new Error('REPORT_FINANCE_PROJECTION_MISSING');
   }
@@ -192,7 +193,8 @@ export class PgReportingRepository extends PgReportingExportRepository implement
       select order_id,scope_id,order_number,payment_state,fulfillment_state,aftersale_state,lifecycle_state,total_minor,currency,
         occurred_at,snapshot,watermark,coalesce((select version from reporting.watermark where projection='commerce' and scope_id=reporting.orderprojection.scope_id),0)+1,
         projection_version,$2,clock_timestamp() from reporting.orderprojection where order_id=$1
-      on conflict(event_id,order_id,scope_id) do nothing`, [order, event]
+      on conflict(event_id,order_id,scope_id) do nothing`,
+      [order, event]
     );
     return revision.rowCount ?? 0;
   }

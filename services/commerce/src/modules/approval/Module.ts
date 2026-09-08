@@ -1,7 +1,7 @@
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { PgTransactionManager } from '../../adapter/database/PgTransactionManager';
-import { PgTransactionalOutbox } from '../../adapter/database/PgTransactionalOutbox';
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { PgTransactionManager } from '../../platform/database/PgTransactionManager';
+import { PgTransactionalOutbox } from '../../platform/database/PgTransactionalOutbox';
+import { defineModule } from '../../composition/DefinedModule';
 import { InstancesGetHandler } from './application/handler/InstancesGetHandler';
 import { TasksApproveHandler } from './application/handler/TasksApproveHandler';
 import { TasksListHandler } from './application/handler/TasksListHandler';
@@ -20,7 +20,7 @@ import { PgApprovalRepository } from './infrastructure/persistence/PgApprovalRep
 import { createJobs } from './interface/job/JobFactory';
 import { Manifest } from './Manifest';
 import { APPROVAL_PORT, APPROVAL_READ_PORT } from './public';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
+import { DATABASE_POOL } from '../../platform/database/Pool';
 
 export const ApprovalModule = defineModule(Manifest, {
   handlers: () => {

@@ -1,5 +1,5 @@
 import * as Operation from '@shop/contract/ids';
-import type { RequestContext } from '@shop/sdk';
+import type { RequestContext } from '@shop/sdk/context';
 import { createFetchVoucher, VOUCHER_METHOD_BY_OPERATION, type VoucherOperations } from '@shop/sdk/voucher';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
 import { consoleCommand, consoleRequest } from '../../../shared/api/RequestContext';

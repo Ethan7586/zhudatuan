@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { JobScheduler } from '../../../../foundation/application/JobScheduler';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import { authorizationEvidence } from '../../../../foundation/security/AuthorizationEvidence';
+import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { JobScheduler } from '../../../../pipeline/JobScheduler';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
+import { authorizationEvidence } from '../../../../platform/security/AuthorizationEvidence';
 import type { ImportPort } from '../../public/ImportPort';
 import type { TaskRepository } from '../port/TaskRepository';
 import { ImportRegistry, type ImportDescriptor } from '../registry/ImportRegistry';
@@ -44,10 +44,8 @@ export class ImportsCreateHandler implements DurableOperationHandler<'runtime.im
     if (!descriptor) throw new DomainError('VALIDATION_FAILED', { field: 'kind' });
     if (!access.capabilities.has(descriptor.operation)) throw new DomainError('CAPABILITY_DENIED', { operation: descriptor.operation });
     const object = await this.objects.prepare(input, access.scope.tenant ?? access.organization);
-    const metadata = body.metadata !== null && typeof body.metadata === 'object' && !Array.isArray(body.metadata)
-      ? Object.freeze({ ...(body.metadata as Readonly<Record<string, unknown>>) }) : Object.freeze({});
-    return Object.freeze({ scope: access.scope.id, actor: access.actor.id, descriptor, reference: object.reference, sha256: object.sha256,
-      fileName: object.name, mediaType: object.mediaType, size: object.size, metadata });
+    const metadata = body.metadata !== null && typeof body.metadata === 'object' && !Array.isArray(body.metadata) ? Object.freeze({ ...(body.metadata as Readonly<Record<string, unknown>>) }) : Object.freeze({});
+    return Object.freeze({ scope: access.scope.id, actor: access.actor.id, descriptor, reference: object.reference, sha256: object.sha256, fileName: object.name, mediaType: object.mediaType, size: object.size, metadata });
   }
 
   async commit(_input: OperationInputFor<'runtime.imports.create'>, prepared: PreparedImport, context: CommitContext<'runtime.imports.create'>) {
@@ -80,7 +78,11 @@ export class ImportsCreateHandler implements DurableOperationHandler<'runtime.im
     return Object.freeze({ checkpoint, response: { status: 202, body: checkpoint } as const });
   }
 
-  finalize(_input: OperationInputFor<'runtime.imports.create'>, checkpoint: OperationOutputFor<'runtime.imports.create'>, _context: FinalizeContext<'runtime.imports.create'>): Promise<OperationReply<OperationOutputFor<'runtime.imports.create'>>> {
+  finalize(
+    _input: OperationInputFor<'runtime.imports.create'>,
+    checkpoint: OperationOutputFor<'runtime.imports.create'>,
+    _context: FinalizeContext<'runtime.imports.create'>
+  ): Promise<OperationReply<OperationOutputFor<'runtime.imports.create'>>> {
     return Promise.resolve({ status: 202, body: checkpoint });
   }
 }

@@ -1,5 +1,5 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../platform/database/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
 import type { JobDeadletter, JobProcessor } from '../../runtime/public/JobProcess';
 import type { ChannelCatalogPort } from '../../catalog/public';
 import type { ChannelPricingPort } from '../../pricing/public';

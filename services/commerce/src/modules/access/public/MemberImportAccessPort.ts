@@ -1,6 +1,6 @@
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import { publicPort } from '../../../composition/ModuleRegistry';
 
 export interface ImportedMembership {
   readonly membership: string;

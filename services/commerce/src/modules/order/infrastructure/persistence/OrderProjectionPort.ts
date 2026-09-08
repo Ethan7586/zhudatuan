@@ -1,4 +1,4 @@
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { OrderFulfillmentMilestone, OrderFulfillmentProjection, OrderRefundProjection } from '../../public';
 import { OrderAfterSalePort } from './OrderAfterSalePort';
 
@@ -6,7 +6,13 @@ export class OrderProjectionPort extends OrderAfterSalePort {
   async recordPayment(
     context: WriteTransactionContext,
     input: Readonly<{
-      order: string; payment: string; currency: string; capturedMinor: number; refundedMinor: number; state: string; version: number;
+      order: string;
+      payment: string;
+      currency: string;
+      capturedMinor: number;
+      refundedMinor: number;
+      state: string;
+      version: number;
       tenders: readonly Readonly<{ sequence: number; kind: 'wechat' | 'benefit' | 'voucher'; reference: string | null; amountMinor: number; state: string }>[];
     }>
   ): Promise<void> {
@@ -19,12 +25,14 @@ export class OrderProjectionPort extends OrderAfterSalePort {
       [input.order, input.payment, input.currency, input.capturedMinor, input.refundedMinor, input.state, input.version]
     );
     await database.query(`delete from ordering.paymenttenderread where order_id=$1`, [input.order]);
-    if (input.tenders.length > 0) await database.query(
-      `insert into ordering.paymenttenderread(order_id,sequence,kind,reference_id,amount_minor,state)
+    if (input.tenders.length > 0)
+      await database.query(
+        `insert into ordering.paymenttenderread(order_id,sequence,kind,reference_id,amount_minor,state)
       select $1,tender.sequence,tender.kind,tender.reference,tender."amountMinor",tender.state
       from jsonb_to_recordset($2::jsonb) as tender(sequence integer,kind text,reference text,"amountMinor" bigint,state text)
-      order by tender.sequence`, [input.order, JSON.stringify(input.tenders)]
-    );
+      order by tender.sequence`,
+        [input.order, JSON.stringify(input.tenders)]
+      );
   }
 
   async recordRefund(context: WriteTransactionContext, input: OrderRefundProjection): Promise<void> {
@@ -37,18 +45,21 @@ export class OrderProjectionPort extends OrderAfterSalePort {
       [input.id, input.order, input.aftersale, input.provider, input.providerReference, input.amountMinor, input.currency, input.state, input.reason]
     );
     await database.query(`delete from ordering.refundtenderread where refund_id=$1`, [input.id]);
-    if (input.tenders.length > 0) await database.query(
-      `insert into ordering.refundtenderread(refund_id,sequence,kind,reference_id,amount_minor,state)
+    if (input.tenders.length > 0)
+      await database.query(
+        `insert into ordering.refundtenderread(refund_id,sequence,kind,reference_id,amount_minor,state)
       select $1,tender.sequence,tender.kind,tender.reference,tender."amountMinor",tender.state
       from jsonb_to_recordset($2::jsonb) as tender(sequence integer,kind text,reference text,"amountMinor" bigint,state text)
-      order by tender.sequence`, [input.id, JSON.stringify(input.tenders)]
-    );
+      order by tender.sequence`,
+        [input.id, JSON.stringify(input.tenders)]
+      );
   }
 
   async recordPaymentRefund(context: WriteTransactionContext, order: string, refundedMinor: number, capturedMinor: number, version: number): Promise<void> {
     const changed = await this.transactions.database(context).query(
       `update ordering.paymentread set refunded_minor=$2,state=case when $2=$3 then 'refunded' else 'partiallyrefunded' end,
-      version=$4,updated_at=clock_timestamp() where order_id=$1 and captured_minor=$3 returning order_id`, [order, refundedMinor, capturedMinor, version]
+      version=$4,updated_at=clock_timestamp() where order_id=$1 and captured_minor=$3 returning order_id`,
+      [order, refundedMinor, capturedMinor, version]
     );
     if (!changed.rows[0]) throw new Error('ORDER_PAYMENT_PROJECTION_MISSING');
   }
@@ -60,7 +71,8 @@ export class OrderProjectionPort extends OrderAfterSalePort {
       select item.id,$1,item.provider,item.partner,item.kind,item.state,item."externalReference",item.version,clock_timestamp(),clock_timestamp()
       from jsonb_to_recordset($2::jsonb) as item(id text,provider text,partner text,kind text,state text,"externalReference" text,version bigint)
       on conflict(id) do update set provider=excluded.provider,partner_id=excluded.partner_id,kind=excluded.kind,
-      state=excluded.state,external_reference=excluded.external_reference,version=excluded.version,updated_at=excluded.updated_at`, [order, JSON.stringify(items)]
+      state=excluded.state,external_reference=excluded.external_reference,version=excluded.version,updated_at=excluded.updated_at`,
+      [order, JSON.stringify(items)]
     );
   }
 

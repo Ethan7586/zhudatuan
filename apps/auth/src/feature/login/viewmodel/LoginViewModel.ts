@@ -12,6 +12,7 @@ import { actionFailure, actionSuccess, type ActionResult } from '../../../shared
 import type { EnrollmentCompletion } from '../../enrollment';
 import { loginBusy, useLoginCommand } from './LoginCommandViewModel';
 import { useLoginProviderViewModel } from './LoginProviderViewModel';
+import { startLoginProvider } from './LoginProviderAction';
 
 const NO_METHODS: readonly [] = Object.freeze([]);
 
@@ -199,15 +200,7 @@ export function useLoginViewModel(dependencies: Dependencies, request: SessionRe
       setFields({});
       dispatch({ type: 'ACCEPTANCE_CHANGED', accepted });
     },
-    provider: (provider: Provider) => {
-      if (!validateTerms()) return;
-      const operation = command.start();
-      if (operation === undefined) return;
-      void dependencies.federationView.start(provider.id, session, operation.signal).then(
-        ({ redirectUrl }) => dependencies.navigation.assignExternal(redirectUrl),
-        (cause: unknown) => command.fail(operation.command, cause)
-      );
-    },
+    provider: (provider: Provider) => startLoginProvider(provider, validateTerms, command, dependencies, session),
     retryProviders: providerState.retry,
     back: () => dispatch({ type: 'BACK_REQUESTED' }),
     retry: () => dispatch({ type: 'BOOTSTRAP_REQUESTED', target: state.target }),

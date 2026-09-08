@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { IdempotencyCleanupKey, RuntimeControlCleanup } from '../../application/port/CleanupPort';
 import { cleanupIds, cleanupLimit } from './PgCleanupValue';
 
@@ -34,7 +34,10 @@ export class PgControlCleanup implements RuntimeControlCleanup {
        order by retention_until,id limit $1`,
       [limit]
     );
-    return cleanupIds(result.rows.map(({ id }) => id), 'deadletter:');
+    return cleanupIds(
+      result.rows.map(({ id }) => id),
+      'deadletter:'
+    );
   }
 
   async purgeDeadletters(context: WriteTransactionContext, ids: readonly string[]): Promise<number> {
@@ -52,7 +55,7 @@ export class PgControlCleanup implements RuntimeControlCleanup {
 function idempotencyKeys(rows: readonly IdempotencyCleanupKey[]): readonly IdempotencyCleanupKey[] {
   const values = rows.map(({ scope, actor, key }) => Object.freeze({ scope, actor, key }));
   const identities = values.map(({ scope, actor, key }) => JSON.stringify([scope, actor, key]));
-  if (values.length > 5000 || new Set(identities).size !== values.length || values.some(({ scope, actor, key }) =>
-    [scope, actor, key].some((value) => typeof value !== 'string' || value.length < 1))) throw new Error('CLEANUP_IDEMPOTENCY_SET_INVALID');
+  if (values.length > 5000 || new Set(identities).size !== values.length || values.some(({ scope, actor, key }) => [scope, actor, key].some((value) => typeof value !== 'string' || value.length < 1)))
+    throw new Error('CLEANUP_IDEMPOTENCY_SET_INVALID');
   return Object.freeze(values);
 }

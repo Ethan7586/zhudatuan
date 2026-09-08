@@ -1,9 +1,9 @@
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
 import { OBJECT_STORE } from '../../../runtime/public/ObjectPort';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
-import { EVENT_STREAM } from '../../../../foundation/stream/EventStream';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
+import { EVENT_STREAM } from '../../../../platform/messaging/EventStream';
 import { EvaluateSla } from '../../application/process/EvaluateSla';
 import { RelaySupportEvents } from '../../application/process/RelaySupportEvents';
 import { RunSupportJob } from '../../application/process/RunSupportJob';

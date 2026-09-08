@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { PgOrderRepository } from './PgOrderRepository';
 
 describe('PgOrderRepository reminder authorization', () => {
@@ -38,13 +38,22 @@ describe('PgOrderRepository reminder authorization', () => {
 describe('PgOrderRepository list facets', () => {
   it('computes scoped state counts and projection watermarks in parallel with the page', async () => {
     const watermark = new Date('2026-09-05T02:00:00.000Z');
-    const query = vi.fn(async (sql: string, _values?: readonly unknown[]) => sql.includes('with visible as materialized')
-      ? { rows: [{ all: 8, unpaid: 1, unshipped: 2, active: 3, completed: 2, aftersale: 1, exception: 1, orderWatermark: watermark, paymentWatermark: watermark, fulfillmentWatermark: null, aftersaleWatermark: null, refundWatermark: null }], rowCount: 1 }
-      : { rows: [], rowCount: 0 });
+    const query = vi.fn(async (sql: string, _values?: readonly unknown[]) =>
+      sql.includes('with visible as materialized')
+        ? {
+            rows: [
+              { all: 8, unpaid: 1, unshipped: 2, active: 3, completed: 2, aftersale: 1, exception: 1, orderWatermark: watermark, paymentWatermark: watermark, fulfillmentWatermark: null, aftersaleWatermark: null, refundWatermark: null },
+            ],
+            rowCount: 1,
+          }
+        : { rows: [], rowCount: 0 }
+    );
     const descendants = vi.fn(async () => Object.freeze(['enterprise:one', 'mall:one']));
     const repository = new PgOrderRepository({ database: () => ({ query }) } as never, {} as never, { descendants, scope: vi.fn() } as never, { search: vi.fn() });
 
-    const result = await repository.read({} as never, { query: { limit: '50' } } as never, readExecution() as never) as unknown as { body: { facets: { state: string; data: { counts: { exception: number }; watermarks: { order: string } } } } };
+    const result = (await repository.read({} as never, { query: { limit: '50' } } as never, readExecution() as never)) as unknown as {
+      body: { facets: { state: string; data: { counts: { exception: number }; watermarks: { order: string } } } };
+    };
 
     expect(result.body.facets).toMatchObject({ state: 'ready', data: { counts: { exception: 1 }, watermarks: { order: watermark.toISOString() } } });
     expect(query).toHaveBeenCalledTimes(2);
@@ -63,7 +72,7 @@ describe('PgOrderRepository list facets', () => {
     });
     const repository = new PgOrderRepository({ database: () => ({ query }) } as never, {} as never, { descendants: vi.fn(async () => Object.freeze(['enterprise:one'])), scope: vi.fn() } as never, { search: vi.fn() });
 
-    const result = await repository.read({} as never, { query: { limit: '50' } } as never, readExecution() as never) as unknown as { body: { items: unknown[]; facets: { state: string; error: { code: string } } } };
+    const result = (await repository.read({} as never, { query: { limit: '50' } } as never, readExecution() as never)) as unknown as { body: { items: unknown[]; facets: { state: string; error: { code: string } } } };
 
     expect(result.body.items).toEqual([]);
     expect(result.body.facets).toMatchObject({ state: 'unavailable', error: { code: 'ORDER_FACET_UNAVAILABLE' } });

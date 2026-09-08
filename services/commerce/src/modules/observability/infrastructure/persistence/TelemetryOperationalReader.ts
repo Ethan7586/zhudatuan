@@ -27,9 +27,9 @@ export class TelemetryOperationalReader implements OperationalReader {
     const levels = serviceLevels(records, generatedAt, this.registry);
     const checks = new Set(this.registry.health.checks);
     const degraded = Object.freeze([
-      ...(checks.has('dependency') ? dependencies.length === 0 ? ['dependency.telemetry.missing'] : dependencies.filter((item) => item.state === 'unhealthy').map((item) => `dependency.${item.name}`) : []),
-      ...(checks.has('queue') ? queues.length === 0 ? ['queue.telemetry.missing'] : queues.filter((item) => item.state === 'backlogged').map((item) => `queue.${item.name}`) : []),
-      ...(checks.has('provider') ? providers.length === 0 ? ['provider.telemetry.missing'] : providers.filter((item) => item.state === 'degraded').map((item) => `provider.${item.name}`) : []),
+      ...(checks.has('dependency') ? (dependencies.length === 0 ? ['dependency.telemetry.missing'] : dependencies.filter((item) => item.state === 'unhealthy').map((item) => `dependency.${item.name}`)) : []),
+      ...(checks.has('queue') ? (queues.length === 0 ? ['queue.telemetry.missing'] : queues.filter((item) => item.state === 'backlogged').map((item) => `queue.${item.name}`)) : []),
+      ...(checks.has('provider') ? (providers.length === 0 ? ['provider.telemetry.missing'] : providers.filter((item) => item.state === 'degraded').map((item) => `provider.${item.name}`)) : []),
       ...(checks.has('servicelevel') ? levels.items.filter((item) => item.status === 'breaching').map((item) => `slo.${item.id}`) : []),
     ]);
     return Object.freeze({
@@ -55,13 +55,15 @@ export class TelemetryOperationalReader implements OperationalReader {
 }
 
 function latestDependencies(records: readonly TelemetryObservation[]): readonly DependencyHealth[] {
-  return latest(records, 'commerce.dependency.duration', 'dependency').map(({ key, item }) => Object.freeze({
-    name: key,
-    state: text(item.record.result) === 'success' ? 'healthy' : 'unhealthy',
-    durationMs: numeric(item.record.value),
-    observedAt: item.observedAt,
-    traceId: text(item.record.traceId),
-  }));
+  return latest(records, 'commerce.dependency.duration', 'dependency').map(({ key, item }) =>
+    Object.freeze({
+      name: key,
+      state: text(item.record.result) === 'success' ? 'healthy' : 'unhealthy',
+      durationMs: numeric(item.record.value),
+      observedAt: item.observedAt,
+      traceId: text(item.record.traceId),
+    })
+  );
 }
 
 function latestQueues(records: readonly TelemetryObservation[], backlogDepth: number): readonly QueueHealth[] {
@@ -72,20 +74,26 @@ function latestQueues(records: readonly TelemetryObservation[], backlogDepth: nu
 }
 
 function latestProviders(records: readonly TelemetryObservation[]): readonly ProviderHealth[] {
-  return latest(records, 'commerce.provider.count', 'provider').map(({ key, item }) => Object.freeze({
-    name: key,
-    state: text(item.record.result) === 'success' ? 'healthy' : 'degraded',
-    operation: text(item.record.operation),
-    observedAt: item.observedAt,
-    traceId: text(item.record.traceId),
-  }));
+  return latest(records, 'commerce.provider.count', 'provider').map(({ key, item }) =>
+    Object.freeze({
+      name: key,
+      state: text(item.record.result) === 'success' ? 'healthy' : 'degraded',
+      operation: text(item.record.operation),
+      observedAt: item.observedAt,
+      traceId: text(item.record.traceId),
+    })
+  );
 }
 
 function serviceLevels(records: readonly TelemetryObservation[], generatedAt: string, registry: ObservationRegistry): ServiceLevelReport {
-  const pointsFor = (window: number): readonly MetricPoint[] => Object.freeze(records.flatMap(({ observedAt, record }) =>
-    Date.parse(observedAt) >= Date.parse(generatedAt) - window * 1_000 && record.kind === 'metric' && text(record.name) !== null
-      ? [Object.freeze({ name: text(record.name)!, value: numeric(record.value), result: text(record.result) })]
-      : []));
+  const pointsFor = (window: number): readonly MetricPoint[] =>
+    Object.freeze(
+      records.flatMap(({ observedAt, record }) =>
+        Date.parse(observedAt) >= Date.parse(generatedAt) - window * 1_000 && record.kind === 'metric' && text(record.name) !== null
+          ? [Object.freeze({ name: text(record.name)!, value: numeric(record.value), result: text(record.result) })]
+          : []
+      )
+    );
   const items = Object.freeze(registry.serviceLevels.map((level) => level.evaluate(pointsFor(level.definition.windowSeconds))));
   return Object.freeze({ generatedAt, windowSeconds: registry.health.freshnessSeconds, items, count: items.length });
 }

@@ -3,7 +3,7 @@ import type { Quote } from '../model/Quote';
 import { formatMinor } from '../../../shared/format/Money';
 
 export function TenderPanel({ quote }: { readonly quote: Quote | null }) {
-  if (!quote) return <div className="rounded border border-brand-light bg-brand-light p-2 text-xs text-brand">提交时由服务端按福利、卡券、个人支付的固定顺序生成权威支付计划。</div>;
+  if (!quote) return <div className="rounded border border-brand-light bg-brand-light p-2 text-xs text-brand">生成 Quote 后，系统会展示服务端确定的福利、卡券和个人支付拆分。</div>;
   return (
     <div className="space-y-2 text-xs">
       {quote.tenders.map((tender, index) => (

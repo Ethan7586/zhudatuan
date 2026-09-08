@@ -1,11 +1,11 @@
 import { IdentityAction as OperationAction } from '../model/IdentityAction';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 import { randomUUID } from 'node:crypto';
 
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
 
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { IdentityAccessPort } from '../../../access/public';
 import type { IdentityMemberPort } from '../../../member/public';
 import type { RegistrationResetRepository } from '../port/RegistrationResetRepository';

@@ -18,7 +18,7 @@ export function HomePage({ viewmodel, page }: Readonly<{ viewmodel: ReturnType<t
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-1">
             {viewmodel.presentationCategories.slice(0, 8).map((category) => (
-              <button type="button" key={category.id} onClick={() => viewmodel.navigatePage('catalog')} className="min-h-11 rounded-xl px-3 text-left text-xs font-bold hover:bg-brand-light">
+              <button type="button" key={category.id} onClick={() => viewmodel.openCategory(category.id)} className="min-h-11 rounded-xl px-3 text-left text-xs font-bold hover:bg-brand-light">
                 {category.name}
                 <span className="mt-0.5 block truncate text-[10px] font-normal text-muted">{category.description || '当前商城已发布'}</span>
               </button>

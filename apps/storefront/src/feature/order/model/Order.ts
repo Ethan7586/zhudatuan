@@ -12,6 +12,15 @@ export interface OrderAddress {
   readonly regionCode: string;
 }
 
+export interface OrderAudit {
+  readonly id: string;
+  readonly action: string;
+  readonly resourceType: string;
+  readonly resource: string | null;
+  readonly actor: string;
+  readonly occurredAt: string;
+}
+
 export interface Order {
   readonly id: string;
   readonly orderNo: string;
@@ -30,11 +39,12 @@ export interface Order {
   readonly lifecycleState: string;
   readonly lines: readonly OrderLine[];
   readonly timeline: readonly Timeline[];
+  readonly audit: readonly OrderAudit[];
   readonly address?: OrderAddress;
   readonly receivedAt: string | null;
   readonly sourceChannel: string | null;
   readonly externalOrderNo: string | null;
-  readonly payment: Readonly<{ capturedMinor: number; refundedMinor: number; refundableMinor: number }>;
+  readonly payment: Readonly<{ id: string | null; capturedMinor: number; refundedMinor: number; refundableMinor: number }> | null;
   readonly sections: Readonly<Record<'products' | 'payment' | 'fulfillment' | 'aftersale' | 'audit', Readonly<{ state: OrderSectionState; message?: string; retryable?: boolean }>>>;
   readonly version: number;
 }

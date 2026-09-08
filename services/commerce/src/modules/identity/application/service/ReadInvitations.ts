@@ -1,8 +1,8 @@
 import { IdentityAction as OperationAction } from '../model/IdentityAction';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
 
 import type { InvitationRepository } from '../port/InvitationRepository';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { MembershipReadPort } from '../../../access/public';
 import type { MemberReadPort } from '../../../member/public';
 import { OPERATION_TARGETS } from '@shop/contract';
@@ -23,10 +23,14 @@ export class ReadInvitations {
       const kind = enumQuery(request.input.query.kind, ['signin', 'enrollment', 'campaign'] as const);
       const status = enumQuery(request.input.query.status, ['draft', 'active', 'exhausted', 'revoked', 'expired'] as const);
       const records = await this.repository.read(database, { scope: access.scope.id, target, kind, status, cursor, limit });
-      const membershipIds = records.flatMap((item) => item.membership_id === null ? [item.issuer_membership_id] : [item.issuer_membership_id, item.membership_id]);
+      const membershipIds = records.flatMap((item) => (item.membership_id === null ? [item.issuer_membership_id] : [item.issuer_membership_id, item.membership_id]));
       const references = await this.memberships.summaries(database, membershipIds, access.scope.id);
       const byMembership = new Map(references.map((item) => [item.membership, item]));
-      const profiles = await this.members.profiles(database, references.map((item) => item.member), access.scope.id);
+      const profiles = await this.members.profiles(
+        database,
+        references.map((item) => item.member),
+        access.scope.id
+      );
       const byMember = new Map(profiles.map((item) => [item.member, item]));
       const items = records.map((item) => {
         const issuer = byMembership.get(item.issuer_membership_id);

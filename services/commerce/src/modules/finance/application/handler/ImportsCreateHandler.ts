@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { JobScheduler } from '../../../../foundation/application/JobScheduler';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord } from '../../../../foundation/application/Validation';
-import { authorizationEvidence } from '../../../../foundation/security/AuthorizationEvidence';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { JobScheduler } from '../../../../pipeline/JobScheduler';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord } from '../../../../pipeline/Validation';
+import { authorizationEvidence } from '../../../../platform/security/AuthorizationEvidence';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { ImportObjectPort, ImportPort } from '../../../runtime/public';
 import { statementImportMetadata, type StatementImportMetadata } from '../../domain/value/StatementImport';
 import type { FinanceChannelPort } from '../../../channel/public';
@@ -44,8 +44,7 @@ export class ImportsCreateHandler implements DurableOperationHandler<'finance.st
       throw new DomainError('VALIDATION_FAILED', { field: reason });
     }
     const object = await this.objects.prepare(input, access.scope.tenant ?? access.organization);
-    return Object.freeze({ scope: access.scope.id, reference: object.reference, sha256: object.sha256, name: object.name,
-      mediaType: object.mediaType, size: object.size, metadata });
+    return Object.freeze({ scope: access.scope.id, reference: object.reference, sha256: object.sha256, name: object.name, mediaType: object.mediaType, size: object.size, metadata });
   }
 
   async commit(_input: OperationInputFor<'finance.statementimports.create'>, prepared: PreparedImport, context: CommitContext<'finance.statementimports.create'>) {

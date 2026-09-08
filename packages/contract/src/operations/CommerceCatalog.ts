@@ -489,7 +489,8 @@ const definitions = [
     "module": "runtime",
     "audience": "console",
     "targets": [
-      "console"
+      "console",
+      "supplier"
     ],
     "permission": "runtime.import.manage",
     "capability": "runtime.uploads.create",
@@ -1574,6 +1575,131 @@ const definitions = [
       "MVPMALLSETTING",
       "MVPIDENTITY",
       "MVPPROVIDER"
+    ]
+  },
+  {
+    "id": "identity.handovers.read",
+    "version": 1,
+    "title": "身份 · 门店交班记录",
+    "method": "GET",
+    "path": "/api/v1/identity/handovers",
+    "module": "identity",
+    "audience": "console",
+    "targets": [
+      "console",
+      "store"
+    ],
+    "permission": "identity.handover.read",
+    "capability": "identity.handovers.read",
+    "scopeKinds": [
+      "store"
+    ],
+    "assuranceLevel": "session",
+    "makerChecker": false,
+    "originPolicy": "none",
+    "csrfPolicy": "none",
+    "responseMode": "json",
+    "cachePolicy": "private",
+    "targetPolicy": "exact",
+    "idempotencyPolicy": "none",
+    "requestSchema": "IdentityHandoversReadInput",
+    "responseSchema": "IdentityHandoversReadOutput",
+    "errorUnion": [
+      "AUTHENTICATION_REQUIRED",
+      "AUTHORIZATION_DENIED",
+      "CAPABILITY_DENIED",
+      "CONTRACT_VERSION_UNSUPPORTED",
+      "DEADLINE_EXCEEDED",
+      "INTERNAL_ERROR",
+      "PERMISSION_DENIED",
+      "RATE_LIMITED",
+      "SCOPE_DENIED",
+      "URL_SENSITIVE_DATA_FORBIDDEN",
+      "VALIDATION_FAILED"
+    ],
+    "idempotencyScope": "none",
+    "expectedVersion": "none",
+    "timeout": 500,
+    "rateClass": "read",
+    "risk": "low",
+    "concurrencyPolicy": "none",
+    "executionMode": "sync",
+    "auditLevel": "detailed",
+    "sensitiveFields": [],
+    "lifecycle": "active",
+    "resourceResolver": "identity.resource",
+    "resourceParameter": null,
+    "idempotent": true,
+    "requirements": [
+      "MVPIDENTITY",
+      "MVPMALLSETTING"
+    ]
+  },
+  {
+    "id": "identity.handovers.create",
+    "version": 1,
+    "title": "身份 · 门店交班",
+    "method": "POST",
+    "path": "/api/v1/identity/handovers",
+    "module": "identity",
+    "audience": "console",
+    "targets": [
+      "console",
+      "store"
+    ],
+    "permission": "identity.handover.create",
+    "capability": "identity.handovers.create",
+    "scopeKinds": [
+      "store"
+    ],
+    "assuranceLevel": "mfa",
+    "makerChecker": false,
+    "originPolicy": "sameorigin",
+    "csrfPolicy": "required",
+    "responseMode": "json",
+    "cachePolicy": "none",
+    "targetPolicy": "exact",
+    "idempotencyPolicy": "required",
+    "requestSchema": "IdentityHandoversCreateInput",
+    "responseSchema": "IdentityHandoversCreateOutput",
+    "errorUnion": [
+      "AUTHENTICATION_REQUIRED",
+      "AUTHORIZATION_DENIED",
+      "CAPABILITY_DENIED",
+      "CONTENT_TYPE_UNSUPPORTED",
+      "CONTRACT_VERSION_UNSUPPORTED",
+      "CSRF_TOKEN_INVALID",
+      "DEADLINE_EXCEEDED",
+      "IDEMPOTENCY_CONFLICT",
+      "IDEMPOTENCY_KEY_REQUIRED",
+      "INTERNAL_ERROR",
+      "ORIGIN_REQUIRED",
+      "PERMISSION_DENIED",
+      "RATE_LIMITED",
+      "REQUEST_BODY_TOO_LARGE",
+      "REQUEST_JSON_INVALID",
+      "RESOURCE_NOT_FOUND",
+      "SCOPE_DENIED",
+      "STEPUP_REQUIRED",
+      "URL_SENSITIVE_DATA_FORBIDDEN",
+      "VALIDATION_FAILED"
+    ],
+    "idempotencyScope": "actor-operation-scope",
+    "expectedVersion": "none",
+    "timeout": 800,
+    "rateClass": "write",
+    "risk": "high",
+    "concurrencyPolicy": "serialized",
+    "executionMode": "sync",
+    "auditLevel": "critical",
+    "sensitiveFields": [],
+    "lifecycle": "active",
+    "resourceResolver": "identity.resource",
+    "resourceParameter": null,
+    "idempotent": true,
+    "requirements": [
+      "MVPIDENTITY",
+      "MVPMALLSETTING"
     ]
   },
   {
@@ -7366,8 +7492,7 @@ const definitions = [
     "module": "catalog",
     "audience": "console",
     "targets": [
-      "console",
-      "supplier"
+      "console"
     ],
     "permission": "catalog.product.manage",
     "capability": "catalog.products.archive",
@@ -7581,8 +7706,7 @@ const definitions = [
     "module": "catalog",
     "audience": "console",
     "targets": [
-      "console",
-      "supplier"
+      "console"
     ],
     "permission": "catalog.listing.manage",
     "capability": "catalog.listings.publish",
@@ -7662,7 +7786,7 @@ const definitions = [
       "console",
       "supplier"
     ],
-    "permission": "catalog.listing.manage",
+    "permission": "catalog.price.manage",
     "capability": "catalog.listings.price.set",
     "scopeKinds": [
       "platform",
@@ -7737,8 +7861,7 @@ const definitions = [
     "module": "catalog",
     "audience": "console",
     "targets": [
-      "console",
-      "supplier"
+      "console"
     ],
     "permission": "catalog.listing.manage",
     "capability": "catalog.listings.pool.set",
@@ -7815,8 +7938,7 @@ const definitions = [
     "module": "catalog",
     "audience": "console",
     "targets": [
-      "console",
-      "supplier"
+      "console"
     ],
     "permission": "catalog.listing.manage",
     "capability": "catalog.listings.unpublish",
@@ -7893,8 +8015,7 @@ const definitions = [
     "module": "catalog",
     "audience": "console",
     "targets": [
-      "console",
-      "supplier"
+      "console"
     ],
     "permission": "catalog.listing.manage",
     "capability": "catalog.listings.batch",
@@ -8111,8 +8232,7 @@ const definitions = [
     "module": "pricing",
     "audience": "console",
     "targets": [
-      "console",
-      "supplier"
+      "console"
     ],
     "permission": "pricing.rule.manage",
     "capability": "pricing.rules.create",
@@ -8185,8 +8305,7 @@ const definitions = [
     "module": "pricing",
     "audience": "console",
     "targets": [
-      "console",
-      "supplier"
+      "console"
     ],
     "permission": "pricing.rule.manage",
     "capability": "pricing.rules.publish",
@@ -8392,6 +8511,150 @@ const definitions = [
     "concurrencyPolicy": "none",
     "executionMode": "sync",
     "auditLevel": "basic",
+    "sensitiveFields": [],
+    "lifecycle": "active",
+    "resourceResolver": "inventory.resource",
+    "resourceParameter": null,
+    "idempotent": true,
+    "requirements": [
+      "MVPGROUPPOOL",
+      "MVPMALLPOOL"
+    ]
+  },
+  {
+    "id": "inventory.adjustments.read",
+    "version": 1,
+    "title": "库存 · 调整申请查询",
+    "method": "GET",
+    "path": "/api/v1/inventory/adjustments",
+    "module": "inventory",
+    "audience": "console",
+    "targets": [
+      "console",
+      "store"
+    ],
+    "permission": "inventory.adjust.read",
+    "capability": "inventory.adjustments.read",
+    "scopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "assuranceLevel": "session",
+    "makerChecker": false,
+    "originPolicy": "none",
+    "csrfPolicy": "none",
+    "responseMode": "json",
+    "cachePolicy": "private",
+    "targetPolicy": "exact",
+    "idempotencyPolicy": "none",
+    "requestSchema": "InventoryAdjustmentsReadInput",
+    "responseSchema": "InventoryAdjustmentsReadOutput",
+    "errorUnion": [
+      "AUTHENTICATION_REQUIRED",
+      "AUTHORIZATION_DENIED",
+      "CAPABILITY_DENIED",
+      "CONTRACT_VERSION_UNSUPPORTED",
+      "DEADLINE_EXCEEDED",
+      "INTERNAL_ERROR",
+      "PERMISSION_DENIED",
+      "RATE_LIMITED",
+      "SCOPE_DENIED",
+      "URL_SENSITIVE_DATA_FORBIDDEN",
+      "VALIDATION_FAILED"
+    ],
+    "idempotencyScope": "none",
+    "expectedVersion": "none",
+    "timeout": 500,
+    "rateClass": "read",
+    "risk": "high",
+    "concurrencyPolicy": "none",
+    "executionMode": "sync",
+    "auditLevel": "detailed",
+    "sensitiveFields": [],
+    "lifecycle": "active",
+    "resourceResolver": "inventory.resource",
+    "resourceParameter": null,
+    "idempotent": true,
+    "requirements": [
+      "MVPGROUPPOOL",
+      "MVPMALLPOOL"
+    ]
+  },
+  {
+    "id": "inventory.adjustments.create",
+    "version": 1,
+    "title": "库存 · 调整申请创建",
+    "method": "POST",
+    "path": "/api/v1/inventory/adjustments",
+    "module": "inventory",
+    "audience": "console",
+    "targets": [
+      "console",
+      "store"
+    ],
+    "permission": "inventory.adjust.request",
+    "capability": "inventory.adjustments.create",
+    "scopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "assuranceLevel": "mfa",
+    "makerChecker": false,
+    "originPolicy": "sameorigin",
+    "csrfPolicy": "required",
+    "responseMode": "json",
+    "cachePolicy": "none",
+    "targetPolicy": "exact",
+    "idempotencyPolicy": "required",
+    "requestSchema": "InventoryAdjustmentsCreateInput",
+    "responseSchema": "InventoryAdjustmentsCreateOutput",
+    "errorUnion": [
+      "APPROVAL_TEMPLATE_DISABLED",
+      "AUTHENTICATION_REQUIRED",
+      "AUTHORIZATION_DENIED",
+      "CAPABILITY_DENIED",
+      "CONTENT_TYPE_UNSUPPORTED",
+      "CONTRACT_VERSION_UNSUPPORTED",
+      "CSRF_TOKEN_INVALID",
+      "DEADLINE_EXCEEDED",
+      "IDEMPOTENCY_CONFLICT",
+      "IDEMPOTENCY_KEY_REQUIRED",
+      "INTERNAL_ERROR",
+      "INVENTORY_QUANTITY_INVALID",
+      "ORIGIN_REQUIRED",
+      "PERMISSION_DENIED",
+      "RATE_LIMITED",
+      "REQUEST_BODY_TOO_LARGE",
+      "REQUEST_JSON_INVALID",
+      "RESOURCE_NOT_FOUND",
+      "SCOPE_DENIED",
+      "STEPUP_REQUIRED",
+      "URL_SENSITIVE_DATA_FORBIDDEN",
+      "VALIDATION_FAILED",
+      "VERSION_CONFLICT"
+    ],
+    "idempotencyScope": "actor-operation-scope",
+    "expectedVersion": "none",
+    "timeout": 800,
+    "rateClass": "critical",
+    "risk": "critical",
+    "concurrencyPolicy": "optimistic",
+    "executionMode": "sync",
+    "auditLevel": "critical",
     "sensitiveFields": [],
     "lifecycle": "active",
     "resourceResolver": "inventory.resource",
@@ -11729,6 +11992,212 @@ const definitions = [
     "lifecycle": "active",
     "resourceResolver": "order.resource",
     "resourceParameter": "aftersaleid",
+    "idempotent": true,
+    "requirements": [
+      "MVPGROUPORDER",
+      "MVPMALLORDER"
+    ]
+  },
+  {
+    "id": "fulfillment.workitems.read",
+    "version": 1,
+    "title": "履约 · 门店工作项查询",
+    "method": "GET",
+    "path": "/api/v1/fulfillments/workitems",
+    "module": "fulfillment",
+    "audience": "console",
+    "targets": [
+      "console",
+      "store",
+      "supplier"
+    ],
+    "permission": "fulfillment.read",
+    "capability": "fulfillment.workitems.read",
+    "scopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "assuranceLevel": "session",
+    "makerChecker": false,
+    "originPolicy": "none",
+    "csrfPolicy": "none",
+    "responseMode": "json",
+    "cachePolicy": "private",
+    "targetPolicy": "exact",
+    "idempotencyPolicy": "none",
+    "requestSchema": "FulfillmentWorkitemsReadInput",
+    "responseSchema": "FulfillmentWorkitemsReadOutput",
+    "errorUnion": [
+      "AUTHENTICATION_REQUIRED",
+      "AUTHORIZATION_DENIED",
+      "CAPABILITY_DENIED",
+      "CONTRACT_VERSION_UNSUPPORTED",
+      "DEADLINE_EXCEEDED",
+      "INTERNAL_ERROR",
+      "PERMISSION_DENIED",
+      "RATE_LIMITED",
+      "SCOPE_DENIED",
+      "URL_SENSITIVE_DATA_FORBIDDEN",
+      "VALIDATION_FAILED"
+    ],
+    "idempotencyScope": "none",
+    "expectedVersion": "none",
+    "timeout": 500,
+    "rateClass": "read",
+    "risk": "high",
+    "concurrencyPolicy": "none",
+    "executionMode": "sync",
+    "auditLevel": "detailed",
+    "sensitiveFields": [],
+    "lifecycle": "active",
+    "resourceResolver": "fulfillment.resource",
+    "resourceParameter": null,
+    "idempotent": true,
+    "requirements": [
+      "MVPGROUPORDER",
+      "MVPMALLORDER"
+    ]
+  },
+  {
+    "id": "fulfillment.workitems.transition",
+    "version": 1,
+    "title": "履约 · 门店工作项流转",
+    "method": "PUT",
+    "path": "/api/v1/fulfillments/{fulfillmentid}/transition",
+    "module": "fulfillment",
+    "audience": "console",
+    "targets": [
+      "console",
+      "store",
+      "supplier"
+    ],
+    "permission": "fulfillment.work.manage",
+    "capability": "fulfillment.workitems.transition",
+    "scopeKinds": [
+      "store",
+      "supplier"
+    ],
+    "assuranceLevel": "mfa",
+    "makerChecker": false,
+    "originPolicy": "sameorigin",
+    "csrfPolicy": "required",
+    "responseMode": "json",
+    "cachePolicy": "none",
+    "targetPolicy": "exact",
+    "idempotencyPolicy": "required",
+    "requestSchema": "FulfillmentWorkitemsTransitionInput",
+    "responseSchema": "FulfillmentWorkitemsTransitionOutput",
+    "errorUnion": [
+      "AUTHENTICATION_REQUIRED",
+      "AUTHORIZATION_DENIED",
+      "CAPABILITY_DENIED",
+      "CONTENT_TYPE_UNSUPPORTED",
+      "CONTRACT_VERSION_UNSUPPORTED",
+      "CSRF_TOKEN_INVALID",
+      "DEADLINE_EXCEEDED",
+      "EXPECTED_VERSION_INVALID",
+      "EXPECTED_VERSION_REQUIRED",
+      "IDEMPOTENCY_CONFLICT",
+      "IDEMPOTENCY_KEY_REQUIRED",
+      "INTERNAL_ERROR",
+      "ORIGIN_REQUIRED",
+      "PERMISSION_DENIED",
+      "RATE_LIMITED",
+      "REQUEST_BODY_TOO_LARGE",
+      "REQUEST_JSON_INVALID",
+      "RESOURCE_NOT_FOUND",
+      "SCOPE_DENIED",
+      "STEPUP_REQUIRED",
+      "URL_SENSITIVE_DATA_FORBIDDEN",
+      "VALIDATION_FAILED",
+      "VERSION_CONFLICT"
+    ],
+    "idempotencyScope": "actor-operation-scope",
+    "expectedVersion": "required",
+    "timeout": 800,
+    "rateClass": "critical",
+    "risk": "high",
+    "concurrencyPolicy": "optimistic",
+    "executionMode": "sync",
+    "auditLevel": "critical",
+    "sensitiveFields": [],
+    "lifecycle": "active",
+    "resourceResolver": "fulfillment.resource",
+    "resourceParameter": "fulfillmentid",
+    "idempotent": true,
+    "requirements": [
+      "MVPGROUPORDER",
+      "MVPMALLORDER"
+    ]
+  },
+  {
+    "id": "fulfillment.returns.read",
+    "version": 1,
+    "title": "履约 · 门店退货工作项查询",
+    "method": "GET",
+    "path": "/api/v1/fulfillments/returns",
+    "module": "fulfillment",
+    "audience": "console",
+    "targets": [
+      "console",
+      "store",
+      "supplier"
+    ],
+    "permission": "fulfillment.read",
+    "capability": "fulfillment.returns.read",
+    "scopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "assuranceLevel": "session",
+    "makerChecker": false,
+    "originPolicy": "none",
+    "csrfPolicy": "none",
+    "responseMode": "json",
+    "cachePolicy": "private",
+    "targetPolicy": "exact",
+    "idempotencyPolicy": "none",
+    "requestSchema": "FulfillmentReturnsReadInput",
+    "responseSchema": "FulfillmentReturnsReadOutput",
+    "errorUnion": [
+      "AUTHENTICATION_REQUIRED",
+      "AUTHORIZATION_DENIED",
+      "CAPABILITY_DENIED",
+      "CONTRACT_VERSION_UNSUPPORTED",
+      "DEADLINE_EXCEEDED",
+      "INTERNAL_ERROR",
+      "PERMISSION_DENIED",
+      "RATE_LIMITED",
+      "SCOPE_DENIED",
+      "URL_SENSITIVE_DATA_FORBIDDEN",
+      "VALIDATION_FAILED"
+    ],
+    "idempotencyScope": "none",
+    "expectedVersion": "none",
+    "timeout": 500,
+    "rateClass": "read",
+    "risk": "high",
+    "concurrencyPolicy": "none",
+    "executionMode": "sync",
+    "auditLevel": "detailed",
+    "sensitiveFields": [],
+    "lifecycle": "active",
+    "resourceResolver": "fulfillment.resource",
+    "resourceParameter": null,
     "idempotent": true,
     "requirements": [
       "MVPGROUPORDER",
@@ -17064,9 +17533,9 @@ const definitions = [
     "idempotencyScope": "none",
     "expectedVersion": "none",
     "timeout": 800,
-    "rateClass": "write",
+    "rateClass": "read",
     "risk": "high",
-    "concurrencyPolicy": "serialized",
+    "concurrencyPolicy": "none",
     "executionMode": "sync",
     "auditLevel": "detailed",
     "sensitiveFields": [],
@@ -19495,7 +19964,6 @@ const definitions = [
       "enterprise",
       "mall",
       "department",
-      "store",
       "supplier"
     ],
     "assuranceLevel": "mfa",
@@ -19567,7 +20035,6 @@ const definitions = [
       "enterprise",
       "mall",
       "department",
-      "store",
       "supplier"
     ],
     "assuranceLevel": "stepup",
@@ -19737,7 +20204,6 @@ const definitions = [
       "enterprise",
       "mall",
       "department",
-      "store",
       "supplier"
     ],
     "assuranceLevel": "mfa",
@@ -21196,7 +21662,6 @@ const definitions = [
       "enterprise",
       "mall",
       "department",
-      "store",
       "supplier"
     ],
     "assuranceLevel": "mfa",
@@ -24208,7 +24673,6 @@ const definitions = [
       "enterprise",
       "mall",
       "department",
-      "store",
       "supplier"
     ],
     "assuranceLevel": "mfa",
@@ -24418,7 +24882,6 @@ const definitions = [
       "enterprise",
       "mall",
       "department",
-      "store",
       "supplier"
     ],
     "assuranceLevel": "stepup",
@@ -26756,7 +27219,9 @@ const definitions = [
     "concurrencyPolicy": "serialized",
     "executionMode": "sync",
     "auditLevel": "detailed",
-    "sensitiveFields": [],
+    "sensitiveFields": [
+      "body.mobile"
+    ],
     "lifecycle": "active",
     "resourceResolver": "referral.resource",
     "resourceParameter": null,
@@ -27048,7 +27513,9 @@ const definitions = [
     "concurrencyPolicy": "serialized",
     "executionMode": "sync",
     "auditLevel": "detailed",
-    "sensitiveFields": [],
+    "sensitiveFields": [
+      "body.token"
+    ],
     "lifecycle": "active",
     "resourceResolver": "referral.resource",
     "resourceParameter": null,
@@ -27367,7 +27834,9 @@ const definitions = [
     "concurrencyPolicy": "optimistic",
     "executionMode": "sync",
     "auditLevel": "detailed",
-    "sensitiveFields": [],
+    "sensitiveFields": [
+      "body.accountRef"
+    ],
     "lifecycle": "active",
     "resourceResolver": "referral.resource",
     "resourceParameter": null,
@@ -28048,7 +28517,9 @@ const definitions = [
     "resourceParameter": "templateid",
     "idempotent": false,
     "requirements": [
+      "MVPGROUPVOUCHER",
       "MVPGROUPSETTING",
+      "MVPMALLVOUCHER",
       "MVPMALLSETTING"
     ]
   },
@@ -28126,7 +28597,9 @@ const definitions = [
     "resourceParameter": "templateid",
     "idempotent": true,
     "requirements": [
+      "MVPGROUPVOUCHER",
       "MVPGROUPSETTING",
+      "MVPMALLVOUCHER",
       "MVPMALLSETTING"
     ]
   },
@@ -28203,7 +28676,9 @@ const definitions = [
     "resourceParameter": "templateid",
     "idempotent": true,
     "requirements": [
+      "MVPGROUPVOUCHER",
       "MVPGROUPSETTING",
+      "MVPMALLVOUCHER",
       "MVPMALLSETTING"
     ]
   },
@@ -28333,7 +28808,9 @@ const definitions = [
     "resourceParameter": null,
     "idempotent": true,
     "requirements": [
+      "MVPGROUPVOUCHER",
       "MVPGROUPSETTING",
+      "MVPMALLVOUCHER",
       "MVPMALLSETTING"
     ]
   },

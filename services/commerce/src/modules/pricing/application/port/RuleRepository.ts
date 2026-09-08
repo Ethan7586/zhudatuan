@@ -1,4 +1,4 @@
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ContractJsonObject } from '@shop/contract';
 import type { PricingRuleKind } from '../../domain/model/PricingRule';
 export interface PriceRuleRecord extends Record<string, unknown> {

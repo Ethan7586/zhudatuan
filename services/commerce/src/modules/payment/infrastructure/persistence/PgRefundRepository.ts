@@ -1,6 +1,6 @@
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { OrganizationReadPort } from '../../../organization/public';
 import type { OrderPaymentPort } from '../../../order/public';
 import type { RefundRepository } from '../../application/port/RefundRepository';

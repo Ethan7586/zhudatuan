@@ -1,4 +1,4 @@
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import type { DirectoryJobRepository, DirectoryLease } from '../port/DirectoryJobRepository';
 
 export class ReconcileDirectory {

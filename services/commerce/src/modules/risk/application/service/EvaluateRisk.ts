@@ -2,8 +2,8 @@ import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { OUTCOME_SEVERITY, type RiskDecisionDraft } from '../../domain/model/Decision';
 import { RiskPolicy } from '../../domain/model/RiskPolicy';
 import { RiskEngine } from '../../domain/policy/RiskEngine';
-import { Deadline } from '../../../../foundation/performance/Deadline';
-import { allParallel } from '../../../../foundation/performance/Parallel';
+import { Deadline } from '@shop/kernel';
+import { allParallel } from '@shop/kernel';
 import type { RiskAssessment, RiskCheck, RiskCheckInput, RiskPolicyRecord, RiskRepository } from '../port/RiskCheck';
 
 const FAIL_CLOSED = new Set<string>(RUNTIME_LIMITS.risk.failClosed);
@@ -24,10 +24,7 @@ export class EvaluateRisk implements RiskCheck {
         await deadline.run(() => this.repository.defer(input));
         return fallback(input, 'dependency');
       }
-      const [storedSignals, blocked] = await allParallel(
-        [() => this.repository.signals(input.actor, input.scopes), () => this.repository.blocked(input.actor, input.scopes)] as const,
-        { concurrency: 2, expiresAt, signal: deadline.signal }
-      );
+      const [storedSignals, blocked] = await allParallel([() => this.repository.signals(input.actor, input.scopes), () => this.repository.blocked(input.actor, input.scopes)] as const, { concurrency: 2, expiresAt, signal: deadline.signal });
       const signals = Object.freeze([...storedSignals, ...input.signals]);
       const windows = Object.freeze([...new Set(policies.map((policy) => policy.rule.velocity?.windowSeconds ?? 3600))]);
       const velocities = await deadline.run(() => this.repository.velocities(input.actor, input.operation, input.scopes, windows));
@@ -60,9 +57,7 @@ export class EvaluateRisk implements RiskCheck {
     return Object.freeze(
       records.map((record) => {
         const active = new RiskPolicy(record.id, record.activeVersion, record.activeRule, record.activeRollout);
-        return active.selected(actor) || record.baselineVersion === null || record.baselineRule === null
-          ? active
-          : new RiskPolicy(record.id, record.baselineVersion, record.baselineRule, 100);
+        return active.selected(actor) || record.baselineVersion === null || record.baselineRule === null ? active : new RiskPolicy(record.id, record.baselineVersion, record.baselineRule, 100);
       })
     );
   }

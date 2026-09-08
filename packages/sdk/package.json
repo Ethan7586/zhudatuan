@@ -13,8 +13,18 @@
   "exports": {
     ".": "./src/index.ts",
     "./commerce": "./src/ClientFactory.ts",
+    "./authclient": "./src/AuthClient.ts",
+    "./consoleclient": "./src/ConsoleClient.ts",
     "./context": "./src/RequestContextFactory.ts",
     "./error": "./src/error/index.ts",
+    "./events": "./src/EventStream.ts",
+    "./files": "./src/ImportFile.ts",
+    "./objects": "./src/ObjectUpload.ts",
+    "./session": "./src/SurfaceSession.ts",
+    "./storeclient": "./src/StoreClient.ts",
+    "./storefrontclient": "./src/StorefrontClient.ts",
+    "./supplierclient": "./src/SupplierClient.ts",
+    "./surfaces": "./src/SurfaceCatalog.ts",
     "./url": "./src/url/index.ts",
     "./*": "./src/operations/*.ts",
     "./operations/*": "./src/operations/*.ts"

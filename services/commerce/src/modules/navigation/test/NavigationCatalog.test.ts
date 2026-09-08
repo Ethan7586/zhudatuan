@@ -1,20 +1,82 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { NAVIGATION_BY_KEY, NAVIGATION_CATALOG } from '../infrastructure/registry/NavigationCatalog';
 import { NavigationContext } from '../domain/model/NavigationContext';
 import { NavigationFilter } from '../application/service/NavigationFilter';
 
 const ORIGINAL_KEYS = Object.freeze([
-  'platformcontrol', 'platformcatalog', 'platformvoucher', 'distributioncontrol', 'groupdashboard', 'groupcontrol', 'groupapplication', 'groupproduct', 'grouporder', 'groupreferral', 'groupvoucher', 'groupchannel', 'groupfinance', 'groupreporting', 'groupsupport', 'groupsettings',
-  'malldashboard', 'mallcontrol', 'malldesign', 'mallproduct', 'mallorder', 'mallvoucher', 'mallchannel', 'mallfinance', 'mallreferral', 'mallreporting', 'mallsupport', 'mallsettings', 'platformchannel', 'groupadmin', 'groupmemberdata', 'groupinvitation',
-  'grouppartner', 'groupqualification', 'groupmessage', 'grouprisk', 'groupprovider', 'groupdirectory', 'malladmin', 'mallmemberdata', 'mallinvitation', 'mallpartner', 'mallqualification', 'mallmessage', 'mallrisk', 'mallprovider', 'malldirectory',
-  'storehome', 'storecatalog', 'storeproduct', 'storecart', 'storecheckout', 'storepayment', 'storeorders', 'storeorder', 'storeaftersale', 'storevouchers', 'storebenefits', 'storeprofile', 'storesecurity', 'storesupport', 'storesupportcase', 'storenotifications',
+  'platformcontrol',
+  'platformcatalog',
+  'platformvoucher',
+  'distributioncontrol',
+  'groupdashboard',
+  'groupcontrol',
+  'groupapplication',
+  'groupproduct',
+  'grouporder',
+  'groupreferral',
+  'groupvoucher',
+  'groupchannel',
+  'groupfinance',
+  'groupreporting',
+  'groupsupport',
+  'groupsettings',
+  'malldashboard',
+  'mallcontrol',
+  'malldesign',
+  'mallproduct',
+  'mallorder',
+  'mallvoucher',
+  'mallchannel',
+  'mallfinance',
+  'mallreferral',
+  'mallreporting',
+  'mallsupport',
+  'mallsettings',
+  'platformchannel',
+  'groupadmin',
+  'groupmemberdata',
+  'groupinvitation',
+  'grouppartner',
+  'groupqualification',
+  'groupmessage',
+  'grouprisk',
+  'groupprovider',
+  'groupdirectory',
+  'malladmin',
+  'mallmemberdata',
+  'mallinvitation',
+  'mallpartner',
+  'mallqualification',
+  'mallmessage',
+  'mallrisk',
+  'mallprovider',
+  'malldirectory',
+  'storehome',
+  'storecatalog',
+  'storeproduct',
+  'storecart',
+  'storecheckout',
+  'storepayment',
+  'storeorders',
+  'storeorder',
+  'storeaftersale',
+  'storevouchers',
+  'storebenefits',
+  'storeprofile',
+  'storesecurity',
+  'storesupport',
+  'storesupportcase',
+  'storenotifications',
 ] as const);
 
 describe('generated navigation catalog', () => {
   it('preserves every original 63-node product entry while extending all six surfaces', () => {
     expect(ORIGINAL_KEYS).toHaveLength(63);
     expect(ORIGINAL_KEYS.filter((key) => !NAVIGATION_BY_KEY.has(key))).toEqual([]);
-    expect(NAVIGATION_CATALOG).toHaveLength(143);
+    const authority = readFileSync(new URL('../../../../../../config/navigation.yml', import.meta.url), 'utf8');
+    const configuredNodes = authority.slice(authority.indexOf('\nnodes:')).match(/^  - id:/gm)?.length ?? 0;
+    expect(NAVIGATION_CATALOG).toHaveLength(configuredNodes);
     expect(new Set(NAVIGATION_CATALOG.map(({ key }) => key)).size).toBe(NAVIGATION_CATALOG.length);
     expect(new Set(NAVIGATION_CATALOG.map(({ surface }) => surface))).toEqual(new Set(['console', 'storefront', 'miniapp', 'store', 'supplier']));
   });
@@ -52,10 +114,26 @@ describe('generated navigation catalog', () => {
     const featureFlags = new Set(NAVIGATION_CATALOG.flatMap(({ featureFlags: flags }) => flags));
     const partitions = new Set(NAVIGATION_CATALOG.map(({ surface, scope }) => `${surface}:${scope}`));
     for (const partition of partitions) {
-      const [target, kind] = partition.split(':') as [typeof NAVIGATION_CATALOG[number]['surface'], typeof NAVIGATION_CATALOG[number]['scope']];
+      const [target, kind] = partition.split(':') as [(typeof NAVIGATION_CATALOG)[number]['surface'], (typeof NAVIGATION_CATALOG)[number]['scope']];
       const scope = { membership: 'membership:one', id: `${kind}:one`, kind, status: 'active' as const, version: 1, default: true };
       const source = NAVIGATION_CATALOG.filter((node) => node.surface === target && node.scope === kind);
-      const nodes = new NavigationFilter().apply(source, new NavigationContext({ target, principal: 'principal:one', membership: 'membership:one', membershipActive: true, assurance: 2, scope, scopes: [scope], permissions, capabilities, featureFlags, accessVersion: 1, capabilityVersion: 1 }));
+      const nodes = new NavigationFilter().apply(
+        source,
+        new NavigationContext({
+          target,
+          principal: 'principal:one',
+          membership: 'membership:one',
+          membershipActive: true,
+          assurance: 2,
+          scope,
+          scopes: [scope],
+          permissions,
+          capabilities,
+          featureFlags,
+          accessVersion: 1,
+          capabilityVersion: 1,
+        })
+      );
       const projected = flatten(nodes);
       expect(new Set(projected.map(({ key }) => key))).toEqual(new Set(source.map(({ key }) => key)));
       for (const node of projected) {

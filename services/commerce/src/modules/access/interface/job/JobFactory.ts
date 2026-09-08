@@ -1,7 +1,7 @@
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { ExpireOwnershipTransfer } from '../../application/process/ExpireOwnershipTransfer';
 import { PgAccessGovernanceRepository } from '../../infrastructure/persistence/PgAccessGovernanceRepository';
 import { OwnershipExpiryJob } from './OwnershipExpiryJob';

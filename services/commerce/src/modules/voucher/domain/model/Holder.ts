@@ -1,6 +1,12 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { VoucherSubject } from '../value/VoucherSubject';
-export interface HolderValue { readonly id: string; readonly voucher: string; readonly member: string; readonly state: 'bound' | 'released'; readonly version: number; }
+export interface HolderValue {
+  readonly id: string;
+  readonly voucher: string;
+  readonly member: string;
+  readonly state: 'bound' | 'released';
+  readonly version: number;
+}
 export class Holder {
   constructor(readonly value: HolderValue) {
     if (!value.id || !value.voucher || !Number.isSafeInteger(value.version) || value.version < 1) throw new DomainError('VALIDATION_FAILED');

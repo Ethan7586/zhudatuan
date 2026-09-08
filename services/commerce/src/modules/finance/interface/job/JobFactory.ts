@@ -1,9 +1,9 @@
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { KMS_CLIENT } from '../../../../foundation/application/KmsPort';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { KMS_CLIENT } from '../../../../pipeline/KmsPort';
 import { OBJECT_STORE } from '../../../runtime/public/ObjectPort';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { FINANCE_CHANNEL_PORT, PROVIDER_SYNC_PORT } from '../../../channel/public';
 import { FINANCE_FULFILLMENT_PORT } from '../../../fulfillment/public';
 import { FINANCE_PAYMENT_PORT } from '../../../payment/public';

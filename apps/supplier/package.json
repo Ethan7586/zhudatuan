@@ -7,7 +7,7 @@
     "dev": "vite --port=4176 --host=0.0.0.0",
     "build": "vite build",
     "test": "vitest run --config vitest.config.ts",
-    "test:component": "vitest run --config vitest.config.ts src/app/SupplierApp.test.tsx",
+    "test:component": "vitest run --config vitest.config.ts src/app/SupplierApp.test.tsx src/app/SupplierApp.component.test.tsx",
     "typecheck": "tsc --noEmit",
     "lint": "npm run typecheck"
   },

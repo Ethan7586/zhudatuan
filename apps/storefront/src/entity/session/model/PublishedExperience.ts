@@ -13,8 +13,8 @@ export function experiencePath(value: string): string | null {
   return /^\/(?:page|pages)\/[a-z0-9][a-z0-9/-]*$/i.test(normalized) && !normalized.includes('//') ? normalized : null;
 }
 
-export function experiencePage(document: ExperienceDocument | null, pathname: string): ExperiencePage | null {
-  if (!document) return null;
+export function experiencePage(experience: ExperienceDocument | null, pathname: string): ExperiencePage | null {
+  if (!experience) return null;
   const normalized = pathname === '' ? '/' : pathname.replace(/\/$/, '') || '/';
-  return document.pages.find((page) => experiencePath(page.path) === normalized) ?? null;
+  return experience.pages.find((page) => experiencePath(page.path) === normalized) ?? null;
 }

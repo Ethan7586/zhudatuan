@@ -1,9 +1,8 @@
 export interface CatalogCategory {
   readonly id: string;
+  readonly code: string;
   readonly name: string;
+  readonly count: number;
   readonly iconName: string;
-  readonly hotKeywords: readonly string[];
-  readonly icon: string;
   readonly description: string;
-  readonly subCategories: readonly object[];
 }

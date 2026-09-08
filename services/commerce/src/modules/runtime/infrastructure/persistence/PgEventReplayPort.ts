@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { EventReplayPort, RuntimeReplayEvent, RuntimeReplayPage } from '../../public';
 
 interface ReplayRow {
@@ -34,16 +34,20 @@ export class PgEventReplayPort implements EventReplayPort {
       [input.scopes, `${input.prefix}%`, start.realtime_published_at, start.id, input.limit + 1]
     );
     const rows = result.rows.slice(0, input.limit);
-    const events: readonly RuntimeReplayEvent[] = Object.freeze(rows.map((row) => Object.freeze({
-      id: row.id,
-      type: row.event_type,
-      version: Number(row.event_version),
-      scope: row.scope_id,
-      aggregate: row.aggregate_id,
-      payload: Object.freeze({ ...row.payload }),
-      occurredAt: new Date(row.occurred_at).toISOString(),
-      cursor: row.realtime_cursor,
-    })));
+    const events: readonly RuntimeReplayEvent[] = Object.freeze(
+      rows.map((row) =>
+        Object.freeze({
+          id: row.id,
+          type: row.event_type,
+          version: Number(row.event_version),
+          scope: row.scope_id,
+          aggregate: row.aggregate_id,
+          payload: Object.freeze({ ...row.payload }),
+          occurredAt: new Date(row.occurred_at).toISOString(),
+          cursor: row.realtime_cursor,
+        })
+      )
+    );
     return Object.freeze({ events, resumeCursor: rows.at(-1)?.realtime_cursor ?? null, overflow: result.rows.length > input.limit });
   }
 

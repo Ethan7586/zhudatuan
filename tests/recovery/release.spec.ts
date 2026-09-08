@@ -3,8 +3,10 @@ import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { REQUIRED_PROVIDER_IDS } from '../../packages/contract/src/provider/ProviderCatalog';
 import { MVP_REQUIREMENT_IDS } from '../../packages/contract/src/RequirementCatalog';
+import { CLIENT_SURFACES } from '../../packages/contract/src/Surface';
 import { validateStage } from '../../scripts/release/stage.mjs';
 import { validateCutover } from '../../scripts/release/cutover.mjs';
+import { JOB_CATALOG } from '../../services/commerce/src/pipeline/JobCatalog';
 
 const sha = 'a'.repeat(64);
 const now = Date.parse('2026-08-21T00:00:00.000Z');
@@ -13,7 +15,7 @@ const candidate = {
   commit: 'b'.repeat(40),
   schemaHead: '20260829109000',
   contractHash: sha,
-  clients: { auth: {}, console: {}, storefront: {} },
+  clients: Object.fromEntries(CLIENT_SURFACES.map((client) => [client, {}])),
   commerce: { sha256: sha },
   sbom: { sha256: sha },
   provenance: { sha256: sha },
@@ -23,7 +25,7 @@ const candidate = {
     operationHash: sha,
     eventHash: sha,
     jobHash: sha,
-    jobCount: 48,
+    jobCount: JOB_CATALOG.length,
     requirementHash: sha,
     migrationHead: '20260829109000',
     migrationHash: sha,
@@ -51,7 +53,10 @@ function evidence() {
     ])
   );
   const checks = Object.fromEntries(
-    ['alertDelivery', 'databaseFreshReplay', 'databaseUpgrade', 'journey', 'migrationEvidence', 'performance', 'providerHealth', 'reconciliation', 'rollbackDrill', 'security', 'smoke', 'snapshotRestore'].map((id) => [id, { passed: true, evidenceSha256: sha }])
+    ['alertDelivery', 'databaseFreshReplay', 'databaseUpgrade', 'journey', 'metrics', 'migrationEvidence', 'performance', 'providerHealth', 'reconciliation', 'rollbackDrill', 'security', 'smoke', 'snapshotRestore'].map((id) => [
+      id,
+      { passed: true, evidenceSha256: sha },
+    ])
   );
   return {
     schema: 'shop.stage.v1',

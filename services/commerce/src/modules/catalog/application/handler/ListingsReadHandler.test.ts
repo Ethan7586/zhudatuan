@@ -39,7 +39,9 @@ describe('ListingsReadHandler', () => {
   it('returns one aggregate row with price, saleable stock, coverage and qualification gaps', async () => {
     const listings = { read: vi.fn(async () => [row]) } as unknown as ListingRepository;
     const inventory = { stock: vi.fn(async () => [{ sku: 'sku:one', scope: 'mall:one', onhand: '12', safety: '2', reserved: '1', status: 'active' }]) } as CatalogInventoryPort;
-    const pricing = { prices: vi.fn(async () => [{ sku: 'sku:one', scope: 'mall:one', amountMinor: '9800', currency: 'CNY', bookStatus: 'active', effectiveAt: '2020-01-01T00:00:00.000Z', expiresAt: null }]) } as CatalogPricingPort;
+    const pricing = {
+      prices: vi.fn(async () => [{ sku: 'sku:one', scope: 'mall:one', amountMinor: '9800', currency: 'CNY', bookStatus: 'active', effectiveAt: '2020-01-01T00:00:00.000Z', expiresAt: null, priceVersion: 3 }]),
+    } as CatalogPricingPort;
     const qualifications = { decisions: vi.fn(async () => [{ listing: 'listing:one', eligible: false, policyVersion: 4 }]) } as CatalogQualificationPort;
     const reply = await new ListingsReadHandler(listings, inventory, pricing, qualifications).execute({ query: {} } as never, readHandlerContext('catalog.listings.read', {} as never));
     expect(reply.body.items[0]).toMatchObject({
@@ -48,6 +50,7 @@ describe('ListingsReadHandler', () => {
       mall_count: 1,
       mall_total: 3,
       price_amount_minor: 9800,
+      price_version: 3,
       price_currency: 'CNY',
       saleable_stock: 9,
       qualification_eligible: false,
@@ -69,6 +72,7 @@ describe('ListingsReadHandler', () => {
     expect(reply.body.items[0]).toMatchObject({
       pool_id: null,
       price_amount_minor: null,
+      price_version: null,
       saleable_stock: null,
       qualification_eligible: null,
       data_gaps: ['pool_missing', 'inventory_unavailable', 'pricing_unavailable', 'qualification_unavailable'],

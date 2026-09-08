@@ -1,5 +1,5 @@
-import { JOB_CATALOG, type JobKind } from '../../../../foundation/application/JobCatalog';
-import type { Job as JobProcessor } from '../../../../foundation/application/Job';
+import { JOB_CATALOG, type JobKind } from '../../../../pipeline/JobCatalog';
+import type { Job as JobProcessor } from '../../../../pipeline/Job';
 
 export interface JobDescriptor {
   readonly owner: string;
@@ -19,20 +19,46 @@ export interface RegisteredJob<T = unknown> {
 }
 
 const ownerNames: Readonly<Record<string, string>> = Object.freeze({
-  access: '权限治理', audit: '审计归档', benefit: '福利发放', catalog: '商品目录', channel: '渠道同步',
-  experience: '页面发布', extension: '扩展服务', finance: '财务处理', fulfillment: '履约处理', identity: '身份服务',
-  inventory: '库存处理', marketing: '营销处理', member: '成员导入', notification: '消息投递', order: '订单处理',
-  payment: '支付处理', qualification: '资格治理', referral: '推荐结算', reporting: '报表导出', risk: '风险检查',
-  runtime: '系统维护', support: '客服处理', voucher: '卡券处理',
+  access: '权限治理',
+  audit: '审计归档',
+  benefit: '福利发放',
+  catalog: '商品目录',
+  channel: '渠道同步',
+  experience: '页面发布',
+  extension: '扩展服务',
+  finance: '财务处理',
+  fulfillment: '履约处理',
+  identity: '身份服务',
+  inventory: '库存处理',
+  marketing: '营销处理',
+  member: '成员导入',
+  notification: '消息投递',
+  order: '订单处理',
+  payment: '支付处理',
+  qualification: '资格治理',
+  referral: '推荐结算',
+  reporting: '报表导出',
+  risk: '风险检查',
+  runtime: '系统维护',
+  support: '客服处理',
+  voucher: '卡券处理',
 });
 
 export class JobRegistry {
-  private readonly descriptors = new Map(JOB_CATALOG.map((entry) => [entry.id, Object.freeze({
-    owner: entry.owner,
-    kind: entry.id,
-    queue: entry.queue,
-    title: `${ownerNames[entry.owner] ?? '后台'}任务`,
-  })] as const));
+  private readonly descriptors = new Map(
+    JOB_CATALOG.map(
+      (entry) =>
+        [
+          entry.id,
+          Object.freeze({
+            owner: entry.owner,
+            kind: entry.id,
+            queue: entry.queue,
+            title: `${ownerNames[entry.owner] ?? '后台'}任务`,
+          }),
+        ] as const
+    )
+  );
   private readonly processors = new Map<string, RegisteredJob>();
   private frozen = false;
 

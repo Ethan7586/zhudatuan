@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export interface SettlementSplit {
   readonly grossMinor: number;
@@ -39,11 +39,13 @@ export class SettlementPolicy {
     }
     const totalWeight = sorted.reduce((sum, { weight }) => sum + BigInt(weight), 0n);
     let allocated = 0;
-    return Object.freeze(sorted.map(({ key, weight }, index) => {
-      const amountMinor = index === sorted.length - 1 ? totalMinor - allocated : safeNumber((BigInt(totalMinor) * BigInt(weight)) / totalWeight);
-      allocated += amountMinor;
-      return Object.freeze({ key, amountMinor });
-    }));
+    return Object.freeze(
+      sorted.map(({ key, weight }, index) => {
+        const amountMinor = index === sorted.length - 1 ? totalMinor - allocated : safeNumber((BigInt(totalMinor) * BigInt(weight)) / totalWeight);
+        allocated += amountMinor;
+        return Object.freeze({ key, amountMinor });
+      })
+    );
   }
 
   assertWithdrawal(settlementMinor: number, withdrawnMinor: number, requestMinor: number): void {

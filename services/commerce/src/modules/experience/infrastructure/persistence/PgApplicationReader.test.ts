@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { PgTransactionAccess, SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess, SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { MallProvisionPort, OrganizationReadPort } from '../../../organization/public';
 import { PgApplicationReader } from './PgApplicationReader';
 

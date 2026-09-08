@@ -1,8 +1,6 @@
 import type { OperationOutputFor } from '@shop/contract';
-import type { PresentedProduct, Product, ProductKind } from '../model/Product';
-
+import type { PresentedProduct, Product, ProductKind, ProductSku } from '../model/Product';
 export type ProductDto = OperationOutputFor<'storefront.catalog.read'>['items'][number];
-
 export function mapProduct(item: ProductDto): Product {
   const priceMinor = item.price?.amountMinor ?? 0;
   const compareMinor = item.price?.compareMinor ?? priceMinor;
@@ -10,23 +8,15 @@ export function mapProduct(item: ProductDto): Product {
   const state = item.availability?.state ?? 'unavailable';
   const detail = object(item.attributes.detail);
   const images = Object.freeze(unique([item.coverUrl, ...texts(item.attributes.images), ...texts(detail.images), ...texts(detail.gallery)]).filter(safeMedia));
-  const specifications = Object.freeze(
-    Object.entries(item.specifications).flatMap(([name, value]) => {
-      const options = texts(value);
-      return options.length > 0 ? [Object.freeze({ name, options: Object.freeze(options) })] : [];
-    })
-  );
-  const parameters = object(detail.parameters);
-  const params = Object.freeze(
-    Object.entries(parameters).flatMap(([key, value]) => {
-      const normalized = scalar(value);
-      return normalized === null ? [] : [Object.freeze({ key, value: normalized })];
-    })
-  );
+  const specifications = specificationValues(item.specifications);
+  const params = parameters(detail.parameters);
   const accounts = Object.freeze(texts(detail.allowedAccounts ?? item.attributes.allowedAccounts).filter(isAccount));
   const description = text(detail.description ?? item.attributes.description);
-  const sku = Object.freeze({
+  const qualification = Object.freeze({ eligible: item.qualification?.eligible ?? null, policyVersion: item.qualification?.policyVersion ?? null });
+  const saleability = Object.freeze({ state: item.saleability.state, reasons: Object.freeze([...item.saleability.reasons]) });
+  const sku: ProductSku = Object.freeze({
     id: item.sku,
+    listingId: item.id,
     productId: item.product,
     priceMinor,
     compareMinor: item.price?.compareMinor ?? null,
@@ -35,9 +25,13 @@ export function mapProduct(item: ProductDto): Product {
     state,
     priceVersion: item.price?.version ?? 'unavailable',
     inventoryVersion: item.availability?.version ?? 'unavailable',
+    qualification,
+    saleability,
+    specifications,
   });
   return Object.freeze({
-    id: item.id,
+    listingId: item.id,
+    productId: item.product,
     skuId: item.sku,
     title: item.title,
     subtitle: item.subtitle ?? '',
@@ -48,10 +42,10 @@ export function mapProduct(item: ProductDto): Product {
     currency: item.price?.currency ?? 'CNY',
     categoryId: item.category.id,
     categoryName: item.category.name,
-    brand: '',
+    brand: text(detail.brandName ?? item.attributes.brandName) ?? '',
     tags: Object.freeze(unique([...texts(item.attributes.tags), ...texts(detail.tags)])),
     supplierId: item.supplierId ?? '',
-    supplierName: '',
+    supplierName: text(detail.supplierName ?? item.attributes.supplierName) ?? '',
     itemType: mapProductKind(item.kind, item.category.code),
     allowedAccounts: accounts,
     stock: available,
@@ -59,17 +53,43 @@ export function mapProduct(item: ProductDto): Product {
     rating: decimal(detail.rating ?? item.attributes.rating),
     reviewCount: count(detail.reviewCount ?? item.attributes.reviewCount),
     deliverySla: text(detail.deliverySla ?? item.attributes.deliverySla) ?? '',
-    purchasable: Boolean(item.price && state === 'available'),
+    qualification,
+    saleability,
     version: item.version,
     updatedAt: item.updatedAt,
     skus: Object.freeze([sku]),
-    ...(specifications.length ? { specs: specifications } : {}),
+    ...(Object.keys(specifications).length ? { specs: specificationsFrom([sku]) } : {}),
     ...(params.length ? { params } : {}),
     ...(description ? { descriptionDetailText: Object.freeze([description]) } : {}),
-    ...(item.attributes.enterpriseExclusive === true ? { isEnterpriseExclusive: true } : {}),
-    ...(item.attributes.dailySpecial === true ? { isDailySpecial: true } : {}),
-    ...(item.attributes.hotRedeem === true ? { isHotRedeem: true } : {}),
-    ...(item.attributes.newArrival === true ? { isNewArrival: true } : {}),
+    ...(item.attributes.enterpriseExclusive === true || detail.enterpriseExclusive === true ? { isEnterpriseExclusive: true } : {}),
+    ...(item.attributes.dailySpecial === true || detail.dailySpecial === true ? { isDailySpecial: true } : {}),
+    ...(item.attributes.hotRedeem === true || detail.hotRedeem === true ? { isHotRedeem: true } : {}),
+    ...(item.attributes.newArrival === true || detail.newArrival === true ? { isNewArrival: true } : {}),
+  });
+}
+export function mapProductDetail(items: readonly ProductDto[]): Product | null {
+  const products = items.map(mapProduct);
+  if (products.length === 0) return null;
+  const skus = Object.freeze(products.flatMap((product) => product.skus));
+  const selected = products.find(({ saleability }) => saleability.state === 'saleable') ?? products[0]!;
+  return Object.freeze({ ...selected, skus, specs: specificationsFrom(skus) });
+}
+
+export function selectProductSku(product: Product, skuId: string): Product {
+  const sku = product.skus.find(({ id }) => id === skuId) ?? product.skus[0];
+  if (!sku) return product;
+  return Object.freeze({
+    ...product,
+    listingId: sku.listingId,
+    productId: sku.productId,
+    skuId: sku.id,
+    priceMarketMinor: sku.compareMinor ?? sku.priceMinor,
+    priceMallMinor: sku.priceMinor,
+    priceWelfareMinor: sku.priceMinor,
+    currency: sku.currency,
+    stock: sku.available,
+    qualification: sku.qualification,
+    saleability: sku.saleability,
   });
 }
 
@@ -107,6 +127,26 @@ export function mapProductKind(value: string, category: string): ProductKind {
   if (normalized.includes('nearby') || normalized.includes('store')) return 'nearby_store';
   if (value === 'service') return 'life_service';
   return 'unknown';
+}
+
+function specificationValues(value: Readonly<Record<string, unknown>>): Readonly<Record<string, string>> {
+  return Object.freeze(Object.fromEntries(Object.entries(value).flatMap(([name, raw]) => {
+    const selected = scalar(Array.isArray(raw) ? raw[0] : raw);
+    return selected === null ? [] : [[name, selected]];
+  })));
+}
+
+function specificationsFrom(skus: readonly ProductSku[]): readonly Readonly<{ name: string; options: readonly string[] }>[] {
+  const options = new Map<string, Set<string>>();
+  for (const sku of skus) for (const [name, value] of Object.entries(sku.specifications)) (options.get(name) ?? options.set(name, new Set()).get(name)!).add(value);
+  return Object.freeze([...options].map(([name, values]) => Object.freeze({ name, options: Object.freeze([...values]) })));
+}
+
+function parameters(value: unknown): readonly Readonly<{ key: string; value: string }>[] {
+  return Object.freeze(Object.entries(object(value)).flatMap(([key, raw]) => {
+    const normalized = scalar(raw);
+    return normalized === null ? [] : [Object.freeze({ key, value: normalized })];
+  }));
 }
 
 function object(value: unknown): Readonly<Record<string, unknown>> {

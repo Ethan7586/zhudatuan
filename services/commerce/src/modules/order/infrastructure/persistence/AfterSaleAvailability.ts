@@ -1,4 +1,4 @@
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import type { AfterSalePolicyPort } from '../../../qualification/public';
 import type { AftersaleState, CommerceState, FulfillmentState, PaymentState } from '../../domain/model/Order';
 import { AfterSaleRefundPolicy } from '../../domain/policy/AfterSaleRefundPolicy';

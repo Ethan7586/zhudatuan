@@ -1,1 +1,1 @@
-export { SystemClock, type Clock } from '../../../../foundation/domain/Clock';
+export { SystemClock, type Clock } from '@shop/kernel';

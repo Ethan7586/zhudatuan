@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { credentialSecret } from '@shop/contract/voucher';
 
 export class CredentialSecret {

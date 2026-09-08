@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ImportFailure } from '../../public/ImportProcess';
 
 export class PgImportEvidence {
@@ -9,10 +9,10 @@ export class PgImportEvidence {
     const result = await this.transactions.database(context).query<{ row_number: number; reason_code: string; field: string | null; detail: unknown }>(
       `select failure.row_number,failure.reason_code,failure.field,failure.detail from runtime.import_errors failure
        join runtime.imports target on target.id=failure.import_id where failure.import_id=$1 and target.scope_id=$2 and target.owner=$3
-       order by failure.row_number,failure.reason_code`, [id, context.scope, owner]
+       order by failure.row_number,failure.reason_code`,
+      [id, context.scope, owner]
     );
-    return Object.freeze(result.rows.map((row) => Object.freeze({ row: row.row_number, reason: row.reason_code, field: row.field,
-      detail: typeof row.detail === 'string' ? row.detail : JSON.stringify(row.detail) })));
+    return Object.freeze(result.rows.map((row) => Object.freeze({ row: row.row_number, reason: row.reason_code, field: row.field, detail: typeof row.detail === 'string' ? row.detail : JSON.stringify(row.detail) })));
   }
 
   async store(context: WriteTransactionContext, id: string, owner: string, failures: readonly ImportFailure[]): Promise<void> {

@@ -3,7 +3,7 @@
     <text class="summarytitle">共 {{count}} 条</text>
     <text class="summarycopy">数据已按当前身份与商城范围过滤</text>
   </view>
-  <view wx:for="{{rows}}" wx:key="key" class="record">
+  <view wx:for="{{rows}}" wx:key="key" class="record" data-key="{{item.key}}" bindtap="select" hover-class="recordactive">
     <view class="recordmain">
       <text class="recordtitle">{{item.title}}</text>
       <text class="recorddetail">{{item.detail}}</text>

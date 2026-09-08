@@ -1,15 +1,15 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { createHash, randomUUID } from 'node:crypto';
 import { isConsumerTarget, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import type { OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord, integerField, textField } from '../../../../pipeline/Validation';
 import type { ObjectStore, UploadAuthorization } from '../../../runtime/public/ObjectPort';
 import { retentionUntil as objectRetentionUntil } from '@shop/kernel';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AttachmentRepository, PreparedSupportOperation } from '../../application/port/SupportRepositories';
 import type { EvidenceStore } from '../../application/port/SupportPersistence';
 import type { ReadSupportContext } from '../../application/service/ReadSupportContext';
@@ -49,8 +49,7 @@ export class PgEvidenceRepository implements AttachmentRepository, EvidenceStore
     assertExtension(name, contentType);
     const id = `evidence:${randomUUID()}`;
     const path = `support/${createHash('sha256').update(access.membership.id).digest('hex').slice(0, 32)}/${randomUUID()}`;
-    const upload = await this.objects.authorizeUpload({ path, contentType, size, sha256,
-      expiresIn: RUNTIME_LIMITS.upload.authorizationSeconds, retentionUntil: objectRetentionUntil(RUNTIME_LIMITS.upload.retentionDays.support) });
+    const upload = await this.objects.authorizeUpload({ path, contentType, size, sha256, expiresIn: RUNTIME_LIMITS.upload.authorizationSeconds, retentionUntil: objectRetentionUntil(RUNTIME_LIMITS.upload.retentionDays.support) });
     return Object.freeze({ id, ticket: input.path.caseid, name, contentType, size, sha256, upload });
   }
 
@@ -78,16 +77,19 @@ export class PgEvidenceRepository implements AttachmentRepository, EvidenceStore
 
   async inspect(context: WriteTransactionContext, conversation: string, scope: string, ids: readonly string[]) {
     if (ids.length === 0) return Object.freeze([]);
-    const result = await this.transactions.database(context).query<{ id: string; state: 'pending' | 'clean' | 'rejected' }>(
-      `select id,state from support.evidence where id=any($1::text[]) and conversation_id=$2 and scope_id=$3 order by id for update`,
-      [ids, conversation, scope]
-    );
+    const result = await this.transactions
+      .database(context)
+      .query<{ id: string; state: 'pending' | 'clean' | 'rejected' }>(`select id,state from support.evidence where id=any($1::text[]) and conversation_id=$2 and scope_id=$3 order by id for update`, [ids, conversation, scope]);
     return Object.freeze(result.rows.map((row) => Object.freeze({ id: row.id, state: row.state })));
   }
 }
 
 function sanitizeName(value: string): string {
-  const name = value.normalize('NFKC').replace(/[\u0000-\u001f\u007f/\\]/g, '').trim().slice(0, 255);
+  const name = value
+    .normalize('NFKC')
+    .replace(/[\u0000-\u001f\u007f/\\]/g, '')
+    .trim()
+    .slice(0, 255);
   if (!name) throw new DomainError('VALIDATION_FAILED', { field: 'name' });
   return name;
 }

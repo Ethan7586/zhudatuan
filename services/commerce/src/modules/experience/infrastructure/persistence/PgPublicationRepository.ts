@@ -1,7 +1,7 @@
 import type { ExperienceAction, ExperienceDocument } from '@shop/contract';
 import type { ObjectStore } from '../../../runtime/public/ObjectPort';
-import { allParallel, mapParallel } from '../../../../foundation/performance/Parallel';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { allParallel, mapParallel } from '@shop/kernel';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ExperienceCatalogEvidence, ExperienceCatalogPort } from '../../../catalog/public';
 import type { InventoryReadPort } from '../../../inventory/public/InventoryReadPort';
 import type { MarketingReadPort } from '../../../marketing/public';

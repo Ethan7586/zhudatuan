@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { SessionSecurity } from '../../../../foundation/security/SessionSecurity';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { SessionSecurity } from '../../../../platform/security/SessionSecurity';
 
 export class PgSessionSecurity implements SessionSecurity {
   constructor(private readonly transactions = new PgTransactionAccess()) {}

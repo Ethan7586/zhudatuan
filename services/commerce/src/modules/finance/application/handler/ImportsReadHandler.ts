@@ -1,8 +1,8 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { FinalizeContext, HandlerContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { ImportPort, RuntimeImportRecord } from '../../../runtime/public';
 import type { ObjectStore } from '../../../runtime/public/ObjectPort';
 

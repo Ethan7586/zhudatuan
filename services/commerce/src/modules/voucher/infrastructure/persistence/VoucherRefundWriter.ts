@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { PgTransactionalOutbox } from '../../../../adapter/database/PgTransactionalOutbox';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { PgTransactionalOutbox } from '../../../../platform/database/PgTransactionalOutbox';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { VoucherAccountingPort } from '../../../finance/public';
 import { Voucher } from '../../domain/model/Voucher';
 import { VoucherRefund } from '../../domain/model/VoucherRefund';
@@ -24,22 +24,24 @@ export interface RefundCommand {
 
 export class VoucherRefundWriter {
   private readonly outbox = new PgTransactionalOutbox();
-  constructor(private readonly finance: VoucherAccountingPort, private readonly transactions = new PgTransactionAccess()) {}
+  constructor(
+    private readonly finance: VoucherAccountingPort,
+    private readonly transactions = new PgTransactionAccess()
+  ) {}
 
   async refund(command: RefundCommand): Promise<string> {
     const database = this.transactions.database(command.context);
-    const prior = await database.query<{ id: string; redemption_id: string; amount_minor: number }>(
-      `select id,redemption_id,amount_minor::integer amount_minor from voucher.refund where scope_id=$1 and idempotency_key=$2`,
-      [command.scope, command.idempotency]
-    );
+    const prior = await database.query<{ id: string; redemption_id: string; amount_minor: number }>(`select id,redemption_id,amount_minor::integer amount_minor from voucher.refund where scope_id=$1 and idempotency_key=$2`, [
+      command.scope,
+      command.idempotency,
+    ]);
     if (prior.rows[0]) {
       if (prior.rows[0].redemption_id !== command.redemption || Number(prior.rows[0].amount_minor) !== command.amountMinor) {
         throw new DomainError('VOUCHER_REDEMPTION_CONFLICT');
       }
       return prior.rows[0].id;
     }
-    const reference = (await database.query<{ voucher_id: string }>(`select voucher_id from voucher.redemption where id=$1 and scope_id=$2`,
-      [command.redemption, command.scope])).rows[0];
+    const reference = (await database.query<{ voucher_id: string }>(`select voucher_id from voucher.redemption where id=$1 and scope_id=$2`, [command.redemption, command.scope])).rows[0];
     if (!reference) throw new DomainError('RESOURCE_NOT_FOUND');
     await database.query(`select id from voucher.voucher where id=$1 and scope_id=$2 for update`, [reference.voucher_id, command.scope]);
     const selected = await database.query<RefundSource>(
@@ -53,8 +55,16 @@ export class VoucherRefundWriter {
     );
     const source = selected.rows[0];
     if (!source) throw new DomainError('RESOURCE_NOT_FOUND');
-    new Redemption({ id: command.redemption, voucher: source.voucher_id, hold: source.hold_id, verification: source.verification_id,
-      amountMinor: Number(source.amount_minor), refundedMinor: Number(source.refunded_minor), state: source.redemption_state, version: Number(source.redemption_version) }).refund(command.amountMinor);
+    new Redemption({
+      id: command.redemption,
+      voucher: source.voucher_id,
+      hold: source.hold_id,
+      verification: source.verification_id,
+      amountMinor: Number(source.amount_minor),
+      refundedMinor: Number(source.refunded_minor),
+      state: source.redemption_state,
+      version: Number(source.redemption_version),
+    }).refund(command.amountMinor);
     const aggregate = new Voucher({
       id: source.voucher_id,
       credential: source.credential_id,
@@ -74,21 +84,49 @@ export class VoucherRefundWriter {
       reason: command.reason,
       ruleVersion: 1,
     });
-    const created = await database.query<{ id: string }>(
-      `select (voucher.create_refund($1,$2,$3,$4,$5,$6,$7,$8)).id`,
-      [refund.value.id, command.scope, command.redemption, command.amountMinor, command.reason, refund.value.ruleVersion, command.idempotency, command.now]
-    );
+    const created = await database.query<{ id: string }>(`select (voucher.create_refund($1,$2,$3,$4,$5,$6,$7,$8)).id`, [
+      refund.value.id,
+      command.scope,
+      command.redemption,
+      command.amountMinor,
+      command.reason,
+      refund.value.ruleVersion,
+      command.idempotency,
+      command.now,
+    ]);
     if (created.rows[0]?.id !== refund.value.id) throw new DomainError('VOUCHER_REDEMPTION_CONFLICT');
-    const changed = await database.query(
-      `update voucher.voucher set remaining_minor=$3,state=$4,version=$5 where id=$1 and scope_id=$2 and version=$6 returning id`,
-      [source.voucher_id, command.scope, aggregate.value.remainingMinor, aggregate.value.state, aggregate.value.version, source.version]
-    );
+    const changed = await database.query(`update voucher.voucher set remaining_minor=$3,state=$4,version=$5 where id=$1 and scope_id=$2 and version=$6 returning id`, [
+      source.voucher_id,
+      command.scope,
+      aggregate.value.remainingMinor,
+      aggregate.value.state,
+      aggregate.value.version,
+      source.version,
+    ]);
     if (changed.rows.length !== 1) throw new DomainError('VERSION_CONFLICT');
     await timeline(database, source.voucher_id, command.scope, source.voucher_state, aggregate.value.state, command.reason, command.actor, command.now);
-    await this.outbox.append(command.context, voucherRefunded({ id: refundEventId(refund.value.id), scope: command.scope, voucher: source.voucher_id,
-      redemption: command.redemption, refund: refund.value.id, ruleVersion: refund.value.ruleVersion, amountMinor: command.amountMinor, currency: source.currency,
-      channel: source.channel, store: source.store, scopes: source.scopes, timezone: source.timezone, order: source.order_id,
-      actor: command.actor, trace: command.context.trace, version: aggregate.value.version, occurredAt: command.now.toISOString() }));
+    await this.outbox.append(
+      command.context,
+      voucherRefunded({
+        id: refundEventId(refund.value.id),
+        scope: command.scope,
+        voucher: source.voucher_id,
+        redemption: command.redemption,
+        refund: refund.value.id,
+        ruleVersion: refund.value.ruleVersion,
+        amountMinor: command.amountMinor,
+        currency: source.currency,
+        channel: source.channel,
+        store: source.store,
+        scopes: source.scopes,
+        timezone: source.timezone,
+        order: source.order_id,
+        actor: command.actor,
+        trace: command.context.trace,
+        version: aggregate.value.version,
+        occurredAt: command.now.toISOString(),
+      })
+    );
     await this.finance.post(command.context, {
       scopeId: command.scope,
       source: { module: 'voucher', aggregate: 'refund', aggregateId: refund.value.id, event: 'voucher.refund', eventId: refundEventId(refund.value.id), leg: 'refund' },

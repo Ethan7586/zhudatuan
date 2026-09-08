@@ -1,11 +1,17 @@
 import { randomUUID } from 'node:crypto';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { JobPort, RuntimeJobRecord } from '../../public/JobPort';
-import { jobDefinition, type JobKind } from '../../../../foundation/application/JobCatalog';
+import { jobDefinition, type JobKind } from '../../../../pipeline/JobCatalog';
 import { QueueAdmission } from '../queue/QueueAdmission';
 
-interface Row { readonly id: string; readonly kind: string; readonly state: string; readonly checkpoint: Readonly<Record<string, unknown>>; readonly updatedAt: Date | string; }
+interface Row {
+  readonly id: string;
+  readonly kind: string;
+  readonly state: string;
+  readonly checkpoint: Readonly<Record<string, unknown>>;
+  readonly updatedAt: Date | string;
+}
 export class PgJobPort implements JobPort {
   constructor(private readonly transactions = new PgTransactionAccess()) {}
   async create(context: WriteTransactionContext, input: Parameters<JobPort['create']>[1]): Promise<RuntimeJobRecord> {
@@ -27,10 +33,9 @@ export class PgJobPort implements JobPort {
     return result.rows[0] ? projection(result.rows[0]) : null;
   }
   async find(context: ReadTransactionContext, scope: string, owner: string, kind: string, idempotency: string): Promise<RuntimeJobRecord | null> {
-    const result = await this.transactions.database(context).query<Row>(
-      `select id,kind,state,checkpoint,updated_at as "updatedAt" from runtime.jobs where scope_id=$1 and owner=$2 and idempotency_key=$3`,
-      [scope, owner, `${kind}:${idempotency}`]
-    );
+    const result = await this.transactions
+      .database(context)
+      .query<Row>(`select id,kind,state,checkpoint,updated_at as "updatedAt" from runtime.jobs where scope_id=$1 and owner=$2 and idempotency_key=$3`, [scope, owner, `${kind}:${idempotency}`]);
     return result.rows[0] ? projection(result.rows[0]) : null;
   }
   async progress(context: WriteTransactionContext, id: string, scope: string, owner: string, checkpoint: Readonly<Record<string, number>>): Promise<RuntimeJobRecord> {
@@ -53,8 +58,25 @@ export class PgJobPort implements JobPort {
 }
 function projection(row: Row): RuntimeJobRecord {
   const value = (key: string) => Number(row.checkpoint[key] ?? 0);
-  const state = row.state === 'succeeded' ? 'completed' : row.state === 'deadlettered' ? 'failed' : row.state as RuntimeJobRecord['state'];
-  return Object.freeze({ id: row.id, kind: row.kind, state, processed: value('processed'), total: value('total'), succeeded: value('succeeded'), failed: value('failed'), retryable: value('retryable'), updatedAt: new Date(row.updatedAt).toISOString() });
+  const state = row.state === 'succeeded' ? 'completed' : row.state === 'deadlettered' ? 'failed' : (row.state as RuntimeJobRecord['state']);
+  return Object.freeze({
+    id: row.id,
+    kind: row.kind,
+    state,
+    processed: value('processed'),
+    total: value('total'),
+    succeeded: value('succeeded'),
+    failed: value('failed'),
+    retryable: value('retryable'),
+    updatedAt: new Date(row.updatedAt).toISOString(),
+  });
 }
-function nonnegative(value: number | undefined, code: string): number { if (!Number.isSafeInteger(value) || (value ?? -1) < 0) throw new Error(code); return value!; }
-function positive(value: number | undefined, code: string): number { const result = nonnegative(value, code); if (result < 1) throw new Error(code); return result; }
+function nonnegative(value: number | undefined, code: string): number {
+  if (!Number.isSafeInteger(value) || (value ?? -1) < 0) throw new Error(code);
+  return value!;
+}
+function positive(value: number | undefined, code: string): number {
+  const result = nonnegative(value, code);
+  if (result < 1) throw new Error(code);
+  return result;
+}

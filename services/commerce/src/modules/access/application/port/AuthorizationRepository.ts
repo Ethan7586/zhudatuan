@@ -1,7 +1,7 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { Scope, ScopeGrant } from '@shop/authz';
 
-import type { AuthorizationRole } from '../../../../foundation/security/AuthorizationSnapshot';
+import type { AuthorizationRole } from '../../../../platform/security/AuthorizationSnapshot';
 
 export interface AuthorizationSnapshotRecord {
   readonly membership: string;
@@ -37,7 +37,10 @@ export interface EffectiveScopeRecord {
 }
 
 export interface AuthorizationRepository {
-  snapshot(context: ReadTransactionContext, input: Readonly<{ membership: string; target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'; operation: string; resource: string | null }>): Promise<AuthorizationSnapshotRecord | null>;
+  snapshot(
+    context: ReadTransactionContext,
+    input: Readonly<{ membership: string; target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'; operation: string; resource: string | null }>
+  ): Promise<AuthorizationSnapshotRecord | null>;
   navigation(context: ReadTransactionContext, memberships: readonly string[]): Promise<readonly NavigationAuthorizationRecord[]>;
   permissions(context: ReadTransactionContext, membership: string): Promise<readonly EffectivePermissionRecord[]>;
   scopes(context: ReadTransactionContext, membership: string): Promise<readonly EffectiveScopeRecord[]>;

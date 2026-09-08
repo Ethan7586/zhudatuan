@@ -1,5 +1,5 @@
 import type { Telemetry, TelemetryContext } from '@shop/telemetry';
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
 import { invitationRateBuckets } from '../../domain/policy/InvitationRatePolicy';
 import type { CleanupCursor, InvitationCleanupRepository } from '../port/CleanupRepository';
 

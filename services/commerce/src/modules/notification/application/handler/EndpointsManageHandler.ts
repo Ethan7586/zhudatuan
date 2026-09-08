@@ -1,9 +1,10 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { CipherEnvelope, KmsClient } from '../../../../foundation/application/KmsPort';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import type { CipherEnvelope, KmsClient } from '../../../../pipeline/KmsPort';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import { Endpoint } from '../../domain/model/Endpoint';
 import type { NotificationMember, NotificationRepository } from '../port/NotificationRepository';
 
@@ -63,14 +64,14 @@ export class EndpointsManageHandler implements DurableOperationHandler<'notifica
     const row = prepared.envelope
       ? await this.notifications.saveEndpoint(context.transaction, current.member, prepared.channel, prepared.envelope, prepared.consentSource, prepared.expectedVersion)
       : await this.notifications.revokeEndpoint(context.transaction, current.member, prepared.channel, prepared.expectedVersion);
-    if (!row && prepared.expectedVersion > 0) throw new Error('VERSION_CONFLICT');
-    const endpoint = row === null ? null : new Endpoint(row.member_id, row.channel, row.address_token, row.consent_source,
-      timestamp(row.consent_at), row.revoked_at === null ? null : timestamp(row.revoked_at), row.version);
-    const body = endpoint === null ? {} : endpoint.active()
-      ? { member_id: endpoint.member, channel: endpoint.channel, consent_source: endpoint.consentSource,
-          consent_at: endpoint.consentAt, revoked_at: null, version: endpoint.version }
-      : { member_id: endpoint.member, channel: endpoint.channel, consent_source: endpoint.consentSource,
-          revoked_at: endpoint.revokedAt!, version: endpoint.version };
+    if (!row && prepared.expectedVersion > 0) throw new DomainError('VERSION_CONFLICT');
+    const endpoint = row === null ? null : new Endpoint(row.member_id, row.channel, row.address_token, row.consent_source, timestamp(row.consent_at), row.revoked_at === null ? null : timestamp(row.revoked_at), row.version);
+    const body =
+      endpoint === null
+        ? {}
+        : endpoint.active()
+          ? { member_id: endpoint.member, channel: endpoint.channel, consent_source: endpoint.consentSource, consent_at: endpoint.consentAt, revoked_at: null, version: endpoint.version }
+          : { member_id: endpoint.member, channel: endpoint.channel, consent_source: endpoint.consentSource, revoked_at: endpoint.revokedAt!, version: endpoint.version };
     const response = endpoint ? { status: 200, body: body as OperationOutputFor<'notification.endpoints.manage'> } : { status: 204, body: {} as OperationOutputFor<'notification.endpoints.manage'> };
     return Object.freeze({ checkpoint: response.body, response });
   }

@@ -9,7 +9,22 @@ describe('Message', () => {
   });
 
   it.each([{ sequence: 0 }, { version: 0 }, { bodyHash: 'unsafe' }, { createdAt: 'today' }])('rejects invalid persisted evidence %o', (override) => {
-    expect(() => new Message('message:one', 'client:0001', 'conversation:one', 'member', 'actor:one', 'text', 'external', override.bodyHash ?? 'a'.repeat(64), override.sequence ?? 1, override.version ?? 1, override.createdAt ?? '2026-09-02T00:00:00.000Z')).toThrow('SUPPORT_MESSAGE_INVALID');
+    expect(
+      () =>
+        new Message(
+          'message:one',
+          'client:0001',
+          'conversation:one',
+          'member',
+          'actor:one',
+          'text',
+          'external',
+          override.bodyHash ?? 'a'.repeat(64),
+          override.sequence ?? 1,
+          override.version ?? 1,
+          override.createdAt ?? '2026-09-02T00:00:00.000Z'
+        )
+    ).toThrow('SUPPORT_MESSAGE_INVALID');
   });
 
   it('binds system messages to internal visibility', () => {

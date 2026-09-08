@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ListingEligibilityDecision } from '../policy/ListingEligibility';
 
 export type ListingState = 'draft' | 'published' | 'unpublished' | 'retired';

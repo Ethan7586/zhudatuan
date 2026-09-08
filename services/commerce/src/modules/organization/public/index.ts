@@ -1,7 +1,7 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../platform/database/TransactionContext';
 export { IDENTITY_ORGANIZATION_PORT, type IdentityOrganizationPort } from './IdentityOrganizationPort';
 export { ACCESS_ORGANIZATION_PORT, type AccessOrganizationPort } from './AccessOrganizationPort';
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import { publicPort } from '../../../composition/ModuleRegistry';
 
 export interface ChannelOrganizationPort {
   createDistributor(context: WriteTransactionContext, input: Readonly<{ id: string; parent: string; name: string; timezone: string }>): Promise<void>;

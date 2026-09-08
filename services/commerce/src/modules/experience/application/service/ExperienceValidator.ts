@@ -1,5 +1,5 @@
 import { parseExperience } from '@shop/contract';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { PublishPolicy } from '../../domain/policy/PublishPolicy';
 import type { PublicationRepository } from '../port/PublicationRepository';
 import type { PublishableVersion, VersionRepository } from '../port/VersionRepository';

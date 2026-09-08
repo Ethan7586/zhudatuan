@@ -47,8 +47,17 @@ security:
   maximumResponseBytes: 1048576
   retryAttempts: 3
   allowedAlgorithms: [RS256, ES256]
+  issuerPolicy: exact-configured-https-origin
+  audiencePolicy: exact-nonempty-configured-set
+  authorizationResponseMode: query
+  tokenEndpointAuthentication: client-secret-from-secret-store
+  redirectMatch: exact-origin-and-path
   secretReference: ^[a-z][a-z0-9./]{2,127}$
   redirectAllowlist: [https://passport.fufu.wang]
   bindingConflict: reject
   accountLink: explicitproof
+  linkConflict: reject-and-audit
+  subjectReassignment: forbidden
+  keyRotationOverlapHours: 24
+  staleKeyFailure: failclosed
   keyRotationDays: 90

@@ -1,8 +1,8 @@
 import { createTelemetry } from '@shop/telemetry';
 import { describe, expect, it } from 'vitest';
-import { JobMetrics } from '../../../foundation/telemetry/JobMetrics';
-import { OperationMetrics } from '../../../foundation/telemetry/OperationMetrics';
-import { ProviderMetrics } from '../../../foundation/telemetry/ProviderMetrics';
+import { JobMetrics } from '../../../platform/telemetry/JobMetrics';
+import { OperationMetrics } from '../../../platform/telemetry/OperationMetrics';
+import { ProviderMetrics } from '../../../platform/telemetry/ProviderMetrics';
 
 describe('Telemetry transaction isolation', () => {
   it('keeps a committed result when the telemetry backend is unavailable', async () => {

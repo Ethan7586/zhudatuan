@@ -1,4 +1,4 @@
-import { token } from '../../../../bootstrap/Container';
+import { token } from '../../../../composition/Container';
 import type { MetricSink } from '../../public/TelemetryPort';
 export type { MetricSink } from '../../public/TelemetryPort';
 

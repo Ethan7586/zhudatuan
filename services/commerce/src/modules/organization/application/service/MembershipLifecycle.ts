@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { IdentityAccessPort } from '../../../access/public';
 
 export class MembershipLifecycle {

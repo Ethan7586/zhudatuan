@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { PgTransactionAccess, SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess, SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import { PgOrganizationRepository } from './PgOrganizationRepository';
 import { Organization } from '../../domain/model/Organization';
 import { Mall } from '../../domain/model/Mall';
@@ -26,10 +26,22 @@ describe('PgOrganizationRepository', () => {
     const mall = await repository.mall(context, row.id, 'tenant:one');
 
     expect(mall.view()).toEqual({
-      id: 'mall:one', parentId: 'enterprise:one', name: '主打团福利商城', code: 'WELFARE01', publicSlug: 'welfare-one', brandName: '主打团',
-      domain: { mode: 'custom', customDomain: 'mall.example.com' }, ownerMembershipId: 'membership:owner', timezone: 'Asia/Shanghai', currency: 'CNY',
-      theme: { preset: 'shop', primaryColor: '#E8502A', accentColor: '#FF8A34', logoObjectRef: 'object:logo', faviconObjectRef: null }, opening: completeOpening,
-      status: 'draft', version: 1, createdAt: '2026-09-04T00:00:00.000Z', updatedAt: '2026-09-04T00:00:00.000Z',
+      id: 'mall:one',
+      parentId: 'enterprise:one',
+      name: '主打团福利商城',
+      code: 'WELFARE01',
+      publicSlug: 'welfare-one',
+      brandName: '主打团',
+      domain: { mode: 'custom', customDomain: 'mall.example.com' },
+      ownerMembershipId: 'membership:owner',
+      timezone: 'Asia/Shanghai',
+      currency: 'CNY',
+      theme: { preset: 'shop', primaryColor: '#E8502A', accentColor: '#FF8A34', logoObjectRef: 'object:logo', faviconObjectRef: null },
+      opening: completeOpening,
+      status: 'draft',
+      version: 1,
+      createdAt: '2026-09-04T00:00:00.000Z',
+      updatedAt: '2026-09-04T00:00:00.000Z',
     });
     expect(vi.mocked(database.query).mock.calls[0]?.[0]).toContain('visible.ancestor_id=$2');
   });
@@ -51,7 +63,20 @@ describe('PgOrganizationRepository', () => {
     const repository = new PgOrganizationRepository({ database: () => database } as unknown as PgTransactionAccess);
     const parent = new Organization({ id: 'enterprise:one', kind: 'enterprise', parentid: 'tenant:one', name: '示范企业', timezone: 'Asia/Shanghai', status: 'active', malllimit: 10, version: 2, createdat: now, updatedat: now });
     const organization = parent.allocateMall({ id: 'mall:one', name: '主打团福利商城', timezone: 'Asia/Shanghai', now });
-    const mall = new Mall({ organization, code: 'WELFARE01', publicSlug: 'welfare-one', brandName: '主打团', domain: { mode: 'platform' }, ownerMembershipId: 'membership:owner', currency: 'CNY', theme: { preset: 'shop', primaryColor: '#E8502A', accentColor: '#FF8A34', logoObjectRef: null, faviconObjectRef: null }, opening: completeOpening, version: 1, createdat: now, updatedat: now });
+    const mall = new Mall({
+      organization,
+      code: 'WELFARE01',
+      publicSlug: 'welfare-one',
+      brandName: '主打团',
+      domain: { mode: 'platform' },
+      ownerMembershipId: 'membership:owner',
+      currency: 'CNY',
+      theme: { preset: 'shop', primaryColor: '#E8502A', accentColor: '#FF8A34', logoObjectRef: null, faviconObjectRef: null },
+      opening: completeOpening,
+      version: 1,
+      createdat: now,
+      updatedat: now,
+    });
     const owner = Membership.owner('organizationmembership:one', mall.organization.id, mall.ownerMembershipId, now);
     await expect(repository.createMall(context as never, { parent, mall, owner, expectedParentVersion: 2 })).rejects.toMatchObject({ code: 'VALIDATION_FAILED', details: { field: 'code' } });
   });
@@ -69,7 +94,20 @@ describe('PgOrganizationRepository', () => {
     const repository = new PgOrganizationRepository({ database: () => database } as unknown as PgTransactionAccess);
     const parent = new Organization({ id: 'enterprise:one', kind: 'enterprise', parentid: 'tenant:one', name: '示范企业', timezone: 'Asia/Shanghai', status: 'active', malllimit: 10, version: 2, createdat: now, updatedat: now });
     const organization = parent.allocateMall({ id: 'mall:one', name: '主打团福利商城', timezone: 'Asia/Shanghai', now });
-    const mall = new Mall({ organization, code: 'WELFARE01', publicSlug: 'welfare-one', brandName: '主打团', domain: { mode: 'custom', customDomain: 'mall.example.com' }, ownerMembershipId: 'membership:owner', currency: 'CNY', theme: { preset: 'shop', primaryColor: '#E8502A', accentColor: '#FF8A34', logoObjectRef: null, faviconObjectRef: null }, opening: completeOpening, version: 1, createdat: now, updatedat: now });
+    const mall = new Mall({
+      organization,
+      code: 'WELFARE01',
+      publicSlug: 'welfare-one',
+      brandName: '主打团',
+      domain: { mode: 'custom', customDomain: 'mall.example.com' },
+      ownerMembershipId: 'membership:owner',
+      currency: 'CNY',
+      theme: { preset: 'shop', primaryColor: '#E8502A', accentColor: '#FF8A34', logoObjectRef: null, faviconObjectRef: null },
+      opening: completeOpening,
+      version: 1,
+      createdat: now,
+      updatedat: now,
+    });
     const owner = Membership.owner('organizationmembership:one', mall.organization.id, mall.ownerMembershipId, now);
     await expect(repository.createMall(context as never, { parent, mall, owner, expectedParentVersion: 2 })).rejects.toMatchObject({ code: 'VALIDATION_FAILED', details: { field } });
   });
@@ -81,18 +119,57 @@ function result(rows: readonly Record<string, unknown>[], rowCount = rows.length
 }
 function mallRow() {
   return {
-    id: 'mall:one', parent_id: 'enterprise:one', name: '主打团福利商城', timezone: 'Asia/Shanghai', status: 'draft', organization_version: '1', mall_limit: '0',
-    code: 'WELFARE01', public_slug: 'welfare-one', brand_name: '主打团', domain_mode: 'custom', custom_domain: 'mall.example.com',
-    owner_membership_id: 'membership:owner', currency: 'CNY', theme_preset: 'shop', theme_primary_color: '#E8502A', theme_accent_color: '#FF8A34',
-    theme_logo_object_ref: 'object:logo', theme_favicon_object_ref: null,
-    opening_state: 'complete', subject_type: 'enterprise', company_name: completeOpening.subject.companyName, credit_code: completeOpening.subject.creditCode,
-    legal_representative: completeOpening.subject.legalRepresentative, contact_name: completeOpening.subject.contactName, contact_mobile: completeOpening.subject.contactMobile,
-    license_object_ref: completeOpening.subject.licenseObjectRef, store_type: completeOpening.business.storeType, primary_category: completeOpening.business.primaryCategory,
-    business_mode: completeOpening.business.mode, business_region: completeOpening.business.region, business_address: completeOpening.business.address, service_phone: completeOpening.business.servicePhone,
-    certificate_mode: completeOpening.certificateMode, certificate_object_ref: completeOpening.certificateObjectRef, mini_program_mode: completeOpening.channels.miniProgramMode,
-    mini_program_app_id: null, mini_program_original_id: null, official_account_mode: completeOpening.channels.officialAccountMode, official_account_app_id: null, video_channel_id: null,
-    payment_plan: completeOpening.payment.plan, wechat_merchant_id: null, delivery_mode: completeOpening.fulfillment.deliveryMode, warehouse_region: completeOpening.fulfillment.warehouseRegion,
-    return_contact: completeOpening.fulfillment.returnContact, return_address: completeOpening.fulfillment.returnAddress, invoice_mode: completeOpening.invoiceMode,
-    notification_contact: completeOpening.notificationContact, version: '1', created_at: new Date(now), updated_at: new Date(now),
+    id: 'mall:one',
+    parent_id: 'enterprise:one',
+    name: '主打团福利商城',
+    timezone: 'Asia/Shanghai',
+    status: 'draft',
+    organization_version: '1',
+    mall_limit: '0',
+    code: 'WELFARE01',
+    public_slug: 'welfare-one',
+    brand_name: '主打团',
+    domain_mode: 'custom',
+    custom_domain: 'mall.example.com',
+    owner_membership_id: 'membership:owner',
+    currency: 'CNY',
+    theme_preset: 'shop',
+    theme_primary_color: '#E8502A',
+    theme_accent_color: '#FF8A34',
+    theme_logo_object_ref: 'object:logo',
+    theme_favicon_object_ref: null,
+    opening_state: 'complete',
+    subject_type: 'enterprise',
+    company_name: completeOpening.subject.companyName,
+    credit_code: completeOpening.subject.creditCode,
+    legal_representative: completeOpening.subject.legalRepresentative,
+    contact_name: completeOpening.subject.contactName,
+    contact_mobile: completeOpening.subject.contactMobile,
+    license_object_ref: completeOpening.subject.licenseObjectRef,
+    store_type: completeOpening.business.storeType,
+    primary_category: completeOpening.business.primaryCategory,
+    business_mode: completeOpening.business.mode,
+    business_region: completeOpening.business.region,
+    business_address: completeOpening.business.address,
+    service_phone: completeOpening.business.servicePhone,
+    certificate_mode: completeOpening.certificateMode,
+    certificate_object_ref: completeOpening.certificateObjectRef,
+    mini_program_mode: completeOpening.channels.miniProgramMode,
+    mini_program_app_id: null,
+    mini_program_original_id: null,
+    official_account_mode: completeOpening.channels.officialAccountMode,
+    official_account_app_id: null,
+    video_channel_id: null,
+    payment_plan: completeOpening.payment.plan,
+    wechat_merchant_id: null,
+    delivery_mode: completeOpening.fulfillment.deliveryMode,
+    warehouse_region: completeOpening.fulfillment.warehouseRegion,
+    return_contact: completeOpening.fulfillment.returnContact,
+    return_address: completeOpening.fulfillment.returnAddress,
+    invoice_mode: completeOpening.invoiceMode,
+    notification_contact: completeOpening.notificationContact,
+    version: '1',
+    created_at: new Date(now),
+    updated_at: new Date(now),
   } as const;
 }

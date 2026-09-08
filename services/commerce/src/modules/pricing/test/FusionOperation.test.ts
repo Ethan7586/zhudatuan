@@ -1,6 +1,6 @@
 import { OPERATION_SCHEMAS } from '@shop/contract';
 import { describe, expect, it, vi } from 'vitest';
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
 import { readHandlerContext } from '../../../test/HandlerFixture';
 import { withReadTransaction, result } from '../../../test/TransactionFixture';
 import { OffersReadHandler } from '../application/handler/OffersReadHandler';

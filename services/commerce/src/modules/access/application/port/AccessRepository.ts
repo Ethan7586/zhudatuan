@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 import type { Membership } from '../../domain/model/Membership';
 import type { Override } from '../../domain/model/Override';
@@ -14,7 +14,17 @@ export interface AccessCenterRecord {
   readonly client: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
   readonly status: string;
   readonly accessVersion: number;
-  readonly roles: readonly Readonly<{ role: string; name: string; description: string; status: 'active' | 'disabled'; kind: 'custom' | 'system' | 'owner'; template: RoleTemplateCode | null; version: number; allows: readonly string[]; denies: readonly string[] }>[];
+  readonly roles: readonly Readonly<{
+    role: string;
+    name: string;
+    description: string;
+    status: 'active' | 'disabled';
+    kind: 'custom' | 'system' | 'owner';
+    template: RoleTemplateCode | null;
+    version: number;
+    allows: readonly string[];
+    denies: readonly string[];
+  }>[];
   readonly scopes: readonly Readonly<{ id: string; kind: string; scope: string; effect: PermissionEffect; expires: string | null }>[];
   readonly overrides: readonly Readonly<{ permission: string; effect: PermissionEffect; expires: string | null }>[];
 }
@@ -159,7 +169,10 @@ export interface AccessRepository {
   rolePermissions(context: ReadTransactionContext, role: string): Promise<RolePermissionState>;
   roleImpact(context: ReadTransactionContext, role: string): Promise<RoleImpact>;
   roleTemplate(context: ReadTransactionContext, code: string): Promise<RoleTemplate | null>;
-  saveRole(context: WriteTransactionContext, input: Readonly<{ role: string; scope: string; name: string; description: string; template: RoleTemplateCode | null; allows: readonly string[]; denies: readonly string[]; expectedVersion: number }>): Promise<RoleChange | null>;
+  saveRole(
+    context: WriteTransactionContext,
+    input: Readonly<{ role: string; scope: string; name: string; description: string; template: RoleTemplateCode | null; allows: readonly string[]; denies: readonly string[]; expectedVersion: number }>
+  ): Promise<RoleChange | null>;
   setRoleStatus(context: WriteTransactionContext, role: string, scope: string, status: 'active' | 'disabled', expectedVersion: number): Promise<Role | null>;
   deleteRole(context: WriteTransactionContext, role: string, scope: string, expectedVersion: number): Promise<boolean>;
   assignRole(context: WriteTransactionContext, role: string, membership: string, issuer: string): Promise<boolean>;

@@ -15,8 +15,14 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: shop-api, shop.release/id: SHOP_RELEASE_ID }
     spec:
-      serviceAccountName: shop-runtime
+      serviceAccountName: shop-api
       terminationGracePeriodSeconds: 45
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: topology.kubernetes.io/zone
@@ -36,6 +42,8 @@ spec:
           ports: [{ name: http, containerPort: 3001 }]
           envFrom:
             - configMapRef: { name: shop-api }
+          env:
+            - { name: TMPDIR, value: /tmp }
           startupProbe:
             httpGet: { path: /health/startup, port: http }
             failureThreshold: 30
@@ -57,6 +65,11 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             seccompProfile: { type: RuntimeDefault }
+          volumeMounts:
+            - { name: temporary, mountPath: /tmp }
+      volumes:
+        - name: temporary
+          emptyDir: { sizeLimit: 128Mi }
 ---
 apiVersion: v1
 kind: Service
@@ -110,8 +123,14 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: shop-jobs, shop.release/id: SHOP_RELEASE_ID }
     spec:
-      serviceAccountName: shop-runtime
+      serviceAccountName: shop-jobs
       terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: topology.kubernetes.io/zone
@@ -125,6 +144,22 @@ spec:
           args: ['services/commerce/dist/JobsMain.js']
           envFrom:
             - configMapRef: { name: shop-jobs }
+          env:
+            - { name: TMPDIR, value: /tmp }
+            - { name: WORKER_READY_FILE, value: /tmp/worker-ready }
+          startupProbe:
+            exec: { command: ['test', '-f', '/tmp/worker-ready'] }
+            failureThreshold: 60
+            periodSeconds: 2
+          readinessProbe:
+            exec: { command: ['test', '-f', '/tmp/worker-ready'] }
+            failureThreshold: 2
+            periodSeconds: 5
+          livenessProbe:
+            exec: { command: ['node', '-e', 'process.kill(1,0)'] }
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
           resources:
             requests: { cpu: 500m, memory: 512Mi }
             limits: { cpu: '2', memory: 1Gi }
@@ -134,6 +169,11 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             seccompProfile: { type: RuntimeDefault }
+          volumeMounts:
+            - { name: temporary, mountPath: /tmp }
+      volumes:
+        - name: temporary
+          emptyDir: { sizeLimit: 512Mi }
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -166,3 +206,13 @@ spec:
       external:
         metric: { name: shop_job_oldest_message_seconds }
         target: { type: AverageValue, averageValue: '30' }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: shop-api, namespace: SHOP_NAMESPACE }
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: shop-jobs, namespace: SHOP_NAMESPACE }
+automountServiceAccountToken: false

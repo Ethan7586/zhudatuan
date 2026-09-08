@@ -1,10 +1,11 @@
 import { PROVIDER_REQUIREMENTS, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler } from '../../../../foundation/application/OperationHandler';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler } from '../../../../pipeline/OperationHandler';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { FinanceChannelPort } from '../../../channel/public';
 import type { OrganizationReadPort } from '../../../organization/public';
 import type { FacetRepository, FinanceFacetCount } from '../port/FacetRepository';
+import { allParallel } from '@shop/kernel';
 
 const providerLabels = Object.freeze(Object.fromEntries(PROVIDER_REQUIREMENTS.map(({ id, label }) => [id, label])) as Readonly<Record<string, string>>);
 const stateLabels: Readonly<Record<string, string>> = Object.freeze({ received: '已接收', matching: '匹配中', balanced: '已平衡', difference: '有差异', approved: '已复核' });
@@ -30,18 +31,20 @@ export class FacetsReadHandler implements OperationHandler<'finance.facets.read'
   async execute(_input: OperationInputFor<'finance.facets.read'>, context: HandlerContext<'finance.facets.read'>) {
     const access = requireSession(context.security);
     const scopes = await this.organizations.descendants(context.transaction, access.scope.id);
-    const [snapshot, mallIds, importProviders] = await Promise.all([
-      this.facets.read(context.transaction, scopes),
-      this.organizations.activeMalls(context.transaction, access.scope.id),
-      this.channels.importProviders(context.transaction, scopes),
-    ]);
+    const [snapshot, mallIds, importProviders] = await allParallel(
+      [() => this.facets.read(context.transaction, scopes), () => this.organizations.activeMalls(context.transaction, access.scope.id), () => this.channels.importProviders(context.transaction, scopes)] as const,
+      { concurrency: 3, expiresAt: context.deadline, signal: context.signal }
+    );
     const mallSummaries = await this.organizations.summaries(context.transaction, mallIds);
     const mallCounts = new Map(snapshot.malls.map(({ value, count }) => [value, count]));
     const activeProviders = new Map(importProviders.map((provider) => [provider.id, provider]));
     const providerCounts = new Map(snapshot.providers.map(({ value, count }) => [value, count]));
     const providerIds = [...new Set([...providerCounts.keys(), ...activeProviders.keys()])].sort((left, right) => (providerCounts.get(right) ?? 0) - (providerCounts.get(left) ?? 0) || left.localeCompare(right));
     const body = {
-      periods: group(snapshot.periods.map(({ value, count }) => ({ value, count, label: periodLabel(value) })), '当前范围还没有可筛选的账期。'),
+      periods: group(
+        snapshot.periods.map(({ value, count }) => ({ value, count, label: periodLabel(value) })),
+        '当前范围还没有可筛选的账期。'
+      ),
       providers: {
         items: providerIds.map((value) => ({
           value,
@@ -51,9 +54,18 @@ export class FacetsReadHandler implements OperationHandler<'finance.facets.read'
         })),
         reason: activeProviders.size === 0 ? '当前范围没有已启用的渠道连接，请先到渠道工作台完成连接配置和连通性测试。' : null,
       },
-      malls: group(mallSummaries.map(({ id, name }) => ({ value: id, label: name, count: mallCounts.get(id) ?? 0 })), '当前范围没有可用商城。'),
-      states: group(snapshot.states.map(({ value, count }) => ({ value, count, label: stateLabels[value] ?? '其他状态' })), '当前范围还没有对账状态。'),
-      differenceTypes: group(snapshot.differenceTypes.map(({ value, count }) => ({ value, count, label: differenceLabels[value] ?? '其他差异' })), '当前范围还没有对账差异类型。'),
+      malls: group(
+        mallSummaries.map(({ id, name }) => ({ value: id, label: name, count: mallCounts.get(id) ?? 0 })),
+        '当前范围没有可用商城。'
+      ),
+      states: group(
+        snapshot.states.map(({ value, count }) => ({ value, count, label: stateLabels[value] ?? '其他状态' })),
+        '当前范围还没有对账状态。'
+      ),
+      differenceTypes: group(
+        snapshot.differenceTypes.map(({ value, count }) => ({ value, count, label: differenceLabels[value] ?? '其他差异' })),
+        '当前范围还没有对账差异类型。'
+      ),
       watermark: snapshot.watermark,
     } satisfies OperationOutputFor<'finance.facets.read'>;
     return { status: 200, body } as const;

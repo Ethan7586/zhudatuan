@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { OrderFulfillmentPort } from '../../../order/public';
 import type { InventoryReturnSnapshot, InventoryReturnPort } from '../../public/InventoryReturnPort';
 export class PgInventoryReturnPort implements InventoryReturnPort {

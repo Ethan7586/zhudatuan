@@ -1,12 +1,12 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import { isConsumerTarget, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import { keysetPage, queryPage } from '../../../../foundation/application/Validation';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import type { OperationReply } from '../../../../pipeline/OperationHandler';
+import { keysetPage, queryPage } from '../../../../pipeline/Validation';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
 import type { ObjectStore } from '../../../runtime/public/ObjectPort';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { mapParallel } from '../../../../foundation/performance/Parallel';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { mapParallel } from '@shop/kernel';
 import type { MessageReader } from '../../application/port/SupportRepositories';
 import type { ConversationStore, SupportContextView } from '../../application/port/SupportPersistence';
 import type { ReadSupportContext } from '../../application/service/ReadSupportContext';
@@ -70,11 +70,7 @@ export class PgConversationRepository implements MessageReader, ConversationStor
     return Object.freeze({ sequence: Number(row.latest_sequence), version: Number(row.version) });
   }
 
-  async readMessages(
-    context: ReadTransactionContext,
-    input: OperationInputFor<'support.messages.read'>,
-    execution: ExecutionContext<'support.messages.read'>
-  ): Promise<OperationReply<OperationOutputFor<'support.messages.read'>>> {
+  async readMessages(context: ReadTransactionContext, input: OperationInputFor<'support.messages.read'>, execution: ExecutionContext<'support.messages.read'>): Promise<OperationReply<OperationOutputFor<'support.messages.read'>>> {
     const actor = await this.support.actor(context, execution);
     const page = queryPage(input, 200);
     const database = this.transactions.database(context);

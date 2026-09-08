@@ -32,10 +32,21 @@ export class WebhookInbox {
   readonly version: number;
 
   constructor(value: WebhookInboxSnapshot) {
-    if (!value.id.trim() || !value.receipt.trim() || !value.connection.trim() || !value.externalId.trim() || !value.eventType.trim() ||
-      !Number.isSafeInteger(value.attempts) || value.attempts < 0 || !/^[a-f0-9]{64}$/.test(value.rawHash) ||
-      !/^[a-f0-9]{64}$/.test(value.signatureHash) || Number.isNaN(Date.parse(value.watermark)) ||
-      !Number.isSafeInteger(value.version) || value.version < 0) throw new Error('CHANNEL_WEBHOOK_INBOX_INVALID');
+    if (
+      !value.id.trim() ||
+      !value.receipt.trim() ||
+      !value.connection.trim() ||
+      !value.externalId.trim() ||
+      !value.eventType.trim() ||
+      !Number.isSafeInteger(value.attempts) ||
+      value.attempts < 0 ||
+      !/^[a-f0-9]{64}$/.test(value.rawHash) ||
+      !/^[a-f0-9]{64}$/.test(value.signatureHash) ||
+      Number.isNaN(Date.parse(value.watermark)) ||
+      !Number.isSafeInteger(value.version) ||
+      value.version < 0
+    )
+      throw new Error('CHANNEL_WEBHOOK_INBOX_INVALID');
     const failure = channelFailure(value.failure);
     if ((value.state === 'failed') !== (failure !== null)) throw new Error('CHANNEL_WEBHOOK_FAILURE_INVALID');
     this.id = value.id;

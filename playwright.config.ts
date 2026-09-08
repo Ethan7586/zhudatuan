@@ -1,9 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
-import { LOCAL_API_ORIGIN, LOCAL_AUTH_ORIGIN, LOCAL_CONSOLE_ORIGIN, LOCAL_STOREFRONT_ORIGIN } from '@shop/config/client';
+import { LOCAL_API_ORIGIN, LOCAL_AUTH_ORIGIN, LOCAL_CONSOLE_ORIGIN, LOCAL_STOREFRONT_ORIGIN, LOCAL_STORE_ORIGIN, LOCAL_SUPPLIER_ORIGIN } from '@shop/config/client';
 
 const apiOrigin = LOCAL_API_ORIGIN;
 const authOrigin = LOCAL_AUTH_ORIGIN;
-const environment = `VITE_API_BASE_URL=${apiOrigin} VITE_AUTH_BASE_URL=${authOrigin} VITE_CONSOLE_ORIGIN=${LOCAL_CONSOLE_ORIGIN} VITE_STOREFRONT_ORIGIN=${LOCAL_STOREFRONT_ORIGIN} VITE_CLIENT_VERSION=1.0.0-e2e DISABLE_HMR=true`;
+const environment = `VITE_API_BASE_URL=${apiOrigin} VITE_AUTH_BASE_URL=${authOrigin} VITE_CONSOLE_ORIGIN=${LOCAL_CONSOLE_ORIGIN} VITE_STOREFRONT_ORIGIN=${LOCAL_STOREFRONT_ORIGIN} VITE_STORE_ORIGIN=${LOCAL_STORE_ORIGIN} VITE_SUPPLIER_ORIGIN=${LOCAL_SUPPLIER_ORIGIN} VITE_CLIENT_VERSION=1.0.0-e2e DISABLE_HMR=true`;
 
 function webServer(workspace: string, port: number) {
   return {
@@ -17,8 +17,8 @@ function webServer(workspace: string, port: number) {
 }
 
 export default defineConfig({
-  testDir: './tests/browser',
-  testMatch: '**/*.spec.ts',
+  testDir: './tests',
+  testMatch: ['browser/RealJourneys.spec.ts', 'e2e/*.spec.ts', 'visual/*.spec.ts', 'accessibility/*.spec.ts'],
   fullyParallel: true,
   globalSetup: './tests/browser/GlobalSetup.ts',
   forbidOnly: true,
@@ -42,6 +42,8 @@ export default defineConfig({
     webServer('@shop/auth', 3002),
     webServer('@shop/console', 4173),
     webServer('@shop/storefront', 3000),
+    webServer('@shop/store', 4175),
+    webServer('@shop/supplier', 4176),
   ],
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

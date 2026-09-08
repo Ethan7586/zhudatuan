@@ -3,14 +3,33 @@ import { Ticket } from '../../domain/model/Ticket';
 import { SendSupportMessage } from './SendSupportMessage';
 
 const actor = { actor: 'actor:agent', membership: 'membership:agent', member: 'member:agent', target: 'console', scope: 'mall:one', scopes: ['mall:one'], trace: 'trace:one' } as const;
-const target = { ticket: new Ticket('ticket:one', 'conversation:one', 'mall:one', 'normal', 'assigned', 'agent:one', null, 3), conversation: 'conversation:one', conversationVersion: 5, member: 'member:one', assignedAgent: 'agent:one' } as const;
-const stored = { id: 'message:one', clientMessageId: 'client:0001', conversationId: 'conversation:one', authorType: 'agent', authorId: 'actor:agent', kind: 'text', visibility: 'external', bodyHash: 'f'.repeat(64), sequence: 6, version: 1, createdAt: '2026-09-02T00:00:00.000Z' } as const;
+const target = {
+  ticket: new Ticket('ticket:one', 'conversation:one', 'mall:one', 'normal', 'assigned', 'agent:one', null, 3),
+  conversation: 'conversation:one',
+  conversationVersion: 5,
+  member: 'member:one',
+  assignedAgent: 'agent:one',
+} as const;
+const stored = {
+  id: 'message:one',
+  clientMessageId: 'client:0001',
+  conversationId: 'conversation:one',
+  authorType: 'agent',
+  authorId: 'actor:agent',
+  kind: 'text',
+  visibility: 'external',
+  bodyHash: 'f'.repeat(64),
+  sequence: 6,
+  version: 1,
+  createdAt: '2026-09-02T00:00:00.000Z',
+} as const;
 
 describe('SendSupportMessage', () => {
   it('locks, versions, appends and publishes one encrypted agent message', async () => {
     const values = fixture(null);
     const service = values.service;
-    const input = request(); const execution = { expectedVersion: 3, traceId: 'trace:one' } as never;
+    const input = request();
+    const execution = { expectedVersion: 3, traceId: 'trace:one' } as never;
     const loaded = await service.loadMessage({} as never, input, execution);
     const prepared = await service.prepareMessage(input, execution, loaded);
     const response = await service.sendMessage({} as never, input, execution, prepared);
@@ -22,7 +41,8 @@ describe('SendSupportMessage', () => {
 
   it('returns the existing message for the same client id without advancing sequence', async () => {
     const values = fixture(stored);
-    const input = request(); const execution = { expectedVersion: 3, traceId: 'trace:one' } as never;
+    const input = request();
+    const execution = { expectedVersion: 3, traceId: 'trace:one' } as never;
     const loaded = await values.service.loadMessage({} as never, input, execution);
     const prepared = await values.service.prepareMessage(input, execution, loaded);
     const response = await values.service.sendMessage({} as never, input, execution, prepared);
@@ -33,7 +53,8 @@ describe('SendSupportMessage', () => {
 
   it('rejects a stale ticket version before any append', async () => {
     const values = fixture(null);
-    const input = request(); const execution = { expectedVersion: 2, traceId: 'trace:one' } as never;
+    const input = request();
+    const execution = { expectedVersion: 2, traceId: 'trace:one' } as never;
     const loaded = await values.service.loadMessage({} as never, input, execution);
     const prepared = await values.service.prepareMessage(input, execution, loaded);
     await expect(values.service.sendMessage({} as never, input, execution, prepared)).rejects.toThrow('VERSION_CONFLICT');
@@ -41,8 +62,13 @@ describe('SendSupportMessage', () => {
   });
 
   it('fails before the write transaction when KMS is unavailable and leaves no partial message', async () => {
-    const values = fixture(null, { encrypt: vi.fn(async () => { throw new Error('KMS_UNAVAILABLE'); }) });
-    const input = request(); const execution = { expectedVersion: 3, traceId: 'trace:one' } as never;
+    const values = fixture(null, {
+      encrypt: vi.fn(async () => {
+        throw new Error('KMS_UNAVAILABLE');
+      }),
+    });
+    const input = request();
+    const execution = { expectedVersion: 3, traceId: 'trace:one' } as never;
     const loaded = await values.service.loadMessage({} as never, input, execution);
     await expect(values.service.prepareMessage(input, execution, loaded)).rejects.toThrow('KMS_UNAVAILABLE');
     expect(values.messages.append).not.toHaveBeenCalled();
@@ -64,7 +90,8 @@ describe('SendSupportMessage', () => {
 
   it('rejects a different agent even when that agent belongs to the same scope', async () => {
     const values = fixture(null, undefined, 'agent:other');
-    const input = request(); const execution = { expectedVersion: 3, traceId: 'trace:one' } as never;
+    const input = request();
+    const execution = { expectedVersion: 3, traceId: 'trace:one' } as never;
     const loaded = await values.service.loadMessage({} as never, input, execution);
     const prepared = await values.service.prepareMessage(input, execution, loaded);
     await expect(values.service.sendMessage({} as never, input, execution, prepared)).rejects.toThrow('SUPPORT_TICKET_PARTICIPANT_DENIED');
@@ -89,4 +116,6 @@ function fixture(existing: typeof stored | null, kms = { encrypt: vi.fn(async ()
   return { service, messages, conversations, events };
 }
 
-function request() { return { path: { caseid: 'ticket:one' }, body: { message: ' 已受理 ', clientMessageId: 'client:0001' } } as never; }
+function request() {
+  return { path: { caseid: 'ticket:one' }, body: { message: ' 已受理 ', clientMessageId: 'client:0001' } } as never;
+}

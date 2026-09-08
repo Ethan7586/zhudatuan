@@ -1,12 +1,17 @@
 import type { Client } from 'pg';
 import { syncMemberProjection } from './MemberProjection';
+import { grantAudiencePermissions } from './RolePermissions';
 
 export const LOCAL_OWNER = Object.freeze({
   principal: 'principal:zhudatuan:owner:ethan:v1',
   member: 'member:zhudatuan:owner:ethan:v1',
   membership: 'membership-platform-owner-ethan-v1',
   tenant: 'tenant-zhudatuan',
+  distributor: 'distributor-local-zhudatuan',
+  enterprise: 'enterprise-zhudatuan',
   mall: 'mall-zhudatuan',
+  store: 'store-local',
+  supplier: 'supplier-local',
 });
 
 export async function ensureLocalOwner(database: Client): Promise<void> {
@@ -47,12 +52,7 @@ export async function ensureLocalOwner(database: Client): Promise<void> {
     where mapping.role_id='role-platform-owner-v2' and mapping.permission_id=permission.id and mapping.effect='deny'
       and exists(select 1 from capability.operation operation where operation.permission_code=permission.code and operation.audience='console')`
   );
-  await database.query(
-    `insert into access.rolepermission(role_id,permission_id,effect)
-    select distinct 'role-platform-owner-v2',permission.id,'allow' from capability.operation operation
-    join access.permission permission on permission.code=operation.permission_code and permission.status='active'
-    where operation.audience='console' on conflict do nothing`
-  );
+  await grantAudiencePermissions(database, 'role-platform-owner-v2', 'console');
   await database.query(
     `insert into access.ownership(scope_id,role_id,membership_id)
     values($1,'role-platform-owner-v2',$2)

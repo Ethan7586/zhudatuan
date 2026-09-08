@@ -1,11 +1,13 @@
 import type { OrderOperations } from '@shop/sdk/order';
 import type { RequestContextFactory } from '../../../shared/api/RequestContext';
-import { createIdempotencyKey, uploadObject } from '@shop/sdk';
+import { createIdempotencyKey } from '@shop/sdk/context';
+import { uploadObject } from '@shop/sdk/objects';
 import type { StorefrontSession } from '../../../entity/session';
 import type { AfterSaleApplyReceipt, ApplyAfterSaleInput, AfterSalePage } from '../model/AfterSale';
 import type { AfterSaleUploadRequest } from '../public/AfterSalePort';
 import { mapAfterSalePage } from './AfterSaleMapper';
 import type { AfterSalePort } from '../public/AfterSalePort';
+import { readCursorPages } from '../../../shared/api/CursorPage';
 
 export class AfterSaleGateway implements AfterSalePort {
   constructor(
@@ -13,8 +15,14 @@ export class AfterSaleGateway implements AfterSalePort {
     private readonly context: RequestContextFactory
   ) {}
   async read(session: StorefrontSession, orderId: string): Promise<AfterSalePage> {
-    const value = await this.order.aftersalesRead({ query: { order: orderId, limit: 50 } }, this.context(session));
-    return mapAfterSalePage(value);
+    const pages = await readCursorPages(async (cursor) =>
+      mapAfterSalePage(await this.order.aftersalesRead({ query: { order: orderId, limit: 50, ...(cursor ? { cursor } : {}) } }, this.context(session)))
+    );
+    return Object.freeze({
+      items: Object.freeze(pages.flatMap(({ items }) => items)),
+      availableLines: pages.find(({ availableLines }) => availableLines.length > 0)?.availableLines ?? Object.freeze([]),
+      nextCursor: null,
+    });
   }
 
   async apply(session: StorefrontSession, orderId: string, input: ApplyAfterSaleInput, idempotencyKey: string): Promise<AfterSaleApplyReceipt> {

@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
 import type { JsonObject } from '@shop/contract';
-import type { ExtensionRegistry } from '../../../../bootstrap/ExtensionRegistry';
-import type { DeadletterStore } from '../../../../foundation/application/DeadletterStore';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
+import type { ExtensionRegistry } from '../../../../composition/ExtensionRegistry';
+import type { DeadletterStore } from '../../../../pipeline/DeadletterStore';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
 import { terminalChannelFailure } from '../../domain/model/Failure';
 import type { ChannelWebhookEventPort } from '../port/ChannelWebhookEventPort';
 import type { ChannelWebhookReceipt, ChannelWebhookRepository, StandardChannelWebhook } from '../port/ChannelWebhookRepository';
@@ -31,12 +31,14 @@ export class ApplyChannelWebhook {
     const receipt = await this.transactions.write(this.options(execution, 'claim'), (context) => this.repository.claim(context, id, execution.scope));
     if (!receipt) return;
     if (receipt.scope !== execution.scope) throw new Error('CHANNEL_WEBHOOK_SCOPE_MISMATCH');
-    const request = envelope(await this.kms.decrypt('evidence', 'channel/webhook', receipt.ciphertext, {
-      connection: receipt.connection,
-      provider: receipt.provider,
-      scope: receipt.scope,
-      external: receipt.external,
-    }));
+    const request = envelope(
+      await this.kms.decrypt('evidence', 'channel/webhook', receipt.ciphertext, {
+        connection: receipt.connection,
+        provider: receipt.provider,
+        scope: receipt.scope,
+        external: receipt.external,
+      })
+    );
     assertExecution(execution);
     const port = this.extensions.strategy(receipt.provider, receipt.scope, 'Webhook');
     const providerContext = {
@@ -89,11 +91,15 @@ function standardize(value: JsonObject): StandardChannelWebhook {
 
 function envelope(value: string): Readonly<{ headers: Readonly<Record<string, string>>; body: string; receivedAt: string }> {
   let parsed: unknown;
-  try { parsed = JSON.parse(value); } catch { throw new Error('CHANNEL_WEBHOOK_ENVELOPE_INVALID'); }
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error('CHANNEL_WEBHOOK_ENVELOPE_INVALID');
+  }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('CHANNEL_WEBHOOK_ENVELOPE_INVALID');
   const source = parsed as Readonly<Record<string, unknown>>;
-  if (!source.headers || typeof source.headers !== 'object' || Array.isArray(source.headers) || typeof source.body !== 'string' ||
-    typeof source.receivedAt !== 'string' || Number.isNaN(Date.parse(source.receivedAt))) throw new Error('CHANNEL_WEBHOOK_ENVELOPE_INVALID');
+  if (!source.headers || typeof source.headers !== 'object' || Array.isArray(source.headers) || typeof source.body !== 'string' || typeof source.receivedAt !== 'string' || Number.isNaN(Date.parse(source.receivedAt)))
+    throw new Error('CHANNEL_WEBHOOK_ENVELOPE_INVALID');
   const headers = source.headers as Readonly<Record<string, unknown>>;
   if (Object.keys(headers).length > 128 || !Object.entries(headers).every(([key, item]) => key.length <= 128 && typeof item === 'string' && item.length <= 8192)) {
     throw new Error('CHANNEL_WEBHOOK_ENVELOPE_INVALID');
@@ -107,9 +113,17 @@ function deadletter(receipt: ChannelWebhookReceipt, webhook: StandardChannelWebh
     kind: 'provider',
     source: receipt.id,
     owner: 'channel',
-    payload: Object.freeze({ receipt: receipt.id, provider: receipt.provider, eventType: webhook.eventType, kind: webhook.kind,
-      state: webhook.state, rawHash: receipt.rawHash, signatureHash: receipt.signatureHash,
-      externalHash: digest(receipt.external), referenceHash: webhook.reference === null ? null : digest(webhook.reference) }),
+    payload: Object.freeze({
+      receipt: receipt.id,
+      provider: receipt.provider,
+      eventType: webhook.eventType,
+      kind: webhook.kind,
+      state: webhook.state,
+      rawHash: receipt.rawHash,
+      signatureHash: receipt.signatureHash,
+      externalHash: digest(receipt.external),
+      referenceHash: webhook.reference === null ? null : digest(webhook.reference),
+    }),
     error,
     attempts: receipt.attempts,
   });

@@ -1,11 +1,11 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { AuditSink } from '../../../../foundation/application/AuditSink';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { encodeCursor, queryPage } from '../../../../foundation/application/Validation';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { AuditSink } from '../../../../pipeline/AuditSink';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { encodeCursor, queryPage } from '../../../../pipeline/Validation';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { AuditFieldPolicy, type AuditDetail } from '../../domain/policy/AuditFieldPolicy';
 import type { AuditHistoryRepository } from '../port/AuditHistoryRepository';
 

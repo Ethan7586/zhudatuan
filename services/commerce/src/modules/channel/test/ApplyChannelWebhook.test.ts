@@ -14,7 +14,10 @@ describe('channel webhook application', () => {
     expect(fixture.verify).toHaveBeenCalledWith(expect.objectContaining({ signal: fixture.execution.signal, deadline: fixture.execution.deadline }), expect.anything());
     expect(fixture.verify.mock.invocationCallOrder[0]).toBeLessThan(fixture.apply.mock.invocationCallOrder[0]!);
     expect(fixture.apply).toHaveBeenCalledWith({}, fixture.receipt, {
-      eventType: 'shipment.changed', reference: 'external:one', kind: 'tracking', state: 'succeeded',
+      eventType: 'shipment.changed',
+      reference: 'external:one',
+      kind: 'tracking',
+      state: 'succeeded',
       normalized: { eventType: 'shipment.changed', reference: 'external:one', kind: 'tracking', state: 'succeeded' },
     });
     expect(fixture.publish).toHaveBeenCalledOnce();
@@ -33,10 +36,17 @@ describe('channel webhook application', () => {
     const fixture = harness({ status: 'deadlettered', error: 'CHANNEL_WEBHOOK_MAPPING_MISSING' });
     await fixture.application.execute(fixture.receipt.id, fixture.execution);
     expect(fixture.publish).not.toHaveBeenCalled();
-    expect(fixture.record).toHaveBeenCalledWith({}, expect.objectContaining({
-      kind: 'provider', source: fixture.receipt.id, owner: 'channel', error: 'CHANNEL_WEBHOOK_MAPPING_MISSING', attempts: 1,
-      payload: expect.objectContaining({ rawHash: hash, externalHash: expect.stringMatching(/^[a-f0-9]{64}$/) }),
-    }));
+    expect(fixture.record).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        kind: 'provider',
+        source: fixture.receipt.id,
+        owner: 'channel',
+        error: 'CHANNEL_WEBHOOK_MAPPING_MISSING',
+        attempts: 1,
+        payload: expect.objectContaining({ rawHash: hash, externalHash: expect.stringMatching(/^[a-f0-9]{64}$/) }),
+      })
+    );
     expect(JSON.stringify(fixture.record.mock.calls[0]![1])).not.toMatch(/external:one|private-provider-field/);
   });
 
@@ -46,7 +56,9 @@ describe('channel webhook application', () => {
     await expect(invalid.application.execute(invalid.receipt.id, invalid.execution)).rejects.toThrow('PROVIDER_WEBHOOK_SIGNATURE_INVALID');
     expect(invalid.apply).not.toHaveBeenCalled();
     const unavailable = harness();
-    unavailable.strategy.mockImplementation(() => { throw new Error('PROVIDER_INSTALLATION_NOT_ACTIVE'); });
+    unavailable.strategy.mockImplementation(() => {
+      throw new Error('PROVIDER_INSTALLATION_NOT_ACTIVE');
+    });
     await expect(unavailable.application.execute(unavailable.receipt.id, unavailable.execution)).rejects.toThrow('PROVIDER_INSTALLATION_NOT_ACTIVE');
     expect(unavailable.apply).not.toHaveBeenCalled();
   });
@@ -54,12 +66,12 @@ describe('channel webhook application', () => {
   it('requires exact task scope and records terminal domain failure classification', async () => {
     const fixture = harness();
     const job = new ChannelWebhookJob(fixture.application);
-    expect(() => job.process({ id: 'job:one', kind: 'channelwebhook', scope: null, payload: { receipt: fixture.receipt.id },
-      authorization: {}, attempts: 1, token: 1 }, fixture.execution.signal)).toThrow('CHANNEL_WEBHOOK_SCOPE_REQUIRED');
-    await job.record({} as never, { id: 'job:one', kind: 'channelwebhook', scope: 'mall:one', payload: { receipt: fixture.receipt.id },
-      authorization: {}, attempts: 8, token: 1 }, 'PROVIDER_WEBHOOK_SIGNATURE_INVALID');
+    expect(() => job.process({ id: 'job:one', kind: 'channelwebhook', scope: null, payload: { receipt: fixture.receipt.id }, authorization: {}, attempts: 1, token: 1 }, fixture.execution.signal)).toThrow('CHANNEL_WEBHOOK_SCOPE_REQUIRED');
+    await job.record({} as never, { id: 'job:one', kind: 'channelwebhook', scope: 'mall:one', payload: { receipt: fixture.receipt.id }, authorization: {}, attempts: 8, token: 1 }, 'PROVIDER_WEBHOOK_SIGNATURE_INVALID');
     expect(fixture.fail).toHaveBeenCalledWith({}, fixture.receipt.id, 'mall:one', {
-      classification: 'authentication', code: 'PROVIDER_WEBHOOK_SIGNATURE_INVALID', retryable: false,
+      classification: 'authentication',
+      code: 'PROVIDER_WEBHOOK_SIGNATURE_INVALID',
+      retryable: false,
     });
   });
 
@@ -74,26 +86,37 @@ describe('channel webhook application', () => {
 });
 
 function harness(outcome: Parameters<typeof outcomeValue>[0] = { status: 'applied' }) {
-  const receipt = Object.freeze({ id: `webhookreceipt:${hash}`, connection: 'connection:one', provider: 'supplier', scope: 'mall:one',
-    external: 'event:one', attempts: 1, ciphertext: 'kms:ciphertext', keyVersion: 'kms:v1', rawHash: hash,
-    signatureHash: hash, trace: 'trace:one', receivedAt, version: 1 });
+  const receipt = Object.freeze({
+    id: `webhookreceipt:${hash}`,
+    connection: 'connection:one',
+    provider: 'supplier',
+    scope: 'mall:one',
+    external: 'event:one',
+    attempts: 1,
+    ciphertext: 'kms:ciphertext',
+    keyVersion: 'kms:v1',
+    rawHash: hash,
+    signatureHash: hash,
+    trace: 'trace:one',
+    receivedAt,
+    version: 1,
+  });
   const apply = vi.fn().mockResolvedValue(outcomeValue(outcome));
   const fail = vi.fn().mockResolvedValue(undefined);
   const repository: ChannelWebhookRepository = { claim: vi.fn().mockResolvedValue(receipt), apply, fail };
   const publish = vi.fn().mockResolvedValue(undefined);
   const record = vi.fn().mockResolvedValue(undefined);
   const verify = vi.fn().mockResolvedValue(true);
-  const strategy = vi.fn().mockReturnValue({ verify, normalize: vi.fn().mockReturnValue({ eventType: 'shipment.changed',
-    externalReference: 'external:one', kind: 'tracking', state: 'delivered', private: 'private-provider-field' }) });
+  const strategy = vi.fn().mockReturnValue({ verify, normalize: vi.fn().mockReturnValue({ eventType: 'shipment.changed', externalReference: 'external:one', kind: 'tracking', state: 'delivered', private: 'private-provider-field' }) });
   const transactions = { write: async (_options: unknown, work: (context: never) => Promise<unknown>) => work({} as never) };
   const kms = { decrypt: vi.fn().mockResolvedValue(JSON.stringify({ headers: { 'x-provider-signature': 'signature' }, body: '{}', receivedAt })) };
-  const application = new ApplyChannelWebhook(transactions as never, repository, { publish } as never, { record } as never,
-    { strategy } as never, kms as never);
+  const application = new ApplyChannelWebhook(transactions as never, repository, { publish } as never, { record } as never, { strategy } as never, kms as never);
   const execution = { scope: 'mall:one', trace: 'job:one', signal: new AbortController().signal, deadline: Date.now() + 30_000 };
   return { application, receipt, execution, apply, fail, publish, record, verify, strategy };
 }
 
 function outcomeValue(value: { readonly status: 'applied' | 'duplicate' } | { readonly status: 'deadlettered'; readonly error: 'CHANNEL_WEBHOOK_MAPPING_MISSING' }) {
-  return value.status === 'applied' ? { status: 'applied' as const, event: { webhook: `webhook:${hash}`, provider: 'supplier',
-    kind: 'tracking', reference: 'external:one', operation: 'operation:one', internalReference: 'fulfillment:one', state: 'succeeded' as const } } : value;
+  return value.status === 'applied'
+    ? { status: 'applied' as const, event: { webhook: `webhook:${hash}`, provider: 'supplier', kind: 'tracking', reference: 'external:one', operation: 'operation:one', internalReference: 'fulfillment:one', state: 'succeeded' as const } }
+    : value;
 }

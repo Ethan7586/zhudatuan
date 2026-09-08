@@ -1,8 +1,9 @@
 import { createHmac } from 'node:crypto';
 import type { Client } from 'pg';
-import type { KmsClient } from '../../../services/commerce/src/foundation/application/KmsPort';
+import type { KmsClient } from '../../../services/commerce/src/pipeline/KmsPort';
 import { LOCAL_OWNER } from './LocalOwner';
 import { syncMemberProjection } from './MemberProjection';
+import { grantAudiencePermissions } from './RolePermissions';
 
 export const LOCAL_CHECKER = Object.freeze({
   principal: 'principal:zhudatuan:checker:alice:v1',
@@ -52,13 +53,7 @@ export async function ensureLocalChecker(database: Client, input: Readonly<{ pas
     [LOCAL_CHECKER.role, LOCAL_OWNER.tenant]
   );
   await database.query('delete from access.rolepermission where role_id=$1', [LOCAL_CHECKER.role]);
-  await database.query(
-    `insert into access.rolepermission(role_id,permission_id,effect)
-    select distinct $1,permission.id,'allow' from capability.operation operation
-    join access.permission permission on permission.code=operation.permission_code and permission.status='active'
-    where operation.audience='console' on conflict do nothing`,
-    [LOCAL_CHECKER.role]
-  );
+  await grantAudiencePermissions(database, LOCAL_CHECKER.role, 'console');
   await database.query("delete from access.membershiprole where membership_id=$1 and role_id in($2,'role:self')", [LOCAL_CHECKER.membership, LOCAL_CHECKER.role]);
   await database.query(
     `insert into access.membershiprole(membership_id,role_id,effective_at) values

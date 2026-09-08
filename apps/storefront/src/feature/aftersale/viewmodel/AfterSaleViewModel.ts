@@ -3,6 +3,7 @@ import { mapConcurrent } from '@shop/kernel';
 import { ORDER_AFTERSALE_ATTACHMENT_TYPES, ORDER_AFTERSALE_REASONS, type OrderAfterSaleReason } from '@shop/contract';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { routePath } from '../../../generated/RouteBinding';
 import { useDependencies } from '../../../app/DependencyContext';
 import { useSession } from '../../../entity/session/viewmodel/SessionContext';
@@ -10,11 +11,13 @@ import { ApplyAfterSale } from '../application/ApplyAfterSale';
 import { ReadAfterSale } from '../application/ReadAfterSale';
 import { UploadAfterSaleAttachment } from '../application/UploadAfterSaleAttachment';
 import type { AfterSaleAttachmentDraft, AfterSalePage } from '../model/AfterSale';
+import { StorefrontQuery } from '../../../shared/api/Query';
 
 export function useAfterSaleViewModel(orderId: string) {
   const dependencies = useDependencies();
   const runtime = useSession();
   const navigate = useNavigate();
+  const cache = useQueryClient();
   const reader = useRef(new ReadAfterSale(dependencies.aftersale));
   const command = useRef(new ApplyAfterSale(dependencies.aftersale));
   const uploader = useRef(new UploadAfterSaleAttachment(dependencies.aftersale));
@@ -45,15 +48,6 @@ export function useAfterSaleViewModel(orderId: string) {
         .map(([lineId, quantity]) => ({ lineId, quantity })),
     [quantities]
   );
-  const expectedMinor = useMemo(
-    () =>
-      page?.availableLines.reduce((total, line) => {
-        const quantity = quantities[line.lineId] ?? 0;
-        return total + (line.maximumQuantity === 0 ? 0 : Math.floor((line.expectedRefundMinor * quantity) / line.maximumQuantity));
-      }, 0) ?? 0,
-    [page, quantities]
-  );
-
   async function upload(files: FileList | null): Promise<void> {
     if (!files || !runtime.session) return;
     const incoming = [...files];
@@ -101,6 +95,11 @@ export function useAfterSaleViewModel(orderId: string) {
       setQuantities({});
       setAttachments([]);
       await load();
+      await Promise.all([
+        cache.invalidateQueries({ queryKey: StorefrontQuery.orders(runtime.query.scoped) }),
+        cache.invalidateQueries({ queryKey: StorefrontQuery.order(runtime.query.scoped, orderId) }),
+      ]);
+      runtime.showToast('售后申请已提交，退款金额与处理进度以服务端记录为准', 'success');
     } catch (cause) {
       if (hasFailureCode(cause, 'STEPUP_REQUIRED')) setVerification(true);
       else setError(presentError(cause).message);
@@ -121,7 +120,6 @@ export function useAfterSaleViewModel(orderId: string) {
     quantities,
     attachments,
     selected,
-    expectedMinor,
     actions: Object.freeze({
       back: () => void navigate(routePath('storeorder', { orderId })),
       refresh: () => void load(),

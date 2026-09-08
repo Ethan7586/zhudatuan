@@ -1,6 +1,6 @@
 import type { OperationInputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler } from '../../../../pipeline/OperationHandler';
 import type { PlanRepository } from '../port/PlanRepository';
 export class PlansManageHandler implements OperationHandler<'benefit.plans.manage', 'write'> {
   readonly operation = 'benefit.plans.manage' as const;

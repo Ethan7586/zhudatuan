@@ -1,6 +1,6 @@
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { defineModule } from '../../bootstrap/DefinedModule';
-import { SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { defineModule } from '../../composition/DefinedModule';
+import { SECURITY_KEYS } from '../../platform/secret/SecretStore';
 import { APPROVAL_PORT } from '../approval/public';
 import { REFERRAL_CATALOG_PORT } from '../catalog/public';
 import { REFERRAL_MEMBER_PORT } from '../member/public';
@@ -52,10 +52,10 @@ export const ReferralModule = defineModule(Manifest, {
       new MembersApproveHandler(referrals),
       new MembersDisqualifyHandler(referrals),
       new BindingsReadHandler(referrals),
-      new BindingsCreateHandler(referrals, UuidIdentifier, tokens, SystemClock),
+      new BindingsCreateHandler(referrals, UuidIdentifier, tokens, new SystemClock()),
       new CommissionsReadHandler(commissions),
       new EarningsReadHandler(referrals, commissions),
-      new LinksReadHandler(referrals, tokens, SystemClock),
+      new LinksReadHandler(referrals, tokens, new SystemClock()),
       new WithdrawalsReadHandler(referrals, withdrawals),
       new WithdrawalsCreateHandler(referrals, withdrawals, UuidIdentifier, new RequestWithdrawalApproval(context.ports.get(APPROVAL_PORT))),
     ];

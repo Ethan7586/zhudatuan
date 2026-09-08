@@ -1,5 +1,5 @@
 import { CAPABILITY_CODES_BY_OWNER } from '@shop/contract';
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { VERIFICATION_CHANNEL_PORT } from './public';
 
 export const NotificationCapabilities = CAPABILITY_CODES_BY_OWNER.notification;

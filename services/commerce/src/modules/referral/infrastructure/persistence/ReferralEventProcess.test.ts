@@ -1,7 +1,7 @@
 import type { PoolClient, QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import { pgTransactionState } from '../../../../adapter/database/PgTransactionState';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { pgTransactionState } from '../../../../platform/database/PgTransactionState';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { PgReferralEventProcess } from './PgReferralEventProcess';
 import { commissionableRefundAmount } from './ReferralEventCodec';
 
@@ -46,7 +46,16 @@ describe('Referral event persistence', () => {
   });
 
   it('excludes refunded benefit tenders from commission reversal evidence', () => {
-    expect(commissionableRefundAmount([{ kind: 'benefit', amount_minor: 200 }, { kind: 'wechat', amount_minor: 700 }, { kind: 'voucher', amount_minor: 100 }], 1_000)).toBe(800);
+    expect(
+      commissionableRefundAmount(
+        [
+          { kind: 'benefit', amount_minor: 200 },
+          { kind: 'wechat', amount_minor: 700 },
+          { kind: 'voucher', amount_minor: 100 },
+        ],
+        1_000
+      )
+    ).toBe(800);
     expect(() => commissionableRefundAmount([{ kind: 'wechat', amount_minor: 700 }], 1_000)).toThrow('REFERRAL_REFUND_EVIDENCE_MISMATCH');
   });
 });
@@ -59,7 +68,21 @@ function inbox() {
     aggregate: 'order:one',
     scope: 'mall:one',
     occurredAt: '2026-09-05T08:00:00.000Z',
-    payload: { member: 'member:buyer', currency: 'CNY', snapshot: { order: 'order:one', member: 'member:buyer', currency: 'CNY', totalMinor: 10_000, tenders: [{ kind: 'benefit', amountMinor: 1_000 }, { kind: 'wechat', amountMinor: 9_000 }], lines: [{ line: 'orderline:one', product: 'product:one', payableMinor: 10_000 }] } },
+    payload: {
+      member: 'member:buyer',
+      currency: 'CNY',
+      snapshot: {
+        order: 'order:one',
+        member: 'member:buyer',
+        currency: 'CNY',
+        totalMinor: 10_000,
+        tenders: [
+          { kind: 'benefit', amountMinor: 1_000 },
+          { kind: 'wechat', amountMinor: 9_000 },
+        ],
+        lines: [{ line: 'orderline:one', product: 'product:one', payableMinor: 10_000 }],
+      },
+    },
   };
 }
 

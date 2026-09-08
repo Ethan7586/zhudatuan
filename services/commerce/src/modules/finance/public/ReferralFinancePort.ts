@@ -1,5 +1,5 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 export interface ReferralFinancePort {
   post(
     context: WriteTransactionContext,

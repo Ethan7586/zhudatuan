@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import type { BatchImportProcessPort, ImportBatchFactoryPort, ImportExecution, ImportFailure, ImportTarget, JobPort, StoredObject } from '../../../runtime/public';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ImportPort } from '../../../runtime/public';
 import type { TaskAuthorizationPort } from '../../../access/public/TaskAuthorizationPort';
 import { statementImportMetadata } from '../../domain/value/StatementImport';
@@ -35,10 +35,18 @@ export class PgStatementImportProcess implements BatchImportProcessPort {
       runtime,
       authorization,
       write: (context, target, row, value) => this.write(context, target, row, value),
-      continue: (context, target, sequence) => jobs.create(context, {
-        idempotency: `${target.id}:${sequence}`, kind: 'financeimport', owner: 'finance', scope: target.scope, queue: 'import',
-        payload: Object.freeze({ import: target.id }), actor: 'system:finance',
-      }).then(() => undefined),
+      continue: (context, target, sequence) =>
+        jobs
+          .create(context, {
+            idempotency: `${target.id}:${sequence}`,
+            kind: 'financeimport',
+            owner: 'finance',
+            scope: target.scope,
+            queue: 'import',
+            payload: Object.freeze({ import: target.id }),
+            actor: 'system:finance',
+          })
+          .then(() => undefined),
       publish: (target, report, execution) => this.publish(target, report, execution),
     });
   }
@@ -123,8 +131,7 @@ export class PgStatementImportProcess implements BatchImportProcessPort {
         `insert into finance.statement(id,scope_id,period_start,period_end,currency,opening_minor,debit_minor,credit_minor,closing_minor,state,
           object_ref,sha256,generated_at,version) values($1,$2,$3,$4,$5,$6,$7,$8,$9,'draft',$10,$11,clock_timestamp(),1)
          on conflict(id) do nothing returning id`,
-        [statement.id, statement.scopeId, statement.periodStart, statement.periodEnd, statement.currency, statement.openingMinor,
-          statement.debitMinor, statement.creditMinor, statement.closingMinor, statement.objectRef, statement.sha256]
+        [statement.id, statement.scopeId, statement.periodStart, statement.periodEnd, statement.currency, statement.openingMinor, statement.debitMinor, statement.creditMinor, statement.closingMinor, statement.objectRef, statement.sha256]
       );
       if (statementCreated.rowCount !== 1) throw new Error('FINANCE_STATEMENT_DUPLICATE');
       const maker = importMaker(target.authorization);
@@ -145,8 +152,13 @@ export class PgStatementImportProcess implements BatchImportProcessPort {
       if (lines.rowCount !== rows) throw new Error('FINANCE_IMPORT_ROW_COUNT_MISMATCH');
       await this.runtime.complete(context, target.id, 'finance', report);
       await this.jobs.create(context, {
-        idempotency: `${target.id}:reconciliation`, kind: 'reconciliation', owner: 'finance', scope: target.scope, queue: 'finance',
-        payload: Object.freeze({ reconciliation }), actor: 'system:finance',
+        idempotency: `${target.id}:reconciliation`,
+        kind: 'reconciliation',
+        owner: 'finance',
+        scope: target.scope,
+        queue: 'finance',
+        payload: Object.freeze({ reconciliation }),
+        actor: 'system:finance',
       });
       await database.query(`delete from finance.statementimportline where import_id=$1 and scope_id=$2`, [target.id, target.scope]);
     });
@@ -196,13 +208,18 @@ function statementMeta(target: ImportTarget) {
 }
 
 function transactionOptions(target: ImportTarget, execution: ImportExecution) {
-  return { tenant: target.scope, membership: '', scope: target.scope, actor: 'job:financeimport', trace: target.id,
-    operation: 'job.finance.import', workload: 'jobs' as const, signal: execution.signal, deadline: execution.deadline };
+  return { tenant: target.scope, membership: '', scope: target.scope, actor: 'job:financeimport', trace: target.id, operation: 'job.finance.import', workload: 'jobs' as const, signal: execution.signal, deadline: execution.deadline };
 }
 
-function statementId(value: string): string { return `statement:${digest(value)}`; }
-function reconciliationId(value: string): string { return `reconciliation:${digest(value)}`; }
-function digest(value: string): string { return createHash('sha256').update(value).digest('hex').slice(0, 32); }
+function statementId(value: string): string {
+  return `statement:${digest(value)}`;
+}
+function reconciliationId(value: string): string {
+  return `reconciliation:${digest(value)}`;
+}
+function digest(value: string): string {
+  return createHash('sha256').update(value).digest('hex').slice(0, 32);
+}
 function importMaker(evidence: Readonly<Record<string, unknown>>): string {
   const maker = evidence.membership;
   if (typeof maker !== 'string' || !/^membership:[A-Za-z0-9:.-]+$/.test(maker)) throw new Error('FINANCE_IMPORT_MAKER_INVALID');

@@ -1,4 +1,4 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 
 import type { ProviderRepository } from '../port/ProviderRepository';
 import type { IdentityProviderRegistryPort } from '../port/IdentityProviderRegistry';

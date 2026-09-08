@@ -1,4 +1,4 @@
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
 import type { MarketingChannel } from '../domain/model/Campaign';
 
 export interface MarketingEvaluationInput {

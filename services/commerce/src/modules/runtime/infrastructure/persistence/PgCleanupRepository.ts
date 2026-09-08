@@ -1,4 +1,4 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import type { RuntimeCleanupPorts } from '../../application/port/CleanupPort';
 import { PgControlCleanup } from './PgControlCleanup';
 import { PgExportCleanup } from './PgExportCleanup';

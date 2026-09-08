@@ -1,5 +1,5 @@
 import { COMMERCE_EVENTS } from '@shop/contract';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import type { RealtimePort, SupportReplayPort } from '../port/RealtimePort';
 import type { OutboxRelayPort } from '../../../runtime/public';
 import type { SupportJobExecution } from './RunSupportJob';
@@ -7,7 +7,12 @@ import type { SupportJobExecution } from './RunSupportJob';
 const supportEvents: ReadonlySet<string> = new Set(COMMERCE_EVENTS.filter(({ module }) => module === 'support').map(({ type }) => type));
 
 export class RelaySupportEvents {
-  constructor(private readonly transactions: TransactionManager, private readonly outbox: OutboxRelayPort, private readonly realtime: RealtimePort, private readonly replay: SupportReplayPort) {}
+  constructor(
+    private readonly transactions: TransactionManager,
+    private readonly outbox: OutboxRelayPort,
+    private readonly realtime: RealtimePort,
+    private readonly replay: SupportReplayPort
+  ) {}
 
   async execute(id: string, execution: SupportJobExecution): Promise<void> {
     const event = await this.transactions.write(options(execution), async (context) => {
@@ -28,5 +33,15 @@ export class RelaySupportEvents {
 }
 
 function options(execution: SupportJobExecution) {
-  return { tenant: execution.scope, membership: '', scope: execution.scope, actor: 'job:supportrelay', trace: execution.trace, operation: 'job.support.supportrelay', workload: 'jobs' as const, signal: execution.signal, deadline: execution.deadline };
+  return {
+    tenant: execution.scope,
+    membership: '',
+    scope: execution.scope,
+    actor: 'job:supportrelay',
+    trace: execution.trace,
+    operation: 'job.support.supportrelay',
+    workload: 'jobs' as const,
+    signal: execution.signal,
+    deadline: execution.deadline,
+  };
 }

@@ -26,9 +26,14 @@ describe('finance module assembly', () => {
   it('registers statement import, reconciliation, settlement and invoice processors', () => {
     const requestedServices: string[] = [];
     const jobs = createJobs({
-      workload: 'jobs', handlers: {} as never, events: {} as never,
+      workload: 'jobs',
+      handlers: {} as never,
+      events: {} as never,
       ports: { get: (token) => (token.key === 'runtime.importbatchfactory' ? { create: () => ({}) } : {}) as never },
-      service: (token) => { requestedServices.push(token.key); return {} as never; },
+      service: (token) => {
+        requestedServices.push(token.key);
+        return {} as never;
+      },
     });
     expect(jobs.map(({ id }) => id)).toEqual(['financeimport', 'reconciliation', 'settlement', 'invoice']);
     expect(requestedServices).toEqual(expect.arrayContaining(['database.pool', 'object.store', 'kms.client', 'finance.invoiceissuer', 'finance.payoutgateway']));

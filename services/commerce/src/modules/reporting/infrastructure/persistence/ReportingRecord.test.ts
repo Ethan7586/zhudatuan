@@ -92,12 +92,22 @@ describe('reporting persistence records', () => {
   });
 
   it('fails closed when a persisted metric contains a non-IANA timezone', () => {
-    expect(() => metricRow({
-      code: 'sales.amount', version: 1,
-      definition: { name: '成交金额', formula: '支付金额合计', dimensions: ['mall'], granularity: 'day', owner: 'reporting' },
-      scope: 'enterprise:1', period: { from: '2026-08-31T00:00:00Z', to: '2026-09-01T00:00:00Z', timezone: 'UTC+8' },
-      dimensions: { mall: 'mall:one' }, value: 10, unit: 'minor', currency: 'CNY', watermark: '2026-09-01T00:00:00Z',
-      projectionVersion: 1, cursorTime: '2026-09-01T00:00:00Z', cursorId: 'sales.amount:one',
-    })).toThrow('REPORT_TIMEZONE_INVALID');
+    expect(() =>
+      metricRow({
+        code: 'sales.amount',
+        version: 1,
+        definition: { name: '成交金额', formula: '支付金额合计', dimensions: ['mall'], granularity: 'day', owner: 'reporting' },
+        scope: 'enterprise:1',
+        period: { from: '2026-08-31T00:00:00Z', to: '2026-09-01T00:00:00Z', timezone: 'UTC+8' },
+        dimensions: { mall: 'mall:one' },
+        value: 10,
+        unit: 'minor',
+        currency: 'CNY',
+        watermark: '2026-09-01T00:00:00Z',
+        projectionVersion: 1,
+        cursorTime: '2026-09-01T00:00:00Z',
+        cursorId: 'sales.amount:one',
+      })
+    ).toThrow('REPORT_TIMEZONE_INVALID');
   });
 });

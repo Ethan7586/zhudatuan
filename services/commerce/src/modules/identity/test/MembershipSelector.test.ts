@@ -12,10 +12,7 @@ describe('MembershipSelector', () => {
       id: 'selection-id',
       principal: 'principal-one',
       target: 'storefront',
-      memberships: [
-        membership('membership-one'),
-        membership('membership-two'),
-      ],
+      memberships: [membership('membership-one'), membership('membership-two')],
       expiresAt: new Date('2099-01-01T00:00:00.000Z'),
       transaction: null,
       returnTarget,
@@ -47,10 +44,7 @@ describe('MembershipSelector', () => {
             assurance: 1,
             authorization,
             returnTarget,
-            memberships: [
-              membership('membership-one'),
-              membership('membership-two'),
-            ],
+            memberships: [membership('membership-one'), membership('membership-two')],
           },
           { peer: '127.0.0.1', agent: 'browser', device: 'device-one' }
         )

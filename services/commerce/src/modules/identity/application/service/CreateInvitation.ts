@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import type { IdentityInvitationsCreateBody } from '@shop/contract';
 import type { Telemetry } from '@shop/telemetry';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { InvitationAccessPort } from '../../../access/public';
 import type { IdentityRegistrationPort } from '../../../member/public';
 import { InvitationPolicy } from '../../domain/policy/InvitationPolicy';
@@ -18,6 +18,7 @@ import type { InvitationCodePort, InvitationHashPort } from '../port/InvitationS
 import type { RegistrationPolicyRepository } from '../port/RegistrationPolicyRepository';
 import { invitationExpiry, invitationReceipt, invitationText, type LoadedInvitation, type PreparedInvitation } from './InvitationCreation';
 import { OneTimeInvitationCode, PrepareEmployeeInvitation } from './PrepareEmployeeInvitation';
+import { publishInvitation, recordInvitation } from './InvitationObserver';
 export class CreateInvitation {
   constructor(
     private readonly repository: InvitationRepository,
@@ -41,12 +42,12 @@ export class CreateInvitation {
       execute: (request, database, prepared) => this.commit(request, database, prepared),
       finalize: (request, result, prepared) => {
         prepared.code.clear();
-        this.record(request, prepared.kind, 'success');
+        recordInvitation(this.telemetry, request, prepared.kind, 'success');
         return Promise.resolve(result);
       },
       discard: (request, prepared, cause) => {
         prepared.code.clear();
-        this.record(request, prepared.kind, 'failure', cause instanceof DomainError ? cause.code : 'INVITATION_CREATE_FAILED');
+        recordInvitation(this.telemetry, request, prepared.kind, 'failure', cause instanceof DomainError ? cause.code : 'INVITATION_CREATE_FAILED');
         return Promise.resolve();
       },
     });
@@ -166,7 +167,7 @@ export class CreateInvitation {
         termsHash: registration!.terms_hash,
         reason: prepared.reason,
       });
-      await this.issued(database, request, prepared.invitation, prepared.organization, prepared.kind, prepared.target, prepared.membership);
+      await publishInvitation(this.events, database, request, prepared.invitation, prepared.organization, prepared.kind, prepared.target, prepared.membership);
       return invitationReceipt(row, prepared.code.reveal(), prepared.mobileMasked, { displayName: prepared.displayName, ...(prepared.employeeNo === null ? {} : { employeeNo: prepared.employeeNo }) });
     }
 
@@ -220,27 +221,8 @@ export class CreateInvitation {
       termsHash: registration?.terms_hash ?? null,
       reason: prepared.reason,
     });
-    await this.issued(database, request, prepared.invitation, plan.organization, prepared.kind, target, plan.membership);
+    await publishInvitation(this.events, database, request, prepared.invitation, plan.organization, prepared.kind, target, plan.membership);
     return invitationReceipt(row, prepared.code.reveal());
-  }
-
-  private issued(context: WriteTransactionContext, request: OperationRequest, invitation: string, scope: string, kind: PreparedInvitation['kind'], target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier', membership: string | null): Promise<void> {
-    const actor = requireAccess(request);
-    return this.events.publish(context, 'identity.invitation.issued', 'invitation', invitation, scope, actor.trace, { invitationId: invitation, kind, target, membershipId: membership });
-  }
-
-  private record(request: OperationRequest, kind: PreparedInvitation['kind'], result: 'success' | 'failure', errorCode?: string): void {
-    const actor = requireAccess(request);
-    this.telemetry.metrics.count('identity_invitation_issued_total', 1, {
-      requestId: actor.trace,
-      traceId: actor.trace,
-      module: 'identity',
-      operation: request.type,
-      result,
-      resourceType: kind,
-      target: kind === 'signin' ? 'variable' : 'storefront',
-      ...(errorCode === undefined ? {} : { errorCode }),
-    });
   }
 }
 

@@ -1,13 +1,4 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-
-export interface RuntimeDatabaseState {
-  readonly writable: boolean;
-  readonly migration: boolean;
-  readonly contract: boolean;
-  readonly role: boolean;
-  readonly operations: number;
-  readonly events: number;
-}
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 
 export interface RuntimeQueueState {
   readonly queued: number;
@@ -17,6 +8,5 @@ export interface RuntimeQueueState {
 }
 
 export interface RuntimeRepository {
-  databaseState(context: ReadTransactionContext): Promise<RuntimeDatabaseState>;
   queueState(context: ReadTransactionContext): Promise<RuntimeQueueState>;
 }

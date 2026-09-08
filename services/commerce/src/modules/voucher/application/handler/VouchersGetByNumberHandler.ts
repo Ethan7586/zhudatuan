@@ -1,5 +1,5 @@
 import type { OperationInputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
 import type { VoucherApplication } from '../service/VoucherApplication';
 import { PreparedOperation } from '../service/PreparedOperation';
 

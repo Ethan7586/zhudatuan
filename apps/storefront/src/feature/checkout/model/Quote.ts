@@ -1,12 +1,16 @@
-import type { Tender } from './Tender';
+import type { OperationOutputFor } from '@shop/contract';
 
-export interface QuoteLine {
-  readonly listing: string;
-  readonly quantity: number;
-  readonly payableMinor: number;
-  readonly accepted: boolean;
-  readonly reasons: readonly string[];
-  readonly versions: Readonly<Record<string, string | number>>;
+type QuoteDto = OperationOutputFor<'checkout.quote.create'>;
+
+export interface QuoteSelection {
+  readonly cartVersion: number;
+  readonly lines: readonly Readonly<{ listingId: string; quantity: number; lineVersion: number }>[];
+  readonly addressId: string | null;
+  readonly invoiceId: string | null;
+  readonly delivery: Readonly<{ method: QuoteDto['selection']['delivery']['method']; note: string | null; scheduledAt: string | null }>;
+  readonly voucherIds: readonly string[];
+  readonly benefits: readonly Readonly<{ accountId: string; amountMinor: number }>[];
+  readonly paymentScene: QuoteDto['selection']['paymentScene'];
 }
 
 export interface Quote {
@@ -16,8 +20,9 @@ export interface Quote {
   readonly confirmationToken: string | null;
   readonly evidenceHash: string;
   readonly expiresAt: string;
+  readonly selection: QuoteSelection;
   readonly cartVersion: number;
-  readonly lines: readonly QuoteLine[];
+  readonly lines: readonly Readonly<{ listing: string; quantity: number; payableMinor: number; accepted: boolean; reasons: readonly string[]; versions: Readonly<Record<string, string | number>> }>[];
   readonly subtotalMinor: number;
   readonly discountMinor: number;
   readonly shippingMinor: number;
@@ -26,6 +31,6 @@ export interface Quote {
   readonly benefitMinor: number;
   readonly personalMinor: number;
   readonly currency: string;
-  readonly tenders: readonly Tender[];
+  readonly tenders: readonly Readonly<{ kind: QuoteDto['tenders'][number]['kind']; reference: string | null; amountMinor: number }>[];
   readonly rejections: readonly Readonly<{ listing: string; reasons: readonly string[] }>[];
 }

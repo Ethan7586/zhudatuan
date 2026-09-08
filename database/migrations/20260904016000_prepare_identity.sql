@@ -27,7 +27,7 @@ create table identity.refreshtoken(
 insert into identity.refreshtoken(id,family_id,session_id,parent_id,token_hash,sequence,issued_at,revoked_at)
 select 'refreshtoken:'||encode(public.digest(session.id||':baseline','sha256'),'hex'),
   'tokenfamily:'||encode(public.digest(session.id||':family','sha256'),'hex'),session.id,null,session.token_hash,0,
-  session.created_at,session.revoked_at
+  session.created_at,case when session.revoked_at is null then null else greatest(session.revoked_at,session.created_at) end
 from identity.session session;
 
 create index identity_refreshtoken_current on identity.refreshtoken(session_id,sequence desc)
@@ -48,7 +48,7 @@ create trigger sessiontokenfamilyrevoke after update of revoked_at on identity.s
 for each row execute function identity.revoke_session_token_family();
 
 create or replace function access.assert_role_separation()
-returns trigger language plpgsql security definer set search_path=access,pg_temp set row_security=off as $function$
+returns trigger language plpgsql security definer set search_path=access,pg_temp set row_security=on as $function$
 declare affected text:=coalesce(new.role_id,old.role_id);
 begin
   if exists(select 1 from access.role where id=affected and kind='owner') then return null; end if;

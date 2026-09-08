@@ -1,12 +1,12 @@
 import type { FinanceAction, FinanceEntries } from './FinanceOperation';
 /** Invoice persistence actions. */
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { createHash, randomUUID } from 'node:crypto';
 
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { rowResult } from '../../../../adapter/database/DatabaseResult';
-import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { rowResult } from '../../../../platform/database/DatabaseResult';
+import type { OperationRequest } from '../../../../pipeline/OperationHandler';
+import { bodyRecord, integerField, textField } from '../../../../pipeline/Validation';
 import type { FinanceWorkflowFactory } from './PgFinanceWorkflow';
 import { Invoice as InvoiceAggregate } from '../../domain/model/Invoice';
 import type { FinanceOrderPort } from '../../../order/public';
@@ -64,8 +64,7 @@ const requestInvoice = async (request: Parameters<FinanceAction>[0], database: P
     requested_by,reason,evidence,source_hash,kind) select $1,profile.id,$2,$3,settlement.currency,'submitted',clock_timestamp(),0,$4,$5,
     $6::jsonb,$7,'original' from invoice.profile profile join finance.settlement settlement on settlement.id=$2 where profile.id=$8
     and profile.owner_id=$9 and profile.status='active' and settlement.scope_id=$9 returning *`,
-    [proposal.id, proposal.settlementId, proposal.amountMinor, proposal.requestedBy, textField(body, 'reason', 1000),
-      JSON.stringify(record(body.evidence)), sourceHash, proposal.profileId, access.scope.id]
+    [proposal.id, proposal.settlementId, proposal.amountMinor, proposal.requestedBy, textField(body, 'reason', 1000), JSON.stringify(record(body.evidence)), sourceHash, proposal.profileId, access.scope.id]
   );
   if (!(result.rows[0] as { id?: string } | undefined)?.id) throw new Error('INVOICE_PROFILE_OR_SETTLEMENT_INVALID');
   await database.query(
@@ -95,10 +94,7 @@ async function assertInvoiceSources(context: Parameters<FinanceOrderPort['verifi
   const paymentIds = distinct(lines.filter(({ source_type }) => source_type === 'payment').map(({ source_id }) => source_id));
   const paymentOrders = await payments.orders(context, paymentIds);
   if (new Set(paymentOrders.map(({ payment }) => payment)).size !== paymentIds.length) throw new Error('INVOICE_LINES_NOT_ELIGIBLE_OR_AMOUNT_MISMATCH');
-  const orderIds = distinct([
-    ...lines.filter(({ source_type }) => source_type === 'order').map(({ source_id }) => source_id),
-    ...paymentOrders.map(({ order }) => order),
-  ]);
+  const orderIds = distinct([...lines.filter(({ source_type }) => source_type === 'order').map(({ source_id }) => source_id), ...paymentOrders.map(({ order }) => order)]);
   const verified = await orders.verified(context, orderIds);
   if (new Set(verified).size !== orderIds.length) throw new Error('INVOICE_LINES_NOT_ELIGIBLE_OR_AMOUNT_MISMATCH');
 }

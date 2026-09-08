@@ -4,4 +4,3 @@ export { RUNTIME_IDENTITY_PORT, type IdentityRetentionPort } from './IdentityRet
 export { MEMBERSHIP_CONTEXT_PORT, type MembershipContext, type MembershipContextPort } from './MembershipContextPort';
 export { PAYMENT_IDENTITY_PORT, type PaymentIdentityPort, type PaymentIdentitySubject } from './PaymentIdentityPort';
 export { IDENTITY_READ_PORT, type IdentityReadPort, type StorefrontIdentity } from './IdentityReadPort';
-export { IDENTITY_READINESS_PORT, type IdentityReadinessPort } from './ReadinessPort';

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PgTransactionAccess } from '../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../platform/database/PgTransactionAccess';
 import { result, withReadTransaction, withWriteTransaction } from '../../../test/TransactionFixture';
 import { PgRecoveryRepository } from '../infrastructure/persistence/PgRecoveryRepository';
 import { afterSaleRefundRunnable } from '../infrastructure/persistence/PgRefundRecoveryProcess';
@@ -20,7 +20,23 @@ describe('Payment recovery and refund concurrency', () => {
       if (sql.includes('from payment.recoverycase recovery')) {
         expect(values[4]).toBe('order:one');
         expect(sql).toContain('recovery.order_id=$5');
-        return result([{ id: 'recovery:one', order_id: 'order:one', resource_type: 'intent', resource_id: 'intent:one', severity: 'critical', state: 'open', error_code: 'PAYMENT_LATE_SUCCESS', evidence: {}, occurrence_count: 2, opened_at: '2026-09-05T00:00:00.000Z', resolved_at: null, resolution_request_id: null, version: 4 }]);
+        return result([
+          {
+            id: 'recovery:one',
+            order_id: 'order:one',
+            resource_type: 'intent',
+            resource_id: 'intent:one',
+            severity: 'critical',
+            state: 'open',
+            error_code: 'PAYMENT_LATE_SUCCESS',
+            evidence: {},
+            occurrence_count: 2,
+            opened_at: '2026-09-05T00:00:00.000Z',
+            resolved_at: null,
+            resolution_request_id: null,
+            version: 4,
+          },
+        ]);
       }
       return result([]);
     });
@@ -36,9 +52,21 @@ describe('Payment recovery and refund concurrency', () => {
       }
       throw new Error(`UNEXPECTED_QUERY:${sql}`);
     });
-    await expect(withWriteTransaction(query, (context) => recoveryRepository().resolve(context, {
-      case: 'recovery:one', action: 'requery', reason: '重新核对渠道结果', scope: 'enterprise:one', actor: 'actor:one', membership: 'membership:one', trace: 'trace:one', idempotency: 'recovery-key', expectedVersion: 4,
-    }))).rejects.toThrow('VERSION_CONFLICT');
+    await expect(
+      withWriteTransaction(query, (context) =>
+        recoveryRepository().resolve(context, {
+          case: 'recovery:one',
+          action: 'requery',
+          reason: '重新核对渠道结果',
+          scope: 'enterprise:one',
+          actor: 'actor:one',
+          membership: 'membership:one',
+          trace: 'trace:one',
+          idempotency: 'recovery-key',
+          expectedVersion: 4,
+        })
+      )
+    ).rejects.toThrow('VERSION_CONFLICT');
     expect(query).toHaveBeenCalledTimes(1);
   });
 
@@ -64,11 +92,7 @@ describe('Payment recovery and refund concurrency', () => {
 });
 
 function recoveryRepository(): PgRecoveryRepository {
-  return new PgRecoveryRepository(
-    new PgTransactionAccess(),
-    { descendants: vi.fn(async () => ['enterprise:one']) },
-    { numbers: vi.fn(async () => ({ 'order:one': 'SW-1' })) }
-  );
+  return new PgRecoveryRepository(new PgTransactionAccess(), { descendants: vi.fn(async () => ['enterprise:one']) }, { numbers: vi.fn(async () => ({ 'order:one': 'SW-1' })) });
 }
 
 function refundRequest(idempotency: string, expectedVersion: number) {

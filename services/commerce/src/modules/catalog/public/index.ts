@@ -1,5 +1,5 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../platform/database/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
 export type { CatalogSku } from './CatalogSku';
 export type { CatalogSourceInput } from './CatalogSource';
 
@@ -34,5 +34,5 @@ export { REFERRAL_CATALOG_PORT, type ReferralCatalogPort } from './ReferralCatal
 export { CART_CATALOG_PORT, type CartCatalogPort, type CartListingSnapshot } from './CartCatalogPort';
 export { CHECKOUT_CATALOG_PORT, type CheckoutCatalogItem, type CheckoutCatalogPort } from './CheckoutCatalogPort';
 export { EXPERIENCE_CATALOG_PORT, type ExperienceCatalogEvidence, type ExperienceCatalogItem, type ExperienceCatalogPort, type ExperienceCatalogReferences } from './ExperienceCatalogPort';
-export { CATALOG_READ_PORT, type CatalogPosition, type CatalogReadPort, type StorefrontListing } from './CatalogReadPort';
+export { CATALOG_READ_PORT, type CatalogPosition, type CatalogReadPort, type StorefrontCategoryFacet, type StorefrontListing } from './CatalogReadPort';
 export { MEMBER_CATALOG_PORT, type MemberCatalogPort, type MemberCatalogVisibility } from './MemberCatalogPort';

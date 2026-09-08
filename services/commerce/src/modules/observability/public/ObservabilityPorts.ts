@@ -1,4 +1,4 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import { publicPort } from '../../../composition/ModuleRegistry';
 import type { LogSink, MetricSink, TraceSink } from './TelemetryPort';
 
 export type ObservabilityMetricPort = MetricSink;

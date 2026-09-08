@@ -1,5 +1,5 @@
 import type { JsonObject } from '@shop/contract';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ChannelFailure } from '../../domain/model/Failure';
 import type { ChannelWebhookEvent, ChannelWebhookState } from '../../public/ChannelWebhookEvent';
 
@@ -27,10 +27,7 @@ export interface StandardChannelWebhook {
   readonly normalized: JsonObject;
 }
 
-export type ChannelWebhookOutcome =
-  | Readonly<{ status: 'applied'; event: ChannelWebhookEvent }>
-  | Readonly<{ status: 'duplicate' | 'stale' }>
-  | Readonly<{ status: 'deadlettered'; error: 'CHANNEL_WEBHOOK_MAPPING_MISSING' }>;
+export type ChannelWebhookOutcome = Readonly<{ status: 'applied'; event: ChannelWebhookEvent }> | Readonly<{ status: 'duplicate' | 'stale' }> | Readonly<{ status: 'deadlettered'; error: 'CHANNEL_WEBHOOK_MAPPING_MISSING' }>;
 
 export interface ChannelWebhookRepository {
   claim(context: WriteTransactionContext, receipt: string, scope: string): Promise<ChannelWebhookReceipt | null>;

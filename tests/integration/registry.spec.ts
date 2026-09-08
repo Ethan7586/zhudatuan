@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { OperationCatalog } from '@shop/contract';
-import { COMMERCE_MODULES, BUSINESS_MODULES } from '../../services/commerce/src/app/modules';
-import { ModuleRegistry, type CommerceModule } from '../../services/commerce/src/bootstrap/ModuleRegistry';
-import { RouteRegistry } from '../../services/commerce/src/bootstrap/RouteRegistry';
-import { defineModuleManifest } from '../../services/commerce/src/bootstrap/ModuleManifest';
+import { COMMERCE_MODULES, BUSINESS_MODULES } from '../../services/commerce/src/generated/ModuleCatalog';
+import { ModuleRegistry, type CommerceModule } from '../../services/commerce/src/composition/ModuleRegistry';
+import { RouteRegistry } from '../../services/commerce/src/composition/RouteRegistry';
+import { defineModuleManifest } from '../../services/commerce/src/composition/ModuleManifest';
 
 test('every contract operation has one executable route and path parameters round-trip', () => {
   const routes = new RouteRegistry();
@@ -20,23 +20,34 @@ test('every contract operation has one executable route and path parameters roun
 test('all bounded contexts, support modules, runtime and observability have a deterministic dependency order', async () => {
   assert.equal(BUSINESS_MODULES.length, 30);
   assert.equal(COMMERCE_MODULES.length, 33);
-  const registry = new ModuleRegistry();
-  const loaded: string[] = [];
-  for (const module of COMMERCE_MODULES)
-    registry.add({
-      manifest: module.manifest,
-      id: module.id,
-      dependencies: module.dependencies,
-      services: [],
-      bind: () => [],
-      register: () => {
-        loaded.push(module.id);
-      },
-    });
-  await registry.load({} as never);
-  assert.equal(loaded.length, COMMERCE_MODULES.length);
-  assert.equal(new Set(loaded).size, COMMERCE_MODULES.length);
-  for (const module of COMMERCE_MODULES) for (const dependency of module.dependencies) assert.ok(loaded.indexOf(dependency) < loaded.indexOf(module.id));
+  for (const workload of ['api', 'jobs', 'provider'] as const) {
+    const registry = new ModuleRegistry();
+    const loaded: string[] = [];
+    for (const module of COMMERCE_MODULES)
+      registry.add({
+        manifest: module.manifest,
+        id: module.id,
+        dependencies: module.dependencies,
+        services: module.services,
+        capabilities: module.capabilities,
+        dependenciesFor: module.dependenciesFor?.bind(module),
+        servicesFor: module.servicesFor?.bind(module),
+        bindingsFor: module.bindingsFor?.bind(module),
+        workersFor: module.workersFor?.bind(module),
+        bind: () => [],
+        register: () => {
+          loaded.push(module.id);
+        },
+      });
+    await registry.load({ workload } as never);
+    assert.equal(loaded.length, COMMERCE_MODULES.length);
+    assert.equal(new Set(loaded).size, COMMERCE_MODULES.length);
+    for (const module of COMMERCE_MODULES) {
+      for (const dependency of module.bindingsFor?.(workload) ?? module.dependencies) {
+        assert.ok(loaded.indexOf(dependency) < loaded.indexOf(module.id), `${workload}:${dependency}->${module.id}`);
+      }
+    }
+  }
 });
 
 test('module dependency cycle and missing dependency both fail startup', async () => {

@@ -1,4 +1,4 @@
-import { token } from '../../../../bootstrap/Container';
+import { token } from '../../../../composition/Container';
 import type { TraceSink } from '../../public/TelemetryPort';
 export type { TraceHandle, TraceSink } from '../../public/TelemetryPort';
 

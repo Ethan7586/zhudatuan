@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../../platform/error/DomainError';
 export class WecomSuiteMapper {
   identity(body: Readonly<Record<string, unknown>>): Readonly<{ tenant: string; subject: string }> {
     if (body.errcode !== 0) throw new DomainError(body.errcode === 40014 || body.errcode === 42001 ? 'IDENTITY_PROVIDER_UNAVAILABLE' : 'FEDERATION_CALLBACK_REJECTED');

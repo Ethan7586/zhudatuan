@@ -13,5 +13,25 @@
 
 1. 按 `eventId` 检查 `runtime.inbox` 与 `runtime.job`。
 2. 按 `order_id` 检查 `payment.intent`、`payment.action` 与各类 Hold 状态。
-3. 检查 `job:cancelquery:*` 的查询恢复任务；失败时从 `runtime.deadletter` 和支付恢复中心重试。
+3. 检查 `job:cancelquery:*` 的查询恢复任务；失败时从 `runtime.deadletters` 和支付恢复中心重试。
 4. 禁止直接修改订单、支付或库存状态；只能重放原事件或重试恢复任务。
+
+## Trigger, impact and owner
+
+Trigger 是 `order.cancelled`；Impact 是外部支付仍可完成或资源占用未释放。Payment Owner 主责，Order、Inventory、Voucher、Benefit 与 Marketing Owner 协同。
+
+## Stop loss and diagnosis
+
+Stop loss 阻止新 Capture，保留未知支付的恢复查询。Diagnosis 依次核对 Inbox、Intent/Action、稳定外部单号、所有 Hold、`paymentquery`、Provider 回执与 Outbox。
+
+## Recovery and data repair
+
+Recovery 使用原事件和稳定幂等键；Data repair 仅通过查询、退款与资源恢复 Saga 前向执行，禁止伪造 Provider 结果。
+
+## Validation, escalation and audit
+
+Validation 证明支付事实唯一、资源只释放一次、迟到成功必退款且账务平衡。Escalation 包括重复扣款、未知状态超时、退款失败和跨订单关联。Audit 保存脱敏 Provider 引用、Job/Event/Trace 和金额核对。
+
+## Postmortem
+
+重复扣款、资源泄漏或 SLO 超限必须完成 Postmortem。

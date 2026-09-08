@@ -16,9 +16,9 @@ export interface JourneyEvidence {
 const root = process.cwd();
 const migrationText = sourceTree('database/migrations', '.sql');
 const objectContract = source('database/contracts/objects.yml');
-const operationPipeline = source('services/commerce/src/foundation/application/OperationPipeline.ts');
-const operationExecutor = source('services/commerce/src/foundation/application/OperationExecutor.ts');
-const operationHash = source('services/commerce/src/foundation/application/OperationHash.ts');
+const operationPipeline = source('services/commerce/src/pipeline/OperationPipeline.ts');
+const operationExecutor = source('services/commerce/src/pipeline/OperationExecutor.ts');
+const operationHash = source('services/commerce/src/pipeline/OperationHash.ts');
 const eventDefinitions = source('packages/contract/definitions/events.yml');
 const permissionCodes = new Set(PERMISSION_CATALOG.map(({ code }) => code));
 const sdkOperations = new Set<OperationId>(SDK_OPERATION_IDS);
@@ -71,13 +71,13 @@ export function journey(requirement: MvpRequirementId, evidence: JourneyEvidence
     }
     assert.match(migrationText, /deadletter|failed_at/i);
     assert.match(source('services/commerce/src/modules/runtime/application/process/RunJob.ts'), /fail|retry|deadletter/i);
-    assert.match(source('services/commerce/src/foundation/interface/ErrorMapper.ts'), /status|code/);
+    assert.match(source('services/commerce/src/pipeline/ErrorPresenter.ts'), /status|code/);
   });
 
   test(`${requirement} audit and telemetry evidence is mandatory`, () => {
     assert.match(operationExecutor, /auditReply/);
     assert.match(operationHash, /executionRequestHash/);
-    assert.match(source('services/commerce/src/foundation/interface/HttpApp.ts'), /request-id|x-request-id/i);
+    assert.match(source('services/commerce/src/platform/http/HttpApp.ts'), /request-id|x-request-id/i);
     assert.match(migrationText, /create table audit\.record/i);
     if (evidence.event) assert.match(eventDefinitions, new RegExp(`id: ${escape(evidence.event)}`));
   });

@@ -1,4 +1,4 @@
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
 import type { ApprovalPort } from '../../../approval/public';
 import type { CatalogRiskDecisionPort } from '../../../catalog/public';
 import type { RiskWorkRepository } from '../port/RiskWorkRepository';
@@ -23,7 +23,9 @@ export class ApplyRiskAction {
           scopeId: action.scope,
           requesterId: action.requester,
           subject: {
-            kind: 'riskaction', id: action.id, version: action.version,
+            kind: 'riskaction',
+            id: action.id,
+            version: action.version,
             snapshot: { decision: action.decision, kind: action.kind, target: action.target, rationale: action.rationale },
           },
           action: `risk.${action.kind}`,
@@ -42,8 +44,12 @@ export class ApplyRiskAction {
       if (action.kind === 'suggestunlist' && action.target.module === 'catalog') {
         if (action.approvalProof === null) throw new Error('RISK_ACTION_APPROVAL_PROOF_REQUIRED');
         await this.catalog.execute(context, {
-          decision: action.decision, scope: action.scope, listing: action.target.id,
-          proof: action.approvalProof, action: action.kind, evidenceHash: action.evidenceHash,
+          decision: action.decision,
+          scope: action.scope,
+          listing: action.target.id,
+          proof: action.approvalProof,
+          action: action.kind,
+          evidenceHash: action.evidenceHash,
         });
         if (!(await this.repository.applied(context, action.id, action.version))) throw new Error('RISK_ACTION_VERSION_CONFLICT');
         return;
@@ -52,7 +58,10 @@ export class ApplyRiskAction {
     });
   }
 
-  async approvalEvent(input: Readonly<{ type: 'approval.instance.approved' | 'approval.instance.rejected'; instance: string; subject: string; subjectVersion: number; action: string; proof: string | null }>, execution: RiskReplayExecution): Promise<void> {
+  async approvalEvent(
+    input: Readonly<{ type: 'approval.instance.approved' | 'approval.instance.rejected'; instance: string; subject: string; subjectVersion: number; action: string; proof: string | null }>,
+    execution: RiskReplayExecution
+  ): Promise<void> {
     const approved = await this.transactions.write(options(execution, 'job.risk.approval'), async (context) => {
       if (input.type === 'approval.instance.rejected') {
         await this.repository.reject(context, input.instance, input.subject, input.subjectVersion, input.action);
@@ -67,7 +76,14 @@ export class ApplyRiskAction {
 
 function options(execution: RiskReplayExecution, operation: string): TransactionOptions {
   return {
-    tenant: execution.scope, membership: '', scope: execution.scope, actor: 'job:riskscan', trace: execution.trace,
-    operation, workload: 'jobs', signal: execution.signal, deadline: execution.deadline,
+    tenant: execution.scope,
+    membership: '',
+    scope: execution.scope,
+    actor: 'job:riskscan',
+    trace: execution.trace,
+    operation,
+    workload: 'jobs',
+    signal: execution.signal,
+    deadline: execution.deadline,
   };
 }

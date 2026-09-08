@@ -13,6 +13,7 @@ import type { OrderPort } from '../public';
 import { OrderMapper } from './OrderMapper';
 import { ImportUploadGateway } from '../../../shared/import/ImportUploadGateway';
 
+import { command, instant, orderFilterQuery } from './OrderRequest';
 export class OrderGateway implements OrderPort {
   private readonly operations: OrderOperations;
   private readonly supportOperations: SupportOperations;
@@ -49,27 +50,25 @@ export class OrderGateway implements OrderPort {
   }
 
   async support(context: ConsoleContext, reference: string, signal?: AbortSignal) {
-    const page = await this.supportOperations.casesRead(
-      { query: { limit: 50, orderId: reference } },
-      consoleRequest(context.scope, signal, context.session.accessVersion)
+    const page = await this.supportOperations.casesRead({ query: { limit: 50, orderId: reference } }, consoleRequest(context.scope, signal, context.session.accessVersion));
+    return Object.freeze(
+      page.items.map((item) =>
+        Object.freeze({
+          id: item.id,
+          subject: item.subject,
+          state: item.state,
+          priority: item.priority,
+          assignedAgentId: item.assigned_agent_id,
+          unreadCount: item.unread_count,
+          slaRisk: item.sla_risk,
+          updatedAt: item.updated_at,
+        })
+      )
     );
-    return Object.freeze(page.items.map((item) => Object.freeze({
-      id: item.id,
-      subject: item.subject,
-      state: item.state,
-      priority: item.priority,
-      assignedAgentId: item.assigned_agent_id,
-      unreadCount: item.unread_count,
-      slaRisk: item.sla_risk,
-      updatedAt: item.updated_at,
-    })));
   }
 
   async recoveries(context: ConsoleContext, reference?: string, signal?: AbortSignal) {
-    const page = await this.paymentOperations.recoveriesRead(
-      { query: { limit: 50, ...(reference === undefined ? {} : { orderId: reference }) } },
-      consoleRequest(context.scope, signal, context.session.accessVersion)
-    );
+    const page = await this.paymentOperations.recoveriesRead({ query: { limit: 50, ...(reference === undefined ? {} : { orderId: reference }) } }, consoleRequest(context.scope, signal, context.session.accessVersion));
     return this.mapper.recoveries(page);
   }
 
@@ -93,18 +92,12 @@ export class OrderGateway implements OrderPort {
   }
 
   async receive(context: ConsoleContext, order: OrderDetail, reason: string, identity: string, signal?: AbortSignal) {
-    const value = await this.operations.ordersReceive(
-      { path: { orderid: order.id }, body: { expectedVersion: order.version, reason: reason.trim() } },
-      command(context, identity, signal, order.version)
-    );
+    const value = await this.operations.ordersReceive({ path: { orderid: order.id }, body: { expectedVersion: order.version, reason: reason.trim() } }, command(context, identity, signal, order.version));
     return this.mapper.received(value);
   }
 
   async cancel(context: ConsoleContext, order: OrderDetail, reason: string, identity: string, signal?: AbortSignal) {
-    const value = await this.operations.ordersCancel(
-      { path: { orderid: order.id }, body: { expectedVersion: order.version, reason: reason.trim() } },
-      command(context, identity, signal, order.version)
-    );
+    const value = await this.operations.ordersCancel({ path: { orderid: order.id }, body: { expectedVersion: order.version, reason: reason.trim() } }, command(context, identity, signal, order.version));
     return this.mapper.cancelled(value);
   }
 
@@ -120,7 +113,6 @@ export class OrderGateway implements OrderPort {
     return this.mapper.aftersale(value, decision);
   }
 
-
   async ship(context: ConsoleContext, target: OrderFulfillment, tracking: string, carrier: string, identity: string, signal?: AbortSignal) {
     const value = await this.fulfillmentOperations.shipmentsCreate(
       { path: { fulfillmentid: target.id }, body: { tracking: tracking.trim(), ...(carrier.trim() === '' ? {} : { carrier: carrier.trim() }) } },
@@ -130,10 +122,7 @@ export class OrderGateway implements OrderPort {
   }
 
   async receiveReturn(context: ConsoleContext, target: OrderReturn, tracking: string, identity: string, signal?: AbortSignal) {
-    const value = await this.fulfillmentOperations.returnsReceive(
-      { path: { returnid: target.id }, body: { ...(tracking.trim() === '' ? {} : { tracking: tracking.trim() }) } },
-      command(context, identity, signal, target.version)
-    );
+    const value = await this.fulfillmentOperations.returnsReceive({ path: { returnid: target.id }, body: { ...(tracking.trim() === '' ? {} : { tracking: tracking.trim() }) } }, command(context, identity, signal, target.version));
     return this.mapper.returned(value, false);
   }
 
@@ -147,52 +136,12 @@ export class OrderGateway implements OrderPort {
 
   async refund(context: ConsoleContext, order: OrderDetail, amountMinor: number, reason: string, proof: string, identity: string, signal?: AbortSignal) {
     if (!order.payment.paymentId) throw new Error('PAYMENT_NOT_REFUNDABLE');
-    const value = await this.paymentOperations.refundsRequest(
-      { body: { payment: order.payment.paymentId, amountMinor, reason: reason.trim() } },
-      command(context, identity, signal, order.payment.version, proof)
-    );
+    const value = await this.paymentOperations.refundsRequest({ body: { payment: order.payment.paymentId, amountMinor, reason: reason.trim() } }, command(context, identity, signal, order.payment.version, proof));
     return this.mapper.refund(value);
   }
 
   async resolveRecovery(context: ConsoleContext, recovery: OrderRecovery, action: OrderRecoveryAction, reason: string, proof: string, identity: string, signal?: AbortSignal) {
-    const value = await this.paymentOperations.recoveriesResolve(
-      { path: { caseid: recovery.id }, body: { action, reason: reason.trim() } },
-      command(context, identity, signal, recovery.version, proof)
-    );
+    const value = await this.paymentOperations.recoveriesResolve({ path: { caseid: recovery.id }, body: { action, reason: reason.trim() } }, command(context, identity, signal, recovery.version, proof));
     return this.mapper.recovery(value);
   }
-}
-
-function orderFilterQuery(filter: OrderListFilter) {
-  return {
-    ...(filter.search === '' ? {} : { search: filter.search }),
-    ...(filter.placed === '' ? {} : { placed: filter.placed as never }),
-    ...(filter.from === '' ? {} : { from: instant(filter.from, false) }),
-    ...(filter.to === '' ? {} : { to: instant(filter.to, true) }),
-    ...(filter.lifecycle === '' ? {} : { lifecycle: filter.lifecycle as never }),
-    ...(filter.payment === '' ? {} : { payment: filter.payment as never }),
-    ...(filter.fulfillment === '' ? {} : { fulfillment: filter.fulfillment as never }),
-    ...(filter.mall === '' ? {} : { mall: filter.mall }),
-    ...(filter.channel === '' ? {} : { channel: filter.channel }),
-    ...(filter.product === '' ? {} : { product: filter.product }),
-    ...(filter.member === '' ? {} : { member: filter.member }),
-    ...(filter.minimumMinor === '' ? {} : { minimumMinor: Number(filter.minimumMinor) }),
-    ...(filter.maximumMinor === '' ? {} : { maximumMinor: Number(filter.maximumMinor) }),
-  } as const;
-}
-
-function command(context: ConsoleContext, identity: string, signal?: AbortSignal, expectedVersion?: number, proof?: string) {
-  return consoleCommand(context.scope, {
-    accessVersion: context.session.accessVersion,
-    idempotencyKey: identity,
-    ...(expectedVersion === undefined ? {} : { expectedVersion }),
-    ...(proof === undefined ? {} : { proof }),
-    ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
-    ...(signal === undefined ? {} : { signal }),
-  });
-}
-
-function instant(value: string, end: boolean): string {
-  const source = value.includes('T') ? value : `${value}T${end ? '23:59:59.999' : '00:00:00.000'}`;
-  return new Date(source).toISOString();
 }

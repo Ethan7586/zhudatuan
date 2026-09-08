@@ -1,7 +1,7 @@
 import type { ProviderCallContext, ProviderCapability, ProviderPortForCapability, SourceSkuKey } from '@shop/contract';
-import type { ExtensionRegistry } from '../../../../bootstrap/ExtensionRegistry';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
+import type { ExtensionRegistry } from '../../../../composition/ExtensionRegistry';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
 import type { ChannelCatalogPort } from '../../../catalog/public';
 import type { ChannelReconciliationPort } from '../../../finance/public';
 import type { ChannelInventoryPort } from '../../../inventory/public';

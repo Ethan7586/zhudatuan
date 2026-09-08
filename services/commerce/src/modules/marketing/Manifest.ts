@@ -1,4 +1,4 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { MARKETING_READ_PORT, MARKETING_RESERVE_PORT } from './public';
 
 export const Manifest = defineModuleManifest({

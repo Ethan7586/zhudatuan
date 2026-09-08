@@ -1,5 +1,5 @@
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ApprovalPort, ApprovalReadPort, ApprovalRequest, ApprovalProofBinding } from '../../../approval/public';
 import type { RepairProposal } from '../../domain/model/RepairProposal';
 import { repairAmount } from '../../domain/model/RepairProposal';
@@ -19,13 +19,7 @@ export class RepairApproval {
     return this.approvals.request(context, approvalRequest(repairId, previewHash, proposal));
   }
 
-  async authorize(
-    context: WriteTransactionContext,
-    repair: RepairDecisionContext,
-    decision: 'approved' | 'rejected',
-    proof: string | null,
-    requestHash: string
-  ): Promise<Readonly<{ checkerId: string; proofId: string | null }>> {
+  async authorize(context: WriteTransactionContext, repair: RepairDecisionContext, decision: 'approved' | 'rejected', proof: string | null, requestHash: string): Promise<Readonly<{ checkerId: string; proofId: string | null }>> {
     if (decision === 'approved') {
       if (proof === null) throw new DomainError('APPROVAL_PROOF_INVALID');
       const consumed = await this.approvals.consume(context, proof, binding(repair, requestHash));
@@ -45,7 +39,8 @@ export class RepairApproval {
       instance.amountMinor !== repair.approvalAmountMinor ||
       instance.currency !== 'CNY' ||
       digest(instance.constraints) !== digest(constraints(repair))
-    ) throw new DomainError('APPROVAL_PROOF_INVALID');
+    )
+      throw new DomainError('APPROVAL_PROOF_INVALID');
     const rejected = [...instance.decisions].reverse().find((candidate) => candidate.outcome === 'rejected');
     if (!rejected) throw new DomainError('APPROVAL_PROOF_INVALID');
     return Object.freeze({ checkerId: rejected.actorId, proofId: null });

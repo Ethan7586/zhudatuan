@@ -4,8 +4,28 @@
 
 ## 恢复
 
-任务以 Runtime Inbox 的 `(consumer,event)` 唯一键防重，并对商城获取事务级 advisory lock。失败会整体回滚并按 Job Catalog 退避重试；超过重试上限后进入 `runtime.deadletter`。修复数据或依赖后重放原事件即可，禁止人工直接补写 Experience 或 Catalog 表。
+任务以 Runtime Inbox 的 `(consumer,event)` 唯一键防重，并对商城获取事务级 advisory lock。失败会整体回滚并按 Job Catalog 退避重试；超过重试上限后进入 `runtime.deadletters`。修复数据或依赖后重放原事件即可，禁止人工直接补写 Experience 或 Catalog 表。
 
 ## 核对
 
 确认 `experience.application.mall_id`、`experience.binding.mall_id` 与事件 `mallId` 一致，且该商城只有一个应用和一个有效商品池绑定；随后确认 Inbox 已写入 `processed_at`。
+
+## Trigger, impact and owner
+
+Trigger 是 `organization.mall.created`；Impact 是商城无法装修、投池或开业。Experience Owner 主责，Organization、Catalog 与 Runtime Owner 协同。
+
+## Stop loss and diagnosis
+
+Stop loss 保持商城未开放，不创建占位入口。Diagnosis 核对 Event/Inbox、商城 Scope、advisory lock、应用/草稿/商品池唯一键、对象存储和数据库错误。
+
+## Recovery and data repair
+
+Recovery 重放原事件；Data repair 只能前向补齐缺失事实并复用相同业务键，不得绕过事务或制造第二应用。
+
+## Validation, escalation and audit
+
+Validation 执行上述唯一性核对并验证六端入口、默认主题和商品池绑定。Escalation 覆盖跨商城绑定、部分提交和重复资源。Audit 保存 Event、Job、Mall、应用、池、Trace 与 Hash。
+
+## Postmortem
+
+开店阻断、重复资源或 SLO 超限必须完成 Postmortem。

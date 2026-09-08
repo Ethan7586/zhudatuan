@@ -2,9 +2,9 @@ import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto';
 import { Client } from 'pg';
 import { localSeedEnvironment, TARGET_SCHEMA_HEAD } from '@shop/config/server';
 import { COMMERCE_OPERATIONS, CONTRACT_VERSION } from '@shop/contract';
-import { HttpKmsClient } from '../../../services/commerce/src/foundation/infrastructure/KmsClient';
-import type { KmsClient } from '../../../services/commerce/src/foundation/application/KmsPort';
-import { HttpObjectStore } from '../../../services/commerce/src/modules/runtime/infrastructure/storage/ObjectStore';
+import { HttpKmsClient } from '../../../services/commerce/src/platform/crypto/KmsClient';
+import type { KmsClient } from '../../../services/commerce/src/pipeline/KmsPort';
+import { HttpObjectStore } from '../../../services/commerce/src/platform/object/ObjectStore';
 import { localFetch } from '@shop/localinfra';
 import { localSecret } from './LocalSecrets';
 

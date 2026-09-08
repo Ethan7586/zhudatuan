@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { ContractJsonValueSchema, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
 import { domainEvent } from '@shop/kernel';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { JobScheduler } from '../../../../foundation/application/JobScheduler';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, integerField, textField } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { JobScheduler } from '../../../../pipeline/JobScheduler';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord, integerField, textField } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import { RiskPolicy } from '../../domain/model/RiskPolicy';
 import type { RiskAdministrationRepository } from '../port/RiskAdministrationRepository';
 

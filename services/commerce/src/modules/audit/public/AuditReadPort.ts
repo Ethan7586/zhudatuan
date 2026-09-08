@@ -1,10 +1,7 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
 
-export type AuditQueryReference = Readonly<
-  | { kind: 'subject' | 'object'; type?: string; id: string }
-  | { kind: 'trace'; id: string }
->;
+export type AuditQueryReference = Readonly<{ kind: 'subject' | 'object'; type?: string; id: string } | { kind: 'trace'; id: string }>;
 
 export interface AuditEvidence {
   readonly id: string;
@@ -26,10 +23,7 @@ export interface AuditEvidence {
 }
 
 export interface AuditReadPort {
-  records(
-    context: ReadTransactionContext,
-    query: Readonly<{ scopes: readonly string[]; references: readonly AuditQueryReference[]; limit?: number }>
-  ): Promise<readonly AuditEvidence[]>;
+  records(context: ReadTransactionContext, query: Readonly<{ scopes: readonly string[]; references: readonly AuditQueryReference[]; limit?: number }>): Promise<readonly AuditEvidence[]>;
 }
 
 export const AUDIT_READ_PORT = publicPort<AuditReadPort>('audit', 'read');

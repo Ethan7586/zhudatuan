@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { PriceRuleRecord, RuleRepository } from '../../application/port/RuleRepository';
 import { PricingRule, type PricingRuleSnapshot } from '../../domain/model/PricingRule';
 import type { ContractJsonObject } from '@shop/contract';

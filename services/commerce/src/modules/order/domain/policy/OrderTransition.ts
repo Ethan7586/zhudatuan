@@ -1,28 +1,59 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { AftersaleState, CommerceState, FulfillmentState, PaymentState } from '../model/Order';
 
 const lifecycle = transitions<CommerceState>({
-  created: ['awaitingpayment', 'cancelled'], awaitingpayment: ['paid', 'cancelled'], paid: ['fulfilling', 'shipped', 'received', 'completed'],
-  fulfilling: ['shipped', 'received', 'completed'], shipped: ['received', 'completed'], received: ['completed'], completed: [], cancelled: [],
+  created: ['awaitingpayment', 'cancelled'],
+  awaitingpayment: ['paid', 'cancelled'],
+  paid: ['fulfilling', 'shipped', 'received', 'completed'],
+  fulfilling: ['shipped', 'received', 'completed'],
+  shipped: ['received', 'completed'],
+  received: ['completed'],
+  completed: [],
+  cancelled: [],
 });
 const payment = transitions<PaymentState>({
-  unpaid: ['authorizing', 'paid', 'failed'], authorizing: ['unpaid', 'paid', 'failed'], paid: ['partially_refunded', 'refunded'],
-  partially_refunded: ['partially_refunded', 'refunded'], refunded: [], failed: ['unpaid', 'paid'],
+  unpaid: ['authorizing', 'paid', 'failed'],
+  authorizing: ['unpaid', 'paid', 'failed'],
+  paid: ['partially_refunded', 'refunded'],
+  partially_refunded: ['partially_refunded', 'refunded'],
+  refunded: [],
+  failed: ['unpaid', 'paid'],
 });
 const fulfillment = transitions<FulfillmentState>({
-  unallocated: ['allocated', 'cancelled'], allocated: ['processing', 'shipped', 'delivered', 'cancelled'], processing: ['shipped', 'delivered', 'cancelled'],
-  shipped: ['delivered', 'received', 'returned'], delivered: ['received', 'returned'], received: ['returned'], cancelled: [], returned: [],
+  unallocated: ['allocated', 'cancelled'],
+  allocated: ['processing', 'shipped', 'delivered', 'cancelled'],
+  processing: ['shipped', 'delivered', 'cancelled'],
+  shipped: ['delivered', 'received', 'returned'],
+  delivered: ['received', 'returned'],
+  received: ['returned'],
+  cancelled: [],
+  returned: [],
 });
 const aftersale = transitions<AftersaleState>({
-  none: ['applied'], applied: ['reviewing'], reviewing: ['approved', 'rejected'], approved: ['returning', 'refunding'], returning: ['received'],
-  received: ['refunding'], refunding: ['resolved'], resolved: [], rejected: [],
+  none: ['applied'],
+  applied: ['reviewing'],
+  reviewing: ['approved', 'rejected'],
+  approved: ['returning', 'refunding'],
+  returning: ['received'],
+  received: ['refunding'],
+  refunding: ['resolved'],
+  resolved: [],
+  rejected: [],
 });
 
 export class OrderTransition {
-  lifecycle(previous: CommerceState, next: CommerceState): void { assert(lifecycle, previous, next); }
-  payment(previous: PaymentState, next: PaymentState): void { assert(payment, previous, next); }
-  fulfillment(previous: FulfillmentState, next: FulfillmentState): void { assert(fulfillment, previous, next); }
-  aftersale(previous: AftersaleState, next: AftersaleState): void { assert(aftersale, previous, next); }
+  lifecycle(previous: CommerceState, next: CommerceState): void {
+    assert(lifecycle, previous, next);
+  }
+  payment(previous: PaymentState, next: PaymentState): void {
+    assert(payment, previous, next);
+  }
+  fulfillment(previous: FulfillmentState, next: FulfillmentState): void {
+    assert(fulfillment, previous, next);
+  }
+  aftersale(previous: AftersaleState, next: AftersaleState): void {
+    assert(aftersale, previous, next);
+  }
 }
 
 function transitions<T extends string>(value: Readonly<Record<T, readonly T[]>>): Readonly<Record<T, ReadonlySet<T>>> {

@@ -1,13 +1,17 @@
 import { createHash, randomUUID } from 'node:crypto';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
 import type { DeliveryResolver } from '../port/DeliveryResolver';
 import type { DeliveryChannelId } from '../../domain/model/Template';
 import { Template } from '../../domain/model/Template';
 import { classifyDeliveryFailure, Dispatch } from '../../domain/model/Dispatch';
 import { Preference, type QuietHours } from '../../domain/model/Preference';
 import type { DeliveryRepository } from '../port/DeliveryRepository';
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { allParallel, mapParallel } from '@shop/kernel';
+import { WORKER_CAPACITY } from '@shop/config/runtime';
+
+import { definitiveProviderRejection, deliveryError, digest, optionalText, preferenceFor, required } from './NotificationDeliveryValue';
 
 export interface NotificationEvent {
   readonly job: string;
@@ -35,7 +39,7 @@ export class NotificationDeliveryProcess {
     if (!scope) throw new Error('NOTIFICATION_SCOPE_REQUIRED');
     const member = optionalText(event.payload.member);
     const templates = await this.read(execution, (context) => this.repository.eventTemplates(context, scope, event.type, member));
-    await Promise.all(templates.map((record) => this.queueEvent(record, event, scope, member, execution)));
+    await mapParallel(templates, WORKER_CAPACITY.notification.concurrency, (record) => this.queueEvent(record, event, scope, member, execution));
     await this.write(execution, (context) => this.repository.completeInbox(context, event.id));
   }
 
@@ -46,17 +50,38 @@ export class NotificationDeliveryProcess {
     const decision = preference?.decide(selected.purpose, selected.mandatory, new Date()) ?? { kind: 'allow' as const };
     if (decision.kind === 'block') return this.write(execution, (context) => this.repository.cancel(context, selected, decision.reason));
     if (decision.kind === 'defer') return this.write(execution, (context) => this.repository.defer(context, selected, decision.availableAt));
-    const dispatch = new Dispatch(selected.id, selected.scope_id, selected.member_id, selected.template_id, selected.channel,
-      selected.recipient_ref ?? selected.recipient_ciphertext ?? selected.id, selected.payload, selected.subject, selected.body, 'sending', selected.id);
+    const dispatch = new Dispatch(
+      selected.id,
+      selected.scope_id,
+      selected.member_id,
+      selected.template_id,
+      selected.channel,
+      selected.recipient_ref ?? selected.recipient_ciphertext ?? selected.id,
+      selected.payload,
+      selected.subject,
+      selected.body,
+      'sending',
+      selected.id
+    );
     const recipient = selected.recipient_ref ?? (await this.kms.decrypt('pii', 'notification/recipient', required(selected.recipient_ciphertext), { dispatch: id, channel: selected.channel }));
     const strategies = this.deliveries.resolve(dispatch.channel);
     for (let index = 0; index < strategies.length; index += 1) {
       const strategy = strategies[index]!;
       try {
-        const receipt = await strategy.send({ recipient, providerTemplate: selected.provider_template, purpose: selected.purpose,
+        const receipt = await strategy.send({
+          recipient,
+          providerTemplate: selected.provider_template,
+          purpose: selected.purpose,
           ...(selected.channel === 'wechat' && selected.authorization_state === 'accepted' ? { authorization: 'accepted' as const } : {}),
-          variables: dispatch.variables, subject: dispatch.subject, body: dispatch.body, idempotency: dispatch.idempotencyKey,
-          requestId: dispatch.id, traceId: execution.trace, deadline: execution.deadline, signal: execution.signal });
+          variables: dispatch.variables,
+          subject: dispatch.subject,
+          body: dispatch.body,
+          idempotency: dispatch.idempotencyKey,
+          requestId: dispatch.id,
+          traceId: execution.trace,
+          deadline: execution.deadline,
+          signal: execution.signal,
+        });
         await this.write(execution, (context) => this.repository.complete(context, selected, receipt, index + 1));
         return;
       } catch (cause) {
@@ -82,17 +107,31 @@ export class NotificationDeliveryProcess {
     let code: string;
     let recipient: string;
     try {
-      [code, recipient] = await Promise.all([
-        this.kms.decrypt('pii', 'identity/challenge', selected.codeCiphertext, { challenge: id, purpose: selected.purpose }),
-        this.kms.decrypt('pii', 'identity/destination', selected.destinationCiphertext, { challenge: id, purpose: selected.purpose }),
-      ]);
+      [code, recipient] = await allParallel(
+        [
+          () => this.kms.decrypt('pii', 'identity/challenge', selected.codeCiphertext, { challenge: id, purpose: selected.purpose }),
+          () => this.kms.decrypt('pii', 'identity/destination', selected.destinationCiphertext, { challenge: id, purpose: selected.purpose }),
+        ] as const,
+        { concurrency: 2, expiresAt: execution.deadline, signal: execution.signal }
+      );
     } catch (cause) {
       await this.write(execution, (context) => this.repository.failChallengeAttempt(context, id, attempt.sequence, deliveryError(cause)));
       throw cause;
     }
     try {
-      const receipt = await this.deliveries.resolve('sms')[0]!.send({ recipient, providerTemplate: null, purpose: 'verification', variables: { code }, subject: null, body: 'verification', idempotency: id,
-        requestId: `${id}:${attempt.sequence}`, traceId: execution.trace, deadline: execution.deadline, signal: execution.signal });
+      const receipt = await this.deliveries.resolve('sms')[0]!.send({
+        recipient,
+        providerTemplate: null,
+        purpose: 'verification',
+        variables: { code },
+        subject: null,
+        body: 'verification',
+        idempotency: id,
+        requestId: `${id}:${attempt.sequence}`,
+        traceId: execution.trace,
+        deadline: execution.deadline,
+        signal: execution.signal,
+      });
       const completed = await this.write(execution, (context) => this.repository.completeChallengeAttempt(context, id, attempt.sequence, receipt.provider, receipt.externalId));
       if (!completed) throw new Error('IDENTITY_NOTIFICATION_DELIVERY_STATE_LOST');
     } catch (cause) {
@@ -123,15 +162,21 @@ export class NotificationDeliveryProcess {
     return { token: endpoint.address_token, address, reference: null };
   }
 
-  private async queueEvent(
-    record: Awaited<ReturnType<DeliveryRepository['eventTemplates']>>[number],
-    event: NotificationEvent,
-    scope: string,
-    member: string | null,
-    execution: DeliveryExecution
-  ): Promise<void> {
-    const template = new Template(record.id, record.scope_id, record.channel, record.event_type, record.version, record.variable_schema,
-      record.provider_template, record.subject, record.body, record.status, record.purpose, record.mandatory);
+  private async queueEvent(record: Awaited<ReturnType<DeliveryRepository['eventTemplates']>>[number], event: NotificationEvent, scope: string, member: string | null, execution: DeliveryExecution): Promise<void> {
+    const template = new Template(
+      record.id,
+      record.scope_id,
+      record.channel,
+      record.event_type,
+      record.version,
+      record.variable_schema,
+      record.provider_template,
+      record.subject,
+      record.body,
+      record.status,
+      record.purpose,
+      record.mandatory
+    );
     const decision = member === null ? { kind: 'allow' as const } : preferenceFor(member, record).decide(template.purpose, template.mandatory, new Date());
     if (decision.kind === 'block') return;
     const recipient = await this.recipient(member, scope, template.channel, execution);
@@ -151,13 +196,29 @@ export class NotificationDeliveryProcess {
     const body = template.render(template.body, variables)!;
     const idempotency = `${event.id}:${template.id}:${template.version}`;
     new Dispatch(id, scope, member, template.id, template.channel, reference ?? recipient.address!, variables, subject, body, 'queued', idempotency);
-    await this.write(execution, (context) => this.repository.queue(context, {
-      id, scope, member, template: template.id, recipientToken: recipient.token, recipientCiphertext: ciphertext,
-      recipientKeyVersion: key, recipientRef: reference, variables, subject, body, idempotency, event: template.event,
-      templateVersion: template.version, providerTemplate: template.providerTemplate, variableSchema: template.variables,
-      purpose: template.purpose, mandatory: template.mandatory,
-      availableAt: decision.kind === 'defer' ? decision.availableAt : new Date().toISOString(),
-    }));
+    await this.write(execution, (context) =>
+      this.repository.queue(context, {
+        id,
+        scope,
+        member,
+        template: template.id,
+        recipientToken: recipient.token,
+        recipientCiphertext: ciphertext,
+        recipientKeyVersion: key,
+        recipientRef: reference,
+        variables,
+        subject,
+        body,
+        idempotency,
+        event: template.event,
+        templateVersion: template.version,
+        providerTemplate: template.providerTemplate,
+        variableSchema: template.variables,
+        purpose: template.purpose,
+        mandatory: template.mandatory,
+        availableAt: decision.kind === 'defer' ? decision.availableAt : new Date().toISOString(),
+      })
+    );
   }
 
   private read<T>(execution: DeliveryExecution, work: (context: ReadTransactionContext) => Promise<T>): Promise<T> {
@@ -181,45 +242,4 @@ export class NotificationDeliveryProcess {
       deadline: execution.deadline,
     };
   }
-}
-
-function preferenceFor(member: string, record: Readonly<{
-  channel: DeliveryChannelId;
-  event_type: string;
-  preference_enabled: boolean;
-  authorization_state: 'unknown' | 'accepted' | 'rejected';
-  consent_source: 'member' | 'provider' | 'operator' | 'system';
-  quiet_start: string | null;
-  quiet_end: string | null;
-  quiet_timezone: string | null;
-  preference_version: number;
-}>): Preference {
-  return new Preference(member, record.channel, record.event_type, record.preference_enabled, record.authorization_state,
-    record.consent_source, quietHours(record), record.preference_version);
-}
-
-function quietHours(record: Readonly<{ quiet_start: string | null; quiet_end: string | null; quiet_timezone: string | null }>): QuietHours | null {
-  if (record.quiet_start === null && record.quiet_end === null && record.quiet_timezone === null) return null;
-  if (record.quiet_start === null || record.quiet_end === null || record.quiet_timezone === null) throw new Error('NOTIFICATION_QUIET_HOURS_INVALID');
-  return Object.freeze({ start: record.quiet_start.slice(0, 5), end: record.quiet_end.slice(0, 5), timezone: record.quiet_timezone });
-}
-
-function optionalText(value: unknown): string | null {
-  if (value === undefined || value === null) return null;
-  if (typeof value !== 'string' || !value) throw new Error('NOTIFICATION_MEMBER_INVALID');
-  return value;
-}
-function required(value: string | null): string {
-  if (!value) throw new Error('NOTIFICATION_RECIPIENT_MISSING');
-  return value;
-}
-function digest(value: string): string {
-  return createHash('sha256').update(value).digest('hex');
-}
-function deliveryError(value: unknown): string {
-  const message = value instanceof Error ? value.message : 'NOTIFICATION_DELIVERY_FAILED';
-  return /^[A-Z][A-Z0-9_.:-]{2,199}$/.test(message) ? message : 'NOTIFICATION_DELIVERY_FAILED';
-}
-function definitiveProviderRejection(code: string): boolean {
-  return code === 'ALIYUN_SMS_REJECTED' || code.startsWith('ALIYUN_SMS_ISV.');
 }

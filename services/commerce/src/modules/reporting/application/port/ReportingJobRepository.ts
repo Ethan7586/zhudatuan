@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ExportJob, ExportReport, ExportRow } from '../../domain/model/ExportJob';
 
 export interface ReportingJobRepository {

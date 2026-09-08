@@ -1,8 +1,8 @@
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
 import { createHash } from 'node:crypto';
 import { parseExperience, serializeExperience } from '@shop/contract';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ExperiencePublicationRepository, PublicationObject, PublicationTarget } from '../../application/port/ExperiencePublicationRepository';
 import { Publication } from '../../domain/model/Publication';
 import { restoreApplication } from './ApplicationRecord';

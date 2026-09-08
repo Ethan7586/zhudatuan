@@ -1,8 +1,8 @@
-import { rowResult } from '../../../../adapter/database/DatabaseResult';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
+import { rowResult } from '../../../../platform/database/DatabaseResult';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
 import { financeLifecycle, type FinanceEntries } from './FinanceOperation';
 import { PgInvoiceProfileRepository } from './PgInvoiceProfileRepository';
 

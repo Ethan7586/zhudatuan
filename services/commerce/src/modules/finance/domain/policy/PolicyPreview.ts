@@ -1,5 +1,5 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { FinancePolicy } from '../model/FinancePolicy';
 
 export class PolicyPreview {
@@ -26,10 +26,14 @@ export class PolicyPreview {
     const wanted = Buffer.from(createHmac('sha256', this.key).update(`financepreview:v1:${claims}`).digest('base64url'));
     if (actual.length !== wanted.length || !timingSafeEqual(actual, wanted)) throw new DomainError('FINANCE_POLICY_INVALID');
     let value: Readonly<Record<string, unknown>>;
-    try { value = JSON.parse(Buffer.from(claims, 'base64url').toString('utf8')) as Readonly<Record<string, unknown>>; }
-    catch { throw new DomainError('FINANCE_POLICY_INVALID'); }
+    try {
+      value = JSON.parse(Buffer.from(claims, 'base64url').toString('utf8')) as Readonly<Record<string, unknown>>;
+    } catch {
+      throw new DomainError('FINANCE_POLICY_INVALID');
+    }
     if (value.kind !== 'policy' || value.previewHash !== expected.previewHash || typeof value.expiresAt !== 'string' || Date.parse(value.expiresAt) <= now.getTime()) throw new DomainError('FINANCE_POLICY_INVALID');
-    if (expected.previewHash !== digest({ policy: expected.policy, sample: expected.sample }) || digest(value.policy) !== digest(expected.policy) || digest(value.sample) !== digest(expected.sample)) throw new DomainError('FINANCE_POLICY_INVALID');
+    if (expected.previewHash !== digest({ policy: expected.policy, sample: expected.sample }) || digest(value.policy) !== digest(expected.policy) || digest(value.sample) !== digest(expected.sample))
+      throw new DomainError('FINANCE_POLICY_INVALID');
   }
 }
 

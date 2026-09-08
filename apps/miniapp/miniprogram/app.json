@@ -1,19 +1,86 @@
 {
   "pages": [
-    "feature/home/page",
-    "feature/benefit/page",
-    "feature/cart/page",
-    "feature/checkout/page",
-    "feature/notification/page",
-    "feature/order/page",
-    "feature/aftersale/page",
-    "feature/payment/page",
-    "feature/catalog/page",
-    "feature/product/page",
-    "feature/account/page",
-    "feature/referral/page",
-    "feature/support/page",
-    "feature/voucher/page"
+    "feature/home/page"
+  ],
+  "subPackages": [
+    {
+      "root": "feature/benefit",
+      "pages": [
+        "page"
+      ]
+    },
+    {
+      "root": "feature/cart",
+      "pages": [
+        "page"
+      ]
+    },
+    {
+      "root": "feature/checkout",
+      "pages": [
+        "page"
+      ]
+    },
+    {
+      "root": "feature/notification",
+      "pages": [
+        "page"
+      ]
+    },
+    {
+      "root": "feature/order",
+      "pages": [
+        "page"
+      ]
+    },
+    {
+      "root": "feature/aftersale",
+      "pages": [
+        "page"
+      ]
+    },
+    {
+      "root": "feature/payment",
+      "pages": [
+        "page"
+      ]
+    },
+    {
+      "root": "feature/catalog",
+      "pages": [
+        "page"
+      ]
+    },
+    {
+      "root": "feature/product",
+      "pages": [
+        "page"
+      ]
+    },
+    {
+      "root": "feature/account",
+      "pages": [
+        "page"
+      ]
+    },
+    {
+      "root": "feature/referral",
+      "pages": [
+        "page"
+      ]
+    },
+    {
+      "root": "feature/support",
+      "pages": [
+        "page"
+      ]
+    },
+    {
+      "root": "feature/voucher",
+      "pages": [
+        "page"
+      ]
+    }
   ],
   "window": {
     "navigationBarTitleText": "智慧翼福利商城",

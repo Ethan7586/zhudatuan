@@ -1,12 +1,12 @@
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { defineModule } from '../../composition/DefinedModule';
 import { Manifest } from './Manifest';
 import { createJobs } from './interface/job/JobFactory';
 import { RecordsReadHandler } from './application/handler/RecordsReadHandler';
 import { PgAuditHistoryRepository } from './infrastructure/persistence/PgAuditHistoryRepository';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
 import { AUDIT_PORT, AUDIT_READ_PORT } from './public';
 import { PgAuditReadPort } from './infrastructure/persistence/PgAuditReadPort';
-import { AUDIT_SINK } from '../../foundation/application/AuditSink';
+import { AUDIT_SINK } from '../../pipeline/AuditSink';
 
 export const AuditModule = defineModule(Manifest, {
   jobs: createJobs,

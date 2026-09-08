@@ -167,8 +167,9 @@ function dispositionForMain(id, operation) {
 function sourceTarget(id) {
   return (
     Object.freeze({
+      'identity.members.create': 'identity.members.manage',
       'identity.storefronts.read': 'storefront.bootstrap.read',
-      'identity.members.reset': 'identity.members.registration.reset',
+      'identity.members.reset': 'identity.members.manage',
       'identity.mobile.challenge': 'identity.mobile.challenges.create',
       'identity.wechat.session': 'identity.federations.start',
       'identity.wechat.bind': 'identity.links.create',
@@ -177,6 +178,25 @@ function sourceTarget(id) {
       'member.invitations.read': 'identity.invitations.read',
       'reporting.powderclass.read': 'reporting.sales.read',
       'invoice.operatorprofiles.read': 'invoice.profiles.read',
+      'voucher.batches.issue': 'voucher.issueorders.create',
+      'voucher.batches.read': 'voucher.issuebatches.get',
+      'voucher.batches.retry': 'voucher.issuebatches.retry',
+      'voucher.bindings.manage': 'voucher.vouchers.bind',
+      'voucher.bindings.read': 'voucher.vouchers.get',
+      'voucher.cardlibraries.allocate': 'voucher.stockrequests.create',
+      'voucher.cardlibraries.create': 'voucher.credentialpools.create',
+      'voucher.cardlibraries.read': 'voucher.credentialpools.list',
+      'voucher.history.read': 'voucher.vouchers.timeline',
+      'voucher.imports.read': 'voucher.jobs.get',
+      'voucher.programs.manage': 'voucher.products.revise',
+      'voucher.programs.read': 'voucher.products.list',
+      'voucher.redemptions.read': 'voucher.redemptions.get',
+      'voucher.redemptions.reverse': 'voucher.refunds.create',
+      'voucher.reserves.decide': 'approval.tasks.approve',
+      'voucher.reserves.read': 'voucher.stockrequests.list',
+      'voucher.reserves.request': 'voucher.stockrequests.create',
+      'voucher.status.batch': 'voucher.actionbatches.create',
+      'voucher.statusbatches.read': 'voucher.actionbatches.list',
     })[id] ?? id
   );
 }

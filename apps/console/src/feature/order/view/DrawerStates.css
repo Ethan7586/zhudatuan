@@ -1,0 +1,60 @@
+@media (max-width: 36rem) {
+  .orderdraweroverlay {
+    inset: 0;
+  }
+  .orderdrawermodal {
+    width: 100vw;
+  }
+  .orderdrawerheader {
+    padding-top: var(--sw-space-3);
+  }
+  .ordermilestones {
+    overflow-x: auto;
+    grid-template-columns: repeat(6, 4.25rem);
+  }
+}
+
+.ordersectionalerts {
+  display: grid;
+  gap: var(--sw-space-1);
+}
+.ordersectionalerts:empty {
+  display: none;
+}
+.ordersectionstate {
+  display: flex;
+  gap: var(--sw-space-1);
+  align-items: flex-start;
+  margin: 0;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-subtle);
+  color: var(--sw-text-secondary);
+  padding: var(--sw-space-1-5);
+}
+.ordersectionstate.iserror {
+  border-color: var(--sw-warning);
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+.ordersectionstate > svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+}
+.ordersectionstate > span {
+  display: grid;
+  gap: var(--sw-space-0-5);
+}
+.ordersectionstate small {
+  color: inherit;
+}
+.ordersectionstate button {
+  width: max-content;
+  min-height: 2rem;
+  border: 0.0625rem solid currentColor;
+  border-radius: var(--sw-radius-sm);
+  background: transparent;
+  color: inherit;
+  padding: 0 var(--sw-space-1);
+}

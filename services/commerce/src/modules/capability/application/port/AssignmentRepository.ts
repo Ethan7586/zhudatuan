@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CapabilityChange, CapabilityImpact } from '../../domain/model/CapabilitySet';
 import type { Entitlement, EntitlementState } from '../../domain/model/Entitlement';
 
@@ -45,9 +45,5 @@ export interface AssignmentRepository {
   list(context: ReadTransactionContext, input: Readonly<{ scope: string; sort: string | null; id: string | null; fetch: number; descendants: number }>): Promise<readonly Assignment[]>;
   prepare(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; parent: string | null; capability: string }>): Promise<AssignmentPlan | null>;
   project(context: ReadTransactionContext, input: Readonly<{ scope: string; capability: string; descendants: number }>): Promise<Assignment | null>;
-  save(
-    context: WriteTransactionContext,
-    change: CapabilityChange,
-    input: Readonly<{ expectedSetVersion: number; actor: string; reason: string; trace: string; descendants: number }>
-  ): Promise<Assignment | null>;
+  save(context: WriteTransactionContext, change: CapabilityChange, input: Readonly<{ expectedSetVersion: number; actor: string; reason: string; trace: string; descendants: number }>): Promise<Assignment | null>;
 }

@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 import { IMPORT_CAPACITY } from '@shop/config/runtime';
-import { tabularHeaders, tabularRecord } from '../../../../foundation/application/Csv';
+import { tabularHeaders, tabularRecord } from '../../../../pipeline/Csv';
 
 export async function* parseSpreadsheet(bytes: Uint8Array, maximumRows: number): AsyncIterable<Readonly<Record<string, string>>> {
   validateArchive(bytes);

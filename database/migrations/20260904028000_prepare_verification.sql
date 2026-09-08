@@ -173,7 +173,7 @@ grant select,insert on verification.attempt to shopverificationwriter;
 update runtime.operation set contract_version='5.0.0' where owner='verification';
 update capability.capability set version=version+1 where id in('verification.challenges.issue','verification.challenges.verify','verification.sessions.read','verification.history.read','verification.devices.read','verification.devices.manage');
 update runtime.contractcatalog set checksum='bf19969858ce083b88d296b82a050e5edcdeb0a6dba89e16bf028b68fc3daaab',operation_count=(select count(*) from runtime.operation),
-  event_count=(select count(*) from runtime.event),published_at=clock_timestamp()
+  event_count=(select count(*) from runtime.event where retired_at is null),published_at=clock_timestamp()
 where artifact='commerce' and version='5.0.0' and status='active';
 
 select runtime.record_migration_evidence(
@@ -189,7 +189,7 @@ do $assert$ begin
   if exists(select 1 from verification.session where attempts>maximum_attempts or expires_at<=created_at) then raise exception 'VERIFICATION_SESSION_INVARIANT_INVALID'; end if;
   if exists(select 1 from verification.token where (consumed_at is null)<>(consumed_by_device_id is null and consumed_by_actor_id is null)) then raise exception 'VERIFICATION_TOKEN_CONSUMPTION_INVALID'; end if;
   if (select count(*) from runtime.operation)<>317 then raise exception 'VERIFICATION_OPERATION_COUNT_INVALID'; end if;
-  if (select count(*) from runtime.event)<>144 then raise exception 'VERIFICATION_EVENT_COUNT_INVALID'; end if;
+  if (select count(*) from runtime.event where retired_at is null)<>144 then raise exception 'VERIFICATION_EVENT_COUNT_INVALID'; end if;
 end $assert$;
 
 commit;

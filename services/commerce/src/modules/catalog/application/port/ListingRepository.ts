@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CatalogPage, CatalogRows } from '../model/CatalogPage';
 import type { ListingSnapshot } from '../../domain/model/Listing';
 

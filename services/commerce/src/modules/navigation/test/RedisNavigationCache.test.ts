@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Cache } from '../../../foundation/cache/Cache';
+import type { Cache } from '../../../platform/cache/Cache';
 import { NavigationKey } from '../domain/model/NavigationKey';
 import { NavigationTree, type NavigationTreeValue } from '../domain/model/NavigationTree';
 import { NavigationInvalidator } from '../infrastructure/cache/NavigationInvalidator';
@@ -48,14 +48,37 @@ describe('RedisNavigationCache', () => {
 
 class MemoryCache implements Cache {
   readonly values = new Map<string, unknown>();
-  start(): Promise<void> { return Promise.resolve(); }
-  get<T>(key: string): Promise<T | null> { return Promise.resolve((this.values.get(key) as T | undefined) ?? null); }
-  put<T>(key: string, value: T): Promise<boolean> { this.values.set(key, value); return Promise.resolve(true); }
-  setnx<T>(key: string, value: T): Promise<boolean> { if (this.values.has(key)) return Promise.resolve(false); this.values.set(key, value); return Promise.resolve(true); }
-  compareDelete<T>(key: string, expected: T): Promise<boolean> { if (this.values.get(key) !== expected) return Promise.resolve(false); this.values.delete(key); return Promise.resolve(true); }
-  remove(...keys: readonly string[]): Promise<boolean> { for (const key of keys) this.values.delete(key); return Promise.resolve(true); }
-  state() { return { available: true } as const; }
-  close(): Promise<void> { this.values.clear(); return Promise.resolve(); }
+  start(): Promise<void> {
+    return Promise.resolve();
+  }
+  get<T>(key: string): Promise<T | null> {
+    return Promise.resolve((this.values.get(key) as T | undefined) ?? null);
+  }
+  put<T>(key: string, value: T): Promise<boolean> {
+    this.values.set(key, value);
+    return Promise.resolve(true);
+  }
+  setnx<T>(key: string, value: T): Promise<boolean> {
+    if (this.values.has(key)) return Promise.resolve(false);
+    this.values.set(key, value);
+    return Promise.resolve(true);
+  }
+  compareDelete<T>(key: string, expected: T): Promise<boolean> {
+    if (this.values.get(key) !== expected) return Promise.resolve(false);
+    this.values.delete(key);
+    return Promise.resolve(true);
+  }
+  remove(...keys: readonly string[]): Promise<boolean> {
+    for (const key of keys) this.values.delete(key);
+    return Promise.resolve(true);
+  }
+  state() {
+    return { available: true } as const;
+  }
+  close(): Promise<void> {
+    this.values.clear();
+    return Promise.resolve();
+  }
 }
 
 function key(principal: string, membership: string, scope: string): NavigationKey {
@@ -76,7 +99,17 @@ function tree(scope: string): NavigationTreeValue {
     catalogVersion: 'catalog:one',
     defaultKey: 'root',
     defaultRoute: '/root',
-    nodes: [{ key: 'root', title: '导航首页', parent: null, order: 1, operation: 'navigation.tree.read', experience: { icon: 'home', routeKey: 'rootroute', route: '/root', component: 'home', placement: 'primary', disabled: false, disabledReason: null, breadcrumbs: [{ key: 'root', title: '导航首页' }] }, children: [] }],
+    nodes: [
+      {
+        key: 'root',
+        title: '导航首页',
+        parent: null,
+        order: 1,
+        operation: 'navigation.tree.read',
+        experience: { icon: 'home', routeKey: 'rootroute', route: '/root', component: 'home', placement: 'primary', disabled: false, disabledReason: null, breadcrumbs: [{ key: 'root', title: '导航首页' }] },
+        children: [],
+      },
+    ],
   }).toValue();
 }
 

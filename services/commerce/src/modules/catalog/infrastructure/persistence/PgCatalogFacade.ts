@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type { QueryResultRow } from 'pg';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { DatabasePool } from '../../../../platform/database/Pool';
 import type { CartCatalogPort, CartListingSnapshot } from '../../public/CartCatalogPort';
-import type { CatalogPosition, CatalogReadPort, StorefrontListing } from '../../public/CatalogReadPort';
+import type { CatalogPosition, CatalogReadPort, StorefrontCategoryFacet, StorefrontListing } from '../../public/CatalogReadPort';
 import type { CheckoutCatalogItem, CheckoutCatalogPort } from '../../public/CheckoutCatalogPort';
 import type { ExperienceCatalogItem, ExperienceCatalogPort, ExperienceCatalogReferences } from '../../public/ExperienceCatalogPort';
 import type { MemberCatalogPort, MemberCatalogVisibility } from '../../public/MemberCatalogPort';
@@ -68,6 +68,29 @@ export class PgCatalogFacade implements CartCatalogPort, CatalogReadPort, Checko
     return Object.freeze(result.rows.map((row) => Object.freeze(row)));
   }
 
+  async categories(
+    context: ReadTransactionContext,
+    input: Readonly<{ mall: string; pool: string; query: string | null; account: 'welfare' | 'meal' | 'wechat' | 'cash' | null; exclusive: boolean }>
+  ): Promise<readonly StorefrontCategoryFacet[]> {
+    const result = await this.transactions.database(context).query<StorefrontCategoryFacet & QueryResultRow>(
+      `select category.id,category.code,category.name,count(distinct product.id)::integer count
+       from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id and sku.status='active'
+       join catalog.product product on product.id=sku.product_id and product.status='active'
+       join catalog.category category on category.id=product.category_id and category.status='active'
+       join catalog.pool pool on pool.id=listing.pool_id and pool.status='active'
+       join catalog.poolbinding binding on binding.pool_id=listing.pool_id and binding.mall_id=$1 and binding.status='active'
+       where listing.pool_id=$2 and listing.status='published' and (listing.effective_at is null or listing.effective_at<=clock_timestamp())
+       and (listing.expires_at is null or listing.expires_at>clock_timestamp())
+       and ($3::text is null or listing.title ilike '%'||$3||'%' or category.name ilike '%'||$3||'%'
+         or coalesce(product.attributes->>'brandName',product.attributes->'detail'->>'brandName','') ilike '%'||$3||'%')
+       and ($4::text is null or coalesce(product.attributes->'allowedAccounts',product.attributes->'detail'->'allowedAccounts','[]'::jsonb)?$4)
+       and (not $5::boolean or product.attributes->>'enterpriseExclusive'='true' or product.attributes->'detail'->>'enterpriseExclusive'='true')
+       group by category.id,category.code,category.name order by category.name,category.id`,
+      [input.mall, input.pool, input.query, input.account, input.exclusive]
+    );
+    return Object.freeze(result.rows.map((row) => Object.freeze({ id: row.id, code: row.code, name: row.name, count: Number(row.count) })));
+  }
+
   async listings(
     context: ReadTransactionContext,
     input: Readonly<{
@@ -97,7 +120,9 @@ export class PgCatalogFacade implements CartCatalogPort, CatalogReadPort, Checko
        join catalog.poolbinding binding on binding.pool_id=listing.pool_id and binding.mall_id=$1 and binding.status='active'
        where listing.pool_id=$2 and listing.status='published' and (listing.effective_at is null or listing.effective_at<=clock_timestamp())
        and (listing.expires_at is null or listing.expires_at>clock_timestamp()) and ($3::text is null or product.id=$3)
-       and ($4::text[] is null or listing.id=any($4::text[])) and ($5::text is null or listing.title ilike '%'||$5||'%')
+       and ($4::text[] is null or listing.id=any($4::text[]))
+       and ($5::text is null or listing.title ilike '%'||$5||'%' or category.name ilike '%'||$5||'%'
+         or coalesce(product.attributes->>'brandName',product.attributes->'detail'->>'brandName','') ilike '%'||$5||'%')
        and ($6::text is null or category.id=$6)
        and ($7::text is null or coalesce(product.attributes->'allowedAccounts',product.attributes->'detail'->'allowedAccounts','[]'::jsonb)?$7)
        and (not $8::boolean or product.attributes->>'enterpriseExclusive'='true' or product.attributes->'detail'->>'enterpriseExclusive'='true')

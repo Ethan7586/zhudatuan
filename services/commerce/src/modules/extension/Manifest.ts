@@ -1,4 +1,4 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { EXTENSION_REGISTRY_PORT } from './public';
 
 export const Manifest = defineModuleManifest({

@@ -6,7 +6,8 @@ export function storedQuote(value: unknown): CheckoutQuote {
   const cart = source.cart;
   if (!record(cart) || !texts(cart, ['id', 'member', 'mall', 'application']) || !integer(cart.version)) invalid();
   if (!record(source.selection) || !Array.isArray(source.lines) || !Array.isArray(source.tenders) || !record(source.evidence) || !Array.isArray(source.rejections)) invalid();
-  if (!integer(source.subtotalMinor) || !integer(source.discountMinor) || !integer(source.shippingMinor) || !integer(source.taxMinor) || !integer(source.payableMinor) || !integer(source.personalMinor) || source.currency !== 'CNY') invalid();
+  if (!integer(source.subtotalMinor) || !integer(source.discountMinor) || !integer(source.shippingMinor) || !integer(source.taxMinor) || !integer(source.payableMinor) || !integer(source.personalMinor) || source.currency !== 'CNY')
+    invalid();
   if (!nullableSnapshot(source.address) || !nullableSnapshot(source.invoice) || !shipping(source.shipping) || !tax(source.tax)) invalid();
   for (const line of source.lines) {
     if (!record(line) || !texts(line, ['listing', 'sku', 'product', 'productType', 'category', 'title'])) invalid();

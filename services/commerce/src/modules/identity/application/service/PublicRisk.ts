@@ -1,6 +1,6 @@
-import type { RiskGate } from '../../../../foundation/security/RiskGate';
-import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { RiskGate } from '../../../../platform/security/RiskGate';
+import type { OperationRequest } from '../../../../pipeline/OperationRequest';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export async function assertPublicRisk(
   risk: RiskGate,

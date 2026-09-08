@@ -1,6 +1,6 @@
 import { PROVIDER_REQUIREMENTS } from '@shop/contract';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ChannelProviderAvailability, ChannelStatement, FinanceChannelPort } from '../../public/FinanceChannelPort';
 
 const labels = Object.freeze(Object.fromEntries(PROVIDER_REQUIREMENTS.map(({ id, label }) => [id, label])) as Readonly<Record<string, string>>);
@@ -16,11 +16,15 @@ export class PgFinanceChannelPort implements FinanceChannelPort {
       group by provider order by provider`,
       [scopes]
     );
-    return Object.freeze(result.rows.map(({ provider, count }) => Object.freeze({
-      id: provider,
-      label: labels[provider] ?? '自定义服务商',
-      count: Number(count),
-    } satisfies ChannelProviderAvailability)));
+    return Object.freeze(
+      result.rows.map(({ provider, count }) =>
+        Object.freeze({
+          id: provider,
+          label: labels[provider] ?? '自定义服务商',
+          count: Number(count),
+        } satisfies ChannelProviderAvailability)
+      )
+    );
   }
 
   async statement(context: ReadTransactionContext, id: string, scope: string): Promise<ChannelStatement | null> {
@@ -39,7 +43,6 @@ export class PgFinanceChannelPort implements FinanceChannelPort {
       [id, scope]
     );
     const row = result.rows[0];
-    return row ? Object.freeze({ id: row.id, scope: row.scope, objectRef: row.object_ref, sha256: row.sha256,
-      period: Object.freeze({ start: row.period_start, end: row.period_end, timezone: row.timezone }) }) : null;
+    return row ? Object.freeze({ id: row.id, scope: row.scope, objectRef: row.object_ref, sha256: row.sha256, period: Object.freeze({ start: row.period_start, end: row.period_end, timezone: row.timezone }) }) : null;
   }
 }

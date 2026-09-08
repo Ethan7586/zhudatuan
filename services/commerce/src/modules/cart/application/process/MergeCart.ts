@@ -1,4 +1,4 @@
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CartOwner } from '../../domain/model/Cart';
 import { CartPolicy } from '../../domain/policy/CartPolicy';
 import type { CartRepository } from '../port/CartRepository';

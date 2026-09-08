@@ -1,5 +1,5 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { Entity } from '../../../../foundation/domain/Entity';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { Entity } from '@shop/kernel';
 import { OrderTransition } from '../policy/OrderTransition';
 import { OrderAddress, type OrderAddressSnapshot } from './OrderAddress';
 import { OrderFulfillment, type OrderFulfillmentSnapshot } from './OrderFulfillment';

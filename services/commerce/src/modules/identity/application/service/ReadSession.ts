@@ -1,11 +1,11 @@
 import { identityLifecycle as operationLifecycle, type IdentityLifecycle as OperationLifecycle } from '../model/IdentityAction';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
 
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
 import type { IdentityMemberPort } from '../../../member/public';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import type { CredentialRepository, CredentialSecurity } from '../port/CredentialRepository';
-import type { OperationResult } from '../../../../foundation/application/OperationRequest';
+import type { OperationResult } from '../../../../pipeline/OperationRequest';
 
 interface LoadedSession {
   readonly credential: CredentialSecurity;

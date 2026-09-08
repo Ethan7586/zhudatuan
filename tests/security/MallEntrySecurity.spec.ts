@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { BootstrapQuery } from '../../services/commerce/src/modules/navigation/application/service/BootstrapQuery';
-import { trustedPeerAddress } from '../../services/commerce/src/foundation/interface/NodeServer';
+import { trustedPeerAddress } from '../../services/commerce/src/platform/http/NodeServer';
 
 test('storefront rejects missing, reserved and noncanonical handles before lookup', async () => {
   let calls = 0;
@@ -30,7 +30,8 @@ test('host and forwarded host never participate in storefront selection', async 
       published: async () => ({ document: {}, version: 'version:one', asOf: '2026-09-01T00:00:00.000Z' }),
     },
     identity: { resolve: () => ({ state: 'anonymous', membership: null, version: 1 }) },
-    navigation: { storefront: () => ({ items: [], version: '1' }) },
+    navigation: { featureFlags: new Set(), read: () => ({ nodes: [], version: '1' }) },
+    capability: { read: async () => [{ scope: 'mall:one', capabilities: new Set(), version: 0 }] },
   } as never);
   const value = context('mall-other') as unknown as { headers: Record<string, string> };
   value.headers.host = 'attacker.example';

@@ -17,7 +17,7 @@ cases:
   - { code: PUBLIC_INDEX_MISSING, positive: module has no public/index.ts, negative: module has public/index.ts }
   - { code: PUBLIC_INDEX_TARGET_INVALID, positive: public/index.ts exports PgRepository, negative: public/index.ts exports sibling Port }
   - { code: PUBLIC_RESULT_ROW_FORBIDDEN, positive: public returns QueryResult, negative: public returns DTO }
-  - { code: DOMAIN_LAYER_DEPENDENCY_FORBIDDEN, positive: domain imports foundation/interface, negative: domain imports foundation/domain }
+  - { code: DOMAIN_LAYER_DEPENDENCY_FORBIDDEN, positive: domain imports platform/http, negative: domain imports platform/error }
   - { code: DOMAIN_MODULE_DEPENDENCY_FORBIDDEN, positive: cart domain imports catalog public, negative: cart application imports catalog public }
   - { code: DOMAIN_TECHNOLOGY_DEPENDENCY_FORBIDDEN, positive: domain imports fastify, negative: domain imports node crypto }
   - { code: DOMAIN_GENERATED_DTO_FORBIDDEN, positive: domain imports OperationInputFor, negative: domain imports OperationTarget }

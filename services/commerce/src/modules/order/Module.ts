@@ -2,10 +2,10 @@ import { PgOrderReceiptPort } from './infrastructure/persistence/PgOrderReceiptP
 import { PgOrderReadPort } from './infrastructure/persistence/PgOrderReadPort';
 import { PgFinanceOrderPort } from './infrastructure/persistence/PgFinanceOrderPort';
 
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { PgOutbox } from '../../adapter/database/PgOutbox';
-import { PgTransactionManager } from '../../adapter/database/PgTransactionManager';
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { PgOutbox } from '../../platform/database/PgOutbox';
+import { PgTransactionManager } from '../../platform/database/PgTransactionManager';
+import { defineModule } from '../../composition/DefinedModule';
 import { OBJECT_STORE } from '../runtime/public/ObjectPort';
 import { Manifest } from './Manifest';
 import { AfterSalesApplyHandler } from './application/handler/AfterSalesApplyHandler';
@@ -25,9 +25,9 @@ import { AfterSaleAttachment } from './application/service/AfterSaleAttachment';
 import { OrderPort } from './infrastructure/persistence/OrderPort';
 import { PgOrderSupportPort } from './infrastructure/persistence/PgOrderSupportPort';
 import { FINANCE_ORDER_PORT, ORDER_EXPIRY_PORT, ORDER_FULFILLMENT_PORT, ORDER_INTENT_PORT, ORDER_PAYMENT_JOB_PORT, ORDER_PAYMENT_PORT, ORDER_RECEIPT_PORT, SUPPORT_ORDER_PORT } from './public/index';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
+import { DATABASE_POOL } from '../../platform/database/Pool';
 import { ORDER_READ_PORT } from './public/OrderReadPort';
-import { writeDatabaseWorkload } from '../../foundation/persistence/Workload';
+import { writeDatabaseWorkload } from '../../platform/database/Workload';
 import { ORGANIZATION_READ_PORT } from '../organization/public';
 import { AFTERSALE_POLICY_PORT } from '../qualification/public';
 import { PgAfterSaleRepository } from './infrastructure/persistence/PgAfterSaleRepository';
@@ -36,7 +36,7 @@ import { AUDIT_READ_PORT } from '../audit/public';
 import { PgOrderDetailRepository } from './infrastructure/persistence/PgOrderDetailRepository';
 import { MEMBER_READ_PORT } from '../member/public';
 import { IMPORT_OBJECT_PORT, RUNTIME_IMPORT_PORT } from '../runtime/public';
-import { PgJobScheduler } from '../../adapter/database/PgJobScheduler';
+import { PgJobScheduler } from '../../platform/database/PgJobScheduler';
 import { createJobs } from './interface/job/JobFactory';
 import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
 

@@ -1,5 +1,5 @@
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
 
 export interface OrganizationReadPort {
   descendants(context: ReadTransactionContext, scopeId: string): Promise<readonly string[]>;

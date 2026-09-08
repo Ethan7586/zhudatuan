@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { OperationSecurityContext } from '../../../foundation/security/OperationSecurityContext';
+import type { OperationSecurityContext } from '../../../platform/security/OperationSecurityContext';
 import { CurrentIdentityReadPort } from '../infrastructure/persistence/CurrentIdentityReadPort';
 
 describe('CurrentIdentityReadPort', () => {

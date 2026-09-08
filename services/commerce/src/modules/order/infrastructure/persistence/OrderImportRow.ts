@@ -61,7 +61,11 @@ function linesOf(row: Readonly<Record<string, string>>): readonly Omit<OrderLine
 
 function parsedLines(value: string): readonly Omit<OrderLineSnapshot, 'id'>[] {
   let parsed: unknown;
-  try { parsed = JSON.parse(value); } catch { throw new Error('ORDER_IMPORT_LINES_INVALID'); }
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error('ORDER_IMPORT_LINES_INVALID');
+  }
   if (!Array.isArray(parsed) || parsed.length === 0 || parsed.length > 100) throw new Error('ORDER_IMPORT_LINES_INVALID');
   return parsed.map((line, index) => {
     if (!line || typeof line !== 'object' || Array.isArray(line)) throw new Error('ORDER_IMPORT_LINES_INVALID');
@@ -101,7 +105,11 @@ function lineOf(row: Readonly<Record<string, string>>, sequence: number): Omit<O
 function addressOf(value: string | undefined): OrderAddressSnapshot | null {
   if (!value) return null;
   let parsed: unknown;
-  try { parsed = JSON.parse(value); } catch { throw new Error('ORDER_IMPORT_ADDRESS_INVALID'); }
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error('ORDER_IMPORT_ADDRESS_INVALID');
+  }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('ORDER_IMPORT_ADDRESS_INVALID');
   const source = parsed as Readonly<Record<string, unknown>>;
   const snapshot = {

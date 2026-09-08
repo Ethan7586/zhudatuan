@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { AccessDecision, DecisionSink } from '../../../../foundation/security/DecisionSink';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import type { SessionSecurity } from '../../../../foundation/security/SessionSecurity';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { AccessDecision, DecisionSink } from '../../../../platform/security/DecisionSink';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
+import type { SessionSecurity } from '../../../../platform/security/SessionSecurity';
 
 export class PgDecisionSink implements DecisionSink {
   constructor(

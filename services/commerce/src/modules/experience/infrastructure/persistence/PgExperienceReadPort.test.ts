@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import { parseExperience, serializeExperience } from '@shop/contract';
 import { describe, expect, it, vi } from 'vitest';
-import type { PgTransactionAccess, SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess, SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import { PgExperienceReadPort } from './PgExperienceReadPort';
 
 const document = parseExperience({

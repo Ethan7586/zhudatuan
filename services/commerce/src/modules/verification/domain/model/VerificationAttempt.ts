@@ -1,12 +1,22 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { VerificationPurpose } from './VerificationSession';
 
 export type VerificationAttemptResult = 'accepted' | 'rejected' | 'replayed' | 'expired';
 
 export class VerificationAttempt {
   readonly value: Readonly<{
-    id: string; session: string; sequence: number; scope: string; purpose: VerificationPurpose; operation: string;
-    actor: string; device: string | null; result: VerificationAttemptResult; reason: string; trace: string; attemptedAt: Date;
+    id: string;
+    session: string;
+    sequence: number;
+    scope: string;
+    purpose: VerificationPurpose;
+    operation: string;
+    actor: string;
+    device: string | null;
+    result: VerificationAttemptResult;
+    reason: string;
+    trace: string;
+    attemptedAt: Date;
   }>;
 
   constructor(value: VerificationAttempt['value']) {

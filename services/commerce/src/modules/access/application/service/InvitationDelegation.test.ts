@@ -4,18 +4,7 @@ import { InvitationDelegation, delegatedPermissions } from './InvitationDelegati
 
 describe('delegatedPermissions', () => {
   it('validates a prepared employee membership with enrollment semantics', async () => {
-    const plan = new GrantPlan(
-      'storefront',
-      'mall:one',
-      'membership:employee',
-      'principal:employee',
-      [{ id: 'role:self', version: 1, kind: 'system', expiresAt: null }],
-      [],
-      [],
-      1,
-      'registration:one',
-      't'.repeat(64)
-    );
+    const plan = new GrantPlan('storefront', 'mall:one', 'membership:employee', 'principal:employee', [{ id: 'role:self', version: 1, kind: 'system', expiresAt: null }], [], [], 1, 'registration:one', 't'.repeat(64));
     const execute = vi.fn(async () => ({
       plan,
       issuerVersion: 7,

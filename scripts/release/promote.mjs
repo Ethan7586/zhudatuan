@@ -27,7 +27,14 @@ if (approval.candidateImageSha256 !== candidate.commerce.sha256) throw new Error
 if (!/^oss:\/\/[a-z0-9.-]+\/.+/.test(approval.databaseSnapshot ?? '')) throw new Error('PROMOTION_SNAPSHOT_INVALID');
 if (!/^oss:\/\/[a-z0-9.-]+\/.+/.test(approval.rollback?.databaseSnapshot ?? '') || !/^[a-z0-9]{8,64}$/.test(approval.rollback?.releaseId ?? '') || !/^[0-9a-f]{64}$/.test(approval.rollback?.pointerSha256 ?? ''))
   throw new Error('PROMOTION_ROLLBACK_INVALID');
-if (!/^[0-9a-f]{64}$/.test(approval.approvalSha256 ?? '') || !/^[a-z0-9.-]+$/.test(approval.bucket ?? '')) throw new Error('PROMOTION_AUTHORITY_INVALID');
+if (
+  !/^[0-9a-f]{64}$/.test(approval.approvalSha256 ?? '') ||
+  !/^[a-z0-9.-]+$/.test(approval.bucket ?? '') ||
+  typeof approval.approver?.id !== 'string' ||
+  approval.approver.id.length === 0 ||
+  !Number.isSafeInteger(Date.parse(approval.signedAt))
+)
+  throw new Error('PROMOTION_AUTHORITY_INVALID');
 
 const release = Object.freeze({
   schema: 'shop.release.v1',

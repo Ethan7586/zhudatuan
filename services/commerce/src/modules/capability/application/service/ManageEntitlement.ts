@@ -1,5 +1,5 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { OrganizationReadPort } from '../../../organization/public';
 import { CapabilitySet } from '../../domain/model/CapabilitySet';
 import { CapabilityPolicy } from '../../domain/policy/CapabilityPolicy';
@@ -38,12 +38,10 @@ export class ManageEntitlement {
       input.now
     );
     const set = new CapabilitySet(input.scope, plan.setVersion, parent, scope.descendants.length);
-    const change = set.change(
-      plan.current,
-      { id: input.id, capability: input.capability, state: input.state, quota: input.quota, expiresAt: input.expiresAt },
-      input.now,
-      { operations: plan.operations, dependentCapabilities: plan.dependentCapabilities }
-    );
+    const change = set.change(plan.current, { id: input.id, capability: input.capability, state: input.state, quota: input.quota, expiresAt: input.expiresAt }, input.now, {
+      operations: plan.operations,
+      dependentCapabilities: plan.dependentCapabilities,
+    });
     const assignment = change.changed
       ? await this.assignments.save(context, change, { expectedSetVersion: plan.setVersion, actor: input.actor, reason: input.reason, trace: input.trace, descendants: scope.descendants.length })
       : await this.assignments.project(context, { scope: input.scope, capability: input.capability, descendants: scope.descendants.length });

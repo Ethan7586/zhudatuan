@@ -1,4 +1,4 @@
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { BenefitGateway } from '../../../benefit/public';
 import type { CheckoutInventoryPort } from '../../../inventory/public';
 import type { MarketingReservePort } from '../../../marketing/public';
@@ -25,7 +25,13 @@ export class CheckoutReservations {
 
   voucherHold(context: WriteTransactionContext, order: string, quote: CheckoutQuote): Promise<void> {
     const tenders = quote.tenders.filter((item) => item.kind === 'voucher').sort(byReference);
-    return this.voucher.reserve(context, order, quote.cart.member, quote.cart.mall, tenders.map(({ reference, amountMinor }) => ({ reference: reference!, amountMinor })));
+    return this.voucher.reserve(
+      context,
+      order,
+      quote.cart.member,
+      quote.cart.mall,
+      tenders.map(({ reference, amountMinor }) => ({ reference: reference!, amountMinor }))
+    );
   }
 
   async marketingHold(context: WriteTransactionContext, order: string, quote: CheckoutQuote, expiresAt: string): Promise<void> {
@@ -45,7 +51,13 @@ export class CheckoutReservations {
 
   benefitHold(context: WriteTransactionContext, order: string, quote: CheckoutQuote): Promise<void> {
     const tenders = quote.tenders.filter((item) => item.kind === 'benefit').sort(byReference);
-    return this.benefit.reserve(context, order, quote.cart.member, quote.cart.mall, tenders.map(({ reference, amountMinor }) => ({ reference: reference!, amountMinor })));
+    return this.benefit.reserve(
+      context,
+      order,
+      quote.cart.member,
+      quote.cart.mall,
+      tenders.map(({ reference, amountMinor }) => ({ reference: reference!, amountMinor }))
+    );
   }
 
   release(context: WriteTransactionContext, order: string): Promise<void> {

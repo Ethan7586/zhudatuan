@@ -1,9 +1,9 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { createHash, randomBytes } from 'node:crypto';
 import { IDENTITY_PROVIDER_CONFIGURATION } from '@shop/config/server';
 
-import type { KmsClient } from '../../../../foundation/application/KmsPort';
+import type { KmsClient } from '../../../../pipeline/KmsPort';
 import type { SessionIssuer } from '../port/SessionIssuer';
 import type { CreateFederation, FederationRepository } from '../port/FederationRepository';
 import type { LinkCaseRepository } from '../port/LinkCaseRepository';
@@ -12,7 +12,7 @@ import type { SubjectHasher } from '../../domain/service/SubjectHasher';
 import type { FederationProtector } from '../../domain/service/FederationProtector';
 import type { Nonce } from '../../domain/service/Nonce';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';
-import type { OperationResult } from '../../../../foundation/application/OperationRequest';
+import type { OperationResult } from '../../../../pipeline/OperationRequest';
 import type { IdentityOrganizationPort } from '../../../organization/public';
 import type { IdentityAccessPort } from '../../../access/public';
 import { FederationPolicy } from '../../domain/policy/FederationPolicy';

@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { keysetPage } from '../../../../foundation/application/Validation';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { keysetPage } from '../../../../pipeline/Validation';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { OrganizationReadPort } from '../../../organization/public';
 import type { OrderPaymentPort } from '../../../order/public';
 import type { RecoveryRepository } from '../../application/port/RecoveryRepository';
@@ -101,14 +101,14 @@ export class PgRecoveryRepository implements RecoveryRepository {
   private async retryRefund(database: ReturnType<PgTransactionAccess['database']>, runtime: PgRuntimeWriter, recovery: RecoveryRecord, request: string): Promise<void> {
     const refund = recovery.resource_type === 'refund' ? recovery.resource_id : typeof recovery.evidence.refund === 'string' ? recovery.evidence.refund : '';
     const selected = await database.query<{ id: string; payment_id: string; amount_minor: number; currency: string; state: RefundState; reason: string; version: number }>(
-      `select id,payment_id,amount_minor::float8 amount_minor,currency,state,reason,version::float8 version from payment.refund where id=$1 for update`, [refund]);
+      `select id,payment_id,amount_minor::float8 amount_minor,currency,state,reason,version::float8 version from payment.refund where id=$1 for update`,
+      [refund]
+    );
     if (!selected.rows[0] || selected.rows[0].state === 'succeeded') throw new Error('PAYMENT_REFUND_NOT_RETRYABLE');
     if (selected.rows[0].state === 'failed') {
       const current = selected.rows[0];
-      const retried = new Refund({ id: current.id, payment: current.payment_id, amountMinor: current.amount_minor, currency: current.currency,
-        state: current.state, reason: current.reason, version: current.version }).retry();
-      const changed = await database.query(`update payment.refund set state=$2,completed_at=null,version=$3 where id=$1 and state='failed' and version=$4 returning id`,
-        [refund, retried.value.state, retried.value.version, current.version]);
+      const retried = new Refund({ id: current.id, payment: current.payment_id, amountMinor: current.amount_minor, currency: current.currency, state: current.state, reason: current.reason, version: current.version }).retry();
+      const changed = await database.query(`update payment.refund set state=$2,completed_at=null,version=$3 where id=$1 and state='failed' and version=$4 returning id`, [refund, retried.value.state, retried.value.version, current.version]);
       if (!changed.rows[0]) throw new DomainError('VERSION_CONFLICT');
       await database.query(`update payment.refundtender set state='planned' where refund_id=$1 and state='failed'`, [refund]);
     }

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { PoolRepository } from '../../application/port/PoolRepository';
 import { Pool } from '../../domain/model/Pool';
 import type { CatalogScopeReader } from './CatalogScopeReader';
@@ -54,8 +54,14 @@ export class PgPoolRepository implements PoolRepository {
     if (!input.platform) await this.scopes.assert(database.transaction, input.accessScope, input.scope);
     const source = await database.query<{ sku_id: string }>(`select sku_id from catalog.poolitem where pool_id=$1 and state='included' order by sku_id`, [input.source]);
     const allocated = Pool.allocate({ id: `pool:${randomUUID()}`, scope: input.scope, kind: input.kind, name: input.name, skus: source.rows.map((item) => item.sku_id) }).snapshot();
-    const result = await database.query(`insert into catalog.pool(id,scope_id,kind,name,status,version) values($1,$2,$3,$4,$5,$6) returning *`,
-      [allocated.id, allocated.scope, allocated.kind, allocated.name, allocated.state, allocated.version]);
+    const result = await database.query(`insert into catalog.pool(id,scope_id,kind,name,status,version) values($1,$2,$3,$4,$5,$6) returning *`, [
+      allocated.id,
+      allocated.scope,
+      allocated.kind,
+      allocated.name,
+      allocated.state,
+      allocated.version,
+    ]);
     const pool = result.rows[0];
     if (!pool || typeof pool.id !== 'string') throw new Error('CATALOG_POOL_CREATE_FAILED');
     await database.query(

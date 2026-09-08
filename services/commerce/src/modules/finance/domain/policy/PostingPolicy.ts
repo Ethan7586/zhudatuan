@@ -1,5 +1,5 @@
 import type { Money } from '@shop/kernel';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { AccountCode } from '../value/AccountCode';
 
 export interface Posting {

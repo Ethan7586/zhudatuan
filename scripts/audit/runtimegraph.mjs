@@ -9,44 +9,49 @@ import { report } from './report.mjs';
 
 const context = graphContext();
 const violations = [...auditJobs(context.sourceFiles, context.production), ...auditDatabase(context.production), ...auditRoutes(context.sourceFiles, context.production)];
-const entries = ['ApiMain', 'JobsMain', 'MigrationMain', 'SmokeMain'];
-for (const entry of entries) {
-  const path = `services/commerce/src/app/${entry}.ts`;
+const runtimeEntries = ['ApiMain', 'JobsMain', 'ProviderMain', 'MigrationMain'];
+const releaseEntries = ['SmokeMain'];
+for (const entry of [...runtimeEntries, ...releaseEntries]) {
+  const path = `services/commerce/src/entry/${entry}.ts`;
   if (!existsSync(join(root, path))) violations.push({ code: 'RUNTIME_ENTRY_MISSING', location: path, detail: entry });
 }
-const obsoleteEntry = join(root, 'services/commerce/src/entry');
+const obsoleteEntry = join(root, 'services/commerce/src/app');
 if (existsSync(obsoleteEntry) && readdirSync(obsoleteEntry).some((file) => file.endsWith('.ts')))
   violations.push({
     code: 'RUNTIME_ENTRY_DIRECTORY_FORBIDDEN',
-    location: 'services/commerce/src/entry',
-    detail: 'use app',
+    location: 'services/commerce/src/app',
+    detail: 'use entry',
   });
 
 const build = readFileSync(join(root, 'scripts/build-commerce.mjs'), 'utf8');
-for (const entry of entries)
-  if (!build.includes(`${entry}: 'services/commerce/src/app/${entry}.ts'`)) {
+for (const entry of [...runtimeEntries, ...releaseEntries])
+  if (!build.includes(`${entry}: 'services/commerce/src/entry/${entry}.ts'`)) {
     violations.push({ code: 'RUNTIME_BUILD_ENTRY_MISSING', location: 'scripts/build-commerce.mjs', detail: entry });
   }
+if (runtimeEntries.length !== 4) violations.push({ code: 'RUNTIME_ENTRY_COUNT_INVALID', location: 'services/commerce/src/entry', detail: String(runtimeEntries.length) });
+const smoke = readFileSync(join(root, 'services/commerce/src/entry/SmokeMain.ts'), 'utf8');
+for (const forbidden of ['insert into', 'update ', 'delete from', '.query(', 'seed'])
+  if (smoke.toLowerCase().includes(forbidden)) violations.push({ code: 'SMOKE_BUSINESS_WRITE_FORBIDDEN', location: 'services/commerce/src/entry/SmokeMain.ts', detail: forbidden });
 for (const forbidden of ['Registration', 'WebBusiness', 'Purchase', 'IdentityNotificationJobsOnly'])
   if (build.includes(forbidden)) {
     violations.push({ code: 'RUNTIME_TEMPORARY_ENTRY_FORBIDDEN', location: 'scripts/build-commerce.mjs', detail: forbidden });
   }
 
-const api = readFileSync(join(root, 'services/commerce/src/app/ApiMain.ts'), 'utf8');
+const api = readFileSync(join(root, 'services/commerce/src/entry/ApiMain.ts'), 'utf8');
 for (const token of ['bootstrapApi', 'assertRuntimeReady', 'listen('])
   if (!api.includes(token)) {
-    violations.push({ code: 'API_BOOTSTRAP_EDGE_MISSING', location: 'services/commerce/src/app/ApiMain.ts', detail: token });
+    violations.push({ code: 'API_BOOTSTRAP_EDGE_MISSING', location: 'services/commerce/src/entry/ApiMain.ts', detail: token });
   }
 if (api.indexOf('assertRuntimeReady') > api.indexOf('listen('))
   violations.push({
     code: 'API_READINESS_ORDER_INVALID',
-    location: 'services/commerce/src/app/ApiMain.ts',
+    location: 'services/commerce/src/entry/ApiMain.ts',
     detail: 'readiness before listen',
   });
-const jobs = readFileSync(join(root, 'services/commerce/src/app/JobsMain.ts'), 'utf8');
+const jobs = readFileSync(join(root, 'services/commerce/src/entry/JobsMain.ts'), 'utf8');
 for (const token of ['bootstrapJobs', 'JOB_RUNTIME_CATALOG_DRIFT', 'registries.workers.all'])
   if (!jobs.includes(token)) {
-    violations.push({ code: 'JOBS_BOOTSTRAP_EDGE_MISSING', location: 'services/commerce/src/app/JobsMain.ts', detail: token });
+    violations.push({ code: 'JOBS_BOOTSTRAP_EDGE_MISSING', location: 'services/commerce/src/entry/JobsMain.ts', detail: token });
   }
 const runtimeModule = readFileSync(join(root, 'services/commerce/src/modules/runtime/Module.ts'), 'utf8');
 const runtimeWorkers = readFileSync(join(root, 'services/commerce/src/modules/runtime/infrastructure/queue/WorkerFactory.ts'), 'utf8');
@@ -54,12 +59,11 @@ const runtimeManifest = readFileSync(join(root, 'services/commerce/src/modules/r
 if (!runtimeModule.includes('workers: createWorkers')) violations.push({ code: 'RUNTIME_WORKER_EDGE_MISSING', location: 'services/commerce/src/modules/runtime/Module.ts', detail: 'workers: createWorkers' });
 for (const token of ['OutboxRelay', 'RuntimeScheduler'])
   if (!runtimeWorkers.includes(token)) violations.push({ code: 'RUNTIME_WORKER_EDGE_MISSING', location: 'services/commerce/src/modules/runtime/infrastructure/queue/WorkerFactory.ts', detail: token });
-for (const token of ["workers: ['outboxrelay', 'scheduler']"])
-  if (!runtimeManifest.includes(token)) violations.push({ code: 'RUNTIME_WORKER_MANIFEST_MISSING', location: 'services/commerce/src/modules/runtime/Manifest.ts', detail: token });
-const pipeline = readFileSync(join(root, 'services/commerce/src/foundation/application/OperationPipeline.ts'), 'utf8');
+for (const token of ["workers: ['outboxrelay', 'scheduler']"]) if (!runtimeManifest.includes(token)) violations.push({ code: 'RUNTIME_WORKER_MANIFEST_MISSING', location: 'services/commerce/src/modules/runtime/Manifest.ts', detail: token });
+const pipeline = readFileSync(join(root, 'services/commerce/src/pipeline/OperationPipeline.ts'), 'utf8');
 for (const token of ['operationSchema', 'policy.authorize', 'handlers.get', 'schema.output.parse'])
   if (!pipeline.includes(token)) {
-    violations.push({ code: 'OPERATION_PIPELINE_EDGE_MISSING', location: 'services/commerce/src/foundation/application/OperationPipeline.ts', detail: token });
+    violations.push({ code: 'OPERATION_PIPELINE_EDGE_MISSING', location: 'services/commerce/src/pipeline/OperationPipeline.ts', detail: token });
   }
 const sdk = readFileSync(join(root, 'packages/sdk/src/ApiClient.ts'), 'utf8');
 const httpContract = readFileSync(join(root, 'packages/contract/src/HttpContract.ts'), 'utf8');

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { IMPORT_CAPACITY } from '@shop/config/runtime';
-import { csvCell, parseCsvStream } from '../../../../foundation/application/Csv';
+import { csvCell, parseCsvStream } from '../../../../pipeline/Csv';
 import type { ImportFailure } from '../../public/ImportProcess';
 import type { ObjectStore, StoredObject } from '../../public/ObjectPort';
 import { parseSpreadsheet } from './Spreadsheet';

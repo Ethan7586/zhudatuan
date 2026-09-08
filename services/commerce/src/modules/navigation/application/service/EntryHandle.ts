@@ -1,6 +1,6 @@
 import { parseStorefrontHandle, type StorefrontHandle } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
 
 export function entryHandle(context: Pick<HandlerContext, 'headers'>): StorefrontHandle {
   try {

@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ReconciliationOutcome } from '../model/ReconciliationOutcome';
 
 export type ReconciliationReviewRoute = 'none' | 'automatic' | 'approval';
@@ -14,17 +14,9 @@ export class ReconciliationPolicy {
 
   route(outcome: ReconciliationOutcome): ReconciliationReviewRoute {
     if (outcome.state === 'balanced') return 'none';
-    if (
-      !Number.isSafeInteger(outcome.thresholdMinor) ||
-      outcome.thresholdMinor < 0 ||
-      !Number.isSafeInteger(outcome.maximumDifferenceMinor) ||
-      outcome.maximumDifferenceMinor < 0 ||
-      outcome.differenceCount < 1
-    ) {
+    if (!Number.isSafeInteger(outcome.thresholdMinor) || outcome.thresholdMinor < 0 || !Number.isSafeInteger(outcome.maximumDifferenceMinor) || outcome.maximumDifferenceMinor < 0 || outcome.differenceCount < 1) {
       throw new DomainError('VALIDATION_FAILED', { field: 'reconciliationThreshold' });
     }
-    return Math.abs(outcome.differenceMinor) <= outcome.thresholdMinor && outcome.maximumDifferenceMinor <= outcome.thresholdMinor
-      ? 'automatic'
-      : 'approval';
+    return Math.abs(outcome.differenceMinor) <= outcome.thresholdMinor && outcome.maximumDifferenceMinor <= outcome.thresholdMinor ? 'automatic' : 'approval';
   }
 }

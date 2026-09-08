@@ -25,9 +25,25 @@ describe('OrderPort', () => {
         invoice: null,
         delivery: {},
         experienceVersion: 'version:one',
-        lines: [{ sku: 'sku:one', listing: 'listing:one', product: 'product:one', productType: 'physical', category: '福利', title: '礼品',
-          quantity: 1, unitMinor: 100, totalMinor: 100, discountMinor: 0, payableMinor: 100, provider: null, partner: null,
-          versions: { listing: 1, product: 1, sku: 1, price: 'price:one', stock: 1 }, accepted: true }],
+        lines: [
+          {
+            sku: 'sku:one',
+            listing: 'listing:one',
+            product: 'product:one',
+            productType: 'physical',
+            category: '福利',
+            title: '礼品',
+            quantity: 1,
+            unitMinor: 100,
+            totalMinor: 100,
+            discountMinor: 0,
+            payableMinor: 100,
+            provider: null,
+            partner: null,
+            versions: { listing: 1, product: 1, sku: 1, price: 'price:one', stock: 1 },
+            accepted: true,
+          },
+        ],
       })
     );
 

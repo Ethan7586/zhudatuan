@@ -1,7 +1,7 @@
 import type { ExperienceDocument } from '@shop/contract';
 import { createHash } from 'node:crypto';
 import { serializeExperience } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ComponentIssue } from '../value/ComponentTree';
 import type { PublishEvidence, PublishEvidenceSnapshot } from '../value/PublishEvidence';
 

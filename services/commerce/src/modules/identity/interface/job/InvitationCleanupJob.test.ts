@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PoolClient, QueryResult } from 'pg';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
+import type { DatabasePool } from '../../../../platform/database/Pool';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
 import { CleanupInvitations } from '../../application/process/CleanupInvitations';
 import { PgInvitationCleanupRepository } from '../../infrastructure/persistence/PgInvitationCleanupRepository';
 import { InvitationCleanupJob } from './InvitationCleanupJob';

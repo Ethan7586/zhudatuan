@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { ConversationChannel } from '../../domain/model/Conversation';
 import type { TicketPriority, TicketState } from '../../domain/model/Ticket';
 
@@ -68,13 +68,56 @@ export function supportMessageTargetSql(lock: boolean): string {
   ${lock ? 'for update of ticket,conversation' : ''}`;
 }
 
-export function supportInstant(value: string | Date): string { return new Date(value).toISOString(); }
-export function supportTicketDto(row: SupportTicketOutputRow) { return { ...row, version: Number(row.version), response_due_at: supportInstant(row.response_due_at), resolution_due_at: supportInstant(row.resolution_due_at), created_at: supportInstant(row.created_at), updated_at: supportInstant(row.updated_at) }; }
-export function supportCaseDto(row: SupportCaseReadRow) { return { ...supportTicketDto(row), member_id: row.member_id, order_id: row.order_id, channel: row.channel, subject: row.subject, reference_type: row.reference_type, reference_id: row.reference_id, unread_count: Number(row.unread_count), sla_risk: row.sla_risk }; }
-export function supportChoice(value: unknown, values: readonly string[], code: string): string { if (typeof value !== 'string' || !values.includes(value)) throw new Error(code); return value; }
-export function supportTicketState(value: unknown): TicketState { return supportChoice(value, STATES, 'SUPPORT_STATE_INVALID') as TicketState; }
-export function supportTicketPriority(value: unknown): TicketPriority { return supportChoice(value, SUPPORT_PRIORITIES, 'SUPPORT_PRIORITY_INVALID') as TicketPriority; }
-export function supportScalar(value: unknown): string | null { return typeof value === 'string' && value.length > 0 ? value : null; }
-export function supportStringList(value: unknown): string[] | null { if (value === undefined) return null; const values = Array.isArray(value) ? value : [value]; return values.map(String); }
-export function supportBoolean(value: unknown): boolean | null { if (value === undefined) return null; if (value === true || value === 'true') return true; if (value === false || value === 'false') return false; throw new DomainError('VALIDATION_FAILED'); }
-export function supportEventPayload(ticketId: string, conversationId: string, memberId: string | null, extra: Readonly<Record<string, unknown>>) { return { ticketId, conversationId, memberId, ...extra }; }
+export function supportInstant(value: string | Date): string {
+  return new Date(value).toISOString();
+}
+export function supportTicketDto(row: SupportTicketOutputRow) {
+  return {
+    ...row,
+    version: Number(row.version),
+    response_due_at: supportInstant(row.response_due_at),
+    resolution_due_at: supportInstant(row.resolution_due_at),
+    created_at: supportInstant(row.created_at),
+    updated_at: supportInstant(row.updated_at),
+  };
+}
+export function supportCaseDto(row: SupportCaseReadRow) {
+  return {
+    ...supportTicketDto(row),
+    member_id: row.member_id,
+    order_id: row.order_id,
+    channel: row.channel,
+    subject: row.subject,
+    reference_type: row.reference_type,
+    reference_id: row.reference_id,
+    unread_count: Number(row.unread_count),
+    sla_risk: row.sla_risk,
+  };
+}
+export function supportChoice(value: unknown, values: readonly string[], code: string): string {
+  if (typeof value !== 'string' || !values.includes(value)) throw new Error(code);
+  return value;
+}
+export function supportTicketState(value: unknown): TicketState {
+  return supportChoice(value, STATES, 'SUPPORT_STATE_INVALID') as TicketState;
+}
+export function supportTicketPriority(value: unknown): TicketPriority {
+  return supportChoice(value, SUPPORT_PRIORITIES, 'SUPPORT_PRIORITY_INVALID') as TicketPriority;
+}
+export function supportScalar(value: unknown): string | null {
+  return typeof value === 'string' && value.length > 0 ? value : null;
+}
+export function supportStringList(value: unknown): string[] | null {
+  if (value === undefined) return null;
+  const values = Array.isArray(value) ? value : [value];
+  return values.map(String);
+}
+export function supportBoolean(value: unknown): boolean | null {
+  if (value === undefined) return null;
+  if (value === true || value === 'true') return true;
+  if (value === false || value === 'false') return false;
+  throw new DomainError('VALIDATION_FAILED');
+}
+export function supportEventPayload(ticketId: string, conversationId: string, memberId: string | null, extra: Readonly<Record<string, unknown>>) {
+  return { ticketId, conversationId, memberId, ...extra };
+}

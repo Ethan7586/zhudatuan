@@ -1,10 +1,11 @@
 import type { OperationInputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import { allParallel } from '../../../../foundation/performance/Parallel';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import { allParallel } from '@shop/kernel';
 import type { CatalogReadPort } from '../../../catalog/public/CatalogReadPort';
 import type { ExperienceReadPort } from '../../../experience/public/ExperienceReadPort';
 import type { InventoryReadPort } from '../../../inventory/public/InventoryReadPort';
 import type { PricingReadPort } from '../../../pricing/public/PricingReadPort';
+import type { CatalogQualificationPort } from '../../../qualification/public';
 import type { StorefrontEntry } from '../../../experience/public/ExperienceReadPort';
 import { CatalogMapper } from './CatalogMapper';
 import { assertEntryMall, entryHandle } from './EntryHandle';
@@ -15,6 +16,7 @@ export class CatalogQuery {
     private readonly catalog: CatalogReadPort,
     private readonly pricing: PricingReadPort,
     private readonly inventory: InventoryReadPort,
+    private readonly qualification: CatalogQualificationPort,
     private readonly mapper: CatalogMapper
   ) {}
 
@@ -36,17 +38,38 @@ export class CatalogQuery {
     const exclusive = flag(queryInput.exclusive);
     const cursor = this.mapper.decode(optional(queryInput.cursor));
     if (listings && (product || query || category || account || exclusive || cursor)) throw new Error('STOREFRONT_CATALOG_FILTER_CONFLICT');
-    const page = await this.catalog.listings(context.transaction, { mall: binding.mall, pool: binding.pool, limit, after: cursor, product, listings, query, category, account, exclusive });
+    const [page, categories] = await allParallel(
+      [
+        () => this.catalog.listings(context.transaction, { mall: binding.mall, pool: binding.pool, limit, after: cursor, product, listings, query, category, account, exclusive }),
+        () => (product || listings ? Promise.resolve(Object.freeze([])) : this.catalog.categories(context.transaction, { mall: binding.mall, pool: binding.pool, query, account, exclusive })),
+      ] as const,
+      { concurrency: 2, expiresAt: context.deadline, signal: context.signal }
+    );
     const skus = page.items.map(({ sku }) => sku);
-    const [prices, availability] = await allParallel([() => this.pricing.prices(context.transaction, binding.mall, skus), () => this.inventory.availability(context.transaction, binding.mall, skus)] as const, {
-      concurrency: 2,
-      expiresAt: context.deadline,
-      signal: context.signal,
+    const subjects = page.items.map((item) => Object.freeze({ listing: item.id, product: item.product, category: item.categoryId, partner: item.supplierId, regions: strings(item.attributes.regions) }));
+    const [prices, availability, qualifications] = await allParallel(
+      [
+        () => settle(() => this.pricing.prices(context.transaction, binding.mall, skus)),
+        () => settle(() => this.inventory.availability(context.transaction, binding.mall, skus)),
+        () => settle(() => this.qualification.decisions(context.transaction, binding.mall, subjects)),
+      ] as const,
+      {
+        concurrency: 3,
+        expiresAt: context.deadline,
+        signal: context.signal,
+      }
+    );
+    const priceRows = fulfilled(prices);
+    const availabilityRows = fulfilled(availability);
+    const qualificationRows = fulfilled(qualifications);
+    const items = this.mapper.items(page.items, priceRows, availabilityRows, qualificationRows, {
+      pricing: prices.status === 'fulfilled',
+      inventory: availability.status === 'fulfilled',
+      qualification: qualifications.status === 'fulfilled',
     });
-    const items = this.mapper.items(page.items, prices, availability);
     return {
       status: 200,
-      body: Object.freeze({ items, nextCursor: this.mapper.encode(page.next), version: combinationVersion(binding.version, prices, availability), asOf: new Date().toISOString() }),
+      body: Object.freeze({ items, categories, nextCursor: this.mapper.encode(page.next), version: combinationVersion(binding.version, priceRows, availabilityRows, qualificationRows), asOf: new Date().toISOString() }),
       headers: { 'cache-control': context.security.kind === 'session' ? 'private,no-store' : 'public,max-age=30,stale-while-revalidate=60' },
     };
   }
@@ -86,6 +109,22 @@ function flag(value: unknown): boolean {
   throw new Error('STOREFRONT_CATALOG_FLAG_INVALID');
 }
 
-function combinationVersion(binding: string, prices: readonly { version: string }[], stock: readonly { version: string }[]): string {
-  return [binding, ...prices.map(({ version }) => version), ...stock.map(({ version }) => version)].sort().join(':');
+function combinationVersion(binding: string, prices: readonly { version: string }[], stock: readonly { version: string }[], qualifications: readonly { policyVersion: number }[]): string {
+  return [binding, ...prices.map(({ version }) => version), ...stock.map(({ version }) => version), ...qualifications.map(({ policyVersion }) => `qualification:${policyVersion}`)].sort().join(':');
+}
+
+async function settle<T>(read: () => Promise<T>): Promise<PromiseSettledResult<T>> {
+  try {
+    return { status: 'fulfilled', value: await read() };
+  } catch (reason) {
+    return { status: 'rejected', reason };
+  }
+}
+
+function fulfilled<T>(result: PromiseSettledResult<readonly T[]>): readonly T[] {
+  return result.status === 'fulfilled' ? result.value : Object.freeze([]);
+}
+
+function strings(value: unknown): readonly string[] {
+  return Object.freeze(Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []);
 }

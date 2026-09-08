@@ -1,12 +1,10 @@
 import type { Product } from '../../../entity/product';
+import type { ShareOutcome, SharePort } from '../../../shared/platform/SharePort';
 
 export class ShareProduct {
-  async execute(product: Product, url: string): Promise<'shared' | 'copied'> {
-    if (navigator.share) {
-      await navigator.share({ title: product.title, text: product.subtitle, url });
-      return 'shared';
-    }
-    await navigator.clipboard.writeText(url);
-    return 'copied';
+  constructor(private readonly share: SharePort) {}
+
+  async execute(product: Product, url: string): Promise<ShareOutcome> {
+    return this.share.share({ title: product.title, text: product.subtitle, url });
   }
 }

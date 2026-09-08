@@ -1,7 +1,7 @@
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
-import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
-import type { OperationResult } from '../../../../foundation/application/OperationRequest';
+import type { OperationRequest } from '../../../../pipeline/OperationRequest';
+import type { OperationResult } from '../../../../pipeline/OperationRequest';
 import type { OperationInputFor } from '@shop/contract';
 import type { MembershipView } from '../model/MembershipCandidate';
 

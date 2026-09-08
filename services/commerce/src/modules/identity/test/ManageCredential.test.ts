@@ -25,7 +25,10 @@ describe('ManageCredential mobile verification', () => {
     const lifecycle = command.mobile();
     const request = mobileRequest();
     const prepared = await lifecycle.prepare!(request, undefined);
-    await withWriteTransaction(async () => result([]), (context) => lifecycle.execute(request, context, prepared));
+    await withWriteTransaction(
+      async () => result([]),
+      (context) => lifecycle.execute(request, context, prepared)
+    );
 
     const buckets = throttle.mock.calls[0]![1] as readonly (readonly [string, string])[];
     expect(buckets.map(([, bucket]) => bucket)).toEqual(['verify:phone_change', 'network:verify:phone_change', 'device:verify:phone_change']);
@@ -38,17 +41,29 @@ function mobileRequest() {
   return {
     type: 'identity.mobile.manage',
     input: {
-      path: {}, query: {},
+      path: {},
+      query: {},
       headers: { 'x-peer-address': '203.0.113.8', 'x-device-id': 'device:one' },
       body: { mobile: '13800138000', challenge: 'challenge:one', code: '123456' },
-      rawBody: '', deadline: Date.now() + 10_000, signal: new AbortController().signal, idempotency: 'mobile-change', expectedVersion: undefined,
+      rawBody: '',
+      deadline: Date.now() + 10_000,
+      signal: new AbortController().signal,
+      idempotency: 'mobile-change',
+      expectedVersion: undefined,
     },
     security: {
       kind: 'session',
       access: {
         actor: { id: 'principal:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target: 'storefront', assurance: { level: 2 } },
         membership: { id: 'membership:one', permissions: { allows: new Set(['identity.credential.manage']), denies: new Set() }, scopes: [], active: true, accessVersion: 1 },
-        roles: [], organization: 'mall:one', scope: { kind: 'self', id: 'self:one', path: [] }, capabilities: new Set(['identity.mobile.manage']), capabilityVersion: 1, accessVersion: 1, assurance: { level: 2 }, trace: 'trace:mobile',
+        roles: [],
+        organization: 'mall:one',
+        scope: { kind: 'self', id: 'self:one', path: [] },
+        capabilities: new Set(['identity.mobile.manage']),
+        capabilityVersion: 1,
+        accessVersion: 1,
+        assurance: { level: 2 },
+        trace: 'trace:mobile',
       },
     },
   } as never;

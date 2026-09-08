@@ -1,47 +1,48 @@
+// Generated from config/clients.yml and definitions/operations.yml. Do not edit.
 import type { OperationExecutor } from './OperationDescriptor';
 import type { MiniappSurfaceClient } from './SurfaceCatalog';
-import { createIdentityOperations } from './operations/identity';
-import { createMemberOperations } from './operations/member';
-import { createPricingOperations } from './operations/pricing';
-import { createInventoryOperations } from './operations/inventory';
-import { createExperienceOperations } from './operations/experience';
-import { createCartOperations } from './operations/cart';
-import { createCheckoutOperations } from './operations/checkout';
-import { createOrderOperations } from './operations/order';
-import { createFulfillmentOperations } from './operations/fulfillment';
-import { createPaymentOperations } from './operations/payment';
-import { createVerificationOperations } from './operations/verification';
-import { createVoucherOperations } from './operations/voucher';
-import { createBenefitOperations } from './operations/benefit';
-import { createFinanceOperations } from './operations/finance';
-import { createInvoiceOperations } from './operations/invoice';
-import { createSupportOperations } from './operations/support';
-import { createNotificationOperations } from './operations/notification';
-import { createObservabilityOperations } from './operations/observability';
-import { createReferralOperations } from './operations/referral';
-import { createStorefrontOperations } from './operations/storefront';
+import { bindSessionsCreate as bindIdentitySessionsCreate, bindSessionsComplete as bindIdentitySessionsComplete, bindTicketsExchange as bindIdentityTicketsExchange, bindSessionRead as bindIdentitySessionRead, bindSessionDelete as bindIdentitySessionDelete, bindSessionsRead as bindIdentitySessionsRead, bindSessionsRevoke as bindIdentitySessionsRevoke, bindMembershipsRead as bindIdentityMembershipsRead, bindMembershipsSwitch as bindIdentityMembershipsSwitch, bindChallengesCreate as bindIdentityChallengesCreate, bindMobileChallengesCreate as bindIdentityMobileChallengesCreate, bindInvitationsResolve as bindIdentityInvitationsResolve, bindEnrollmentsRead as bindIdentityEnrollmentsRead, bindEnrollmentsComplete as bindIdentityEnrollmentsComplete, bindPasswordChange as bindIdentityPasswordChange, bindPasswordVerify as bindIdentityPasswordVerify, bindPasswordReset as bindIdentityPasswordReset, bindMobileManage as bindIdentityMobileManage, bindStepupStart as bindIdentityStepupStart, bindStepupComplete as bindIdentityStepupComplete, bindStepupDisable as bindIdentityStepupDisable, bindBootstrapRead as bindIdentityBootstrapRead, bindProvidersRead as bindIdentityProvidersRead, bindFederationsStart as bindIdentityFederationsStart, bindFederationsCallback as bindIdentityFederationsCallback, bindFederationsSelectionRead as bindIdentityFederationsSelectionRead, bindFederationsComplete as bindIdentityFederationsComplete, bindLinksRead as bindIdentityLinksRead, bindLinksCreate as bindIdentityLinksCreate, bindLinksRevoke as bindIdentityLinksRevoke } from './operations/identity';
+import { bindProfileRead as bindMemberProfileRead, bindAddressesRead as bindMemberAddressesRead, bindAddressesManage as bindMemberAddressesManage, bindFavoritesRead as bindMemberFavoritesRead, bindFavoritesPut as bindMemberFavoritesPut } from './operations/member';
+import { bindOffersRead as bindPricingOffersRead } from './operations/pricing';
+import { bindAvailabilityRead as bindInventoryAvailabilityRead } from './operations/inventory';
+import { bindPublishedRead as bindExperiencePublishedRead } from './operations/experience';
+import { bindCurrentRead as bindCartCurrentRead, bindAnonymousMerge as bindCartAnonymousMerge, bindItemsPut as bindCartItemsPut, bindItemsBatch as bindCartItemsBatch } from './operations/cart';
+import { bindQuoteCreate as bindCheckoutQuoteCreate, bindQuotesCurrentRead as bindCheckoutQuotesCurrentRead } from './operations/checkout';
+import { bindOrdersCreate as bindOrderOrdersCreate, bindOrdersCancel as bindOrderOrdersCancel, bindOrdersRead as bindOrderOrdersRead, bindDetailRead as bindOrderDetailRead, bindRemindersCreate as bindOrderRemindersCreate, bindAftersalesRead as bindOrderAftersalesRead, bindAftersaleattachmentsCreate as bindOrderAftersaleattachmentsCreate, bindAftersalesApply as bindOrderAftersalesApply, bindOrdersReceive as bindOrderOrdersReceive } from './operations/order';
+import { bindTrackingRead as bindFulfillmentTrackingRead } from './operations/fulfillment';
+import { bindIntentsCreate as bindPaymentIntentsCreate, bindIntentsRead as bindPaymentIntentsRead } from './operations/payment';
+import { bindSessionsRead as bindVerificationSessionsRead } from './operations/verification';
+import { bindSearchRead as bindVoucherSearchRead, bindActivationsSecret as bindVoucherActivationsSecret, bindActivationsNumbersecret as bindVoucherActivationsNumbersecret, bindVouchersGet as bindVoucherVouchersGet, bindVouchersTimeline as bindVoucherVouchersTimeline, bindRedemptionsGet as bindVoucherRedemptionsGet } from './operations/voucher';
+import { bindAccountsRead as bindBenefitAccountsRead, bindLedgersRead as bindBenefitLedgersRead } from './operations/benefit';
+import { bindInvoicesRead as bindFinanceInvoicesRead, bindInvoicesDownload as bindFinanceInvoicesDownload } from './operations/finance';
+import { bindProfilesRead as bindInvoiceProfilesRead, bindRequestsCreate as bindInvoiceRequestsCreate } from './operations/invoice';
+import { bindCasesCreate as bindSupportCasesCreate, bindCasesRead as bindSupportCasesRead, bindMessagesSend as bindSupportMessagesSend, bindMessagesRead as bindSupportMessagesRead, bindAttachmentsCreate as bindSupportAttachmentsCreate, bindEventsRead as bindSupportEventsRead, bindReadstatesManage as bindSupportReadstatesManage } from './operations/support';
+import { bindNotificationsRead as bindNotificationNotificationsRead, bindNotificationsAck as bindNotificationNotificationsAck, bindPreferencesRead as bindNotificationPreferencesRead, bindPreferencesManage as bindNotificationPreferencesManage, bindEndpointsManage as bindNotificationEndpointsManage } from './operations/notification';
+import { bindClienterrorsCreate as bindObservabilityClienterrorsCreate } from './operations/observability';
+import { bindMembersApply as bindReferralMembersApply, bindBindingsRead as bindReferralBindingsRead, bindBindingsCreate as bindReferralBindingsCreate, bindEarningsRead as bindReferralEarningsRead, bindLinksRead as bindReferralLinksRead, bindWithdrawalsRead as bindReferralWithdrawalsRead, bindWithdrawalsCreate as bindReferralWithdrawalsCreate } from './operations/referral';
+import { bindBootstrapRead as bindStorefrontBootstrapRead, bindCatalogRead as bindStorefrontCatalogRead } from './operations/storefront';
 
 export function createMiniappClient(executor: OperationExecutor): MiniappSurfaceClient {
   return Object.freeze({
-    identity: createIdentityOperations(executor),
-    member: createMemberOperations(executor),
-    pricing: createPricingOperations(executor),
-    inventory: createInventoryOperations(executor),
-    experience: createExperienceOperations(executor),
-    cart: createCartOperations(executor),
-    checkout: createCheckoutOperations(executor),
-    order: createOrderOperations(executor),
-    fulfillment: createFulfillmentOperations(executor),
-    payment: createPaymentOperations(executor),
-    verification: createVerificationOperations(executor),
-    voucher: createVoucherOperations(executor),
-    benefit: createBenefitOperations(executor),
-    finance: createFinanceOperations(executor),
-    invoice: createInvoiceOperations(executor),
-    support: createSupportOperations(executor),
-    notification: createNotificationOperations(executor),
-    observability: createObservabilityOperations(executor),
-    referral: createReferralOperations(executor),
-    storefront: createStorefrontOperations(executor),
+    identity: Object.freeze({ sessionsCreate: bindIdentitySessionsCreate(executor), sessionsComplete: bindIdentitySessionsComplete(executor), ticketsExchange: bindIdentityTicketsExchange(executor), sessionRead: bindIdentitySessionRead(executor), sessionDelete: bindIdentitySessionDelete(executor), sessionsRead: bindIdentitySessionsRead(executor), sessionsRevoke: bindIdentitySessionsRevoke(executor), membershipsRead: bindIdentityMembershipsRead(executor), membershipsSwitch: bindIdentityMembershipsSwitch(executor), challengesCreate: bindIdentityChallengesCreate(executor), mobileChallengesCreate: bindIdentityMobileChallengesCreate(executor), invitationsResolve: bindIdentityInvitationsResolve(executor), enrollmentsRead: bindIdentityEnrollmentsRead(executor), enrollmentsComplete: bindIdentityEnrollmentsComplete(executor), passwordChange: bindIdentityPasswordChange(executor), passwordVerify: bindIdentityPasswordVerify(executor), passwordReset: bindIdentityPasswordReset(executor), mobileManage: bindIdentityMobileManage(executor), stepupStart: bindIdentityStepupStart(executor), stepupComplete: bindIdentityStepupComplete(executor), stepupDisable: bindIdentityStepupDisable(executor), bootstrapRead: bindIdentityBootstrapRead(executor), providersRead: bindIdentityProvidersRead(executor), federationsStart: bindIdentityFederationsStart(executor), federationsCallback: bindIdentityFederationsCallback(executor), federationsSelectionRead: bindIdentityFederationsSelectionRead(executor), federationsComplete: bindIdentityFederationsComplete(executor), linksRead: bindIdentityLinksRead(executor), linksCreate: bindIdentityLinksCreate(executor), linksRevoke: bindIdentityLinksRevoke(executor) }),
+    member: Object.freeze({ profileRead: bindMemberProfileRead(executor), addressesRead: bindMemberAddressesRead(executor), addressesManage: bindMemberAddressesManage(executor), favoritesRead: bindMemberFavoritesRead(executor), favoritesPut: bindMemberFavoritesPut(executor) }),
+    pricing: Object.freeze({ offersRead: bindPricingOffersRead(executor) }),
+    inventory: Object.freeze({ availabilityRead: bindInventoryAvailabilityRead(executor) }),
+    experience: Object.freeze({ publishedRead: bindExperiencePublishedRead(executor) }),
+    cart: Object.freeze({ currentRead: bindCartCurrentRead(executor), anonymousMerge: bindCartAnonymousMerge(executor), itemsPut: bindCartItemsPut(executor), itemsBatch: bindCartItemsBatch(executor) }),
+    checkout: Object.freeze({ quoteCreate: bindCheckoutQuoteCreate(executor), quotesCurrentRead: bindCheckoutQuotesCurrentRead(executor) }),
+    order: Object.freeze({ ordersCreate: bindOrderOrdersCreate(executor), ordersCancel: bindOrderOrdersCancel(executor), ordersRead: bindOrderOrdersRead(executor), detailRead: bindOrderDetailRead(executor), remindersCreate: bindOrderRemindersCreate(executor), aftersalesRead: bindOrderAftersalesRead(executor), aftersaleattachmentsCreate: bindOrderAftersaleattachmentsCreate(executor), aftersalesApply: bindOrderAftersalesApply(executor), ordersReceive: bindOrderOrdersReceive(executor) }),
+    fulfillment: Object.freeze({ trackingRead: bindFulfillmentTrackingRead(executor) }),
+    payment: Object.freeze({ intentsCreate: bindPaymentIntentsCreate(executor), intentsRead: bindPaymentIntentsRead(executor) }),
+    verification: Object.freeze({ sessionsRead: bindVerificationSessionsRead(executor) }),
+    voucher: Object.freeze({ searchRead: bindVoucherSearchRead(executor), activationsSecret: bindVoucherActivationsSecret(executor), activationsNumbersecret: bindVoucherActivationsNumbersecret(executor), vouchersGet: bindVoucherVouchersGet(executor), vouchersTimeline: bindVoucherVouchersTimeline(executor), redemptionsGet: bindVoucherRedemptionsGet(executor) }),
+    benefit: Object.freeze({ accountsRead: bindBenefitAccountsRead(executor), ledgersRead: bindBenefitLedgersRead(executor) }),
+    finance: Object.freeze({ invoicesRead: bindFinanceInvoicesRead(executor), invoicesDownload: bindFinanceInvoicesDownload(executor) }),
+    invoice: Object.freeze({ profilesRead: bindInvoiceProfilesRead(executor), requestsCreate: bindInvoiceRequestsCreate(executor) }),
+    support: Object.freeze({ casesCreate: bindSupportCasesCreate(executor), casesRead: bindSupportCasesRead(executor), messagesSend: bindSupportMessagesSend(executor), messagesRead: bindSupportMessagesRead(executor), attachmentsCreate: bindSupportAttachmentsCreate(executor), eventsRead: bindSupportEventsRead(executor), readstatesManage: bindSupportReadstatesManage(executor) }),
+    notification: Object.freeze({ notificationsRead: bindNotificationNotificationsRead(executor), notificationsAck: bindNotificationNotificationsAck(executor), preferencesRead: bindNotificationPreferencesRead(executor), preferencesManage: bindNotificationPreferencesManage(executor), endpointsManage: bindNotificationEndpointsManage(executor) }),
+    observability: Object.freeze({ clienterrorsCreate: bindObservabilityClienterrorsCreate(executor) }),
+    referral: Object.freeze({ membersApply: bindReferralMembersApply(executor), bindingsRead: bindReferralBindingsRead(executor), bindingsCreate: bindReferralBindingsCreate(executor), earningsRead: bindReferralEarningsRead(executor), linksRead: bindReferralLinksRead(executor), withdrawalsRead: bindReferralWithdrawalsRead(executor), withdrawalsCreate: bindReferralWithdrawalsCreate(executor) }),
+    storefront: Object.freeze({ bootstrapRead: bindStorefrontBootstrapRead(executor), catalogRead: bindStorefrontCatalogRead(executor) }),
   });
 }

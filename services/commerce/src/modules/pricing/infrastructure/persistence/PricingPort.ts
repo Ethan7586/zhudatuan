@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { Money, type CurrencyCode } from '@shop/kernel';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ProviderPrice } from '../../public/ProviderPrice';
 import { Offer } from '../../domain/model/Offer';
 import { PriceBook } from '../../domain/model/PriceBook';
@@ -11,10 +11,14 @@ import { Quote } from '../../domain/model/Quote';
 import { PricingEngine } from '../../domain/service/PricingEngine';
 import { PgPricingReadPort } from './PgPricingReadPort';
 import { PgPriceWriter } from './PgPriceWriter';
+import { array, iso, nullableMinor, nullableTime, object } from './PricingValue';
 export class PricingPort {
   private readonly read: PgPricingReadPort;
   private readonly writer: PgPriceWriter;
-  constructor(private readonly transactions = new PgTransactionAccess(), private readonly engine = new PricingEngine()) {
+  constructor(
+    private readonly transactions = new PgTransactionAccess(),
+    private readonly engine = new PricingEngine()
+  ) {
     this.read = new PgPricingReadPort(transactions);
     this.writer = new PgPriceWriter(transactions);
   }
@@ -84,7 +88,9 @@ export class PricingPort {
       )
     );
   }
-  async setPrice(context: WriteTransactionContext, input: Readonly<{ scope: string; sku: string; amountMinor: number; currency: 'CNY'; expectedVersion: number }>) { return this.writer.set(context, input); }
+  async setPrice(context: WriteTransactionContext, input: Readonly<{ scope: string; sku: string; amountMinor: number; currency: 'CNY'; expectedVersion: number }>) {
+    return this.writer.set(context, input);
+  }
   async current(
     context: WriteTransactionContext,
     scope: string,
@@ -224,26 +230,4 @@ export class PricingPort {
     const database = this.transactions.database(context);
     await database.query(`delete from pricing.quote where expires_at<clock_timestamp()-interval '7 days' and not(id=any($1::text[]))`, [retained]);
   }
-}
-
-function nullableMinor(value: unknown): number | null {
-  if (value === null || value === undefined) return null;
-  if (!Number.isSafeInteger(value) || Number(value) < 0) throw new Error('PROVIDER_PRICE_INVALID');
-  return Number(value);
-}
-function nullableTime(value: unknown): string | null {
-  if (value === null || value === undefined) return null;
-  if (typeof value !== 'string') throw new Error('PROVIDER_PRICE_TIME_INVALID');
-  return value;
-}
-function array(value: unknown): readonly unknown[] {
-  if (!Array.isArray(value)) throw new Error('PRICING_QUOTE_LINES_INVALID');
-  return Object.freeze([...value]);
-}
-function object(value: unknown): Readonly<Record<string, unknown>> {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('PRICING_QUOTE_OBJECT_INVALID');
-  return Object.freeze({ ...(value as Record<string, unknown>) });
-}
-function iso(value: Date | string): string {
-  return (value instanceof Date ? value : new Date(value)).toISOString();
 }

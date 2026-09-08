@@ -55,9 +55,7 @@ describe('finance statement import', () => {
     const statements: string[] = [];
     const query = vi.fn(async (sql: string) => {
       statements.push(sql.replace(/\s+/g, ' ').trim());
-      return sql.includes('select $1::bigint opening')
-        ? result([{ opening: 1000, debit: 500, credit: 100, closing: 1300, rows: 2, failed: 0 }])
-        : result([]);
+      return sql.includes('select $1::bigint opening') ? result([{ opening: 1000, debit: 500, credit: 100, closing: 1300, rows: 2, failed: 0 }]) : result([]);
     });
     const runtimePort = runtime();
     const jobPort = jobs();
@@ -74,19 +72,32 @@ describe('finance statement import', () => {
 
 function batchHarness(): Readonly<{ factory: ImportBatchFactoryPort; staged: boolean }> {
   const state = { staged: false };
-  const factory: ImportBatchFactoryPort = { create(configuration) { return delegate(configuration, state); } };
-  return Object.freeze({ factory, get staged() { return state.staged; } });
+  const factory: ImportBatchFactoryPort = {
+    create(configuration) {
+      return delegate(configuration, state);
+    },
+  };
+  return Object.freeze({
+    factory,
+    get staged() {
+      return state.staged;
+    },
+  });
 }
 
 function delegate(configuration: ImportBatchConfiguration, state: { staged: boolean }): BatchImportProcessPort {
   return {
     find: async () => target,
     authorize: async () => undefined,
-    stage: async () => { state.staged = true; },
+    stage: async () => {
+      state.staged = true;
+    },
     process: async () => true,
     failures: async () => [],
     report: async () => undefined,
-    complete: async (candidate, resultFile, run) => { await configuration.publish?.(candidate, resultFile, run); },
+    complete: async (candidate, resultFile, run) => {
+      await configuration.publish?.(candidate, resultFile, run);
+    },
     reject: async () => undefined,
     fault: async () => undefined,
   };

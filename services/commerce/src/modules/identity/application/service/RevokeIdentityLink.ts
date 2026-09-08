@@ -1,7 +1,7 @@
 import { IdentityAction as OperationAction } from '../model/IdentityAction';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
 import type { IdentityLinker } from '../service/IdentityLinker';
 export class RevokeIdentityLink {
   constructor(private readonly linker: IdentityLinker) {}

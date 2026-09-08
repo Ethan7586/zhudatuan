@@ -1,5 +1,5 @@
-import { HttpClient } from '../../../../foundation/http/HttpClient';
-import { invalidExternalResponse, readExternalJson } from '../../../../foundation/http/ExternalResponse';
+import { HttpClient } from '../../../../platform/http/HttpClient';
+import { invalidExternalResponse, readExternalJson } from '../../../../platform/http/ExternalResponse';
 import type { PayoutGateway as PayoutPort, PayoutInput, PayoutResult } from '../../application/port/PayoutGateway';
 
 export interface PayoutConfiguration {

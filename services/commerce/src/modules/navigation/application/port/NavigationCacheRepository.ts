@@ -1,4 +1,4 @@
-import type { CacheState } from '../../../../foundation/cache/Cache';
+import type { CacheState } from '../../../../platform/cache/Cache';
 import type { NavigationKey } from '../../domain/model/NavigationKey';
 import type { NavigationTree, NavigationTreeValue } from '../../domain/model/NavigationTree';
 

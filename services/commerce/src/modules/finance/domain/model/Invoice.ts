@@ -1,5 +1,5 @@
 import { Money } from '@shop/kernel';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export type InvoiceState = 'submitted' | 'approved' | 'issuing' | 'issued' | 'rejected' | 'cancelled' | 'failed' | 'red';
 export type InvoiceKind = 'original' | 'red';
@@ -32,12 +32,15 @@ export class Invoice {
       throw new DomainError('VALIDATION_FAILED', { field: 'invoice' });
     }
     const amount = Money.of(value.amountMinor, value.currency as 'CNY');
-    const total = value.lines.reduce((sum, line) => {
-      if (!line.id || !line.description.trim() || !Number.isSafeInteger(line.amountMinor) || line.amountMinor <= 0 || !Number.isSafeInteger(line.taxMinor) || line.taxMinor < 0 || line.taxMinor > line.amountMinor) {
-        throw new DomainError('VALIDATION_FAILED', { field: 'invoiceLine' });
-      }
-      return sum.add(Money.of(line.amountMinor, value.currency as 'CNY'));
-    }, Money.zero(value.currency as 'CNY'));
+    const total = value.lines.reduce(
+      (sum, line) => {
+        if (!line.id || !line.description.trim() || !Number.isSafeInteger(line.amountMinor) || line.amountMinor <= 0 || !Number.isSafeInteger(line.taxMinor) || line.taxMinor < 0 || line.taxMinor > line.amountMinor) {
+          throw new DomainError('VALIDATION_FAILED', { field: 'invoiceLine' });
+        }
+        return sum.add(Money.of(line.amountMinor, value.currency as 'CNY'));
+      },
+      Money.zero(value.currency as 'CNY')
+    );
     if (amount.minor <= 0 || !amount.equals(total) || (value.kind === 'original' && value.redOf !== null) || (value.kind === 'red' && !value.redOf) || !Number.isSafeInteger(value.version) || value.version < 0) {
       throw new DomainError('VALIDATION_FAILED', { field: 'invoiceAmount' });
     }

@@ -1,4 +1,4 @@
-import { resourceId } from '../../../../foundation/application/Validation';
+import { resourceId } from '../../../../pipeline/Validation';
 import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { CredentialImportProcess } from '../../application/process/CredentialImportProcess';
 
@@ -9,4 +9,7 @@ export class CredentialImportJob implements JobProcessor {
     return this.task.execute(resourceId(job.payload, 'import', 'import', 'VOUCHER_IMPORT_REQUIRED'), text(job.scope, 'VOUCHER_SCOPE_REQUIRED'), signal, deadline);
   }
 }
-function text(value: unknown, code: string): string { if (typeof value !== 'string' || value === '') throw new Error(code); return value; }
+function text(value: unknown, code: string): string {
+  if (typeof value !== 'string' || value === '') throw new Error(code);
+  return value;
+}

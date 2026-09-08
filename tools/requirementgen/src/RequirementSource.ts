@@ -26,28 +26,19 @@ export interface MvpDefinition {
     row: number;
     range: string;
   }>;
-  readonly status: 'Designed' | 'Implemented' | 'Integrated' | 'Accepted' | 'Released';
-  readonly release: 'required';
+  readonly release: 'blocking';
   readonly modules: readonly string[];
   readonly directOperations: readonly string[];
   readonly transitiveOperations: readonly string[];
   readonly journeys: readonly string[];
   readonly providers: readonly string[];
-  readonly clarifications: readonly string[];
   readonly runbook: string;
   readonly tables: readonly string[];
 }
 
-export interface ClarificationDefinition {
-  readonly id: string;
-  readonly requirements: readonly MvpDefinition['id'][];
-  readonly term: string;
-  readonly status: 'open' | 'resolved';
-  readonly blocking: boolean;
-  readonly owner: string;
-  readonly acceptance: string | null;
-  readonly resolvedby: string | null;
-  readonly reason: string;
+export interface MvpPolicy {
+  readonly count: 22;
+  readonly release: 'blocking';
 }
 
 export interface RequirementBinding {
@@ -64,16 +55,16 @@ export interface RequirementSource {
   readonly bindings: Readonly<Record<string, RequirementBinding>>;
   readonly providers: readonly ProviderDefinition[];
   readonly mvp: readonly MvpDefinition[];
-  readonly clarifications: readonly ClarificationDefinition[];
+  readonly mvpPolicy: MvpPolicy;
 }
 
 interface SourceDocument {
   readonly version?: number;
+  readonly mvpPolicy?: MvpPolicy;
   readonly sheets?: readonly SheetRecord[];
   readonly bindings?: Readonly<Record<string, RequirementBinding>>;
   readonly providers?: readonly ProviderDefinition[];
-  readonly mvp?: readonly MvpDefinition[];
-  readonly clarifications?: readonly ClarificationDefinition[];
+  readonly mvp?: readonly Omit<MvpDefinition, 'release'>[];
 }
 
 interface SheetRecord extends Omit<SheetDefinition, 'rows'> {
@@ -86,12 +77,12 @@ interface SheetRecord extends Omit<SheetDefinition, 'rows'> {
 export async function loadRequirementSource(root: string): Promise<RequirementSource> {
   const path = resolve(root, 'config/requirements.yml');
   const document = parse(await readFile(path, 'utf8')) as SourceDocument;
-  if (document.version !== 4) throw new Error('REQUIREMENT_SOURCE_VERSION_INVALID:' + String(document.version));
+  if (document.version !== 5) throw new Error('REQUIREMENT_SOURCE_VERSION_INVALID:' + String(document.version));
+  if (document.mvpPolicy?.count !== 22 || document.mvpPolicy.release !== 'blocking') throw new Error('MVP_POLICY_INVALID');
   const sheets = Object.freeze((document.sheets ?? []).map(expandSheet));
   const bindings = Object.freeze({ ...(document.bindings ?? {}) });
   const providers = Object.freeze([...(document.providers ?? [])]);
-  const mvp = Object.freeze([...(document.mvp ?? [])]);
-  const clarifications = Object.freeze([...(document.clarifications ?? [])]);
+  const mvp = Object.freeze((document.mvp ?? []).map((definition) => Object.freeze({ ...definition, release: document.mvpPolicy!.release })));
   assertUnique(
     sheets.map(({ prefix }) => prefix),
     'REQUIREMENT_SHEET_PREFIX_DUPLICATE'
@@ -116,8 +107,8 @@ export async function loadRequirementSource(root: string): Promise<RequirementSo
     'MVP_ID_DUPLICATE'
   );
   if (mvp.length !== 22) throw new Error('MVP_SOURCE_COUNT_INVALID:' + mvp.length);
-  const required = mvp.filter(({ release }) => release === 'required');
-  if (required.length !== 22) throw new Error(`MVP_RELEASE_COUNT_INVALID:${required.length}`);
+  const blocking = mvp.filter(({ release }) => release === 'blocking');
+  if (blocking.length !== document.mvpPolicy.count) throw new Error(`MVP_RELEASE_COUNT_INVALID:${blocking.length}`);
   if (mvp.some(({ id }) => !/^MVP[A-Z]+$/.test(id))) throw new Error('MVP_ID_INVALID');
   if (mvp.some(({ directOperations, transitiveOperations }) => directOperations.some((operation) => transitiveOperations.includes(operation)))) {
     throw new Error('MVP_OPERATION_CLASSIFICATION_OVERLAP');
@@ -133,7 +124,6 @@ export async function loadRequirementSource(root: string): Promise<RequirementSo
   if (mvp.some(({ source }) => source.sheet !== 'MVP上线功能清单' || source.row < 3 || source.row > 24 || source.range !== `A${source.row}:F${source.row}`)) {
     throw new Error('MVP_SOURCE_INVALID');
   }
-  const mvpIds = new Set(mvp.map(({ id }) => id));
   const providerIds = new Set(providers.map(({ id }) => id));
   if (providers.slice(0, 11).some(({ core }) => core === undefined) || providers.slice(11).some(({ core }) => core !== undefined)) {
     throw new Error('REQUIREMENT_PROVIDER_CORE_INVALID');
@@ -143,18 +133,10 @@ export async function loadRequirementSource(root: string): Promise<RequirementSo
     ['jdproduct', 'jdfresh', 'tmall', 'supplier', 'cake', 'flower', 'book', 'charge', 'foodvoucher', 'movie', 'meal'],
     'REQUIREMENT_PRIORITY_ONE_PROVIDER'
   );
-  const clarificationIds = new Set(clarifications.map(({ id }) => id));
-  if (
-    mvp.some(({ journeys, providers: references }) => journeys.length === 0 || references.some((reference) => !providerIds.has(reference))) ||
-    clarifications.some(({ id, requirements, status }) => id.length === 0 || requirements.length === 0 || requirements.some((requirement) => !mvpIds.has(requirement)) || (status !== 'open' && status !== 'resolved')) ||
-    mvp.some(({ clarifications: references }) => references.some((reference) => !clarificationIds.has(reference)))
-  ) {
-    throw new Error('REQUIREMENT_CLARIFICATION_INVALID');
+  if (mvp.some(({ journeys, providers: references }) => journeys.length === 0 || references.some((reference) => !providerIds.has(reference)))) {
+    throw new Error('REQUIREMENT_REFERENCE_INVALID');
   }
-  assertExactKeys(clarifications.map(({ id }) => id), ['distributiondefinition', 'voucherarchive', 'grouprisk'], 'REQUIREMENT_CLARIFICATION');
-  const unresolved = clarifications.filter(({ status }) => status !== 'resolved');
-  if (unresolved.length > 0) throw new Error(`REQUIREMENT_CLARIFICATION_UNRESOLVED:${unresolved.map(({ id }) => id).join(',')}`);
-  return Object.freeze({ version: document.version, sheets, bindings, providers, mvp, clarifications });
+  return Object.freeze({ version: document.version, sheets, bindings, providers, mvp, mvpPolicy: document.mvpPolicy });
 }
 
 function expandSheet(record: SheetRecord): SheetDefinition {

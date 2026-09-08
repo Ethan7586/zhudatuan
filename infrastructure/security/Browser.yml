@@ -1,0 +1,49 @@
+version: 1
+owner: security
+surfaces: [auth, console, storefront, miniapp, store, supplier]
+headers:
+  contentSecurityPolicy: infrastructure/network/Edge.yml#headers
+  trustedTypes: { requiredFor: script, policies: [shop-sanitized-html] }
+  crossOriginOpenerPolicy: same-origin
+  crossOriginResourcePolicy: same-site
+  frameAncestors: [none]
+  referrerPolicy: no-referrer
+  permissionsPolicy: { camera: none, microphone: none, geolocation: none, payment: storefront-and-miniapp }
+session:
+  cookie: { secure: true, httpOnly: true, sameSite: Strict, path: '/', domain: host-only }
+  refreshCookie: { secure: true, httpOnly: true, sameSite: Strict, rotation: every-use }
+  localStorageTokens: forbidden
+  sessionStorageTokens: forbidden
+csrf:
+  mutatingMethods: [POST, PUT, PATCH, DELETE]
+  token: session-bound-double-submit
+  origin: exact-allowlist
+  refererFallback: forbidden
+  contentTypes: [application/json, multipart/form-data]
+origin:
+  authority: infrastructure/storage/Cors.yml
+  credentialsWithWildcard: forbidden
+  postMessage: exact-origin-and-schema
+  redirects: config/identityproviders.yml#security.redirectAllowlist
+uploads:
+  directToQuarantine: true
+  signedUrlMinutes: 5
+  contentLength: exact
+  contentSha256: required
+  mimeExtensionMagic: all-match
+  activeContent: reject
+downloads:
+  authorizationBeforeSign: true
+  signedUrlMinutes: 5
+  contentDisposition: attachment-for-untrusted
+  nosniff: true
+  filename: normalized
+dom:
+  innerHtml: forbidden
+  eval: forbidden
+  inlineScript: forbidden
+  unknownIframe: forbidden
+  externalScript: forbidden
+failure:
+  expose: [businessMessage, requestId, retryability]
+  hide: [stack, sql, path, providerPayload, internalId, secret]

@@ -15,9 +15,15 @@ describe('AccessPort directory membership resolution', () => {
     const query = vi.fn<(sql: string, values?: readonly unknown[]) => Promise<QueryResult>>(async () =>
       databaseResult([
         {
-          id: 'membership:target', member_id: 'member:target', organization_id: 'mall:one', employee_no: null,
-          status: 'active', access_version: '8', joined_at: new Date('2026-09-04T00:00:00Z'),
-          registration_reset_allowed: true, registration_reset_block_reason: null,
+          id: 'membership:target',
+          member_id: 'member:target',
+          organization_id: 'mall:one',
+          employee_no: null,
+          status: 'active',
+          access_version: '8',
+          joined_at: new Date('2026-09-04T00:00:00Z'),
+          registration_reset_allowed: true,
+          registration_reset_block_reason: null,
         },
       ])
     );
@@ -30,7 +36,9 @@ describe('AccessPort directory membership resolution', () => {
   });
 
   it('reads the access center without using a reserved SQL alias', async () => {
-    const query = vi.fn(async (_sql: string) => databaseResult([{ id: 'membership:one', display_name: '张三', employee_no: 'E1001', mobile_masked: '138****0000', client: 'console', status: 'active', access_version: '3', roles: [], scopes: [], overrides: [] }]));
+    const query = vi.fn(async (_sql: string) =>
+      databaseResult([{ id: 'membership:one', display_name: '张三', employee_no: 'E1001', mobile_masked: '138****0000', client: 'console', status: 'active', access_version: '3', roles: [], scopes: [], overrides: [] }])
+    );
     const repository = new PgAccessRepository();
 
     await expect(withReadTransaction(query, (context) => repository.center(context, { organization: 'mall:one', after: null, limit: 51 }))).resolves.toEqual([
@@ -86,9 +94,15 @@ describe('AccessPort directory membership resolution', () => {
     const repository = new PgAccessRepository();
 
     await expect(
-      withWriteTransaction(query, (context) => repository.saveRole(context, { role: 'role:one', scope: 'mall:one', name: '运营', description: '负责商城日常运营', template: null, allows: ['order.orders.read'], denies: ['payment.refund'], expectedVersion: 3 }))
+      withWriteTransaction(query, (context) =>
+        repository.saveRole(context, { role: 'role:one', scope: 'mall:one', name: '运营', description: '负责商城日常运营', template: null, allows: ['order.orders.read'], denies: ['payment.refund'], expectedVersion: 3 })
+      )
     ).resolves.toMatchObject({ role: { id: 'role:one', version: 4 }, allowCount: 1, denyCount: 1 });
-    expect(query.mock.calls.map(([sql]) => String(sql).trim().split(/\s+/).slice(0, 3).join(' '))).toEqual(['insert into access.role(id,scope_id,name,description,status,version,kind,template_code)', 'delete from access.rolepermission', 'with requested as']);
+    expect(query.mock.calls.map(([sql]) => String(sql).trim().split(/\s+/).slice(0, 3).join(' '))).toEqual([
+      'insert into access.role(id,scope_id,name,description,status,version,kind,template_code)',
+      'delete from access.rolepermission',
+      'with requested as',
+    ]);
   });
 });
 

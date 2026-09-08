@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ProviderManifest } from '@shop/contract';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import type { ProviderMetrics } from '../../../../foundation/telemetry/ProviderMetrics';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
+import type { ProviderMetrics } from '../../../../platform/telemetry/ProviderMetrics';
 import { Installation } from '../../domain/model/Installation';
 import type { ExtensionCandidate, ExtensionLoader, ExtensionRepository } from '../port/ExtensionLoader';
 import type { ExtensionStateSink } from '../../public';
@@ -81,16 +81,39 @@ function transactions(): TransactionManager {
 function candidate(version: number): ExtensionCandidate {
   const health = { state: 'healthy', checkedAt: '2026-09-04T00:00:00.000Z' } as const;
   return {
-    token: 'candidate:1', installation: 'connection:1', provider: 'sample', scope: 'scope:1', version, manifest: manifest(), health, latency: 1,
+    token: 'candidate:1',
+    installation: 'connection:1',
+    provider: 'sample',
+    scope: 'scope:1',
+    version,
+    manifest: manifest(),
+    health,
+    latency: 1,
     probes: { contract: 'passed', sandbox: health, canary: health },
   };
 }
 
 function manifest(): ProviderManifest {
   return {
-    id: 'sample', name: '示例', kind: 'channel', version: '1.0.0', apiVersion: '2026-08-21', contractVersion: 'sample.v1', dependencies: [],
-    healthOperation: 'health', capabilities: ['Catalog'], permissions: ['channel.sample.operate'], configSchema: 'provider.sample.v1', eventSubscriptions: [], secretRefs: ['credential'],
-    sandbox: { supported: true, mode: 'endpoint', endpointRef: 'provider.sample.sandboxurl' }, rateLimits: { requestsPerSecond: 1, maxConcurrency: 1 },
-    timeout: { connectionMs: 1, responseMs: 1, totalMs: 1 }, retryPolicy: { maxAttempts: 1 }, circuitPolicy: { failureThreshold: 1, recoveryMs: 100 }, webhookContract: null, signature: 'signed',
+    id: 'sample',
+    name: '示例',
+    kind: 'channel',
+    version: '1.0.0',
+    apiVersion: '2026-08-21',
+    contractVersion: 'sample.v1',
+    dependencies: [],
+    healthOperation: 'health',
+    capabilities: ['Catalog'],
+    permissions: ['channel.sample.operate'],
+    configSchema: 'provider.sample.v1',
+    eventSubscriptions: [],
+    secretRefs: ['credential'],
+    sandbox: { supported: true, mode: 'endpoint', endpointRef: 'provider.sample.sandboxurl' },
+    rateLimits: { requestsPerSecond: 1, maxConcurrency: 1 },
+    timeout: { connectionMs: 1, responseMs: 1, totalMs: 1 },
+    retryPolicy: { maxAttempts: 1 },
+    circuitPolicy: { failureThreshold: 1, recoveryMs: 100 },
+    webhookContract: null,
+    signature: 'signed',
   };
 }

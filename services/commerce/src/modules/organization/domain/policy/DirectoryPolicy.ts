@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 export class DirectoryPolicy {
   validate(page: DirectoryPolicyPage, previous: number): void {
     if (!Number.isSafeInteger(page.version) || page.version < previous) throw new DomainError('DIRECTORY_SYNC_STALE');

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { ResourceState, type ResourceCondition } from '../ResourceState';
-import { SectionBoundary } from '../SectionBoundary';
+import { ResourceState, type ResourceCondition } from '../organism/ResourceState';
+import { SectionBoundary } from '../organism/SectionBoundary';
 
 export interface WorkspacePageProps {
   readonly label: string;

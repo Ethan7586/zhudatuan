@@ -4,11 +4,7 @@ import { DeliveryRegistry } from './DeliveryRegistry';
 
 describe('delivery strategy registry', () => {
   it('orders interchangeable providers by explicit priority', () => {
-    const registry = new DeliveryRegistry([
-      strategy('email', 'secondary', 20),
-      strategy('email', 'primary', 10),
-      strategy('sms', 'sms', 1),
-    ]);
+    const registry = new DeliveryRegistry([strategy('email', 'secondary', 20), strategy('email', 'primary', 10), strategy('sms', 'sms', 1)]);
     expect(registry.resolve('email').map(({ provider }) => provider)).toEqual(['primary', 'secondary']);
   });
 

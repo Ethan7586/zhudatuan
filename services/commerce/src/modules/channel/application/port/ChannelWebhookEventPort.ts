@@ -1,4 +1,4 @@
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ChannelWebhookEvent } from '../../public/ChannelWebhookEvent';
 
 export interface ChannelWebhookEventPort {

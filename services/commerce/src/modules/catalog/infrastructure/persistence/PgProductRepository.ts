@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CatalogPartnerPort } from '../../../partner/public';
 import type { ProductDetailBase, ProductRepository } from '../../application/port/ProductRepository';
 import { Product, type ProductSnapshot } from '../../domain/model/Product';
@@ -54,7 +54,7 @@ export class PgProductRepository implements ProductRepository {
     );
     const product = result.rows[0];
     if (!product) throw new DomainError('LISTING_NOT_PURCHASABLE');
-    const ownerScope = product.owner_partner_id ? (await this.partners.scopes(context, [product.owner_partner_id])).get(product.owner_partner_id) ?? null : null;
+    const ownerScope = product.owner_partner_id ? ((await this.partners.scopes(context, [product.owner_partner_id])).get(product.owner_partner_id) ?? null) : null;
     if (product.listings.length === 0 && (ownerScope === null || !allowedScopes.includes(ownerScope))) throw new DomainError('LISTING_NOT_PURCHASABLE');
     const media = productMedia(product.attributes, product.cover_url, product.title);
     const regionIds = textArray(product.attributes.regionIds);
@@ -75,8 +75,15 @@ export class PgProductRepository implements ProductRepository {
       values($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,clock_timestamp(),clock_timestamp()) returning *`,
       [product.id, product.scope, product.owner, product.brand, product.category, product.title, product.kind, JSON.stringify(product.attributes), product.state, product.version]
     );
-    await database.query(`insert into catalog.sku(id,scope_id,product_id,code,specifications,status,version) values($1,$2,$3,$4,$5::jsonb,$6,$7)`,
-      [createdSku.id, input.scope, createdSku.product, createdSku.code, JSON.stringify(createdSku.specifications), createdSku.state, createdSku.version]);
+    await database.query(`insert into catalog.sku(id,scope_id,product_id,code,specifications,status,version) values($1,$2,$3,$4,$5::jsonb,$6,$7)`, [
+      createdSku.id,
+      input.scope,
+      createdSku.product,
+      createdSku.code,
+      JSON.stringify(createdSku.specifications),
+      createdSku.state,
+      createdSku.version,
+    ]);
     await database.query(
       `insert into catalog.listing(id,scope_id,pool_id,sku_id,title,status,effective_at,expires_at,version,created_at,updated_at)
       values($1,$2,(select id from catalog.pool where scope_id=$2 and status='active' order by case kind when 'private' then 0 else 1 end,id limit 1),
@@ -98,15 +105,17 @@ export class PgProductRepository implements ProductRepository {
     if (!loaded.rows[0]) throw new DomainError('VERSION_CONFLICT');
     const category = input.category === null ? undefined : await this.category(database, input.category);
     const current = restore(loaded.rows[0]);
-    const changed = Product.restore(current).change(
-      {
-        ...(input.title === null ? {} : { title: input.title }),
-        ...(category === undefined ? {} : { category }),
-        ...(input.attributes === null ? {} : { attributes: input.attributes }),
-        ...(input.status === null ? {} : { state: input.status }),
-      },
-      input.expectedVersion
-    ).snapshot();
+    const changed = Product.restore(current)
+      .change(
+        {
+          ...(input.title === null ? {} : { title: input.title }),
+          ...(category === undefined ? {} : { category }),
+          ...(input.attributes === null ? {} : { attributes: input.attributes }),
+          ...(input.status === null ? {} : { state: input.status }),
+        },
+        input.expectedVersion
+      )
+      .snapshot();
     const result = await database.query(
       `update catalog.product set title=$2,category_id=$3,attributes=$4::jsonb,status=$5,version=$6,updated_at=clock_timestamp()
        where id=$1 and version=$7 returning *`,
@@ -125,7 +134,8 @@ export class PgProductRepository implements ProductRepository {
     const visible = await this.scopes.visible(context, scope, false);
     const locked = await database.query<Record<string, unknown>>(
       `select id,scope_id,owner_partner_id,brand_id,category_id,title,product_type,attributes,status,version::integer
-       from catalog.product where id=$1 and scope_id=any($2::text[]) for update`, [id, visible]
+       from catalog.product where id=$1 and scope_id=any($2::text[]) for update`,
+      [id, visible]
     );
     if (!locked.rows[0]) throw new DomainError('VERSION_CONFLICT');
     const archived = Product.restore(restore(locked.rows[0])).archive(expectedVersion).snapshot();
@@ -137,7 +147,8 @@ export class PgProductRepository implements ProductRepository {
   private async category(database: ReturnType<PgTransactionAccess['database']>, value: string): Promise<string> {
     const category = value.trim();
     const result = await database.query<{ id: string; parent_id: string | null; code: string; name: string; status: CategorySnapshot['state']; sort_order: number }>(
-      'select id,parent_id,code,name,status,sort_order from catalog.category where id=$1 or name=$1 order by case when id=$1 then 0 else 1 end limit 1', [category]
+      'select id,parent_id,code,name,status,sort_order from catalog.category where id=$1 or name=$1 order by case when id=$1 then 0 else 1 end limit 1',
+      [category]
     );
     if (!result.rows[0]) throw new DomainError('VALIDATION_FAILED', { field: 'category' });
     const row = result.rows[0];
@@ -167,7 +178,9 @@ function productTimeline(product: ProductDetail): ProductDetailBase['timeline'] 
       Object.freeze({ id: `timeline:listingcreated:${listing.id}`, kind: 'listingcreated' as const, title: '商城投放已创建', occurredAt: listing.createdAt, reference: listing.id }),
       Object.freeze({ id: `timeline:listingupdated:${listing.id}`, kind: 'listingupdated' as const, title: '商城投放已更新', occurredAt: listing.updatedAt, reference: listing.id }),
     ]),
-    ...product.channels.map((channel) => Object.freeze({ id: `timeline:sourceobserved:${channel.provider}:${channel.externalId}`, kind: 'sourceobserved' as const, title: '渠道来源已同步', occurredAt: channel.observedAt, reference: channel.externalId })),
+    ...product.channels.map((channel) =>
+      Object.freeze({ id: `timeline:sourceobserved:${channel.provider}:${channel.externalId}`, kind: 'sourceobserved' as const, title: '渠道来源已同步', occurredAt: channel.observedAt, reference: channel.externalId })
+    ),
   ];
   return Object.freeze(values.sort((left, right) => right.occurredAt.localeCompare(left.occurredAt) || left.id.localeCompare(right.id)));
 }
@@ -192,9 +205,15 @@ function safeMediaUrl(value: string): boolean {
 
 function restore(row: Readonly<Record<string, unknown>>): ProductSnapshot {
   return Object.freeze({
-    id: String(row.id), scope: String(row.scope_id), owner: typeof row.owner_partner_id === 'string' ? row.owner_partner_id : null,
-    brand: typeof row.brand_id === 'string' ? row.brand_id : null, category: String(row.category_id), title: String(row.title),
-    kind: row.product_type as ProductSnapshot['kind'], attributes: row.attributes as Readonly<Record<string, unknown>>,
-    state: row.status as ProductSnapshot['state'], version: Number(row.version),
+    id: String(row.id),
+    scope: String(row.scope_id),
+    owner: typeof row.owner_partner_id === 'string' ? row.owner_partner_id : null,
+    brand: typeof row.brand_id === 'string' ? row.brand_id : null,
+    category: String(row.category_id),
+    title: String(row.title),
+    kind: row.product_type as ProductSnapshot['kind'],
+    attributes: row.attributes as Readonly<Record<string, unknown>>,
+    state: row.status as ProductSnapshot['state'],
+    version: Number(row.version),
   });
 }

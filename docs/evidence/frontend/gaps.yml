@@ -17,7 +17,7 @@ gaps:
     operation: request headers
     evidence:
       - packages/sdk/src/ApiClient.ts
-      - services/commerce/src/foundation/interface/HttpApp.ts
+      - services/commerce/src/platform/http/HttpApp.ts
     conflict: SDK emits x-access-version and x-action-proof but CORS and access pipeline do not accept both headers
     impact:
       - scoped or proof-bound browser requests fail preflight or lose their concurrency/security binding
@@ -240,7 +240,7 @@ gaps:
       - packages/contract/definitions/errors.yml
       - packages/contract/src/ContractIdentity.generated.ts
       - database/contracts/current.sql
-      - services/commerce/src/bootstrap/RuntimeCompatibility.ts
+      - services/commerce/src/composition/RuntimeCompatibility.ts
     conflict: the frontend hardening work adds client and adapter error codes and therefore changes CONTRACT_CHECKSUM, while the generated current schema rewrites the checksum for contract head 20260821032000 and no new production migration publishes that transition
     impact:
       - an existing database retains the previous checksum and Commerce RuntimeCompatibility fails closed even though a fresh generated schema passes

@@ -1,0 +1,74 @@
+version: 1
+owner: runtime
+encryption: { atRest: kms, inTransit: tls13, bucketKeys: distinct, rotation: annual }
+access:
+  default: deny
+  publicAcl: forbidden
+  listBuckets: forbidden
+  authorization: shortlived-signedurl
+  workloadIdentity: required
+  accessLogs: { immutable: true, retentionDays: 365, pii: forbidden }
+scan:
+  uploads: quarantine-before-read
+  engine: managed-antimalware
+  failMode: closed
+  infected: { publish: forbidden, download: forbidden, retainForEvidenceDays: 30, alert: security }
+classes:
+  import:
+    bucket: shop-import
+    prefix: '{tenant}/{kind}/{job}/{sha256}'
+    writers: [api]
+    readers: [jobs]
+    retentionRef: config/capacity.yml#runtime.upload.retentionDays.import
+    worm: false
+    scan: required
+  export:
+    bucket: shop-export
+    prefix: '{tenant}/{kind}/{job}/{snapshot}'
+    writers: [jobs]
+    readers: [api]
+    retentionRef: config/capacity.yml#runtime.voucherExport.snapshotTtlSeconds
+    downloadTtlRef: config/capacity.yml#runtime.voucherExport.downloadTtlSeconds
+    worm: false
+    watermark: required
+  credential:
+    bucket: shop-credential
+    prefix: '{tenant}/{pool}/{batch}/{sha256}'
+    writers: [api, jobs]
+    readers: [jobs]
+    plaintext: forbidden
+    encryptionContext: [tenant, pool, batch]
+    worm: compliance
+    retention: domain-lifecycle
+    scan: required
+  support:
+    bucket: shop-support
+    prefix: '{tenant}/{ticket}/{attachment}/{sha256}'
+    writers: [api]
+    readers: [api, jobs]
+    retentionRef: config/capacity.yml#runtime.upload.retentionDays.support
+    worm: governance
+    scan: required
+  experience:
+    bucket: shop-experience
+    prefix: 'releases/{application}/{release}/{sha256}'
+    writers: [jobs]
+    readers: [cdn]
+    immutable: true
+    publicThroughCdnOnly: true
+    retention: current-plus-rollback-heads
+    scan: required
+  evidence:
+    bucket: shop-evidence
+    prefix: '{kind}/{date}/{release}/{sha256}'
+    writers: [jobs, migration]
+    readers: [security, auditor]
+    worm: compliance
+    retentionDays: 2555
+    legalHold: supported
+deletion:
+  requireFinalState: true
+  requireRetentionExpiry: true
+  batchesRef: config/capacity.yml#runtime.cleanup.objectConcurrency
+  tombstoneAudit: required
+  versionPurge: privacy-workflow-only

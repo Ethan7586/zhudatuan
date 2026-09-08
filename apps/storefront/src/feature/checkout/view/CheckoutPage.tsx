@@ -6,9 +6,11 @@ import { formatMinor } from '../../../shared/format/Money';
 import { AddressPanel } from './AddressPanel';
 import { OrderSummary } from './OrderSummary';
 import { StorefrontStepup } from '../../security';
+import { CheckoutOptions } from './CheckoutOptions';
+import { CheckoutStatus } from './CheckoutStatus';
 
 export function CheckoutPage({ viewmodel: storefront }: { readonly viewmodel: ReturnType<typeof useCheckoutViewModel> }) {
-  const { selectedAddress, selected, allSelected: all, estimateMinor, quote, verification, actions } = storefront;
+  const { selectedAddress, selected, allSelected: all, verification, actions } = storefront;
   return (
     <div className="min-h-[80vh] w-full bg-[var(--sw-background)] pb-10 font-sans">
       <StorefrontStepup open={verification} onClose={actions.closeVerification} onVerified={actions.verified} />
@@ -20,11 +22,7 @@ export function CheckoutPage({ viewmodel: storefront }: { readonly viewmodel: Re
           </h1>
           <span className="text-muted">安全报价与结算</span>
         </header>
-        {quote ? (
-          <div className="rounded-lg border border-brand bg-brand-light px-3 py-2 text-xs text-brand-dark">
-            已生成服务端不可变报价，有效期至 {new Date(quote.expiresAt).toLocaleString('zh-CN')}。商品、资格、优惠、福利、库存、配送与开票信息均已形成可核验快照；提交时若上下文变化，会提示您重新报价。
-          </div>
-        ) : null}
+        <CheckoutStatus state={storefront.checkout} />
         {storefront.isLoading ? (
           <div className="rounded-lg border border-edge bg-surface p-8 text-center text-muted" role="status">
             正在读取购物车商品…
@@ -62,8 +60,8 @@ export function CheckoutPage({ viewmodel: storefront }: { readonly viewmodel: Re
                         </span>
                       </div>
                       <div className="min-w-[70px] text-right">
-                        <b className="text-price">¥{formatMinor(item.product.priceWelfareMinor)}</b>
-                        <div className="text-[10px] text-muted line-through">¥{formatMinor(item.product.priceMarketMinor)}</div>
+                        <b className="text-price">{item.amountMinor === null ? '价格待更新' : `¥${formatMinor(item.amountMinor)}`}</b>
+                        <div className="text-[10px] text-muted">购物车服务端行价</div>
                       </div>
                       <div className="flex items-center rounded border border-edge-strong">
                         <button
@@ -96,8 +94,9 @@ export function CheckoutPage({ viewmodel: storefront }: { readonly viewmodel: Re
                 onManage={actions.manageAddresses}
                 onInvoices={actions.manageInvoices}
               />
+              <CheckoutOptions viewmodel={storefront.options} />
             </div>
-            <OrderSummary quote={quote} estimateMinor={estimateMinor} selectedCount={selected.length} submitting={storefront.isSubmittingOrder} onSubmit={() => void actions.submit()} />
+            <OrderSummary state={storefront.checkout} selectedCount={selected.length} onSubmit={() => void actions.submit()} />
           </div>
         )}
       </div>

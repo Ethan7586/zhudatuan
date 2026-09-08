@@ -1,6 +1,6 @@
 import type { Money } from '@shop/kernel';
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../platform/database/TransactionContext';
 
 export interface OrderLineSnapshot {
   readonly sku: string;

@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CheckoutSessionStore, StoredCurrentQuote } from '../../application/port/CheckoutSessionStore';
 import type { StoredCheckoutQuote } from '../../public/CheckoutWritePort';
 import { quoteExpired } from '../../domain/error/CheckoutError';

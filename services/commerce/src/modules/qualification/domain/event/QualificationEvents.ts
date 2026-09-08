@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { domainEvent, type DomainEvent } from '../../../../foundation/domain/DomainEvent';
+import { domainEvent, type DomainEvent } from '@shop/kernel';
 import type { QualificationCaseSnapshot, QualificationState } from '../model/QualificationCase';
 
 interface EventContext {
@@ -21,7 +21,10 @@ export function qualificationExpiredEvent(value: QualificationCaseSnapshot, cont
 
 function changed(type: string, value: QualificationCaseSnapshot, context: EventContext): DomainEvent {
   const byKind = (kind: 'product' | 'category' | 'region') =>
-    value.applicability.filter((item) => item.kind === kind).map((item) => item.id).concat(value.subject.kind === kind ? [value.subject.id] : []);
+    value.applicability
+      .filter((item) => item.kind === kind)
+      .map((item) => item.id)
+      .concat(value.subject.kind === kind ? [value.subject.id] : []);
   return domainEvent({
     event: `event:${randomUUID()}`,
     type,

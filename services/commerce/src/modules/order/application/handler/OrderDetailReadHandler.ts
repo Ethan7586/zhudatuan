@@ -1,8 +1,8 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { AuditReadPort } from '../../../audit/public';
 import { OrderVisibility, type OrderSection } from '../../domain/policy/OrderVisibility';
 import type { OrderDetailRepository } from '../port/OrderDetailRepository';
@@ -34,23 +34,36 @@ export class OrderDetailReadHandler implements OperationHandler<'order.detail.re
         const value = await this.orders.finance(context.transaction, summary.id);
         return Object.freeze({ ...value, watermark: iso(value.watermark) });
       }),
-      this.section('audit', visible, context, async () => (await this.audit.records(context.transaction, {
-        scopes: [summary.scopeId], references: [{ kind: 'object', id: summary.id }], limit: 100,
-      })).map((record) => Object.freeze({
-        id: record.id,
-        action: record.operation,
-        resourceType: record.object.type,
-        resourceMasked: record.object.id === null ? null : `${record.object.type} ····${record.object.id.slice(-4)}`,
-        actorMasked: `${record.actor.type} ····${record.actor.id?.slice(-4) ?? '未知'}`,
-        occurredAt: record.occurredAt,
-        traceMasked: `追踪 ····${record.trace.slice(-4)}`,
-      }))),
+      this.section('audit', visible, context, async () =>
+        (
+          await this.audit.records(context.transaction, {
+            scopes: [summary.scopeId],
+            references: [{ kind: 'object', id: summary.id }],
+            limit: 100,
+          })
+        ).map((record) =>
+          Object.freeze({
+            id: record.id,
+            action: record.operation,
+            resourceType: record.object.type,
+            resourceMasked: record.object.id === null ? null : `${record.object.type} ····${record.object.id.slice(-4)}`,
+            actorMasked: `${record.actor.type} ····${record.actor.id?.slice(-4) ?? '未知'}`,
+            occurredAt: record.occurredAt,
+            traceMasked: `追踪 ····${record.trace.slice(-4)}`,
+          })
+        )
+      ),
     ]);
     return {
       status: 200,
       body: Object.freeze({
         summary: Object.freeze({ ...summary, orderedAt: iso(summary.orderedAt), receivedAt: iso(summary.receivedAt), createdAt: iso(summary.createdAt), updatedAt: iso(summary.updatedAt) }),
-        products, payment, fulfillment, aftersale, finance, audit,
+        products,
+        payment,
+        fulfillment,
+        aftersale,
+        finance,
+        audit,
       }) as Detail,
     };
   }
@@ -68,7 +81,9 @@ export class OrderDetailReadHandler implements OperationHandler<'order.detail.re
 
 function iso(value: Date | null): string | null;
 function iso(value: Date): string;
-function iso(value: Date | null): string | null { return value === null ? null : value.toISOString(); }
+function iso(value: Date | null): string | null {
+  return value === null ? null : value.toISOString();
+}
 function label(section: Section): string {
   return ({ products: '商品明细', payment: '支付信息', fulfillment: '履约信息', aftersale: '售后信息', finance: '财务摘要', audit: '操作记录' } as const)[section];
 }

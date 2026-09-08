@@ -1,11 +1,10 @@
 {
-  "schema": "zhudatuan.releaseeligibility.v2",
+  "schema": "zhudatuan.releaseeligibility.v3",
   "derived": true,
   "releaseEligible": false,
   "requirements": {
     "released": 0,
-    "required": 22,
-    "nonblocking": 0
+    "blocking": 22
   },
   "providers": {
     "released": 0,

@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { Clock } from '../../../../foundation/domain/Clock';
-import { domainEvent } from '../../../../foundation/domain/DomainEvent';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { OutboxWriter } from '../../../../foundation/messaging/Outbox';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { Clock } from '@shop/kernel';
+import { domainEvent } from '@shop/kernel';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { OutboxWriter } from '../../../../platform/messaging/Outbox';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { OrderTransition } from '../../domain/policy/OrderTransition';
 
 interface CancellationRow extends Record<string, unknown> {
@@ -72,7 +72,9 @@ export class CancelOrder {
     this.transitions.fulfillment(order.fulfillment_state, 'cancelled');
     if (order.version !== input.expectedVersion) throw new DomainError('VERSION_CONFLICT');
     const cancelledAt = this.clock.now().toISOString();
-    const eventId = `event:${createHash('sha256').update(`order.cancelled:${order.id}:${order.version + 1}`).digest('hex')}`;
+    const eventId = `event:${createHash('sha256')
+      .update(`order.cancelled:${order.id}:${order.version + 1}`)
+      .digest('hex')}`;
     const changed = await database.query<CancellationRow>(
       `update ordering.orderrecord set lifecycle_state='cancelled',fulfillment_state='cancelled',version=version+1,updated_at=clock_timestamp()
       where id=$1 and version=$2 and lifecycle_state in('created','awaitingpayment') and payment_state in('unpaid','authorizing','failed')
@@ -88,20 +90,23 @@ export class CancelOrder {
       values($1,$2,$3,'cancelled',$4,$5,$6,$7,$8,$9)`,
       [order.id, order.scope_id, order.lifecycle_state, input.actorId, input.membershipId, input.reason, eventId, cancelledAt, cancelled.version]
     );
-    await this.outbox.append(context, domainEvent({
-      event: eventId,
-      type: 'order.cancelled',
-      version: 1,
-      aggregate: { type: 'order', id: order.id, version: cancelled.version },
-      tenant: order.scope_id,
-      occurred: cancelledAt,
-      trace: input.traceId,
-      actor: input.actorId,
-      correlation: input.traceId,
-      causation: input.traceId,
-      payloadVersion: 1,
-      payload: { order: order.id, reason: input.reason },
-    }));
+    await this.outbox.append(
+      context,
+      domainEvent({
+        event: eventId,
+        type: 'order.cancelled',
+        version: 1,
+        aggregate: { type: 'order', id: order.id, version: cancelled.version },
+        tenant: order.scope_id,
+        occurred: cancelledAt,
+        trace: input.traceId,
+        actor: input.actorId,
+        correlation: input.traceId,
+        causation: input.traceId,
+        payloadVersion: 1,
+        payload: { order: order.id, reason: input.reason },
+      })
+    );
     return output(cancelled, false);
   }
 }

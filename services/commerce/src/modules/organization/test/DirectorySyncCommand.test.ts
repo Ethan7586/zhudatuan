@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { JobScheduler } from '../../../foundation/application/JobScheduler';
-import type { WriteHandlerContext } from '../../../foundation/application/HandlerContext';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { JobScheduler } from '../../../pipeline/JobScheduler';
+import type { WriteHandlerContext } from '../../../pipeline/HandlerContext';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 import { DirectoriesSyncHandler } from '../application/handler/DirectoriesSyncHandler';
 import type { OrganizationRepository } from '../application/port/OrganizationRepository';
 

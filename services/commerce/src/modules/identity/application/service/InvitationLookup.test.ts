@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { InvitationLookup } from './InvitationLookup';
 
 const CODE = 'A'.repeat(32);

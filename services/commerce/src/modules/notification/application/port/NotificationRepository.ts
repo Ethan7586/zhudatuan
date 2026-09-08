@@ -1,5 +1,5 @@
-import type { CipherEnvelope } from '../../../../foundation/application/KmsPort';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { CipherEnvelope } from '../../../../pipeline/KmsPort';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ConsentSource, QuietHours } from '../../domain/model/Preference';
 import type { DeliveryChannelId, NotificationPurpose, VariableSchema } from '../../domain/model/Template';
 
@@ -43,7 +43,16 @@ export interface SavedTemplate extends NotificationTemplate {
 export interface NotificationRepository {
   member(context: ReadTransactionContext, membership: string): Promise<NotificationMember>;
   preferences(context: ReadTransactionContext, member: string, organization: string, cursor: string | null, fetch: number): Promise<readonly Readonly<Record<string, unknown>>[]>;
-  changePreference(context: WriteTransactionContext, member: string, organization: string, channel: DeliveryChannelId, event: string, enabled: boolean, authorization: string, consentSource: ConsentSource, quietHours: QuietHours | null, expectedVersion: number): Promise<Readonly<Record<string, unknown>> | null>;
+  changePreference(
+    context: WriteTransactionContext,
+    member: string,
+    organization: string,
+    channel: DeliveryChannelId,
+    event: string,
+    enabled: boolean,
+    quietHours: QuietHours | null,
+    expectedVersion: number
+  ): Promise<Readonly<Record<string, unknown>> | null>;
   wechatRecipient(context: ReadTransactionContext, membership: string): Promise<WechatRecipient | null>;
   revokeEndpoint(context: WriteTransactionContext, member: string, channel: DeliveryChannelId, expectedVersion: number): Promise<SavedEndpoint | null>;
   saveEndpoint(context: WriteTransactionContext, member: string, channel: DeliveryChannelId, envelope: CipherEnvelope, consentSource: ConsentSource, expectedVersion: number): Promise<SavedEndpoint | null>;

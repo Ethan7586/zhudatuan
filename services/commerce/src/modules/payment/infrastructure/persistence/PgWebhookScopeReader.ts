@@ -1,5 +1,5 @@
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import type { OrderReadPort } from '../../../order/public';
 import type { VerifiedPaymentWebhook } from '../../application/port/WebhookInboxRepository';
 import type { WebhookScopeReader } from '../../application/port/WebhookScopeReader';

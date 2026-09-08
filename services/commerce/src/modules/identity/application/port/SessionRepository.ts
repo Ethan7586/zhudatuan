@@ -1,8 +1,8 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 import type { Session } from '../../domain/model/Session';
 import type { RefreshTokenFamily } from '../../domain/model/RefreshTokenFamily';
-import type { QueryPage } from '../../../../foundation/application/Validation';
+import type { QueryPage } from '../../../../pipeline/Validation';
 
 export interface SessionRecord {
   readonly session: Session;
@@ -34,7 +34,7 @@ export interface SessionListRecord {
 export interface SessionRepository {
   credentialVersion(context: WriteTransactionContext, principal: string): Promise<number>;
   create(context: WriteTransactionContext, value: SessionRecord): Promise<void>;
-  revokeCurrent(context: WriteTransactionContext, principal: string, session: string): Promise<SessionRevocation | null>;
+  revokeCurrent(context: WriteTransactionContext, principal: string, session: string, reason?: 'logout' | 'membership_switch' | 'store_handover'): Promise<SessionRevocation | null>;
   revokeSelected(context: WriteTransactionContext, principal: string, current: string, target: string): Promise<readonly string[]>;
   owns(context: ReadTransactionContext, principal: string, session: string): Promise<boolean>;
   elevate(context: WriteTransactionContext, principal: string, session: string, assurance: 1 | 2 | 3): Promise<boolean>;

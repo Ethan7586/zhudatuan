@@ -11,6 +11,9 @@ describe('ManageReadState', () => {
     const response = await service.manageReadState({} as never, { path: { conversationid: 'conversation:one' }, body: { lastSequence: 9 } } as never, { traceId: 'trace:one' } as never);
     expect(readstates.advance).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ membership: 'membership:one', member: 'member:one', storefront: true, lastSequence: 9 }));
     expect(response.body).toEqual({ conversationId: 'conversation:one', lastSequence: 9, version: 3 });
-    expect(events.append).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ type: 'support.readstate.updated', payload: { ticketId: 'ticket:one', conversationId: 'conversation:one', memberId: 'member:one', sequence: 9, version: 3 } }));
+    expect(events.append).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ type: 'support.readstate.updated', payload: { ticketId: 'ticket:one', conversationId: 'conversation:one', memberId: 'member:one', sequence: 9, version: 3 } })
+    );
   });
 });

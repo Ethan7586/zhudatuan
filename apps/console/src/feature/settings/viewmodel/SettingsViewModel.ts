@@ -5,6 +5,7 @@ import type { SettingsWorkspace } from '../model/Settings';
 
 export function createSettingsViewModel(nodes: readonly ConsoleNavigationNode[], scope: ConsoleScope, assurance: number): SettingsWorkspace {
   const modules = flattenEnabledNavigation(nodes)
+    .filter((node) => node.experience.placement !== 'contextual')
     .map((node) =>
       Object.freeze({
         id: node.key,

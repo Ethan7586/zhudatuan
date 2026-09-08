@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { ExpireOrders } from './ExpireOrders';
 
 describe('ExpireOrders', () => {

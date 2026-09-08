@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { productionSources, relative, root } from '../check/source.mjs';
 
 const findings = [];
-const retiredDirectories = ['apps/admin-web', 'apps/auth-web', 'apps/storefront-web', 'apps/store', 'apps/supplier', 'apps/miniapp', 'apps/wechat-miniapp', 'services/commerce-api', 'services/core-read-cache', 'services/jobs'];
+const retiredDirectories = ['apps/admin-web', 'apps/auth-web', 'apps/storefront-web', 'apps/wechat-miniapp', 'services/commerce-api', 'services/core-read-cache', 'services/jobs'];
 const auxiliaryDirectories = ['archive', 'artifacts', 'deliverables', 'pre-contract-code-merge-20260820', 'smart-wing-branch-work'];
 const retiredStorefrontRuntime = [
   'apps/storefront/.next',

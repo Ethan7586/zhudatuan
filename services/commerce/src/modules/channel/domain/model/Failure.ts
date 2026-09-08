@@ -1,14 +1,4 @@
-export const ChannelFailureClasses = Object.freeze([
-  'validation',
-  'authentication',
-  'authorization',
-  'conflict',
-  'ratelimit',
-  'timeout',
-  'unavailable',
-  'provider',
-  'unknown',
-] as const);
+export const ChannelFailureClasses = Object.freeze(['validation', 'authentication', 'authorization', 'conflict', 'ratelimit', 'timeout', 'unavailable', 'provider', 'unknown'] as const);
 
 export type ChannelFailureClass = (typeof ChannelFailureClasses)[number];
 

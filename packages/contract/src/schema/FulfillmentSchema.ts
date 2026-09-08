@@ -1,6 +1,6 @@
 import { array, int, literal, null as nullSchema, optional, positive, strictObject, string, union } from 'zod/mini';
 import { ContractJsonValueSchema } from './JsonSchema';
-import { isoUtc, unsigned, version } from './Primitives';
+import { isoUtc, pageQuery, unsigned, version } from './Primitives';
 import { FULFILLMENT_RETURN_STATES } from '../Vocabulary';
 
 const nullableText = union([string(), nullSchema()]);
@@ -45,20 +45,36 @@ const returned = strictObject({
 const trackingEvent = strictObject({ id: string(), external: string(), state: string(), description: string(), location: nullableText, evidence: ContractJsonValueSchema, occurredAt: isoUtc, receivedAt: isoUtc });
 const fulfillmentPackage = strictObject({ id: string(), carrier: nullableText, tracking: string(), providerReference: nullableText, state: string(), version, lines: array(returnLine), events: array(trackingEvent) });
 const shipment = strictObject({ id: string(), state: literal(['draft', 'shipped', 'delivered', 'cancelled']), providerReference: nullableText, shippedAt: nullableTime, deliveredAt: nullableTime, version, packages: array(fulfillmentPackage) });
+const workState = literal(['pending', 'submitted', 'accepted', 'processing', 'ready', 'completed', 'cancelled', 'failed', 'needsaction']);
+const workLine = strictObject({ line: string(), sku: string(), title: string(), quantity: unsigned, packed: unsigned });
+const workItem = strictObject({
+  ...fulfillment.shape,
+  order_number: string(),
+  member_masked: string(),
+  priority: literal(['normal', 'risk', 'overdue']),
+  lines: array(workLine),
+});
+const returnWorkItem = strictObject({ ...returned.shape, order_number: string(), member_masked: string() });
 
 export const FULFILLMENT_BODY_SCHEMAS = {
   FulfillmentShipmentsCreateInput: strictObject({ tracking: string(), carrier: optional(string()), lines: optional(array(returnLine)) }),
+  FulfillmentWorkitemsTransitionInput: strictObject({ action: literal(['accept', 'prepare', 'ready', 'complete']), note: optional(string()) }),
   FulfillmentReturnsReceiveInput: strictObject({ tracking: optional(string()) }),
   FulfillmentReturnsInspectInput: strictObject({ accepted: literal([true, false]), inspection: optional(ContractJsonValueSchema) }),
 } as const;
 
 export const FULFILLMENT_QUERY_SCHEMAS = {
   FulfillmentTrackingReadInput: strictObject({ order: string() }),
+  FulfillmentWorkitemsReadInput: strictObject({ ...pageQuery, state: optional(array(workState)) }),
+  FulfillmentReturnsReadInput: strictObject({ ...pageQuery, state: optional(array(literal(FULFILLMENT_RETURN_STATES))) }),
 } as const;
 
 export const FULFILLMENT_OUTPUT_SCHEMAS = {
   FulfillmentShipmentsCreateOutput: strictObject({ ...fulfillment.shape, shipment_id: string(), package_id: string(), tracking: string(), shipped_quantity: unsigned }),
   FulfillmentTrackingReadOutput: strictObject({ items: array(strictObject({ id: string(), order_id: string(), route: literal(['physical', 'digital', 'voucher', 'channel']), state: string(), external_reference: nullableText, shipments: array(shipment) })), count: unsigned }),
+  FulfillmentWorkitemsReadOutput: strictObject({ items: array(workItem), count: unsigned, nextCursor: optional(string()) }),
+  FulfillmentWorkitemsTransitionOutput: workItem,
+  FulfillmentReturnsReadOutput: strictObject({ items: array(returnWorkItem), count: unsigned, nextCursor: optional(string()) }),
   FulfillmentReturnsReceiveOutput: returned,
   FulfillmentReturnsInspectOutput: returned,
 } as const;

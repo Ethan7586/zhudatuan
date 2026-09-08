@@ -1,23 +1,41 @@
-# Inventory import
+# 库存导入运行手册
 
-- Trigger: import lease expires, cursor stops advancing, row failures cross the alert threshold, object integrity fails, or the job reaches `runtime.deadletter`.
-- Impact: only the affected scope's stock observations remain incomplete; existing committed stock and reservations remain authoritative.
-- Owner: Inventory on-call with the supplying organization owner; Security joins for object-integrity or PII incidents.
-- Stop loss: pause the affected import and stock publication, quarantine the immutable source object, and keep checkout fail-closed for stale or invalid stock.
-- Diagnosis: compare object reference, MIME, malware scan, SHA-256, staged count, cursor, row errors, reservation commitments, movements, lease and database health.
-- Recovery: correct the source file and submit a new import; replay the same job only for a transient failure while its immutable object hash still matches.
-- Data repair: use reviewed Inventory commands that append movements; never edit counters, `onhand`, reservations, cursors or error rows directly.
-- Validation: total equals succeeded plus failed, the cursor reached total, every stock change has one idempotent movement, available stock is non-negative, and the signed report hash matches storage.
-- Escalation: P0 for negative availability, cross-scope writes or corrupted evidence; P1 for a blocked active supplier import beyond its SLO.
-- Audit: retain uploader, scope, object reference and digest, scan result, counters, report digest, replay actor and correction reason without row plaintext.
-- Postmortem: document trigger, detection latency, affected scopes/SKUs, invariant evidence, recovery, prevention owner and due date.
+## 触发症状、用户影响与严重级（Trigger / Impact / Severity）
 
-Queue: `import`. Source: private `text/csv` object whose SHA-256 was verified before the job was accepted.
+库存导入 Lease/Checkpoint 停滞、行错误越界、对象 Hash 异常、负可用量、重复 Movement 或 Deadletter 时触发。现有库存与 Reservation 继续以账本为准；负库存或已接受超卖为 P0。
 
-The worker validates and stages at most 100,000 rows, then applies stable 500-row shards. `cursor_value`, success/failure counters, validation summary and the last error are durable. Each row is isolated by a savepoint; an invalid row cannot roll back another row. Stock adjustments lock the stock item, recheck active reservations, write one idempotent movement and never permit available stock to become negative.
+## Owner 与前置权限
 
-Completion requires a clean, integrity-checked CSV report in private object storage. The API exposes only a five-minute signed report URL. Retries resume from the committed cursor; runtime exhaustion is recorded in `runtime.deadletter`.
+Inventory Owner 主责，Supplier、Order、Database 与 Security 协同。先遵循 `import.md`；操作人还需目标 Location/Scope 的库存调整权限，不能用导入替代订单预占或释放命令。
 
-CSV columns: `sku`, `location`, `onhand`; optional `safety`, `status`. `onhand` and `safety` are non-negative integers. `status` is `active` or `blocked`.
+## 只读诊断（Diagnosis）
 
-Alert on repeated `IMPORT_OBJECT_INVALID`, `INVENTORY_IMPORT_STAGE_INCOMPLETE`, `IMPORT_REPORT_COLLISION`, dead letters, or a job whose `updated_at` is older than its lease while in an active state.
+除统一证据外，核对 `sku`、`location`、非负整数 `onhand`，可选 `safety` 与 `active/blocked` 状态；读取 StockItem 版本、活动 Reservation、Movement 幂等键、可用量公式和锁等待。对比导入前后账本，不只看投影计数。
+
+## 止血（Stop loss）
+
+暂停该 Scope 导入与受影响 Listing 新销售，命令时库存检查继续 fail-closed；保留现有 Reservation。禁止直改 `onhand`、可用量、Reservation、Movement、Cursor 或错误行。
+
+## 恢复（Recovery）
+
+通用重试从已提交 Checkpoint 继续。每行锁定 StockItem、重读活动 Reservation、追加一个稳定幂等 Movement 后更新聚合；版本冲突重新读取而不覆盖。永久数据错误修正文件后新建任务。
+
+## 数据核对（Data repair / Validation / Escalation / Audit）
+
+Validation 证明 `available = onhand - reserved - safety >= 0`、每个成功行恰有一个 Movement、Reservation 无丢失、总行数/Hash/Checkpoint 守恒、跨 Scope 为 0。Data repair 只能追加经审批 Movement；Escalation 对负库存/超卖/重复移动立即 P0；Audit 记录前后版本和数量摘要。
+
+## 回滚边界
+
+已追加 Movement 不删除，以相反且有原因的库存调整补偿；已完成订单 Reservation 不由导入回退。通用边界见 `import.md`。
+
+## 沟通模板
+
+“库存导入 `{importId}`，Location/Scope `{scope}`，进度 `{completed}/{total}`，冲突 `{conflicts}`，可售影响 `{impact}`，Owner `{owner}`，证据 `{evidenceRef}`。”
+
+## 关闭条件
+
+统一 Import 条件通过；可用量非负、超卖为 0、Movement/Reservation/投影一致、受影响 Listing 可售状态重新核验、告警恢复。
+
+## 复盘链接（Postmortem）
+
+负库存、超卖、重复 Movement、跨 Scope 或锁风暴必须填写 `{postmortemUrl}`。

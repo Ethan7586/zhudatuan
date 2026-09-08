@@ -22,9 +22,19 @@ describe('verification domain', () => {
   });
 
   it('locks a session after the configured attempt limit', () => {
-    let session = VerificationSession.issue({ id: 'verification:one', scope: 'mall:one', subjectType: 'member', subject: 'member:one',
-      purpose: 'member_code', operation: 'verification.member.inspect', channel: 'qrcode', maximumAttempts: 3,
-      issuedBy: 'membership:one', createdAt: NOW, expiresAt: new Date(NOW.getTime() + 60_000) });
+    let session = VerificationSession.issue({
+      id: 'verification:one',
+      scope: 'mall:one',
+      subjectType: 'member',
+      subject: 'member:one',
+      purpose: 'member_code',
+      operation: 'verification.member.inspect',
+      channel: 'qrcode',
+      maximumAttempts: 3,
+      issuedBy: 'membership:one',
+      createdAt: NOW,
+      expiresAt: new Date(NOW.getTime() + 60_000),
+    });
     session = session.reject(new Date(NOW.getTime() + 1_000));
     session = session.reject(new Date(NOW.getTime() + 2_000));
     session = session.reject(new Date(NOW.getTime() + 3_000));

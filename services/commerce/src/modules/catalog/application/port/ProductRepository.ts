@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ProductKind, ProductSnapshot, ProductState } from '../../domain/model/Product';
 
 export interface ProductDetailBase {
@@ -17,7 +17,19 @@ export interface ProductDetailBase {
   readonly updatedAt: string;
   readonly regionIds: readonly string[];
   readonly skus: readonly Readonly<{ id: string; code: string; status: string; specifications: readonly Readonly<{ name: string; value: string }>[]; version: string | number }>[];
-  readonly listings: readonly Readonly<{ id: string; scope: string; pool: string | null; sku: string; title: string; status: string; effectiveAt: string | null; expiresAt: string | null; createdAt: string; updatedAt: string; version: string | number }>[];
+  readonly listings: readonly Readonly<{
+    id: string;
+    scope: string;
+    pool: string | null;
+    sku: string;
+    title: string;
+    status: string;
+    effectiveAt: string | null;
+    expiresAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+    version: string | number;
+  }>[];
   readonly media: readonly Readonly<{ id: string; kind: 'image' | 'video' | 'document'; url: string; alt: string | null; sort: number }>[];
   readonly channels: readonly Readonly<{ provider: string; externalId: string; status: 'pending' | 'mapped' | 'rejected' | 'retired'; sourceVersion: string; observedAt: string }>[];
   readonly pools: readonly Readonly<{ id: string; name: string; kind: 'global' | 'channel' | 'private' | 'markup'; status: 'draft' | 'active' | 'disabled'; listingCount: number }>[];

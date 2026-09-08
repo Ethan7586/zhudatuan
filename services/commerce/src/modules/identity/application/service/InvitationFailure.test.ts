@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { OperationRequest } from '../../../../pipeline/OperationRequest';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { InvitationFailure } from './InvitationFailure';
 import { result, withWriteTransaction } from '../../../../test/TransactionFixture';
 

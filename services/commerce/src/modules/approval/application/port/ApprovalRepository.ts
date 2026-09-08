@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ApprovalSubjectKind } from '../../domain/value/ApprovalSubject';
 import type { ApprovalStep } from '../../domain/model/ApprovalTemplate';
 import type { ApprovalDecisionRecord, ApprovalInstanceRecord, ApprovalTaskRecord } from '../../public/ApprovalRecord';

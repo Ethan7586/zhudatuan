@@ -1,4 +1,4 @@
-import { token } from '../../../../bootstrap/Container';
+import { token } from '../../../../composition/Container';
 import type { LogSink } from '../../public/TelemetryPort';
 export type { LogEntry, LogSink } from '../../public/TelemetryPort';
 

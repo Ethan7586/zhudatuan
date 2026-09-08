@@ -43,8 +43,16 @@ export class EvidenceBundle {
 
   static restore(plaintext: string): EvidenceBundle {
     const value = JSON.parse(plaintext) as Readonly<Record<string, unknown>>;
-    if (value.format !== 'shop.audit.evidence.v2' || typeof value.scope !== 'string' || typeof value.start !== 'string' || typeof value.end !== 'string' ||
-      typeof value.firstHash !== 'string' || typeof value.lastHash !== 'string' || !Array.isArray(value.rows) || value.count !== value.rows.length) {
+    if (
+      value.format !== 'shop.audit.evidence.v2' ||
+      typeof value.scope !== 'string' ||
+      typeof value.start !== 'string' ||
+      typeof value.end !== 'string' ||
+      typeof value.firstHash !== 'string' ||
+      typeof value.lastHash !== 'string' ||
+      !Array.isArray(value.rows) ||
+      value.count !== value.rows.length
+    ) {
       throw new Error('AUDIT_EVIDENCE_BUNDLE_INVALID');
     }
     return new EvidenceBundle(value.scope, value.start, value.end, value.firstHash, value.lastHash, value.rows as readonly Readonly<Record<string, unknown>>[]);
@@ -59,5 +67,9 @@ function entry(row: EvidenceRow, index: number, rows: readonly EvidenceRow[]): E
   return Object.freeze({ kind: row.kind, id: row.id, recordHash: row.record_hash });
 }
 
-function hash(value: string): boolean { return /^[a-f0-9]{64}$/.test(value); }
-function time(value: string): boolean { return Number.isFinite(Date.parse(value)); }
+function hash(value: string): boolean {
+  return /^[a-f0-9]{64}$/.test(value);
+}
+function time(value: string): boolean {
+  return Number.isFinite(Date.parse(value));
+}

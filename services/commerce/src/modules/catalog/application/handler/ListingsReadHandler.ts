@@ -1,8 +1,8 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { keysetPage, queryPage } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { keysetPage, queryPage } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { ListingRepository } from '../port/ListingRepository';
 import type { CatalogInventoryPort } from '../../../inventory/public';
 import type { CatalogPricingPort } from '../../../pricing/public';
@@ -106,6 +106,7 @@ async function enrich(
         mall_total: count(row.mall_total),
         price_amount_minor: price === undefined ? null : count(price.amountMinor),
         price_currency: price === undefined || typeof price.currency !== 'string' ? null : price.currency,
+        price_version: price === undefined ? null : count(price.priceVersion),
         saleable_stock: saleable,
         qualification_eligible: decision?.eligible ?? null,
         data_gaps: Object.freeze(gaps),

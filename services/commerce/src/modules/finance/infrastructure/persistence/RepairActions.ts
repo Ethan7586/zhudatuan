@@ -1,16 +1,16 @@
-import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import { type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import type { FinanceEntries } from './FinanceOperation';
 import { createHash } from 'node:crypto';
 
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { bodyRecord, keysetRows, queryPage } from '../../../../foundation/application/Validation';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { bodyRecord, keysetRows, queryPage } from '../../../../pipeline/Validation';
 import type { RepairRepository } from '../../application/port/RepairRepository';
 import type { RepairPolicy } from '../../domain/policy/RepairPolicy';
-import type { Clock } from '../../../../foundation/domain/Clock';
+import type { Clock } from '@shop/kernel';
 import { financeEntries, positive, text } from './PolicyActions';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
-import { executionRequestHash } from '../../../../foundation/application/OperationHash';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
+import { executionRequestHash } from '../../../../pipeline/OperationHash';
 import type { RepairApproval } from '../../application/service/RepairApproval';
 import { repairAmount } from '../../domain/model/RepairProposal';
 

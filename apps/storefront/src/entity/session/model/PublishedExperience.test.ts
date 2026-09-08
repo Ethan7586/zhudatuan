@@ -16,7 +16,7 @@ describe('published storefront experience', () => {
   it('maps typed actions to canonical routes without accepting arbitrary paths', () => {
     const document = publishedExperience(bootstrap())!;
     expect(experienceActionPath(document, { type: 'product', target: 'listing:one' })).toBe('/products/listing%3Aone');
-    expect(experienceActionPath(document, { type: 'category', target: 'category:one' })).toBe('/catalog?category=category%3Aone');
+    expect(experienceActionPath(document, { type: 'category', target: 'category:one' })).toBe('/products?category=category%3Aone');
     expect(experienceActionPath(document, { type: 'micropage', target: 'page:autumn' })).toBe('/pages/autumn');
     expect(experienceActionPath(document, { type: 'link', target: '/orders' })).toBeNull();
   });

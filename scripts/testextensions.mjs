@@ -13,7 +13,7 @@ const commands = [
   {
     id: 'host-isolation',
     command: ['run', 'test', '--workspace', '@shop/commerce', '--', '--run',
-      'src/bootstrap/ExtensionRegistry.test.ts',
+      'src/composition/ExtensionRegistry.test.ts',
       'src/modules/extension/application/service/Lifecycle.test.ts',
       'src/modules/channel/test/ApplyChannelWebhook.test.ts',
       'src/modules/channel/test/ChannelModel.test.ts',

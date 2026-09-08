@@ -1,8 +1,14 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import { publicPort } from '../../../composition/ModuleRegistry';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
 export interface CatalogPosition {
   readonly sort: string;
   readonly id: string;
+}
+export interface StorefrontCategoryFacet {
+  readonly id: string;
+  readonly code: string;
+  readonly name: string;
+  readonly count: number;
 }
 export interface StorefrontListing {
   readonly id: string;
@@ -23,6 +29,7 @@ export interface StorefrontListing {
   readonly updatedAt: string;
 }
 export interface CatalogReadPort {
+  categories(context: ReadTransactionContext, input: Readonly<{ mall: string; pool: string; query: string | null; account: 'welfare' | 'meal' | 'wechat' | 'cash' | null; exclusive: boolean }>): Promise<readonly StorefrontCategoryFacet[]>;
   listings(
     context: ReadTransactionContext,
     input: Readonly<{

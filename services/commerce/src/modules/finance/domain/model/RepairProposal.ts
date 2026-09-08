@@ -1,6 +1,6 @@
 import type { FinanceEntryTemplate } from './FinancePolicy';
 import type { RepairDifference } from './RepairCase';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 /** Complete, signed and immutable input to a finance repair. */
 export interface RepairProposal {

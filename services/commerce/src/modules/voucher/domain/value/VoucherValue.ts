@@ -1,7 +1,10 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export class VoucherValue {
-  constructor(readonly minor: number, readonly currency = 'CNY') {
+  constructor(
+    readonly minor: number,
+    readonly currency = 'CNY'
+  ) {
     if (!Number.isSafeInteger(minor) || minor < 0 || currency !== 'CNY') throw new DomainError('VALIDATION_FAILED', { field: 'value' });
   }
   subtract(amount: number): VoucherValue {

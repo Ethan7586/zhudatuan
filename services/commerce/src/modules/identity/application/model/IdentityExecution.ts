@@ -1,7 +1,7 @@
 import type { OperationId, OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
+import type { PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { OperationReply } from '../../../../pipeline/OperationHandler';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
 
 export interface PreparedIdentityLifecycle<T> {
   readonly request: OperationRequest;

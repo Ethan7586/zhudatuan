@@ -1,12 +1,15 @@
 import { createHash } from 'node:crypto';
-import { safeErrorCode } from '../../../../foundation/domain/SafeError';
-import { csvCell } from '../../../../foundation/application/Csv';
+import { safeErrorCode } from '../../../../platform/error/SafeError';
+import { csvCell } from '../../../../pipeline/Csv';
 import type { ClaimedJob } from '../../public/JobProcess';
 import type { ExportExecution, ExportPlan, ExportRenderer } from '../../public/ExportProcess';
 import type { ObjectStore, ObjectUpload, StoredObject } from '../../public/ObjectPort';
 
 export class RunExport {
-  constructor(private readonly kind: string, private readonly objects: ObjectStore) {
+  constructor(
+    private readonly kind: string,
+    private readonly objects: ObjectStore
+  ) {
     if (!/^[a-z][a-z0-9]+$/.test(kind)) throw new Error('EXPORT_KIND_INVALID');
   }
 
@@ -48,8 +51,7 @@ export class RunExport {
       if (expectedRows !== null && rows !== expectedRows) throw new Error('EXPORT_ROW_COUNT_MISMATCH');
       stored = await upload.complete();
       const inspected = await this.objects.inspect(stored.reference);
-      if (inspected.scan !== 'clean' || inspected.sha256 !== stored.sha256 || inspected.size !== stored.size ||
-        inspected.contentType !== 'text/csv' || inspected.path !== path(execution.scope, plan.owner, plan.id)) {
+      if (inspected.scan !== 'clean' || inspected.sha256 !== stored.sha256 || inspected.size !== stored.size || inspected.contentType !== 'text/csv' || inspected.path !== path(execution.scope, plan.owner, plan.id)) {
         throw new Error('EXPORT_SCAN_OR_INTEGRITY_FAILED');
       }
       await renderer.complete(plan, Object.freeze({ object: stored, rows }));
@@ -63,10 +65,20 @@ export class RunExport {
 }
 
 function validate(plan: ExportPlan, id: string): void {
-  if (plan.id !== id || !/^[a-z][a-z0-9]+$/.test(plan.owner) || plan.columns.length === 0 || new Set(plan.columns).size !== plan.columns.length ||
-    plan.columns.some((column) => !column || column.length > 100) || !Number.isSafeInteger(plan.pageRows) || plan.pageRows < 1 || plan.pageRows > 10_000 ||
+  if (
+    plan.id !== id ||
+    !/^[a-z][a-z0-9]+$/.test(plan.owner) ||
+    plan.columns.length === 0 ||
+    new Set(plan.columns).size !== plan.columns.length ||
+    plan.columns.some((column) => !column || column.length > 100) ||
+    !Number.isSafeInteger(plan.pageRows) ||
+    plan.pageRows < 1 ||
+    plan.pageRows > 10_000 ||
     (plan.expectedRows !== null && (!Number.isSafeInteger(plan.expectedRows) || plan.expectedRows < 0)) ||
-    !Number.isSafeInteger(plan.maximumAttempts) || plan.maximumAttempts < 1) throw new Error('EXPORT_PLAN_INVALID');
+    !Number.isSafeInteger(plan.maximumAttempts) ||
+    plan.maximumAttempts < 1
+  )
+    throw new Error('EXPORT_PLAN_INVALID');
 }
 
 function path(scope: string, owner: string, id: string): string {

@@ -31,11 +31,11 @@ describe('finance domain', () => {
   it('posts and reverses immutable balanced journals without changing history', () => {
     const reference = posting('payment', 'payment', 'payment:one', 'payment.captured', 'event:captured', 'external.capture');
     const draft = Journal.draft({
-      id: 'journal:one', scopeId: 'mall:one', reference, description: '支付入账',
-      entries: [
-        JournalEntry.create('entry:one', cash, 'debit', Money.of(100), at),
-        JournalEntry.create('entry:two', income, 'credit', Money.of(100), at),
-      ],
+      id: 'journal:one',
+      scopeId: 'mall:one',
+      reference,
+      description: '支付入账',
+      entries: [JournalEntry.create('entry:one', cash, 'debit', Money.of(100), at), JournalEntry.create('entry:two', income, 'credit', Money.of(100), at)],
     });
     const period = AccountingPeriod.open('mall:one', '2026-09');
     const ledger = Ledger.empty('mall:one', [cash, income]).post(draft, period, at);
@@ -50,11 +50,11 @@ describe('finance domain', () => {
 
   it('blocks mixed totals and closed accounting periods', () => {
     const draft = Journal.draft({
-      id: 'journal:bad', scopeId: 'mall:one', reference: posting('payment', 'payment', 'payment:bad', 'payment.captured', 'event:bad', 'external.capture'), description: '错误入账',
-      entries: [
-        JournalEntry.create('entry:bad:one', cash, 'debit', Money.of(100), at),
-        JournalEntry.create('entry:bad:two', income, 'credit', Money.of(99), at),
-      ],
+      id: 'journal:bad',
+      scopeId: 'mall:one',
+      reference: posting('payment', 'payment', 'payment:bad', 'payment.captured', 'event:bad', 'external.capture'),
+      description: '错误入账',
+      entries: [JournalEntry.create('entry:bad:one', cash, 'debit', Money.of(100), at), JournalEntry.create('entry:bad:two', income, 'credit', Money.of(99), at)],
     });
     const closed = AccountingPeriod.open('mall:one', '2026-09').requestClose('maker').decideClose('checker', true, at);
     expect(() => draft.post(AccountingPeriod.open('mall:one', '2026-09'), at)).toThrow('FINANCE_JOURNAL_UNBALANCED');
@@ -63,13 +63,34 @@ describe('finance domain', () => {
   });
 
   it('requires statement conservation and reconciliation evidence before approval', () => {
-    const statement = Statement.draft({ id: 'statement:one', scopeId: 'mall:one', periodStart: '2026-09-01', periodEnd: '2026-09-30', currency: 'CNY',
-      openingMinor: 100, debitMinor: 50, creditMinor: 20, closingMinor: 130, objectRef: 'object:one', sha256: 'a'.repeat(64), generatedAt: at.instant, version: 1 });
+    const statement = Statement.draft({
+      id: 'statement:one',
+      scopeId: 'mall:one',
+      periodStart: '2026-09-01',
+      periodEnd: '2026-09-30',
+      currency: 'CNY',
+      openingMinor: 100,
+      debitMinor: 50,
+      creditMinor: 20,
+      closingMinor: 130,
+      objectRef: 'object:one',
+      sha256: 'a'.repeat(64),
+      generatedAt: at.instant,
+      version: 1,
+    });
     expect(statement.finalize().snapshot().state).toBe('final');
     expect(() => Statement.draft({ ...statement.snapshot(), closingMinor: 129 })).toThrow('FINANCE_JOURNAL_UNBALANCED');
 
-    const received = Reconciliation.receive({ id: 'reconciliation:one', scopeId: 'mall:one', provider: 'provider', partnerId: 'partner:one', period: '2026-09',
-      statementRef: 'object:one', statementHash: 'a'.repeat(64), requestedBy: 'maker' });
+    const received = Reconciliation.receive({
+      id: 'reconciliation:one',
+      scopeId: 'mall:one',
+      provider: 'provider',
+      partnerId: 'partner:one',
+      period: '2026-09',
+      statementRef: 'object:one',
+      statementHash: 'a'.repeat(64),
+      requestedBy: 'maker',
+    });
     const balanced = received.startMatching().complete(100, 100, 0);
     expect(balanced.approve('checker').snapshot().state).toBe('approved');
     expect(() => balanced.approve('maker')).toThrow('MAKER_CHECKER_SEPARATION_REQUIRED');
@@ -78,10 +99,21 @@ describe('finance domain', () => {
 
   it('freezes deterministic settlement rounding and maker-checker money states', () => {
     const policy = new SettlementPolicy();
-    expect(policy.allocate(10, [{ key: 'b', weight: 1 }, { key: 'a', weight: 1 }, { key: 'c', weight: 1 }])).toEqual([
-      { key: 'a', amountMinor: 3 }, { key: 'b', amountMinor: 3 }, { key: 'c', amountMinor: 4 },
+    expect(
+      policy.allocate(10, [
+        { key: 'b', weight: 1 },
+        { key: 'a', weight: 1 },
+        { key: 'c', weight: 1 },
+      ])
+    ).toEqual([
+      { key: 'a', amountMinor: 3 },
+      { key: 'b', amountMinor: 3 },
+      { key: 'c', amountMinor: 4 },
     ]);
-    const settlement = Settlement.fromSplit({ id: 'settlement:one', scopeId: 'mall:one', reconciliationId: 'reconciliation:one', partnerId: 'partner:one', period: '2026-09', currency: 'CNY', requestedBy: 'maker' }, policy.split(10_001, { basisPoints: 350, invoiceBasis: 'net' }));
+    const settlement = Settlement.fromSplit(
+      { id: 'settlement:one', scopeId: 'mall:one', reconciliationId: 'reconciliation:one', partnerId: 'partner:one', period: '2026-09', currency: 'CNY', requestedBy: 'maker' },
+      policy.split(10_001, { basisPoints: 350, invoiceBasis: 'net' })
+    );
     expect(settlement.approve('checker').snapshot()).toMatchObject({ state: 'payable', amountMinor: 9_651, approvedBy: 'checker' });
     expect(() => settlement.approve('maker')).toThrow('FINANCE_SETTLEMENT_SEPARATION_REQUIRED');
 
@@ -91,12 +123,32 @@ describe('finance domain', () => {
   });
 
   it('keeps invoice line totals and approval separation inside the aggregate', () => {
-    const invoice = Invoice.submit({ id: 'invoice:one', profileId: 'profile:one', settlementId: 'settlement:one', amountMinor: 100, currency: 'CNY', kind: 'original', redOf: null,
-      lines: [{ id: 'line:one', description: '商品', amountMinor: 100, taxMinor: 6 }], requestedBy: 'maker' });
+    const invoice = Invoice.submit({
+      id: 'invoice:one',
+      profileId: 'profile:one',
+      settlementId: 'settlement:one',
+      amountMinor: 100,
+      currency: 'CNY',
+      kind: 'original',
+      redOf: null,
+      lines: [{ id: 'line:one', description: '商品', amountMinor: 100, taxMinor: 6 }],
+      requestedBy: 'maker',
+    });
     expect(invoice.decide('checker', true).beginIssue().issue().snapshot().state).toBe('issued');
     expect(() => invoice.decide('maker', true)).toThrow('MAKER_CHECKER_SEPARATION_REQUIRED');
-    expect(() => Invoice.submit({ id: 'invoice:bad', profileId: 'profile:one', settlementId: 'settlement:one', amountMinor: 99, currency: 'CNY', kind: 'original', redOf: null,
-      lines: [{ id: 'line:one', description: '商品', amountMinor: 100, taxMinor: 6 }], requestedBy: 'maker' })).toThrow('VALIDATION_FAILED');
+    expect(() =>
+      Invoice.submit({
+        id: 'invoice:bad',
+        profileId: 'profile:one',
+        settlementId: 'settlement:one',
+        amountMinor: 99,
+        currency: 'CNY',
+        kind: 'original',
+        redOf: null,
+        lines: [{ id: 'line:one', description: '商品', amountMinor: 100, taxMinor: 6 }],
+        requestedBy: 'maker',
+      })
+    ).toThrow('VALIDATION_FAILED');
   });
 });
 

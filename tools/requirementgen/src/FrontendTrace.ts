@@ -1,4 +1,5 @@
 import type { RouteTrace } from './RouteTrace';
+import type { DeliveryStatus } from './DeliveryStatus';
 
 export type FrontendClient = RouteTrace['surface'];
 
@@ -18,13 +19,10 @@ export interface FrontendExecutionTrace {
   readonly callers: readonly string[];
   readonly callees: readonly string[];
   readonly evidence: readonly string[];
-  readonly status: 'Missing' | 'Designed' | 'Implemented' | 'Integrated' | 'Accepted' | 'Released';
+  readonly status: DeliveryStatus;
 }
 
-export function executionTraces(
-  input: Readonly<{ route: string; operation: string; test: string }>,
-  routes: readonly RouteTrace[]
-): readonly FrontendExecutionTrace[] {
+export function executionTraces(input: Readonly<{ route: string; operation: string; test: string }>, routes: readonly RouteTrace[]): readonly FrontendExecutionTrace[] {
   const matches = routes.filter(({ path }) => path === input.route);
   if (matches.length === 0) throw new Error(`FRONTEND_ROUTE_TRACE_MISSING:${input.route}`);
   return Object.freeze(
@@ -37,15 +35,15 @@ export function executionTraces(
         operation: input.operation,
         test: input.test,
         files: Object.freeze({
-          route: `apps/${route.surface}/src/route/Router.tsx`,
+          route: route.source,
           manifest: route.manifest,
           viewmodel: route.viewmodel,
           sdk: 'packages/sdk/src/operations/CommerceClient.ts',
         }),
         callers: Object.freeze([`route:${route.id}`, `feature:${route.surface}/${route.feature}`]),
         callees: Object.freeze([`viewmodel:${route.surface}/${route.feature}`, `sdk:${input.operation}`, `operation:${input.operation}`]),
-        evidence: Object.freeze([]),
-        status: 'Designed' as const,
+        evidence: Object.freeze([route.source, route.manifest, route.viewmodel, route.test]),
+        status: 'Implemented' as const,
       })
     )
   );

@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { FavoriteVisibility } from '../policy/FavoritePolicy';
 import { FavoritePolicy } from '../policy/FavoritePolicy';
 

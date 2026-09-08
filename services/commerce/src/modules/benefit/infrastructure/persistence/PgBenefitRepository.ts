@@ -1,11 +1,11 @@
-import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import { type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import type { OperationId, OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply, OperationRequest, OperationResult } from '../../../../foundation/application/OperationHandler';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import type { OperationReply, OperationRequest, OperationResult } from '../../../../pipeline/OperationHandler';
 
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import type { AccountRepository } from '../../application/port/AccountRepository';
 import type { BudgetRepository } from '../../application/port/BudgetRepository';
 import type { GrantRepository } from '../../application/port/GrantRepository';

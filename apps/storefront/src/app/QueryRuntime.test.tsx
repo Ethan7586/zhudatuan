@@ -16,7 +16,18 @@ describe('storefront query runtime', () => {
 
   it('retries reads once and never retries writes automatically', () => {
     const defaults = createStorefrontQueryClient().getDefaultOptions();
-    expect(defaults.queries).toMatchObject({ retry: 1, staleTime: 30_000, gcTime: 300_000, refetchOnWindowFocus: false });
+    expect(defaults.queries).toMatchObject({ retry: 1, staleTime: 30_000, gcTime: 300_000, refetchOnWindowFocus: false, refetchOnReconnect: true });
     expect(defaults.mutations).toMatchObject({ retry: false });
+  });
+
+  it('recovers a weak-network read once without duplicating a write', async () => {
+    const client = createStorefrontQueryClient();
+    const query = vi.fn()
+      .mockRejectedValueOnce(new TypeError('network interrupted'))
+      .mockResolvedValueOnce({ items: ['listing:one'] });
+
+    await expect(client.fetchQuery({ queryKey: ['storefront', 'public', 'catalog'], queryFn: query, retryDelay: 0 })).resolves.toEqual({ items: ['listing:one'] });
+    expect(query).toHaveBeenCalledTimes(2);
+    client.clear();
   });
 });

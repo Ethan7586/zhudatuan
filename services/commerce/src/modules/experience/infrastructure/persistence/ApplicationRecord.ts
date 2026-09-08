@@ -1,7 +1,7 @@
 import { parseExperience, type ExperienceDocument } from '@shop/contract';
 import type { QueryResultRow } from 'pg';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { databaseInteger } from '../../../../foundation/persistence/DatabaseInteger';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { databaseInteger } from '../../../../platform/database/DatabaseInteger';
 import type { MallProvisionSnapshot } from '../../../organization/public';
 import { Application, type ApplicationSnapshot } from '../../domain/model/Application';
 

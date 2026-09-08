@@ -1,4 +1,4 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { Override } from '../../domain/model/Override';
 import type { PermissionEffect, Role, RoleTemplateCode } from '../../domain/model/Role';
 import type { Scope } from '../../domain/model/Scope';
@@ -14,7 +14,10 @@ export interface AccessAdministrationRepository {
   rolePermissions(context: ReadTransactionContext, role: string): Promise<RolePermissionState>;
   roleImpact(context: ReadTransactionContext, role: string): Promise<RoleImpact>;
   roleTemplate(context: ReadTransactionContext, code: string): Promise<RoleTemplate | null>;
-  saveRole(context: WriteTransactionContext, input: Readonly<{ role: string; scope: string; name: string; description: string; template: RoleTemplateCode | null; allows: readonly string[]; denies: readonly string[]; expectedVersion: number }>): Promise<RoleChange | null>;
+  saveRole(
+    context: WriteTransactionContext,
+    input: Readonly<{ role: string; scope: string; name: string; description: string; template: RoleTemplateCode | null; allows: readonly string[]; denies: readonly string[]; expectedVersion: number }>
+  ): Promise<RoleChange | null>;
   setRoleStatus(context: WriteTransactionContext, role: string, scope: string, status: 'active' | 'disabled', expectedVersion: number): Promise<Role | null>;
   deleteRole(context: WriteTransactionContext, role: string, scope: string, expectedVersion: number): Promise<boolean>;
   assignRole(context: WriteTransactionContext, role: string, membership: string, issuer: string): Promise<boolean>;

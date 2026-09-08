@@ -1,5 +1,5 @@
 import type { Telemetry, TelemetryContext } from '@shop/telemetry';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { EntryResolveObservation, ExperienceObserver, PublicationObservation } from '../../application/port/ExperienceObserver';
 import type { EntryState } from '../../domain/policy/EntryPolicy';
 

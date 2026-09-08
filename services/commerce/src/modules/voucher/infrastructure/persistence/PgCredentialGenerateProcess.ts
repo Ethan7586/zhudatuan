@@ -1,10 +1,10 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import type { CredentialGenerateWork } from '../../application/process/CredentialGenerateProcess';
 import type { CredentialProtector, ProtectedCredential } from '../../application/port/CredentialProtector';
 import type { JobPort } from '../../../runtime/public';
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
-import { mapParallel } from '../../../../foundation/performance/Parallel';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
+import { mapParallel } from '@shop/kernel';
 
 interface PoolRow {
   readonly prefix: string;
@@ -34,10 +34,7 @@ export class PgCredentialGenerateProcess implements CredentialGenerateWork {
 
   async generate(input: Parameters<CredentialGenerateWork['generate']>[0]): Promise<void> {
     const pool = await this.manager.read(options(input, 'readpool'), async (context) => {
-      const found = await this.transactions.database(context).query<PoolRow>(
-        `select prefix,product_id,generated::integer,state,mode from voucher.credentialpool where id=$1 and scope_id=$2`,
-        [input.pool, input.scope]
-      );
+      const found = await this.transactions.database(context).query<PoolRow>(`select prefix,product_id,generated::integer,state,mode from voucher.credentialpool where id=$1 and scope_id=$2`, [input.pool, input.scope]);
       return found.rows[0] ?? null;
     });
     if (!pool || pool.mode !== 'generated') throw new Error('VOUCHER_CREDENTIAL_POOL_INVALID');
@@ -50,28 +47,26 @@ export class PgCredentialGenerateProcess implements CredentialGenerateWork {
       const ordinals = Array.from({ length: Math.min(CHUNK_SIZE, input.count - processed) }, (_, index) => processed + index + 1);
       const candidates = ordinals.map((offset) => ({ id: credentialId(input.scope, input.pool, input.start + offset - 1), offset }));
       const existing = await this.manager.read(options(input, `existing:${processed}`), async (context) => {
-        const result = await this.transactions.database(context).query<{ id: string }>(
-          `select id from voucher.credential where scope_id=$1 and id=any($2::text[])`,
-          [input.scope, candidates.map(({ id }) => id)]
-        );
+        const result = await this.transactions.database(context).query<{ id: string }>(`select id from voucher.credential where scope_id=$1 and id=any($2::text[])`, [input.scope, candidates.map(({ id }) => id)]);
         return new Set(result.rows.map(({ id }) => id));
       });
-      const encrypted = await mapParallel(candidates.filter(({ id }) => !existing.has(id)), ENCRYPTION_CONCURRENCY, async ({ id, offset }) => {
-        available(input);
-        const binding = Object.freeze({ scope: input.scope, pool: input.pool, credential: id });
-        const [number, secret] = await Promise.all([
-          this.protector.protect(numberValue(pool.prefix, input.job, offset), 'number', binding),
-          this.protector.protect(randomBytes(32).toString('hex'), 'secret', binding),
-        ]);
-        return Object.freeze({ id, number, secret });
-      });
+      const encrypted = await mapParallel(
+        candidates.filter(({ id }) => !existing.has(id)),
+        ENCRYPTION_CONCURRENCY,
+        async ({ id, offset }) => {
+          available(input);
+          const binding = Object.freeze({ scope: input.scope, pool: input.pool, credential: id });
+          const [number, secret] = await Promise.all([this.protector.protect(numberValue(pool.prefix, input.job, offset), 'number', binding), this.protector.protect(randomBytes(32).toString('hex'), 'secret', binding)]);
+          return Object.freeze({ id, number, secret });
+        }
+      );
       processed = await this.manager.write(options(input, `persist:${processed}`), async (context) => {
         const database = this.transactions.database(context);
         if (encrypted.length > 0) await insertCredentials(database, input, pool.product_id, encrypted);
-        const count = await database.query<{ count: number }>(
-          `select count(*)::integer count from voucher.credential where scope_id=$1 and id=any($2::text[]) and state in('available','allocated')`,
-          [input.scope, candidates.map(({ id }) => id)]
-        );
+        const count = await database.query<{ count: number }>(`select count(*)::integer count from voucher.credential where scope_id=$1 and id=any($2::text[]) and state in('available','allocated')`, [
+          input.scope,
+          candidates.map(({ id }) => id),
+        ]);
         if ((count.rows[0]?.count ?? 0) !== candidates.length) throw new Error('VOUCHER_CREDENTIAL_CHUNK_INCOMPLETE');
         const next = ordinals.at(-1)!;
         await this.jobs.progress(context, input.job, input.scope, 'voucher', { total: input.count, processed: next, succeeded: next, failed: 0, retryable: 0 });
@@ -81,12 +76,7 @@ export class PgCredentialGenerateProcess implements CredentialGenerateWork {
   }
 }
 
-async function insertCredentials(
-  database: ReturnType<PgTransactionAccess['database']>,
-  input: Parameters<CredentialGenerateWork['generate']>[0],
-  product: string,
-  credentials: readonly CredentialInput[]
-): Promise<void> {
+async function insertCredentials(database: ReturnType<PgTransactionAccess['database']>, input: Parameters<CredentialGenerateWork['generate']>[0], product: string, credentials: readonly CredentialInput[]): Promise<void> {
   const rows = credentials.map(({ id, number, secret }) => ({
     id,
     numberCiphertext: number.ciphertext,

@@ -1,6 +1,15 @@
 export interface SupportRealtimeEvent {
   readonly id: string;
-  readonly type: 'support.message.sent' | 'support.ticket.updated' | 'support.ticket.assigned' | 'support.ticket.closed' | 'support.ticket.reopened' | 'support.readstate.updated' | 'support.attachment.ready' | 'support.attachment.rejected' | 'support.sla.escalated';
+  readonly type:
+    | 'support.message.sent'
+    | 'support.ticket.updated'
+    | 'support.ticket.assigned'
+    | 'support.ticket.closed'
+    | 'support.ticket.reopened'
+    | 'support.readstate.updated'
+    | 'support.attachment.ready'
+    | 'support.attachment.rejected'
+    | 'support.sla.escalated';
   readonly scopeId: string;
   readonly ticketId: string;
   readonly conversationId: string;
@@ -39,16 +48,18 @@ export interface SupportReplayPort {
 }
 
 export interface SupportStreamPresenter {
-  present(input: Readonly<{
-    scopes: readonly string[];
-    member: string;
-    storefront: boolean;
-    conversation: string | null;
-    cursor: string | null;
-    replay: readonly SupportRealtimeEvent[];
-    release: () => void;
-  }>): OperationReply<OperationOutputFor<'support.events.read'>>;
+  present(
+    input: Readonly<{
+      scopes: readonly string[];
+      member: string;
+      storefront: boolean;
+      conversation: string | null;
+      cursor: string | null;
+      replay: readonly SupportRealtimeEvent[];
+      release: () => void;
+    }>
+  ): OperationReply<OperationOutputFor<'support.events.read'>>;
 }
 import type { OperationOutputFor } from '@shop/contract';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { OperationReply } from '../../../../pipeline/OperationHandler';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';

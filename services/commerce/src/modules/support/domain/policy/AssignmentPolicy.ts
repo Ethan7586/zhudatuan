@@ -1,4 +1,4 @@
-import type { Policy } from '../../../../foundation/domain/Policy';
+import type { Policy } from '@shop/kernel';
 import type { AssignmentRule } from '../model/AssignmentRule';
 import type { TicketPriority } from '../model/Ticket';
 
@@ -35,11 +35,13 @@ export class AssignmentPolicy implements Policy<Assignment, Agent | null> {
     const rules = input.rules?.filter((rule) => priority && rule.scope === input.scope && rule.matches(input.skill, priority)) ?? [];
     if (input.rules && priority && rules.length === 0) return Object.freeze([]);
     const weight = Math.max(0, ...rules.map((rule) => rule.weight));
-    return Object.freeze(input.agents
-      .filter((agent) => agent.state === 'available' && agent.online && agent.scopes.includes(input.scope) && agent.skills.includes(input.skill) && agent.load < agent.capacity)
-      .map((agent) => ({ agent, loadRatio: agent.load / agent.capacity, weight }))
-      .sort((left, right) => left.loadRatio - right.loadRatio || right.weight - left.weight || instant(left.agent.lastAssignedAt) - instant(right.agent.lastAssignedAt) || left.agent.id.localeCompare(right.agent.id))
-      .map(({ agent }) => agent));
+    return Object.freeze(
+      input.agents
+        .filter((agent) => agent.state === 'available' && agent.online && agent.scopes.includes(input.scope) && agent.skills.includes(input.skill) && agent.load < agent.capacity)
+        .map((agent) => ({ agent, loadRatio: agent.load / agent.capacity, weight }))
+        .sort((left, right) => left.loadRatio - right.loadRatio || right.weight - left.weight || instant(left.agent.lastAssignedAt) - instant(right.agent.lastAssignedAt) || left.agent.id.localeCompare(right.agent.id))
+        .map(({ agent }) => agent)
+    );
   }
 }
 

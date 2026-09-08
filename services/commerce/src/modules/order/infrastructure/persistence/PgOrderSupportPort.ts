@@ -1,10 +1,24 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { OrderSupportAction, OrderSupportPort, OrderSupportSummary } from '../../public/OrderSupportPort';
 
-interface SummaryRow { readonly id: string; readonly scope_id: string; readonly member_id: string; readonly order_number: string; readonly lifecycle_state: string; readonly total_minor: number }
-interface ActionRow { readonly id: string; readonly order_id: string; readonly aftersale_id: string | null; readonly support_case_id: string; readonly kind: 'caseopened'; readonly created_at: string }
+interface SummaryRow {
+  readonly id: string;
+  readonly scope_id: string;
+  readonly member_id: string;
+  readonly order_number: string;
+  readonly lifecycle_state: string;
+  readonly total_minor: number;
+}
+interface ActionRow {
+  readonly id: string;
+  readonly order_id: string;
+  readonly aftersale_id: string | null;
+  readonly support_case_id: string;
+  readonly kind: 'caseopened';
+  readonly created_at: string;
+}
 
 export class PgOrderSupportPort implements OrderSupportPort {
   constructor(private readonly transactions = new PgTransactionAccess()) {}
@@ -28,7 +42,10 @@ export class PgOrderSupportPort implements OrderSupportPort {
     return Object.freeze(result.rows.map(summary));
   }
 
-  async collaborate(context: WriteTransactionContext, input: Readonly<{ id: string; order: string; supportCase: string; scopes: readonly string[]; member: string; memberOnly: boolean; actor: string; trace: string }>): Promise<OrderSupportAction> {
+  async collaborate(
+    context: WriteTransactionContext,
+    input: Readonly<{ id: string; order: string; supportCase: string; scopes: readonly string[]; member: string; memberOnly: boolean; actor: string; trace: string }>
+  ): Promise<OrderSupportAction> {
     const order = await this.find(context, input.order, input.scopes, input.member, input.memberOnly);
     if (!order) throw new DomainError('RESOURCE_NOT_FOUND');
     const result = await this.transactions.database(context).query<ActionRow>(
@@ -38,10 +55,15 @@ export class PgOrderSupportPort implements OrderSupportPort {
       returning id,order_id,aftersale_id,support_case_id,kind,created_at`,
       [input.id, order.id, input.supportCase, order.scope, order.member, input.actor, JSON.stringify({ source: 'support', trace: input.trace })]
     );
-    const created = result.rows[0] ?? (await this.transactions.database(context).query<ActionRow>(
-      `select id,order_id,aftersale_id,support_case_id,kind,created_at from ordering.supportcollaboration
-      where support_case_id=$1 and order_id=$2`, [input.supportCase, order.id]
-    )).rows[0];
+    const created =
+      result.rows[0] ??
+      (
+        await this.transactions.database(context).query<ActionRow>(
+          `select id,order_id,aftersale_id,support_case_id,kind,created_at from ordering.supportcollaboration
+      where support_case_id=$1 and order_id=$2`,
+          [input.supportCase, order.id]
+        )
+      ).rows[0];
     if (!created) throw new DomainError('VERSION_CONFLICT');
     return action(created);
   }

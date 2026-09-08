@@ -1,4 +1,4 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { FINANCE_ORDER_PORT, ORDER_EXPIRY_PORT, ORDER_FULFILLMENT_PORT, ORDER_INTENT_PORT, ORDER_PAYMENT_JOB_PORT, ORDER_PAYMENT_PORT, ORDER_READ_PORT, ORDER_RECEIPT_PORT, SUPPORT_ORDER_PORT } from './public';
 
 export const Manifest = defineModuleManifest({

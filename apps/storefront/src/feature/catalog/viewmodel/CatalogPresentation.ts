@@ -1,6 +1,6 @@
 import { presentProduct, type PresentedProduct, type Product } from '../../../entity/product';
 import type { CatalogCategory } from '../model/CatalogCategory';
-import { CATEGORY_DISPLAY_NAMES } from '../model/Taxonomy';
+import type { CatalogPage } from '../model/CatalogPage';
 
 export type FrontendProduct = PresentedProduct;
 export type FrontendCategory = CatalogCategory;
@@ -22,19 +22,8 @@ const CATEGORY_ICONS: Readonly<Record<string, string>> = Object.freeze({
   cat_welfare_zone: 'Gift',
 });
 
-export function toFrontendCategories(products: readonly Product[]): readonly FrontendCategory[] {
-  const categories = new Map<string, { name: string; titles: Set<string>; keywords: Set<string> }>();
-  for (const product of products) {
-    const category = categories.get(product.categoryId) ?? { name: CATEGORY_DISPLAY_NAMES[product.categoryId] ?? product.categoryName, titles: new Set<string>(), keywords: new Set<string>() };
-    category.titles.add(product.title);
-    [product.brand, ...product.tags].filter(Boolean).forEach((keyword) => category.keywords.add(keyword));
-    categories.set(product.categoryId, category);
-  }
+export function toFrontendCategories(categories: CatalogPage['categories']): readonly FrontendCategory[] {
   return Object.freeze(
-    [...categories.entries()].map(([id, category]) => {
-      const hotKeywords = Object.freeze([...category.titles, ...category.keywords].slice(0, 3));
-      const iconName = CATEGORY_ICONS[id] ?? 'Gift';
-      return Object.freeze({ id, name: category.name, iconName, hotKeywords, children: Object.freeze([]), icon: iconName, description: hotKeywords.join(' · '), subCategories: Object.freeze([]) });
-    })
+    categories.map((category) => Object.freeze({ ...category, iconName: CATEGORY_ICONS[category.code] ?? 'Gift', description: `${category.count} 件可见商品` }))
   );
 }

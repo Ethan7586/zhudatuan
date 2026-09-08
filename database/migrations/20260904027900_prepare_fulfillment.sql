@@ -250,7 +250,7 @@ values('verification.completed',1,'verification','contract://events/verification
 update runtime.operation set contract_version='5.0.0' where owner='fulfillment';
 update capability.capability set version=version+1 where id='fulfillment.shipments.create';
 update runtime.contractcatalog set checksum='0b1566a88761bdd06b69454989192a7cd41769d931d51d36a1250f3d2d9aa277',
-  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event),published_at=clock_timestamp()
+  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event where retired_at is null),published_at=clock_timestamp()
 where artifact='commerce' and version='5.0.0' and status='active';
 
 select runtime.record_migration_evidence(
@@ -265,7 +265,7 @@ do $contract$ begin
   if not exists(select 1 from runtime.event where type='verification.completed' and version=1 and owner='verification')
     then raise exception 'VERIFICATION_COMPLETED_EVENT_MISSING'; end if;
   if (select count(*) from runtime.operation)<>317 then raise exception 'FULFILLMENT_OPERATION_COUNT_INVALID'; end if;
-  if (select count(*) from runtime.event)<>144 then raise exception 'FULFILLMENT_EVENT_COUNT_INVALID'; end if;
+  if (select count(*) from runtime.event where retired_at is null)<>144 then raise exception 'FULFILLMENT_EVENT_COUNT_INVALID'; end if;
 end $contract$;
 
 commit;

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationRequest } from '../../../foundation/application/OperationRequest';
+import type { OperationRequest } from '../../../pipeline/OperationRequest';
 import type { IdentityAccessPort } from '../../access/public';
 import type { IdentityMemberPort } from '../../member/public';
 import { ManageMember } from '../application/service/ManageMember';
@@ -9,12 +9,7 @@ describe('ManageMember', () => {
   it('updates the member only when the locked access version matches', async () => {
     const updateDisplay = vi.fn(async () => ({ id: 'member:one', display_name: '新名称', version: 4 }));
     const memberForManagement = vi.fn(async () => ({ member: 'member:one', accessVersion: 7 }));
-    const action = new ManageMember(
-      { memberForManagement } as unknown as IdentityAccessPort,
-      { updateDisplay } as unknown as IdentityMemberPort,
-      {} as never,
-      {} as never
-    ).action();
+    const action = new ManageMember({ memberForManagement } as unknown as IdentityAccessPort, { updateDisplay } as unknown as IdentityMemberPort, {} as never, {} as never).action();
 
     await expect(
       withWriteTransaction(
@@ -68,28 +63,40 @@ describe('ManageMember', () => {
     expect(response).toMatchObject({
       status: 200,
       body: {
-        action: 'registrationReset', memberId: 'member:one', principalId: 'principal:target', status: 'reset',
-        loginIdentityReleased: true, historyRetained: true, memberships: ['membership:target', 'membership:storefront'],
-        accessVersion: 9, profileVersion: 6, principalVersion: 5,
+        action: 'registrationReset',
+        memberId: 'member:one',
+        principalId: 'principal:target',
+        status: 'reset',
+        loginIdentityReleased: true,
+        historyRetained: true,
+        memberships: ['membership:target', 'membership:storefront'],
+        accessVersion: 9,
+        profileVersion: 6,
+        principalVersion: 5,
       },
     });
     expect(registrations.lock).toHaveBeenCalledBefore(access.memberForManagement as never);
     expect(events.publish).toHaveBeenCalledWith(expect.anything(), 'identity.member.reset', 'principal', 'principal:target', 'mall:one', 'trace:member', {
-      memberId: 'member:one', credentialVersion: 5, reason: '重新邀请该成员注册',
+      memberId: 'member:one',
+      credentialVersion: 5,
+      reason: '重新邀请该成员注册',
     });
   });
 
   it('uses explicit enable, disable and offboard actions instead of a generic status command', async () => {
     const changeStatus = vi.fn(async (_context: unknown, _membership: string, _status: 'active' | 'suspended' | 'left') => ({ accessVersion: 8 }));
-    const action = new ManageMember(
-      { memberForManagement: vi.fn(async () => ({ member: 'member:one', accessVersion: 7 })), changeStatus } as unknown as IdentityAccessPort,
-      {} as IdentityMemberPort,
-      {} as never,
-      {} as never
-    ).action();
-    for (const [command, status] of [['enable', 'active'], ['disable', 'suspended'], ['offboard', 'left']] as const) {
-      await expect(withWriteTransaction(async () => result([]), (context) => action(request(7, { action: command, reason: '成员状态调整完成' }), context)))
-        .resolves.toMatchObject({ body: { action: command, status } });
+    const action = new ManageMember({ memberForManagement: vi.fn(async () => ({ member: 'member:one', accessVersion: 7 })), changeStatus } as unknown as IdentityAccessPort, {} as IdentityMemberPort, {} as never, {} as never).action();
+    for (const [command, status] of [
+      ['enable', 'active'],
+      ['disable', 'suspended'],
+      ['offboard', 'left'],
+    ] as const) {
+      await expect(
+        withWriteTransaction(
+          async () => result([]),
+          (context) => action(request(7, { action: command, reason: '成员状态调整完成' }), context)
+        )
+      ).resolves.toMatchObject({ body: { action: command, status } });
     }
     expect(changeStatus.mock.calls.map((call) => call[2])).toEqual(['active', 'suspended', 'left']);
   });

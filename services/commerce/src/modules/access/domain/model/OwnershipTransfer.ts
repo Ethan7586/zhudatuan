@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export type OwnershipTransferState = 'draft' | 'pending' | 'accepted' | 'cancelled' | 'expired';
 export type FormerOwnerMode = 'retain_admin' | 'remove_admin';

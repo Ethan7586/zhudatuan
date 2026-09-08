@@ -1,6 +1,6 @@
 import { PgOrganizationReadPort } from './infrastructure/persistence/PgOrganizationReadPort';
 
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { defineModule } from '../../composition/DefinedModule';
 import { Manifest } from './Manifest';
 import { OrganizationPort } from './infrastructure/persistence/OrganizationPort';
 import { IDENTITY_ORGANIZATION_PORT } from './public/IdentityOrganizationPort';
@@ -11,7 +11,7 @@ import { ACCESS_ORGANIZATION_PORT } from './public/AccessOrganizationPort';
 import { ORGANIZATION_READ_PORT } from './public';
 import { ORGANIZATION_HIERARCHY_PORT } from './public/HierarchyPort';
 import { PgOrganizationHierarchy } from './infrastructure/persistence/PgOrganizationHierarchy';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
 import { LayersReadHandler } from './application/handler/LayersReadHandler';
 import { DirectoriesReadHandler } from './application/handler/DirectoriesReadHandler';
 import { DirectoriesManageHandler } from './application/handler/DirectoriesManageHandler';
@@ -19,9 +19,9 @@ import { DirectoriesSyncHandler } from './application/handler/DirectoriesSyncHan
 import { DirectorySyncRunsReadHandler } from './application/handler/DirectorySyncRunsReadHandler';
 import { DirectoryEventsReceiveHandler } from './application/handler/DirectoryEventsReceiveHandler';
 import { PgOrganizationRepository } from './infrastructure/persistence/PgOrganizationRepository';
-import { PgJobScheduler } from '../../adapter/database/PgJobScheduler';
-import { SECRET_STORE } from '../../foundation/infrastructure/SecretStore';
-import { KMS_CLIENT } from '../../foundation/application/KmsPort';
+import { PgJobScheduler } from '../../platform/database/PgJobScheduler';
+import { SECRET_STORE } from '../../platform/secret/SecretStore';
+import { KMS_CLIENT } from '../../pipeline/KmsPort';
 import { DirectoryProviderRegistry } from './application/service/DirectoryProviderRegistry';
 import { WecomDirectoryClient } from './infrastructure/adapter/wecom/WecomDirectoryClient';
 import { WecomDirectoryProvider } from './infrastructure/adapter/wecom/WecomDirectoryProvider';

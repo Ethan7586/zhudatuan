@@ -1,0 +1,137 @@
+.headerpopup {
+  position: absolute;
+  top: calc(100% + var(--sw-space-1));
+  right: 0;
+  z-index: var(--sw-layer-popover);
+  display: grid;
+  width: 230px;
+  gap: var(--sw-space-1);
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  color: var(--sw-text);
+  padding: var(--sw-space-1-5);
+  box-shadow: var(--sw-shadow-overlay);
+  font-size: var(--sw-font-size-caption);
+}
+.headerpopup span,
+.headerpopup p {
+  margin: 0;
+  color: var(--sw-muted);
+}
+.headerpopup button {
+  min-height: var(--sw-control-touch-target);
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface-subtle);
+}
+.headerpopup em {
+  color: var(--sw-danger-strong);
+  font-style: normal;
+}
+.globaltaskcenter {
+  width: min(25rem, calc(100vw - var(--sw-space-4)));
+  gap: var(--sw-space-1-5);
+}
+.globaltaskcenter > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-1-5);
+}
+.globaltaskcenter > header div {
+  display: grid;
+  gap: var(--sw-space-0-5);
+}
+.globaltaskcenter > header button {
+  min-height: var(--sw-control-touch-target);
+  padding: 0 var(--sw-space-1);
+}
+.globaltaskcenter ul {
+  display: grid;
+  max-height: 21rem;
+  gap: var(--sw-space-0-5);
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.globaltaskcenter li > button {
+  display: grid;
+  width: 100%;
+  min-height: var(--sw-control-height-lg);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sw-control-gap-lg);
+  border-color: transparent;
+  background: transparent;
+  padding: var(--sw-space-1);
+  text-align: left;
+}
+.globaltaskcenter li > button:hover {
+  border-color: var(--sw-border);
+  background: var(--sw-surface-subtle);
+}
+.globaltaskcenter li span {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+}
+.globaltaskcenter .taskcentertitle {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-1);
+}
+.globaltaskcenter .taskcentertitle small {
+  flex: none;
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-hover);
+  padding: var(--sw-space-0-5) var(--sw-space-1);
+  font-weight: var(--sw-font-weight-semibold);
+}
+.globaltaskcenter .taskcentertitle small[data-category='issuance'],
+.globaltaskcenter .taskcentertitle small[data-category='reconciliation'] {
+  background: var(--sw-warning-soft);
+  color: var(--sw-warning-strong);
+}
+.globaltaskcenter .taskcentermeta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+}
+.globaltaskcenter .taskcentermeta small:last-child {
+  color: var(--sw-brand-hover);
+  font-weight: var(--sw-font-weight-semibold);
+}
+.globaltaskcenter progress {
+  width: 100%;
+  height: var(--sw-space-0-5);
+  border: 0;
+  border-radius: var(--sw-radius-full);
+  accent-color: var(--sw-brand);
+}
+.globaltaskcenter li strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.globaltaskcenter li small {
+  color: var(--sw-muted);
+}
+.globaltaskcenter li i {
+  width: var(--sw-space-1);
+  height: var(--sw-space-1);
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-warning);
+}
+.globaltaskcenter li i[data-state='failed'] {
+  background: var(--sw-danger-strong);
+}
+.globaltaskcenter .taskcenterlink {
+  width: 100%;
+  border-color: color-mix(in srgb, var(--sw-brand) 25%, var(--sw-border));
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-hover);
+  font-weight: var(--sw-font-weight-bold);
+}

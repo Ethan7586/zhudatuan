@@ -1,9 +1,9 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { CATALOG_INVENTORY_PORT, CHECKOUT_INVENTORY_PORT, INVENTORY_READ_PORT, ORDER_EXPIRY_INVENTORY_PORT, PAYMENT_INVENTORY_PORT, PROVIDER_INVENTORY_PORT } from './public';
 
 export const Manifest = defineModuleManifest({
   id: 'inventory',
-  dependencies: ['runtime'],
+  dependencies: ['approval', 'runtime'],
   services: ['database.pool', 'audit.sink', 'object.store'],
   ports: [CHECKOUT_INVENTORY_PORT, PAYMENT_INVENTORY_PORT, CATALOG_INVENTORY_PORT, INVENTORY_READ_PORT],
   workloads: {

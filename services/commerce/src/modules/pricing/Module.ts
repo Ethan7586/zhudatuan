@@ -1,5 +1,5 @@
-import { defineModule } from '../../bootstrap/DefinedModule';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
+import { defineModule } from '../../composition/DefinedModule';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
 import { Manifest } from './Manifest';
 import { PricingPort } from './infrastructure/persistence/PricingPort';
 import { CART_PRICING_PORT, CATALOG_PRICE_COMMAND_PORT, CATALOG_PRICING_PORT, CHECKOUT_PRICING_PORT, PROVIDER_PRICING_PORT, RUNTIME_PRICING_PORT } from './public/index';

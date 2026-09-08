@@ -11,12 +11,25 @@ describe('PgCheckoutSessionStore', () => {
     const query = vi.fn(async (sql: string, values: readonly unknown[] = []) => {
       calls.push([sql, values]);
       if (sql.includes('insert into checkout.session')) return result([{ checkoutId: 'checkout:one', quoteId: 'quote:one', signature: 'a'.repeat(64), expiresAt: future(), quoteVersion: 0 }]);
-      if (sql.includes('from checkout.session session where')) return result([{ checkout: 'checkout:one', cartId: 'cart:one', memberId: 'member:one', mallId: 'mall:one', applicationId: 'app:one', quoteId: 'quote:one', quoteHash: 'a'.repeat(64), expiresAt: future(), input: {}, version: 0 }]);
+      if (sql.includes('from checkout.session session where'))
+        return result([{ checkout: 'checkout:one', cartId: 'cart:one', memberId: 'member:one', mallId: 'mall:one', applicationId: 'app:one', quoteId: 'quote:one', quoteHash: 'a'.repeat(64), expiresAt: future(), input: {}, version: 0 }]);
       return result([]);
     });
     await withWriteTransaction(query, async (context) => {
       const store = new PgCheckoutSessionStore();
-      await store.replaceCurrent(context, { checkoutId: 'checkout:one', quoteId: 'quote:one', signature: 'c'.repeat(64), confirmationDigest: digest, cartId: 'cart:one', memberId: 'member:one', mallId: 'mall:one', applicationId: 'app:one', addressId: null, selection: {}, expiresAt: future() });
+      await store.replaceCurrent(context, {
+        checkoutId: 'checkout:one',
+        quoteId: 'quote:one',
+        signature: 'c'.repeat(64),
+        confirmationDigest: digest,
+        cartId: 'cart:one',
+        memberId: 'member:one',
+        mallId: 'mall:one',
+        applicationId: 'app:one',
+        addressId: null,
+        selection: {},
+        expiresAt: future(),
+      });
       await store.lockQuote(context, 'quote:one', 'member:one', 'mall:one', digest);
     });
     const inserted = calls.find(([sql]) => String(sql).includes('insert into checkout.session'))!;
@@ -29,7 +42,7 @@ describe('PgCheckoutSessionStore', () => {
 
   it('allows only one quoted-to-confirmed transition', async () => {
     let confirmations = 0;
-    const query = vi.fn(async (sql: string) => sql.includes("set state='confirmed'") && confirmations++ === 0 ? result([{ id: 'checkout:one' }]) : result([]));
+    const query = vi.fn(async (sql: string) => (sql.includes("set state='confirmed'") && confirmations++ === 0 ? result([{ id: 'checkout:one' }]) : result([])));
     await withWriteTransaction(query, async (context) => {
       const store = new PgCheckoutSessionStore();
       await store.confirm(context, 'checkout:one');

@@ -1,4 +1,4 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import { publicPort } from '../../../composition/ModuleRegistry';
 import type { MarketingReadPort } from './MarketingReadPort';
 import type { MarketingReservePort } from './MarketingReservePort';
 

@@ -14,9 +14,14 @@ describe('PgEventReplayPort', () => {
       return result([event('event:one', '11-0'), event('event:overflow', '12-0')]);
     });
 
-    const page = await withReadTransaction(query, (context) => new PgEventReplayPort().after(context, {
-      cursor: '10-0', scopes: ['mall:one'], prefix: 'support.', limit: 1,
-    }));
+    const page = await withReadTransaction(query, (context) =>
+      new PgEventReplayPort().after(context, {
+        cursor: '10-0',
+        scopes: ['mall:one'],
+        prefix: 'support.',
+        limit: 1,
+      })
+    );
 
     expect(page).toMatchObject({ resumeCursor: '11-0', overflow: true });
     expect(page?.events).toHaveLength(1);
@@ -25,9 +30,16 @@ describe('PgEventReplayPort', () => {
 
   it('returns null when the cursor is no longer in the authorized scope', async () => {
     const query = vi.fn(async () => result([]));
-    await expect(withReadTransaction(query, (context) => new PgEventReplayPort().after(context, {
-      cursor: '10-0', scopes: ['mall:one'], prefix: 'support.', limit: 100,
-    }))).resolves.toBeNull();
+    await expect(
+      withReadTransaction(query, (context) =>
+        new PgEventReplayPort().after(context, {
+          cursor: '10-0',
+          scopes: ['mall:one'],
+          prefix: 'support.',
+          limit: 100,
+        })
+      )
+    ).resolves.toBeNull();
   });
 
   it('finds only published references through the Runtime owner', async () => {
@@ -36,13 +48,19 @@ describe('PgEventReplayPort', () => {
       expect(sql).not.toContain('support.');
       return result([{ reference: 'message:one' }]);
     });
-    await expect(withReadTransaction(query, (context) => new PgEventReplayPort().publishedReferences(context, {
-      type: 'support.message.sent', field: 'messageId', references: ['message:one'], excluding: null,
-    }))).resolves.toEqual(['message:one']);
+    await expect(
+      withReadTransaction(query, (context) =>
+        new PgEventReplayPort().publishedReferences(context, {
+          type: 'support.message.sent',
+          field: 'messageId',
+          references: ['message:one'],
+          excluding: null,
+        })
+      )
+    ).resolves.toEqual(['message:one']);
   });
 });
 
 function event(id: string, cursor: string) {
-  return { id, event_type: 'support.message.sent', event_version: 1, scope_id: 'mall:one', aggregate_id: 'conversation:one',
-    payload: { messageId: 'message:one' }, occurred_at: '2026-09-06T00:01:00.000Z', realtime_cursor: cursor };
+  return { id, event_type: 'support.message.sent', event_version: 1, scope_id: 'mall:one', aggregate_id: 'conversation:one', payload: { messageId: 'message:one' }, occurred_at: '2026-09-06T00:01:00.000Z', realtime_cursor: cursor };
 }

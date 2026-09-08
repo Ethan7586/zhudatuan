@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { VerificationPort } from '../../public';
 import { VerificationPolicy } from '../../domain/policy/VerificationPolicy';
 

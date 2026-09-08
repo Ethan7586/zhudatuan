@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { defineModule } from '../../composition/DefinedModule';
 import { MEMBER_ACCESS_PORT } from '../access/public';
 import { CART_CATALOG_PORT } from '../catalog/public';
 import { CART_EXPERIENCE_PORT, EXPERIENCE_READ_PORT } from '../experience/public';

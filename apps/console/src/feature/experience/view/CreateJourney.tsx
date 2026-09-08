@@ -131,7 +131,11 @@ export function CreateJourney({ model, onClose }: Readonly<{ model: MallCreation
                 完成二次验证
               </button>
             ) : null}
-            <button type="submit" className="isprimary" disabled={!model.available || model.busy || model.recordPending || model.parentsPending || (model.step === model.lastStep && !model.confirmed)}>
+            <button
+              type="submit"
+              className="isprimary"
+              disabled={!model.available || model.busy || model.recordPending || (model.mode === 'create' && model.step > 0 && model.parentsPending) || (model.step === model.lastStep && !model.confirmed)}
+            >
               {model.busy ? (updating ? '正在保存…' : '正在创建…') : model.step === model.lastStep ? (updating ? '保存商城资料' : '确认创建商城') : '继续'}
             </button>
           </footer>

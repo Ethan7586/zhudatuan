@@ -23,14 +23,17 @@ export class RiskScanJob implements JobProcessor {
       if (payload.event !== 'approval.instance.approved' && payload.event !== 'approval.instance.rejected') throw new Error('RISK_APPROVAL_EVENT_INVALID');
       const facts = record(payload.payload, 'RISK_APPROVAL_EVENT_PAYLOAD_INVALID');
       if (facts.subjectKind !== 'riskaction') return Promise.resolve();
-      return this.actions.approvalEvent({
-        type: payload.event,
-        instance: text(facts.instanceId, 'RISK_APPROVAL_INSTANCE_REQUIRED'),
-        subject: text(facts.subjectId, 'RISK_APPROVAL_SUBJECT_REQUIRED'),
-        subjectVersion: integer(facts.subjectVersion, 'RISK_APPROVAL_SUBJECT_VERSION_REQUIRED'),
-        action: actionKind(facts.action),
-        proof: payload.event === 'approval.instance.approved' ? text(facts.proofId, 'RISK_APPROVAL_PROOF_REQUIRED') : null,
-      }, execution);
+      return this.actions.approvalEvent(
+        {
+          type: payload.event,
+          instance: text(facts.instanceId, 'RISK_APPROVAL_INSTANCE_REQUIRED'),
+          subject: text(facts.subjectId, 'RISK_APPROVAL_SUBJECT_REQUIRED'),
+          subjectVersion: integer(facts.subjectVersion, 'RISK_APPROVAL_SUBJECT_VERSION_REQUIRED'),
+          action: actionKind(facts.action),
+          proof: payload.event === 'approval.instance.approved' ? text(facts.proofId, 'RISK_APPROVAL_PROOF_REQUIRED') : null,
+        },
+        execution
+      );
     }
     if (typeof payload.event === 'string' && payload.event.startsWith('qualification.')) {
       const event = payload.event;

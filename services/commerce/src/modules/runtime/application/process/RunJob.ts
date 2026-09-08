@@ -1,10 +1,10 @@
-import { Deadline } from '../../../../foundation/performance/Deadline';
-import { mapParallel } from '../../../../foundation/performance/Parallel';
-import { retryDelay } from '../../../../foundation/performance/Retry';
-import type { JobMetrics } from '../../../../foundation/telemetry/JobMetrics';
-import { ApplicationError } from '../../../../foundation/domain/ApplicationError';
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
-import type { DeadletterStore } from '../../../../foundation/application/DeadletterStore';
+import { Deadline } from '@shop/kernel';
+import { mapParallel } from '@shop/kernel';
+import { retryDelay } from '@shop/kernel';
+import type { JobMetrics } from '../../../../platform/telemetry/JobMetrics';
+import { ApplicationError } from '../../../../platform/error/ApplicationError';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
+import type { DeadletterStore } from '../../../../pipeline/DeadletterStore';
 import type { ClaimedJob, JobAuthorization, JobDeadletter, JobProcessor, JobQueuePort, JobRunnerConfig } from '../../public/JobProcess';
 
 export class RunJob {
@@ -21,8 +21,8 @@ export class RunJob {
   async execute(kind: string, processor: JobProcessor, signal: AbortSignal): Promise<void> {
     while (!signal.aborted) {
       const jobs = await this.transactions.write(this.options(kind, signal, `claim:${kind}`), (context) =>
-        this.repository.claim(context, { kind, queue: this.config.queue, worker: this.config.worker, batch: this.config.batch,
-          lease: this.config.lease, workload: this.config.workload, concurrency: this.config.concurrency }));
+        this.repository.claim(context, { kind, queue: this.config.queue, worker: this.config.worker, batch: this.config.batch, lease: this.config.lease, workload: this.config.workload, concurrency: this.config.concurrency })
+      );
       if (jobs.length === 0) {
         await delay(this.config.poll, signal);
         continue;
@@ -34,8 +34,9 @@ export class RunJob {
   private async process(job: ClaimedJob, processor: JobProcessor, signal: AbortSignal): Promise<void> {
     const started = performance.now();
     let authorized: boolean;
-    try { authorized = await this.authorize(job); }
-    catch (cause) {
+    try {
+      authorized = await this.authorize(job);
+    } catch (cause) {
       this.metrics?.failure(job, this.config.owner, cause);
       const outcome = await this.fail(job, cause);
       this.metrics?.observe(job, this.config.owner, performance.now() - started, outcome, safeErrorCode(cause));
@@ -65,8 +66,7 @@ export class RunJob {
       await heartbeat;
       if (leaseFailure !== undefined) throw leaseFailure;
       const settlement = new AbortController().signal;
-      await this.transactions.write(this.options(job.scope ?? 'runtime', settlement, `complete:${job.id}`), (context) =>
-        this.repository.complete(context, job, this.config.worker));
+      await this.transactions.write(this.options(job.scope ?? 'runtime', settlement, `complete:${job.id}`), (context) => this.repository.complete(context, job, this.config.worker));
       this.metrics?.observe(job, this.config.owner, performance.now() - started, 'success');
     } catch (cause) {
       heartbeatStop.abort();
@@ -92,15 +92,13 @@ export class RunJob {
       if (job.authorization.kind === 'system') assertSystemAuthorization(job);
       else {
         const signal = new AbortController().signal;
-        await this.transactions.read(this.options(job.scope ?? 'runtime', signal, `authorize:${job.id}`), (context) =>
-          this.authorization.assert(context, job.authorization));
+        await this.transactions.read(this.options(job.scope ?? 'runtime', signal, `authorize:${job.id}`), (context) => this.authorization.assert(context, job.authorization));
       }
       return true;
     } catch (cause) {
       if (safeErrorCode(cause) !== 'AUTHORIZATION_DENIED' && !(cause instanceof Error && cause.message.startsWith('JOB_SYSTEM_AUTHORIZATION_'))) throw cause;
       const signal = new AbortController().signal;
-      await this.transactions.write(this.options(job.scope ?? 'runtime', signal, `reject:${job.id}`), (context) =>
-        this.repository.rejectAuthorization(context, job, this.config.worker));
+      await this.transactions.write(this.options(job.scope ?? 'runtime', signal, `reject:${job.id}`), (context) => this.repository.rejectAuthorization(context, job, this.config.worker));
       return false;
     }
   }
@@ -108,8 +106,7 @@ export class RunJob {
   private async heartbeat(job: ClaimedJob): Promise<boolean> {
     if (!(await this.authorize(job))) return false;
     const signal = new AbortController().signal;
-    return this.transactions.write(this.options(job.scope ?? 'runtime', signal, `heartbeat:${job.id}`), (context) =>
-      this.repository.heartbeat(context, job, this.config.worker, this.config.lease));
+    return this.transactions.write(this.options(job.scope ?? 'runtime', signal, `heartbeat:${job.id}`), (context) => this.repository.heartbeat(context, job, this.config.worker, this.config.lease));
   }
 
   private async monitor(job: ClaimedJob, stop: AbortSignal, failed: (cause: unknown, cancelled: boolean) => void): Promise<void> {
@@ -144,8 +141,7 @@ export class RunJob {
   }
 
   private options(scope: string, signal: AbortSignal, action: string): TransactionOptions {
-    return { tenant: scope, membership: '', scope, actor: this.config.worker, trace: action,
-      operation: `job.runtime.${action}`, workload: 'jobs', signal, deadline: Date.now() + this.config.deadline };
+    return { tenant: scope, membership: '', scope, actor: this.config.worker, trace: action, operation: `job.runtime.${action}`, workload: 'jobs', signal, deadline: Date.now() + this.config.deadline };
   }
 }
 
@@ -154,13 +150,16 @@ function assertSystemAuthorization(job: ClaimedJob): void {
   const text = (field: string) => typeof evidence[field] === 'string' && String(evidence[field]).trim().length > 0;
   const source = evidence.source;
   const captured = typeof evidence.capturedAt === 'string' ? Date.parse(evidence.capturedAt) : Number.NaN;
-  if (!text('actor') || !text('operation') || evidence.scope !== job.scope || !['jobs', 'provider', 'scheduler'].includes(String(source))
-    || !Number.isFinite(captured) || captured > Date.now() + 5_000) throw new Error('JOB_SYSTEM_AUTHORIZATION_INVALID');
+  if (!text('actor') || !text('operation') || evidence.scope !== job.scope || !['jobs', 'provider', 'scheduler'].includes(String(source)) || !Number.isFinite(captured) || captured > Date.now() + 5_000)
+    throw new Error('JOB_SYSTEM_AUTHORIZATION_INVALID');
 }
 
 function permanent(code: string): boolean {
-  return ['AUTHORIZATION_DENIED', 'JOB_SYSTEM_AUTHORIZATION_INVALID', 'JOB_PAYLOAD_INVALID', 'JOB_KIND_INVALID'].includes(code) ||
-    code.endsWith('_SIGNATURE_INVALID') || code.startsWith('CHANNEL_WEBHOOK_') && ['_INVALID', '_REQUIRED', '_MISMATCH'].some((suffix) => code.endsWith(suffix));
+  return (
+    ['AUTHORIZATION_DENIED', 'JOB_SYSTEM_AUTHORIZATION_INVALID', 'JOB_PAYLOAD_INVALID', 'JOB_KIND_INVALID'].includes(code) ||
+    code.endsWith('_SIGNATURE_INVALID') ||
+    (code.startsWith('CHANNEL_WEBHOOK_') && ['_INVALID', '_REQUIRED', '_MISMATCH'].some((suffix) => code.endsWith(suffix)))
+  );
 }
 
 function safeErrorCode(cause: unknown): string {
@@ -173,6 +172,13 @@ function delay(milliseconds: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve) => {
     if (signal.aborted) return resolve();
     const timer = setTimeout(resolve, milliseconds);
-    signal.addEventListener('abort', () => { clearTimeout(timer); resolve(); }, { once: true });
+    signal.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      { once: true }
+    );
   });
 }

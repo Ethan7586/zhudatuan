@@ -1,4 +1,4 @@
-import { resourceId } from '../../../../foundation/application/Validation';
+import { resourceId } from '../../../../pipeline/Validation';
 import type { ClaimedJob, JobProcessor } from '../../../runtime/public/JobProcess';
 import type { InventoryImportProcess } from '../../application/process/InventoryImportProcess';
 

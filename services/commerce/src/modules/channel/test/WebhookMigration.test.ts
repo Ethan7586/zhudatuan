@@ -10,15 +10,14 @@ describe('channel webhook database hard cut', () => {
   it('keeps pre-verification evidence in Receipt and makes terminal transitions immutable', async () => {
     const database = await fixture();
     try {
-      await expect(database.exec(`update channel.webhookreceipt set raw_hash='${'b'.repeat(64)}',version=version+1 where id='webhookreceipt:one'`))
-        .rejects.toThrow('CHANNEL_WEBHOOK_RECEIPT_EVIDENCE_IMMUTABLE');
+      await expect(database.exec(`update channel.webhookreceipt set raw_hash='${'b'.repeat(64)}',version=version+1 where id='webhookreceipt:one'`)).rejects.toThrow('CHANNEL_WEBHOOK_RECEIPT_EVIDENCE_IMMUTABLE');
       await database.exec(`update channel.webhookreceipt set state='verified',verified_at=now(),version=version+1 where id='webhookreceipt:one'`);
-      await expect(database.exec(`update channel.webhookreceipt set state='processing',verified_at=null,version=version+1 where id='webhookreceipt:one'`))
-        .rejects.toThrow('CHANNEL_WEBHOOK_RECEIPT_TRANSITION_INVALID');
+      await expect(database.exec(`update channel.webhookreceipt set state='processing',verified_at=null,version=version+1 where id='webhookreceipt:one'`)).rejects.toThrow('CHANNEL_WEBHOOK_RECEIPT_TRANSITION_INVALID');
       await database.exec(`update channel.webhookinbox set state='applied',processed_at=now(),version=version+1 where id='webhook:one'`);
-      await expect(database.exec(`update channel.webhookinbox set state='processing',processed_at=null,version=version+1 where id='webhook:one'`))
-        .rejects.toThrow('CHANNEL_WEBHOOK_TRANSITION_INVALID');
-    } finally { await database.close(); }
+      await expect(database.exec(`update channel.webhookinbox set state='processing',processed_at=null,version=version+1 where id='webhook:one'`)).rejects.toThrow('CHANNEL_WEBHOOK_TRANSITION_INVALID');
+    } finally {
+      await database.close();
+    }
   });
 
   it('accepts encrypted receipts without inserting an unverified Inbox or bypassing the runtime task port', () => {

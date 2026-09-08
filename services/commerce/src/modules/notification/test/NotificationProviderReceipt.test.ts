@@ -1,6 +1,6 @@
 import { PGlite } from '@electric-sql/pglite';
 import { describe, expect, it } from 'vitest';
-import { PgTransactionAccess } from '../../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../../platform/database/PgTransactionAccess';
 import { result, withWriteTransaction } from '../../../test/TransactionFixture';
 import type { DispatchRecord } from '../application/port/DeliveryRepository';
 import { PgDeliveryRepository } from '../infrastructure/persistence/PgDeliveryRepository';
@@ -15,8 +15,7 @@ describe('notification provider receipt idempotency', () => {
         return { ...result(executed.rows), rowCount: executed.affectedRows ?? executed.rows.length };
       };
       const repository = new PgDeliveryRepository({} as never, {} as never, new PgTransactionAccess());
-      const complete = (dispatch: DispatchRecord) => withWriteTransaction(query,
-        (context) => repository.complete(context, dispatch, { provider: 'email.primary', externalId: 'provider:receipt:one' }, 1));
+      const complete = (dispatch: DispatchRecord) => withWriteTransaction(query, (context) => repository.complete(context, dispatch, { provider: 'email.primary', externalId: 'provider:receipt:one' }, 1));
 
       await complete(dispatch('dispatch:one'));
       await complete(dispatch('dispatch:one'));
@@ -29,7 +28,10 @@ describe('notification provider receipt idempotency', () => {
       );
       expect(counts.rows[0]).toEqual({ receipts: 1, attempts: 1, events: 1 });
       const states = await database.query<{ id: string; state: string }>('select id,state from notification.dispatch order by id');
-      expect(states.rows).toEqual([{ id: 'dispatch:one', state: 'sent' }, { id: 'dispatch:two', state: 'sending' }]);
+      expect(states.rows).toEqual([
+        { id: 'dispatch:one', state: 'sent' },
+        { id: 'dispatch:two', state: 'sending' },
+      ]);
     } finally {
       await database.close();
     }
@@ -38,11 +40,31 @@ describe('notification provider receipt idempotency', () => {
 
 function dispatch(id: string): DispatchRecord {
   return {
-    id, scope_id: 'mall:one', member_id: 'member:one', template_id: 'template:one', channel: 'email',
-    event_type: 'order.paid', template_version: 1, provider_template: null, variable_schema: {}, subject: null, body: '订单已支付',
-    payload: {}, recipient_ciphertext: null, recipient_ref: 'member:one', purpose: 'transactional', mandatory: false,
-    attempt_sequence: 1, max_attempts: 5, preference_enabled: true, authorization_state: 'unknown', consent_source: 'member',
-    quiet_start: null, quiet_end: null, quiet_timezone: null, preference_version: 0,
+    id,
+    scope_id: 'mall:one',
+    member_id: 'member:one',
+    template_id: 'template:one',
+    channel: 'email',
+    event_type: 'order.paid',
+    template_version: 1,
+    provider_template: null,
+    variable_schema: {},
+    subject: null,
+    body: '订单已支付',
+    payload: {},
+    recipient_ciphertext: null,
+    recipient_ref: 'member:one',
+    purpose: 'transactional',
+    mandatory: false,
+    attempt_sequence: 1,
+    max_attempts: 5,
+    preference_enabled: true,
+    authorization_state: 'unknown',
+    consent_source: 'member',
+    quiet_start: null,
+    quiet_end: null,
+    quiet_timezone: null,
+    preference_version: 0,
   };
 }
 

@@ -1,6 +1,6 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { IdentityMemberPort } from '../../public/IdentityMemberPort';
 import type { IdentityRegistrationPort, PendingRegistrationMember, RegistrationMobileOwner } from '../../public/IdentityRegistrationPort';
 import type { MemberAccessPort } from '../../../access/public';
@@ -29,7 +29,7 @@ export class MemberPort implements IdentityMemberPort, IdentityRegistrationPort 
   lockPending(context: WriteTransactionContext, member: string): Promise<PendingRegistrationMember> {
     return this.pendingMember(this.transactions.database(context), member, true);
   }
-  private async pendingMember(database: import('../../../../adapter/database/PgTransactionAccess').SqlExecutor, member: string, lock: boolean): Promise<PendingRegistrationMember> {
+  private async pendingMember(database: import('../../../../platform/database/PgTransactionAccess').SqlExecutor, member: string, lock: boolean): Promise<PendingRegistrationMember> {
     const result = await database.query<
       Readonly<{
         member: string;

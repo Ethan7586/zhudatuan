@@ -1,8 +1,8 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { JsonObject, ProviderCapability } from '@shop/contract';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ChannelJobRepository, ChannelSyncRun } from '../../application/port/ChannelJobRepository';
 import type { ConnectionState } from '../../domain/model/Connection';
 import type { SyncPhase } from '../../domain/model/SyncRun';

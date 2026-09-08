@@ -31,7 +31,7 @@ function text(value: unknown, code: string): string {
 }
 
 function optionalObject(value: unknown): Readonly<Record<string, unknown>> | null {
-  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : null;
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Readonly<Record<string, unknown>>) : null;
 }
 
 function optional(value: unknown): string | null {

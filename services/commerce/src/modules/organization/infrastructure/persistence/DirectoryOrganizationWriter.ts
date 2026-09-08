@@ -1,4 +1,4 @@
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import type { StagedSubject } from '../../application/port/DirectoryRepository';
 import type { DirectoryConnection } from '../../domain/model/DirectoryConnection';
 

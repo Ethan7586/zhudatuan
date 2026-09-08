@@ -1,11 +1,11 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { reject } from '../../../../foundation/application/OperationRejection';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { reject } from '../../../../pipeline/OperationRejection';
 
 import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
 import type { SessionListRecord, SessionRecord, SessionRepository, SessionRevocation } from '../../application/port/SessionRepository';
-import type { QueryPage } from '../../../../foundation/application/Validation';
+import type { QueryPage } from '../../../../pipeline/Validation';
 export class PgSessionRepository implements SessionRepository {
   private readonly transactions = new PgTransactionAccess();
   async credentialVersion(context: WriteTransactionContext, principal: string): Promise<number> {
@@ -28,7 +28,20 @@ export class PgSessionRepository implements SessionRepository {
       `insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,
       ip_hash,user_agent,device_label,assurance_level,expires_at,last_seen_at,created_at)
       values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,clock_timestamp(),clock_timestamp())`,
-      [session.id, session.principal, session.membership, value.tokenFamily.current.hash, session.credentialVersion, session.accessVersion, session.target, value.ipHash, value.userAgent, value.deviceLabel, session.assurance, session.expiresAt]
+      [
+        session.id,
+        session.principal,
+        session.membership,
+        value.tokenFamily.current.hash,
+        session.credentialVersion,
+        session.accessVersion,
+        session.target,
+        value.ipHash,
+        value.userAgent,
+        value.deviceLabel,
+        session.assurance,
+        session.expiresAt,
+      ]
     );
     await database.query(
       `insert into identity.refreshtoken(id,family_id,session_id,parent_id,token_hash,sequence,issued_at)
@@ -45,15 +58,15 @@ export class PgSessionRepository implements SessionRepository {
       trace: value.trace,
     });
   }
-  async revokeCurrent(context: WriteTransactionContext, principal: string, session: string): Promise<SessionRevocation | null> {
+  async revokeCurrent(context: WriteTransactionContext, principal: string, session: string, reason: 'logout' | 'membership_switch' | 'store_handover' = 'logout'): Promise<SessionRevocation | null> {
     const database = this.transactions.database(context);
     const result = await database.query<{
       id: string;
       revoked_at: Date;
     }>(
-      `update identity.session set revoked_at=clock_timestamp(),
-      revoked_reason='logout' where id=$1 and principal_id=$2 and revoked_at is null returning id,revoked_at`,
-      [session, principal]
+      `update identity.session set revoked_at=clock_timestamp(),revoked_reason=$3
+      where id=$1 and principal_id=$2 and revoked_at is null returning id,revoked_at`,
+      [session, principal, reason]
     );
     const row = result.rows[0];
     return row ? Object.freeze({ id: row.id, revokedAt: row.revoked_at }) : null;

@@ -1,5 +1,5 @@
 import { Currency } from '@shop/kernel';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { AccountCode, type AccountKind } from '../value/AccountCode';
 
 export type AccountState = 'active' | 'closed';

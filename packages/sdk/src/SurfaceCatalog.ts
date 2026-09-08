@@ -96,6 +96,8 @@ export const SURFACE_OPERATION_IDS = Object.freeze({
     "identity.tickets.exchange",
     "identity.session.read",
     "identity.session.delete",
+    "identity.handovers.read",
+    "identity.handovers.create",
     "identity.sessions.read",
     "identity.sessions.revoke",
     "identity.memberships.read",
@@ -181,6 +183,8 @@ export const SURFACE_OPERATION_IDS = Object.freeze({
     "pricing.rules.publish",
     "pricing.offers.read",
     "inventory.availability.read",
+    "inventory.adjustments.read",
+    "inventory.adjustments.create",
     "inventory.imports.create",
     "inventory.imports.read",
     "marketing.campaigns.read",
@@ -217,6 +221,9 @@ export const SURFACE_OPERATION_IDS = Object.freeze({
     "order.aftersales.read",
     "order.aftersales.approve",
     "order.aftersales.reject",
+    "fulfillment.workitems.read",
+    "fulfillment.workitems.transition",
+    "fulfillment.returns.read",
     "fulfillment.shipments.create",
     "fulfillment.returns.receive",
     "fulfillment.returns.inspect",
@@ -609,6 +616,8 @@ export const SURFACE_OPERATION_IDS = Object.freeze({
     "identity.tickets.exchange",
     "identity.session.read",
     "identity.session.delete",
+    "identity.handovers.read",
+    "identity.handovers.create",
     "identity.sessions.read",
     "identity.sessions.revoke",
     "identity.memberships.read",
@@ -631,12 +640,17 @@ export const SURFACE_OPERATION_IDS = Object.freeze({
     "member.profile.read",
     "pricing.offers.read",
     "inventory.availability.read",
+    "inventory.adjustments.read",
+    "inventory.adjustments.create",
     "experience.published.read",
     "order.orders.cancel",
     "order.orders.read",
     "order.detail.read",
     "order.reminders.create",
     "order.aftersales.read",
+    "fulfillment.workitems.read",
+    "fulfillment.workitems.transition",
+    "fulfillment.returns.read",
     "fulfillment.shipments.create",
     "fulfillment.returns.receive",
     "fulfillment.returns.inspect",
@@ -690,6 +704,7 @@ export const SURFACE_OPERATION_IDS = Object.freeze({
     "order.orders.receive"
   ],
   "supplier": [
+    "runtime.uploads.create",
     "identity.sessions.create",
     "identity.sessions.complete",
     "identity.tickets.exchange",
@@ -719,18 +734,11 @@ export const SURFACE_OPERATION_IDS = Object.freeze({
     "catalog.product.detail.read",
     "catalog.products.create",
     "catalog.products.update",
-    "catalog.products.archive",
     "catalog.listings.read",
     "catalog.facets.read",
-    "catalog.listings.publish",
     "catalog.listings.price.set",
-    "catalog.listings.pool.set",
-    "catalog.listings.unpublish",
-    "catalog.listings.batch",
     "catalog.imports.create",
     "catalog.imports.read",
-    "pricing.rules.create",
-    "pricing.rules.publish",
     "pricing.offers.read",
     "inventory.availability.read",
     "inventory.imports.create",
@@ -741,6 +749,9 @@ export const SURFACE_OPERATION_IDS = Object.freeze({
     "order.detail.read",
     "order.reminders.create",
     "order.aftersales.read",
+    "fulfillment.workitems.read",
+    "fulfillment.workitems.transition",
+    "fulfillment.returns.read",
     "fulfillment.shipments.create",
     "fulfillment.returns.receive",
     "fulfillment.returns.inspect",
@@ -971,6 +982,14 @@ const SURFACE_METHODS = Object.freeze({
     {
       "domain": "identity",
       "method": "sessionDelete"
+    },
+    {
+      "domain": "identity",
+      "method": "handoversRead"
+    },
+    {
+      "domain": "identity",
+      "method": "handoversCreate"
     },
     {
       "domain": "identity",
@@ -1314,6 +1333,14 @@ const SURFACE_METHODS = Object.freeze({
     },
     {
       "domain": "inventory",
+      "method": "adjustmentsRead"
+    },
+    {
+      "domain": "inventory",
+      "method": "adjustmentsCreate"
+    },
+    {
+      "domain": "inventory",
       "method": "importsCreate"
     },
     {
@@ -1455,6 +1482,18 @@ const SURFACE_METHODS = Object.freeze({
     {
       "domain": "order",
       "method": "aftersalesReject"
+    },
+    {
+      "domain": "fulfillment",
+      "method": "workitemsRead"
+    },
+    {
+      "domain": "fulfillment",
+      "method": "workitemsTransition"
+    },
+    {
+      "domain": "fulfillment",
+      "method": "returnsRead"
     },
     {
       "domain": "fulfillment",
@@ -3008,6 +3047,14 @@ const SURFACE_METHODS = Object.freeze({
     },
     {
       "domain": "identity",
+      "method": "handoversRead"
+    },
+    {
+      "domain": "identity",
+      "method": "handoversCreate"
+    },
+    {
+      "domain": "identity",
       "method": "sessionsRead"
     },
     {
@@ -3095,6 +3142,14 @@ const SURFACE_METHODS = Object.freeze({
       "method": "availabilityRead"
     },
     {
+      "domain": "inventory",
+      "method": "adjustmentsRead"
+    },
+    {
+      "domain": "inventory",
+      "method": "adjustmentsCreate"
+    },
+    {
       "domain": "experience",
       "method": "publishedRead"
     },
@@ -3117,6 +3172,18 @@ const SURFACE_METHODS = Object.freeze({
     {
       "domain": "order",
       "method": "aftersalesRead"
+    },
+    {
+      "domain": "fulfillment",
+      "method": "workitemsRead"
+    },
+    {
+      "domain": "fulfillment",
+      "method": "workitemsTransition"
+    },
+    {
+      "domain": "fulfillment",
+      "method": "returnsRead"
     },
     {
       "domain": "fulfillment",
@@ -3325,6 +3392,10 @@ const SURFACE_METHODS = Object.freeze({
   ],
   "supplier": [
     {
+      "domain": "runtime",
+      "method": "uploadsCreate"
+    },
+    {
       "domain": "identity",
       "method": "sessionsCreate"
     },
@@ -3442,10 +3513,6 @@ const SURFACE_METHODS = Object.freeze({
     },
     {
       "domain": "catalog",
-      "method": "productsArchive"
-    },
-    {
-      "domain": "catalog",
       "method": "listingsRead"
     },
     {
@@ -3454,23 +3521,7 @@ const SURFACE_METHODS = Object.freeze({
     },
     {
       "domain": "catalog",
-      "method": "listingsPublish"
-    },
-    {
-      "domain": "catalog",
       "method": "listingsPriceSet"
-    },
-    {
-      "domain": "catalog",
-      "method": "listingsPoolSet"
-    },
-    {
-      "domain": "catalog",
-      "method": "listingsUnpublish"
-    },
-    {
-      "domain": "catalog",
-      "method": "listingsBatch"
     },
     {
       "domain": "catalog",
@@ -3479,14 +3530,6 @@ const SURFACE_METHODS = Object.freeze({
     {
       "domain": "catalog",
       "method": "importsRead"
-    },
-    {
-      "domain": "pricing",
-      "method": "rulesCreate"
-    },
-    {
-      "domain": "pricing",
-      "method": "rulesPublish"
     },
     {
       "domain": "pricing",
@@ -3527,6 +3570,18 @@ const SURFACE_METHODS = Object.freeze({
     {
       "domain": "order",
       "method": "aftersalesRead"
+    },
+    {
+      "domain": "fulfillment",
+      "method": "workitemsRead"
+    },
+    {
+      "domain": "fulfillment",
+      "method": "workitemsTransition"
+    },
+    {
+      "domain": "fulfillment",
+      "method": "returnsRead"
     },
     {
       "domain": "fulfillment",
@@ -3718,7 +3773,7 @@ export interface AuthSurfaceClient {
 
 export interface ConsoleSurfaceClient {
   readonly runtime: Pick<CommerceClient["runtime"], "healthDependency" | "jobsRead" | "jobsCancel" | "uploadsCreate" | "importsCreate" | "importsRead" | "importsConfirm" | "importsRetry" | "exportsRead" | "exportsCancel">;
-  readonly identity: Pick<CommerceClient["identity"], "sessionsCreate" | "sessionsComplete" | "ticketsExchange" | "sessionRead" | "sessionDelete" | "sessionsRead" | "sessionsRevoke" | "membershipsRead" | "membershipsSwitch" | "challengesCreate" | "mobileChallengesCreate" | "invitationsResolve" | "invitationsRead" | "invitationsCreate" | "invitationsRevoke" | "enrollmentsRead" | "enrollmentsComplete" | "membersManage" | "passwordChange" | "passwordVerify" | "passwordReset" | "mobileManage" | "stepupStart" | "stepupComplete" | "stepupDisable" | "bootstrapRead" | "providersRead" | "federationsStart" | "federationsCallback" | "federationsSelectionRead" | "federationsComplete" | "linksRead" | "linksCreate" | "linksRevoke" | "providersCenterRead" | "providersManage" | "providersTest">;
+  readonly identity: Pick<CommerceClient["identity"], "sessionsCreate" | "sessionsComplete" | "ticketsExchange" | "sessionRead" | "sessionDelete" | "handoversRead" | "handoversCreate" | "sessionsRead" | "sessionsRevoke" | "membershipsRead" | "membershipsSwitch" | "challengesCreate" | "mobileChallengesCreate" | "invitationsResolve" | "invitationsRead" | "invitationsCreate" | "invitationsRevoke" | "enrollmentsRead" | "enrollmentsComplete" | "membersManage" | "passwordChange" | "passwordVerify" | "passwordReset" | "mobileManage" | "stepupStart" | "stepupComplete" | "stepupDisable" | "bootstrapRead" | "providersRead" | "federationsStart" | "federationsCallback" | "federationsSelectionRead" | "federationsComplete" | "linksRead" | "linksCreate" | "linksRevoke" | "providersCenterRead" | "providersManage" | "providersTest">;
   readonly organization: Pick<CommerceClient["organization"], "layersRead" | "mallsCreate" | "mallsRead" | "mallsUpdate" | "storesRead" | "storesManage" | "directoriesRead" | "directoriesManage" | "directoriesSync" | "directoriesSyncrunsRead">;
   readonly access: Pick<CommerceClient["access"], "centerRead" | "ownershipRead" | "ownershipTransfersPreview" | "ownershipTransfersCreate" | "ownershipTransfersAcceptPreview" | "ownershipTransfersAccept" | "ownershipTransfersCancelPreview" | "ownershipTransfersCancel" | "rolesManage" | "overridesManage" | "scopesManage">;
   readonly capability: Pick<CommerceClient["capability"], "assignmentsRead" | "assignmentsManage">;
@@ -3728,12 +3783,12 @@ export interface ConsoleSurfaceClient {
   readonly channel: Pick<CommerceClient["channel"], "distributorsCreate" | "distributorsRead" | "distributorsUpdate" | "distributorsDisable" | "bindingsManage" | "quotasManage" | "connectionsRead" | "connectionsCreate" | "connectionsUpdate" | "connectionsTest" | "connectionsEnable" | "connectionsDisable" | "syncrunsStart" | "syncrunsRead" | "syncrunsCancel" | "operationsRead" | "operationsReplay">;
   readonly catalog: Pick<CommerceClient["catalog"], "poolsRead" | "poolsAttach" | "poolsDetach" | "poolsAllocate" | "productDetailRead" | "productsCreate" | "productsUpdate" | "productsArchive" | "listingsRead" | "facetsRead" | "listingsPublish" | "listingsPriceSet" | "listingsPoolSet" | "listingsUnpublish" | "listingsBatch" | "importsCreate" | "importsRead">;
   readonly pricing: Pick<CommerceClient["pricing"], "rulesCreate" | "rulesPublish" | "offersRead">;
-  readonly inventory: Pick<CommerceClient["inventory"], "availabilityRead" | "importsCreate" | "importsRead">;
+  readonly inventory: Pick<CommerceClient["inventory"], "availabilityRead" | "adjustmentsRead" | "adjustmentsCreate" | "importsCreate" | "importsRead">;
   readonly marketing: Pick<CommerceClient["marketing"], "campaignsRead" | "campaignsCreate" | "campaignsRevise" | "campaignsPublish" | "campaignsDisable">;
   readonly reporting: Pick<CommerceClient["reporting"], "dashboardRead" | "salesRead" | "productsRead" | "mallsRead" | "categoriesRead" | "channelsRead" | "voucherconsumptionRead" | "exportsCreate" | "exportsRead">;
   readonly experience: Pick<CommerceClient["experience"], "applicationsCreate" | "applicationsCopy" | "applicationsDetailRead" | "applicationsRead" | "applicationsUpdate" | "versionsSave" | "versionsValidate" | "versionsPublish" | "versionsRestore" | "publishedRead">;
   readonly order: Pick<CommerceClient["order"], "ordersCancel" | "ordersRead" | "detailRead" | "remindersCreate" | "ordersExport" | "importsCreate" | "importsRead" | "aftersalesRead" | "aftersalesApprove" | "aftersalesReject" | "ordersReceive">;
-  readonly fulfillment: Pick<CommerceClient["fulfillment"], "shipmentsCreate" | "returnsReceive" | "returnsInspect">;
+  readonly fulfillment: Pick<CommerceClient["fulfillment"], "workitemsRead" | "workitemsTransition" | "returnsRead" | "shipmentsCreate" | "returnsReceive" | "returnsInspect">;
   readonly verification: Pick<CommerceClient["verification"], "challengesIssue" | "challengesVerify" | "historyRead" | "devicesRead" | "devicesManage">;
   readonly payment: Pick<CommerceClient["payment"], "refundsRequest" | "recoveriesRead" | "recoveriesResolve">;
   readonly voucher: Pick<CommerceClient["voucher"], "productsCreate" | "productsRevise" | "productsEnable" | "productsDisable" | "productsGet" | "productsList" | "productoptionsList" | "credentialpoolsCreate" | "credentialsGenerate" | "credentialsImport" | "credentialpoolsClose" | "credentialpoolsGet" | "credentialpoolsList" | "credentialsList" | "credentialsGet" | "credentialexportsCreate" | "jobsGet" | "stockrequestsCreate" | "stockrequestsUpdate" | "stockrequestsSubmit" | "stockrequestsCancel" | "stockrequestsGet" | "stockrequestsList" | "stockrequestoptionsList" | "issueordersCreate" | "issueordersUpdate" | "issueordersSubmit" | "issueordersCancel" | "issueordersGet" | "issueordersList" | "issuebatchesRetry" | "issuebatchesGet" | "issueorderexportsCreate" | "actionbatchesCreate" | "actionbatchesGet" | "actionbatchesList" | "actionbatchesRetry" | "actionexportsCreate" | "searchRead" | "activationsSecret" | "activationsNumbersecret" | "vouchersBind" | "vouchersUnbind" | "vouchersGet" | "vouchersGetbynumber" | "vouchersTimeline" | "redemptionsQuote" | "tenderholdsCreate" | "tenderholdsConsume" | "tenderholdsRelease" | "redemptionsCreate" | "refundsCreate" | "redemptionsGet" | "searchfacetsRead" | "searchsnapshotsCreate" | "searchexportsCreate" | "exportsGet">;
@@ -3798,15 +3853,15 @@ export interface MiniappSurfaceClient {
 }
 
 export interface StoreSurfaceClient {
-  readonly identity: Pick<CommerceClient["identity"], "sessionsCreate" | "sessionsComplete" | "ticketsExchange" | "sessionRead" | "sessionDelete" | "sessionsRead" | "sessionsRevoke" | "membershipsRead" | "membershipsSwitch" | "challengesCreate" | "mobileChallengesCreate" | "invitationsResolve" | "enrollmentsRead" | "enrollmentsComplete" | "passwordChange" | "passwordVerify" | "passwordReset" | "mobileManage" | "stepupStart" | "stepupComplete" | "stepupDisable" | "bootstrapRead" | "providersRead" | "federationsStart" | "federationsCallback" | "federationsSelectionRead" | "federationsComplete" | "linksRead" | "linksCreate" | "linksRevoke">;
+  readonly identity: Pick<CommerceClient["identity"], "sessionsCreate" | "sessionsComplete" | "ticketsExchange" | "sessionRead" | "sessionDelete" | "handoversRead" | "handoversCreate" | "sessionsRead" | "sessionsRevoke" | "membershipsRead" | "membershipsSwitch" | "challengesCreate" | "mobileChallengesCreate" | "invitationsResolve" | "enrollmentsRead" | "enrollmentsComplete" | "passwordChange" | "passwordVerify" | "passwordReset" | "mobileManage" | "stepupStart" | "stepupComplete" | "stepupDisable" | "bootstrapRead" | "providersRead" | "federationsStart" | "federationsCallback" | "federationsSelectionRead" | "federationsComplete" | "linksRead" | "linksCreate" | "linksRevoke">;
   readonly organization: Pick<CommerceClient["organization"], "layersRead" | "storesRead">;
   readonly capability: Pick<CommerceClient["capability"], "assignmentsRead">;
   readonly member: Pick<CommerceClient["member"], "profileRead">;
   readonly pricing: Pick<CommerceClient["pricing"], "offersRead">;
-  readonly inventory: Pick<CommerceClient["inventory"], "availabilityRead">;
+  readonly inventory: Pick<CommerceClient["inventory"], "availabilityRead" | "adjustmentsRead" | "adjustmentsCreate">;
   readonly experience: Pick<CommerceClient["experience"], "publishedRead">;
   readonly order: Pick<CommerceClient["order"], "ordersCancel" | "ordersRead" | "detailRead" | "remindersCreate" | "aftersalesRead" | "ordersReceive">;
-  readonly fulfillment: Pick<CommerceClient["fulfillment"], "shipmentsCreate" | "returnsReceive" | "returnsInspect">;
+  readonly fulfillment: Pick<CommerceClient["fulfillment"], "workitemsRead" | "workitemsTransition" | "returnsRead" | "shipmentsCreate" | "returnsReceive" | "returnsInspect">;
   readonly verification: Pick<CommerceClient["verification"], "challengesIssue" | "challengesVerify" | "historyRead" | "devicesRead" | "devicesManage">;
   readonly payment: Pick<CommerceClient["payment"], "refundsRequest" | "recoveriesRead" | "recoveriesResolve">;
   readonly voucher: Pick<CommerceClient["voucher"], "searchRead" | "activationsSecret" | "activationsNumbersecret" | "vouchersBind" | "vouchersUnbind" | "vouchersGet" | "vouchersGetbynumber" | "vouchersTimeline" | "redemptionsQuote" | "tenderholdsCreate" | "tenderholdsConsume" | "tenderholdsRelease" | "redemptionsCreate" | "refundsCreate" | "redemptionsGet">;
@@ -3816,17 +3871,18 @@ export interface StoreSurfaceClient {
 }
 
 export interface SupplierSurfaceClient {
+  readonly runtime: Pick<CommerceClient["runtime"], "uploadsCreate">;
   readonly identity: Pick<CommerceClient["identity"], "sessionsCreate" | "sessionsComplete" | "ticketsExchange" | "sessionRead" | "sessionDelete" | "sessionsRead" | "sessionsRevoke" | "membershipsRead" | "membershipsSwitch" | "challengesCreate" | "mobileChallengesCreate" | "invitationsResolve" | "enrollmentsRead" | "enrollmentsComplete" | "passwordChange" | "passwordVerify" | "passwordReset" | "mobileManage" | "stepupStart" | "stepupComplete" | "stepupDisable" | "bootstrapRead" | "providersRead" | "federationsStart" | "federationsCallback" | "federationsSelectionRead" | "federationsComplete" | "linksRead" | "linksCreate" | "linksRevoke">;
   readonly organization: Pick<CommerceClient["organization"], "layersRead">;
   readonly capability: Pick<CommerceClient["capability"], "assignmentsRead">;
   readonly partner: Pick<CommerceClient["partner"], "partnersRead">;
   readonly member: Pick<CommerceClient["member"], "profileRead">;
-  readonly catalog: Pick<CommerceClient["catalog"], "poolsRead" | "productDetailRead" | "productsCreate" | "productsUpdate" | "productsArchive" | "listingsRead" | "facetsRead" | "listingsPublish" | "listingsPriceSet" | "listingsPoolSet" | "listingsUnpublish" | "listingsBatch" | "importsCreate" | "importsRead">;
-  readonly pricing: Pick<CommerceClient["pricing"], "rulesCreate" | "rulesPublish" | "offersRead">;
+  readonly catalog: Pick<CommerceClient["catalog"], "poolsRead" | "productDetailRead" | "productsCreate" | "productsUpdate" | "listingsRead" | "facetsRead" | "listingsPriceSet" | "importsCreate" | "importsRead">;
+  readonly pricing: Pick<CommerceClient["pricing"], "offersRead">;
   readonly inventory: Pick<CommerceClient["inventory"], "availabilityRead" | "importsCreate" | "importsRead">;
   readonly experience: Pick<CommerceClient["experience"], "publishedRead">;
   readonly order: Pick<CommerceClient["order"], "ordersCancel" | "ordersRead" | "detailRead" | "remindersCreate" | "aftersalesRead" | "ordersReceive">;
-  readonly fulfillment: Pick<CommerceClient["fulfillment"], "shipmentsCreate" | "returnsReceive" | "returnsInspect">;
+  readonly fulfillment: Pick<CommerceClient["fulfillment"], "workitemsRead" | "workitemsTransition" | "returnsRead" | "shipmentsCreate" | "returnsReceive" | "returnsInspect">;
   readonly voucher: Pick<CommerceClient["voucher"], "searchRead" | "activationsSecret" | "activationsNumbersecret" | "vouchersGet" | "vouchersTimeline" | "redemptionsGet">;
   readonly finance: Pick<CommerceClient["finance"], "overviewRead" | "entriesRead" | "statementsRead" | "statementsExport" | "reconciliationsRead" | "settlementsRead">;
   readonly invoice: Pick<CommerceClient["invoice"], "requestsRead">;

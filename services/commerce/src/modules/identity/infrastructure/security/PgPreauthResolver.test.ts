@@ -30,7 +30,20 @@ describe('PgPreauthResolver', () => {
   it('rejects malformed cookies before database access', async () => {
     const query = vi.fn();
     const resolver = new PgPreauthResolver({ query } as never, new FederationProtector('p'.repeat(32)));
-    await expect(resolver.resolve({ cookie: '__Host-preauth=short', 'x-client-target': 'console' }, OperationCatalog.get('identity.federations.complete'))).rejects.toThrow('AUTHENTICATION_REQUIRED');
+    await expect(resolver.resolve({ cookie: '__Host-preauth=short', 'x-client-target': 'console' }, OperationCatalog.get('identity.federations.complete'))).rejects.toThrow('FEDERATION_TRANSACTION_INVALID');
     expect(query).not.toHaveBeenCalled();
+  });
+
+  it('uses the declared enrollment preauth errors for missing and expired proofs', async () => {
+    const operation = OperationCatalog.get('identity.enrollments.read');
+    const missing = new PgPreauthResolver({ query: vi.fn() } as never, new FederationProtector('p'.repeat(32)));
+    await expect(missing.resolve({ 'x-client-target': 'storefront' }, operation)).rejects.toThrow('PREAUTH_REQUIRED');
+
+    const query = vi.fn(async () => ({
+      rows: [{ id: 'preauth:expired', purpose: 'enrollment', target: 'storefront', principal_id: null, reference_id: 'enrollment:1', version: 1, expires_at: new Date(0) }],
+      rowCount: 1,
+    }));
+    const expired = new PgPreauthResolver({ query } as never, new FederationProtector('p'.repeat(32)));
+    await expect(expired.resolve({ cookie: `__Host-preauth=${'a'.repeat(64)}`, 'x-client-target': 'storefront' }, operation)).rejects.toThrow('PREAUTH_EXPIRED');
   });
 });

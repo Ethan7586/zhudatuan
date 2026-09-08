@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import { prepareProducts } from './ProductImportPreflight';
 
 describe('product import preflight', () => {
@@ -8,10 +8,29 @@ describe('product import preflight', () => {
     const partners = { scopes: vi.fn(async () => new Map([['partner:one', 'supplier:one']])) };
     const qualifications = { decisions: vi.fn(async (_context, _scope, subjects) => subjects.map((subject: { listing: string }) => ({ listing: subject.listing, eligible: true, policyVersion: 7 }))) };
 
-    const prepared = await prepareProducts(database, {} as never, 'mall:one', [{ row: 2, value: {
-      spu: ' MEAL-1 ', title: ' 早餐 ', sku: ' meal-1-red ', category: 'FOOD', supplier: 'partner:one', type: 'physical',
-      images: '["https://assets.example/meal.webp"]', attributes: '{"color":"red"}', specifications: '{"size":"S"}',
-    } }], partners as never, qualifications as never);
+    const prepared = await prepareProducts(
+      database,
+      {} as never,
+      'mall:one',
+      [
+        {
+          row: 2,
+          value: {
+            spu: ' MEAL-1 ',
+            title: ' 早餐 ',
+            sku: ' meal-1-red ',
+            category: 'FOOD',
+            supplier: 'partner:one',
+            type: 'physical',
+            images: '["https://assets.example/meal.webp"]',
+            attributes: '{"color":"red"}',
+            specifications: '{"size":"S"}',
+          },
+        },
+      ],
+      partners as never,
+      qualifications as never
+    );
 
     expect(prepared.failures).toEqual([]);
     expect(prepared.rows[0]).toMatchObject({ row: 2, payload: { spu: 'MEAL-1', title: '早餐', sku: 'MEAL-1-RED', category: 'category:food', supplier: 'partner:one' } });
@@ -25,14 +44,23 @@ describe('product import preflight', () => {
     const partners = { scopes: vi.fn(async () => new Map()) };
     const qualifications = { decisions: vi.fn(async () => []) };
 
-    const prepared = await prepareProducts(database, {} as never, 'mall:one', [
-      { row: 2, value: row({ attributes: '{}' }) },
-      { row: 3, value: row({ supplier: 'partner:missing' }) },
-      { row: 4, value: row({ images: '["http://127.0.0.1/a.png"]' }) },
-    ], partners as never, qualifications as never);
+    const prepared = await prepareProducts(
+      database,
+      {} as never,
+      'mall:one',
+      [
+        { row: 2, value: row({ attributes: '{}' }) },
+        { row: 3, value: row({ supplier: 'partner:missing' }) },
+        { row: 4, value: row({ images: '["http://127.0.0.1/a.png"]' }) },
+      ],
+      partners as never,
+      qualifications as never
+    );
 
     expect(prepared.failures.map(({ row, reason }) => [row, reason])).toEqual([
-      [2, 'CATALOG_ATTRIBUTE_REQUIRED'], [3, 'CATALOG_SUPPLIER_UNKNOWN'], [4, 'CATALOG_IMAGES_INVALID'],
+      [2, 'CATALOG_ATTRIBUTE_REQUIRED'],
+      [3, 'CATALOG_SUPPLIER_UNKNOWN'],
+      [4, 'CATALOG_IMAGES_INVALID'],
     ]);
     expect(prepared.rows.every(({ payload }) => Object.keys(payload).length === 1 && typeof payload.invalid === 'string')).toBe(true);
   });

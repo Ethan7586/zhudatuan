@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { isConsumerTarget } from '@shop/contract';
 import type { InvitationKind, InvitationTarget } from '../model/Invitation';
 

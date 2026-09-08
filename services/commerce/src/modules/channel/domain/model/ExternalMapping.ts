@@ -22,8 +22,12 @@ export class ExternalMapping {
   readonly version: number;
 
   constructor(value: ExternalMappingSnapshot) {
-    if ([value.provider, value.scope, value.objectType, value.externalId, value.internalType, value.internalId, value.sourceVersion].some((item) => !item.trim()) ||
-      Number.isNaN(Date.parse(value.watermark)) || !Number.isSafeInteger(value.version) || value.version < 0) {
+    if (
+      [value.provider, value.scope, value.objectType, value.externalId, value.internalType, value.internalId, value.sourceVersion].some((item) => !item.trim()) ||
+      Number.isNaN(Date.parse(value.watermark)) ||
+      !Number.isSafeInteger(value.version) ||
+      value.version < 0
+    ) {
       throw new Error('CHANNEL_EXTERNAL_MAPPING_INVALID');
     }
     this.provider = value.provider;

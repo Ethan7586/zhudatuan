@@ -1,6 +1,6 @@
 import { randomBytes, scrypt as derive, timingSafeEqual } from 'node:crypto';
-import type { Specification } from '../../../../foundation/domain/Specification';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { Specification } from '@shop/kernel';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { Bulkhead } from '@shop/kernel';
 const VERSION = 'v1';
@@ -19,11 +19,12 @@ const PASSWORD_RULES: readonly Specification<string>[] = Object.freeze([
 ]);
 
 function scrypt(password: string, salt: Buffer, length: number): Promise<Buffer> {
-  return WORKERS.run(() => new Promise<Buffer>((resolve, reject) => derive(password, salt, length, { N: COST, r: BLOCK, p: PARALLEL, maxmem: MAX_MEMORY }, (cause, result) => (cause ? reject(cause) : resolve(result)))))
-    .catch((cause: unknown) => {
+  return WORKERS.run(() => new Promise<Buffer>((resolve, reject) => derive(password, salt, length, { N: COST, r: BLOCK, p: PARALLEL, maxmem: MAX_MEMORY }, (cause, result) => (cause ? reject(cause) : resolve(result))))).catch(
+    (cause: unknown) => {
       if (cause instanceof Error && cause.message === 'BULKHEAD_REJECTED') throw new DomainError('RATE_LIMITED', { retryAfter: 1 });
       throw cause;
-    });
+    }
+  );
 }
 
 export class PasswordPolicy {

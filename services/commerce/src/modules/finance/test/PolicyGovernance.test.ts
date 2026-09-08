@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { SqlExecutor } from '../../../adapter/database/PgTransactionAccess';
-import type { Clock } from '../../../foundation/domain/Clock';
+import type { SqlExecutor } from '../../../platform/database/PgTransactionAccess';
+import type { Clock } from '@shop/kernel';
 import { FinancePolicy } from '../domain/model/FinancePolicy';
 import { PolicyPreview } from '../domain/policy/PolicyPreview';
 import { policyCommands } from '../infrastructure/persistence/PolicyCommands';
@@ -50,7 +50,8 @@ describe('finance policy governance', () => {
   it('allows a mall accounting policy only when an ancestor explicitly delegates it', async () => {
     const signer = new PolicyPreview('k'.repeat(32));
     const preview = signer.create(financePolicy(), sample, now);
-    const query = vi.fn()
+    const query = vi
+      .fn()
       .mockResolvedValueOnce(result([{ allowed_kinds: ['accounting'], maximum_threshold_minor: null }]))
       .mockResolvedValueOnce(result([{ id: 'financepolicy:orders', scope_id: 'mall:one', kind: 'accounting', rule: {}, state: 'active', version: 1 }]));
     const scopes = { describe: vi.fn(async () => ({ scopeKind: 'mall', ancestors: ['enterprise:one'] })) } as unknown as FinanceScopeQuery;
@@ -69,7 +70,19 @@ function financePolicy(change: Readonly<Record<string, unknown>> = {}) {
 }
 
 function rule(previewToken: string, previewHash: string) {
-  return { name: '订单收入确认', trigger: '订单支付成功', entries, effectiveAt: sample.from, expiresAt: null, targetStatus: 'active', sampleFrom: sample.from, sampleTo: sample.to, affectedCount: sample.affectedCount, previewToken, previewHash };
+  return {
+    name: '订单收入确认',
+    trigger: '订单支付成功',
+    entries,
+    effectiveAt: sample.from,
+    expiresAt: null,
+    targetStatus: 'active',
+    sampleFrom: sample.from,
+    sampleTo: sample.to,
+    affectedCount: sample.affectedCount,
+    previewToken,
+    previewHash,
+  };
 }
 
 function request(scope: string, policyRule: Readonly<Record<string, unknown>>): FinanceRequest {
@@ -82,5 +95,9 @@ function request(scope: string, policyRule: Readonly<Record<string, unknown>>): 
   };
 }
 
-function fixedClock(): Clock { return { now: () => new Date(now) }; }
-function result(rows: readonly any[]) { return { rows, rowCount: rows.length, command: 'SELECT', oid: 0, fields: [] }; }
+function fixedClock(): Clock {
+  return { now: () => new Date(now) };
+}
+function result(rows: readonly any[]) {
+  return { rows, rowCount: rows.length, command: 'SELECT', oid: 0, fields: [] };
+}

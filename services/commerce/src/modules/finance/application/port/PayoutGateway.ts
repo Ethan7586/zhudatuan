@@ -1,4 +1,4 @@
-import { token } from '../../../../bootstrap/Container';
+import { token } from '../../../../composition/Container';
 
 export interface PayoutInput {
   readonly withdrawal: string;

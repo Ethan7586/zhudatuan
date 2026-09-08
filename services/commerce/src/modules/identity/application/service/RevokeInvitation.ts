@@ -1,10 +1,10 @@
 import { IdentityAction as OperationAction } from '../model/IdentityAction';
-import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
 
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
 import type { InvitationRepository } from '../port/InvitationRepository';
 import type { IdentityEventRepository } from '../port/IdentityEventRepository';
 

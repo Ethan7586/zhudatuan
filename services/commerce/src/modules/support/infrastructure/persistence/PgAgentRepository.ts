@@ -1,10 +1,10 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, integerField, keysetPage, queryPage, textField } from '../../../../foundation/application/Validation';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import type { OperationReply } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord, integerField, keysetPage, queryPage, textField } from '../../../../pipeline/Validation';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AgentRepository } from '../../application/port/SupportRepositories';
 import type { AgentStore } from '../../application/port/SupportPersistence';
 import type { ReadSupportContext } from '../../application/service/ReadSupportContext';
@@ -13,23 +13,20 @@ import type { PgSupportEventRepository } from './PgSupportEventRepository';
 
 export class PgAgentRepository implements AgentRepository, AgentStore {
   private readonly transactions = new PgTransactionAccess();
-  constructor(private readonly support?: ReadSupportContext, private readonly events?: PgSupportEventRepository) {}
+  constructor(
+    private readonly support?: ReadSupportContext,
+    private readonly events?: PgSupportEventRepository
+  ) {}
 
   async assertSender(context: ReadTransactionContext, membership: string, scope: string): Promise<string> {
-    const result = await this.transactions.database(context).query<{ id: string }>(
-      `select id from support.agent where membership_id=$1 and scope_id=$2 and state in('available','busy')`,
-      [membership, scope]
-    );
+    const result = await this.transactions.database(context).query<{ id: string }>(`select id from support.agent where membership_id=$1 and scope_id=$2 and state in('available','busy')`, [membership, scope]);
     const id = result.rows[0]?.id;
     if (!id) throw new DomainError('SUPPORT_TICKET_NOT_WRITABLE');
     return id;
   }
 
   async findByMembership(context: ReadTransactionContext, membership: string, scopes: readonly string[]): Promise<string | null> {
-    const result = await this.transactions.database(context).query<{ id: string }>(
-      `select id from support.agent where membership_id=$1 and scope_id=any($2::text[]) and state<>'disabled' order by id limit 1`,
-      [membership, scopes]
-    );
+    const result = await this.transactions.database(context).query<{ id: string }>(`select id from support.agent where membership_id=$1 and scope_id=any($2::text[]) and state<>'disabled' order by id limit 1`, [membership, scopes]);
     return result.rows[0]?.id ?? null;
   }
 
@@ -41,7 +38,11 @@ export class PgAgentRepository implements AgentRepository, AgentStore {
       where agent.scope_id=$1 and agent.state='available' group by agent.id order by agent.id`,
       [scope]
     );
-    return Object.freeze(result.rows.map((row) => Object.freeze({ id: row.id, online: true, state: row.state, load: Number(row.load), capacity: Number(row.capacity), skills: Object.freeze(row.skills), scopes: Object.freeze([scope]), lastAssignedAt: row.last_assigned_at })));
+    return Object.freeze(
+      result.rows.map((row) =>
+        Object.freeze({ id: row.id, online: true, state: row.state, load: Number(row.load), capacity: Number(row.capacity), skills: Object.freeze(row.skills), scopes: Object.freeze([scope]), lastAssignedAt: row.last_assigned_at })
+      )
+    );
   }
 
   async readAgents(context: ReadTransactionContext, input: OperationInputFor<'support.agents.read'>, execution: ExecutionContext<'support.agents.read'>): Promise<OperationReply<OperationOutputFor<'support.agents.read'>>> {
@@ -49,7 +50,8 @@ export class PgAgentRepository implements AgentRepository, AgentStore {
     const page = queryPage(input);
     const result = await this.transactions.database(context).query<AgentRow>(
       `select id,scope_id,membership_id,skills,capacity,state,version,last_assigned_at from support.agent
-      where scope_id=$1 and ($2::text is null or id>$2) order by id limit $3`, [actor.scope, page.id, page.fetch]
+      where scope_id=$1 and ($2::text is null or id>$2) order by id limit $3`,
+      [actor.scope, page.id, page.fetch]
     );
     const rows = result.rows.map((row) => ({ id: row.id, membership_id: row.membership_id, skills: row.skills, capacity: Number(row.capacity), state: row.state, version: Number(row.version) }));
     const paged = keysetPage(rows, page, 'id');
@@ -80,7 +82,11 @@ export class PgAgentRepository implements AgentRepository, AgentStore {
       if (!this.events) throw new Error('SUPPORT_EVENT_REPOSITORY_REQUIRED');
       await this.events.enqueue(context, 'supportreassign', actor.scope, { agent: row.id, cursor: null }, undefined, `job:reassign:${row.id}:${row.version}`);
     }
-    return { status: 200, headers: { etag: `"${row.version}"` }, body: { id: row.id, scope_id: row.scope_id, membership_id: row.membership_id, skills: row.skills, capacity: Number(row.capacity), state: row.state, version: Number(row.version) } };
+    return {
+      status: 200,
+      headers: { etag: `"${row.version}"` },
+      body: { id: row.id, scope_id: row.scope_id, membership_id: row.membership_id, skills: row.skills, capacity: Number(row.capacity), state: row.state, version: Number(row.version) },
+    };
   }
 
   private async console(context: ReadTransactionContext, execution: ExecutionContext) {
@@ -101,6 +107,12 @@ interface AgentRow {
   readonly version: number;
   readonly last_assigned_at: string | null;
 }
-function choice(value: unknown, values: readonly string[], code: string): string { if (typeof value !== 'string' || !values.includes(value)) throw new Error(code); return value; }
-function stringArray(value: unknown): string[] { if (!Array.isArray(value) || value.length === 0 || !value.every((item) => typeof item === 'string' && item.trim())) throw new DomainError('VALIDATION_FAILED'); return [...new Set(value.map((item) => item.trim()))]; }
+function choice(value: unknown, values: readonly string[], code: string): string {
+  if (typeof value !== 'string' || !values.includes(value)) throw new Error(code);
+  return value;
+}
+function stringArray(value: unknown): string[] {
+  if (!Array.isArray(value) || value.length === 0 || !value.every((item) => typeof item === 'string' && item.trim())) throw new DomainError('VALIDATION_FAILED');
+  return [...new Set(value.map((item) => item.trim()))];
+}
 const states = ['offline', 'available', 'busy', 'disabled'] as const;

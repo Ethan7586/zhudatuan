@@ -1,6 +1,7 @@
-import { token } from '../../../../bootstrap/Container';
+import { token } from '../../../../composition/Container';
 import type { DeliveryChannel } from '../../application/port/DeliveryChannel';
 import type { DeliveryResolver, DeliveryStrategy } from '../../application/port/DeliveryResolver';
+import { mapParallel } from '@shop/kernel';
 
 export class DeliveryRegistry implements DeliveryResolver {
   private readonly channels: Map<string, DeliveryRoute[]>;
@@ -41,7 +42,7 @@ export class DeliveryRegistry implements DeliveryResolver {
       if (retained.length) this.channels.set(channel, retained);
       else this.channels.delete(channel);
     }
-    const drained = (await Promise.all(disabled.map((strategy) => strategy.drain(deadline)))).every(Boolean);
+    const drained = (await mapParallel(disabled, 8, (strategy) => strategy.drain(deadline))).every(Boolean);
     return Object.freeze({ drained, active: disabled.reduce((total, strategy) => total + strategy.active, 0) });
   }
 }
@@ -57,13 +58,16 @@ class DeliveryRoute {
     readonly provider: string,
     readonly priority: number
   ) {
-    this.contract = Object.freeze({ channel: channel.id, provider, priority,
-      send: (request: Parameters<DeliveryChannel['send']>[0]) => this.invoke(request) });
+    this.contract = Object.freeze({ channel: channel.id, provider, priority, send: (request: Parameters<DeliveryChannel['send']>[0]) => this.invoke(request) });
   }
 
-  get active(): number { return this.running; }
+  get active(): number {
+    return this.running;
+  }
 
-  close(): void { this.accepting = false; }
+  close(): void {
+    this.accepting = false;
+  }
 
   async drain(deadline: number): Promise<boolean> {
     if (this.running === 0) return true;

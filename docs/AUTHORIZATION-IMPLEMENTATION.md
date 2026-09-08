@@ -1,6 +1,6 @@
 # 授权实现
 
-授权唯一入口是 `packages/authz` 合同与 `services/commerce/src/foundation/security/AccessPipeline.ts`。每个受保护 Operation 都按以下顺序处理：
+授权唯一入口是 `packages/authz` 合同与 `services/commerce/src/pipeline/AccessPipeline.ts`。每个受保护 Operation 都按以下顺序处理：
 
 ```text
 HostOnly Secure Session → Membership 状态 → Access Version → Resource Scope

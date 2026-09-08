@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sdkDomainSources, sdkSource, sdkSurfaceSource, surfaceSource, type ClientDefinition, type OperationDefinition } from './ClientArtifacts';
+import { sdkBrowserClientSources, sdkDomainSources, sdkMiniappSource, sdkSource, sdkSurfaceSource, surfaceSource, type ClientDefinition, type OperationDefinition } from './ClientArtifacts';
 
 const operations = [operation('identity.session.read', 'GET', '/api/v1/identity/session', 'storefront'), operation('catalog.listings.read', 'GET', '/api/v1/catalog/listings', 'storefront')] as const;
 
@@ -32,6 +32,13 @@ describe('SDK client artifacts', () => {
     expect(source).toContain('createSurfaceClient');
     expect(source).toContain('MINIAPP_TRANSPORT_POLICY');
     expect(source).toContain('StorefrontSurfaceClient');
+    expect(sdkMiniappSource(clients, operations)).toContain('bindIdentitySessionRead(executor)');
+    expect(sdkMiniappSource(clients, operations)).not.toContain('createCommerceClient');
+    const storefront = sdkBrowserClientSources(clients, operations).get('StorefrontClient');
+    expect(storefront).toContain('createFetchStorefront');
+    expect(storefront).toContain('bindIdentitySessionRead(executor)');
+    expect(storefront).toContain('bindCatalogListingsRead(executor)');
+    expect(storefront).not.toContain('createCommerceClient');
   });
 });
 
@@ -52,7 +59,7 @@ function operation(id: string, method: OperationDefinition['method'], path: Oper
     method,
     path,
     audience,
-    targets: audience === 'public' ? ['console', 'storefront', 'miniapp', 'store', 'supplier'] : audience === 'console' || audience === 'storefront' ? [audience] : [],
+    targets: audience === 'public' ? ['console', 'storefront', 'miniapp', 'store', 'supplier'] : audience === 'storefront' ? ['storefront', 'miniapp'] : audience === 'console' ? ['console'] : [],
     owner: id.split('.')[0]!,
     permission: null,
     capability: id,

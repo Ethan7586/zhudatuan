@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef } from 'react';
 import { useSession } from '../../../entity/session/viewmodel/SessionContext';
 import { StorefrontQuery } from '../../../shared/api/Query';
-import type { Product } from '../../../entity/product';
+import { productAvailability, type Product } from '../../../entity/product';
 import { ReadCart } from '../application/ReadCart';
 import { ChangeCart } from '../application/ChangeCart';
 import { useDependencies } from '../../../app/DependencyContext';
@@ -35,13 +35,14 @@ export function useCartCommand() {
     await refresh();
   };
   const add = (product: Product, quantity = 1, _selectedSpec: Readonly<Record<string, string>> = {}) => {
-    const current = cart.data?.items.find(({ listing, sku }) => listing === product.id && sku === product.skuId);
+    const current = cart.data?.items.find(({ listing, sku }) => listing === product.listingId && sku === product.skuId);
     const nextQuantity = Number(current?.quantity ?? 0) + quantity;
-    if (!product.purchasable || product.stock < nextQuantity || !Number.isSafeInteger(quantity) || quantity < 1) {
-      session.showToast('商品当前不可购买，请刷新商品信息后重试', 'error');
+    const availability = productAvailability(product);
+    if (!availability.canPurchase || product.stock < nextQuantity || !Number.isSafeInteger(quantity) || quantity < 1) {
+      session.showToast(availability.canPurchase ? '购买数量超过当前可售库存，请减少数量后重试' : availability.availabilityText, 'error');
       return;
     }
-    void change(product.id, nextQuantity, current ? Number(current.version) : null)
+    void change(product.listingId, nextQuantity, current ? Number(current.version) : null)
       .then(() => session.showToast('已加入购物车', 'success'))
       .catch(() => session.showToast('购物车更新失败，请刷新后重试', 'error'));
   };

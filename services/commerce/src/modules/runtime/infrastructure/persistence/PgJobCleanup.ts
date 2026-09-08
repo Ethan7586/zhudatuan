@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CleanupEvidence, JobCleanup } from '../../application/port/CleanupPort';
 import { cleanupIds, cleanupLimit } from './PgCleanupValue';
 
@@ -32,13 +32,24 @@ export class PgJobCleanup implements JobCleanup {
        order by retention_until,id limit $1`,
       [limit]
     );
-    return cleanupIds(result.rows.map(({ id }) => id), 'job:');
+    return cleanupIds(
+      result.rows.map(({ id }) => id),
+      'job:'
+    );
   }
 
   async record(context: WriteTransactionContext, job: Readonly<{ id: string; token: number }>, evidence: CleanupEvidence): Promise<void> {
-    if (!job.id.startsWith('job:') || !Number.isSafeInteger(job.token) || job.token < 1 || !/^[a-f0-9]{64}$/.test(evidence.hash) ||
-      !Number.isFinite(Date.parse(evidence.createdAt)) || !Number.isFinite(Date.parse(evidence.inboxBefore)) || !Number.isFinite(Date.parse(evidence.outboxBefore)) ||
-      Object.values(evidence.counts).some((count) => !Number.isSafeInteger(count) || count < 0)) throw new Error('CLEANUP_EVIDENCE_INVALID');
+    if (
+      !job.id.startsWith('job:') ||
+      !Number.isSafeInteger(job.token) ||
+      job.token < 1 ||
+      !/^[a-f0-9]{64}$/.test(evidence.hash) ||
+      !Number.isFinite(Date.parse(evidence.createdAt)) ||
+      !Number.isFinite(Date.parse(evidence.inboxBefore)) ||
+      !Number.isFinite(Date.parse(evidence.outboxBefore)) ||
+      Object.values(evidence.counts).some((count) => !Number.isSafeInteger(count) || count < 0)
+    )
+      throw new Error('CLEANUP_EVIDENCE_INVALID');
     const result = await this.transactions.database(context).query(
       `update runtime.jobs set checkpoint=checkpoint||jsonb_build_object('cleanup',$3::jsonb),version=version+1,
        updated_by=$4,updated_at=clock_timestamp() where id=$1 and state='running' and fencing_token=$2

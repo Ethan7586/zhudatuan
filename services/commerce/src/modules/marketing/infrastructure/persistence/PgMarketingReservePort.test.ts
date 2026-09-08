@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { PgTransactionAccess, SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess, SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { result } from '../../../../test/TransactionFixture';
 import { PgMarketingReservePort } from './PgMarketingReservePort';
 
@@ -46,7 +46,17 @@ describe('PgMarketingReservePort', () => {
     await new PgMarketingReservePort(access(query)).expire(context, 'order:one', new Date('2030-09-05T08:15:00.000Z'));
     const release = query.mock.calls.find(([text]) => String(text).includes("state='released'"));
     expect(String(release?.[0])).toContain('redemption.expires_at<=$2');
+    expect(String(release?.[0])).toContain('version=redemption.version+1');
     expect(query.mock.calls.some(([_text, values]) => String(values).includes('marketing.promotion.released'))).toBe(true);
+  });
+
+  it('qualifies the redemption version during commit when the joined campaign also has a version', async () => {
+    const query = vi.fn(async (text: string, _values?: readonly unknown[]) =>
+      text.startsWith("update marketing.redemption redemption set state='committed'") ? result([reservation({ state: 'committed', version: 2 })]) : result([])
+    );
+    await new PgMarketingReservePort(access(query)).commit(context, 'order:one');
+    const commit = query.mock.calls.find(([text]) => String(text).includes("state='committed'"));
+    expect(String(commit?.[0])).toContain('version=redemption.version+1');
   });
 
   it('replenishes only the cumulative proportional delta and finishes on a full refund', async () => {

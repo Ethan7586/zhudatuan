@@ -1,9 +1,9 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import { OwnerPolicy } from '../../domain/policy/OwnerPolicy';
 import { PermissionPolicy } from '../../domain/policy/PermissionPolicy';
 import { SeparationPolicy } from '../../domain/policy/SeparationPolicy';
@@ -68,7 +68,22 @@ export class RolesManageHandler implements OperationHandler<'access.roles.manage
     if (!changed) throw new DomainError('VERSION_CONFLICT');
     if (changed.allowCount !== allows.length || changed.denyCount !== denies.length) throw new DomainError('VALIDATION_FAILED', { field: 'allows' });
     await this.access.bumpRole(context.transaction, role, 'rolepermissionschanged', context.traceId);
-    return { status: 200, body: { action: 'save', id: changed.role.id, scopeId: changed.role.scope, name: changed.role.name, description: changed.role.description, status: changed.role.status, version: changed.role.version, allowCount: changed.allowCount, denyCount: changed.denyCount, template, impact } };
+    return {
+      status: 200,
+      body: {
+        action: 'save',
+        id: changed.role.id,
+        scopeId: changed.role.scope,
+        name: changed.role.name,
+        description: changed.role.description,
+        status: changed.role.status,
+        version: changed.role.version,
+        allowCount: changed.allowCount,
+        denyCount: changed.denyCount,
+        template,
+        impact,
+      },
+    };
   }
 
   private async status(existing: Role, body: Readonly<Record<string, unknown>>, context: WriteHandlerContext<'access.roles.manage'>): Promise<OperationReply<OperationOutputFor<'access.roles.manage'>>> {
@@ -99,9 +114,7 @@ export class RolesManageHandler implements OperationHandler<'access.roles.manage
       const permissions = await this.access.rolePermissions(context.transaction, existing.id);
       this.permissions.assertSubset(identity.membership.permissions.allows, identity.membership.permissions.denies, [...permissions.allows, ...permissions.denies]);
     }
-    const changed = action === 'assign'
-      ? await this.access.assignRole(context.transaction, existing.id, target.id, identity.membership.id)
-      : await this.access.revokeRole(context.transaction, existing.id, target.id);
+    const changed = action === 'assign' ? await this.access.assignRole(context.transaction, existing.id, target.id, identity.membership.id) : await this.access.revokeRole(context.transaction, existing.id, target.id);
     if (!changed) throw new DomainError('ACCESS_GRANT_CONFLICT');
     const accessVersion = await this.access.bump(context.transaction, target.id, action === 'assign' ? 'roleassigned' : 'rolerevoked', context.traceId);
     return { status: 200, body: { action, id: existing.id, targetMembership, accessVersion, changed: true } };

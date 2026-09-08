@@ -28,16 +28,7 @@ export interface OrderProjection {
   readonly snapshot: Readonly<Record<string, unknown>>;
 }
 
-export function projectedMetric(
-  code: string,
-  scope: string,
-  period: DailyPeriod,
-  dimensions: Readonly<Record<string, string>>,
-  value: number,
-  unit: MetricUnit,
-  currency: string | null,
-  watermark: string
-): MetricContribution {
+export function projectedMetric(code: string, scope: string, period: DailyPeriod, dimensions: Readonly<Record<string, string>>, value: number, unit: MetricUnit, currency: string | null, watermark: string): MetricContribution {
   if (
     !/^[a-z][a-z0-9]+(?:\.[a-z][a-z0-9]+)+$/.test(code) ||
     !scope ||
@@ -49,7 +40,8 @@ export function projectedMetric(
     Number.isNaN(Date.parse(watermark)) ||
     (unit === 'minor') !== (currency !== null) ||
     (currency !== null && !/^[A-Z]{3}$/.test(currency))
-  ) throw new Error('REPORT_METRIC_INVALID');
+  )
+    throw new Error('REPORT_METRIC_INVALID');
   let timezone: string;
   try {
     timezone = timezoneName(period.timezone);

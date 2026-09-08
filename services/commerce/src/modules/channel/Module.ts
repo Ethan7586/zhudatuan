@@ -1,11 +1,11 @@
 import { PgFinanceChannelPort } from './infrastructure/persistence/PgFinanceChannelPort';
 
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { defineModule } from '../../bootstrap/DefinedModule';
-import { KMS_CLIENT } from '../../foundation/application/KmsPort';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
-import { PgTransactionManager } from '../../adapter/database/PgTransactionManager';
-import { EXTENSION_REGISTRY } from '../../bootstrap/ExtensionRegistry';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { defineModule } from '../../composition/DefinedModule';
+import { KMS_CLIENT } from '../../pipeline/KmsPort';
+import { DATABASE_POOL } from '../../platform/database/Pool';
+import { PgTransactionManager } from '../../platform/database/PgTransactionManager';
+import { EXTENSION_REGISTRY } from '../../composition/ExtensionRegistry';
 import { CHANNEL_CAPABILITY_PORT } from '../capability/public';
 import { EXTENSION_REGISTRY_PORT } from '../extension/public';
 import { CHANNEL_ORGANIZATION_PORT, ORGANIZATION_READ_PORT } from '../organization/public';

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { CONTRACT_VERSION, OperationCatalog } from '@shop/contract';
-import { RouteRegistry } from '../../services/commerce/src/bootstrap/RouteRegistry';
-import { HttpApp } from '../../services/commerce/src/foundation/interface/HttpApp';
-import { CsrfProtector } from '../../services/commerce/src/foundation/security/CsrfProtector';
+import { RouteRegistry } from '../../services/commerce/src/composition/RouteRegistry';
+import { HttpApp } from '../../services/commerce/src/platform/http/HttpApp';
+import { CsrfProtector } from '../../services/commerce/src/platform/security/CsrfProtector';
 
 const csrfProtector = new CsrfProtector('security-test-csrf-key-material-32-bytes', {
   console: 'https://console.example',

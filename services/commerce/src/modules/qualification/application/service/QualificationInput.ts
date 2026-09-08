@@ -1,5 +1,5 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { textField } from '../../../../foundation/application/Validation';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { textField } from '../../../../pipeline/Validation';
 import type { EvidenceKind } from '../../domain/model/Evidence';
 import type { QualificationTarget, QualificationTargetKind } from '../../domain/model/QualificationCase';
 

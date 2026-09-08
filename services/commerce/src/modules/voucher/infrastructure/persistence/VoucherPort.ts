@@ -1,22 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { VOUCHER_TERMS } from './IssueTerms';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { VoucherAccountingPort } from '../../../finance/public';
 import type { OrganizationReadPort } from '../../../organization/public';
-import type {
-  CheckoutVoucherGateway,
-  FulfillmentVoucherItem,
-  FulfillmentVoucherPort,
-  FulfillmentVoucherReceipt,
-  PaymentVoucherPort,
-  VerificationVoucherPort,
-  VoucherChoice,
-  VoucherRefund,
-  VoucherTender,
-} from '../../public';
+import type { CheckoutVoucherGateway, FulfillmentVoucherItem, FulfillmentVoucherPort, FulfillmentVoucherReceipt, PaymentVoucherPort, VerificationVoucherPort, VoucherChoice, VoucherRefund, VoucherTender } from '../../public';
 import { VoucherRefundWriter } from './VoucherRefundWriter';
 import { timeline, VoucherRedemptionWriter } from './VoucherRedemptionWriter';
 import { VoucherTenderWriter } from './VoucherTenderWriter';
@@ -26,7 +16,10 @@ export class VoucherPort implements CheckoutVoucherGateway, PaymentVoucherPort, 
   private readonly transactions = new PgTransactionAccess();
   private readonly tenders = new VoucherTenderWriter(this.transactions);
 
-  constructor(private readonly finance?: VoucherAccountingPort, private readonly organizations?: Pick<OrganizationReadPort, 'scope'>) {}
+  constructor(
+    private readonly finance?: VoucherAccountingPort,
+    private readonly organizations?: Pick<OrganizationReadPort, 'scope'>
+  ) {}
 
   async preview(context: ReadTransactionContext, vouchers: readonly string[], member: string, scope: string): Promise<readonly VoucherChoice[]> {
     if (vouchers.length === 0) return Object.freeze([]);
@@ -51,7 +44,12 @@ export class VoucherPort implements CheckoutVoucherGateway, PaymentVoucherPort, 
       order by voucher.expires_at,voucher.id limit 100`,
       [scope, member]
     );
-    return this.preview(context, rows.rows.map(({ id }) => id), member, scope);
+    return this.preview(
+      context,
+      rows.rows.map(({ id }) => id),
+      member,
+      scope
+    );
   }
 
   async reserve(context: WriteTransactionContext, order: string, member: string, scope: string, tenders: readonly VoucherTender[]): Promise<void> {
@@ -61,9 +59,18 @@ export class VoucherPort implements CheckoutVoucherGateway, PaymentVoucherPort, 
       throw new DomainError('VOUCHER_HOLD_CONFLICT');
     }
     for (const tender of normalized) {
-      await this.tenders.reserve({ context, scope, voucher: tender.reference, owner: order, member,
-        amountMinor: tender.amountMinor, ttlSeconds: RUNTIME_LIMITS.voucherTender.holdTtlSeconds,
-        idempotency: `checkout:${order}:${tender.reference}`, actor: context.actor, now: new Date() });
+      await this.tenders.reserve({
+        context,
+        scope,
+        voucher: tender.reference,
+        owner: order,
+        member,
+        amountMinor: tender.amountMinor,
+        ttlSeconds: RUNTIME_LIMITS.voucherTender.holdTtlSeconds,
+        idempotency: `checkout:${order}:${tender.reference}`,
+        actor: context.actor,
+        now: new Date(),
+      });
     }
   }
 
@@ -71,8 +78,7 @@ export class VoucherPort implements CheckoutVoucherGateway, PaymentVoucherPort, 
     const database = this.transactions.database(context);
     const holds = await database.query<HoldRow>(`select ${HOLD_FIELDS} from voucher.tenderhold hold where hold.owner_id=$1 and hold.scope_id=$2 and hold.state='active' order by hold.voucher_id,hold.id`, [order, context.scope]);
     for (const hold of holds.rows) {
-      await this.tenders.release({ context, scope: context.scope, hold: hold.id, ifActive: true,
-        reason: 'checkoutrelease', actor: context.actor, now: new Date() });
+      await this.tenders.release({ context, scope: context.scope, hold: hold.id, ifActive: true, reason: 'checkoutrelease', actor: context.actor, now: new Date() });
     }
   }
 
@@ -133,18 +139,12 @@ export class VoucherPort implements CheckoutVoucherGateway, PaymentVoucherPort, 
     return row.rows[0]?.scope_id ?? null;
   }
 
-  async redeemVerification(
-    context: WriteTransactionContext,
-    input: Readonly<{ voucher: string; verification: string; scope: string; store: string; actor: string }>
-  ): Promise<Readonly<{ id: string; amountMinor: number }> | null> {
+  async redeemVerification(context: WriteTransactionContext, input: Readonly<{ voucher: string; verification: string; scope: string; store: string; actor: string }>): Promise<Readonly<{ id: string; amountMinor: number }> | null> {
     const redeemed = await this.redemptions().redeemVerified({ context, ...input, now: new Date() });
     return redeemed ? Object.freeze({ id: redeemed.id, amountMinor: redeemed.amountMinor }) : null;
   }
 
-  async issue(
-    context: WriteTransactionContext,
-    input: Readonly<{ fulfillment: string; order: string; scope: string; member: string; items: readonly FulfillmentVoucherItem[] }>
-  ): Promise<FulfillmentVoucherReceipt> {
+  async issue(context: WriteTransactionContext, input: Readonly<{ fulfillment: string; order: string; scope: string; member: string; items: readonly FulfillmentVoucherItem[] }>): Promise<FulfillmentVoucherReceipt> {
     if (!input.fulfillment || !input.order || !input.scope || !input.member || input.items.length === 0) throw new Error('VOUCHER_FULFILLMENT_INVALID');
     const items = [...input.items].sort((left, right) => left.line.localeCompare(right.line));
     if (new Set(items.map(({ line }) => line)).size !== items.length) throw new Error('VOUCHER_FULFILLMENT_LINE_DUPLICATE');
@@ -162,27 +162,32 @@ export class VoucherPort implements CheckoutVoucherGateway, PaymentVoucherPort, 
       );
       if (prior.rows.length > item.quantity) throw new Error('VOUCHER_FULFILLMENT_QUANTITY_CONFLICT');
       const needed = item.quantity - prior.rows.length;
-      const selected = needed === 0 ? [] : (await database.query<VoucherRow & { activation: string }>(
-        `select ${VOUCHER_FIELDS},terms.activation from voucher.voucher voucher ${VOUCHER_TERMS}
+      const selected =
+        needed === 0
+          ? []
+          : (
+              await database.query<VoucherRow & { activation: string }>(
+                `select ${VOUCHER_FIELDS},terms.activation from voucher.voucher voucher ${VOUCHER_TERMS}
         join voucher.product product on product.id=voucher.product_id and product.scope_id=voucher.scope_id
         where voucher.product_id=$1 and voucher.scope_id=$2 and product.state='enabled' and voucher.holder_id is null
         and voucher.state in('available','allocated') and voucher.expires_at>clock_timestamp()
         order by voucher.expires_at,voucher.id for update of voucher skip locked limit $3`,
-        [item.product, input.scope, needed]
-      )).rows;
+                [item.product, input.scope, needed]
+              )
+            ).rows;
       if (selected.length !== needed) throw new DomainError('VOUCHER_STOCK_INSUFFICIENT');
       for (const voucher of selected) {
         const holder = `holder:${randomUUID()}`;
         const now = new Date();
         const state = voucher.activation === 'automatic' && new Date(voucher.starts_at) <= now ? 'active' : 'bound';
-        await database.query(
-          `insert into voucher.holder(id,scope_id,voucher_id,member_id,state,version,bound_at,released_at) values($1,$2,$3,$4,'bound',1,$5,null)`,
-          [holder, input.scope, voucher.id, input.member, now]
-        );
-        const changed = await database.query(
-          `update voucher.voucher set holder_id=$3,state=$4,version=version+1 where id=$1 and scope_id=$2 and holder_id is null and version=$5 returning id`,
-          [voucher.id, input.scope, holder, state, voucher.version]
-        );
+        await database.query(`insert into voucher.holder(id,scope_id,voucher_id,member_id,state,version,bound_at,released_at) values($1,$2,$3,$4,'bound',1,$5,null)`, [holder, input.scope, voucher.id, input.member, now]);
+        const changed = await database.query(`update voucher.voucher set holder_id=$3,state=$4,version=version+1 where id=$1 and scope_id=$2 and holder_id is null and version=$5 returning id`, [
+          voucher.id,
+          input.scope,
+          holder,
+          state,
+          voucher.version,
+        ]);
         if (!changed.rows[0]) throw new Error('VOUCHER_FULFILLMENT_QUANTITY_CONFLICT');
         await timeline(database, voucher.id, input.scope, voucher.state, state, reason, 'system:fulfillment', now);
       }

@@ -1,6 +1,6 @@
 import { OPERATION_SCHEMAS, OperationCatalog, type OperationId } from '@shop/contract';
 import { describe, expect, it, vi } from 'vitest';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 import { readHandlerContext } from '../../../test/HandlerFixture';
 import { WithdrawalsCreateHandler } from '../application/handler/WithdrawalsCreateHandler';
 import type { ReferralRepository } from '../application/port/ReferralRepository';

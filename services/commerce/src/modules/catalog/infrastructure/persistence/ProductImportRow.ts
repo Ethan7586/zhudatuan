@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AuditPort } from '../../../audit/public';
 import type { CatalogPartnerPort } from '../../../partner/public';
 import type { ImportTarget } from '../../../runtime/public';
@@ -30,15 +30,7 @@ interface ProductRecord extends Record<string, unknown> {
   readonly version: number | string;
 }
 
-export async function importProduct(
-  database: SqlExecutor,
-  context: WriteTransactionContext,
-  target: ImportTarget,
-  rowNumber: number,
-  row: Readonly<Record<string, string>>,
-  partners: CatalogPartnerPort,
-  audit: AuditPort
-): Promise<void> {
+export async function importProduct(database: SqlExecutor, context: WriteTransactionContext, target: ImportTarget, rowNumber: number, row: Readonly<Record<string, string>>, partners: CatalogPartnerPort, audit: AuditPort): Promise<void> {
   if (row.invalid) throw new Error(validCode(row.invalid) ? row.invalid : 'CATALOG_IMPORT_ROW_INVALID');
   const sourceHash = digest(JSON.stringify(row));
   const existingReceipt = await receipt(database, target.id, rowNumber);
@@ -58,9 +50,7 @@ export async function importProduct(
   if (racedReceipt) return assertReceipt(racedReceipt, sourceHash);
   if (supplier !== null && !(await partners.scopes(context, [supplier])).has(supplier)) throw new Error('CATALOG_SUPPLIER_UNKNOWN');
   const selectedCategory = await activeCategory(database, category, attributes);
-  const current = await database.query<ProductRecord>(
-    'select id,scope_id,owner_partner_id,brand_id,category_id,title,product_type,attributes,status,version from catalog.product where id=$1', [productId]
-  );
+  const current = await database.query<ProductRecord>('select id,scope_id,owner_partner_id,brand_id,category_id,title,product_type,attributes,status,version from catalog.product where id=$1', [productId]);
   const existingProduct = current.rows[0];
   if (existingProduct?.status === 'archived') throw new Error('CATALOG_PRODUCT_ARCHIVED');
   const snapshot = Product.create({ id: productId, scope: target.scope, owner: supplier, brand: null, category: selectedCategory, title, kind, attributes }).snapshot();
@@ -77,24 +67,49 @@ export async function importProduct(
     if (!raced) throw new Error('CATALOG_IMPORT_RECEIPT_CONFLICT');
     return assertReceipt(raced, sourceHash);
   }
-  if (product.changed) await new PgRuntimeWriter(database).appendMany([{
-    id: `event:catalog:import:${digest(`${target.id}:${rowNumber}:product`)}`,
-    type: product.created ? 'catalog.product.created' : 'catalog.product.updated', aggregateType: 'product', aggregate: product.id,
-    aggregateVersion: product.version, scope: target.scope, payload: Object.freeze({ product: product.id, scope: target.scope, status: 'draft', version: product.version }),
-    trace: target.id, actor: 'job:catalogimport', correlation: target.id, causation: `${target.id}:${rowNumber}`, payloadVersion: 1,
-  }]);
+  if (product.changed)
+    await new PgRuntimeWriter(database).appendMany([
+      {
+        id: `event:catalog:import:${digest(`${target.id}:${rowNumber}:product`)}`,
+        type: product.created ? 'catalog.product.created' : 'catalog.product.updated',
+        aggregateType: 'product',
+        aggregate: product.id,
+        aggregateVersion: product.version,
+        scope: target.scope,
+        payload: Object.freeze({ product: product.id, scope: target.scope, status: 'draft', version: product.version }),
+        trace: target.id,
+        actor: 'job:catalogimport',
+        correlation: target.id,
+        causation: `${target.id}:${rowNumber}`,
+        payloadVersion: 1,
+      },
+    ]);
   await audit.record(context, {
-    actor: 'job:catalogimport', actorType: 'service', scope: target.scope, request: `${target.id}:${rowNumber}`,
-    operation: 'catalog.imports.apply', subject: { type: 'import', id: target.id }, object: { type: 'product', id: product.id },
-    outcome: 'succeeded', reason: '商品导入分片写入', before: existingProduct ?? null,
+    actor: 'job:catalogimport',
+    actorType: 'service',
+    scope: target.scope,
+    request: `${target.id}:${rowNumber}`,
+    operation: 'catalog.imports.apply',
+    subject: { type: 'import', id: target.id },
+    object: { type: 'product', id: product.id },
+    outcome: 'succeeded',
+    reason: '商品导入分片写入',
+    before: existingProduct ?? null,
     after: { product: product.id, sku: sku.id, productVersion: product.version, skuVersion: sku.version },
-    evidence: { sourceHash, fileHash: target.sha256, row: rowNumber }, trace: target.id,
+    evidence: { sourceHash, fileHash: target.sha256, row: rowNumber },
+    trace: target.id,
   });
 }
 
 async function saveProduct(database: SqlExecutor, value: ProductSnapshot, existing: ProductRecord | undefined) {
-  const changed = !existing || existing.scope_id !== value.scope || existing.owner_partner_id !== value.owner || existing.category_id !== value.category ||
-    existing.title !== value.title || existing.product_type !== value.kind || JSON.stringify(existing.attributes) !== JSON.stringify(value.attributes);
+  const changed =
+    !existing ||
+    existing.scope_id !== value.scope ||
+    existing.owner_partner_id !== value.owner ||
+    existing.category_id !== value.category ||
+    existing.title !== value.title ||
+    existing.product_type !== value.kind ||
+    JSON.stringify(existing.attributes) !== JSON.stringify(value.attributes);
   if (!changed && existing) return Object.freeze({ id: existing.id, version: Number(existing.version), created: false, changed: false });
   const result = await database.query<{ id: string; version: number | string }>(
     `insert into catalog.product(id,scope_id,owner_partner_id,brand_id,category_id,title,product_type,attributes,status,version,created_at,updated_at)
@@ -109,7 +124,8 @@ async function saveProduct(database: SqlExecutor, value: ProductSnapshot, existi
 
 async function saveSku(database: SqlExecutor, scope: string, id: string, product: string, code: string, specifications: Readonly<Record<string, unknown>>) {
   const current = await database.query<{ id: string; product_id: string; code: string; specifications: Readonly<Record<string, unknown>>; version: number | string }>(
-    'select id,product_id,code,specifications,version from catalog.sku where id=$1 or scope_id=$2 and code=$3', [id, scope, code]
+    'select id,product_id,code,specifications,version from catalog.sku where id=$1 or scope_id=$2 and code=$3',
+    [id, scope, code]
   );
   const existing = current.rows[0];
   if (existing && (existing.id !== id || existing.product_id !== product)) throw new Error('CATALOG_SKU_PRODUCT_CONFLICT');
@@ -126,7 +142,8 @@ async function saveSku(database: SqlExecutor, scope: string, id: string, product
 
 async function activeCategory(database: SqlExecutor, category: string, attributes: Readonly<Record<string, unknown>>): Promise<string> {
   const result = await database.query<{ id: string; parent_id: string | null; code: string; name: string; status: CategorySnapshot['state']; sort_order: number; required_attributes: readonly string[] }>(
-    'select id,parent_id,code,name,status,sort_order,required_attributes from catalog.category where id=$1', [category]
+    'select id,parent_id,code,name,status,sort_order,required_attributes from catalog.category where id=$1',
+    [category]
   );
   const row = result.rows[0];
   if (!row) throw new Error('CATALOG_CATEGORY_UNKNOWN');
@@ -136,9 +153,7 @@ async function activeCategory(database: SqlExecutor, category: string, attribute
 }
 
 async function receipt(database: SqlExecutor, importId: string, row: number): Promise<ImportReceipt | null> {
-  const result = await database.query<ImportReceipt>(
-    'select product_id,sku_id,product_version,sku_version,source_hash from catalog.import_receipts where import_id=$1 and row_number=$2', [importId, row]
-  );
+  const result = await database.query<ImportReceipt>('select product_id,sku_id,product_version,sku_version,source_hash from catalog.import_receipts where import_id=$1 and row_number=$2', [importId, row]);
   return result.rows[0] ?? null;
 }
 
@@ -148,7 +163,11 @@ function assertReceipt(value: ImportReceipt, sourceHash: string): void {
 
 function objectValue(value: string | undefined, code: string): Readonly<Record<string, unknown>> {
   let parsed: unknown;
-  try { parsed = JSON.parse(value ?? '{}'); } catch { throw new Error(code); }
+  try {
+    parsed = JSON.parse(value ?? '{}');
+  } catch {
+    throw new Error(code);
+  }
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error(code);
   return Object.freeze({ ...(parsed as Readonly<Record<string, unknown>>) });
 }
@@ -169,6 +188,12 @@ function importedId(kind: 'product' | 'sku', scope: string, value: string): stri
   return `${kind}:import:${createHash('sha256').update(`${scope}:${value}`).digest('hex')}`;
 }
 
-function missing(value: unknown): boolean { return value === undefined || value === null || value === '' || Array.isArray(value) && value.length === 0; }
-function validCode(value: string): boolean { return /^[A-Z][A-Z0-9_]{2,127}$/.test(value); }
-function digest(value: string): string { return createHash('sha256').update(value).digest('hex'); }
+function missing(value: unknown): boolean {
+  return value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0);
+}
+function validCode(value: string): boolean {
+  return /^[A-Z][A-Z0-9_]{2,127}$/.test(value);
+}
+function digest(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
+}

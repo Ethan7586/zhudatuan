@@ -1,5 +1,5 @@
 import type { ReferralFinancePort } from '../../../finance/public';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 /** Explicit reversal service kept separate so recovery and manual reversals share one accounting boundary. */
 export class ReverseCommissions {

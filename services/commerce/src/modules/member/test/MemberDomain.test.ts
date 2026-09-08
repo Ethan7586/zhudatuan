@@ -1,7 +1,7 @@
 import type { QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import { PgTransactionAccess } from '../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../foundation/domain/DomainError';
+import { PgTransactionAccess } from '../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../platform/error/DomainError';
 import { withWriteTransaction } from '../../../test/TransactionFixture';
 import { AddressBook } from '../domain/model/AddressBook';
 import { FavoriteList } from '../domain/model/FavoriteList';

@@ -1,9 +1,9 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { createHash } from 'node:crypto';
 import { isOperationTarget, type Operation } from '@shop/contract';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import type { PreauthResolver } from '../../../../foundation/security/PreauthResolver';
-import type { PreauthPurpose, PreauthSecurityContext } from '../../../../foundation/security/OperationSecurityContext';
+import type { DatabasePool } from '../../../../platform/database/Pool';
+import type { PreauthResolver } from '../../../../platform/security/PreauthResolver';
+import type { PreauthPurpose, PreauthSecurityContext } from '../../../../platform/security/OperationSecurityContext';
 import { requestCookie } from './SessionCookie';
 import type { FederationProtector } from '../../domain/service/FederationProtector';
 import { Preauth } from '../../domain/model/Preauth';
@@ -32,7 +32,7 @@ export class PgPreauthResolver implements PreauthResolver {
     const token = requestCookie(headers.cookie, '__Host-preauth');
     const target = headers['x-client-target'];
     if (!token || !/^[A-Za-z0-9_-]{64}$/.test(token) || !isOperationTarget(target)) {
-      throw new DomainError('AUTHENTICATION_REQUIRED');
+      throw new DomainError(requiredCode(operation));
     }
     const purpose = purposeOf(operation.id);
     const peer = headers['x-peer-address'] ?? 'unknown';
@@ -45,9 +45,10 @@ export class PgPreauthResolver implements PreauthResolver {
       [createHash('sha256').update(token).digest(), this.protector.browser(peer, agent, device), this.protector.device(device), purpose, target]
     );
     const row = result.rows[0];
-    if (!row) throw new DomainError('AUTHENTICATION_REQUIRED');
+    if (!row) throw new DomainError(requiredCode(operation));
     const preauth = new Preauth({ id: row.id, purpose: row.purpose, target: row.target, principal: row.principal_id, reference: row.reference_id, version: Number(row.version), expiresAt: row.expires_at });
-    preauth.assertActive(new Date(), purpose, target);
+    if (preauth.expiresAt <= new Date()) throw new DomainError(expiredCode(operation));
+    if (preauth.purpose !== purpose || preauth.target !== target) throw new DomainError(requiredCode(operation));
     return Object.freeze({
       kind: 'preauth',
       id: preauth.id,
@@ -58,13 +59,20 @@ export class PgPreauthResolver implements PreauthResolver {
       version: preauth.version,
       expires: preauth.expiresAt,
       trace: headers['x-trace-id'] ?? `preauth:${preauth.id}`,
-      authorization:
-        row.auth_state_hash && row.auth_nonce_hash && row.auth_pkce_challenge
-          ? Object.freeze({ stateHash: row.auth_state_hash, nonceHash: row.auth_nonce_hash, challenge: row.auth_pkce_challenge })
-          : null,
+      authorization: row.auth_state_hash && row.auth_nonce_hash && row.auth_pkce_challenge ? Object.freeze({ stateHash: row.auth_state_hash, nonceHash: row.auth_nonce_hash, challenge: row.auth_pkce_challenge }) : null,
       returnTarget: row.return_target,
     });
   }
+}
+
+function requiredCode(operation: Operation): 'AUTHENTICATION_REQUIRED' | 'FEDERATION_TRANSACTION_INVALID' | 'PREAUTH_REQUIRED' {
+  if (operation.id === 'identity.federations.selection.read') return 'AUTHENTICATION_REQUIRED';
+  if (operation.id === 'identity.federations.complete') return 'FEDERATION_TRANSACTION_INVALID';
+  return 'PREAUTH_REQUIRED';
+}
+
+function expiredCode(operation: Operation): 'FEDERATION_TRANSACTION_EXPIRED' | 'PREAUTH_EXPIRED' {
+  return operation.id.startsWith('identity.federations.') ? 'FEDERATION_TRANSACTION_EXPIRED' : 'PREAUTH_EXPIRED';
 }
 
 function purposeOf(operation: string): PreauthPurpose {

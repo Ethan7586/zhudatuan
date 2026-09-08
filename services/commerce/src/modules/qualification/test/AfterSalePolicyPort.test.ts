@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { QueryResult, QueryResultRow } from 'pg';
-import { PgTransactionManager } from '../../../adapter/database/PgTransactionManager';
-import type { DatabasePool } from '../../../foundation/persistence/Pool';
+import { PgTransactionManager } from '../../../platform/database/PgTransactionManager';
+import type { DatabasePool } from '../../../platform/database/Pool';
 import { PgAfterSalePolicyPort } from '../infrastructure/persistence/PgAfterSalePolicyPort';
 
 describe('PgAfterSalePolicyPort', () => {

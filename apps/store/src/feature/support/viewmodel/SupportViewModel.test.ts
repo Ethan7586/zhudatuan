@@ -1,3 +1,3 @@
 import { expect, it } from 'vitest';
 import { supportViewModel } from './SupportViewModel';
-it('binds support', () => expect(supportViewModel.routes).toEqual(['storesupportwork']));
+it('binds support list and conversation', () => expect(supportViewModel.routes).toEqual(['storesupportwork', 'storeworkcase']));

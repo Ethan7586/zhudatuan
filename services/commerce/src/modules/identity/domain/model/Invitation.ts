@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { isConsumerTarget } from '@shop/contract';
 export type InvitationKind = 'signin' | 'enrollment' | 'campaign';
 export type InvitationTarget = 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';

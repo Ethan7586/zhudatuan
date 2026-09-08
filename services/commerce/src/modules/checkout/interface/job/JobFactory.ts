@@ -1,7 +1,7 @@
-import { PgTransactionManager } from '../../../../adapter/database/PgTransactionManager';
-import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
-import type { ModuleJob } from '../../../../foundation/application/ModuleJob';
-import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { PgTransactionManager } from '../../../../platform/database/PgTransactionManager';
+import type { ModuleContext } from '../../../../composition/ModuleRegistry';
+import type { ModuleJob } from '../../../../pipeline/ModuleJob';
+import { DATABASE_POOL } from '../../../../platform/database/Pool';
 import { ORDER_EXPIRY_INVENTORY_PORT } from '../../../inventory/public';
 import { ORDER_EXPIRY_PORT } from '../../../order/public';
 import { ORDER_EXPIRY_HOLD_PORT, ORDER_EXPIRY_PAYMENT_PORT } from '../../../payment/public';

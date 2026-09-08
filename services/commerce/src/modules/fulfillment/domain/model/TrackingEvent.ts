@@ -30,5 +30,9 @@ export class TrackingEvent {
 
 const states = new Set<TrackingStatus>(['created', 'accepted', 'ready', 'shipped', 'intransit', 'outfordelivery', 'delivered', 'pickedup', 'completed', 'exception', 'returned']);
 const ranks: Readonly<Record<Exclude<TrackingStatus, 'exception'>, number>> = Object.freeze({ created: 0, accepted: 1, ready: 2, shipped: 3, intransit: 4, outfordelivery: 5, delivered: 6, pickedup: 6, completed: 7, returned: 8 });
-function rank(value: TrackingStatus): number { return value === 'exception' ? -1 : ranks[value]; }
-function instant(value: string): boolean { return Number.isFinite(new Date(value).getTime()); }
+function rank(value: TrackingStatus): number {
+  return value === 'exception' ? -1 : ranks[value];
+}
+function instant(value: string): boolean {
+  return Number.isFinite(new Date(value).getTime());
+}

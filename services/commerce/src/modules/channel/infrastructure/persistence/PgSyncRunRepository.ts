@@ -1,8 +1,8 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { createHash, randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { SyncRunRepository } from '../../application/port/SyncRunRepository';
 import type { SyncState } from '../../domain/model/SyncRun';
 import { SyncPolicy } from '../../domain/policy/SyncPolicy';
@@ -42,9 +42,11 @@ export class PgSyncRunRepository implements SyncRunRepository {
     const database = this.transactions.database(context);
     const selected = await database.query<{ state: SyncState; version: number }>(
       `select run.state,run.version from channel.syncrun run join channel.connection connection on connection.id=run.connection_id
-      where run.id=$1 and connection.scope_id=$2 for update`, [id, scope]);
+      where run.id=$1 and connection.scope_id=$2 for update`,
+      [id, scope]
+    );
     const current = selected.rows[0];
-    if (!current || expectedVersion !== null && Number(current.version) !== expectedVersion) throw new DomainError('VERSION_CONFLICT');
+    if (!current || (expectedVersion !== null && Number(current.version) !== expectedVersion)) throw new DomainError('VERSION_CONFLICT');
     this.policy.requireCancellation(current.state);
     const result = await database.query(
       `update channel.syncrun run set state='cancelled',completed_at=clock_timestamp(),version=version+1

@@ -4,8 +4,7 @@ import { IssueInvoice } from '../application/process/IssueInvoice';
 import { RunSettlement } from '../application/process/RunSettlement';
 import { InputWatermark } from '../domain/value/InputWatermark';
 
-const execution = Object.freeze({ scope: 'mall:one', trace: 'job:one', signal: new AbortController().signal,
-  deadline: Date.now() + 10_000 });
+const execution = Object.freeze({ scope: 'mall:one', trace: 'job:one', signal: new AbortController().signal, deadline: Date.now() + 10_000 });
 
 describe('finance long-running execution contract', () => {
   it('freezes one valid input watermark and rejects drift', () => {

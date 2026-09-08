@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { PostingPolicy } from '../policy/PostingPolicy';
 import { AccountingDate } from '../value/AccountingDate';
 import type { PostingReference } from '../value/PostingReference';
@@ -41,10 +41,12 @@ export class Journal {
   post(period: AccountingPeriod, at: AccountingDate, policy = new PostingPolicy()): Journal {
     if (this.value.state !== 'draft') throw new DomainError('VERSION_CONFLICT');
     period.assertPostable(at);
-    policy.assertBalanced(this.value.entries.map((entry) => {
-      const value = entry.snapshot();
-      return { account: AccountCode.of(value.accountCode, value.accountKind), side: value.side, amount: value.amount };
-    }));
+    policy.assertBalanced(
+      this.value.entries.map((entry) => {
+        const value = entry.snapshot();
+        return { account: AccountCode.of(value.accountCode, value.accountKind), side: value.side, amount: value.amount };
+      })
+    );
     return new Journal({ ...this.value, state: 'posted', postedAt: at, version: this.value.version + 1 });
   }
 

@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { CouponRule, type CouponRuleSnapshot } from './CouponRule';
 import { PromotionRule, type PromotionSnapshot } from './Promotion';
 

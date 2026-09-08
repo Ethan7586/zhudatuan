@@ -1,11 +1,8 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { Cart, CartOwner } from '../../domain/model/Cart';
 import type { CartLineMutation } from '../../domain/model/CartLine';
 
-export type CartMergeState =
-  | Readonly<{ state: 'none' }>
-  | Readonly<{ state: 'completed' }>
-  | Readonly<{ state: 'ready'; source: Cart; target: Cart }>;
+export type CartMergeState = Readonly<{ state: 'none' }> | Readonly<{ state: 'completed' }> | Readonly<{ state: 'ready'; source: Cart; target: Cart }>;
 
 export interface CartRepository {
   current(context: ReadTransactionContext, owner: CartOwner): Promise<Cart | null>;

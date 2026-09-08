@@ -1,7 +1,7 @@
 import { identityClientSchema } from '@shop/contract/identityschema';
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationRequest } from '../../../foundation/application/OperationRequest';
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { OperationRequest } from '../../../pipeline/OperationRequest';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
 import { ReadIdentityBootstrap } from '../application/service/ReadIdentityBootstrap';
 
 describe('ReadIdentityBootstrap', () => {

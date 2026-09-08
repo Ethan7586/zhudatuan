@@ -1,4 +1,4 @@
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 
 export async function nextOrderNumber(database: SqlExecutor): Promise<string> {
   const row = (

@@ -1,20 +1,12 @@
 import { createHash } from 'node:crypto';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AccessRecord } from '../../domain/model/AccessRecord';
 import type { AuditRecord } from '../../domain/model/AuditRecord';
 import type { ArchiveBatch, ArchiveDisposal, ArchiveObject, AuditRepository } from '../../application/port/AuditRepository';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
 
-interface ArchiveRow {
-  readonly id: string;
-  readonly kind: 'command' | 'access';
-  readonly occurred: string;
-  readonly record_hash: string;
-  readonly previous_hash: string | null;
-  readonly payload: Readonly<Record<string, unknown>>;
-}
-
+import { minuteKey, nextArchiveAt, type ArchiveRow } from './AuditRecord';
 export class PgAuditRepository implements AuditRepository {
   constructor(private readonly transactions = new PgTransactionAccess()) {}
 
@@ -70,9 +62,25 @@ export class PgAuditRepository implements AuditRepository {
       `insert into audit.accessrecord(id,scope_id,actor_id,actor_type,request_id,operation,subject_type,subject_id,object_type,
       object_id,outcome,reason,fields,trace_id,previous_hash,record_hash,accessed_at)
       values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14,$15,$16,$17)`,
-      [record.id, input.scope, input.actor, input.actorType, input.request, input.operation, input.subject.type, input.subject.id,
-        input.object.type, input.object.id, input.outcome, input.reason, JSON.stringify(record.fields), input.trace,
-        record.previousHash, record.recordHash, record.accessedAt]
+      [
+        record.id,
+        input.scope,
+        input.actor,
+        input.actorType,
+        input.request,
+        input.operation,
+        input.subject.type,
+        input.subject.id,
+        input.object.type,
+        input.object.id,
+        input.outcome,
+        input.reason,
+        JSON.stringify(record.fields),
+        input.trace,
+        record.previousHash,
+        record.recordHash,
+        record.accessedAt,
+      ]
     );
   }
 
@@ -124,9 +132,12 @@ export class PgAuditRepository implements AuditRepository {
   async completeArchive(context: WriteTransactionContext, batch: ArchiveBatch, object: ArchiveObject): Promise<void> {
     const database = this.transactions.database(context);
     await database.query('select pg_advisory_xact_lock(hashtextextended($1,0))', [`audit:${batch.scope}`]);
-    const retention = await database.query<{ legal_hold: boolean }>(`select coalesce(
+    const retention = await database.query<{ legal_hold: boolean }>(
+      `select coalesce(
       (select legal_hold from audit.retention where scope_id=$1),
-      (select legal_hold from audit.retention where scope_id='organization-platform-root'),false) legal_hold`, [batch.scope]);
+      (select legal_hold from audit.retention where scope_id='organization-platform-root'),false) legal_hold`,
+      [batch.scope]
+    );
     if (retention.rows[0]?.legal_hold) throw new Error('AUDIT_ARCHIVE_LEGAL_HOLD_ACTIVE');
     const id = `archive:${createHash('sha256').update(`${batch.scope}:${batch.start}:${batch.end}:${batch.lastHash}`).digest('hex').slice(0, 32)}`;
     await database.query(
@@ -134,15 +145,30 @@ export class PgAuditRepository implements AuditRepository {
       first_record_hash,last_record_hash,record_count,expires_at,archived_at,plaintext_sha256,index_sha256,locked_until,bundle_version)
       values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,clock_timestamp(),$14,$15,$16,2)
       on conflict(id) do nothing`,
-      [id, batch.scope, batch.start.slice(0, 10), batch.end.slice(0, 10), batch.end, object.reference, object.sha256, object.size,
-        object.keyVersion, batch.firstHash, batch.lastHash, batch.rows.length, object.expiresAt, object.plaintextHash, object.indexHash, object.lockedUntil]
+      [
+        id,
+        batch.scope,
+        batch.start.slice(0, 10),
+        batch.end.slice(0, 10),
+        batch.end,
+        object.reference,
+        object.sha256,
+        object.size,
+        object.keyVersion,
+        batch.firstHash,
+        batch.lastHash,
+        batch.rows.length,
+        object.expiresAt,
+        object.plaintextHash,
+        object.indexHash,
+        object.lockedUntil,
+      ]
     );
     const persisted = await database.query(
       `select 1 from audit.archiveref where id=$1 and scope_id=$2 and object_ref=$3 and sha256=$4
       and object_size=$5 and key_version=$6 and first_record_hash=$7 and last_record_hash=$8 and record_count=$9
       and plaintext_sha256=$10 and index_sha256=$11 and locked_until=$12 and expires_at=$13 and bundle_version=2`,
-      [id, batch.scope, object.reference, object.sha256, object.size, object.keyVersion, batch.firstHash, batch.lastHash,
-        batch.rows.length, object.plaintextHash, object.indexHash, object.lockedUntil, object.expiresAt]
+      [id, batch.scope, object.reference, object.sha256, object.size, object.keyVersion, batch.firstHash, batch.lastHash, batch.rows.length, object.plaintextHash, object.indexHash, object.lockedUntil, object.expiresAt]
     );
     if (!persisted.rows[0]) throw new Error('AUDIT_ARCHIVE_REFERENCE_CONFLICT');
     await database.query(
@@ -155,17 +181,22 @@ export class PgAuditRepository implements AuditRepository {
       [id, batch.recordIds, batch.accessIds, batch.scope]
     );
     const expected = object.entries.map((entry) => ({ kind: entry.kind, id: entry.id, record_hash: entry.recordHash }));
-    const mapped = await database.query<{ count: number; exact: boolean }>(`select count(*)::integer count,
+    const mapped = await database.query<{ count: number; exact: boolean }>(
+      `select count(*)::integer count,
       coalesce(bool_and(item.record_hash=expected.record_hash),false) exact
       from jsonb_to_recordset($2::jsonb) expected(kind text,id text,record_hash text)
       join audit.archiveitem item on item.archive_id=$1 and item.record_kind=expected.kind and item.record_id=expected.id`,
-      [id, JSON.stringify(expected)]);
+      [id, JSON.stringify(expected)]
+    );
     if (mapped.rows[0]?.count !== batch.rows.length || !mapped.rows[0]?.exact) throw new Error('AUDIT_ARCHIVE_SOURCE_CHANGED');
   }
 
   async disposalBatch(context: ReadTransactionContext): Promise<ArchiveDisposal | null> {
     const result = await this.transactions.database(context).query<{
-      archive: string; reference: string; sha256: string; scope: string;
+      archive: string;
+      reference: string;
+      sha256: string;
+      scope: string;
     }>(`select archive.id archive,archive.object_ref reference,archive.sha256,archive.scope_id scope
       from audit.archiveref archive
       where archive.expires_at<=clock_timestamp()
@@ -179,16 +210,18 @@ export class PgAuditRepository implements AuditRepository {
   async completeDisposal(context: WriteTransactionContext, disposal: ArchiveDisposal, trace: string): Promise<void> {
     const database = this.transactions.database(context);
     await database.query('select pg_advisory_xact_lock(hashtextextended($1,0))', [`audit:${disposal.scope}`]);
-    const inserted = await database.query(`insert into audit.archivedisposal(archive_id,scope_id,object_ref,object_sha256,reason,trace_id,removed_at)
+    const inserted = await database.query(
+      `insert into audit.archivedisposal(archive_id,scope_id,object_ref,object_sha256,reason,trace_id,removed_at)
       select archive.id,archive.scope_id,archive.object_ref,archive.sha256,'legal-retention-expired',$5,clock_timestamp()
       from audit.archiveref archive where archive.id=$1 and archive.scope_id=$2 and archive.object_ref=$3 and archive.sha256=$4
         and archive.expires_at<=clock_timestamp()
         and not coalesce((select legal_hold from audit.retention where scope_id=archive.scope_id),
           (select legal_hold from audit.retention where scope_id='organization-platform-root'),false)
-      on conflict(archive_id) do nothing`, [disposal.archive, disposal.scope, disposal.reference, disposal.sha256, trace]);
+      on conflict(archive_id) do nothing`,
+      [disposal.archive, disposal.scope, disposal.reference, disposal.sha256, trace]
+    );
     if ((inserted.rowCount ?? 0) === 0) {
-      const existing = await database.query('select 1 from audit.archivedisposal where archive_id=$1 and object_ref=$2 and object_sha256=$3',
-        [disposal.archive, disposal.reference, disposal.sha256]);
+      const existing = await database.query('select 1 from audit.archivedisposal where archive_id=$1 and object_ref=$2 and object_sha256=$3', [disposal.archive, disposal.reference, disposal.sha256]);
       if (!existing.rows[0]) throw new Error('AUDIT_ARCHIVE_DISPOSAL_CONFLICT');
     }
   }
@@ -198,19 +231,4 @@ export class PgAuditRepository implements AuditRepository {
     const next = nextArchiveAt(immediate);
     await new PgRuntimeWriter(database).schedule({ id: `job:auditarchive:${minuteKey(next)}`, kind: 'auditarchive', owner: 'audit', scope: 'organization-platform-root', payload: {}, priority: 80, availableAt: next.toISOString() });
   }
-}
-
-function nextArchiveAt(immediate: boolean): Date {
-  const next = new Date();
-  next.setUTCSeconds(0, 0);
-  if (immediate) next.setUTCMinutes(next.getUTCMinutes() + 1);
-  else {
-    next.setUTCMinutes(0);
-    next.setUTCHours(next.getUTCHours() + 1);
-  }
-  return next;
-}
-
-function minuteKey(value: Date): string {
-  return value.toISOString().replace(/[-:T]/g, '').slice(0, 12);
 }

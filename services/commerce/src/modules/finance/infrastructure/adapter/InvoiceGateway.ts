@@ -1,6 +1,6 @@
 import type { InvoiceInput, InvoiceIssuer, IssuedInvoice } from '../../application/port/InvoiceIssuer';
-import { HttpClient } from '../../../../foundation/http/HttpClient';
-import { invalidExternalResponse, readExternalJson } from '../../../../foundation/http/ExternalResponse';
+import { HttpClient } from '../../../../platform/http/HttpClient';
+import { invalidExternalResponse, readExternalJson } from '../../../../platform/http/ExternalResponse';
 
 export interface InvoiceConfiguration {
   readonly endpoint: string;

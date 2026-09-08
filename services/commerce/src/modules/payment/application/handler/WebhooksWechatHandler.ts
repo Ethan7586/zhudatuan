@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableCommit, DurableOperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { CommitContext, FinalizeContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableCommit, DurableOperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
 import type { PaymentGateway, PaymentNotification } from '../port/PaymentGateway';
 import type { VerifiedPaymentWebhook, WebhookInboxRepository } from '../port/WebhookInboxRepository';
 import type { WebhookScopeReader } from '../port/WebhookScopeReader';
@@ -26,8 +26,7 @@ export class WebhooksWechatHandler implements DurableOperationHandler<'payment.w
 
   async prepare(_input: OperationInputFor<'payment.webhooks.wechat'>, context: PrepareContext<'payment.webhooks.wechat'>): Promise<PreparedWebhook> {
     if (!context.rawBody) throw new Error('WECHAT_PAY_NOTIFICATION_BODY_MISSING');
-    const notification = verified(await this.gateway.verifyNotification(context.headers, context.rawBody,
-      { requestId: context.requestId, traceId: context.traceId, signal: context.signal, deadline: context.deadline }));
+    const notification = verified(await this.gateway.verifyNotification(context.headers, context.rawBody, { requestId: context.requestId, traceId: context.traceId, signal: context.signal, deadline: context.deadline }));
     return Object.freeze({
       notification,
       raw: context.rawBody,

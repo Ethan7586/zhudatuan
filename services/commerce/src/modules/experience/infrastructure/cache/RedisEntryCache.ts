@@ -1,6 +1,6 @@
 import { CACHE_CATALOG } from '@shop/config/runtime';
-import type { Cache } from '../../../../foundation/cache/Cache';
-import { VersionedKey } from '../../../../foundation/cache/VersionedKey';
+import type { Cache } from '../../../../platform/cache/Cache';
+import { VersionedKey } from '../../../../platform/cache/VersionedKey';
 import type { EntryCache } from '../../application/port/EntryCache';
 import type { StorefrontEntry } from '../../application/port/EntryRepository';
 

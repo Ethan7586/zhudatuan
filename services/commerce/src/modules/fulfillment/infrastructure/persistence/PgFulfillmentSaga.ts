@@ -1,4 +1,4 @@
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import { FulfillmentFailurePolicy } from '../../domain/policy/FulfillmentFailurePolicy';
 
 export class PgFulfillmentSaga {
@@ -26,10 +26,7 @@ export class PgFulfillmentSaga {
 
   async fail(database: SqlExecutor, fulfillment: string, step: string, error: unknown): Promise<'retry' | 'needsaction'> {
     const code = error instanceof Error ? error.message.slice(0, 160) : String(error).slice(0, 160);
-    const current = await database.query<{ attempts: number }>(
-      `select attempts from fulfillment.sagastep where fulfillment_id=$1 and step=$2 and state='running' for update`,
-      [fulfillment, step]
-    );
+    const current = await database.query<{ attempts: number }>(`select attempts from fulfillment.sagastep where fulfillment_id=$1 and step=$2 and state='running' for update`, [fulfillment, step]);
     const decision = this.failures.classify(error, current.rows[0]?.attempts ?? 0);
     const changed = await database.query<{ state: 'retry' | 'needsaction' }>(
       `update fulfillment.sagastep set state=$4,error_code=$3,

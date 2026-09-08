@@ -5,10 +5,11 @@ import type { SupportAttachment } from '../model/Attachment';
 import type { MessageDraft, SupportMessage } from '../model/Message';
 import type { useConversationViewModel } from '../viewmodel/ConversationViewModel';
 import { SupportComposer } from './SupportComposer';
+import { SupportContext } from './SupportContext';
 import './Support.css';
 
 export function ConversationPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof useConversationViewModel> }>) {
-  const { caseId, ticket, connected, error, state, messages, attachments, hasEarlier, loadingEarlier, draft, failed, sending, sendingDraft, unavailable, newMessage, actions } = viewmodel;
+  const { caseId, ticket, connected, error, state, messages, attachments, context, hasEarlier, loadingEarlier, draft, failed, sending, uploading, sendingDraft, unavailable, newMessage, actions } = viewmodel;
   const viewport = useRef<HTMLDivElement>(null);
   const scroll = useRef({ caseId, first: 0, last: 0, height: 0, bottom: true });
   useLayoutEffect(() => {
@@ -53,6 +54,7 @@ export function ConversationPage({ viewmodel }: Readonly<{ viewmodel: ReturnType
           {error}
         </p>
       ) : null}
+      <SupportContext context={context} />
       <section
         className="storesupportmessages"
         ref={viewport}
@@ -100,12 +102,14 @@ export function ConversationPage({ viewmodel }: Readonly<{ viewmodel: ReturnType
         value={draft.message}
         unavailable={unavailable}
         sending={sending}
+        uploading={uploading}
         failed={failed !== null}
         attachments={draft.attachments}
         onChange={actions.changeMessage}
         onSend={actions.send}
         onRetry={actions.retry}
         onFile={actions.upload}
+        onRemove={actions.removeAttachment}
       />
     </div>
   );

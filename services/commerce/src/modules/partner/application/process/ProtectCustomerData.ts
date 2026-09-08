@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationInputFor } from '@shop/contract';
-import type { PrepareContext } from '../../../../foundation/application/HandlerContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { CipherEnvelope, KmsClient } from '../../../../foundation/application/KmsPort';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { PrepareContext } from '../../../../pipeline/HandlerContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { CipherEnvelope, KmsClient } from '../../../../pipeline/KmsPort';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import { Agreement } from '../../domain/model/Agreement';
 import { Contact, type ContactKind } from '../../domain/model/Contact';
 import { Customer, type CustomerKind } from '../../domain/model/Customer';
@@ -24,10 +24,7 @@ export class ProtectCustomerData {
     const name = textField(body, 'name', 160);
     const kind = customerKind(body.kind);
     new Customer(id, kind, name, 'draft', 1);
-    const [identifierEnvelope, contact] = await Promise.all([
-      this.kms.encrypt('pii', 'partner/customer/identifier', identifier, { customer: id, scope: access.scope.id }),
-      this.contact(body.contact, id, access.scope.id),
-    ]);
+    const [identifierEnvelope, contact] = await Promise.all([this.kms.encrypt('pii', 'partner/customer/identifier', identifier, { customer: id, scope: access.scope.id }), this.contact(body.contact, id, access.scope.id)]);
     return Object.freeze({
       id,
       tenant: this.policy.tenant(access.scope),

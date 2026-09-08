@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { VerifiedAfterSaleAttachment } from '../../application/service/AfterSaleAttachment';
 import type { LineRow, OrderRow } from './AfterSaleAvailability';
 

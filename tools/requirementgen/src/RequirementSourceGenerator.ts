@@ -16,23 +16,25 @@ const shared = sharedStrings(xml('xl/sharedStrings.xml'));
 const mvp = cells(findSheet('MVP上线功能清单'));
 const providers = cells(findSheet('接口'));
 for (const requirement of source.mvp) {
-  if (requirement.release !== 'required') throw new Error(`MVP_RELEASE_DRIFT:${requirement.id}:${requirement.source.row}`);
+  if (requirement.release !== 'blocking') throw new Error(`MVP_RELEASE_DRIFT:${requirement.id}:${requirement.source.row}`);
 }
 for (const row of [11, 20]) {
   const definition = mvp.get(`D${row}`) ?? '';
   if (!definition.includes('分类销售数据') || definition.includes('粉类')) throw new Error(`MVP_REPORT_DIMENSION_DRIFT:${row}`);
 }
-if (!(mvp.get('F9') ?? '').includes('待确认') || !(mvp.get('F18') ?? '').includes('待确认')) throw new Error('MVP_VOUCHER_CLARIFICATION_DRIFT');
-if (!(mvp.get('F13') ?? '').includes('待确认')) throw new Error('MVP_RISK_CLARIFICATION_DRIFT');
+if ([3, 4, 10, 19].some((row) => mvp.get(`F${row}`) !== '忽略')) throw new Error('MVP_HISTORICAL_IGNORE_DRIFT');
+if ([9, 13, 18].some((row) => !(mvp.get(`F${row}`) ?? '').includes('待确认'))) throw new Error('MVP_HISTORICAL_NOTE_DRIFT');
 
-const priorityOne = await Promise.all(source.providers.slice(0, 11).map(async (provider) => {
-  const priority = Number(providers.get(`D${provider.row}`));
-  const label = providers.get(`B${provider.row}`) ?? '';
-  if (priority !== 1 || !label) throw new Error(`PROVIDER_PRIORITY_ONE_DRIFT:${provider.id}`);
-  const definition = await providerDefinition(provider.id);
-  if (definition.id !== provider.id || definition.name !== label) throw new Error(`PROVIDER_MANIFEST_NAME_DRIFT:${provider.id}`);
-  return Object.freeze({ id: provider.id, row: provider.row, label, priority, core: provider.core, definition });
-}));
+const priorityOne = await Promise.all(
+  source.providers.slice(0, 11).map(async (provider) => {
+    const priority = Number(providers.get(`D${provider.row}`));
+    const label = providers.get(`B${provider.row}`) ?? '';
+    if (priority !== 1 || !label) throw new Error(`PROVIDER_PRIORITY_ONE_DRIFT:${provider.id}`);
+    const definition = await providerDefinition(provider.id);
+    if (definition.id !== provider.id || definition.name !== label) throw new Error(`PROVIDER_MANIFEST_NAME_DRIFT:${provider.id}`);
+    return Object.freeze({ id: provider.id, row: provider.row, label, priority, core: provider.core, definition });
+  })
+);
 if (source.providers.slice(11).some((provider) => Number(providers.get(`D${provider.row}`)) === 1)) throw new Error('PROVIDER_PRIORITY_ONE_COUNT_DRIFT');
 
 const output = stringify(
@@ -40,10 +42,25 @@ const output = stringify(
     generated: true,
     source: authority.logicalSource,
     workbookSha256: authority.sha256,
-    counts: { mvp: 22, required: 22, nonblocking: 0, providerRequired: 11 },
-    mvp: source.mvp.map(({ id, title, source: reference, release, clarifications }) => ({ id, title, source: reference, release, clarifications })),
+    authority: {
+      path: authority.repositoryRelativePath,
+      sheet: authority.sheet,
+      sourceRange: authority.range,
+      selectedRange: authority.selectionRange,
+      sha256: authority.sha256,
+      readAt: authority.reviewedAt,
+      order: authority.authorityOrder,
+      changePolicy: '工作簿内容或哈希变化时必须重新进行产品、架构、数据与发布评审',
+    },
+    counts: { mvp: 22, blocking: 22, providerRequired: 11 },
+    mvp: source.mvp.map(({ id, title, source: reference, release }) => ({
+      id,
+      title,
+      source: reference,
+      release,
+      historicalWorkbookNote: mvp.get(`F${reference.row}`) ?? '',
+    })),
     providers: priorityOne.map(({ id, row, label, priority, core }) => ({ id, row, label, priority, core })),
-    clarifications: source.clarifications,
   },
   { lineWidth: 0 }
 );

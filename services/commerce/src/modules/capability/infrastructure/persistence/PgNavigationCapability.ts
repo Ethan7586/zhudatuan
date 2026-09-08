@@ -1,7 +1,7 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { databaseInteger } from '../../../../foundation/persistence/DatabaseInteger';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { DatabasePool } from '../../../../platform/database/Pool';
+import { databaseInteger } from '../../../../platform/database/DatabaseInteger';
 import type { NavigationCapability, NavigationCapabilityPort } from '../../public/NavigationCapabilityPort';
 interface CapabilityRow {
   readonly scope_id: string;

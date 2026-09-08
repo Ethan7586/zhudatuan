@@ -18,12 +18,23 @@ export class OrderEventJob implements JobProcessor {
     const scopeId = text(envelope.scopeId, 'ORDER_EVENT_SCOPE_REQUIRED');
     if (scopeId !== job.scope) throw new Error('ORDER_EVENT_SCOPE_MISMATCH');
     const payload = object(envelope.payload);
-    const event = eventType === 'payment.captured' ? this.payment.receive(eventId, scopeId, payload)
-      : eventType === 'fulfillment.shipped' ? this.fulfillment.receive(eventId, scopeId, payload)
-        : eventType === 'refund.completed' ? this.refund.receive(eventId, scopeId, payload) : null;
+    const event =
+      eventType === 'payment.captured'
+        ? this.payment.receive(eventId, scopeId, payload)
+        : eventType === 'fulfillment.shipped'
+          ? this.fulfillment.receive(eventId, scopeId, payload)
+          : eventType === 'refund.completed'
+            ? this.refund.receive(eventId, scopeId, payload)
+            : null;
     if (!event) throw new Error('ORDER_EVENT_UNSUPPORTED');
     await this.processor.execute(event, signal, deadline);
   }
 }
-function object(value: unknown): Readonly<Record<string, unknown>> { if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('JOB_PAYLOAD_INVALID'); return value as Readonly<Record<string, unknown>>; }
-function text(value: unknown, code: string): string { if (typeof value !== 'string' || !value) throw new Error(code); return value; }
+function object(value: unknown): Readonly<Record<string, unknown>> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('JOB_PAYLOAD_INVALID');
+  return value as Readonly<Record<string, unknown>>;
+}
+function text(value: unknown, code: string): string {
+  if (typeof value !== 'string' || !value) throw new Error(code);
+  return value;
+}

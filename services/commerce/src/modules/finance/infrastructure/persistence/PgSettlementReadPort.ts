@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { SettlementCursor, SettlementEntry, SettlementReadPort } from '../../public/SettlementReadPort';
 
 export class PgSettlementReadPort implements SettlementReadPort {
@@ -9,7 +9,13 @@ export class PgSettlementReadPort implements SettlementReadPort {
     if (accountIds.length === 0) return Object.freeze([]);
     const database = this.transactions.database(context);
     const result = await database.query<{
-      id: string; accountId: string; amountMinor: number; referenceType: string; referenceId: string; description: string; occurredAt: Date | string;
+      id: string;
+      accountId: string;
+      amountMinor: number;
+      referenceType: string;
+      referenceId: string;
+      description: string;
+      occurredAt: Date | string;
     }>(
       `select entry.id,entry.account_id "accountId",
       case entry.side when 'credit' then entry.amount_minor else -entry.amount_minor end::float8 "amountMinor",

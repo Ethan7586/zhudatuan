@@ -1,6 +1,6 @@
 import { PGlite } from '@electric-sql/pglite';
 import { describe, expect, it } from 'vitest';
-import type { SqlExecutor } from '../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../platform/database/PgTransactionAccess';
 import { result } from '../../../test/TransactionFixture';
 import { projectedMetric } from '../domain/model/Projection';
 import { PgReportingRepository } from '../infrastructure/persistence/PgReportingRepository';
@@ -34,7 +34,10 @@ describe('reporting projection history', () => {
       const revisions = await database.query<{ event_id: string; data_version: number }>('select event_id,data_version from reporting.factrevision order by projection_version');
       expect(current.rows[0]?.value_numeric).toBe(150);
       expect(frozen.rows[0]?.value_numeric).toBe(100);
-      expect(revisions.rows).toEqual([{ event_id: 'event:first', data_version: 1 }, { event_id: 'event:late', data_version: 2 }]);
+      expect(revisions.rows).toEqual([
+        { event_id: 'event:first', data_version: 1 },
+        { event_id: 'event:late', data_version: 2 },
+      ]);
 
       await database.exec("update reporting.period set state='closed'");
       await expect(repository.addMetrics([late], 'event:closed')).rejects.toThrow('REPORT_PERIOD_CLOSED');

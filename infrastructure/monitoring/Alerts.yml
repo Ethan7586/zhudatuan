@@ -1,0 +1,51 @@
+version: 1
+owner: reliability
+mode: generated
+source: config/telemetry.yml#alerts
+catalog: docs/alerts/catalog.md
+generator:
+  output: monitoring-provider-rules
+  immutable: true
+  rejectUnknownFields: true
+  require:
+    - title
+    - signal
+    - measure
+    - windowSeconds
+    - threshold
+    - severity
+    - owner
+    - runbook
+    - dashboard
+    - recentChanges
+    - traceQuery
+    - mitigation
+  validate:
+    owner: nonempty
+    runbook: existing-file
+    dashboard: existing-dashboard
+    recentChanges: configured-link
+    traceQuery: safe-query
+    mitigation: safe-action
+    secrets: forbidden
+routing:
+  critical:
+    destination: incident-oncall
+    repeatSeconds: 300
+    acknowledgeSeconds: 300
+  warning:
+    destination: owning-team
+    repeatSeconds: 1800
+    acknowledgeSeconds: 1800
+grouping: [environment, alertid, owner, provider]
+inhibition:
+  - parent: releasefailure
+    children: [servicelevelburn, importfailure]
+    equality: [environment, release]
+  - parent: securityincident
+    children: [sessionmallmismatch]
+    equality: [environment]
+evidence:
+  payload: [alertid, observedat, environment, release, signalvalue, thresholdversion, dashboard, recentchanges, traceexample, runbook, owner, mitigation, evidencehash]
+  forbidden: [secret, token, cookie, authorization, otp, pii, requestbody]
+  archive: infrastructure/storage/Policy.yml#evidence

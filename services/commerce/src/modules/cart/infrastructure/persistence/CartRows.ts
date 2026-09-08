@@ -1,5 +1,5 @@
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { Cart, type CartOwner } from '../../domain/model/Cart';
 
 interface CartRow {
@@ -14,10 +14,7 @@ interface CartRow {
 }
 
 export async function readCart(database: SqlExecutor, id: string): Promise<Cart> {
-  const selected = await database.query<CartRow>(
-    `select id,owner_kind,member_id,token_digest,mall_id,application_id,version::integer,updated_at from cart.cart where id=$1`,
-    [id]
-  );
+  const selected = await database.query<CartRow>(`select id,owner_kind,member_id,token_digest,mall_id,application_id,version::integer,updated_at from cart.cart where id=$1`, [id]);
   const row = selected.rows[0];
   if (!row) throw new DomainError('CART_EMPTY');
   const lines = await database.query<{ listing_id: string; sku_id: string; quantity: number; selected: boolean; version: number }>(

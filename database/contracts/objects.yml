@@ -608,7 +608,7 @@ objects:
     owner: shopidentityowner
     source: database/migrations/20260904013000_prepare_access_ownership.sql
     callers:
-      - services/commerce/src/foundation/security/PgSessionResolver.ts
+      - services/commerce/src/platform/security/PgSessionResolver.ts
   - id: identity.revoke_session_token_family
     kind: function
     owner: shopidentityowner
@@ -933,7 +933,7 @@ objects:
     owner: shopruntimeowner
     source: database/migrations/20260829102000_inbox_deduplication.sql
     callers:
-      - services/commerce/src/adapter/database/PgInbox.ts
+      - services/commerce/src/platform/database/PgInbox.ts
   - id: runtime.accept_provider_webhook
     kind: function
     owner: shopruntimeowner
@@ -5325,6 +5325,22 @@ objects:
     objectType: table
     target: fulfillment.shipment
     privilege: update
+  - id: shopapp:table:fulfillment.storeaction:insert
+    kind: grant
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopapp
+    objectType: table
+    target: fulfillment.storeaction
+    privilege: insert
+  - id: shopapp:table:fulfillment.storeaction:select
+    kind: grant
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopapp
+    objectType: table
+    target: fulfillment.storeaction
+    privilege: select
   - id: shopapp:table:fulfillment.trackingevent:select
     kind: grant
     owner: shopfulfillmentowner
@@ -5925,6 +5941,22 @@ objects:
     objectType: table
     target: identity.stepuprequest
     privilege: update
+  - id: shopapp:table:identity.storehandover:insert
+    kind: grant
+    owner: shopidentityowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopapp
+    objectType: table
+    target: identity.storehandover
+    privilege: insert
+  - id: shopapp:table:identity.storehandover:select
+    kind: grant
+    owner: shopidentityowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopapp
+    objectType: table
+    target: identity.storehandover
+    privilege: select
   - id: shopapp:table:identity.wechatgrant:delete
     kind: grant
     owner: shopidentityowner
@@ -5956,6 +5988,30 @@ objects:
     role: shopapp
     objectType: table
     target: identity.wechatgrant
+    privilege: update
+  - id: shopapp:table:inventory.adjustmentrequest:insert
+    kind: grant
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopapp
+    objectType: table
+    target: inventory.adjustmentrequest
+    privilege: insert
+  - id: shopapp:table:inventory.adjustmentrequest:select
+    kind: grant
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopapp
+    objectType: table
+    target: inventory.adjustmentrequest
+    privilege: select
+  - id: shopapp:table:inventory.adjustmentrequest:update
+    kind: grant
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopapp
+    objectType: table
+    target: inventory.adjustmentrequest
     privilege: update
   - id: shopapp:table:inventory.command:delete
     kind: grant
@@ -11453,6 +11509,86 @@ objects:
     objectType: table
     target: catalog.import_receipts
     privilege: update
+  - id: shopfulfillmentreader:table:fulfillment.storeaction:select
+    kind: grant
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopfulfillmentreader
+    objectType: table
+    target: fulfillment.storeaction
+    privilege: select
+  - id: shopfulfillmentwriter:table:fulfillment.storeaction:insert
+    kind: grant
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopfulfillmentwriter
+    objectType: table
+    target: fulfillment.storeaction
+    privilege: insert
+  - id: shopfulfillmentwriter:table:fulfillment.storeaction:select
+    kind: grant
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopfulfillmentwriter
+    objectType: table
+    target: fulfillment.storeaction
+    privilege: select
+  - id: shopidentityreader:table:identity.storehandover:select
+    kind: grant
+    owner: shopidentityowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopidentityreader
+    objectType: table
+    target: identity.storehandover
+    privilege: select
+  - id: shopidentitywriter:table:identity.storehandover:insert
+    kind: grant
+    owner: shopidentityowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopidentitywriter
+    objectType: table
+    target: identity.storehandover
+    privilege: insert
+  - id: shopidentitywriter:table:identity.storehandover:select
+    kind: grant
+    owner: shopidentityowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopidentitywriter
+    objectType: table
+    target: identity.storehandover
+    privilege: select
+  - id: shopinventoryreader:table:inventory.adjustmentrequest:select
+    kind: grant
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopinventoryreader
+    objectType: table
+    target: inventory.adjustmentrequest
+    privilege: select
+  - id: shopinventorywriter:table:inventory.adjustmentrequest:insert
+    kind: grant
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopinventorywriter
+    objectType: table
+    target: inventory.adjustmentrequest
+    privilege: insert
+  - id: shopinventorywriter:table:inventory.adjustmentrequest:select
+    kind: grant
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopinventorywriter
+    objectType: table
+    target: inventory.adjustmentrequest
+    privilege: select
+  - id: shopinventorywriter:table:inventory.adjustmentrequest:update
+    kind: grant
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopinventorywriter
+    objectType: table
+    target: inventory.adjustmentrequest
+    privilege: update
   - id: shopjob:function:access.authorization_snapshot(text,text,text,text):execute
     kind: grant
     owner: shopaccessowner
@@ -15541,6 +15677,22 @@ objects:
     objectType: table
     target: fulfillment.shipment
     privilege: update
+  - id: shopjob:table:fulfillment.storeaction:insert
+    kind: grant
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopjob
+    objectType: table
+    target: fulfillment.storeaction
+    privilege: insert
+  - id: shopjob:table:fulfillment.storeaction:select
+    kind: grant
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopjob
+    objectType: table
+    target: fulfillment.storeaction
+    privilege: select
   - id: shopjob:table:fulfillment.trackingevent:insert
     kind: grant
     owner: shopfulfillmentowner
@@ -16092,6 +16244,30 @@ objects:
     role: shopjob
     objectType: table
     target: identity.wechatgrant
+    privilege: update
+  - id: shopjob:table:inventory.adjustmentrequest:insert
+    kind: grant
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopjob
+    objectType: table
+    target: inventory.adjustmentrequest
+    privilege: insert
+  - id: shopjob:table:inventory.adjustmentrequest:select
+    kind: grant
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopjob
+    objectType: table
+    target: inventory.adjustmentrequest
+    privilege: select
+  - id: shopjob:table:inventory.adjustmentrequest:update
+    kind: grant
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    role: shopjob
+    objectType: table
+    target: inventory.adjustmentrequest
     privilege: update
   - id: shopjob:table:inventory.command:delete
     kind: grant
@@ -26025,6 +26201,34 @@ objects:
     kind: policy
     owner: shopfulfillmentowner
     source: database/migrations/20260904065000_finalize_constraints.sql
+  - id: fulfillment.storeaction.appscope
+    kind: policy
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: fulfillment.storeaction.jobscope
+    kind: policy
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: fulfillment.storeaction.migrationaccess
+    kind: policy
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: fulfillment.storeaction.moduleowner
+    kind: policy
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: fulfillment.storeaction.moduleread
+    kind: policy
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: fulfillment.storeaction.modulereader
+    kind: policy
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: fulfillment.storeaction.modulewriter
+    kind: policy
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
   - id: fulfillment.trackingevent.appscope
     kind: policy
     owner: shopfulfillmentowner
@@ -26693,6 +26897,30 @@ objects:
     kind: policy
     owner: shopidentityowner
     source: database/migrations/20260830153000_issue_action_proof.sql
+  - id: identity.storehandover.appscope
+    kind: policy
+    owner: shopidentityowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: identity.storehandover.migrationaccess
+    kind: policy
+    owner: shopidentityowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: identity.storehandover.moduleowner
+    kind: policy
+    owner: shopidentityowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: identity.storehandover.moduleread
+    kind: policy
+    owner: shopidentityowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: identity.storehandover.modulereader
+    kind: policy
+    owner: shopidentityowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: identity.storehandover.modulewriter
+    kind: policy
+    owner: shopidentityowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
   - id: identity.wechatgrant.appscope
     kind: policy
     owner: shopidentityowner
@@ -26721,6 +26949,34 @@ objects:
     kind: policy
     owner: shopidentityowner
     source: database/migrations/20260904065000_finalize_constraints.sql
+  - id: inventory.adjustmentrequest.appscope
+    kind: policy
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: inventory.adjustmentrequest.jobscope
+    kind: policy
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: inventory.adjustmentrequest.migrationaccess
+    kind: policy
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: inventory.adjustmentrequest.moduleowner
+    kind: policy
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: inventory.adjustmentrequest.moduleread
+    kind: policy
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: inventory.adjustmentrequest.modulereader
+    kind: policy
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+  - id: inventory.adjustmentrequest.modulewriter
+    kind: policy
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
   - id: inventory.command.appscope
     kind: policy
     owner: shopinventoryowner
@@ -34028,6 +34284,11 @@ objects:
     owner: shopfulfillmentowner
     source: database/migrations/20260904027900_prepare_fulfillment.sql
     rls: true
+  - id: fulfillment.storeaction
+    kind: table
+    owner: shopfulfillmentowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    rls: true
   - id: fulfillment.trackingevent
     kind: table
     owner: shopfulfillmentowner
@@ -34143,10 +34404,20 @@ objects:
     owner: shopidentityowner
     source: database/migrations/20260830153000_issue_action_proof.sql
     rls: true
+  - id: identity.storehandover
+    kind: table
+    owner: shopidentityowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
+    rls: true
   - id: identity.wechatgrant
     kind: table
     owner: shopidentityowner
     source: database/migrations/20260821013000_create_identity_access.sql
+    rls: true
+  - id: inventory.adjustmentrequest
+    kind: table
+    owner: shopinventoryowner
+    source: database/migrations/20260907011000_complete_store_workflow.sql
     rls: true
   - id: inventory.command
     kind: table

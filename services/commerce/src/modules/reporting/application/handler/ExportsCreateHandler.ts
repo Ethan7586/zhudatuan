@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { bodyRecord } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { JobPort } from '../../../runtime/public';
 import { exportSnapshot } from '../../domain/model/ExportJob';
 import { ReportSnapshot } from '../../domain/model/ReportSnapshot';
@@ -28,8 +28,12 @@ export class ExportsCreateHandler implements OperationHandler<'reporting.exports
     const filter = exportFilter(report, body.filter);
     const current = await this.reports.watermark(context.transaction, access.scope.id);
     const selected = ReportSnapshot.restore(body.snapshot, metricExportQuery(access.scope.id, filter));
-    if (selected.watermark.version > current.version || Date.parse(selected.watermark.occurredAt) > Date.parse(current.occurredAt) ||
-      Date.parse(selected.generatedAt) > Date.now() || (selected.watermark.version === current.version && selected.watermark.event !== current.event)) {
+    if (
+      selected.watermark.version > current.version ||
+      Date.parse(selected.watermark.occurredAt) > Date.parse(current.occurredAt) ||
+      Date.parse(selected.generatedAt) > Date.now() ||
+      (selected.watermark.version === current.version && selected.watermark.event !== current.event)
+    ) {
       throw new Error('REPORT_EXPORT_SNAPSHOT_INVALID');
     }
     const snapshot = exportSnapshot(filter, selected.watermark, selected.generatedAt, selected.generationVersion);

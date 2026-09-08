@@ -1,8 +1,8 @@
 import type { OperationId, OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { ExecutionContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationReply, OperationResult } from '../../../../foundation/application/OperationHandler';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
+import type { OperationReply, OperationResult } from '../../../../pipeline/OperationHandler';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import type { FinanceOperation } from '../../application/port/FinanceOperation';
 import type { FinanceEntry, FinanceRequest } from './FinanceOperation';
 

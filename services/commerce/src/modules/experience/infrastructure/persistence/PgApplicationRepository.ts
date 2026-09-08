@@ -1,4 +1,4 @@
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
 import type { ExperienceCatalogPort } from '../../../catalog/public';
 import type { MallProvisionPort, OrganizationReadPort } from '../../../organization/public';
 import type { ApplicationRepository } from '../../application/port/ApplicationRepository';

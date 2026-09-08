@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { PgRuntimeWriter, type RuntimeSql } from '../../../../adapter/database/PgRuntimeWriter';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { PgRuntimeWriter, type RuntimeSql } from '../../../../platform/database/PgRuntimeWriter';
 
 export async function cancelUnexecuted(database: Queryable, batch: string, budget: string) {
   const released = await database.query(

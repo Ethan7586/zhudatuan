@@ -1,6 +1,6 @@
 import { Client } from 'pg';
 import { localSeedEnvironment } from '@shop/config/server';
-import { KmsClient } from '../../../services/commerce/src/foundation/infrastructure/KmsClient';
+import { KmsClient } from '../../../services/commerce/src/platform/secret/KmsClient';
 import { localSecret } from './LocalSecrets';
 
 const environment = localSeedEnvironment();

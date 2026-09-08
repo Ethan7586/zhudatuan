@@ -1,6 +1,6 @@
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../platform/database/TransactionContext';
 
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import { publicPort } from '../../../composition/ModuleRegistry';
 
 export interface IdentityMembership {
   readonly id: string;
@@ -17,7 +17,11 @@ export interface IdentityMembership {
 
 export interface IdentityAccessPort {
   memberships(context: ReadTransactionContext, member: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<readonly IdentityMembership[]>;
-  session(context: WriteTransactionContext, membership: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<Readonly<{ accessVersion: number; client: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier' }>>;
+  session(
+    context: WriteTransactionContext,
+    membership: string,
+    target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'
+  ): Promise<Readonly<{ accessVersion: number; client: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier' }>>;
   directoryMemberships(context: ReadTransactionContext, memberships: readonly string[]): Promise<Readonly<{ principal: string | null; memberships: readonly IdentityMembership[]; conflict: boolean }>>;
   setEmployeeNumber(context: WriteTransactionContext, membership: string, employee: string | null): Promise<void>;
   memberForManagement(context: WriteTransactionContext, membership: string): Promise<Readonly<{ member: string; accessVersion: number }>>;

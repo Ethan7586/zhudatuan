@@ -1,7 +1,7 @@
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import { mapParallel } from '../../../../foundation/performance/Parallel';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
+import { mapParallel } from '@shop/kernel';
 import type { ProviderResolver } from '../service/ProviderResolver';
-import { safeErrorCode } from '../../../../foundation/domain/SafeError';
+import { safeErrorCode } from '../../../../platform/error/SafeError';
 import type { ProviderHealthRepository } from '../port/ProviderHealthRepository';
 
 export class MonitorIdentityProviders {

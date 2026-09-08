@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { mapParallel } from '../../../../foundation/performance/Parallel';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { mapParallel } from '@shop/kernel';
 import type { CheckoutRetentionPort } from '../../../checkout/public';
 import type { PricingRetentionPort } from '../../../pricing/public';
 import type { VerificationRetentionPort } from '../../../verification/public';
@@ -31,15 +31,14 @@ export class CleanupRuntime {
     private readonly dependencies: RuntimeCleanupDependencies,
     private readonly config: RuntimeCleanupConfig
   ) {
-    if (![config.batch, config.objectConcurrency, config.inboxDays, config.outboxDays].every(value => Number.isSafeInteger(value) && value > 0)) {
+    if (![config.batch, config.objectConcurrency, config.inboxDays, config.outboxDays].every((value) => Number.isSafeInteger(value) && value > 0)) {
       throw new Error('CLEANUP_CONFIG_INVALID');
     }
   }
 
   async execute(job: Pick<ClaimedJob, 'id' | 'token'>, signal: AbortSignal, deadline: number): Promise<void> {
     const jobId = job.id;
-    const options = (operation: string): TransactionOptions => ({ tenant: '', membership: '', scope: 'runtime', actor: 'job:cleanup',
-      trace: jobId, operation, workload: 'jobs', signal, deadline });
+    const options = (operation: string): TransactionOptions => ({ tenant: '', membership: '', scope: 'runtime', actor: 'job:cleanup', trace: jobId, operation, workload: 'jobs', signal, deadline });
     await this.transactions.write(options('job.runtime.cleanup.recover'), async (context) => {
       await this.cleanup.jobs.recover(context, jobId, this.config.batch);
       await this.cleanup.imports.expire(context, this.config.batch);
@@ -54,20 +53,17 @@ export class CleanupRuntime {
     const plan = await this.transactions.read(options('job.runtime.cleanup.plan'), async (context) => {
       const imports = await this.cleanup.imports.plan(context, this.config.batch);
       const remaining = this.config.batch - imports.ids.length;
-      const exports = remaining > 0
-        ? await this.cleanup.exports.plan(context, remaining)
-        : { ids: Object.freeze([]), objects: Object.freeze([]) };
+      const exports = remaining > 0 ? await this.cleanup.exports.plan(context, remaining) : { ids: Object.freeze([]), objects: Object.freeze([]) };
       const jobs = await this.cleanup.jobs.plan(context, this.config.batch);
       const idempotency = await this.cleanup.control.planIdempotency(context, this.config.batch);
       const deadletters = await this.cleanup.control.planDeadletters(context, this.config.batch);
       const inbox = await this.cleanup.inbox.plan(context, inboxBefore, this.config.batch);
       const outbox = await this.cleanup.outbox.plan(context, outboxBefore, this.config.batch);
       const objects = Object.freeze([...new Set([...imports.objects, ...exports.objects])]);
-      return Object.freeze({ version: 1, createdAt, inboxBefore: inboxBefore.toISOString(), outboxBefore: outboxBefore.toISOString(),
-        jobs, imports, exports, idempotency, deadletters, inbox, outbox, objects });
+      return Object.freeze({ version: 1, createdAt, inboxBefore: inboxBefore.toISOString(), outboxBefore: outboxBefore.toISOString(), jobs, imports, exports, idempotency, deadletters, inbox, outbox, objects });
     });
     const evidence = cleanupEvidence(plan);
-    await this.transactions.write(options('job.runtime.cleanup.plan.record'), context => this.cleanup.jobs.record(context, job, evidence));
+    await this.transactions.write(options('job.runtime.cleanup.plan.record'), (context) => this.cleanup.jobs.record(context, job, evidence));
     await mapParallel(plan.objects, this.config.objectConcurrency, async (reference) => {
       if (signal.aborted) throw signal.reason ?? new Error('CLEANUP_ABORTED');
       if (Date.now() >= deadline) throw new Error('DEADLINE_EXCEEDED');
@@ -92,17 +88,32 @@ function before(now: number, days: number): Date {
   return new Date(now - days * 86_400_000);
 }
 
-function cleanupEvidence(plan: Readonly<Record<string, unknown>> & {
-  readonly createdAt: string; readonly inboxBefore: string; readonly outboxBefore: string;
-  readonly jobs: readonly string[]; readonly imports: Readonly<{ ids: readonly string[] }>;
-  readonly exports: Readonly<{ ids: readonly string[] }>; readonly idempotency: readonly unknown[];
-  readonly deadletters: readonly string[]; readonly inbox: readonly unknown[]; readonly outbox: readonly string[]; readonly objects: readonly string[];
-}): CleanupEvidence {
-  const counts = Object.freeze({ jobs: plan.jobs.length, imports: plan.imports.ids.length, exports: plan.exports.ids.length,
-    idempotency: plan.idempotency.length, deadletters: plan.deadletters.length, inbox: plan.inbox.length,
-    outbox: plan.outbox.length, objects: plan.objects.length });
-  return Object.freeze({ hash: createHash('sha256').update(JSON.stringify(plan)).digest('hex'), createdAt: plan.createdAt,
-    inboxBefore: plan.inboxBefore, outboxBefore: plan.outboxBefore, counts });
+function cleanupEvidence(
+  plan: Readonly<Record<string, unknown>> & {
+    readonly createdAt: string;
+    readonly inboxBefore: string;
+    readonly outboxBefore: string;
+    readonly jobs: readonly string[];
+    readonly imports: Readonly<{ ids: readonly string[] }>;
+    readonly exports: Readonly<{ ids: readonly string[] }>;
+    readonly idempotency: readonly unknown[];
+    readonly deadletters: readonly string[];
+    readonly inbox: readonly unknown[];
+    readonly outbox: readonly string[];
+    readonly objects: readonly string[];
+  }
+): CleanupEvidence {
+  const counts = Object.freeze({
+    jobs: plan.jobs.length,
+    imports: plan.imports.ids.length,
+    exports: plan.exports.ids.length,
+    idempotency: plan.idempotency.length,
+    deadletters: plan.deadletters.length,
+    inbox: plan.inbox.length,
+    outbox: plan.outbox.length,
+    objects: plan.objects.length,
+  });
+  return Object.freeze({ hash: createHash('sha256').update(JSON.stringify(plan)).digest('hex'), createdAt: plan.createdAt, inboxBefore: plan.inboxBefore, outboxBefore: plan.outboxBefore, counts });
 }
 
 function assertCleanupCounts(expected: Readonly<Record<string, number>>, actual: Readonly<Record<string, number>>): void {

@@ -1,5 +1,5 @@
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { FacetRepository, FinanceFacetCount, FinanceFacetSnapshot } from '../../application/port/FacetRepository';
 
 interface FacetRow {
@@ -58,14 +58,14 @@ export class PgFacetRepository implements FacetRepository {
 
 function counts(value: unknown): readonly FinanceFacetCount[] {
   if (!Array.isArray(value)) return Object.freeze([]);
-  return Object.freeze(value.flatMap((item) => {
-    if (!item || typeof item !== 'object') return [];
-    const record = item as Readonly<Record<string, unknown>>;
-    const count = typeof record.count === 'number' ? record.count : Number(record.count);
-    return typeof record.value === 'string' && Number.isSafeInteger(count) && count >= 0
-      ? [Object.freeze({ value: record.value, count })]
-      : [];
-  }));
+  return Object.freeze(
+    value.flatMap((item) => {
+      if (!item || typeof item !== 'object') return [];
+      const record = item as Readonly<Record<string, unknown>>;
+      const count = typeof record.count === 'number' ? record.count : Number(record.count);
+      return typeof record.value === 'string' && Number.isSafeInteger(count) && count >= 0 ? [Object.freeze({ value: record.value, count })] : [];
+    })
+  );
 }
 
 function timestamp(value: Date | string | null): string | null {

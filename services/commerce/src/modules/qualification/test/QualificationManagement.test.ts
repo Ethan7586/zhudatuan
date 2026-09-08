@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { WriteHandlerContext } from '../../../foundation/application/HandlerContext';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { WriteHandlerContext } from '../../../pipeline/HandlerContext';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 import { DecisionsPreviewHandler } from '../application/handler/DecisionsPreviewHandler';
 import { PoliciesManageHandler } from '../application/handler/PoliciesManageHandler';
 import type { QualificationRepository } from '../application/port/QualificationRepository';
@@ -16,8 +16,17 @@ describe('qualification management', () => {
 
   it('previews exact changed paths and conservative snapshot impact', async () => {
     const previewPolicy = vi.fn(async () => ({
-      currentName: '员工策略', currentVersion: 3, currentRule: { effect: 'allow', requiredTags: ['employee'] }, currentHash: 'a'.repeat(64),
-      sourceVersion: null, sourceRule: { effect: 'allow', requiredTags: ['employee'] }, sourceHash: 'a'.repeat(64), potentialProfiles: 120, resourceCount: 8, subjectCount: 2, limitCount: 4,
+      currentName: '员工策略',
+      currentVersion: 3,
+      currentRule: { effect: 'allow', requiredTags: ['employee'] },
+      currentHash: 'a'.repeat(64),
+      sourceVersion: null,
+      sourceRule: { effect: 'allow', requiredTags: ['employee'] },
+      sourceHash: 'a'.repeat(64),
+      potentialProfiles: 120,
+      resourceCount: 8,
+      subjectCount: 2,
+      limitCount: 4,
     }));
     const handler = new DecisionsPreviewHandler({ previewPolicy } as unknown as QualificationRepository);
     const result = await handler.execute({ path: {}, query: {}, body: { kind: 'publish', policy: 'policy:one', name: '员工策略', rule: { effect: 'allow', requiredTags: ['manager'] } } } as never, context('qualification.decisions.preview'));
@@ -37,16 +46,43 @@ describe('qualification management', () => {
 
 const transaction = {} as WriteTransactionContext;
 function receipt(id: string, action: 'publish' | 'rollback', source: number | null, active: number) {
-  return { id, scope_id: 'mall:one', name: '员工策略', status: 'published' as const, active_version: active, created_at: '2026-09-03T00:00:00.000Z', updated_at: '2026-09-03T00:01:00.000Z', rule_hash: 'a'.repeat(64), action, source_version: source };
+  return {
+    id,
+    scope_id: 'mall:one',
+    name: '员工策略',
+    status: 'published' as const,
+    active_version: active,
+    created_at: '2026-09-03T00:00:00.000Z',
+    updated_at: '2026-09-03T00:01:00.000Z',
+    rule_hash: 'a'.repeat(64),
+    action,
+    source_version: source,
+  };
 }
 function context<TKey extends 'qualification.decisions.preview' | 'qualification.policies.manage'>(operation: TKey): WriteHandlerContext<TKey> {
   return {
-    requestId: 'request:one', traceId: 'trace:one', deadline: Date.now() + 1_000, signal: new AbortController().signal, operation,
-    headers: {}, rawBody: '', idempotencyKey: 'qualification:one', transaction,
-    security: { kind: 'session', access: {
-      actor: { id: 'principal:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target: 'console', assurance: { level: 3 } },
-      membership: { id: 'membership:one', active: true, accessVersion: 1, permissions: { allows: new Set(['qualification.preview', 'qualification.manage']), denies: new Set() }, scopes: [] },
-      organization: 'mall:one', scope: { id: 'mall:one', kind: 'mall', path: [] }, accessVersion: 1, capabilities: new Set([operation]), capabilityVersion: 1, assurance: { level: 3 }, trace: 'trace:one',
-    } },
+    requestId: 'request:one',
+    traceId: 'trace:one',
+    deadline: Date.now() + 1_000,
+    signal: new AbortController().signal,
+    operation,
+    headers: {},
+    rawBody: '',
+    idempotencyKey: 'qualification:one',
+    transaction,
+    security: {
+      kind: 'session',
+      access: {
+        actor: { id: 'principal:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target: 'console', assurance: { level: 3 } },
+        membership: { id: 'membership:one', active: true, accessVersion: 1, permissions: { allows: new Set(['qualification.preview', 'qualification.manage']), denies: new Set() }, scopes: [] },
+        organization: 'mall:one',
+        scope: { id: 'mall:one', kind: 'mall', path: [] },
+        accessVersion: 1,
+        capabilities: new Set([operation]),
+        capabilityVersion: 1,
+        assurance: { level: 3 },
+        trace: 'trace:one',
+      },
+    },
   } as never;
 }

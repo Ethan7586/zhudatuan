@@ -4,13 +4,13 @@ import { performance } from 'node:perf_hooks';
 import { test } from 'node:test';
 import { OperationCatalog } from '@shop/contract';
 import { ConcurrencyPolicy } from '@shop/providercore';
-import { RouteRegistry } from '../../services/commerce/src/bootstrap/RouteRegistry';
+import { RouteRegistry } from '../../services/commerce/src/composition/RouteRegistry';
 import { CAPACITY_MODEL, RUNTIME_LIMITS } from '@shop/config/runtime';
-import { RedisCache } from '../../services/commerce/src/foundation/cache/RedisCache';
-import { CircuitBreaker } from '../../services/commerce/src/foundation/performance/CircuitBreaker';
-import { retryDelay } from '../../services/commerce/src/foundation/performance/Retry';
-import { Singleflight } from '../../services/commerce/src/foundation/performance/Singleflight';
-import { HttpStream } from '../../services/commerce/src/foundation/interface/HttpStream';
+import { RedisCache } from '../../services/commerce/src/platform/cache/RedisCache';
+import { CircuitBreaker } from '@shop/kernel';
+import { retryDelay } from '@shop/kernel';
+import { Singleflight } from '@shop/kernel';
+import { HttpStream } from '../../services/commerce/src/platform/http/HttpStream';
 import { AssignmentPolicy } from '../../services/commerce/src/modules/support/domain/policy/AssignmentPolicy';
 import { MessagePolicy } from '../../services/commerce/src/modules/support/domain/policy/MessagePolicy';
 
@@ -135,7 +135,11 @@ test('local support hot paths retain ample headroom below their production p95 b
     sample(messageSamples, () => messages.prepare({ body: '客服已收到你的问题', clientMessageId: `client:${String(index).padStart(8, '0')}`, attachmentIds: [] }));
     sample(queueSamples, () => assignments.decide({ agents, scope: 'mall:one', skill: 'general', priority: 'normal' }));
     const started = performance.now();
-    const stream = new HttpStream((async function* () { yield { id: `${index}-0`, event: 'support.message.sent', data: { ticketId: 'ticket:one', conversationId: 'conversation:one', sequence: index + 1 } }; })());
+    const stream = new HttpStream(
+      (async function* () {
+        yield { id: `${index}-0`, event: 'support.message.sent', data: { ticketId: 'ticket:one', conversationId: 'conversation:one', sequence: index + 1 } };
+      })()
+    );
     const reader = stream.readable(new AbortController().signal).getReader();
     const frame = await reader.read();
     assert.equal(frame.done, false);

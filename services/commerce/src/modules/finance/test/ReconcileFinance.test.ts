@@ -74,13 +74,16 @@ describe('finance reconciliation routing', () => {
 
     await review.route({ ...base, thresholdMinor: 10 }, 'approval', new AbortController().signal, Date.now() + 10_000);
 
-    expect(request).toHaveBeenCalledWith(expect.objectContaining({ membership: 'membership:maker' }), expect.objectContaining({
-      requesterId: 'membership:maker',
-      subject: expect.objectContaining({ kind: 'reconciliation', id: base.id, version: base.version }),
-      action: 'finance.reconciliation.review',
-      amountMinor: 50,
-      currency: 'CNY',
-    }));
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({ membership: 'membership:maker' }),
+      expect.objectContaining({
+        requesterId: 'membership:maker',
+        subject: expect.objectContaining({ kind: 'reconciliation', id: base.id, version: base.version }),
+        action: 'finance.reconciliation.review',
+        amountMinor: 50,
+        currency: 'CNY',
+      })
+    );
     expect(sql.some((statement) => /finance\.(journal|entry|account)/.test(statement))).toBe(false);
     expect(sql.some((statement) => statement.includes("review_route='approval'"))).toBe(true);
   });

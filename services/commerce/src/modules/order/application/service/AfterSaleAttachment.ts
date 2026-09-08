@@ -1,10 +1,10 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { createHash, randomUUID } from 'node:crypto';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
-import { bodyRecord, integerField, textField, type OperationWireInput } from '../../../../foundation/application/Validation';
+import { bodyRecord, integerField, textField, type OperationWireInput } from '../../../../pipeline/Validation';
 import type { ObjectStore, UploadAuthorization } from '../../../runtime/public/ObjectPort';
 import { retentionUntil as objectRetentionUntil } from '@shop/kernel';
-import { mapParallel } from '../../../../foundation/performance/Parallel';
+import { mapParallel } from '@shop/kernel';
 
 export interface PreparedAfterSaleAttachment {
   readonly objectId: string;
@@ -33,8 +33,14 @@ export class AfterSaleAttachment {
     if (size > 1_000_000 || !/^[a-f0-9]{64}$/.test(sha256)) throw new DomainError('VALIDATION_FAILED', { field: 'attachment' });
     const extension = extensionFor(name, contentType);
     const owner = ownerFor(membership);
-    const upload = await this.objects.authorizeUpload({ path: `aftersale/${owner}/${randomUUID()}${extension}`, contentType, size, sha256,
-      expiresIn: RUNTIME_LIMITS.upload.authorizationSeconds, retentionUntil: objectRetentionUntil(RUNTIME_LIMITS.upload.retentionDays.aftersale) });
+    const upload = await this.objects.authorizeUpload({
+      path: `aftersale/${owner}/${randomUUID()}${extension}`,
+      contentType,
+      size,
+      sha256,
+      expiresIn: RUNTIME_LIMITS.upload.authorizationSeconds,
+      retentionUntil: objectRetentionUntil(RUNTIME_LIMITS.upload.retentionDays.aftersale),
+    });
     return Object.freeze({ objectId: upload.reference, upload });
   }
 
@@ -61,8 +67,11 @@ export class AfterSaleAttachment {
     const extension = extensionFor(name, contentType);
     if (size > 1_000_000 || !/^[a-f0-9]{64}$/.test(sha256)) throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
     let stored;
-    try { stored = await this.objects.inspect(objectId); }
-    catch { throw new DomainError('VALIDATION_FAILED', { field: 'attachments' }); }
+    try {
+      stored = await this.objects.inspect(objectId);
+    } catch {
+      throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
+    }
     if (
       stored.reference !== objectId ||
       stored.sha256 !== sha256 ||
@@ -73,14 +82,20 @@ export class AfterSaleAttachment {
       Date.parse(stored.retentionUntil) <= Date.now() ||
       !stored.path.startsWith(`aftersale/${owner}/`) ||
       !stored.path.endsWith(extension)
-    ) throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
+    )
+      throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
     return Object.freeze({ objectId, name, mediaType: contentType, sizeBytes: size, contentHash: sha256 });
   }
 }
 
-function ownerFor(membership: string): string { return createHash('sha256').update(membership).digest('hex').slice(0, 32); }
+function ownerFor(membership: string): string {
+  return createHash('sha256').update(membership).digest('hex').slice(0, 32);
+}
 function nameField(value: Record<string, unknown>): string {
-  const name = textField(value, 'name', 255).normalize('NFKC').replace(/[\u0000-\u001f\u007f/\\]/g, '').trim();
+  const name = textField(value, 'name', 255)
+    .normalize('NFKC')
+    .replace(/[\u0000-\u001f\u007f/\\]/g, '')
+    .trim();
   if (!name) throw new DomainError('VALIDATION_FAILED', { field: 'name' });
   return name;
 }

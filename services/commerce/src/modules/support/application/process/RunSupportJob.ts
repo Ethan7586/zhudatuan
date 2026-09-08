@@ -1,4 +1,4 @@
-import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionManager, TransactionOptions } from '../../../../platform/database/TransactionManager';
 import type { AttachmentScanPort } from '../port/AttachmentScanPort';
 import type { SupportJobRepository } from '../port/SupportJobRepository';
 import type { EvaluateSla } from './EvaluateSla';

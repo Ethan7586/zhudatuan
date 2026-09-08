@@ -1,4 +1,4 @@
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import { RiskPolicy, type RiskOutcome } from '../../domain/model/RiskPolicy';
 import { signal } from '../../domain/model/Signal';
 import { RiskEngine } from '../../domain/policy/RiskEngine';
@@ -76,14 +76,16 @@ function signalList(value: unknown) {
     value.slice(0, 500).flatMap((candidate) => {
       const item = record(candidate, 'RISK_REPLAY_SIGNAL_INVALID');
       if (typeof item.value !== 'number') return [];
-      return [signal({
-        type: text(item.type, 'RISK_REPLAY_SIGNAL_TYPE_INVALID'),
-        version: integer(item.version, 'RISK_REPLAY_SIGNAL_VERSION_INVALID'),
-        value: item.value,
-        source: text(item.source, 'RISK_REPLAY_SIGNAL_SOURCE_INVALID'),
-        sensitivity: sensitivity(item.sensitivity),
-        observedAt: text(item.observedAt, 'RISK_REPLAY_SIGNAL_TIME_INVALID'),
-      })];
+      return [
+        signal({
+          type: text(item.type, 'RISK_REPLAY_SIGNAL_TYPE_INVALID'),
+          version: integer(item.version, 'RISK_REPLAY_SIGNAL_VERSION_INVALID'),
+          value: item.value,
+          source: text(item.source, 'RISK_REPLAY_SIGNAL_SOURCE_INVALID'),
+          sensitivity: sensitivity(item.sensitivity),
+          observedAt: text(item.observedAt, 'RISK_REPLAY_SIGNAL_TIME_INVALID'),
+        }),
+      ];
     })
   );
 }

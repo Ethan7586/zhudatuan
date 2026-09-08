@@ -39,9 +39,13 @@ export class SyncRun {
       throw new Error('CHANNEL_SYNC_RUN_INVALID');
     }
     const { progress } = value;
-    if ([progress.pulled, progress.accepted, progress.rejected].some((count) => !Number.isSafeInteger(count) || count < 0) ||
-      progress.accepted + progress.rejected > progress.pulled || progress.cursor !== null && !progress.cursor.trim() ||
-      progress.watermark !== null && Number.isNaN(Date.parse(progress.watermark))) throw new Error('CHANNEL_SYNC_PROGRESS_INVALID');
+    if (
+      [progress.pulled, progress.accepted, progress.rejected].some((count) => !Number.isSafeInteger(count) || count < 0) ||
+      progress.accepted + progress.rejected > progress.pulled ||
+      (progress.cursor !== null && !progress.cursor.trim()) ||
+      (progress.watermark !== null && Number.isNaN(Date.parse(progress.watermark)))
+    )
+      throw new Error('CHANNEL_SYNC_PROGRESS_INVALID');
     const failure = channelFailure(value.failure);
     if ((value.state === 'failed') !== (failure !== null)) throw new Error('CHANNEL_SYNC_FAILURE_INVALID');
     this.id = value.id;

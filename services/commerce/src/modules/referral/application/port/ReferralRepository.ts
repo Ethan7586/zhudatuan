@@ -1,5 +1,5 @@
-import type { QueryPage } from '../../../../foundation/application/Validation';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { QueryPage } from '../../../../pipeline/Validation';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 export interface EligibleMember {
   readonly memberId: string;
@@ -21,13 +21,35 @@ export interface ReferralRepository {
   setting(context: ReadTransactionContext, scope: string): Promise<Readonly<Record<string, unknown>> | null>;
   manageSetting(
     context: WriteTransactionContext,
-    input: Readonly<{ id: string; scopeId: string; enabled: boolean; recruitEnabled: boolean; reviewRequired: boolean; rewardEnabled: boolean; bindingMode: 'permanent' | 'days'; firstTouchDays: number; freezeDays: number; settlementTrigger: 'paid' | 'received'; rateBasisPoints: number; minimumWithdrawalMinor: number; monthlyWithdrawalLimit: number | null; currency: string; expectedVersion: number }>
+    input: Readonly<{
+      id: string;
+      scopeId: string;
+      enabled: boolean;
+      recruitEnabled: boolean;
+      reviewRequired: boolean;
+      rewardEnabled: boolean;
+      bindingMode: 'permanent' | 'days';
+      firstTouchDays: number;
+      freezeDays: number;
+      settlementTrigger: 'paid' | 'received';
+      rateBasisPoints: number;
+      minimumWithdrawalMinor: number;
+      monthlyWithdrawalLimit: number | null;
+      currency: string;
+      expectedVersion: number;
+    }>
   ): Promise<Readonly<Record<string, unknown>>>;
   products(context: ReadTransactionContext, scope: string, page: QueryPage): Promise<readonly Readonly<Record<string, unknown>>[]>;
-  manageProduct(context: WriteTransactionContext, input: Readonly<{ id: string; scopeId: string; productId: string; enabled: boolean; rateBasisPoints: number; rewardBasisPoints: number; expectedVersion: number }>): Promise<Readonly<Record<string, unknown>>>;
+  manageProduct(
+    context: WriteTransactionContext,
+    input: Readonly<{ id: string; scopeId: string; productId: string; enabled: boolean; rateBasisPoints: number; rewardBasisPoints: number; expectedVersion: number }>
+  ): Promise<Readonly<Record<string, unknown>>>;
   members(context: ReadTransactionContext, scope: string, page: QueryPage): Promise<readonly Readonly<Record<string, unknown>>[]>;
   member(context: WriteTransactionContext, scope: string, id: string): Promise<ReferralMemberSnapshot | null>;
-  applyMember(context: WriteTransactionContext, input: Readonly<{ id: string; scopeId: string; memberId: string; displayName: string; mobile: string; makerId: string; reason: string; state: 'applied' | 'active' }>): Promise<Readonly<Record<string, unknown>>>;
+  applyMember(
+    context: WriteTransactionContext,
+    input: Readonly<{ id: string; scopeId: string; memberId: string; displayName: string; mobile: string; makerId: string; reason: string; state: 'applied' | 'active' }>
+  ): Promise<Readonly<Record<string, unknown>>>;
   decideMember(context: WriteTransactionContext, input: Readonly<{ id: string; scopeId: string; actorId: string; expectedVersion: number; next: 'active' | 'disqualified'; reason: string }>): Promise<Readonly<Record<string, unknown>>>;
   bindings(context: ReadTransactionContext, scope: string, customer: string | null, page: QueryPage): Promise<readonly Readonly<Record<string, unknown>>[]>;
   binding(context: WriteTransactionContext, scope: string, customer: string): Promise<Readonly<Record<string, unknown>> | null>;

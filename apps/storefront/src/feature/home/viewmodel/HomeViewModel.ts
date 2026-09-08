@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { routePath } from '../../../generated/RouteBinding';
+import { routePath, ROUTES } from '../../../generated/RouteBinding';
 import { useSession } from '../../../entity/session/viewmodel/SessionContext';
 import { pathForFeature, pathForPage } from '../../../shared/navigation/Route';
 import { useAccountIdentity } from '../../account';
@@ -18,11 +18,15 @@ export function useHomeViewModel() {
   const order = useOrderState(identity.currentMall);
   return Object.freeze({
     user: identity.user,
+    profileState: identity.profileState,
+    profileMessage: identity.profileMessage,
+    retryProfile: identity.retryProfile,
     currentMall: identity.currentMall,
     presentationProducts: catalog.presentationProducts,
     presentationCategories: catalog.presentationCategories,
     catalogState: catalog.state,
-    presentationOrders: order.presentationOrders,
+    orders: order.orders,
+    orderState: order.listState,
     addToCart: (product: Parameters<typeof cart.add>[0], quantity: Parameters<typeof cart.add>[1] = 1) => {
       void cart.add(product, quantity);
     },
@@ -40,5 +44,6 @@ export function useHomeViewModel() {
       void navigate(pathForFeature(name));
     },
     openProduct: (id: string) => void navigate(routePath('storeproduct', { productId: id })),
+    openCategory: (id: string) => void navigate(`${ROUTES.storecatalog}?category=${encodeURIComponent(id)}`),
   });
 }

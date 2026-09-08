@@ -1,6 +1,6 @@
-import { DomainError } from '../../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../../platform/error/DomainError';
 import { IDENTITY_PROVIDER_CONFIGURATION, oidcIssuer } from '@shop/config/server';
-import { Singleflight } from '../../../../../foundation/performance/Singleflight';
+import { Singleflight } from '@shop/kernel';
 import type { ProviderHttpClient } from '../../security/ProviderHttpClient';
 
 export interface OidcMetadata {

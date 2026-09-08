@@ -1,7 +1,7 @@
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { OrderFulfillmentPort } from '../../../order/public';
 import type { FulfillmentEventProcess, FulfillmentProcessEvent } from '../../application/port/FulfillmentEventProcess';
 import { FulfillmentPolicy } from '../../domain/policy/FulfillmentPolicy';
@@ -36,12 +36,7 @@ export class PgFulfillmentEventProcess implements FulfillmentEventProcess {
     });
   }
 
-  private async returnApproved(
-    context: WriteTransactionContext,
-    runtime: PgRuntimeWriter,
-    event: FulfillmentProcessEvent,
-    payload: Readonly<Record<string, unknown>>
-  ): Promise<void> {
+  private async returnApproved(context: WriteTransactionContext, runtime: PgRuntimeWriter, event: FulfillmentProcessEvent, payload: Readonly<Record<string, unknown>>): Promise<void> {
     if (payload.aftersale !== event.resourceId || payload.state !== event.kind) throw new Error('FULFILLMENT_AFTERSALE_EVIDENCE_MISMATCH');
     if (event.kind !== 'approved') return;
     const request = await this.orders.returnRequest(context, event.resourceId);
@@ -50,13 +45,7 @@ export class PgFulfillmentEventProcess implements FulfillmentEventProcess {
     await runtime.schedule({ id: `job:return:${event.eventId}`, kind: 'fulfillment', owner: 'fulfillment', scope: event.scopeId, payload: { aftersale: event.resourceId }, priority: 10 });
   }
 
-  private async paid(
-    context: WriteTransactionContext,
-    database: SqlExecutor,
-    runtime: PgRuntimeWriter,
-    event: FulfillmentProcessEvent,
-    payload: Readonly<Record<string, unknown>>
-  ): Promise<void> {
+  private async paid(context: WriteTransactionContext, database: SqlExecutor, runtime: PgRuntimeWriter, event: FulfillmentProcessEvent, payload: Readonly<Record<string, unknown>>): Promise<void> {
     if (payload.order !== event.resourceId || payload.payment !== event.paymentId) throw new Error('FULFILLMENT_PAYMENT_EVIDENCE_MISMATCH');
     const order = await this.orders.snapshot(context, event.resourceId);
     if (!order || order.scope !== event.scopeId || payload.member !== order.member) throw new Error('FULFILLMENT_ORDER_CONTEXT_MISMATCH');
@@ -71,16 +60,18 @@ export class PgFulfillmentEventProcess implements FulfillmentEventProcess {
         [id, event.resourceId, plan.suborder, plan.provider, plan.partner, plan.kind, event.scopeId, order.member, plan.route, event.paymentId, event.eventId, plan.amountMinor, plan.key]
       );
       for (const line of plan.lines) {
-        await database.query(
-          `insert into fulfillment.line(fulfillment_id,order_line_id,quantity) values($1,$2,$3) on conflict do nothing`,
-          [id, line.line, line.quantity]
-        );
+        await database.query(`insert into fulfillment.line(fulfillment_id,order_line_id,quantity) values($1,$2,$3) on conflict do nothing`, [id, line.line, line.quantity]);
       }
       await runtime.schedule({ id: `job:fulfillment:${digest(`${event.eventId}:${plan.key}`)}`, kind: 'fulfillment', owner: 'fulfillment', scope: event.scopeId, payload: { fulfillment: id }, priority: 10 });
     }
     const created = await database.query<{
-      id: string; provider: string | null; partner: string | null; kind: 'shipment' | 'delivery' | 'pickup' | 'service' | 'digital';
-      state: string; externalReference: string | null; version: number;
+      id: string;
+      provider: string | null;
+      partner: string | null;
+      kind: 'shipment' | 'delivery' | 'pickup' | 'service' | 'digital';
+      state: string;
+      externalReference: string | null;
+      version: number;
     }>(
       `select id,provider,partner_id partner,kind,state,external_reference "externalReference",version::float8 version
       from fulfillment.fulfillmentorder where source_effect_id=$1 order by id`,
@@ -99,13 +90,7 @@ export class PgFulfillmentEventProcess implements FulfillmentEventProcess {
     await runtime.schedule({ id: `job:tracking:webhook:${event.eventId}`, kind: 'tracking', owner: 'fulfillment', scope: event.scopeId, payload: { fulfillment: reference }, priority: 5 });
   }
 
-  private async verified(
-    context: WriteTransactionContext,
-    database: SqlExecutor,
-    runtime: PgRuntimeWriter,
-    event: FulfillmentProcessEvent,
-    payload: Readonly<Record<string, unknown>>
-  ): Promise<void> {
+  private async verified(context: WriteTransactionContext, database: SqlExecutor, runtime: PgRuntimeWriter, event: FulfillmentProcessEvent, payload: Readonly<Record<string, unknown>>): Promise<void> {
     if (payload.verification !== event.sourceId || payload.subject !== event.resourceId || payload.subjectType !== event.subjectType) {
       throw new Error('FULFILLMENT_VERIFICATION_EVIDENCE_MISMATCH');
     }
@@ -134,8 +119,12 @@ export class PgFulfillmentEventProcess implements FulfillmentEventProcess {
     await this.orders.completeFulfillment(context, row.order_id, lines);
     await runtime.append({
       id: `event:fulfillment:verified:${digest(event.eventId)}`,
-      type: 'fulfillment.shipped', aggregateType: 'fulfillment', aggregate: row.id, scope: event.scopeId,
-      payload: { fulfillment: row.id, order: row.order_id, member: row.member_id, state: 'delivered' }, trace: event.eventId,
+      type: 'fulfillment.shipped',
+      aggregateType: 'fulfillment',
+      aggregate: row.id,
+      scope: event.scopeId,
+      payload: { fulfillment: row.id, order: row.order_id, member: row.member_id, state: 'delivered' },
+      trace: event.eventId,
     });
   }
 }

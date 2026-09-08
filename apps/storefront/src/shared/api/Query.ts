@@ -35,6 +35,7 @@ export const StorefrontQuery = Object.freeze({
   aftersale: (identity: StorefrontScopedQueryIdentity, orderId: string) => scopedKey(identity, 'aftersale', Object.freeze({ orderId })),
   favorites: (identity: StorefrontScopedQueryIdentity) => scopedKey(identity, 'favorites'),
   notifications: (identity: StorefrontScopedQueryIdentity) => scopedKey(identity, 'notifications'),
+  referral: (identity: StorefrontScopedQueryIdentity) => scopedKey(identity, 'referral'),
   security: (identity: StorefrontScopedQueryIdentity) => scopedKey(identity, 'security'),
   vouchers: (identity: StorefrontScopedQueryIdentity) => scopedKey(identity, 'vouchers'),
   support: (identity: StorefrontScopedQueryIdentity, caseId?: string) => scopedKey(identity, 'support', Object.freeze({ caseId: caseId ?? 'all' })),

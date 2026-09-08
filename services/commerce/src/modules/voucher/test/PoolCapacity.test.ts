@@ -16,7 +16,9 @@ describe('pool-level stock commitments', () => {
       await data.database.exec(`update voucher.issuebatch set succeeded=succeeded+1 where id='batch:partial';
         update voucher.credential set state='allocated' where id='credential:1';`);
       expect(await data.capacity()).toEqual({ physical: 9, reserved: 6, available: 3 });
-    } finally { await data.database.close(); }
+    } finally {
+      await data.database.close();
+    }
   });
 
   it('refuses overcommit before creating approval and serializes successful submissions on the pool', async () => {
@@ -27,39 +29,48 @@ describe('pool-level stock commitments', () => {
       const sql = data.query.mock.calls.map(([statement]) => statement);
       expect(sql[0]).toContain('from voucher.stockrequest');
       expect(sql[1]).toBe('select state from voucher.credentialpool where id=$1 and scope_id=$2 for update');
-      expect(sql.findIndex(statement => statement === `${POOL_CAPACITY} where pool.id=$1 and pool.scope_id=$2`)).toBeGreaterThan(1);
+      expect(sql.findIndex((statement) => statement === `${POOL_CAPACITY} where pool.id=$1 and pool.scope_id=$2`)).toBeGreaterThan(1);
       await data.database.exec(`update voucher.stockrequest set quantity=3 where id='stock:draft';`);
       expect((await data.submit()).body).toMatchObject({ state: 'submitted', approval: 'approval:new', quantity: 3, version: 2 });
       expect(await data.capacity()).toEqual({ physical: 10, reserved: 10, available: 0 });
       await expect(data.submit('stock:second')).rejects.toThrow('VOUCHER_STOCK_INSUFFICIENT');
       expect(data.request).toHaveBeenCalledOnce();
-    } finally { await data.database.close(); }
+    } finally {
+      await data.database.close();
+    }
   });
 
   it('uses the same remaining supply for product choices and releases rejected reservations', async () => {
     const data = await fixture();
     try {
       const product = new PgVoucherProductRepository({ validate: vi.fn() });
-      const options = () => withReadTransaction(data.query, transaction => product.options({ input: { query: {} }, context: { transaction }, scope: 'mall:one' } as never));
+      const options = () => withReadTransaction(data.query, (transaction) => product.options({ input: { query: {} }, context: { transaction }, scope: 'mall:one' } as never));
       expect((await options()).body.items).toEqual([{ id: 'product:one', number: 'VP1', name: '员工福利', faceMinor: 1000, currency: 'CNY', available: 3 }]);
       await data.database.exec(`update voucher.stockrequest set quantity=3 where id='stock:draft';`);
       await data.submit();
       expect((await options()).body.items).toEqual([]);
       await data.database.exec(`update voucher.stockrequest set state='rejected' where id='stock:pending';`);
       expect((await options()).body.items[0]?.available).toBe(2);
-    } finally { await data.database.close(); }
+    } finally {
+      await data.database.close();
+    }
   });
 
-  it.each(['closed pool', 'disabled product', 'decided request'] as const)('rechecks %s before creating an approval', async state => {
+  it.each(['closed pool', 'disabled product', 'decided request'] as const)('rechecks %s before creating an approval', async (state) => {
     const data = await fixture();
     try {
-      const statement = state === 'closed pool' ? `update voucher.credentialpool set state='closed' where id='pool:one'`
-        : state === 'disabled product' ? `update voucher.product set state='disabled' where id='product:one'`
-          : `update voucher.stockrequest set state='approved' where id='stock:draft'`;
+      const statement =
+        state === 'closed pool'
+          ? `update voucher.credentialpool set state='closed' where id='pool:one'`
+          : state === 'disabled product'
+            ? `update voucher.product set state='disabled' where id='product:one'`
+            : `update voucher.stockrequest set state='approved' where id='stock:draft'`;
       await data.database.exec(statement);
       await expect(data.submit()).rejects.toThrow(state === 'closed pool' ? 'VOUCHER_POOL_CLOSED' : state === 'disabled product' ? 'VOUCHER_PRODUCT_INCOMPLETE' : 'VOUCHER_STATE_INVALID');
       expect(data.request).not.toHaveBeenCalled();
-    } finally { await data.database.close(); }
+    } finally {
+      await data.database.close();
+    }
   });
 });
 
@@ -93,11 +104,15 @@ async function fixture() {
   });
   const request = vi.fn(async () => ({ instanceId: 'approval:new' }));
   const repository = new PgStockRequestRepository({ request } as unknown as ApprovalPort, {} as never);
-  return { database, query, request,
+  return {
+    database,
+    query,
+    request,
     capacity: async () => {
       const row = (await database.query<{ physical: number; reserved: number; available: number }>(`${POOL_CAPACITY} where pool.id='pool:one'`)).rows[0]!;
       return { physical: row.physical, reserved: row.reserved, available: row.available };
     },
-    submit: (id = 'stock:draft') => withWriteTransaction(query, transaction => repository.submit({ input: { path: { requestid: id } }, context: { transaction },
-      scope: 'mall:one', actor: 'actor:one', now: new Date(), expectedVersion: 1 } as never)) };
+    submit: (id = 'stock:draft') =>
+      withWriteTransaction(query, (transaction) => repository.submit({ input: { path: { requestid: id } }, context: { transaction }, scope: 'mall:one', actor: 'actor:one', now: new Date(), expectedVersion: 1 } as never)),
+  };
 }

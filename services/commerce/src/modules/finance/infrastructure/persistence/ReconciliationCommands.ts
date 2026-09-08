@@ -1,8 +1,8 @@
 import type { FinanceAction, FinanceEntries } from './FinanceOperation';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import { rowResult } from '../../../../adapter/database/DatabaseResult';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import { rowResult } from '../../../../platform/database/DatabaseResult';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
 
 export function reconciliationCommands(): FinanceEntries<'reconciliationsManage'> {
   return { reconciliationsManage: resolveDifference };

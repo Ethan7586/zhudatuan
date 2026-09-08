@@ -1,4 +1,4 @@
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import { publicPort } from '../../../composition/ModuleRegistry';
 import type { BenefitGateway } from './BenefitPort';
 export type { BenefitGateway, BenefitChoice, BenefitRefund, BenefitTender } from './BenefitPort';
 export type CheckoutBenefitPort = Pick<BenefitGateway, 'preview' | 'available' | 'reserve'>;

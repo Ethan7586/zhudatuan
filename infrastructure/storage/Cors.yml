@@ -1,0 +1,20 @@
+version: 1
+owner: security
+authority: infrastructure/network/Edge.yml#routes
+credentials: true
+wildcard: false
+origins:
+  auth: { source: routes.auth.host, methods: [GET, HEAD, POST, OPTIONS] }
+  console: { source: routes.console.host, methods: [GET, HEAD, POST, PUT, DELETE, OPTIONS] }
+  storefront: { source: routes.storefront.host, methods: [GET, HEAD, POST, PUT, DELETE, OPTIONS] }
+  miniapp: { source: routes.miniapp.host, methods: [GET, HEAD, POST, PUT, DELETE, OPTIONS] }
+  store: { source: routes.store.host, methods: [GET, HEAD, POST, PUT, DELETE, OPTIONS] }
+  supplier: { source: routes.supplier.host, methods: [GET, HEAD, POST, PUT, DELETE, OPTIONS] }
+headers:
+  request: [authorization, content-type, idempotency-key, if-match, traceparent, tracestate, x-csrf-token, x-request-id, x-upload-sha256]
+  expose: [etag, retry-after, traceparent, x-request-id, x-result-version]
+  forbidden: [cookie-forwarding, proxy-authorization]
+preflight:
+  maximumAgeSeconds: 600
+  vary: [origin, access-control-request-method, access-control-request-headers]
+privateNetworkAccess: false

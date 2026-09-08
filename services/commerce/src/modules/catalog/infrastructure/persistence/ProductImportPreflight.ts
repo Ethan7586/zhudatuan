@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CatalogPartnerPort } from '../../../partner/public';
 import type { CatalogQualificationPort } from '../../../qualification/public';
 import type { ImportCandidate, ImportFailure, ImportPreparedBatch } from '../../../runtime/public';
@@ -36,17 +36,26 @@ export async function prepareProducts(
 ): Promise<ImportPreparedBatch> {
   const parsed = rows.map(parseRow);
   const candidates = parsed.filter((item): item is ProductDraft => !('reason' in item));
-  const categories = await categoryMap(database, candidates.map(({ category }) => category));
-  const partnerScopes = await partners.scopes(context, unique(candidates.flatMap(({ supplier }) => supplier === null ? [] : [supplier])));
+  const categories = await categoryMap(
+    database,
+    candidates.map(({ category }) => category)
+  );
+  const partnerScopes = await partners.scopes(context, unique(candidates.flatMap(({ supplier }) => (supplier === null ? [] : [supplier]))));
   const resolved = candidates.map((item) => resolve(item, categories, partnerScopes));
   const eligible = resolved.filter((item): item is ProductDraft => !('reason' in item));
-  const decisions = await qualifications.decisions(context, scope, eligible.map((item) => Object.freeze({
-    listing: `importrow:${item.row}`,
-    product: productId(scope, item.spu),
-    category: item.category,
-    partner: item.supplier,
-    regions: regions(item.attributes),
-  })));
+  const decisions = await qualifications.decisions(
+    context,
+    scope,
+    eligible.map((item) =>
+      Object.freeze({
+        listing: `importrow:${item.row}`,
+        product: productId(scope, item.spu),
+        category: item.category,
+        partner: item.supplier,
+        regions: regions(item.attributes),
+      })
+    )
+  );
   const qualification = new Map(decisions.map((decision) => [decision.listing, decision.eligible]));
   const results = new Map<number, ProductDraft | ImportFailure>();
   for (const item of parsed) results.set(item.row, item);
@@ -56,10 +65,12 @@ export async function prepareProducts(
   }
   const failures = [...results.values()].filter((item): item is ImportFailure => 'reason' in item);
   return Object.freeze({
-    rows: Object.freeze(rows.map(({ row }) => {
-      const item = results.get(row);
-      return Object.freeze({ row, payload: item && !('reason' in item) ? payload(item) : Object.freeze({ invalid: item && 'reason' in item ? item.reason : 'CATALOG_IMPORT_ROW_INVALID' }) });
-    })),
+    rows: Object.freeze(
+      rows.map(({ row }) => {
+        const item = results.get(row);
+        return Object.freeze({ row, payload: item && !('reason' in item) ? payload(item) : Object.freeze({ invalid: item && 'reason' in item ? item.reason : 'CATALOG_IMPORT_ROW_INVALID' }) });
+      })
+    ),
     failures: Object.freeze(failures),
   });
 }
@@ -101,25 +112,39 @@ async function categoryMap(database: SqlExecutor, references: readonly string[])
   if (wanted.length === 0) return new Map();
   const result = await database.query<CategoryRow>(
     `select id,code,name,status,required_attributes from catalog.category
-     where id=any($1::text[]) or code=any($1::text[]) or name=any($1::text[]) order by id`, [wanted]
+     where id=any($1::text[]) or code=any($1::text[]) or name=any($1::text[]) order by id`,
+    [wanted]
   );
   const mapped = new Map<string, CategoryRow[]>();
-  for (const row of result.rows) for (const key of [row.id, row.code, row.name]) {
-    if (!wanted.includes(key)) continue;
-    mapped.set(key, [...(mapped.get(key) ?? []), row]);
-  }
+  for (const row of result.rows)
+    for (const key of [row.id, row.code, row.name]) {
+      if (!wanted.includes(key)) continue;
+      mapped.set(key, [...(mapped.get(key) ?? []), row]);
+    }
   return mapped;
 }
 
 function payload(item: ProductDraft): Readonly<Record<string, string>> {
-  return Object.freeze({ spu: item.spu, title: item.title, sku: item.sku, category: item.category, supplier: item.supplier ?? '', type: item.kind,
-    attributes: JSON.stringify(item.attributes), specifications: JSON.stringify(item.specifications) });
+  return Object.freeze({
+    spu: item.spu,
+    title: item.title,
+    sku: item.sku,
+    category: item.category,
+    supplier: item.supplier ?? '',
+    type: item.kind,
+    attributes: JSON.stringify(item.attributes),
+    specifications: JSON.stringify(item.specifications),
+  });
 }
 
 function withImages(attributes: Readonly<Record<string, unknown>>, value: string | undefined, title: string): Readonly<Record<string, unknown>> {
   if (!value?.trim()) return Object.freeze({ ...attributes });
   let parsed: unknown;
-  try { parsed = JSON.parse(value); } catch { throw new Error('CATALOG_IMAGES_INVALID:images'); }
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error('CATALOG_IMAGES_INVALID:images');
+  }
   if (!Array.isArray(parsed) || parsed.length < 1 || parsed.length > 20 || parsed.some((url) => typeof url !== 'string' || !safeImage(url))) {
     throw new Error('CATALOG_IMAGES_INVALID:images');
   }
@@ -132,13 +157,19 @@ function safeImage(value: string): boolean {
   try {
     const url = new URL(value);
     return url.protocol === 'https:' && url.username === '' && url.password === '' && url.hostname.includes('.');
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
 
 function objectValue(value: string | undefined, code: string): Readonly<Record<string, unknown>> {
   if (!value?.trim()) return Object.freeze({});
   let parsed: unknown;
-  try { parsed = JSON.parse(value); } catch { throw new Error(`${code}:${code === 'CATALOG_ATTRIBUTES_INVALID' ? 'attributes' : 'specifications'}`); }
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error(`${code}:${code === 'CATALOG_ATTRIBUTES_INVALID' ? 'attributes' : 'specifications'}`);
+  }
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error(`${code}:${code === 'CATALOG_ATTRIBUTES_INVALID' ? 'attributes' : 'specifications'}`);
   return Object.freeze({ ...(parsed as Readonly<Record<string, unknown>>) });
 }
@@ -162,19 +193,34 @@ function failure(row: number, reason: string, field: string | null, detail: stri
 
 function detailFor(code: string | undefined): string {
   const messages: Readonly<Record<string, string>> = Object.freeze({
-    CATALOG_SPU_REQUIRED: '请填写 SPU 编码', CATALOG_TITLE_REQUIRED: '请填写 300 字以内的商品名称', CATALOG_SKU_REQUIRED: '请填写 SKU 编码',
-    CATALOG_CATEGORY_REQUIRED: '请填写类目标识或编码', CATALOG_ATTRIBUTES_INVALID: '商品属性必须是 JSON 对象',
-    CATALOG_SPECIFICATIONS_INVALID: 'SKU 规格必须是 JSON 对象', CATALOG_IMAGES_INVALID: '图片必须是 1 至 20 个 HTTPS 地址组成的 JSON 数组',
-    CATALOG_FIELD_TOO_LONG: '字段内容超过允许长度', VALIDATION_FAILED: 'SKU 编码格式不正确',
+    CATALOG_SPU_REQUIRED: '请填写 SPU 编码',
+    CATALOG_TITLE_REQUIRED: '请填写 300 字以内的商品名称',
+    CATALOG_SKU_REQUIRED: '请填写 SKU 编码',
+    CATALOG_CATEGORY_REQUIRED: '请填写类目标识或编码',
+    CATALOG_ATTRIBUTES_INVALID: '商品属性必须是 JSON 对象',
+    CATALOG_SPECIFICATIONS_INVALID: 'SKU 规格必须是 JSON 对象',
+    CATALOG_IMAGES_INVALID: '图片必须是 1 至 20 个 HTTPS 地址组成的 JSON 数组',
+    CATALOG_FIELD_TOO_LONG: '字段内容超过允许长度',
+    VALIDATION_FAILED: 'SKU 编码格式不正确',
   });
   return messages[code ?? ''] ?? '该行未通过商品校验';
 }
 
-function missingAttribute(value: unknown): boolean { return value === undefined || value === null || value === '' || Array.isArray(value) && value.length === 0; }
+function missingAttribute(value: unknown): boolean {
+  return value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0);
+}
 function regions(attributes: Readonly<Record<string, unknown>>): readonly string[] {
   return Array.isArray(attributes.regionIds) ? Object.freeze(attributes.regionIds.filter((value): value is string => typeof value === 'string')) : Object.freeze([]);
 }
-function isKind(value: string): value is ProductDraft['kind'] { return ['physical', 'virtual', 'service', 'voucher'].includes(value); }
-function unique(values: readonly string[]): readonly string[] { return Object.freeze([...new Set(values)]); }
-function digest(value: string): string { return createHash('sha256').update(value).digest('hex').slice(0, 32); }
-function productId(scope: string, spu: string): string { return `product:import:${createHash('sha256').update(`${scope}:${spu}`).digest('hex')}`; }
+function isKind(value: string): value is ProductDraft['kind'] {
+  return ['physical', 'virtual', 'service', 'voucher'].includes(value);
+}
+function unique(values: readonly string[]): readonly string[] {
+  return Object.freeze([...new Set(values)]);
+}
+function digest(value: string): string {
+  return createHash('sha256').update(value).digest('hex').slice(0, 32);
+}
+function productId(scope: string, spu: string): string {
+  return `product:import:${createHash('sha256').update(`${scope}:${spu}`).digest('hex')}`;
+}

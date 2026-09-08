@@ -1,8 +1,8 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { Scope, ScopeGrant } from '@shop/authz';
 import type { AuthorizationRepository, AuthorizationSnapshotRecord, EffectivePermissionRecord, EffectiveScopeRecord, NavigationAuthorizationRecord } from '../../application/port/AuthorizationRepository';
-import type { AuthorizationRole } from '../../../../foundation/security/AuthorizationSnapshot';
+import type { AuthorizationRole } from '../../../../platform/security/AuthorizationSnapshot';
 interface SnapshotRow {
   readonly membership_id: string;
   readonly membership_active: boolean;

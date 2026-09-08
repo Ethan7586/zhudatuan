@@ -1,13 +1,7 @@
 import type { ContractJsonValue } from '@shop/contract';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import type {
-  ManagedQualificationPolicy,
-  QualificationDecisionRecord,
-  QualificationPolicyImpactBasis,
-  QualificationPolicyRecord,
-  QualificationRepository,
-} from '../../application/port/QualificationRepository';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { ManagedQualificationPolicy, QualificationDecisionRecord, QualificationPolicyImpactBasis, QualificationPolicyRecord, QualificationRepository } from '../../application/port/QualificationRepository';
 
 interface PolicyRow extends Record<string, unknown> {
   readonly id: string;
@@ -185,10 +179,7 @@ export class PgQualificationRepository implements QualificationRepository {
     return this.append(context, locked, locked.active_version, input.name, input.rule, input.hash, input.actor, 'publish');
   }
 
-  async rollbackPolicy(
-    context: WriteTransactionContext,
-    input: Readonly<{ id: string; scope: string; version: number; actor: string; expectedVersion: number }>
-  ): Promise<ManagedQualificationPolicy | null> {
+  async rollbackPolicy(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; version: number; actor: string; expectedVersion: number }>): Promise<ManagedQualificationPolicy | null> {
     const database = this.transactions.database(context);
     const locked = await this.lock(database, input.id);
     if (!locked || locked.scope_id !== input.scope || locked.active_version !== input.expectedVersion || input.version === locked.active_version) return null;
@@ -243,7 +234,5 @@ export class PgQualificationRepository implements QualificationRepository {
 }
 
 function managed(row: ManagedPolicyRow | undefined, action: 'publish' | 'rollback', source: number | null): ManagedQualificationPolicy | null {
-  return row
-    ? Object.freeze({ ...row, created_at: row.created_at.toISOString(), updated_at: row.updated_at.toISOString(), action, source_version: source })
-    : null;
+  return row ? Object.freeze({ ...row, created_at: row.created_at.toISOString(), updated_at: row.updated_at.toISOString(), action, source_version: source }) : null;
 }

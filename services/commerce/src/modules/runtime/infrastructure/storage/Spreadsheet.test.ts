@@ -14,7 +14,10 @@ describe('Runtime spreadsheet parser', () => {
 
   it('rejects formulas and multiple populated worksheets', async () => {
     const formula = new ExcelJS.Workbook();
-    formula.addWorksheet('导入').addRows([['sku', 'value'], ['SKU-1', { formula: '1+1', result: 2 }]]);
+    formula.addWorksheet('导入').addRows([
+      ['sku', 'value'],
+      ['SKU-1', { formula: '1+1', result: 2 }],
+    ]);
     await expect(collect(parseSpreadsheet(new Uint8Array(await formula.xlsx.writeBuffer()), 10))).rejects.toThrow('XLSX_FORMULA_FORBIDDEN');
 
     const multiple = new ExcelJS.Workbook();

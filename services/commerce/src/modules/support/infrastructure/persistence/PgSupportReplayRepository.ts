@@ -1,8 +1,8 @@
 import { COMMERCE_EVENTS } from '@shop/contract';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { EventReplayPort } from '../../../runtime/public';
 import type { DurableSupportEvent, SupportRealtimeEvent, SupportReplayBatch, SupportReplayPort } from '../../application/port/RealtimePort';
 
@@ -33,13 +33,17 @@ export class PgSupportReplayRepository implements SupportReplayPort {
   async replay(context: ReadTransactionContext, input: Readonly<{ scopes: readonly string[]; member: string; storefront: boolean; conversation: string | null; cursor: string }>): Promise<SupportReplayBatch> {
     const page = await this.runtime.after(context, { cursor: input.cursor, scopes: input.scopes, prefix: 'support.', limit: RUNTIME_LIMITS.stream.retentionEvents });
     if (!page || page.overflow) throw new DomainError('SUPPORT_EVENT_CURSOR_EXPIRED');
-    const messageIds = distinct(page.events.filter(({ type }) => type === 'support.message.sent').flatMap(({ payload }) => text(payload.messageId) ? [text(payload.messageId)!] : []));
+    const messageIds = distinct(page.events.filter(({ type }) => type === 'support.message.sent').flatMap(({ payload }) => (text(payload.messageId) ? [text(payload.messageId)!] : [])));
     const truths = new Map((await this.messages(context, messageIds, input.scopes)).map((truth) => [truth.message_id, truth]));
-    const mapped = page.events.map((event) => mapEvent(event.cursor, event.type, event.version, event.scope, event.aggregate, event.payload, event.occurredAt, text(event.payload.messageId) ? truths.get(text(event.payload.messageId)!) ?? null : null));
+    const mapped = page.events.map((event) =>
+      mapEvent(event.cursor, event.type, event.version, event.scope, event.aggregate, event.payload, event.occurredAt, text(event.payload.messageId) ? (truths.get(text(event.payload.messageId)!) ?? null) : null)
+    );
     const visible = mapped.filter((event) => (!input.conversation || event.conversationId === input.conversation) && (!input.storefront || event.memberId === input.member));
-    visible.sort((left, right) => left.conversationId === right.conversationId && left.sequence !== undefined && right.sequence !== undefined
-      ? left.sequence - right.sequence || left.id.localeCompare(right.id)
-      : Date.parse(left.occurredAt) - Date.parse(right.occurredAt) || left.id.localeCompare(right.id));
+    visible.sort((left, right) =>
+      left.conversationId === right.conversationId && left.sequence !== undefined && right.sequence !== undefined
+        ? left.sequence - right.sequence || left.id.localeCompare(right.id)
+        : Date.parse(left.occurredAt) - Date.parse(right.occurredAt) || left.id.localeCompare(right.id)
+    );
     return Object.freeze({ events: Object.freeze(visible), resumeCursor: page.resumeCursor });
   }
 
@@ -67,10 +71,7 @@ export class PgSupportReplayRepository implements SupportReplayPort {
   }
 
   private async assertRelayOrder(context: ReadTransactionContext, event: string, truth: MessageTruth): Promise<void> {
-    const result = await this.transactions.database(context).query<{ id: string }>(
-      `select id from support.message where conversation_id=$1 and sequence<$2 order by sequence,id`,
-      [truth.conversation_id, truth.sequence]
-    );
+    const result = await this.transactions.database(context).query<{ id: string }>(`select id from support.message where conversation_id=$1 and sequence<$2 order by sequence,id`, [truth.conversation_id, truth.sequence]);
     const references = result.rows.map(({ id }) => id);
     const published = await this.runtime.publishedReferences(context, { type: 'support.message.sent', field: 'messageId', references, excluding: event });
     if (new Set(published).size !== references.length) throw new Error('SUPPORT_MESSAGE_RELAY_ORDER_PENDING');
@@ -90,7 +91,7 @@ function mapEvent(id: string, type: string, version: number, scope: string, aggr
     scopeId: scope,
     ticketId: truth?.ticket_id ?? text(payload.ticketId) ?? aggregate,
     conversationId: truth?.conversation_id ?? text(payload.conversationId) ?? aggregate,
-    ...((truth ? truth.visibility === 'external' ? truth.member_id : null : text(payload.memberId)) === null ? {} : { memberId: truth ? truth.member_id! : text(payload.memberId)! }),
+    ...((truth ? (truth.visibility === 'external' ? truth.member_id : null) : text(payload.memberId)) === null ? {} : { memberId: truth ? truth.member_id! : text(payload.memberId)! }),
     ...(messageId === null ? {} : { messageId }),
     ...(text(payload.evidenceId) === null ? {} : { evidenceId: text(payload.evidenceId)! }),
     ...(truth ? { sequence: Number(truth.sequence) } : Number.isSafeInteger(payload.sequence) ? { sequence: Number(payload.sequence) } : {}),

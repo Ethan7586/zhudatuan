@@ -1,4 +1,4 @@
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import type { CatalogRiskDecisionPort } from '../../../catalog/public';
 import type { RiskReplayExecution } from './ReplayRiskPolicy';
 

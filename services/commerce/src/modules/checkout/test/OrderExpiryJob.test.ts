@@ -1,7 +1,7 @@
 import type { PoolClient, QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import type { DatabasePool } from '../../../foundation/persistence/Pool';
-import { PgTransactionManager } from '../../../adapter/database/PgTransactionManager';
+import type { DatabasePool } from '../../../platform/database/Pool';
+import { PgTransactionManager } from '../../../platform/database/PgTransactionManager';
 import { ExpireOrders } from '../application/process/ExpireOrders';
 import { PgOrderExpiryRepository } from '../infrastructure/persistence/PgOrderExpiryRepository';
 import { OrderExpiryJob } from '../interface/job/OrderExpiryJob';

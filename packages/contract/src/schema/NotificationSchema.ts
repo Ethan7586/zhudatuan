@@ -21,8 +21,34 @@ const purpose = literal(NOTIFICATION_PURPOSES);
 const templateState = literal(NOTIFICATION_TEMPLATE_STATES);
 const announcementState = literal(NOTIFICATION_ANNOUNCEMENT_STATES);
 const notification = strictObject({ id: string(), kind: literal(NOTIFICATION_KINDS), event_type: string(), channel, subject: nullableText, body: string(), state: string(), created_at: isoUtc, read_at: nullableTime });
-const preference = strictObject({ channel, event_type: string(), provider_template: nullableText, enabled: boolean(), authorization_state: authorization, authorized_at: nullableTime, consent_source: consentSource, quiet_start: nullableText, quiet_end: nullableText, quiet_timezone: nullableText, version, cursor_id: string() });
-const changedPreference = strictObject({ member_id: string(), channel, event_type: string(), enabled: boolean(), updated_at: isoUtc, authorization_state: authorization, authorized_at: nullableTime, consent_source: consentSource, quiet_start: nullableText, quiet_end: nullableText, quiet_timezone: nullableText, version });
+const preference = strictObject({
+  channel,
+  event_type: string(),
+  provider_template: nullableText,
+  enabled: boolean(),
+  authorization_state: authorization,
+  authorized_at: nullableTime,
+  consent_source: consentSource,
+  quiet_start: nullableText,
+  quiet_end: nullableText,
+  quiet_timezone: nullableText,
+  version,
+  cursor_id: string(),
+});
+const changedPreference = strictObject({
+  member_id: string(),
+  channel,
+  event_type: string(),
+  enabled: boolean(),
+  updated_at: isoUtc,
+  authorization_state: authorization,
+  authorized_at: nullableTime,
+  consent_source: consentSource,
+  quiet_start: nullableText,
+  quiet_end: nullableText,
+  quiet_timezone: nullableText,
+  version,
+});
 const template = strictObject({
   id: string(),
   scope_id: string(),
@@ -55,7 +81,7 @@ const announcement = strictObject({ ...announcementRead.shape, scope_id: string(
 
 export const NOTIFICATION_BODY_SCHEMAS = {
   NotificationNotificationsAckInput: strictObject({}),
-  NotificationPreferencesManageInput: strictObject({ enabled: boolean(), authorization: optional(literal(['accepted', 'rejected'])), quietHours: optional(union([quietHours, nullSchema()])) }),
+  NotificationPreferencesManageInput: strictObject({ enabled: boolean(), quietHours: optional(union([quietHours, nullSchema()])) }),
   NotificationEndpointsManageInput: strictObject({ enabled: boolean(), authorization: optional(literal('accepted')), address: optional(string()) }),
   NotificationTemplatesManageInput: strictObject({
     channel,

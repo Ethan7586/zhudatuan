@@ -66,12 +66,12 @@ items:
     batch: 1
     status: VerifiedLocal
     files:
-      - packages/design/src/ResourceState.tsx
-      - packages/design/src/RouteFallback.tsx
-      - packages/design/src/ResourcePanel.tsx
-      - packages/design/src/Button.tsx
-      - packages/design/src/Form.tsx
-      - packages/design/src/Dialog.tsx
+      - packages/design/src/organism/ResourceState.tsx
+      - packages/design/src/molecule/RouteLoading.tsx
+      - packages/design/src/organism/ResourcePanel.tsx
+      - packages/design/src/atom/Button.tsx
+      - packages/design/src/molecule/Form.tsx
+      - packages/design/src/organism/Dialog.tsx
       - packages/testing/src/browser
     callers:
       - six clients
@@ -84,9 +84,9 @@ items:
     feature: design/testing
     operation: none-display-only
     test:
-      - packages/design/src/ResourceState.component.test.tsx
-      - packages/design/src/Dialog.component.test.tsx
-      - packages/design/src/RouteFallback.component.test.tsx
+      - packages/design/src/organism/ResourceState.component.test.tsx
+      - packages/design/src/organism/Dialog.component.test.tsx
+      - packages/design/src/molecule/RouteLoading.component.test.tsx
       - packages/testing/src/browser/Browser.test.tsx
     evidence:
       - design/testing strict typecheck passed

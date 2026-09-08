@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../../platform/error/DomainError';
 export class WecomCorpMapper {
   value(body: Readonly<Record<string, unknown>>): Readonly<{ tenant: string; subject: string }> {
     const code = typeof body.errcode === 'number' ? body.errcode : -1;

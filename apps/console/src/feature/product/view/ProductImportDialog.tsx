@@ -1,6 +1,9 @@
+import { ImportPanel } from '@shop/design';
 import type { ProductImportViewModel } from '../viewmodel/ProductImportViewModel';
 import { ProductImportOutcome } from './ProductImportOutcome';
-import { ProductImportSetup, ProductImportSteps } from './ProductImportSetup';
+import { ProductImportSetup } from './ProductImportSetup';
+
+const steps = ['模板', '上传', '映射', '校验', '提交', '任务'] as const;
 
 export function ProductImportDialog({ viewmodel }: Readonly<{ viewmodel: ProductImportViewModel }>) {
   if (!viewmodel.open) return null;
@@ -18,9 +21,10 @@ export function ProductImportDialog({ viewmodel }: Readonly<{ viewmodel: Product
           </button>
         </header>
         <div className="productflowbody">
-          <ProductImportSteps current={viewmodel.step} />
-          <ProductImportSetup viewmodel={viewmodel} />
-          <ProductImportOutcome viewmodel={viewmodel} />
+          <ImportPanel steps={steps} current={viewmodel.step} label="商品导入步骤" stepsClassName="productimportsteps">
+            <ProductImportSetup viewmodel={viewmodel} />
+            <ProductImportOutcome viewmodel={viewmodel} />
+          </ImportPanel>
         </div>
       </form>
     </div>

@@ -1,14 +1,14 @@
 import { PgSupportBenefitPort } from './infrastructure/persistence/PgSupportBenefitPort';
 import { PgBenefitReadPort } from './infrastructure/persistence/PgBenefitReadPort';
 
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { defineModule } from '../../composition/DefinedModule';
 import { Manifest } from './Manifest';
 import { BenefitPort } from './infrastructure/persistence/BenefitPort';
 import { BENEFIT_ACCOUNTING_PORT } from '../finance/public/index';
 import { CHECKOUT_BENEFIT_PORT, PAYMENT_BENEFIT_PORT } from './public/index';
 import { BENEFIT_READ_PORT } from './public/BenefitReadPort';
 import { SUPPORT_BENEFIT_PORT } from './public/SupportBenefitPort';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
 import { PgBenefitRepository } from './infrastructure/persistence/PgBenefitRepository';
 import { AccountsReadHandler } from './application/handler/AccountsReadHandler';
 import { LedgersReadHandler } from './application/handler/LedgersReadHandler';

@@ -44,23 +44,17 @@ async function ensureProduct(client: Client, product: (typeof products)[number],
     [product.id, product.title, product.kind, attributes, LOCAL_OWNER.mall]
   );
   await client.query(
-    `insert into catalog.sku(id,product_id,code,specifications,status,version)
-    values($1,$2,$3,'{"规格":"标准款"}'::jsonb,'active',1)
-    on conflict(id) do update set product_id=excluded.product_id,code=excluded.code,specifications=excluded.specifications,status='active'`,
-    [product.sku, product.id, product.code]
+    `insert into catalog.sku(id,product_id,code,specifications,status,version,scope_id)
+    values($1,$2,$3,'{"规格":"标准款"}'::jsonb,'active',1,$4)
+    on conflict(id) do update set product_id=excluded.product_id,code=excluded.code,specifications=excluded.specifications,
+      status='active',scope_id=excluded.scope_id`,
+    [product.sku, product.id, product.code, LOCAL_OWNER.mall]
   );
   await client.query(
     `insert into catalog.poolitem(pool_id,sku_id,state,source_version,added_at)
     values('pool-local-zhudatuan',$1,'included','visual-v1','2026-09-01T00:00:00Z')
     on conflict(pool_id,sku_id) do update set state='included',source_version='visual-v1'`,
     [product.sku]
-  );
-  await client.query(
-    `insert into catalog.listing(id,scope_id,pool_id,sku_id,title,status,effective_at,expires_at,version,created_at,updated_at)
-    values('listing:mall-zhudatuan:'||$1,$2,'pool-local-zhudatuan',$1,$3,'published','2026-01-01T00:00:00Z',null,1,'2026-09-01T00:00:00Z','2026-09-01T00:00:00Z')
-    on conflict(scope_id,sku_id) do update set pool_id='pool-local-zhudatuan',title=excluded.title,status='published',
-      effective_at=excluded.effective_at,expires_at=null,updated_at=excluded.updated_at`,
-    [product.sku, LOCAL_OWNER.mall, product.title]
   );
   await client.query(
     `insert into pricing.price(id,book_id,sku_id,amount_minor,compare_minor,effective_at,expires_at)
@@ -74,6 +68,13 @@ async function ensureProduct(client: Client, product: (typeof products)[number],
     on conflict(scope_id,sku_id,location_id) do update set onhand=100,safety=5,version=inventory.stockitem.version+1,
       status='active',updated_at=excluded.updated_at`,
     [product.sku, LOCAL_OWNER.mall]
+  );
+  await client.query(
+    `insert into catalog.listing(id,scope_id,pool_id,sku_id,title,status,effective_at,expires_at,version,created_at,updated_at)
+    values('listing:mall-zhudatuan:'||$1,$2,'pool-local-zhudatuan',$1,$3,'published','2026-01-01T00:00:00Z',null,1,'2026-09-01T00:00:00Z','2026-09-01T00:00:00Z')
+    on conflict(scope_id,sku_id) do update set pool_id='pool-local-zhudatuan',title=excluded.title,status='published',
+      effective_at=excluded.effective_at,expires_at=null,updated_at=excluded.updated_at`,
+    [product.sku, LOCAL_OWNER.mall, product.title]
   );
 }
 

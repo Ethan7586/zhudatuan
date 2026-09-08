@@ -3,12 +3,12 @@ import { ListingWithdrawal } from './infrastructure/persistence/ListingWithdrawa
 import { CatalogSourcePort } from './infrastructure/persistence/CatalogSourcePort';
 import { PgCatalogSku } from './infrastructure/persistence/PgCatalogSku';
 
-import { PgJobScheduler } from '../../adapter/database/PgJobScheduler';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { defineModule } from '../../bootstrap/DefinedModule';
+import { PgJobScheduler } from '../../platform/database/PgJobScheduler';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { defineModule } from '../../composition/DefinedModule';
 import { OBJECT_STORE } from '../runtime/public/ObjectPort';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
-import { readDatabaseWorkload } from '../../foundation/persistence/Workload';
+import { DATABASE_POOL } from '../../platform/database/Pool';
+import { readDatabaseWorkload } from '../../platform/database/Workload';
 import { CATALOG_INVENTORY_PORT } from '../inventory/public';
 import { ORGANIZATION_READ_PORT } from '../organization/public';
 import { CATALOG_PARTNER_PORT } from '../partner/public';

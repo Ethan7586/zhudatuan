@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { WriteHandlerContext } from '../../../foundation/application/HandlerContext';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { WriteHandlerContext } from '../../../pipeline/HandlerContext';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 import { RolesManageHandler } from '../application/handler/RolesManageHandler';
 import { Membership } from '../domain/model/Membership';
 import { Role } from '../domain/model/Role';
@@ -28,12 +28,9 @@ describe('RolesManageHandler', () => {
   });
 
   it('enforces the same current voucher separation rule shown by the permission center', async () => {
-    const repository = { separationRules: vi.fn(async () => [{ left: 'voucher.credential.manage', right: 'voucher.issue.manage', reason: '凭证生产与卡券发放必须职责分离' }]),
-      lockRole: vi.fn(), saveRole: vi.fn() };
+    const repository = { separationRules: vi.fn(async () => [{ left: 'voucher.credential.manage', right: 'voucher.issue.manage', reason: '凭证生产与卡券发放必须职责分离' }]), lockRole: vi.fn(), saveRole: vi.fn() };
     const allows = ['voucher.credential.manage', 'voucher.issue.manage'];
-    await expect(new RolesManageHandler(repository as never).execute(
-      { path: { roleid: 'role:unsafe' }, body: { action: 'save', name: '卡券操作', allows, denies: [] } }, context(0, allows)))
-      .rejects.toThrow('ACCESS_SEPARATION_REQUIRED');
+    await expect(new RolesManageHandler(repository as never).execute({ path: { roleid: 'role:unsafe' }, body: { action: 'save', name: '卡券操作', allows, denies: [] } }, context(0, allows))).rejects.toThrow('ACCESS_SEPARATION_REQUIRED');
     expect(repository.lockRole).not.toHaveBeenCalled();
     expect(repository.saveRole).not.toHaveBeenCalled();
   });
@@ -48,10 +45,7 @@ describe('RolesManageHandler', () => {
       assignRole: vi.fn(async () => true),
       bump: vi.fn(async () => 9),
     };
-    const result = await new RolesManageHandler(repository as never).execute(
-      { path: { roleid: role.id }, body: { action: 'assign', targetMembership: member.id } },
-      context(8, ['payment.refund'])
-    );
+    const result = await new RolesManageHandler(repository as never).execute({ path: { roleid: role.id }, body: { action: 'assign', targetMembership: member.id } }, context(8, ['payment.refund']));
     expect(result.body).toEqual({ action: 'assign', id: role.id, targetMembership: member.id, accessVersion: 9, changed: true });
     expect(repository.assignRole).toHaveBeenCalledWith(transaction, role.id, member.id, 'membership:test');
     expect(repository.bump).toHaveBeenCalledWith(transaction, member.id, 'roleassigned', 'trace:test');
@@ -65,10 +59,7 @@ describe('RolesManageHandler', () => {
       roleImpact: vi.fn(async () => ({ people: 1, scopes: 1 })),
       deleteRole: vi.fn(async () => true),
     };
-    await expect(new RolesManageHandler(repository as never).execute(
-      { path: { roleid: role.id }, body: { action: 'delete' } },
-      context(3, ['payment.refund'])
-    )).rejects.toThrow('ACCESS_GRANT_CONFLICT');
+    await expect(new RolesManageHandler(repository as never).execute({ path: { roleid: role.id }, body: { action: 'delete' } }, context(3, ['payment.refund']))).rejects.toThrow('ACCESS_GRANT_CONFLICT');
     expect(repository.deleteRole).not.toHaveBeenCalled();
   });
 });
@@ -87,11 +78,20 @@ function context(expectedVersion: number, permissions: readonly string[]): Write
     idempotencyKey: 'role:test',
     expectedVersion,
     transaction,
-    security: { kind: 'session', access: {
-      actor: { id: 'principal:test', session: 'session:test', membership: 'membership:test', credentialVersion: 1, accessVersion: 1, target: 'console', assurance: { level: 3 } },
-      membership: { id: 'membership:test', active: true, accessVersion: 1, permissions: { allows: new Set(permissions), denies: new Set() }, scopes: [] },
-      roles: [], organization: 'mall:one', scope: { id: 'mall:one', kind: 'mall', path: [] }, accessVersion: 1,
-      capabilities: new Set(['access.roles.manage']), capabilityVersion: 1, assurance: { level: 3 }, trace: 'trace:test',
-    } },
+    security: {
+      kind: 'session',
+      access: {
+        actor: { id: 'principal:test', session: 'session:test', membership: 'membership:test', credentialVersion: 1, accessVersion: 1, target: 'console', assurance: { level: 3 } },
+        membership: { id: 'membership:test', active: true, accessVersion: 1, permissions: { allows: new Set(permissions), denies: new Set() }, scopes: [] },
+        roles: [],
+        organization: 'mall:one',
+        scope: { id: 'mall:one', kind: 'mall', path: [] },
+        accessVersion: 1,
+        capabilities: new Set(['access.roles.manage']),
+        capabilityVersion: 1,
+        assurance: { level: 3 },
+        trace: 'trace:test',
+      },
+    },
   };
 }

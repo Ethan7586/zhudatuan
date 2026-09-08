@@ -68,9 +68,7 @@ export class ChannelPolicy {
   quotaAllows(quota: Quota, used: number, at: string): boolean {
     const instant = Date.parse(at);
     if (!Number.isSafeInteger(used) || used < 0 || Number.isNaN(instant)) throw new Error('CHANNEL_QUOTA_USAGE_INVALID');
-    return quota.value.state === 'enabled' && instant >= Date.parse(quota.value.effectiveAt) &&
-      (quota.value.expiresAt === null || instant < Date.parse(quota.value.expiresAt)) &&
-      (quota.value.limit === null || used < quota.value.limit);
+    return quota.value.state === 'enabled' && instant >= Date.parse(quota.value.effectiveAt) && (quota.value.expiresAt === null || instant < Date.parse(quota.value.expiresAt)) && (quota.value.limit === null || used < quota.value.limit);
   }
 
   requireOperationTransition(operation: ProviderOperation, target: ProviderOperationState): void {
@@ -91,10 +89,15 @@ export class ChannelPolicy {
 }
 
 export function validateConnectionLimits(limits: ConnectionLimits): void {
-  const integers = [limits.connectionTimeoutMs, limits.responseTimeoutMs, limits.totalDeadlineMs, limits.maxConcurrency,
-    limits.maxAttempts, limits.failureThreshold, limits.recoveryMs];
-  if (integers.some((value) => !Number.isSafeInteger(value) || value <= 0) || !Number.isFinite(limits.requestsPerSecond) || limits.requestsPerSecond <= 0 ||
-    limits.connectionTimeoutMs > limits.totalDeadlineMs || limits.responseTimeoutMs > limits.totalDeadlineMs) throw new Error('CHANNEL_CONNECTION_LIMITS_INVALID');
+  const integers = [limits.connectionTimeoutMs, limits.responseTimeoutMs, limits.totalDeadlineMs, limits.maxConcurrency, limits.maxAttempts, limits.failureThreshold, limits.recoveryMs];
+  if (
+    integers.some((value) => !Number.isSafeInteger(value) || value <= 0) ||
+    !Number.isFinite(limits.requestsPerSecond) ||
+    limits.requestsPerSecond <= 0 ||
+    limits.connectionTimeoutMs > limits.totalDeadlineMs ||
+    limits.responseTimeoutMs > limits.totalDeadlineMs
+  )
+    throw new Error('CHANNEL_CONNECTION_LIMITS_INVALID');
 }
 
 function validateUsage(usage: ChannelUsage): void {

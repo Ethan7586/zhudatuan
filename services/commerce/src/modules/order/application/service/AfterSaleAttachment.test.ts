@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
+import type { OperationRequest } from '../../../../pipeline/OperationRequest';
 import type { ObjectMetadata, UploadAuthorization } from '../../../runtime/public/ObjectPort';
 import { AfterSaleAttachment } from './AfterSaleAttachment';
 
@@ -23,13 +23,17 @@ describe('after-sale attachment', () => {
     await expect(service.verify(request({ attachments: [{ objectId: reference, name: 'damage.png', contentType: 'image/png', sizeBytes: 100, sha256 }] }).input, membership)).resolves.toEqual([
       { objectId: reference, name: 'damage.png', mediaType: 'image/png', sizeBytes: 100, contentHash: sha256 },
     ]);
-    await expect(new AfterSaleAttachment({ authorizeUpload: vi.fn(), inspect: vi.fn(async () => metadata({ sha256: 'b'.repeat(64) })) }).verify(request({ attachments: [{ objectId: reference, name: 'damage.png', contentType: 'image/png', sizeBytes: 100, sha256 }] }).input, membership)).rejects.toThrow('VALIDATION_FAILED');
+    await expect(
+      new AfterSaleAttachment({ authorizeUpload: vi.fn(), inspect: vi.fn(async () => metadata({ sha256: 'b'.repeat(64) })) }).verify(
+        request({ attachments: [{ objectId: reference, name: 'damage.png', contentType: 'image/png', sizeBytes: 100, sha256 }] }).input,
+        membership
+      )
+    ).rejects.toThrow('VALIDATION_FAILED');
   });
 });
 
 function metadata(overrides: Partial<ObjectMetadata> = {}): ObjectMetadata {
-  return { reference, sha256, size: 100, scan: 'clean', contentType: 'image/png', path: `aftersale/${owner}/damage.png`,
-    retentionUntil: '2099-01-01T00:00:00.000Z', lockedUntil: null, ...overrides };
+  return { reference, sha256, size: 100, scan: 'clean', contentType: 'image/png', path: `aftersale/${owner}/damage.png`, retentionUntil: '2099-01-01T00:00:00.000Z', lockedUntil: null, ...overrides };
 }
 
 function request(body: Record<string, unknown>): OperationRequest {

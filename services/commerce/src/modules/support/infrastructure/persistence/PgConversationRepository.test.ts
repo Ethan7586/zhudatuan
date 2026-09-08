@@ -12,12 +12,24 @@ describe('PgConversationRepository', () => {
     const query = vi.fn(async (sql: string) => {
       queries.push(sql);
       if (sql.includes('select conversation.id')) return result([{ id: 'conversation:one', scope_id: 'mall:one', member_id: 'member:one', version: 4, latest_sequence: 2, last_read_sequence: 1 }]);
-      if (sql.includes('from support.message message')) return result([{ id: 'message:one', client_message_id: 'client:0001', conversation_id: 'conversation:one', scope_id: 'mall:one', author_type: 'agent', author_id: 'actor:agent', kind: 'attachment', visibility: 'external', body_ciphertext: 'ciphertext', sequence: 2, version: 1, created_at: '2026-09-06T00:00:00.000Z' }]);
-      return result([
-        evidence('clean', 'object:clean', null, null),
-        evidence('pending', 'object:pending', null, null),
-        evidence('rejected', 'object:rejected', 'VIRUS_DETECTED', '请删除后重新上传。'),
-      ]);
+      if (sql.includes('from support.message message'))
+        return result([
+          {
+            id: 'message:one',
+            client_message_id: 'client:0001',
+            conversation_id: 'conversation:one',
+            scope_id: 'mall:one',
+            author_type: 'agent',
+            author_id: 'actor:agent',
+            kind: 'attachment',
+            visibility: 'external',
+            body_ciphertext: 'ciphertext',
+            sequence: 2,
+            version: 1,
+            created_at: '2026-09-06T00:00:00.000Z',
+          },
+        ]);
+      return result([evidence('clean', 'object:clean', null, null), evidence('pending', 'object:pending', null, null), evidence('rejected', 'object:rejected', 'VIRUS_DETECTED', '请删除后重新上传。')]);
     });
     const repository = new PgConversationRepository(
       { decrypt: vi.fn(async () => '附件说明') } as never,

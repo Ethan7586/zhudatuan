@@ -1,6 +1,6 @@
 import { CAPABILITY_CODES_BY_OWNER, OperationCatalog } from '@shop/contract';
 import { describe, expect, it } from 'vitest';
-import type { RegisteredOperationHandler } from '../../../foundation/application/OperationHandler';
+import type { RegisteredOperationHandler } from '../../../pipeline/OperationHandler';
 import { Manifest, ReportingCapabilities } from '../Manifest';
 import { ReportingModule } from '../Module';
 

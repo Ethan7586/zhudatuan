@@ -41,5 +41,6 @@ describe('support mapping', () => {
     });
     expect(page.items[0]?.subject).toBe('配送问题');
     expect(conversation.items[0]?.body).toBe('已受理');
+    expect(conversation.context.member.mobileMasked).toBe('138****0000');
   });
 });

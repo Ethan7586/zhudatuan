@@ -1,9 +1,9 @@
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ApiErrorCode } from '@shop/contract';
-import { OperationRejection, reject } from '../../../../foundation/application/OperationRejection';
+import { OperationRejection, reject } from '../../../../pipeline/OperationRejection';
 
-import { ApplicationError } from '../../../../foundation/domain/ApplicationError';
-import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
+import { ApplicationError } from '../../../../platform/error/ApplicationError';
+import type { OperationRequest } from '../../../../pipeline/OperationRequest';
 import type { IdentityEventRepository } from '../port/IdentityEventRepository';
 
 export class InvitationFailure {

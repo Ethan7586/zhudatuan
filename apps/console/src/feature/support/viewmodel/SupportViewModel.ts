@@ -17,8 +17,7 @@ import { agentsKey, directTicketKey, historyKey, queueKey, queuePrefix } from '.
 import { useSettingsViewModel } from './SettingsViewModel';
 import { readSupportFilter } from './SupportFilter';
 import { supportActionError } from './SupportError';
-
-type TicketAction = Readonly<{ kind: 'close' }> | Readonly<{ kind: 'reopen' }> | Readonly<{ kind: 'assign'; agent: string; reason: string }>;
+import { executeTicketAction, type TicketAction } from './SupportAction';
 
 export function useSupportViewModel(context: ConsoleContext, dependencies: SupportDependencies, requestStepup: () => void) {
   const { caseId } = useParams();
@@ -69,12 +68,7 @@ export function useSupportViewModel(context: ConsoleContext, dependencies: Suppo
   const conversationRefresh = conversation.actions.refresh;
   const queueRefetch = queue.refetch;
   const action = useMutation<void, Error, TicketAction>({
-    mutationFn: async (value) => {
-      if (!ticket) throw new Error('请先选择工单。');
-      if (value.kind === 'close') await dependencies.closeTicket.execute(context, ticket);
-      else if (value.kind === 'reopen') await dependencies.reopenTicket.execute(context, ticket);
-      else await dependencies.assignTicket.execute(context, ticket, value.agent, value.reason);
-    },
+    mutationFn: (value) => executeTicketAction(context, dependencies, ticket, value),
     onSuccess: async () => {
       await queue.refetch();
     },

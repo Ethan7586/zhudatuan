@@ -22,14 +22,29 @@ describe('secure report export', () => {
     const response = await handler.execute({ body: { report: 'metrics', filter, snapshot: reportSnapshot } } as never, context() as never);
 
     expect(response).toEqual({ status: 202, body: created });
-    expect(reports.createExport).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
-      scope: 'enterprise:one', actor: 'actor:one', membership: 'membership:one', report: 'metrics', filter,
-      snapshot: { filter, watermark, generatedAt: reportSnapshot.generatedAt, generationVersion: 1 },
-    }));
-    expect(jobs.create).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
-      scope: 'enterprise:one', owner: 'reporting', kind: 'export', queue: 'export', idempotency: 'request:one', actor: 'actor:one',
-      payload: { export: expect.stringMatching(/^export:/) },
-    }));
+    expect(reports.createExport).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        scope: 'enterprise:one',
+        actor: 'actor:one',
+        membership: 'membership:one',
+        report: 'metrics',
+        filter,
+        snapshot: { filter, watermark, generatedAt: reportSnapshot.generatedAt, generationVersion: 1 },
+      })
+    );
+    expect(jobs.create).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        scope: 'enterprise:one',
+        owner: 'reporting',
+        kind: 'export',
+        queue: 'export',
+        idempotency: 'request:one',
+        actor: 'actor:one',
+        payload: { export: expect.stringMatching(/^export:/) },
+      })
+    );
   });
 
   it('rejects a client snapshot from another scope or beyond the current watermark before scheduling work', async () => {
@@ -37,7 +52,9 @@ describe('secure report export', () => {
     const jobs = { create: vi.fn() };
     const handler = new ExportsCreateHandler(reports as never, jobs as never);
 
-    await expect(handler.execute({ body: { report: 'metrics', filter, snapshot: { ...reportSnapshot, query: { ...reportSnapshot.query, scope: 'enterprise:other' } } } } as never, context() as never)).rejects.toThrow('REPORT_SNAPSHOT_INVALID');
+    await expect(handler.execute({ body: { report: 'metrics', filter, snapshot: { ...reportSnapshot, query: { ...reportSnapshot.query, scope: 'enterprise:other' } } } } as never, context() as never)).rejects.toThrow(
+      'REPORT_SNAPSHOT_INVALID'
+    );
     await expect(handler.execute({ body: { report: 'metrics', filter, snapshot: { ...reportSnapshot, watermark: { ...watermark, version: 10 } } } } as never, context() as never)).rejects.toThrow('REPORT_EXPORT_SNAPSHOT_INVALID');
     expect(reports.createExport).not.toHaveBeenCalled();
     expect(jobs.create).not.toHaveBeenCalled();
@@ -53,13 +70,27 @@ describe('secure report export', () => {
   it('authorizes only a five minute download after a clean completed object', async () => {
     const authorize = vi.fn().mockResolvedValue({ url: 'https://objects.example/report.csv?token=one', expiresAt: '2026-09-03T00:05:00.000Z' });
     const handler = new ExportsReadHandler({} as never, { authorize } as never);
-    const response = await handler.finalize({} as never, {
-      id: 'export:one', scope: 'enterprise:one', report: 'metrics', filter: {},
-      snapshot: { filter: {}, watermark: { event: 'event:one', occurredAt: '2026-09-03T00:00:00.000Z', version: 1 }, generatedAt: '2026-09-03T00:00:00.000Z', generationVersion: 1 },
-      state: 'completed', cursor: null,
-      recordCount: 2, objectReference: 'reports/export/one.csv', objectHash: 'a'.repeat(64), objectSize: 120, scanState: 'clean',
-      expiresAt: '2026-09-03T00:10:00.000Z', createdAt: '2026-09-03T00:00:00.000Z', generatedAt: '2026-09-03T00:01:00.000Z',
-    }, {} as never);
+    const response = await handler.finalize(
+      {} as never,
+      {
+        id: 'export:one',
+        scope: 'enterprise:one',
+        report: 'metrics',
+        filter: {},
+        snapshot: { filter: {}, watermark: { event: 'event:one', occurredAt: '2026-09-03T00:00:00.000Z', version: 1 }, generatedAt: '2026-09-03T00:00:00.000Z', generationVersion: 1 },
+        state: 'completed',
+        cursor: null,
+        recordCount: 2,
+        objectReference: 'reports/export/one.csv',
+        objectHash: 'a'.repeat(64),
+        objectSize: 120,
+        scanState: 'clean',
+        expiresAt: '2026-09-03T00:10:00.000Z',
+        createdAt: '2026-09-03T00:00:00.000Z',
+        generatedAt: '2026-09-03T00:01:00.000Z',
+      },
+      {} as never
+    );
     expect(authorize).toHaveBeenCalledWith('reports/export/one.csv', 300);
     expect(response.body.download?.url).toContain('https://objects.example/');
   });
@@ -78,7 +109,9 @@ describe('secure report export', () => {
         const offset = cursor === null ? 0 : rows.findIndex((row) => row.key === cursor) + 1;
         return rows.slice(offset, offset + fetch);
       }),
-      advanceExport: vi.fn(async (_context: unknown, _id: string, cursor: string) => { advanced.push(cursor); }),
+      advanceExport: vi.fn(async (_context: unknown, _id: string, cursor: string) => {
+        advanced.push(cursor);
+      }),
     };
     const transactions = {
       read: async (_options: unknown, work: (context: unknown) => Promise<unknown>) => work({}),
@@ -108,18 +141,31 @@ describe('secure report export', () => {
 
 function exportJob(state: 'queued' | 'completed') {
   return {
-    id: 'export:one', scope: 'enterprise:one', report: 'metrics' as const, filter: {},
+    id: 'export:one',
+    scope: 'enterprise:one',
+    report: 'metrics' as const,
+    filter: {},
     snapshot: { filter: {}, watermark: { event: 'event:one', occurredAt: '2026-09-03T00:00:00.000Z', version: 1 }, generatedAt: '2026-09-03T00:00:00.000Z', generationVersion: 1 },
-    state, cursor: null, recordCount: state === 'completed' ? 2 : 0, objectReference: state === 'completed' ? 'reports/export/one.csv' : null,
-    objectHash: state === 'completed' ? 'a'.repeat(64) : null, objectSize: state === 'completed' ? 120 : null,
-    scanState: state === 'completed' ? 'clean' as const : null, expiresAt: state === 'completed' ? '2026-09-03T00:10:00.000Z' : null,
-    createdAt: '2026-09-03T00:00:00.000Z', generatedAt: state === 'completed' ? '2026-09-03T00:01:00.000Z' : null,
+    state,
+    cursor: null,
+    recordCount: state === 'completed' ? 2 : 0,
+    objectReference: state === 'completed' ? 'reports/export/one.csv' : null,
+    objectHash: state === 'completed' ? 'a'.repeat(64) : null,
+    objectSize: state === 'completed' ? 120 : null,
+    scanState: state === 'completed' ? ('clean' as const) : null,
+    expiresAt: state === 'completed' ? '2026-09-03T00:10:00.000Z' : null,
+    createdAt: '2026-09-03T00:00:00.000Z',
+    generatedAt: state === 'completed' ? '2026-09-03T00:01:00.000Z' : null,
   };
 }
 
 function context() {
   return {
-    operation: 'reporting.exports.create', traceId: 'trace:one', requestId: 'request:one', idempotencyKey: 'request:one',
-    transaction: {}, security: { kind: 'session', access: { actor: { id: 'actor:one' }, membership: { id: 'membership:one' }, scope: { id: 'enterprise:one' } } },
+    operation: 'reporting.exports.create',
+    traceId: 'trace:one',
+    requestId: 'request:one',
+    idempotencyKey: 'request:one',
+    transaction: {},
+    security: { kind: 'session', access: { actor: { id: 'actor:one' }, membership: { id: 'membership:one' }, scope: { id: 'enterprise:one' } } },
   };
 }

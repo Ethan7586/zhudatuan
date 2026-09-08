@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { Progress, type ProgressValue } from '../value/Progress';
 import { RetryPolicy } from '../policy/RetryPolicy';
 
@@ -30,11 +30,26 @@ export type RuntimeTaskSnapshot = Omit<RuntimeTaskData, 'cancelRequested'> & Rea
 export class RuntimeTask {
   readonly progress: Progress;
 
-  constructor(private readonly data: RuntimeTaskData, private readonly retryPolicy = new RetryPolicy()) {
-    if (!/^(job|import|export):/.test(data.id) || !data.owner || !data.kind || !data.title || !Number.isSafeInteger(data.version) || data.version < 1 ||
-      Number.isNaN(Date.parse(data.createdAt)) || Number.isNaN(Date.parse(data.updatedAt)) || (data.expiresAt !== null && Number.isNaN(Date.parse(data.expiresAt))) ||
-      !TASK_STATES[data.type].has(data.state) || !data.id.startsWith(`${data.type}:`) ||
-      (data.previewHash !== null && !/^[a-f0-9]{64}$/.test(data.previewHash)) || !Number.isSafeInteger(data.validationErrors) || data.validationErrors < 0) {
+  constructor(
+    private readonly data: RuntimeTaskData,
+    private readonly retryPolicy = new RetryPolicy()
+  ) {
+    if (
+      !/^(job|import|export):/.test(data.id) ||
+      !data.owner ||
+      !data.kind ||
+      !data.title ||
+      !Number.isSafeInteger(data.version) ||
+      data.version < 1 ||
+      Number.isNaN(Date.parse(data.createdAt)) ||
+      Number.isNaN(Date.parse(data.updatedAt)) ||
+      (data.expiresAt !== null && Number.isNaN(Date.parse(data.expiresAt))) ||
+      !TASK_STATES[data.type].has(data.state) ||
+      !data.id.startsWith(`${data.type}:`) ||
+      (data.previewHash !== null && !/^[a-f0-9]{64}$/.test(data.previewHash)) ||
+      !Number.isSafeInteger(data.validationErrors) ||
+      data.validationErrors < 0
+    ) {
       throw new DomainError('VALIDATION_FAILED');
     }
     this.progress = Progress.restore(data);

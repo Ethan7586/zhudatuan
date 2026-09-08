@@ -1,0 +1,15 @@
+.shopdaterange { display: grid; grid-template-columns: repeat(2, minmax(10rem, 1fr)); gap: var(--sw-space-2); min-inline-size: 0; border: 0; padding: 0; }
+.shopdaterange legend { grid-column: 1 / -1; font-weight: var(--sw-font-weight-semibold); }
+.shopfieldgroup { display: grid; gap: var(--sw-space-0-5); }
+.shopfieldgroup > span { font-size: var(--sw-font-size-label); font-weight: var(--sw-font-weight-semibold); }
+.shopfieldgroup > small { color: var(--sw-text-secondary); }
+.shopfieldgroup[data-invalid='true'] > small { color: var(--sw-danger-strong); }
+.shopamount { color: var(--sw-text); font-family: var(--sw-font-financial); font-variant-numeric: tabular-nums; font-weight: var(--sw-font-weight-semibold); }
+.shopbusinessref { display: inline-flex; min-height: var(--sw-control-touch-target); align-items: center; gap: var(--sw-space-1); }
+.shopbusinessref > span { display: grid; }
+.shopbusinessref small { color: var(--sw-text-secondary); }
+.shopbusinessref code { overflow-wrap: anywhere; }
+.shopprogress { display: grid; gap: var(--sw-space-1); }
+.shopprogress > div { display: flex; justify-content: space-between; gap: var(--sw-space-2); }
+.shopprogress progress { width: 100%; accent-color: var(--sw-brand); }
+@media (max-width: 47.99rem) { .shopdaterange { grid-template-columns: 1fr; } }

@@ -1,6 +1,6 @@
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
 
-import { publicPort } from '../../../bootstrap/ModuleRegistry';
+import { publicPort } from '../../../composition/ModuleRegistry';
 import type { NavigationScopeKind } from '@shop/authz';
 
 export interface NavigationScope {

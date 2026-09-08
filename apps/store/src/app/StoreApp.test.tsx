@@ -9,7 +9,9 @@ describe('store route registry', () => {
     expect(Object.values(STORE_ROUTES).every((route) => typeof route.load === 'function')).toBe(true);
     expect(NAVIGATION_ROUTE_IDS.every((id) => id in STORE_ROUTES)).toBe(true);
     expect(Object.values(STORE_ROUTES).every((route) => route.scope === 'store' && route.capability === route.operation && route.breadcrumbs.length > 0)).toBe(true);
-    expect(STORE_ROUTES.storefulfillment.operation).toBe('order.orders.read');
+    expect(STORE_ROUTES.storefulfillment.operation).toBe('fulfillment.workitems.read');
+    expect(STORE_ROUTES.storereturnwork.operation).toBe('fulfillment.returns.read');
+    expect(STORE_ROUTES.storeworkcase.operation).toBe('support.messages.read');
   });
 
   it('matches encoded scoped routes without accepting malformed paths', () => {

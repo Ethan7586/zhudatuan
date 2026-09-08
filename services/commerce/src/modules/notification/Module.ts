@@ -1,6 +1,6 @@
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { defineModule } from '../../bootstrap/DefinedModule';
-import { KMS_CLIENT } from '../../foundation/application/KmsPort';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { defineModule } from '../../composition/DefinedModule';
+import { KMS_CLIENT } from '../../pipeline/KmsPort';
 import { MEMBER_ACCESS_PORT } from '../access/public';
 import { NOTIFICATION_IDENTITY_PORT } from '../identity/public';
 import { ORGANIZATION_READ_PORT } from '../organization/public';

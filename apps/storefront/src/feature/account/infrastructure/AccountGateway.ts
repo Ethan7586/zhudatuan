@@ -10,6 +10,7 @@ import type { Address } from '../model/Address';
 import type { Profile } from '../model/Profile';
 import type { BenefitBalances } from '../../benefit/public/BenefitReader';
 import type { AccountPort } from '../public/AccountPort';
+import { readCursorPages } from '../../../shared/api/CursorPage';
 
 export class AccountGateway implements AccountPort {
   constructor(
@@ -22,7 +23,8 @@ export class AccountGateway implements AccountPort {
   }
 
   async addresses(session: StorefrontSession, signal?: AbortSignal): Promise<readonly Address[]> {
-    return mapAddresses(await this.member.addressesRead({ query: { limit: 50 } }, this.context(session, { signal })));
+    const pages = await readCursorPages((cursor) => this.member.addressesRead({ query: { limit: 50, ...(cursor ? { cursor } : {}) } }, this.context(session, { signal })), signal);
+    return Object.freeze(pages.flatMap(mapAddresses));
   }
 
   changeAddress(session: StorefrontSession, addressId: string, draft: AddressDraft | null, expectedVersion: number, idempotencyKey: string) {
@@ -54,8 +56,8 @@ export class AccountGateway implements AccountPort {
   }
 
   async favorites(session: StorefrontSession, signal?: AbortSignal): Promise<readonly Favorite[]> {
-    const value = await this.member.favoritesRead({ query: { limit: 100 } }, this.context(session, { signal }));
-    return mapFavorites(value);
+    const pages = await readCursorPages((cursor) => this.member.favoritesRead({ query: { limit: 100, ...(cursor ? { cursor } : {}) } }, this.context(session, { signal })), signal);
+    return Object.freeze(pages.flatMap(mapFavorites));
   }
 
   async changeFavorite(session: StorefrontSession, listingId: string, favorite: boolean, idempotencyKey: string): Promise<void> {

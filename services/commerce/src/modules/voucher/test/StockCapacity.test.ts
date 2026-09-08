@@ -2,7 +2,7 @@ import { PGlite } from '@electric-sql/pglite';
 import { describe, expect, it, vi } from 'vitest';
 import type { OperationId } from '@shop/contract';
 import { withReadTransaction, withWriteTransaction, result } from '../../../test/TransactionFixture';
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
 import type { VoucherCall } from '../application/port/VoucherCall';
 import { PgStockRequestRepository } from '../infrastructure/persistence/PgStockRequestRepository';
 import { PgIssueOrderRepository } from '../infrastructure/persistence/PgIssueOrderRepository';
@@ -13,11 +13,13 @@ describe('stock allocation SQL', () => {
     try {
       const repository = new PgStockRequestRepository({} as never, {} as never);
       const query = executor(database);
-      const first = await withReadTransaction(query, context => repository.options(call(context, { query: { limit: 1 } })));
+      const first = await withReadTransaction(query, (context) => repository.options(call(context, { query: { limit: 1 } })));
       expect(first.body).toEqual({ items: [{ request: 'stock:one', number: 'SR1', product: 'product:one', pool: 'pool:one', customer: 'customer:one', available: 3, approved: 3 }], count: 1, nextCursor: 'stock:one' });
-      const next = await withReadTransaction(query, context => repository.options(call(context, { query: { limit: 1, cursor: 'stock:one' } })));
+      const next = await withReadTransaction(query, (context) => repository.options(call(context, { query: { limit: 1, cursor: 'stock:one' } })));
       expect(next.body).toEqual({ items: [{ request: 'stock:two', number: 'SR2', product: 'product:one', pool: 'pool:empty', customer: 'customer:one', available: 0, approved: 2 }], count: 1 });
-    } finally { await database.close(); }
+    } finally {
+      await database.close();
+    }
   });
 
   it('locks the quota before checking and refuses a request above the remaining allocation', async () => {
@@ -25,10 +27,12 @@ describe('stock allocation SQL', () => {
     try {
       const query = executor(database);
       const repository = new PgIssueOrderRepository({} as never, {} as never, {} as never, {} as never);
-      await expect(withWriteTransaction(query, context => repository.create(call(context, { body: command(4) })))).rejects.toThrow('VOUCHER_STOCK_INSUFFICIENT');
+      await expect(withWriteTransaction(query, (context) => repository.create(call(context, { body: command(4) })))).rejects.toThrow('VOUCHER_STOCK_INSUFFICIENT');
       expect(query.mock.calls[0]).toEqual(['select id from voucher.stockrequest where id=$1 and scope_id=$2 for update', ['stock:one', 'mall:one']]);
       expect(query.mock.calls.some(([sql]) => sql.startsWith('insert'))).toBe(false);
-    } finally { await database.close(); }
+    } finally {
+      await database.close();
+    }
   });
 
   it('excludes only the revised order and continues reserving other failed orders', async () => {
@@ -36,17 +40,27 @@ describe('stock allocation SQL', () => {
     try {
       const query = executor(database);
       const repository = new PgIssueOrderRepository({} as never, {} as never, {} as never, {} as never);
-      const revised = await withWriteTransaction(query, context => repository.update({ ...call<'voucher.issueorders.update'>(context,
-        { path: { orderid: 'issue:draft' }, body: command(5) }), expectedVersion: 1 }));
+      const revised = await withWriteTransaction(query, (context) => repository.update({ ...call<'voucher.issueorders.update'>(context, { path: { orderid: 'issue:draft' }, body: command(5) }), expectedVersion: 1 }));
       expect(revised.body.quantity).toBe(5);
-      await expect(withWriteTransaction(query, context => repository.create(call(context, { body: command(1) })))).rejects.toThrow('VOUCHER_STOCK_INSUFFICIENT');
-    } finally { await database.close(); }
+      await expect(withWriteTransaction(query, (context) => repository.create(call(context, { body: command(1) })))).rejects.toThrow('VOUCHER_STOCK_INSUFFICIENT');
+    } finally {
+      await database.close();
+    }
   });
 });
 
 function command(quantity: number) {
-  return { customer: 'customer:one', product: 'product:one', stockRequest: 'stock:one', quantity, purpose: 'manual', delivery: 'claim',
-    validity: { startsAt: '2026-09-05T00:00:00.000Z', expiresAt: '2026-12-05T00:00:00.000Z' }, recipientSnapshot: 'snapshot:one', reason: '员工福利' };
+  return {
+    customer: 'customer:one',
+    product: 'product:one',
+    stockRequest: 'stock:one',
+    quantity,
+    purpose: 'manual',
+    delivery: 'claim',
+    validity: { startsAt: '2026-09-05T00:00:00.000Z', expiresAt: '2026-12-05T00:00:00.000Z' },
+    recipientSnapshot: 'snapshot:one',
+    reason: '员工福利',
+  };
 }
 function call<TKey extends OperationId>(transaction: ReadTransactionContext, input: unknown): VoucherCall<TKey> {
   return { input, context: { transaction }, scope: 'mall:one', actor: 'actor:one', now: new Date('2026-09-05T00:00:00.000Z') } as VoucherCall<TKey>;

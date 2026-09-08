@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { OperationCatalog, operationSchema } from '@shop/contract';
-import { DomainError } from '../../services/commerce/src/foundation/domain/DomainError';
+import { DomainError } from '../../services/commerce/src/platform/error/DomainError';
 import { DelegationPolicy } from '../../services/commerce/src/modules/access/domain/policy/DelegationPolicy';
 import { GrantPlan } from '../../services/commerce/src/modules/access/domain/model/GrantPlan';
 import { Invitation, type InvitationState } from '../../services/commerce/src/modules/identity/domain/model/Invitation';
@@ -67,16 +67,16 @@ test('invite04_invalid_code', () => {
 });
 
 test('invite05_expired_code', () => {
-  assert.throws(() => signin().assertRedeemable(new Date('2100-01-01T00:00:00.000Z'), 'storefront'), invitationInvalid);
+  assert.throws(() => signin().assertRedeemable(new Date('2100-01-01T00:00:00.000Z'), 'storefront'), invitationExpired);
 });
 
 test('invite06_revoked_code', () => {
-  assert.throws(() => signin({ status: 'revoked' }).assertRedeemable(ACTIVE_AT, 'storefront'), invitationInvalid);
+  assert.throws(() => signin({ status: 'revoked' }).assertRedeemable(ACTIVE_AT, 'storefront'), invitationRevoked);
 });
 
 test('invite07_replayed_code', () => {
   const consumed = signin().consume(ACTIVE_AT);
-  assert.throws(() => consumed.consume(ACTIVE_AT), invitationInvalid);
+  assert.throws(() => consumed.consume(ACTIVE_AT), invitationAccepted);
 });
 
 test('invite08_wrong_target', () => {
@@ -119,9 +119,9 @@ test('invite15_navigation_api_consistency', () => {
   assert.equal(navigation.cachePolicy, 'etag');
   assert.equal(navigation.permission, null);
   for (const node of NAVIGATION_CATALOG) {
-    const entry = OperationCatalog.get(node.entry);
-    assert.ok(node.capabilities.includes(entry.capability), `${node.id} capability differs from ${entry.id}`);
-    if (entry.permission !== null) assert.ok(node.permissions.includes(entry.permission), `${node.id} permission differs from ${entry.id}`);
+    const entry = OperationCatalog.get(node.operation);
+    assert.equal(node.capability, entry.capability, `${node.key} capability differs from ${entry.id}`);
+    assert.equal(node.permission, entry.permission, `${node.key} permission differs from ${entry.id}`);
   }
 });
 
@@ -183,6 +183,15 @@ class VersionedInvitationStore {
 }
 function invitationInvalid(error: unknown): boolean {
   return error instanceof DomainError && error.code === 'INVITATION_INVALID';
+}
+function invitationExpired(error: unknown): boolean {
+  return error instanceof DomainError && error.code === 'INVITATION_EXPIRED';
+}
+function invitationRevoked(error: unknown): boolean {
+  return error instanceof DomainError && error.code === 'INVITATION_REVOKED';
+}
+function invitationAccepted(error: unknown): boolean {
+  return error instanceof DomainError && error.code === 'INVITATION_ACCEPTED';
 }
 function delegationDenied(error: unknown): boolean {
   return error instanceof DomainError && error.code === 'DELEGATION_DENIED';

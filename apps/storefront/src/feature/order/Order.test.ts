@@ -16,6 +16,9 @@ describe('order model mapping', () => {
         currency: 'CNY',
         total_minor: 129900,
         payment: { paymentId: 'payment:one', version: 0, capturedMinor: 129900, refundedMinor: 0, refundableMinor: 129900, updatedAt: '2026-08-31T02:00:00.000Z', tenders: [] },
+        fulfillments: [],
+        refunds: [],
+        timeline: [],
         receivedAt: null,
         version: 4,
         created_at: '2026-08-31T01:00:00.000Z',
@@ -73,6 +76,7 @@ describe('order model mapping', () => {
     expect(order.lines[0]?.title).toBe('员工礼品');
     expect(order.timeline[0]?.tracking).toBe('SF****0001');
     expect(order.sections.payment).toEqual({ state: 'unavailable', message: '支付投影正在追赶', retryable: true });
+    expect(order.payment).toBeNull();
     expect(order.sections.aftersale).toEqual({ state: 'hidden' });
     expect(Object.isFrozen(order.sections)).toBe(true);
   });

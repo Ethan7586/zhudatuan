@@ -5,7 +5,7 @@ import type { MarketingReservePort } from '../../../marketing/public';
 import type { OrderPort } from '../../../order/infrastructure/persistence/OrderPort';
 import { PaymentSettlement } from '../../infrastructure/persistence/PaymentSettlement';
 import { result, withWriteTransaction } from '../../../../test/TransactionFixture';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 describe('canonical payment settlement injection', () => {
   it('keeps the captured sequence while allowing the purchase benefit boundary', async () => {

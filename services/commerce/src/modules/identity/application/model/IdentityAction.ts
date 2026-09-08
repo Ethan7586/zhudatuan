@@ -1,5 +1,5 @@
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
-import type { ReadTransactionContext, TransactionMode, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
+import type { ReadTransactionContext, TransactionMode, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 type IdentityTransaction<TMode extends TransactionMode> = TMode extends 'write' ? WriteTransactionContext : ReadTransactionContext;
 

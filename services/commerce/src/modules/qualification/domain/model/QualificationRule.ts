@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { ContractJsonValue } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 const blockedKeys = new Set(['__proto__', 'constructor', 'prototype']);
 const stringLists = ['cityCodes', 'requiredTags', 'excludedTags'] as const;

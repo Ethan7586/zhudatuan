@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CartRepository } from '../../application/port/CartRepository';
 import { cartConflict } from '../../domain/error/CartError';
 import type { Cart, CartOwner } from '../../domain/model/Cart';
@@ -13,9 +13,10 @@ export class PgCartRepository implements CartRepository {
 
   async current(context: ReadTransactionContext, owner: CartOwner): Promise<Cart | null> {
     const database = this.transactions.database(context);
-    const selected = owner.kind === 'member'
-      ? await database.query<{ id: string }>(`select id from cart.cart where owner_kind='member' and member_id=$1 and mall_id=$2 and application_id=$3 and state='active'`, [owner.member, owner.mall, owner.application])
-      : await database.query<{ id: string }>(`select id from cart.cart where owner_kind='anonymous' and token_digest=$1 and mall_id=$2 and application_id=$3 and state='active'`, [owner.tokenDigest, owner.mall, owner.application]);
+    const selected =
+      owner.kind === 'member'
+        ? await database.query<{ id: string }>(`select id from cart.cart where owner_kind='member' and member_id=$1 and mall_id=$2 and application_id=$3 and state='active'`, [owner.member, owner.mall, owner.application])
+        : await database.query<{ id: string }>(`select id from cart.cart where owner_kind='anonymous' and token_digest=$1 and mall_id=$2 and application_id=$3 and state='active'`, [owner.tokenDigest, owner.mall, owner.application]);
     return selected.rows[0] ? readCart(database, selected.rows[0].id) : null;
   }
 
@@ -25,17 +26,18 @@ export class PgCartRepository implements CartRepository {
     if (expectedVersion !== 0) return cartConflict();
     const database = this.transactions.database(context);
     const id = `cart:${randomUUID()}`;
-    const inserted = owner.kind === 'member'
-      ? await database.query<{ id: string }>(
-          `insert into cart.cart(id,owner_kind,member_id,token_digest,mall_id,application_id,state,version,updated_at)
+    const inserted =
+      owner.kind === 'member'
+        ? await database.query<{ id: string }>(
+            `insert into cart.cart(id,owner_kind,member_id,token_digest,mall_id,application_id,state,version,updated_at)
            values($1,'member',$2,null,$3,$4,'active',0,clock_timestamp()) on conflict(member_id,mall_id,application_id) where state='active' and owner_kind='member' do nothing returning id`,
-          [id, owner.member, owner.mall, owner.application]
-        )
-      : await database.query<{ id: string }>(
-          `insert into cart.cart(id,owner_kind,member_id,token_digest,mall_id,application_id,state,version,updated_at)
+            [id, owner.member, owner.mall, owner.application]
+          )
+        : await database.query<{ id: string }>(
+            `insert into cart.cart(id,owner_kind,member_id,token_digest,mall_id,application_id,state,version,updated_at)
            values($1,'anonymous',null,$2,$3,$4,'active',0,clock_timestamp()) on conflict(token_digest,mall_id,application_id) where state='active' and owner_kind='anonymous' do nothing returning id`,
-          [id, owner.tokenDigest, owner.mall, owner.application]
-        );
+            [id, owner.tokenDigest, owner.mall, owner.application]
+          );
     if (!inserted.rows[0]) return cartConflict();
     return readCart(database, inserted.rows[0].id);
   }
@@ -61,7 +63,10 @@ export class PgCartRepository implements CartRepository {
   async prepareMerge(context: WriteTransactionContext, tokenDigest: string, owner: Extract<CartOwner, { kind: 'member' }>) {
     const database = this.transactions.database(context);
     const claim = await database.query<{ member_id: string; mall_id: string; application_id: string }>(`select member_id,mall_id,application_id from cart.mergeclaim where token_digest=$1`, [tokenDigest]);
-    if (claim.rows[0]) return claim.rows[0].member_id === owner.member && claim.rows[0].mall_id === owner.mall && claim.rows[0].application_id === owner.application ? Object.freeze({ state: 'completed' as const }) : Object.freeze({ state: 'none' as const });
+    if (claim.rows[0])
+      return claim.rows[0].member_id === owner.member && claim.rows[0].mall_id === owner.mall && claim.rows[0].application_id === owner.application
+        ? Object.freeze({ state: 'completed' as const })
+        : Object.freeze({ state: 'none' as const });
     const source = await database.query<{ id: string }>(`select id from cart.cart where owner_kind='anonymous' and token_digest=$1 and mall_id=$2 and application_id=$3 and state='active'`, [tokenDigest, owner.mall, owner.application]);
     if (!source.rows[0]) return Object.freeze({ state: 'none' as const });
     const target = await this.ensureMember(database, owner);
@@ -72,23 +77,32 @@ export class PgCartRepository implements CartRepository {
   async completeMerge(context: WriteTransactionContext, source: Cart, target: Cart, changes: readonly CartLineMutation[]): Promise<Cart> {
     const database = this.transactions.database(context);
     const merged = changes.length > 0 ? await this.mutate(context, target, changes) : target;
-    const consumed = await database.query(
-      `update cart.cart set state='merged',version=version+1,updated_at=clock_timestamp() where id=$1 and state='active' and version=$2 returning id`,
-      [source.id, source.version]
-    );
+    const consumed = await database.query(`update cart.cart set state='merged',version=version+1,updated_at=clock_timestamp() where id=$1 and state='active' and version=$2 returning id`, [source.id, source.version]);
     if (!consumed.rows[0] || source.owner.kind !== 'anonymous' || target.owner.kind !== 'member') return cartConflict();
-    await database.query(
-      `insert into cart.mergeclaim(token_digest,member_id,mall_id,application_id,target_cart_id,merged_at) values($1,$2,$3,$4,$5,clock_timestamp())`,
-      [source.owner.tokenDigest, target.owner.member, target.owner.mall, target.owner.application, target.id]
-    );
+    await database.query(`insert into cart.mergeclaim(token_digest,member_id,mall_id,application_id,target_cart_id,merged_at) values($1,$2,$3,$4,$5,clock_timestamp())`, [
+      source.owner.tokenDigest,
+      target.owner.member,
+      target.owner.mall,
+      target.owner.application,
+      target.id,
+    ]);
     return merged;
   }
 
   private async lock(context: WriteTransactionContext, owner: CartOwner, expectedVersion: number): Promise<Cart | null> {
     const database = this.transactions.database(context);
-    const selected = owner.kind === 'member'
-      ? await database.query<{ id: string; version: number }>(`select id,version::integer from cart.cart where owner_kind='member' and member_id=$1 and mall_id=$2 and application_id=$3 and state='active' for update`, [owner.member, owner.mall, owner.application])
-      : await database.query<{ id: string; version: number }>(`select id,version::integer from cart.cart where owner_kind='anonymous' and token_digest=$1 and mall_id=$2 and application_id=$3 and state='active' for update`, [owner.tokenDigest, owner.mall, owner.application]);
+    const selected =
+      owner.kind === 'member'
+        ? await database.query<{ id: string; version: number }>(`select id,version::integer from cart.cart where owner_kind='member' and member_id=$1 and mall_id=$2 and application_id=$3 and state='active' for update`, [
+            owner.member,
+            owner.mall,
+            owner.application,
+          ])
+        : await database.query<{ id: string; version: number }>(`select id,version::integer from cart.cart where owner_kind='anonymous' and token_digest=$1 and mall_id=$2 and application_id=$3 and state='active' for update`, [
+            owner.tokenDigest,
+            owner.mall,
+            owner.application,
+          ]);
     if (!selected.rows[0]) return null;
     if (Number(selected.rows[0].version) !== expectedVersion) return cartConflict();
     return readCart(database, selected.rows[0].id);

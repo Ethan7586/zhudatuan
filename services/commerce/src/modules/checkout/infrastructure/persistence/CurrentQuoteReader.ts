@@ -1,6 +1,6 @@
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
-import { requireAccess } from '../../../../foundation/application/OperationAccess';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
+import { requireAccess } from '../../../../pipeline/OperationAccess';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { MemberAccessPort } from '../../../access/public';
 import type { CheckoutPort } from '../../application/service/CheckoutPort';
 import { quoteResult } from '../../application/service/QuoteResult';

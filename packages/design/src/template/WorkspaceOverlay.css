@@ -1,0 +1,44 @@
+.filterbar {
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  padding: var(--sw-space-2);
+}
+
+.drawerbackdrop {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+  background: color-mix(in srgb, var(--sw-brand-ink) 48%, transparent);
+}
+
+.drawerpanel {
+  width: min(36rem, 100%);
+  min-height: 100%;
+  overflow: auto;
+  background: var(--sw-surface);
+  padding: var(--sw-space-3);
+  box-shadow: var(--sw-shadow-overlay);
+}
+
+.drawerbody {
+  display: grid;
+  gap: var(--sw-space-2);
+}
+
+.watermark {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  letter-spacing: 0.04em;
+}
+
+.toastregion {
+  position: fixed;
+  z-index: 50;
+  right: var(--sw-space-2);
+  bottom: var(--sw-space-2);
+  width: min(24rem, calc(100% - var(--sw-space-4)));
+  flex-direction: column;
+}

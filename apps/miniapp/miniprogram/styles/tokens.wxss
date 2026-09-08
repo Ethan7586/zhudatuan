@@ -37,4 +37,5 @@ page {
   --shop-radius-medium: 24rpx;
   --shop-radius-large: 32rpx;
   --shop-radius-extra: 48rpx;
+  --shop-opacity-pressed: 0.72;
 }

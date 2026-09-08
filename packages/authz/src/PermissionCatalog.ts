@@ -738,6 +738,27 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "catalog.pool.read"
   },
   {
+    "code": "catalog.price.manage",
+    "module": "catalog",
+    "category": "catalog",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": false,
+    "description": "维护当前范围商品报价"
+  },
+  {
     "code": "catalog.product.manage",
     "module": "catalog",
     "category": "catalog",
@@ -810,7 +831,8 @@ export const PERMISSION_CATALOG = Object.freeze([
       "tenant",
       "enterprise",
       "mall",
-      "department"
+      "department",
+      "supplier"
     ],
     "makerChecker": false,
     "description": "channel.connection.manage"
@@ -828,7 +850,8 @@ export const PERMISSION_CATALOG = Object.freeze([
       "tenant",
       "enterprise",
       "mall",
-      "department"
+      "department",
+      "supplier"
     ],
     "makerChecker": false,
     "description": "channel.connection.read"
@@ -1293,7 +1316,8 @@ export const PERMISSION_CATALOG = Object.freeze([
       "tenant",
       "enterprise",
       "mall",
-      "department"
+      "department",
+      "supplier"
     ],
     "makerChecker": false,
     "description": "finance.reconciliation.read"
@@ -1455,7 +1479,8 @@ export const PERMISSION_CATALOG = Object.freeze([
       "tenant",
       "enterprise",
       "mall",
-      "department"
+      "department",
+      "supplier"
     ],
     "makerChecker": true,
     "description": "finance.statement.export"
@@ -1491,7 +1516,8 @@ export const PERMISSION_CATALOG = Object.freeze([
       "tenant",
       "enterprise",
       "mall",
-      "department"
+      "department",
+      "supplier"
     ],
     "makerChecker": false,
     "description": "finance.statement.read"
@@ -1634,6 +1660,20 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "fulfillment.ship"
   },
   {
+    "code": "fulfillment.work.manage",
+    "module": "fulfillment",
+    "category": "fulfillment",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "store",
+      "supplier"
+    ],
+    "makerChecker": false,
+    "description": "处理门店或供应商接单、备货和交付"
+  },
+  {
     "code": "identity.assurance.manage",
     "module": "identity",
     "category": "identity",
@@ -1658,6 +1698,32 @@ export const PERMISSION_CATALOG = Object.freeze([
     ],
     "makerChecker": false,
     "description": "identity.credential.manage"
+  },
+  {
+    "code": "identity.handover.create",
+    "module": "identity",
+    "category": "identity",
+    "risk": "high",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "store"
+    ],
+    "makerChecker": false,
+    "description": "提交门店交班并退出当前会话"
+  },
+  {
+    "code": "identity.handover.read",
+    "module": "identity",
+    "category": "identity",
+    "risk": "low",
+    "minimumAssurance": 1,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "store"
+    ],
+    "makerChecker": false,
+    "description": "查看门店交班记录"
   },
   {
     "code": "identity.invitation.audit",
@@ -1892,6 +1958,48 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "identity.session.read"
   },
   {
+    "code": "inventory.adjust.read",
+    "module": "inventory",
+    "category": "inventory",
+    "risk": "high",
+    "minimumAssurance": 1,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": false,
+    "description": "查看库存调整申请"
+  },
+  {
+    "code": "inventory.adjust.request",
+    "module": "inventory",
+    "category": "inventory",
+    "risk": "critical",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "store",
+      "supplier",
+      "brand"
+    ],
+    "makerChecker": false,
+    "description": "提交库存调整审批申请"
+  },
+  {
     "code": "inventory.import.manage",
     "module": "inventory",
     "category": "inventory",
@@ -2064,7 +2172,8 @@ export const PERMISSION_CATALOG = Object.freeze([
       "tenant",
       "enterprise",
       "mall",
-      "department"
+      "department",
+      "supplier"
     ],
     "makerChecker": false,
     "description": "invoice.request.read"

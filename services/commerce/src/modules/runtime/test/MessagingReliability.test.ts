@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { QueryResult } from 'pg';
-import { PgInbox } from '../../../adapter/database/PgInbox';
-import { PgOutbox } from '../../../adapter/database/PgOutbox';
-import type { DeadletterStore } from '../../../foundation/application/DeadletterStore';
-import type { OutboxMessage } from '../../../foundation/messaging/Outbox';
+import { PgInbox } from '../../../platform/database/PgInbox';
+import { PgOutbox } from '../../../platform/database/PgOutbox';
+import type { DeadletterStore } from '../../../pipeline/DeadletterStore';
+import type { OutboxMessage } from '../../../platform/messaging/Outbox';
 import { result, transactionManager, withWriteTransaction } from '../../../test/TransactionFixture';
 
 describe('runtime Outbox and Inbox reliability', () => {
@@ -20,7 +20,7 @@ describe('runtime Outbox and Inbox reliability', () => {
       return result([]);
     });
     const inbox = new PgInbox();
-    await withWriteTransaction(query, async context => {
+    await withWriteTransaction(query, async (context) => {
       expect(await inbox.accept(context, 'internal', 'job:catalog', event())).toBe(true);
       await inbox.complete(context, 'internal', 'job:catalog', 'event:one');
       await inbox.complete(context, 'internal', 'job:catalog', 'event:one');
@@ -54,7 +54,20 @@ describe('runtime Outbox and Inbox reliability', () => {
 });
 
 function event(): OutboxMessage {
-  return Object.freeze({ id: 'event:one', event_type: 'catalog.product.changed', event_version: 1, aggregate_id: 'product:one', aggregate_version: 1,
-    scope_id: 'scope:one', actor_id: 'actor:one', correlation_id: 'correlation:one', causation_id: 'command:one', payload_version: 1,
-    payload: Object.freeze({ productId: 'product:one' }), trace_id: 'trace:one', attempts: 1, fencing_token: 3 });
+  return Object.freeze({
+    id: 'event:one',
+    event_type: 'catalog.product.changed',
+    event_version: 1,
+    aggregate_id: 'product:one',
+    aggregate_version: 1,
+    scope_id: 'scope:one',
+    actor_id: 'actor:one',
+    correlation_id: 'correlation:one',
+    causation_id: 'command:one',
+    payload_version: 1,
+    payload: Object.freeze({ productId: 'product:one' }),
+    trace_id: 'trace:one',
+    attempts: 1,
+    fencing_token: 3,
+  });
 }

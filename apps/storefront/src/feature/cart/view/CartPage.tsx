@@ -4,7 +4,7 @@ import { ProductMedia } from '../../../shared/view/ProductMedia';
 import { formatMinor } from '../../../shared/format/Money';
 
 export function CartPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof useCartViewModel> }>) {
-  const { cart, selected, allSelected, estimateMinor, isLoading, failed, actions } = viewmodel;
+  const { cart, selected, allSelected, isLoading, failed, actions } = viewmodel;
   return (
     <div className="min-h-[80dvh] bg-[var(--sw-background)] px-3 py-4 sm:px-5">
       <div className="mx-auto max-w-[1100px]">
@@ -13,7 +13,7 @@ export function CartPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof 
             <ShoppingCart className="text-brand" />
             购物车
           </h1>
-          <p className="mt-1 text-xs text-muted">此处金额为购物车估算；应付金额只以结算页服务端报价为准。</p>
+          <p className="mt-1 text-xs text-muted">购物车不冻结价格与库存；最终明细和应付金额只以结算页服务端报价为准。</p>
         </header>
         {isLoading ? (
           <div role="status" className="grid min-h-64 place-items-center rounded-3xl border bg-surface">
@@ -81,15 +81,15 @@ export function CartPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof 
               </div>
             </section>
             <aside className="rounded-3xl border border-edge bg-surface p-5 shadow-sm lg:sticky lg:top-24">
-              <h2 className="text-lg font-black">费用估算</h2>
+              <h2 className="text-lg font-black">结算准备</h2>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between">
                   <dt>已选商品</dt>
                   <dd>{selected.length} 件</dd>
                 </div>
                 <div className="flex justify-between border-t pt-4">
-                  <dt className="font-black">当前估算</dt>
-                  <dd className="text-xl font-black text-danger">¥{formatMinor(estimateMinor)}</dd>
+                  <dt className="font-black">最终应付</dt>
+                  <dd className="font-black text-muted">服务端报价后显示</dd>
                 </div>
               </dl>
               <p className="mt-3 rounded-xl bg-warning-surface p-3 text-xs leading-5 text-warning-strong">运费、优惠、卡券、福利账户及最终应付由下一步服务端报价逐项列明。</p>

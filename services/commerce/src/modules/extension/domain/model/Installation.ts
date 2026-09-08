@@ -10,7 +10,17 @@ export class Installation {
     readonly configurationVersion: number,
     readonly version: number
   ) {
-    if (!id || !/^[a-z][a-z0-9]{1,63}$/.test(extension) || !/^\d+\.\d+\.\d+$/.test(extensionVersion) || !scope || !['disabled', 'testing', 'enabled', 'degraded'].includes(state) || !Number.isSafeInteger(configurationVersion) || configurationVersion < 0 || !Number.isSafeInteger(version) || version < 0) {
+    if (
+      !id ||
+      !/^[a-z][a-z0-9]{1,63}$/.test(extension) ||
+      !/^\d+\.\d+\.\d+$/.test(extensionVersion) ||
+      !scope ||
+      !['disabled', 'testing', 'enabled', 'degraded'].includes(state) ||
+      !Number.isSafeInteger(configurationVersion) ||
+      configurationVersion < 0 ||
+      !Number.isSafeInteger(version) ||
+      version < 0
+    ) {
       throw new Error('EXTENSION_INSTALLATION_INVALID');
     }
     Object.freeze(this);

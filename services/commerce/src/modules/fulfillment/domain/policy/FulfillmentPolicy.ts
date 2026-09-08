@@ -40,16 +40,18 @@ export class FulfillmentPolicy {
         groups.set(key, group);
       }
       for (const [key, group] of [...groups].sort(([left], [right]) => left.localeCompare(right))) {
-        result.push(Object.freeze({
-          key: `${source.suborder}:${key}`,
-          suborder: source.suborder,
-          route: group.route,
-          kind: group.kind,
-          provider: source.provider,
-          partner: source.partner,
-          amountMinor: group.lines.reduce((sum, line) => sum + line.payableMinor, 0),
-          lines: Object.freeze(group.lines.map(({ line, quantity }) => Object.freeze({ line, quantity }))),
-        }));
+        result.push(
+          Object.freeze({
+            key: `${source.suborder}:${key}`,
+            suborder: source.suborder,
+            route: group.route,
+            kind: group.kind,
+            provider: source.provider,
+            partner: source.partner,
+            amountMinor: group.lines.reduce((sum, line) => sum + line.payableMinor, 0),
+            lines: Object.freeze(group.lines.map(({ line, quantity }) => Object.freeze({ line, quantity }))),
+          })
+        );
       }
     }
     if (new Set(result.map(({ key }) => key)).size !== result.length) throw new Error('FULFILLMENT_PLAN_DUPLICATE');

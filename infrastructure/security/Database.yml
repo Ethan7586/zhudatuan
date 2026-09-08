@@ -1,0 +1,45 @@
+version: 1
+owner: database
+schemas:
+  authority: database/contracts/objects.yml
+  ownership: one-shop-module-owner-role
+  publicSchemaTables: forbidden
+roles:
+  api: { name: shopapp, login: true, bypassRls: false, workloads: [query, command], crossSchemaWrite: forbidden }
+  jobs: { name: shopjob, login: true, bypassRls: false, workloads: [worker], crossSchemaWrite: forbidden }
+  provider: { name: shopprovider, login: true, inherit: false, bypassRls: false, workloads: [provider], crossSchemaWrite: forbidden }
+  migration: { name: shopmigration, login: false, inherit: release-window-only, bypassRls: false, concurrentSessions: 1, advisoryLock: shop-domain-hard-cut }
+  read: { name: shopread, login: false, transaction: readonly, replicaPreferred: true }
+rls:
+  required: all-tenant-tables
+  force: true
+  context: [actor, tenant, scope, membership, operation, trace]
+  missingContext: deny
+  ownerBypass: forbidden-for-workloads
+  tests: [crossTenant, siblingScope, missingContext, forgedContext, backgroundAuthorizationSnapshot]
+migration:
+  history: database/contracts/history.json
+  phases: [prepare, backfill, assert, cutover, retire]
+  historicalMutation: forbidden
+  backupBeforePrepare: required
+  assertionsBeforeCutover: required
+  retire: { approval: required, reversible: false, repair: forwardfix }
+breakglass:
+  default: disabled
+  identity: individual-mfa
+  ticket: required
+  approval: incident-commander-plus-database-owner
+  ttlMinutes: 30
+  network: bastion-only
+  statementAudit: immutable
+  afterUse: rotate-and-review
+backup:
+  encryption: distinct-kms-key
+  access: backup-service-only
+  restoreIdentity: separate
+  integrity: sha256-manifest
+audit:
+  connections: [identity, applicationName, source, tls, role]
+  statements: [ddl, role, grant, rls, breakglass, migration]
+  sensitiveBindValues: redact
+  export: immutable-security-stream

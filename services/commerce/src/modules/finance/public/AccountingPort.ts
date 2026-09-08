@@ -1,4 +1,4 @@
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 
 export type AccountKind = 'asset' | 'liability' | 'income' | 'expense';
 

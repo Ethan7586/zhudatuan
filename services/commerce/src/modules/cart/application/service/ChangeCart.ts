@@ -1,4 +1,4 @@
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CartOwner, CartView } from '../../domain/model/Cart';
 import type { CartChange, CartItemResult } from '../../domain/model/CartLine';
 import { CartPolicy } from '../../domain/policy/CartPolicy';
@@ -14,16 +14,8 @@ export class ChangeCart {
     private readonly policy = new CartPolicy()
   ) {}
 
-  async execute(
-    context: WriteTransactionContext,
-    owner: CartOwner,
-    expectedVersion: number,
-    changes: readonly CartChange[],
-    create: boolean
-  ): Promise<Readonly<{ cart: CartView; results: readonly CartItemResult[] }>> {
-    const cart = create
-      ? await this.carts.lockOrCreate(context, owner, expectedVersion)
-      : await this.carts.lockExisting(context, owner, expectedVersion);
+  async execute(context: WriteTransactionContext, owner: CartOwner, expectedVersion: number, changes: readonly CartChange[], create: boolean): Promise<Readonly<{ cart: CartView; results: readonly CartItemResult[] }>> {
+    const cart = create ? await this.carts.lockOrCreate(context, owner, expectedVersion) : await this.carts.lockExisting(context, owner, expectedVersion);
     const existing = new Map(cart.lines.map((line) => [line.listing, line]));
     const offers = await this.offers.resolve(
       context,
@@ -33,7 +25,7 @@ export class ChangeCart {
     const plan = cart.plan(this.policy, changes, offers);
     const latest = plan.mutations.length > 0 ? await this.carts.mutate(context, cart, plan.mutations) : cart;
     const versions = new Map(latest.lines.map((line) => [line.listing, line.version]));
-    const results = plan.results.map((item) => item.outcome === 'succeeded' ? Object.freeze({ ...item, lineVersion: versions.get(item.listing) ?? null }) : item);
+    const results = plan.results.map((item) => (item.outcome === 'succeeded' ? Object.freeze({ ...item, lineVersion: versions.get(item.listing) ?? null }) : item));
     return Object.freeze({ cart: await this.reader.read(context, latest), results: Object.freeze(results) });
   }
 }

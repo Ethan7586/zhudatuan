@@ -19,17 +19,21 @@ describe('CartPolicy', () => {
       { listing: 'listing:c', quantity: 1, selected: null, lineVersion: null },
       { listing: 'listing:d', quantity: 3, selected: false, lineVersion: null },
     ];
-    const plan = policy.plan(lines, changes, new Map([['listing:c', offer('listing:c', 'sku:c', { code: 'unpriced' })], ['listing:d', offer('listing:d', 'sku:d')]]));
+    const plan = policy.plan(
+      lines,
+      changes,
+      new Map([
+        ['listing:c', offer('listing:c', 'sku:c', { code: 'unpriced' })],
+        ['listing:d', offer('listing:d', 'sku:d')],
+      ])
+    );
     expect(plan.results.map(({ outcome, reason }) => [outcome, reason])).toEqual([
       ['failed', 'versionconflict'],
       ['succeeded', null],
       ['failed', 'unpriced'],
       ['succeeded', null],
     ]);
-    expect(plan.mutations).toEqual([
-      expect.objectContaining({ listing: 'listing:b', quantity: 0, version: 1 }),
-      expect.objectContaining({ listing: 'listing:d', quantity: 3, selected: false, version: null }),
-    ]);
+    expect(plan.mutations).toEqual([expect.objectContaining({ listing: 'listing:b', quantity: 0, version: 1 }), expect.objectContaining({ listing: 'listing:d', quantity: 3, selected: false, version: null })]);
   });
 
   it('coalesces different listings for the same SKU into one atomic mutation', () => {
@@ -38,7 +42,14 @@ describe('CartPolicy', () => {
       { listing: 'listing:a', quantity: 1, selected: true, lineVersion: null },
       { listing: 'listing:b', quantity: 2, selected: true, lineVersion: null },
     ];
-    const plan = policy.plan([], changes, new Map([['listing:a', offer('listing:a', 'sku:one')], ['listing:b', offer('listing:b', 'sku:one')]]));
+    const plan = policy.plan(
+      [],
+      changes,
+      new Map([
+        ['listing:a', offer('listing:a', 'sku:one')],
+        ['listing:b', offer('listing:b', 'sku:one')],
+      ])
+    );
     expect(plan.results).toHaveLength(2);
     expect(plan.mutations).toEqual([expect.objectContaining({ listing: 'listing:a', sku: 'sku:one', quantity: 3, version: null })]);
   });
@@ -47,8 +58,14 @@ describe('CartPolicy', () => {
     const policy = new CartPolicy(1, 5, 10);
     const plan = policy.plan(
       [{ listing: 'listing:a', sku: 'sku:a', quantity: 1, selected: true, version: 0 }],
-      [{ listing: 'listing:b', quantity: 1, selected: null, lineVersion: null }, { listing: 'listing:a', quantity: 6, selected: null, lineVersion: 0 }],
-      new Map([['listing:a', offer('listing:a', 'sku:a')], ['listing:b', offer('listing:b', 'sku:b')]])
+      [
+        { listing: 'listing:b', quantity: 1, selected: null, lineVersion: null },
+        { listing: 'listing:a', quantity: 6, selected: null, lineVersion: 0 },
+      ],
+      new Map([
+        ['listing:a', offer('listing:a', 'sku:a')],
+        ['listing:b', offer('listing:b', 'sku:b')],
+      ])
     );
     expect(plan.results.map(({ reason }) => reason)).toEqual(['linelimit', 'quantitylimit']);
   });

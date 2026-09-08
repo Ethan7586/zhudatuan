@@ -4,10 +4,20 @@ import { PgFinanceChannelPort } from '../infrastructure/persistence/PgFinanceCha
 
 describe('finance channel public port', () => {
   it('returns only the standard immutable statement DTO', async () => {
-    const query = vi.fn(async () => result([{
-      id: 'statement:one', scope: 'mall:one', object_ref: 'object:one', sha256: 'a'.repeat(64),
-      period_start: '2026-08-01', period_end: '2026-08-31', timezone: 'Asia/Shanghai', provider_secret: 'never-expose',
-    }]));
+    const query = vi.fn(async () =>
+      result([
+        {
+          id: 'statement:one',
+          scope: 'mall:one',
+          object_ref: 'object:one',
+          sha256: 'a'.repeat(64),
+          period_start: '2026-08-01',
+          period_end: '2026-08-31',
+          timezone: 'Asia/Shanghai',
+          provider_secret: 'never-expose',
+        },
+      ])
+    );
     const statement = await withReadTransaction(query, (context) => new PgFinanceChannelPort().statement(context, 'statement:one', 'mall:one'));
 
     expect(statement).toEqual({

@@ -1,5 +1,8 @@
-version: 4
+version: 5
 owner: product
+mvpPolicy:
+  count: 22
+  release: blocking
 sheets:
   - { name: 1-平台层, label: 平台层, prefix: PLAT, start: 4, end: 71, level: platform, role: platformoperator, scope: platform }
   - { name: 2-分销层, label: 分销层, prefix: DIST, start: 4, end: 44, level: distribution, role: distributoroperator, scope: distributor }
@@ -34,317 +37,291 @@ mvp:
   - id: MVPPLATFORM
     title: 平台基础
     source: { sheet: MVP上线功能清单, row: 3, range: A3:F3 }
-    status: Designed
-    release: required
     modules: [organization, catalog, voucher]
     directOperations: [organization.layers.read, catalog.pools.read, voucher.credentialpools.list, voucher.credentialpools.create]
     transitiveOperations: []
     journeys: [tests/journey/PlatformJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: catalogsync
     tables: [organization.organization, catalog.poolbinding, voucher.credentialpool]
   - id: MVPDISTRIBUTION
     title: 分销层
     source: { sheet: MVP上线功能清单, row: 4, range: A4:F4 }
-    status: Designed
-    release: required
     modules: [organization, channel, capability, partner, referral]
     directOperations: [channel.distributors.read]
     transitiveOperations: []
     journeys: [tests/journey/DistributionJourney.spec.ts]
     providers: []
-    clarifications: [distributiondefinition]
     runbook: catalogsync
-    tables: [organization.organization, channel.connection, capability.assignment]
+    tables: [organization.organization, channel.connection, capability.entitlement]
   - id: MVPGROUPDASHBOARD
     title: 集团数据大屏
     source: { sheet: MVP上线功能清单, row: 5, range: A5:F5 }
-    status: Designed
-    release: required
     modules: [reporting]
     directOperations: [reporting.dashboard.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupDashboardJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: projection
     tables: [reporting.metric, reporting.fact, reporting.orderprojection]
   - id: MVPGROUPAPPLICATION
     title: 集团应用管理
     source: { sheet: MVP上线功能清单, row: 6, range: A6:F6 }
-    status: Designed
-    release: required
     modules: [experience, capability, extension]
     directOperations: [experience.applications.read, storefront.bootstrap.read]
     transitiveOperations: []
     journeys: [tests/journey/MallEntryJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: experiencepublish
     tables: [experience.application, experience.version, experience.release, experience.publication]
   - id: MVPGROUPPOOL
     title: 集团商品池
     source: { sheet: MVP上线功能清单, row: 7, range: A7:F7 }
-    status: Designed
-    release: required
     modules: [catalog, pricing, inventory]
     directOperations: [catalog.pools.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupProductJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: catalogsync
     tables: [catalog.pool, catalog.product, catalog.listing, pricing.rule]
   - id: MVPGROUPORDER
     title: 集团订单管理
     source: { sheet: MVP上线功能清单, row: 8, range: A8:F8 }
-    status: Designed
-    release: required
     modules: [order, fulfillment, payment]
     directOperations: [order.orders.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupOrderJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: fulfillment
     tables: [ordering.orderrecord, ordering.aftersale, fulfillment.fulfillmentorder, payment.refund]
   - id: MVPGROUPVOUCHER
     title: 集团卡券中心
     source: { sheet: MVP上线功能清单, row: 9, range: A9:F9 }
-    status: Designed
-    release: required
     modules: [voucher, partner, approval, benefit]
-    directOperations: &vouchermvpoperations [voucher.products.create, voucher.products.revise, voucher.products.enable, voucher.products.disable, voucher.products.get, voucher.products.list, voucher.productoptions.list, voucher.credentialpools.create, voucher.credentials.generate, voucher.credentials.import, voucher.credentialpools.close, voucher.credentialpools.get, voucher.credentialpools.list, voucher.credentials.list, voucher.credentials.get, voucher.credentialexports.create, voucher.jobs.get, voucher.stockrequests.create, voucher.stockrequests.update, voucher.stockrequests.submit, voucher.stockrequests.cancel, voucher.stockrequests.get, voucher.stockrequests.list, voucher.stockrequestoptions.list, voucher.issueorders.create, voucher.issueorders.update, voucher.issueorders.submit, voucher.issueorders.cancel, voucher.issueorders.get, voucher.issueorders.list, voucher.issuebatches.retry, voucher.issuebatches.get, voucher.issueorderexports.create, voucher.actionbatches.create, voucher.actionbatches.get, voucher.actionbatches.list, voucher.actionbatches.retry, voucher.actionexports.create, voucher.search.read, voucher.activations.secret, voucher.activations.numbersecret, voucher.vouchers.bind, voucher.vouchers.unbind, voucher.vouchers.get, voucher.vouchers.getbynumber, voucher.vouchers.timeline, voucher.redemptions.quote, voucher.tenderholds.create, voucher.tenderholds.consume, voucher.tenderholds.release, voucher.redemptions.create, voucher.refunds.create, voucher.redemptions.get, voucher.searchfacets.read, voucher.searchsnapshots.create, voucher.searchexports.create, voucher.exports.get, partner.customers.create, partner.customers.list, approval.templates.list, approval.templates.revise, approval.templates.enable, approval.templates.disable, approval.tasks.approve, approval.tasks.reject]
+    directOperations:
+      &vouchermvpoperations [
+        voucher.products.create,
+        voucher.products.revise,
+        voucher.products.enable,
+        voucher.products.disable,
+        voucher.products.get,
+        voucher.products.list,
+        voucher.productoptions.list,
+        voucher.credentialpools.create,
+        voucher.credentials.generate,
+        voucher.credentials.import,
+        voucher.credentialpools.close,
+        voucher.credentialpools.get,
+        voucher.credentialpools.list,
+        voucher.credentials.list,
+        voucher.credentials.get,
+        voucher.credentialexports.create,
+        voucher.jobs.get,
+        voucher.stockrequests.create,
+        voucher.stockrequests.update,
+        voucher.stockrequests.submit,
+        voucher.stockrequests.cancel,
+        voucher.stockrequests.get,
+        voucher.stockrequests.list,
+        voucher.stockrequestoptions.list,
+        voucher.issueorders.create,
+        voucher.issueorders.update,
+        voucher.issueorders.submit,
+        voucher.issueorders.cancel,
+        voucher.issueorders.get,
+        voucher.issueorders.list,
+        voucher.issuebatches.retry,
+        voucher.issuebatches.get,
+        voucher.issueorderexports.create,
+        voucher.actionbatches.create,
+        voucher.actionbatches.get,
+        voucher.actionbatches.list,
+        voucher.actionbatches.retry,
+        voucher.actionexports.create,
+        voucher.search.read,
+        voucher.activations.secret,
+        voucher.activations.numbersecret,
+        voucher.vouchers.bind,
+        voucher.vouchers.unbind,
+        voucher.vouchers.get,
+        voucher.vouchers.getbynumber,
+        voucher.vouchers.timeline,
+        voucher.redemptions.quote,
+        voucher.tenderholds.create,
+        voucher.tenderholds.consume,
+        voucher.tenderholds.release,
+        voucher.redemptions.create,
+        voucher.refunds.create,
+        voucher.redemptions.get,
+        voucher.searchfacets.read,
+        voucher.searchsnapshots.create,
+        voucher.searchexports.create,
+        voucher.exports.get,
+        partner.customers.create,
+        partner.customers.list,
+        approval.templates.list,
+        approval.templates.revise,
+        approval.templates.enable,
+        approval.templates.disable,
+        approval.tasks.approve,
+        approval.tasks.reject,
+      ]
     transitiveOperations: []
     journeys: [tests/journey/GroupVoucherJourney.spec.ts]
     providers: []
-    clarifications: [voucherarchive]
     runbook: benefitgrant
     tables: [partner.customer, voucher.product, voucher.credentialpool, voucher.stockrequest, voucher.issueorder, voucher.issuebatch, voucher.voucher, voucher.redemption]
   - id: MVPGROUPFINANCE
     title: 集团财务
     source: { sheet: MVP上线功能清单, row: 10, range: A10:F10 }
-    status: Designed
-    release: required
     modules: [finance]
     directOperations: [finance.overview.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupFinanceJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: reconciliation
     tables: [finance.journal, finance.entry, finance.statement, invoice.request]
   - id: MVPGROUPREPORT
     title: 集团数据统计
     source: { sheet: MVP上线功能清单, row: 11, range: A11:F11 }
-    status: Designed
-    release: required
     modules: [reporting]
     directOperations: [reporting.sales.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupReportJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: export
     tables: [reporting.metric, reporting.fact, reporting.export]
   - id: MVPGROUPSUPPORT
     title: 集团客服中心
     source: { sheet: MVP上线功能清单, row: 12, range: A12:F12 }
-    status: Designed
-    release: required
     modules: [support, notification]
     directOperations: [support.cases.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupSupportJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: supportsla
-    tables: [support.case, support.message, support.assignment, support.sla]
+    tables: [support.ticket, support.message, support.assignment, support.sla]
   - id: MVPGROUPSETTING
     title: 集团设置
     source: { sheet: MVP上线功能清单, row: 13, range: A13:F13 }
-    status: Designed
-    release: required
     modules: [access, member, partner, notification, risk, identity, organization]
     directOperations: [access.center.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupSettingJourney.spec.ts]
     providers: []
-    clarifications: [grouprisk]
     runbook: riskscan
     tables: [access.role, access.membership, member.profile, partner.partner, notification.template, risk.policy]
   - id: MVPMALLDASHBOARD
     title: 商城数据大屏
     source: { sheet: MVP上线功能清单, row: 14, range: A14:F14 }
-    status: Designed
-    release: required
     modules: [reporting]
     directOperations: [reporting.dashboard.read]
     transitiveOperations: []
     journeys: [tests/journey/MallDashboardJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: projection
     tables: [reporting.metric, reporting.fact, reporting.orderprojection]
   - id: MVPMALLDESIGN
     title: 商城装修
     source: { sheet: MVP上线功能清单, row: 15, range: A15:F15 }
-    status: Designed
-    release: required
     modules: [experience]
     directOperations: [experience.applications.read, storefront.bootstrap.read]
     transitiveOperations: []
     journeys: [tests/journey/MallDesignJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: experiencepublish
     tables: [experience.application, experience.version, experience.release, experience.publication]
   - id: MVPMALLPOOL
     title: 商城商品池
     source: { sheet: MVP上线功能清单, row: 16, range: A16:F16 }
-    status: Designed
-    release: required
     modules: [catalog, pricing, inventory]
     directOperations: [catalog.pools.read]
     transitiveOperations: []
     journeys: [tests/journey/MallProductJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: pricesync
     tables: [catalog.product, catalog.listing, pricing.rule]
   - id: MVPMALLORDER
     title: 商城订单管理
     source: { sheet: MVP上线功能清单, row: 17, range: A17:F17 }
-    status: Designed
-    release: required
     modules: [order, fulfillment, payment]
     directOperations: [order.orders.read]
     transitiveOperations: []
     journeys: [tests/journey/MallOrderJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: paymentrefund
     tables: [ordering.orderrecord, ordering.aftersale, fulfillment.fulfillmentorder, payment.refund]
   - id: MVPMALLVOUCHER
     title: 商城卡券中心
     source: { sheet: MVP上线功能清单, row: 18, range: A18:F18 }
-    status: Designed
-    release: required
     modules: [voucher, partner, approval, benefit]
     directOperations: *vouchermvpoperations
     transitiveOperations: []
     journeys: [tests/journey/MallVoucherJourney.spec.ts]
     providers: []
-    clarifications: [voucherarchive]
     runbook: voucherexpiry
     tables: [partner.customer, voucher.product, voucher.stockrequest, voucher.voucher, voucher.tenderhold, voucher.redemption, voucher.refund]
   - id: MVPMALLFINANCE
     title: 商城财务
     source: { sheet: MVP上线功能清单, row: 19, range: A19:F19 }
-    status: Designed
-    release: required
     modules: [finance]
     directOperations: [finance.overview.read]
     transitiveOperations: []
     journeys: [tests/journey/MallFinanceJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: reconciliation
     tables: [finance.account, finance.statement, invoice.request]
   - id: MVPMALLREPORT
     title: 商城数据统计
     source: { sheet: MVP上线功能清单, row: 20, range: A20:F20 }
-    status: Designed
-    release: required
     modules: [reporting]
     directOperations: [reporting.sales.read]
     transitiveOperations: []
     journeys: [tests/journey/MallReportJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: export
     tables: [reporting.metric, reporting.fact, reporting.export]
   - id: MVPMALLSUPPORT
     title: 商城客服中心
     source: { sheet: MVP上线功能清单, row: 21, range: A21:F21 }
-    status: Designed
-    release: required
     modules: [support, notification]
     directOperations: [support.cases.read]
     transitiveOperations: []
     journeys: [tests/journey/MallSupportJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: supportsla
-    tables: [support.case, support.message, support.assignment, support.sla]
+    tables: [support.ticket, support.message, support.assignment, support.sla]
   - id: MVPMALLSETTING
     title: 商城设置
     source: { sheet: MVP上线功能清单, row: 22, range: A22:F22 }
-    status: Designed
-    release: required
     modules: [access, member, partner, notification, risk, identity, organization, experience]
     directOperations: [access.center.read]
     transitiveOperations: []
     journeys: [tests/journey/MallSettingJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: riskscan
     tables: [access.role, access.membership, member.profile, partner.relationship, notification.template, risk.policy]
   - id: MVPIDENTITY
     title: 用户注册与登录
     source: { sheet: MVP上线功能清单, row: 23, range: A23:F23 }
-    status: Designed
-    release: required
     modules: [identity, member]
-    directOperations: [identity.bootstrap.read, identity.sessions.create, identity.sessions.complete, identity.tickets.exchange, identity.challenges.create, identity.invitations.resolve, identity.enrollments.read, identity.enrollments.complete]
+    directOperations:
+      [identity.bootstrap.read, identity.sessions.create, identity.sessions.complete, identity.tickets.exchange, identity.challenges.create, identity.invitations.resolve, identity.enrollments.read, identity.enrollments.complete]
     transitiveOperations: [identity.providers.read, identity.federations.start, identity.federations.selection.read, identity.federations.complete, identity.password.reset]
     journeys: [tests/journey/IdentityJourney.spec.ts]
     providers: []
-    clarifications: []
     runbook: identityrecovery
     tables: [identity.principal, identity.credential, identity.session, identity.invitation, access.membership, member.profile]
   - id: MVPPROVIDER
     title: 优先级一接口接入
     source: { sheet: MVP上线功能清单, row: 24, range: A24:F24 }
-    status: Designed
-    release: required
     modules: [channel, extension]
     directOperations: [channel.connections.read]
     transitiveOperations: []
     journeys: [tests/journey/ProviderJourney.spec.ts]
     providers: [jdproduct, jdfresh, tmall, supplier, cake, flower, book, charge, foodvoucher, movie, meal]
-    clarifications: []
     runbook: catalogsync
     tables: [channel.connection, channel.syncrun, channel.provideroperation, extension.installation]
-clarifications:
-  - id: distributiondefinition
-    requirements: [MVPDISTRIBUTION]
-    term: 分销层
-    status: resolved
-    blocking: false
-    owner: product
-    acceptance: 分销层定义为平台与租户之间的业务范围，拥有集团绑定、配额、佣金和渠道治理职责
-    resolvedby: docs/architecture/福利商城理想方案20260904.md
-    reason: 理想方案已给出唯一范围模型和分销层职责，历史“忽略”备注不再降低发布要求
-  - id: voucherarchive
-    requirements: [MVPGROUPVOUCHER, MVPMALLVOUCHER]
-    term: 客户管理与产品档案
-    status: resolved
-    blocking: true
-    owner: product
-    acceptance: 客户归 Partner Customer 子域，产品档案归 Rich Voucher Product 与 Catalog，不在 Voucher 建第二份客户或商品主数据
-    resolvedby: docs/architecture/福利商城理想方案20260904.md
-    reason: 理想方案已经裁决归属，历史待确认项转换为必须通过的实现与迁移验收
-  - id: grouprisk
-    requirements: [MVPGROUPSETTING]
-    term: 集团风控设置
-    status: resolved
-    blocking: true
-    owner: product
-    acceptance: 集团风控使用 Risk Policy 和 Case 聚合，策略启用需 Step-up、MakerChecker 与 Approval 证据
-    resolvedby: docs/architecture/福利商城理想方案20260904.md
-    reason: 理想方案已经定义风险策略对象、审批边界和质量门，历史待确认项不再开放
 bindings:
   PLAT001: { 'module': 'reporting', 'operation': 'reporting.dashboard.read', 'route': '/scopes/:scopeKind/:scopeId/reporting', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'reporting.metric' }
   PLAT002: { 'module': 'reporting', 'operation': 'reporting.exports.create', 'route': '/scopes/:scopeKind/:scopeId/reporting', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'reporting.metric' }
@@ -357,9 +334,9 @@ bindings:
   PLAT009: { 'module': 'access', 'operation': 'access.ownership.transfers.create', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'access.ownershiptransfer' }
   PLAT010: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'organization.organization' }
   PLAT011: { 'module': 'access', 'operation': 'access.ownership.transfers.create', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'access.ownershiptransfer' }
-  PLAT012: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.assignment' }
-  PLAT013: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.assignment' }
-  PLAT014: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.assignment' }
+  PLAT012: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.entitlement' }
+  PLAT013: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.entitlement' }
+  PLAT014: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.entitlement' }
   PLAT015: { 'module': 'voucher', 'operation': 'voucher.credentialpools.create', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.credentialpool' }
   PLAT016: { 'module': 'partner', 'operation': 'partner.customers.list', 'route': '/scopes/:scopeKind/:scopeId/settings/partners', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'partner.customer' }
   PLAT017: { 'module': 'voucher', 'operation': 'voucher.products.list', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'voucher.product' }
@@ -399,11 +376,11 @@ bindings:
   PLAT051: { 'module': 'verification', 'operation': 'verification.challenges.issue', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'verification.challenge' }
   PLAT052: { 'module': 'partner', 'operation': 'partner.partners.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'partner.partner' }
   PLAT053: { 'module': 'partner', 'operation': 'partner.partners.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'partner.partner' }
-  PLAT054: { 'module': 'support', 'operation': 'support.cases.read', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'support.case' }
-  PLAT055: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'support.case' }
-  PLAT056: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.assignment' }
-  PLAT057: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.assignment' }
-  PLAT058: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.assignment' }
+  PLAT054: { 'module': 'support', 'operation': 'support.cases.read', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'support.ticket' }
+  PLAT055: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'support.ticket' }
+  PLAT056: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.entitlement' }
+  PLAT057: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.entitlement' }
+  PLAT058: { 'module': 'capability', 'operation': 'capability.assignments.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'capability.entitlement' }
   PLAT059: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'organization.organization' }
   PLAT060: { 'module': 'risk', 'operation': 'risk.policies.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'risk.policy' }
   PLAT061: { 'module': 'notification', 'operation': 'notification.notifications.ack', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'notification.template' }
@@ -481,10 +458,10 @@ bindings:
   GROUP024: { 'module': 'benefit', 'operation': 'benefit.grants.read', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'benefit.grantbatch' }
   GROUP025: { 'module': 'verification', 'operation': 'verification.challenges.issue', 'route': '/scopes/:scopeKind/:scopeId/vouchers', 'journey': 'tests/journey/GroupVoucherJourney.spec.ts', 'table': 'verification.challenge' }
   GROUP026: { 'module': 'order', 'operation': 'order.reminders.create', 'route': '/scopes/:scopeKind/:scopeId/orders', 'journey': 'tests/journey/GroupOrderJourney.spec.ts', 'table': 'ordering.orderrecord' }
-  GROUP027: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.case' }
-  GROUP028: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.case' }
-  GROUP029: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.case' }
-  GROUP030: { 'module': 'support', 'operation': 'support.cases.read', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.case' }
+  GROUP027: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.ticket' }
+  GROUP028: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.ticket' }
+  GROUP029: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.ticket' }
+  GROUP030: { 'module': 'support', 'operation': 'support.cases.read', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.ticket' }
   GROUP031: { 'module': 'partner', 'operation': 'partner.partners.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/GroupSettingJourney.spec.ts', 'table': 'partner.partner' }
   GROUP032: { 'module': 'partner', 'operation': 'partner.partners.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/GroupSettingJourney.spec.ts', 'table': 'partner.partner' }
   GROUP033: { 'module': 'catalog', 'operation': 'catalog.pools.attach', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/GroupProductJourney.spec.ts', 'table': 'catalog.product' }
@@ -495,8 +472,8 @@ bindings:
   GROUP038: { 'module': 'catalog', 'operation': 'catalog.pools.attach', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/GroupProductJourney.spec.ts', 'table': 'catalog.product' }
   GROUP039: { 'module': 'order', 'operation': 'order.reminders.create', 'route': '/scopes/:scopeKind/:scopeId/orders', 'journey': 'tests/journey/GroupOrderJourney.spec.ts', 'table': 'ordering.orderrecord' }
   GROUP040: { 'module': 'catalog', 'operation': 'catalog.pools.attach', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/GroupProductJourney.spec.ts', 'table': 'catalog.product' }
-  GROUP041: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.case' }
-  GROUP042: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.case' }
+  GROUP041: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.ticket' }
+  GROUP042: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.ticket' }
   GROUP043: { 'module': 'catalog', 'operation': 'catalog.pools.attach', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/GroupProductJourney.spec.ts', 'table': 'catalog.product' }
   GROUP044: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/GroupSettingJourney.spec.ts', 'table': 'organization.organization' }
   GROUP045: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/GroupSettingJourney.spec.ts', 'table': 'organization.organization' }
@@ -522,7 +499,7 @@ bindings:
   GROUP065: { 'module': 'catalog', 'operation': 'catalog.pools.attach', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/GroupProductJourney.spec.ts', 'table': 'catalog.product' }
   GROUP066: { 'module': 'order', 'operation': 'order.reminders.create', 'route': '/scopes/:scopeKind/:scopeId/orders', 'journey': 'tests/journey/GroupOrderJourney.spec.ts', 'table': 'ordering.orderrecord' }
   GROUP067: { 'module': 'order', 'operation': 'order.reminders.create', 'route': '/scopes/:scopeKind/:scopeId/orders', 'journey': 'tests/journey/GroupOrderJourney.spec.ts', 'table': 'ordering.orderrecord' }
-  GROUP068: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.case' }
+  GROUP068: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/GroupSupportJourney.spec.ts', 'table': 'support.ticket' }
   MALL001: { 'module': 'reporting', 'operation': 'reporting.dashboard.read', 'route': '/scopes/:scopeKind/:scopeId/reporting', 'journey': 'tests/journey/MallDashboardJourney.spec.ts', 'table': 'reporting.metric' }
   MALL002: { 'module': 'catalog', 'operation': 'catalog.pools.attach', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/MallProductJourney.spec.ts', 'table': 'catalog.product' }
   MALL003: { 'module': 'experience', 'operation': 'experience.applications.create', 'route': '/scopes/:scopeKind/:scopeId/experience', 'journey': 'tests/journey/MallDesignJourney.spec.ts', 'table': 'experience.application' }
@@ -547,7 +524,7 @@ bindings:
   MALL022: { 'module': 'member', 'operation': 'member.addresses.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'member.profile' }
   MALL023: { 'module': 'member', 'operation': 'member.addresses.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'member.profile' }
   MALL024: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'organization.organization' }
-  MALL025: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/MallSupportJourney.spec.ts', 'table': 'support.case' }
+  MALL025: { 'module': 'support', 'operation': 'support.cases.create', 'route': '/scopes/:scopeKind/:scopeId/support', 'journey': 'tests/journey/MallSupportJourney.spec.ts', 'table': 'support.ticket' }
   MALL026: { 'module': 'access', 'operation': 'access.ownership.transfers.create', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'access.ownershiptransfer' }
   MALL027: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'organization.organization' }
   MALL028: { 'module': 'organization', 'operation': 'organization.directories.manage', 'route': '/scopes/:scopeKind/:scopeId/control', 'journey': 'tests/journey/MallSettingJourney.spec.ts', 'table': 'organization.organization' }

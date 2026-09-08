@@ -8,7 +8,23 @@ import { OrderVisibility } from './policy/OrderVisibility';
 
 describe('Order domain', () => {
   it('freezes immutable transaction snapshots and rejects amount drift or plaintext addresses', () => {
-    const line = { id: 'line:one', sku: 'sku:one', listing: 'listing:one', product: 'product:one', productType: 'physical', category: 'category:one', title: '福利商品', quantity: 2, unitMinor: 100, totalMinor: 200, discountMinor: 20, payableMinor: 180, provider: null, partner: null, versions: { listing: 1, product: 2, sku: 3, price: 'price:4', stock: 5 } } as const;
+    const line = {
+      id: 'line:one',
+      sku: 'sku:one',
+      listing: 'listing:one',
+      product: 'product:one',
+      productType: 'physical',
+      category: 'category:one',
+      title: '福利商品',
+      quantity: 2,
+      unitMinor: 100,
+      totalMinor: 200,
+      discountMinor: 20,
+      payableMinor: 180,
+      provider: null,
+      partner: null,
+      versions: { listing: 1, product: 2, sku: 3, price: 'price:4', stock: 5 },
+    } as const;
     expect(OrderLine.freeze(line).value).toEqual(line);
     expect(() => OrderLine.freeze({ ...line, payableMinor: 181 })).toThrow('ORDER_SNAPSHOT_INVALID');
     expect(() => OrderAddress.freeze({ recipientMasked: '张三', mobileMasked: '13812345678', addressMasked: '上海市', regionCode: '310000', version: '1', hash: 'a'.repeat(64) })).toThrow('ORDER_SNAPSHOT_INVALID');

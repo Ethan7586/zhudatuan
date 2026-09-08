@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { QueryResult } from 'pg';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
+import type { DatabasePool } from '../../../../platform/database/Pool';
 import { result } from '../../../../test/TransactionFixture';
 import { JobLease } from './JobLease';
 
@@ -46,13 +46,11 @@ describe('JobLease', () => {
 });
 
 function lease() {
-  return Object.freeze({ resource: 'directory:one', scope: 'organization:one', owner: 'worker:one',
-    token: 'lease:11111111-1111-4111-8111-111111111111', deadline: '2099-01-01T00:00:00.000Z', version: 1, fencingToken: 1 });
+  return Object.freeze({ resource: 'directory:one', scope: 'organization:one', owner: 'worker:one', token: 'lease:11111111-1111-4111-8111-111111111111', deadline: '2099-01-01T00:00:00.000Z', version: 1, fencingToken: 1 });
 }
 
 function leaseRow(token: string, version: number, fencingToken: number) {
-  return { resource: 'directory:one', scope: 'organization:one', owner: 'worker:one', token,
-    deadline: new Date('2099-01-01T00:00:00.000Z'), version, fencingToken };
+  return { resource: 'directory:one', scope: 'organization:one', owner: 'worker:one', token, deadline: new Date('2099-01-01T00:00:00.000Z'), version, fencingToken };
 }
 
 function pool(query: DatabasePool['query']): DatabasePool {

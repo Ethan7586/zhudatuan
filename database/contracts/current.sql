@@ -21,6 +21,8 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('identity.tickets.exchange','identity','POST','/api/v1/identity/tickets/exchange','5.0.0'),
   ('identity.session.read','identity','GET','/api/v1/identity/session','5.0.0'),
   ('identity.session.delete','identity','DELETE','/api/v1/identity/session','5.0.0'),
+  ('identity.handovers.read','identity','GET','/api/v1/identity/handovers','5.0.0'),
+  ('identity.handovers.create','identity','POST','/api/v1/identity/handovers','5.0.0'),
   ('identity.sessions.read','identity','GET','/api/v1/identity/sessions','5.0.0'),
   ('identity.sessions.revoke','identity','DELETE','/api/v1/identity/sessions/{sessionid}','5.0.0'),
   ('identity.memberships.read','identity','GET','/api/v1/identity/memberships','5.0.0'),
@@ -110,6 +112,8 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('pricing.rules.publish','pricing','PUT','/api/v1/pricing/rules/{ruleid}/publication','5.0.0'),
   ('pricing.offers.read','pricing','GET','/api/v1/pricing/offers','5.0.0'),
   ('inventory.availability.read','inventory','GET','/api/v1/inventory/availability','5.0.0'),
+  ('inventory.adjustments.read','inventory','GET','/api/v1/inventory/adjustments','5.0.0'),
+  ('inventory.adjustments.create','inventory','POST','/api/v1/inventory/adjustments','5.0.0'),
   ('inventory.imports.create','inventory','POST','/api/v1/inventory/imports','5.0.0'),
   ('inventory.imports.read','inventory','GET','/api/v1/inventory/imports','5.0.0'),
   ('marketing.campaigns.read','marketing','GET','/api/v1/marketing/campaigns','5.0.0'),
@@ -154,6 +158,9 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('order.aftersales.apply','order','POST','/api/v1/orders/{orderid}/aftersales','5.0.0'),
   ('order.aftersales.approve','order','PUT','/api/v1/orders/aftersales/{aftersaleid}/approval','5.0.0'),
   ('order.aftersales.reject','order','DELETE','/api/v1/orders/aftersales/{aftersaleid}/approval','5.0.0'),
+  ('fulfillment.workitems.read','fulfillment','GET','/api/v1/fulfillments/workitems','5.0.0'),
+  ('fulfillment.workitems.transition','fulfillment','PUT','/api/v1/fulfillments/{fulfillmentid}/transition','5.0.0'),
+  ('fulfillment.returns.read','fulfillment','GET','/api/v1/fulfillments/returns','5.0.0'),
   ('fulfillment.shipments.create','fulfillment','POST','/api/v1/fulfillments/{fulfillmentid}/shipments','5.0.0'),
   ('fulfillment.tracking.read','fulfillment','GET','/api/v1/fulfillments/tracking','5.0.0'),
   ('fulfillment.returns.receive','fulfillment','PUT','/api/v1/fulfillments/returns/{returnid}/receipt','5.0.0'),
@@ -562,6 +569,7 @@ insert into access.permission(id,code,risk,status) values
   ('permission:edf1d71083ecd73fbbb89843','catalog.pool.allocate','critical','active'),
   ('permission:282c4f2a67a0b67c995565fa','catalog.pool.manage','high','active'),
   ('permission:293cbf11339f376fb1599dc1','catalog.pool.read','low','active'),
+  ('permission:8c72db31708dac97f6430118','catalog.price.manage','high','active'),
   ('permission:1b2f99a79850e8b84cfef975','catalog.product.manage','high','active'),
   ('permission:3002915032d0a97ce28b1e3d','catalog.product.read','low','active'),
   ('permission:09fc6ce399ba94edee739308','channel.binding.manage','critical','active'),
@@ -612,8 +620,11 @@ insert into access.permission(id,code,risk,status) values
   ('permission:ef552dc790b9b1facffac414','fulfillment.read','low','active'),
   ('permission:9fd58d2d177b87ba37f2a9a9','fulfillment.return.manage','high','active'),
   ('permission:0ddf986ece68bbd1412f2e71','fulfillment.ship','high','active'),
+  ('permission:cd84a0aaf90370eb1e57d6b8','fulfillment.work.manage','high','active'),
   ('permission:3558696b3d509f8a9ae2e8d7','identity.assurance.manage','elevated','active'),
   ('permission:2b1d3743f52df46720788010','identity.credential.manage','critical','active'),
+  ('permission:ec0714fa937a9a833c08abd3','identity.handover.create','high','active'),
+  ('permission:6faacc238d947e031337e6c8','identity.handover.read','low','active'),
   ('permission:f4fdc6f978bdc660ad0950c4','identity.invitation.issue','critical','active'),
   ('permission:604198843876a9d459f41ec9','identity.invitation.read','elevated','active'),
   ('permission:98178eafb2c153e0ade5d989','identity.invitation.revoke','high','active'),
@@ -625,6 +636,8 @@ insert into access.permission(id,code,risk,status) values
   ('permission:62a354df9138535ba0651fd6','identity.registration.reset','critical','active'),
   ('permission:a061c751526602d3562ce3b4','identity.session.manage','elevated','active'),
   ('permission:4551e0fea695439811ce62fd','identity.session.read','low','active'),
+  ('permission:b469aca74954a20a93cdf054','inventory.adjust.read','high','active'),
+  ('permission:18d253078419a3ea3395618d','inventory.adjust.request','critical','active'),
   ('permission:799efec930989e90c70be9f5','inventory.import.manage','high','active'),
   ('permission:870d3eaceee68d5caf25c17e','inventory.import.read','low','active'),
   ('permission:622034c651dca56c01dbd499','inventory.read','low','active'),
@@ -834,6 +847,8 @@ insert into capability.capability(id,kind,name,version,status) values
   ('identity.tickets.exchange','operation','identity.tickets.exchange',3,'active'),
   ('identity.session.read','operation','identity.session.read',3,'active'),
   ('identity.session.delete','operation','identity.session.delete',3,'active'),
+  ('identity.handovers.read','operation','identity.handovers.read',3,'active'),
+  ('identity.handovers.create','operation','identity.handovers.create',3,'active'),
   ('identity.sessions.read','operation','identity.sessions.read',3,'active'),
   ('identity.sessions.revoke','operation','identity.sessions.revoke',3,'active'),
   ('identity.memberships.read','operation','identity.memberships.read',3,'active'),
@@ -923,6 +938,8 @@ insert into capability.capability(id,kind,name,version,status) values
   ('pricing.rules.publish','operation','pricing.rules.publish',3,'active'),
   ('pricing.offers.read','operation','pricing.offers.read',3,'active'),
   ('inventory.availability.read','operation','inventory.availability.read',3,'active'),
+  ('inventory.adjustments.read','operation','inventory.adjustments.read',3,'active'),
+  ('inventory.adjustments.create','operation','inventory.adjustments.create',3,'active'),
   ('inventory.imports.create','operation','inventory.imports.create',3,'active'),
   ('inventory.imports.read','operation','inventory.imports.read',3,'active'),
   ('marketing.campaigns.read','operation','marketing.campaigns.read',3,'active'),
@@ -968,6 +985,9 @@ insert into capability.capability(id,kind,name,version,status) values
   ('order.aftersales.approve','operation','order.aftersales.approve',3,'active'),
   ('order.aftersales.reject','operation','order.aftersales.reject',3,'active'),
   ('fulfillment.shipments.create','operation','fulfillment.shipments.create',3,'active'),
+  ('fulfillment.workitems.read','operation','fulfillment.workitems.read',3,'active'),
+  ('fulfillment.workitems.transition','operation','fulfillment.workitems.transition',3,'active'),
+  ('fulfillment.returns.read','operation','fulfillment.returns.read',3,'active'),
   ('fulfillment.tracking.read','operation','fulfillment.tracking.read',3,'active'),
   ('fulfillment.returns.receive','operation','fulfillment.returns.receive',3,'active'),
   ('fulfillment.returns.inspect','operation','fulfillment.returns.inspect',3,'active'),
@@ -1274,7 +1294,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('runtime.health.dependency','runtime.health.dependency','runtime.health.read','console','{console}'),
   ('runtime.jobs.read','runtime.jobs.read','runtime.task.read','console','{console}'),
   ('runtime.jobs.cancel','runtime.jobs.cancel','runtime.task.manage','console','{console}'),
-  ('runtime.uploads.create','runtime.uploads.create','runtime.import.manage','console','{console}'),
+  ('runtime.uploads.create','runtime.uploads.create','runtime.import.manage','console','{console,supplier}'),
   ('runtime.imports.create','runtime.imports.create','runtime.import.manage','console','{console}'),
   ('runtime.imports.read','runtime.imports.read','runtime.task.read','console','{console}'),
   ('runtime.imports.confirm','runtime.imports.confirm','runtime.import.manage','console','{console}'),
@@ -1286,6 +1306,8 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('identity.tickets.exchange','identity.tickets.exchange',null,'public','{console,storefront,miniapp,store,supplier}'),
   ('identity.session.read','identity.session.read','identity.session.read','public','{console,storefront,miniapp,store,supplier}'),
   ('identity.session.delete','identity.session.delete',null,'public','{console,storefront,miniapp,store,supplier}'),
+  ('identity.handovers.read','identity.handovers.read','identity.handover.read','console','{console,store}'),
+  ('identity.handovers.create','identity.handovers.create','identity.handover.create','console','{console,store}'),
   ('identity.sessions.read','identity.sessions.read','identity.session.read','public','{console,storefront,miniapp,store,supplier}'),
   ('identity.sessions.revoke','identity.sessions.revoke','identity.session.manage','public','{console,storefront,miniapp,store,supplier}'),
   ('identity.memberships.read','identity.memberships.read','identity.session.read','public','{console,storefront,miniapp,store,supplier}'),
@@ -1361,20 +1383,22 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('catalog.product.detail.read','catalog.product.detail.read','catalog.product.read','console','{console,supplier}'),
   ('catalog.products.create','catalog.products.create','catalog.product.manage','console','{console,supplier}'),
   ('catalog.products.update','catalog.products.update','catalog.product.manage','console','{console,supplier}'),
-  ('catalog.products.archive','catalog.products.archive','catalog.product.manage','console','{console,supplier}'),
+  ('catalog.products.archive','catalog.products.archive','catalog.product.manage','console','{console}'),
   ('catalog.listings.read','catalog.listings.read','catalog.listing.read','console','{console,supplier}'),
   ('catalog.facets.read','catalog.facets.read','catalog.listing.read','console','{console,supplier}'),
-  ('catalog.listings.publish','catalog.listings.publish','catalog.listing.manage','console','{console,supplier}'),
-  ('catalog.listings.price.set','catalog.listings.price.set','catalog.listing.manage','console','{console,supplier}'),
-  ('catalog.listings.pool.set','catalog.listings.pool.set','catalog.listing.manage','console','{console,supplier}'),
-  ('catalog.listings.unpublish','catalog.listings.unpublish','catalog.listing.manage','console','{console,supplier}'),
-  ('catalog.listings.batch','catalog.listings.batch','catalog.listing.manage','console','{console,supplier}'),
+  ('catalog.listings.publish','catalog.listings.publish','catalog.listing.manage','console','{console}'),
+  ('catalog.listings.price.set','catalog.listings.price.set','catalog.price.manage','console','{console,supplier}'),
+  ('catalog.listings.pool.set','catalog.listings.pool.set','catalog.listing.manage','console','{console}'),
+  ('catalog.listings.unpublish','catalog.listings.unpublish','catalog.listing.manage','console','{console}'),
+  ('catalog.listings.batch','catalog.listings.batch','catalog.listing.manage','console','{console}'),
   ('catalog.imports.create','catalog.imports.create','catalog.import.manage','console','{console,supplier}'),
   ('catalog.imports.read','catalog.imports.read','catalog.import.read','console','{console,supplier}'),
-  ('pricing.rules.create','pricing.rules.create','pricing.rule.manage','console','{console,supplier}'),
-  ('pricing.rules.publish','pricing.rules.publish','pricing.rule.manage','console','{console,supplier}'),
+  ('pricing.rules.create','pricing.rules.create','pricing.rule.manage','console','{console}'),
+  ('pricing.rules.publish','pricing.rules.publish','pricing.rule.manage','console','{console}'),
   ('pricing.offers.read','pricing.offers.read','pricing.offer.read','public','{console,storefront,miniapp,store,supplier}'),
   ('inventory.availability.read','inventory.availability.read','inventory.read','public','{console,storefront,miniapp,store,supplier}'),
+  ('inventory.adjustments.read','inventory.adjustments.read','inventory.adjust.read','console','{console,store}'),
+  ('inventory.adjustments.create','inventory.adjustments.create','inventory.adjust.request','console','{console,store}'),
   ('inventory.imports.create','inventory.imports.create','inventory.import.manage','console','{console,supplier}'),
   ('inventory.imports.read','inventory.imports.read','inventory.import.read','console','{console,supplier}'),
   ('marketing.campaigns.read','marketing.campaigns.read','marketing.read','console','{console}'),
@@ -1419,6 +1443,9 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('order.aftersales.apply','order.aftersales.apply','order.aftersale.apply','storefront','{storefront,miniapp}'),
   ('order.aftersales.approve','order.aftersales.approve','order.aftersale.decide','console','{console}'),
   ('order.aftersales.reject','order.aftersales.reject','order.aftersale.decide','console','{console}'),
+  ('fulfillment.workitems.read','fulfillment.workitems.read','fulfillment.read','console','{console,store,supplier}'),
+  ('fulfillment.workitems.transition','fulfillment.workitems.transition','fulfillment.work.manage','console','{console,store,supplier}'),
+  ('fulfillment.returns.read','fulfillment.returns.read','fulfillment.read','console','{console,store,supplier}'),
   ('fulfillment.shipments.create','fulfillment.shipments.create','fulfillment.ship','console','{console,store,supplier}'),
   ('fulfillment.tracking.read','fulfillment.tracking.read','fulfillment.read','storefront','{storefront,miniapp}'),
   ('fulfillment.returns.receive','fulfillment.returns.receive','fulfillment.return.manage','console','{console,store,supplier}'),
@@ -1799,12 +1826,12 @@ begin
     if resolved is null then select scope_id into resolved from verification.session where id=p_resource; end if;
     if resolved is null then select scope_id into resolved from verification.device where id=p_resource; end if;
     if resolved is null then select scope_id into resolved from payment.recoverycase where id=p_resource; end if;
-    if resolved is null then select scope_id into resolved from voucher.program where id=p_resource; end if;
-    if resolved is null then select scope_id into resolved from voucher.cardpool where id=p_resource; end if;
-    if resolved is null then select scope_id into resolved from voucher.reserverequest where id=p_resource; end if;
-    if resolved is null then select program.scope_id into resolved from voucher.issuebatch batch join voucher.program program on program.id=batch.program_id where batch.id=p_resource; end if;
-    if resolved is null then select program.scope_id into resolved from voucher.voucher voucher join voucher.program program on program.id=voucher.program_id where voucher.id=p_resource; end if;
-    if resolved is null then select program.scope_id into resolved from voucher.redemption redemption join voucher.voucher voucher on voucher.id=redemption.voucher_id join voucher.program program on program.id=voucher.program_id where redemption.id=p_resource; end if;
+    if resolved is null then select scope_id into resolved from voucher.product where id=p_resource; end if;
+    if resolved is null then select scope_id into resolved from voucher.credentialpool where id=p_resource; end if;
+    if resolved is null then select scope_id into resolved from voucher.stockrequest where id=p_resource; end if;
+    if resolved is null then select scope_id into resolved from voucher.issuebatch where id=p_resource; end if;
+    if resolved is null then select scope_id into resolved from voucher.voucher where id=p_resource; end if;
+    if resolved is null then select scope_id into resolved from voucher.redemption where id=p_resource; end if;
     if resolved is null then select scope_id into resolved from benefit.plan where id=p_resource; end if;
     if resolved is null then select plan.scope_id into resolved from benefit.budget budget join benefit.plan plan on plan.id=budget.plan_id where budget.id=p_resource; end if;
     if resolved is null then select plan.scope_id into resolved from benefit.grantbatch batch join benefit.plan plan on plan.id=batch.plan_id where batch.id=p_resource; end if;
@@ -1815,7 +1842,7 @@ begin
     if resolved is null then select reporting.resource_scope(p_resource) into resolved; end if;
     if resolved is null then select risk.resource_scope(p_resource) into resolved; end if;
     if resolved is null then select scope_id into resolved from extension.installation where id=p_resource; end if;
-    if resolved is null and p_operation in('access.roles.manage','access.scopes.manage','capability.assignments.manage','partner.partners.manage','qualification.policies.manage','experience.applications.update','notification.templates.manage','notification.announcements.manage','reporting.exports.create','risk.policies.manage','verification.devices.manage','voucher.programs.manage','benefit.plans.manage','benefit.budgets.manage')
+    if resolved is null and p_operation in('access.roles.manage','access.scopes.manage','capability.assignments.manage','partner.partners.manage','qualification.policies.manage','experience.applications.update','notification.templates.manage','notification.announcements.manage','reporting.exports.create','risk.policies.manage','verification.devices.manage','voucher.products.create','benefit.plans.manage','benefit.budgets.manage')
       then select organization_id into resolved from access.membership where id=p_membership_id; end if;
   end if;
   if resolved is null then raise exception 'RESOURCE_SCOPE_NOT_FOUND'; end if;
@@ -2008,6 +2035,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='supplier' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','53debb34ca3a5d90bf292bb4ea34f4c62a0ad8804fe5e55d94dbeee23ea8e0ce');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','7d5daf1a5006b794d68e1935aec80ab49413764c948d376e2002adcce2cb73b8');
 
 commit;

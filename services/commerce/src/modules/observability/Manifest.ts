@@ -1,4 +1,4 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { OBSERVABILITY_CATALOG_PORT, OBSERVABILITY_LOG_PORT, OBSERVABILITY_METRIC_PORT, OBSERVABILITY_TRACE_PORT } from './public';
 
 export const Manifest = defineModuleManifest({

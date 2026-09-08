@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 
 export type ReservationState = 'reserved' | 'committed' | 'released' | 'expired';
 

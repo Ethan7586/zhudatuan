@@ -1,4 +1,4 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { BENEFIT_MEMBER_PORT, IDENTITY_MEMBER_PORT, IDENTITY_REGISTRATION_PORT, MEMBER_ADDRESS_PORT, MEMBER_READ_PORT, REFERRAL_MEMBER_PORT } from './public';
 
 export const Manifest = defineModuleManifest({

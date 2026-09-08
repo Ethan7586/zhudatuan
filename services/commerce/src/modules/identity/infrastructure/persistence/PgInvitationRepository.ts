@@ -1,6 +1,6 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { InvitationCreatedRecord, InvitationFilter, InvitationReadRecord, InvitationRepository, InvitationRevokedRecord, NewInvitation } from '../../application/port/InvitationRepository';
 import { Invitation, type InvitationState } from '../../domain/model/Invitation';
 import { InvitationClaim } from '../../domain/model/InvitationClaim';
@@ -14,7 +14,12 @@ export class PgInvitationRepository extends PgInvitationRedemption implements In
   lock(context: WriteTransactionContext, hashes: readonly InvitationDigest[], target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<Invitation> {
     return this.findByToken(this.transactions.database(context), hashes, target, true);
   }
-  private async findByToken(database: import('../../../../adapter/database/PgTransactionAccess').SqlExecutor, hashes: readonly InvitationDigest[], target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier', lock: boolean): Promise<Invitation> {
+  private async findByToken(
+    database: import('../../../../platform/database/PgTransactionAccess').SqlExecutor,
+    hashes: readonly InvitationDigest[],
+    target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier',
+    lock: boolean
+  ): Promise<Invitation> {
     const result = await database.query<InvitationRow>(
       `select id,kind,target,organization_id,membership_id,principal_id,recipient_hash,
       token_key_version,issuer_membership_id,issuer_access_version,grant_digest,minimum_assurance,max_uses,use_count,not_before,
@@ -35,7 +40,7 @@ export class PgInvitationRepository extends PgInvitationRedemption implements In
   lockClaimed(context: WriteTransactionContext, claim: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier'): Promise<Invitation> {
     return this.findClaimed(this.transactions.database(context), claim, target, true);
   }
-  private async findClaimed(database: import('../../../../adapter/database/PgTransactionAccess').SqlExecutor, claim: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier', lock: boolean): Promise<Invitation> {
+  private async findClaimed(database: import('../../../../platform/database/PgTransactionAccess').SqlExecutor, claim: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier', lock: boolean): Promise<Invitation> {
     const result = await database.query<InvitationRow>(
       `select invitation.id,invitation.kind,invitation.target,invitation.organization_id,
       invitation.membership_id,invitation.principal_id,invitation.recipient_hash,invitation.token_key_version,

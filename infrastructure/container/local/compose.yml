@@ -1,4 +1,4 @@
-name: zhudatuan-local
+name: ${LOCAL_COMPOSE_PROJECT}
 
 services:
   postgres:
@@ -7,13 +7,13 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      SHOPAPP_PASSWORD: ${SHOPAPP_PASSWORD}
-      SHOPJOB_PASSWORD: ${SHOPJOB_PASSWORD}
-      SHOPPROVIDER_PASSWORD: ${SHOPPROVIDER_PASSWORD}
-      SHOPMIGRATION_PASSWORD: ${SHOPMIGRATION_PASSWORD}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgresadmin
+      SHOPAPP_PASSWORD_FILE: /run/secrets/postgresapi
+      SHOPJOB_PASSWORD_FILE: /run/secrets/postgresjobs
+      SHOPPROVIDER_PASSWORD_FILE: /run/secrets/postgresprovider
+    secrets: [postgresadmin, postgresapi, postgresjobs, postgresprovider]
     ports:
-      - '127.0.0.1:5432:5432'
+      - '127.0.0.1:${LOCAL_POSTGRES_PORT}:5432'
     volumes:
       - postgresdata:/var/lib/postgresql/data
     healthcheck:
@@ -26,20 +26,62 @@ services:
   redis:
     image: redis:7.4-alpine
     restart: unless-stopped
-    environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-    command: ['redis-server', '--appendonly', 'yes', '--requirepass', '${REDIS_PASSWORD}']
+    entrypoint: ['/bin/sh', '-ec']
+    command: ['exec redis-server --appendonly yes --requirepass "$$(cat /run/secrets/redis)"']
+    secrets: [redis]
     ports:
-      - '127.0.0.1:6379:6379'
+      - '127.0.0.1:${LOCAL_REDIS_PORT}:6379'
     volumes:
       - redisdata:/data
     healthcheck:
-      test: ['CMD-SHELL', 'redis-cli -a "$$REDIS_PASSWORD" --no-auth-warning ping | grep -qx PONG']
+      test: ['CMD-SHELL', 'redis-cli -a "$$(cat /run/secrets/redis)" --no-auth-warning ping | grep -qx PONG']
       interval: 2s
       timeout: 3s
       retries: 30
       start_period: 3s
 
+  objects:
+    profiles: [objects]
+    build:
+      context: ../../..
+      dockerfile: infrastructure/container/Dockerfile
+      target: build
+    command: ['node', '--import', 'tsx', 'tools/localobjects/src/Main.ts']
+    environment:
+      LOCAL_TLS_KEY_FILE: /workspace/infrastructure/container/local/.tls/local.key
+      LOCAL_TLS_CERT_FILE: /workspace/infrastructure/container/local/.tls/local.crt
+      LOCAL_OBJECTS_PORT: '8445'
+      LOCAL_OBJECTS_DIRECTORY: /workspace/infrastructure/container/local/data/objects
+      LOCAL_OBJECTS_TOKEN_FILE: /run/secrets/objects
+    entrypoint: ['/bin/sh', '-ec', 'export LOCAL_OBJECTS_TOKEN="$$(cat /run/secrets/objects)"; exec "$$@"', '--']
+    secrets: [objects]
+    ports: ['127.0.0.1:8445:8445']
+    volumes:
+      - ./.tls:/workspace/infrastructure/container/local/.tls:ro
+      - ./data/objects:/workspace/infrastructure/container/local/data/objects
+    read_only: true
+    tmpfs: [/tmp]
+
+  providersandbox:
+    profiles: [provider]
+    build:
+      context: ../../..
+      dockerfile: infrastructure/container/Dockerfile
+      target: build
+    command: ['node', '--import', 'tsx', 'tools/localinfra/src/ProviderSandbox.ts']
+    environment: { LOCAL_PROVIDER_PORT: '9080' }
+    ports: ['127.0.0.1:9080:9080']
+    read_only: true
+    tmpfs: [/tmp]
+
 volumes:
   postgresdata:
   redisdata:
+
+secrets:
+  postgresadmin: { file: ./data/secrets/postgresadmin }
+  postgresapi: { file: ./data/secrets/postgresapi }
+  postgresjobs: { file: ./data/secrets/postgresjobs }
+  postgresprovider: { file: ./data/secrets/postgresprovider }
+  redis: { file: ./data/secrets/redis }
+  objects: { file: ./data/secrets/objects }

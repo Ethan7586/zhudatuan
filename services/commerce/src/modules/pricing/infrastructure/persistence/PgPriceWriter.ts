@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import type { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 interface PriceRow {
   readonly id: string;
@@ -33,7 +33,12 @@ export class PgPriceWriter {
     if ((existing === undefined && input.expectedVersion !== 0) || (existing !== undefined && existing.version !== input.expectedVersion)) throw new DomainError('VERSION_CONFLICT');
     const price = existing === undefined ? await this.create(context, input) : await this.update(context, input, existing.id);
     await new PgRuntimeWriter(database).append({
-      id: `event:${randomUUID()}`, type: 'pricing.offer.changed', aggregateType: 'offer', aggregate: price.id, scope: input.scope, trace: context.trace,
+      id: `event:${randomUUID()}`,
+      type: 'pricing.offer.changed',
+      aggregateType: 'offer',
+      aggregate: price.id,
+      scope: input.scope,
+      trace: context.trace,
       payload: { offer: price.id, sku: price.sku_id, scope: input.scope, version: price.version },
     });
     return Object.freeze({ sku: price.sku_id, scope: input.scope, amountMinor: Number(price.amount_minor), currency: input.currency, version: Number(price.version), effectiveAt: iso(price.effective_at), updatedAt: iso(price.updated_at) });
@@ -53,7 +58,7 @@ export class PgPriceWriter {
 
   private async update(context: WriteTransactionContext, input: Readonly<{ amountMinor: number; expectedVersion: number }>, id: string): Promise<PriceRow> {
     const result = await this.transactions.database(context).query<PriceRow>(
-      `update pricing.price set amount_minor=$2 where id=$1 and version=$3
+      `update pricing.price set amount_minor=$2,version=version+1,updated_at=clock_timestamp() where id=$1 and version=$3
        returning id,sku_id,amount_minor::float8 amount_minor,version::integer,effective_at,updated_at`,
       [id, input.amountMinor, input.expectedVersion]
     );

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { TicketPriority, TicketState } from '../../domain/model/Ticket';
 import type { AssignmentRecord, AssignmentStore, AssignmentTicket } from '../../application/port/SupportPersistence';
 

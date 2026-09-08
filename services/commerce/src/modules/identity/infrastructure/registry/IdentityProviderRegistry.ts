@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { IdentityProviderType } from '@shop/config/server';
 import type { FederatedIdentityProvider } from '../../application/port/FederatedIdentityProvider';
 import type { ProviderHttpClient } from '../security/ProviderHttpClient';

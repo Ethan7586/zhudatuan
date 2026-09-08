@@ -44,7 +44,7 @@ select role.id,permission.id,'allow' from access.role role cross join access.per
 where role.id in('role-platform-owner-v2','role:self') and permission.code='order.cancel' on conflict do nothing;
 
 update runtime.contractcatalog set checksum='0b1566a88761bdd06b69454989192a7cd41769d931d51d36a1250f3d2d9aa277',
-  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event),published_at=clock_timestamp()
+  operation_count=(select count(*) from runtime.operation),event_count=(select count(*) from runtime.event where retired_at is null),published_at=clock_timestamp()
 where artifact='commerce' and version='5.0.0' and status='active';
 
 comment on table ordering.cancellation is 'Immutable user or operator cancellation receipts for unpaid orders.';

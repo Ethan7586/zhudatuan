@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import type { VoucherValue } from '../model/Voucher';
 export class BindingPolicy {
   bind(voucher: VoucherValue, holder: string): void {

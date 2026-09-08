@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { HandlerContext, WriteHandlerContext } from '../../../foundation/application/HandlerContext';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { HandlerContext, WriteHandlerContext } from '../../../pipeline/HandlerContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../platform/database/TransactionContext';
 import { TemplatesManageHandler } from '../application/handler/TemplatesManageHandler';
 import { TemplatesReadHandler } from '../application/handler/TemplatesReadHandler';
 import type { NotificationRepository } from '../application/port/NotificationRepository';

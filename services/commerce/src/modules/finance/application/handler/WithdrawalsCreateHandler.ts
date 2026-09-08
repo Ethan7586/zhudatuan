@@ -1,6 +1,6 @@
 import type { OperationInputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler } from '../../../../pipeline/OperationHandler';
 import type { WithdrawalRepository } from '../port/FinanceCommandRepository';
 
 export class WithdrawalsCreateHandler implements OperationHandler<'finance.withdrawals.create', 'write'> {

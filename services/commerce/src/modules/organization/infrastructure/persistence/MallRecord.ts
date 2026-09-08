@@ -1,5 +1,5 @@
 import type { QueryResultRow } from 'pg';
-import { databaseInteger } from '../../../../foundation/persistence/DatabaseInteger';
+import { databaseInteger } from '../../../../platform/database/DatabaseInteger';
 import { Mall } from '../../domain/model/Mall';
 import { Organization, type OrganizationKind, type OrganizationStatus } from '../../domain/model/Organization';
 
@@ -120,11 +120,26 @@ export function mapMall(row: MallRow): Mall {
     theme: Object.freeze({ preset: row.theme_preset, primaryColor: row.theme_primary_color, accentColor: row.theme_accent_color, logoObjectRef: row.theme_logo_object_ref, faviconObjectRef: row.theme_favicon_object_ref }),
     opening: Object.freeze({
       state: row.opening_state,
-      subject: Object.freeze({ type: row.subject_type, companyName: row.company_name, creditCode: row.credit_code, legalRepresentative: row.legal_representative, contactName: row.contact_name, contactMobile: row.contact_mobile, licenseObjectRef: row.license_object_ref }),
+      subject: Object.freeze({
+        type: row.subject_type,
+        companyName: row.company_name,
+        creditCode: row.credit_code,
+        legalRepresentative: row.legal_representative,
+        contactName: row.contact_name,
+        contactMobile: row.contact_mobile,
+        licenseObjectRef: row.license_object_ref,
+      }),
       business: Object.freeze({ storeType: row.store_type, primaryCategory: row.primary_category, mode: row.business_mode, region: row.business_region, address: row.business_address, servicePhone: row.service_phone }),
       certificateMode: row.certificate_mode,
       certificateObjectRef: row.certificate_object_ref,
-      channels: Object.freeze({ miniProgramMode: row.mini_program_mode, miniProgramAppId: row.mini_program_app_id, miniProgramOriginalId: row.mini_program_original_id, officialAccountMode: row.official_account_mode, officialAccountAppId: row.official_account_app_id, videoChannelId: row.video_channel_id }),
+      channels: Object.freeze({
+        miniProgramMode: row.mini_program_mode,
+        miniProgramAppId: row.mini_program_app_id,
+        miniProgramOriginalId: row.mini_program_original_id,
+        officialAccountMode: row.official_account_mode,
+        officialAccountAppId: row.official_account_app_id,
+        videoChannelId: row.video_channel_id,
+      }),
       payment: Object.freeze({ plan: row.payment_plan, wechatMerchantId: row.wechat_merchant_id }),
       fulfillment: Object.freeze({ deliveryMode: row.delivery_mode, warehouseRegion: row.warehouse_region, returnContact: row.return_contact, returnAddress: row.return_address }),
       invoiceMode: row.invoice_mode,

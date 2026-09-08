@@ -1,5 +1,5 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { ReportingJobRepository } from '../../application/port/ReportingJobRepository';
 import { ProjectEvent } from '../../application/service/ProjectEvent';
 import type { ExportReport } from '../../domain/model/ExportJob';

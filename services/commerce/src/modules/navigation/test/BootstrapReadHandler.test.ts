@@ -3,7 +3,18 @@ import { BootstrapReadHandler } from '../application/handler/BootstrapReadHandle
 
 describe('BootstrapReadHandler', () => {
   it('resolves the public mall before opening the read transaction and reuses that immutable entry', async () => {
-    const entry = Object.freeze({ application: 'application:one', handle: 'mall-one', url: 'https://shop.test/s/mall-one', mall: 'mall:one', pool: 'pool:one', release: 'release:one', version: 'version:one', tenant: 'tenant:one', contentHash: 'a'.repeat(64), objectKey: 'experience/application:one/a.json' });
+    const entry = Object.freeze({
+      application: 'application:one',
+      handle: 'mall-one',
+      url: 'https://shop.test/s/mall-one',
+      mall: 'mall:one',
+      pool: 'pool:one',
+      release: 'release:one',
+      version: 'version:one',
+      tenant: 'tenant:one',
+      contentHash: 'a'.repeat(64),
+      objectKey: 'experience/application:one/a.json',
+    });
     const execute = vi.fn(async () => ({ status: 200, body: { state: 'complete' }, headers: { 'cache-control': 'private,no-store' } }));
     const handler = new BootstrapReadHandler({ entry: vi.fn(async () => entry), execute } as never);
     const context = { security: { kind: 'anonymous' }, signal: new AbortController().signal } as never;

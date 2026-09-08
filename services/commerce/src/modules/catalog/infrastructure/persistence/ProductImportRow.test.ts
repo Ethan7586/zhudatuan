@@ -1,13 +1,11 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
-import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
 import type { ImportTarget } from '../../../runtime/public';
 import { importProduct } from './ProductImportRow';
 
-const target: ImportTarget = Object.freeze({ id: 'import:one', scope: 'mall:one', reference: 'object:one', sha256: 'a'.repeat(64),
-  state: 'running', authorization: {}, confirmed: true });
-const row = Object.freeze({ spu: 'MEAL-1', title: '早餐', sku: 'MEAL-1-RED', category: 'category:food', supplier: 'partner:one',
-  type: 'physical', attributes: '{"color":"red"}', specifications: '{"size":"S"}' });
+const target: ImportTarget = Object.freeze({ id: 'import:one', scope: 'mall:one', reference: 'object:one', sha256: 'a'.repeat(64), state: 'running', authorization: {}, confirmed: true });
+const row = Object.freeze({ spu: 'MEAL-1', title: '早餐', sku: 'MEAL-1-RED', category: 'category:food', supplier: 'partner:one', type: 'physical', attributes: '{"color":"red"}', specifications: '{"size":"S"}' });
 
 describe('product import row', () => {
   it('writes product, SKU, durable receipt, event and audit in the row transaction', async () => {
@@ -24,8 +22,7 @@ describe('product import row', () => {
     });
     const audit = { record: vi.fn(async () => undefined) };
 
-    await importProduct({ query } as unknown as SqlExecutor, {} as never, target, 2, row,
-      { scopes: vi.fn(async () => new Map([['partner:one', 'supplier:one']])) } as never, audit as never);
+    await importProduct({ query } as unknown as SqlExecutor, {} as never, target, 2, row, { scopes: vi.fn(async () => new Map([['partner:one', 'supplier:one']])) } as never, audit as never);
 
     expect(query.mock.calls.some(([sql]) => String(sql).includes('insert into catalog.import_receipts'))).toBe(true);
     expect(query.mock.calls.some(([sql]) => String(sql).includes('insert into runtime.outbox'))).toBe(true);
@@ -45,5 +42,9 @@ describe('product import row', () => {
   });
 });
 
-function result(rows: readonly Record<string, unknown>[]) { return { rows, rowCount: rows.length, command: '', oid: 0, fields: [] }; }
-function digest(value: string): string { return createHash('sha256').update(value).digest('hex'); }
+function result(rows: readonly Record<string, unknown>[]) {
+  return { rows, rowCount: rows.length, command: '', oid: 0, fields: [] };
+}
+function digest(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
+}

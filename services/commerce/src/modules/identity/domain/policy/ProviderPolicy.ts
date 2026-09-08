@@ -1,4 +1,4 @@
-import { DomainError } from '../../../../foundation/domain/DomainError';
+import { DomainError } from '../../../../platform/error/DomainError';
 import { IDENTITY_PROVIDER_CONFIGURATION } from '@shop/config/server';
 import type { ProviderInstance } from '../model/ProviderInstance';
 export class ProviderPolicy {

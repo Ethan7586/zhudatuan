@@ -1,9 +1,9 @@
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { PgTransactionManager } from '../../adapter/database/PgTransactionManager';
-import { defineModule } from '../../bootstrap/DefinedModule';
-import { KMS_CLIENT } from '../../foundation/application/KmsPort';
-import { DATABASE_POOL } from '../../foundation/persistence/Pool';
-import { writeDatabaseWorkload } from '../../foundation/persistence/Workload';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { PgTransactionManager } from '../../platform/database/PgTransactionManager';
+import { defineModule } from '../../composition/DefinedModule';
+import { KMS_CLIENT } from '../../pipeline/KmsPort';
+import { DATABASE_POOL } from '../../platform/database/Pool';
+import { writeDatabaseWorkload } from '../../platform/database/Workload';
 import { MEMBER_ACCESS_PORT } from '../access/public';
 import { PAYMENT_BENEFIT_PORT } from '../benefit/public';
 import { PAYMENT_IDENTITY_PORT } from '../identity/public';
@@ -45,9 +45,13 @@ export const PaymentModule = defineModule(Manifest, {
     const gateways = new PaymentGatewayRegistry([context.service(PAYMENT_GATEWAY)]);
     const paymentPort = new PaymentPort();
     const continuation = new PgPaymentContinuation(
-      context.service(DATABASE_POOL).workload(writeDatabaseWorkload(context.workload)), context.service(PAYMENT_GATEWAY), context.service(KMS_CLIENT),
+      context.service(DATABASE_POOL).workload(writeDatabaseWorkload(context.workload)),
+      context.service(PAYMENT_GATEWAY),
+      context.service(KMS_CLIENT),
       new PaymentSettlement(context.ports.get(PAYMENT_BENEFIT_PORT), context.ports.get(PAYMENT_VOUCHER_PORT), context.ports.get(PAYMENT_INVENTORY_PORT), context.ports.get(MARKETING_RESERVE_PORT), orders),
-      orders, context.ports.get(MEMBER_ACCESS_PORT), context.ports.get(PAYMENT_IDENTITY_PORT),
+      orders,
+      context.ports.get(MEMBER_ACCESS_PORT),
+      context.ports.get(PAYMENT_IDENTITY_PORT),
       new PaymentHoldReleaser(context.ports.get(PAYMENT_BENEFIT_PORT), context.ports.get(PAYMENT_VOUCHER_PORT), context.ports.get(PAYMENT_INVENTORY_PORT), context.ports.get(MARKETING_RESERVE_PORT))
     );
     return [
@@ -56,11 +60,7 @@ export const PaymentModule = defineModule(Manifest, {
       new RefundsRequestHandler(new PgRefundRepository(transactions, organizations, orders)),
       new RecoveriesReadHandler(recoveries),
       new RecoveriesResolveHandler(recoveries),
-      new WebhooksWechatHandler(
-        context.service(PAYMENT_GATEWAY),
-        new PgWebhookScopeReader(new PgTransactionManager(context.service(DATABASE_POOL)), context.ports.get(ORDER_READ_PORT)),
-        new PgWebhookInboxRepository(transactions, orders)
-      ),
+      new WebhooksWechatHandler(context.service(PAYMENT_GATEWAY), new PgWebhookScopeReader(new PgTransactionManager(context.service(DATABASE_POOL)), context.ports.get(ORDER_READ_PORT)), new PgWebhookInboxRepository(transactions, orders)),
     ];
   },
   ports: (context) => {

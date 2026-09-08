@@ -1,7 +1,7 @@
-import type { HandlerContext, WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { sessionAccess } from '../../../../foundation/security/OperationSecurityContext';
+import type { HandlerContext, WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { sessionAccess } from '../../../../platform/security/OperationSecurityContext';
 import type { CartOwnerRepository } from '../port/CartOwnerRepository';
 import type { CartOwner } from '../../domain/model/Cart';
 import { CartToken } from '../../domain/model/CartToken';

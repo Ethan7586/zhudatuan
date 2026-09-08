@@ -27,8 +27,7 @@ class MemoryObjects implements ObjectStore {
       abort: async () => undefined,
       complete: async () => {
         const sha256 = createHash('sha256').update(bytes).digest('hex');
-        const object = { reference: `object:${path}`, sha256, size: bytes.byteLength, scan: 'clean' as const, contentType, path,
-          retentionUntil: null, lockedUntil: null };
+        const object = { reference: `object:${path}`, sha256, size: bytes.byteLength, scan: 'clean' as const, contentType, path, retentionUntil: null, lockedUntil: null };
         this.values.set(path, { bytes, object });
         this.values.set(object.reference, { bytes, object });
         return object;
@@ -43,7 +42,9 @@ class MemoryObjects implements ObjectStore {
     if (!value) throw new Error('NOT_FOUND');
     return value;
   }
-  async lock(_reference: string, until: string) { return { mode: 'compliance' as const, lockedUntil: until }; }
+  async lock(_reference: string, until: string) {
+    return { mode: 'compliance' as const, lockedUntil: until };
+  }
   async read(reference: string) {
     const value = this.values.get(reference)?.bytes;
     if (!value) throw new Error('NOT_FOUND');

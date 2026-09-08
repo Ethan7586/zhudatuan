@@ -1,0 +1,30 @@
+.consolesidebar.iscollapsed .sidebarbrand {
+  justify-content: center;
+  padding-inline: var(--sw-space-1);
+}
+.consolesidebar.iscollapsed .sidebarbrandcopy,
+.consolesidebar.iscollapsed .sidebarlabel,
+.consolesidebar.iscollapsed .sidebarnavtitle,
+.consolesidebar.iscollapsed .sidebarnavavailability,
+.consolesidebar.iscollapsed .navigationdisclosure {
+  display: none;
+}
+.consolesidebar.iscollapsed .sidebartoggle {
+  top: calc(var(--sw-layout-header) + var(--sw-space-1));
+  right: var(--sw-space-1-5);
+  opacity: 1;
+  transform: none;
+}
+.consolesidebar.iscollapsed .sidebarnavigation {
+  padding-top: var(--sw-space-3);
+}
+.consolesidebar.iscollapsed .sidebarnavigation.sidebarsupport {
+  padding-top: var(--sw-space-1);
+}
+.consolesidebar.iscollapsed .sidebarnavigation button {
+  justify-content: center;
+  padding-inline: 0;
+}
+.consolesidebar.iscollapsed .navigationchildren {
+  display: none;
+}

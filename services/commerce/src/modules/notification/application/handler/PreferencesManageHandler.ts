@@ -1,10 +1,10 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { bodyRecord } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
-import { Preference, type AuthorizationState, type QuietHours } from '../../domain/model/Preference';
+import { DomainError } from '../../../../platform/error/DomainError';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { bodyRecord } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
+import { Preference, type AuthorizationState, type ConsentSource, type QuietHours } from '../../domain/model/Preference';
 import { DELIVERY_CHANNELS, type DeliveryChannelId } from '../../domain/model/Template';
 import type { NotificationRepository } from '../port/NotificationRepository';
 
@@ -19,13 +19,11 @@ export class PreferencesManageHandler implements OperationHandler<'notification.
     const event = eventType(input.path.eventtype);
     const body = bodyRecord(input);
     const enabled = boolean(body.enabled);
-    const authorization = channel === 'wechat' ? authorizationState(body.authorization) : 'unknown';
-    const source = channel === 'wechat' && body.authorization !== undefined ? 'provider' : 'member';
     const quiet = quietHours(body.quietHours);
     const expected = context.expectedVersion ?? 0;
-    new Preference(member.member, channel, event, enabled, authorization, source, quiet, expected);
-    const row = await this.notifications.changePreference(context.transaction, member.member, member.organization, channel, event, enabled, authorization, source, quiet, expected);
+    const row = await this.notifications.changePreference(context.transaction, member.member, member.organization, channel, event, enabled, quiet, expected);
     if (!row) throw new DomainError('VERSION_CONFLICT');
+    new Preference(member.member, channel, event, enabled, authorizationState(row.authorization_state), consentSource(row.consent_source), quiet, Number(row.version));
     return { status: 200, body: row as OperationOutputFor<'notification.preferences.manage'> };
   }
 }
@@ -49,8 +47,12 @@ function eventType(value: unknown): string {
   return value;
 }
 function authorizationState(value: unknown): AuthorizationState {
-  if (!['accepted', 'rejected'].includes(String(value))) throw new Error('NOTIFICATION_AUTHORIZATION_INVALID');
+  if (!['unknown', 'accepted', 'rejected'].includes(String(value))) throw new Error('NOTIFICATION_AUTHORIZATION_INVALID');
   return value as AuthorizationState;
+}
+function consentSource(value: unknown): ConsentSource {
+  if (!['member', 'provider', 'operator', 'system'].includes(String(value))) throw new Error('NOTIFICATION_CONSENT_SOURCE_INVALID');
+  return value as ConsentSource;
 }
 function boolean(value: unknown): boolean {
   if (typeof value !== 'boolean') throw new Error('BOOLEAN_REQUIRED');

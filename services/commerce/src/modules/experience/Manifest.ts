@@ -1,4 +1,4 @@
-import { defineModuleManifest } from '../../bootstrap/ModuleManifest';
+import { defineModuleManifest } from '../../composition/ModuleManifest';
 import { CART_EXPERIENCE_PORT, CHECKOUT_EXPERIENCE_PORT, EXPERIENCE_READ_PORT } from './public';
 
 export const Manifest = defineModuleManifest({

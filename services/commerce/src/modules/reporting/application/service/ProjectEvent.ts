@@ -4,7 +4,7 @@ import type { MetricContribution } from '../../domain/model/Metric';
 import { PROJECTION_EVENTS } from '../../../../generated/EventSubscriptions';
 import { COMMERCE_EVENTS } from '@shop/contract';
 
-const eventVersions = new Map<string, number>(COMMERCE_EVENTS.map(event => [event.type, event.version]));
+const eventVersions = new Map<string, number>(COMMERCE_EVENTS.map((event) => [event.type, event.version]));
 
 export class ProjectEvent {
   constructor(private readonly repository: ReportingPort) {}
@@ -76,7 +76,15 @@ export class ProjectEvent {
     await this.repository.payOrder(text(payload.order, 'REPORT_ORDER_REQUIRED'), amount, currency, snapshot, event.occurredAt, event.id);
   }
 
-  private line(scope: string, mall: string, application: string, period: Readonly<{ from: string; to: string; timezone: string }>, line: Readonly<Record<string, unknown>>, currency: string, watermark: string): readonly MetricContribution[] {
+  private line(
+    scope: string,
+    mall: string,
+    application: string,
+    period: Readonly<{ from: string; to: string; timezone: string }>,
+    line: Readonly<Record<string, unknown>>,
+    currency: string,
+    watermark: string
+  ): readonly MetricContribution[] {
     const amount = integer(line.payableMinor, 'REPORT_LINE_AMOUNT_INVALID');
     const common = { mall, application };
     return Object.freeze([
@@ -106,7 +114,10 @@ export class ProjectEvent {
     const metrics: MetricContribution[] = [];
     for (const scope of scopes(payload.scopes, mall)) {
       affected.add(scope);
-      metrics.push(projectedMetric('refund.amount', scope, range, { mall, application }, amount, 'minor', currency, event.occurredAt), projectedMetric('refund.orders', scope, range, { mall, application }, 1, 'count', null, event.occurredAt));
+      metrics.push(
+        projectedMetric('refund.amount', scope, range, { mall, application }, amount, 'minor', currency, event.occurredAt),
+        projectedMetric('refund.orders', scope, range, { mall, application }, 1, 'count', null, event.occurredAt)
+      );
     }
     await this.repository.addMetrics(metrics, event.id);
   }
@@ -128,8 +139,10 @@ export class ProjectEvent {
     const dimensions: Readonly<Record<string, string>> = { voucherScope: owner, channel, currency, ...(store ? { store } : {}) };
     for (const scope of scopes(payload.scopes, owner, ...(store ? [store] : []))) {
       affected.add(scope);
-      metrics.push(projectedMetric(refund ? 'voucher.refund.amount' : 'voucher.amount', scope, range, dimensions, amount, 'minor', currency, event.occurredAt),
-        projectedMetric(refund ? 'voucher.refunds' : 'voucher.redemptions', scope, range, dimensions, 1, 'count', null, event.occurredAt));
+      metrics.push(
+        projectedMetric(refund ? 'voucher.refund.amount' : 'voucher.amount', scope, range, dimensions, amount, 'minor', currency, event.occurredAt),
+        projectedMetric(refund ? 'voucher.refunds' : 'voucher.redemptions', scope, range, dimensions, 1, 'count', null, event.occurredAt)
+      );
     }
     await this.repository.addMetrics(metrics, event.id);
   }

@@ -2,10 +2,10 @@ import { PgReferralMemberPort } from './infrastructure/persistence/PgReferralMem
 import { PgMemberReadPort } from './infrastructure/persistence/PgMemberReadPort';
 import { PgBenefitMemberPort } from './infrastructure/persistence/PgBenefitMemberPort';
 
-import { PgJobScheduler } from '../../adapter/database/PgJobScheduler';
-import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
-import { defineModule } from '../../bootstrap/DefinedModule';
-import { KMS_CLIENT } from '../../foundation/application/KmsPort';
+import { PgJobScheduler } from '../../platform/database/PgJobScheduler';
+import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
+import { defineModule } from '../../composition/DefinedModule';
+import { KMS_CLIENT } from '../../pipeline/KmsPort';
 import { OBJECT_STORE } from '../runtime/public/ObjectPort';
 import { MEMBER_ACCESS_PORT } from '../access/public';
 import { MEMBER_CATALOG_PORT } from '../catalog/public';

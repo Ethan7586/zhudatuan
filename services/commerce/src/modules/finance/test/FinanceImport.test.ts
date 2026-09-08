@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { CommitContext } from '../../../foundation/application/HandlerContext';
-import type { JobScheduler } from '../../../foundation/application/JobScheduler';
-import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { CommitContext } from '../../../pipeline/HandlerContext';
+import type { JobScheduler } from '../../../pipeline/JobScheduler';
+import type { WriteTransactionContext } from '../../../platform/database/TransactionContext';
 import { readHandlerContext } from '../../../test/HandlerFixture';
 import type { FinanceChannelPort } from '../../channel/public';
 import type { OrganizationReadPort } from '../../organization/public';
@@ -46,19 +46,25 @@ describe('finance import creation', () => {
 
     const result = await fixture.handler.commit({} as never, prepared, context());
 
-    expect(fixture.imports.create).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
-      scope: 'mall:one',
-      owner: 'finance',
-      kind: 'statement',
-      reference: 'object:statement',
-      metadata: prepared.metadata,
-    }));
-    expect(fixture.jobs.schedule).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
-      kind: 'financeimport',
-      owner: 'finance',
-      scope: 'mall:one',
-      payload: { import: expect.stringMatching(/^import:/) },
-    }));
+    expect(fixture.imports.create).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        scope: 'mall:one',
+        owner: 'finance',
+        kind: 'statement',
+        reference: 'object:statement',
+        metadata: prepared.metadata,
+      })
+    );
+    expect(fixture.jobs.schedule).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        kind: 'financeimport',
+        owner: 'finance',
+        scope: 'mall:one',
+        payload: { import: expect.stringMatching(/^import:/) },
+      })
+    );
     expect(result.response).toMatchObject({ status: 202, body: { state: 'uploaded', total_count: 0 } });
   });
 });

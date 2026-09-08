@@ -1,7 +1,7 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
-import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { WriteHandlerContext } from '../../../../pipeline/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../pipeline/OperationHandler';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import { ownershipEvent } from '../../domain/event/OwnershipEvents';
 import type { ManageOwnershipTransfer } from '../process/ManageOwnershipTransfer';
 
@@ -16,11 +16,17 @@ export class OwnershipCancelHandler implements OperationHandler<'access.ownershi
       status: 200,
       body,
       headers: { etag: `"${body.version}"` },
-      events: [ownershipEvent({
-        type: 'access.owner.transfer.cancelled', transfer: body.id, scope: access.scope.id, actor: access.membership.id,
-        trace: context.traceId, version: body.version,
-        payload: { transfer: body.id, scope: access.scope.id, sourceMembership: body.sourceMembership, targetMembership: body.targetMembership, version: body.version },
-      })],
+      events: [
+        ownershipEvent({
+          type: 'access.owner.transfer.cancelled',
+          transfer: body.id,
+          scope: access.scope.id,
+          actor: access.membership.id,
+          trace: context.traceId,
+          version: body.version,
+          payload: { transfer: body.id, scope: access.scope.id, sourceMembership: body.sourceMembership, targetMembership: body.targetMembership, version: body.version },
+        }),
+      ],
     };
   }
 }

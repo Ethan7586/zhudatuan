@@ -1,9 +1,9 @@
 import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../foundation/application/HandlerContext';
-import type { DurableCommit, DurableOperationHandler, OperationReply, OperationRequest, OperationResult } from '../../../../foundation/application/OperationHandler';
-import { DomainError } from '../../../../foundation/domain/DomainError';
-import { bodyRecord, textField } from '../../../../foundation/application/Validation';
-import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext } from '../../../../pipeline/HandlerContext';
+import type { DurableCommit, DurableOperationHandler, OperationReply, OperationRequest, OperationResult } from '../../../../pipeline/OperationHandler';
+import { DomainError } from '../../../../platform/error/DomainError';
+import { bodyRecord, textField } from '../../../../pipeline/Validation';
+import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { MemberAccessPort } from '../../../access/public';
 import type { OrderPaymentPort, PaymentOrderSnapshot } from '../../../order/public';
 import type { PaymentContinuation } from '../port/PaymentContinuation';
@@ -55,13 +55,11 @@ export class IntentsCreateHandler implements DurableOperationHandler<'payment.in
     return Object.freeze({ ...loaded, scene });
   }
 
-  transactionScope(_input: OperationInputFor<'payment.intents.create'>, prepared: PreparedIntent): string { return prepared.order.scope; }
+  transactionScope(_input: OperationInputFor<'payment.intents.create'>, prepared: PreparedIntent): string {
+    return prepared.order.scope;
+  }
 
-  async commit(
-    _input: OperationInputFor<'payment.intents.create'>,
-    prepared: PreparedIntent,
-    context: CommitContext<'payment.intents.create'>
-  ): Promise<DurableCommit<IntentCheckpoint, OperationOutputFor<'payment.intents.create'>>> {
+  async commit(_input: OperationInputFor<'payment.intents.create'>, prepared: PreparedIntent, context: CommitContext<'payment.intents.create'>): Promise<DurableCommit<IntentCheckpoint, OperationOutputFor<'payment.intents.create'>>> {
     const payment = await this.payments.prepare(context.transaction, {
       order: prepared.order.id,
       orderNumber: prepared.order.number,
@@ -86,20 +84,35 @@ export class IntentsCreateHandler implements DurableOperationHandler<'payment.in
 function response(status: number, checkpoint: IntentCheckpoint, value: unknown): Reply {
   const body = record(value);
   const state = body.state;
-  if (state === 'captured' && typeof body.payment === 'string') return { status, body: { intentId: checkpoint.payment.intent, orderId: checkpoint.order, paymentId: body.payment, state, action: null, expiresAt: checkpoint.payment.expiresAt, retryAfter: 0 } };
-  if (body.parameters && typeof body.parameters === 'object' && !Array.isArray(body.parameters)) return { status, body: { intentId: checkpoint.payment.intent, orderId: checkpoint.order, paymentId: checkpoint.payment.intent, state: 'pending', action: stringRecord(body.parameters), expiresAt: checkpoint.payment.expiresAt, retryAfter: 0 } };
+  if (state === 'captured' && typeof body.payment === 'string')
+    return { status, body: { intentId: checkpoint.payment.intent, orderId: checkpoint.order, paymentId: body.payment, state, action: null, expiresAt: checkpoint.payment.expiresAt, retryAfter: 0 } };
+  if (body.parameters && typeof body.parameters === 'object' && !Array.isArray(body.parameters))
+    return {
+      status,
+      body: { intentId: checkpoint.payment.intent, orderId: checkpoint.order, paymentId: checkpoint.payment.intent, state: 'pending', action: stringRecord(body.parameters), expiresAt: checkpoint.payment.expiresAt, retryAfter: 0 },
+    };
   const normalized = state === 'failed' ? 'failed' : state === 'reconciling' ? 'recovery' : 'preparing';
-  return { status, body: { intentId: checkpoint.payment.intent, orderId: checkpoint.order, paymentId: checkpoint.payment.intent, state: normalized, action: null, expiresAt: checkpoint.payment.expiresAt, retryAfter: normalized === 'failed' ? 0 : 5 } };
+  return {
+    status,
+    body: { intentId: checkpoint.payment.intent, orderId: checkpoint.order, paymentId: checkpoint.payment.intent, state: normalized, action: null, expiresAt: checkpoint.payment.expiresAt, retryAfter: normalized === 'failed' ? 0 : 5 },
+  };
 }
 
 function request(input: OperationInputFor<'payment.intents.create'>, context: FinalizeContext<'payment.intents.create'>): OperationRequest {
   return Object.freeze({
     type: context.operation,
     security: context.security,
-    input: Object.freeze({ path: Object.freeze({}), query: Object.freeze({}), headers: context.headers, body: input.body, rawBody: context.rawBody,
-      deadline: context.deadline, signal: context.signal,
+    input: Object.freeze({
+      path: Object.freeze({}),
+      query: Object.freeze({}),
+      headers: context.headers,
+      body: input.body,
+      rawBody: context.rawBody,
+      deadline: context.deadline,
+      signal: context.signal,
       ...(context.idempotencyKey === undefined ? {} : { idempotency: context.idempotencyKey }),
-      ...(context.expectedVersion === undefined ? {} : { expectedVersion: context.expectedVersion }) }),
+      ...(context.expectedVersion === undefined ? {} : { expectedVersion: context.expectedVersion }),
+    }),
   });
 }
 

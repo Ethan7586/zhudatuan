@@ -1,6 +1,6 @@
 import { Money } from '@shop/kernel';
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
-import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../platform/database/PgTransactionAccess';
+import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AccountCommand, AccountingPort, HoldCommand, PostingCommand } from '../../public/AccountingPort';
 import { Account } from '../../domain/model/Account';
 import { AccountingPeriod } from '../../domain/model/AccountingPeriod';
@@ -27,15 +27,21 @@ export class PgAccountingPort implements AccountingPort {
       scopeId: command.scopeId,
       reference,
       description: command.description,
-      entries: [
-        JournalEntry.create('entry:debit', debit, 'debit', Money.of(command.amountMinor), occurredAt),
-        JournalEntry.create('entry:credit', credit, 'credit', Money.of(command.amountMinor), occurredAt),
-      ],
+      entries: [JournalEntry.create('entry:debit', debit, 'debit', Money.of(command.amountMinor), occurredAt), JournalEntry.create('entry:credit', credit, 'credit', Money.of(command.amountMinor), occurredAt)],
     });
     Ledger.empty(command.scopeId, [debit, credit]).post(draft, AccountingPeriod.open(command.scopeId, occurredAt.period), occurredAt);
     const result = await database.query<{ journal: string }>(`select finance.post($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::timestamptz) journal`, [
-      command.scopeId, reference.value.event, reference.value.aggregateId, command.currency, command.description,
-      command.debit.code, command.debit.kind, command.credit.code, command.credit.kind, command.amountMinor, occurredAt.instant,
+      command.scopeId,
+      reference.value.event,
+      reference.value.aggregateId,
+      command.currency,
+      command.description,
+      command.debit.code,
+      command.debit.kind,
+      command.credit.code,
+      command.credit.kind,
+      command.amountMinor,
+      occurredAt.instant,
     ]);
     const journal = result.rows[0]?.journal;
     if (!journal) throw new Error('FINANCE_POST_FAILED');

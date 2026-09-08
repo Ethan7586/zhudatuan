@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
-import type { TransactionManager } from '../../../../foundation/persistence/TransactionManager';
+import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
+import type { TransactionManager } from '../../../../platform/database/TransactionManager';
 import type { PaymentGateway } from '../../application/port/PaymentGateway';
 import { PaymentReference } from '../../domain/model/PaymentReference';
 import { PaymentSettlement } from './PaymentSettlement';
@@ -20,7 +20,7 @@ import {
   type IntentTarget,
   type ProviderObservation,
 } from './PaymentRecoveryPersistence';
-import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { PaymentRecoveryExecution, PaymentRecoveryProcess } from '../../application/port/PaymentRecoveryProcess';
 import { paymentProviderExecution, paymentRecoveryOptions as options, type PaymentRecoveryDependencies } from './PaymentRecoveryContext';
 export class PgPaymentRecoveryProcess implements PaymentRecoveryProcess {
