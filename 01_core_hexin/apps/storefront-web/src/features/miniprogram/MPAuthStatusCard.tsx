@@ -1,5 +1,4 @@
 import React from 'react';
-import { LogIn, UserRoundCheck } from 'lucide-react';
 import type { SessionStatus } from '../../context/MallContext.types';
 import type { UserProfile } from '../../types';
 
@@ -7,7 +6,6 @@ interface MPAuthStatusCardProps {
   authHref?: string;
   sessionStatus: SessionStatus;
   user: UserProfile;
-  onOpenProfile: () => void;
 }
 
 const cardClassName = 'flex h-[68px] w-full items-center rounded-xl border border-white/20 bg-white px-3.5 text-left shadow-sm';
@@ -16,9 +14,39 @@ export const AUTH_WELCOME_HOLD_MS = 2200;
 export const AUTH_WELCOME_FADE_MS = 720;
 export const AUTH_WELCOME_COLLAPSE_MS = 520;
 export const AUTH_WELCOME_EXIT_MS = AUTH_WELCOME_FADE_MS + AUTH_WELCOME_COLLAPSE_MS;
+export const AUTH_LOGIN_TRANSITION_MS = 420;
 
-export function MPAuthStatusCard({ authHref, sessionStatus, user, onOpenProfile }: MPAuthStatusCardProps) {
+function FrostDewVisual() {
+  return (
+    <span
+      data-auth-loader="visual"
+      data-auth-loader-style="frost-dew"
+      aria-hidden="true"
+      className="sw-auth-frost-dew h-9 w-24"
+    >
+      <span className="sw-auth-frost-dew-ring" />
+      <span className="sw-auth-frost-dew-orb" />
+    </span>
+  );
+}
+
+export function MPAuthStatusCard({ authHref, sessionStatus, user }: MPAuthStatusCardProps) {
   const [welcomePhase, setWelcomePhase] = React.useState<'visible' | 'fading' | 'collapsing' | 'hidden'>('visible');
+  const [isEnteringLogin, setIsEnteringLogin] = React.useState(false);
+  const loginTimerRef = React.useRef<number | null>(null);
+
+  React.useEffect(() => {
+    const resetLoginTransition = () => {
+      if (loginTimerRef.current !== null) window.clearTimeout(loginTimerRef.current);
+      loginTimerRef.current = null;
+      setIsEnteringLogin(false);
+    };
+    window.addEventListener('pageshow', resetLoginTransition);
+    return () => {
+      window.removeEventListener('pageshow', resetLoginTransition);
+      if (loginTimerRef.current !== null) window.clearTimeout(loginTimerRef.current);
+    };
+  }, []);
 
   React.useEffect(() => {
     if (sessionStatus !== 'authenticated') {
@@ -45,13 +73,22 @@ export function MPAuthStatusCard({ authHref, sessionStatus, user, onOpenProfile 
 
   const isWelcomeFading = sessionStatus === 'authenticated' && (welcomePhase === 'fading' || welcomePhase === 'collapsing');
   const isWelcomeCollapsing = sessionStatus === 'authenticated' && welcomePhase === 'collapsing';
+  const enterLogin = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!authHref || isEnteringLogin || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    setIsEnteringLogin(true);
+    loginTimerRef.current = window.setTimeout(() => {
+      loginTimerRef.current = null;
+      window.location.assign(authHref);
+    }, AUTH_LOGIN_TRANSITION_MS);
+  };
 
   return (
     <div
       className={`overflow-hidden bg-[var(--sw-brand-dark)] px-3 transition-[height,padding-bottom] duration-[520ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
         isWelcomeCollapsing ? 'pointer-events-none h-0 pb-0' : 'h-20 pb-3'
       }`}
-      data-auth-shell={sessionStatus}
+      data-auth-shell={sessionStatus === 'guest' && isEnteringLogin ? 'checking' : sessionStatus}
       data-auth-phase={welcomePhase}
     >
       {sessionStatus === 'checking' ? (
@@ -62,56 +99,48 @@ export function MPAuthStatusCard({ authHref, sessionStatus, user, onOpenProfile 
           aria-live="polite"
           aria-busy="true"
         >
-          <span
-            data-auth-loader="visual"
-            aria-hidden="true"
-            className="flex h-9 min-w-20 items-center justify-center gap-1.5 rounded-full bg-slate-50 ring-1 ring-inset ring-slate-100"
-          >
-            <span className="sw-auth-loader-dot h-1.5 w-1.5 rounded-full bg-[#2563EB]" />
-            <span className="sw-auth-loader-dot h-1.5 w-1.5 rounded-full bg-[#06B6D4]" />
-            <span className="sw-auth-loader-dot h-1.5 w-1.5 rounded-full bg-[#F59E0B]" />
-            <span className="sw-auth-loader-dot h-1.5 w-1.5 rounded-full bg-[#10B981]" />
-          </span>
+          <FrostDewVisual />
         </div>
       ) : sessionStatus === 'guest' ? (
         <a
           href={authHref}
-          aria-label="使用手机号登录智慧翼账户"
-          className={`${cardClassName} justify-between active:scale-[0.99]`}
-        >
-          <span className="flex min-w-0 items-center gap-2.5">
-            <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-blue-50 text-[var(--sw-brand)]">
-              <LogIn className="h-4 w-4" />
-            </span>
-            <span className="min-w-0">
-              <span className="block text-sm font-black text-slate-900">手机号登录</span>
-              <span className="block truncate text-[10px] text-slate-500">登录后查看会员身份、订单与支付</span>
-            </span>
-          </span>
-          <span className="ml-2 flex-none rounded-full bg-[var(--sw-brand)] px-3 py-1.5 text-xs font-bold text-white">登录</span>
-        </a>
-      ) : (
-        <button
-          type="button"
-          onClick={onOpenProfile}
-          aria-label={`查看${user.name}的会员账户`}
-          className={`${cardClassName} justify-between transition-[opacity,transform] duration-[720ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
-            isWelcomeFading
-              ? 'pointer-events-none -translate-y-2 scale-[0.985] opacity-0'
-              : 'sw-auth-welcome-card translate-y-0 scale-100 opacity-100 active:opacity-90'
+          onClick={enterLogin}
+          aria-label={isEnteringLogin ? '正在进入智慧翼账户' : '进入智慧翼账户'}
+          aria-busy={isEnteringLogin || undefined}
+          data-auth-action="login"
+          data-auth-state={isEnteringLogin ? 'entering' : 'idle'}
+          className={`${cardClassName} relative justify-center overflow-hidden transition-transform duration-300 ${
+            isEnteringLogin ? 'pointer-events-none' : 'active:scale-[0.99]'
           }`}
         >
-          <span className="flex min-w-0 items-center gap-2.5">
-            <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-              <UserRoundCheck className="h-4 w-4" />
-            </span>
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-black text-slate-900">{user.name}，欢迎回来</span>
-              <span className="block truncate text-[10px] text-slate-500">很高兴再次见到你</span>
-            </span>
+          <span
+            data-auth-prompt="login"
+            className={`text-sm font-semibold tracking-[0.12em] text-slate-700 transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${
+              isEnteringLogin ? '-translate-y-1 opacity-0' : 'translate-y-0 opacity-100'
+            }`}
+          >
+            轻轻一点，恰逢所喜。
           </span>
-          <span className="ml-2 flex-none rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">查看账户</span>
-        </button>
+          <span
+            className={`absolute inset-0 flex items-center justify-center transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
+              isEnteringLogin ? 'scale-100 opacity-100' : 'pointer-events-none scale-90 opacity-0'
+            }`}
+          >
+            <FrostDewVisual />
+          </span>
+        </a>
+      ) : (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`${cardClassName} justify-center transition-[opacity,transform] duration-[720ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
+            isWelcomeFading
+              ? 'pointer-events-none -translate-y-2 scale-[0.985] opacity-0'
+              : 'sw-auth-welcome-card translate-y-0 scale-100 opacity-100'
+          }`}
+        >
+          <span className="truncate text-sm font-semibold tracking-[0.08em] text-slate-700">欢迎 {user.name} 回来</span>
+        </div>
       )}
     </div>
   );

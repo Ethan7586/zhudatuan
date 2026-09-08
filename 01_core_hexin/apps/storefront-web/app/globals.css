@@ -83,6 +83,106 @@ textarea {
   animation-delay: 360ms;
 }
 
+@keyframes sw-auth-frost-dew-breathe {
+  0%,
+  100% {
+    opacity: 0.84;
+    transform: translate3d(0, 0, 0) scale(0.96);
+  }
+  48% {
+    opacity: 1;
+    transform: translate3d(0, -0.75px, 0) scale(1.035);
+  }
+}
+
+@keyframes sw-auth-frost-dew-glimmer {
+  0%,
+  24%,
+  100% {
+    opacity: 0.2;
+    transform: translate3d(-6px, 0, 0) scale(0.94);
+  }
+  56% {
+    opacity: 0.48;
+    transform: translate3d(6px, 0, 0) scale(1.05);
+  }
+}
+
+@keyframes sw-auth-frost-dew-ring {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: scale(0.9);
+  }
+  52% {
+    opacity: 0.62;
+    transform: scale(1.08);
+  }
+}
+
+.sw-auth-frost-dew {
+  position: relative;
+  display: flex;
+  isolation: isolate;
+  align-items: center;
+  justify-content: center;
+  contain: layout style;
+  background:
+    radial-gradient(ellipse at 50% 58%, rgb(210 232 244 / 42%) 0, rgb(235 245 250 / 18%) 40%, transparent 70%);
+}
+
+.sw-auth-frost-dew::before {
+  position: absolute;
+  width: 64px;
+  height: 30px;
+  content: '';
+  background: radial-gradient(ellipse, rgb(188 220 237 / 38%) 0, rgb(220 238 247 / 18%) 44%, transparent 74%);
+  animation: sw-auth-frost-dew-glimmer 3.6s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+  will-change: opacity, transform;
+}
+
+.sw-auth-frost-dew::after {
+  position: absolute;
+  top: 50%;
+  width: 54px;
+  height: 1px;
+  content: '';
+  background: linear-gradient(90deg, transparent, rgb(168 207 228 / 8%), rgb(204 229 242 / 48%), rgb(168 207 228 / 8%), transparent);
+  transform: translateY(8px);
+}
+
+.sw-auth-frost-dew-ring {
+  position: absolute;
+  width: 29px;
+  height: 29px;
+  border: 1px solid rgb(190 221 238 / 36%);
+  border-radius: 999px;
+  box-shadow: 0 0 13px rgb(185 217 234 / 20%);
+  animation: sw-auth-frost-dew-ring 2.8s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+  will-change: opacity, transform;
+}
+
+.sw-auth-frost-dew-orb {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgb(255 255 255 / 90%);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 34% 26%, rgb(255 255 255 / 98%) 0 13%, transparent 25%),
+    radial-gradient(circle at 48% 44%, #fbfdff 0, #e2f0f7 46%, #bfdbea 100%);
+  box-shadow:
+    0 0 0 4px rgb(218 237 247 / 30%),
+    0 0 20px 9px rgb(178 213 232 / 34%),
+    inset 0 -2px 4px rgb(126 174 201 / 14%),
+    inset 0 1px 3px rgb(255 255 255 / 92%);
+  animation: sw-auth-frost-dew-breathe 2.8s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+  transform-origin: center;
+  will-change: opacity, transform;
+}
+
 .sw-auth-welcome-card {
   animation: sw-auth-welcome-breathe 2.2s cubic-bezier(0.32, 0.72, 0, 1) both;
   transform-origin: center;
@@ -91,6 +191,9 @@ textarea {
 
 @media (prefers-reduced-motion: reduce) {
   .sw-auth-loader-dot,
+  .sw-auth-frost-dew::before,
+  .sw-auth-frost-dew-ring,
+  .sw-auth-frost-dew-orb,
   .sw-auth-welcome-card {
     animation: none;
   }

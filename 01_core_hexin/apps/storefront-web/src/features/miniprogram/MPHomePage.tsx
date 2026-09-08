@@ -104,7 +104,6 @@ export const MPHomePage: React.FC = () => {
         authHref={authHref}
         sessionStatus={sessionStatus}
         user={user}
-        onOpenProfile={() => setMpPage('profile')}
       />
 
       {/* 搜索框区 */}
