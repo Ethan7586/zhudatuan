@@ -1,12 +1,17 @@
 .filterform {
   display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
   flex-wrap: wrap;
   align-items: end;
   gap: var(--sw-space-2);
 }
 
-.filterform [data-rac] {
+.filterform > label,
+.filterform > [data-rac] {
   display: grid;
+  min-width: min(100%, 10rem);
+  flex: 1 1 10rem;
   gap: var(--sw-space-0-5);
 }
 
@@ -15,6 +20,24 @@
   color: var(--sw-text-secondary);
   font-size: var(--sw-font-size-body-sm);
   font-weight: var(--sw-font-weight-bold);
+}
+
+.filterform :where(input, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--sw-control-touch-target);
+  border: var(--sw-border-width) solid var(--sw-border-interactive);
+  border-radius: var(--sw-radius-sm);
+  outline: 0;
+  background: var(--sw-surface);
+  padding: 0 var(--sw-control-padding);
+  color: var(--sw-text);
+}
+
+.filterform :where(input, select):focus-visible {
+  border-color: var(--sw-brand);
+  outline: var(--sw-focus-width) solid var(--sw-focus-color);
+  outline-offset: var(--sw-focus-offset);
 }
 
 .inlinefield {
@@ -43,6 +66,64 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--sw-space-1);
+}
+
+.pageheaderbody {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.pageheaderbody > :last-child {
+  margin-bottom: 0;
+}
+
+.pageheader h1 {
+  margin-bottom: var(--sw-space-0-5);
+  line-height: var(--sw-line-height-display);
+}
+
+.pageeyebrow {
+  margin-bottom: var(--sw-space-0-5);
+  color: var(--sw-muted);
+}
+
+.pageheaderactions {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
+.filterbaractions {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
+@media (max-width: 63.99rem) {
+  .filterbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .filterform {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .pageheader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pageheaderactions,
+  .filterbaractions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  }
+
+  .filterform {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .routeerror {
