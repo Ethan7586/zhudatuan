@@ -388,7 +388,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   const ledger = await localFetch('http://127.0.0.1:3001/api/v1/benefits/ledgers', { headers: sessionHeaders(storefront) });
   const ledgerPayload: unknown = await ledger.json();
   if (ledger.status !== 200 || ledgerPayload === null || typeof ledgerPayload !== 'object' || Array.isArray(ledgerPayload) || !Array.isArray((ledgerPayload as Readonly<Record<string, unknown>>).items))
-    throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
+    throw new Error(`LOCAL_BENEFIT_LEDGER_INVALID:${ledger.status}:${JSON.stringify(ledgerPayload)}`);
   await completeStepup(storefront);
   const listSessions = () => localFetch('http://127.0.0.1:3001/api/v1/identity/sessions', { headers: sessionHeaders(storefront) });
   const sessions = await listSessions();

@@ -4,6 +4,7 @@ import { keysetResult, queryPage } from '../../../../pipeline/Validation';
 import { MEMBER_ACCESS_PORT } from '../../../access/public';
 import { BENEFIT_SETTLEMENT_READ_PORT } from '../../../finance/public';
 import { benefitAccountReader } from './BenefitAccountReader';
+import { projectBenefitLedger } from './BenefitLedgerProjection';
 
 export function benefitReader(context: ModuleContext) {
   const members = context.ports.get(MEMBER_ACCESS_PORT);
@@ -14,12 +15,11 @@ export function benefitReader(context: ModuleContext) {
       const access = requireAccess(request);
       const page = queryPage(request.input);
       const member = await members.member(database.transaction, access.membership.id);
-      const accounts = await database.query<{ id: string; kind: string; currency: string; finance_account_id: string }>(`select id,kind,currency,finance_account_id from benefit.account where member_id=$1`, [member]);
-      const accountByFinance = new Map(accounts.rows.map((account) => [account.finance_account_id, account] as const));
-      const entries = await settlements.entries(database.transaction, [...accountByFinance.keys()], { occurredAt: page.sort, entry: page.id }, page.fetch);
+      const accounts = await database.query<{ id: string; kind: string; currency: string; financeAccountId: string }>(`select id,kind,currency,finance_account_id "financeAccountId" from benefit.account where member_id=$1`, [member]);
+      const entries = await settlements.entries(database.transaction, accounts.rows.map(({ financeAccountId }) => financeAccountId), { occurredAt: page.sort, entry: page.id }, page.fetch);
       return keysetResult(
         {
-          rows: entries.map((entry) => ({ ...entry, account: accountByFinance.get(entry.accountId)!.id, kind: accountByFinance.get(entry.accountId)!.kind, currency: accountByFinance.get(entry.accountId)!.currency })),
+          rows: projectBenefitLedger(entries, accounts.rows),
           rowCount: entries.length,
         } as never,
         page,
