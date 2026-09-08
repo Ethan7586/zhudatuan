@@ -4,6 +4,22 @@ import type { OperationDatabase } from '../../../foundation/application/ModuleOp
 import { AccessPort } from '../01_public_gongkai/AccessPort';
 
 describe('AccessPort invited registration', () => {
+  it('uses the transaction timestamp for registration access assignments', async () => {
+    const query = vi.fn(async (text: string) => result(text.includes('returning *')
+      ? [{ id: 'membership:storefront', client: 'storefront', status: 'active' }] : []));
+
+    await new AccessPort().createRegistration({ query } as unknown as OperationDatabase, {
+      membership: 'membership:storefront', member: 'member:one', principal: 'principal:one', organization: 'mall:one',
+      realm: 'realm:consumer', account: 'account:one',
+      role: 'role:member', scopeKind: 'mall', scopes: ['scope:mall', 'scope:owner', 'scope:self'],
+    });
+
+    expect(query.mock.calls[1]?.[0]).toContain('transaction_timestamp()');
+    expect(query.mock.calls[2]?.[0]).toContain('transaction_timestamp()');
+    expect(query.mock.calls[1]?.[0]).not.toContain('clock_timestamp()');
+    expect(query.mock.calls[2]?.[0]).not.toContain('clock_timestamp()');
+  });
+
   it('creates storefront and zero-operation console memberships in one transaction boundary', async () => {
     const query = vi.fn(async (text: string, _values: readonly unknown[] = []) => result(text.includes("'storefront'") && text.includes('returning *') ? [{ id: 'membership:storefront', client: 'storefront', status: 'active' }] : []));
     const port = new AccessPort();

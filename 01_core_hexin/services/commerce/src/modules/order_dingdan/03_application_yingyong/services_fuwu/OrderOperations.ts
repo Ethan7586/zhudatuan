@@ -111,7 +111,7 @@ function review(next: 'approved' | 'rejected') {
       access.actor.id, access.membership.id, JSON.stringify({ permission: 'order.aftersale.decide', scope: access.scope }), access.trace]);
     await database.query(`update ordering.orderrecord set aftersale_state=$2,version=version+1,updated_at=clock_timestamp() where id=$1`, [aftersale.order_id, next === 'approved' ? 'processing' : 'rejected']);
     if (next === 'approved') await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-      select $1,'paymentrefund','payment',orders.scope_id,jsonb_build_object('aftersale',$2),'queued',10,clock_timestamp(),clock_timestamp(),clock_timestamp()
+      select $1,'paymentrefund','payment',orders.scope_id,jsonb_build_object('aftersale',$2::text),'queued',10,clock_timestamp(),clock_timestamp(),clock_timestamp()
       from ordering.orderrecord orders where orders.id=$3`, [`job:refund:${aftersale.id}`, aftersale.id, aftersale.order_id]);
     return rowResult(result);
   };

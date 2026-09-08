@@ -1,0 +1,2716 @@
+{
+  "metadata": {
+    "rootRunId": "l1-hongtai-1788737688943-d756d8d9",
+    "generatedAt": "2026-09-06T23:34:48.943Z",
+    "gitSha": "8f962fe0f3019c079c174223940be86eec0c36d5",
+    "runtime": "v22.22.3",
+    "transport": "in-process HttpApp Request/Response with real route, contract, CSRF and authorization pipeline",
+    "database": "fresh isolated PostgreSQL 17 container",
+    "providerStubs": [
+      "SMS debug delivery",
+      "WeChat JSAPI payment/query/refund"
+    ],
+    "infrastructureFixture": "in-memory envelope key adapter for test-only challenge/mobile/openid ciphertext",
+    "cohorts": [
+      1,
+      10,
+      100
+    ]
+  },
+  "tiers": [
+    {
+      "users": 1,
+      "runId": "l1-hongtai-1788737688943-d756d8d9-1",
+      "startSpanMs": 0,
+      "endToEndMs": {
+        "count": 1,
+        "min": 5870.4,
+        "mean": 5870.4,
+        "p50": 5870.4,
+        "p95": 5870.4,
+        "p99": 5870.4,
+        "max": 5870.4
+      },
+      "passwordHashMs": {
+        "count": 1,
+        "min": 68.133,
+        "mean": 68.133,
+        "p50": 68.133,
+        "p95": 68.133,
+        "p99": 68.133,
+        "max": 68.133
+      },
+      "stages": [
+        {
+          "name": "registration.challenge",
+          "requests": 1,
+          "wallMs": 43.366,
+          "throughputRps": 23.06,
+          "statusCounts": {
+            "202": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 43.197,
+            "mean": 43.197,
+            "p50": 43.197,
+            "p95": 43.197,
+            "p99": 43.197,
+            "max": 43.197
+          },
+          "errors": []
+        },
+        {
+          "name": "registration.create",
+          "requests": 1,
+          "wallMs": 131.344,
+          "throughputRps": 7.614,
+          "statusCounts": {
+            "201": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 131.284,
+            "mean": 131.284,
+            "p50": 131.284,
+            "p95": 131.284,
+            "p99": 131.284,
+            "max": 131.284
+          },
+          "errors": []
+        },
+        {
+          "name": "login.challenge",
+          "requests": 1,
+          "wallMs": 9.997,
+          "throughputRps": 100.03,
+          "statusCounts": {
+            "202": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 9.957,
+            "mean": 9.957,
+            "p50": 9.957,
+            "p95": 9.957,
+            "p99": 9.957,
+            "max": 9.957
+          },
+          "errors": []
+        },
+        {
+          "name": "login.session",
+          "requests": 1,
+          "wallMs": 14.903,
+          "throughputRps": 67.101,
+          "statusCounts": {
+            "201": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 14.64,
+            "mean": 14.64,
+            "p50": 14.64,
+            "p95": 14.64,
+            "p99": 14.64,
+            "max": 14.64
+          },
+          "errors": []
+        },
+        {
+          "name": "login.ticket-exchange",
+          "requests": 1,
+          "wallMs": 7.518,
+          "throughputRps": 133.014,
+          "statusCounts": {
+            "200": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 7.471,
+            "mean": 7.471,
+            "p50": 7.471,
+            "p95": 7.471,
+            "p99": 7.471,
+            "max": 7.471
+          },
+          "errors": []
+        },
+        {
+          "name": "catalog.read",
+          "requests": 1,
+          "wallMs": 53.288,
+          "throughputRps": 18.766,
+          "statusCounts": {
+            "200": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 53.244,
+            "mean": 53.244,
+            "p50": 53.244,
+            "p95": 53.244,
+            "p99": 53.244,
+            "max": 53.244
+          },
+          "errors": []
+        },
+        {
+          "name": "cart.add",
+          "requests": 1,
+          "wallMs": 41.807,
+          "throughputRps": 23.919,
+          "statusCounts": {
+            "200": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 41.759,
+            "mean": 41.759,
+            "p50": 41.759,
+            "p95": 41.759,
+            "p99": 41.759,
+            "max": 41.759
+          },
+          "errors": []
+        },
+        {
+          "name": "cart.update",
+          "requests": 1,
+          "wallMs": 30.133,
+          "throughputRps": 33.186,
+          "statusCounts": {
+            "200": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 30.066,
+            "mean": 30.066,
+            "p50": 30.066,
+            "p95": 30.066,
+            "p99": 30.066,
+            "max": 30.066
+          },
+          "errors": []
+        },
+        {
+          "name": "cart.read",
+          "requests": 1,
+          "wallMs": 22.704,
+          "throughputRps": 44.045,
+          "statusCounts": {
+            "200": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 22.505,
+            "mean": 22.505,
+            "p50": 22.505,
+            "p95": 22.505,
+            "p99": 22.505,
+            "max": 22.505
+          },
+          "errors": []
+        },
+        {
+          "name": "checkout.quote",
+          "requests": 1,
+          "wallMs": 82.878,
+          "throughputRps": 12.066,
+          "statusCounts": {
+            "201": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 82.823,
+            "mean": 82.823,
+            "p50": 82.823,
+            "p95": 82.823,
+            "p99": 82.823,
+            "max": 82.823
+          },
+          "errors": []
+        },
+        {
+          "name": "order.create",
+          "requests": 1,
+          "wallMs": 66.244,
+          "throughputRps": 15.096,
+          "statusCounts": {
+            "201": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 65.984,
+            "mean": 65.984,
+            "p50": 65.984,
+            "p95": 65.984,
+            "p99": 65.984,
+            "max": 65.984
+          },
+          "errors": []
+        },
+        {
+          "name": "order.replay",
+          "requests": 1,
+          "wallMs": 23.443,
+          "throughputRps": 42.657,
+          "statusCounts": {
+            "201": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 23.389,
+            "mean": 23.389,
+            "p50": 23.389,
+            "p95": 23.389,
+            "p99": 23.389,
+            "max": 23.389
+          },
+          "errors": []
+        },
+        {
+          "name": "payment.intent",
+          "requests": 1,
+          "wallMs": 40.05,
+          "throughputRps": 24.969,
+          "statusCounts": {
+            "201": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 39.965,
+            "mean": 39.965,
+            "p50": 39.965,
+            "p95": 39.965,
+            "p99": 39.965,
+            "max": 39.965
+          },
+          "errors": []
+        },
+        {
+          "name": "order.paid-read",
+          "requests": 1,
+          "wallMs": 42.13,
+          "throughputRps": 23.736,
+          "statusCounts": {
+            "200": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 42.071,
+            "mean": 42.071,
+            "p50": 42.071,
+            "p95": 42.071,
+            "p99": 42.071,
+            "max": 42.071
+          },
+          "errors": []
+        },
+        {
+          "name": "aftersale.apply",
+          "requests": 1,
+          "wallMs": 53.876,
+          "throughputRps": 18.561,
+          "statusCounts": {
+            "201": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 53.8,
+            "mean": 53.8,
+            "p50": 53.8,
+            "p95": 53.8,
+            "p99": 53.8,
+            "max": 53.8
+          },
+          "errors": []
+        },
+        {
+          "name": "aftersale.replay",
+          "requests": 1,
+          "wallMs": 19.918,
+          "throughputRps": 50.206,
+          "statusCounts": {
+            "201": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 19.837,
+            "mean": 19.837,
+            "p50": 19.837,
+            "p95": 19.837,
+            "p99": 19.837,
+            "max": 19.837
+          },
+          "errors": []
+        },
+        {
+          "name": "aftersale.approve",
+          "requests": 1,
+          "wallMs": 8.701,
+          "throughputRps": 114.929,
+          "statusCounts": {
+            "200": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 8.657,
+            "mean": 8.657,
+            "p50": 8.657,
+            "p95": 8.657,
+            "p99": 8.657,
+            "max": 8.657
+          },
+          "errors": []
+        },
+        {
+          "name": "order.final-read",
+          "requests": 1,
+          "wallMs": 21.255,
+          "throughputRps": 47.048,
+          "statusCounts": {
+            "200": 1
+          },
+          "latencyMs": {
+            "count": 1,
+            "min": 21.192,
+            "mean": 21.192,
+            "p50": 21.192,
+            "p95": 21.192,
+            "p99": 21.192,
+            "max": 21.192
+          },
+          "errors": []
+        }
+      ],
+      "queues": [
+        {
+          "kind": "identitynotification",
+          "jobs": 1,
+          "drainMs": 22.489,
+          "peakOutstanding": 1,
+          "finalStates": {
+            "completed": 1
+          },
+          "queueWaitMs": {
+            "count": 1,
+            "min": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "providerMs": {
+            "count": 1,
+            "min": 0.001,
+            "mean": 0.001,
+            "p50": 0.001,
+            "p95": 0.001,
+            "p99": 0.001,
+            "max": 0.001
+          }
+        },
+        {
+          "kind": "identitynotification",
+          "jobs": 1,
+          "drainMs": 21.73,
+          "peakOutstanding": 1,
+          "finalStates": {
+            "completed": 1
+          },
+          "queueWaitMs": {
+            "count": 1,
+            "min": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "providerMs": {
+            "count": 1,
+            "min": 0.001,
+            "mean": 0.001,
+            "p50": 0.001,
+            "p95": 0.001,
+            "p99": 0.001,
+            "max": 0.001
+          }
+        },
+        {
+          "kind": "paymentquery",
+          "jobs": 1,
+          "drainMs": 5056.704,
+          "peakOutstanding": 1,
+          "finalStates": {
+            "completed": 1
+          }
+        },
+        {
+          "kind": "paymentrefund",
+          "jobs": 1,
+          "drainMs": 41.941,
+          "peakOutstanding": 1,
+          "finalStates": {
+            "completed": 1
+          }
+        }
+      ],
+      "resources": {
+        "peakDatabaseConnections": 6,
+        "peakRssBytes": 202014720,
+        "maxEventLoopDelayMs": 4.884,
+        "cpuUserMs": 337.383,
+        "cpuSystemMs": 44.569,
+        "cpuPercentOfOneCore": 6.501
+      },
+      "isolation": {
+        "counts": {
+          "carts": 1,
+          "cart_items": 1,
+          "foreign_cart_items": 0,
+          "orders": 1,
+          "wrong_order_owner": 0,
+          "aftersales": 1,
+          "completed_aftersales": 1,
+          "payments": 1,
+          "refunds": 1,
+          "succeeded_refunds": 1,
+          "sessions": 1
+        },
+        "exactOneCartPerUser": true,
+        "noForeignCartItems": true,
+        "exactOneOrderPerUser": true,
+        "noCrossUserOrderOwner": true,
+        "exactOneAftersalePerUser": true,
+        "exactOnePaymentAndRefundPerUser": true,
+        "exactOneLoginSessionPerUser": true
+      },
+      "usersEvidence": [
+        {
+          "ordinal": 1,
+          "principal": "principal:cdfa796a-4e73-46f6-b81e-e2908305f950",
+          "member": "member:98a37174-18be-4230-aadf-b107c4b6c8e4",
+          "membership": "membership:981da1e1-6047-44eb-abe1-2b246a00ecbe",
+          "session": "session:cbe38613-1c6e-4077-93b4-0a12ff92cebe",
+          "order": "order:99a58481-38a9-4b1d-9c5b-82b6a5321ea2",
+          "intent": "intent:cfce15da-a307-44ab-9a02-df80a6f5ef5c",
+          "aftersale": "aftersale:7a6fbf11-3bff-473f-86f8-98aa79cf0a2a",
+          "finalState": "refunded/resolved"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "users": 10,
+      "runId": "l1-hongtai-1788737688943-d756d8d9-10",
+      "startSpanMs": 0.44,
+      "endToEndMs": {
+        "count": 10,
+        "min": 9232.614,
+        "mean": 9267.478,
+        "p50": 9274.865,
+        "p95": 9282.731,
+        "p99": 9282.731,
+        "max": 9282.731
+      },
+      "passwordHashMs": {
+        "count": 10,
+        "min": 88.481,
+        "mean": 161.844,
+        "p50": 180.501,
+        "p95": 259.475,
+        "p99": 259.475,
+        "max": 259.475
+      },
+      "stages": [
+        {
+          "name": "registration.challenge",
+          "requests": 10,
+          "wallMs": 96.428,
+          "throughputRps": 103.704,
+          "statusCounts": {
+            "202": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 28.638,
+            "mean": 63.637,
+            "p50": 60.604,
+            "p95": 95.981,
+            "p99": 95.981,
+            "max": 95.981
+          },
+          "errors": []
+        },
+        {
+          "name": "registration.create",
+          "requests": 10,
+          "wallMs": 392.784,
+          "throughputRps": 25.459,
+          "statusCounts": {
+            "201": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 156.209,
+            "mean": 292.838,
+            "p50": 290.38,
+            "p95": 392.337,
+            "p99": 392.337,
+            "max": 392.337
+          },
+          "errors": []
+        },
+        {
+          "name": "login.challenge",
+          "requests": 10,
+          "wallMs": 68.984,
+          "throughputRps": 144.961,
+          "statusCounts": {
+            "202": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 9.228,
+            "mean": 38.022,
+            "p50": 34.457,
+            "p95": 68.562,
+            "p99": 68.562,
+            "max": 68.562
+          },
+          "errors": []
+        },
+        {
+          "name": "login.session",
+          "requests": 10,
+          "wallMs": 101.66,
+          "throughputRps": 98.367,
+          "statusCounts": {
+            "201": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 13.493,
+            "mean": 58.825,
+            "p50": 55.77,
+            "p95": 101.083,
+            "p99": 101.083,
+            "max": 101.083
+          },
+          "errors": []
+        },
+        {
+          "name": "login.ticket-exchange",
+          "requests": 10,
+          "wallMs": 54.677,
+          "throughputRps": 182.892,
+          "statusCounts": {
+            "200": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 6.106,
+            "mean": 30.378,
+            "p50": 27.999,
+            "p95": 54.261,
+            "p99": 54.261,
+            "max": 54.261
+          },
+          "errors": []
+        },
+        {
+          "name": "catalog.read",
+          "requests": 10,
+          "wallMs": 215.864,
+          "throughputRps": 46.325,
+          "statusCounts": {
+            "200": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 161.629,
+            "mean": 199.041,
+            "p50": 200.189,
+            "p95": 215.576,
+            "p99": 215.576,
+            "max": 215.576
+          },
+          "errors": []
+        },
+        {
+          "name": "cart.add",
+          "requests": 10,
+          "wallMs": 405.744,
+          "throughputRps": 24.646,
+          "statusCounts": {
+            "200": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 157.109,
+            "mean": 278.876,
+            "p50": 288.731,
+            "p95": 405.147,
+            "p99": 405.147,
+            "max": 405.147
+          },
+          "errors": []
+        },
+        {
+          "name": "cart.update",
+          "requests": 10,
+          "wallMs": 234.269,
+          "throughputRps": 42.686,
+          "statusCounts": {
+            "200": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 111.552,
+            "mean": 156.329,
+            "p50": 145.893,
+            "p95": 233.767,
+            "p99": 233.767,
+            "max": 233.767
+          },
+          "errors": []
+        },
+        {
+          "name": "cart.read",
+          "requests": 10,
+          "wallMs": 96.338,
+          "throughputRps": 103.801,
+          "statusCounts": {
+            "200": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 83.258,
+            "mean": 90.716,
+            "p50": 89.817,
+            "p95": 96.134,
+            "p99": 96.134,
+            "max": 96.134
+          },
+          "errors": []
+        },
+        {
+          "name": "checkout.quote",
+          "requests": 10,
+          "wallMs": 602.823,
+          "throughputRps": 16.589,
+          "statusCounts": {
+            "201": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 281.419,
+            "mean": 428.14,
+            "p50": 442.851,
+            "p95": 602.81,
+            "p99": 602.81,
+            "max": 602.81
+          },
+          "errors": []
+        },
+        {
+          "name": "order.create",
+          "requests": 10,
+          "wallMs": 479.395,
+          "throughputRps": 20.86,
+          "statusCounts": {
+            "201": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 118.8,
+            "mean": 297.418,
+            "p50": 275.886,
+            "p95": 479.201,
+            "p99": 479.201,
+            "max": 479.201
+          },
+          "errors": []
+        },
+        {
+          "name": "order.replay",
+          "requests": 10,
+          "wallMs": 112.499,
+          "throughputRps": 88.89,
+          "statusCounts": {
+            "201": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 79.724,
+            "mean": 96.397,
+            "p50": 94.92,
+            "p95": 112.177,
+            "p99": 112.177,
+            "max": 112.177
+          },
+          "errors": []
+        },
+        {
+          "name": "payment.intent",
+          "requests": 10,
+          "wallMs": 214.434,
+          "throughputRps": 46.634,
+          "statusCounts": {
+            "201": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 182.963,
+            "mean": 204.339,
+            "p50": 204.214,
+            "p95": 214.277,
+            "p99": 214.277,
+            "max": 214.277
+          },
+          "errors": []
+        },
+        {
+          "name": "order.paid-read",
+          "requests": 10,
+          "wallMs": 192.515,
+          "throughputRps": 51.944,
+          "statusCounts": {
+            "200": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 164.302,
+            "mean": 184.013,
+            "p50": 186.093,
+            "p95": 192.25,
+            "p99": 192.25,
+            "max": 192.25
+          },
+          "errors": []
+        },
+        {
+          "name": "aftersale.apply",
+          "requests": 10,
+          "wallMs": 284.43,
+          "throughputRps": 35.158,
+          "statusCounts": {
+            "201": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 190.203,
+            "mean": 242.236,
+            "p50": 245.657,
+            "p95": 284.246,
+            "p99": 284.246,
+            "max": 284.246
+          },
+          "errors": []
+        },
+        {
+          "name": "aftersale.replay",
+          "requests": 10,
+          "wallMs": 89.429,
+          "throughputRps": 111.821,
+          "statusCounts": {
+            "201": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 78.371,
+            "mean": 84.557,
+            "p50": 85.611,
+            "p95": 89.132,
+            "p99": 89.132,
+            "max": 89.132
+          },
+          "errors": []
+        },
+        {
+          "name": "aftersale.approve",
+          "requests": 10,
+          "wallMs": 87.539,
+          "throughputRps": 114.235,
+          "statusCounts": {
+            "200": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 9.045,
+            "mean": 46.992,
+            "p50": 41.519,
+            "p95": 87.305,
+            "p99": 87.305,
+            "max": 87.305
+          },
+          "errors": []
+        },
+        {
+          "name": "order.final-read",
+          "requests": 10,
+          "wallMs": 98.836,
+          "throughputRps": 101.178,
+          "statusCounts": {
+            "200": 10
+          },
+          "latencyMs": {
+            "count": 10,
+            "min": 48.377,
+            "mean": 83.258,
+            "p50": 90.671,
+            "p95": 98.554,
+            "p99": 98.554,
+            "max": 98.554
+          },
+          "errors": []
+        }
+      ],
+      "queues": [
+        {
+          "kind": "identitynotification",
+          "jobs": 10,
+          "drainMs": 42.983,
+          "peakOutstanding": 10,
+          "finalStates": {
+            "completed": 10
+          },
+          "queueWaitMs": {
+            "count": 10,
+            "min": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "providerMs": {
+            "count": 10,
+            "min": 0.001,
+            "mean": 0.001,
+            "p50": 0.001,
+            "p95": 0.002,
+            "p99": 0.002,
+            "max": 0.002
+          }
+        },
+        {
+          "kind": "identitynotification",
+          "jobs": 10,
+          "drainMs": 22.571,
+          "peakOutstanding": 10,
+          "finalStates": {
+            "completed": 10
+          },
+          "queueWaitMs": {
+            "count": 10,
+            "min": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "providerMs": {
+            "count": 10,
+            "min": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0.001,
+            "p99": 0.001,
+            "max": 0.001
+          }
+        },
+        {
+          "kind": "paymentquery",
+          "jobs": 10,
+          "drainMs": 5176.672,
+          "peakOutstanding": 10,
+          "finalStates": {
+            "completed": 10
+          }
+        },
+        {
+          "kind": "paymentrefund",
+          "jobs": 10,
+          "drainMs": 194.815,
+          "peakOutstanding": 10,
+          "finalStates": {
+            "completed": 10
+          }
+        }
+      ],
+      "resources": {
+        "peakDatabaseConnections": 41,
+        "peakRssBytes": 305643520,
+        "maxEventLoopDelayMs": 2.841,
+        "cpuUserMs": 1612.57,
+        "cpuSystemMs": 201.543,
+        "cpuPercentOfOneCore": 19.531
+      },
+      "isolation": {
+        "counts": {
+          "carts": 10,
+          "cart_items": 10,
+          "foreign_cart_items": 0,
+          "orders": 10,
+          "wrong_order_owner": 0,
+          "aftersales": 10,
+          "completed_aftersales": 10,
+          "payments": 10,
+          "refunds": 10,
+          "succeeded_refunds": 10,
+          "sessions": 10
+        },
+        "exactOneCartPerUser": true,
+        "noForeignCartItems": true,
+        "exactOneOrderPerUser": true,
+        "noCrossUserOrderOwner": true,
+        "exactOneAftersalePerUser": true,
+        "exactOnePaymentAndRefundPerUser": true,
+        "exactOneLoginSessionPerUser": true
+      },
+      "usersEvidence": [
+        {
+          "ordinal": 2,
+          "principal": "principal:5ae6c50f-b659-483d-bc96-55ebf20f6a6f",
+          "member": "member:ff655985-379e-413c-b9c8-2786a24aa47e",
+          "membership": "membership:8ad4bb4a-0c30-4dfa-a171-dad0805f8268",
+          "session": "session:e9e25ad0-34b0-4d7b-85f6-dbede7998c8d",
+          "order": "order:3d383c9c-9a04-44f7-8475-6ff711ba050c",
+          "intent": "intent:260d3a4a-4fa4-4f4b-9ab1-b25a055ffad7",
+          "aftersale": "aftersale:51a12072-43a2-401e-ae52-8f68b3799c51",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 3,
+          "principal": "principal:7fbdf48e-84e4-4af6-b30a-57dc280ba658",
+          "member": "member:291804c7-0448-4e1f-8094-aa02704ec82c",
+          "membership": "membership:684105e4-2db2-4587-b32c-cdfad3ab6a31",
+          "session": "session:9483bfdf-d5ca-4e6c-91b5-a1443b5a283c",
+          "order": "order:b5f3e001-aa86-4be5-a45d-a5f889b6b044",
+          "intent": "intent:03b8235d-1f87-4db0-a9d1-83d73d656f72",
+          "aftersale": "aftersale:48b3f395-f307-4bcb-854d-a60993bdeba7",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 4,
+          "principal": "principal:11891f9f-897f-435b-a076-5472c6f2e8dc",
+          "member": "member:58088ff9-c5f5-46bf-8182-7cd5578564f2",
+          "membership": "membership:3af1ce82-7772-4470-b190-a4e9583206fc",
+          "session": "session:4fd60620-02bc-480f-b065-2951ccff05d8",
+          "order": "order:b96a5a83-2623-4850-a565-81e88e4a11fc",
+          "intent": "intent:838a6324-32eb-4a70-ba61-53cfa0f97328",
+          "aftersale": "aftersale:42c53026-783b-4554-8f8f-0df4c913e783",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 5,
+          "principal": "principal:43447b77-a63f-42e0-8633-81cd21396521",
+          "member": "member:9fe355e3-5e1a-4d26-9fd1-53e90e9ce36f",
+          "membership": "membership:14888122-a408-4bb9-a22a-724afe9a724f",
+          "session": "session:3dcd1e67-81ef-49a7-822d-4c054dedf7cc",
+          "order": "order:3b47e9c8-f0ed-4bc7-9308-a2e28e1783d8",
+          "intent": "intent:0b419eec-883a-407c-b139-bf7961f5fec6",
+          "aftersale": "aftersale:b38526bf-9d7d-4e88-b4fc-231711a26646",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 6,
+          "principal": "principal:57305e18-9bbd-4af8-8c28-b0aa2223cd22",
+          "member": "member:8d5284d5-048b-4f06-992a-b05966a5af14",
+          "membership": "membership:2ffd303c-2f1e-4a00-bb30-c82fae45e861",
+          "session": "session:beaf2696-6076-4eee-8218-fb6a1134f301",
+          "order": "order:3f2a972a-43f2-4bab-9c53-2c74dd3a7a2d",
+          "intent": "intent:b392567f-56c3-4e68-b134-ca9e702685a9",
+          "aftersale": "aftersale:ee69b640-462e-4a4f-ab60-2ec26a2be2f6",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 7,
+          "principal": "principal:e7f3a16a-a4b3-4fbc-8102-f5494ced0a84",
+          "member": "member:10a1ac6f-bc58-4172-be46-f8309f728f5a",
+          "membership": "membership:b46c59cd-463d-447b-a266-2aca20262ca2",
+          "session": "session:70a44558-8a70-4da6-abe8-dfe0966c4e2a",
+          "order": "order:20599f5c-17c3-4f7d-8fcd-b253f48d2d11",
+          "intent": "intent:6825188e-d592-472d-89e9-9ecb58f2f7a0",
+          "aftersale": "aftersale:8c277d37-b6b6-45fb-8e91-93f5f8ae323b",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 8,
+          "principal": "principal:d8c31f8c-d868-4252-87ba-8fd03fcc1b77",
+          "member": "member:ac2c8e97-f2a5-4e4d-a865-d2350a496f8a",
+          "membership": "membership:ae62b065-a91c-4cff-81ef-d3b7b3bf13c2",
+          "session": "session:393a5cfd-f0d5-49f9-ac7d-05c727b82393",
+          "order": "order:80938877-49ec-47c7-9e81-6dde25b32b42",
+          "intent": "intent:d87a394e-ef52-4d1c-8db1-2e08bc72d5ae",
+          "aftersale": "aftersale:52602ae1-8bcc-4744-98b4-0a8e13545d1a",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 9,
+          "principal": "principal:92d98935-6b07-4cc7-b9d7-890f34c7a282",
+          "member": "member:90b5064b-0501-463e-859c-707251a4f6dc",
+          "membership": "membership:3d422b9a-6206-466a-a962-70cac2fd9881",
+          "session": "session:988a571b-3ab1-4377-a2d9-9e20bcdd9f55",
+          "order": "order:76b21cc9-fb10-4274-9138-06488a730c8f",
+          "intent": "intent:9562f459-914c-4103-af7f-3983ded87bdb",
+          "aftersale": "aftersale:851067a7-4d01-46f8-a66d-7c23edcd057d",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 10,
+          "principal": "principal:091d66fb-4d29-4136-8d4e-3205969156d3",
+          "member": "member:43bae203-f418-4b87-b64d-8ab920842864",
+          "membership": "membership:9d52433f-15fb-4737-a0e9-71ae75b430c4",
+          "session": "session:9da09c63-5f85-4689-9ae5-d01de275e72f",
+          "order": "order:6d4d1b53-6361-4cda-8cc7-dbb4612338cd",
+          "intent": "intent:ae73c90b-0fa3-4559-b5fa-0e18acbd5d53",
+          "aftersale": "aftersale:705843c3-bf29-4761-aaf4-7eb5c97b0b12",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 11,
+          "principal": "principal:1b7d51f6-839c-4b37-b98b-66f03beb073d",
+          "member": "member:49f55f6e-4752-4fb0-8e6d-0fdf8b22069b",
+          "membership": "membership:a3df2422-d184-4637-a097-3c8130da3651",
+          "session": "session:3f81496f-2b50-4052-b509-c418ca4b960b",
+          "order": "order:8288ed9a-d4cb-403d-8e01-c3eb70579670",
+          "intent": "intent:ad221838-d031-491d-bdc2-8808a0d64a21",
+          "aftersale": "aftersale:e6e2feb0-9338-4718-99ff-ed1c322afdc7",
+          "finalState": "refunded/resolved"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "users": 100,
+      "runId": "l1-hongtai-1788737688943-d756d8d9-100",
+      "startSpanMs": 5.661,
+      "endToEndMs": {
+        "count": 100,
+        "min": 40024.162,
+        "mean": 40084.771,
+        "p50": 40085.885,
+        "p95": 40121.408,
+        "p99": 40122.857,
+        "max": 40123.065
+      },
+      "passwordHashMs": {
+        "count": 100,
+        "min": 86.502,
+        "mean": 1161.099,
+        "p50": 1165.287,
+        "p95": 2140.268,
+        "p99": 2233.525,
+        "max": 2240.834
+      },
+      "stages": [
+        {
+          "name": "registration.challenge",
+          "requests": 100,
+          "wallMs": 737.594,
+          "throughputRps": 135.576,
+          "statusCounts": {
+            "202": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 34.774,
+            "mean": 381.28,
+            "p50": 374.813,
+            "p95": 695.835,
+            "p99": 725.459,
+            "max": 731.926
+          },
+          "errors": []
+        },
+        {
+          "name": "registration.create",
+          "requests": 100,
+          "wallMs": 3194.083,
+          "throughputRps": 31.308,
+          "statusCounts": {
+            "201": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 160.932,
+            "mean": 1924.895,
+            "p50": 2123.296,
+            "p95": 3085.967,
+            "p99": 3170.071,
+            "max": 3191.425
+          },
+          "errors": []
+        },
+        {
+          "name": "login.challenge",
+          "requests": 100,
+          "wallMs": 667.709,
+          "throughputRps": 149.766,
+          "statusCounts": {
+            "202": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 14.308,
+            "mean": 340.706,
+            "p50": 337.981,
+            "p95": 631.753,
+            "p99": 658.274,
+            "max": 665.065
+          },
+          "errors": []
+        },
+        {
+          "name": "login.session",
+          "requests": 100,
+          "wallMs": 920.225,
+          "throughputRps": 108.669,
+          "statusCounts": {
+            "201": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 16.929,
+            "mean": 465.916,
+            "p50": 460.487,
+            "p95": 870.976,
+            "p99": 908.001,
+            "max": 917.468
+          },
+          "errors": []
+        },
+        {
+          "name": "login.ticket-exchange",
+          "requests": 100,
+          "wallMs": 556.158,
+          "throughputRps": 179.805,
+          "statusCounts": {
+            "200": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 9.464,
+            "mean": 283.588,
+            "p50": 287.817,
+            "p95": 526.898,
+            "p99": 548.354,
+            "max": 553.968
+          },
+          "errors": []
+        },
+        {
+          "name": "catalog.read",
+          "requests": 100,
+          "wallMs": 1219.105,
+          "throughputRps": 82.027,
+          "statusCounts": {
+            "200": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 1064.684,
+            "mean": 1147.643,
+            "p50": 1149.881,
+            "p95": 1215.295,
+            "p99": 1216.761,
+            "max": 1218.076
+          },
+          "errors": []
+        },
+        {
+          "name": "cart.add",
+          "requests": 100,
+          "wallMs": 2259.787,
+          "throughputRps": 44.252,
+          "statusCounts": {
+            "200": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 1076.45,
+            "mean": 1727.413,
+            "p50": 1754.324,
+            "p95": 2106.345,
+            "p99": 2228.188,
+            "max": 2258.482
+          },
+          "errors": []
+        },
+        {
+          "name": "cart.update",
+          "requests": 100,
+          "wallMs": 2361.169,
+          "throughputRps": 42.352,
+          "statusCounts": {
+            "200": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 1023.128,
+            "mean": 1643.765,
+            "p50": 1653.582,
+            "p95": 2118.1,
+            "p99": 2216.807,
+            "max": 2359.924
+          },
+          "errors": []
+        },
+        {
+          "name": "cart.read",
+          "requests": 100,
+          "wallMs": 1000.406,
+          "throughputRps": 99.959,
+          "statusCounts": {
+            "200": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 872.36,
+            "mean": 952.189,
+            "p50": 955.757,
+            "p95": 996.585,
+            "p99": 998.654,
+            "max": 998.967
+          },
+          "errors": []
+        },
+        {
+          "name": "checkout.quote",
+          "requests": 100,
+          "wallMs": 3116.399,
+          "throughputRps": 32.088,
+          "statusCounts": {
+            "201": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 1591.02,
+            "mean": 2444.817,
+            "p50": 2450.048,
+            "p95": 3093.942,
+            "p99": 3112.491,
+            "max": 3115.032
+          },
+          "errors": []
+        },
+        {
+          "name": "order.create",
+          "requests": 100,
+          "wallMs": 6637.566,
+          "throughputRps": 15.066,
+          "statusCounts": {
+            "201": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 930.667,
+            "mean": 3539.846,
+            "p50": 3379.344,
+            "p95": 6282.255,
+            "p99": 6565.596,
+            "max": 6635.748
+          },
+          "errors": []
+        },
+        {
+          "name": "order.replay",
+          "requests": 100,
+          "wallMs": 1245.993,
+          "throughputRps": 80.257,
+          "statusCounts": {
+            "201": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 836.06,
+            "mean": 1057.29,
+            "p50": 1056.235,
+            "p95": 1225.295,
+            "p99": 1240.891,
+            "max": 1244.19
+          },
+          "errors": []
+        },
+        {
+          "name": "payment.intent",
+          "requests": 100,
+          "wallMs": 1755.245,
+          "throughputRps": 56.972,
+          "statusCounts": {
+            "201": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 1472.681,
+            "mean": 1630.054,
+            "p50": 1630.077,
+            "p95": 1749.256,
+            "p99": 1750.88,
+            "max": 1753.101
+          },
+          "errors": []
+        },
+        {
+          "name": "order.paid-read",
+          "requests": 100,
+          "wallMs": 1214.948,
+          "throughputRps": 82.308,
+          "statusCounts": {
+            "200": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 1104.424,
+            "mean": 1172.271,
+            "p50": 1177.609,
+            "p95": 1211.261,
+            "p99": 1213.402,
+            "max": 1213.431
+          },
+          "errors": []
+        },
+        {
+          "name": "aftersale.apply",
+          "requests": 100,
+          "wallMs": 2007.832,
+          "throughputRps": 49.805,
+          "statusCounts": {
+            "201": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 1240.329,
+            "mean": 1631.273,
+            "p50": 1637.777,
+            "p95": 1859.507,
+            "p99": 1921.401,
+            "max": 2007.478
+          },
+          "errors": []
+        },
+        {
+          "name": "aftersale.replay",
+          "requests": 100,
+          "wallMs": 984.303,
+          "throughputRps": 101.595,
+          "statusCounts": {
+            "201": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 840.612,
+            "mean": 923.183,
+            "p50": 925.709,
+            "p95": 978.338,
+            "p99": 982.214,
+            "max": 982.245
+          },
+          "errors": []
+        },
+        {
+          "name": "aftersale.approve",
+          "requests": 100,
+          "wallMs": 1960.816,
+          "throughputRps": 50.999,
+          "statusCounts": {
+            "200": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 11.607,
+            "mean": 849.631,
+            "p50": 771.421,
+            "p95": 1826.593,
+            "p99": 1932.848,
+            "max": 1960.61
+          },
+          "errors": []
+        },
+        {
+          "name": "order.final-read",
+          "requests": 100,
+          "wallMs": 1009.674,
+          "throughputRps": 99.042,
+          "statusCounts": {
+            "200": 100
+          },
+          "latencyMs": {
+            "count": 100,
+            "min": 906.961,
+            "mean": 968.664,
+            "p50": 969.306,
+            "p95": 1006.512,
+            "p99": 1007.587,
+            "max": 1007.766
+          },
+          "errors": []
+        }
+      ],
+      "queues": [
+        {
+          "kind": "identitynotification",
+          "jobs": 100,
+          "drainMs": 114.359,
+          "peakOutstanding": 100,
+          "finalStates": {
+            "completed": 100
+          },
+          "queueWaitMs": {
+            "count": 100,
+            "min": 0,
+            "mean": 32.41,
+            "p50": 0,
+            "p95": 171,
+            "p99": 189,
+            "max": 194
+          },
+          "providerMs": {
+            "count": 100,
+            "min": 0,
+            "mean": 0.001,
+            "p50": 0.001,
+            "p95": 0.002,
+            "p99": 0.006,
+            "max": 0.007
+          }
+        },
+        {
+          "kind": "identitynotification",
+          "jobs": 100,
+          "drainMs": 66.673,
+          "peakOutstanding": 100,
+          "finalStates": {
+            "completed": 100
+          },
+          "queueWaitMs": {
+            "count": 100,
+            "min": 0,
+            "mean": 11.09,
+            "p50": 0,
+            "p95": 80,
+            "p99": 110,
+            "max": 119
+          },
+          "providerMs": {
+            "count": 100,
+            "min": 0,
+            "mean": 0.001,
+            "p50": 0.001,
+            "p95": 0.002,
+            "p99": 0.002,
+            "max": 0.02
+          }
+        },
+        {
+          "kind": "paymentquery",
+          "jobs": 100,
+          "drainMs": 6083.466,
+          "peakOutstanding": 100,
+          "finalStates": {
+            "completed": 100
+          }
+        },
+        {
+          "kind": "paymentrefund",
+          "jobs": 100,
+          "drainMs": 970.53,
+          "peakOutstanding": 100,
+          "finalStates": {
+            "completed": 100
+          }
+        }
+      ],
+      "resources": {
+        "peakDatabaseConnections": 94,
+        "peakRssBytes": 307691520,
+        "maxEventLoopDelayMs": 6.456,
+        "cpuUserMs": 12637.976,
+        "cpuSystemMs": 1363.961,
+        "cpuPercentOfOneCore": 34.853
+      },
+      "isolation": {
+        "counts": {
+          "carts": 100,
+          "cart_items": 100,
+          "foreign_cart_items": 0,
+          "orders": 100,
+          "wrong_order_owner": 0,
+          "aftersales": 100,
+          "completed_aftersales": 100,
+          "payments": 100,
+          "refunds": 100,
+          "succeeded_refunds": 100,
+          "sessions": 100
+        },
+        "exactOneCartPerUser": true,
+        "noForeignCartItems": true,
+        "exactOneOrderPerUser": true,
+        "noCrossUserOrderOwner": true,
+        "exactOneAftersalePerUser": true,
+        "exactOnePaymentAndRefundPerUser": true,
+        "exactOneLoginSessionPerUser": true
+      },
+      "usersEvidence": [
+        {
+          "ordinal": 12,
+          "principal": "principal:2dab7ef2-5ea1-43a1-9cbc-f8914374a857",
+          "member": "member:6140f591-7032-43f1-ba6f-425009e4bfa6",
+          "membership": "membership:da358746-7e09-4a65-ae39-fdffa7e008d6",
+          "session": "session:c5bdecda-05bb-4026-90ed-72bb34f3b86e",
+          "order": "order:6a73c465-2fce-4852-bf68-dc447618c0e9",
+          "intent": "intent:b21b6023-3530-4612-a7f3-4551c436d619",
+          "aftersale": "aftersale:9275849f-ee12-48eb-84cd-26a19ebded86",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 13,
+          "principal": "principal:fcc15e9e-b665-42ed-9535-d4f221c23f3a",
+          "member": "member:dead5773-5113-4590-a065-a62ee0eb9bfd",
+          "membership": "membership:3c99f74c-f6fb-4f40-baab-6e4cf9ebfdcd",
+          "session": "session:303099c0-11d8-45a6-aa5e-0235c6314465",
+          "order": "order:61b75470-5396-4890-983d-21804a3c0585",
+          "intent": "intent:2b6cba1b-8fff-4a3f-ab8c-7381c3743c2d",
+          "aftersale": "aftersale:14c76307-6d60-42a5-bdb2-64b72cde4dba",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 14,
+          "principal": "principal:26de2212-95e2-413b-ab2c-270e94ae513f",
+          "member": "member:11316584-de2f-479c-867e-7b7659dfd78b",
+          "membership": "membership:34d33143-d34f-4b30-8a64-f697a0b27b8e",
+          "session": "session:afd20137-0e2e-4a2b-b773-b020a638c6ca",
+          "order": "order:f1e0dd9e-846d-4187-b1e7-bce1627f5e09",
+          "intent": "intent:fa53350e-aa2d-4a6b-bb7e-27a72753018d",
+          "aftersale": "aftersale:12d8eb10-a6ab-4af7-9b8d-b72855e2ad2f",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 15,
+          "principal": "principal:81334bfb-e9d6-460b-a71d-21de9d923aa7",
+          "member": "member:eb60c08c-eff6-44ed-93b9-e485165f7cf7",
+          "membership": "membership:b4cc9ab6-0890-4637-98a6-ad5a5b9138d4",
+          "session": "session:33fed2b1-225b-44d2-9d5b-efb8214091ad",
+          "order": "order:1c2d431e-6f0d-4015-b424-061915f2cf92",
+          "intent": "intent:8d4d4d15-ef46-4840-8d16-67cf0b209a8e",
+          "aftersale": "aftersale:8f801095-043c-4e2f-b596-445fa59f24fe",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 16,
+          "principal": "principal:b3d34864-fbae-47d9-8cc8-fa2da7fb4e9a",
+          "member": "member:779641f8-2e4a-49f1-817c-b6313e04ec77",
+          "membership": "membership:dd7632d5-52dd-44a0-851d-7e4c0fb3b900",
+          "session": "session:1ecdcbcb-0932-4754-9a7b-d428402f61da",
+          "order": "order:9051077d-b97e-4824-a047-6b8ad8353ba0",
+          "intent": "intent:c868996c-ba0d-466d-8213-9eb310d7ea35",
+          "aftersale": "aftersale:49000716-9500-4d5e-8987-c7f0be2b83b1",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 17,
+          "principal": "principal:29d9a846-ec61-43f0-866e-86d5afdb4899",
+          "member": "member:71022b76-e66e-4be4-b928-b5171f29b505",
+          "membership": "membership:07368691-a8bf-4cab-86f6-b13605c8ec1d",
+          "session": "session:251eef87-7722-4d22-8b31-883d8c2c8597",
+          "order": "order:27bd9678-4935-4255-a7d3-3ddc4007ea0b",
+          "intent": "intent:99108947-b755-4801-85b8-37ca327d5696",
+          "aftersale": "aftersale:e5a3ef88-5f73-4c16-bee1-49f3b0846599",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 18,
+          "principal": "principal:0d2cda20-6404-4deb-8f3f-bae08fe441cd",
+          "member": "member:e3ce5bff-173a-4299-a9fe-ec1ae3608c1a",
+          "membership": "membership:a7dc78b5-8f6d-43c4-abfc-fbef74c4168e",
+          "session": "session:f1471998-c887-4b3f-9c25-d4050e6860c3",
+          "order": "order:714c3be8-0e0e-4844-9344-632e2846d606",
+          "intent": "intent:39afdd17-5514-46e9-8837-45ffb1d83048",
+          "aftersale": "aftersale:e302647f-44b6-458a-9b82-27303a12da5c",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 19,
+          "principal": "principal:5e070db5-2173-4a98-ac58-c3a6ae6bf015",
+          "member": "member:552d8295-759d-4faa-92fd-f074cb6924a7",
+          "membership": "membership:5f778f00-0063-4190-b958-7cbf70172a79",
+          "session": "session:ec51731a-a85e-4cb6-849c-031f71be2f06",
+          "order": "order:ea846129-35d5-4d9c-83cf-0c8a35035722",
+          "intent": "intent:8aa7e305-33e8-43af-8333-32f955508e0b",
+          "aftersale": "aftersale:9df39651-a1e6-4032-819c-68c4afe5dd01",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 20,
+          "principal": "principal:5b4be787-290a-4d2e-bac0-ee67531b7ba1",
+          "member": "member:ad3f84b9-2170-49c1-8b1a-b7638ad9e62a",
+          "membership": "membership:2267c5b3-9a15-4997-9957-64f1a3678ce2",
+          "session": "session:ea7f0cfc-32a4-4842-9eed-18dd28fe196c",
+          "order": "order:953e3f30-2ac6-4a44-a95f-419fad22e446",
+          "intent": "intent:e87b10de-33d7-4643-90db-b526496582d8",
+          "aftersale": "aftersale:299f2054-4a8a-4fb8-85bd-07d06bf7585b",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 21,
+          "principal": "principal:709bb5a6-2dd8-4eb0-bda6-070935016982",
+          "member": "member:ed6ab069-1c25-41d5-b73f-538d822e2c8e",
+          "membership": "membership:1642a85a-afe9-4a39-8a29-6050aff30c1d",
+          "session": "session:831e3f65-b431-4a27-870c-3adc3311c52b",
+          "order": "order:69af217a-5dc3-44f8-90f5-81787d4b0819",
+          "intent": "intent:214051ac-3646-492f-be16-cd8f6777425b",
+          "aftersale": "aftersale:14300b30-6ca5-4fc0-8a5e-e29d29d56696",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 22,
+          "principal": "principal:96ad0b6b-eaee-4c12-8f3e-e7d534efc7a3",
+          "member": "member:f6a70721-6e92-4c9d-9492-2b121f6cbacf",
+          "membership": "membership:11d5a06d-5bd9-4fd8-975d-19757ab5b81a",
+          "session": "session:70a2dbef-cd06-48f2-ab4d-5eabff767537",
+          "order": "order:3061f5c6-4d16-4985-a200-07b17427b7e3",
+          "intent": "intent:46f6ab10-84d7-4030-9174-794c8ee61308",
+          "aftersale": "aftersale:2d02686a-c624-444c-a91e-5c2458fff1c8",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 23,
+          "principal": "principal:8aaa2606-253d-4df5-9dd4-c0b9e280f037",
+          "member": "member:86d2fc1b-f41d-4562-ad78-e446bc31486c",
+          "membership": "membership:9d012c16-de47-4764-bd5d-516eb9e0dde2",
+          "session": "session:2e960984-dba0-49d0-8782-703409085598",
+          "order": "order:008fa0ab-2624-4079-84bf-067b54db1a65",
+          "intent": "intent:7ddaca44-e0c0-4f29-985b-e3fad242528d",
+          "aftersale": "aftersale:99b59936-a5bb-45fc-9793-1e3c90ef8073",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 24,
+          "principal": "principal:055d2e4d-50a7-44a6-aab5-df6d0b78329d",
+          "member": "member:41fa4195-cfbc-4068-bc2e-d3bb2ae52fef",
+          "membership": "membership:5473da42-4655-4cf3-be5d-3ec17631b7db",
+          "session": "session:8a696807-a33a-466c-90cf-341f16cd9f4e",
+          "order": "order:7875cd36-8ce6-4219-bfd1-4820f7c90eba",
+          "intent": "intent:021a1bd1-ed69-41a9-9325-722949099a07",
+          "aftersale": "aftersale:392b0a78-f994-4ca1-9f2f-20e6a64d922a",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 25,
+          "principal": "principal:85acfe5e-2f92-44ed-8b66-f157df4190ce",
+          "member": "member:b1ccada8-408a-4b75-83ba-22720b7a651e",
+          "membership": "membership:553a4567-004b-4ba0-a9a4-8a8d5a4844cf",
+          "session": "session:08684092-fc82-4861-a0ce-71db47c699a2",
+          "order": "order:05165eca-0033-4f95-9f5e-a7dabec4bc7c",
+          "intent": "intent:3be9483e-0df3-46cd-aa99-12cd92975d90",
+          "aftersale": "aftersale:3cf1f1f8-d163-4a33-b96b-d43bcb0e32af",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 26,
+          "principal": "principal:c8ab0cdf-454b-43e8-bf78-3ef34a770c0f",
+          "member": "member:9c1a0e1a-22f3-4ce2-b9ea-39e8e8b7d650",
+          "membership": "membership:b8fc1c7f-4f08-4004-8c9b-faae33c43917",
+          "session": "session:7f95152a-9d1a-41e0-abd9-f421f5e9064e",
+          "order": "order:b5b331e1-2b78-43b0-83a2-d0565f474c79",
+          "intent": "intent:969f6861-9c7c-40b3-92d7-1442b3fb3c73",
+          "aftersale": "aftersale:c7c764af-8309-4a09-ab11-ad6fbe8a606e",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 27,
+          "principal": "principal:49a9cfea-94ae-49e8-9934-9000314f843a",
+          "member": "member:49b356e2-bba5-4b45-84b4-898ce2a8113a",
+          "membership": "membership:d8181036-b478-45d2-aefd-8f3106cdda33",
+          "session": "session:a1c099b4-bca1-4625-a71a-7436a5ce0a93",
+          "order": "order:70c3b3a0-1b87-48af-8d99-18a57e072e77",
+          "intent": "intent:753feaaf-4a3f-46dc-afa9-d48e665ca580",
+          "aftersale": "aftersale:2ef4d82c-89b0-4142-92ba-8634afd0f4d7",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 28,
+          "principal": "principal:8b8b2b7b-d7ac-4410-9a3b-4c55dccc6756",
+          "member": "member:65c1d04e-7406-4951-90e1-e1429c05602b",
+          "membership": "membership:235d55bc-3dd0-46fd-b1e5-25ef0525f3b3",
+          "session": "session:79c3a669-d949-4b25-b8e0-955d325d1186",
+          "order": "order:8013504d-368f-4996-bbcd-7b9a600f913a",
+          "intent": "intent:3ab76bee-b856-411b-9d60-ed9adbb33d33",
+          "aftersale": "aftersale:613c28ed-d3ea-4d0e-a45b-905725017aec",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 29,
+          "principal": "principal:72092e43-3d38-4a4e-8e8f-c12e7c0821ea",
+          "member": "member:2ffbb6dc-f6bf-4237-9f97-c4ba3ba14f43",
+          "membership": "membership:f153a082-12ce-4161-a387-9d7d063d03ba",
+          "session": "session:489b65df-b477-49a7-83c6-a99c91d3c106",
+          "order": "order:742a1b6d-1af4-43a4-8b4a-83daef615371",
+          "intent": "intent:90e84ad3-558e-49ce-8426-25432fb6c892",
+          "aftersale": "aftersale:d3a1c1fc-e910-4200-8b86-cd62329e9c7f",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 30,
+          "principal": "principal:9710157c-bcd4-4c0c-951b-ddf4a3f108fd",
+          "member": "member:63bf3fee-15e3-4877-af28-6ed68cb3df8e",
+          "membership": "membership:0b272c52-eeef-49d9-af0c-5e5b3c85e33f",
+          "session": "session:d1c043b0-1457-4829-bf24-b2f99adebec8",
+          "order": "order:f6511b87-7083-4861-98de-ad71c62b8bd2",
+          "intent": "intent:3ccbf24a-c140-4e80-8a99-24513ed6d4db",
+          "aftersale": "aftersale:a92e2331-86ec-400a-8c2e-a2d90ee01486",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 31,
+          "principal": "principal:127402e8-d962-4576-8863-d21559b25c71",
+          "member": "member:3a87c681-5b16-454b-9644-92cbe8d50b09",
+          "membership": "membership:a95c0e24-9e6f-47c0-9cd3-0dbfacb93412",
+          "session": "session:f100b761-1e0d-45b2-b1f4-8154e1e8a0c9",
+          "order": "order:50eebca6-cb9d-4eb6-ba20-a2de8ac2f4e0",
+          "intent": "intent:26ea5feb-7294-4425-8d89-5d17b38cd0cf",
+          "aftersale": "aftersale:639a41ae-57e3-458f-982d-d424ee29e03b",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 32,
+          "principal": "principal:198d476c-95cd-4f98-b169-06f0f9ce8325",
+          "member": "member:d1e632be-b68e-4ea1-92e9-2a6e94d54f5e",
+          "membership": "membership:4aa74fa2-387d-4cbd-b0e3-9df28e82bac6",
+          "session": "session:99f12ad1-fbf0-459c-bdb9-6ed10ee20bd0",
+          "order": "order:e8781bec-eefb-48eb-bafc-4d916bc35d49",
+          "intent": "intent:7e98ec9e-f52c-4e17-b217-5a56e498a0ab",
+          "aftersale": "aftersale:0c813e7b-6a30-48a4-a6d6-62d8e9bd1077",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 33,
+          "principal": "principal:6fba2acc-4100-4e35-b0ea-cc983f7ba9c9",
+          "member": "member:ce10ee0f-a47c-43e2-9ceb-cad325ad7a57",
+          "membership": "membership:adb57801-a0f8-44e3-a61b-a5891365cc44",
+          "session": "session:4439a91a-8eb0-4bc6-8f0d-c1bbf97c8950",
+          "order": "order:2a268fe6-755f-44bb-92e5-d764f853f153",
+          "intent": "intent:ee96afd9-8514-4749-935b-d3a6a19c7f94",
+          "aftersale": "aftersale:23a20993-dde0-46b4-bffd-d46e75a8309a",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 34,
+          "principal": "principal:1674b27b-8651-4c89-aa6b-90d4cf80ebf4",
+          "member": "member:5a76696d-ccc5-4043-aaf9-bc3bb081f36e",
+          "membership": "membership:faa4d573-166c-42c1-a3b5-325f60a1ad0e",
+          "session": "session:d948ccfe-7952-4eb8-81c8-84382ca30a5a",
+          "order": "order:ddc8fe2c-ed15-48e8-a1e5-6a9d95dfe2c9",
+          "intent": "intent:201acbf6-d875-4111-a863-0167e1ecaa23",
+          "aftersale": "aftersale:4c1f68d3-cbb4-476d-9416-aaf1203ddfad",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 35,
+          "principal": "principal:ffdfb4f8-865a-45f7-a6c3-39b810be8431",
+          "member": "member:7567c63e-8525-4ba7-807b-8c583bae4263",
+          "membership": "membership:d49093e7-7b39-4a1b-82e1-13f6506f1606",
+          "session": "session:1231c69e-2d61-4019-af18-89e905e74f45",
+          "order": "order:974c7be8-f360-437f-ad00-fb9b1e49ac53",
+          "intent": "intent:b0356b73-d58d-4e25-9808-1bb951635091",
+          "aftersale": "aftersale:d83ae716-bec5-46b5-b3b3-0505b835f41d",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 36,
+          "principal": "principal:2fe8acfa-8fdf-4284-9a17-dc4186dd10b8",
+          "member": "member:abf0a2dc-9408-4642-983a-c756e413c839",
+          "membership": "membership:018f648b-e020-4329-9854-fa2d6dbb7d43",
+          "session": "session:7e487303-76cd-4bfe-aed0-2bb1d87f7a22",
+          "order": "order:8a070780-05ce-4899-a501-001956f8f875",
+          "intent": "intent:cd852bea-4337-4a17-9f12-4a0e07985af9",
+          "aftersale": "aftersale:9d0029fb-c2a8-4347-9971-f725e464bfb9",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 37,
+          "principal": "principal:2d88da15-3638-44e9-bc4d-e2cdcb831ecc",
+          "member": "member:489a7736-b4f0-4605-a9e1-0385f5eae7e5",
+          "membership": "membership:22aab583-e5fb-42c9-a861-ecc042bd0955",
+          "session": "session:8793f73f-8165-4576-836d-1a3668f9469d",
+          "order": "order:36b0bb03-71fe-4ebf-8cf4-44677ccff16c",
+          "intent": "intent:1b25e743-eb58-4c4f-bfc9-dadee27f59fc",
+          "aftersale": "aftersale:6806690f-50a2-4ad0-acc4-470095bcef89",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 38,
+          "principal": "principal:a883a00d-c81f-49c8-8656-aa8f1f37f48e",
+          "member": "member:94c734c9-a30a-42ce-92b1-ec1d0c0e7494",
+          "membership": "membership:6d46b95e-42b9-4897-a074-270af11762e8",
+          "session": "session:9501f2b4-e008-46d9-9af6-f2305c4f8edb",
+          "order": "order:4a16e7ff-faea-4474-9f98-f57dc6b52039",
+          "intent": "intent:3670409b-66e9-4420-b9fa-a66d57c55547",
+          "aftersale": "aftersale:2803da96-c42e-474e-9281-ddb0093a89bf",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 39,
+          "principal": "principal:f5eb97a5-c28d-4680-9825-a7c81d64093e",
+          "member": "member:2bea8d6e-6d33-4bcf-bda4-095e408a3692",
+          "membership": "membership:1be2dfc4-a338-43e8-97dd-6aa29abbf30e",
+          "session": "session:c4a32681-4000-4e9f-b56f-8634a1fe44e4",
+          "order": "order:7443626b-29fa-4cca-962d-441881b7286a",
+          "intent": "intent:e6788e15-b622-42ba-b9b6-46275d5d953a",
+          "aftersale": "aftersale:fa6b1be7-23ca-47d9-86ec-c6471249a841",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 40,
+          "principal": "principal:f9b77881-74af-4262-a35d-985f8e15b6e4",
+          "member": "member:c38e59ac-c977-4b49-a369-9a1b8e0127b5",
+          "membership": "membership:4fa3f2fc-b0a0-43d4-8e6b-48a69a768be3",
+          "session": "session:6c584913-28d4-4ab8-b59f-069c2207a4f6",
+          "order": "order:eed94a0a-662b-4ac7-81e8-1f388a7cfa53",
+          "intent": "intent:dfd295d2-0afb-481b-92e7-c663367744eb",
+          "aftersale": "aftersale:8347592e-a754-4dfe-ad24-d9ba7c3dd445",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 41,
+          "principal": "principal:f4897ea2-ef30-4aa9-8bc2-3157addd0769",
+          "member": "member:e1158651-252f-4eda-9e7a-cc8d94d32c40",
+          "membership": "membership:f3b80493-7b54-476b-a4c5-1f6d0a2f522f",
+          "session": "session:ac1e12e4-e763-45a6-8363-9b20921a4a0d",
+          "order": "order:f71faa27-8fc2-4d9f-9a42-d54f359c3217",
+          "intent": "intent:2bce3bd0-8e0f-45ad-92ad-1f5814bd589a",
+          "aftersale": "aftersale:81a56e12-8a2c-4e2c-8ce8-4c0469a57beb",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 42,
+          "principal": "principal:8daa2428-baf9-4236-8faf-baca91815dd5",
+          "member": "member:0304609b-bab4-4b38-ac7e-4ba71e4960ce",
+          "membership": "membership:68b2721b-ee4d-47ba-97b4-4e563c868d77",
+          "session": "session:cb372a99-1f6b-4914-9a51-6575bcc7165a",
+          "order": "order:c37306a9-a806-44a6-a427-6e1272fa1d2a",
+          "intent": "intent:89f552e0-215a-48d6-a5c2-24b842272b1d",
+          "aftersale": "aftersale:7f860ffe-0059-46ae-a192-218a49bf5905",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 43,
+          "principal": "principal:5858bd54-b99f-44e7-953f-46caaf55c47b",
+          "member": "member:1ff69b99-112e-4156-82bc-589e4b6f1970",
+          "membership": "membership:efaf6c12-6a48-4a27-a053-7d49ca96ba98",
+          "session": "session:e537b189-90eb-4580-b853-b33dad18a1e2",
+          "order": "order:9175efc9-e00a-4e3e-af83-4b21d11b7d82",
+          "intent": "intent:69c29ddc-273a-476e-a11e-da8293ff0e9d",
+          "aftersale": "aftersale:f627e466-f974-4464-b55d-8e1e7423aeb5",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 44,
+          "principal": "principal:4272ed2d-28ef-4ef9-9e67-3f67cacc407a",
+          "member": "member:1751f648-bb97-4611-93b6-970e46d45f8d",
+          "membership": "membership:84a2d821-008b-4e6c-b580-03094f5deabe",
+          "session": "session:5a0663d7-f3f2-4136-8152-2066d74ca2eb",
+          "order": "order:15bb7209-b0a1-4661-8b4f-9676d577fd24",
+          "intent": "intent:11eb21c3-f163-41dd-9a4c-fe1632693597",
+          "aftersale": "aftersale:018410ef-6576-42ea-844c-ceaea0567196",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 45,
+          "principal": "principal:8306b425-f224-4611-8fca-bf0a503884e2",
+          "member": "member:bb707c2a-194f-475f-bd3e-92124952daa6",
+          "membership": "membership:fcf0251a-816d-4af1-9d67-f1eeebd60062",
+          "session": "session:f90e8c70-b4e8-4e4b-b4e4-05701f026421",
+          "order": "order:add73dd7-d9b3-4f1c-8acc-0115cef3d9b0",
+          "intent": "intent:bb6ddf13-f050-4e80-b182-3186abf012d9",
+          "aftersale": "aftersale:eccb4bfb-6a11-40da-a989-1ac9585aac21",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 46,
+          "principal": "principal:70248572-a2a7-4809-b6f9-3fd30cdb7979",
+          "member": "member:f5890686-68f6-42db-8d98-09f614e012c5",
+          "membership": "membership:2760b0da-703d-4232-8928-bd6aed968105",
+          "session": "session:8e46634d-87b9-47d9-9f52-6ededf1e67c3",
+          "order": "order:6822d77d-446c-49fe-92de-5872b32b1873",
+          "intent": "intent:3c5c793f-33cb-41e0-926c-42be739e3d2e",
+          "aftersale": "aftersale:5487a17f-8624-4d45-abb9-2d37700d72e1",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 47,
+          "principal": "principal:b40acd4b-9c32-4cba-8a07-38755be2602e",
+          "member": "member:80733150-2ae2-4e0e-acd2-f4b1113ebba4",
+          "membership": "membership:95d98dee-704c-4ce5-a6fb-8e8bdecb65bc",
+          "session": "session:495b55a4-faad-4d19-93c1-968637659748",
+          "order": "order:cf7660b0-1b51-4c59-8f2e-b3e2b8e6b7a3",
+          "intent": "intent:2ec5264c-5e73-4e1a-83d6-13bb68621a3b",
+          "aftersale": "aftersale:809b8aa4-0079-49af-872b-d408b52b4414",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 48,
+          "principal": "principal:6d57a669-559f-4e38-b74b-4fc20c9d42a3",
+          "member": "member:7cac28ec-0cf6-40ed-8d4c-b8c6a36bc8d8",
+          "membership": "membership:af0e7b52-3c5f-4702-a12f-9bd795eda599",
+          "session": "session:69906ec1-5f75-45e9-9035-78cefdc8303e",
+          "order": "order:b166f348-6548-4cc9-a9ac-74ff18584bd0",
+          "intent": "intent:13af5dc3-4ba6-4c72-beeb-709fbb23e0e3",
+          "aftersale": "aftersale:ebc77e90-8611-4874-b60b-ca6878c81073",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 49,
+          "principal": "principal:59fe9386-00f0-47bd-a8bb-8e7299b8f3d7",
+          "member": "member:843659b5-ea34-4b29-ba45-28b17d89846c",
+          "membership": "membership:94ab7a90-dfdc-4fc5-aa8e-e95e5d665909",
+          "session": "session:3a796da7-a8ca-4401-979f-1dcbfe329ee8",
+          "order": "order:6aa26ee9-8767-4361-9fbb-b058a59a4d5c",
+          "intent": "intent:60f6c4c3-57b0-4259-974d-774846c2ee90",
+          "aftersale": "aftersale:13c541dd-f1d1-43c2-8d7c-4faf2c5b618a",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 50,
+          "principal": "principal:f422fcfe-29be-4965-a9f8-4a8d2d23ff80",
+          "member": "member:c9d8ecd6-3f6e-4fb7-895c-893dd50a92ea",
+          "membership": "membership:d93b90c1-5948-4e17-83c0-6212d490e279",
+          "session": "session:6f4ed406-9394-4596-84cb-f4bdcab289f5",
+          "order": "order:38d8004e-b964-4d6c-90f8-67edc66ccd26",
+          "intent": "intent:70386932-4ae2-4e2d-b717-ea62f16ac16e",
+          "aftersale": "aftersale:cff36a9b-4c41-4416-9c18-a93c3ac44aea",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 51,
+          "principal": "principal:9013cf2c-4b67-4e21-b281-f45d151888f5",
+          "member": "member:bf14fee0-820a-468f-a4e2-64f13729fe84",
+          "membership": "membership:1dd380b0-4460-49ab-be04-5358ff9f9521",
+          "session": "session:e3453e7b-b0cd-4a8f-9304-009d068e209e",
+          "order": "order:ffcafd85-ec87-43e7-ab30-aad0a843beb9",
+          "intent": "intent:b6ef00f4-df86-4773-8a1e-f551878ebe54",
+          "aftersale": "aftersale:1993dccb-81da-415e-8a15-1e056334c0fb",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 52,
+          "principal": "principal:7ed1615e-7c44-44ab-a03f-f2e6e827f546",
+          "member": "member:7be5d197-6730-4a9b-bbba-65310de297bb",
+          "membership": "membership:6df9437e-8b20-4446-8a38-ed756f361d0a",
+          "session": "session:109cb6b9-24a5-43a4-b1b9-ffe9fc4db93f",
+          "order": "order:f933d048-d61f-4f3b-bebc-15adf9ef2706",
+          "intent": "intent:2fe59ff5-ae70-41e2-b555-85264995bb2b",
+          "aftersale": "aftersale:466553a3-7c56-4ca5-8d32-3dfea3fa6959",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 53,
+          "principal": "principal:9f4d2d5b-d5e8-4ce7-b262-bc1b9f7ac591",
+          "member": "member:fbf9ad4e-ef8e-443e-9a2d-93e26487ee6e",
+          "membership": "membership:a96faa02-08b2-48a0-9d37-4ee805c590f0",
+          "session": "session:60b41415-dd69-4d61-bd57-6d0c062dbc97",
+          "order": "order:07466300-ba8e-458a-89dd-949a0d6214ac",
+          "intent": "intent:7e87e646-ded1-4062-b61e-c50b7a90c849",
+          "aftersale": "aftersale:fb785595-a0df-4829-bde6-6a33774c1cc6",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 54,
+          "principal": "principal:f47eef49-b81d-4268-a9c6-cbc674e7a708",
+          "member": "member:54203689-c8e0-4379-aaae-8d83704d2f15",
+          "membership": "membership:f2b363b6-c7b9-4f15-965e-f3b3dba52bfb",
+          "session": "session:66e8baa5-5de3-4226-ac3e-bd75b7adc5d5",
+          "order": "order:945fa45b-3c9b-4f2b-82bd-42a93f7e9dd5",
+          "intent": "intent:d0f304e9-77f3-4b4c-a5af-654115d03881",
+          "aftersale": "aftersale:44507c6d-44b0-4432-ba6f-4e3469d09ef0",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 55,
+          "principal": "principal:a99ddf14-dc4b-41f6-87a6-f46db23bcfa8",
+          "member": "member:2bad7d82-a441-4222-bb87-04468888c460",
+          "membership": "membership:a8652a1a-f1b9-43b5-88e7-e5cd3bfc33f0",
+          "session": "session:785bbdb0-323e-4d86-bd5f-4a3c247673c0",
+          "order": "order:ca576d27-c250-481b-ab64-6e693287f6af",
+          "intent": "intent:de296331-9996-46e8-a604-9f1989e2e78e",
+          "aftersale": "aftersale:59f4f3a5-2d85-46b9-8bc7-38fc5c6dfa94",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 56,
+          "principal": "principal:70198420-030c-40c8-ae16-4786659d8110",
+          "member": "member:2926fb4e-2111-40c5-8e88-e56564103ce3",
+          "membership": "membership:98e0e717-164c-4261-9e81-38be0a49cd0a",
+          "session": "session:ef733416-447f-4cd5-8d5d-33ad005b69cf",
+          "order": "order:9752dd9a-9c64-4bd3-8945-e93da669c4b7",
+          "intent": "intent:442543c3-ee9e-4059-b0d5-19210c1ff83d",
+          "aftersale": "aftersale:d47f9d16-cbfd-4959-81f6-00072d1be026",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 57,
+          "principal": "principal:cb14706b-ed7f-4cbf-91cf-be2a01987d71",
+          "member": "member:54d7e587-02c6-4048-b49c-8189238a52ff",
+          "membership": "membership:f564ed99-e375-4c7e-9962-a7e15e13a0a4",
+          "session": "session:3c5eeccb-024a-4d5a-ad15-42b409e9251f",
+          "order": "order:309609b1-85c8-4ecd-a71d-41564b895b80",
+          "intent": "intent:763818a0-43df-4b94-9ad4-8240ad24bf24",
+          "aftersale": "aftersale:1b574d15-b91b-4223-a735-af153bd4744f",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 58,
+          "principal": "principal:695239ae-3f83-47f5-8560-8ae3a42349fc",
+          "member": "member:a7b73198-ea6e-4e1f-9296-dcb02292877c",
+          "membership": "membership:0f564149-ecee-4214-b20d-f4976a5ce98a",
+          "session": "session:70ca750d-2c1e-4f98-a99f-7595faa142a5",
+          "order": "order:981513ed-f727-4722-8d3f-2820b80e967a",
+          "intent": "intent:c668fb65-d433-482a-9c6d-bcacc869c460",
+          "aftersale": "aftersale:2f5ffcc2-d787-42ee-bc96-4f495242ed50",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 59,
+          "principal": "principal:24e37830-bb6f-4a89-a047-055d691c9479",
+          "member": "member:82eb47cc-4dd8-4948-8859-3604656bafa4",
+          "membership": "membership:1028e3b1-b828-44d8-b030-a258be5c6e5f",
+          "session": "session:07b818db-7058-4c30-a5ba-f7d4849785be",
+          "order": "order:3d4f102f-016c-4f4a-9959-adf8262dfdc7",
+          "intent": "intent:be10f743-d728-4a77-8335-484308a2fbe1",
+          "aftersale": "aftersale:eec76ca1-fcc6-420c-873d-edad228f036d",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 60,
+          "principal": "principal:05ccbf26-eded-4076-8774-61489cf87c6b",
+          "member": "member:2914eb59-609d-4b98-96f2-b4bbb5abd1f5",
+          "membership": "membership:88961cc3-bda2-44d9-a2c4-fcf1e8af3385",
+          "session": "session:252a4fd1-5f05-4801-a5da-536c4a06be50",
+          "order": "order:55df46d7-df90-4bd3-af18-b9968a70424a",
+          "intent": "intent:ac9a68c7-9fcb-4c8b-9daf-8745eafbea04",
+          "aftersale": "aftersale:76921288-6897-4cb0-9614-d4745040c66c",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 61,
+          "principal": "principal:9c331532-6c6e-4c18-807d-ee6da15edd6e",
+          "member": "member:f8019d99-e666-4c6b-b3a4-129271f35eb1",
+          "membership": "membership:73a8121d-bb5e-42a8-a0cc-b6242c029dd2",
+          "session": "session:50ab3ec7-292d-4d4d-8662-4640923bbae0",
+          "order": "order:15530660-a754-4cc6-a362-8bd1e725fd0d",
+          "intent": "intent:d17432f2-3b91-4c04-8cf5-dce1aed659f9",
+          "aftersale": "aftersale:4461ef1c-dd08-4d32-a8b9-c0ed83d0de65",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 62,
+          "principal": "principal:d00386dc-6fa5-41cb-abb1-b41a1583ca86",
+          "member": "member:11ce90c1-a88e-4269-8b66-abdb0d2b6e9d",
+          "membership": "membership:872f29e9-3fcc-44d1-9f75-32cd4d06d29c",
+          "session": "session:c3834738-941b-4930-af75-3735fea5d910",
+          "order": "order:2caffcba-3e2e-4196-8f03-f0eaecfa89d8",
+          "intent": "intent:3be62fff-575d-44a3-856e-d9540fe9712e",
+          "aftersale": "aftersale:fa9ca09c-be22-4e65-bae3-b5db97db1fa1",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 63,
+          "principal": "principal:3d7b3b8c-2b52-4022-b6a8-5076fe635141",
+          "member": "member:2ebfbdff-97a8-4e39-94a3-8cba04874991",
+          "membership": "membership:5403fba8-0fa3-43fe-a37e-c2c48f62c4e0",
+          "session": "session:51d5d1b5-8291-47b8-b5f6-d708358d9a49",
+          "order": "order:e12fcb3a-6716-4a6c-b1f5-8267fc4d2bfc",
+          "intent": "intent:12eaf5a1-a409-4c96-8717-4c4664daaa41",
+          "aftersale": "aftersale:9165c0cf-be20-452d-be36-2e2d53326f6f",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 64,
+          "principal": "principal:f33d3f86-4e1f-497e-a9e6-bd40eac62221",
+          "member": "member:45897f97-f8e3-4dfa-abcc-c91eac2716fa",
+          "membership": "membership:8afa9253-eb96-4e64-b2f4-dd7b270aa0cf",
+          "session": "session:d094f325-6e50-4ea1-8e49-12d13333f694",
+          "order": "order:91b9104c-ad6e-4515-a44d-395263154728",
+          "intent": "intent:50390f86-e6d2-4572-b507-a07a4bffca6e",
+          "aftersale": "aftersale:087a3e0f-390e-4edd-a2b7-9676e4c09815",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 65,
+          "principal": "principal:c9c00813-d06b-4bf3-858c-8b04061d3a03",
+          "member": "member:a68aa08d-24c6-415c-994e-6d57581f6410",
+          "membership": "membership:7c90872f-c15e-4280-b9e6-47b8c191302b",
+          "session": "session:5878ad28-72b7-43bc-bb42-754911574d37",
+          "order": "order:5e1afcbd-ec1a-4852-a10e-88f0cfeacd51",
+          "intent": "intent:e6d6127d-0424-4486-bbcb-b8f63fb6cad3",
+          "aftersale": "aftersale:c0b28ff4-b2a8-4ce9-a8b0-65af17a85b49",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 66,
+          "principal": "principal:ee559a73-55a8-4673-b0eb-3e718eb025e7",
+          "member": "member:8e3a18b5-d4a0-4f22-b94a-56f90fb2edff",
+          "membership": "membership:15ba172c-b937-4c0d-a819-f87b46fabf9a",
+          "session": "session:9f65e88b-e5d7-4393-a5a7-fa7005d424c9",
+          "order": "order:468b3149-f0ec-45c1-a980-a464d6846d63",
+          "intent": "intent:24bb9d0b-fd93-4a88-9368-3e38702a458d",
+          "aftersale": "aftersale:8442c825-378b-46c1-a801-bd5c3f07efdc",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 67,
+          "principal": "principal:f2d0a310-88f2-474d-bafc-dedd49f05fb5",
+          "member": "member:390be30f-97a7-473c-99f6-790eca58d02e",
+          "membership": "membership:ca792cc1-b5d8-45b6-9649-d172935b91cb",
+          "session": "session:3927d3bf-c8d4-4729-b8ee-36d32cdd9368",
+          "order": "order:8122e142-4cb1-49ee-8d0d-054e5738a0eb",
+          "intent": "intent:53269b31-6d63-4af5-ae2e-b107593703a9",
+          "aftersale": "aftersale:0a0c35c6-35c4-46fe-81d3-2e3005ce4164",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 68,
+          "principal": "principal:aba10035-f5ac-4699-93cf-58911296adb8",
+          "member": "member:498c5525-cc4a-4fe9-9a1e-a9f4f19b40bb",
+          "membership": "membership:8b539f2c-f524-4bee-aa80-7abb8816f50e",
+          "session": "session:b8fcff7e-1c6b-4553-b7af-110c1885369a",
+          "order": "order:39144ba1-265c-4bdc-b51e-2c299b5e0b77",
+          "intent": "intent:1d96eb35-4d66-412f-abfc-694f77822923",
+          "aftersale": "aftersale:3c03cead-f26d-4779-b72f-7c25441c9cc7",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 69,
+          "principal": "principal:d8d81242-2fa9-4dd1-9d6e-820a2494f1bb",
+          "member": "member:bcdad51e-a636-4aec-87f3-4c307cb1d17d",
+          "membership": "membership:d26a99e7-ee21-412b-8824-62d0c1da9ef6",
+          "session": "session:94713a97-d08b-4130-a45e-c019fd0705ab",
+          "order": "order:02eeb688-b3fc-4b4a-8956-806089b2e619",
+          "intent": "intent:64d5cbd1-680b-4a2e-b481-7accd63dfcf0",
+          "aftersale": "aftersale:2c7f4dd5-0a59-474e-b061-e9ae07bc1da2",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 70,
+          "principal": "principal:e6bffb3e-1e0f-47ee-9c80-e3a7c89b93a4",
+          "member": "member:6cb7e7d4-7221-4844-b955-c271d69c0db1",
+          "membership": "membership:8e0a9549-3710-4642-9db3-8b9481bd742a",
+          "session": "session:0344a8fd-139d-445d-bcd9-da61ba335341",
+          "order": "order:eb2a968b-ca43-47cf-80d1-174b8dd638d3",
+          "intent": "intent:f7bbf18a-e8c7-4a32-9dff-ee788ed61f10",
+          "aftersale": "aftersale:1d0f2e2d-8361-45d5-82b0-f6c3c14be31b",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 71,
+          "principal": "principal:0ff8534d-add7-488d-8b05-30301b8a7416",
+          "member": "member:dd4bec87-c0c0-48bf-8255-fa49995b6245",
+          "membership": "membership:2d45afcd-69f1-4dce-a1f2-14b1cc88098e",
+          "session": "session:e4a380a5-e728-450c-b4dd-3ebced814253",
+          "order": "order:af78d59d-3b1a-442a-9130-b76907a79b10",
+          "intent": "intent:367fe952-4206-4cf8-8aad-eaf9ab3cee56",
+          "aftersale": "aftersale:67595777-d8d3-4ed3-a194-4508ded82bf4",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 72,
+          "principal": "principal:7b757eda-0a77-467a-bba6-f337d7562862",
+          "member": "member:eb99b733-a6b9-4c4c-83b5-da9fc5c7d091",
+          "membership": "membership:da6c4600-0a50-4fb9-b4ec-aeee1aa87641",
+          "session": "session:b909cb43-e6c7-4e0c-99c8-7b702678dd0c",
+          "order": "order:a84e355b-f207-4d5b-945d-3d862978cd60",
+          "intent": "intent:fa26d4ae-1af8-4ecd-a9f5-61d91e9d783f",
+          "aftersale": "aftersale:2c472786-2f27-4e67-8e85-c4276a542d17",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 73,
+          "principal": "principal:435b369c-df23-480a-a382-425ce7a89295",
+          "member": "member:d1d6767a-6ff2-4db9-a954-e81843cf3ed3",
+          "membership": "membership:8d78636f-30e5-42f6-8f1b-523e2ec9a020",
+          "session": "session:327722b6-ba3e-41b6-9aef-43fa7de4fc3f",
+          "order": "order:8f6b9957-7c5a-45f2-a85f-3ba7f67642d9",
+          "intent": "intent:82cc1f08-cc40-407f-a406-02c82701057c",
+          "aftersale": "aftersale:2796ac17-b416-4813-8af1-6030b51b5136",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 74,
+          "principal": "principal:14009057-5f70-44cd-ab59-bcec350a0237",
+          "member": "member:5e540962-009b-4fac-9a1c-bb5446991957",
+          "membership": "membership:cfdecd90-13b0-4ed5-af2f-b0e4df442fb6",
+          "session": "session:4653b941-5261-4be4-b31d-a821fcc0f509",
+          "order": "order:6b748cc9-710d-4243-8fea-4fc3798410e2",
+          "intent": "intent:55285b58-60de-4f1b-8b94-e483b3e319c2",
+          "aftersale": "aftersale:6b3d9166-68b8-4aee-ad6e-30c4c38be1aa",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 75,
+          "principal": "principal:03151cc6-4cff-4e89-bdab-99db2259e366",
+          "member": "member:1d780eb5-9cbf-4fcc-a811-d7bd428f0325",
+          "membership": "membership:ab6f4618-7d9d-4764-a3ec-2b1e14be446d",
+          "session": "session:aac1e25f-4ebd-4d08-921d-fb93e33f41f5",
+          "order": "order:ac4a9143-9509-41ac-b1e5-d3733eaac0f7",
+          "intent": "intent:96e7ad30-f6f7-4e3f-9c9f-ce252119d842",
+          "aftersale": "aftersale:d89ff432-afbb-402b-9a7e-ea3dc2a7cd23",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 76,
+          "principal": "principal:3d679a48-2d66-4da3-a63e-c634345dc9eb",
+          "member": "member:db07f86d-0b0d-4e94-bf46-a2f38fab3d87",
+          "membership": "membership:6cb3c405-6e1e-4065-8efc-e440a52b1d78",
+          "session": "session:01361272-f19e-4134-88f6-54021a8509d6",
+          "order": "order:efa2a887-d96a-49fe-b2ce-de24cc192868",
+          "intent": "intent:c4182384-f785-45c4-8aff-55f0dd54d587",
+          "aftersale": "aftersale:e50ba735-a062-4f0e-adf0-bfd3f111835d",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 77,
+          "principal": "principal:9d9cd5a0-0587-449c-af10-ca8e39973095",
+          "member": "member:1a3e2cc6-6ab3-45a3-92ff-d1ec200a3b1c",
+          "membership": "membership:1d87ac63-7146-4ad6-87a9-70e13b09df8f",
+          "session": "session:7eb89743-bd55-4524-8fbc-15316a00f6a6",
+          "order": "order:c1370827-1561-4496-a6cd-cac51aaea6a7",
+          "intent": "intent:c2bfa97b-114a-46e0-97bf-9bfdfd19ede0",
+          "aftersale": "aftersale:7fce5bcb-3158-42c2-8555-29b42cb76712",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 78,
+          "principal": "principal:6e8252f2-3ca5-4aa4-9ecf-414dc5218901",
+          "member": "member:d5427bbb-e313-496d-bccb-9a52b8f8179c",
+          "membership": "membership:07dea5bf-9d09-483d-9f24-77d208846bde",
+          "session": "session:5ea0f75c-7362-4be6-9834-0442d433837d",
+          "order": "order:476516a1-2177-4dc8-9c47-085e188b5c69",
+          "intent": "intent:3f2655f2-48aa-4edc-85d9-098200559075",
+          "aftersale": "aftersale:e3c5dc01-48e3-4896-b338-da70641a4f78",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 79,
+          "principal": "principal:44d9b16d-ac57-4c19-a988-404b00df80d7",
+          "member": "member:0491ebfa-58ca-4012-8876-c3bf546d8871",
+          "membership": "membership:1bdda9d4-b777-4cb5-9c85-26c2c89c23fb",
+          "session": "session:0beb8daa-8dd7-4bbf-be66-c559c730d0e3",
+          "order": "order:a8f730c1-20c2-485c-8e0d-9425a45ffa31",
+          "intent": "intent:bfed1102-7401-4e88-b28f-8de77ee9b159",
+          "aftersale": "aftersale:189dcd9c-b823-486d-84dd-04d21c829cb1",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 80,
+          "principal": "principal:36cb9726-6e2a-494f-9c97-fdb4cd5eb991",
+          "member": "member:c5a1a92b-0977-40c9-9ac3-011d45645774",
+          "membership": "membership:5a72a908-efbf-4409-a62b-274291effbaa",
+          "session": "session:c1aee007-e5cb-407e-86c7-39d81d39e38d",
+          "order": "order:ec539814-f5a0-4925-ba32-206398c652f7",
+          "intent": "intent:39b06f26-160d-4831-a831-2deb07bb459a",
+          "aftersale": "aftersale:baf95272-6779-4a25-8ec3-714e461f794c",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 81,
+          "principal": "principal:ed1964af-a8d1-43fa-9d02-fdf19c28ea6b",
+          "member": "member:eabd1774-635e-47a0-b96b-68ef43665c72",
+          "membership": "membership:91bcd80b-ff46-41e3-af6b-dea10ab6ac33",
+          "session": "session:9ec7dc38-a4b8-457f-8e8e-485135389bc6",
+          "order": "order:7caba2bf-079e-45a8-8833-fbbfb2505345",
+          "intent": "intent:d4ea7b44-53cd-427a-8d2a-f2ea28216885",
+          "aftersale": "aftersale:e30d4d28-3e74-46e4-a0ab-dd810e1e3f25",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 82,
+          "principal": "principal:a72e02d3-f884-4f8c-8f45-0fa6d21e6e25",
+          "member": "member:2fa2f026-557b-4a26-9a67-07da5ce6a47d",
+          "membership": "membership:c7cdcd0b-b0e8-4f8d-a006-debd98749750",
+          "session": "session:90a6181b-a14f-43a2-b2a7-441c44966482",
+          "order": "order:b1e4efdb-2849-4208-965c-0604710dfa06",
+          "intent": "intent:d007e49b-8283-470d-9029-a276c57cdcbd",
+          "aftersale": "aftersale:979fb439-a00e-40e7-aaf9-589bf8ca3413",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 83,
+          "principal": "principal:eea22bf0-cfc6-456b-8171-e1f505a1416e",
+          "member": "member:f43f6684-5a92-4ffd-8ce1-117cd9a0bf0d",
+          "membership": "membership:279126a3-96eb-411f-8ec2-49fd5dcee69e",
+          "session": "session:a147f9bb-4cf3-482a-8d08-e9ff4853ccda",
+          "order": "order:187fb274-3ad8-4a95-a403-2c3a3a596407",
+          "intent": "intent:64676520-88a9-45eb-a8ed-afec682ac0e7",
+          "aftersale": "aftersale:967c5e75-cb61-4673-89d7-5516385792ab",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 84,
+          "principal": "principal:8de64547-0147-440c-aa7a-90e4128700e7",
+          "member": "member:84d665cd-ae09-4942-8562-b1adcb44046f",
+          "membership": "membership:4ddd577b-9e90-4a03-bead-fb19cbecfba7",
+          "session": "session:8a821a5a-3eee-4de5-992c-92788867858d",
+          "order": "order:24ae0748-495f-44c6-9511-6a35dedd8c9e",
+          "intent": "intent:39cb2e80-c744-4bae-ae0e-c92685d5986f",
+          "aftersale": "aftersale:933264a9-87b6-4f05-a7b0-de1b1c093643",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 85,
+          "principal": "principal:957a5526-d57e-4aca-b890-d0bfd833cfb8",
+          "member": "member:44037a5d-2e90-4b74-ab39-be0794024187",
+          "membership": "membership:13cec5f2-df00-466f-9735-5b2bdd42739f",
+          "session": "session:f81e8fd4-2c2a-4c1e-a95b-153168916fa3",
+          "order": "order:a26e564f-b4dd-4c7f-8a03-37066a4ca617",
+          "intent": "intent:5379740b-b9da-42bf-ba72-325715963ef5",
+          "aftersale": "aftersale:66e27a71-b33e-404e-bc34-d13ce0227c6c",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 86,
+          "principal": "principal:43326668-7d88-41a8-be96-58239e1369bc",
+          "member": "member:9d8aae04-8031-4d77-9fde-7ee5d5507a3f",
+          "membership": "membership:cb60c422-a09e-468f-8826-acf70b6a8a22",
+          "session": "session:66c5221d-b86c-43e9-a273-748ac5678f1a",
+          "order": "order:27ee054a-8515-41ca-bce5-310c20773c4c",
+          "intent": "intent:da93c494-bb2a-476e-bda6-bf1758a0e028",
+          "aftersale": "aftersale:efd9ac59-d4ad-4c3c-a86c-d15b75a31f50",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 87,
+          "principal": "principal:47505dde-3a77-440e-a675-861b9cad001c",
+          "member": "member:5fe620ad-f08d-494f-ba84-e752de586935",
+          "membership": "membership:69f58332-95d6-477b-9d0b-4381c67fe02d",
+          "session": "session:fdf8f9f7-19a3-4369-97f3-1a619c9e33ae",
+          "order": "order:ce08aa61-0be8-48de-97ec-e52971327f5b",
+          "intent": "intent:3ac224cf-bd66-4119-9ef3-3a80c04e158b",
+          "aftersale": "aftersale:b95b64a8-d9a2-48df-9e4f-9bca034e4da3",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 88,
+          "principal": "principal:6b0f8778-08fc-4d32-994a-647552feec50",
+          "member": "member:ce6f63a3-4e1b-4ab4-80cf-09b2559c7aad",
+          "membership": "membership:fd664df1-d1b0-4b4c-812e-1979e10b65b5",
+          "session": "session:19c62582-2057-4e91-bb5a-0a205c62874f",
+          "order": "order:63405509-a896-44c7-995c-8e09253bb3f4",
+          "intent": "intent:380321a4-3e56-4982-a84b-1117a32f380e",
+          "aftersale": "aftersale:405157c0-1f64-426b-92e7-10be92c14b96",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 89,
+          "principal": "principal:232511e8-5279-484b-875f-824af26ac79e",
+          "member": "member:dfb623e9-35ad-4d6e-8f56-a77273d5034c",
+          "membership": "membership:982cf33c-4ff0-4f22-ba45-dca106dfe38a",
+          "session": "session:c217f66a-b150-47f1-8b51-d0e24cbe93f7",
+          "order": "order:ee459c8c-b333-4842-87e4-ebfb616f4fb3",
+          "intent": "intent:78da2751-c04c-43c4-b091-2db6cbfb8d7f",
+          "aftersale": "aftersale:634885df-95f4-4e1f-8277-c10033c3b4e0",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 90,
+          "principal": "principal:ae2c62c3-40b9-4ae5-989f-5f82726a5908",
+          "member": "member:14be51dc-9858-4d03-9b60-30b455e81e3f",
+          "membership": "membership:a6318fd9-cfb4-4b50-858f-2422dba5458b",
+          "session": "session:ee618a95-fd4c-4814-9956-eb65c570695a",
+          "order": "order:09aa52f7-f18b-434d-bcbe-502f9fb2b378",
+          "intent": "intent:8bd621b5-4950-4018-b2e6-35a93bd86d1e",
+          "aftersale": "aftersale:20df8c0a-3528-444e-92eb-1005f384f9fb",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 91,
+          "principal": "principal:108f3041-ac5f-46b6-a41d-31c762e65aef",
+          "member": "member:95f9566d-d17c-42fe-aa53-34ec3286c386",
+          "membership": "membership:539262fa-a76f-4d1b-9722-d1a5fe695465",
+          "session": "session:50b5b740-81a3-41b1-b0ef-5cceff5cf75d",
+          "order": "order:699ff7f7-2e49-433e-a236-e7cc1213d1e3",
+          "intent": "intent:9b9b224f-7cc4-4af7-afbd-b7ef858eb297",
+          "aftersale": "aftersale:d94a3c11-33e4-42be-b0cc-e4a534047f3e",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 92,
+          "principal": "principal:aefa88a6-3ac4-44f6-aa44-7e1d50654ff3",
+          "member": "member:ae7915d7-c86b-44c4-a78b-c3e25d5073f7",
+          "membership": "membership:2e424025-c7d9-4000-9704-bedd41fe4e03",
+          "session": "session:f4fe6190-f920-4de4-83ec-487f80c88deb",
+          "order": "order:920d0075-9377-4ea1-a316-2aa10c77b6b9",
+          "intent": "intent:5734dda6-0a89-4a1e-ba6d-043cab3175fe",
+          "aftersale": "aftersale:3f86608d-32c6-49d7-a2f3-2fce9b0f6733",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 93,
+          "principal": "principal:b9acf982-da46-4ab4-b527-ee8037494a57",
+          "member": "member:ac4bc480-0cb9-4a15-908c-2a65cd959133",
+          "membership": "membership:6861b742-5cf8-4481-9438-935d40488e2c",
+          "session": "session:7bbe99ab-2da0-42c8-9f73-012c8ba22187",
+          "order": "order:e25e5632-cfca-4242-8519-624a58cfa43a",
+          "intent": "intent:c3fc3432-5754-4d00-9fc3-d9aa24820bd3",
+          "aftersale": "aftersale:159241b3-c778-4504-a8b5-934a14d81b92",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 94,
+          "principal": "principal:e6ec7f09-ceaa-4b91-b270-e295dd9fdf4d",
+          "member": "member:91090010-14a4-4283-ba0a-6928eb9f8d7c",
+          "membership": "membership:e31101b3-59c2-4ed6-ab44-543a28b86add",
+          "session": "session:71da17e5-4989-41eb-806d-77ae63cc3d43",
+          "order": "order:1c281c33-9f90-4e37-8d43-fcfadf2b777b",
+          "intent": "intent:800d6f4a-a873-4627-93ef-3f40d32d371b",
+          "aftersale": "aftersale:e542720f-2917-4459-bb7c-730cb4281af6",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 95,
+          "principal": "principal:797f15b9-59ea-42ed-aa08-0281efa49221",
+          "member": "member:98c34536-2127-46e5-9cb0-7f2000ce24d9",
+          "membership": "membership:dc2e5fb5-55b5-4287-8ed4-d53f0f1dd477",
+          "session": "session:b760d8c2-9f1c-4315-9658-a751447cdc1e",
+          "order": "order:1229cfcd-3306-4bc9-96a9-fbb1c6a2c291",
+          "intent": "intent:aada2c65-470f-4df4-b23e-165241c8d87a",
+          "aftersale": "aftersale:d0b816c9-de91-44fa-ae11-8b8c7d91e2db",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 96,
+          "principal": "principal:192ed96c-b93c-4e5a-a5d5-1e4189c424ff",
+          "member": "member:561fb57f-ee84-433a-a31c-1517713ef9ae",
+          "membership": "membership:87c40acd-4654-46fc-8c92-f02b8b43476f",
+          "session": "session:bcb4e8d5-95c3-43c7-a99b-f4bcdbbb0a16",
+          "order": "order:53ac9db8-fc96-4b7e-85f3-1fce45379301",
+          "intent": "intent:898d112d-73a4-4c8a-b22d-38968fee1d80",
+          "aftersale": "aftersale:2958e372-f935-4aa4-9035-f13a9045f71c",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 97,
+          "principal": "principal:9f7a6991-2203-4d6e-887a-ca2418f90d36",
+          "member": "member:4e50ef1b-3578-45fc-ae93-aa02bbbccf8a",
+          "membership": "membership:91f191c4-e784-44e9-b2c6-b348e0fa03d1",
+          "session": "session:f03db40a-5083-4217-b2f4-7e46334f72ce",
+          "order": "order:8ce4b917-7354-4e04-9ff5-27d5998a16cb",
+          "intent": "intent:685dac18-4d09-4416-af8c-57c02645eefd",
+          "aftersale": "aftersale:650c528d-3f3e-4b63-be8e-ee579a216639",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 98,
+          "principal": "principal:f69ae0a7-1d1f-472e-849d-d70fe6f4779d",
+          "member": "member:7f2da534-dace-41eb-a8d9-855d7f8cbb77",
+          "membership": "membership:407e66fd-cff0-4eb2-8050-2a37ad5da526",
+          "session": "session:c0e79f5c-f90e-4a0c-bab2-1257bd53e45e",
+          "order": "order:4cfff3b5-c4d1-49d5-9b41-e750193a3f0e",
+          "intent": "intent:e7f6b036-8efc-4634-8495-15cffe81c7e3",
+          "aftersale": "aftersale:89612204-d6bb-4e8f-b263-b474a464ea46",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 99,
+          "principal": "principal:fe32e987-8024-4247-b010-0509fe664b1f",
+          "member": "member:561dd32d-7c2d-4141-aa0c-5d662b2becac",
+          "membership": "membership:caff7cad-59e3-4fc4-a54d-32561cb17a29",
+          "session": "session:6cfafc6e-c42f-4db0-8700-9649906715fc",
+          "order": "order:ac158245-8d10-4ee4-ac8c-3a7a038033bd",
+          "intent": "intent:56440d4b-5ff3-4688-ac13-e54cb38b2997",
+          "aftersale": "aftersale:1c907edf-2c18-4cbb-a868-59e244ba616b",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 100,
+          "principal": "principal:b3a8fdd3-26cc-40a7-b94a-1875144b4ec3",
+          "member": "member:0658fd23-ecec-4635-b01a-f8908b8e7449",
+          "membership": "membership:b63d40a7-3258-4891-bdba-e8c642b87e9c",
+          "session": "session:3034d12f-5301-4000-b922-f1390d845181",
+          "order": "order:6bbe4137-2d03-4894-9e7f-5e928dbd4754",
+          "intent": "intent:325d7c9f-4a3a-4e12-90bb-936ea1171fa3",
+          "aftersale": "aftersale:47472846-a08e-48ea-b055-7f0bc941295d",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 101,
+          "principal": "principal:d4ada5e6-0bc5-4143-9140-b3e2e0f63e7c",
+          "member": "member:6598962f-432b-48f9-8196-6c79ccefb252",
+          "membership": "membership:462678dc-8975-423e-bfb1-80cbc0a1d524",
+          "session": "session:e29050d1-c6c7-4185-9431-472f0f1df440",
+          "order": "order:bdf526c0-04c9-4162-a4ee-7815f4c1dd08",
+          "intent": "intent:528f38ac-7d37-4e62-8441-2eb7d6ac1743",
+          "aftersale": "aftersale:963a798b-3176-4beb-ab7c-6dc4ca1883ba",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 102,
+          "principal": "principal:3472e502-5ca3-4d5e-aaab-83ee8c7707d3",
+          "member": "member:7b190daf-4513-492e-b5c9-60d4ad0acf19",
+          "membership": "membership:ea11fd74-d38b-4bc8-8df2-f145b5c6eb27",
+          "session": "session:d8e73ad4-4a8f-4126-81a0-c359fb8c7edc",
+          "order": "order:04cde34f-98d0-484d-b1d4-1d59e9814848",
+          "intent": "intent:a6436961-60ba-4f20-8d5e-b30ddd5bfaf1",
+          "aftersale": "aftersale:8474edcf-aceb-4e8c-a40a-912b96703c15",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 103,
+          "principal": "principal:7d4d14c0-364d-46f6-89c9-489b0ef94904",
+          "member": "member:2a67ed94-ceb2-4760-9a7a-705d406aa01f",
+          "membership": "membership:49d5ff4d-912e-4b78-922e-f98a5ea49d53",
+          "session": "session:d4fa169e-8b9f-45db-a7e9-d110be9cd96d",
+          "order": "order:a34c24c0-af8d-4adf-8691-670aea776da1",
+          "intent": "intent:687ce531-0efc-4f2a-ab98-003e519cd872",
+          "aftersale": "aftersale:e9d2104d-46d6-4273-84f0-2c0241d668a8",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 104,
+          "principal": "principal:c2e9977d-39da-4cb7-8102-6a4f957eebd1",
+          "member": "member:329f9709-754b-4de5-a67f-845c8d4bac81",
+          "membership": "membership:ae89bbb8-7a1f-400d-92ea-977feee3967d",
+          "session": "session:baa8e828-328f-45c8-9e94-350551cf78dd",
+          "order": "order:a3ef2efb-38c5-454a-baf8-fb13a3735b0c",
+          "intent": "intent:4a0f8698-4290-47e6-8695-091a42d586c9",
+          "aftersale": "aftersale:c7166310-e885-43b8-a6ef-d79f5be0aaac",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 105,
+          "principal": "principal:991d5f8b-560d-40e0-a095-a0b0b5e6afda",
+          "member": "member:7c764bd5-838d-4c86-87c8-f8fcb44dd6f4",
+          "membership": "membership:6215d6b3-4357-4a84-b7fe-7072727d4c99",
+          "session": "session:2ba1cc93-8185-4c5f-a163-ddaadece6a28",
+          "order": "order:09dd45f6-2103-48ef-95b5-be8c0c194d50",
+          "intent": "intent:2b3e484f-e70e-4eca-a3d4-ca6ae8033d01",
+          "aftersale": "aftersale:6f085c6a-9b22-4d9a-9baf-2e70faf76d20",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 106,
+          "principal": "principal:7e50d4ff-fe69-4053-8865-e45867e802d8",
+          "member": "member:687a87e0-e4c8-416a-b54a-6d08e241e898",
+          "membership": "membership:0543c224-62d5-4b34-b800-f7d48414ad1d",
+          "session": "session:7ea1bc04-21f6-42bb-9940-1701c9454eb9",
+          "order": "order:1b1e4f5a-b6a3-4d4e-b85f-ad39ddbdf7d3",
+          "intent": "intent:d8840c36-5dc0-46c1-b7f4-56ae9b41f1ae",
+          "aftersale": "aftersale:3c178910-ce32-408b-a064-6490b1b64097",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 107,
+          "principal": "principal:a6be33e1-fd2e-47b3-b10d-c90557fbcfa0",
+          "member": "member:f9bb8d6f-618f-4c86-b8ee-7db51c1a7bfb",
+          "membership": "membership:9e9eb4a6-3c5e-4e3d-906b-f265e6393f17",
+          "session": "session:cacc13bc-5906-416e-8ca2-7ddcb28b4424",
+          "order": "order:c01d4499-1ff2-4435-8396-e69e18f95ff7",
+          "intent": "intent:a528515b-0ca2-4d52-93cb-47a64bbee7b4",
+          "aftersale": "aftersale:435c228b-8704-4b9d-90ee-07c46c76dc68",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 108,
+          "principal": "principal:3b8ad30f-aebe-482c-9e93-1ea88ece506a",
+          "member": "member:71a879b6-fd85-41b7-ae7b-eeb2ebf568e7",
+          "membership": "membership:b428b974-d371-42b4-8ad4-ba2d3b8709f8",
+          "session": "session:d0aae7f0-b238-4d67-9d64-ec1cdbcae2de",
+          "order": "order:ceef74a6-517c-46ae-9778-9d21f32474a0",
+          "intent": "intent:d308b68d-c193-475b-bcad-6bd7fb73fe03",
+          "aftersale": "aftersale:35676016-6855-4ff8-b434-b45de25abb3d",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 109,
+          "principal": "principal:e5f4a98d-68d9-406c-ade2-f8736f730777",
+          "member": "member:5d97e0b9-4afa-4fda-b4a3-52b877c8fda3",
+          "membership": "membership:69b99f3d-5224-4f6b-b490-d6840c4b02b4",
+          "session": "session:4e415d96-6ec5-41fa-ae0f-edc03680456d",
+          "order": "order:3db5987d-7ae0-429c-919f-d3b4d889ca1b",
+          "intent": "intent:5af7507e-cb5a-441a-a838-18216368459c",
+          "aftersale": "aftersale:bb7a2096-3d33-49bf-80a6-370624e0b43e",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 110,
+          "principal": "principal:bdf6cb08-1636-44bb-9500-06bac339ad64",
+          "member": "member:e1f02d50-84d5-41ca-b5c5-c512a5208006",
+          "membership": "membership:b25c9e61-f4ab-44a3-acbc-430165d5998a",
+          "session": "session:752fab7c-1a78-4a6a-a0d0-0e16460da40a",
+          "order": "order:b4edd58c-5fe5-4fb2-bb2b-48f34ef459c0",
+          "intent": "intent:90e1a8fc-2596-447d-9c8e-30f86fadc64e",
+          "aftersale": "aftersale:3db47be1-8b69-4028-90a2-8c4948e78677",
+          "finalState": "refunded/resolved"
+        },
+        {
+          "ordinal": 111,
+          "principal": "principal:38be73e3-e8a9-4237-84d6-318db6eb57a1",
+          "member": "member:4bc4b3fe-5c0b-46cc-a1dd-96fefa40c77a",
+          "membership": "membership:fa811c10-4395-4f38-9796-505547116eff",
+          "session": "session:739fadce-d5fb-449d-9a31-1868d04954aa",
+          "order": "order:5eef5377-b05f-4504-aff1-e99537790509",
+          "intent": "intent:7f3b84dd-6f9a-4d0a-83b0-0d57d6b1db16",
+          "aftersale": "aftersale:24c1646a-abd6-4f26-931e-5676fed96aa1",
+          "finalState": "refunded/resolved"
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "verdict": {
+    "passed": true,
+    "reason": "ALL_1_10_100_COHORTS_PASSED"
+  },
+  "database": {
+    "serverVersion": "17.11",
+    "queueStates": [
+      {
+        "kind": "auditarchive",
+        "state": "queued",
+        "count": 1
+      },
+      {
+        "kind": "extensionhealth",
+        "state": "queued",
+        "count": 1
+      },
+      {
+        "kind": "fulfillment",
+        "state": "queued",
+        "count": 111
+      },
+      {
+        "kind": "identitynotification",
+        "state": "completed",
+        "count": 222
+      },
+      {
+        "kind": "orderexpiry",
+        "state": "queued",
+        "count": 111
+      },
+      {
+        "kind": "paymentquery",
+        "state": "completed",
+        "count": 111
+      },
+      {
+        "kind": "paymentrefund",
+        "state": "completed",
+        "count": 111
+      }
+    ],
+    "deadletters": 0,
+    "totals": {
+      "orders": 111,
+      "aftersales": 111,
+      "refunds": 111
+    },
+    "expectedResidualQueue": "fulfillment jobs remain queued because fulfillment dispatch is outside this journey; all SMS/payment/refund jobs must be completed"
+  }
+}

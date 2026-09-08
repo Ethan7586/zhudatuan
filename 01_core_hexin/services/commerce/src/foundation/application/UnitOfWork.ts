@@ -11,6 +11,7 @@ export interface TransactionContext {
   readonly actor: string;
   readonly trace: string;
   readonly workload: 'query' | 'command' | 'worker' | 'migration';
+  readonly serializationKeys?: readonly string[];
 }
 
 export interface UnitOfWork {

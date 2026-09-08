@@ -63,8 +63,8 @@ export class RefundSettlement {
     await orderPort.markRefunded(database, { order: refund.order_id, refundedMinor: totals.refunded_minor,
       capturedMinor: totals.captured_minor, aftersale: refund.aftersale_id });
     await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
-      values($1,'payment.refunded',1,'refund',$2,$3,jsonb_build_object('refund',$2,'payment',$4,'amountMinor',$5,'currency',$6,
-        'member',$7,'order',$8,'mall',$9,'tenders',$10::jsonb,'scopes',(select jsonb_agg(ancestor_id order by depth)
+      values($1,'payment.refunded',1,'refund',$2,$3,jsonb_build_object('refund',$2::text,'payment',$4::text,'amountMinor',$5::bigint,'currency',$6::text,
+        'member',$7::text,'order',$8::text,'mall',$9::text,'tenders',$10::jsonb,'scopes',(select jsonb_agg(ancestor_id order by depth)
           from organization.unitclosure where descendant_id=$3),'timezone',(select timezone from organization.organization where id=$9)),
         $1,coalesce($11::timestamptz,clock_timestamp()),clock_timestamp())`, [`event:${randomUUID()}`, refundid, refund.scope_id, refund.payment_id,
       refund.amount_minor, refund.currency, refund.member_id, refund.order_id, refund.mall_id, JSON.stringify(legs), providerOccurredAt]);

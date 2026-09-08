@@ -107,6 +107,8 @@ describe('RefundSettlement provider accounting time', () => {
     const financial = fixture.calls.find((call) => call.sql.includes('insert into runtime.outbox'));
     expect(authority?.values).toEqual(['mall:one', 'refund:one', 'wechat-refund:one', 400, 'CNY']);
     expect(financial?.values[10]).toBe(monthEnd);
+    expect(financial?.sql).toContain("'refund',$2::text,'payment',$4::text,'amountMinor',$5::bigint,'currency',$6::text");
+    expect(financial?.sql).toContain("'member',$7::text,'order',$8::text,'mall',$9::text");
     expect(dependencies.benefitRefund).toHaveBeenCalledOnce();
   });
 

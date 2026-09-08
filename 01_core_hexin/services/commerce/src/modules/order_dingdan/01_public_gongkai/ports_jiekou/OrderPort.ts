@@ -39,14 +39,16 @@ export class OrderPort {
   }
 
   async startAftersaleRefund(database: OperationDatabase, aftersale: string): Promise<void> {
-    const changed = await database.query(`update ordering.aftersale set state='processing',version=version+1,updated_at=clock_timestamp()
-      where id=$1 and state='approved' returning id`, [aftersale]);
+    const changed = await database.query(`with transitioned as(
+      update ordering.aftersale set state='processing',version=version+1,updated_at=clock_timestamp()
+      where id=$1 and state='approved' returning id)
+      select id from transitioned union all select id from ordering.aftersale where id=$1 and state='processing' limit 1`, [aftersale]);
     if (!changed.rows[0]) throw new Error('AFTERSALE_STATE_CONFLICT');
   }
 
   async markRefunded(database: OperationDatabase, input: Readonly<{ order: string; refundedMinor: number; capturedMinor: number;
     aftersale: string | null }>): Promise<void> {
-    const changed = await database.query(`update ordering.orderrecord set payment_state=case when $2=$3 then 'refunded' else 'partially_refunded' end,
+    const changed = await database.query(`update ordering.orderrecord set payment_state=case when $2::bigint=$3::bigint then 'refunded' else 'partially_refunded' end,
       aftersale_state=case when $4::text is null then aftersale_state else 'resolved' end,version=version+1,updated_at=clock_timestamp()
       where id=$1 returning id`, [input.order, input.refundedMinor, input.capturedMinor, input.aftersale]);
     if (!changed.rows[0]) throw new Error('ORDER_NOT_FOUND');

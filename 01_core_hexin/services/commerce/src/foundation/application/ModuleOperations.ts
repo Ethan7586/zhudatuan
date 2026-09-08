@@ -225,8 +225,11 @@ export function requireAccess(request: OperationRequest) {
 
 function transactionContext(request: OperationRequest, module: string, workload: 'query' | 'command') {
   const access = request.access;
+  const mall = access?.mallContext?.mall_id ?? access?.mall_id;
+  const serializationKeys = request.type === 'order.orders.create' && mall ? [`inventory:${mall}`] : undefined;
   return { tenant: access?.scope.tenant ?? '', membership: access?.membership.id ?? '', scope: access?.scope.id ?? `public:${module}`,
-    actor: access?.actor.id ?? 'public', trace: access?.trace ?? `public:${request.type}`, workload } as const;
+    actor: access?.actor.id ?? 'public', trace: access?.trace ?? `public:${request.type}`, workload,
+    ...(serializationKeys === undefined ? {} : { serializationKeys }) } as const;
 }
 
 export function operationRequestHash(request: OperationRequest): string {
