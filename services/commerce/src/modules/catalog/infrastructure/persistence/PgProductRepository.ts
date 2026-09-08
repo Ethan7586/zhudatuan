@@ -8,9 +8,25 @@ import { Product, type ProductSnapshot } from '../../domain/model/Product';
 import { Sku } from '../../domain/model/Sku';
 import { Category, type CategorySnapshot } from '../../domain/model/Category';
 import type { CatalogScopeReader } from './CatalogScopeReader';
-interface ProductDetail extends Omit<ProductDetailBase, 'media' | 'regionIds' | 'timeline'> {
+type ProductListing = ProductDetailBase['listings'][number];
+type ProductChannel = ProductDetailBase['channels'][number];
+type Instant = string | Date;
+type NormalizedProductDetail = Omit<ProductDetail, 'createdAt' | 'updatedAt' | 'listings' | 'channels'> & Pick<ProductDetailBase, 'createdAt' | 'updatedAt' | 'listings' | 'channels'>;
+
+interface ProductDetail extends Omit<ProductDetailBase, 'createdAt' | 'updatedAt' | 'listings' | 'channels' | 'media' | 'regionIds' | 'timeline'> {
   readonly owner_partner_id: string | null;
   readonly attributes: Readonly<Record<string, unknown>>;
+  readonly createdAt: Instant;
+  readonly updatedAt: Instant;
+  readonly listings: readonly Readonly<
+    Omit<ProductListing, 'effectiveAt' | 'expiresAt' | 'createdAt' | 'updatedAt'> & {
+      readonly effectiveAt: Instant | null;
+      readonly expiresAt: Instant | null;
+      readonly createdAt: Instant;
+      readonly updatedAt: Instant;
+    }
+  >[];
+  readonly channels: readonly Readonly<Omit<ProductChannel, 'observedAt'> & { readonly observedAt: Instant }>[];
 }
 export class PgProductRepository implements ProductRepository {
   constructor(
@@ -56,10 +72,11 @@ export class PgProductRepository implements ProductRepository {
     if (!product) throw new DomainError('LISTING_NOT_PURCHASABLE');
     const ownerScope = product.owner_partner_id ? ((await this.partners.scopes(context, [product.owner_partner_id])).get(product.owner_partner_id) ?? null) : null;
     if (product.listings.length === 0 && (ownerScope === null || !allowedScopes.includes(ownerScope))) throw new DomainError('LISTING_NOT_PURCHASABLE');
-    const media = productMedia(product.attributes, product.cover_url, product.title);
-    const regionIds = textArray(product.attributes.regionIds);
-    const timeline = productTimeline(product);
-    const { attributes: _attributes, ...visible } = product;
+    const normalized = normalizeProductDetail(product);
+    const media = productMedia(normalized.attributes, normalized.cover_url, normalized.title);
+    const regionIds = textArray(normalized.attributes.regionIds);
+    const timeline = productTimeline(normalized);
+    const { attributes: _attributes, ...visible } = normalized;
     return Object.freeze({ ...visible, media, regionIds, timeline, visibleScopes: Object.freeze(allowedScopes) });
   }
   async create(context: WriteTransactionContext, input: Parameters<ProductRepository['create']>[1]) {
@@ -170,7 +187,23 @@ function productMedia(attributes: Readonly<Record<string, unknown>>, cover: stri
   return Object.freeze(values.sort((left, right) => left.sort - right.sort || left.id.localeCompare(right.id)));
 }
 
-function productTimeline(product: ProductDetail): ProductDetailBase['timeline'] {
+function normalizeProductDetail(product: ProductDetail): NormalizedProductDetail {
+  const listings = Object.freeze(
+    product.listings.map((listing) =>
+      Object.freeze({
+        ...listing,
+        effectiveAt: nullableIsoInstant(listing.effectiveAt),
+        expiresAt: nullableIsoInstant(listing.expiresAt),
+        createdAt: isoInstant(listing.createdAt),
+        updatedAt: isoInstant(listing.updatedAt),
+      })
+    )
+  );
+  const channels = Object.freeze(product.channels.map((channel) => Object.freeze({ ...channel, observedAt: isoInstant(channel.observedAt) })));
+  return Object.freeze({ ...product, createdAt: isoInstant(product.createdAt), updatedAt: isoInstant(product.updatedAt), listings, channels });
+}
+
+function productTimeline(product: Pick<ProductDetailBase, 'id' | 'createdAt' | 'updatedAt' | 'listings' | 'channels'>): ProductDetailBase['timeline'] {
   const values: ProductDetailBase['timeline'][number][] = [
     Object.freeze({ id: `timeline:productcreated:${product.id}`, kind: 'productcreated', title: '商品主档已创建', occurredAt: product.createdAt, reference: product.id }),
     Object.freeze({ id: `timeline:productupdated:${product.id}`, kind: 'productupdated', title: '商品主档已更新', occurredAt: product.updatedAt, reference: product.id }),
@@ -183,6 +216,16 @@ function productTimeline(product: ProductDetail): ProductDetailBase['timeline'] 
     ),
   ];
   return Object.freeze(values.sort((left, right) => right.occurredAt.localeCompare(left.occurredAt) || left.id.localeCompare(right.id)));
+}
+
+function nullableIsoInstant(value: Instant | null): string | null {
+  return value === null ? null : isoInstant(value);
+}
+
+function isoInstant(value: Instant): string {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) throw new Error('CATALOG_PRODUCT_INVALID_INSTANT');
+  return date.toISOString();
 }
 
 function textArray(value: unknown): readonly string[] {

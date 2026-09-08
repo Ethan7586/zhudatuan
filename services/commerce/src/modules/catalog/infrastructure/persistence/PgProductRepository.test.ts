@@ -19,8 +19,8 @@ describe('PgProductRepository detail projection', () => {
           cover_url: 'https://assets.example/cover.jpg',
           subtitle: null,
           description: '工作日早餐',
-          createdAt: '2026-09-01T00:00:00.000Z',
-          updatedAt: '2026-09-07T00:00:00.000Z',
+          createdAt: new Date('2026-09-01T00:00:00.000Z'),
+          updatedAt: new Date('2026-09-07T00:00:00.000Z'),
           attributes: {
             regionIds: ['region:east'],
             media: [
@@ -66,9 +66,18 @@ describe('PgProductRepository detail projection', () => {
       { id: 'media:manual', kind: 'document', url: 'https://assets.example/manual.pdf', alt: '说明书', sort: 2 },
     ]);
     expect(detail.regionIds).toEqual(['region:east']);
+    expect(detail.createdAt).toBe('2026-09-01T00:00:00.000Z');
+    expect(detail.updatedAt).toBe('2026-09-07T00:00:00.000Z');
+    expect(detail.listings[0]).toMatchObject({
+      effectiveAt: null,
+      expiresAt: null,
+      createdAt: '2026-09-02T00:00:00.000Z',
+      updatedAt: '2026-09-06T00:00:00.000Z',
+    });
     expect(detail.channels).toHaveLength(1);
     expect(detail.pools).toEqual([{ id: 'pool:one', name: '早餐池', kind: 'private', status: 'active', listingCount: 1 }]);
     expect(detail.timeline[0]).toMatchObject({ kind: 'sourceobserved', occurredAt: '2026-09-07T08:00:00.000Z' });
+    expect(detail.timeline.every(({ occurredAt }) => typeof occurredAt === 'string')).toBe(true);
     expect(detail).not.toHaveProperty('attributes');
   });
 });
