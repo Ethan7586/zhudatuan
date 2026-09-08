@@ -26,7 +26,12 @@ export class AccessPipeline {
     try {
       assertAudienceTarget(operation, actor.target);
       const now = this.clock.now();
-      const snapshot = await this.snapshots.resolve(actor, operation, resource ?? headers['x-scope-hint']);
+      const resolvedResource = resource ?? headers['x-scope-hint'];
+      const snapshot = await this.snapshots.resolve(actor, operation, {
+        ...(resolvedResource === undefined ? {} : { resource: resolvedResource }),
+        deadline,
+        signal,
+      });
       const membership = snapshot.membership;
       if (!membership.active) throw new DomainError('MEMBERSHIP_INACTIVE');
       if (snapshot.credentialVersion !== actor.credentialVersion)

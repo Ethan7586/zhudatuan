@@ -12,13 +12,16 @@ export class ReadAuthorizationSnapshot implements AuthorizationSnapshotResolver 
     private readonly telemetry: Telemetry
   ) {}
 
-  async resolve(actor: Actor, operation: string, resource?: string): Promise<AuthorizationSnapshot> {
+  async resolve(
+    actor: Actor,
+    operation: string,
+    options: Readonly<{ resource?: string | undefined; deadline: number; signal: AbortSignal }>
+  ): Promise<AuthorizationSnapshot> {
     const started = performance.now();
     let result = 'failure';
     try {
-      const signal = AbortSignal.timeout(5_000);
-      const row = await this.transactions.read({ tenant: '', membership: actor.membership, scope: '', actor: actor.id, trace: actor.session, operation, deadline: Date.now() + 5_000, signal }, (context) =>
-        this.repository.snapshot(context, { membership: actor.membership, target: actor.target, operation, resource: resource ?? null })
+      const row = await this.transactions.read({ tenant: '', membership: actor.membership, scope: '', actor: actor.id, trace: actor.session, operation, deadline: options.deadline, signal: options.signal }, (context) =>
+        this.repository.snapshot(context, { membership: actor.membership, target: actor.target, operation, resource: options.resource ?? null })
       );
       if (!row) throw new DomainError('MEMBERSHIP_INACTIVE');
       result = 'success';

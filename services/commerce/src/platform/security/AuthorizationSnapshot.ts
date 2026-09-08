@@ -23,5 +23,9 @@ export interface AuthorizationSnapshot {
 }
 
 export interface AuthorizationSnapshotResolver {
-  resolve(actor: Actor, operation: string, resource?: string): Promise<AuthorizationSnapshot>;
+  resolve(
+    actor: Actor,
+    operation: string,
+    options: Readonly<{ resource?: string | undefined; deadline: number; signal: AbortSignal }>
+  ): Promise<AuthorizationSnapshot>;
 }

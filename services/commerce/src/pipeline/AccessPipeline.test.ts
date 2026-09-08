@@ -43,7 +43,11 @@ describe('AccessPipeline audience boundary', () => {
       actor: { target: 'storefront' },
       scope: OWNER,
     });
-    expect(fixture.snapshot).toHaveBeenCalledWith(expect.objectContaining({ membership: 'membership:one' }), 'member.profile.read', undefined);
+    expect(fixture.snapshot).toHaveBeenCalledWith(
+      expect.objectContaining({ membership: 'membership:one' }),
+      'member.profile.read',
+      expect.objectContaining({ deadline: expect.any(Number), signal: expect.any(AbortSignal) })
+    );
     expect(fixture.risk).toHaveBeenCalledWith(expect.objectContaining({ operation: 'member.profile.read' }));
   });
 

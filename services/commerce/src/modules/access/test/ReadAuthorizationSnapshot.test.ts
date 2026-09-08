@@ -29,7 +29,13 @@ describe('ReadAuthorizationSnapshot', () => {
       transactionManager(async () => databaseResult([])),
       { metrics: { count: vi.fn(), duration } } as never
     );
-    const snapshot = await query.resolve({ id: 'principal:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 7, target: 'console', assurance: { level: 2 } }, 'order.orders.read');
+    const signal = new AbortController().signal;
+    const deadline = Date.now() + 1_000;
+    const snapshot = await query.resolve(
+      { id: 'principal:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 7, target: 'console', assurance: { level: 2 } },
+      'order.orders.read',
+      { deadline, signal }
+    );
     expect([...snapshot.membership.permissions.allows]).toEqual(['order.read', 'order.refund']);
     expect([...snapshot.membership.permissions.denies]).toEqual(['order.refund']);
     expect([...snapshot.capabilities]).toEqual(['order.orders.read']);
@@ -37,5 +43,25 @@ describe('ReadAuthorizationSnapshot', () => {
     expect(snapshot.credentialVersion).toBe(2);
     expect(snapshot.roles).toEqual([expect.objectContaining({ id: 'role:one', version: 4, active: true })]);
     expect(duration).toHaveBeenCalledWith('access_authorization_snapshot_duration_ms', expect.any(Number), expect.objectContaining({ operation: 'order.orders.read', result: 'success' }));
+  });
+
+  it('honors the caller cancellation instead of starting an independent authorization budget', async () => {
+    const snapshot = vi.fn();
+    const controller = new AbortController();
+    controller.abort(new Error('CALLER_ABORTED'));
+    const query = new ReadAuthorizationSnapshot(
+      { snapshot } as unknown as AuthorizationRepository,
+      transactionManager(async () => databaseResult([])),
+      { metrics: { count: vi.fn(), duration: vi.fn() } } as never
+    );
+
+    await expect(
+      query.resolve(
+        { id: 'principal:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 7, target: 'console', assurance: { level: 2 } },
+        'order.orders.read',
+        { deadline: Date.now() + 1_000, signal: controller.signal }
+      )
+    ).rejects.toThrow('CALLER_ABORTED');
+    expect(snapshot).not.toHaveBeenCalled();
   });
 });
