@@ -1801,8 +1801,7 @@ begin
     select 'self:'||profile.principal_id into resolved from access.membership membership join member.profile profile on profile.id=membership.member_id where membership.id=p_membership_id;
   elsif exists(select 1 from capability.operation where operation_id=p_operation and audience='storefront')
       or p_operation like 'cart.%' or p_operation like 'checkout.%' or p_operation in(
-      'order.orders.create','order.aftersales.apply','benefit.accounts.read','invoice.profiles.manage',
-      'invoice.requests.create','invoice.requests.read','invoice.requests.cancel',
+      'order.orders.create','order.aftersales.apply','benefit.accounts.read',
       'notification.notifications.read','notification.preferences.manage','notification.endpoints.manage') then
     select profile.id into resolved from access.membership membership join member.profile profile on profile.id=membership.member_id where membership.id=p_membership_id;
   elsif p_operation in('order.orders.read','order.aftersales.read','support.cases.read','support.messages.read')
