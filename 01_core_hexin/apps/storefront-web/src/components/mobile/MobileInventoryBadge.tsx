@@ -1,8 +1,7 @@
 import { CircleCheck, CircleX, PackageSearch, TriangleAlert } from 'lucide-react';
-import type { FrontendProduct } from '../../adapters/frontendData';
-import { inventoryStatus } from './mobileOrderPresentation';
+import { inventoryStatus, type MobileInventoryProduct } from './mobileOrderPresentation';
 
-export function MobileInventoryBadge({ product }: Readonly<{ product: FrontendProduct }>) {
+export function MobileInventoryBadge({ product }: Readonly<{ product: MobileInventoryProduct }>) {
   const status = inventoryStatus(product);
   if (status === 'available') {
     return <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-emerald-600"><CircleCheck className="h-3 w-3" />库存充足</span>;

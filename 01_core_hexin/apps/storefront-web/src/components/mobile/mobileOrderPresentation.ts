@@ -3,6 +3,12 @@ import type { MobileFulfillmentStage } from '../../context/MallContext';
 
 export type MobileInventoryStatus = 'available' | 'tight' | 'unavailable' | 'pending';
 
+export interface MobileInventoryProduct {
+  purchasable?: boolean;
+  stock?: number;
+  stockCount?: number;
+}
+
 export interface MobileMerchantPackage {
   id: string;
   merchantName: string;
@@ -18,10 +24,11 @@ export function mobileOrderPayableAmount(order: FrontendOrder): number {
   return Math.max(0, orderTotal - order.payment.welfareDeducted - order.payment.mealDeducted);
 }
 
-export function inventoryStatus(product: FrontendProduct): MobileInventoryStatus {
-  if (!product.purchasable && product.stockCount === 0) return 'pending';
-  if (product.stockCount <= 0) return 'unavailable';
-  if (product.stockCount <= 8) return 'tight';
+export function inventoryStatus(product: MobileInventoryProduct): MobileInventoryStatus {
+  const stockCount = product.stockCount ?? product.stock ?? 0;
+  if (!product.purchasable && stockCount === 0) return 'pending';
+  if (stockCount <= 0) return 'unavailable';
+  if (stockCount <= 8) return 'tight';
   return 'available';
 }
 

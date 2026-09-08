@@ -16,6 +16,10 @@ describe('mobile order presentation', () => {
     expect(inventoryStatus(candidate)).toBe(expected);
   });
 
+  it('reads the canonical stock field used by cart products', () => {
+    expect(inventoryStatus({ stock: 5, purchasable: true })).toBe('tight');
+  });
+
   it('reserves one package for each merchant', () => {
     const order = {
       id: 'order-1',
