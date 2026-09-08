@@ -7,6 +7,7 @@ import { identityReply, identityRequest } from '../model/IdentityExecution';
 export class TicketsExchangeHandler implements OperationHandler<'identity.tickets.exchange', 'write'> {
   readonly operation = 'identity.tickets.exchange' as const;
   readonly mode = 'write' as const;
+  readonly isolation = 'read committed' as const;
 
   constructor(private readonly action: IdentityAction) {}
 
