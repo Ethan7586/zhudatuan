@@ -1,3 +1,5 @@
+import { Button } from '@shop/design';
+
 interface ProductSelectionBarProps {
   readonly count: number;
   readonly canBatch: boolean;
@@ -13,12 +15,12 @@ export function ProductSelectionBar({ count, canBatch, batchReason, onBatch }: P
         已选择当前页 <strong>{count}</strong> 项
       </span>
       <span>仅处理当前页已选记录，服务端按可见范围再次收敛</span>
-      <button type="button" onClick={() => onBatch(true)} disabled={!canBatch} title={batchReason}>
+      <Button onPress={() => onBatch(true)} isDisabled={!canBatch}>
         批量上架
-      </button>
-      <button type="button" onClick={() => onBatch(false)} disabled={!canBatch} title={batchReason}>
+      </Button>
+      <Button onPress={() => onBatch(false)} isDisabled={!canBatch}>
         批量下架
-      </button>
+      </Button>
       {!canBatch && batchReason ? <small>{batchReason}</small> : null}
     </div>
   );

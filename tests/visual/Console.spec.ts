@@ -115,6 +115,37 @@ test('Console 窄屏页脚只保留服务状态且不覆盖工作区', async ({ 
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
 });
 
+test('Console 商品治理台在桌面、平板和手机保持清晰布局与触控尺寸', async ({ page }) => {
+  test.slow();
+  await prepareVisual(page, { width: 1366, height: 768 });
+  await signInConsole(page);
+  for (const viewport of [
+    { width: 1366, height: 768 },
+    { width: 1024, height: 768 },
+    { width: 768, height: 1024 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleproducts, 'enterprise')}`);
+    await expectUsable(page);
+    await expect(page.locator('.producttablewrap tbody tr').first()).toBeVisible();
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    await expect.poll(() => minimumHeight(page, '.productheroactions button')).toBeGreaterThanOrEqual(44);
+    if (viewport.width <= 768) {
+      await expect(page.locator('.producttablewrap tbody tr').first()).toHaveCSS('display', 'grid');
+      await expect.poll(() => elementFitsParent(page, '.producttablewrap tbody .productchecktarget', '.producttablewrap tbody tr')).toBe(true);
+      await expect.poll(() => textFits(page, '.productfilterdisclosure > summary > span')).toBe(true);
+      await expect.poll(() => textFits(page, '.productfilterdisclosure > summary > small')).toBe(true);
+      await page.locator('.productfilterdisclosure > summary').click();
+      await expect(page.locator('.producttoolbar')).toBeVisible();
+      await expect.poll(() => minimumHeight(page, '.producttoolbar :is(button, input, select)')).toBeGreaterThanOrEqual(44);
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    } else {
+      await expect(page.locator('.producttablewrap tbody tr').first()).toHaveCSS('display', 'table-row');
+    }
+  }
+});
+
 function canonicalScope(routeid: string): ScopeKind {
   const declared = authority.nodes.filter((node) => node.surface === 'console' && node.routeid === routeid).map(({ scope }) => scope);
   const preferred: readonly ScopeKind[] = routeid.startsWith('consolereferral')
@@ -138,8 +169,12 @@ async function columnCount(page: import('@playwright/test').Page, selector: stri
 }
 
 async function elementFitsParent(page: import('@playwright/test').Page, selector: string, parent: string): Promise<boolean> {
-  const childBox = await page.locator(selector).boundingBox();
-  const parentBox = await page.locator(parent).boundingBox();
+  const childBox = await page.locator(selector).first().boundingBox();
+  const parentBox = await page.locator(parent).first().boundingBox();
   if (!childBox || !parentBox) return false;
   return childBox.x >= parentBox.x && childBox.y >= parentBox.y && childBox.x + childBox.width <= parentBox.x + parentBox.width && childBox.y + childBox.height <= parentBox.y + parentBox.height;
+}
+
+async function minimumHeight(page: import('@playwright/test').Page, selector: string): Promise<number> {
+  return page.locator(selector).evaluateAll((elements) => Math.min(...elements.map((element) => element.getBoundingClientRect().height)));
 }

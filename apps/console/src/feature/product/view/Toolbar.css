@@ -1,10 +1,10 @@
 .productselectcontrol {
   position: relative;
   display: flex;
-  height: 36px;
+  height: var(--sw-control-touch-target);
   align-items: center;
-  border: 1px solid var(--sw-border);
-  border-radius: 6px;
+  border: var(--sw-border-width) solid var(--sw-border-interactive);
+  border-radius: var(--sw-radius-sm);
   background: var(--sw-surface);
 }
 
@@ -17,7 +17,7 @@
   background: transparent;
   color: var(--sw-text-secondary);
   padding: 0 28px 0 10px;
-  font-size: 11px;
+  font-size: var(--sw-font-size-body-sm);
   cursor: pointer;
 }
 
@@ -38,32 +38,23 @@
 
 .productcompactfield {
   display: block;
-  width: 86px;
-  height: 36px;
+  width: 8rem;
+  height: var(--sw-control-touch-target);
 }
 
 .productcompactfield input {
   width: 100%;
   height: 100%;
-  border: 1px solid var(--sw-border);
-  border-radius: 6px;
+  border: var(--sw-border-width) solid var(--sw-border-interactive);
+  border-radius: var(--sw-radius-sm);
   outline: 0;
   padding: 0 10px;
-  font-size: 11px;
+  font-size: var(--sw-font-size-body-sm);
 }
 
 .producttoolbutton {
-  display: inline-flex;
-  min-height: 36px;
-  align-items: center;
-  gap: 5px;
-  border: 1px solid var(--sw-border);
-  border-radius: 6px;
-  background: var(--sw-surface);
-  color: var(--sw-text-secondary);
-  padding: 0 10px;
-  font-size: 11px;
-  white-space: nowrap;
+  --shop-button-min-height: var(--sw-control-touch-target);
+  --shop-button-padding: 0 var(--sw-control-padding-compact);
 }
 
 .producttoolbutton svg {
@@ -75,13 +66,9 @@
 }
 
 .productreset {
-  min-height: 36px;
-  border: 0;
-  background: transparent;
-  color: var(--sw-brand);
-  padding: 0 4px;
-  font-size: 11px;
-  font-weight: 600;
+  --shop-button-min-height: var(--sw-control-touch-target);
+  --shop-button-padding: 0 var(--sw-space-1);
+  --shop-button-quiet-color: var(--sw-brand-dark);
 }
 
 .producttoolspacer {
@@ -90,23 +77,19 @@
 
 .productfacetstate {
   color: var(--sw-muted);
-  font-size: 10px;
+  font-size: var(--sw-font-size-caption);
   white-space: nowrap;
 }
 
 .productfacetretry {
-  min-height: 30px;
-  border: 0;
-  background: transparent;
-  color: var(--sw-danger);
-  padding: 0 4px;
-  font-size: 10px;
-  white-space: nowrap;
+  --shop-button-min-height: var(--sw-control-touch-target);
+  --shop-button-padding: 0 var(--sw-space-1);
+  --shop-button-quiet-color: var(--sw-danger-strong);
 }
 
 .productservertime {
   display: flex;
-  height: 24px;
+  min-height: var(--sw-control-height-compact);
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
@@ -114,7 +97,7 @@
   border-top: 1px solid var(--sw-brand-light);
   color: var(--sw-muted);
   padding: 0 11px;
-  font-size: 10px;
+  font-size: var(--sw-font-size-caption);
 }
 
 .productservertime span {

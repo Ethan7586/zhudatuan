@@ -7,15 +7,16 @@
 }
 .productdatagap {
   display: inline-flex;
-  max-width: 108px;
+  max-width: 9rem;
+  min-height: var(--sw-control-height-compact);
   overflow: hidden;
   align-items: center;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--sw-radius-sm);
   background: var(--sw-warning-surface);
   color: var(--sw-warning-strong);
-  padding: 3px 6px;
-  font-size: 9px;
+  padding: 0 var(--sw-space-1);
+  font-size: var(--sw-font-size-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
@@ -28,7 +29,7 @@
   align-items: center;
   gap: 5px;
   color: var(--sw-text-secondary);
-  font-size: 10px;
+  font-size: var(--sw-font-size-caption);
 }
 .productstatus i {
   display: grid;
@@ -57,18 +58,18 @@
 .productrowactions {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sw-space-0-5);
 }
 .productrowactions button {
   display: inline-flex;
-  min-height: 28px;
+  min-height: var(--sw-control-touch-target);
   align-items: center;
   gap: 4px;
   border: 0;
   background: transparent;
   color: var(--sw-brand);
-  padding: 0 3px;
-  font-size: 10px;
+  padding: 0 var(--sw-space-1);
+  font-size: var(--sw-font-size-body-sm);
 }
 .productrowactions button:last-child {
   color: var(--sw-text-secondary);

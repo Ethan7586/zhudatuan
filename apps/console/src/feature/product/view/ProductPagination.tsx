@@ -1,3 +1,4 @@
+import { Button } from '@shop/design';
 import { ProductIcon } from './ProductIcon';
 
 interface ProductPaginationProps {
@@ -28,9 +29,9 @@ export function ProductPagination({ count, total, page, limit, canPrevious, canN
         </select>
       </label>
       <div className="productpagebuttons">
-        <button type="button" aria-label="上一页" disabled={!canPrevious} onClick={onPrevious}>
+        <Button tone="quiet" aria-label="上一页" isDisabled={!canPrevious} onPress={onPrevious}>
           <ProductIcon name="arrowLeft" />
-        </button>
+        </Button>
         <strong aria-current="page">{page}</strong>
         {pageCount === undefined ? null : (
           <>
@@ -38,9 +39,9 @@ export function ProductPagination({ count, total, page, limit, canPrevious, canN
             <span>{pageCount}</span>
           </>
         )}
-        <button type="button" aria-label="下一页" disabled={!canNext} onClick={onNext}>
+        <Button tone="quiet" aria-label="下一页" isDisabled={!canNext} onPress={onNext}>
           <ProductIcon name="arrowRight" />
-        </button>
+        </Button>
       </div>
     </footer>
   );

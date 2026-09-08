@@ -1,34 +1,30 @@
 .productcatalog {
-  padding: 14px 16px 16px;
+  padding: var(--sw-space-2);
 }
 .producttablecard {
   overflow: hidden;
-  border: 1px solid var(--sw-border);
-  border-radius: 8px;
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
   background: var(--sw-surface);
 }
 .productselectionbar {
   display: flex;
-  min-height: 40px;
+  min-height: var(--sw-control-height-lg);
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid var(--sw-border-strong);
   background: var(--sw-background);
   color: var(--sw-text-secondary);
   padding: 6px 12px;
-  font-size: 11px;
+  font-size: var(--sw-font-size-body-sm);
 }
 .productselectionbar > span:nth-child(2) {
   flex: 1;
   color: var(--sw-muted);
 }
-.productselectionbar button {
-  min-height: 28px;
-  border: 1px solid var(--sw-border-strong);
-  border-radius: 5px;
-  background: var(--sw-surface);
-  color: var(--sw-brand);
-  padding: 0 9px;
+.productselectionbar .shopbutton {
+  --shop-button-min-height: var(--sw-control-height);
+  --shop-button-padding: 0 var(--sw-control-padding-compact);
 }
 .producttablewrap {
   width: 100%;
@@ -37,28 +33,28 @@
 }
 .producttablewrap table {
   width: 100%;
-  min-width: 900px;
+  min-width: 72rem;
   border-collapse: collapse;
   table-layout: auto;
-  font-size: 11px;
+  font-size: var(--sw-font-size-body-sm);
 }
 .producttablewrap th,
 .producttablewrap td {
-  height: 52px;
+  height: 4rem;
   border-bottom: 1px solid var(--sw-border);
   padding: 6px 10px;
   text-align: left;
   white-space: nowrap;
 }
 .producttablewrap th {
-  height: 38px;
+  height: var(--sw-control-touch-target);
   position: sticky;
   top: 0;
   z-index: 1;
   background: var(--sw-surface-subtle);
   color: var(--sw-muted);
-  font-size: 10px;
-  font-weight: 600;
+  font-size: var(--sw-font-size-caption);
+  font-weight: var(--sw-font-weight-semibold);
 }
 .producttablewrap tbody tr {
   color: var(--sw-text);
@@ -75,25 +71,32 @@
   border-bottom: 0;
 }
 .productcheckcell {
-  width: 40px;
+  width: 3.5rem;
   text-align: center !important;
 }
 .productcheckcell input {
-  width: 15px;
-  height: 15px;
+  width: 1.125rem;
+  height: 1.125rem;
   accent-color: var(--sw-brand);
+}
+.productchecktarget {
+  display: inline-grid;
+  width: var(--sw-control-touch-target);
+  height: var(--sw-control-touch-target);
+  cursor: pointer;
+  place-items: center;
 }
 .productidentity {
   display: flex;
-  min-width: 172px;
-  max-width: 250px;
+  min-width: 16rem;
+  max-width: none;
   align-items: center;
   gap: 9px;
 }
 .productidentity > button {
   display: grid;
   min-width: 0;
-  min-height: 0;
+  min-height: var(--sw-control-touch-target);
   gap: 1px;
   border: 0;
   background: transparent;
@@ -102,14 +105,12 @@
 }
 .productidentity strong,
 .productidentity span {
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .productidentity strong {
   color: var(--sw-text);
-  font-size: 11px;
-  font-weight: 650;
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: var(--sw-font-weight-semibold);
 }
 .productidentity span {
   color: var(--sw-muted);
@@ -126,8 +127,8 @@
   place-items: center;
 }
 .productthumbnail {
-  width: 40px;
-  height: 40px;
+  width: var(--sw-control-height-lg);
+  height: var(--sw-control-height-lg);
 }
 .productthumbnail svg {
   width: 21px;
@@ -165,12 +166,12 @@
   gap: 1px;
 }
 .productcellpair strong {
-  font-size: 10px;
-  font-weight: 500;
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: var(--sw-font-weight-medium);
 }
 .productcellpair small {
   color: var(--sw-muted);
-  font-size: 9px;
+  font-size: var(--sw-font-size-caption);
 }
 .productcellpair.isunavailable small {
   color: var(--sw-disabled);

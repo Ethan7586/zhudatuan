@@ -1,4 +1,5 @@
-import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
+import { Button } from '@shop/design';
 import { chineseReference, presentCatalogGap, presentProductSource, presentProductStatus } from '@shop/presentation';
 import { ProductIcon } from './ProductIcon';
 import type { Listing } from '../model/Product';
@@ -31,7 +32,9 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
           <thead>
             <tr>
               <th className="productcheckcell">
-                <input type="checkbox" aria-label="选择本页商品" checked={allSelected} onChange={onToggleAll} />
+                <label className="productchecktarget">
+                  <input type="checkbox" aria-label="选择本页商品" checked={allSelected} onChange={onToggleAll} />
+                </label>
               </th>
               <th>商品信息</th>
               {visibleColumns.has('category') ? <th>分类 / 来源</th> : null}
@@ -48,21 +51,17 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
             {rows.map((row) => (
               <tr key={row.id} data-active={activeId === row.id ? 'true' : undefined} onClick={() => onOpen(row)}>
                 <td className="productcheckcell">
-                  <input type="checkbox" aria-label={`选择 ${row.title}`} checked={selected.has(row.id)} onClick={stopClick} onChange={() => onToggle(row.id)} />
+                  <label className="productchecktarget" onClick={stopClick}>
+                    <input type="checkbox" aria-label={`选择 ${row.title}`} checked={selected.has(row.id)} onChange={() => onToggle(row.id)} />
+                  </label>
                 </td>
                 <td data-label="商品信息">
                   <div className="productidentity">
                     <ProductThumbnail row={row} />
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onOpen(row);
-                      }}
-                    >
+                    <Button className="productidentitybutton" tone="quiet" onClick={stopClick} onPress={() => onOpen(row)}>
                       <strong>{row.title}</strong>
                       <span>{chineseReference('商品编号', row.product_id)}</span>
-                    </button>
+                    </Button>
                   </div>
                 </td>
                 {visibleColumns.has('category') ? (
@@ -92,28 +91,19 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                 ) : null}
                 {visibleColumns.has('updated') ? <td className="producttime" data-label="更新时间">{formatTime(row.cursor_sort)}</td> : null}
                 <td data-label="可用操作">
-                  <div className="productrowactions">
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onOpen(row);
-                      }}
-                    >
+                  <div className="productrowactions" onClick={stopClick}>
+                    <Button tone="quiet" onPress={() => onOpen(row)}>
                       <ProductIcon name="eye" />
                       查看
-                    </button>
-                    <button
-                      type="button"
+                    </Button>
+                    <Button
+                      tone="quiet"
                       aria-label={`${row.title}更多操作`}
-                      title="打开商品管理操作"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onOpen(row);
-                      }}
+                      onPress={() => onOpen(row)}
                     >
                       <ProductIcon name="more" />
-                    </button>
+                      <span>更多</span>
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -144,17 +134,15 @@ function CellPair({ primary, secondary }: Readonly<{ primary: string; secondary:
 
 function DataGap({ label, onOpen }: Readonly<{ label: string; onOpen: () => void }>) {
   return (
-    <button
-      type="button"
+    <Button
+      tone="quiet"
       className="productdatagap"
-      title={`${label}，查看修复方法`}
-      onClick={(event) => {
-        event.stopPropagation();
-        onOpen();
-      }}
+      aria-label={`${label}，查看修复方法`}
+      onClick={stopClick}
+      onPress={onOpen}
     >
       {label}
-    </button>
+    </Button>
   );
 }
 
@@ -193,6 +181,6 @@ function formatTime(value: string | undefined): string {
   return `${part('month')}-${part('day')} ${part('hour')}:${part('minute')}`;
 }
 
-function stopClick(event: MouseEvent | KeyboardEvent) {
+function stopClick(event: MouseEvent) {
   event.stopPropagation();
 }

@@ -1,4 +1,5 @@
 import { Form, Input, Label, TextField } from 'react-aria-components';
+import { Button } from '@shop/design';
 import { ProductIcon } from './ProductIcon';
 import type { ProductFilter } from '../model/ProductFilter';
 import type { ProductFacetOption, ProductFilterFacets } from '../model/ProductFacet';
@@ -29,9 +30,9 @@ export function ProductFilterForm({ value, onChange, onApply, onReset, onColumns
         <Label className="sr-only">商品搜索</Label>
         <ProductIcon name="search" />
         <Input value={value.q} onChange={(event) => onChange({ ...value, q: event.target.value })} maxLength={200} placeholder="搜索商品名称或规格编码" />
-        <button className="productsearchsubmit" type="submit" aria-label="筛选">
+        <Button className="productsearchsubmit" tone="quiet" type="submit" aria-label="筛选">
           <ProductIcon name="arrowRight" />
-        </button>
+        </Button>
       </TextField>
 
       <FacetSelect label="分类" value={value.category} options={facets?.categories ?? []} onChange={(category) => onChange({ ...value, category })} />
@@ -45,20 +46,20 @@ export function ProductFilterForm({ value, onChange, onApply, onReset, onColumns
         </span>
       ) : null}
       {!facetsLoading && facetsError !== undefined ? (
-        <button className="productfacetretry" type="button" onClick={onRetryFacets}>
+        <Button className="productfacetretry" tone="quiet" onPress={onRetryFacets}>
           筛选项加载失败，重试
-        </button>
+        </Button>
       ) : null}
       {!facetsLoading && facetsError === undefined && facets !== undefined && facetCount === 0 ? <span className="productfacetstate">当前范围暂无可用筛选项</span> : null}
 
-      <button className="productreset" type="button" onClick={onReset}>
+      <Button className="productreset" tone="quiet" onPress={onReset}>
         重置
-      </button>
+      </Button>
       <span className="producttoolspacer" />
-      <button className="producttoolbutton" type="button" onClick={onColumns}>
+      <Button className="producttoolbutton" onPress={onColumns}>
         <ProductIcon name="settings" />
         列设置
-      </button>
+      </Button>
     </Form>
   );
 }
