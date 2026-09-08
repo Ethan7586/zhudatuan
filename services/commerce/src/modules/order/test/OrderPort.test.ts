@@ -52,6 +52,8 @@ describe('OrderPort', () => {
     expect(insert).not.toContain('received_at');
     expect(created.record).not.toHaveProperty('received_at');
     expect(created.record).not.toHaveProperty('receipt_event_id');
+    expect(created.record.created_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u);
+    expect(created.record.updated_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u);
   });
 
   it('keeps a split order in progress until every line quantity is fulfilled', async () => {

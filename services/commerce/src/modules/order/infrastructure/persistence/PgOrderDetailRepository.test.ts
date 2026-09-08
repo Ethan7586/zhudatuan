@@ -46,6 +46,33 @@ describe('PgOrderDetailRepository finance projection', () => {
   });
 });
 
+describe('PgOrderDetailRepository contract timestamps', () => {
+  it('canonicalizes payment, fulfillment milestone and refund timestamps returned by PostgreSQL', async () => {
+    const query = vi.fn(async (sql: string) => {
+      if (sql.includes('from ordering.paymentread payment')) {
+        return result([{ paymentId: 'payment:one', updatedAt: '2026-09-05T08:00:00+08:00', tenders: [] }]);
+      }
+      if (sql.includes('from ordering.fulfillmentread value')) {
+        return result([{ id: 'fulfillment:one', createdAt: '2026-09-05T08:01:00+08:00', updatedAt: '2026-09-05T08:02:00+08:00', milestones: [{ occurredAt: '2026-09-05T08:03:00+08:00' }] }]);
+      }
+      if (sql.includes('aftersale_state state')) return result([{ state: 'reviewing' }]);
+      if (sql.includes('from ordering.refundread refund')) return result([{ id: 'refund:one', createdAt: '2026-09-05T08:04:00+08:00', updatedAt: '2026-09-05T08:05:00+08:00', tenders: [] }]);
+      return result([]);
+    });
+    const repository = new PgOrderDetailRepository(new PgTransactionAccess(), {} as never);
+
+    const [payment, fulfillment, aftersale] = await Promise.all([
+      withReadTransaction(query, (context) => repository.payment(context, 'order:one')),
+      withReadTransaction(query, (context) => repository.fulfillment(context, 'order:one', null)),
+      withReadTransaction(query, (context) => repository.aftersale(context, 'order:one')),
+    ]);
+
+    expect(payment).toMatchObject({ updatedAt: '2026-09-05T00:00:00.000Z' });
+    expect(fulfillment).toEqual([expect.objectContaining({ createdAt: '2026-09-05T00:01:00.000Z', updatedAt: '2026-09-05T00:02:00.000Z', milestones: [{ occurredAt: '2026-09-05T00:03:00.000Z' }] })]);
+    expect(aftersale).toMatchObject({ refunds: [{ createdAt: '2026-09-05T00:04:00.000Z', updatedAt: '2026-09-05T00:05:00.000Z' }] });
+  });
+});
+
 function result(rows: readonly unknown[]): QueryResult<any> {
   return { rows: [...rows], rowCount: rows.length, command: '', oid: 0, fields: [] } as QueryResult<any>;
 }

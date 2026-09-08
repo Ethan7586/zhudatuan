@@ -20,6 +20,7 @@ import { OrderReadFilter } from '../../application/model/OrderReadFilter';
 import { ORDER_READ_FILTER_SQL, orderReadFilterValues } from './OrderReadSql';
 import { appendAfterSaleEvent, appendAfterSaleTimeline, attachAfterSale, loadAfterSaleLines, loadAfterSaleOrder, scheduleAfterSaleJob, transitionAfterSale } from './AfterSaleStore';
 import type { MemberReadPort } from '../../../member/public';
+import { orderProjection } from './OrderProjection';
 export class AfterSalePersistence {
   private readonly refunds = new AfterSaleRefundPolicy();
   constructor(
@@ -69,7 +70,7 @@ export class AfterSalePersistence {
     const availableReference = filter.order || filter.search;
     const availableOrder = member && availableReference ? await loadAfterSaleOrder(database, availableReference, access.scope.id, false) : null;
     const availableLines = availableOrder === null ? [] : await availableAfterSaleLines(database, availableOrder, await loadAfterSaleLines(database, availableOrder.id, [], false), this.policies);
-    const result = keysetRows(rows.rows, page, 'createdAt');
+    const result = keysetRows(rows.rows.map((row) => orderProjection(row)), page, 'createdAt');
     return { ...result, body: { ...(result.body as Record<string, unknown>), availableLines } };
   }
 
@@ -169,7 +170,7 @@ export class AfterSalePersistence {
       `select id,order_id "orderId",state,expected_refund_minor::float8 "expectedRefundMinor",currency,requires_return "requiresReturn",created_at "createdAt",updated_at "updatedAt",version::float8 version from ordering.aftersale where id=$1`,
       [aftersale]
     );
-    return rowResult(result, 201);
+    return projectedRowResult(result, 201);
   }
 
   async review(request: OperationRequest, database: SqlExecutor, decision: 'approved' | 'rejected'): Promise<OperationResult> {
@@ -210,6 +211,11 @@ export class AfterSalePersistence {
       finalState = 'refunding';
     }
     if (finalState !== decision) await database.query(`update ordering.orderrecord set aftersale_state=$2,version=version+1,updated_at=clock_timestamp() where id=$1`, [sale.order_id, finalState]);
-    return rowResult(await database.query(`select id,order_id "orderId",state,version::float8 version,updated_at "updatedAt" from ordering.aftersale where id=$1`, [sale.id]));
+    return projectedRowResult(await database.query(`select id,order_id "orderId",state,version::float8 version,updated_at "updatedAt" from ordering.aftersale where id=$1`, [sale.id]));
   }
+}
+
+function projectedRowResult(result: Parameters<typeof rowResult>[0], status = 200): OperationResult {
+  const reply = rowResult(result, status);
+  return { ...reply, body: orderProjection(reply.body) };
 }

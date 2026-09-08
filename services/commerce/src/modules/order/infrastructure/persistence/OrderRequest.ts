@@ -12,9 +12,6 @@ export function emptyOrderFacets() {
   });
 }
 
-export function iso(value: Date | null): string | null {
-  return value === null ? null : value.toISOString();
-}
 export function orderRequest<TKey extends OperationId>(type: TKey, input: OperationInputFor<TKey>, execution: ExecutionContext<TKey>): OperationRequest {
   const wire = input as Readonly<{
     path?: Readonly<Record<string, string>>;

@@ -6,6 +6,7 @@ import { requireSession } from '../../../../platform/security/OperationSecurityC
 import type { AuditReadPort } from '../../../audit/public';
 import { OrderVisibility, type OrderSection } from '../../domain/policy/OrderVisibility';
 import type { OrderDetailRepository } from '../port/OrderDetailRepository';
+import { orderTime } from '../model/OrderTime';
 
 type Detail = OperationOutputFor<'order.detail.read'>;
 type Section = Exclude<OrderSection, 'summary'>;
@@ -32,7 +33,7 @@ export class OrderDetailReadHandler implements OperationHandler<'order.detail.re
       this.section('aftersale', visible, context, () => this.orders.aftersale(context.transaction, summary.id)),
       this.section('finance', visible, context, async () => {
         const value = await this.orders.finance(context.transaction, summary.id);
-        return Object.freeze({ ...value, watermark: iso(value.watermark) });
+        return Object.freeze({ ...value, watermark: orderTime(value.watermark) });
       }),
       this.section('audit', visible, context, async () =>
         (
@@ -57,7 +58,7 @@ export class OrderDetailReadHandler implements OperationHandler<'order.detail.re
     return {
       status: 200,
       body: Object.freeze({
-        summary: Object.freeze({ ...summary, orderedAt: iso(summary.orderedAt), receivedAt: iso(summary.receivedAt), createdAt: iso(summary.createdAt), updatedAt: iso(summary.updatedAt) }),
+        summary: Object.freeze({ ...summary, orderedAt: orderTime(summary.orderedAt), receivedAt: orderTime(summary.receivedAt), createdAt: orderTime(summary.createdAt), updatedAt: orderTime(summary.updatedAt) }),
         products,
         payment,
         fulfillment,
@@ -79,11 +80,6 @@ export class OrderDetailReadHandler implements OperationHandler<'order.detail.re
   }
 }
 
-function iso(value: Date | null): string | null;
-function iso(value: Date): string;
-function iso(value: Date | null): string | null {
-  return value === null ? null : value.toISOString();
-}
 function label(section: Section): string {
   return ({ products: '商品明细', payment: '支付信息', fulfillment: '履约信息', aftersale: '售后信息', finance: '财务摘要', audit: '操作记录' } as const)[section];
 }

@@ -77,6 +77,42 @@ describe('PgOrderRepository list facets', () => {
     expect(result.body.items).toEqual([]);
     expect(result.body.facets).toMatchObject({ state: 'unavailable', error: { code: 'ORDER_FACET_UNAVAILABLE' } });
   });
+
+  it('canonicalizes top-level and nested PostgreSQL timestamps before contract validation', async () => {
+    const query = vi.fn(async (sql: string) =>
+      sql.includes('with visible as materialized')
+        ? {
+            rows: [{ all: 1, unpaid: 1, unshipped: 0, active: 0, completed: 0, aftersale: 0, exception: 0, orderWatermark: null, paymentWatermark: null, fulfillmentWatermark: null, aftersaleWatermark: null, refundWatermark: null }],
+            rowCount: 1,
+          }
+        : {
+            rows: [
+              {
+                id: 'order:one',
+                created_at: new Date('2026-09-05T00:00:00.000Z'),
+                updated_at: new Date('2026-09-05T00:01:00.000Z'),
+                receivedAt: null,
+                payment: { updatedAt: '2026-09-05T08:02:00+08:00' },
+                fulfillments: [{ createdAt: '2026-09-05T00:03:00+00:00', updatedAt: '2026-09-05T00:04:00+00:00', milestones: [{ occurredAt: '2026-09-05T08:05:00+08:00' }] }],
+                refunds: [],
+              },
+            ],
+            rowCount: 1,
+          }
+    );
+    const repository = new PgOrderRepository({ database: () => ({ query }) } as never, {} as never, { descendants: vi.fn(async () => Object.freeze(['enterprise:one'])), scope: vi.fn() } as never, { search: vi.fn() });
+
+    const result = (await repository.read({} as never, { query: { limit: '50' } } as never, readExecution() as never)) as unknown as {
+      body: { items: readonly Readonly<Record<string, unknown>>[] };
+    };
+
+    expect(result.body.items[0]).toMatchObject({
+      created_at: '2026-09-05T00:00:00.000Z',
+      updated_at: '2026-09-05T00:01:00.000Z',
+      payment: { updatedAt: '2026-09-05T00:02:00.000Z' },
+      fulfillments: [{ createdAt: '2026-09-05T00:03:00.000Z', updatedAt: '2026-09-05T00:04:00.000Z', milestones: [{ occurredAt: '2026-09-05T00:05:00.000Z' }] }],
+    });
+  });
 });
 
 function execution(target: 'console' | 'storefront', kind: 'enterprise' | 'owner', scope: string) {

@@ -7,6 +7,7 @@ import { nextOrderNumber } from './OrderNumber';
 import type { CreateOrderIntent } from '../../public/OrderIntentPort';
 import { DomainError } from '../../../../platform/error/DomainError';
 import { OrderReadPort } from './OrderReadPort';
+import { orderProjection } from './OrderProjection';
 export class OrderPort extends OrderReadPort {
   async create(
     context: WriteTransactionContext,
@@ -70,7 +71,7 @@ export class OrderPort extends OrderReadPort {
       group by line.provider,line.partner_id`,
       [input.id]
     );
-    return Object.freeze({ number, record });
+    return Object.freeze({ number, record: orderProjection(record) });
   }
   async scheduleExpiry(context: WriteTransactionContext, order: string, scope: string): Promise<void> {
     const database = this.transactions.database(context);

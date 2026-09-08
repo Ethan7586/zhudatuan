@@ -21,7 +21,9 @@ import { ReceiveOrder } from './ReceiveOrder';
 import { CancelOrder } from './CancelOrder';
 import { ORDER_READ_FILTER_SQL, orderExceptionSql, orderReadFilterValues } from './OrderReadSql';
 import type { MemberReadPort } from '../../../member/public';
-import { emptyOrderFacets, iso, orderRequest } from './OrderRequest';
+import { emptyOrderFacets, orderRequest } from './OrderRequest';
+import { orderTime } from '../../application/model/OrderTime';
+import { orderProjection } from './OrderProjection';
 export class PgOrderRepository implements OrderRepository, ReminderRepository, ExportRepository {
   private readonly receiver: ReceiveOrder;
   private readonly canceller: CancelOrder;
@@ -103,7 +105,7 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
       ),
       orderFacets(database, [owner, access.scope.id, supplier, store, scopes, ...orderReadFilterValues(filter, timezone, memberIds, 'all')], execution.signal),
     ]);
-    const pageResult = keysetResult(result, page, 'created_at');
+    const pageResult = keysetResult({ rows: result.rows.map((row) => orderProjection(row)) }, page, 'created_at');
     const body = pageResult.body as Readonly<Record<string, unknown>>;
     return { ...pageResult, body: Object.freeze({ ...body, facets }) } as never;
   }
@@ -132,7 +134,7 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
       | undefined;
     if (!reminder?.id) throw new DomainError('ORDER_REMINDER_NOT_ALLOWED');
     await new PgRuntimeWriter(database).schedule({ id: `job:${reminder.id}`, kind: 'notification', owner: 'order', scope: access.scope.id, payload: { reminder: reminder.id, order: input.path.orderid }, priority: 20 });
-    return { status: 202, body: Object.freeze({ ...reminder }) } as never;
+    return { status: 202, body: orderProjection(reminder) } as never;
   }
   async create(context: WriteTransactionContext, input: OperationInputFor<'order.orders.export'>, execution: ExecutionContext<'order.orders.export'>) {
     const access = requireSession(execution.security);
@@ -234,11 +236,11 @@ async function orderFacets(database: SqlExecutor, values: readonly unknown[], si
       data: Object.freeze({
         counts: Object.freeze({ all: row.all, unpaid: row.unpaid, unshipped: row.unshipped, active: row.active, completed: row.completed, aftersale: row.aftersale, exception: row.exception }),
         watermarks: Object.freeze({
-          order: iso(row.orderWatermark),
-          payment: iso(row.paymentWatermark),
-          fulfillment: iso(row.fulfillmentWatermark),
-          aftersale: iso(row.aftersaleWatermark),
-          refund: iso(row.refundWatermark),
+          order: orderTime(row.orderWatermark),
+          payment: orderTime(row.paymentWatermark),
+          fulfillment: orderTime(row.fulfillmentWatermark),
+          aftersale: orderTime(row.aftersaleWatermark),
+          refund: orderTime(row.refundWatermark),
         }),
       }),
     });

@@ -5,6 +5,7 @@ import { organizationScope } from '../../../../platform/security/OrganizationSco
 import { requireSession } from '../../../../platform/security/OperationSecurityContext';
 import type { OrganizationReadPort } from '../../../organization/public';
 import type { OrderDetailRepository, OrderDetailSummary, OrderFinanceSummary } from '../../application/port/OrderDetailRepository';
+import { orderProjection } from './OrderProjection';
 
 export class PgOrderDetailRepository implements OrderDetailRepository {
   constructor(
@@ -64,7 +65,7 @@ export class PgOrderDetailRepository implements OrderDetailRepository {
       [order]
     );
     if (!result.rows[0]) throw new Error('ORDER_PAYMENT_PROJECTION_MISSING');
-    return Object.freeze(result.rows[0]);
+    return orderProjection(result.rows[0]);
   }
 
   async fulfillment(context: ReadTransactionContext, order: string, partner: string | null) {
@@ -80,7 +81,7 @@ export class PgOrderDetailRepository implements OrderDetailRepository {
       order by value.created_at,value.id`,
       [order, partner]
     );
-    return Object.freeze(result.rows.map((row) => Object.freeze(row)));
+    return Object.freeze(result.rows.map((row) => orderProjection(row)));
   }
 
   async aftersale(context: ReadTransactionContext, order: string) {
@@ -100,7 +101,7 @@ export class PgOrderDetailRepository implements OrderDetailRepository {
       ),
     ]);
     if (!state.rows[0]) throw new Error('ORDER_AFTERSALE_PROJECTION_MISSING');
-    return Object.freeze({ state: state.rows[0].state, refunds: Object.freeze(refunds.rows.map((row) => Object.freeze(row))) });
+    return Object.freeze({ state: state.rows[0].state, refunds: Object.freeze(refunds.rows.map((row) => orderProjection(row))) });
   }
 
   async finance(context: ReadTransactionContext, order: string) {

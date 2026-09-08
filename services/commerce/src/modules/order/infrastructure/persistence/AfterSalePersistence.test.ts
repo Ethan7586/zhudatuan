@@ -76,6 +76,33 @@ describe('AfterSalePersistence read scope', () => {
       51,
     ]);
   });
+
+  it('canonicalizes list and nested timeline timestamps before contract validation', async () => {
+    const query = vi.fn(async () => ({
+      rows: [
+        {
+          id: 'aftersale:one',
+          createdAt: '2026-09-05T08:00:00+08:00',
+          updatedAt: '2026-09-05T08:01:00+08:00',
+          timeline: [{ occurredAt: '2026-09-05T08:02:00+08:00', evidence: { createdAt: 'source-value' } }],
+        },
+      ],
+      rowCount: 1,
+    }));
+    const service = new AfterSalePersistence({ evaluate: vi.fn() } as never, { descendants: vi.fn(async () => Object.freeze(['enterprise:one'])) } as never, { search: vi.fn() });
+
+    const result = await service.read(request('console', 'enterprise', 'enterprise:one'), { query, transaction: {} } as never);
+
+    expect(result.body).toMatchObject({
+      items: [
+        {
+          createdAt: '2026-09-05T00:00:00.000Z',
+          updatedAt: '2026-09-05T00:01:00.000Z',
+          timeline: [{ occurredAt: '2026-09-05T00:02:00.000Z', evidence: { createdAt: 'source-value' } }],
+        },
+      ],
+    });
+  });
 });
 
 function request(target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier', kind: 'enterprise' | 'owner', scope: string): MutableRequest {
