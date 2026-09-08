@@ -60,6 +60,39 @@ describe('InvitationRoute assurance boundary', () => {
     expect(screen.queryByText('membership:employee')).toBeNull();
   });
 
+  it('uses readable account names when an operator selects an existing member', async () => {
+    server.use(
+      http.get('*/api/v1/access/center', () =>
+        HttpResponse.json({
+          items: [
+            {
+              id: 'membership:employee',
+              display_name: '李小明',
+              employee_no: 'E1002',
+              mobile_masked: '139****0002',
+              client: 'console',
+              status: 'active',
+              access_version: 3,
+              roles: [],
+              scopes: [],
+              overrides: [],
+            },
+          ],
+          count: 1,
+          roles: [],
+          templates: [],
+          separationRules: [],
+        })
+      )
+    );
+    const user = userEvent.setup();
+    renderRoute(context(3));
+
+    await user.click(await screen.findByRole('button', { name: '登录邀请' }));
+    expect(screen.getByRole('option', { name: '李小明 · 工号 E1002' })).toBeTruthy();
+    expect(screen.queryByText(/membership:employee/)).toBeNull();
+  });
+
   it('reuses the infrastructure identity when the exact create command is retried', async () => {
     const identities: string[] = [];
     let attempts = 0;

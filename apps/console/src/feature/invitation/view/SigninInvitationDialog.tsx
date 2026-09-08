@@ -1,5 +1,4 @@
 import { Button, Dialog, Form } from '@shop/design';
-import { chineseReference } from '@shop/presentation';
 import { useEffect, useMemo, useState } from 'react';
 import type { InvitationMembershipPage } from '../model/Invitation';
 import type { InvitationDraft } from '../model/InvitationDraft';
@@ -15,7 +14,7 @@ export function SigninInvitationDialog({
   onSubmit,
 }: Readonly<{ open: boolean; memberships: InvitationMembershipPage['items']; busy: boolean; error?: string; onClose: () => void; onSubmit: (draft: InvitationDraft) => Promise<void> }>) {
   const [target, setTarget] = useState<OperationTarget>('console');
-  const eligible = useMemo(() => memberships.filter((item) => item.client === target), [memberships, target]);
+  const eligible = useMemo(() => memberships.filter((item) => item.client === target && item.status === 'active'), [memberships, target]);
   const [membership, setMembership] = useState('');
   const [expiresAt, setExpiresAt] = useState(() => new Date(Date.now() + 72 * 3_600_000).toISOString());
   const [reason, setReason] = useState('');
@@ -44,9 +43,10 @@ export function SigninInvitationDialog({
         </select>
         <label htmlFor="signinMembership">指定成员</label>
         <select id="signinMembership" value={membership} onChange={(event) => setMembership(event.target.value)} disabled={busy} required>
+          {eligible.length === 0 ? <option value="">该位置暂无可邀请的在职成员</option> : null}
           {eligible.map((item) => (
             <option key={item.id} value={item.id}>
-              {chineseReference('成员', item.id)}
+              {membershipLabel(item)}
             </option>
           ))}
         </select>
@@ -65,6 +65,11 @@ export function SigninInvitationDialog({
       </Form>
     </Dialog>
   );
+}
+
+function membershipLabel(item: InvitationMembershipPage['items'][number]): string {
+  const detail = item.employeeNo ? `工号 ${item.employeeNo}` : item.mobileMasked ? `手机 ${item.mobileMasked}` : undefined;
+  return detail ? `${item.displayName} · ${detail}` : item.displayName;
 }
 
 function localTime(value: string): string {

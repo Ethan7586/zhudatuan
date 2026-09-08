@@ -1,7 +1,6 @@
 import { deepFreeze } from '../../../shared/model/Immutable';
 import type { Invitation, InvitationMembershipPage, InvitationPage, InvitationReceipt, InvitationRevocation } from '../model/Invitation';
 import { InvitationMembershipPageSchema, InvitationPageSchema, InvitationReceiptSchema, InvitationRevocationSchema } from './InvitationSchema';
-import type { OperationTarget } from '@shop/contract';
 
 export class InvitationMapper {
   page(value: unknown): InvitationPage {
@@ -11,9 +10,20 @@ export class InvitationMapper {
   }
 
   memberships(value: unknown): InvitationMembershipPage {
-    const page = InvitationMembershipPageSchema.parse(value) as Readonly<{ items: readonly Readonly<{ id: string; client: OperationTarget }>[]; count: number; nextCursor?: string }>;
+    const page = InvitationMembershipPageSchema.parse(value);
     if (page.count !== page.items.length) throw new Error('INVITATION_MEMBERSHIP_COUNT_MISMATCH');
-    return deepFreeze({ items: page.items.map((item) => ({ id: item.id, client: item.client })), count: page.count, ...(page.nextCursor === undefined ? {} : { nextCursor: page.nextCursor }) });
+    return deepFreeze({
+      items: page.items.map((item) => ({
+        id: item.id,
+        displayName: item.display_name,
+        employeeNo: item.employee_no,
+        mobileMasked: item.mobile_masked,
+        client: item.client,
+        status: item.status,
+      })),
+      count: page.count,
+      ...(page.nextCursor === undefined ? {} : { nextCursor: page.nextCursor }),
+    });
   }
 
   receipt(value: unknown): InvitationReceipt {

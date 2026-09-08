@@ -69,7 +69,11 @@ export interface InvitationRevocation {
 }
 export interface InvitationMembership {
   readonly id: string;
+  readonly displayName: string;
+  readonly employeeNo: string | null;
+  readonly mobileMasked: string | null;
   readonly client: InvitationTargetKind;
+  readonly status: 'invited' | 'active' | 'suspended' | 'left';
 }
 export interface InvitationMembershipPage {
   readonly items: readonly InvitationMembership[];
