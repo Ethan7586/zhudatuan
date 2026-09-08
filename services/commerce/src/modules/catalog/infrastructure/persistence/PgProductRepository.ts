@@ -3,31 +3,12 @@ import type { PgTransactionAccess } from '../../../../platform/database/PgTransa
 import { DomainError } from '../../../../platform/error/DomainError';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { CatalogPartnerPort } from '../../../partner/public';
-import type { ProductDetailBase, ProductRepository } from '../../application/port/ProductRepository';
+import type { ProductRepository } from '../../application/port/ProductRepository';
 import { Product, type ProductSnapshot } from '../../domain/model/Product';
 import { Sku } from '../../domain/model/Sku';
 import { Category, type CategorySnapshot } from '../../domain/model/Category';
 import type { CatalogScopeReader } from './CatalogScopeReader';
-type ProductListing = ProductDetailBase['listings'][number];
-type ProductChannel = ProductDetailBase['channels'][number];
-type Instant = string | Date;
-type NormalizedProductDetail = Omit<ProductDetail, 'createdAt' | 'updatedAt' | 'listings' | 'channels'> & Pick<ProductDetailBase, 'createdAt' | 'updatedAt' | 'listings' | 'channels'>;
-
-interface ProductDetail extends Omit<ProductDetailBase, 'createdAt' | 'updatedAt' | 'listings' | 'channels' | 'media' | 'regionIds' | 'timeline'> {
-  readonly owner_partner_id: string | null;
-  readonly attributes: Readonly<Record<string, unknown>>;
-  readonly createdAt: Instant;
-  readonly updatedAt: Instant;
-  readonly listings: readonly Readonly<
-    Omit<ProductListing, 'effectiveAt' | 'expiresAt' | 'createdAt' | 'updatedAt'> & {
-      readonly effectiveAt: Instant | null;
-      readonly expiresAt: Instant | null;
-      readonly createdAt: Instant;
-      readonly updatedAt: Instant;
-    }
-  >[];
-  readonly channels: readonly Readonly<Omit<ProductChannel, 'observedAt'> & { readonly observedAt: Instant }>[];
-}
+import { projectProductDetail, type ProductDetailRow } from './ProductDetailProjection';
 export class PgProductRepository implements ProductRepository {
   constructor(
     private readonly transactions: PgTransactionAccess,
@@ -37,7 +18,7 @@ export class PgProductRepository implements ProductRepository {
   async detail(context: ReadTransactionContext, productId: string, scope: string, store: boolean) {
     const database = this.transactions.database(context);
     const allowedScopes = await this.scopes.visible(context, scope, store);
-    const result = await database.query<ProductDetail>(
+    const result = await database.query<ProductDetailRow>(
       `select product.id,product.title,product.product_type,product.status,product.version::text version,
         product.category_id,product.brand_id,product.owner_partner_id,
         product.attributes,product.attributes->>'coverUrl' cover_url,product.attributes->>'subtitle' subtitle,
@@ -72,12 +53,7 @@ export class PgProductRepository implements ProductRepository {
     if (!product) throw new DomainError('LISTING_NOT_PURCHASABLE');
     const ownerScope = product.owner_partner_id ? ((await this.partners.scopes(context, [product.owner_partner_id])).get(product.owner_partner_id) ?? null) : null;
     if (product.listings.length === 0 && (ownerScope === null || !allowedScopes.includes(ownerScope))) throw new DomainError('LISTING_NOT_PURCHASABLE');
-    const normalized = normalizeProductDetail(product);
-    const media = productMedia(normalized.attributes, normalized.cover_url, normalized.title);
-    const regionIds = textArray(normalized.attributes.regionIds);
-    const timeline = productTimeline(normalized);
-    const { attributes: _attributes, ...visible } = normalized;
-    return Object.freeze({ ...visible, media, regionIds, timeline, visibleScopes: Object.freeze(allowedScopes) });
+    return projectProductDetail(product, allowedScopes);
   }
   async create(context: WriteTransactionContext, input: Parameters<ProductRepository['create']>[1]) {
     const database = this.transactions.database(context);
@@ -170,79 +146,6 @@ export class PgProductRepository implements ProductRepository {
     if (!result.rows[0]) throw new DomainError('VALIDATION_FAILED', { field: 'category' });
     const row = result.rows[0];
     return Category.restore({ id: row.id, parent: row.parent_id, code: row.code, name: row.name, state: row.status, sort: row.sort_order }).active().id;
-  }
-}
-
-function productMedia(attributes: Readonly<Record<string, unknown>>, cover: string | null, title: string): ProductDetailBase['media'] {
-  const candidates = Array.isArray(attributes.media) ? attributes.media : [];
-  const values = candidates.flatMap((candidate, index) => {
-    if (candidate === null || typeof candidate !== 'object' || Array.isArray(candidate)) return [];
-    const item = candidate as Readonly<Record<string, unknown>>;
-    const kind = item.kind;
-    const url = typeof item.url === 'string' && safeMediaUrl(item.url) ? item.url : null;
-    if ((kind !== 'image' && kind !== 'video' && kind !== 'document') || url === null) return [];
-    return [Object.freeze({ id: typeof item.id === 'string' && item.id !== '' ? item.id : `media:${index + 1}`, kind, url, alt: typeof item.alt === 'string' ? item.alt : null, sort: positiveInteger(item.sort, index) })];
-  });
-  if (cover !== null && safeMediaUrl(cover) && !values.some(({ url }) => url === cover)) values.unshift(Object.freeze({ id: 'media:cover', kind: 'image', url: cover, alt: title, sort: 0 }));
-  return Object.freeze(values.sort((left, right) => left.sort - right.sort || left.id.localeCompare(right.id)));
-}
-
-function normalizeProductDetail(product: ProductDetail): NormalizedProductDetail {
-  const listings = Object.freeze(
-    product.listings.map((listing) =>
-      Object.freeze({
-        ...listing,
-        effectiveAt: nullableIsoInstant(listing.effectiveAt),
-        expiresAt: nullableIsoInstant(listing.expiresAt),
-        createdAt: isoInstant(listing.createdAt),
-        updatedAt: isoInstant(listing.updatedAt),
-      })
-    )
-  );
-  const channels = Object.freeze(product.channels.map((channel) => Object.freeze({ ...channel, observedAt: isoInstant(channel.observedAt) })));
-  return Object.freeze({ ...product, createdAt: isoInstant(product.createdAt), updatedAt: isoInstant(product.updatedAt), listings, channels });
-}
-
-function productTimeline(product: Pick<ProductDetailBase, 'id' | 'createdAt' | 'updatedAt' | 'listings' | 'channels'>): ProductDetailBase['timeline'] {
-  const values: ProductDetailBase['timeline'][number][] = [
-    Object.freeze({ id: `timeline:productcreated:${product.id}`, kind: 'productcreated', title: '商品主档已创建', occurredAt: product.createdAt, reference: product.id }),
-    Object.freeze({ id: `timeline:productupdated:${product.id}`, kind: 'productupdated', title: '商品主档已更新', occurredAt: product.updatedAt, reference: product.id }),
-    ...product.listings.flatMap((listing) => [
-      Object.freeze({ id: `timeline:listingcreated:${listing.id}`, kind: 'listingcreated' as const, title: '商城投放已创建', occurredAt: listing.createdAt, reference: listing.id }),
-      Object.freeze({ id: `timeline:listingupdated:${listing.id}`, kind: 'listingupdated' as const, title: '商城投放已更新', occurredAt: listing.updatedAt, reference: listing.id }),
-    ]),
-    ...product.channels.map((channel) =>
-      Object.freeze({ id: `timeline:sourceobserved:${channel.provider}:${channel.externalId}`, kind: 'sourceobserved' as const, title: '渠道来源已同步', occurredAt: channel.observedAt, reference: channel.externalId })
-    ),
-  ];
-  return Object.freeze(values.sort((left, right) => right.occurredAt.localeCompare(left.occurredAt) || left.id.localeCompare(right.id)));
-}
-
-function nullableIsoInstant(value: Instant | null): string | null {
-  return value === null ? null : isoInstant(value);
-}
-
-function isoInstant(value: Instant): string {
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) throw new Error('CATALOG_PRODUCT_INVALID_INSTANT');
-  return date.toISOString();
-}
-
-function textArray(value: unknown): readonly string[] {
-  return Object.freeze(Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item !== '') : []);
-}
-
-function positiveInteger(value: unknown, fallback: number): number {
-  const parsed = Number(value);
-  return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : fallback;
-}
-
-function safeMediaUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return url.protocol === 'https:' || url.protocol === 'http:';
-  } catch {
-    return false;
   }
 }
 
