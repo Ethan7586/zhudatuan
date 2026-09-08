@@ -1,5 +1,6 @@
 @layer component {
   .authsteps,
+  .authflowlabel,
   .authsurfacelabel,
   .authsecondaryactions,
   .authcodegroup,
@@ -10,6 +11,18 @@
 
   .authsteps {
     gap: var(--sw-space-0-5);
+  }
+
+  .authflowlabel {
+    gap: var(--sw-space-1);
+    color: var(--sw-brand-dark);
+    font-size: var(--sw-font-size-body-sm);
+    font-weight: var(--sw-font-weight-bold);
+  }
+
+  .authflowlabel svg {
+    width: var(--sw-icon-size-md);
+    height: var(--sw-icon-size-md);
   }
 
   .authback {

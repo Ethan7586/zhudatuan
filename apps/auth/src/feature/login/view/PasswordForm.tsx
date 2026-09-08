@@ -7,13 +7,13 @@ export function PasswordForm({
   error,
   onSubmit,
   onReset,
-  onInvitation,
+  onRegister,
 }: Readonly<{
   busy: boolean;
   error: Readonly<Record<string, string>>;
   onSubmit: (subject: string, password: string) => void;
   onReset: () => void;
-  onInvitation: () => void;
+  onRegister: () => void;
 }>) {
   const vm = usePasswordForm(onSubmit);
   return (
@@ -66,7 +66,7 @@ export function PasswordForm({
         <Button tone="quiet" onPress={onReset}>
           忘记密码？
         </Button>
-        <Button tone="strong" onPress={onInvitation}>
+        <Button tone="strong" onPress={onRegister}>
           <UserCheck aria-hidden="true" />
           新用户注册
         </Button>

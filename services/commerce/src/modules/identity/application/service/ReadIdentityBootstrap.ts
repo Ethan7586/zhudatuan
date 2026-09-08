@@ -8,7 +8,7 @@ import { passwordPolicyView } from './PasswordPolicyView';
 import { registrationPolicyView } from './RegistrationPolicyView';
 import { isOperationTarget } from '@shop/contract';
 
-const METHODS = Object.freeze(['password', 'otp', 'invitation', 'federation'] as const);
+const METHODS = Object.freeze(['password', 'otp', 'federation'] as const);
 
 export class ReadIdentityBootstrap {
   constructor(

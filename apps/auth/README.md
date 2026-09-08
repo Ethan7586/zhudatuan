@@ -20,20 +20,20 @@ main → app → route → feature/ui → feature/application → feature/model 
 
 ## 路由
 
-| 路由 | 责任 | 公开参数 |
-|---|---|---|
-| `/` | 密码、验证码和邀请码登录主流程 | `target`、`returntarget`、`returnpath` |
-| `/invitation` | 预选邀请码方式；邀请码仍只走请求体 | 同登录入口 |
-| `/membership` | 服务端一次性身份选择上下文 | `target`、`state` |
-| `/callback` | 第三方认证回调状态说明 | `target` |
-| `/link` | 明确的账号关联提示，不自动合并 | `target`、`code` |
-| `*` | 安全未找到页 | 无 |
+| 路由          | 责任                                       | 公开参数                               |
+| ------------- | ------------------------------------------ | -------------------------------------- |
+| `/`           | 密码、验证码和身份联邦登录主流程           | `target`、`returntarget`、`returnpath` |
+| `/invitation` | 邀请码注册与受邀身份确认；邀请码只走请求体 | 同登录入口                             |
+| `/membership` | 服务端一次性身份选择上下文                 | `target`、`state`                      |
+| `/callback`   | 第三方认证回调状态说明                     | `target`                               |
+| `/link`       | 明确的账号关联提示，不自动合并             | `target`、`code`                       |
+| `*`           | 安全未找到页                               | 无                                     |
 
 Guard 拒绝未知、重复、超长、含控制字符或非白名单 target 的参数。内部页面使用 React Router；跨应用跳转必须通过 `approvedDestination`，生产环境仅允许配置的 HTTPS origin，HTTP 只允许 loopback 本地开发。
 
 ## 状态机
 
-`LoginMachine` 是纯 reducer。状态覆盖 Bootstrapping、Ready、ChallengePending、Submitting、ResolvingInvitation、ExchangingTicket、Enrollment、Proof、MembershipSelection、Redirecting、RecoverableFailure、TerminalFailure 和 Cancelled。每个异步命令都带单调递增的 command；过期响应被忽略，运行中拒绝重复提交，target 变化会使旧命令失效，Redirecting 和 TerminalFailure 不再接受敏感表单事件。
+`LoginMachine` 是纯 reducer。状态覆盖 Bootstrapping、Ready、ChallengePending、Submitting、ResolvingInvitation、ExchangingTicket、Enrollment、Proof、MembershipSelection、RegistrationComplete、Redirecting、RecoverableFailure、TerminalFailure 和 Cancelled。每个异步命令都带单调递增的 command；过期响应被忽略，运行中拒绝重复提交，target 变化会使旧命令失效，Redirecting 和 TerminalFailure 不再接受敏感表单事件。
 
 密码、验证码、邀请码、PKCE verifier 和票据不进入 reducer、context、URL、localStorage 或 telemetry。组件使用 `Secret` 缩短 JS 字符串和 DOM 引用的生命周期；JavaScript 无法保证物理清零，因此服务端仍必须实施限时、限次、摘要存储、单次消费和审计。
 
@@ -41,7 +41,7 @@ Guard 拒绝未知、重复、超长、含控制字符或非白名单 target 的
 
 - 浏览器公开环境只在 `config/Environment.ts` 读取，由 `@shop/config` 校验。
 - 登录方式、密码政策、OTP 时长、法律文本和 bootstrap 到期时间来自 `identity.bootstrap.read`。
-- Provider 列表由独立 operation 读取，失败只降级第三方登录区，不阻断密码、验证码、邀请码三条 MVP 主链路。
+- Provider 列表由独立 operation 读取，失败只降级第三方登录区，不阻断密码和验证码登录；邀请码注册使用独立路由与 Operation。
 - PostgreSQL 是身份、凭据、membership、challenge、invitation、selection 和 ticket 的事实源；前端按钮禁用不代替服务端事务、幂等和条件更新。
 
 ## 错误流

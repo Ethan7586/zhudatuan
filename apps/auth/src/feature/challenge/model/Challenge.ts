@@ -1,9 +1,13 @@
+import type { OperationOutputFor } from '@shop/contract';
+
 export type ChallengeRequest =
   | Readonly<{ purpose: 'login' | 'password_reset'; destination: string }>
   | Readonly<{ purpose: 'enrollment'; enrollmentId: string }>
   | Readonly<{ purpose: 'enrollment_campaign'; enrollmentId: string; destination: string }>;
 
-export type ChallengePurpose = ChallengeRequest['purpose'] | 'invitation_login';
+export type ChallengePurpose = ChallengeRequest['purpose'] | 'invitation_acceptance';
+type ProofOutput = Extract<OperationOutputFor<'identity.sessions.create'>, { kind: 'proofRequired' }>;
+export type ProofMethod = ProofOutput['proof']['method'];
 
 export interface Challenge {
   readonly id: string;
@@ -20,7 +24,7 @@ const PURPOSE_LABELS: Readonly<Record<ChallengePurpose, string>> = Object.freeze
   password_reset: '重置密码',
   enrollment: '激活员工账号',
   enrollment_campaign: '注册员工账号',
-  invitation_login: '确认受邀成员身份',
+  invitation_acceptance: '确认受邀成员身份',
 });
 
 export function challengePurposeLabel(purpose: Challenge['purpose']): string {
@@ -32,11 +36,7 @@ export function challengeNotice(challenge: Challenge, protectExistence = false):
   return protectExistence ? `${timing}为保护账号存在性，无论账号是否存在均显示相同结果。` : timing;
 }
 
-export function challengeState(
-  value: Readonly<{ id: string; purpose: ChallengePurpose; expiresAt: string; retryAt: string; attemptsRemaining: number }>,
-  expectedPurpose: ChallengePurpose,
-  now = Date.now()
-): Challenge | undefined {
+export function challengeState(value: Readonly<{ id: string; purpose: ChallengePurpose; expiresAt: string; retryAt: string; attemptsRemaining: number }>, expectedPurpose: ChallengePurpose, now = Date.now()): Challenge | undefined {
   const expiresAt = Date.parse(value.expiresAt);
   const retryAt = Date.parse(value.retryAt);
   if (value.purpose !== expectedPurpose || !Number.isFinite(expiresAt) || !Number.isFinite(retryAt) || expiresAt <= retryAt || !Number.isSafeInteger(value.attemptsRemaining) || value.attemptsRemaining < 1) return undefined;

@@ -2,7 +2,7 @@ import { ChoiceButton } from '@shop/design';
 import type { KeyboardEvent } from 'react';
 import type { LoginMethod as Method } from '../../bootstrap';
 
-const LABELS: Readonly<Record<Method, string>> = Object.freeze({ password: '密码登录', otp: '验证码登录', invitation: '邀请码登录' });
+const LABELS: Readonly<Record<Method, string>> = Object.freeze({ password: '密码登录', otp: '验证码登录' });
 
 export function LoginMethod({ method, methods, busy, onChange }: Readonly<{ method: Method; methods: readonly string[]; busy: boolean; onChange: (method: Method) => void }>) {
   const available = (Object.keys(LABELS) as Method[]).filter((value) => methods.includes(value));

@@ -29,7 +29,7 @@ const enrollment = strictObject({
 });
 const invitationProof = strictObject({
   kind: literal('proofRequired'),
-  proof: strictObject({ reference: string(), purpose: literal('invitation_login'), expiresAt: string(), retryAt: string(), attemptsRemaining: number(), method: literal('otp'), target }),
+  proof: strictObject({ reference: string(), purpose: literal('invitation_acceptance'), expiresAt: string(), retryAt: string(), attemptsRemaining: number(), method: literal('otp'), target }),
 });
 const policy = strictObject({
   terms_title: string(),
@@ -91,7 +91,11 @@ export const createdInvitation = strictObject({
 
 export const IDENTITY_OUTPUT_SCHEMAS = {
   IdentityHandoversCreateOutput: strictObject({ id: string(), scopeId: string(), membershipId: string(), note: string(), handedOverAt: string(), sessionRevokedAt: string(), version: number() }),
-  IdentityHandoversReadOutput: strictObject({ items: array(strictObject({ id: string(), scopeId: string(), membershipId: string(), note: string(), handedOverAt: string(), version: number() })), count: number(), nextCursor: optional(string()) }),
+  IdentityHandoversReadOutput: strictObject({
+    items: array(strictObject({ id: string(), scopeId: string(), membershipId: string(), note: string(), handedOverAt: string(), version: number() })),
+    count: number(),
+    nextCursor: optional(string()),
+  }),
   IdentitySessionsCreateOutput: discriminatedUnion('kind', [authorization, selection, proof, enrollment]),
   IdentitySessionsCompleteOutput: authorization,
   IdentityTicketsExchangeOutput: strictObject({ returnTarget, expiresIn: number() }),
@@ -131,8 +135,8 @@ export const IDENTITY_OUTPUT_SCHEMAS = {
     returnTarget: string(),
     expiresAt: string(),
     csrf: string(),
-    methods: array(literal(['password', 'otp', 'invitation', 'federation'])),
-    preferredMethod: literal(['password', 'otp', 'invitation']),
+    methods: array(literal(['password', 'otp', 'federation'])),
+    preferredMethod: literal(['password', 'otp']),
     password: strictObject({
       minimumLength: number(),
       maximumLength: number(),

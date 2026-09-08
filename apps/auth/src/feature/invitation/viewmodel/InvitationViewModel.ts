@@ -9,21 +9,19 @@ export class InvitationViewModel {
   }
 }
 
-export function useInvitationProof(onSubmit: (code: string) => Promise<void>) {
+export function useInvitationForm(busy: boolean, onSubmit: (code: string) => Promise<void>) {
   const input = useRef<HTMLInputElement>(null);
+  const submitting = useRef(false);
   const secret = useMemo(() => new Secret(), []);
-  useEffect(() => {
-    input.current?.focus();
-    const element = input.current;
-    return () => clearSecretInput(element, secret);
-  }, [secret]);
+  useEffect(() => () => clearSecretInput(input.current, secret), [secret]);
   const submit = async () => {
-    const code = secret.take();
+    if (submitting.current || busy) return;
+    submitting.current = true;
     try {
-      await onSubmit(code);
+      await onSubmit(secret.take().trim());
     } finally {
+      submitting.current = false;
       clearSecretInput(input.current, secret);
-      requestAnimationFrame(() => input.current?.focus());
     }
   };
   return Object.freeze({ input, setCode: (value: string) => secret.set(value), submit });

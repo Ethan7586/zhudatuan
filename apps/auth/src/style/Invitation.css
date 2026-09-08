@@ -1,7 +1,33 @@
 @layer feature {
-  .invitationproofform {
+  .registrationreceipt {
     display: grid;
-    gap: var(--sw-space-1-5);
+    justify-items: center;
+    gap: var(--sw-space-2);
+    padding: var(--sw-space-3) var(--sw-space-2);
+    border-radius: var(--sw-radius-md);
+    background: var(--sw-success-surface);
+    text-align: center;
+  }
+
+  .registrationreceipt > svg {
+    width: var(--sw-icon-size-hero);
+    height: var(--sw-icon-size-hero);
+    color: var(--sw-success-strong);
+  }
+
+  .registrationreceipt h3,
+  .registrationreceipt p {
+    margin: 0;
+  }
+
+  .registrationreceipt p {
+    margin-top: var(--sw-space-0-5);
+    color: var(--sw-text-secondary);
+    font-size: var(--sw-font-size-body-sm);
+  }
+
+  .authloginreturn {
+    justify-self: center;
   }
 
   .invitationjourney {

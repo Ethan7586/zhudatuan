@@ -9,7 +9,7 @@ const bootstrap: Bootstrap = Object.freeze({
   returnTarget: 'signed',
   expiresAt: Date.now() + 60_000,
   csrf: 'csrf',
-  methods: Object.freeze(['password', 'otp', 'invitation', 'federation'] as const),
+  methods: Object.freeze(['password', 'otp', 'federation'] as const),
   preferredMethod: 'password',
   password: Object.freeze({ minimumLength: 12, maximumLength: 128, uppercase: true, lowercase: true, number: true, symbol: true }),
   otp: Object.freeze({ validSeconds: 300, resendSeconds: 60 }),
@@ -94,7 +94,7 @@ describe('LoginMachine', () => {
     expect(enrollmentSubmitting).toMatchObject({ phase: 'enrollment', submitting: true, command: 3 });
     expect(loginMachine(enrollmentSubmitting, { type: 'ENROLLMENT_SUBMIT_REQUESTED' })).toBe(enrollmentSubmitting);
     expect(loginMachine(enrollmentSubmitting, { type: 'BACK_REQUESTED' })).toBe(enrollmentSubmitting);
-    expect(loginMachine(enrollmentSubmitting, { type: 'ENROLLMENT_COMPLETED', command: 3, notice: 'complete' })).toMatchObject({ phase: 'ready', notice: 'complete' });
+    expect(loginMachine(enrollmentSubmitting, { type: 'ENROLLMENT_COMPLETED', command: 3, notice: 'complete' })).toMatchObject({ phase: 'registrationcomplete', notice: 'complete' });
     expect(loginMachine(enrollmentState, { type: 'ENROLLMENT_COMPLETED', command: 2, notice: 'illegal' })).toBe(enrollmentState);
     const enrollmentFailed = loginMachine(enrollmentSubmitting, { type: 'ENROLLMENT_FAILED', command: 3, failure: problem });
     expect(enrollmentFailed).toMatchObject({ phase: 'enrollment', submitting: false });
@@ -105,7 +105,11 @@ describe('LoginMachine', () => {
 
 function enrollment() {
   return Object.freeze({
-    id: 'enrollment', kind: 'enrollment' as const, target: 'storefront' as const, expiresAt: '2099-01-01', subjectMode: 'bound' as const,
+    id: 'enrollment',
+    kind: 'enrollment' as const,
+    target: 'storefront' as const,
+    expiresAt: '2099-01-01',
+    subjectMode: 'bound' as const,
     organization: Object.freeze({ id: 'organization', name: '示例企业' }),
     employee: Object.freeze({ displayName: '测试员工' }),
     policy: bootstrap.legal,

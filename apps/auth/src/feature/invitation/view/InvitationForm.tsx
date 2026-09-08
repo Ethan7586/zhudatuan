@@ -1,12 +1,14 @@
 import { Button } from '@shop/design';
 import { ArrowRight, KeyRound, RefreshCw } from 'lucide-react';
-import { useInvitationForm } from '../../login';
+import { useInvitationForm } from '../viewmodel/InvitationViewModel';
 
 export function InvitationForm({
   busy,
+  error,
   onSubmit,
 }: Readonly<{
   busy: boolean;
+  error?: string;
   onSubmit: (code: string) => Promise<void>;
 }>) {
   const vm = useInvitationForm(busy, onSubmit);
@@ -30,15 +32,22 @@ export function InvitationForm({
           placeholder="粘贴企业福利管理员提供的邀请码"
           className="authinput authsecretinput"
           disabled={busy}
-          aria-describedby="invitation-hint"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? 'invitation-hint invitation-error' : 'invitation-hint'}
+          aria-errormessage={error ? 'invitation-error' : undefined}
         />
       </label>
+      {error ? (
+        <span id="invitation-error" className="authfieldissue" role="alert">
+          {error}
+        </span>
+      ) : null}
       <p id="invitation-hint" className="authhint">
         邀请码仅用于本次验证，不会写入网址、浏览器存储或分析数据。
       </p>
       <Button type="submit" tone="primary" isDisabled={busy} className="authfull">
         {busy ? <RefreshCw className="authspin" aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
-        {busy ? '验证中...' : '继续接受邀请'}
+        {busy ? '验证中...' : '验证邀请码并继续'}
       </Button>
     </form>
   );

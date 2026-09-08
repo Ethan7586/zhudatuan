@@ -29,6 +29,7 @@ export type LoginState =
   | Readonly<BootstrappedState & { phase: 'enrollment'; enrollment: EnrollmentState; submitting: boolean }>
   | Readonly<BootstrappedState & { phase: 'proof'; reference: string; methodKind: LoginProofMethod; expiresAt: string; challenge?: Challenge }>
   | Readonly<BootstrappedState & { phase: 'membershipselection'; memberships: readonly Membership[] }>
+  | Readonly<BootstrappedState & { phase: 'registrationcomplete' }>
   | Readonly<BootstrappedState & { phase: 'redirecting'; redirectUrl: string }>
   | Readonly<BootstrappedState & { phase: 'recoverablefailure'; failure: FailureView }>
   | Readonly<BaseState & { phase: 'terminalfailure'; failure: FailureView }>

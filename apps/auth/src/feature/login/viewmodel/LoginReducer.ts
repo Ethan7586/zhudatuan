@@ -58,30 +58,7 @@ export function useOtpForm(busy: boolean, onChallenge: (subject: string) => Prom
   const submit = () => {
     const submitted = code;
     setCode('');
-    onSubmit(subject, challengeSubject === subject.trim() ? challenge?.id ?? '' : '', submitted);
+    onSubmit(subject, challengeSubject === subject.trim() ? (challenge?.id ?? '') : '', submitted);
   };
   return Object.freeze({ subject, challenge, code, seconds: cooldown.seconds, sending, codeRef, setSubject, setCode, send, submit });
-}
-
-export function useInvitationForm(busy: boolean, onSubmit: (code: string) => Promise<void>) {
-  const input = useRef<HTMLInputElement>(null);
-  const submitting = useRef(false);
-  const secret = useMemo(() => new Secret(), []);
-  useEffect(() => () => clearSecretInput(input.current, secret), [secret]);
-  const submit = async () => {
-    if (submitting.current || busy) return;
-    submitting.current = true;
-    try {
-      await onSubmit(secret.take().trim());
-    } finally {
-      submitting.current = false;
-      clearSecretInput(input.current, secret);
-    }
-  };
-  return Object.freeze({ input, setCode: (value: string) => secret.set(value), submit });
-}
-
-export function usePolicy() {
-  const [policy, setPolicy] = useState<'terms' | 'privacy'>();
-  return Object.freeze({ policy, open: setPolicy, close: () => setPolicy(undefined) });
 }

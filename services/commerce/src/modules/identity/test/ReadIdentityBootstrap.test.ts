@@ -29,6 +29,9 @@ describe('ReadIdentityBootstrap', () => {
     const password = body.password as Record<string, unknown>;
 
     expect(identityClientSchema('identity.bootstrap.read').output.parse(body)).toEqual(body);
+    expect(body.methods).toEqual(['password', 'otp', 'federation']);
+    expect(body.preferredMethod).toBe('password');
+    expect(body.methods).not.toContain('invitation');
     expect(Object.keys(password).sort()).toEqual(['lowercase', 'maximumLength', 'minimumLength', 'number', 'symbol', 'uppercase']);
     expect(password).not.toHaveProperty('maximumConcurrency');
     expect(password).not.toHaveProperty('maximumQueue');

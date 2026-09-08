@@ -104,7 +104,7 @@ export class ResolveInvitation {
       if (!this.hasher.matchesRecipient(mobile, recipient)) throw new DomainError('INVITATION_INVALID');
       const challenge = `challenge:${randomUUID()}`;
       const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
-      const purpose = 'invitation_login';
+      const purpose = 'invitation_acceptance';
       const [codeEnvelope, destinationEnvelope] = await Promise.all([this.kms.encrypt('pii', 'identity/challenge', code, { challenge, purpose }), this.kms.encrypt('pii', 'identity/destination', mobile, { challenge, purpose })]);
       return Object.freeze({ ...prepared, proof: Object.freeze({ challenge, code, codeEnvelope, destinationEnvelope }) });
     } catch (cause) {
@@ -163,7 +163,7 @@ export class ResolveInvitation {
       const issued = await this.challenges.issue(database, {
         id: proof.challenge,
         principal,
-        purpose: 'invitation_login',
+        purpose: 'invitation_acceptance',
         destinationHash: recipient.toString('hex'),
         codeHash: this.code(proof.challenge, proof.code),
         codeCiphertext: proof.codeEnvelope.ciphertext,
@@ -182,7 +182,7 @@ export class ResolveInvitation {
           kind: 'proofRequired',
           proof: {
             reference: proof.challenge,
-            purpose: 'invitation_login',
+            purpose: 'invitation_acceptance',
             expiresAt: issued.expiresAt.toISOString(),
             retryAt: retryAt.toISOString(),
             attemptsRemaining: RUNTIME_LIMITS.authentication.otp.maximumAttempts,

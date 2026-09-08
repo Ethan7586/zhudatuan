@@ -45,11 +45,13 @@ export function loginMachine(state: LoginState, event: LoginEvent): LoginState {
     case 'ENROLLMENT_FAILED':
       return state.phase === 'enrollment' && state.submitting ? Object.freeze({ ...state, submitting: false }) : state;
     case 'PROOF_REQUIRED':
-      return isRunning(state) ? Object.freeze({ ...base(state), phase: 'proof', reference: event.reference, methodKind: event.method, expiresAt: event.expiresAt, ...(event.challenge ? { challenge: event.challenge } : {}), bootstrap: state.bootstrap }) : state;
+      return isRunning(state)
+        ? Object.freeze({ ...base(state), phase: 'proof', reference: event.reference, methodKind: event.method, expiresAt: event.expiresAt, ...(event.challenge ? { challenge: event.challenge } : {}), bootstrap: state.bootstrap })
+        : state;
     case 'MEMBERSHIP_REQUIRED':
       return isRunning(state) ? Object.freeze({ ...base(state), phase: 'membershipselection', memberships: event.memberships, bootstrap: state.bootstrap }) : state;
     case 'ENROLLMENT_COMPLETED':
-      return state.phase === 'enrollment' && state.submitting ? Object.freeze({ ...base(state), phase: 'ready', bootstrap: state.bootstrap, notice: event.notice }) : state;
+      return state.phase === 'enrollment' && state.submitting ? Object.freeze({ ...base(state), phase: 'registrationcomplete', bootstrap: state.bootstrap, notice: event.notice }) : state;
     case 'RECOVERABLE_FAILED':
       return isRunning(state) || state.phase === 'membershipselection' || state.phase === 'proof' || state.phase === 'enrollment'
         ? Object.freeze({ ...base(state), phase: 'recoverablefailure', bootstrap: state.bootstrap, failure: event.failure })

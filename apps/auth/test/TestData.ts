@@ -25,7 +25,7 @@ export const bootstrap: Bootstrap = Object.freeze({
   returnTarget: 'signed-return',
   expiresAt: Date.now() + 60_000,
   csrf: 'csrf-token',
-  methods: Object.freeze(['password', 'otp', 'invitation', 'federation'] as const),
+  methods: Object.freeze(['password', 'otp', 'federation'] as const),
   preferredMethod: 'password',
   password: Object.freeze({ minimumLength: 12, maximumLength: 128, uppercase: true, lowercase: true, number: true, symbol: true }),
   otp: Object.freeze({ validSeconds: 300, resendSeconds: 60 }),
@@ -52,7 +52,9 @@ export function identitySdk(methods: Partial<IdentitySdk>): IdentitySdk {
     get(target, property, receiver) {
       const value = Reflect.get(target, property, receiver);
       if (value !== undefined) return value;
-      return vi.fn(async () => { throw new Error(`UNEXPECTED_SDK_CALL:${String(property)}`); });
+      return vi.fn(async () => {
+        throw new Error(`UNEXPECTED_SDK_CALL:${String(property)}`);
+      });
     },
   }) as IdentitySdk;
 }
@@ -78,7 +80,7 @@ export function bootstrapOutput(target: 'console' | 'storefront' = 'storefront')
     returnTarget: 'signed-return',
     expiresAt: new Date(Date.now() + 60_000).toISOString(),
     csrf: 'csrf-token',
-    methods: ['password', 'otp', 'invitation', 'federation'],
+    methods: ['password', 'otp', 'federation'],
     preferredMethod: 'password' as const,
     password: { minimumLength: 12, maximumLength: 128, uppercase: true, lowercase: true, number: true, symbol: true },
     otp: { validSeconds: 300, resendSeconds: 60 },

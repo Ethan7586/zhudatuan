@@ -65,7 +65,7 @@ export class CompleteSession {
     }
     try {
       await this.challenges.consume(requireWriteTransaction(database), textField(body, 'proof'), textField(body, 'code', 16), (id, code) => this.code(id, code), invitation.state.principal, {
-        purpose: 'invitation_login',
+        purpose: 'invitation_acceptance',
         destinationHash: invitation.state.recipientHash.toString('hex'),
       });
     } catch (cause) {

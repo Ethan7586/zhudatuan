@@ -9,16 +9,21 @@ describe('Auth application', () => {
 
   it('renders the password MVP after bootstrap while provider loading degrades independently', async () => {
     window.history.replaceState({}, '', '/?target=storefront');
-    vi.stubGlobal('fetch', vi.fn(async (request: string | URL | Request) => {
-      const url = String(request);
-      if (url.includes('/identity/bootstrap')) return json(bootstrapOutput());
-      if (url.includes('/identity/providers')) return json({ items: 'invalid' });
-      throw new Error('UNEXPECTED_TEST_REQUEST');
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (request: string | URL | Request) => {
+        const url = String(request);
+        if (url.includes('/identity/bootstrap')) return json(bootstrapOutput());
+        if (url.includes('/identity/providers')) return json({ items: 'invalid' });
+        throw new Error('UNEXPECTED_TEST_REQUEST');
+      })
+    );
     render(<App />);
     expect(screen.getByText('正在初始化安全登录…')).toBeTruthy();
     expect(await screen.findByRole('heading', { name: '统一账号认证' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '登录' })).toBeTruthy();
+    expect(screen.queryByRole('tab', { name: '邀请码登录' })).toBeNull();
+    expect(screen.getByRole('button', { name: '新用户注册' })).toBeTruthy();
     expect(await screen.findByRole('alert')).toBeTruthy();
   });
 });

@@ -12,7 +12,15 @@ export function Component() {
   const location = useLocation();
   return (
     <Guard route={ROUTES.authlogin} rejected={<InvalidRoute />}>
-      {(request) => <AuthRuntime dependencies={dependencies} request={request} invitation={false} onTarget={(target) => void navigate({ pathname: location.pathname, search: authTargetSearch(location.search, target) }, { replace: true })} />}
+      {(request) => (
+        <AuthRuntime
+          dependencies={dependencies}
+          request={request}
+          journey="login"
+          onTarget={(target) => void navigate({ pathname: location.pathname, search: authTargetSearch(location.search, target) }, { replace: true })}
+          onRegister={() => void navigate({ pathname: ROUTES.authinvitation, search: location.search })}
+        />
+      )}
     </Guard>
   );
 }

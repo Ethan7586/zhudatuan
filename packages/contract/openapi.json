@@ -30962,7 +30962,6 @@
               "enum": [
                 "password",
                 "otp",
-                "invitation",
                 "federation"
               ],
               "type": "string"
@@ -31020,8 +31019,7 @@
           "preferredMethod": {
             "enum": [
               "password",
-              "otp",
-              "invitation"
+              "otp"
             ],
             "type": "string"
           },
@@ -32455,7 +32453,7 @@
                     "type": "string"
                   },
                   "purpose": {
-                    "const": "invitation_login",
+                    "const": "invitation_acceptance",
                     "type": "string"
                   },
                   "reference": {

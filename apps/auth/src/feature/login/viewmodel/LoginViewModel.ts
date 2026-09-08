@@ -16,15 +16,18 @@ import { startLoginProvider } from './LoginProviderAction';
 
 const NO_METHODS: readonly [] = Object.freeze([]);
 
-export function useLoginViewModel(dependencies: Dependencies, request: SessionRequest, invitation: boolean, onTarget: (target: SessionRequest['target']) => void) {
+export function useLoginViewModel(dependencies: Dependencies, request: SessionRequest, journey: 'login' | 'registration', onTarget: (target: SessionRequest['target']) => void) {
   const [state, dispatch] = useReducer(loginMachine, request.target, initialLoginState);
   const [fields, setFields] = useState<Readonly<Record<string, string>>>({});
   const [recovery, setRecovery] = useState(false);
   const [focusTarget, setFocusTarget] = useState<SessionRequest['target']>();
-  const session = useMemo(() => Object.freeze({ target: request.target, ...(request.returnTarget ? { returnTarget: request.returnTarget } : {}), ...(request.returnPath ? { returnPath: request.returnPath } : {}) }), [request.returnPath, request.returnTarget, request.target]);
+  const session = useMemo(
+    () => Object.freeze({ target: request.target, ...(request.returnTarget ? { returnTarget: request.returnTarget } : {}), ...(request.returnPath ? { returnPath: request.returnPath } : {}) }),
+    [request.returnPath, request.returnTarget, request.target]
+  );
   const currentBootstrap = 'bootstrap' in state ? state.bootstrap : undefined;
   const command = useLoginCommand(dependencies, state, dispatch);
-  const providerState = useLoginProviderViewModel(dependencies, session, currentBootstrap?.methods ?? NO_METHODS);
+  const providerState = useLoginProviderViewModel(dependencies, session, journey === 'login' ? (currentBootstrap?.methods ?? NO_METHODS) : NO_METHODS);
 
   useEffect(() => {
     if (state.phase !== 'bootstrapping') return;
@@ -33,14 +36,13 @@ export function useLoginViewModel(dependencies: Dependencies, request: SessionRe
     void dependencies.bootstrap.execute(session, controller.signal).then(
       (bootstrap) => {
         dispatch({ type: 'BOOTSTRAP_SUCCEEDED', command, bootstrap });
-        if (invitation && bootstrap.methods.includes('invitation')) queueMicrotask(() => dispatch({ type: 'METHOD_CHANGED', method: 'invitation' }));
       },
       (cause: unknown) => {
         if (!controller.signal.aborted) dispatch({ type: 'BOOTSTRAP_FAILED', command, failure: presentError(cause) });
       }
     );
     return () => controller.abort();
-  }, [dependencies.bootstrap, invitation, session, state.command, state.phase]);
+  }, [dependencies.bootstrap, session, state.command, state.phase]);
 
   useEffect(() => {
     if (state.phase === 'redirecting') dependencies.navigation.replace(state.redirectUrl);
@@ -90,7 +92,12 @@ export function useLoginViewModel(dependencies: Dependencies, request: SessionRe
     }
   };
   const resolveInvitation = async (code: string) => {
-    if (!validateTerms()) return;
+    const next = Object.freeze({
+      ...(!code.trim() ? { invitation: '请输入企业邀请码' } : {}),
+      ...(!state.accepted ? { agreement: '请先阅读并同意服务协议与隐私政策' } : {}),
+    });
+    setFields(next);
+    if (Object.keys(next).length) return;
     const operation = command.start(true);
     if (operation === undefined) return;
     try {
