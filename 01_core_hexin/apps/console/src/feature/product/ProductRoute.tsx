@@ -1,5 +1,5 @@
 import { ResourceState } from '@shop/design';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -19,7 +19,7 @@ import { canManageListing, publishReadyListings, readyPublicationUnavailableReas
   type ListingPublicationAction } from './ProductPublicationCommand';
 import { productKey, readProducts, type ProductQuery } from './ProductQuery';
 import type { Listing, ProductFilter } from './ProductSchema';
-import { ProductTable, type ProductColumnKey } from './ProductTable';
+import { ProductTable, ProductTableSkeleton, type ProductColumnKey } from './ProductTable';
 import './product.css';
 import './product-table.css';
 import './product-dialogs.css';
@@ -29,6 +29,8 @@ import './product-responsive.css';
 
 const allColumns: readonly ProductColumnKey[] = Object.freeze(['category', 'sku', 'malls', 'price', 'stock', 'status', 'updated']);
 const pageSizes = new Set([20, 50, 100]);
+const publicationRefreshDelays = Object.freeze([250, 500, 1_000, 2_000, 3_000]);
+const publicationRefreshAttempts = 30;
 const productCsvColumns: readonly CsvColumn<Listing>[] = Object.freeze([
   { header: '记录ID', value: (row) => row.id },
   { header: '商品ID', value: (row) => row.product_id },
@@ -72,6 +74,7 @@ export function Component() {
   const query = useQuery({
     queryKey: productKey(context, filter),
     queryFn: ({ signal }) => readProducts(context, filter, signal),
+    placeholderData: keepPreviousData,
     staleTime: 5 * 60_000,
   });
   const error = safeQueryError(query.error);
@@ -93,6 +96,7 @@ export function Component() {
   const [createOpen, setCreateOpen] = useState(false);
   const [releaseProgress, setReleaseProgress] = useState<ReadyPublicationProgress>();
   const [releaseCompleted, setReleaseCompleted] = useState<number>();
+  const [releaseRefreshError, setReleaseRefreshError] = useState<string>();
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<ProductColumnKey>>(() => new Set(allColumns));
   const cursorTrail = useRef(new Map<number, string | undefined>([[1, undefined]]));
   const visibleSelected = useMemo(() => new Set(query.data?.items.filter((row) => selected.has(row.id)).map((row) => row.id) ?? []), [query.data?.items, selected]);
@@ -104,7 +108,10 @@ export function Component() {
   });
   const readyPublication = useMutation({
     mutationFn: () => publishReadyListings(context),
-    onMutate: () => { setReleaseCompleted(undefined); },
+    onMutate: () => {
+      setReleaseCompleted(undefined);
+      setReleaseRefreshError(undefined);
+    },
     onSuccess: (receipt) => {
       setSelected(new Set());
       const counts = query.data?.status_counts;
@@ -112,24 +119,44 @@ export function Component() {
         setReleaseProgress({ id: receipt.id, total: counts.pending_review, publishedBefore: counts.published });
       } else {
         setReleaseCompleted(receipt.count);
+        void queryClient.invalidateQueries({ queryKey: productKey(context, filter) });
       }
-      void queryClient.invalidateQueries({ queryKey: productKey(context, filter) });
     },
   });
   useEffect(() => {
     if (releaseProgress === undefined) return;
-    void query.refetch();
-    const interval = window.setInterval(() => { void query.refetch(); }, 750);
-    return () => window.clearInterval(interval);
-  }, [releaseProgress?.id]);
-  useEffect(() => {
-    const counts = query.data?.status_counts;
-    if (releaseProgress === undefined || counts === undefined) return;
-    const current = Math.min(releaseProgress.total, Math.max(0, releaseProgress.total - counts.pending_review));
-    if (releaseProgress.total > 0 && current < releaseProgress.total && counts.pending_review > 0) return;
-    setReleaseCompleted(Math.max(0, counts.published - releaseProgress.publishedBefore));
-    setReleaseProgress(undefined);
-  }, [query.data?.status_counts, releaseProgress]);
+    let active = true;
+    let attempt = 0;
+    let timeout: number | undefined;
+    const schedule = () => {
+      const delay = publicationRefreshDelays[Math.min(attempt, publicationRefreshDelays.length - 1)]!;
+      timeout = window.setTimeout(() => { void refresh(); }, delay);
+    };
+    const refresh = async () => {
+      const result = await query.refetch({ cancelRefetch: false });
+      if (!active) return;
+      const counts = result.data?.status_counts;
+      const completed = counts === undefined ? 0
+        : Math.min(releaseProgress.total, Math.max(0, counts.published - releaseProgress.publishedBefore));
+      if (completed >= releaseProgress.total) {
+        setReleaseCompleted(completed);
+        setReleaseProgress(undefined);
+        return;
+      }
+      attempt += 1;
+      if (attempt >= publicationRefreshAttempts) {
+        setReleaseProgress(undefined);
+        setReleaseRefreshError('状态读取超时，已停止自动刷新。后台任务可能仍在执行，请稍后手动刷新页面。');
+        return;
+      }
+      schedule();
+    };
+    schedule();
+    return () => {
+      active = false;
+      if (timeout !== undefined) window.clearTimeout(timeout);
+    };
+  }, [releaseProgress?.id, query.refetch]);
   const writeEnabled = canCreateCatalogImport(context);
   const releaseDisabledReason = readyPublication.isPending || releaseProgress !== undefined
     ? '正在审核并上架，请勿重复操作'
@@ -140,12 +167,12 @@ export function Component() {
   const releaseFeedback = readyPublication.error !== null
     ? { tone: 'error' as const, message: readyPublication.error instanceof Error
       ? `审核上架失败：${readyPublication.error.message}` : '一键审核上架失败' }
-    : releaseCompleted === undefined ? undefined : {
+    : releaseRefreshError === undefined ? releaseCompleted === undefined ? undefined : {
       tone: 'success' as const,
-      message: `已审核并上架 ${releaseCompleted} 件商品，前台商品接口已可读取。`,
-    };
+      message: `已审核并上架 ${releaseCompleted} 件商品，商品管理状态已更新。`,
+    } : { tone: 'error' as const, message: releaseRefreshError };
   const releaseProgressValue = releaseProgress === undefined || query.data?.status_counts === undefined ? undefined : {
-    current: Math.min(releaseProgress.total, Math.max(0, releaseProgress.total - query.data.status_counts.pending_review)),
+    current: Math.min(releaseProgress.total, Math.max(0, query.data.status_counts.published - releaseProgress.publishedBefore)),
     total: releaseProgress.total,
   };
   const openImportResult = (jobId: string) => {
@@ -275,14 +302,14 @@ export function Component() {
         </p>
       </section>
       <ResourceState
-        condition={condition}
+        condition={condition === 'loading' ? 'ready' : condition}
         {...(error === undefined ? {} : { error })}
         retry={() => {
           void query.refetch();
         }}
       >
         {query.data === undefined ? (
-          <span />
+          <div className="productcatalog"><ProductTableSkeleton /></div>
         ) : (
           <div className="productcatalog">
             <ProductTable

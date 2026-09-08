@@ -5,6 +5,8 @@ import type { Listing } from './ProductSchema';
 
 export type ProductColumnKey = 'category' | 'sku' | 'malls' | 'price' | 'stock' | 'status' | 'updated';
 
+const skeletonRows = Object.freeze([0, 1, 2, 3, 4, 5]);
+
 interface ProductTableProps {
   readonly rows: readonly Listing[];
   readonly previewEnabled: boolean;
@@ -130,6 +132,27 @@ export function ProductTable({ rows, previewEnabled, visibleColumns, selected, a
             })}
           </tbody>
         </table>
+      </div>
+    </section>
+  );
+}
+
+export function ProductTableSkeleton() {
+  return (
+    <section className="producttablecard producttableskeleton" aria-busy="true">
+      <h2 className="sr-only">商品列表</h2>
+      <p className="sr-only" role="status" aria-label="正在加载商品列表" aria-live="polite">正在加载商品列表…</p>
+      <div className="producttableskeletonhead" aria-hidden="true" />
+      <div aria-hidden="true">
+        {skeletonRows.map((row) => (
+          <div className="producttableskeletonrow" key={row}>
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
+        ))}
       </div>
     </section>
   );

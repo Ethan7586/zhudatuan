@@ -35,6 +35,19 @@ afterEach(() => {
 afterAll(() => server.close());
 
 describe('Product governance workspace', () => {
+  it('renders the product shell and a stable table skeleton before the cold request completes', async () => {
+    server.use(http.get('*/api/v1/catalog/listings', async ({ request }) => {
+      requests.push(new URL(request.url));
+      await new Promise((resolve) => setTimeout(resolve, 120));
+      return HttpResponse.json(productPage);
+    }));
+    renderProductRoute(mallContext);
+
+    expect(screen.getByRole('heading', { level: 1, name: '商品管理' })).toBeTruthy();
+    expect(screen.getByRole('status', { name: '正在加载商品列表' })).toBeTruthy();
+    expect(await screen.findByRole('table', { name: '商品列表' })).toBeTruthy();
+  });
+
   it('hides cached product data and an open drawer when access is revoked', async () => {
     const user = userEvent.setup();
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -95,6 +108,12 @@ describe('Product governance workspace', () => {
 
   it('shows real SKU quantity and filters the complete management statuses', async () => {
     const user = userEvent.setup();
+    server.use(http.get('*/api/v1/catalog/listings', async ({ request }) => {
+      const url = new URL(request.url);
+      requests.push(url);
+      if (url.searchParams.get('status') !== null) await new Promise((resolve) => setTimeout(resolve, 120));
+      return HttpResponse.json(productPage);
+    }));
     renderProductRoute(mallContext);
     const table = await screen.findByRole('table', { name: '商品列表' });
 
@@ -105,16 +124,25 @@ describe('Product governance workspace', () => {
     }
 
     await user.click(screen.getByRole('button', { name: /^待审核/ }));
+    expect(screen.getByRole('table', { name: '商品列表' })).toBeTruthy();
+    expect(screen.getByText('正在同步服务端数据…')).toBeTruthy();
     await waitFor(() => expect(requests.some((url) => url.searchParams.get('status') === 'pending_review')).toBe(true));
   });
 
-  it('publishes every ready product through a visible background-task progress', async () => {
+  it('publishes every ready product with one sequential refresh and no request storm', async () => {
     const user = userEvent.setup();
     let queued = false;
     let completed = false;
-    server.use(http.get('*/api/v1/catalog/listings', ({ request }) => {
+    let activeReads = 0;
+    let maximumConcurrentReads = 0;
+    server.use(http.get('*/api/v1/catalog/listings', async ({ request }) => {
       requests.push(new URL(request.url));
-      if (!queued || !completed) return HttpResponse.json(productPage);
+      if (!queued) return HttpResponse.json(productPage);
+      activeReads += 1;
+      maximumConcurrentReads = Math.max(maximumConcurrentReads, activeReads);
+      await new Promise((resolve) => setTimeout(resolve, 900));
+      activeReads -= 1;
+      if (!completed) return HttpResponse.json(productPage);
       return HttpResponse.json({ ...productPage, status_counts: {
         ...productPage.status_counts, pending_review: 0, published: 2,
       } });
@@ -147,7 +175,9 @@ describe('Product governance workspace', () => {
     expect(screen.getByText('商品正在发布到前台：0/1')).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
     completed = true;
-    expect(await screen.findByText('已审核并上架 1 件商品，前台商品接口已可读取。')).toBeTruthy();
+    expect(await screen.findByText('已审核并上架 1 件商品，商品管理状态已更新。', {}, { timeout: 2_500 })).toBeTruthy();
+    expect(maximumConcurrentReads).toBe(1);
+    expect(requests).toHaveLength(2);
   });
 
   it('enables manual creation, standard-package import and publication in an authorized mall', async () => {
