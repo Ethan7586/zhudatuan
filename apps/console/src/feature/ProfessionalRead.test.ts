@@ -66,19 +66,17 @@ const server = setupServer(
     if (pathname.startsWith('/api/v1/runtime/exports/')) return HttpResponse.json({ ...runtimeTask, type: 'export', owner: 'reporting', kind: 'sales', title: '销售报表导出', fileName: null });
     if (pathname.startsWith('/api/v1/reports/')) {
       reportQueries.push(url.search);
-      const preset = url.searchParams.get('dimensionpreset') === 'customermember'
-        ? { code: 'customermember', name: '客户 / 会员分层', description: '当前客户范围内的会员购买分层', dimensions: ['customer', 'member'], privacy: 'masked', version: 1, owner: 'reporting' }
-        : null;
+      const memberDimension = url.searchParams.get('dimensionpreset') === 'customermember';
       const page = {
         ...empty,
         snapshot: {
-          query: { scope: 'enterprise:1', dimension: preset ? 'member' : null, period: '30days', application: null },
+          query: { scope: 'enterprise:1', dimension: memberDimension ? 'member' : null, period: '30days', application: null },
           watermark: { event: 'event:one', occurredAt: '2026-09-05T00:00:00.000Z', version: 1 },
           generatedAt: '2026-09-05T00:00:01.000Z',
           generationVersion: 1,
         },
       };
-      return HttpResponse.json(pathname === '/api/v1/reports/sales' ? { ...page, preset } : page);
+      return HttpResponse.json(page);
     }
     if (pathname === '/api/v1/access/center') return HttpResponse.json({ items: [], count: 0, roles: [], templates: [], separationRules: [] });
     if (pathname.endsWith('/messages')) {
