@@ -102,6 +102,22 @@ https://:4430 {
 		}
 	}
 
+	@catalogBatch {
+		host api.hbbtzn.com
+		method POST OPTIONS
+		path /api/v1/catalog/listings/batches
+	}
+	handle @catalogBatch {
+		reverse_proxy 127.0.0.1:4431 {
+			header_up Host {http.request.host}
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up -X-Sfl-Node-Id
+			header_up -X-Sfl-Node-Manifest-Id
+			header_up -X-Sfl-Node-Surface
+			header_up -X-Zdt-Identity-Entry-Host
+		}
+	}
+
 	@catalogPublication {
 		host api.hbbtzn.com
 		method PUT DELETE OPTIONS

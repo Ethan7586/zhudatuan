@@ -78,6 +78,8 @@ function gatewayConfiguration(manifest, instance, ports) {
 `\thandle @webBusiness {\n${proxy(ports.web)}\n\t}\n\n` +
 `\t@catalogImports {\n\t\thost ${apiHost}\n\t\tpath /api/v1/catalog/imports*\n\t}\n` +
 `\thandle @catalogImports {\n${proxy(ports.catalog)}\n\t}\n\n` +
+`\t@catalogBatch {\n\t\thost ${apiHost}\n\t\tmethod POST OPTIONS\n\t\tpath /api/v1/catalog/listings/batches\n\t}\n` +
+`\thandle @catalogBatch {\n${proxy(ports.catalog)}\n\t}\n\n` +
 `\t@catalogPublication {\n\t\thost ${apiHost}\n\t\tmethod PUT DELETE OPTIONS\n\t\tpath_regexp publication ^/api/v1/catalog/listings/[^/]+/publication$\n\t}\n` +
 `\thandle @catalogPublication {\n${proxy(ports.catalog)}\n\t}\n\n` +
 `\t@paymentWebhook {\n\t\thost ${apiHost}\n\t\tmethod POST\n\t\tpath /api/v1/webhooks/wechat/payment\n\t}\n` +

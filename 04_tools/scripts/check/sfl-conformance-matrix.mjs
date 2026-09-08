@@ -80,6 +80,8 @@ const gateway = await text('02_platform_pingtai', 'config', 'node-runtime', 'hbb
 assert.doesNotMatch(gateway, /zhudatuan\.com/);
 assert.match(gateway, /host api\.hbbtzn\.com/);
 assert.match(gateway, /@storefrontPublicCatalog\s*\{\s*host h5\.hbbtzn\.com hbbtzn\.com mall\.hbbtzn\.com www\.hbbtzn\.com\s*method GET HEAD OPTIONS\s*path \/api\/v1\/catalog\/public\/products\*/);
+assert.match(gateway, /@catalogBatch/);
+assert.match(gateway, /path \/api\/v1\/catalog\/listings\/batches/);
 for (const port of [4431, 4432, 4433, 4434, 4436]) assert.match(gateway, new RegExp(`reverse_proxy 127\\.0\\.0\\.1:${port}`));
 assert.match(gateway, /header_up Host \{http\.request\.host\}/);
 for (const header of ['X-Sfl-Node-Id', 'X-Sfl-Node-Manifest-Id', 'X-Zdt-Identity-Entry-Host']) {
