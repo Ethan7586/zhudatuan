@@ -4,9 +4,25 @@ set -eu
 create_role() {
   role="$1"
   password="$2"
-  if [ "$(psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --tuples-only --no-align --command "select count(*) from pg_roles where rolname='$role'")" = "0" ]; then
-    psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set ON_ERROR_STOP=1 --command "create role $role login password '$password' nobypassrls"
+  if [ "$(run_sql "select count(*) from pg_roles where rolname=:'role';" --tuples-only --no-align --set=role="$role")" = "0" ]; then
+    run_sql "create role :\"role\" login nobypassrls;" --set=role="$role"
   fi
+  set_role_password "$role" "$password"
+}
+
+run_sql() {
+  statement="$1"
+  shift
+  printf '%s\n' "$statement" | psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set ON_ERROR_STOP=1 "$@"
+}
+
+set_role_password() {
+  role="$1"
+  password="$2"
+  export ROLE_PASSWORD="$password"
+  printf '%s\n' '\getenv password ROLE_PASSWORD' "alter role :\"role\" login password :'password';" |
+    psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set ON_ERROR_STOP=1 --set=role="$role"
+  unset ROLE_PASSWORD
 }
 
 create_replay_role() {
@@ -23,6 +39,7 @@ read_secret() {
   cat "$file"
 }
 
+set_role_password "$POSTGRES_USER" "$(read_secret "$POSTGRES_PASSWORD_FILE")"
 create_role shopapp "$(read_secret "$SHOPAPP_PASSWORD_FILE")"
 create_role shopjob "$(read_secret "$SHOPJOB_PASSWORD_FILE")"
 create_role shopprovider "$(read_secret "$SHOPPROVIDER_PASSWORD_FILE")"
