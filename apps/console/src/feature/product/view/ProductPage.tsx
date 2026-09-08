@@ -12,6 +12,7 @@ import { ProductPagination } from './ProductPagination';
 import { ProductTable } from './ProductTable';
 import { ProductImportDialog } from './ProductImportDialog';
 import { ProductBatchDialog } from './ProductBatchDialog';
+import { FilterDisclosure } from './FilterDisclosure';
 
 export function ProductPage({ title, viewmodel, importmodel }: Readonly<{ title: string; viewmodel: ProductViewModel; importmodel: ProductImportViewModel }>) {
   return (
@@ -35,11 +36,7 @@ export function ProductPage({ title, viewmodel, importmodel }: Readonly<{ title:
       }
       controls={
         <section className="productcontrols" aria-label="商品筛选">
-          <details className="productfilterdisclosure">
-            <summary>
-              <span>筛选商品</span>
-              <small>{activeFilterCount(viewmodel.filter) === 0 ? '按名称、分类、供应商、商城或状态查找' : `已启用 ${activeFilterCount(viewmodel.filter)} 个条件`}</small>
-            </summary>
+          <FilterDisclosure count={activeFilterCount(viewmodel.filter)}>
             <ProductFilterForm
               value={viewmodel.filter}
               onChange={viewmodel.actions.changeFilter}
@@ -51,7 +48,7 @@ export function ProductPage({ title, viewmodel, importmodel }: Readonly<{ title:
               {...(viewmodel.facets.error === undefined ? {} : { facetsError: viewmodel.facets.error })}
               onRetryFacets={viewmodel.facets.retry}
             />
-          </details>
+          </FilterDisclosure>
           <p className="productservertime">
             <span aria-hidden="true" />
             {viewmodel.resource.condition === 'refreshing' ? '正在同步商品数据…' : '商品数据已加载'}
