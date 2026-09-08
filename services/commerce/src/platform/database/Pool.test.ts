@@ -12,5 +12,9 @@ describe('database pool profiles', () => {
     expect(worker.max).toBe(RUNTIME_LIMITS.pool.worker.maximumConnections);
     expect(new Set([query.application_name, command.application_name, worker.application_name]).size).toBe(3);
     expect(query.options).toContain(`statement_timeout=${RUNTIME_LIMITS.pool.query.statementTimeoutMilliseconds}`);
+    expect(query.options).toContain('jit=off');
+    expect(command.options).toContain('jit=off');
+    expect(worker.options).toContain('jit=off');
+    expect(poolConfiguration('migration').options).toContain('jit=on');
   });
 });

@@ -38,7 +38,7 @@ export function poolConfiguration(workload: DatabaseWorkload): Readonly<{
     connectionTimeoutMillis: limits.connectionTimeoutMilliseconds,
     idleTimeoutMillis: limits.idleTimeoutMilliseconds,
     application_name: `shop-${workload}`,
-    options: `-c statement_timeout=${limits.statementTimeoutMilliseconds} -c idle_in_transaction_session_timeout=${limits.idleTransactionTimeoutMilliseconds}`,
+    options: `-c statement_timeout=${limits.statementTimeoutMilliseconds} -c idle_in_transaction_session_timeout=${limits.idleTransactionTimeoutMilliseconds} -c jit=${limits.jit ? 'on' : 'off'}`,
   });
 }
 

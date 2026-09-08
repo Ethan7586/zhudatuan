@@ -173,21 +173,25 @@ runtime:
       idleTimeoutMilliseconds: 30000
       statementTimeoutMilliseconds: 5000
       idleTransactionTimeoutMilliseconds: 15000
+      jit: false
     command:
       maximumConnections: 20
       connectionTimeoutMilliseconds: 3000
       idleTimeoutMilliseconds: 30000
       statementTimeoutMilliseconds: 10000
       idleTransactionTimeoutMilliseconds: 15000
+      jit: false
     worker:
       maximumConnections: 24
       connectionTimeoutMilliseconds: 5000
       idleTimeoutMilliseconds: 30000
       statementTimeoutMilliseconds: 120000
       idleTransactionTimeoutMilliseconds: 15000
+      jit: false
     migration:
       maximumConnections: 1
       connectionTimeoutMilliseconds: 5000
       idleTimeoutMilliseconds: 30000
       statementTimeoutMilliseconds: 0
       idleTransactionTimeoutMilliseconds: 0
+      jit: true

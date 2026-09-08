@@ -498,7 +498,8 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
       !Number.isSafeInteger(value.statementTimeoutMilliseconds) ||
       value.statementTimeoutMilliseconds < 0 ||
       !Number.isSafeInteger(value.idleTransactionTimeoutMilliseconds) ||
-      value.idleTransactionTimeoutMilliseconds < 0
+      value.idleTransactionTimeoutMilliseconds < 0 ||
+      typeof value.jit !== 'boolean'
     ) {
       throw new Error(`POOL_CAPACITY_INVALID:${name}`);
     }

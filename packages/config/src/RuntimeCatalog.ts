@@ -1,5 +1,5 @@
 // Generated from config/cache.yml and config/capacity.yml. Do not edit.
-export const CONFIG_CHECKSUM = 'f9d868e66f22b24c4a669b2d9e9b31ff20b67f66ccb7b950c5f81fe4c2b951a2' as const;
+export const CONFIG_CHECKSUM = '12b2d3dd6db74cc217fe1d8bffef93f25776e11ae709d6efcc83834f891bb1bf' as const;
 
 export const BROWSER_QUERY_POLICY = Object.freeze({
   "query": {
@@ -392,28 +392,32 @@ export const RUNTIME_LIMITS = Object.freeze({
       "connectionTimeoutMilliseconds": 3000,
       "idleTimeoutMilliseconds": 30000,
       "statementTimeoutMilliseconds": 5000,
-      "idleTransactionTimeoutMilliseconds": 15000
+      "idleTransactionTimeoutMilliseconds": 15000,
+      "jit": false
     },
     "command": {
       "maximumConnections": 20,
       "connectionTimeoutMilliseconds": 3000,
       "idleTimeoutMilliseconds": 30000,
       "statementTimeoutMilliseconds": 10000,
-      "idleTransactionTimeoutMilliseconds": 15000
+      "idleTransactionTimeoutMilliseconds": 15000,
+      "jit": false
     },
     "worker": {
       "maximumConnections": 24,
       "connectionTimeoutMilliseconds": 5000,
       "idleTimeoutMilliseconds": 30000,
       "statementTimeoutMilliseconds": 120000,
-      "idleTransactionTimeoutMilliseconds": 15000
+      "idleTransactionTimeoutMilliseconds": 15000,
+      "jit": false
     },
     "migration": {
       "maximumConnections": 1,
       "connectionTimeoutMilliseconds": 5000,
       "idleTimeoutMilliseconds": 30000,
       "statementTimeoutMilliseconds": 0,
-      "idleTransactionTimeoutMilliseconds": 0
+      "idleTransactionTimeoutMilliseconds": 0,
+      "jit": true
     }
   }
 } as const);
