@@ -91,6 +91,7 @@ export const token = Object.freeze({
     floating: '0px 8px 24px 0px rgba(7, 24, 47, 0.1), 0px 24px 64px 0px rgba(7, 24, 47, 0.12)',
     modal: '0px 4px 12px 0px rgba(7, 24, 47, 0.08), 0px 20px 56px 0px rgba(7, 24, 47, 0.18)',
     brandControl: '0px 6px 15px 0px rgba(31, 94, 255, 0.2)',
+    dangerControl: '0px 6px 15px 0px rgba(220, 38, 38, 0.18)',
     focus: '0px 0px 0px 3px rgba(31, 94, 255, 0.16)',
   }),
   layer: Object.freeze({

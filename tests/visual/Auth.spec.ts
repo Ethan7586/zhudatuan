@@ -31,3 +31,29 @@ test('Auth 错误文案不暴露代码且键盘可完成登录表单', async ({ 
   await expect(page.locator('[role="alert"]')).toBeVisible();
   await expect(page.locator('body')).not.toContainText(/AUTHENTICATION_|INTERNAL_ERROR|TypeError|SQLSTATE/);
 });
+
+test('Auth 共享按钮原子保持主次层级、触控尺寸与完整中文', async ({ page }) => {
+  await prepareVisual(page, { width: 390, height: 844 });
+  await page.goto(`${LOCAL_AUTH_ORIGIN}/?target=storefront`);
+  await expectUsable(page);
+
+  const primary = page.getByRole('button', { name: '登录并进入消费者商城' });
+  const secondary = page.getByRole('button', { name: '忘记密码？' });
+  const reveal = page.getByRole('button', { name: '显示密码' });
+  for (const control of [primary, secondary, reveal]) {
+    const box = await control.boundingBox();
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+  }
+  await expect.poll(() => textFits(primary)).toBe(true);
+  await expect(primary).toHaveCSS('background-image', /linear-gradient/);
+  await expect(primary).not.toHaveCSS('box-shadow', 'none');
+  await expect(secondary).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+
+  const revealTransform = await reveal.evaluate((element) => getComputedStyle(element).transform);
+  await reveal.hover();
+  expect(await reveal.evaluate((element) => getComputedStyle(element).transform)).toBe(revealTransform);
+});
+
+async function textFits(locator: import('@playwright/test').Locator): Promise<boolean> {
+  return locator.evaluate((element) => element.scrollWidth <= element.clientWidth + 1 && element.scrollHeight <= element.clientHeight + 1);
+}
