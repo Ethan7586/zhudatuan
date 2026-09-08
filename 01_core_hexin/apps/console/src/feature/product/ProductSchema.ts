@@ -82,7 +82,9 @@ export const ListingPublicationReceiptSchema = z.object({
 });
 
 export const ListingBatchPublicationReceiptSchema = z.object({
+  id: z.optional(z.string().check(z.minLength(1))),
   action: z.literal('publish_ready'),
+  state: z.optional(z.literal('queued')),
   items: z.array(ListingPublicationReceiptSchema),
   count: DatabaseIntegerSchema,
 });

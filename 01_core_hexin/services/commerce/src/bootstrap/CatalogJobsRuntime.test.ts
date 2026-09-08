@@ -4,10 +4,12 @@ import type { DatabasePool } from '../foundation/persistence/Pool';
 import { catalogJobsEnvironment, createCatalogJobs } from './CatalogJobsRuntime';
 
 describe('catalog jobs runtime', () => {
-  it('builds only the catalog import worker', () => {
+  it('builds the catalog import and publication workers', () => {
     const pool = {} as DatabasePool;
     const objects = {} as ObjectStore;
-    expect(createCatalogJobs(pool, objects, 'catalog-test', 'mall:hongtai').map(({ id }) => id)).toEqual(['catalogimport']);
+    expect(createCatalogJobs(pool, objects, 'catalog-test', 'mall:hongtai').map(({ id }) => id)).toEqual([
+      'catalogimport', 'catalogpublication',
+    ]);
   });
 
   it('accepts only the inputs needed by the catalog worker', () => {

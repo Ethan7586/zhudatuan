@@ -86,24 +86,20 @@ describe('catalog mall command boundaries', () => {
     expect(publishCalls[0]?.values).toEqual(['listing:1', 'mall:hongtai', 3, 'published']);
   });
 
-  it('publishes every ready draft in the current mall as one database action', async () => {
+  it('queues ready draft publication for the current mall worker', async () => {
     const calls: QueryCall[] = [];
-    const database = recordingDatabase(calls, (text) => text.startsWith('with eligible')
-      ? [{ id: 'listing:1', status: 'published', version: 1 }, { id: 'listing:2', status: 'published', version: 4 }]
-      : []);
+    const database = recordingDatabase(calls, () => []);
 
     const result = await setListingBatchPublication(
       request('catalog.listings.batch', {}, undefined, {}, { action: 'publish_ready' }),
       database,
     );
 
-    expect(result).toMatchObject({ status: 200, body: { action: 'publish_ready', count: 2 } });
+    expect(result).toMatchObject({ status: 202, body: { action: 'publish_ready', state: 'queued', count: 0 } });
     expect(calls).toHaveLength(1);
-    expect(calls[0]?.values).toEqual(['mall:hongtai']);
-    expect(calls[0]?.text).toContain("listing.status='draft'");
-    expect(calls[0]?.text).toContain('pricing.pricebook');
-    expect(calls[0]?.text).toContain('inventory.stockitem');
-    expect(calls[0]?.text).toContain('for update of listing');
+    expect(calls[0]?.values[1]).toBe('mall:hongtai');
+    expect(calls[0]?.text).toContain("'catalogpublication'");
+    expect(calls[0]?.text).toContain('insert into runtime.job');
   });
 });
 

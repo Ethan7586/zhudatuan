@@ -108,17 +108,29 @@ describe('Product governance workspace', () => {
     await waitFor(() => expect(requests.some((url) => url.searchParams.get('status') === 'pending_review')).toBe(true));
   });
 
-  it('publishes every ready product in the current mall with one action', async () => {
+  it('publishes every ready product through a visible background-task progress', async () => {
     const user = userEvent.setup();
+    let queued = false;
+    let completed = false;
+    server.use(http.get('*/api/v1/catalog/listings', ({ request }) => {
+      requests.push(new URL(request.url));
+      if (!queued || !completed) return HttpResponse.json(productPage);
+      return HttpResponse.json({ ...productPage, status_counts: {
+        ...productPage.status_counts, pending_review: 0, published: 2,
+      } });
+    }));
     server.use(http.post('*/api/v1/catalog/listings/batches', async ({ request }) => {
       const body = await request.json() as { action?: string };
       batchActions.push(body.action ?? '');
       writes.push('POST');
+      queued = true;
       return HttpResponse.json({
+        id: 'catalogpublication:test',
         action: 'publish_ready',
-        items: [{ id: 'listing:ready', status: 'published', version: 1 }],
-        count: 1,
-      });
+        state: 'queued',
+        items: [],
+        count: 0,
+      }, { status: 202 });
     }));
     renderProductRoute(mallContext);
     await screen.findByRole('table', { name: '商品列表' });
@@ -131,8 +143,11 @@ describe('Product governance workspace', () => {
 
     await waitFor(() => expect(batchActions).toEqual(['publish_ready']));
     expect(writes).toContain('POST');
+    expect(await screen.findByRole('progressbar')).toBeTruthy();
+    expect(screen.getByText('商品正在发布到前台：0/1')).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
-    expect((await screen.findByRole('status')).textContent).toContain('已审核并上架 1 件商品');
+    completed = true;
+    expect(await screen.findByText('已审核并上架 1 件商品，前台商品接口已可读取。')).toBeTruthy();
   });
 
   it('enables manual creation, standard-package import and publication in an authorized mall', async () => {

@@ -1,7 +1,7 @@
+import { randomUUID } from 'node:crypto';
 import { rowResult, requireAccess, type OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import type { OperationRequest } from '../../../foundation/application/OperationHandler';
 import { bodyRecord } from '../../../foundation/interface/Validation';
-import { CATALOG_LISTING_MANAGEMENT_STATUS_SQL } from './CatalogListingManagement';
 
 export async function setListingPublication(
   request: OperationRequest,
@@ -30,20 +30,12 @@ export async function setListingBatchPublication(request: OperationRequest, data
   const access = requireAccess(request);
   const body = bodyRecord(request);
   if (body.action === 'publish_ready') {
-    const result = await database.query(
-      `with eligible as(
-        select listing.id from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id
-        join catalog.product product on product.id=sku.product_id
-        where listing.scope_id=$1 and listing.status='draft'
-          and (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='pending_review'
-        order by listing.id for update of listing
-      )
-      update catalog.listing listing set status='published',effective_at=clock_timestamp(),expires_at=null,
-        version=listing.version+1,updated_at=clock_timestamp()
-      from eligible where listing.id=eligible.id returning listing.id,listing.status,listing.version`,
-      [access.scope.id],
-    );
-    return { status: 200, body: { action: 'publish_ready', items: result.rows, count: result.rowCount } };
+    const id = `catalogpublication:${randomUUID()}`;
+    await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
+      values($1,'catalogpublication','catalog',$2,
+        jsonb_build_object('action','publish_ready','total',0,'processed',0,'published',0,'phase','queued'),
+        'queued',90,clock_timestamp(),clock_timestamp(),clock_timestamp())`, [id, access.scope.id]);
+    return { status: 202, body: { id, action: 'publish_ready', state: 'queued', items: [], count: 0 } };
   }
   if (body.action !== 'publish' && body.action !== 'unpublish') throw new Error('VALIDATION_FAILED:action');
   if (!Array.isArray(body.ids) || body.ids.some((id) => typeof id !== 'string')) throw new Error('VALIDATION_FAILED:ids');

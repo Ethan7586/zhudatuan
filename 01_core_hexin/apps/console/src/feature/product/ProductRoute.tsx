@@ -1,6 +1,6 @@
 import { ResourceState } from '@shop/design';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
@@ -42,6 +42,12 @@ const productCsvColumns: readonly CsvColumn<Listing>[] = Object.freeze([
   { header: '失效时间', value: (row) => row.expires_at },
   { header: '更新时间', value: (row) => row.preview?.lastSyncedAt },
 ]);
+
+interface ReadyPublicationProgress {
+  readonly id: string;
+  readonly total: number;
+  readonly publishedBefore: number;
+}
 
 export function Component() {
   const context = useConsoleContext();
@@ -85,6 +91,8 @@ export function Component() {
   const [batchOpen, setBatchOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [releaseProgress, setReleaseProgress] = useState<ReadyPublicationProgress>();
+  const [releaseCompleted, setReleaseCompleted] = useState<number>();
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<ProductColumnKey>>(() => new Set(allColumns));
   const cursorTrail = useRef(new Map<number, string | undefined>([[1, undefined]]));
   const visibleSelected = useMemo(() => new Set(query.data?.items.filter((row) => selected.has(row.id)).map((row) => row.id) ?? []), [query.data?.items, selected]);
@@ -96,13 +104,34 @@ export function Component() {
   });
   const readyPublication = useMutation({
     mutationFn: () => publishReadyListings(context),
-    onSuccess: () => {
+    onMutate: () => { setReleaseCompleted(undefined); },
+    onSuccess: (receipt) => {
       setSelected(new Set());
+      const counts = query.data?.status_counts;
+      if (receipt.state === 'queued' && receipt.id !== undefined && counts !== undefined) {
+        setReleaseProgress({ id: receipt.id, total: counts.pending_review, publishedBefore: counts.published });
+      } else {
+        setReleaseCompleted(receipt.count);
+      }
       void queryClient.invalidateQueries({ queryKey: productKey(context, filter) });
     },
   });
+  useEffect(() => {
+    if (releaseProgress === undefined) return;
+    void query.refetch();
+    const interval = window.setInterval(() => { void query.refetch(); }, 750);
+    return () => window.clearInterval(interval);
+  }, [releaseProgress?.id]);
+  useEffect(() => {
+    const counts = query.data?.status_counts;
+    if (releaseProgress === undefined || counts === undefined) return;
+    const current = Math.min(releaseProgress.total, Math.max(0, releaseProgress.total - counts.pending_review));
+    if (releaseProgress.total > 0 && current < releaseProgress.total && counts.pending_review > 0) return;
+    setReleaseCompleted(Math.max(0, counts.published - releaseProgress.publishedBefore));
+    setReleaseProgress(undefined);
+  }, [query.data?.status_counts, releaseProgress]);
   const writeEnabled = canCreateCatalogImport(context);
-  const releaseDisabledReason = readyPublication.isPending
+  const releaseDisabledReason = readyPublication.isPending || releaseProgress !== undefined
     ? '正在审核并上架，请勿重复操作'
     : readyPublicationUnavailableReason(context)
       ?? (query.data?.status_counts === undefined
@@ -111,10 +140,14 @@ export function Component() {
   const releaseFeedback = readyPublication.error !== null
     ? { tone: 'error' as const, message: readyPublication.error instanceof Error
       ? `审核上架失败：${readyPublication.error.message}` : '一键审核上架失败' }
-    : readyPublication.data === undefined ? undefined : {
+    : releaseCompleted === undefined ? undefined : {
       tone: 'success' as const,
-      message: `已审核并上架 ${readyPublication.data.count} 件商品，前台商品接口已可读取。`,
+      message: `已审核并上架 ${releaseCompleted} 件商品，前台商品接口已可读取。`,
     };
+  const releaseProgressValue = releaseProgress === undefined || query.data?.status_counts === undefined ? undefined : {
+    current: Math.min(releaseProgress.total, Math.max(0, releaseProgress.total - query.data.status_counts.pending_review)),
+    total: releaseProgress.total,
+  };
   const openImportResult = (jobId: string) => {
     setImportOpen(false);
     setCreateOpen(false);
@@ -219,7 +252,8 @@ export function Component() {
         exportReady={query.data !== undefined}
         writeEnabled={writeEnabled}
         {...(releaseDisabledReason === undefined ? {} : { releaseDisabledReason })}
-        releasePending={readyPublication.isPending}
+        releasePending={readyPublication.isPending || releaseProgress !== undefined}
+        {...(releaseProgressValue === undefined ? {} : { releaseProgress: releaseProgressValue })}
         {...(releaseFeedback === undefined ? {} : { releaseFeedback })}
         onImport={() => setImportOpen(true)}
         onCreate={() => setCreateOpen(true)}

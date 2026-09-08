@@ -67,6 +67,19 @@
 .productreleasefeedbackdisabled { color: #9a3412; }
 .productreleasefeedbackerror { color: #b91c1c; }
 .productreleasefeedbacksuccess { color: #15803d; }
+.productreleaseprogress {
+  display: grid;
+  gap: 3px;
+  color: #1d4ed8;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+}
+.productreleaseprogress progress {
+  width: 100%;
+  height: 5px;
+  accent-color: #1f5eff;
+}
 .productaction,
 .productheroactions button,
 .productdrawerfooter button,

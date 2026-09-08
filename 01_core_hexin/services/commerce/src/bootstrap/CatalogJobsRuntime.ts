@@ -15,6 +15,7 @@ import { createPool, type DatabasePool } from '../foundation/persistence/Pool';
 import { JobMetrics } from '../foundation/telemetry/JobMetrics';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import { CatalogImportProcessor } from '../modules/catalog/05_interface_jieru/job/CatalogImportJob';
+import { CatalogPublicationProcessor } from '../modules/catalog/05_interface_jieru/job/CatalogPublicationJob';
 
 export interface CatalogJobsEnvironment {
   readonly APP_ENV: string;
@@ -129,6 +130,14 @@ export function createCatalogJobs(pool: DatabasePool, objects: ObjectStore, work
       undefined,
       new JobMetrics(commerceTelemetry()),
     ),
+    new QueueJob(
+      'catalogpublication',
+      pool,
+      configuration,
+      new CatalogPublicationProcessor(pool),
+      undefined,
+      new JobMetrics(commerceTelemetry()),
+    ),
   ]);
 }
 
@@ -168,7 +177,7 @@ export async function catalogJobsRuntimeCompatibility(pool: DatabasePool, expect
       and has_table_privilege(current_user,'catalog.product','INSERT')
       and has_table_privilege(current_user,'catalog.sku','SELECT')
       and has_table_privilege(current_user,'catalog.sku','INSERT')
-      and has_table_privilege(current_user,'catalog.listing','INSERT')
+      and has_table_privilege(current_user,'catalog.listing','SELECT,INSERT,UPDATE')
       and has_table_privilege(current_user,'pricing.pricebook','SELECT')
       and has_table_privilege(current_user,'pricing.pricebook','INSERT')
       and has_table_privilege(current_user,'pricing.price','SELECT')
