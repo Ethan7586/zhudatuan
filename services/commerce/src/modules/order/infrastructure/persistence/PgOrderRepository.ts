@@ -24,17 +24,20 @@ import type { MemberReadPort } from '../../../member/public';
 import { emptyOrderFacets, orderRequest } from './OrderRequest';
 import { orderTime } from '../../application/model/OrderTime';
 import { orderProjection } from './OrderProjection';
+import { OrderLabels } from '../../application/service/OrderLabels';
 export class PgOrderRepository implements OrderRepository, ReminderRepository, ExportRepository {
   private readonly receiver: ReceiveOrder;
   private readonly canceller: CancelOrder;
+  private readonly labels: OrderLabels;
   constructor(
     private readonly transactions: PgTransactionAccess,
     outbox: OutboxWriter,
-    private readonly organizations: Pick<OrganizationReadPort, 'descendants' | 'scope'>,
-    private readonly members: Pick<MemberReadPort, 'search'>
+    private readonly organizations: Pick<OrganizationReadPort, 'descendants' | 'scope' | 'summaries'>,
+    private readonly members: Pick<MemberReadPort, 'search' | 'profiles'>
   ) {
     this.receiver = new ReceiveOrder(transactions, outbox, new SystemClock());
     this.canceller = new CancelOrder(transactions, outbox, new SystemClock());
+    this.labels = new OrderLabels(members, organizations);
   }
   async read(context: ReadTransactionContext, input: OperationInputFor<'order.orders.read'>, execution: ExecutionContext<'order.orders.read'>) {
     const access = requireSession(execution.security);
@@ -105,7 +108,9 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
       ),
       orderFacets(database, [owner, access.scope.id, supplier, store, scopes, ...orderReadFilterValues(filter, timezone, memberIds, 'all')], execution.signal),
     ]);
-    const pageResult = keysetResult({ rows: result.rows.map((row) => orderProjection(row)) }, page, 'created_at');
+    const projected = result.rows.map((row) => orderProjection(row));
+    const rows = await this.labels.list(context, access.scope.id, supplier || store, projected);
+    const pageResult = keysetResult({ rows }, page, 'created_at');
     const body = pageResult.body as Readonly<Record<string, unknown>>;
     return { ...pageResult, body: Object.freeze({ ...body, facets }) } as never;
   }

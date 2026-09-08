@@ -46583,7 +46583,13 @@
                 "mall_id": {
                   "type": "string"
                 },
+                "mall_name": {
+                  "type": "string"
+                },
                 "member_id": {
+                  "type": "string"
+                },
+                "member_name": {
                   "type": "string"
                 },
                 "order_number": {
@@ -46848,6 +46854,9 @@
                 "scope_id": {
                   "type": "string"
                 },
+                "scope_name": {
+                  "type": "string"
+                },
                 "timeline": {
                   "items": {
                     "additionalProperties": false,
@@ -46914,8 +46923,11 @@
                 "id",
                 "order_number",
                 "scope_id",
+                "scope_name",
                 "member_id",
+                "member_name",
                 "mall_id",
+                "mall_name",
                 "checkout_id",
                 "currency",
                 "total_minor",

@@ -18,8 +18,11 @@ const order = {
   id: 'order:internal-1',
   order_number: 'SW202608260001',
   scope_id: 'enterprise:1',
+  scope_name: '示例集团',
   member_id: 'member:verified-1',
+  member_name: '张小明',
   mall_id: 'mall:verified-1',
+  mall_name: '员工福利商城',
   checkout_id: 'checkout:verified-1',
   total_minor: 12_800,
   currency: 'CNY',
@@ -304,8 +307,10 @@ describe('Order route', () => {
     expect(screen.getByRole('note').textContent).toContain('由服务端按当前数据范围权威筛选');
     expect(screen.getByText('当前条件由服务端实时筛选')).toBeTruthy();
     expect(screen.getByText('第 1 页 · 本页 1 条')).toBeTruthy();
-    expect(screen.getByText(/^会员 \d{4} \d{4}$/)).toBeTruthy();
-    expect(screen.getByText(/^组织范围 \d{4} \d{4}$/)).toBeTruthy();
+    expect(screen.getByText('张小明')).toBeTruthy();
+    expect(screen.getByText('示例集团')).toBeTruthy();
+    expect(screen.queryByText(/^会员 \d{4} \d{4}$/)).toBeNull();
+    expect(screen.queryByText(/^组织范围 \d{4} \d{4}$/)).toBeNull();
     expect(screen.queryByText('member:verified-1')).toBeNull();
     expect(screen.queryByText('enterprise:1')).toBeNull();
     expect(screen.queryByText(order.id)).toBeNull();

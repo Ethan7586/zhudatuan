@@ -1,5 +1,4 @@
 import { formatMinor } from '../../../shared/ui/Format';
-import { chineseReference } from '@shop/presentation';
 import { OrderIcon } from './OrderIcon';
 import { aftersaleLabel, aftersaleTone, formatOrderTime, fulfillmentLabel, fulfillmentTone, lifecycleLabel, paymentLabel, paymentTone, productSummary } from './OrderPresentation';
 import type { OrderColumnKey } from '../model/OrderColumn';
@@ -75,8 +74,8 @@ function OrderRow({
       {visible.has('member') ? (
         <td data-label="会员 / 企业">
           <div className="orderprimarycell">
-            <strong>{order.member_id ? chineseReference('会员', order.member_id) : '会员编号不可用'}</strong>
-            <span>{order.scope_id ? chineseReference('组织范围', order.scope_id) : '组织范围不可用'}</span>
+            <strong>{order.member_name}</strong>
+            <span>{order.scope_name}</span>
           </div>
         </td>
       ) : null}
