@@ -147,6 +147,33 @@ test('Console 商品治理台在桌面、平板和手机保持清晰布局与触
   }
 });
 
+test('Console 数据报表在桌面、平板和手机保持可读且无需横向拖动', async ({ page }) => {
+  test.slow();
+  await prepareVisual(page, { width: 1366, height: 768 });
+  await signInConsole(page);
+  for (const viewport of [
+    { width: 1366, height: 768 },
+    { width: 1024, height: 768 },
+    { width: 768, height: 1024 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consolereporting, 'enterprise')}`);
+    await expectUsable(page);
+    await expect(page.getByRole('table', { name: '报表指标' })).toBeVisible();
+    await expect(page.locator('.reportcontent tbody tr').first()).toBeVisible();
+    await expect.poll(() => minimumHeight(page, '.reportpage :is(button, input, select)')).toBeGreaterThanOrEqual(44);
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    if (viewport.width <= 768) {
+      await expect(page.locator('.reportcontent tbody tr').first()).toHaveCSS('display', 'grid');
+      await expect.poll(() => page.locator('.reportcontent .tablewrap').evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+      await expect(page.locator('.reportcontent tbody td[data-label="维度"]').first()).toBeVisible();
+    } else {
+      await expect(page.locator('.reportcontent tbody tr').first()).toHaveCSS('display', 'table-row');
+    }
+  }
+});
+
 function canonicalScope(routeid: string): ScopeKind {
   const declared = authority.nodes.filter((node) => node.surface === 'console' && node.routeid === routeid).map(({ scope }) => scope);
   const preferred: readonly ScopeKind[] = routeid.startsWith('consolereferral')

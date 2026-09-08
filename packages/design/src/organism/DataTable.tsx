@@ -17,6 +17,7 @@ export interface DataTableProps<T extends RowData> {
 }
 
 export function DataTable<T extends RowData>({ caption, columns, rows, rowKey }: DataTableProps<T>) {
+  const labels = useMemo(() => new Map(columns.map((column) => [column.key, column.label])), [columns]);
   const tableColumns = useMemo(() => {
     const helper = createColumnHelper<typeof features, T>();
     return helper.columns(columns.map((column) => helper.accessor((row) => row, { id: column.key, header: column.label, cell: ({ row }) => column.render(row.original) })));
@@ -42,7 +43,7 @@ export function DataTable<T extends RowData>({ caption, columns, rows, rowKey }:
           {table.getRowModel().rows.map((row) => (
             <tr key={row.id}>
               {row.getAllCells().map((cell) => (
-                <td key={cell.id} data-column={cell.column.id}>
+                <td key={cell.id} data-column={cell.column.id} data-label={labels.get(cell.column.id)}>
                   <table.FlexRender cell={cell} />
                 </td>
               ))}
