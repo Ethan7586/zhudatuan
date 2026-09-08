@@ -50,9 +50,7 @@
   font-weight: 800;
 }
 .assurancepromptbutton {
-  border-color: var(--sw-brand);
-  background: var(--sw-brand);
-  color: white;
+  min-height: var(--sw-control-touch-target);
 }
 
 @media (max-width: 42rem) {

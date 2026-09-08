@@ -1,4 +1,5 @@
 import { MetricGrid, ResourcePanel } from '@shop/design';
+import { AssurancePrompt } from '../../../entity/session/AssurancePrompt';
 import { formatMinor } from '../../../shared/ui/Format';
 import type { OverviewViewModel } from '../viewmodel/OverviewViewModel';
 import { FinanceHeader } from './FinanceHeader';
@@ -7,6 +8,7 @@ import { FinanceFacetSummary } from './FinanceFacetSummary';
 import './FinanceWorkspace.css';
 
 export function OverviewPage({ title, model }: Readonly<{ title: string; model: OverviewViewModel }>) {
+  if (model.needsStepup) return <AssurancePrompt title={title} description="财务余额、账本与经营资金属于敏感数据。请先完成短信二次验证，成功后会自动返回并加载财务总览。" />;
   const primary = model.data?.items[0];
   const metrics = primary
     ? ([

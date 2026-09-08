@@ -1,5 +1,6 @@
 import { Button, DataTable, ResourcePanel, type DataColumn } from '@shop/design';
 import { chineseDomainLabel, chineseReference } from '@shop/presentation';
+import { AssurancePrompt } from '../../../entity/session/AssurancePrompt';
 import { ActionReceipt } from '../../../shared/action/ActionReceipt';
 import { formatDate, formatMinor } from '../../../shared/ui/Format';
 import type { FinanceRecord, FinanceSection } from '../model/Finance';
@@ -24,6 +25,7 @@ const metadata: Readonly<Record<FinanceSection, Readonly<{ title: string; descri
 });
 
 export function SectionPage({ title, model, importing }: Readonly<{ title: string; model: SectionViewModel; importing?: FinanceImportViewModel }>) {
+  if (model.needsStepup) return <AssurancePrompt title={title} description="账单、对账、结算、提现和发票包含敏感财务数据。请先完成短信二次验证，成功后会自动返回并加载当前页面。" />;
   const meta = metadata[model.section];
   const columns: readonly DataColumn<FinanceRecord>[] = [
     { key: 'label', label: meta.record, render: (row) => row.label },

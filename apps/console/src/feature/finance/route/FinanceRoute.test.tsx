@@ -233,6 +233,29 @@ afterEach(() => {
 afterAll(() => server.close());
 
 describe('Finance MVVM workspace', () => {
+  it.each([
+    ['财务总览', '/finance', OverviewRoute],
+    ['账单', '/finance/statements', StatementRoute],
+    ['对账', '/finance/reconciliations', ReconciliationRoute],
+    ['财务审计', '/finance/audit?reference=order%3Aone', AuditRoute],
+  ] as const)('requires clear second verification before reading %s data', async (title, entry, Route) => {
+    renderRoute(entry, Route, {
+      ...context,
+      session: {
+        ...context.session,
+        permissions: [...context.session.permissions, 'finance.statement.read', 'audit.read'],
+        capabilities: [...context.session.capabilities, 'finance.statements.read', 'finance.audit.read'],
+        assurance: { level: 1 },
+      },
+    });
+
+    expect(await screen.findByRole('heading', { level: 1, name: title })).toBeTruthy();
+    expect(screen.getByText(/请先完成短信二次验证/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: '立即完成二次验证' })).toBeTruthy();
+    expect(overviewReads).toHaveLength(0);
+    expect(requests).toHaveLength(0);
+  });
+
   it('links facts, events and audit evidence by URL business reference while keeping technical trace collapsed', async () => {
     renderRoute('/finance/audit?reference=order%3Aone&campaign=keep', AuditRoute, auditContext);
     expect(await screen.findByRole('heading', { level: 1, name: '财务审计' })).toBeTruthy();

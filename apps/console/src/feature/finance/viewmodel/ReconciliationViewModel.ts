@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FinanceDependencies } from '../../../app/Dependencies';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import { canUseOperation } from '../../../shared/security/OperationAccess';
+import { canUseOperation, requiredAssurance } from '../../../shared/security/OperationAccess';
 import { defaultFinanceColumns, financeOperations, type FinanceColumnKey, type FinanceReconciliation, type FinanceReconciliationAction } from '../model/Finance';
 import { availableReconciliationCommands, reconciliationMessage, validateReconciliationCommand } from '../model/ReconciliationPolicy';
 import { financeFacetKey, financeReconciliationKey } from './FinanceQueryKey';
@@ -38,8 +38,10 @@ export function useReconciliationViewModel(context: ConsoleContext, dependencies
   const queryInput = reconciliationInput(url);
   const facetAllowed = canUseOperation(context, OP_FINANCE_FACETS_READ);
   const readAllowed = canUseOperation(context, OP_FINANCE_RECONCILIATIONS_READ);
-  const facetQuery = useQuery({ queryKey: financeFacetKey(context), queryFn: ({ signal }) => dependencies.readFacets.execute(context, signal), enabled: facetAllowed, staleTime: 30_000 });
-  const query = useQuery({ queryKey: financeReconciliationKey(context, queryInput), queryFn: ({ signal }) => dependencies.readReconciliations.execute(context, queryInput, signal), enabled: readAllowed, staleTime: 30_000 });
+  const facetReady = facetAllowed && context.session.assurance.level >= requiredAssurance(OP_FINANCE_FACETS_READ);
+  const readReady = readAllowed && context.session.assurance.level >= requiredAssurance(OP_FINANCE_RECONCILIATIONS_READ);
+  const facetQuery = useQuery({ queryKey: financeFacetKey(context), queryFn: ({ signal }) => dependencies.readFacets.execute(context, signal), enabled: facetReady, staleTime: 30_000 });
+  const query = useQuery({ queryKey: financeReconciliationKey(context, queryInput), queryFn: ({ signal }) => dependencies.readReconciliations.execute(context, queryInput, signal), enabled: readReady, staleTime: 30_000 });
   const page = query.data;
   useFinancePrefetch(context, dependencies, 'reconciliations', page !== undefined);
   const selectedId = url.selected;
@@ -147,14 +149,15 @@ export function useReconciliationViewModel(context: ConsoleContext, dependencies
     filters: Object.freeze({ period, provider, mall, state, differenceType, active: [period, provider, mall, state, differenceType].filter(Boolean).length }),
     facets: Object.freeze({
       data: facetQuery.data,
-      condition: facetAllowed ? queryCondition({ pending: facetQuery.isPending, fetching: facetQuery.isFetching, error: facetQuery.error, hasData: facetQuery.data !== undefined, empty: false }) : 'forbidden',
+      condition: facetAllowed ? (facetReady ? queryCondition({ pending: facetQuery.isPending, fetching: facetQuery.isFetching, error: facetQuery.error, hasData: facetQuery.data !== undefined, empty: false }) : 'forbidden') : 'forbidden',
       error: facetAllowed ? safeQueryError(facetQuery.error) : '当前账号没有读取财务筛选项的权限。',
       retry: () => {
-        if (facetAllowed) void facetQuery.refetch();
+        if (facetReady) void facetQuery.refetch();
       },
     }),
-    condition: readAllowed ? queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: page !== undefined, empty: page?.items.length === 0 }) : 'forbidden',
+    condition: readAllowed ? (readReady ? queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: page !== undefined, empty: page?.items.length === 0 }) : 'forbidden') : 'forbidden',
     error: readAllowed ? safeQueryError(query.error) : '当前账号没有读取对账数据的权限。',
+    needsStepup: readAllowed && !readReady,
     fetching: query.isFetching,
     command: Object.freeze({
       allowed: canUseOperation(context, financeOperations.manageReconciliation),
@@ -171,7 +174,7 @@ export function useReconciliationViewModel(context: ConsoleContext, dependencies
     }),
     actions: Object.freeze({
       refresh: () => {
-        if (readAllowed) void query.refetch();
+        if (readReady) void query.refetch();
       },
       toggleRow,
       toggleAll,

@@ -1,3 +1,4 @@
+import { Button } from '@shop/design';
 import { useStepup } from './StepupContext';
 import './AssurancePrompt.css';
 
@@ -20,9 +21,9 @@ export function AssurancePrompt({ title, description }: Readonly<{ title: string
           <li>验证状态由服务端签发，页面不会保存验证码</li>
           <li>完成后继续使用当前数据范围，无需重新登录</li>
         </ul>
-        <button className="shopbutton assurancepromptbutton" type="button" onClick={stepup.request}>
+        <Button className="assurancepromptbutton" tone="primary" onPress={stepup.request}>
           立即完成二次验证
-        </button>
+        </Button>
       </div>
     </section>
   );

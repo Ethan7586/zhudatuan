@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import type { FinanceDependencies } from '../../../app/Dependencies';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
 import { defineQueryState, optionalQuery, trimmedQuery } from '../../../shared/query/QueryState';
-import { canUseOperation } from '../../../shared/security/OperationAccess';
+import { canUseOperation, requiredAssurance } from '../../../shared/security/OperationAccess';
 import { scopeRoutePath } from '../../../shared/url/ScopePath';
 import type { FinanceRecord, FinanceSection } from '../model/Finance';
 import { emptyFinanceActionDraft, sectionActions, validateFinanceAction, type FinanceAction, type FinanceActionDraft } from '../model/FinanceCommand';
@@ -24,8 +24,10 @@ export function useSectionViewModel(context: ConsoleContext, dependencies: Finan
   const cursor = url.cursor;
   const scope = `${context.scope.kind}:${context.scope.id}`;
   const previousScope = useRef(scope);
-  const allowed = canUseOperation(context, financeSectionOperation(section));
-  const query = useQuery({ queryKey: financeSectionKey(context, section, cursor), queryFn: ({ signal }) => dependencies.readSection.execute(context, section, cursor, signal), enabled: allowed, staleTime: 30_000 });
+  const operation = financeSectionOperation(section);
+  const allowed = canUseOperation(context, operation);
+  const ready = allowed && context.session.assurance.level >= requiredAssurance(operation);
+  const query = useQuery({ queryKey: financeSectionKey(context, section, cursor), queryFn: ({ signal }) => dependencies.readSection.execute(context, section, cursor, signal), enabled: ready, staleTime: 30_000 });
   useFinancePrefetch(context, dependencies, section, query.data !== undefined);
   const [action, setAction] = useState<FinanceAction>();
   const [draft, setDraft] = useState<FinanceActionDraft>(emptyFinanceActionDraft);
@@ -58,21 +60,27 @@ export function useSectionViewModel(context: ConsoleContext, dependencies: Finan
   const selected = data?.items.find(({ id }) => id === url.selected);
   const globalActions = useMemo(() => sectionActions(section).filter(({ operation }) => canUseOperation(context, operation)), [context, section]);
   const recordActions = useMemo(() => sectionActions(section, selected).filter(({ operation }) => canUseOperation(context, operation)), [context, section, selected]);
-  const begin = useCallback((next: FinanceAction) => {
-    setAction(next);
-    if (next.record !== undefined) setSearch((current) => sectionQuery.patch(current, { selected: undefined }), { replace: true });
-    setDraft(emptyFinanceActionDraft());
-    setIdentity(dependencies.createIdentity());
-    setReceipt(undefined);
-    mutation.reset();
-  }, [dependencies, mutation, setSearch]);
-  const change = useCallback(<TKey extends keyof FinanceActionDraft>(key: TKey, value: FinanceActionDraft[TKey]) => {
-    setDraft((current) => ({ ...current, [key]: value, ...(key === 'proof' || key === 'confirmed' ? {} : { proof: '', confirmed: false }) }));
-    if (key !== 'proof' && key !== 'confirmed') {
+  const begin = useCallback(
+    (next: FinanceAction) => {
+      setAction(next);
+      if (next.record !== undefined) setSearch((current) => sectionQuery.patch(current, { selected: undefined }), { replace: true });
+      setDraft(emptyFinanceActionDraft());
       setIdentity(dependencies.createIdentity());
+      setReceipt(undefined);
       mutation.reset();
-    }
-  }, [dependencies, mutation]);
+    },
+    [dependencies, mutation, setSearch]
+  );
+  const change = useCallback(
+    <TKey extends keyof FinanceActionDraft>(key: TKey, value: FinanceActionDraft[TKey]) => {
+      setDraft((current) => ({ ...current, [key]: value, ...(key === 'proof' || key === 'confirmed' ? {} : { proof: '', confirmed: false }) }));
+      if (key !== 'proof' && key !== 'confirmed') {
+        setIdentity(dependencies.createIdentity());
+        mutation.reset();
+      }
+    },
+    [dependencies, mutation]
+  );
   const validation = validateFinanceAction(action, draft, context.session.assurance.level);
   const submit = useCallback(() => {
     if (action === undefined || validation !== undefined || mutation.isPending) return;
@@ -90,14 +98,15 @@ export function useSectionViewModel(context: ConsoleContext, dependencies: Finan
     recordActions,
     canAudit: canUseOperation(context, OP_FINANCE_AUDIT_READ),
     receipt,
-    action: action === undefined ? undefined : Object.freeze({ target: action, draft, validation, busy: mutation.isPending, error: mutation.error ? presentError(mutation.error).message : undefined, assurance: context.session.assurance.level }),
-    condition: allowed ? queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0 }) : 'forbidden',
+    action:
+      action === undefined ? undefined : Object.freeze({ target: action, draft, validation, busy: mutation.isPending, error: mutation.error ? presentError(mutation.error).message : undefined, assurance: context.session.assurance.level }),
+    condition: allowed ? (ready ? queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0 }) : 'forbidden') : 'forbidden',
     error: allowed ? safeQueryError(query.error) : '当前账号没有读取此财务模块的权限。',
+    needsStepup: allowed && !ready,
     refresh: () => {
-      if (allowed) void query.refetch();
+      if (ready) void query.refetch();
     },
-    next: (nextCursor: string) =>
-      setSearch((current) => sectionQuery.patch(current, { cursor: nextCursor, selected: undefined })),
+    next: (nextCursor: string) => setSearch((current) => sectionQuery.patch(current, { cursor: nextCursor, selected: undefined })),
     actions: Object.freeze({
       filter: (status: string) => setSearch((current) => sectionQuery.patch(current, { status: status || undefined, cursor: undefined, selected: undefined })),
       open: (id: string) => setSearch((current) => sectionQuery.patch(current, { selected: id })),
