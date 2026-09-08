@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { MPProductFeed } from './MPProductFeed';
@@ -9,6 +9,7 @@ import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 
 export const HOME_CAMPAIGN_AUTOPLAY_MS = 5200;
 export const HOME_CAMPAIGN_TRANSITION_MS = 760;
+export const HOME_CAMPAIGN_INTERACTION_PAUSE_MS = 9000;
 
 const HOME_CAMPAIGNS = [
   {
@@ -49,11 +50,19 @@ const HOME_CAMPAIGNS = [
   },
 ] as const;
 
+export function homeCampaignIndexForScroll(scrollLeft: number, viewportWidth: number): number {
+  if (!Number.isFinite(scrollLeft) || !Number.isFinite(viewportWidth) || viewportWidth <= 0) return 0;
+  return Math.max(0, Math.min(HOME_CAMPAIGNS.length - 1, Math.round(scrollLeft / viewportWidth)));
+}
+
 export const MPHomePage: React.FC = () => {
   const { user, currentMall, mpPage, sessionStatus, setMpPage, addToCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
   const [activeBanner, setActiveBanner] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [authHref, setAuthHref] = useState<string | undefined>(undefined);
+  const campaignTrackRef = useRef<HTMLDivElement>(null);
+  const campaignResumeAtRef = useRef(0);
+  const campaignScrollFrameRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     setAuthHref(storefrontAuthHref(window.location.hostname));
@@ -66,9 +75,19 @@ export const MPHomePage: React.FC = () => {
     const scheduleNextCampaign = () => {
       if (timer !== undefined) window.clearTimeout(timer);
       if (document.visibilityState !== 'visible') return;
+      const interactionPauseRemaining = Math.max(0, campaignResumeAtRef.current - Date.now());
       timer = window.setTimeout(
-        () => setActiveBanner((current) => (current + 1) % HOME_CAMPAIGNS.length),
-        HOME_CAMPAIGN_AUTOPLAY_MS,
+        () => {
+          if (Date.now() < campaignResumeAtRef.current) {
+            scheduleNextCampaign();
+            return;
+          }
+          const next = (activeBanner + 1) % HOME_CAMPAIGNS.length;
+          const track = campaignTrackRef.current;
+          if (track) track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
+          setActiveBanner(next);
+        },
+        interactionPauseRemaining || HOME_CAMPAIGN_AUTOPLAY_MS,
       );
     };
 
@@ -79,6 +98,31 @@ export const MPHomePage: React.FC = () => {
       document.removeEventListener('visibilitychange', scheduleNextCampaign);
     };
   }, [activeBanner, mpPage]);
+
+  useEffect(() => () => {
+    if (campaignScrollFrameRef.current !== undefined) window.cancelAnimationFrame(campaignScrollFrameRef.current);
+  }, []);
+
+  const pauseCampaignAutoplay = () => {
+    campaignResumeAtRef.current = Date.now() + HOME_CAMPAIGN_INTERACTION_PAUSE_MS;
+  };
+
+  const syncCampaignFromScroll = () => {
+    if (campaignScrollFrameRef.current !== undefined) window.cancelAnimationFrame(campaignScrollFrameRef.current);
+    campaignScrollFrameRef.current = window.requestAnimationFrame(() => {
+      const track = campaignTrackRef.current;
+      if (!track) return;
+      const next = homeCampaignIndexForScroll(track.scrollLeft, track.clientWidth);
+      setActiveBanner((current) => current === next ? current : next);
+    });
+  };
+
+  const scrollToCampaign = (index: number, initiatedByUser = false) => {
+    if (initiatedByUser) pauseCampaignAutoplay();
+    const track = campaignTrackRef.current;
+    if (track) track.scrollTo({ left: index * track.clientWidth, behavior: 'smooth' });
+    setActiveBanner(index);
+  };
 
   // Quick 8 categories (Meituan B2C info architecture style)
   const quickCategories = [
@@ -132,61 +176,75 @@ export const MPHomePage: React.FC = () => {
           className="relative h-[124px] overflow-hidden rounded-2xl bg-[var(--sw-brand-dark)] text-white shadow-sm"
           data-home-campaign-carousel
         >
-          {HOME_CAMPAIGNS.map((campaign, index) => {
-            const Icon = campaign.icon;
-            const isActive = activeBanner === index;
-            return (
-              <article
-                key={campaign.id}
-                aria-hidden={!isActive}
-                data-campaign-slide={campaign.id}
-                data-active={isActive ? 'true' : 'false'}
-                style={{ transitionDuration: `${HOME_CAMPAIGN_TRANSITION_MS}ms` }}
-                className={`absolute inset-0 bg-gradient-to-br ${campaign.color} p-4 transition-[opacity,transform] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transform-none motion-reduce:transition-none ${
-                  isActive
-                    ? 'z-10 translate-x-0 scale-100 opacity-100'
-                    : 'pointer-events-none z-0 translate-x-3 scale-[0.985] opacity-0'
-                }`}
-              >
-                <div aria-hidden="true" className="absolute -right-5 -top-8 h-28 w-28 rounded-full bg-white/10" />
-                <div aria-hidden="true" className="absolute bottom-1 right-7 h-12 w-12 rounded-full bg-white/8" />
-                <Icon aria-hidden="true" className="absolute right-5 top-5 h-12 w-12 text-white/18" strokeWidth={1.35} />
-
-                <div className="relative z-10 max-w-[78%]">
-                  <span className="inline-flex rounded-full border border-white/20 bg-white/14 px-2 py-0.5 text-[9px] font-bold text-amber-100">
-                    {campaign.eyebrow}
-                  </span>
-                  <h2 className="mt-1 text-base font-black leading-tight tracking-tight">{campaign.title}</h2>
-                  <p className="mt-0.5 truncate text-[10px] font-medium text-white/78">{campaign.desc}</p>
-                </div>
-
-                <button
-                  type="button"
-                  tabIndex={isActive ? 0 : -1}
-                  onClick={() => setMpPage('category')}
-                  className="absolute bottom-3 left-4 z-10 flex min-h-7 items-center gap-0.5 rounded-full bg-white px-3 text-[10px] font-bold text-[var(--sw-brand-dark)] shadow-xs active:scale-[0.98]"
+          <div
+            ref={campaignTrackRef}
+            data-home-campaign-track
+            tabIndex={0}
+            onPointerDown={pauseCampaignAutoplay}
+            onWheel={pauseCampaignAutoplay}
+            onScroll={syncCampaignFromScroll}
+            onKeyDown={(event) => {
+              if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+              event.preventDefault();
+              const direction = event.key === 'ArrowRight' ? 1 : -1;
+              const next = (activeBanner + direction + HOME_CAMPAIGNS.length) % HOME_CAMPAIGNS.length;
+              scrollToCampaign(next, true);
+            }}
+            className="flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden motion-reduce:scroll-auto"
+          >
+            {HOME_CAMPAIGNS.map((campaign, index) => {
+              const Icon = campaign.icon;
+              const isActive = activeBanner === index;
+              return (
+                <article
+                  key={campaign.id}
+                  aria-hidden={!isActive}
+                  data-campaign-slide={campaign.id}
+                  data-active={isActive ? 'true' : 'false'}
+                  className={`relative h-full min-w-full snap-center snap-always overflow-hidden bg-gradient-to-br ${campaign.color} p-4`}
                 >
-                  <span>{campaign.cta}</span>
-                  <ChevronRight className="h-3 w-3" />
-                </button>
-              </article>
-            );
-          })}
+                  <div aria-hidden="true" className="absolute -right-5 -top-8 h-28 w-28 rounded-full bg-white/10" />
+                  <div aria-hidden="true" className="absolute bottom-1 right-7 h-12 w-12 rounded-full bg-white/8" />
+                  <Icon aria-hidden="true" className="absolute right-5 top-5 h-12 w-12 text-white/18" strokeWidth={1.35} />
 
-          <div className="absolute bottom-2.5 right-3 z-20 flex items-center" aria-label="选择活动页">
+                  <div className="relative z-10 max-w-[78%]">
+                    <span className="inline-flex rounded-full border border-white/20 bg-white/14 px-2 py-0.5 text-[9px] font-bold text-amber-100">
+                      {campaign.eyebrow}
+                    </span>
+                    <h2 className="mt-1 text-base font-black leading-tight tracking-tight">{campaign.title}</h2>
+                    <p className="mt-0.5 truncate text-[10px] font-medium text-white/78">{campaign.desc}</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    tabIndex={isActive ? 0 : -1}
+                    onClick={() => setMpPage('category')}
+                    className="absolute bottom-3 left-4 z-10 flex min-h-7 items-center gap-0.5 rounded-full bg-white px-3 text-[10px] font-bold text-[var(--sw-brand-dark)] shadow-xs active:scale-[0.98]"
+                  >
+                    <span>{campaign.cta}</span>
+                    <ChevronRight className="h-3 w-3" />
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+
+          <span className="sr-only" aria-live="polite">第 {activeBanner + 1} 页，共 {HOME_CAMPAIGNS.length} 页</span>
+          <div className="absolute bottom-2.5 right-3 z-20 flex items-center gap-1 rounded-full bg-black/10 px-1.5" aria-label="选择活动页">
             {HOME_CAMPAIGNS.map((campaign, index) => (
               <button
                 key={campaign.id}
                 type="button"
                 aria-label={`切换到活动：${campaign.title}`}
                 aria-pressed={activeBanner === index}
-                onClick={() => setActiveBanner(index)}
-                className="flex h-7 w-7 items-center justify-center rounded-full active:bg-white/10"
+                onClick={() => scrollToCampaign(index, true)}
+                className="flex h-5 w-2.5 items-center justify-center rounded-full active:bg-white/10"
               >
                 <span
                   aria-hidden="true"
-                  className={`h-1 rounded-full transition-[width,background-color] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
-                    activeBanner === index ? 'w-4 bg-amber-200' : 'w-1.5 bg-white/45'
+                  style={{ transitionDuration: `${HOME_CAMPAIGN_TRANSITION_MS}ms` }}
+                  className={`h-1 rounded-full transition-[width,background-color,opacity] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
+                    activeBanner === index ? 'w-3 bg-amber-100 opacity-100' : 'w-1 bg-white/50 opacity-80'
                   }`}
                 />
               </button>

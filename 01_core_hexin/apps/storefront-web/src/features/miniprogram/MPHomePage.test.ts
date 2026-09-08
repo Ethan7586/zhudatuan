@@ -22,7 +22,13 @@ vi.mock('../../context/MallContext', () => ({
   }),
 }));
 
-import { HOME_CAMPAIGN_AUTOPLAY_MS, HOME_CAMPAIGN_TRANSITION_MS, MPHomePage } from './MPHomePage';
+import {
+  HOME_CAMPAIGN_AUTOPLAY_MS,
+  HOME_CAMPAIGN_INTERACTION_PAUSE_MS,
+  HOME_CAMPAIGN_TRANSITION_MS,
+  homeCampaignIndexForScroll,
+  MPHomePage,
+} from './MPHomePage';
 
 describe('mini-program home page', () => {
   it('keeps duplicated welfare and meal balances off the home page', () => {
@@ -44,12 +50,25 @@ describe('mini-program home page', () => {
     expect(html).toContain('大武汉礼品');
   });
 
-  it('uses a calm autoplay rhythm and compositor-only campaign transition', () => {
+  it('uses a calm native swipe track and pauses autoplay after interaction', () => {
     const html = renderToStaticMarkup(React.createElement(MPHomePage));
 
     expect(HOME_CAMPAIGN_AUTOPLAY_MS).toBe(5200);
+    expect(HOME_CAMPAIGN_INTERACTION_PAUSE_MS).toBe(9000);
     expect(HOME_CAMPAIGN_TRANSITION_MS).toBe(760);
-    expect(html).toContain('transition-[opacity,transform]');
+    expect(html).toContain('data-home-campaign-track');
+    expect(html).toContain('overflow-x-auto');
+    expect(html).toContain('snap-x snap-mandatory');
+    expect(html.match(/snap-center snap-always overflow-hidden/g)).toHaveLength(4);
+    expect(html).toContain('scroll-smooth');
     expect(html).toContain('h-[124px]');
+  });
+
+  it('settles manual movement on the nearest campaign page', () => {
+    expect(homeCampaignIndexForScroll(0, 360)).toBe(0);
+    expect(homeCampaignIndexForScroll(190, 360)).toBe(1);
+    expect(homeCampaignIndexForScroll(725, 360)).toBe(2);
+    expect(homeCampaignIndexForScroll(5000, 360)).toBe(3);
+    expect(homeCampaignIndexForScroll(100, 0)).toBe(0);
   });
 });
