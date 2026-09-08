@@ -3,8 +3,8 @@ artifact: commerce
 
 schemaHead:
   contractVersion: 5.0.0
-  migrationHead: "20260908013000"
-  migrationCount: 416
+  migrationHead: "20260908014000"
+  migrationCount: 417
   historyHead: "20260903116000"
   historyCount: 316
   checksum: sha256
