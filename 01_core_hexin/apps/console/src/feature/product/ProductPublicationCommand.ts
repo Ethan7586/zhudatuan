@@ -19,10 +19,15 @@ export function canManageListing(context: ConsoleContext, action: ListingPublica
 }
 
 export function canPublishReadyListings(context: ConsoleContext): boolean {
-  return context.scope.kind === 'mall'
-    && context.session.csrf !== undefined
-    && context.session.permissions.includes('catalog.listing.manage')
-    && context.session.capabilities.includes('catalog.listings.batch');
+  return readyPublicationUnavailableReason(context) === undefined;
+}
+
+export function readyPublicationUnavailableReason(context: ConsoleContext): string | undefined {
+  if (context.scope.kind !== 'mall') return '请先切换到商城范围';
+  if (context.session.csrf === undefined) return '登录状态缺少操作凭证，请重新登录';
+  if (!context.session.permissions.includes('catalog.listing.manage')) return '当前账号缺少商品上架权限';
+  if (!context.session.capabilities.includes('catalog.listings.batch')) return '当前角色未开通批量审核上架能力';
+  return undefined;
 }
 
 export async function setListingPublication(

@@ -50,6 +50,23 @@
   align-items: center;
   gap: 10px;
 }
+.productreleasecontrol {
+  display: grid;
+  max-width: 250px;
+  gap: 5px;
+}
+.productreleasecontrol .productaction {
+  width: 100%;
+}
+.productreleasefeedback {
+  margin: 0;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+}
+.productreleasefeedbackdisabled { color: #9a3412; }
+.productreleasefeedbackerror { color: #b91c1c; }
+.productreleasefeedbacksuccess { color: #15803d; }
 .productaction,
 .productheroactions button,
 .productdrawerfooter button,
@@ -84,7 +101,9 @@
 }
 .productheroactions button:disabled,
 .productdrawerfooter button:disabled {
-  opacity: 0.72;
+  cursor: not-allowed;
+  opacity: 0.52;
+  box-shadow: none;
 }
 .producttabs {
   display: flex;

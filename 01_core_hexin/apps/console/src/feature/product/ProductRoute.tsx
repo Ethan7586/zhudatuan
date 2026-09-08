@@ -15,7 +15,7 @@ import { ProductFilterForm } from './ProductFilter';
 import { canCreateCatalogImport } from './ProductImportCommand';
 import { ProductImportDialog } from './ProductImportDialog';
 import { ProductPagination } from './ProductPagination';
-import { canManageListing, canPublishReadyListings, publishReadyListings, setListingPublication,
+import { canManageListing, publishReadyListings, readyPublicationUnavailableReason, setListingPublication,
   type ListingPublicationAction } from './ProductPublicationCommand';
 import { productKey, readProducts, type ProductQuery } from './ProductQuery';
 import type { Listing, ProductFilter } from './ProductSchema';
@@ -102,6 +102,19 @@ export function Component() {
     },
   });
   const writeEnabled = canCreateCatalogImport(context);
+  const releaseDisabledReason = readyPublication.isPending
+    ? '正在审核并上架，请勿重复操作'
+    : readyPublicationUnavailableReason(context)
+      ?? (query.data?.status_counts === undefined
+        ? '正在读取待审核商品数量'
+        : query.data.status_counts.pending_review === 0 ? '当前商城没有待审核商品' : undefined);
+  const releaseFeedback = readyPublication.error !== null
+    ? { tone: 'error' as const, message: readyPublication.error instanceof Error
+      ? `审核上架失败：${readyPublication.error.message}` : '一键审核上架失败' }
+    : readyPublication.data === undefined ? undefined : {
+      tone: 'success' as const,
+      message: `已审核并上架 ${readyPublication.data.count} 件商品，前台商品接口已可读取。`,
+    };
   const openImportResult = (jobId: string) => {
     setImportOpen(false);
     setCreateOpen(false);
@@ -205,8 +218,9 @@ export function Component() {
         status={filter.status ?? ''}
         exportReady={query.data !== undefined}
         writeEnabled={writeEnabled}
-        releaseEnabled={canPublishReadyListings(context)}
+        {...(releaseDisabledReason === undefined ? {} : { releaseDisabledReason })}
         releasePending={readyPublication.isPending}
+        {...(releaseFeedback === undefined ? {} : { releaseFeedback })}
         onImport={() => setImportOpen(true)}
         onCreate={() => setCreateOpen(true)}
         onRelease={() => readyPublication.mutate()}
@@ -271,12 +285,6 @@ export function Component() {
       </ResourceState>
       {publication.error === null ? null : <p className="productcommanderror" role="alert">
         {publication.error instanceof Error ? publication.error.message : '货架状态更新失败'}
-      </p>}
-      {readyPublication.data === undefined ? null : <p className="productcommandsuccess" role="status">
-        已审核并上架 {readyPublication.data.count} 件商品，前台商品接口已可读取。
-      </p>}
-      {readyPublication.error === null ? null : <p className="productcommanderror" role="alert">
-        {readyPublication.error instanceof Error ? readyPublication.error.message : '一键审核上架失败'}
       </p>}
       <ProductDrawer {...(selectedListing === undefined ? {} : { listing: selectedListing })} previewEnabled={previewEnabled} onClose={closeDrawer} />
       <ProductColumnSettings open={columnsOpen} visible={visibleColumns} onChange={toggleColumn} onClose={() => setColumnsOpen(false)} />

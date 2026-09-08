@@ -8,8 +8,9 @@ interface ProductCatalogHeaderProps {
   readonly onStatus: (status: string) => void;
   readonly exportReady: boolean;
   readonly writeEnabled: boolean;
-  readonly releaseEnabled: boolean;
+  readonly releaseDisabledReason?: string;
   readonly releasePending: boolean;
+  readonly releaseFeedback?: Readonly<{ tone: 'success' | 'error'; message: string }>;
   readonly onImport: () => void;
   readonly onCreate: () => void;
   readonly onExport: () => void;
@@ -24,8 +25,8 @@ const tabs = Object.freeze([
   { key: 'unpublished', label: '已下架' },
 ] as const);
 
-export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, exportReady, writeEnabled, releaseEnabled,
-  releasePending, onImport, onCreate, onExport, onRelease }: ProductCatalogHeaderProps) {
+export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, exportReady, writeEnabled, releaseDisabledReason,
+  releasePending, releaseFeedback, onImport, onCreate, onExport, onRelease }: ProductCatalogHeaderProps) {
   const preview = previewEnabled && page?.preview?.kind === 'console-product-v1' ? page.preview : undefined;
   const coreTotal = preview === undefined ? page?.total_count : preview.facets.statuses.reduce((total, facet) => total + facet.count, 0) || preview.totalCount;
   const description = coreTotal === undefined ? '正在读取当前范围商品总量与管理状态。' : `当前范围内共 ${formatCount(coreTotal)} 件商品`;
@@ -39,13 +40,22 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
           <p>{description}</p>
         </div>
         <div className="productheroactions" role="group" aria-label="商品管理操作">
-          <button className="productaction productactionprimary" type="button"
-            disabled={!releaseEnabled || releasePending || (page?.status_counts?.pending_review ?? 0) === 0}
-            onClick={onRelease}
-            title={releaseEnabled ? '一次审核并上架当前商城全部合格商品' : '当前商城范围没有批量上架权限'}>
-            <ProductIcon name="store" />
-            {releasePending ? '正在发布…' : `一键审核上架${page?.status_counts === undefined ? '' : ` ${formatCount(page.status_counts.pending_review)}`}`}
-          </button>
+          <div className="productreleasecontrol">
+            <button className="productaction productactionprimary" type="button"
+              disabled={releaseDisabledReason !== undefined}
+              aria-describedby={releaseDisabledReason === undefined && releaseFeedback === undefined ? undefined : 'productreleasestate'}
+              onClick={onRelease}
+              title={releaseDisabledReason === undefined ? '一次审核并上架当前商城全部合格商品' : `暂不可用：${releaseDisabledReason}`}>
+              <ProductIcon name="store" />
+              {releasePending ? '正在发布…' : `一键审核上架${page?.status_counts === undefined ? '' : ` ${formatCount(page.status_counts.pending_review)}`}`}
+            </button>
+            {releaseFeedback === undefined && releaseDisabledReason === undefined ? null : (
+              <p id="productreleasestate" className={`productreleasefeedback productreleasefeedback${releaseFeedback?.tone ?? 'disabled'}`}
+                {...(releaseFeedback === undefined ? {} : { role: releaseFeedback.tone === 'error' ? 'alert' : 'status' })}>
+                {releaseFeedback?.message ?? `暂不可用：${releaseDisabledReason}`}
+              </p>
+            )}
+          </div>
           <button className="productaction" type="button" disabled={!writeEnabled} onClick={onImport}
             title={writeEnabled ? '上传 catalog-package/v1 标准货盘包' : '请切换到有商品导入权限的商城范围'}>
             <ProductIcon name="upload" />批量导入
