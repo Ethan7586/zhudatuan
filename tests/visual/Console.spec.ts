@@ -103,6 +103,18 @@ test('Console 会员与权限首页加载所属样式并按视口重排', async 
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
 });
 
+test('Console 窄屏页脚只保留服务状态且不覆盖工作区', async ({ page }) => {
+  await prepareVisual(page, { width: 390, height: 844 });
+  await signInConsole(page);
+  await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleproducts, 'enterprise')}`);
+  await expectUsable(page);
+  await expect(page.locator('.consolefooterscope')).toBeHidden();
+  await expect(page.locator('.consolefooterhint')).toBeHidden();
+  await expect(page.locator('.consolefooterstatus')).toBeVisible();
+  await expect.poll(() => elementFitsParent(page, '.consolefooterstatus', '.consolefooter')).toBe(true);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+});
+
 function canonicalScope(routeid: string): ScopeKind {
   const declared = authority.nodes.filter((node) => node.surface === 'console' && node.routeid === routeid).map(({ scope }) => scope);
   const preferred: readonly ScopeKind[] = routeid.startsWith('consolereferral')
@@ -123,4 +135,11 @@ async function textFits(page: import('@playwright/test').Page, selector: string)
 
 async function columnCount(page: import('@playwright/test').Page, selector: string): Promise<number> {
   return page.locator(selector).evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length);
+}
+
+async function elementFitsParent(page: import('@playwright/test').Page, selector: string, parent: string): Promise<boolean> {
+  const childBox = await page.locator(selector).boundingBox();
+  const parentBox = await page.locator(parent).boundingBox();
+  if (!childBox || !parentBox) return false;
+  return childBox.x >= parentBox.x && childBox.y >= parentBox.y && childBox.x + childBox.width <= parentBox.x + parentBox.width && childBox.y + childBox.height <= parentBox.y + parentBox.height;
 }

@@ -152,6 +152,14 @@ body:has(.consolelayout[data-visual-theme='console-v1']) {
   .consoleworkspace .workspacebody {
     padding-inline: var(--sw-space-1-5);
   }
+  .consoleworkspace .consolefooter {
+    justify-content: center;
+    padding-inline: var(--sw-space-1-5);
+    white-space: nowrap;
+  }
+  .consoleworkspace :where(.consolefooterscope, .consolefooterhint) {
+    display: none;
+  }
 }
 
 @media (max-width: 36rem) {

@@ -113,12 +113,12 @@ export function ScopeShell({ registry }: Readonly<{ registry: RouteRegistryContr
               </Suspense>
             ) : null}
             <footer className="consolefooter">
-              <span>© 2026 智慧翼运营系统 · 当前数据范围：{context.scope.name ?? model.scopeType}</span>
+              <span className="consolefooterscope">© 2026 智慧翼运营系统 · 当前数据范围：{context.scope.name ?? model.scopeType}</span>
               <span className="consolefooterstatus">
                 <i aria-hidden="true" />
                 服务运行正常
               </span>
-              <code>智能助手调用需服务端授权</code>
+              <code className="consolefooterhint">智能助手调用需服务端授权</code>
             </footer>
           </div>
         </div>
