@@ -5,7 +5,7 @@ import type { MallProvisionPort, OrganizationReadPort } from '../../../organizat
 import { PgApplicationReader } from './PgApplicationReader';
 
 describe('PgApplicationReader presentation projection', () => {
-  it('combines the Experience head with one batched authoritative mall profile and domain binding health', async () => {
+  it('combines the Experience head with one batched authoritative mall profile and domain health', async () => {
     const database = { query: vi.fn(async () => result([row])) } as unknown as SqlExecutor;
     const organizations = { descendants: vi.fn(async () => ['mall:one']) } as unknown as OrganizationReadPort;
     const malls = {
@@ -19,6 +19,7 @@ describe('PgApplicationReader presentation projection', () => {
     expect(items[0]).toMatchObject({ mallName: '示范商城', brandName: '示范品牌', theme: { preset: 'market' }, domain: { mode: 'custom', address: 'mall.example.com', state: 'ready' } });
     expect(malls.malls).toHaveBeenCalledWith(expect.anything(), ['mall:one']);
     expect(database.query).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(database.query).mock.calls.some(([sql]) => sql.includes('experience.binding'))).toBe(false);
   });
 });
 
@@ -47,7 +48,6 @@ const row = Object.freeze({
   version: '5',
   head_sequence: '4',
   head_theme: theme,
-  binding_domains: ['mall.example.com'],
   release_id: 'release:one',
   release_version: 'version:four',
   pool_id: 'pool:one',

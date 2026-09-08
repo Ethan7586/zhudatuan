@@ -17,7 +17,6 @@ export interface ApplicationSummaryRow extends QueryResultRow {
   readonly version: unknown;
   readonly head_sequence: unknown;
   readonly head_theme: unknown;
-  readonly binding_domains: unknown;
   readonly release_id: string | null;
   readonly release_version: string | null;
   readonly pool_id: string | null;
@@ -44,7 +43,7 @@ export function applicationSummarySql(): string {
 export function applicationSummaryColumns(): string {
   return `application.id,application.mall_id,application.code,application.public_slug,application.name,application.status,application.is_primary,application.version,
     application.updated_at,head.sequence head_sequence,head.configuration->'theme' head_theme,
-    coalesce(bindings.domains,'{}'::text[]) binding_domains,release.id release_id,release.version_id release_version,release.pool_id,
+    release.id release_id,release.version_id release_version,release.pool_id,
     publishedversion.sequence published_sequence,publishedversion.validation_state,publication.state publication_state,
     publication.content_hash,publishedversion.configuration_hash,publication.object_key`;
 }
@@ -52,7 +51,6 @@ export function applicationSummaryColumns(): string {
 export function applicationSummaryFrom(): string {
   return `from experience.application application
     left join experience.version head on head.id=application.head_version_id
-    left join lateral(select array_agg(lower(binding.domain)) domains from experience.binding binding where binding.application_id=application.id) bindings on true
     left join lateral(select item.id,item.version_id,item.pool_id from experience.release item
       where item.application_id=application.id and item.state='active' and item.effective_at<=clock_timestamp()
       order by item.effective_at desc,item.id desc limit 1) release on true

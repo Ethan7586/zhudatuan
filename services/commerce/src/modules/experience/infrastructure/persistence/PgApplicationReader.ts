@@ -118,7 +118,7 @@ export class PgApplicationReader {
       headSequence: applicationOptionalInteger(row.head_sequence),
       publishedSequence: applicationOptionalInteger(row.published_sequence),
       theme: row.head_theme === null || row.head_theme === undefined ? (profile?.theme ?? null) : parseExperienceTheme(row.head_theme),
-      domain: domainHealth(profile, entry.state, row.binding_domains, address.url),
+      domain: domainHealth(profile, entry.state, address.url),
       entry,
       updatedAt: applicationIso(row.updated_at),
     });
@@ -133,12 +133,11 @@ export class PgApplicationReader {
   }
 }
 
-function domainHealth(profile: MallProvisionSnapshot | undefined, entry: ApplicationSummary['entry']['state'], domains: unknown, platformAddress: string): ApplicationSummary['domain'] {
+function domainHealth(profile: MallProvisionSnapshot | undefined, entry: ApplicationSummary['entry']['state'], platformAddress: string): ApplicationSummary['domain'] {
   if (!profile) return Object.freeze({ mode: 'unknown', address: null, state: 'unknown' });
   const mode = profile.domain.mode;
   const address = mode === 'custom' ? profile.domain.customDomain : platformAddress;
   if (entry === 'disabled') return Object.freeze({ mode, address, state: 'disabled' });
   if (entry === 'invalid') return Object.freeze({ mode, address, state: 'invalid' });
-  const bound = Array.isArray(domains) && domains.some((candidate) => typeof candidate === 'string' && candidate.toLowerCase() === (mode === 'custom' ? address.toLowerCase() : profile.publicSlug.toLowerCase()));
-  return Object.freeze({ mode, address, state: entry === 'ready' && (mode === 'platform' || bound) ? 'ready' : 'pending' });
+  return Object.freeze({ mode, address, state: entry === 'ready' ? 'ready' : 'pending' });
 }

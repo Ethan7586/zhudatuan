@@ -46,7 +46,7 @@ export class PgExperienceProvisionRepository implements ExperienceProvisionRepos
       await this.complete(runtime, input.event);
       return 'synchronized' as const;
     }
-    const pool = await this.catalog.provisionPool(context, { mall: input.mall.id, name: `${input.mall.name}商品池` });
+    await this.catalog.provisionPool(context, { mall: input.mall.id, name: `${input.mall.name}商品池` });
     const application = `application:${input.mall.id}`;
     const version = `${application}:version:1`;
     const now = new Date().toISOString();
@@ -54,16 +54,12 @@ export class PgExperienceProvisionRepository implements ExperienceProvisionRepos
     const owner = Application.create({ id: application, mall: input.mall.id, code: input.mall.code, publicSlug: input.mall.publicSlug, name: input.mall.name, primary: true, head: version, createdAt: now, updatedAt: now });
     await this.insertApplication(database, owner.snapshot());
     await this.insertVersion(database, initial.snapshot());
-    await this.synchronizeBinding(database, owner.snapshot().id, input.mall, pool);
     await this.complete(runtime, input.event);
     return 'created' as const;
   }
 
   private async synchronize(context: WriteTransactionContext, row: ApplicationRow, mall: Parameters<ExperienceProvisionRepository['provision']>[1]['mall'], actor: string): Promise<void> {
     const database = this.transactions.database(context);
-    const binding = await this.catalog.activeBinding(context, [mall.id]);
-    if (!binding || binding.mall !== mall.id) throw new Error('EXPERIENCE_MALL_POOL_BINDING_MISSING');
-    await this.synchronizeBinding(database, row.id, mall, binding.pool);
     let application = restoreApplication(row);
     const revised = application.revise({ name: mall.name, state: mall.status }, application.snapshot().version, new Date().toISOString());
     if (revised !== application) {
@@ -91,16 +87,6 @@ export class PgExperienceProvisionRepository implements ExperienceProvisionRepos
     await this.insertVersion(database, synchronized.snapshot());
     const advanced = application.advance(version, application.snapshot().version, now);
     await this.saveApplication(database, application.snapshot().version, advanced.snapshot());
-  }
-
-  private async synchronizeBinding(database: ReturnType<PgTransactionAccess['database']>, application: string, mall: Parameters<ExperienceProvisionRepository['provision']>[1]['mall'], pool: string): Promise<void> {
-    const domain = mall.domain.mode === 'custom' ? mall.domain.customDomain : mall.publicSlug;
-    await database.query(`delete from experience.binding where application_id=$1 and lower(domain)<>lower($2)`, [application, domain]);
-    await database.query(
-      `insert into experience.binding(application_id,domain,mall_id,pool_id) values($1,lower($2),$3,$4)
-       on conflict(application_id,domain) do update set mall_id=excluded.mall_id,pool_id=excluded.pool_id`,
-      [application, domain, mall.id, pool]
-    );
   }
 
   private async insertApplication(database: ReturnType<PgTransactionAccess['database']>, value: ApplicationSnapshot): Promise<void> {

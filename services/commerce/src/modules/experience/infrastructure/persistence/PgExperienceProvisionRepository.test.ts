@@ -41,8 +41,7 @@ describe('PgExperienceProvisionRepository', () => {
     await expect(repository.provision(context, { event: 'event:one', mall, actor: 'membership:owner' })).resolves.toBe('replayed');
     expect(catalog.provisionPool).toHaveBeenCalledTimes(1);
     expect(vi.mocked(database.query).mock.calls.some(([sql]) => sql.includes('insert into organization.'))).toBe(false);
-    const binding = vi.mocked(database.query).mock.calls.find(([sql]) => sql.includes('insert into experience.binding'));
-    expect(binding?.[1]).toEqual([expect.stringMatching(/^application:/), 'mall.example.com', mall.id, 'pool:one']);
+    expect(vi.mocked(database.query).mock.calls.some(([sql]) => sql.includes('experience.binding'))).toBe(false);
   });
 
   it('synchronizes an existing application and creates an immutable theme version for MallUpdated', async () => {
@@ -82,12 +81,12 @@ describe('PgExperienceProvisionRepository', () => {
         return result([]);
       }),
     } as unknown as SqlExecutor;
-    const catalog = { provisionPool: vi.fn(), activeBinding: vi.fn(async () => ({ mall: mall.id, pool: 'pool:one' })) } as unknown as ExperienceCatalogPort;
+    const catalog = { provisionPool: vi.fn() } as unknown as ExperienceCatalogPort;
     const repository = new PgExperienceProvisionRepository(catalog, { database: () => database } as unknown as PgTransactionAccess);
 
     await expect(repository.provision(context, { event: 'event:update', mall, actor: 'membership:owner' })).resolves.toBe('synchronized');
     expect(catalog.provisionPool).not.toHaveBeenCalled();
-    expect(vi.mocked(database.query).mock.calls.some(([sql]) => sql.includes('insert into experience.binding'))).toBe(true);
+    expect(vi.mocked(database.query).mock.calls.some(([sql]) => sql.includes('experience.binding'))).toBe(false);
     const insert = vi.mocked(database.query).mock.calls.find(([sql]) => sql.includes('insert into experience.version'));
     expect(insert?.[1]?.[9]).toBe(sourceVersion);
     expect(String(insert?.[1]?.[3])).toContain('"preset":"shop"');
