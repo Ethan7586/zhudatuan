@@ -1,6 +1,6 @@
 import { Client } from 'pg';
 import { localSeedEnvironment } from '@shop/config/server';
-import { KmsClient } from '../../../services/commerce/src/platform/secret/KmsClient';
+import { HttpKmsClient } from '../../../services/commerce/src/platform/crypto/KmsClient';
 import { localSecret } from './LocalSecrets';
 
 const environment = localSeedEnvironment();
@@ -21,14 +21,14 @@ try {
   );
   const value = result.rows[0];
   if (!value) throw new Error('LOCAL_CHALLENGE_MISSING');
-  const kms = new KmsClient(environment.kmsEndpoint, environment.kmsBearerToken);
+  const kms = new HttpKmsClient(environment.kmsEndpoint, environment.kmsBearerToken);
   const code = await kms.decrypt('pii', 'identity/challenge', value.code_ciphertext, { challenge: value.id, purpose });
   const membership = 'membership-platform-owner-ethan-v1';
   const scopeResult = await database.query<{ organization_id: string; access_version: string }>('select organization_id,access_version from access.membership where id=$1', [membership]);
   const scope = scopeResult.rows[0]?.organization_id;
   const authorization = await database.query('select capability_version,cardinality(operation_ids) operations from capability.membership_authorization($1)', [membership]);
-  const navigation = scope ? await database.query('select min(capability_version) minimum,max(capability_version) maximum,count(*) capabilities from capability.navigation_capabilities($1)', [[scope]]) : { rows: [] };
-  const platform = await database.query('select min(capability_version) minimum,max(capability_version) maximum,count(*) capabilities from capability.navigation_capabilities($1)', [['organization-platform-root']]);
+  const navigation = scope ? await database.query('select min(capability_version) minimum,max(capability_version) maximum,count(*) capabilities from capability.navigation_capabilities($1,$2)', [[scope], 'console']) : { rows: [] };
+  const platform = await database.query('select min(capability_version) minimum,max(capability_version) maximum,count(*) capabilities from capability.navigation_capabilities($1,$2)', [['organization-platform-root'], 'console']);
   const scopes = await database.query('select scope_kind,count(*) count from organization.navigation_scopes($1) group by scope_kind order by scope_kind', [[membership]]);
   const operations = await database.query(
     "select operation_id from capability.membership_operations($1) where operation_id in('catalog.pools.read','voucher.credentialpools.list','voucher.credentialpools.create','channel.providers.read','member.profile.read','organization.layers.read') order by operation_id",
