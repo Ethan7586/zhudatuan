@@ -8,6 +8,7 @@ import { assertLocalOwnership, ensureLocalOwner, LOCAL_OWNER } from './LocalOwne
 import { assertLocalSurfaceAccess, ensureLocalSurfaceAccess } from './LocalSurface';
 import { ensureLocalChecker } from './LocalChecker';
 import { assertLocalBenefitLedger, ensureLocalBenefits } from './LocalBenefits';
+import { ensureLocalPricebook, LOCAL_PRICEBOOK } from './LocalPricing';
 import { syncMemberProjection } from './MemberProjection';
 import { serializeExperience } from '@shop/contract';
 
@@ -202,17 +203,12 @@ async function ensureLocalQualification(database: Client): Promise<void> {
 }
 
 async function ensureLocalCommercialCatalog(database: Client): Promise<void> {
-  await database.query(
-    `insert into pricing.pricebook(id,scope_id,currency,name,status,version)
-    values('pricebook:local:zhudatuan','mall-zhudatuan','CNY','主打团福利商城验收价目表','active',1)
-    on conflict(id) do update set scope_id=excluded.scope_id,currency=excluded.currency,name=excluded.name,status='active',
-      version=pricing.pricebook.version+1`
-  );
+  await ensureLocalPricebook(database);
   await database.query(`update pricing.pricebook set status='retired',version=version+1
-    where scope_id='mall-zhudatuan' and id<>'pricebook:local:zhudatuan' and status='active'`);
+    where scope_id=$1 and id<>$2 and status='active'`, [LOCAL_PRICEBOOK.scope, LOCAL_PRICEBOOK.id]);
   await database.query(
     `insert into pricing.price(id,book_id,sku_id,amount_minor,compare_minor,effective_at,expires_at)
-    select 'price:local:'||md5(item.sku_id),'pricebook:local:zhudatuan',item.sku_id,
+    select 'price:local:'||md5(item.sku_id),$1,item.sku_id,
       greatest(coalesce(source.amount_minor,10000),100) amount_minor,
       greatest(coalesce(source.compare_minor,source.amount_minor,12800),greatest(coalesce(source.amount_minor,10000),100)) compare_minor,
       '1970-01-01T00:00:00Z',null
@@ -224,7 +220,8 @@ async function ensureLocalCommercialCatalog(database: Client): Promise<void> {
       order by price.effective_at desc,price.id limit 1) source on true
     where item.pool_id='pool-local-zhudatuan' and item.state='included'
     on conflict(book_id,sku_id,effective_at) do update set amount_minor=excluded.amount_minor,
-      compare_minor=excluded.compare_minor,expires_at=null`
+      compare_minor=excluded.compare_minor,expires_at=null`,
+    [LOCAL_PRICEBOOK.id]
   );
   await database.query(
     `insert into inventory.stockitem(id,scope_id,sku_id,location_id,onhand,safety,version,status,updated_at)
@@ -243,11 +240,12 @@ async function ensureLocalCommercialCatalog(database: Client): Promise<void> {
       (select count(*)::integer from catalog.listing listing where listing.pool_id='pool-local-zhudatuan'
         and listing.id!~'^[a-z][a-z0-9]*:[A-Za-z0-9][A-Za-z0-9.:/-]*$') invalid_listing,
       (select count(*)::integer from catalog.poolitem item where item.pool_id='pool-local-zhudatuan' and item.state='included'
-        and not exists(select 1 from pricing.price price where price.book_id='pricebook:local:zhudatuan' and price.sku_id=item.sku_id
+        and not exists(select 1 from pricing.price price where price.book_id=$1 and price.sku_id=item.sku_id
           and price.amount_minor>0 and price.effective_at<=clock_timestamp() and (price.expires_at is null or price.expires_at>clock_timestamp()))) missing_price,
       (select count(*)::integer from catalog.poolitem item where item.pool_id='pool-local-zhudatuan' and item.state='included'
         and not exists(select 1 from inventory.stockitem stock where stock.scope_id='mall-zhudatuan' and stock.sku_id=item.sku_id
-          and stock.status='active' and stock.onhand>stock.safety)) missing_stock`
+          and stock.status='active' and stock.onhand>stock.safety)) missing_stock`,
+    [LOCAL_PRICEBOOK.id]
   );
   const row = readiness.rows[0];
   if (!row || row.invalid_listing !== 0 || row.missing_price !== 0 || row.missing_stock !== 0) throw new Error(`LOCAL_COMMERCIAL_CATALOG_INCOMPLETE:${JSON.stringify(row)}`);

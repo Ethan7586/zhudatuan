@@ -2,6 +2,7 @@ import { Client } from 'pg';
 import { localSeedEnvironment } from '@shop/config/server';
 import { localSecret } from './LocalSecrets';
 import { LOCAL_OWNER } from './LocalOwner';
+import { LOCAL_PRICEBOOK } from './LocalPricing';
 
 const environment = localSeedEnvironment();
 const database = new Client({ connectionString: await localSecret(environment.adminDatabaseConnectionRef) });
@@ -58,9 +59,9 @@ async function ensureProduct(client: Client, product: (typeof products)[number],
   );
   await client.query(
     `insert into pricing.price(id,book_id,sku_id,amount_minor,compare_minor,effective_at,expires_at)
-    values('price:visual:'||$1,'pricebook:local:zhudatuan',$1,$2,$3,'2026-01-01T00:00:00Z',null)
+    values('price:visual:'||$1,$4,$1,$2,$3,'2026-01-01T00:00:00Z',null)
     on conflict(book_id,sku_id,effective_at) do update set amount_minor=excluded.amount_minor,compare_minor=excluded.compare_minor,expires_at=null`,
-    [product.sku, product.amount, product.compare]
+    [product.sku, product.amount, product.compare, LOCAL_PRICEBOOK.id]
   );
   await client.query(
     `insert into inventory.stockitem(id,scope_id,sku_id,location_id,onhand,safety,version,status,updated_at)
@@ -81,8 +82,8 @@ async function ensureProduct(client: Client, product: (typeof products)[number],
 async function assertVisualSeed(client: Client): Promise<void> {
   const result = await client.query<{ count: number }>(`select count(distinct listing.id)::integer count from catalog.listing listing
     join catalog.poolbinding binding on binding.pool_id=listing.pool_id and binding.mall_id=$1 and binding.status='active'
-    join pricing.price price on price.book_id='pricebook:local:zhudatuan' and price.sku_id=listing.sku_id
+    join pricing.price price on price.book_id=$3 and price.sku_id=listing.sku_id
     join inventory.stockitem stock on stock.scope_id=$1 and stock.sku_id=listing.sku_id and stock.status='active'
-    where listing.sku_id=any($2::text[]) and listing.status='published' and price.amount_minor>0 and stock.onhand>stock.safety`, [LOCAL_OWNER.mall, products.map(({ sku }) => sku)]);
+    where listing.sku_id=any($2::text[]) and listing.status='published' and price.amount_minor>0 and stock.onhand>stock.safety`, [LOCAL_OWNER.mall, products.map(({ sku }) => sku), LOCAL_PRICEBOOK.id]);
   if (result.rows[0]?.count !== products.length) throw new Error(`LOCAL_VISUAL_SEED_INCOMPLETE:${result.rows[0]?.count ?? 0}`);
 }
