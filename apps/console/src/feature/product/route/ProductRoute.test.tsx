@@ -83,6 +83,14 @@ afterEach(() => {
 afterAll(() => server.close());
 
 describe('Product route', () => {
+  it('announces the real loading phase before reporting fresh product data', async () => {
+    renderRoute(context);
+
+    expect(screen.getByText('正在加载商品数据…')).toBeTruthy();
+    expect(screen.queryByText('商品数据已是最新')).toBeNull();
+    expect(await screen.findByText('商品数据已是最新')).toBeTruthy();
+  });
+
   it('loads only the aggregate product list on first render and keeps pools and details lazy', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     render(

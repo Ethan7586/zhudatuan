@@ -13,6 +13,7 @@ import { ProductTable } from './ProductTable';
 import { ProductImportDialog } from './ProductImportDialog';
 import { ProductBatchDialog } from './ProductBatchDialog';
 import { FilterDisclosure } from './FilterDisclosure';
+import { presentProductStatus } from './ProductStatus';
 
 export function ProductPage({ title, viewmodel, importmodel }: Readonly<{ title: string; viewmodel: ProductViewModel; importmodel: ProductImportViewModel }>) {
   return (
@@ -49,9 +50,9 @@ export function ProductPage({ title, viewmodel, importmodel }: Readonly<{ title:
               onRetryFacets={viewmodel.facets.retry}
             />
           </FilterDisclosure>
-          <p className="productservertime">
+          <p className="productservertime" data-condition={viewmodel.resource.condition} role="status" aria-live="polite">
             <span aria-hidden="true" />
-            {viewmodel.resource.condition === 'refreshing' ? '正在同步商品数据…' : '商品数据已加载'}
+            {presentProductStatus(viewmodel.resource.condition)}
           </p>
         </section>
       }

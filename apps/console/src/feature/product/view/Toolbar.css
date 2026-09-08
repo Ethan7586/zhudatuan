@@ -106,3 +106,24 @@
   border-radius: 50%;
   background: var(--sw-success);
 }
+
+.productservertime[data-condition='loading'] span,
+.productservertime[data-condition='refreshing'] span,
+.productservertime[data-condition='retry'] span {
+  background: var(--sw-brand);
+}
+
+.productservertime[data-condition='stale'] span,
+.productservertime[data-condition='ratelimited'] span,
+.productservertime[data-condition='offline'] span {
+  background: var(--sw-warning);
+}
+
+.productservertime[data-condition='forbidden'] span,
+.productservertime[data-condition='unavailable'] span,
+.productservertime[data-condition='notconfigured'] span,
+.productservertime[data-condition='notfound'] span,
+.productservertime[data-condition='conflict'] span,
+.productservertime[data-condition='failure'] span {
+  background: var(--sw-danger);
+}

@@ -129,6 +129,7 @@ test('Console 商品治理台在桌面、平板和手机保持清晰布局与触
     await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleproducts, 'enterprise')}`);
     await expectUsable(page);
     await expect(page.locator('.producttablewrap tbody tr').first()).toBeVisible();
+    await expect(page.locator('.productservertime')).toHaveText('商品数据已是最新');
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
     await expect.poll(() => minimumHeight(page, '.productheroactions button')).toBeGreaterThanOrEqual(44);
     if (viewport.width <= 768) {
