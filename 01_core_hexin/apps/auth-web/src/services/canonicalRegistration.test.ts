@@ -35,6 +35,11 @@ describe('canonical registration', () => {
       .toBe('https://api.hbbtzn.com');
   });
 
+  it('routes the L0 accounts host to its own L0 API even when an L1 build value leaked in', () => {
+    expect(resolveCanonicalRegistrationApiOrigin('https://api.hbbtzn.com', false, 'accounts.zhudatuan.com'))
+      .toBe('https://api.zhudatuan.com');
+  });
+
   it('resolves a storefront application into its authoritative organization and terms', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse(storefrontRegistration()));
     vi.stubGlobal('fetch', fetchMock);

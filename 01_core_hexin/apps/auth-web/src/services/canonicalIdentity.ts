@@ -446,8 +446,7 @@ function storefrontOriginForIdentityHost(configuredOrigin: string): string {
 
 function apiOrigin(): string {
   let configured = import.meta.env.VITE_API_BASE_URL?.trim() || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
-  if (typeof window !== 'undefined' && window.location.hostname.startsWith('accounts.')
-    && window.location.hostname !== 'accounts.zhudatuan.com') {
+  if (typeof window !== 'undefined' && window.location.hostname.startsWith('accounts.')) {
     configured = `https://api.${window.location.hostname.slice('accounts.'.length)}`;
   }
   const parsed = new URL(configured);

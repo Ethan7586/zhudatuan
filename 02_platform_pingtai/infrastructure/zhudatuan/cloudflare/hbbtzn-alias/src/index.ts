@@ -1,3 +1,5 @@
+// SFL-D01：L1 通过 L0 物理源站复用同源制品的历史边缘兼容层。
+// 本文件只能转发和翻译旧入口，不能成为节点身份、权限、数据范围或业务事实的来源。
 const ROOT_STOREFRONT_HOST = 'hbbtzn.com';
 const API_UPSTREAM_ORIGIN = 'https://api.zhudatuan.com';
 const ACCOUNTS_UPSTREAM_ORIGIN = 'https://accounts.zhudatuan.com';

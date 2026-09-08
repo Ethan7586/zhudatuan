@@ -317,6 +317,10 @@ describe('canonical console identity', () => {
       membership: 'membership:zhudatuan',
       redirectUrl: 'https://zhudatuan.com/orders?source=login',
     });
+    expect(fetchMock.mock.calls.map(([input]) => String(input))).toEqual([
+      'https://api.zhudatuan.com/api/v1/identity/sessions',
+      'https://api.zhudatuan.com/api/v1/identity/tickets/exchange',
+    ]);
   });
 
   it('rejects an L0 return ticket on the L1 identity host instead of rewriting it', async () => {

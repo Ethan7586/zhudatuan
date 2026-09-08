@@ -288,7 +288,7 @@ export function resolveCanonicalRegistrationApiOrigin(
   hostname?: string,
 ): string {
   let candidate = configured?.trim() || (development ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
-  if (hostname?.startsWith('accounts.') && hostname !== 'accounts.zhudatuan.com') {
+  if (hostname?.startsWith('accounts.')) {
     candidate = `https://api.${hostname.slice('accounts.'.length)}`;
   }
   const parsed = new URL(candidate);

@@ -1,3 +1,4 @@
+// SFL-D02：兼容旧 target/application 查询参数；只识别入口，不承担授权判定。
 export interface ConsumerIdentityEntry {
   readonly application: string;
   readonly target: 'storefront' | 'storefront-hbbtzn';

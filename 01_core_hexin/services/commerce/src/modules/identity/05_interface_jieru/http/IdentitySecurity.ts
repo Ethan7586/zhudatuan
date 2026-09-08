@@ -24,6 +24,7 @@ export function authTarget(value: string): AuthTarget {
 }
 
 export function authMembershipTarget(target: AuthTarget): Exclude<AuthTarget, 'console-hbbtzn' | 'storefront-hbbtzn'> {
+  // SFL-D03：旧节点专用 target 只归一为业务入口类别；节点归属必须由已解析 realm/NodeContext 判定。
   if (target === 'console-hbbtzn') return 'console';
   if (target === 'storefront-hbbtzn') return 'storefront';
   return target;
