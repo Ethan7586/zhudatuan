@@ -26,9 +26,7 @@ export function OrderOverviewPanel({ order, onRetry }: Readonly<{ order: OrderDe
                 </span>
                 <span>
                   <strong>{line.title}</strong>
-                  <small>
-                    {chineseReference('商品规格', line.sku)} ×{line.quantity}
-                  </small>
+                  <small>数量 {line.quantity} · 下单商品快照</small>
                 </span>
                 <b>{formatMinor(line.payableMinor, order.currency)}</b>
               </div>
@@ -53,18 +51,24 @@ export function OrderOverviewPanel({ order, onRetry }: Readonly<{ order: OrderDe
           <div className="orderdetailgrid">
             <OrderDetailInfo label="履约状态" value={fulfillmentLabel(order.fulfillment_state)} />
             <OrderDetailInfo label="履约单" value={fulfillment ? chineseReference('履约单', fulfillment.id) : '尚未创建'} />
-            <OrderDetailInfo label="供应方" value={providerLabel(fulfillment?.provider ?? order.lines[0]?.provider ?? null, fulfillment?.partner ?? order.lines[0]?.partner ?? null)} />
+            <OrderDetailInfo label="供应方" value={providerLabel(fulfillment?.provider ?? order.lines[0]?.provider ?? null, fulfillment?.partnerName ?? order.lines[0]?.partnerName ?? null)} />
             <OrderDetailInfo label="收货信息" value={addressLabel(order)} />
           </div>
         ) : null}
       </OrderDetailSection>
       <OrderDetailSection title="最近操作">
         <OrderSectionState section={order.sections.audit} title="审计记录" onRetry={onRetry} />
-        {order.sections.audit.state === 'ready' ? <p className="orderrecentoperation">最近操作：{order.timeline[0] ? `${actionLabel(order.timeline[0].action)} · ${formatOrderTime(order.timeline[0].occurredAt)}` : '暂无写操作审计记录'}</p> : null}
+        {order.sections.audit.state === 'ready' ? (
+          <p className="orderrecentoperation">最近操作：{order.timeline[0] ? `${actionLabel(order.timeline[0].action)} · ${formatOrderTime(order.timeline[0].occurredAt)}` : '暂无写操作审计记录'}</p>
+        ) : null}
       </OrderDetailSection>
       <OrderDetailSection title="售后状态">
         <OrderSectionState section={order.sections.aftersale} title="售后快照" onRetry={onRetry} />
-        {order.sections.aftersale.state === 'ready' ? <p className="orderrecentoperation">{lifecycleLabel(order.lifecycle_state)} · {order.refunds.length} 笔退款记录</p> : null}
+        {order.sections.aftersale.state === 'ready' ? (
+          <p className="orderrecentoperation">
+            {lifecycleLabel(order.lifecycle_state)} · {order.refunds.length} 笔退款记录
+          </p>
+        ) : null}
       </OrderDetailSection>
     </div>
   );

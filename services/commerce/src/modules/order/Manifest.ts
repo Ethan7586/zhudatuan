@@ -3,7 +3,7 @@ import { FINANCE_ORDER_PORT, ORDER_EXPIRY_PORT, ORDER_FULFILLMENT_PORT, ORDER_IN
 
 export const Manifest = defineModuleManifest({
   id: 'order',
-  dependencies: ['organization', 'qualification', 'audit', 'member', 'runtime'],
+  dependencies: ['organization', 'qualification', 'audit', 'member', 'partner', 'runtime'],
   services: ['database.pool', 'audit.sink', 'object.store'],
   ports: [ORDER_INTENT_PORT, ORDER_PAYMENT_PORT, ORDER_FULFILLMENT_PORT, SUPPORT_ORDER_PORT, ORDER_RECEIPT_PORT, ORDER_READ_PORT, FINANCE_ORDER_PORT],
   workloads: {

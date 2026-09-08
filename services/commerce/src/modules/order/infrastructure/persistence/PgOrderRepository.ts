@@ -25,6 +25,7 @@ import { emptyOrderFacets, orderRequest } from './OrderRequest';
 import { orderTime } from '../../application/model/OrderTime';
 import { orderProjection } from './OrderProjection';
 import { OrderLabels } from '../../application/service/OrderLabels';
+import type { CatalogPartnerPort } from '../../../partner/public';
 export class PgOrderRepository implements OrderRepository, ReminderRepository, ExportRepository {
   private readonly receiver: ReceiveOrder;
   private readonly canceller: CancelOrder;
@@ -33,11 +34,12 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
     private readonly transactions: PgTransactionAccess,
     outbox: OutboxWriter,
     private readonly organizations: Pick<OrganizationReadPort, 'descendants' | 'scope' | 'summaries'>,
-    private readonly members: Pick<MemberReadPort, 'search' | 'profiles'>
+    private readonly members: Pick<MemberReadPort, 'search' | 'profiles' | 'principals'>,
+    partners: Pick<CatalogPartnerPort, 'names'>
   ) {
     this.receiver = new ReceiveOrder(transactions, outbox, new SystemClock());
     this.canceller = new CancelOrder(transactions, outbox, new SystemClock());
-    this.labels = new OrderLabels(members, organizations);
+    this.labels = new OrderLabels(members, organizations, partners);
   }
   async read(context: ReadTransactionContext, input: OperationInputFor<'order.orders.read'>, execution: ExecutionContext<'order.orders.read'>) {
     const access = requireSession(execution.security);

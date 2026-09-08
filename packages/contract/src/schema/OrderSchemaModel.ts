@@ -17,6 +17,7 @@ export const line = strictObject({
   category: string(),
   provider: union([string(), nullSchema()]),
   partner: union([string(), nullSchema()]),
+  partnerName: union([string(), nullSchema()]),
 });
 export const address = strictObject({
   recipientMasked: string(),
@@ -51,6 +52,7 @@ export const fulfillmentDetail = strictObject({
   id: string(),
   provider: union([string(), nullSchema()]),
   partner: union([string(), nullSchema()]),
+  partnerName: union([string(), nullSchema()]),
   kind: literal(['shipment', 'delivery', 'pickup', 'service', 'digital']),
   state: literal(['pending', 'submitted', 'accepted', 'processing', 'ready', 'completed', 'cancelled', 'failed', 'needsaction']),
   version,
@@ -84,7 +86,7 @@ export const auditTimeline = strictObject({
   action: string(),
   resourceType: string(),
   resourceMasked: union([string(), nullSchema()]),
-  actorMasked: string(),
+  actorName: string(),
   occurredAt: isoUtc,
   traceMasked: string(),
 });
@@ -123,8 +125,12 @@ export const localUnavailable = strictObject({ state: literal('unavailable'), er
 export const detailSummary = strictObject({
   id: string(),
   orderNumber: string(),
+  memberId: string(),
+  memberName: string(),
   scopeId: string(),
+  scopeName: string(),
   mallId: string(),
+  mallName: string(),
   currency,
   totalMinor: unsigned,
   paymentState: literal(ORDER_PAYMENT_STATES),

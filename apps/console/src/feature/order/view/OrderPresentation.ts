@@ -1,4 +1,4 @@
-import { chineseDomainLabel, chineseProviderLabel, chineseReference } from '@shop/presentation';
+import { chineseDomainLabel, chineseProviderLabel } from '@shop/presentation';
 import type { OrderPaymentTender, OrderRecord } from '../model/Order';
 
 export type OrderTone = 'brand' | 'success' | 'warning' | 'danger' | 'muted';
@@ -89,8 +89,8 @@ export function formatOrderTime(value: string): string {
     .replaceAll('/', '-');
 }
 
-export function providerLabel(provider: string | null, partner: string | null): string {
-  return provider ? chineseProviderLabel(provider) : partner ? chineseReference('合作方', partner) : '平台自营';
+export function providerLabel(provider: string | null, partnerName: string | null): string {
+  return provider ? chineseProviderLabel(provider) : (partnerName ?? '平台自营');
 }
 
 export function tenderLabel(kind: OrderPaymentTender['kind']): string {
@@ -124,6 +124,6 @@ export function productSummary(order: OrderRecord): Readonly<{ title: string; de
   const quantity = lines.reduce((total, line) => total + line.quantity, 0);
   return {
     title: first.title,
-    detail: `${chineseReference('商品规格', first.sku)} · 共 ${quantity} 件${lines.length > 1 ? ` / ${lines.length} 类` : ''}`,
+    detail: `共 ${quantity} 件${lines.length > 1 ? ` / ${lines.length} 类商品` : ''}`,
   };
 }

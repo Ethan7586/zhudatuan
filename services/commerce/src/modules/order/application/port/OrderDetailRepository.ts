@@ -4,6 +4,7 @@ import type { ReadTransactionContext } from '../../../../platform/database/Trans
 export interface OrderDetailSummary {
   readonly id: string;
   readonly orderNumber: string;
+  readonly memberId: string;
   readonly scopeId: string;
   readonly mallId: string;
   readonly currency: string;

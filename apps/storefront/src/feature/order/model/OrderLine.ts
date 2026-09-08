@@ -16,4 +16,5 @@ export interface OrderLine {
   readonly itemType: ProductKind;
   readonly provider: string | null;
   readonly partner: string | null;
+  readonly partnerName: string | null;
 }

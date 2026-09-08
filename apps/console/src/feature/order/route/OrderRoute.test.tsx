@@ -48,6 +48,7 @@ const order = {
       id: 'fulfillment:verified-1',
       provider: null,
       partner: null,
+      partnerName: null,
       kind: 'shipment',
       state: 'processing',
       version: 0,
@@ -58,9 +59,7 @@ const order = {
     },
   ],
   refunds: [],
-  timeline: [
-    { id: 'audit:1', action: 'fulfillment.shipments.create', resourceType: 'fulfillment', resourceMasked: 'fulfillment ····ed-1', actorMasked: 'console ····or-1', occurredAt: '2026-08-26T08:42:00.000Z', traceMasked: '追踪 ····0001' },
-  ],
+  timeline: [{ id: 'audit:1', action: 'fulfillment.shipments.create', resourceType: 'fulfillment', resourceMasked: 'fulfillment ····ed-1', actorName: '测试订单运营', occurredAt: '2026-08-26T08:42:00.000Z', traceMasked: '追踪 ····0001' }],
   receivedAt: null,
   created_at: '2026-08-26T08:30:00.000Z',
   updated_at: '2026-08-26T09:00:00.000Z',
@@ -80,6 +79,7 @@ const order = {
       category: 'category:office',
       provider: null,
       partner: null,
+      partnerName: null,
     },
   ],
 } as const;
@@ -109,8 +109,12 @@ const detail = {
   summary: {
     id: order.id,
     orderNumber: order.order_number,
+    memberId: order.member_id,
+    memberName: order.member_name,
     scopeId: order.scope_id,
+    scopeName: order.scope_name,
     mallId: order.mall_id,
+    mallName: order.mall_name,
     currency: order.currency,
     totalMinor: order.total_minor,
     paymentState: order.payment_state,
@@ -316,7 +320,7 @@ describe('Order route', () => {
     expect(screen.queryByText(order.id)).toBeNull();
     expect(screen.queryByText('SKU-VERIFIED-1')).toBeNull();
     expect(screen.getByText(order.order_number).tagName).toBe('STRONG');
-    expect(screen.getByText(/^商品规格 \d{4} \d{4} · 共 2 件$/)).toBeTruthy();
+    expect(screen.getByText('共 2 件')).toBeTruthy();
     expect(screen.queryByText('不应泄漏的演示会员')).toBeNull();
     expect(screen.queryByText('不应泄漏的演示支付方式')).toBeNull();
     expect(screen.getByRole('button', { name: '全部订单' }).textContent).toBe('全部订单1');

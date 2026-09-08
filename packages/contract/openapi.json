@@ -44147,7 +44147,7 @@
                         "action": {
                           "type": "string"
                         },
-                        "actorMasked": {
+                        "actorName": {
                           "type": "string"
                         },
                         "id": {
@@ -44179,7 +44179,7 @@
                         "action",
                         "resourceType",
                         "resourceMasked",
-                        "actorMasked",
+                        "actorName",
                         "occurredAt",
                         "traceMasked"
                       ],
@@ -44473,6 +44473,16 @@
                             }
                           ]
                         },
+                        "partnerName": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "provider": {
                           "anyOf": [
                             {
@@ -44511,6 +44521,7 @@
                         "id",
                         "provider",
                         "partner",
+                        "partnerName",
                         "kind",
                         "state",
                         "version",
@@ -44798,6 +44809,16 @@
                             }
                           ]
                         },
+                        "partnerName": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "payableMinor": {
                           "maximum": 9007199254740991,
                           "minimum": 0,
@@ -44851,7 +44872,8 @@
                         "productType",
                         "category",
                         "provider",
-                        "partner"
+                        "partner",
+                        "partnerName"
                       ],
                       "type": "object"
                     },
@@ -45019,6 +45041,15 @@
               "mallId": {
                 "type": "string"
               },
+              "mallName": {
+                "type": "string"
+              },
+              "memberId": {
+                "type": "string"
+              },
+              "memberName": {
+                "type": "string"
+              },
               "orderedAt": {
                 "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
                 "type": "string"
@@ -45049,6 +45080,9 @@
                 ]
               },
               "scopeId": {
+                "type": "string"
+              },
+              "scopeName": {
                 "type": "string"
               },
               "sourceChannel": {
@@ -45097,8 +45131,12 @@
             "required": [
               "id",
               "orderNumber",
+              "memberId",
+              "memberName",
               "scopeId",
+              "scopeName",
               "mallId",
+              "mallName",
               "currency",
               "totalMinor",
               "paymentState",
@@ -46427,6 +46465,16 @@
                           }
                         ]
                       },
+                      "partnerName": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "provider": {
                         "anyOf": [
                           {
@@ -46465,6 +46513,7 @@
                       "id",
                       "provider",
                       "partner",
+                      "partnerName",
                       "kind",
                       "state",
                       "version",
@@ -46512,6 +46561,16 @@
                         "type": "string"
                       },
                       "partner": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "partnerName": {
                         "anyOf": [
                           {
                             "type": "string"
@@ -46574,7 +46633,8 @@
                       "productType",
                       "category",
                       "provider",
-                      "partner"
+                      "partner",
+                      "partnerName"
                     ],
                     "type": "object"
                   },
@@ -46864,7 +46924,7 @@
                       "action": {
                         "type": "string"
                       },
-                      "actorMasked": {
+                      "actorName": {
                         "type": "string"
                       },
                       "id": {
@@ -46896,7 +46956,7 @@
                       "action",
                       "resourceType",
                       "resourceMasked",
-                      "actorMasked",
+                      "actorName",
                       "occurredAt",
                       "traceMasked"
                     ],

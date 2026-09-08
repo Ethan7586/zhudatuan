@@ -19,7 +19,7 @@ export class PgOrderDetailRepository implements OrderDetailRepository {
     const partner = access.scope.kind === 'supplier' || access.scope.kind === 'store';
     const scopes = member || partner ? [] : await this.organizations.descendants(context, organizationScope(access.scope));
     const result = await this.transactions.database(context).query<OrderDetailSummary>(
-      `select orders.id,orders.order_number "orderNumber",orders.scope_id "scopeId",orders.mall_id "mallId",
+      `select orders.id,orders.order_number "orderNumber",orders.member_id "memberId",orders.scope_id "scopeId",orders.mall_id "mallId",
       orders.currency,orders.total_minor::float8 "totalMinor",orders.payment_state "paymentState",
       orders.fulfillment_state "fulfillmentState",orders.aftersale_state "aftersaleState",orders.lifecycle_state "lifecycleState",
       orders.source_channel "sourceChannel",orders.external_reference "externalOrderNo",orders.source_state "sourceState",

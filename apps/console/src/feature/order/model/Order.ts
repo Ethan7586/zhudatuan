@@ -10,8 +10,12 @@ export type { OrderAfterSaleDecision };
 export interface OrderDetail {
   readonly id: OrderDetailOutput['summary']['id'];
   readonly order_number: OrderDetailOutput['summary']['orderNumber'];
+  readonly member_id: OrderDetailOutput['summary']['memberId'];
+  readonly member_name: OrderDetailOutput['summary']['memberName'];
   readonly scope_id: OrderDetailOutput['summary']['scopeId'];
+  readonly scope_name: OrderDetailOutput['summary']['scopeName'];
   readonly mall_id: OrderDetailOutput['summary']['mallId'];
+  readonly mall_name: OrderDetailOutput['summary']['mallName'];
   readonly total_minor: OrderDetailOutput['summary']['totalMinor'];
   readonly currency: OrderDetailOutput['summary']['currency'];
   readonly payment_state: OrderDetailOutput['summary']['paymentState'];

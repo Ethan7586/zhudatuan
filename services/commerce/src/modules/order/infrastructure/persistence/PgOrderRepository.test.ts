@@ -10,7 +10,7 @@ describe('PgOrderRepository reminder authorization', () => {
       .mockResolvedValueOnce({ rows: [{ existing: false, depth: 0 }], rowCount: 1 })
       .mockResolvedValueOnce({ rows: [], rowCount: 1 });
     const descendants = vi.fn(async () => Object.freeze(['enterprise:one', 'mall:one']));
-    const repository = new PgOrderRepository({ database: () => ({ query }) } as never, {} as never, { descendants } as never, { search: vi.fn(), profiles: vi.fn(async () => Object.freeze([])) });
+    const repository = new PgOrderRepository({ database: () => ({ query }) } as never, {} as never, { descendants } as never, memberReads(), partnerReads());
 
     const result = await repository.schedule({} as never, { path: { orderid: 'order:one' }, body: {} } as never, execution('console', 'enterprise', 'enterprise:one') as never);
 
@@ -27,7 +27,7 @@ describe('PgOrderRepository reminder authorization', () => {
 
   it('returns a stable domain failure when the order is invisible, terminal or still cooling down', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [], rowCount: 0 });
-    const repository = new PgOrderRepository({ database: () => ({ query }) } as never, {} as never, { descendants: vi.fn() } as never, { search: vi.fn(), profiles: vi.fn(async () => Object.freeze([])) });
+    const repository = new PgOrderRepository({ database: () => ({ query }) } as never, {} as never, { descendants: vi.fn() } as never, memberReads(), partnerReads());
 
     await expect(repository.schedule({} as never, { path: { orderid: 'order:two' }, body: {} } as never, execution('storefront', 'owner', 'member:one') as never)).rejects.toEqual(new DomainError('ORDER_REMINDER_NOT_ALLOWED'));
     expect(query).toHaveBeenCalledTimes(1);
@@ -49,7 +49,7 @@ describe('PgOrderRepository list facets', () => {
         : { rows: [], rowCount: 0 }
     );
     const descendants = vi.fn(async () => Object.freeze(['enterprise:one', 'mall:one']));
-    const repository = new PgOrderRepository({ database: () => ({ query }) } as never, {} as never, { descendants, scope: vi.fn() } as never, { search: vi.fn(), profiles: vi.fn(async () => Object.freeze([])) });
+    const repository = new PgOrderRepository({ database: () => ({ query }) } as never, {} as never, { descendants, scope: vi.fn() } as never, memberReads(), partnerReads());
 
     const result = (await repository.read({} as never, { query: { limit: '50' } } as never, readExecution() as never)) as unknown as {
       body: { facets: { state: string; data: { counts: { exception: number }; watermarks: { order: string } } } };
@@ -74,7 +74,8 @@ describe('PgOrderRepository list facets', () => {
       { database: () => ({ query }) } as never,
       {} as never,
       { descendants: vi.fn(async () => Object.freeze(['enterprise:one'])), scope: vi.fn(), summaries: vi.fn(async () => Object.freeze([])) },
-      { search: vi.fn(), profiles: vi.fn(async () => Object.freeze([])) }
+      memberReads(),
+      partnerReads()
     );
 
     const result = (await repository.read({} as never, { query: { limit: '50' } } as never, readExecution() as never)) as unknown as { body: { items: unknown[]; facets: { state: string; error: { code: string } } } };
@@ -113,7 +114,8 @@ describe('PgOrderRepository list facets', () => {
         scope: vi.fn(),
         summaries: vi.fn(async () => Object.freeze([{ id: 'enterprise:one', name: '示例集团', kind: 'enterprise' }])),
       },
-      { search: vi.fn(), profiles: vi.fn(async () => Object.freeze([{ member: 'member:one', displayName: '王小明', mobileMasked: null }])) }
+      memberReads({ profiles: vi.fn(async () => Object.freeze([{ member: 'member:one', displayName: '王小明', mobileMasked: null }])) }),
+      partnerReads()
     );
 
     const result = (await repository.read({} as never, { query: { limit: '50' } } as never, readExecution() as never)) as unknown as {
@@ -162,4 +164,12 @@ function execution(target: 'console' | 'storefront', kind: 'enterprise' | 'owner
 
 function readExecution() {
   return { ...execution('console', 'enterprise', 'enterprise:one'), operation: 'order.orders.read', idempotencyKey: undefined } as const;
+}
+
+function memberReads(overrides: Readonly<Record<string, unknown>> = {}) {
+  return { search: vi.fn(async () => Object.freeze([])), profiles: vi.fn(async () => Object.freeze([])), principals: vi.fn(async () => Object.freeze([])), ...overrides } as never;
+}
+
+function partnerReads() {
+  return { names: vi.fn(async () => new Map<string, string>()) };
 }

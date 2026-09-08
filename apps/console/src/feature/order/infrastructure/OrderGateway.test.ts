@@ -39,7 +39,23 @@ describe('Order query', () => {
   it('sends every bounded contract filter with scope and access version', async () => {
     await gateway.orders(
       context(),
-      query({ search: 'SW42', view: 'active', placed: '7days', from: '2026-08-01', to: '2026-08-31', lifecycle: 'fulfilling', payment: 'paid', fulfillment: 'processing', mall: 'mall:1', channel: 'channel:jd', product: 'sku:1', member: '王小明', minimumMinor: '100', maximumMinor: '99900', cursor: 'cursor:50' }),
+      query({
+        search: 'SW42',
+        view: 'active',
+        placed: '7days',
+        from: '2026-08-01',
+        to: '2026-08-31',
+        lifecycle: 'fulfilling',
+        payment: 'paid',
+        fulfillment: 'processing',
+        mall: 'mall:1',
+        channel: 'channel:jd',
+        product: 'sku:1',
+        member: '王小明',
+        minimumMinor: '100',
+        maximumMinor: '99900',
+        cursor: 'cursor:50',
+      }),
       new AbortController().signal
     );
     expect(Object.fromEntries(requests[0]?.searchParams ?? [])).toEqual({
@@ -106,19 +122,69 @@ describe('Order query', () => {
   });
 
   it('loads related support cases through the generated Support SDK using an exact order filter', async () => {
-    server.use(http.get('*/api/v1/support/cases', ({ request }) => {
-      requests.push(new URL(request.url));
-      return HttpResponse.json({ items: [{ id: 'case:one', scope_id: 'enterprise:1', priority: 'high', state: 'assigned', assigned_agent_id: 'agent:one', response_due_at: '2026-09-05T02:00:00.000Z', resolution_due_at: '2026-09-05T08:00:00.000Z', created_at: '2026-09-05T01:00:00.000Z', updated_at: '2026-09-05T01:30:00.000Z', version: 1, conversation_id: 'conversation:one', skill: 'order', member_id: 'member:1', order_id: 'order:internal:7', channel: 'inapp', subject: '物流进度咨询', reference_type: null, reference_id: null, unread_count: 2, sla_risk: 'risk' }], count: 1 });
-    }));
+    server.use(
+      http.get('*/api/v1/support/cases', ({ request }) => {
+        requests.push(new URL(request.url));
+        return HttpResponse.json({
+          items: [
+            {
+              id: 'case:one',
+              scope_id: 'enterprise:1',
+              priority: 'high',
+              state: 'assigned',
+              assigned_agent_id: 'agent:one',
+              response_due_at: '2026-09-05T02:00:00.000Z',
+              resolution_due_at: '2026-09-05T08:00:00.000Z',
+              created_at: '2026-09-05T01:00:00.000Z',
+              updated_at: '2026-09-05T01:30:00.000Z',
+              version: 1,
+              conversation_id: 'conversation:one',
+              skill: 'order',
+              member_id: 'member:1',
+              order_id: 'order:internal:7',
+              channel: 'inapp',
+              subject: '物流进度咨询',
+              reference_type: null,
+              reference_id: null,
+              unread_count: 2,
+              sla_risk: 'risk',
+            },
+          ],
+          count: 1,
+        });
+      })
+    );
     await expect(gateway.support(context(), 'order:internal:7')).resolves.toEqual([expect.objectContaining({ id: 'case:one', subject: '物流进度咨询', unreadCount: 2 })]);
     expect(Object.fromEntries(requests[0]?.searchParams ?? [])).toEqual({ limit: '50', orderId: 'order:internal:7' });
   });
 
   it('reads exact payment recoveries and maps their optimistic versions', async () => {
-    server.use(http.get('*/api/v1/payments/recoveries', ({ request }) => {
-      requests.push(new URL(request.url));
-      return HttpResponse.json({ items: [{ id: 'recovery:one', order_id: 'order:internal:7', order_number: 'SW-20260826-0007', resource_type: 'intent', resource_id: 'intent:one', severity: 'critical', state: 'open', error_code: 'PAYMENT_LATE_SUCCESS', evidence: {}, occurrence_count: 2, opened_at: '2026-09-05T02:00:00.000Z', resolved_at: null, resolution_request_id: null, version: 3 }], count: 1 });
-    }));
+    server.use(
+      http.get('*/api/v1/payments/recoveries', ({ request }) => {
+        requests.push(new URL(request.url));
+        return HttpResponse.json({
+          items: [
+            {
+              id: 'recovery:one',
+              order_id: 'order:internal:7',
+              order_number: 'SW-20260826-0007',
+              resource_type: 'intent',
+              resource_id: 'intent:one',
+              severity: 'critical',
+              state: 'open',
+              error_code: 'PAYMENT_LATE_SUCCESS',
+              evidence: {},
+              occurrence_count: 2,
+              opened_at: '2026-09-05T02:00:00.000Z',
+              resolved_at: null,
+              resolution_request_id: null,
+              version: 3,
+            },
+          ],
+          count: 1,
+        });
+      })
+    );
     const page = await gateway.recoveries(context(), 'order:internal:7');
     expect(page.items[0]).toMatchObject({ id: 'recovery:one', orderId: 'order:internal:7', version: 3 });
     expect(Object.fromEntries(requests[0]?.searchParams ?? [])).toEqual({ limit: '50', orderId: 'order:internal:7' });
@@ -127,11 +193,13 @@ describe('Order query', () => {
   it('cancels the exact unpaid order version and maps the immutable receipt', async () => {
     let requestBody: unknown;
     let headers: Headers | undefined;
-    server.use(http.post('*/api/v1/orders/:orderId/cancel', async ({ request }) => {
-      requestBody = await request.json();
-      headers = request.headers;
-      return HttpResponse.json({ orderId: 'order:one', lifecycleState: 'cancelled', fulfillmentState: 'cancelled', cancelledAt: '2026-09-05T02:00:00.000Z', version: 3, eventId: 'event:cancel-one', repeated: false });
-    }));
+    server.use(
+      http.post('*/api/v1/orders/:orderId/cancel', async ({ request }) => {
+        requestBody = await request.json();
+        headers = request.headers;
+        return HttpResponse.json({ orderId: 'order:one', lifecycleState: 'cancelled', fulfillmentState: 'cancelled', cancelledAt: '2026-09-05T02:00:00.000Z', version: 3, eventId: 'event:cancel-one', repeated: false });
+      })
+    );
     const source = { ...order('order:one', 'SW-1'), payment_state: 'unpaid' as const, fulfillment_state: 'unallocated' as const, lifecycle_state: 'awaitingpayment' as const };
     const detail = new OrderMapper().order(orderDetail(source));
     await expect(gateway.cancel(context(), detail, '收货信息有误，需要重新下单', 'cancel-key')).resolves.toMatchObject({ orderId: 'order:one', state: 'cancelled', version: 3 });
@@ -144,27 +212,124 @@ describe('Order query', () => {
   it('binds fulfillment, return, refund and recovery commands to exact resources and evidence headers', async () => {
     const seen: Array<{ path: string; body: unknown; match: string | null; proof: string | null; identity: string | null; csrf: string | null }> = [];
     const capture = async (request: Request) => {
-      seen.push({ path: new URL(request.url).pathname, body: await request.json(), match: request.headers.get('if-match'), proof: request.headers.get('x-action-proof'), identity: request.headers.get('idempotency-key'), csrf: request.headers.get('x-csrf-token') });
+      seen.push({
+        path: new URL(request.url).pathname,
+        body: await request.json(),
+        match: request.headers.get('if-match'),
+        proof: request.headers.get('x-action-proof'),
+        identity: request.headers.get('idempotency-key'),
+        csrf: request.headers.get('x-csrf-token'),
+      });
     };
-    const returned = (state: 'received' | 'accepted', version: number) => ({ id: 'return:one', aftersale_id: 'aftersale:one', fulfillment_id: 'fulfillment:one', scope_id: 'enterprise:1', state, provider: null, provider_reference: null, instruction: {}, tracking_number: 'SF123456', created_at: '2026-09-05T02:00:00.000Z', updated_at: '2026-09-05T03:00:00.000Z', version, lines: [{ line: 'line:one', quantity: 1 }], inspections: state === 'accepted' ? [{ id: 'inspection:one', sequence: 1, accepted: true, evidence: {}, actor: 'actor:one', inspectedAt: '2026-09-05T03:00:00.000Z' }] : [] });
+    const returned = (state: 'received' | 'accepted', version: number) => ({
+      id: 'return:one',
+      aftersale_id: 'aftersale:one',
+      fulfillment_id: 'fulfillment:one',
+      scope_id: 'enterprise:1',
+      state,
+      provider: null,
+      provider_reference: null,
+      instruction: {},
+      tracking_number: 'SF123456',
+      created_at: '2026-09-05T02:00:00.000Z',
+      updated_at: '2026-09-05T03:00:00.000Z',
+      version,
+      lines: [{ line: 'line:one', quantity: 1 }],
+      inspections: state === 'accepted' ? [{ id: 'inspection:one', sequence: 1, accepted: true, evidence: {}, actor: 'actor:one', inspectedAt: '2026-09-05T03:00:00.000Z' }] : [],
+    });
     server.use(
-      http.post('*/api/v1/fulfillments/:id/shipments', async ({ request }) => { await capture(request); return HttpResponse.json({ id: 'fulfillment:one', order_id: 'order:one', suborder_id: 'suborder:one', provider: null, partner_id: null, store_id: null, kind: 'shipment', route: 'physical', state: 'processing', external_reference: null, payment_id: 'payment:one', source_effect_id: null, amount_minor: 12_800, idempotency_key: null, created_at: '2026-09-05T02:00:00.000Z', updated_at: '2026-09-05T03:00:00.000Z', version: 2, shipment_id: 'shipment:one', package_id: 'package:one', tracking: 'SF123456', shipped_quantity: 1 }, { status: 201 }); }),
-      http.put('*/api/v1/fulfillments/returns/:id/receipt', async ({ request }) => { await capture(request); return HttpResponse.json(returned('received', 5)); }),
-      http.put('*/api/v1/fulfillments/returns/:id/inspection', async ({ request }) => { await capture(request); return HttpResponse.json(returned('accepted', 6)); }),
-      http.post('*/api/v1/payments/refunds', async ({ request }) => { await capture(request); return HttpResponse.json({ id: 'refund:one', payment_id: 'payment:one', provider: 'wechat', provider_reference: 'refund-reference', amount_minor: 1000, currency: 'CNY', state: 'requested', reason: '差额退回', aftersale_id: null }, { status: 202 }); }),
-      http.post('*/api/v1/payments/recoveries/:id/resolutions', async ({ request }) => { await capture(request); return HttpResponse.json({ case: 'recovery:one', request: 'recoveryrequest:one', action: 'requery', state: 'accepted' }, { status: 202 }); })
+      http.post('*/api/v1/fulfillments/:id/shipments', async ({ request }) => {
+        await capture(request);
+        return HttpResponse.json(
+          {
+            id: 'fulfillment:one',
+            order_id: 'order:one',
+            suborder_id: 'suborder:one',
+            provider: null,
+            partner_id: null,
+            store_id: null,
+            kind: 'shipment',
+            route: 'physical',
+            state: 'processing',
+            external_reference: null,
+            payment_id: 'payment:one',
+            source_effect_id: null,
+            amount_minor: 12_800,
+            idempotency_key: null,
+            created_at: '2026-09-05T02:00:00.000Z',
+            updated_at: '2026-09-05T03:00:00.000Z',
+            version: 2,
+            shipment_id: 'shipment:one',
+            package_id: 'package:one',
+            tracking: 'SF123456',
+            shipped_quantity: 1,
+          },
+          { status: 201 }
+        );
+      }),
+      http.put('*/api/v1/fulfillments/returns/:id/receipt', async ({ request }) => {
+        await capture(request);
+        return HttpResponse.json(returned('received', 5));
+      }),
+      http.put('*/api/v1/fulfillments/returns/:id/inspection', async ({ request }) => {
+        await capture(request);
+        return HttpResponse.json(returned('accepted', 6));
+      }),
+      http.post('*/api/v1/payments/refunds', async ({ request }) => {
+        await capture(request);
+        return HttpResponse.json(
+          { id: 'refund:one', payment_id: 'payment:one', provider: 'wechat', provider_reference: 'refund-reference', amount_minor: 1000, currency: 'CNY', state: 'requested', reason: '差额退回', aftersale_id: null },
+          { status: 202 }
+        );
+      }),
+      http.post('*/api/v1/payments/recoveries/:id/resolutions', async ({ request }) => {
+        await capture(request);
+        return HttpResponse.json({ case: 'recovery:one', request: 'recoveryrequest:one', action: 'requery', state: 'accepted' }, { status: 202 });
+      })
     );
-    const target = { id: 'fulfillment:one', provider: null, partner: null, kind: 'shipment' as const, state: 'processing' as const, version: 1, externalReferenceMasked: null, createdAt: '2026-09-05T02:00:00.000Z', updatedAt: '2026-09-05T02:00:00.000Z', milestones: [] };
+    const target = {
+      id: 'fulfillment:one',
+      provider: null,
+      partner: null,
+      partnerName: null,
+      kind: 'shipment' as const,
+      state: 'processing' as const,
+      version: 1,
+      externalReferenceMasked: null,
+      createdAt: '2026-09-05T02:00:00.000Z',
+      updatedAt: '2026-09-05T02:00:00.000Z',
+      milestones: [],
+    };
     const returnTarget = { id: 'return:one', state: 'received' as const, provider: null, providerReferenceMasked: null, trackingMasked: '尾号 3456', version: 4 };
     const detail = new OrderMapper().order(orderDetail({ ...order('order:one', 'SW-1'), payment: { ...order('order:one', 'SW-1').payment, version: 8 } }));
-    const recovery = { id: 'recovery:one', orderId: 'order:one', orderNumber: 'SW-1', resourceType: 'intent', resourceId: 'intent:one', severity: 'critical' as const, state: 'open' as const, errorCode: 'PAYMENT_LATE_SUCCESS', occurrenceCount: 2, openedAt: '2026-09-05T02:00:00.000Z', resolvedAt: null, resolutionRequestId: null, version: 3 };
+    const recovery = {
+      id: 'recovery:one',
+      orderId: 'order:one',
+      orderNumber: 'SW-1',
+      resourceType: 'intent',
+      resourceId: 'intent:one',
+      severity: 'critical' as const,
+      state: 'open' as const,
+      errorCode: 'PAYMENT_LATE_SUCCESS',
+      occurrenceCount: 2,
+      openedAt: '2026-09-05T02:00:00.000Z',
+      resolvedAt: null,
+      resolutionRequestId: null,
+      version: 3,
+    };
     const proof = 'p'.repeat(43);
     await gateway.ship(context(), target, 'SF123456', '顺丰', 'ship-key');
     await gateway.receiveReturn(context(), returnTarget, 'SF123456', 'receive-key');
     await gateway.inspectReturn(context(), returnTarget, true, '外观完整', 'inspect-key');
     await gateway.refund(context(), detail, 1000, '差额退回', proof, 'refund-key');
     await gateway.resolveRecovery(context(), recovery, 'requery', '重新核对渠道结果', proof, 'recovery-key');
-    expect(seen.map(({ path }) => path)).toEqual(['/api/v1/fulfillments/fulfillment%3Aone/shipments', '/api/v1/fulfillments/returns/return%3Aone/receipt', '/api/v1/fulfillments/returns/return%3Aone/inspection', '/api/v1/payments/refunds', '/api/v1/payments/recoveries/recovery%3Aone/resolutions']);
+    expect(seen.map(({ path }) => path)).toEqual([
+      '/api/v1/fulfillments/fulfillment%3Aone/shipments',
+      '/api/v1/fulfillments/returns/return%3Aone/receipt',
+      '/api/v1/fulfillments/returns/return%3Aone/inspection',
+      '/api/v1/payments/refunds',
+      '/api/v1/payments/recoveries/recovery%3Aone/resolutions',
+    ]);
     expect(seen.map(({ match }) => match)).toEqual(['"1"', '"4"', '"4"', '"8"', '"3"']);
     expect(seen.map(({ identity }) => identity)).toEqual(['ship-key', 'receive-key', 'inspect-key', 'refund-key', 'recovery-key']);
     expect(seen.every(({ csrf }) => csrf === 'csrf:order-test')).toBe(true);
@@ -256,8 +421,12 @@ function orderDetail(item: ReturnType<typeof order>) {
     summary: {
       id: item.id,
       orderNumber: item.order_number,
+      memberId: item.member_id,
+      memberName: item.member_name,
       scopeId: item.scope_id,
+      scopeName: item.scope_name,
       mallId: item.mall_id,
+      mallName: item.mall_name,
       currency: item.currency,
       totalMinor: item.total_minor,
       paymentState: item.payment_state,
@@ -279,7 +448,20 @@ function orderDetail(item: ReturnType<typeof order>) {
     payment: { state: 'ready', data: item.payment },
     fulfillment: { state: 'ready', data: item.fulfillments },
     aftersale: { state: 'ready', data: { state: item.aftersale_state, refunds: item.refunds } },
-    finance: { state: 'ready', data: { grossMinor: item.total_minor, capturedMinor: item.payment.capturedMinor, refundedMinor: item.payment.refundedMinor, netMinor: item.payment.capturedMinor - item.payment.refundedMinor, outstandingMinor: 0, currency: item.currency, state: 'balanced', verificationState: 'verified', watermark: item.updated_at } },
+    finance: {
+      state: 'ready',
+      data: {
+        grossMinor: item.total_minor,
+        capturedMinor: item.payment.capturedMinor,
+        refundedMinor: item.payment.refundedMinor,
+        netMinor: item.payment.capturedMinor - item.payment.refundedMinor,
+        outstandingMinor: 0,
+        currency: item.currency,
+        state: 'balanced',
+        verificationState: 'verified',
+        watermark: item.updated_at,
+      },
+    },
     audit: { state: 'ready', data: item.timeline },
   };
 }

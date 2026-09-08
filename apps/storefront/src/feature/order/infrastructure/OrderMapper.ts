@@ -62,12 +62,20 @@ export function mapOrderDetail(value: OrderDetailDto, mall: EnterpriseMall, trac
     lines: Object.freeze(lines.map(mapLine)),
     timeline: mergeTimeline(timeline, tracked),
     audit: Object.freeze(value.audit.state === 'ready' ? value.audit.data.map(mapAudit) : []),
-    ...(value.summary.address === null ? {} : { address: { recipient: value.summary.address.recipientMasked, mobile: value.summary.address.mobileMasked, detail: value.summary.address.addressMasked, regionCode: value.summary.address.regionCode } }),
+    ...(value.summary.address === null
+      ? {}
+      : { address: { recipient: value.summary.address.recipientMasked, mobile: value.summary.address.mobileMasked, detail: value.summary.address.addressMasked, regionCode: value.summary.address.regionCode } }),
     receivedAt: value.summary.receivedAt,
     sourceChannel: value.summary.sourceChannel,
     externalOrderNo: value.summary.externalOrderNo,
     payment: payment ? Object.freeze({ id: payment.paymentId, capturedMinor: payment.capturedMinor, refundedMinor: payment.refundedMinor, refundableMinor: payment.refundableMinor }) : null,
-    sections: Object.freeze({ products: section(value.products), payment: section(value.payment), fulfillment: tracked.length > 0 ? Object.freeze({ state: 'ready' as const }) : section(value.fulfillment), aftersale: section(value.aftersale), audit: section(value.audit) }),
+    sections: Object.freeze({
+      products: section(value.products),
+      payment: section(value.payment),
+      fulfillment: tracked.length > 0 ? Object.freeze({ state: 'ready' as const }) : section(value.fulfillment),
+      aftersale: section(value.aftersale),
+      audit: section(value.audit),
+    }),
     version: Number(value.summary.version),
   });
 }
@@ -79,14 +87,20 @@ export function mapOrders(value: OperationOutputFor<'order.orders.read'>, mall: 
 export function mapTimeline(value: OperationOutputFor<'fulfillment.tracking.read'>): readonly Timeline[] {
   return Object.freeze(
     value.items.flatMap((item) =>
-      item.shipments.flatMap((shipment) => shipment.packages.flatMap((packaged) => packaged.events.map((event) => Object.freeze({
-        id: event.id,
-        kind: 'tracking',
-        state: event.state,
-        tracking: packaged.tracking,
-        occurredAt: event.occurredAt,
-        evidence: Object.freeze(isRecord(event.evidence) ? event.evidence : {}),
-      }))))
+      item.shipments.flatMap((shipment) =>
+        shipment.packages.flatMap((packaged) =>
+          packaged.events.map((event) =>
+            Object.freeze({
+              id: event.id,
+              kind: 'tracking',
+              state: event.state,
+              tracking: packaged.tracking,
+              occurredAt: event.occurredAt,
+              evidence: Object.freeze(isRecord(event.evidence) ? event.evidence : {}),
+            })
+          )
+        )
+      )
     )
   );
 }
@@ -116,6 +130,7 @@ function mapLine(line: OrderDto['lines'][number]) {
     itemType: mapProductKind(line.productType, line.category),
     provider: line.provider,
     partner: line.partner,
+    partnerName: line.partnerName,
   });
 }
 
@@ -124,7 +139,7 @@ function mapMilestone(value: OrderDto['fulfillments'][number]['milestones'][numb
 }
 
 function mapAudit(value: OrderDto['timeline'][number]) {
-  return Object.freeze({ id: value.id, action: value.action, resourceType: value.resourceType, resource: value.resourceMasked, actor: value.actorMasked, occurredAt: value.occurredAt });
+  return Object.freeze({ id: value.id, action: value.action, resourceType: value.resourceType, resource: value.resourceMasked, actor: value.actorName, occurredAt: value.occurredAt });
 }
 
 function mergeTimeline(...groups: readonly (readonly Timeline[])[]): readonly Timeline[] {

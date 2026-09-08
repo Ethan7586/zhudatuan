@@ -38,13 +38,14 @@ describe('order model mapping', () => {
             category: 'category:voucher',
             provider: 'supplier',
             partner: 'partner:one',
+            partnerName: '员工福利供应商',
           },
         ],
       } as never,
       mall()
     );
     expect(order).toMatchObject({ status: 'pending_receipt', totalMinor: 129900, version: 4 });
-    expect(order.lines[0]).toMatchObject({ unitMinor: 129900, quantity: 1, itemType: 'virtual_coupon', categoryId: 'category:voucher' });
+    expect(order.lines[0]).toMatchObject({ unitMinor: 129900, quantity: 1, itemType: 'virtual_coupon', categoryId: 'category:voucher', partnerName: '员工福利供应商' });
     expect(Object.isFrozen(order.lines)).toBe(true);
   });
 
@@ -64,15 +65,79 @@ describe('order model mapping', () => {
   });
 
   it('maps sectioned order detail without letting a delayed projection hide ready facts', () => {
-    const order = mapOrderDetail({
-      summary: { id: 'order:one', orderNumber: 'SW202609050001', scopeId: 'owner:one', mallId: 'mall:one', currency: 'CNY', totalMinor: 8800, paymentState: 'paid', fulfillmentState: 'shipped', aftersaleState: 'none', lifecycleState: 'shipped', sourceChannel: null, externalOrderNo: null, sourceState: null, verificationState: 'verified', orderedAt: '2026-09-05T01:00:00.000Z', address: { recipientMasked: '王**', mobileMasked: '138****0000', addressMasked: '上海市****路', regionCode: '310000' }, receivedAt: null, createdAt: '2026-09-05T01:00:00.000Z', updatedAt: '2026-09-05T02:00:00.000Z', version: 3 },
-      products: { state: 'ready', data: [{ id: 'line:one', sku: 'sku:one', listing: 'listing:one', title: '员工礼品', quantity: 1, unitMinor: 8800, totalMinor: 8800, discountMinor: 0, payableMinor: 8800, productType: 'physical', category: 'category:gift', provider: null, partner: null }] },
-      payment: { state: 'unavailable', error: { code: 'PAYMENT_DELAYED', message: '支付投影正在追赶', retryable: true, traceId: 'trace:payment-1' } },
-      fulfillment: { state: 'ready', data: [{ id: 'fulfillment:one', provider: null, partner: null, kind: 'shipment', state: 'processing', externalReferenceMasked: null, createdAt: '2026-09-05T01:10:00.000Z', updatedAt: '2026-09-05T02:00:00.000Z', milestones: [{ id: 'milestone:one', kind: 'shipping', state: 'intransit', trackingMasked: 'SF****0001', occurredAt: '2026-09-05T02:00:00.000Z' }] }] },
-      aftersale: { state: 'hidden' },
-      finance: { state: 'hidden' },
-      audit: { state: 'hidden' },
-    } as never, mall());
+    const order = mapOrderDetail(
+      {
+        summary: {
+          id: 'order:one',
+          orderNumber: 'SW202609050001',
+          memberId: 'member:one',
+          memberName: '王小明',
+          scopeId: 'owner:one',
+          scopeName: '王小明',
+          mallId: 'mall:one',
+          mallName: '员工福利商城',
+          currency: 'CNY',
+          totalMinor: 8800,
+          paymentState: 'paid',
+          fulfillmentState: 'shipped',
+          aftersaleState: 'none',
+          lifecycleState: 'shipped',
+          sourceChannel: null,
+          externalOrderNo: null,
+          sourceState: null,
+          verificationState: 'verified',
+          orderedAt: '2026-09-05T01:00:00.000Z',
+          address: { recipientMasked: '王**', mobileMasked: '138****0000', addressMasked: '上海市****路', regionCode: '310000' },
+          receivedAt: null,
+          createdAt: '2026-09-05T01:00:00.000Z',
+          updatedAt: '2026-09-05T02:00:00.000Z',
+          version: 3,
+        },
+        products: {
+          state: 'ready',
+          data: [
+            {
+              id: 'line:one',
+              sku: 'sku:one',
+              listing: 'listing:one',
+              title: '员工礼品',
+              quantity: 1,
+              unitMinor: 8800,
+              totalMinor: 8800,
+              discountMinor: 0,
+              payableMinor: 8800,
+              productType: 'physical',
+              category: 'category:gift',
+              provider: null,
+              partner: null,
+              partnerName: null,
+            },
+          ],
+        },
+        payment: { state: 'unavailable', error: { code: 'PAYMENT_DELAYED', message: '支付投影正在追赶', retryable: true, traceId: 'trace:payment-1' } },
+        fulfillment: {
+          state: 'ready',
+          data: [
+            {
+              id: 'fulfillment:one',
+              provider: null,
+              partner: null,
+              partnerName: null,
+              kind: 'shipment',
+              state: 'processing',
+              externalReferenceMasked: null,
+              createdAt: '2026-09-05T01:10:00.000Z',
+              updatedAt: '2026-09-05T02:00:00.000Z',
+              milestones: [{ id: 'milestone:one', kind: 'shipping', state: 'intransit', trackingMasked: 'SF****0001', occurredAt: '2026-09-05T02:00:00.000Z' }],
+            },
+          ],
+        },
+        aftersale: { state: 'hidden' },
+        finance: { state: 'hidden' },
+        audit: { state: 'hidden' },
+      } as never,
+      mall()
+    );
     expect(order.lines[0]?.title).toBe('员工礼品');
     expect(order.timeline[0]?.tracking).toBe('SF****0001');
     expect(order.sections.payment).toEqual({ state: 'unavailable', message: '支付投影正在追赶', retryable: true });

@@ -1,4 +1,4 @@
-import { chineseReference, chineseSectionLabel } from '@shop/presentation';
+import { chineseSectionLabel } from '@shop/presentation';
 import { Button, DataTable, MetricGrid, ResourcePanel, type DataColumn } from '@shop/design';
 import { useEffect } from 'react';
 import { formatDate, formatMinor } from '../../../shared/ui/Format';
@@ -16,7 +16,6 @@ import { aftersaleLabel, fulfillmentLabel, paymentLabel } from './OrderPresentat
 
 const columns: readonly DataColumn<OrderLine>[] = [
   { key: 'title', label: '商品', render: (row) => row.title },
-  { key: 'sku', label: '商品规格', render: (row) => chineseReference('规格', row.sku) },
   { key: 'quantity', label: '数量', render: (row) => row.quantity },
   { key: 'unit', label: '单价快照', render: (row) => formatMinor(row.unitMinor) },
   { key: 'discount', label: '优惠快照', render: (row) => formatMinor(row.discountMinor) },
@@ -45,7 +44,7 @@ export function OrderDetailPage({ title, tab, onTab, onBack, viewmodel }: Readon
     <ResourcePanel
       title={data?.order_number ?? title}
       eyebrow={chineseSectionLabel('订单详情')}
-      description={data === undefined ? '正在读取订单权威快照。' : `${chineseReference('订单', data.order_number)}的支付、履约、退款、脱敏地址与审计权威快照。`}
+      description={data === undefined ? '正在读取订单权威快照。' : `订单号 ${data.order_number} 的支付、履约、退款、脱敏地址与审计权威快照。`}
       condition={viewmodel.condition}
       {...(viewmodel.error === undefined ? {} : { error: viewmodel.error })}
       retry={viewmodel.refresh}

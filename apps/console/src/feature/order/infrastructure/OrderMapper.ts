@@ -36,8 +36,12 @@ export class OrderMapper {
     return deepFreeze({
       id: detail.summary.id,
       order_number: detail.summary.orderNumber,
+      member_id: detail.summary.memberId,
+      member_name: detail.summary.memberName,
       scope_id: detail.summary.scopeId,
+      scope_name: detail.summary.scopeName,
       mall_id: detail.summary.mallId,
+      mall_name: detail.summary.mallName,
       total_minor: detail.summary.totalMinor,
       currency: detail.summary.currency,
       payment_state: detail.summary.paymentState,
