@@ -3,6 +3,7 @@ import { useEffect, useRef, type Dispatch } from 'react';
 import type { Dependencies } from '../../../app/Dependencies';
 import type { LoginOutcome } from '../model/Login';
 import type { LoginEvent, LoginState } from '../model/LoginState';
+import { targetTitle } from '../../../shared/model/Target';
 
 const RUNNING = new Set(['bootstrapping', 'challengepending', 'submitting', 'resolvinginvitation', 'exchangingticket']);
 
@@ -56,7 +57,7 @@ export function useLoginCommand(dependencies: Dependencies, state: LoginState, d
     } else if (outcome.kind === 'enrollment') {
       const enrollment = await dependencies.readEnrollment.execute(outcome.id, { target: outcome.target }, active.current?.signal);
       dispatch({ type: 'ENROLLMENT_REQUIRED', command, enrollment });
-    } else dispatch({ type: 'ENROLLMENT_COMPLETED', command, notice: '员工商城账号已创建，请使用新账号登录。' });
+    } else dispatch({ type: 'ENROLLMENT_COMPLETED', command, notice: `${targetTitle(outcome.target)}账号已创建，请使用新账号登录。` });
   };
   return Object.freeze({ start, startEnrollment, fail, route, renew, cancel: () => active.current?.abort() });
 }

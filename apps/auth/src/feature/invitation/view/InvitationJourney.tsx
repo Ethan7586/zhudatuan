@@ -1,10 +1,10 @@
 import type { AuthTarget } from '@shop/config/client';
-import { CLIENT_BY_ID } from '@shop/config/clientcatalog';
+import { targetTitle } from '../../../shared/model/Target';
 
 const STEPS = Object.freeze(['验证邀请', '完善账号', '确认身份', '进入系统']);
 
 export function InvitationJourney({ target, current }: Readonly<{ target: AuthTarget; current: 1 | 2 | 3 | 4 }>) {
-  const targetTitle = CLIENT_BY_ID.get(target)?.title ?? '目标系统';
+  const destination = targetTitle(target);
   return (
     <section className="invitationjourney" aria-label="邀请码注册进度">
       <ol>
@@ -18,7 +18,7 @@ export function InvitationJourney({ target, current }: Readonly<{ target: AuthTa
           );
         })}
       </ol>
-      <p>企业、身份和权限由系统安全确认，注册后进入“{targetTitle}”；注册过程不能自行扩大权限。</p>
+      <p>企业、身份和权限由系统安全确认，注册后进入“{destination}”；注册过程不能自行扩大权限。</p>
     </section>
   );
 }

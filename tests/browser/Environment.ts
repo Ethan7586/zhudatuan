@@ -41,7 +41,7 @@ export async function completePasswordSignIn(page: Page): Promise<void> {
   await accountField.fill(account);
   await page.getByLabel('密码', { exact: true }).fill(password);
   await page.getByRole('checkbox', { name: /我已阅读并同意/ }).check();
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /登录并进入/ }).click();
 }
 
 export async function expectResponsivePage(page: Page): Promise<void> {

@@ -1,14 +1,17 @@
 import { Button } from '@shop/design';
 import { ArrowRight, KeyRound, RefreshCw } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useInvitationForm } from '../viewmodel/InvitationViewModel';
 
 export function InvitationForm({
   busy,
   error,
+  agreement,
   onSubmit,
 }: Readonly<{
   busy: boolean;
   error?: string;
+  agreement: ReactNode;
   onSubmit: (code: string) => Promise<void>;
 }>) {
   const vm = useInvitationForm(busy, onSubmit);
@@ -17,7 +20,7 @@ export function InvitationForm({
     await vm.submit();
   };
   return (
-    <form onSubmit={(event) => void submit(event)} className="authform">
+    <form onSubmit={(event) => void submit(event)} className="authform" aria-label="邀请码注册">
       <label className="authfield">
         <span className="authlabel">
           <KeyRound aria-hidden="true" />
@@ -45,9 +48,10 @@ export function InvitationForm({
       <p id="invitation-hint" className="authhint">
         邀请码仅用于本次验证，不会写入网址、浏览器存储或分析数据。
       </p>
+      {agreement}
       <Button type="submit" tone="primary" isDisabled={busy} className="authfull">
         {busy ? <RefreshCw className="authspin" aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
-        {busy ? '验证中...' : '验证邀请码并继续'}
+        {busy ? '正在安全验证…' : '验证邀请码，继续注册'}
       </Button>
     </form>
   );

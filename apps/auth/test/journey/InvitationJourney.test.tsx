@@ -11,10 +11,10 @@ describe('invitation journey', () => {
   it('submits an invitation outside URL and persistent storage and clears it immediately', async () => {
     const submit = vi.fn(async () => undefined);
     const user = userEvent.setup();
-    render(<InvitationForm busy={false} onSubmit={submit} />);
+    render(<InvitationForm busy={false} agreement={<span />} onSubmit={submit} />);
     const input = screen.getByLabelText('企业邀请码');
     await user.type(input, ' invite-secret ');
-    await user.click(screen.getByRole('button', { name: '验证邀请码并继续' }));
+    await user.click(screen.getByRole('button', { name: '验证邀请码，继续注册' }));
     expect(submit).toHaveBeenCalledWith('invite-secret');
     expect((input as HTMLInputElement).value).toBe('');
     expect(window.location.href).not.toContain('invite-secret');
@@ -22,7 +22,7 @@ describe('invitation journey', () => {
   });
 
   it('announces an invitation validation issue next to the field', () => {
-    render(<InvitationForm busy={false} error="请输入企业邀请码" onSubmit={vi.fn(async () => undefined)} />);
+    render(<InvitationForm busy={false} error="请输入企业邀请码" agreement={<span />} onSubmit={vi.fn(async () => undefined)} />);
     expect(screen.getByLabelText('企业邀请码').getAttribute('aria-invalid')).toBe('true');
     expect(screen.getByText('请输入企业邀请码')).toBeTruthy();
   });
@@ -54,9 +54,9 @@ describe('invitation journey', () => {
       />
     );
     expect(screen.getByRole('heading', { name: '使用企业邀请码注册' })).toBeTruthy();
-    expect(screen.getByRole('radiogroup', { name: '注册后进入' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: '验证邀请码并继续' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: '已有账号，返回登录' })).toBeTruthy();
+    expect(screen.getByRole('radiogroup', { name: '目标系统' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '验证邀请码，继续注册' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '返回登录' })).toBeTruthy();
     expect(screen.queryByRole('tablist', { name: '登录方式' })).toBeNull();
   });
 });

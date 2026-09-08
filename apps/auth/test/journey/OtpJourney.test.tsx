@@ -21,11 +21,11 @@ describe('OTP journey', () => {
     const submit = vi.fn();
     const challenge = vi.fn(async () => actionSuccess(issued));
     const user = userEvent.setup();
-    render(<OtpForm busy={false} error={{}} onChallenge={challenge} onSubmit={submit} />);
+    render(<OtpForm busy={false} error={{}} agreement={<span />} submitLabel="登录并进入消费者商城" onChallenge={challenge} onSubmit={submit} />);
     await user.type(screen.getByLabelText(/登录账号或已绑定手机号/), '13800000000');
     await user.click(screen.getByRole('button', { name: '获取验证码' }));
     await user.type(screen.getByLabelText('短信验证码'), '123456');
-    await user.click(screen.getByRole('button', { name: '登录' }));
+    await user.click(screen.getByRole('button', { name: '登录并进入消费者商城' }));
     expect(challenge).toHaveBeenCalledWith('13800000000');
     expect(submit).toHaveBeenCalledWith('13800000000', 'challenge-1', '123456');
     expect(screen.getByLabelText('验证码状态').textContent).toContain('登录验证');
@@ -36,18 +36,23 @@ describe('OTP journey', () => {
     const submit = vi.fn();
     const challenge = vi.fn(async () => actionFailure<Challenge>({ title: '暂时不可用', message: '请稍后重试', severity: 'warning', action: { kind: 'retry', label: '重试' }, retryable: true }));
     const user = userEvent.setup();
-    render(<OtpForm busy={false} error={{}} onChallenge={challenge} onSubmit={submit} />);
+    render(<OtpForm busy={false} error={{}} agreement={<span />} submitLabel="登录并进入消费者商城" onChallenge={challenge} onSubmit={submit} />);
     await user.type(screen.getByLabelText(/登录账号或已绑定手机号/), '13800000000');
     await user.click(screen.getByRole('button', { name: '获取验证码' }));
-    await user.click(screen.getByRole('button', { name: '登录' }));
+    await user.click(screen.getByRole('button', { name: '登录并进入消费者商城' }));
     expect(submit).toHaveBeenCalledWith('13800000000', '', '');
   });
 
   it('coalesces rapid challenge clicks into one running request', async () => {
     let complete: ((value: ReturnType<typeof actionSuccess<Challenge>>) => void) | undefined;
-    const challenge = vi.fn(() => new Promise<ReturnType<typeof actionSuccess<Challenge>>>((resolve) => { complete = resolve; }));
+    const challenge = vi.fn(
+      () =>
+        new Promise<ReturnType<typeof actionSuccess<Challenge>>>((resolve) => {
+          complete = resolve;
+        })
+    );
     const user = userEvent.setup();
-    render(<OtpForm busy={false} error={{}} onChallenge={challenge} onSubmit={vi.fn()} />);
+    render(<OtpForm busy={false} error={{}} agreement={<span />} submitLabel="登录并进入消费者商城" onChallenge={challenge} onSubmit={vi.fn()} />);
     await user.type(screen.getByLabelText(/登录账号或已绑定手机号/), '13800000000');
     const send = screen.getByRole('button', { name: '获取验证码' });
     send.click();
@@ -59,7 +64,7 @@ describe('OTP journey', () => {
   it('invalidates the challenge when the account or mobile changes', async () => {
     const submit = vi.fn();
     const user = userEvent.setup();
-    render(<OtpForm busy={false} error={{}} onChallenge={vi.fn(async () => actionSuccess(issued))} onSubmit={submit} />);
+    render(<OtpForm busy={false} error={{}} agreement={<span />} submitLabel="登录并进入消费者商城" onChallenge={vi.fn(async () => actionSuccess(issued))} onSubmit={submit} />);
     const subject = screen.getByLabelText(/登录账号或已绑定手机号/);
 
     await user.type(subject, '13800000000');
@@ -67,7 +72,7 @@ describe('OTP journey', () => {
     await user.clear(subject);
     await user.type(subject, '13900000000');
     await user.type(screen.getByLabelText('短信验证码'), '123456');
-    await user.click(screen.getByRole('button', { name: '登录' }));
+    await user.click(screen.getByRole('button', { name: '登录并进入消费者商城' }));
 
     expect(screen.queryByLabelText('验证码状态')).toBeNull();
     expect(submit).toHaveBeenCalledWith('13900000000', '', '123456');

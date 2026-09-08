@@ -7,8 +7,10 @@ import type { Bootstrap } from '../../bootstrap';
 import { AuthCard } from '../../../shell/AuthCard';
 import { AuthShell } from '../../../shell/AuthShell';
 import { Alert } from '../../../shared/ui/Alert';
+import { AuthSwitch } from '../../../shared/ui/AuthSwitch';
 import { LegalAgreement } from '../../../shared/ui/LegalAgreement';
 import { TargetPicker } from '../../../shared/ui/TargetPicker';
+import { targetTitle } from '../../../shared/model/Target';
 import { InvitationForm } from './InvitationForm';
 import { InvitationJourney } from './InvitationJourney';
 
@@ -33,6 +35,7 @@ export interface RegistrationPageProps {
 
 export function RegistrationPage(props: Readonly<RegistrationPageProps>) {
   const first = props.stage === undefined;
+  const destination = targetTitle(props.target);
   return (
     <AuthShell>
       <AuthCard flow="registration" stage={first ? 1 : 2} onBack={props.onBack}>
@@ -48,7 +51,7 @@ export function RegistrationPage(props: Readonly<RegistrationPageProps>) {
               <CheckCircle2 aria-hidden="true" />
               <div>
                 <h3>注册已完成</h3>
-                <p>请使用刚刚设置的账号和密码登录员工商城。</p>
+                <p>请使用刚刚设置的账号和密码登录{destination}。</p>
               </div>
               <Button tone="primary" className="authfull" onPress={props.onLogin}>
                 <LogIn aria-hidden="true" />
@@ -57,13 +60,14 @@ export function RegistrationPage(props: Readonly<RegistrationPageProps>) {
             </section>
           ) : first ? (
             <div className="authformstack">
-              <TargetPicker label="注册后进入" target={props.target} {...(props.focusTarget ? { focusTarget: props.focusTarget } : {})} busy={props.busy} onTarget={props.onTarget} />
-              <InvitationForm busy={props.busy} {...(props.fields.invitation ? { error: props.fields.invitation } : {})} onSubmit={props.onInvitation} />
-              <LegalAgreement policy={props.bootstrap.legal} accepted={props.accepted} busy={props.busy} {...(props.fields.agreement ? { error: props.fields.agreement } : {})} onAccepted={props.onAccepted} />
-              <Button tone="quiet" className="authloginreturn" onPress={props.onLogin}>
-                <LogIn aria-hidden="true" />
-                已有账号，返回登录
-              </Button>
+              <TargetPicker target={props.target} {...(props.focusTarget ? { focusTarget: props.focusTarget } : {})} busy={props.busy} description="请选择注册完成后要进入的系统，邀请码会再次校验权限。" onTarget={props.onTarget} />
+              <InvitationForm
+                busy={props.busy}
+                {...(props.fields.invitation ? { error: props.fields.invitation } : {})}
+                agreement={<LegalAgreement policy={props.bootstrap.legal} accepted={props.accepted} busy={props.busy} {...(props.fields.agreement ? { error: props.fields.agreement } : {})} onAccepted={props.onAccepted} />}
+                onSubmit={props.onInvitation}
+              />
+              <AuthSwitch destination="login" busy={props.busy} onSwitch={props.onLogin} />
             </div>
           ) : (
             props.stage

@@ -23,7 +23,6 @@ export function useEnrollmentViewModel(
   const [challenge, setChallenge] = useState<Challenge>();
   const [challengeSubject, setChallengeSubject] = useState('');
   const [accepted, setAccepted] = useState(false);
-  const [policy, setPolicy] = useState<'terms' | 'privacy'>();
   const [busy, setBusy] = useState<'code' | 'submit'>();
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
@@ -112,7 +111,6 @@ export function useEnrollmentViewModel(
     setChallenge(undefined);
     setChallengeSubject('');
     setAccepted(false);
-    setPolicy(undefined);
     setNotice('');
     setError('');
     cooldown.clear();
@@ -127,7 +125,6 @@ export function useEnrollmentViewModel(
     form,
     challenge,
     accepted,
-    policy,
     busy,
     notice,
     error,
@@ -137,7 +134,6 @@ export function useEnrollmentViewModel(
     confirmInput,
     update,
     setAccepted,
-    setPolicy,
     setPassword: (value: string) => password.set(value),
     setConfirm: (value: string) => confirm.set(value),
     send,

@@ -9,7 +9,7 @@ export function PolicyDialog({ policy, kind, onAccept, onClose }: Readonly<{ pol
       <div className="authpolicy">
         <div>{body}</div>
         <Button tone="primary" onPress={onAccept}>
-          我已阅读并同意
+          同意并继续
         </Button>
       </div>
     </Dialog>

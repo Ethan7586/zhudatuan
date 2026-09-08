@@ -7,8 +7,10 @@ import { AuthCard } from '../../../shell/AuthCard';
 import { AuthShell } from '../../../shell/AuthShell';
 import { Alert } from '../../../shared/ui/Alert';
 import type { ActionResult } from '../../../shared/ui/ActionResult';
+import { AuthSwitch } from '../../../shared/ui/AuthSwitch';
 import { LegalAgreement } from '../../../shared/ui/LegalAgreement';
 import { TargetPicker } from '../../../shared/ui/TargetPicker';
+import { targetTitle } from '../../../shared/model/Target';
 import { LoginMethod } from './LoginMethod';
 import { OtpForm } from './OtpForm';
 import { PasswordForm } from './PasswordForm';
@@ -44,6 +46,8 @@ export interface LoginPageProps {
 
 export function LoginPage(props: Readonly<LoginPageProps>) {
   const first = props.stage === undefined;
+  const destination = targetTitle(props.target);
+  const agreement = <LegalAgreement policy={props.bootstrap.legal} accepted={props.accepted} busy={props.busy} {...(props.fields.agreement ? { error: props.fields.agreement } : {})} onAccepted={props.onAccepted} />;
   return (
     <AuthShell>
       <AuthCard stage={first ? 1 : 2} onBack={props.onBack}>
@@ -55,11 +59,11 @@ export function LoginPage(props: Readonly<LoginPageProps>) {
           <Alert {...(props.failure ? { failure: props.failure } : {})} {...(props.notice ? { notice: props.notice } : {})} />
           {first ? (
             <div className="authformstack">
-              <TargetPicker target={props.target} {...(props.focusTarget ? { focusTarget: props.focusTarget } : {})} busy={props.busy} onTarget={props.onTarget} />
+              <TargetPicker target={props.target} {...(props.focusTarget ? { focusTarget: props.focusTarget } : {})} busy={props.busy} description="请选择登录成功后要进入的系统。" onTarget={props.onTarget} />
               <LoginMethod method={props.method} methods={props.providers.credentials} busy={props.busy} onChange={props.onMethod} />
               <div id={`auth-panel-${props.method}`} role="tabpanel" aria-labelledby={`auth-tab-${props.method}`} key={`${props.target}:${props.method}`}>
-                {props.method === 'password' ? <PasswordForm busy={props.busy} error={props.fields} onSubmit={props.onPassword} onReset={props.onReset} onRegister={props.onRegister} /> : null}
-                {props.method === 'otp' ? <OtpForm busy={props.busy} error={props.fields} onChallenge={props.onChallenge} onSubmit={props.onOtp} /> : null}
+                {props.method === 'password' ? <PasswordForm busy={props.busy} error={props.fields} agreement={agreement} submitLabel={`登录并进入${destination}`} onSubmit={props.onPassword} onReset={props.onReset} /> : null}
+                {props.method === 'otp' ? <OtpForm busy={props.busy} error={props.fields} agreement={agreement} submitLabel={`登录并进入${destination}`} onChallenge={props.onChallenge} onSubmit={props.onOtp} /> : null}
               </div>
               {props.providersLoading || props.providerFailure || props.providers.federations.length > 0 ? (
                 <div className="authproviders">
@@ -67,7 +71,7 @@ export function LoginPage(props: Readonly<LoginPageProps>) {
                   {props.providerFailure ? <Alert failure={props.providerFailure} onAction={props.onProviderRetry} /> : null}
                 </div>
               ) : null}
-              <LegalAgreement policy={props.bootstrap.legal} accepted={props.accepted} busy={props.busy} {...(props.fields.agreement ? { error: props.fields.agreement } : {})} onAccepted={props.onAccepted} />
+              <AuthSwitch destination="register" busy={props.busy} onSwitch={props.onRegister} />
             </div>
           ) : (
             props.stage

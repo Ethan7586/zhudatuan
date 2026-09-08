@@ -1,28 +1,44 @@
 import { ChoiceButton } from '@shop/design';
-import type { KeyboardEvent } from 'react';
+import { LockKeyhole, MessageSquareText } from 'lucide-react';
+import { useId, type KeyboardEvent } from 'react';
 import type { LoginMethod as Method } from '../../bootstrap';
+import { ChoiceIntro } from '../../../shared/ui/ChoiceIntro';
 
-const LABELS: Readonly<Record<Method, string>> = Object.freeze({ password: '密码登录', otp: '验证码登录' });
+const METHODS = Object.freeze({
+  password: Object.freeze({ label: '密码登录', icon: LockKeyhole }),
+  otp: Object.freeze({ label: '验证码登录', icon: MessageSquareText }),
+}) satisfies Readonly<Record<Method, Readonly<{ label: string; icon: typeof LockKeyhole }>>>;
 
 export function LoginMethod({ method, methods, busy, onChange }: Readonly<{ method: Method; methods: readonly string[]; busy: boolean; onChange: (method: Method) => void }>) {
-  const available = (Object.keys(LABELS) as Method[]).filter((value) => methods.includes(value));
+  const available = (Object.keys(METHODS) as Method[]).filter((value) => methods.includes(value));
+  const titleId = useId();
+  const descriptionId = useId();
   return (
-    <div className="authmethods" role="tablist" aria-label="登录方式">
-      {available.map((value, index) => (
-        <ChoiceButton
-          id={`auth-tab-${value}`}
-          aria-controls={`auth-panel-${value}`}
-          key={value}
-          kind="tab"
-          selected={method === value}
-          disabled={busy}
-          onChoose={() => onChange(value)}
-          onKeyDown={(event) => move(event, index, available, onChange)}
-        >
-          {LABELS[value]}
-        </ChoiceButton>
-      ))}
-    </div>
+    <section className="authmethodsection">
+      <ChoiceIntro step={2} title="登录方式" description="仅切换身份验证方式，不会改变上方所选系统。" titleId={titleId} descriptionId={descriptionId} />
+      <div className="authmethods" role="tablist" aria-labelledby={titleId} aria-describedby={descriptionId}>
+        {available.map((value, index) => {
+          const item = METHODS[value];
+          const Icon = item.icon;
+          return (
+            <ChoiceButton
+              id={`auth-tab-${value}`}
+              aria-controls={`auth-panel-${value}`}
+              key={value}
+              kind="tab"
+              selected={method === value}
+              disabled={busy}
+              onChoose={() => onChange(value)}
+              onKeyDown={(event) => move(event, index, available, onChange)}
+              className="authmethod"
+            >
+              <Icon aria-hidden="true" />
+              {item.label}
+            </ChoiceButton>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

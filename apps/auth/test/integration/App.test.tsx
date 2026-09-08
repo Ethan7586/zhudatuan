@@ -21,9 +21,9 @@ describe('Auth application', () => {
     render(<App />);
     expect(screen.getByText('正在初始化安全登录…')).toBeTruthy();
     expect(await screen.findByRole('heading', { name: '统一账号认证' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: '登录' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '登录并进入消费者商城' })).toBeTruthy();
     expect(screen.queryByRole('tab', { name: '邀请码登录' })).toBeNull();
-    expect(screen.getByRole('button', { name: '新用户注册' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '开始注册' })).toBeTruthy();
     expect(await screen.findByRole('alert')).toBeTruthy();
   });
 });

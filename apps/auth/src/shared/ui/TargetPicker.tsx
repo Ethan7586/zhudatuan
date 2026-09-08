@@ -1,8 +1,9 @@
 import type { AuthTarget } from '@shop/config/client';
-import { CLIENT_BY_ID } from '@shop/config/clientcatalog';
 import { ChoiceButton } from '@shop/design';
-import { Building2, LayoutDashboard, ShoppingBag, Smartphone, Store } from 'lucide-react';
-import { useEffect, useRef, type KeyboardEvent } from 'react';
+import { Building2, Check, LayoutDashboard, ShoppingBag, Smartphone, Store } from 'lucide-react';
+import { useEffect, useId, useRef, type KeyboardEvent } from 'react';
+import { targetTitle } from '../model/Target';
+import { ChoiceIntro } from './ChoiceIntro';
 
 interface TargetOption {
   readonly value: AuthTarget;
@@ -12,31 +13,34 @@ interface TargetOption {
 }
 
 const targets: readonly TargetOption[] = Object.freeze([
-  { value: 'storefront', title: title('storefront'), description: '选购福利与查询订单', icon: ShoppingBag },
-  { value: 'console', title: title('console'), description: '管理商城与企业运营', icon: LayoutDashboard },
+  { value: 'storefront', title: targetTitle('storefront'), description: '进入商城选福利、查订单', icon: ShoppingBag },
+  { value: 'console', title: targetTitle('console'), description: '进入后台管理商城与企业', icon: LayoutDashboard },
 ]);
 const specialized: Readonly<Record<Exclude<AuthTarget, 'storefront' | 'console'>, TargetOption>> = Object.freeze({
-  miniapp: Object.freeze({ value: 'miniapp', title: title('miniapp'), description: '在微信中领取与选购福利', icon: Smartphone }),
-  store: Object.freeze({ value: 'store', title: title('store'), description: '处理核销、履约与门店业务', icon: Store }),
-  supplier: Object.freeze({ value: 'supplier', title: title('supplier'), description: '管理商品、库存与履约协作', icon: Building2 }),
+  miniapp: Object.freeze({ value: 'miniapp', title: targetTitle('miniapp'), description: '进入微信领取与选购福利', icon: Smartphone }),
+  store: Object.freeze({ value: 'store', title: targetTitle('store'), description: '进入工作台处理核销与履约', icon: Store }),
+  supplier: Object.freeze({ value: 'supplier', title: targetTitle('supplier'), description: '进入后台管理商品与库存', icon: Building2 }),
 });
 
-function title(target: AuthTarget): string {
-  const client = CLIENT_BY_ID.get(target);
-  if (!client) throw new Error(`AUTH_TARGET_MISSING:${target}`);
-  return client.title;
-}
-
-export function TargetPicker({ label = '登录后进入', target, focusTarget, busy, onTarget }: Readonly<{ label?: string; target: AuthTarget; focusTarget?: AuthTarget; busy: boolean; onTarget: (target: AuthTarget) => void }>) {
+export function TargetPicker({
+  target,
+  focusTarget,
+  busy,
+  description = '登录成功后将直接进入所选系统。',
+  onTarget,
+}: Readonly<{ target: AuthTarget; focusTarget?: AuthTarget; busy: boolean; description?: string; onTarget: (target: AuthTarget) => void }>) {
   const controls = useRef(new Map<AuthTarget, HTMLButtonElement>());
+  const titleId = useId();
+  const descriptionId = useId();
   const options = target === 'storefront' || target === 'console' ? targets : Object.freeze([specialized[target], ...targets]);
   useEffect(() => {
     if (focusTarget === target) controls.current.get(target)?.focus();
   }, [focusTarget, target]);
   return (
     <fieldset className="authtargets">
-      <legend>{label}</legend>
-      <div role="radiogroup" aria-label={label}>
+      <legend className="sr-only">目标系统</legend>
+      <ChoiceIntro step={1} title="目标系统" description={description} titleId={titleId} descriptionId={descriptionId} />
+      <div role="radiogroup" aria-labelledby={titleId} aria-describedby={descriptionId}>
         {options.map((item, index) => {
           const Icon = item.icon;
           const selected = target === item.value;
@@ -61,6 +65,9 @@ export function TargetPicker({ label = '登录后进入', target, focusTarget, b
               <span className="authtargetcopy">
                 <strong>{item.title}</strong>
                 <small>{item.description}</small>
+              </span>
+              <span className="authtargetstate" aria-hidden="true">
+                <Check />
               </span>
             </ChoiceButton>
           );

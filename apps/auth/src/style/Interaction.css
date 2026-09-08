@@ -10,33 +10,126 @@
     padding-top: var(--sw-space-1-5);
   }
 
-  .authagreement,
-  .enrollmentagreement {
+  .authagreement {
+    overflow: hidden;
+    border: var(--sw-border-width) solid var(--sw-border);
+    border-radius: var(--sw-radius-md);
+    background: var(--sw-surface-subtle);
+    transition:
+      border-color var(--sw-duration-fast) var(--sw-ease-standard),
+      background var(--sw-duration-fast) var(--sw-ease-standard);
+  }
+
+  .authagreement[data-accepted='true'] {
+    border-color: var(--sw-brand);
+    background: var(--sw-brand-faint);
+  }
+
+  .authagreement[data-invalid='true'] {
+    border-color: var(--sw-danger);
+    background: var(--sw-danger-surface);
+  }
+
+  .authagreementcheck {
     display: grid;
+    min-height: var(--sw-min-touch-target);
     grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
     gap: var(--sw-space-1);
-    align-items: start;
-    color: var(--sw-text-secondary);
-    font-size: var(--sw-font-size-caption);
+    padding: var(--sw-space-1) var(--sw-space-1-5);
+    cursor: pointer;
+  }
+
+  .authagreementcheck:hover {
+    background: var(--sw-surface-hover);
+  }
+
+  .authagreementinput {
+    display: grid;
+    width: 1.375rem;
+    height: 1.375rem;
+    margin: 0;
+    appearance: none;
+    border: var(--sw-border-width-strong) solid var(--sw-border-interactive);
+    border-radius: var(--sw-space-0-5);
+    background: var(--sw-surface);
+    color: var(--sw-text-inverse);
+    cursor: pointer;
+    place-content: center;
+  }
+
+  .authagreementinput::before {
+    width: 0.625rem;
+    height: 0.375rem;
+    border-bottom: var(--sw-border-width-strong) solid currentColor;
+    border-left: var(--sw-border-width-strong) solid currentColor;
+    content: '';
+    transform: rotate(-45deg) scale(0);
+    transform-origin: center;
+    transition: transform var(--sw-duration-fast) var(--sw-ease-standard);
+  }
+
+  .authagreementinput:checked {
+    border-color: var(--sw-brand);
+    background: var(--sw-brand);
+  }
+
+  .authagreementinput:checked::before {
+    transform: rotate(-45deg) scale(1);
+  }
+
+  .authagreementinput:focus-visible {
+    outline: var(--sw-focus-width) solid var(--sw-brand);
+    outline-offset: var(--sw-focus-offset);
+  }
+
+  .authagreementinput:disabled,
+  .authagreementcheck:has(.authagreementinput:disabled) {
+    cursor: not-allowed;
+  }
+
+  .authagreementcopy {
+    display: grid;
+    min-width: 0;
+    gap: var(--sw-space-0-5);
+  }
+
+  .authagreementcopy strong {
+    color: var(--sw-text);
+    font-size: var(--sw-font-size-body-sm);
     line-height: var(--sw-line-height-body-sm);
   }
 
-  .authagreement input,
-  .enrollmentagreement input {
-    width: 1.25rem;
-    min-height: 1.25rem;
-    margin-top: var(--sw-space-0-5);
-    accent-color: var(--sw-brand);
+  .authagreementcopy small {
+    color: var(--sw-muted);
+    font-size: var(--sw-font-size-caption);
+    line-height: var(--sw-line-height-caption);
   }
 
-  .authinline {
-    min-height: var(--sw-min-touch-target);
-    border: 0;
-    background: transparent;
-    color: var(--sw-brand-dark);
-    padding: 0 var(--sw-space-0-5);
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
+  .authpolicyactions {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: auto repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: var(--sw-space-1);
+    border-top: var(--sw-border-width) solid var(--sw-border);
+    padding: var(--sw-space-0-5) var(--sw-space-1);
+  }
+
+  .authpolicyactions > span {
+    color: var(--sw-muted);
+    font-size: var(--sw-font-size-caption);
+    font-weight: var(--sw-font-weight-bold);
+  }
+
+  .authpolicybutton {
+    min-width: 0;
+    --shop-button-min-height: var(--sw-min-touch-target);
+    --shop-button-radius: var(--sw-radius-full);
+    --shop-button-padding: var(--sw-control-gap) var(--sw-space-1);
+    font-size: var(--sw-font-size-caption);
+    text-decoration: none;
+    white-space: nowrap;
   }
 
   .authstatus {
@@ -47,7 +140,9 @@
     text-align: center;
   }
 
-  .authstatus h1 { margin: 0; }
+  .authstatus h1 {
+    margin: 0;
+  }
 
   .authstatusicon {
     width: 2rem;
@@ -55,7 +150,9 @@
     color: var(--sw-brand);
   }
 
-  .authstatuswarning { color: var(--sw-warning-strong); }
+  .authstatuswarning {
+    color: var(--sw-warning-strong);
+  }
 
   .authstatus .authfull {
     width: auto;

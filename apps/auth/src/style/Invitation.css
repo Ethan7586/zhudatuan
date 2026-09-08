@@ -26,10 +26,6 @@
     font-size: var(--sw-font-size-body-sm);
   }
 
-  .authloginreturn {
-    justify-self: center;
-  }
-
   .invitationjourney {
     display: grid;
     gap: var(--sw-space-1);

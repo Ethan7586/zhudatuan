@@ -67,19 +67,27 @@
 
   @media (max-width: 30rem) {
     .authtargets > div,
-    .authsecondaryactions,
-    .authcodegroup {
+    .authcodegroup,
+    .authswitch {
       display: grid;
       grid-template-columns: 1fr;
     }
 
-    .authsecondaryactions > *,
-    .authcodebutton {
+    .authcodebutton,
+    .authswitchbutton {
       width: 100%;
     }
 
-    .authregisterhint {
-      text-align: left;
+    .authpolicyactions {
+      grid-template-columns: 1fr;
+    }
+
+    .authpolicyactions > span {
+      grid-column: auto;
+    }
+
+    .authpolicybutton {
+      width: 100%;
     }
 
     .authalert {
@@ -104,6 +112,8 @@
     .authalert,
     .authnotice,
     .authtarget,
+    .authmethods,
+    .authagreement,
     .membershipchoice {
       border: var(--sw-border-width-strong) solid CanvasText;
     }
@@ -113,6 +123,10 @@
     [data-current='true'] {
       outline: var(--sw-focus-width) solid Highlight;
       outline-offset: var(--sw-focus-offset);
+    }
+
+    .authagreementinput {
+      appearance: auto;
     }
   }
 }

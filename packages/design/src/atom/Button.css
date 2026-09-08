@@ -1,14 +1,14 @@
 .shopbutton {
   display: inline-flex;
-  min-height: var(--sw-control-touch-target);
+  min-height: var(--shop-button-min-height, var(--sw-control-touch-target));
   align-items: center;
   justify-content: center;
   gap: var(--sw-space-1);
-  border: var(--sw-border-width) solid var(--sw-border-strong);
-  border-radius: var(--sw-radius-sm);
-  background: var(--sw-surface);
-  color: var(--sw-text);
-  padding: var(--sw-control-gap) var(--sw-control-padding);
+  border: var(--shop-button-border-width, var(--sw-border-width)) solid var(--shop-button-border, var(--sw-border-strong));
+  border-radius: var(--shop-button-radius, var(--sw-radius-sm));
+  background: var(--shop-button-background, var(--sw-surface));
+  color: var(--shop-button-color, var(--sw-text));
+  padding: var(--shop-button-padding, var(--sw-control-gap) var(--sw-control-padding));
   font-size: var(--sw-font-size-body-sm);
   font-weight: var(--sw-font-weight-bold);
   line-height: var(--sw-line-height-body);
@@ -24,8 +24,9 @@
 }
 
 .shopbutton:is([data-hovered], :hover) {
-  border-color: var(--sw-brand);
-  background: var(--sw-surface-subtle);
+  border-color: var(--shop-button-hover-border, var(--sw-brand));
+  background: var(--shop-button-hover-background, var(--sw-surface-subtle));
+  color: var(--shop-button-hover-color, var(--shop-button-color, var(--sw-text)));
 }
 
 .shopbuttonprimary {
@@ -54,15 +55,16 @@
 }
 
 .shopbuttonquiet {
-  border-color: transparent;
-  background: transparent;
-  color: var(--sw-brand-dark);
+  border-color: var(--shop-button-quiet-border, transparent);
+  background: var(--shop-button-quiet-background, transparent);
+  color: var(--shop-button-quiet-color, var(--sw-brand-dark));
   box-shadow: none;
 }
 
 .shopbuttonquiet:is([data-hovered], :hover) {
-  border-color: transparent;
-  background: var(--sw-brand-light);
+  border-color: var(--shop-button-quiet-hover-border, transparent);
+  background: var(--shop-button-quiet-hover-background, var(--sw-brand-light));
+  color: var(--shop-button-quiet-hover-color, var(--shop-button-quiet-color, var(--sw-brand-dark)));
 }
 
 .shopbuttondanger {
@@ -91,5 +93,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shopbutton { transition: none; }
+  .shopbutton {
+    transition: none;
+  }
 }

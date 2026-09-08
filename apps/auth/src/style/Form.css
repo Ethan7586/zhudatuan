@@ -2,7 +2,7 @@
   .authsteps,
   .authflowlabel,
   .authsurfacelabel,
-  .authsecondaryactions,
+  .authfieldhead,
   .authcodegroup,
   .authlabel {
     display: flex;
@@ -131,6 +131,18 @@
     font-weight: var(--sw-font-weight-bold);
   }
 
+  .authfieldhead {
+    min-width: 0;
+    justify-content: space-between;
+    gap: var(--sw-space-1);
+  }
+
+  .authfieldaction {
+    flex: 0 0 auto;
+    --shop-button-padding: var(--sw-control-gap) var(--sw-space-1);
+    font-size: var(--sw-font-size-caption);
+  }
+
   .authlabel {
     gap: var(--sw-space-0-5);
   }
@@ -162,6 +174,11 @@
     box-shadow: var(--sw-shadow-focus);
   }
 
+  .authinput[aria-invalid='true'] {
+    border-color: var(--sw-danger);
+    box-shadow: var(--sw-shadow-focus-danger);
+  }
+
   .authsecretinput {
     font-family: var(--sw-font-mono);
   }
@@ -181,8 +198,8 @@
     right: var(--sw-space-0-5);
     display: grid;
     width: var(--sw-control-touch-target);
-    border-radius: var(--sw-radius-sm);
-    padding: 0;
+    --shop-button-radius: var(--sw-radius-sm);
+    --shop-button-padding: 0;
     transform: translateY(-50%);
     place-items: center;
   }
