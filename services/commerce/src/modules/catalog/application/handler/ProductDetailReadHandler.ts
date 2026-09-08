@@ -28,9 +28,9 @@ export class ProductDetailReadHandler implements OperationHandler<'catalog.produ
     if (section === undefined) throw new DomainError('VALIDATION_FAILED', { field: 'section' });
     const detail = await this.products.detail(context.transaction, input.path.productid, access.scope.id, access.scope.kind === 'store');
     const skus = detail.skus.map(({ id }) => id);
-    const inventory = await partition(section === 'inventory', () => this.inventory.stock(context.transaction, skus, detail.visibleScopes));
-    const pricing = await partition(section === 'pricing', () => this.pricing.prices(context.transaction, skus, detail.visibleScopes));
-    const qualification = await partition(section === 'qualification', () => this.qualifications.decisions(context.transaction, access.scope.id, qualificationSubjects(detail)));
+    const inventory = await partition(section === 'inventory', async () => inventoryProjection(await this.inventory.stock(context.transaction, skus, detail.visibleScopes)));
+    const pricing = await partition(section === 'pricing', async () => priceProjection(await this.pricing.prices(context.transaction, skus, detail.visibleScopes)));
+    const qualification = await partition(section === 'qualification', async () => qualificationProjection(await this.qualifications.decisions(context.transaction, access.scope.id, qualificationSubjects(detail))));
     const { visibleScopes: _visibleScopes, regionIds: _regionIds, ...base } = detail;
     const gaps = Object.freeze([
       ...(inventory.state === 'unavailable' ? [{ dependency: 'inventory' as const, code: 'DEPENDENCY_UNAVAILABLE' }] : []),
@@ -76,4 +76,22 @@ function dependency(partitionValue: Partition<unknown>, field: string) {
 
 function qualificationSubjects(detail: ProductDetailBase) {
   return Object.freeze(detail.listings.map((listing) => Object.freeze({ listing: listing.id, product: detail.id, category: detail.category_id, partner: detail.owner_partner_id, regions: detail.regionIds })));
+}
+
+function inventoryProjection(rows: readonly Readonly<Record<string, unknown>>[]) {
+  return Object.freeze(
+    rows.map(({ sku, scope, location, onhand, safety, status, version }) => Object.freeze({ sku, scope, location, onhand, safety, status, version }))
+  );
+}
+
+function priceProjection(rows: readonly Readonly<Record<string, unknown>>[]) {
+  return Object.freeze(
+    rows.map(({ sku, scope, currency, amountMinor, compareMinor, bookStatus, effectiveAt, expiresAt, bookVersion, priceVersion }) =>
+      Object.freeze({ sku, scope, currency, amountMinor, compareMinor, bookStatus, effectiveAt, expiresAt, bookVersion, priceVersion })
+    )
+  );
+}
+
+function qualificationProjection(rows: readonly Readonly<{ listing: string; eligible: boolean; policyVersion: number }>[]) {
+  return Object.freeze(rows.map(({ listing, eligible, policyVersion }) => Object.freeze({ listing, eligible, policyVersion })));
 }

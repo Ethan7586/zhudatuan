@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { readHandlerContext } from '../../../../test/HandlerFixture';
+import { OPERATION_SCHEMAS } from '@shop/contract';
 import type { CatalogInventoryPort } from '../../../inventory/public';
 import type { CatalogPricingPort } from '../../../pricing/public';
 import type { CatalogQualificationPort } from '../../../qualification/public';
@@ -51,6 +52,32 @@ describe('ProductDetailReadHandler', () => {
       dependencies: { qualification: { state: 'ready', watermark: '4' } },
     });
     expect(qualifications.decisions).toHaveBeenCalledWith(expect.anything(), expect.any(String), [{ listing: 'listing:one', product: 'product:one', category: 'category:food', partner: null, regions: ['region:east'] }]);
+  });
+
+  it('projects the rich inventory port model into the strict product detail contract', async () => {
+    const inventory = {
+      stock: vi.fn(async () => [
+        {
+          sku: 'sku:one',
+          scope: 'mall:one',
+          location: 'warehouse:one',
+          onhand: '12',
+          safety: '2',
+          reserved: '1',
+          status: 'active',
+          version: '3',
+          watermark: new Date('2026-09-07T08:00:00.000Z'),
+        },
+      ]),
+    } as unknown as CatalogInventoryPort;
+    const handler = new ProductDetailReadHandler(repository(), inventory, { prices: vi.fn() } as unknown as CatalogPricingPort, { decisions: vi.fn() } as unknown as CatalogQualificationPort);
+
+    const reply = await handler.execute({ path: { productid: 'product:one' }, query: { section: 'inventory' }, body: {} } as never, readHandlerContext('catalog.product.detail.read', {} as never));
+
+    expect(reply.body.inventory).toEqual([{ sku: 'sku:one', scope: 'mall:one', location: 'warehouse:one', onhand: '12', safety: '2', status: 'active', version: '3' }]);
+    expect(reply.body.inventory[0]).not.toHaveProperty('reserved');
+    expect(reply.body.inventory[0]).not.toHaveProperty('watermark');
+    expect(() => OPERATION_SCHEMAS['catalog.product.detail.read'].output.parse(reply.body)).not.toThrow();
   });
 });
 
