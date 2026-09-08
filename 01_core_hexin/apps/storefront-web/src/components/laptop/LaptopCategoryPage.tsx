@@ -7,6 +7,16 @@ interface LaptopCategoryPageProps {
   onSelectTab: (tab: LaptopPage) => void;
   surface?: StorefrontWebSurface;
 }
+
+export const DEFAULT_PRICE_RANGE = [0, null] as const;
+
+export function productPriceInRange(
+  price: number,
+  [minimum, maximum]: readonly [number, number | null],
+): boolean {
+  return price >= minimum && (maximum === null || price <= maximum);
+}
+
 export const LaptopCategoryPage: React.FC<LaptopCategoryPageProps> = ({ onSelectTab, surface = 'laptop' }) => {
   const { addToCart, showToast, presentationProducts: MOCK_PRODUCTS } = useMall();
   const homePage = defaultStorefrontWebPage(surface);
@@ -15,13 +25,13 @@ export const LaptopCategoryPage: React.FC<LaptopCategoryPageProps> = ({ onSelect
   const [subsidyOnly, setSubsidyOnly] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<'default' | 'sales' | 'price-asc' | 'price-desc'>('default');
   const [isFilterCollapsed, setIsFilterCollapsed] = useState<boolean>(false);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
+  const [priceRange, setPriceRange] = useState<[number, number | null]>(() => [...DEFAULT_PRICE_RANGE]);
   // Filter products
   let filtered = MOCK_PRODUCTS.filter((p) => {
     if (filterCategory !== 'all' && p.category !== filterCategory) return false;
     if (allowMealCardOnly && !p.allowMealCard) return false;
     if (subsidyOnly && !p.isEnterpriseSubsidized) return false;
-    if (p.welfarePrice < priceRange[0] || p.welfarePrice > priceRange[1]) return false;
+    if (!productPriceInRange(p.welfarePrice, priceRange)) return false;
     return true;
   });
   // Sort products
@@ -119,10 +129,10 @@ export const LaptopCategoryPage: React.FC<LaptopCategoryPageProps> = ({ onSelect
                     <span>-</span>
                     <input
                       type="number"
-                      value={priceRange[1]}
-                      onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                      value={priceRange[1] ?? ''}
+                      onChange={(e) => setPriceRange([priceRange[0], e.target.value === '' ? null : Number(e.target.value)])}
                       className="w-full border border-gray-300 rounded px-1.5 py-0.5 text-center outline-none focus:border-[var(--sw-brand)]"
-                      placeholder="5000"
+                      placeholder="不限"
                     />
                   </div>
                 </div>
@@ -131,7 +141,7 @@ export const LaptopCategoryPage: React.FC<LaptopCategoryPageProps> = ({ onSelect
                     setFilterCategory('all');
                     setAllowMealCardOnly(false);
                     setSubsidyOnly(false);
-                    setPriceRange([0, 5000]);
+                    setPriceRange([...DEFAULT_PRICE_RANGE]);
                   }}
                   className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-1.5 rounded text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors"
                 >
