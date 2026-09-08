@@ -207,7 +207,7 @@ async function ensureLocalCommercialCatalog(database: Client): Promise<void> {
         and (price.expires_at is null or price.expires_at>clock_timestamp())
       order by price.effective_at desc,price.id limit 1) source on true
     where item.pool_id='pool-local-zhudatuan' and item.state='included'
-    on conflict(book_id,sku_id,effective_at) do update set amount_minor=excluded.amount_minor,
+    on conflict(book_id,sku_id,effective_at) do update set id=excluded.id,amount_minor=excluded.amount_minor,
       compare_minor=excluded.compare_minor,expires_at=null`,
     [LOCAL_PRICEBOOK.id]
   );
@@ -223,10 +223,12 @@ async function ensureLocalCommercialCatalog(database: Client): Promise<void> {
     on conflict(scope_id,sku_id,location_id) do update set onhand=excluded.onhand,safety=excluded.safety,
       version=inventory.stockitem.version+1,status='active',updated_at=clock_timestamp()`
   );
-  const readiness = await database.query<{ invalid_listing: number; missing_price: number; missing_stock: number }>(
+  const readiness = await database.query<{ invalid_listing: number; invalid_price: number; missing_price: number; missing_stock: number }>(
     `select
       (select count(*)::integer from catalog.listing listing where listing.pool_id='pool-local-zhudatuan'
         and listing.id!~'^[a-z][a-z0-9]*:[A-Za-z0-9][A-Za-z0-9.:/-]*$') invalid_listing,
+      (select count(*)::integer from pricing.price price where price.book_id=$1
+        and price.id!~'^price:[A-Za-z0-9][A-Za-z0-9.:/-]*$') invalid_price,
       (select count(*)::integer from catalog.poolitem item where item.pool_id='pool-local-zhudatuan' and item.state='included'
         and not exists(select 1 from pricing.price price where price.book_id=$1 and price.sku_id=item.sku_id
           and price.amount_minor>0 and price.effective_at<=clock_timestamp() and (price.expires_at is null or price.expires_at>clock_timestamp()))) missing_price,
@@ -236,7 +238,7 @@ async function ensureLocalCommercialCatalog(database: Client): Promise<void> {
     [LOCAL_PRICEBOOK.id]
   );
   const row = readiness.rows[0];
-  if (!row || row.invalid_listing !== 0 || row.missing_price !== 0 || row.missing_stock !== 0) throw new Error(`LOCAL_COMMERCIAL_CATALOG_INCOMPLETE:${JSON.stringify(row)}`);
+  if (!row || row.invalid_listing !== 0 || row.invalid_price !== 0 || row.missing_price !== 0 || row.missing_stock !== 0) throw new Error(`LOCAL_COMMERCIAL_CATALOG_INCOMPLETE:${JSON.stringify(row)}`);
 }
 
 async function ensureLocalMallCatalog(database: Client): Promise<void> {

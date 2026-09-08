@@ -14,6 +14,8 @@ describe('Pricing domain', () => {
     const offer = Offer.create({ id: 'price:one', book: book.id, sku: 'sku:one', amountMinor: 10000, compareMinor: 12000, currency: book.currency, effectiveAt: '2026-09-01T00:00:00.000Z', expiresAt: null }).effective(now);
     expect(book).toMatchObject({ name: '商城价格簿', state: 'active', version: 1 });
     expect(offer.amount.minor).toBe(10000);
+    expect(Offer.create({ id: 'price:legacy-sku', book: book.id, sku: 'sku-p-101', amountMinor: 100, compareMinor: null, currency: book.currency, effectiveAt: '2026-09-01T00:00:00.000Z', expiresAt: null }).snapshot().sku).toBe('sku-p-101');
+    expect(() => Offer.create({ id: 'price:blank-sku', book: book.id, sku: ' ', amountMinor: 100, compareMinor: null, currency: book.currency, effectiveAt: '2026-09-01T00:00:00.000Z', expiresAt: null })).toThrow();
     expect(() => Offer.create({ id: 'price:bad', book: book.id, sku: 'sku:one', amountMinor: 100, compareMinor: 99, currency: 'CNY', effectiveAt: '2026-09-01T00:00:00.000Z', expiresAt: null })).toThrow();
     expect(() => PriceBook.create({ id: 'pricebook:bad', scope: 'mall:one', currency: 'USD' as never, name: '非法币种' })).toThrow('CURRENCY_UNSUPPORTED');
   });

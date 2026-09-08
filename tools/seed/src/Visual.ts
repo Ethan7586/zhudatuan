@@ -60,7 +60,7 @@ async function ensureProduct(client: Client, product: (typeof products)[number],
   await client.query(
     `insert into pricing.price(id,book_id,sku_id,amount_minor,compare_minor,effective_at,expires_at)
     values('price:visual:'||$1,$4,$1,$2,$3,'2026-01-01T00:00:00Z',null)
-    on conflict(book_id,sku_id,effective_at) do update set amount_minor=excluded.amount_minor,compare_minor=excluded.compare_minor,expires_at=null`,
+    on conflict(book_id,sku_id,effective_at) do update set id=excluded.id,amount_minor=excluded.amount_minor,compare_minor=excluded.compare_minor,expires_at=null`,
     [product.sku, product.amount, product.compare, LOCAL_PRICEBOOK.id]
   );
   await client.query(

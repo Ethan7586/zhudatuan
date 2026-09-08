@@ -57,10 +57,14 @@ export class Offer {
 }
 
 function validate(value: OfferSnapshot): void {
-  if (!/^price:[A-Za-z0-9][A-Za-z0-9.:/-]*$/.test(value.id) || !/^pricebook:/.test(value.book) || !/^sku:/.test(value.sku)) invalid('offer');
+  if (!/^price:[A-Za-z0-9][A-Za-z0-9.:/-]*$/.test(value.id) || !/^pricebook:/.test(value.book) || !stableReference(value.sku)) invalid('offer');
   if (value.amount.minor < 0 || (value.compare !== null && (value.compare.minor < value.amount.minor || !value.compare.currency.equals(value.amount.currency)))) invalid('amount');
   if (value.expiresAt !== null && Date.parse(value.expiresAt) <= Date.parse(value.effectiveAt)) invalid('period');
   if (!Number.isSafeInteger(value.version) || value.version < 1) invalid('version');
+}
+
+function stableReference(value: string): boolean {
+  return value.length > 0 && value.length <= 512 && value === value.trim() && !/\s/.test(value);
 }
 
 function iso(value: string): string {
