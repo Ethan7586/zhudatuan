@@ -1,7 +1,7 @@
 import { Button, Dialog, Form } from '@shop/design';
 import { targetTitle } from '../../../shared/model/Target';
-import { LegalAgreement } from '../../../shared/ui/LegalAgreement';
-import { canEditDisplayName } from '../model/RegistrationPolicy';
+import { LegalAgreement } from '../../../shared/view/LegalAgreement';
+import { canEditDisplayName } from '../model/EnrollmentPolicy';
 import type { EnrollmentViewModel } from '../viewmodel/EnrollmentViewModel';
 import { EnrollmentError } from './EnrollmentError';
 import { MobileProof } from './MobileProof';

@@ -7,7 +7,7 @@ import { RouteRegistry } from '../app/RouteRegistry';
 import { ROUTES } from '../generated/RouteBinding';
 import { AuthCard } from '../shell/AuthCard';
 import { AuthShell } from '../shell/AuthShell';
-import { Loading } from '../shared/ui/Loading';
+import { Loading } from '../shared/view/Loading';
 import { NotFound } from './RouteError';
 
 export function Router({ dependencies }: Readonly<{ dependencies: Dependencies }>) {

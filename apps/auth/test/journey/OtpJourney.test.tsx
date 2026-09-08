@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { OtpForm } from '../../src/feature/login/view/OtpForm';
-import { actionFailure, actionSuccess } from '../../src/shared/ui/ActionResult';
+import { actionFailure, actionSuccess } from '../../src/shared/model/ActionResult';
 import type { Challenge } from '../../src/feature/challenge';
 
 const issued: Challenge = Object.freeze({

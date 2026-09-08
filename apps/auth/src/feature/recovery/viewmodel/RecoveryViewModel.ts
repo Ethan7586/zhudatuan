@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Bootstrap } from '../../bootstrap';
 import { challengeNotice, useCooldown, type Challenge } from '../../challenge';
 import { clearSecretInput, Secret } from '../../../shared/security/Secret';
-import type { ActionResult } from '../../../shared/ui/ActionResult';
+import type { ActionResult } from '../../../shared/model/ActionResult';
 
 export function useRecoveryViewModel(
   bootstrap: Bootstrap,

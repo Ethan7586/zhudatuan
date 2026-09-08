@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { LoginMethod } from '../../src/feature/login/view/LoginMethod';
-import { TargetPicker } from '../../src/shared/ui/TargetPicker';
+import { TargetPicker } from '../../src/shared/view/TargetPicker';
 
 describe('keyboard journey', () => {
   it('moves through login method tabs with arrows, Home and End', async () => {

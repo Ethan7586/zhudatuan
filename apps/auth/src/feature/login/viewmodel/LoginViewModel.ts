@@ -8,7 +8,7 @@ import { challengeNotice, type Challenge, type ChallengeRequest } from '../../ch
 import type { LoginMethod } from '../../bootstrap';
 import type { Provider } from '../../federation';
 import type { Membership } from '../../membership';
-import { actionFailure, actionSuccess, type ActionResult } from '../../../shared/ui/ActionResult';
+import { actionFailure, actionSuccess, type ActionResult } from '../../../shared/model/ActionResult';
 import type { EnrollmentCompletion } from '../../enrollment';
 import { loginBusy, useLoginCommand } from './LoginCommandViewModel';
 import { useLoginProviderViewModel } from './LoginProviderViewModel';

@@ -2,7 +2,7 @@ import { ChoiceButton } from '@shop/design';
 import { LockKeyhole, MessageSquareText } from 'lucide-react';
 import { useId, type KeyboardEvent } from 'react';
 import type { LoginMethod as Method } from '../../bootstrap';
-import { ChoiceIntro } from '../../../shared/ui/ChoiceIntro';
+import { ChoiceIntro } from '../../../shared/view/ChoiceIntro';
 
 const METHODS = Object.freeze({
   password: Object.freeze({ label: '密码登录', icon: LockKeyhole }),

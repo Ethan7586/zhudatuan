@@ -1,6 +1,6 @@
 import type { AuthTarget } from '@shop/config/client';
 import type { OperationOutputFor } from '@shop/contract';
-import type { RegistrationPolicy } from '../../enrollment';
+import type { RegistrationPolicy } from '../../../shared/model/RegistrationPolicy';
 
 export type LoginMethod = Exclude<OperationOutputFor<'identity.bootstrap.read'>['methods'][number], 'federation'>;
 

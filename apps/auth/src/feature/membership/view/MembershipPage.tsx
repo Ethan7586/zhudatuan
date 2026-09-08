@@ -2,8 +2,8 @@ import type { FailureView } from '@shop/presentation';
 import type { Membership } from '../model/Membership';
 import { AuthCard } from '../../../shell/AuthCard';
 import { AuthShell } from '../../../shell/AuthShell';
-import { Alert } from '../../../shared/ui/Alert';
-import { Loading } from '../../../shared/ui/Loading';
+import { Alert } from '../../../shared/view/Alert';
+import { Loading } from '../../../shared/view/Loading';
 import { MembershipList } from './MembershipList';
 
 export function MembershipPage({ memberships, busy, failure, onSelect, onRestart }: Readonly<{ memberships: readonly Membership[]; busy: boolean; failure?: FailureView; onSelect: (membership: Membership) => void; onRestart: () => void }>) {

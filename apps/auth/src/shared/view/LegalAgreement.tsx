@@ -1,7 +1,7 @@
 import { Button } from '@shop/design';
 import { FileText, ShieldCheck } from 'lucide-react';
 import { lazy, useId, useState } from 'react';
-import type { RegistrationPolicy } from '../../feature/enrollment';
+import type { RegistrationPolicy } from '../model/RegistrationPolicy';
 
 const PolicyDialog = lazy(() => import('./PolicyDialog').then((module) => ({ default: module.PolicyDialog })));
 

@@ -1,7 +1,7 @@
 import { Button, Dialog } from '@shop/design';
 import type { FailureView } from '@shop/presentation';
 import { ChallengeStatus, CodeField } from '../../challenge';
-import { Alert } from '../../../shared/ui/Alert';
+import { Alert } from '../../../shared/view/Alert';
 import type { RecoveryViewModel } from '../viewmodel/RecoveryViewModel';
 
 export function RecoveryDialog({ open, viewmodel, failure }: Readonly<{ open: boolean; viewmodel: RecoveryViewModel; failure?: FailureView }>) {

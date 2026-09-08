@@ -2,7 +2,7 @@ import { Button } from '@shop/design';
 import { ArrowRight, Lock, RefreshCw, Smartphone } from 'lucide-react';
 import { useId, type ReactNode } from 'react';
 import { ChallengeStatus, CodeField, type Challenge } from '../../challenge';
-import type { ActionResult } from '../../../shared/ui/ActionResult';
+import type { ActionResult } from '../../../shared/model/ActionResult';
 import { useOtpForm } from '../viewmodel/LoginReducer';
 
 export function OtpForm({

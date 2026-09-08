@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { challengeNotice, useCooldown, type Challenge, type ChallengeRequest } from '../../challenge';
 import type { PasswordPolicy } from '../../bootstrap';
 import { clearSecretInput, Secret } from '../../../shared/security/Secret';
-import type { ActionResult } from '../../../shared/ui/ActionResult';
+import type { ActionResult } from '../../../shared/model/ActionResult';
 import type { EnrollmentCompletion, EnrollmentState } from '../model/Enrollment';
 
 interface EnrollmentForm {

@@ -1,6 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { presentError, type FailureView } from '@shop/presentation';
-import { Alert } from '../shared/ui/Alert';
+import { Alert } from '../shared/view/Alert';
 import { AuthCard } from '../shell/AuthCard';
 import { AuthShell } from '../shell/AuthShell';
 

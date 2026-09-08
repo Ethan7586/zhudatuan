@@ -1,6 +1,6 @@
 import type { AuthTarget } from '@shop/config/client';
 import type { OperationOutputFor } from '@shop/contract';
-import type { RegistrationPolicy } from './RegistrationPolicy';
+import type { RegistrationPolicy } from '../../../shared/model/RegistrationPolicy';
 
 type EnrollmentDto = OperationOutputFor<'identity.enrollments.read'>;
 export type EnrollmentTarget = EnrollmentDto['target'] & AuthTarget;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { clearSecretInput, Secret } from '../../../shared/security/Secret';
-import type { ActionResult } from '../../../shared/ui/ActionResult';
+import type { ActionResult } from '../../../shared/model/ActionResult';
 import { useCooldown, type Challenge } from '../../challenge';
 
 export function usePasswordForm(onSubmit: (subject: string, password: string) => void) {

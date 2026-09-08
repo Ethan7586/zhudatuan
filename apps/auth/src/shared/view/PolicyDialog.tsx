@@ -1,5 +1,5 @@
 import { Button, Dialog } from '@shop/design';
-import type { RegistrationPolicy } from '../../feature/enrollment/model/RegistrationPolicy';
+import type { RegistrationPolicy } from '../model/RegistrationPolicy';
 
 export function PolicyDialog({ policy, kind, onAccept, onClose }: Readonly<{ policy: RegistrationPolicy; kind?: 'terms' | 'privacy'; onAccept: () => void; onClose: () => void }>) {
   const title = kind === 'terms' ? policy.termsTitle : policy.privacyTitle;

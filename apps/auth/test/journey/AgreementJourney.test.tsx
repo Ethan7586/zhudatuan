@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { LegalAgreement } from '../../src/shared/ui/LegalAgreement';
+import { LegalAgreement } from '../../src/shared/view/LegalAgreement';
 import { bootstrap } from '../TestData';
 
 describe('legal agreement journey', () => {
