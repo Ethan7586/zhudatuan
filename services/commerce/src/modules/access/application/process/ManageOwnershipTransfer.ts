@@ -27,7 +27,7 @@ export class ManageOwnershipTransfer {
   async read(input: OperationInputFor<'access.ownership.read'>, context: HandlerContext<'access.ownership.read'>): Promise<OwnershipView> {
     void input;
     const access = requireSession(context.security);
-    const view = await this.repository.read(context.transaction, access.scope.id, access.membership.id);
+    const view = await this.repository.read(context.transaction, ownershipScope(access), access.membership.id);
     if (!view) throw new DomainError('RESOURCE_NOT_FOUND');
     return view;
   }
@@ -89,7 +89,8 @@ export class ManageOwnershipTransfer {
     const formerRole = optionalText(body.formerOwnerRole);
     const reason = textField(body, 'reason', 500).trim();
     if (reason.length < 4) throw new DomainError('VALIDATION_FAILED', { field: 'reason' });
-    const ownership = await this.repository.lockOwnership(context.transaction, access.scope.id);
+    const scope = ownershipScope(access);
+    const ownership = await this.repository.lockOwnership(context.transaction, scope);
     if (!ownership) throw new DomainError('RESOURCE_NOT_FOUND');
     const members = await this.repository.lockMembers(context.transaction, [ownership.membership, target].sort());
     const source = members.find((membership) => membership.id === ownership.membership);
@@ -97,10 +98,10 @@ export class ManageOwnershipTransfer {
     if (!source || !candidate) throw new DomainError('RESOURCE_NOT_FOUND');
     const expectedVersion = requiredVersion(context.expectedVersion);
     this.policy.assertDraft({ actor: access.membership.id, source, target: candidate, ownership, expectedVersion, targetVersion, mode, formerRole });
-    if (await this.repository.activeTransfer(context.transaction, access.scope.id, context.traceId)) throw new DomainError('OWNER_TRANSFER_PENDING');
-    const formerOwnerRoleVersion = await this.repository.roleVersion(context.transaction, formerRole, access.scope.id);
+    if (await this.repository.activeTransfer(context.transaction, scope, context.traceId)) throw new DomainError('OWNER_TRANSFER_PENDING');
+    const formerOwnerRoleVersion = await this.repository.roleVersion(context.transaction, formerRole, scope);
     if (formerRole !== null && formerOwnerRoleVersion === null) throw new DomainError('OWNER_TRANSFER_ROLE_INVALID');
-    const impact = await this.repository.impact(context.transaction, access.scope.id, [ownership.membership, target]);
+    const impact = await this.repository.impact(context.transaction, scope, [ownership.membership, target]);
     const started = this.now().getTime();
     const coolingUntil = new Date(started + 24 * 60 * 60_000);
     const expiresAt = new Date(started + 7 * 24 * 60 * 60_000);
@@ -143,11 +144,12 @@ export class ManageOwnershipTransfer {
 
   private async prepareExisting<TKey extends OperationId>(transferId: string, context: WriteHandlerContext<TKey>, action: 'accept' | 'cancel') {
     const access = requireSession(context.security);
-    const transfer = await this.repository.lockTransfer(context.transaction, access.scope.id, transferId);
+    const scope = ownershipScope(access);
+    const transfer = await this.repository.lockTransfer(context.transaction, scope, transferId);
     if (!transfer) throw new DomainError('RESOURCE_NOT_FOUND');
     const active = transfer.current(this.now());
     if (active.state === 'expired') throw new DomainError('OWNER_TRANSFER_EXPIRED');
-    const ownership = await this.repository.lockOwnership(context.transaction, access.scope.id);
+    const ownership = await this.repository.lockOwnership(context.transaction, scope);
     if (!ownership) throw new DomainError('RESOURCE_NOT_FOUND');
     if (action === 'accept') {
       if (this.now() < active.coolingUntil) throw new DomainError('OWNER_TRANSFER_COOLING_PERIOD');
@@ -173,6 +175,10 @@ export class ManageOwnershipTransfer {
       }),
     });
   }
+}
+
+function ownershipScope(access: Readonly<{ organization: string; scope: Readonly<{ tenant?: string }> }>): string {
+  return access.scope.tenant ?? access.organization;
 }
 
 function ownerMode(value: string): FormerOwnerMode {

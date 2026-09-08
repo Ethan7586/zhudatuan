@@ -100,7 +100,29 @@ describe('access ownership transfer', () => {
       impact: vi.fn(async () => ({ people: 2, scopes: 7 })),
     };
     const transaction = {} as WriteTransactionContext;
-    const context = { ...readHandlerContext('access.ownership.transfers.preview', transaction), transaction, expectedVersion: 5 } as WriteHandlerContext<'access.ownership.transfers.preview'>;
+    const base = readHandlerContext('access.ownership.transfers.preview', transaction);
+    if (base.security.kind !== 'session') throw new Error('TEST_SESSION_REQUIRED');
+    const context = {
+      ...base,
+      transaction,
+      expectedVersion: 5,
+      security: {
+        kind: 'session',
+        access: {
+          ...base.security.access,
+          organization: 'mall:one',
+          scope: {
+            id: 'enterprise:one',
+            kind: 'enterprise',
+            tenant: 'mall:one',
+            path: [
+              { kind: 'mall', id: 'mall:one' },
+              { kind: 'enterprise', id: 'enterprise:one' },
+            ],
+          },
+        },
+      },
+    } as WriteHandlerContext<'access.ownership.transfers.preview'>;
     const preview = await new ManageOwnershipTransfer(repository as never, () => new Date('2026-09-04T00:00:00.000Z')).previewCreate(
       { body: { targetMembership: 'membership:target', targetAccessVersion: 9, formerOwnerMode: 'retain_admin', formerOwnerRole: 'role:operator', reason: '负责人岗位调整' } },
       context
@@ -115,7 +137,49 @@ describe('access ownership transfer', () => {
       coolingUntil: '2026-09-05T00:00:00.000Z',
       expiresAt: '2026-09-11T00:00:00.000Z',
     });
+    expect(repository.lockOwnership).toHaveBeenCalledWith(transaction, 'mall:one');
+    expect(repository.activeTransfer).toHaveBeenCalledWith(transaction, 'mall:one', 'trace:test');
+    expect(repository.roleVersion).toHaveBeenCalledWith(transaction, 'role:operator', 'mall:one');
+    expect(repository.impact).toHaveBeenCalledWith(transaction, 'mall:one', ['membership:test', 'membership:target']);
     expect(repository).not.toHaveProperty('create.mock.calls.0');
+  });
+
+  it('reads the tenant ownership boundary while a child enterprise is selected', async () => {
+    const ownership = {
+      state: 'active' as const,
+      version: 5,
+      mobileReady: true,
+      owner: { membership: 'membership:test', member: 'member:test', principal: 'principal:test', displayName: '测试所有者' },
+      candidates: [],
+      formerOwnerRoles: [],
+      pending: null,
+    };
+    const repository = { read: vi.fn(async () => ownership) };
+    const transaction = {} as WriteTransactionContext;
+    const base = readHandlerContext('access.ownership.read', transaction);
+    if (base.security.kind !== 'session') throw new Error('TEST_SESSION_REQUIRED');
+    const context = {
+      ...base,
+      security: {
+        kind: 'session',
+        access: {
+          ...base.security.access,
+          organization: 'tenant:one',
+          scope: {
+            id: 'enterprise:one',
+            kind: 'enterprise',
+            tenant: 'tenant:one',
+            path: [
+              { kind: 'tenant', id: 'tenant:one' },
+              { kind: 'enterprise', id: 'enterprise:one' },
+            ],
+          },
+        },
+      },
+    } as typeof base;
+
+    await expect(new ManageOwnershipTransfer(repository as never).read({}, context)).resolves.toBe(ownership);
+    expect(repository.read).toHaveBeenCalledWith(transaction, 'tenant:one', 'membership:test');
   });
 
   it('keeps a Chinese permission search projection and GIN index in the migration contract', async () => {
