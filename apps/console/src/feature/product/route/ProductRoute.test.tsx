@@ -98,6 +98,7 @@ describe('Product route', () => {
 
     expect(await screen.findByRole('table', { name: '商品列表' })).toBeTruthy();
     expect(screen.getByText('办公福利礼盒')).toBeTruthy();
+    expect(screen.getByText(/^商品编号 \d{4} \d{4}$/)).toBeTruthy();
     expect(screen.getByRole('columnheader', { name: '分类 / 来源' })).toBeTruthy();
     expect(screen.getByRole('columnheader', { name: 'SKU 摘要' })).toBeTruthy();
     expect(screen.getByRole('columnheader', { name: '商城覆盖' })).toBeTruthy();

@@ -61,7 +61,7 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                       }}
                     >
                       <strong>{row.title}</strong>
-                      <span>{chineseReference('商品', row.product_id)}</span>
+                      <span>{chineseReference('商品编号', row.product_id)}</span>
                     </button>
                   </div>
                 </td>

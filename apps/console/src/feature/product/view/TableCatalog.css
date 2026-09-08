@@ -112,8 +112,8 @@
   font-weight: 650;
 }
 .productidentity span {
-  color: var(--sw-disabled);
-  font-size: 9px;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
 }
 .productthumbnail,
 .productdrawerthumbnail {
