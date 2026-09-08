@@ -1,3 +1,4 @@
+import { Button } from '@shop/design';
 import type { FinanceColumnKey } from '../model/Finance';
 
 const columns: readonly Readonly<{ key: FinanceColumnKey; label: string }>[] = Object.freeze([
@@ -28,9 +29,9 @@ export function FinanceColumnSettings({
     <section id="financecolumnsettings" className="financecolumnsettings" aria-label="对账列表列设置">
       <header>
         <strong>列设置</strong>
-        <button type="button" onClick={onClose}>
+        <Button tone="quiet" onPress={onClose}>
           完成
-        </button>
+        </Button>
       </header>
       <p>选择当前设备要显示的列；批次、勾选与操作列固定显示。</p>
       <div>

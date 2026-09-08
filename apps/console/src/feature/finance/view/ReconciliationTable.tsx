@@ -1,3 +1,4 @@
+import { Button } from '@shop/design';
 import { formatMinor } from '../../../shared/ui/Format';
 import { chineseDomainLabel, chineseProviderLabel, chineseReference } from '@shop/presentation';
 import type { ReactNode } from 'react';
@@ -68,47 +69,66 @@ function ReconciliationRow({
   const canOpen = row.items.length > 0;
   return (
     <tr className={row.state === 'difference' || row.state === 'resolutionpending' ? 'hasdifference' : undefined} onClick={canOpen ? onOpen : undefined}>
-      <td className="financecheckcell" onClick={(event) => event.stopPropagation()}>
+      <td className="financecheckcell" data-label="选择" onClick={(event) => event.stopPropagation()}>
         <input type="checkbox" aria-label={`选择${chineseReference('对账批次', row.id)}`} checked={checked} onChange={onToggle} />
       </td>
-      <td>
+      <td data-label="对账批次 / 账期">
         <span className="financecellpair">
           <strong>{chineseReference('对账批次', row.id)}</strong>
           <small>{row.period}</small>
         </span>
       </td>
       {visible.has('channel') ? (
-        <td>
+        <td data-label="渠道 / 数据源">
           <span className="financecellpair">
             <strong>{chineseProviderLabel(row.provider)}</strong>
             <small>{row.statementRef ? chineseReference('渠道账单', row.statementRef) : '未关联渠道账单'}</small>
           </span>
         </td>
       ) : null}
-      {visible.has('scope') ? <td>{chineseReference('合作方', row.partnerId)}</td> : null}
-      {visible.has('matched') ? <td><span className="financecellpair"><strong>{count(row.itemCounts.matched)}</strong><small>{row.statementHash ? '账单校验完成' : '等待账单校验'}</small></span></td> : null}
-      {visible.has('differences') ? <td>{count(row.itemCounts.difference, true)}</td> : null}
-      {visible.has('channelAmount') ? <td className="financemoney">{formatMinor(row.debitMinor)}</td> : null}
-      {visible.has('ledgerAmount') ? <td className="financemoney">{formatMinor(row.creditMinor)}</td> : null}
-      {visible.has('differenceAmount') ? <td className={row.differenceMinor === 0 ? 'financemoney' : 'financemoney financedifference'}>{formatMinor(row.differenceMinor)}</td> : null}
+      {visible.has('scope') ? <td data-label="所属范围">{chineseReference('合作方', row.partnerId)}</td> : null}
+      {visible.has('matched') ? (
+        <td data-label="已匹配">
+          <span className="financecellpair">
+            <strong>{count(row.itemCounts.matched)}</strong>
+            <small>{row.statementHash ? '账单校验完成' : '等待账单校验'}</small>
+          </span>
+        </td>
+      ) : null}
+      {visible.has('differences') ? <td data-label="差异">{count(row.itemCounts.difference, true)}</td> : null}
+      {visible.has('channelAmount') ? (
+        <td className="financemoney" data-label="渠道金额">
+          {formatMinor(row.debitMinor)}
+        </td>
+      ) : null}
+      {visible.has('ledgerAmount') ? (
+        <td className="financemoney" data-label="账本金额">
+          {formatMinor(row.creditMinor)}
+        </td>
+      ) : null}
+      {visible.has('differenceAmount') ? (
+        <td className={row.differenceMinor === 0 ? 'financemoney' : 'financemoney financedifference'} data-label="差额">
+          {formatMinor(row.differenceMinor)}
+        </td>
+      ) : null}
       {visible.has('state') ? (
-        <td>
+        <td data-label="状态">
           <FinanceState state={row.state} />
         </td>
       ) : null}
-      {visible.has('time') ? <td>{formatTime(row.updatedAt)}</td> : null}
-      <td>
+      {visible.has('time') ? <td data-label="完成 / 更新时间">{formatTime(row.updatedAt)}</td> : null}
+      <td data-label="操作">
         {canOpen ? (
-          <button
+          <Button
             className="financeviewbutton"
-            type="button"
+            tone="quiet"
             onClick={(event) => {
               event.stopPropagation();
-              onOpen();
             }}
+            onPress={onOpen}
           >
             查看差异
-          </button>
+          </Button>
         ) : (
           <span className="financenodifference">无差异</span>
         )}
@@ -153,15 +173,15 @@ export function FinancePagination({
       </label>
       <div>
         {hasCursor ? (
-          <button type="button" aria-label="返回第一页" onClick={() => onCursor()}>
+          <Button tone="quiet" aria-label="返回第一页" onPress={() => onCursor()}>
             <FinanceIcon name="arrowLeft" />
-          </button>
+          </Button>
         ) : null}
         <span>当前页</span>
         {page.nextCursor === undefined ? null : (
-          <button type="button" aria-label="下一页" onClick={() => onCursor(page.nextCursor)}>
+          <Button tone="quiet" aria-label="下一页" onPress={() => onCursor(page.nextCursor)}>
             <FinanceIcon name="arrowRight" />
-          </button>
+          </Button>
         )}
       </div>
     </footer>

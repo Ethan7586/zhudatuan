@@ -211,7 +211,7 @@
 }
 .financedrawerfooter button {
   min-width: 90px;
-  min-height: 34px;
+  min-height: var(--sw-control-touch-target);
 }
 .financedrawerfooter .financesubmitreview {
   min-width: 130px;

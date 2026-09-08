@@ -82,7 +82,7 @@
 
 .financefilters select {
   width: 100%;
-  min-height: 36px;
+  min-height: var(--sw-control-touch-target);
   border: 1px solid var(--sw-border-strong);
   border-radius: 6px;
   background: var(--sw-surface);
@@ -118,7 +118,7 @@
 
 .financefilterstate button,
 .financefilterclear {
-  min-height: 36px;
+  min-height: var(--sw-control-touch-target);
   border: 1px solid var(--sw-border-strong);
   border-radius: 6px;
   background: var(--sw-surface);
@@ -145,7 +145,7 @@
 }
 
 .financefacetsummary button {
-  min-height: 32px;
+  min-height: var(--sw-control-touch-target);
   border: 1px solid var(--sw-border-strong);
   border-radius: 6px;
   background: var(--sw-surface);
@@ -172,8 +172,14 @@
 }
 
 .financefacetgrid span,
-.financefacetgrid small { color: var(--sw-muted); font-size: 10px; }
-.financefacetgrid strong { color: var(--sw-text); font-size: 20px; }
+.financefacetgrid small {
+  color: var(--sw-muted);
+  font-size: 10px;
+}
+.financefacetgrid strong {
+  color: var(--sw-text);
+  font-size: 20px;
+}
 .financecolumnbar > p {
   display: flex;
   align-items: center;
@@ -182,4 +188,6 @@
   color: var(--sw-muted);
   font-size: 10px;
 }
-.financecolumnbar > p svg { color: var(--sw-brand); }
+.financecolumnbar > p svg {
+  color: var(--sw-brand);
+}

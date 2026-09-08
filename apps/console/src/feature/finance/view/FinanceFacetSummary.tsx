@@ -1,3 +1,4 @@
+import { Button } from '@shop/design';
 import type { FinanceFacetGroup } from '../model/Finance';
 import type { OverviewViewModel } from '../viewmodel/OverviewViewModel';
 
@@ -13,9 +14,7 @@ export function FinanceFacetSummary({ model }: Readonly<{ model: OverviewViewMod
     return (
       <section className="financefacetsummary" role="alert">
         <span>{model.facets.error}</span>
-        <button type="button" onClick={model.facets.retry}>
-          重新读取
-        </button>
+        <Button onPress={model.facets.retry}>重新读取</Button>
       </section>
     );
   const facets = model.facets.data;

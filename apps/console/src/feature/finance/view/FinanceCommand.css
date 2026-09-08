@@ -23,7 +23,9 @@
   font: inherit;
 }
 
-.financecommandform textarea { resize: vertical; }
+.financecommandform textarea {
+  resize: vertical;
+}
 
 .financecommandconfirm {
   display: grid;
@@ -34,7 +36,11 @@
   line-height: 1.55;
 }
 
-.financecommandform > p { margin: 0; color: var(--sw-warning-strong); font-size: 9px; }
+.financecommandform > p {
+  margin: 0;
+  color: var(--sw-warning-strong);
+  font-size: 9px;
+}
 
 .financecommandform > div,
 .financecommandreceipt > button {
@@ -45,7 +51,7 @@
 
 .financecommandform button,
 .financecommandreceipt > button {
-  min-height: 34px;
+  min-height: var(--sw-control-touch-target);
   border: 1px solid var(--sw-border-strong);
   border-radius: 5px;
   background: var(--sw-surface);
@@ -59,8 +65,13 @@
   color: var(--sw-surface);
 }
 
-.financecommandform button:disabled { opacity: 0.48; }
-.financecommandreceipt { display: grid; gap: 10px; }
+.financecommandform button:disabled {
+  opacity: 0.48;
+}
+.financecommandreceipt {
+  display: grid;
+  gap: 10px;
+}
 
 .financepreviewnotice {
   display: block;

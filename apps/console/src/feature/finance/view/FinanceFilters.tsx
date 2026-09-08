@@ -1,3 +1,4 @@
+import { Button } from '@shop/design';
 import type { FinanceFacetGroup } from '../model/Finance';
 import type { ReconciliationViewModel } from '../viewmodel/ReconciliationViewModel';
 
@@ -16,9 +17,7 @@ export function FinanceFilters({ model }: Readonly<{ model: ReconciliationViewMo
     return (
       <section className="financefilterstate" role="alert">
         <span>{facets.error}</span>
-        <button type="button" onClick={facets.retry}>
-          重新读取
-        </button>
+        <Button onPress={facets.retry}>重新读取</Button>
       </section>
     );
   if (!facets.data) return null;
@@ -30,9 +29,9 @@ export function FinanceFilters({ model }: Readonly<{ model: ReconciliationViewMo
       <FacetSelect label="状态" group={facets.data.states} value={model.filters.state} filter="status" onChange={model.actions.filter} />
       <FacetSelect label="差异类型" group={facets.data.differenceTypes} value={model.filters.differenceType} filter="difference" onChange={model.actions.filter} />
       {model.filters.active > 0 ? (
-        <button className="financefilterclear" type="button" onClick={model.actions.clearFilters}>
+        <Button className="financefilterclear" tone="quiet" onPress={model.actions.clearFilters}>
           清除 {model.filters.active} 项筛选
-        </button>
+        </Button>
       ) : null}
     </form>
   );

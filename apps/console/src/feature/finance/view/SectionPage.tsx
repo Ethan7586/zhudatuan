@@ -11,8 +11,8 @@ import { FinanceActionDialog } from './FinanceActionDialog';
 import { FinanceHeader } from './FinanceHeader';
 import { FinanceRecordDrawer } from './FinanceRecordDrawer';
 import { FinanceTabs } from './FinanceTabs';
-import './FinanceWorkspace.css';
 import './FinanceSection.css';
+import './FinanceWorkspace.css';
 
 const metadata: Readonly<Record<FinanceSection, Readonly<{ title: string; description: string; record: string }>>> = Object.freeze({
   entries: { title: '账本分录', record: '分录', description: '核对服务端不可变借贷事实。分录只追加，前端不合计、不调账。' },
@@ -30,10 +30,18 @@ export function SectionPage({ title, model, importing }: Readonly<{ title: strin
   const columns: readonly DataColumn<FinanceRecord>[] = [
     { key: 'label', label: meta.record, render: (row) => row.label },
     { key: 'reference', label: '业务编号', render: (row) => chineseReference('业务', row.reference) },
-    { key: 'amount', label: '金额', render: (row) => row.amountMinor === null || row.currency === null ? '不适用' : formatMinor(row.amountMinor, row.currency) },
+    { key: 'amount', label: '金额', render: (row) => (row.amountMinor === null || row.currency === null ? '不适用' : formatMinor(row.amountMinor, row.currency)) },
     { key: 'state', label: '状态', render: (row) => chineseDomainLabel(row.state) },
     { key: 'time', label: '业务时间', render: (row) => formatDate(row.occurredAt) },
-    { key: 'action', label: '操作', render: (row) => <Button tone="quiet" onPress={() => model.actions.open(row.id)}>查看详情</Button> },
+    {
+      key: 'action',
+      label: '操作',
+      render: (row) => (
+        <Button tone="quiet" onPress={() => model.actions.open(row.id)}>
+          查看详情
+        </Button>
+      ),
+    },
   ];
   const summary = [
     { label: '服务端总数', value: (model.data?.count ?? 0).toLocaleString('zh-CN') },
@@ -43,13 +51,34 @@ export function SectionPage({ title, model, importing }: Readonly<{ title: strin
   ];
   return (
     <section className="financeworkspace financesectionworkspace">
-      <FinanceHeader title={title} description={meta.description} summary={summary} fetching={model.condition === 'refreshing'} statusText={model.condition === 'refreshing' ? '正在同步服务端当前页' : '服务端游标分页 · 当前页已同步'} onRefresh={model.refresh} />
+      <FinanceHeader
+        title={title}
+        description={meta.description}
+        summary={summary}
+        fetching={model.condition === 'refreshing'}
+        statusText={model.condition === 'refreshing' ? '正在同步服务端当前页' : '服务端游标分页 · 当前页已同步'}
+        onRefresh={model.refresh}
+      />
       <FinanceTabs model={model.navigation} {...(importing === undefined ? {} : { onImport: importing.actions.open })} />
       <div className="financesectiontoolbar">
-        <label>筛选本页状态<select value={model.status ?? ''} onChange={(event) => model.actions.filter(event.target.value)}><option value="">全部状态</option>{model.states.map((state) => <option key={state} value={state}>{chineseDomainLabel(state)}</option>)}</select></label>
+        <label>
+          筛选本页状态
+          <select value={model.status ?? ''} onChange={(event) => model.actions.filter(event.target.value)}>
+            <option value="">全部状态</option>
+            {model.states.map((state) => (
+              <option key={state} value={state}>
+                {chineseDomainLabel(state)}
+              </option>
+            ))}
+          </select>
+        </label>
         <span>筛选仅作用于当前已读取页，翻页仍由服务端游标控制。</span>
       </div>
-      {model.receipt ? <div className="financesectionreceipt"><ActionReceipt state={{ kind: 'success', receipt: model.receipt, objectLabel: meta.record, impact: '服务端已受理并完成权威回读，列表与详情已同步。' }} dismiss={{ label: '关闭回执', onPress: model.actions.dismissReceipt }} /></div> : null}
+      {model.receipt ? (
+        <div className="financesectionreceipt">
+          <ActionReceipt state={{ kind: 'success', receipt: model.receipt, objectLabel: meta.record, impact: '服务端已受理并完成权威回读，列表与详情已同步。' }} dismiss={{ label: '关闭回执', onPress: model.actions.dismissReceipt }} />
+        </div>
+      ) : null}
       <ResourcePanel
         headingLevel={2}
         title={meta.title}
@@ -58,10 +87,32 @@ export function SectionPage({ title, model, importing }: Readonly<{ title: strin
         condition={model.condition}
         {...(model.error === undefined ? {} : { error: model.error })}
         retry={model.refresh}
-        actions={<>{model.globalActions.map((action) => <Button key={action.kind} tone="primary" onPress={() => model.actions.begin(action)}>{action.label}</Button>)}<Button onPress={model.refresh}>刷新</Button></>}
+        actions={
+          <>
+            {model.globalActions.map((action) => (
+              <Button key={action.kind} tone="primary" onPress={() => model.actions.begin(action)}>
+                {action.label}
+              </Button>
+            ))}
+            <Button onPress={model.refresh}>刷新</Button>
+          </>
+        }
       >
-        {model.rows.length === 0 && model.status ? <div className="financelocalempty"><strong>当前页没有符合条件的记录</strong><p>可切换状态，或翻页继续查看服务端数据。</p></div> : <DataTable caption={meta.title} columns={columns} rows={model.rows} rowKey={(row) => row.id} />}
-        <div className="financepagination"><span>服务端共 {model.data?.count ?? 0} 条</span><span>当前显示 {model.rows.length} 条</span><Button onPress={() => model.data?.nextCursor && model.next(model.data.nextCursor)} isDisabled={model.data?.nextCursor === undefined}>下一页</Button></div>
+        {model.rows.length === 0 && model.status ? (
+          <div className="financelocalempty">
+            <strong>当前页没有符合条件的记录</strong>
+            <p>可切换状态，或翻页继续查看服务端数据。</p>
+          </div>
+        ) : (
+          <DataTable caption={meta.title} columns={columns} rows={model.rows} rowKey={(row) => row.id} />
+        )}
+        <div className="financepagination">
+          <span>服务端共 {model.data?.count ?? 0} 条</span>
+          <span>当前显示 {model.rows.length} 条</span>
+          <Button onPress={() => model.data?.nextCursor && model.next(model.data.nextCursor)} isDisabled={model.data?.nextCursor === undefined}>
+            下一页
+          </Button>
+        </div>
       </ResourcePanel>
       <FinanceRecordDrawer model={model} />
       <FinanceActionDialog model={model} />

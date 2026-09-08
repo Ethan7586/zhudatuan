@@ -30,7 +30,7 @@
 .financedrawerclose,
 .financedrawertitle button {
   display: inline-flex;
-  min-height: 28px;
+  min-height: var(--sw-control-touch-target);
   align-items: center;
   gap: 5px;
   border: 0;
@@ -49,7 +49,7 @@
   position: absolute;
   top: 14px;
   right: 16px;
-  width: 30px;
+  width: var(--sw-control-touch-target);
   justify-content: center;
   color: var(--sw-text);
 }

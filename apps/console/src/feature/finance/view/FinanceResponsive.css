@@ -1,5 +1,7 @@
 @media (max-width: 1040px) {
-  .financefacetgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .financefacetgrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
   .financefilters {
     flex-wrap: wrap;
   }
@@ -14,35 +16,75 @@
   }
 }
 
-@media (max-width: 720px) {
-  .financefacetgrid { grid-template-columns: 1fr 1fr; }
-  .financeworkspace {
-    border-radius: 0;
+@media (max-width: 48rem) {
+  .financefacetgrid {
+    grid-template-columns: 1fr 1fr;
   }
   .financepageheader {
+    display: grid;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: flex-start;
-    flex-direction: column;
+    gap: 12px;
     padding: 18px 15px;
   }
-  .financerefreshbutton { width: 100%; }
+  .financepageheader > div:first-child {
+    min-width: 0;
+  }
+  .financerefreshbutton {
+    width: auto;
+    align-self: start;
+  }
   .financestatusrail {
+    display: grid;
     align-items: flex-start;
-    flex-direction: column;
+    gap: 8px;
     padding: 9px 15px;
   }
   .financestatusrail dl {
-    flex-wrap: wrap;
-    gap: 7px 0;
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 16px;
+  }
+  .financestatusrail dl > div {
+    min-width: 0;
+    justify-content: space-between;
+    gap: 8px;
+    padding-block: 5px;
+  }
+  .financestatusrail dl > div:not(:last-child)::after {
+    display: none;
+  }
+  .financestatusrail dt,
+  .financestatusrail dd {
+    white-space: nowrap;
+  }
+  .financestatusrail dd {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .financestatusrail > div {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: flex-start;
+    border-top: 1px solid var(--sw-border-subtle);
+    padding-top: 8px;
+    white-space: normal;
   }
   .financetabs {
     padding-inline: 7px;
   }
   .financecolumnbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     padding-inline: 10px;
+  }
+  .financecolumnbar > p {
+    min-width: 0;
+  }
+  .financecolumnbar > button {
+    flex: 0 0 auto;
   }
   .financesearchfield {
     width: 100%;
@@ -51,12 +93,124 @@
     display: block;
     flex: 1 0 100%;
   }
+  .financefilters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    overflow: visible;
+  }
+  .financefilters label,
+  .financefilterempty {
+    min-width: 0;
+  }
+  .financefilterclear {
+    width: 100%;
+    grid-column: 1 / -1;
+  }
+  .financeworkspace :is(button, select, input:not([type='checkbox']):not([type='radio']), textarea),
+  .financedraweroverlay :is(button, select, input:not([type='checkbox']):not([type='radio']), textarea),
+  .financeworkspace summary {
+    min-height: var(--sw-control-touch-target);
+  }
   .financepagination {
     grid-template-columns: 1fr auto;
     padding: 9px 10px;
   }
   .financepagination > label {
     display: none;
+  }
+  .financepagination button {
+    width: var(--sw-control-touch-target);
+    min-width: var(--sw-control-touch-target);
+  }
+  .financesectionworkspace .financepagination {
+    grid-template-columns: 1fr 1fr;
+  }
+  .financesectionworkspace .financepagination > button {
+    width: 100%;
+    grid-column: 1 / -1;
+  }
+  .financetablewrap,
+  .financesectionworkspace .tablewrap {
+    overflow: visible;
+    border-top: 0;
+  }
+  .financetablewrap {
+    padding: 12px;
+  }
+  .financetable,
+  .financetable tbody,
+  .financesectionworkspace .tablewrap table,
+  .financesectionworkspace .tablewrap tbody {
+    display: grid;
+    min-width: 0;
+  }
+  .financetable thead,
+  .financesectionworkspace .tablewrap thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .financetable tbody,
+  .financesectionworkspace .tablewrap tbody {
+    gap: 12px;
+  }
+  .financesectionworkspace .tablewrap tbody {
+    padding: 12px;
+  }
+  .financetable tbody tr,
+  .financesectionworkspace .tablewrap tbody tr {
+    display: grid;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--sw-border);
+    border-radius: var(--sw-radius-md);
+    background: var(--sw-surface);
+  }
+  .financetable tbody td,
+  .financesectionworkspace .tablewrap tbody td {
+    display: grid;
+    min-width: 0;
+    min-height: var(--sw-control-touch-target);
+    height: auto;
+    grid-template-columns: minmax(7rem, 38%) minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--sw-border);
+    padding: 8px 12px;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  .financetable tbody td::before,
+  .financesectionworkspace .tablewrap tbody td::before {
+    color: var(--sw-muted);
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .financetable tbody td:last-child,
+  .financesectionworkspace .tablewrap tbody td:last-child {
+    border-bottom: 0;
+  }
+  .financetable .financecheckcell {
+    width: auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    text-align: left !important;
+  }
+  .financetable .financecheckcell input {
+    width: 22px;
+    height: 22px;
+    justify-self: end;
+  }
+  .financecellpair,
+  .financemoney,
+  .financestate,
+  .financenodifference {
+    min-width: 0;
   }
   .financedraweroverlay {
     inset: 0;
