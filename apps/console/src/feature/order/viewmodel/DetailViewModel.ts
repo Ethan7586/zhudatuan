@@ -1,13 +1,4 @@
-import {
-  OP_FULFILLMENT_SHIPMENTS_CREATE,
-  OP_ORDER_ORDERS_CANCEL,
-  OP_ORDER_ORDERS_RECEIVE,
-  OP_ORDER_REMINDERS_CREATE,
-  OP_PAYMENT_RECOVERIES_READ,
-  OP_PAYMENT_RECOVERIES_RESOLVE,
-  OP_PAYMENT_REFUNDS_REQUEST,
-  OP_SUPPORT_CASES_READ,
-} from '@shop/contract/ids';
+import { OP_FULFILLMENT_SHIPMENTS_CREATE, OP_ORDER_ORDERS_CANCEL, OP_ORDER_ORDERS_RECEIVE, OP_ORDER_REMINDERS_CREATE, OP_PAYMENT_RECOVERIES_RESOLVE, OP_PAYMENT_REFUNDS_REQUEST, OP_SUPPORT_CASES_READ } from '@shop/contract/ids';
 import { presentError, queryCondition, safeQueryError } from '@shop/presentation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -15,7 +6,7 @@ import type { OrderDependencies } from '../../../app/Dependencies';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
 import { orderDetailKey, orderRecoveryKey, orderSupportKey } from './OrderQueryKey';
 import { canUseOperation } from '../../../shared/security/OperationAccess';
-import { orderRecoveryState } from './RecoveryViewModel';
+import { orderRecoveryAccess, orderRecoveryState } from './RecoveryViewModel';
 import type { OrderCommandReceipt, OrderDetail, OrderFulfillment, OrderOperationReceipt, OrderRecovery, OrderRecoveryAction, OrderSupportCase, OrderSupportState } from '../model/Order';
 
 export interface OrderCommandEditor {
@@ -47,11 +38,11 @@ export function useOrderDetailViewModel(context: ConsoleContext, dependencies: O
     queryFn: ({ signal }) => dependencies.readSupport.execute(context, supportReference!, signal),
     enabled: canReadSupport && supportReference !== undefined,
   });
-  const canReadRecoveries = canUseOperation(context, OP_PAYMENT_RECOVERIES_READ);
+  const recoveryAccess = orderRecoveryAccess(context);
   const recoveryQuery = useQuery({
     queryKey: orderRecoveryKey(context, supportReference ?? reference ?? ''),
     queryFn: ({ signal }) => dependencies.readRecoveries.execute(context, supportReference, signal),
-    enabled: canReadRecoveries && supportReference !== undefined,
+    enabled: recoveryAccess.ready && supportReference !== undefined,
   });
   const command = useMutation<OrderCommandReceipt | OrderOperationReceipt>({
     mutationFn: () => {
@@ -66,7 +57,7 @@ export function useOrderDetailViewModel(context: ConsoleContext, dependencies: O
     },
     onSuccess: async () => {
       await query.refetch();
-      if (canReadRecoveries && supportReference !== undefined) await recoveryQuery.refetch();
+      if (recoveryAccess.ready && supportReference !== undefined) await recoveryQuery.refetch();
       refreshList();
     },
   });
@@ -89,7 +80,7 @@ export function useOrderDetailViewModel(context: ConsoleContext, dependencies: O
   });
   const queryFailure = query.error === null ? undefined : presentError(query.error);
   const support = supportState(canReadSupport, supportQuery);
-  const recoveries = orderRecoveryState(canReadRecoveries, recoveryQuery);
+  const recoveries = orderRecoveryState(recoveryAccess, recoveryQuery);
   return Object.freeze({
     reference,
     data: query.data,
@@ -123,7 +114,9 @@ export function useOrderDetailViewModel(context: ConsoleContext, dependencies: O
     copyNumber,
     refresh: () => void query.refetch(),
     refreshSupport: () => void supportQuery.refetch(),
-    refreshRecoveries: () => void recoveryQuery.refetch(),
+    refreshRecoveries: () => {
+      if (recoveryAccess.ready) void recoveryQuery.refetch();
+    },
     actions: Object.freeze({
       openCancel: () => {
         setIdentity(dependencies.createIdentity());

@@ -1,4 +1,4 @@
-import { OP_ORDER_IMPORTS_CREATE, OP_ORDER_ORDERS_EXPORT, OP_PAYMENT_RECOVERIES_READ } from '@shop/contract/ids';
+import { OP_ORDER_IMPORTS_CREATE, OP_ORDER_ORDERS_EXPORT } from '@shop/contract/ids';
 import { chineseReference, safeQueryError } from '@shop/presentation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useMemo, useRef, useState } from 'react';
@@ -15,7 +15,7 @@ import { useAfterSaleViewModel } from './AfterSaleViewModel';
 import { useOrderDetailViewModel } from './DetailViewModel';
 import { orderKey, orderRecoveryKey } from './OrderQueryKey';
 import { readCursor, readDetailTab, readFilter, readPage, readSelected, readView, writeOrderCursor, writeOrderFilter, writeOrderSelection, writeOrderTab, writeOrderView } from './OrderSearch';
-import { orderRecoveryState } from './RecoveryViewModel';
+import { orderRecoveryAccess, orderRecoveryState } from './RecoveryViewModel';
 import { usePreference } from '../../../shared/preference/PreferenceState';
 import { validateImportFile } from '../../../shared/import/ImportUploadGateway';
 import { downloadImportTemplate } from '../../../shared/import/ImportTemplate';
@@ -46,11 +46,11 @@ export function useOrderListViewModel(context: ConsoleContext, dependencies: Ord
     enabled: view !== 'aftersale',
     placeholderData: (previous) => previous,
   });
-  const canReadRecoveries = canUseOperation(context, OP_PAYMENT_RECOVERIES_READ);
+  const recoveryAccess = orderRecoveryAccess(context);
   const recoveryQuery = useQuery({
     queryKey: orderRecoveryKey(context, 'scope'),
     queryFn: ({ signal }) => dependencies.readRecoveries.execute(context, undefined, signal),
-    enabled: view === 'exception' && canReadRecoveries,
+    enabled: view === 'exception' && recoveryAccess.ready,
   });
   const aftersale = useAfterSaleViewModel(context, dependencies, aftersaleFilter, view === 'aftersale', requestStepup, () => void query.refetch());
   const detail = useOrderDetailViewModel(context, dependencies, selected, requestStepup, () => void query.refetch());
@@ -93,7 +93,7 @@ export function useOrderListViewModel(context: ConsoleContext, dependencies: Ord
     if (view === 'aftersale') aftersale.retry();
     else void query.refetch();
     if (selected !== undefined) detail.refresh();
-    if (view === 'exception' && canReadRecoveries) void recoveryQuery.refetch();
+    if (view === 'exception' && recoveryAccess.ready) void recoveryQuery.refetch();
   };
   const toggleColumn = (key: OrderColumnKey) => {
     const next = new Set(columns);
@@ -129,11 +129,18 @@ export function useOrderListViewModel(context: ConsoleContext, dependencies: Ord
     malls,
     detail,
     aftersale,
-    recoveries: orderRecoveryState(canReadRecoveries, recoveryQuery),
+    recoveries: orderRecoveryState(recoveryAccess, recoveryQuery),
     assurance: context.session.assurance.level,
     canImport: canUseOperation(context, OP_ORDER_IMPORTS_CREATE),
     canExport: canUseOperation(context, OP_ORDER_ORDERS_EXPORT),
-    importing: Object.freeze({ editor: importEditor, template: dependencies.importTemplate, busy: createImport.isPending, result: createImport.data, error: safeQueryError(createImport.error), validation: importValidation(importEditor, context.session.assurance.level) }),
+    importing: Object.freeze({
+      editor: importEditor,
+      template: dependencies.importTemplate,
+      busy: createImport.isPending,
+      result: createImport.data,
+      error: safeQueryError(createImport.error),
+      validation: importValidation(importEditor, context.session.assurance.level),
+    }),
     exporting: Object.freeze({ open: exportOpen, confirmed: exportConfirmed, busy: createExport.isPending, result: createExport.data, error: safeQueryError(createExport.error), filter }),
     page: query.data,
     pending: query.isPending,

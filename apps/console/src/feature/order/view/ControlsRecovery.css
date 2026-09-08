@@ -105,6 +105,51 @@
   background: var(--sw-danger-surface);
   padding: var(--sw-space-1-5);
 }
+.orderexceptionprompt {
+  display: grid;
+  justify-items: start;
+  gap: var(--sw-space-1);
+  border: 0.0625rem solid var(--sw-border-strong);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1-5);
+}
+.orderexceptionprompt button {
+  min-height: var(--sw-control-touch-target);
+  border: 0;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-brand);
+  color: var(--sw-text-inverse);
+  padding-inline: var(--sw-space-2);
+  font-weight: 700;
+  box-shadow: var(--sw-shadow-control-rest);
+  cursor: pointer;
+  transition:
+    background var(--sw-duration-fast) var(--sw-ease-standard),
+    box-shadow var(--sw-duration-fast) var(--sw-ease-standard);
+}
+.orderexceptionprompt button:hover,
+.ordersectionstate .orderunlockaction:hover {
+  background: var(--sw-brand-hover);
+}
+.orderexceptionprompt button:focus-visible,
+.ordersectionstate .orderunlockaction:focus-visible {
+  outline: var(--sw-focus-width) solid var(--sw-focus-color);
+  outline-offset: var(--sw-focus-offset);
+}
+.ordersectionstate .orderunlockaction {
+  min-height: var(--sw-control-touch-target);
+  border-color: transparent;
+  background: var(--sw-brand);
+  color: var(--sw-text-inverse);
+  padding-inline: var(--sw-space-2);
+  font-weight: 700;
+  box-shadow: var(--sw-shadow-control-rest);
+  cursor: pointer;
+  transition:
+    background var(--sw-duration-fast) var(--sw-ease-standard),
+    box-shadow var(--sw-duration-fast) var(--sw-ease-standard);
+}
 .orderexceptiongrid article {
   display: grid;
   gap: var(--sw-space-1);

@@ -62,6 +62,7 @@ export type OrderRecoveryState =
   | Readonly<{ state: 'loading' }>
   | Readonly<{ state: 'ready'; data: OrderRecoveryPage }>
   | Readonly<{ state: 'hidden' }>
+  | Readonly<{ state: 'locked' }>
   | Readonly<{ state: 'unavailable'; error: Readonly<{ message: string; retryable: boolean; traceId?: string }> }>;
 
 export interface OrderReturn {

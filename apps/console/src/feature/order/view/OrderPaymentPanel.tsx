@@ -12,12 +12,12 @@ export function OrderPaymentPanel({ order, onRetry, viewmodel }: Readonly<{ orde
       <OrderDetailSection title="支付汇总">
         <OrderSectionState section={order.sections.payment} title="支付汇总" onRetry={onRetry} />
         {order.sections.payment.state === 'ready' ? (
-        <div className="orderdetailgrid">
-          <OrderDetailInfo label="订单应付" value={formatMinor(order.total_minor, order.currency)} />
-          <OrderDetailInfo label="实付金额" value={formatMinor(order.payment.capturedMinor, order.currency)} />
-          <OrderDetailInfo label="已退金额" value={formatMinor(order.payment.refundedMinor, order.currency)} />
-          <OrderDetailInfo label="可退余额" value={formatMinor(order.payment.refundableMinor, order.currency)} />
-        </div>
+          <div className="orderdetailgrid">
+            <OrderDetailInfo label="订单应付" value={formatMinor(order.total_minor, order.currency)} />
+            <OrderDetailInfo label="实付金额" value={formatMinor(order.payment.capturedMinor, order.currency)} />
+            <OrderDetailInfo label="已退金额" value={formatMinor(order.payment.refundedMinor, order.currency)} />
+            <OrderDetailInfo label="可退余额" value={formatMinor(order.payment.refundableMinor, order.currency)} />
+          </div>
         ) : null}
       </OrderDetailSection>
       <OrderDetailSection title="支付拆分">
@@ -59,8 +59,12 @@ export function OrderPaymentPanel({ order, onRetry, viewmodel }: Readonly<{ orde
           ))
         )}
       </OrderDetailSection>
-      {viewmodel?.canRefund ? <button className="orderprimaryaction" type="button" onClick={viewmodel.actions.openRefund}>提交退款</button> : null}
-      {viewmodel ? <OrderRecoveryPanel state={viewmodel.recoveries} canResolve={viewmodel.canResolveRecovery} onResolve={viewmodel.actions.openRecovery} onRetry={viewmodel.refreshRecoveries} /> : null}
+      {viewmodel?.canRefund ? (
+        <button className="orderprimaryaction" type="button" onClick={viewmodel.actions.openRefund}>
+          提交退款
+        </button>
+      ) : null}
+      {viewmodel ? <OrderRecoveryPanel state={viewmodel.recoveries} canResolve={viewmodel.canResolveRecovery} onResolve={viewmodel.actions.openRecovery} onRetry={viewmodel.refreshRecoveries} onUnlock={viewmodel.actions.stepup} /> : null}
     </div>
   );
 }

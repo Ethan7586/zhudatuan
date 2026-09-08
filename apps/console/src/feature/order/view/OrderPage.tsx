@@ -28,7 +28,10 @@ export function OrderPage({ title, viewmodel }: Readonly<{ title: string; viewmo
       <OrderStatusTabs active={view} facets={page?.facets} onChange={actions.selectView} />
       <div className="orderfilterarea">
         <details className="orderfilterdisclosure">
-          <summary><span>筛选与查找</span><small>{activeFilterCount(filter) === 0 ? '按订单、状态、商城或更多条件查找' : `已启用 ${activeFilterCount(filter)} 个条件`}</small></summary>
+          <summary>
+            <span>筛选与查找</span>
+            <small>{activeFilterCount(filter) === 0 ? '按订单、状态、商城或更多条件查找' : `已启用 ${activeFilterCount(filter)} 个条件`}</small>
+          </summary>
           <OrderFilterForm value={filter} malls={malls} onApply={actions.applyFilter} onColumns={actions.toggleColumns} columnsOpen={columnsopen} />
         </details>
         <OrderColumnSettings open={columnsopen} visible={columns} onToggle={actions.toggleColumn} onClose={actions.closeColumns} />
@@ -42,8 +45,22 @@ export function OrderPage({ title, viewmodel }: Readonly<{ title: string; viewmo
           <AfterSalePanel viewmodel={aftersale} selected={selected} onOpen={actions.openAftersale} onRetry={actions.refresh} />
         ) : (
           <>
-            {page?.facets.state === 'unavailable' ? <section className="orderfacetnotice" role="status"><span>{page.facets.error.message}</span><button type="button" onClick={actions.refresh}>重试统计</button></section> : null}
-            {page?.facets.state === 'ready' && page.facets.data.counts.exception > 0 && view !== 'exception' ? <section className="orderfacetnotice iswarning" role="status"><span>发现 {page.facets.data.counts.exception} 条支付、履约、售后或来源核验异常。</span><button type="button" onClick={() => actions.selectView('exception')}>优先处理异常</button></section> : null}
+            {page?.facets.state === 'unavailable' ? (
+              <section className="orderfacetnotice" role="status">
+                <span>{page.facets.error.message}</span>
+                <button type="button" onClick={actions.refresh}>
+                  重试统计
+                </button>
+              </section>
+            ) : null}
+            {page?.facets.state === 'ready' && page.facets.data.counts.exception > 0 && view !== 'exception' ? (
+              <section className="orderfacetnotice iswarning" role="status">
+                <span>发现 {page.facets.data.counts.exception} 条支付、履约、售后或来源核验异常。</span>
+                <button type="button" onClick={() => actions.selectView('exception')}>
+                  优先处理异常
+                </button>
+              </section>
+            ) : null}
             {viewmodel.pending ? (
               <p className="orderliststate" role="status">
                 正在读取订单…
@@ -70,7 +87,11 @@ export function OrderPage({ title, viewmodel }: Readonly<{ title: string; viewmo
                 <p>请调整服务端筛选条件后重试。</p>
               </section>
             ) : null}
-            {page === undefined ? null : view === 'exception' ? <OrderExceptionPanel rows={page.items} recoveries={viewmodel.recoveries} onOpen={actions.open} onRetry={actions.refresh} /> : page.items.length === 0 ? null : <OrderTable rows={page.items} visible={columns} {...(selected === undefined ? {} : { activeOrder: selected })} onOpen={actions.open} />}
+            {page === undefined ? null : view === 'exception' ? (
+              <OrderExceptionPanel rows={page.items} recoveries={viewmodel.recoveries} onOpen={actions.open} onRetry={actions.refresh} onUnlock={actions.stepup} />
+            ) : page.items.length === 0 ? null : (
+              <OrderTable rows={page.items} visible={columns} {...(selected === undefined ? {} : { activeOrder: selected })} onOpen={actions.open} />
+            )}
           </>
         )}
       </div>

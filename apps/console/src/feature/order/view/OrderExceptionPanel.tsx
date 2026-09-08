@@ -35,11 +35,13 @@ export function OrderExceptionPanel({
   recoveries,
   onOpen,
   onRetry,
+  onUnlock,
 }: Readonly<{
   rows: readonly OrderRecord[];
   recoveries: OrderRecoveryState;
   onOpen: (id: string, tab: OrderDetailTab) => void;
   onRetry: () => void;
+  onUnlock: () => void;
 }>) {
   const [filter, setFilter] = useState<ExceptionFilter>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -163,6 +165,15 @@ export function OrderExceptionPanel({
             {recoveries.state === 'ready' ? <strong>{recoveries.data.count} 项</strong> : null}
           </header>
           {recoveries.state === 'loading' ? <p role="status">正在读取支付恢复事项…</p> : null}
+          {recoveries.state === 'locked' ? (
+            <div className="orderexceptionprompt" role="status">
+              <strong>完成二次验证后查看支付恢复事项</strong>
+              <p>这里包含敏感交易信息，验证成功后会自动读取，不需要重新进入页面。</p>
+              <button type="button" onClick={onUnlock}>
+                完成二次验证
+              </button>
+            </div>
+          ) : null}
           {recoveries.state === 'unavailable' ? (
             <div className="orderexceptionerror" role="alert">
               <strong>支付恢复数据暂时不可用</strong>
@@ -297,6 +308,7 @@ function recoverySummary(state: OrderRecoveryState): string {
   if (state.state === 'ready') return `${state.data.count} 项支付恢复事项`;
   if (state.state === 'unavailable') return '支付恢复数据暂不可用';
   if (state.state === 'loading') return '正在读取支付恢复事项';
+  if (state.state === 'locked') return '完成二次验证后查看';
   return '按订单支付事实统计';
 }
 

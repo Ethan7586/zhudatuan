@@ -658,6 +658,63 @@ describe('Order route', () => {
     });
   });
 
+  it('keeps payment recovery reads locked in the exception workbench until MFA assurance is available', async () => {
+    let recoveryReads = 0;
+    server.use(
+      http.get('*/api/v1/payments/recoveries', () => {
+        recoveryReads += 1;
+        return HttpResponse.json({ items: [], count: 0 });
+      })
+    );
+    const lowAssurance = {
+      ...context,
+      session: {
+        ...context.session,
+        permissions: [...context.session.permissions, 'payment.recovery.read'],
+        capabilities: [...context.session.capabilities, 'payment.recoveries.read'],
+        assurance: { level: 1 as const, verified: context.session.assurance.verified },
+      },
+    };
+    renderRoute('/orders?view=exception', lowAssurance);
+
+    const workbench = await screen.findByRole('region', { name: '订单异常工作台' });
+    expect(within(workbench).getByText('完成二次验证后查看支付恢复事项')).toBeTruthy();
+    expect(within(workbench).getByRole('button', { name: '完成二次验证' })).toBeTruthy();
+    await waitFor(() => expect(recoveryReads).toBe(0));
+  });
+
+  it('loads detail payment recoveries automatically after MFA assurance succeeds', async () => {
+    let recoveryReads = 0;
+    server.use(
+      http.get('*/api/v1/payments/recoveries', () => {
+        recoveryReads += 1;
+        return HttpResponse.json({ items: [], count: 0 });
+      })
+    );
+    const lowAssurance = {
+      ...context,
+      session: {
+        ...context.session,
+        permissions: [...context.session.permissions, 'payment.recovery.read'],
+        capabilities: [...context.session.capabilities, 'payment.recoveries.read'],
+        assurance: { level: 1 as const, verified: context.session.assurance.verified },
+      },
+    };
+    const rendered = renderRoute(`/orders?selected=${encodeURIComponent(order.id)}&tab=payment`, lowAssurance);
+
+    const dialog = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
+    expect(within(dialog).getByText('完成二次验证后查看')).toBeTruthy();
+    expect(within(dialog).getByRole('button', { name: '完成二次验证' })).toBeTruthy();
+    await waitFor(() => expect(recoveryReads).toBe(0));
+
+    rendered.rerenderContext({
+      ...lowAssurance,
+      session: { ...lowAssurance.session, assurance: { level: 2, verified: '2026-08-26T08:05:00.000Z' } },
+    });
+    expect(await within(dialog).findByText('本单没有支付恢复事项。')).toBeTruthy();
+    expect(recoveryReads).toBe(1);
+  });
+
   it('configures optional columns without exposing unsupported bulk selection', async () => {
     const user = userEvent.setup();
     const rendered = renderRoute();
