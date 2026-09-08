@@ -1,4 +1,4 @@
-import type { OperationBodyFor, OperationOutputFor, OrderAfterSaleDecision } from '@shop/contract';
+import type { OperationOutputFor } from '@shop/contract';
 import type { DeepReadonly } from '../../../shared/model/Immutable';
 
 type OrderPageOutput = DeepReadonly<OperationOutputFor<'order.orders.read'>>;

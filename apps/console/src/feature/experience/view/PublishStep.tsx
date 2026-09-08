@@ -35,13 +35,13 @@ export function PublishStep({ model }: Readonly<{ model: MallCreationViewModel }
           />
         </div>
       ) : null}
-      <label className="malljourneyconfirm">
-        <input type="checkbox" checked={model.confirmed} onChange={(event) => model.actions.confirmed(event.target.checked)} />
-        <span>
-          <strong>我已核对商城归属、主体资料、公开域名和履约配置</strong>
+      <div className="malljourneyconfirm">
+        <input id="malljourneyconfirm" type="checkbox" checked={model.confirmed} onChange={(event) => model.actions.confirmed(event.target.checked)} />
+        <label htmlFor="malljourneyconfirm">
+          我已核对商城归属、主体资料、公开域名和履约配置
           <small>提交会写入完整商城资料并生成不可重复的操作回执。</small>
-        </span>
-      </label>
+        </label>
+      </div>
     </section>
   );
 }

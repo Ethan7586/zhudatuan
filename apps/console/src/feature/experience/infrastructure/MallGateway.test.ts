@@ -90,9 +90,30 @@ describe('MallGateway', () => {
 });
 
 function createDraft(): MallCreateDraft {
-  const { id: _id, status: _status, version: _version, createdAt: _createdAt, updatedAt: _updatedAt, opening, ...profile } = mall;
-  const { state: _state, ...openingInput } = opening;
-  return { ...profile, parentVersion: 7, opening: openingInput };
+  return {
+    parentId: mall.parentId,
+    parentVersion: 7,
+    name: mall.name,
+    code: mall.code,
+    publicSlug: mall.publicSlug,
+    brandName: mall.brandName,
+    domain: mall.domain,
+    ownerMembershipId: mall.ownerMembershipId,
+    timezone: mall.timezone,
+    currency: mall.currency,
+    theme: mall.theme,
+    opening: {
+      subject: mall.opening.subject,
+      business: mall.opening.business,
+      certificateMode: mall.opening.certificateMode,
+      certificateObjectRef: mall.opening.certificateObjectRef,
+      channels: mall.opening.channels,
+      payment: mall.opening.payment,
+      fulfillment: mall.opening.fulfillment,
+      invoiceMode: mall.opening.invoiceMode,
+      notificationContact: mall.opening.notificationContact,
+    },
+  };
 }
 
 function context(): ConsoleContext {

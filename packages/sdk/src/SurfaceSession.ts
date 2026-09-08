@@ -1,4 +1,3 @@
-import type { ScopeKind } from '@shop/authz';
 import type { OperationOutputFor, OperationTarget } from '@shop/contract';
 import type { OperationMethod } from './OperationDescriptor';
 import { createRequestContext } from './RequestContextFactory';
@@ -18,13 +17,7 @@ export interface SurfaceAccessEnvironment {
   readonly clientVersion: string;
 }
 
-export async function readSurfaceSession(
-  client: SurfaceAccessClient,
-  environment: SurfaceAccessEnvironment,
-  surface: OperatorSurface,
-  catalogVersion: string,
-  signal: AbortSignal
-): Promise<SurfaceSession> {
+export async function readSurfaceSession(client: SurfaceAccessClient, environment: SurfaceAccessEnvironment, surface: OperatorSurface, catalogVersion: string, signal: AbortSignal): Promise<SurfaceSession> {
   if (environment.target !== surface) throw new Error('SURFACE_ENVIRONMENT_TARGET_INVALID');
   const value = await client.identity.sessionRead({}, createRequestContext(environment.clientVersion, { target: surface, catalogVersion, signal }));
   if (value.target !== surface) throw new Error('SURFACE_SESSION_TARGET_INVALID');
@@ -34,17 +27,10 @@ export async function readSurfaceSession(
 export function selectSurfaceScope(session: SurfaceSession, surface: OperatorSurface, candidate?: Readonly<{ kind: string; id: string }>): RequestScope {
   const scope = candidate === undefined ? session.scopes.find((value) => value.kind === surface) : session.scopes.find((value) => value.kind === candidate.kind && value.id === candidate.id);
   if (scope === undefined || scope.kind !== surface || scope.id.length === 0) throw new Error('SURFACE_SCOPE_DENIED');
-  return Object.freeze({ kind: scope.kind as ScopeKind, id: scope.id });
+  return Object.freeze({ kind: scope.kind, id: scope.id });
 }
 
-export async function readSurfaceNavigation(
-  client: SurfaceAccessClient,
-  environment: SurfaceAccessEnvironment,
-  session: SurfaceSession,
-  scope: RequestScope,
-  catalogVersion: string,
-  signal: AbortSignal
-): Promise<SurfaceNavigation> {
+export async function readSurfaceNavigation(client: SurfaceAccessClient, environment: SurfaceAccessEnvironment, session: SurfaceSession, scope: RequestScope, catalogVersion: string, signal: AbortSignal): Promise<SurfaceNavigation> {
   const context = surfaceRequestContext(environment, session, scope, catalogVersion, signal);
   const value = await client.navigation.treeRead({ query: { scopeid: scope.id } }, context);
   if (value.target !== environment.target || value.scope.id !== scope.id || value.scope.kind !== scope.kind || value.catalogVersion !== catalogVersion) {
@@ -53,13 +39,7 @@ export async function readSurfaceNavigation(
   return value;
 }
 
-export function surfaceRequestContext(
-  environment: SurfaceAccessEnvironment,
-  session: SurfaceSession,
-  scope: RequestScope,
-  catalogVersion: string,
-  signal?: AbortSignal
-): RequestContext {
+export function surfaceRequestContext(environment: SurfaceAccessEnvironment, session: SurfaceSession, scope: RequestScope, catalogVersion: string, signal?: AbortSignal): RequestContext {
   return createRequestContext(environment.clientVersion, {
     target: environment.target,
     scope,

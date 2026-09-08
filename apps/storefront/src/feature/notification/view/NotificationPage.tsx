@@ -108,7 +108,7 @@ export function NotificationPage({ viewmodel }: Readonly<{ viewmodel: ReturnType
                           onSubmit={(event) => {
                             event.preventDefault();
                             const data = new FormData(event.currentTarget);
-                            void actions.quiet(item, String(data.get('start')), String(data.get('end')), true);
+                            void actions.quiet(item, formText(data, 'start'), formText(data, 'end'), true);
                           }}
                         >
                           <TimeField name="start" label="开始" value={item.quietStart?.slice(0, 5) ?? '22:00'} />
@@ -133,6 +133,11 @@ export function NotificationPage({ viewmodel }: Readonly<{ viewmodel: ReturnType
       </div>
     </section>
   );
+}
+
+function formText(data: FormData, name: string): string {
+  const value = data.get(name);
+  return typeof value === 'string' ? value : '';
 }
 
 function TimeField({ name, label, value }: Readonly<{ name: string; label: string; value: string }>) {

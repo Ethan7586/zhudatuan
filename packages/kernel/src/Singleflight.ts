@@ -34,7 +34,7 @@ export class Singleflight {
           if (this.flights.get(key) === flight) this.flights.delete(key);
         }),
       };
-      this.flights.set(key, flight as Flight<unknown>);
+      this.flights.set(key, flight);
     }
     flight.waiters += 1;
     return this.wait(key, flight, shared, options);
@@ -65,6 +65,11 @@ export class Singleflight {
 }
 
 function cancelled(signal: AbortSignal): Promise<never> {
-  if (signal.aborted) return Promise.reject(signal.reason);
-  return new Promise((_, reject) => signal.addEventListener('abort', () => reject(signal.reason), { once: true }));
+  if (signal.aborted) return Promise.reject(abortReason(signal));
+  return new Promise((_, reject) => signal.addEventListener('abort', () => reject(abortReason(signal)), { once: true }));
+}
+
+function abortReason(signal: AbortSignal): Error {
+  const reason: unknown = signal.reason;
+  return reason instanceof Error ? reason : new Error('OPERATION_ABORTED', { cause: reason });
 }

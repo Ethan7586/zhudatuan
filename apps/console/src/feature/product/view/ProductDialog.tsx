@@ -1,4 +1,4 @@
-import type { FormEvent } from 'react';
+import { useEffect, useRef, type FormEvent } from 'react';
 import { OP_CATALOG_LISTINGS_PRICE_SET, OP_CATALOG_LISTINGS_PUBLISH, OP_CATALOG_LISTINGS_UNPUBLISH, OP_CATALOG_PRODUCTS_ARCHIVE, OP_CATALOG_PRODUCTS_CREATE, OP_CATALOG_PRODUCTS_UPDATE } from '@shop/contract/ids';
 import { PRODUCT_STATUS_OPTIONS, PRODUCT_TYPE_OPTIONS, presentProductAction } from '@shop/presentation';
 import type { ProductAction } from '../model/ProductAction';
@@ -6,6 +6,12 @@ import type { ProductActionViewModel } from '../viewmodel/ProductActionViewModel
 
 export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: ProductActionViewModel; onClose: () => void }>) {
   const action = viewmodel.action;
+  const titleInput = useRef<HTMLInputElement>(null);
+  const priceInput = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (action?.operation === OP_CATALOG_PRODUCTS_CREATE || action?.operation === OP_CATALOG_PRODUCTS_UPDATE) titleInput.current?.focus();
+    if (action?.operation === OP_CATALOG_LISTINGS_PRICE_SET) priceInput.current?.focus();
+  }, [action]);
   if (action === null) return null;
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -29,7 +35,7 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
             <>
               <label>
                 商品名称
-                <input value={viewmodel.title} onChange={(event) => viewmodel.setTitle(event.target.value)} required maxLength={160} disabled={viewmodel.submitting} autoFocus />
+                <input ref={titleInput} value={viewmodel.title} onChange={(event) => viewmodel.setTitle(event.target.value)} required maxLength={160} disabled={viewmodel.submitting} />
               </label>
               <label>
                 商品分类
@@ -64,7 +70,7 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
           {action.operation === OP_CATALOG_LISTINGS_PRICE_SET ? (
             <label>
               销售价（元）
-              <input type="number" min="0.01" max="999999.99" step="0.01" value={viewmodel.amount} onChange={(event) => viewmodel.setAmount(event.target.value)} required disabled={viewmodel.submitting} autoFocus />
+              <input ref={priceInput} type="number" min="0.01" max="999999.99" step="0.01" value={viewmodel.amount} onChange={(event) => viewmodel.setAmount(event.target.value)} required disabled={viewmodel.submitting} />
             </label>
           ) : null}
           <ProductActionMessage action={action} />
@@ -73,7 +79,11 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
               {viewmodel.error}
             </p>
           )}
-          {viewmodel.permissionReason === undefined ? null : <p role="alert" className="productflowerror">{viewmodel.permissionReason}</p>}
+          {viewmodel.permissionReason === undefined ? null : (
+            <p role="alert" className="productflowerror">
+              {viewmodel.permissionReason}
+            </p>
+          )}
         </div>
         <footer>
           <button type="button" onClick={onClose}>

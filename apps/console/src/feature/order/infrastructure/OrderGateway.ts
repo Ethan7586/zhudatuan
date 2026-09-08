@@ -1,19 +1,18 @@
-import { createFetchOrder, type OrderOperations } from '@shop/sdk/order';
-import { createFetchSupport, type SupportOperations } from '@shop/sdk/support';
 import { createFetchFulfillment, type FulfillmentOperations } from '@shop/sdk/fulfillment';
+import { createFetchOrder, type OrderOperations } from '@shop/sdk/order';
 import { createFetchPayment, type PaymentOperations } from '@shop/sdk/payment';
+import { createFetchSupport, type SupportOperations } from '@shop/sdk/support';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import { consoleCommand, consoleRequest } from '../../../shared/api/RequestContext';
-import type { AfterSaleRecord } from '../model/AfterSale';
-import type { AfterSaleQuery } from '../model/AfterSale';
+import { consoleRequest } from '../../../shared/api/RequestContext';
+import { ImportUploadGateway } from '../../../shared/import/ImportUploadGateway';
+import type { AfterSaleQuery, AfterSaleRecord } from '../model/AfterSale';
 import type { OrderAfterSaleDecision, OrderDetail, OrderFulfillment, OrderImportSource, OrderRecovery, OrderRecoveryAction, OrderReturn } from '../model/Order';
 import type { OrderListFilter } from '../model/OrderFilter';
 import { ORDER_PAGE_LIMIT, type OrderQuery } from '../model/OrderQuery';
 import type { OrderPort } from '../public';
 import { OrderMapper } from './OrderMapper';
-import { ImportUploadGateway } from '../../../shared/import/ImportUploadGateway';
 
-import { command, instant, orderFilterQuery } from './OrderRequest';
+import { command, orderFilterQuery } from './OrderRequest';
 export class OrderGateway implements OrderPort {
   private readonly operations: OrderOperations;
   private readonly supportOperations: SupportOperations;

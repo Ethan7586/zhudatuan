@@ -12,7 +12,11 @@ afterEach(cleanup);
 describe('StorefrontShell', () => {
   it('renders configured brand, navigation, shortcuts and account actions', () => {
     const viewmodel = model();
-    render(<StorefrontShell viewmodel={viewmodel}><p>商城正文</p></StorefrontShell>);
+    render(
+      <StorefrontShell viewmodel={viewmodel}>
+        <p>商城正文</p>
+      </StorefrontShell>
+    );
 
     expect(screen.getByText('员工关怀')).toBeTruthy();
     expect(screen.getByLabelText('搜索商城商品')).toBeTruthy();
@@ -36,7 +40,11 @@ describe('StorefrontShell', () => {
 
   it('does not render capabilities missing from navigation configuration', () => {
     const viewmodel = model({ navigation: { primary: [], published: [], quick: [], search: false, quickView: false } });
-    render(<StorefrontShell viewmodel={viewmodel}><p>只读首页</p></StorefrontShell>);
+    render(
+      <StorefrontShell viewmodel={viewmodel}>
+        <p>只读首页</p>
+      </StorefrontShell>
+    );
 
     expect(screen.queryByLabelText('搜索商城商品')).toBeNull();
     expect(screen.queryByLabelText('客服中心')).toBeNull();
@@ -65,7 +73,7 @@ function model(overrides: Record<string, unknown> = {}) {
     account: { authenticated: true, name: '王小明', currentMall: mall, malls: [mall, { ...mall, id: 'mall:two', membershipId: 'membership:two', mallName: '第二福利商城', badge: '可切换' }] },
     toasts: [],
     removeToast: vi.fn(),
-    actions: { navigate: vi.fn(), home: vi.fn(), catalog: vi.fn(), search: vi.fn(), switchMall: vi.fn(), logout: vi.fn(async () => undefined) },
+    actions: { navigate: vi.fn(), home: vi.fn(), catalog: vi.fn(), search: vi.fn(), switchMall: vi.fn(), logout: vi.fn(() => Promise.resolve()) },
     ...overrides,
   } as unknown as ReturnType<typeof useShellViewModel>;
 }

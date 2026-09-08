@@ -44,8 +44,8 @@ export function ReferralPanel({ viewmodel, back }: Readonly<{ viewmodel: ReturnT
             busy={busy}
             loading={loadingWithdrawals}
             hasMore={hasMoreWithdrawals}
-            apply={actions.apply}
-            withdraw={actions.withdraw}
+            apply={(event) => void actions.apply(event)}
+            withdraw={(event) => void actions.withdraw(event)}
             generate={() => void actions.generateLink()}
             share={() => void actions.shareLink()}
             closeLink={actions.closeLink}

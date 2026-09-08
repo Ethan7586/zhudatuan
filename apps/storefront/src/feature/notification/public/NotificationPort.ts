@@ -1,5 +1,5 @@
 import type { StorefrontSession } from '../../../entity/session';
-import type { NotificationChannel, NotificationPage } from '../model/Notification';
+import type { NotificationPage } from '../model/Notification';
 import type { NotificationPreference } from '../model/NotificationPreference';
 
 export interface NotificationPort {

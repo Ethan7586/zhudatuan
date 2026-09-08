@@ -44,8 +44,12 @@ export function matchRoutePath(pathname: string): RouteMatch | undefined {
     const parameters: Record<string, string> = {};
     let matches = true;
     for (let index = 0; index < expected.length; index += 1) {
-      const pattern = expected[index]!;
-      const value = actual[index]!;
+      const pattern = expected.at(index);
+      const value = actual.at(index);
+      if (pattern === undefined || value === undefined) {
+        matches = false;
+        continue;
+      }
       if (!pattern.startsWith(':')) {
         if (pattern !== value) matches = false;
         continue;
@@ -58,7 +62,7 @@ export function matchRoutePath(pathname: string): RouteMatch | undefined {
         matches = false;
       }
     }
-    if (matches) return Object.freeze({ id, parameters: Object.freeze(parameters) }) as RouteMatch;
+    if (matches) return Object.freeze({ id, parameters: Object.freeze(parameters) });
   }
   return undefined;
 }

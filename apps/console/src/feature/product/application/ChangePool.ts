@@ -1,6 +1,6 @@
 import type { Listing, Pool, PoolAllocationKind } from '../model/Product';
 import type { ProductCommand, ProductPort } from '../public';
-import { OP_CATALOG_POOLS_ALLOCATE, OP_CATALOG_POOLS_ATTACH, OP_CATALOG_POOLS_DETACH } from '@shop/contract/ids';
+import { OP_CATALOG_POOLS_ALLOCATE, OP_CATALOG_POOLS_ATTACH, type OP_CATALOG_POOLS_DETACH } from '@shop/contract/ids';
 
 export type PoolChange =
   | Readonly<{ operation: typeof OP_CATALOG_POOLS_ALLOCATE; target: string; poolkind: PoolAllocationKind; name: string }>

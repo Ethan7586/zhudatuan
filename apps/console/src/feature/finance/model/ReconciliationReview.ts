@@ -100,22 +100,28 @@ export function reconciliationTimeline(row: FinanceReconciliation, item: Finance
 
 function collectEvidence(value: ContractJsonValue | null | undefined, prefix: string, output: ReconciliationEvidenceFact[], depth = 0): void {
   if (value === null || value === undefined) return;
-  if (Array.isArray(value)) {
+  if (isJsonArray(value)) {
     value.forEach((entry, index) => collectEvidence(entry, `${prefix}.${index + 1}`, output, depth + 1));
     return;
   }
   if (typeof value === 'object') {
-    Object.entries(value).forEach(([key, entry]) => collectEvidence(entry, `${prefix}.${key}`, output, depth + 1));
+    Object.keys(value).forEach((key) => collectEvidence(value[key], `${prefix}.${key}`, output, depth + 1));
     return;
   }
   const key = prefix.split('.').at(-1) ?? prefix;
   const normalized = key.replaceAll('_', '').toLowerCase();
-  output.push(Object.freeze({
-    key: prefix,
-    label: evidenceLabels[normalized] ?? (depth > 1 ? '补充证据' : '批次证据'),
-    value: String(value),
-    technical: normalized.includes('hash') || normalized.includes('trace'),
-  }));
+  output.push(
+    Object.freeze({
+      key: prefix,
+      label: evidenceLabels[normalized] ?? (depth > 1 ? '补充证据' : '批次证据'),
+      value: String(value),
+      technical: normalized.includes('hash') || normalized.includes('trace'),
+    })
+  );
+}
+
+function isJsonArray(value: ContractJsonValue): value is readonly ContractJsonValue[] {
+  return Array.isArray(value);
 }
 
 function step(key: string, label: string, detail: string, actor: string | null, state: ReconciliationStepState): ReconciliationStep {

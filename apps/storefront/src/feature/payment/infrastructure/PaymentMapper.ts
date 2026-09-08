@@ -7,7 +7,7 @@ export function mapPayment(value: OperationOutputFor<'payment.intents.read'>): P
     intentId: String(value.intentId),
     orderId: String(value.orderId),
     paymentId: String(value.paymentId),
-    state: value.state as Payment['state'],
+    state: value.state,
     action,
     expiresAt: String(value.expiresAt),
     retryAfter: value.retryAfter,

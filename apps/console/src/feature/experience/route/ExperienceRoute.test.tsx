@@ -330,7 +330,16 @@ describe('Experience governance workspace', () => {
         publishMatch = request.headers.get('if-match') ?? '';
         operations.push('publish');
         published = true;
-        return HttpResponse.json({ id: 'release:restored', application_id: restored.application_id, version_id: restored.id, pool_id: 'pool:benefits', state: 'active', effective_at: '2026-09-07T00:05:00.000Z', retired_at: null, published_by: 'actor:commerce' });
+        return HttpResponse.json({
+          id: 'release:restored',
+          application_id: restored.application_id,
+          version_id: restored.id,
+          pool_id: 'pool:benefits',
+          state: 'active',
+          effective_at: '2026-09-07T00:05:00.000Z',
+          retired_at: null,
+          published_by: 'actor:commerce',
+        });
       })
     );
     renderRoute('/applications', scope('mall', 'mall:hongtai-benefits', '鸿泰惠民通'), 3);
@@ -396,12 +405,12 @@ describe('Experience governance workspace', () => {
     expect(within(panel).getByText('我的待保存标题')).toBeTruthy();
     expect(within(panel).getByText('同事刚保存的标题')).toBeTruthy();
     expect(within(panel).getAllByText(/同字段冲突/).length).toBeGreaterThan(0);
-    expect((within(panel).getByRole('button', { name: '安全合并并保存' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(within(panel).getByRole<HTMLButtonElement>('button', { name: '安全合并并保存' }).disabled).toBe(true);
 
     await user.click(within(panel).getByRole('button', { name: '载入最新版本' }));
     expect(screen.queryByText('检测到其他人的新版本')).toBeNull();
     await user.click(screen.getByRole('button', { name: '编辑主视觉' }));
-    expect((screen.getByLabelText('主标题') as HTMLInputElement).value).toBe('同事刚保存的标题');
+    expect(screen.getByLabelText<HTMLInputElement>('主标题').value).toBe('同事刚保存的标题');
   });
 });
 

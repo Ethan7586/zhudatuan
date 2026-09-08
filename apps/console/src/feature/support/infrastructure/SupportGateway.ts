@@ -1,7 +1,7 @@
 import { createIdempotencyKey } from '@shop/sdk/context';
 import { EventStreamResyncError } from '@shop/sdk/events';
 import { uploadObject } from '@shop/sdk/objects';
-import type { ContractJsonObject, OperationBodyFor, SupportAttachmentType } from '@shop/contract';
+import type { ContractJsonObject, SupportAttachmentType } from '@shop/contract';
 import { createFetchSupport } from '@shop/sdk/support';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
 import { consoleCommand, consoleRequest, consoleStream } from '../../../shared/api/RequestContext';
@@ -96,9 +96,8 @@ export class SupportGateway implements SupportPort {
   }
 
   async manageAccount(context: ConsoleContext, id: string, version: number, change: AccountChange): Promise<void> {
-    const body: ContractJsonObject = change.secretRef === undefined
-      ? { provider: change.provider, displayName: change.displayName, state: change.state }
-      : { provider: change.provider, displayName: change.displayName, state: change.state, secretRef: change.secretRef };
+    const body: ContractJsonObject =
+      change.secretRef === undefined ? { provider: change.provider, displayName: change.displayName, state: change.state } : { provider: change.provider, displayName: change.displayName, state: change.state, secretRef: change.secretRef };
     await this.client.accountsManage({ path: { accountid: id }, body }, this.command(context, version));
   }
 
@@ -107,7 +106,7 @@ export class SupportGateway implements SupportPort {
   }
 
   async manageSla(context: ConsoleContext, id: string, version: number, change: SlaChange): Promise<void> {
-    const body = { priority: change.priority, responseSeconds: change.responseSeconds, resolutionSeconds: change.resolutionSeconds, reopenSeconds: change.reopenSeconds } as OperationBodyFor<'SupportSlasManageInput'>;
+    const body = { priority: change.priority, responseSeconds: change.responseSeconds, resolutionSeconds: change.resolutionSeconds, reopenSeconds: change.reopenSeconds };
     await this.client.slasManage({ path: { slaid: id }, body }, this.command(context, version));
   }
 

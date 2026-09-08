@@ -59,7 +59,7 @@ export function defineComponent(definition: ComponentDefinition): ComponentManif
   const routeids = new Set(routes.map(({ routeid }) => routeid));
   for (const id of definition.navigationids) {
     const navigation = NAVIGATION_BY_ID.get(id);
-    if (navigation === undefined || !routeids.has(navigation.routeKey as RouteId)) throw new Error(`COMPONENT_NAVIGATION_ROUTE_MISSING:${id}`);
+    if (navigation === undefined || !routeids.has(navigation.routeKey)) throw new Error(`COMPONENT_NAVIGATION_ROUTE_MISSING:${id}`);
   }
   return Object.freeze({
     component: definition.component,

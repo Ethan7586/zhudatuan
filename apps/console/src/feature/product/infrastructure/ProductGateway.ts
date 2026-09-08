@@ -1,7 +1,8 @@
 import { createRequestContext } from '@shop/sdk/context';
 import { createFetchCatalog, createFetchCatalogFacetsRead, createFetchCatalogListingsRead, createFetchCatalogPoolsRead, createFetchCatalogProductDetailRead } from '@shop/sdk/catalog';
 import { createFetchRuntime } from '@shop/sdk/runtime';
-import type { Listing, Pool, PoolAllocationKind, ProductDetailSection, ProductDraft } from '../model/Product';
+import type { Listing, Pool, PoolAllocationKind, ProductBatchAction, ProductDetailSection, ProductDraft } from '../model/Product';
+import type { ProductImport } from '../model/ProductImport';
 import type { ProductCommand, ProductImportPort, ProductPort, ProductQuery, ProductRequest } from '../public';
 import { ProductMapper } from './ProductMapper';
 import { ImportUploadGateway } from '../../../shared/import/ImportUploadGateway';
@@ -96,11 +97,11 @@ export class ProductGateway implements ProductPort, ProductImportPort {
     return published ? this.catalog.listingsPublish(input, this.command(request, version(listing.version))) : this.catalog.listingsUnpublish(input, this.command(request, version(listing.version)));
   }
 
-  async previewProductBatch(request: ProductCommand, listings: readonly Listing[], action: import('../model/Product').ProductBatchAction) {
+  async previewProductBatch(request: ProductCommand, listings: readonly Listing[], action: ProductBatchAction) {
     return this.mapper.batch(await this.catalog.listingsBatch({ body: { phase: 'preview', items: batchItems(listings), action } }, this.command(request)));
   }
 
-  async executeProductBatch(request: ProductCommand, listings: readonly Listing[], action: import('../model/Product').ProductBatchAction, previewHash: string) {
+  async executeProductBatch(request: ProductCommand, listings: readonly Listing[], action: ProductBatchAction, previewHash: string) {
     return this.mapper.batch(await this.catalog.listingsBatch({ body: { phase: 'execute', items: batchItems(listings), action, previewHash } }, this.command(request)));
   }
 
@@ -134,7 +135,7 @@ export class ProductGateway implements ProductPort, ProductImportPort {
     return this.mapper.importTask(task, detail);
   }
 
-  async confirmProductImport(request: ProductCommand, task: import('../model/ProductImport').ProductImport) {
+  async confirmProductImport(request: ProductCommand, task: ProductImport) {
     return this.mapper.importTask(await this.runtime.importsConfirm({ path: { importid: task.id }, body: { previewHash: task.previewHash! } }, this.command(request, task.version)));
   }
 

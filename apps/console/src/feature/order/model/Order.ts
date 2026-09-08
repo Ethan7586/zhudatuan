@@ -3,12 +3,9 @@ import type { DeepReadonly } from '../../../shared/model/Immutable';
 
 type OrderPageOutput = DeepReadonly<OperationOutputFor<'order.orders.read'>>;
 type OrderDetailOutput = DeepReadonly<OperationOutputFor<'order.detail.read'>>;
-type SupportCaseOutput = DeepReadonly<OperationOutputFor<'support.cases.read'>['items'][number]>;
-type RecoveryOutput = DeepReadonly<OperationOutputFor<'payment.recoveries.read'>['items'][number]>;
-type ReturnOutput = DeepReadonly<OperationOutputFor<'fulfillment.returns.receive'>>;
-
-import type { OrderAddress, OrderAuditEntry, OrderDetailSectionState, OrderFulfillment, OrderLine, OrderPayment, OrderRefund } from './OrderState';
+import type { OrderAuditEntry, OrderFulfillment, OrderLine, OrderPayment, OrderRefund } from './OrderState';
 export * from './OrderState';
+export type { OrderAfterSaleDecision };
 
 export interface OrderDetail {
   readonly id: OrderDetailOutput['summary']['id'];
@@ -80,4 +77,3 @@ export interface OrderCommandReceipt {
 export type OrderFacetData = Extract<OrderPageOutput['facets'], { state: 'ready' }>['data'];
 export type OrderPage = OrderPageOutput;
 export type OrderRecoveryAction = OperationBodyFor<'PaymentRecoveriesResolveInput'>['action'];
-export type { OrderAfterSaleDecision };

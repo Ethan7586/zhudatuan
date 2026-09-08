@@ -32,7 +32,8 @@ export function useReconciliationViewModel(context: ConsoleContext, dependencies
   const period = url.reconPeriod;
   const provider = url.channel;
   const mall = url.mall;
-  const state = reconciliationStates.find((value) => value === url.status);
+  const status = url.status;
+  const state = reconciliationStates.find((value) => value === status);
   const differenceType = url.difference;
   const queryInput = reconciliationInput(url);
   const facetAllowed = canUseOperation(context, OP_FINANCE_FACETS_READ);
@@ -43,9 +44,7 @@ export function useReconciliationViewModel(context: ConsoleContext, dependencies
   useFinancePrefetch(context, dependencies, 'reconciliations', page !== undefined);
   const selectedId = url.selected;
   const selected = page?.items.find((row) => row.id === selectedId);
-  const selectedItem = selected?.items.find((item) => item.id === url.item)
-    ?? selected?.items.find((item) => item.state === 'difference' || item.state === 'resolutionpending')
-    ?? selected?.items[0];
+  const selectedItem = selected?.items.find((item) => item.id === url.item) ?? selected?.items.find((item) => item.state === 'difference' || item.state === 'resolutionpending') ?? selected?.items[0];
   const commandOptions = useMemo(() => availableReconciliationCommands(selected, selectedItem), [selected, selectedItem]);
 
   useEffect(() => {
@@ -53,31 +52,34 @@ export function useReconciliationViewModel(context: ConsoleContext, dependencies
     previousScope.current = scope;
     const stale = removedReconciliationQueryKeys.some((key) => search.has(key)) || (search.has('limit') && url.limit === 50);
     if (!scopeChanged && !stale) return;
-    setSearch(
-      (current) => reconciliationQuery.patch(current, { q: undefined, tab: undefined, limit: url.limit, ...(scopeChanged ? { cursor: undefined, selected: undefined, item: undefined } : {}) }),
-      { replace: true }
-    );
-  }, [scope, search, setSearch]);
+    setSearch((current) => reconciliationQuery.patch(current, { q: undefined, tab: undefined, limit: url.limit, ...(scopeChanged ? { cursor: undefined, selected: undefined, item: undefined } : {}) }), { replace: true });
+  }, [scope, search, setSearch, url.limit]);
 
   useEffect(() => {
     const facets = facetQuery.data;
     if (!facets) return;
     const selections = [
-      ['reconPeriod', facets.periods.items],
-      ['channel', facets.providers.items],
-      ['mall', facets.malls.items],
-      ['status', facets.states.items],
-      ['difference', facets.differenceTypes.items],
+      ['reconPeriod', period, facets.periods.items],
+      ['channel', provider, facets.providers.items],
+      ['mall', mall, facets.malls.items],
+      ['status', status, facets.states.items],
+      ['difference', differenceType, facets.differenceTypes.items],
     ] as const;
-    if (!selections.some(([key, items]) => url[key] !== undefined && !items.some(({ value }) => value === url[key]))) return;
+    if (!selections.some(([, value, items]) => value !== undefined && !items.some((item) => item.value === value))) return;
     setSearch(
-      (current) => reconciliationQuery.patch(current, Object.fromEntries([
-        ...selections.filter(([key, items]) => url[key] !== undefined && !items.some(({ value }) => value === url[key])).map(([key]) => [key, undefined]),
-        ['cursor', undefined], ['selected', undefined], ['item', undefined],
-      ]) as Parameters<typeof reconciliationQuery.patch>[1]),
+      (current) =>
+        reconciliationQuery.patch(
+          current,
+          Object.fromEntries([
+            ...selections.filter(([, value, items]) => value !== undefined && !items.some((item) => item.value === value)).map(([key]) => [key, undefined]),
+            ['cursor', undefined],
+            ['selected', undefined],
+            ['item', undefined],
+          ]) as Parameters<typeof reconciliationQuery.patch>[1]
+        ),
       { replace: true }
     );
-  }, [facetQuery.data, search, setSearch]);
+  }, [differenceType, facetQuery.data, mall, period, provider, search, setSearch, status]);
 
   useEffect(() => {
     if (!page) return;
@@ -110,10 +112,7 @@ export function useReconciliationViewModel(context: ConsoleContext, dependencies
     },
   });
 
-  const updateSearch = useCallback(
-    (values: Parameters<typeof reconciliationQuery.patch>[1]) => setSearch((current) => reconciliationQuery.patch(current, values)),
-    [setSearch]
-  );
+  const updateSearch = useCallback((values: Parameters<typeof reconciliationQuery.patch>[1]) => setSearch((current) => reconciliationQuery.patch(current, values)), [setSearch]);
   const resetCommand = (setter: (value: string) => void) => (value: string) => {
     setter(value);
     setConfirmed(false);
@@ -123,10 +122,8 @@ export function useReconciliationViewModel(context: ConsoleContext, dependencies
   const toggleRow = (id: string) => setSelectedRows((current) => toggleSelection(current, id));
   const toggleAll = () => setSelectedRows((current) => togglePageSelection(current, page?.items.map((row) => row.id) ?? []));
   const toggleColumn = (key: FinanceColumnKey) => setVisibleColumns((current) => toggleSelection(current, key));
-  const setCursor = (nextCursor?: string) =>
-    updateSearch({ cursor: nextCursor, selected: undefined, item: undefined });
-  const setLimit = (limit: 20 | 50) =>
-    updateSearch({ limit, cursor: undefined, selected: undefined, item: undefined });
+  const setCursor = (nextCursor?: string) => updateSearch({ cursor: nextCursor, selected: undefined, item: undefined });
+  const setLimit = (limit: 20 | 50) => updateSearch({ limit, cursor: undefined, selected: undefined, item: undefined });
   const validation = validateReconciliationCommand(selected, selectedItem, commandOptions, command, reason, proof, confirmed);
   const submit = () => {
     if (!selected || validation || mutation.isPending) return;
@@ -187,8 +184,7 @@ export function useReconciliationViewModel(context: ConsoleContext, dependencies
       next: (nextCursor: string) => setCursor(nextCursor),
       first: () => setCursor(),
       limit: setLimit,
-      filter: (key: 'reconPeriod' | 'channel' | 'mall' | 'status' | 'difference', value: string) =>
-        updateSearch({ [key]: value || undefined, cursor: undefined, selected: undefined, item: undefined }),
+      filter: (key: 'reconPeriod' | 'channel' | 'mall' | 'status' | 'difference', value: string) => updateSearch({ [key]: value || undefined, cursor: undefined, selected: undefined, item: undefined }),
       clearFilters: () => updateSearch({ reconPeriod: undefined, channel: undefined, mall: undefined, status: undefined, difference: undefined, cursor: undefined, selected: undefined, item: undefined }),
       command: (value: FinanceReconciliationAction) => {
         setCommand(value);

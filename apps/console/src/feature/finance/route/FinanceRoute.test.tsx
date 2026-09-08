@@ -3,23 +3,23 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
-import { MemoryRouter, useLocation } from 'react-router';
 import type { ComponentType } from 'react';
+import { MemoryRouter, useLocation } from 'react-router';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { streamingFile } from '../../../../test/StreamingFile';
 import { createConsoleDependencies } from '../../../app/Dependencies';
 import { DependencyProvider } from '../../../app/DependencyContext';
 import { ConsoleContextProvider } from '../../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
 import { StepupProvider } from '../../../entity/session/StepupContext';
-import { Component as OverviewRoute } from './FinanceRoute';
-import { Component as ReconciliationRoute } from './ReconciliationRoute';
 import { Component as AuditRoute } from './AuditRoute';
-import { Component as StatementRoute } from './StatementRoute';
 import { Component as EntryRoute } from './EntryRoute';
-import { Component as SettlementRoute } from './SettlementRoute';
-import { Component as WithdrawalRoute } from './WithdrawalRoute';
+import { Component as OverviewRoute } from './FinanceRoute';
 import { Component as InvoiceRoute } from './InvoiceRoute';
-import { streamingFile } from '../../../../test/StreamingFile';
+import { Component as ReconciliationRoute } from './ReconciliationRoute';
+import { Component as SettlementRoute } from './SettlementRoute';
+import { Component as StatementRoute } from './StatementRoute';
+import { Component as WithdrawalRoute } from './WithdrawalRoute';
 
 const requests: URL[] = [];
 const overviewReads: string[] = [];
@@ -46,7 +46,18 @@ const row = {
   version: 7,
   item_counts: { matched: 2, difference: 1 },
   items: [
-    { id: 'reconciliationdifference:1', externalMinor: 11_900, internalMinor: 0, differenceMinor: 11_900, state: 'difference', reasonCode: 'INTERNAL_REFERENCE_MISSING', evidence: { paymentReference: 'payment:wechat:1', channelLine: 'WX-20260824-0119', matchRule: 'provider-reference' }, resolution: null, resolvedBy: null, approvedBy: null },
+    {
+      id: 'reconciliationdifference:1',
+      externalMinor: 11_900,
+      internalMinor: 0,
+      differenceMinor: 11_900,
+      state: 'difference',
+      reasonCode: 'INTERNAL_REFERENCE_MISSING',
+      evidence: { paymentReference: 'payment:wechat:1', channelLine: 'WX-20260824-0119', matchRule: 'provider-reference' },
+      resolution: null,
+      resolvedBy: null,
+      approvedBy: null,
+    },
   ],
 } as const;
 
@@ -71,10 +82,13 @@ const server = setupServer(
   }),
   http.get('*/api/v1/finance/entries', ({ request }) => {
     requests.push(new URL(request.url));
-    return HttpResponse.json({ items: [
-      { id: 'entry:debit:1', side: 'debit', amount_minor: 12_300, code: 'cash.receivable', currency: 'CNY', reference_type: 'order', reference_id: 'order:1', description: '订单应收款入账', posted_at: '2026-09-01T08:00:00.000Z' },
-      { id: 'entry:credit:1', side: 'credit', amount_minor: 12_300, code: 'sales.income', currency: 'CNY', reference_type: 'order', reference_id: 'order:1', description: '商品收入入账', posted_at: '2026-09-01T08:00:00.000Z' },
-    ], count: 2 });
+    return HttpResponse.json({
+      items: [
+        { id: 'entry:debit:1', side: 'debit', amount_minor: 12_300, code: 'cash.receivable', currency: 'CNY', reference_type: 'order', reference_id: 'order:1', description: '订单应收款入账', posted_at: '2026-09-01T08:00:00.000Z' },
+        { id: 'entry:credit:1', side: 'credit', amount_minor: 12_300, code: 'sales.income', currency: 'CNY', reference_type: 'order', reference_id: 'order:1', description: '商品收入入账', posted_at: '2026-09-01T08:00:00.000Z' },
+      ],
+      count: 2,
+    });
   }),
   http.get('*/api/v1/finance/statements', ({ request }) => {
     requests.push(new URL(request.url));
@@ -82,7 +96,22 @@ const server = setupServer(
   }),
   http.post('*/api/v1/finance/statements/exports', async ({ request }) => {
     sectionCommands.push({ operation: 'statementexport', body: await request.json(), headers: request.headers });
-    return HttpResponse.json({ id: 'export:statement:1', scope: 'enterprise:1', report: 'finance.statement', filter: {}, state: 'queued', cursor: null, recordCount: 0, objectReference: null, objectHash: null, objectSize: null, scanState: null, expiresAt: null, createdAt: '2026-09-01T09:00:00.000Z', generatedAt: null });
+    return HttpResponse.json({
+      id: 'export:statement:1',
+      scope: 'enterprise:1',
+      report: 'finance.statement',
+      filter: {},
+      state: 'queued',
+      cursor: null,
+      recordCount: 0,
+      objectReference: null,
+      objectHash: null,
+      objectSize: null,
+      scanState: null,
+      expiresAt: null,
+      createdAt: '2026-09-01T09:00:00.000Z',
+      generatedAt: null,
+    });
   }),
   http.get('*/api/v1/finance/settlements', ({ request }) => {
     requests.push(new URL(request.url));
@@ -90,8 +119,7 @@ const server = setupServer(
   }),
   http.post('*/api/v1/finance/settlements/:id/decide', async ({ request }) => {
     sectionCommands.push({ operation: 'settlementdecide', body: await request.json(), headers: request.headers });
-    const { lines: _lines, splits: _splits, adjustments: _adjustments, ...result } = settlement();
-    return HttpResponse.json({ ...result, state: 'payable', approved_by: 'membership:checker', approved_at: '2026-09-01T10:00:00.000Z', version: 4 });
+    return HttpResponse.json({ ...settlement(), lines: undefined, splits: undefined, adjustments: undefined, state: 'payable', approved_by: 'membership:checker', approved_at: '2026-09-01T10:00:00.000Z', version: 4 });
   }),
   http.get('*/api/v1/finance/withdrawals', ({ request }) => {
     requests.push(new URL(request.url));
@@ -115,25 +143,23 @@ const server = setupServer(
   }),
   http.delete('*/api/v1/invoices/requests/:id', ({ request }) => {
     sectionCommands.push({ operation: 'invoicecancel', body: {}, headers: request.headers });
-    const { object_ref: _object, sha256: _sha, issued_at: _issued, lines: _lines, ...result } = invoiceRequest();
-    return HttpResponse.json({ ...result, state: 'cancelled', version: 3 });
+    return HttpResponse.json({ ...invoiceRequest(), object_ref: undefined, sha256: undefined, issued_at: undefined, lines: undefined, state: 'cancelled', version: 3 });
   }),
   http.post('*/api/v1/invoices/requests/:id/decide', async ({ request }) => {
     sectionCommands.push({ operation: 'invoicedecide', body: await request.json(), headers: request.headers });
-    const { object_ref: _object, sha256: _sha, issued_at: _issued, lines: _lines, ...result } = invoiceRequest();
-    return HttpResponse.json({ ...result, state: 'approved', approved_by: 'membership:checker', version: 3 });
+    return HttpResponse.json({ ...invoiceRequest(), object_ref: undefined, sha256: undefined, issued_at: undefined, lines: undefined, state: 'approved', approved_by: 'membership:checker', version: 3 });
   }),
   http.post('*/api/v1/invoices/requests/:id/red', async ({ request }) => {
     sectionCommands.push({ operation: 'invoicered', body: await request.json(), headers: request.headers });
-    const { object_ref: _object, sha256: _sha, issued_at: _issued, lines: _lines, ...result } = invoiceRequest();
-    return HttpResponse.json({ ...result, id: 'invoice:red:1', state: 'submitted', kind: 'red', red_of_request_id: result.id, version: 0 });
+    const source = invoiceRequest();
+    return HttpResponse.json({ ...source, object_ref: undefined, sha256: undefined, issued_at: undefined, lines: undefined, id: 'invoice:red:1', state: 'submitted', kind: 'red', red_of_request_id: source.id, version: 0 });
   }),
   http.get('*/api/v1/channels/connections', ({ request }) => {
     financeImportCommands.push({ operation: 'connections', body: {}, headers: request.headers });
     return HttpResponse.json({ items: [statementConnection()], count: 1 });
   }),
   http.post('*/api/v1/runtime/uploads', async ({ request }) => {
-    const body = await request.json() as Readonly<{ name: string; contentType: string; size: number; sha256: string }>;
+    const body = (await request.json()) as Readonly<{ name: string; contentType: string; size: number; sha256: string }>;
     financeImportCommands.push({ operation: 'uploadintent', body, headers: request.headers });
     return HttpResponse.json({
       reference: 'object:finance/statement.csv',
@@ -244,16 +270,22 @@ describe('Finance MVVM workspace', () => {
     expect(screen.queryByText('服务端未提供')).toBeNull();
     expect(screen.queryByRole('button', { name: '发起对账' })).toBeNull();
     const navigation = screen.getByRole('navigation', { name: '财务工作台' });
-    expect(within(navigation).getAllByRole('button').map((button) => button.textContent)).toEqual(['概览', '账单', '对账', '结算', '提现', '发票']);
+    expect(
+      within(navigation)
+        .getAllByRole('button')
+        .map((button) => button.textContent)
+    ).toEqual(['概览', '账单', '对账', '结算', '提现', '发票']);
     expect(within(navigation).queryByRole('button', { name: '导入账单' })).toBeNull();
     await waitFor(() => expect([...overviewReads].sort()).toEqual(['/api/v1/finance/facets', '/api/v1/finance/overview']));
   });
 
   it('keeps facets, navigation and the finance entry usable when only overview fails', async () => {
-    server.use(http.get('*/api/v1/finance/overview', ({ request }) => {
-      overviewReads.push(new URL(request.url).pathname);
-      return HttpResponse.json({ code: 'FINANCE_OVERVIEW_DELAYED', message: '财务总览暂时不可用。', requestId: 'trace:finance-overview' }, { status: 503 });
-    }));
+    server.use(
+      http.get('*/api/v1/finance/overview', ({ request }) => {
+        overviewReads.push(new URL(request.url).pathname);
+        return HttpResponse.json({ code: 'FINANCE_OVERVIEW_DELAYED', message: '财务总览暂时不可用。', requestId: 'trace:finance-overview' }, { status: 503 });
+      })
+    );
     renderRoute('/finance', OverviewRoute);
 
     expect(await screen.findByRole('heading', { level: 1, name: '财务总览' })).toBeTruthy();
@@ -269,7 +301,23 @@ describe('Finance MVVM workspace', () => {
       http.get('*/api/v1/finance/statements', ({ request }) => {
         sectionReads.push(new URL(request.url).pathname);
         return HttpResponse.json({
-          items: [{ id: 'statement:1', scope_id: 'enterprise:1', period_start: '2026-08-01', period_end: '2026-08-31', currency: 'CNY', opening_minor: 1_000, debit_minor: 600, credit_minor: 200, closing_minor: 1_400, state: 'final', object_ref: null, sha256: null, generated_at: '2026-09-01T00:00:00.000Z' }],
+          items: [
+            {
+              id: 'statement:1',
+              scope_id: 'enterprise:1',
+              period_start: '2026-08-01',
+              period_end: '2026-08-31',
+              currency: 'CNY',
+              opening_minor: 1_000,
+              debit_minor: 600,
+              credit_minor: 200,
+              closing_minor: 1_400,
+              state: 'final',
+              object_ref: null,
+              sha256: null,
+              generated_at: '2026-09-01T00:00:00.000Z',
+            },
+          ],
           count: 1,
         });
       }),
@@ -389,7 +437,7 @@ describe('Finance MVVM workspace', () => {
     expect(await within(dialog).findByText('暂无可用账单渠道')).toBeTruthy();
     expect(within(dialog).getByText('当前范围的账单渠道尚未启用，或最近一次健康检查未通过。')).toBeTruthy();
     expect(within(dialog).queryByLabelText('账单来源渠道')).toBeNull();
-    expect((within(dialog).getByRole('button', { name: '下一步：上传文件' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(within(dialog).getByRole<HTMLButtonElement>('button', { name: '下一步：上传文件' }).disabled).toBe(true);
     expect(financeImportCommands).toHaveLength(0);
   });
 
@@ -407,7 +455,11 @@ describe('Finance MVVM workspace', () => {
     expect(within(dialog).getByLabelText<HTMLInputElement>('一次性操作凭证').value.length).toBe(43);
     await user.click(within(dialog).getByRole('checkbox', { name: /我已核对操作对象/ }));
     const approve = within(dialog).getByRole<HTMLButtonElement>('button', { name: '确认批准结算' });
-    expect({ disabled: approve.disabled, proof: within(dialog).getByLabelText<HTMLInputElement>('一次性操作凭证').value.length, validation: dialog.querySelector('.financeactionvalidation')?.textContent }).toEqual({ disabled: false, proof: 43, validation: undefined });
+    expect({ disabled: approve.disabled, proof: within(dialog).getByLabelText<HTMLInputElement>('一次性操作凭证').value.length, validation: dialog.querySelector('.financeactionvalidation')?.textContent }).toEqual({
+      disabled: false,
+      proof: 43,
+      validation: undefined,
+    });
     await user.click(approve);
     await waitFor(() => expect(sectionCommands).toHaveLength(1));
     expect(screen.queryByRole('alert')?.textContent).toBeFalsy();
@@ -473,10 +525,12 @@ describe('Finance MVVM workspace', () => {
   });
 
   it('offers red issuance only for an issued original invoice and rereads after the real command', async () => {
-    server.use(http.get('*/api/v1/invoices/requests', ({ request }) => {
-      requests.push(new URL(request.url));
-      return HttpResponse.json({ items: [{ ...invoiceRequest(), state: 'issued', issued_at: '2026-09-01T09:00:00.000Z' }], count: 1 });
-    }));
+    server.use(
+      http.get('*/api/v1/invoices/requests', ({ request }) => {
+        requests.push(new URL(request.url));
+        return HttpResponse.json({ items: [{ ...invoiceRequest(), state: 'issued', issued_at: '2026-09-01T09:00:00.000Z' }], count: 1 });
+      })
+    );
     const user = userEvent.setup();
     renderRoute('/finance/invoices', InvoiceRoute, operationsContext);
     await user.click(await screen.findByRole('button', { name: '查看详情' }));
@@ -593,7 +647,10 @@ const context: ConsoleContext = {
   scope: { kind: 'enterprise', id: 'enterprise:1' },
   scopes: [{ kind: 'enterprise', id: 'enterprise:1' }],
 };
-const authorizedContext: ConsoleContext = { ...context, session: { ...context.session, csrf: 'csrf:finance', permissions: [...context.session.permissions, 'finance.reconciliation.manage'], capabilities: [...context.session.capabilities, 'finance.reconciliations.manage'] } };
+const authorizedContext: ConsoleContext = {
+  ...context,
+  session: { ...context.session, csrf: 'csrf:finance', permissions: [...context.session.permissions, 'finance.reconciliation.manage'], capabilities: [...context.session.capabilities, 'finance.reconciliations.manage'] },
+};
 const auditContext: ConsoleContext = { ...context, session: { ...context.session, permissions: [...context.session.permissions, 'audit.read'], capabilities: [...context.session.capabilities, 'finance.audit.read'] } };
 const statementContext: ConsoleContext = { ...context, session: { ...context.session, permissions: ['finance.statement.read', 'finance.reconciliation.read'], capabilities: ['finance.statements.read', 'finance.reconciliations.read'] } };
 const operationsContext: ConsoleContext = {
@@ -602,19 +659,49 @@ const operationsContext: ConsoleContext = {
     ...context.session,
     csrf: 'csrf:finance',
     permissions: [
-      'audit.read', 'finance.entry.read', 'finance.statement.read', 'finance.statement.export', 'finance.reconciliation.read',
-      'finance.settlement.read', 'finance.settlement.decide', 'finance.withdrawal.read', 'finance.withdrawal.create',
-      'finance.withdrawal.decide', 'finance.withdrawal.recover', 'invoice.request.read', 'invoice.request.cancel',
-      'invoice.request.decide', 'invoice.request.red',
-      'finance.statement.import', 'runtime.import.manage', 'runtime.task.read', 'channel.connection.read',
+      'audit.read',
+      'finance.entry.read',
+      'finance.statement.read',
+      'finance.statement.export',
+      'finance.reconciliation.read',
+      'finance.settlement.read',
+      'finance.settlement.decide',
+      'finance.withdrawal.read',
+      'finance.withdrawal.create',
+      'finance.withdrawal.decide',
+      'finance.withdrawal.recover',
+      'invoice.request.read',
+      'invoice.request.cancel',
+      'invoice.request.decide',
+      'invoice.request.red',
+      'finance.statement.import',
+      'runtime.import.manage',
+      'runtime.task.read',
+      'channel.connection.read',
     ],
     capabilities: [
-      'finance.audit.read', 'finance.entries.read', 'finance.statements.read', 'finance.statements.export', 'finance.reconciliations.read',
-      'finance.settlements.read', 'finance.settlements.decide', 'finance.withdrawals.read', 'finance.withdrawals.create',
-      'finance.withdrawals.decide', 'finance.withdrawals.recover', 'invoice.requests.read', 'invoice.requests.cancel',
-      'invoice.requests.decide', 'invoice.requests.red',
-      'finance.statementimports.create', 'finance.statementimports.read', 'runtime.uploads.create', 'runtime.jobs.read',
-      'runtime.imports.read', 'runtime.imports.confirm', 'channel.connections.read',
+      'finance.audit.read',
+      'finance.entries.read',
+      'finance.statements.read',
+      'finance.statements.export',
+      'finance.reconciliations.read',
+      'finance.settlements.read',
+      'finance.settlements.decide',
+      'finance.withdrawals.read',
+      'finance.withdrawals.create',
+      'finance.withdrawals.decide',
+      'finance.withdrawals.recover',
+      'invoice.requests.read',
+      'invoice.requests.cancel',
+      'invoice.requests.decide',
+      'invoice.requests.red',
+      'finance.statementimports.create',
+      'finance.statementimports.read',
+      'runtime.uploads.create',
+      'runtime.jobs.read',
+      'runtime.imports.read',
+      'runtime.imports.confirm',
+      'channel.connections.read',
     ],
   },
 };
@@ -673,21 +760,74 @@ function audit() {
       { id: 'repair:one', kind: 'repair', label: '差异修复待复核', business_reference: 'statement:one', state: 'submitted', amount_minor: null, currency: null, occurred_at: '2026-09-05T10:03:00.000Z', version: 1 },
     ],
     events: [{ id: 'event:one', type: 'finance.entry.posted', event_version: 1, aggregate_type: 'journal', aggregate_id: 'journal:one', state: 'published', occurred_at: '2026-09-05T10:00:01.000Z', trace_id: 'trace:one' }],
-    records: [{ id: 'audit:one', kind: 'command', action: 'finance.post', resource_type: 'journal', resource_id: 'journal:one', actor_id: 'actor:one', actor_type: 'member', before_hash: null, after_hash: 'a'.repeat(64), record_hash: 'b'.repeat(64), evidence: {}, occurred_at: '2026-09-05T10:00:02.000Z', trace_id: 'trace:one' }],
+    records: [
+      {
+        id: 'audit:one',
+        kind: 'command',
+        action: 'finance.post',
+        resource_type: 'journal',
+        resource_id: 'journal:one',
+        actor_id: 'actor:one',
+        actor_type: 'member',
+        before_hash: null,
+        after_hash: 'a'.repeat(64),
+        record_hash: 'b'.repeat(64),
+        evidence: {},
+        occurred_at: '2026-09-05T10:00:02.000Z',
+        trace_id: 'trace:one',
+      },
+    ],
     watermark: '2026-09-05T10:00:02.000Z',
   };
 }
 
 function statementPage() {
   return {
-    items: [{ id: 'statement:1', scope_id: 'enterprise:1', period_start: '2026-08-01', period_end: '2026-08-31', currency: 'CNY', opening_minor: 110_000, debit_minor: 32_000, credit_minor: 22_000, closing_minor: 120_000, state: 'final', object_ref: 'object:statement:1', sha256: 'a'.repeat(64), generated_at: '2026-09-01T00:00:00.000Z' }],
+    items: [
+      {
+        id: 'statement:1',
+        scope_id: 'enterprise:1',
+        period_start: '2026-08-01',
+        period_end: '2026-08-31',
+        currency: 'CNY',
+        opening_minor: 110_000,
+        debit_minor: 32_000,
+        credit_minor: 22_000,
+        closing_minor: 120_000,
+        state: 'final',
+        object_ref: 'object:statement:1',
+        sha256: 'a'.repeat(64),
+        generated_at: '2026-09-01T00:00:00.000Z',
+      },
+    ],
     count: 1,
   };
 }
 
 function settlement() {
   return {
-    id: 'settlement:1', partner_id: 'supplier:1', period: '2026-08', reconciliation_id: 'reconciliation:1', amount_minor: 120_000, currency: 'CNY', state: 'draft', scope_id: 'enterprise:1', requested_by: 'membership:maker', approved_by: null, frozen_at: '2026-09-01T00:00:00.000Z', approved_at: null, paid_at: null, evidence: {}, version: 3, gross_minor: 128_000, fee_minor: 8_000, invoice_basis: 'taxincluded', input_hash: 'b'.repeat(64), input_count: 3, input_minor: 128_000, input_watermark: '2026-09-01T00:00:00.000Z',
+    id: 'settlement:1',
+    partner_id: 'supplier:1',
+    period: '2026-08',
+    reconciliation_id: 'reconciliation:1',
+    amount_minor: 120_000,
+    currency: 'CNY',
+    state: 'draft',
+    scope_id: 'enterprise:1',
+    requested_by: 'membership:maker',
+    approved_by: null,
+    frozen_at: '2026-09-01T00:00:00.000Z',
+    approved_at: null,
+    paid_at: null,
+    evidence: {},
+    version: 3,
+    gross_minor: 128_000,
+    fee_minor: 8_000,
+    invoice_basis: 'taxincluded',
+    input_hash: 'b'.repeat(64),
+    input_count: 3,
+    input_minor: 128_000,
+    input_watermark: '2026-09-01T00:00:00.000Z',
     lines: [
       { id: 'line:1', sourceType: 'order', sourceId: 'order:1', amountMinor: 50_000, taxMinor: 3_000, state: 'frozen', adjustmentOf: null },
       { id: 'line:2', sourceType: 'order', sourceId: 'order:2', amountMinor: 40_000, taxMinor: 2_000, state: 'frozen', adjustmentOf: null },
@@ -700,13 +840,56 @@ function settlement() {
 
 function withdrawal() {
   return {
-    id: 'withdrawal:1', scope_id: 'enterprise:1', settlement_id: 'settlement:1', amount_minor: 8_800, currency: 'CNY', destination_ref: 'bankaccount:1', state: 'failed', requested_by: 'membership:maker', approved_by: 'membership:checker', reason: '供应商本期结算提现', evidence: {}, provider_reference: 'provider:withdrawal:1', provider: 'wechat', provider_state: 'failed', request_hash: 'c'.repeat(64), input_watermark: '2026-09-01T00:00:00.000Z', response_hash: 'd'.repeat(64), created_at: '2026-09-01T08:00:00.000Z', updated_at: '2026-09-01T08:05:00.000Z', paid_at: null, version: 5,
+    id: 'withdrawal:1',
+    scope_id: 'enterprise:1',
+    settlement_id: 'settlement:1',
+    amount_minor: 8_800,
+    currency: 'CNY',
+    destination_ref: 'bankaccount:1',
+    state: 'failed',
+    requested_by: 'membership:maker',
+    approved_by: 'membership:checker',
+    reason: '供应商本期结算提现',
+    evidence: {},
+    provider_reference: 'provider:withdrawal:1',
+    provider: 'wechat',
+    provider_state: 'failed',
+    request_hash: 'c'.repeat(64),
+    input_watermark: '2026-09-01T00:00:00.000Z',
+    response_hash: 'd'.repeat(64),
+    created_at: '2026-09-01T08:00:00.000Z',
+    updated_at: '2026-09-01T08:05:00.000Z',
+    paid_at: null,
+    version: 5,
   };
 }
 
 function invoiceRequest() {
   return {
-    id: 'invoice:1', profile_id: 'invoiceprofile:1', settlement_id: 'settlement:1', amount_minor: 120_000, currency: 'CNY', state: 'submitted', created_at: '2026-09-01T08:00:00.000Z', version: 2, requested_by: 'membership:maker', approved_by: null, reason: '供应商申请开票', evidence: {}, source_hash: 'e'.repeat(64), kind: 'original', red_of_request_id: null, issue_hash: null, issue_count: null, issue_watermark: null, provider: null, provider_reference: null, response_hash: null, object_ref: null, sha256: null, issued_at: null,
+    id: 'invoice:1',
+    profile_id: 'invoiceprofile:1',
+    settlement_id: 'settlement:1',
+    amount_minor: 120_000,
+    currency: 'CNY',
+    state: 'submitted',
+    created_at: '2026-09-01T08:00:00.000Z',
+    version: 2,
+    requested_by: 'membership:maker',
+    approved_by: null,
+    reason: '供应商申请开票',
+    evidence: {},
+    source_hash: 'e'.repeat(64),
+    kind: 'original',
+    red_of_request_id: null,
+    issue_hash: null,
+    issue_count: null,
+    issue_watermark: null,
+    provider: null,
+    provider_reference: null,
+    response_hash: null,
+    object_ref: null,
+    sha256: null,
+    issued_at: null,
     lines: [
       { settlementLine: 'line:1', amountMinor: 60_000, taxMinor: 3_000, sourceHash: 'f'.repeat(64) },
       { settlementLine: 'line:2', amountMinor: 60_000, taxMinor: 3_000, sourceHash: '0'.repeat(64) },
@@ -716,11 +899,28 @@ function invoiceRequest() {
 
 function statementConnection() {
   return {
-    id: 'connection:supplier:one', provider: 'supplier', scope_id: 'enterprise:1', status: 'enabled', region: 'CN',
-    connection_timeout_ms: 500, response_timeout_ms: 1_000, total_deadline_ms: 2_000, max_concurrency: 8,
-    requests_per_second: 20, max_attempts: 3, failure_threshold: 5, recovery_ms: 30_000, version: 2,
-    contract_version: 'supplier.v1', created_at: '2026-09-01T00:00:00.000Z', updated_at: '2026-09-01T00:00:00.000Z',
-    has_secret: true, capabilities: ['Statement'], health_state: 'healthy', health_latency_ms: 30, health_reason: null,
+    id: 'connection:supplier:one',
+    provider: 'supplier',
+    scope_id: 'enterprise:1',
+    status: 'enabled',
+    region: 'CN',
+    connection_timeout_ms: 500,
+    response_timeout_ms: 1_000,
+    total_deadline_ms: 2_000,
+    max_concurrency: 8,
+    requests_per_second: 20,
+    max_attempts: 3,
+    failure_threshold: 5,
+    recovery_ms: 30_000,
+    version: 2,
+    contract_version: 'supplier.v1',
+    created_at: '2026-09-01T00:00:00.000Z',
+    updated_at: '2026-09-01T00:00:00.000Z',
+    has_secret: true,
+    capabilities: ['Statement'],
+    health_state: 'healthy',
+    health_latency_ms: 30,
+    health_reason: null,
     checked_at: '2026-09-01T00:00:00.000Z',
   };
 }

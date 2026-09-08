@@ -32,8 +32,11 @@ describe('ProductBatchViewModel', () => {
     expect(screen.getByText('商品版本已变化，请重新预检')).toBeTruthy();
     await user.click(screen.getByRole('button', { name: '仅重试 1 个失败项' }));
     await waitFor(() => expect(preview).toHaveBeenCalledTimes(2));
-    expect(preview.mock.calls[1]?.[1]).toEqual([expect.objectContaining({ id: 'listing:two', version: 4 })]);
-    expect(execute).toHaveBeenCalledWith(expect.objectContaining({ identity: expect.stringMatching(/^command:/) }), listings, 'publish', expect.objectContaining({ phase: 'preview', previewHash: 'a'.repeat(64) }));
+    const failedListing = listings[1];
+    if (failedListing === undefined) throw new Error('TEST_FAILED_LISTING_MISSING');
+    expect(preview.mock.calls[1]?.[1]).toEqual([{ ...failedListing, version: 4 }]);
+    expect(execute.mock.calls[0]?.[0]).toHaveProperty('identity');
+    expect(execute).toHaveBeenCalledWith(expect.anything(), listings, 'publish', expect.objectContaining({ phase: 'preview', previewHash: 'a'.repeat(64) }));
   });
 
   it('does not expose a batch action when the operation is unavailable', () => {

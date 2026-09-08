@@ -4,7 +4,7 @@ import { OrderGateway } from './OrderGateway';
 
 describe('Storefront OrderGateway', () => {
   it('sends cancellation to the exact aggregate version with CSRF and one idempotency key', async () => {
-    const ordersCancel = vi.fn(async () => ({ orderId: 'order:one', lifecycleState: 'cancelled', fulfillmentState: 'cancelled', cancelledAt: '2026-09-05T02:00:00.000Z', version: 4, eventId: 'event:one', repeated: false }));
+    const ordersCancel = vi.fn(() => Promise.resolve({ orderId: 'order:one', lifecycleState: 'cancelled', fulfillmentState: 'cancelled', cancelledAt: '2026-09-05T02:00:00.000Z', version: 4, eventId: 'event:one', repeated: false }));
     const context = vi.fn((_session, options) => ({ ...options }) as RequestContext);
     const gateway = new OrderGateway({ ordersCancel } as never, {} as never, context);
     const session = { membership: 'membership:one', scope: { kind: 'mall' as const, id: 'mall:one' }, accessVersion: 7, csrfToken: 'csrf:one' };
@@ -17,8 +17,8 @@ describe('Storefront OrderGateway', () => {
   });
 
   it('reads the aggregate detail and provider tracking concurrently for the same order', async () => {
-    const detailRead = vi.fn(async () => { throw new Error('DETAIL_STOP'); });
-    const trackingRead = vi.fn(async () => ({ items: [], count: 0 }));
+    const detailRead = vi.fn(() => Promise.reject(new Error('DETAIL_STOP')));
+    const trackingRead = vi.fn(() => Promise.resolve({ items: [], count: 0 }));
     const context = vi.fn(() => ({ headers: {} }) as unknown as RequestContext);
     const gateway = new OrderGateway({ detailRead } as never, { trackingRead } as never, context);
     const session = { membership: 'membership:one', scope: { kind: 'mall' as const, id: 'mall:one' }, accessVersion: 7, csrfToken: 'csrf:one' };

@@ -1,10 +1,7 @@
 import type { ApiErrorCode } from '@shop/contract';
-import { Button, ResourcePanel, type ResourceCondition } from '@shop/design';
+import type { ResourceCondition } from '@shop/design';
 import { failure, presentError } from '@shop/presentation';
-import { useEffect } from 'react';
-import { isRouteErrorResponse, useLocation, useNavigate, useRouteError } from 'react-router';
-import { NAVIGATION_CATALOG_HASH } from '../generated/NavigationBinding';
-import { ROOT_PATH } from '../generated/RouteBinding';
+import { isRouteErrorResponse } from 'react-router';
 
 const routeApiErrorCodes = Object.freeze([
   'AUTHORIZATION_DENIED',

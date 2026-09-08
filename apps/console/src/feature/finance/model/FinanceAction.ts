@@ -1,4 +1,5 @@
-import {
+import type { OperationId, OperationInputFor } from '@shop/contract';
+import type {
   OP_FINANCE_SETTLEMENTS_DECIDE,
   OP_FINANCE_STATEMENTS_EXPORT,
   OP_FINANCE_WITHDRAWALS_CREATE,
@@ -8,9 +9,7 @@ import {
   OP_INVOICE_REQUESTS_DECIDE,
   OP_INVOICE_REQUESTS_RED,
 } from '@shop/contract/ids';
-import type { OperationId, OperationInputFor } from '@shop/contract';
-import { operationPolicy } from '@shop/contract/policies';
-import type { FinanceRecord, FinanceSection } from './Finance';
+import type { FinanceRecord } from './Finance';
 
 export type FinanceActionKind =
   | 'statementexport'

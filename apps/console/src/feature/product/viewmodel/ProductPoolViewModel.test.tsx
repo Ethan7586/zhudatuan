@@ -8,13 +8,7 @@ import type { Listing, Pool } from '../model/Product';
 import { PoolDialog } from '../view/PoolDialog';
 import { useProductPoolViewModel } from './ProductPoolViewModel';
 import { listingFixture } from '../test/ProductFixture';
-import {
-  OP_CATALOG_LISTINGS_POOL_SET,
-  OP_CATALOG_POOLS_ALLOCATE,
-  OP_CATALOG_POOLS_ATTACH,
-  OP_CATALOG_POOLS_DETACH,
-  OP_CATALOG_POOLS_READ,
-} from '@shop/contract/ids';
+import { OP_CATALOG_LISTINGS_POOL_SET, OP_CATALOG_POOLS_ALLOCATE, OP_CATALOG_POOLS_ATTACH, OP_CATALOG_POOLS_DETACH, OP_CATALOG_POOLS_READ } from '@shop/contract/ids';
 
 afterEach(() => cleanup());
 
@@ -30,7 +24,7 @@ describe('ProductPoolViewModel', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: '确认执行' }));
 
     await waitFor(() => expect(move).toHaveBeenCalledTimes(2));
-    expect(move.mock.calls[0]?.[0].identity).toBe(move.mock.calls[1]?.[0].identity);
+    expect(commandIdentity(move.mock.calls[0]?.[0])).toBe(commandIdentity(move.mock.calls[1]?.[0]));
     expect(move.mock.calls[0]?.[1]).toBe(listing);
     expect(move.mock.calls[0]?.[2]).toMatchObject({ id: 'pool:target' });
   });
@@ -41,7 +35,9 @@ describe('ProductPoolViewModel', () => {
     await screen.findByRole('option', { name: '移出当前商品池' });
     await userEvent.setup().selectOptions(screen.getByLabelText('操作'), 'remove');
     await userEvent.setup().click(screen.getByRole('button', { name: '确认执行' }));
-    await waitFor(() => expect(move).toHaveBeenCalledWith(expect.objectContaining({ identity: expect.stringMatching(/^command:/) }), listing, null));
+    await waitFor(() => expect(move).toHaveBeenCalledTimes(1));
+    expect(commandIdentity(move.mock.calls[0]?.[0])).toMatch(/^command:/);
+    expect(move).toHaveBeenCalledWith(expect.anything(), listing, null);
   });
 
   it('allocates, attaches and detaches a pool through separate generated operations', async () => {
@@ -59,11 +55,9 @@ describe('ProductPoolViewModel', () => {
     await user.click(screen.getByRole('button', { name: '确认执行' }));
     await waitFor(() => expect(execute).toHaveBeenCalledTimes(3));
 
-    expect(execute.mock.calls.map((call) => call[2])).toEqual([
-      { operation: OP_CATALOG_POOLS_ALLOCATE, target: 'mall:one', poolkind: 'channel', name: '主打团渠道商品池' },
-      { operation: OP_CATALOG_POOLS_ATTACH, target: 'mall:one' },
-      { operation: OP_CATALOG_POOLS_DETACH, target: 'mall:one' },
-    ]);
+    expect(execute).toHaveBeenNthCalledWith(1, expect.anything(), expect.anything(), { operation: OP_CATALOG_POOLS_ALLOCATE, target: 'mall:one', poolkind: 'channel', name: '主打团渠道商品池' });
+    expect(execute).toHaveBeenNthCalledWith(2, expect.anything(), expect.anything(), { operation: OP_CATALOG_POOLS_ATTACH, target: 'mall:one' });
+    expect(execute).toHaveBeenNthCalledWith(3, expect.anything(), expect.anything(), { operation: OP_CATALOG_POOLS_DETACH, target: 'mall:one' });
   });
 
   it('does not execute a listing pool change without the generated operation access', async () => {
@@ -81,7 +75,7 @@ describe('ProductPoolViewModel', () => {
 function setup(current: Listing | undefined, move: ReturnType<typeof vi.fn>, execute = vi.fn(), value: ConsoleContext = context) {
   let sequence = 0;
   const dependencies = {
-    readPools: { execute: vi.fn(async () => ({ items: pools, count: pools.length })) },
+    readPools: { execute: vi.fn(() => Promise.resolve({ items: pools, count: pools.length })) },
     changePool: { move, execute },
     createIdentity: () => `command:${++sequence}`,
   } as unknown as ProductDependencies;
@@ -91,6 +85,13 @@ function setup(current: Listing | undefined, move: ReturnType<typeof vi.fn>, exe
       <Harness listing={current} context={value} dependencies={dependencies} />
     </QueryClientProvider>
   );
+}
+
+function commandIdentity(value: unknown): string {
+  if (value === null || typeof value !== 'object') throw new Error('TEST_COMMAND_MISSING');
+  const identity: unknown = Reflect.get(value, 'identity');
+  if (typeof identity !== 'string') throw new Error('TEST_COMMAND_IDENTITY_MISSING');
+  return identity;
 }
 
 function Harness({ listing: current, context: value, dependencies }: Readonly<{ listing: Listing | undefined; context: ConsoleContext; dependencies: ProductDependencies }>) {

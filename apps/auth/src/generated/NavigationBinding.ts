@@ -17,7 +17,7 @@ export interface NavigationManifest {
   readonly routeKey: NavigationRouteId;
   readonly feature: ComponentKey;
   readonly scope: 'platform' | 'distributor' | 'tenant' | 'enterprise' | 'mall' | 'department' | 'store' | 'supplier' | 'brand' | 'self' | 'owner';
-  readonly parent: NavigationId | null;
+  readonly parent: null;
   readonly operation: OperationId;
   readonly capability: string;
   readonly permission: string | null;

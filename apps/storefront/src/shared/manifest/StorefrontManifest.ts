@@ -40,7 +40,7 @@ export function defineManifest(definition: StorefrontDefinition): StorefrontMani
     if (ROUTE_FEATURES[route.routeid] !== definition.feature) throw new Error(`STOREFRONT_MANIFEST_FEATURE_INVALID:${route.routeid}`);
     const bindings = navigationForRoute(route.routeid);
     if (bindings.length !== 1) throw new Error(`STOREFRONT_MANIFEST_NAVIGATION_INVALID:${route.routeid}`);
-    const binding = bindings[0]!;
+    const binding = bindings[0];
     return Object.freeze({
       ...route,
       operation: binding.operation,

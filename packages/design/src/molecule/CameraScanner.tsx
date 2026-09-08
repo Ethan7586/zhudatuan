@@ -33,7 +33,7 @@ export function CameraScanner({ onValue, onClose }: Readonly<{ onValue: (value: 
       } catch {
         if (active) setError('暂时无法识别，请对准二维码或改用键盘输入。');
       }
-      if (active) timer = window.setTimeout(inspect, 250);
+      if (active) timer = window.setTimeout(() => void inspect(), 250);
     };
     void navigator.mediaDevices
       .getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false })
@@ -45,7 +45,9 @@ export function CameraScanner({ onValue, onClose }: Readonly<{ onValue: (value: 
         stream = value;
         if (video.current) {
           video.current.srcObject = value;
-          void video.current.play().then(inspect);
+          void video.current.play().then(() => {
+            void inspect();
+          });
         }
       })
       .catch(() => setError('无法使用相机，请检查权限，或直接使用扫码枪和键盘。'));

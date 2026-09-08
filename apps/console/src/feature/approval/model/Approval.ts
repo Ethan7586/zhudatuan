@@ -1,12 +1,9 @@
 import { APPROVAL_SUBJECT_KINDS, type OperationOutputFor } from '@shop/contract';
+import type { ApprovalDecision, ApprovalEscalation, ApprovalStep, ApprovalSubjectKind, ApprovalTask, ApprovalTemplate, ApprovalTemplateVersion } from './ApprovalTemplate';
 
-type ApprovalTemplateDto = OperationOutputFor<'approval.templates.list'>['items'][number];
-type ApprovalVersionDto = OperationOutputFor<'approval.templates.get'>['versions'][number];
-type ApprovalTaskDto = OperationOutputFor<'approval.tasks.list'>['items'][number];
 type ApprovalInstanceDto = OperationOutputFor<'approval.instances.get'>;
 
 export { APPROVAL_SUBJECT_KINDS };
-import type { ApprovalDecision, ApprovalEscalation, ApprovalStep, ApprovalSubjectKind, ApprovalTask, ApprovalTemplate, ApprovalTemplateState, ApprovalTemplateVersion } from './ApprovalTemplate';
 export * from './ApprovalTemplate';
 
 export interface ApprovalInstance {

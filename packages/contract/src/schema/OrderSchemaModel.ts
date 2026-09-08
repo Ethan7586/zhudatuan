@@ -1,9 +1,7 @@
-import { array, boolean, literal, maxLength, minLength, null as nullSchema, optional, record, strictObject, string, union } from 'zod/mini';
+import { array, boolean, literal, null as nullSchema, strictObject, string, union } from 'zod/mini';
+import { ORDER_AFTERSALE_STATES, ORDER_FULFILLMENT_STATES, ORDER_LIFECYCLE_STATES, ORDER_PAYMENT_STATES } from '../OrderContract';
 import { ContractJsonValueSchema } from './JsonSchema';
-import { currency, expectedVersion, id, isoUtc, pageQuery, unsigned, version } from './Primitives';
-import { ORDER_AFTERSALE_BODY_SCHEMAS, ORDER_AFTERSALE_OUTPUT_SCHEMAS } from './OrderAfterSaleSchema';
-import { importCreated, importInput, importRead } from './ImportSchema';
-import { ORDER_AFTERSALE_STATES, ORDER_FULFILLMENT_STATES, ORDER_LIFECYCLE_STATES, ORDER_LIST_VIEWS, ORDER_PAYMENT_STATES, ORDER_PLACED_FILTERS } from '../OrderContract';
+import { currency, isoUtc, unsigned, version } from './Primitives';
 
 export const line = strictObject({
   id: string(),

@@ -1,15 +1,19 @@
-import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router';
 import { RouteLoading } from '@shop/design';
+import { lazy, Suspense } from 'react';
+import { Route, Routes } from 'react-router';
 import { RouteRegistry } from '../app/RouteRegistry';
 import { ROUTES } from '../generated/RouteBinding';
-import { StorefrontShell } from '../shell/StorefrontShell';
 import { useShellViewModel } from '../shell/ShellViewModel';
+import { StorefrontShell } from '../shell/StorefrontShell';
 import { Guard } from './Guard';
 import { Scroll } from './Scroll';
 
 const bindings = RouteRegistry.routes().map((route) => Object.freeze({ ...route, Component: lazy(() => route.load().then((module) => ({ default: module.Component }))) }));
-const PublishedRoute = lazy(() => RouteRegistry.fallback().load().then((module) => ({ default: module.Component })));
+const PublishedRoute = lazy(() =>
+  RouteRegistry.fallback()
+    .load()
+    .then((module) => ({ default: module.Component }))
+);
 
 export function Router() {
   const shell = useShellViewModel();

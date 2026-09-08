@@ -9,14 +9,8 @@ import {
   OP_ACCESS_ROLES_MANAGE,
   OP_ACCESS_SCOPES_MANAGE,
 } from '@shop/contract/ids';
-import type { OperationBodyFor, OperationId, OperationOutputFor, OperationTarget } from '@shop/contract';
-
-type AccessCenterDto = OperationOutputFor<'access.center.read'>;
-type AccessScopeDto = AccessCenterDto['items'][number]['scopes'][number];
-type AccessRoleDto = AccessCenterDto['roles'][number];
-type AccessMembershipDto = AccessCenterDto['items'][number];
-type OwnershipTransferDto = NonNullable<OperationOutputFor<'access.ownership.read'>['pending']>;
 import type { AccessChange, AccessEnvelope, OwnerChange } from './AccessState';
+
 export * from './AccessState';
 
 export function accessEnvelope(change: AccessChange): AccessEnvelope {

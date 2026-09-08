@@ -41,7 +41,18 @@ const order = {
     ],
   },
   fulfillments: [
-    { id: 'fulfillment:verified-1', provider: null, partner: null, kind: 'shipment', state: 'processing', version: 0, externalReferenceMasked: null, createdAt: '2026-08-26T08:41:00.000Z', updatedAt: '2026-08-26T08:42:00.000Z', milestones: [] },
+    {
+      id: 'fulfillment:verified-1',
+      provider: null,
+      partner: null,
+      kind: 'shipment',
+      state: 'processing',
+      version: 0,
+      externalReferenceMasked: null,
+      createdAt: '2026-08-26T08:41:00.000Z',
+      updatedAt: '2026-08-26T08:42:00.000Z',
+      milestones: [],
+    },
   ],
   refunds: [],
   timeline: [
@@ -118,7 +129,20 @@ const detail = {
   payment: { state: 'ready', data: order.payment },
   fulfillment: { state: 'ready', data: order.fulfillments },
   aftersale: { state: 'ready', data: { state: order.aftersale_state, refunds: order.refunds } },
-  finance: { state: 'ready', data: { grossMinor: order.total_minor, capturedMinor: order.payment.capturedMinor, refundedMinor: order.payment.refundedMinor, netMinor: order.payment.capturedMinor - order.payment.refundedMinor, outstandingMinor: 0, currency: order.currency, state: 'balanced', verificationState: 'verified', watermark: order.updated_at } },
+  finance: {
+    state: 'ready',
+    data: {
+      grossMinor: order.total_minor,
+      capturedMinor: order.payment.capturedMinor,
+      refundedMinor: order.payment.refundedMinor,
+      netMinor: order.payment.capturedMinor - order.payment.refundedMinor,
+      outstandingMinor: 0,
+      currency: order.currency,
+      state: 'balanced',
+      verificationState: 'verified',
+      watermark: order.updated_at,
+    },
+  },
   audit: { state: 'ready', data: order.timeline },
 } as const;
 
@@ -210,7 +234,9 @@ describe('Order route', () => {
           <ConsoleContextProvider value={context}>
             <StepupProvider controller={{ request: () => undefined }}>
               <DependencyProvider value={createConsoleDependencies()}>
-                <Routes><Route path="/scopes/:scopeKind/:scopeId/orders/:orderId" element={<OrderDetailComponent />} /></Routes>
+                <Routes>
+                  <Route path="/scopes/:scopeKind/:scopeId/orders/:orderId" element={<OrderDetailComponent />} />
+                </Routes>
               </DependencyProvider>
             </StepupProvider>
           </ConsoleContextProvider>
@@ -227,12 +253,16 @@ describe('Order route', () => {
   });
 
   it('hides unauthorized detail partitions and repairs a forbidden section deep link', async () => {
-    server.use(http.get('*/api/v1/orders/:orderId', () => HttpResponse.json({
-      ...detail,
-      payment: { state: 'hidden' },
-      finance: { state: 'hidden' },
-      audit: { state: 'hidden' },
-    })));
+    server.use(
+      http.get('*/api/v1/orders/:orderId', () =>
+        HttpResponse.json({
+          ...detail,
+          payment: { state: 'hidden' },
+          finance: { state: 'hidden' },
+          audit: { state: 'hidden' },
+        })
+      )
+    );
     const restricted = {
       ...context,
       session: {
@@ -248,7 +278,9 @@ describe('Order route', () => {
           <ConsoleContextProvider value={restricted}>
             <StepupProvider controller={{ request: () => undefined }}>
               <DependencyProvider value={createConsoleDependencies()}>
-                <Routes><Route path="/scopes/:scopeKind/:scopeId/orders/:orderId" element={<OrderDetailComponent />} /></Routes>
+                <Routes>
+                  <Route path="/scopes/:scopeKind/:scopeId/orders/:orderId" element={<OrderDetailComponent />} />
+                </Routes>
               </DependencyProvider>
             </StepupProvider>
           </ConsoleContextProvider>
@@ -446,10 +478,38 @@ describe('Order route', () => {
   });
 
   it('loads the permission-gated support panel independently with an exact order reference', async () => {
-    server.use(http.get('*/api/v1/support/cases', ({ request }) => {
-      getRequests.push(new URL(request.url));
-      return HttpResponse.json({ items: [{ id: 'case:one', scope_id: 'enterprise:1', priority: 'high', state: 'assigned', assigned_agent_id: 'agent:one', response_due_at: '2026-09-05T02:00:00.000Z', resolution_due_at: '2026-09-05T08:00:00.000Z', created_at: '2026-09-05T01:00:00.000Z', updated_at: '2026-09-05T01:30:00.000Z', version: 1, conversation_id: 'conversation:one', skill: 'order', member_id: 'member:verified-1', order_id: order.id, channel: 'inapp', subject: '物流进度咨询', reference_type: null, reference_id: null, unread_count: 2, sla_risk: 'risk' }], count: 1 });
-    }));
+    server.use(
+      http.get('*/api/v1/support/cases', ({ request }) => {
+        getRequests.push(new URL(request.url));
+        return HttpResponse.json({
+          items: [
+            {
+              id: 'case:one',
+              scope_id: 'enterprise:1',
+              priority: 'high',
+              state: 'assigned',
+              assigned_agent_id: 'agent:one',
+              response_due_at: '2026-09-05T02:00:00.000Z',
+              resolution_due_at: '2026-09-05T08:00:00.000Z',
+              created_at: '2026-09-05T01:00:00.000Z',
+              updated_at: '2026-09-05T01:30:00.000Z',
+              version: 1,
+              conversation_id: 'conversation:one',
+              skill: 'order',
+              member_id: 'member:verified-1',
+              order_id: order.id,
+              channel: 'inapp',
+              subject: '物流进度咨询',
+              reference_type: null,
+              reference_id: null,
+              unread_count: 2,
+              sla_risk: 'risk',
+            },
+          ],
+          count: 1,
+        });
+      })
+    );
     const permitted = { ...context, session: { ...context.session, permissions: [...context.session.permissions, 'support.case.read'], capabilities: [...context.session.capabilities, 'support.cases.read'] } };
     renderRoute(`/orders?selected=${encodeURIComponent(order.id)}&tab=support`, permitted);
 
@@ -511,7 +571,9 @@ describe('Order route', () => {
   });
 
   it('keeps the order list usable when only status facets and watermarks are unavailable', async () => {
-    server.use(http.get('*/api/v1/orders', () => HttpResponse.json({ ...listPage, facets: { state: 'unavailable', error: { code: 'ORDER_FACET_UNAVAILABLE', message: '订单状态统计与数据水位暂时不可用，列表仍可继续使用。', retryable: true } } })));
+    server.use(
+      http.get('*/api/v1/orders', () => HttpResponse.json({ ...listPage, facets: { state: 'unavailable', error: { code: 'ORDER_FACET_UNAVAILABLE', message: '订单状态统计与数据水位暂时不可用，列表仍可继续使用。', retryable: true } } }))
+    );
     renderRoute();
 
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
@@ -520,10 +582,12 @@ describe('Order route', () => {
   });
 
   it('surfaces exception counts before the ordinary list and opens the server-filtered workbench', async () => {
-    server.use(http.get('*/api/v1/orders', ({ request }) => {
-      getRequests.push(new URL(request.url));
-      return HttpResponse.json({ ...listPage, facets: { ...listPage.facets, data: { ...listPage.facets.data, counts: { ...listPage.facets.data.counts, exception: 2 } } } });
-    }));
+    server.use(
+      http.get('*/api/v1/orders', ({ request }) => {
+        getRequests.push(new URL(request.url));
+        return HttpResponse.json({ ...listPage, facets: { ...listPage.facets, data: { ...listPage.facets.data, counts: { ...listPage.facets.data.counts, exception: 2 } } } });
+      })
+    );
     const user = userEvent.setup();
     renderRoute();
 
@@ -539,19 +603,37 @@ describe('Order route', () => {
     const fulfillmentReturned = { ...order, id: 'order:fulfillment-returned', order_number: 'SW202609070002', fulfillment_state: 'returned', updated_at: '2026-09-07T02:00:00.000Z' } as const;
     const aftersaleReviewing = { ...order, id: 'order:aftersale-reviewing', order_number: 'SW202609070003', aftersale_state: 'reviewing', updated_at: '2026-09-07T03:00:00.000Z' } as const;
     const sourcePending = { ...order, id: 'order:source-pending', order_number: 'SW202609070004', updated_at: '2026-09-07T04:00:00.000Z' } as const;
-    const recovery = { id: 'recovery:exception-one', order_id: paymentFailed.id, order_number: paymentFailed.order_number, resource_type: 'intent', resource_id: 'intent:exception-one', severity: 'critical', state: 'open', error_code: 'PAYMENT_LATE_SUCCESS', evidence: {}, occurrence_count: 2, opened_at: '2026-09-07T04:30:00.000Z', resolved_at: null, resolution_request_id: null, version: 3 } as const;
+    const recovery = {
+      id: 'recovery:exception-one',
+      order_id: paymentFailed.id,
+      order_number: paymentFailed.order_number,
+      resource_type: 'intent',
+      resource_id: 'intent:exception-one',
+      severity: 'critical',
+      state: 'open',
+      error_code: 'PAYMENT_LATE_SUCCESS',
+      evidence: {},
+      occurrence_count: 2,
+      opened_at: '2026-09-07T04:30:00.000Z',
+      resolved_at: null,
+      resolution_request_id: null,
+      version: 3,
+    } as const;
     server.use(
       http.get('*/api/v1/orders', ({ request }) => {
         getRequests.push(new URL(request.url));
-        return HttpResponse.json({ items: [paymentFailed, fulfillmentReturned, aftersaleReviewing, sourcePending], count: 4, facets: { ...listPage.facets, data: { ...listPage.facets.data, counts: { ...listPage.facets.data.counts, exception: 4 } } } });
+        return HttpResponse.json({
+          items: [paymentFailed, fulfillmentReturned, aftersaleReviewing, sourcePending],
+          count: 4,
+          facets: { ...listPage.facets, data: { ...listPage.facets.data, counts: { ...listPage.facets.data.counts, exception: 4 } } },
+        });
       }),
       http.get('*/api/v1/payments/recoveries', () => HttpResponse.json({ items: [recovery], count: 1 })),
-      http.get('*/api/v1/orders/:orderId', ({ params }) => HttpResponse.json({ ...detail, summary: { ...detail.summary, id: String(params.orderId), orderNumber: paymentFailed.order_number, paymentState: 'failed', updatedAt: paymentFailed.updated_at } }))
+      http.get('*/api/v1/orders/:orderId', ({ params }) =>
+        HttpResponse.json({ ...detail, summary: { ...detail.summary, id: String(params.orderId), orderNumber: paymentFailed.order_number, paymentState: 'failed', updatedAt: paymentFailed.updated_at } })
+      )
     );
-    const permitted = { ...context, session: { ...context.session,
-      permissions: [...context.session.permissions, 'payment.recovery.read'],
-      capabilities: [...context.session.capabilities, 'payment.recoveries.read'],
-    } };
+    const permitted = { ...context, session: { ...context.session, permissions: [...context.session.permissions, 'payment.recovery.read'], capabilities: [...context.session.capabilities, 'payment.recoveries.read'] } };
     const user = userEvent.setup();
     renderRoute('/orders?view=exception', permitted);
 
@@ -566,7 +648,7 @@ describe('Order route', () => {
     expect(within(workbench).getByText('售后待审核')).toBeTruthy();
 
     await user.click(within(workbench).getByRole('button', { name: '渠道核验' }));
-    expect(within(workbench).getByRole('list', { name: '异常订单队列' }).textContent).toContain(sourcePending.order_number);
+    expect(within(workbench).getByRole('listbox', { name: '异常订单队列' }).textContent).toContain(sourcePending.order_number);
     expect(within(workbench).getByText('服务端异常条件已识别')).toBeTruthy();
     await user.click(within(workbench).getByRole('button', { name: '全部异常' }));
     await user.click(within(workbench).getByRole('button', { name: '进入支付分区' }));
@@ -619,11 +701,13 @@ describe('Order route', () => {
   });
 
   it('stores cursor position in the URL and restores the previous page without offset pagination', async () => {
-    server.use(http.get('*/api/v1/orders', ({ request }) => {
-      const url = new URL(request.url);
-      getRequests.push(url);
-      return HttpResponse.json(url.searchParams.has('cursor') ? { ...listPage, nextCursor: undefined } : listPage);
-    }));
+    server.use(
+      http.get('*/api/v1/orders', ({ request }) => {
+        const url = new URL(request.url);
+        getRequests.push(url);
+        return HttpResponse.json(url.searchParams.has('cursor') ? { ...listPage, nextCursor: undefined } : listPage);
+      })
+    );
     const user = userEvent.setup();
     renderRoute('/orders?campaign=keep');
     await screen.findByRole('table', { name: '订单列表' });
@@ -642,15 +726,17 @@ describe('Order route', () => {
 
   it('keeps the last verified page visible while a changed URL query revalidates', async () => {
     const replacement = { ...order, id: 'order:internal-2', order_number: 'SW202608260002' };
-    server.use(http.get('*/api/v1/orders', async ({ request }) => {
-      const url = new URL(request.url);
-      getRequests.push(url);
-      if (url.searchParams.get('search') === '新订单') {
-        await delay(80);
-        return HttpResponse.json({ ...listPage, items: [replacement], nextCursor: undefined });
-      }
-      return HttpResponse.json(listPage);
-    }));
+    server.use(
+      http.get('*/api/v1/orders', async ({ request }) => {
+        const url = new URL(request.url);
+        getRequests.push(url);
+        if (url.searchParams.get('search') === '新订单') {
+          await delay(80);
+          return HttpResponse.json({ ...listPage, items: [replacement], nextCursor: undefined });
+        }
+        return HttpResponse.json(listPage);
+      })
+    );
     const user = userEvent.setup();
     renderRoute();
     await screen.findByText(order.order_number);
@@ -695,7 +781,11 @@ describe('Order route', () => {
   });
 
   it('keeps the detail usable when one authoritative section is unavailable', async () => {
-    server.use(http.get('*/api/v1/orders/:orderId', () => HttpResponse.json({ ...detail, payment: { state: 'unavailable', error: { code: 'PAYMENT_PROJECTION_DELAYED', message: '支付投影正在追赶，请稍后重试。', retryable: true, traceId: 'trace:payment-1' } } })));
+    server.use(
+      http.get('*/api/v1/orders/:orderId', () =>
+        HttpResponse.json({ ...detail, payment: { state: 'unavailable', error: { code: 'PAYMENT_PROJECTION_DELAYED', message: '支付投影正在追赶，请稍后重试。', retryable: true, traceId: 'trace:payment-1' } } })
+      )
+    );
     const user = userEvent.setup();
     renderRoute();
     await user.click(await screen.findByRole('button', { name: `查看订单 ${order.order_number}` }));
@@ -706,9 +796,7 @@ describe('Order route', () => {
   });
 
   it('keeps the aggregate list and exception navigation usable when the entire detail request fails', async () => {
-    server.use(
-      http.get('*/api/v1/orders/:orderId', () => HttpResponse.json({ code: 'DEPENDENCY_UNAVAILABLE', requestId: 'request:detail-failed' }, { status: 503 }))
-    );
+    server.use(http.get('*/api/v1/orders/:orderId', () => HttpResponse.json({ code: 'DEPENDENCY_UNAVAILABLE', requestId: 'request:detail-failed' }, { status: 503 })));
     const user = userEvent.setup();
     renderRoute();
     await user.click(await screen.findByRole('button', { name: `查看订单 ${order.order_number}` }));
@@ -732,7 +820,23 @@ describe('Order route', () => {
         exportRequests += 1;
         exportBody = await request.json();
         await delay(60);
-        return HttpResponse.json({ id: 'export:order-1', scope: 'enterprise:1', report: 'orders', filter: {}, watermark: '2026-09-05T01:00:00.000Z', state: 'queued', cursor: null, recordCount: 0, objectReference: null, objectHash: null, objectSize: null, scanState: null, expiresAt: null, createdAt: '2026-09-05T01:00:00.000Z', generatedAt: null });
+        return HttpResponse.json({
+          id: 'export:order-1',
+          scope: 'enterprise:1',
+          report: 'orders',
+          filter: {},
+          watermark: '2026-09-05T01:00:00.000Z',
+          state: 'queued',
+          cursor: null,
+          recordCount: 0,
+          objectReference: null,
+          objectHash: null,
+          objectSize: null,
+          scanState: null,
+          expiresAt: null,
+          createdAt: '2026-09-05T01:00:00.000Z',
+          generatedAt: null,
+        });
       }),
       http.post('*/api/v1/runtime/uploads', async ({ request }) => {
         expect(await request.json()).toEqual({
@@ -751,7 +855,7 @@ describe('Order route', () => {
           upload: { url: 'https://objects.test/imports/orders.csv', method: 'PUT', headers: { 'content-type': 'text/csv' }, expiresAt: '2099-09-05T00:00:00.000Z' },
         });
       }),
-      http.put('https://objects.test/imports/orders.csv', async ({ request }) => {
+      http.put('https://objects.test/imports/orders.csv', ({ request }) => {
         expect(request.credentials).toBe('omit');
         return new HttpResponse(null, { status: 204 });
       }),
@@ -765,9 +869,9 @@ describe('Order route', () => {
     await screen.findByRole('table', { name: '订单列表' });
     await user.click(screen.getByRole('button', { name: '导出订单' }));
     const exportDialog = screen.getByRole('dialog', { name: /安全导出订单/ });
-    expect((within(exportDialog).getByRole('button', { name: '创建安全导出' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(within(exportDialog).getByRole<HTMLButtonElement>('button', { name: '创建安全导出' }).disabled).toBe(true);
     await user.click(within(exportDialog).getByRole('checkbox'));
-    expect((within(exportDialog).getByRole('button', { name: '创建安全导出' }) as HTMLButtonElement).disabled).toBe(false);
+    expect(within(exportDialog).getByRole<HTMLButtonElement>('button', { name: '创建安全导出' }).disabled).toBe(false);
     await user.dblClick(within(exportDialog).getByRole('button', { name: '创建安全导出' }));
     expect(await within(exportDialog).findByText('导出任务已进入安全队列')).toBeTruthy();
     expect(exportRequests).toBe(1);
@@ -779,16 +883,16 @@ describe('Order route', () => {
     expect(within(importDialog).getByText('外部订单标准模板')).toBeTruthy();
     await user.click(within(importDialog).getByRole('button', { name: '下一步：上传文件' }));
     importDialog = screen.getByRole('dialog', { name: /导入外部订单/ });
-    const file = within(importDialog).getByLabelText('选择外部订单文件') as HTMLInputElement;
+    const file = within(importDialog).getByLabelText<HTMLInputElement>('选择外部订单文件');
     await user.upload(file, streamingFile('external_order_no,amount_minor\n', 'orders.csv', 'text/csv'));
     expect(typeof file.files?.[0]?.stream).toBe('function');
     await user.click(within(importDialog).getByRole('button', { name: '下一步：核对映射' }));
     expect(within(importDialog).getByText('标准列自动映射')).toBeTruthy();
     expect(within(importDialog).getByText('重复项处理')).toBeTruthy();
-    const confirmation = within(importDialog).getByRole('checkbox') as HTMLInputElement;
+    const confirmation = within(importDialog).getByRole<HTMLInputElement>('checkbox');
     await user.click(confirmation);
     expect(confirmation.checked).toBe(true);
-    const submit = within(importDialog).getByRole('button', { name: '提交并开始服务端预检' }) as HTMLButtonElement;
+    const submit = within(importDialog).getByRole<HTMLButtonElement>('button', { name: '提交并开始服务端预检' });
     expect(submit.disabled).toBe(false);
     expect(submit.form?.checkValidity()).toBe(true);
     await user.click(submit);
@@ -803,15 +907,27 @@ describe('Order route', () => {
     server.use(
       http.get('*/api/v1/orders/aftersales', () => HttpResponse.json({ items: [aftersale], count: 1, availableLines: [] })),
       http.get('*/api/v1/orders/:orderId', () => HttpResponse.json({ ...detail, summary: { ...detail.summary, lifecycleState: 'shipped', fulfillmentState: 'shipped' } })),
-      http.post('*/api/v1/orders/:orderId/reminders', ({ params }) => { calls.push(`remind:${params.orderId}`); return HttpResponse.json({ id: 'reminder:1', order_id: order.id, member_id: 'member:1', kind: 'fulfillment', state: 'queued', created_at: '2026-09-05T01:00:00.000Z' }); }),
-      http.post('*/api/v1/orders/:orderId/receive', ({ params }) => { calls.push(`receive:${params.orderId}`); return HttpResponse.json({ orderId: order.id, fulfillmentState: 'received', receivedAt: '2026-09-05T01:00:00.000Z', version: 12, eventId: 'event:receive-1', repeated: false }); }),
-      http.put('*/api/v1/orders/aftersales/:aftersaleId/approval', ({ params }) => { calls.push(`approve:${params.aftersaleId}`); return HttpResponse.json({ id: aftersale.id, orderId: order.id, state: 'approved', version: 3, updatedAt: '2026-09-05T01:00:00.000Z' }); }),
-      http.delete('*/api/v1/orders/aftersales/:aftersaleId/approval', ({ params }) => { calls.push(`reject:${params.aftersaleId}`); return HttpResponse.json({ id: aftersale.id, orderId: order.id, state: 'rejected', version: 3, updatedAt: '2026-09-05T01:00:00.000Z' }); })
+      http.post('*/api/v1/orders/:orderId/reminders', ({ params }) => {
+        calls.push(`remind:${parameter(params.orderId)}`);
+        return HttpResponse.json({ id: 'reminder:1', order_id: order.id, member_id: 'member:1', kind: 'fulfillment', state: 'queued', created_at: '2026-09-05T01:00:00.000Z' });
+      }),
+      http.post('*/api/v1/orders/:orderId/receive', ({ params }) => {
+        calls.push(`receive:${parameter(params.orderId)}`);
+        return HttpResponse.json({ orderId: order.id, fulfillmentState: 'received', receivedAt: '2026-09-05T01:00:00.000Z', version: 12, eventId: 'event:receive-1', repeated: false });
+      }),
+      http.put('*/api/v1/orders/aftersales/:aftersaleId/approval', ({ params }) => {
+        calls.push(`approve:${parameter(params.aftersaleId)}`);
+        return HttpResponse.json({ id: aftersale.id, orderId: order.id, state: 'approved', version: 3, updatedAt: '2026-09-05T01:00:00.000Z' });
+      }),
+      http.delete('*/api/v1/orders/aftersales/:aftersaleId/approval', ({ params }) => {
+        calls.push(`reject:${parameter(params.aftersaleId)}`);
+        return HttpResponse.json({ id: aftersale.id, orderId: order.id, state: 'rejected', version: 3, updatedAt: '2026-09-05T01:00:00.000Z' });
+      })
     );
     const user = userEvent.setup();
     renderRoute();
     await user.click(await screen.findByRole('button', { name: `查看订单 ${order.order_number}` }));
-    let dialog = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
+    const dialog = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
     await user.click(within(dialog).getByRole('button', { name: '提醒履约' }));
     let action = screen.getByRole('dialog', { name: /提醒履约方处理/ });
     await user.click(within(action).getByRole('checkbox'));
@@ -847,17 +963,75 @@ describe('Order route', () => {
 
   it('executes shipment, refund and payment recovery from independently permissioned detail panels', async () => {
     const calls: string[] = [];
-    const recovery = { id: 'recovery:one', order_id: order.id, order_number: order.order_number, resource_type: 'intent', resource_id: 'intent:one', severity: 'critical', state: 'open', error_code: 'PAYMENT_LATE_SUCCESS', evidence: {}, occurrence_count: 2, opened_at: '2026-09-05T01:00:00.000Z', resolved_at: null, resolution_request_id: null, version: 3 };
+    const recovery = {
+      id: 'recovery:one',
+      order_id: order.id,
+      order_number: order.order_number,
+      resource_type: 'intent',
+      resource_id: 'intent:one',
+      severity: 'critical',
+      state: 'open',
+      error_code: 'PAYMENT_LATE_SUCCESS',
+      evidence: {},
+      occurrence_count: 2,
+      opened_at: '2026-09-05T01:00:00.000Z',
+      resolved_at: null,
+      resolution_request_id: null,
+      version: 3,
+    };
     server.use(
       http.get('*/api/v1/payments/recoveries', () => HttpResponse.json({ items: [recovery], count: 1 })),
-      http.post('*/api/v1/fulfillments/:fulfillmentId/shipments', ({ params }) => { calls.push(`ship:${params.fulfillmentId}`); return HttpResponse.json({ id: String(params.fulfillmentId), order_id: order.id, suborder_id: 'suborder:one', provider: null, partner_id: null, store_id: null, kind: 'shipment', route: 'physical', state: 'processing', external_reference: null, payment_id: order.payment.paymentId, source_effect_id: null, amount_minor: order.total_minor, idempotency_key: null, created_at: '2026-09-05T01:00:00.000Z', updated_at: '2026-09-05T01:00:00.000Z', version: 1, shipment_id: 'shipment:one', package_id: 'package:one', tracking: 'SF123456', shipped_quantity: 2 }, { status: 201 }); }),
-      http.post('*/api/v1/payments/refunds', () => { calls.push('refund'); return HttpResponse.json({ id: 'refund:one', payment_id: order.payment.paymentId, provider: 'wechat', provider_reference: 'refund:one', amount_minor: 1000, currency: 'CNY', state: 'requested', reason: '订单差额退回', aftersale_id: null }, { status: 202 }); }),
-      http.post('*/api/v1/payments/recoveries/:recoveryId/resolutions', ({ params }) => { calls.push(`recovery:${params.recoveryId}`); return HttpResponse.json({ case: String(params.recoveryId), request: 'recoveryrequest:one', action: 'requery', state: 'accepted' }, { status: 202 }); })
+      http.post('*/api/v1/fulfillments/:fulfillmentId/shipments', ({ params }) => {
+        const fulfillment = parameter(params.fulfillmentId);
+        calls.push(`ship:${fulfillment}`);
+        return HttpResponse.json(
+          {
+            id: fulfillment,
+            order_id: order.id,
+            suborder_id: 'suborder:one',
+            provider: null,
+            partner_id: null,
+            store_id: null,
+            kind: 'shipment',
+            route: 'physical',
+            state: 'processing',
+            external_reference: null,
+            payment_id: order.payment.paymentId,
+            source_effect_id: null,
+            amount_minor: order.total_minor,
+            idempotency_key: null,
+            created_at: '2026-09-05T01:00:00.000Z',
+            updated_at: '2026-09-05T01:00:00.000Z',
+            version: 1,
+            shipment_id: 'shipment:one',
+            package_id: 'package:one',
+            tracking: 'SF123456',
+            shipped_quantity: 2,
+          },
+          { status: 201 }
+        );
+      }),
+      http.post('*/api/v1/payments/refunds', () => {
+        calls.push('refund');
+        return HttpResponse.json(
+          { id: 'refund:one', payment_id: order.payment.paymentId, provider: 'wechat', provider_reference: 'refund:one', amount_minor: 1000, currency: 'CNY', state: 'requested', reason: '订单差额退回', aftersale_id: null },
+          { status: 202 }
+        );
+      }),
+      http.post('*/api/v1/payments/recoveries/:recoveryId/resolutions', ({ params }) => {
+        const recoveryId = parameter(params.recoveryId);
+        calls.push(`recovery:${recoveryId}`);
+        return HttpResponse.json({ case: recoveryId, request: 'recoveryrequest:one', action: 'requery', state: 'accepted' }, { status: 202 });
+      })
     );
-    const permitted = { ...context, session: { ...context.session,
-      permissions: [...context.session.permissions, 'fulfillment.ship', 'payment.refund', 'payment.recovery.read', 'payment.recovery.manage'],
-      capabilities: [...context.session.capabilities, 'fulfillment.shipments.create', 'payment.refunds.request', 'payment.recoveries.read', 'payment.recoveries.resolve'],
-    } };
+    const permitted = {
+      ...context,
+      session: {
+        ...context.session,
+        permissions: [...context.session.permissions, 'fulfillment.ship', 'payment.refund', 'payment.recovery.read', 'payment.recovery.manage'],
+        capabilities: [...context.session.capabilities, 'fulfillment.shipments.create', 'payment.refunds.request', 'payment.recoveries.read', 'payment.recoveries.resolve'],
+      },
+    };
     const user = userEvent.setup();
     renderRoute(`/orders?selected=${encodeURIComponent(order.id)}&tab=products`, permitted);
     const dialog = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
@@ -896,15 +1070,20 @@ describe('Order route', () => {
 
   it('shows and executes cancellation only for an independently authorized unpaid order', async () => {
     const calls: string[] = [];
-    const unpaidDetail = { ...detail, summary: { ...detail.summary, paymentState: 'unpaid', fulfillmentState: 'unallocated', lifecycleState: 'awaitingpayment' }, payment: { state: 'ready', data: { ...order.payment, paymentId: null, capturedMinor: 0, refundableMinor: 0 } }, fulfillment: { state: 'ready', data: [] } } as const;
+    const unpaidDetail = {
+      ...detail,
+      summary: { ...detail.summary, paymentState: 'unpaid', fulfillmentState: 'unallocated', lifecycleState: 'awaitingpayment' },
+      payment: { state: 'ready', data: { ...order.payment, paymentId: null, capturedMinor: 0, refundableMinor: 0 } },
+      fulfillment: { state: 'ready', data: [] },
+    } as const;
     server.use(
       http.get('*/api/v1/orders/:orderId', () => HttpResponse.json(unpaidDetail)),
-      http.post('*/api/v1/orders/:orderId/cancel', ({ params }) => { calls.push(`cancel:${params.orderId}`); return HttpResponse.json({ orderId: order.id, lifecycleState: 'cancelled', fulfillmentState: 'cancelled', cancelledAt: '2026-09-05T02:00:00.000Z', version: 12, eventId: 'event:cancel-one', repeated: false }); })
+      http.post('*/api/v1/orders/:orderId/cancel', ({ params }) => {
+        calls.push(`cancel:${parameter(params.orderId)}`);
+        return HttpResponse.json({ orderId: order.id, lifecycleState: 'cancelled', fulfillmentState: 'cancelled', cancelledAt: '2026-09-05T02:00:00.000Z', version: 12, eventId: 'event:cancel-one', repeated: false });
+      })
     );
-    const permitted = { ...context, session: { ...context.session,
-      permissions: [...context.session.permissions, 'order.cancel'],
-      capabilities: [...context.session.capabilities, 'order.orders.cancel'],
-    } };
+    const permitted = { ...context, session: { ...context.session, permissions: [...context.session.permissions, 'order.cancel'], capabilities: [...context.session.capabilities, 'order.orders.cancel'] } };
     const user = userEvent.setup();
     renderRoute(`/orders?selected=${encodeURIComponent(order.id)}`, permitted);
     const dialog = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
@@ -921,16 +1100,70 @@ describe('Order route', () => {
     const calls: string[] = [];
     let returnState: 'authorized' | 'received' = 'authorized';
     let returnVersion = 4;
-    const sale = () => ({ ...aftersale, state: returnState === 'authorized' ? 'returning' : 'received', timeline: [...aftersale.timeline, { sequence: 2, kind: 'return', previousState: 'approved', state: returnState === 'authorized' ? 'returning' : 'received', evidence: { returns: [{ id: 'return:one', state: returnState, provider: null, providerReference: null, trackingNumber: 'SF123456', version: returnVersion }] }, occurredAt: '2026-09-05T01:00:00.000Z' }] });
+    const sale = () => ({
+      ...aftersale,
+      state: returnState === 'authorized' ? 'returning' : 'received',
+      timeline: [
+        ...aftersale.timeline,
+        {
+          sequence: 2,
+          kind: 'return',
+          previousState: 'approved',
+          state: returnState === 'authorized' ? 'returning' : 'received',
+          evidence: { returns: [{ id: 'return:one', state: returnState, provider: null, providerReference: null, trackingNumber: 'SF123456', version: returnVersion }] },
+          occurredAt: '2026-09-05T01:00:00.000Z',
+        },
+      ],
+    });
     server.use(
       http.get('*/api/v1/orders/aftersales', () => HttpResponse.json({ items: [sale()], count: 1, availableLines: [] })),
-      http.put('*/api/v1/fulfillments/returns/:returnId/receipt', ({ params }) => { calls.push(`receive:${params.returnId}`); returnState = 'received'; returnVersion = 5; return HttpResponse.json({ id: String(params.returnId), aftersale_id: aftersale.id, fulfillment_id: order.fulfillments[0].id, scope_id: order.scope_id, state: 'received', provider: null, provider_reference: null, instruction: {}, tracking_number: 'SF123456', created_at: '2026-09-05T01:00:00.000Z', updated_at: '2026-09-05T01:01:00.000Z', version: 5, lines: [{ line: 'line:one', quantity: 1 }], inspections: [] }); }),
-      http.put('*/api/v1/fulfillments/returns/:returnId/inspection', ({ params }) => { calls.push(`inspect:${params.returnId}`); return HttpResponse.json({ id: String(params.returnId), aftersale_id: aftersale.id, fulfillment_id: order.fulfillments[0].id, scope_id: order.scope_id, state: 'accepted', provider: null, provider_reference: null, instruction: {}, tracking_number: 'SF123456', created_at: '2026-09-05T01:00:00.000Z', updated_at: '2026-09-05T01:02:00.000Z', version: 6, lines: [{ line: 'line:one', quantity: 1 }], inspections: [{ id: 'inspection:one', sequence: 1, accepted: true, evidence: {}, actor: 'actor:one', inspectedAt: '2026-09-05T01:02:00.000Z' }] }); })
+      http.put('*/api/v1/fulfillments/returns/:returnId/receipt', ({ params }) => {
+        const returnId = parameter(params.returnId);
+        calls.push(`receive:${returnId}`);
+        returnState = 'received';
+        returnVersion = 5;
+        return HttpResponse.json({
+          id: returnId,
+          aftersale_id: aftersale.id,
+          fulfillment_id: order.fulfillments[0].id,
+          scope_id: order.scope_id,
+          state: 'received',
+          provider: null,
+          provider_reference: null,
+          instruction: {},
+          tracking_number: 'SF123456',
+          created_at: '2026-09-05T01:00:00.000Z',
+          updated_at: '2026-09-05T01:01:00.000Z',
+          version: 5,
+          lines: [{ line: 'line:one', quantity: 1 }],
+          inspections: [],
+        });
+      }),
+      http.put('*/api/v1/fulfillments/returns/:returnId/inspection', ({ params }) => {
+        const returnId = parameter(params.returnId);
+        calls.push(`inspect:${returnId}`);
+        return HttpResponse.json({
+          id: returnId,
+          aftersale_id: aftersale.id,
+          fulfillment_id: order.fulfillments[0].id,
+          scope_id: order.scope_id,
+          state: 'accepted',
+          provider: null,
+          provider_reference: null,
+          instruction: {},
+          tracking_number: 'SF123456',
+          created_at: '2026-09-05T01:00:00.000Z',
+          updated_at: '2026-09-05T01:02:00.000Z',
+          version: 6,
+          lines: [{ line: 'line:one', quantity: 1 }],
+          inspections: [{ id: 'inspection:one', sequence: 1, accepted: true, evidence: {}, actor: 'actor:one', inspectedAt: '2026-09-05T01:02:00.000Z' }],
+        });
+      })
     );
-    const permitted = { ...context, session: { ...context.session,
-      permissions: [...context.session.permissions, 'fulfillment.return.manage'],
-      capabilities: [...context.session.capabilities, 'fulfillment.returns.receive', 'fulfillment.returns.inspect'],
-    } };
+    const permitted = {
+      ...context,
+      session: { ...context.session, permissions: [...context.session.permissions, 'fulfillment.return.manage'], capabilities: [...context.session.capabilities, 'fulfillment.returns.receive', 'fulfillment.returns.inspect'] },
+    };
     const user = userEvent.setup();
     renderRoute('/orders?view=aftersale', permitted);
     await user.click(await screen.findByRole('button', { name: '登记退货收货' }));
@@ -948,6 +1181,12 @@ describe('Order route', () => {
     expect(calls).toEqual(['receive:return:one', 'inspect:return:one']);
   });
 });
+
+function parameter(value: string | readonly string[] | undefined): string {
+  if (typeof value === 'string' && value.length > 0) return value;
+  if (Array.isArray(value) && typeof value[0] === 'string' && value[0].length > 0) return value[0];
+  throw new Error('TEST_ROUTE_PARAMETER_MISSING');
+}
 
 function renderRoute(entry = '/orders', initialContext = context) {
   const client = new QueryClient({

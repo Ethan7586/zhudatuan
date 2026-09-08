@@ -1,7 +1,6 @@
-import type { AfterSalePage } from '../model/AfterSale';
-import type { OrderAfterSaleDecision, OrderCommandReceipt, OrderDetail, OrderExportTask, OrderImportTask, OrderOperationReceipt, OrderPage, OrderRecoveryPage, OrderReturn } from '../model/Order';
-import { FULFILLMENT_RETURN_STATES } from '@shop/contract';
 import { deepFreeze } from '../../../shared/model/Immutable';
+import type { AfterSalePage } from '../model/AfterSale';
+import type { OrderAfterSaleDecision, OrderCommandReceipt, OrderDetail, OrderExportTask, OrderImportTask, OrderOperationReceipt, OrderPage, OrderRecoveryPage } from '../model/Order';
 import { AfterSalePageSchema } from './AfterSaleSchema';
 import {
   OrderAftersaleApproveSchema,
@@ -12,16 +11,16 @@ import {
   OrderImportSchema,
   OrderPageSchema,
   OrderReceiveSchema,
-  OrderReminderSchema,
-  OrderShipmentSchema,
-  OrderReturnReceiveSchema,
-  OrderReturnInspectSchema,
-  OrderRefundSchema,
   OrderRecoveryPageSchema,
   OrderRecoveryResolveSchema,
+  OrderRefundSchema,
+  OrderReminderSchema,
+  OrderReturnInspectSchema,
+  OrderReturnReceiveSchema,
+  OrderShipmentSchema,
 } from './OrderSchema';
 
-import { emptyPayment, masked, orderReturns } from './OrderMapValue';
+import { emptyPayment, orderReturns } from './OrderMapValue';
 export class OrderMapper {
   page(value: unknown): OrderPage {
     return deepFreeze(OrderPageSchema.parse(value));

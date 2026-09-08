@@ -51,10 +51,13 @@ export function useReportingViewModel(context: ConsoleContext, dependencies: Rep
     setExportOpen(false);
   }, [dependencies, filterIdentity]);
   const data = query.data;
-  const create = useMutation({ mutationFn: (commandIdentity: string) => {
-    if (!data) throw new Error('请等待当前报表加载完成后再导出。');
-    return dependencies.export.execute(context, filter, data.snapshot, commandIdentity);
-  }, onSuccess: (job) => setExportId(job.id) });
+  const create = useMutation({
+    mutationFn: (commandIdentity: string) => {
+      if (!data) throw new Error('请等待当前报表加载完成后再导出。');
+      return dependencies.export.execute(context, filter, data.snapshot, commandIdentity);
+    },
+    onSuccess: (job) => setExportId(job.id),
+  });
   const exported = useQuery({
     queryKey: exportKey(context, exportId ?? 'pending'),
     queryFn: ({ signal }) => dependencies.readExport.execute(context, exportId!, signal),
@@ -65,7 +68,7 @@ export function useReportingViewModel(context: ConsoleContext, dependencies: Rep
     const job = exported.data;
     if (job?.state !== 'completed' || job.scanState !== 'clean' || !job.download || receipt?.requestId === identity) return;
     setReceipt(Object.freeze({ requestId: identity, reference: chineseReference('导出任务', job.id), occurredAt: job.generatedAt ?? job.createdAt, message: `安全导出已生成，共 ${job.recordCount} 条；下载链接将在服务端指定时间失效。` }));
-  }, [exported.data, identity, receipt?.reference]);
+  }, [exported.data, identity, receipt?.requestId]);
   const rows = useMemo(() => data?.items ?? [], [data?.items]);
   const watermark = data?.snapshot.watermark.occurredAt;
   const timezone = rows[0]?.period.timezone ?? 'Asia/Shanghai';

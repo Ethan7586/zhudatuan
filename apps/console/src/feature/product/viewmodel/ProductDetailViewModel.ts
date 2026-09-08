@@ -41,7 +41,7 @@ function useSection(productid: string, section: ProductDetailSection, dependency
     productid === '' ? ('empty' as const) : unavailable ? ('unavailable' as const) : queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: false });
   return Object.freeze({
     section,
-    data: query.data as ProductDetail | undefined,
+    data: query.data,
     condition,
     ...(error === undefined ? {} : { error }),
     refresh: () => void query.refetch(),

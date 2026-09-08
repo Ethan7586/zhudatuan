@@ -7,8 +7,7 @@ import { regex } from 'zod/mini';
 const nullableText = union([string(), nullSchema()]);
 const handle = string().check(regex(STOREFRONT_HANDLE_PATTERN));
 const publicUrl = string().check(regex(STOREFRONT_ENTRY_URL_PATTERN));
-const section = <TOutput>(data: ZodMiniType<TOutput>) =>
-  strictObject({ state: literal(['complete', 'unavailable', 'failed']), version: string(), asOf: isoUtc, data: union([data, nullSchema()]) });
+const section = <TOutput>(data: ZodMiniType<TOutput>) => strictObject({ state: literal(['complete', 'unavailable', 'failed']), version: string(), asOf: isoUtc, data: union([data, nullSchema()]) });
 const binding = strictObject({ application: string(), mall: string(), pool: string(), release: string(), version: string(), tenant: string() });
 const identity = strictObject({
   state: literal(['anonymous', 'member']),
@@ -41,10 +40,19 @@ const navigation: ZodMiniType<StorefrontNavigationNode> = lazy(() =>
     parent: nullableText,
     order: number(),
     operation: string(),
-    experience: strictObject({ icon: string(), routeKey: string(), route: string(), component: string(), placement: literal(['primary', 'secondary', 'contextual']), disabled: boolean(), disabledReason: nullableText, breadcrumbs: array(strictObject({ key: string(), title: string() })) }),
+    experience: strictObject({
+      icon: string(),
+      routeKey: string(),
+      route: string(),
+      component: string(),
+      placement: literal(['primary', 'secondary', 'contextual']),
+      disabled: boolean(),
+      disabledReason: nullableText,
+      breadcrumbs: array(strictObject({ key: string(), title: string() })),
+    }),
     children: array(navigation),
   })
-) as ZodMiniType<StorefrontNavigationNode>;
+);
 const benefit = strictObject({ accounts: number(), availableMinor: number(), currency: nullableText, version: number() });
 const orders = strictObject({ total: number(), awaitingPayment: number(), fulfilling: number(), aftersale: number(), version: number() });
 const price = strictObject({ sku: string(), amountMinor: number(), compareMinor: union([number(), nullSchema()]), currency: string(), version: string() });

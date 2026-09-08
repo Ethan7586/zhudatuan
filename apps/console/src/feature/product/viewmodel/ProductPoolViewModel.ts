@@ -1,21 +1,15 @@
+import { OP_CATALOG_LISTINGS_POOL_SET, OP_CATALOG_POOLS_ALLOCATE, OP_CATALOG_POOLS_ATTACH, OP_CATALOG_POOLS_DETACH, OP_CATALOG_POOLS_READ } from '@shop/contract/ids';
 import { presentError } from '@shop/presentation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ProductDependencies } from '../../../app/Dependencies';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import type { Listing, Pool, PoolAllocationKind } from '../model/Product';
+import { identityFor, type CommandIdentity } from '../../../shared/action/CommandIdentity';
+import { canUseOperation } from '../../../shared/security/OperationAccess';
+import type { Listing, PoolAllocationKind } from '../model/Product';
 import { isManagedListing } from '../model/ProductAction';
 import { command } from './ProductActionViewModel';
 import { poolKey } from './ProductQueryKey';
-import { identityFor, type CommandIdentity } from '../../../shared/action/CommandIdentity';
-import {
-  OP_CATALOG_LISTINGS_POOL_SET,
-  OP_CATALOG_POOLS_ALLOCATE,
-  OP_CATALOG_POOLS_ATTACH,
-  OP_CATALOG_POOLS_DETACH,
-  OP_CATALOG_POOLS_READ,
-} from '@shop/contract/ids';
-import { canUseOperation } from '../../../shared/security/OperationAccess';
 
 type PoolMode = 'allocate' | 'attach' | 'detach' | 'move' | 'remove';
 
@@ -48,9 +42,7 @@ export function useProductPoolViewModel(open: boolean, listing: Listing | undefi
   const listingManageable = listing !== undefined && isManagedListing(listing) && listing.status !== 'published' && listing.status !== 'retired';
   const canSubmit =
     operationAllowed &&
-    (listing === undefined
-      ? selected !== undefined && globalOperation
-      : listingManageable && (operation === 'remove' ? listingpool != null : operation === 'move' && selected !== undefined && selected.id !== listingpool));
+    (listing === undefined ? selected !== undefined && globalOperation : listingManageable && (operation === 'remove' ? listingpool != null : operation === 'move' && selected !== undefined && selected.id !== listingpool));
   const commandidentity = useRef<CommandIdentity | undefined>(undefined);
   const identity = identityFor(commandidentity, JSON.stringify({ listing: listing?.id, version: listing?.version, selected: selected?.id, target, kind, name, operation }), dependencies.createIdentity);
   const mutation = useMutation<unknown>({

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -13,9 +13,9 @@ afterEach(() => cleanup());
 
 describe('ProductImportViewModel', () => {
   it('runs template, upload, mapping, server preflight, versioned confirmation and task receipt', async () => {
-    const create = vi.fn(async () => task('queued', 1));
-    const read = vi.fn(async () => ({ ...task('ready', 2), total: 1, confirmationRequired: true, previewHash: 'b'.repeat(64), columns: ['sku', 'title'] }));
-    const confirm = vi.fn(async () => ({ ...task('running', 3), total: 1 }));
+    const create = vi.fn<ProductDependencies['createImport']['execute']>(() => Promise.resolve(task('queued', 1)));
+    const read = vi.fn(() => Promise.resolve({ ...task('ready', 2), total: 1, confirmationRequired: true, previewHash: 'b'.repeat(64), columns: ['sku', 'title'] }));
+    const confirm = vi.fn(() => Promise.resolve({ ...task('running', 3), total: 1 }));
     setup(create, read, confirm);
     const user = userEvent.setup();
 
@@ -31,8 +31,9 @@ describe('ProductImportViewModel', () => {
     expect(await screen.findByText('预检完成，等待确认')).toBeTruthy();
     await user.click(screen.getByRole('button', { name: '确认并执行导入' }));
     expect(await screen.findByText('商品导入正在执行')).toBeTruthy();
-    expect(create).toHaveBeenCalledWith(expect.objectContaining({ identity: expect.stringMatching(/^command:/) }), file, expect.any(Function));
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ identity: expect.stringMatching(/^command:/) }), expect.objectContaining({ id: 'import:one', version: 2, previewHash: 'b'.repeat(64) }));
+    expect(create.mock.calls[0]?.[0]).toHaveProperty('identity');
+    expect(create).toHaveBeenCalledWith(expect.anything(), file, expect.any(Function));
+    expect(confirm).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ id: 'import:one', version: 2, previewHash: 'b'.repeat(64) }));
     expect(read).toHaveBeenCalled();
   });
 

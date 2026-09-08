@@ -50,7 +50,7 @@ export function JourneySelect<T extends string>({
 }>) {
   return (
     <JourneyField label={label} {...(hint ? { hint } : {})}>
-      <select aria-label={label} value={value} onChange={(event) => onChange({ [field]: event.target.value } as Partial<MallOpeningDraft>)}>
+      <select aria-label={label} value={value} onChange={(event) => onChange({ [field]: event.target.value })}>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}

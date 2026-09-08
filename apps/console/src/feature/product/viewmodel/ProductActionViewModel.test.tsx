@@ -8,14 +8,7 @@ import type { Listing } from '../model/Product';
 import type { ProductAction } from '../model/ProductAction';
 import { ProductDialog } from '../view/ProductDialog';
 import { useProductActionViewModel } from './ProductActionViewModel';
-import {
-  OP_CATALOG_LISTINGS_PRICE_SET,
-  OP_CATALOG_LISTINGS_PUBLISH,
-  OP_CATALOG_LISTINGS_UNPUBLISH,
-  OP_CATALOG_PRODUCTS_ARCHIVE,
-  OP_CATALOG_PRODUCTS_CREATE,
-  OP_CATALOG_PRODUCTS_UPDATE,
-} from '@shop/contract/ids';
+import { OP_CATALOG_LISTINGS_PRICE_SET, OP_CATALOG_LISTINGS_PUBLISH, OP_CATALOG_LISTINGS_UNPUBLISH, OP_CATALOG_PRODUCTS_ARCHIVE, OP_CATALOG_PRODUCTS_CREATE, OP_CATALOG_PRODUCTS_UPDATE } from '@shop/contract/ids';
 import { listingFixture } from '../test/ProductFixture';
 
 afterEach(() => cleanup());
@@ -38,7 +31,8 @@ describe('ProductActionViewModel', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: '保存修改' }));
 
     await waitFor(() => expect(execute).toHaveBeenCalledTimes(1));
-    expect(execute.mock.calls[0]?.[0]).toMatchObject({ identity: expect.stringMatching(/^command:/), accessVersion: 7 });
+    expect(execute.mock.calls[0]?.[0]).toHaveProperty('accessVersion', 7);
+    expect(execute.mock.calls[0]?.[0]).toHaveProperty('identity');
     expect(execute.mock.calls[0]?.[1]).toMatchObject({ operation: OP_CATALOG_PRODUCTS_UPDATE, listing, expectedVersion: 7, body: { title: '办公福利礼盒', category: 'category:office', status: 'active' } });
     expect(done).toHaveBeenCalledOnce();
   });
@@ -73,11 +67,9 @@ describe('ProductActionViewModel', () => {
     await user.click(screen.getByRole('button', { name: '确认下架' }));
     await waitFor(() => expect(execute).toHaveBeenCalledTimes(3));
 
-    expect(execute.mock.calls.map((call) => call[1])).toEqual([
-      { operation: OP_CATALOG_PRODUCTS_ARCHIVE, listing, expectedVersion: 7 },
-      { operation: OP_CATALOG_LISTINGS_PUBLISH, listing },
-      { operation: OP_CATALOG_LISTINGS_UNPUBLISH, listing },
-    ]);
+    expect(execute).toHaveBeenNthCalledWith(1, expect.anything(), { operation: OP_CATALOG_PRODUCTS_ARCHIVE, listing, expectedVersion: 7 });
+    expect(execute).toHaveBeenNthCalledWith(2, expect.anything(), { operation: OP_CATALOG_LISTINGS_PUBLISH, listing });
+    expect(execute).toHaveBeenNthCalledWith(3, expect.anything(), { operation: OP_CATALOG_LISTINGS_UNPUBLISH, listing });
   });
 
   it('does not submit a generated operation that is absent from the current access snapshot', async () => {

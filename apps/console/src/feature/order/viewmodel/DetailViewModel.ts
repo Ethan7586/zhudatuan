@@ -1,4 +1,13 @@
-import { OP_FULFILLMENT_SHIPMENTS_CREATE, OP_ORDER_ORDERS_CANCEL, OP_ORDER_ORDERS_RECEIVE, OP_ORDER_REMINDERS_CREATE, OP_PAYMENT_RECOVERIES_READ, OP_PAYMENT_RECOVERIES_RESOLVE, OP_PAYMENT_REFUNDS_REQUEST, OP_SUPPORT_CASES_READ } from '@shop/contract/ids';
+import {
+  OP_FULFILLMENT_SHIPMENTS_CREATE,
+  OP_ORDER_ORDERS_CANCEL,
+  OP_ORDER_ORDERS_RECEIVE,
+  OP_ORDER_REMINDERS_CREATE,
+  OP_PAYMENT_RECOVERIES_READ,
+  OP_PAYMENT_RECOVERIES_RESOLVE,
+  OP_PAYMENT_REFUNDS_REQUEST,
+  OP_SUPPORT_CASES_READ,
+} from '@shop/contract/ids';
 import { presentError, queryCondition, safeQueryError } from '@shop/presentation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -7,7 +16,7 @@ import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
 import { orderDetailKey, orderRecoveryKey, orderSupportKey } from './OrderQueryKey';
 import { canUseOperation } from '../../../shared/security/OperationAccess';
 import { orderRecoveryState } from './RecoveryViewModel';
-import type { OrderRecoveryAction } from '../model/Order';
+import type { OrderCommandReceipt, OrderDetail, OrderFulfillment, OrderOperationReceipt, OrderRecovery, OrderRecoveryAction, OrderSupportCase, OrderSupportState } from '../model/Order';
 
 export interface OrderCommandEditor {
   readonly kind: 'cancel' | 'receive' | 'remind' | 'ship' | 'refund' | 'recovery';
@@ -17,8 +26,8 @@ export interface OrderCommandEditor {
   readonly carrier: string;
   readonly amountMinor: string;
   readonly proof: string;
-  readonly fulfillment?: import('../model/Order').OrderFulfillment;
-  readonly recovery?: import('../model/Order').OrderRecovery;
+  readonly fulfillment?: OrderFulfillment;
+  readonly recovery?: OrderRecovery;
   readonly recoveryAction: OrderRecoveryAction;
 }
 
@@ -41,10 +50,10 @@ export function useOrderDetailViewModel(context: ConsoleContext, dependencies: O
   const canReadRecoveries = canUseOperation(context, OP_PAYMENT_RECOVERIES_READ);
   const recoveryQuery = useQuery({
     queryKey: orderRecoveryKey(context, supportReference ?? reference ?? ''),
-    queryFn: ({ signal }) => dependencies.readRecoveries.execute(context, supportReference!, signal),
+    queryFn: ({ signal }) => dependencies.readRecoveries.execute(context, supportReference, signal),
     enabled: canReadRecoveries && supportReference !== undefined,
   });
-  const command = useMutation<import('../model/Order').OrderCommandReceipt | import('../model/Order').OrderOperationReceipt>({
+  const command = useMutation<OrderCommandReceipt | OrderOperationReceipt>({
     mutationFn: () => {
       if (!query.data || !editor) throw new Error('VALIDATION_FAILED');
       if (editor.kind === 'cancel') return dependencies.cancel.execute(context, query.data, editor.reason, identity);
@@ -95,10 +104,19 @@ export function useOrderDetailViewModel(context: ConsoleContext, dependencies: O
     copied,
     editor,
     assurance: context.session.assurance.level,
-    canCancel: canUseOperation(context, OP_ORDER_ORDERS_CANCEL) && query.data !== undefined && ['created', 'awaitingpayment'].includes(query.data.lifecycle_state) && ['unpaid', 'authorizing', 'failed'].includes(query.data.payment_state) && ['unallocated', 'allocated'].includes(query.data.fulfillment_state),
+    canCancel:
+      canUseOperation(context, OP_ORDER_ORDERS_CANCEL) &&
+      query.data !== undefined &&
+      ['created', 'awaitingpayment'].includes(query.data.lifecycle_state) &&
+      ['unpaid', 'authorizing', 'failed'].includes(query.data.payment_state) &&
+      ['unallocated', 'allocated'].includes(query.data.fulfillment_state),
     canReceive: canUseOperation(context, OP_ORDER_ORDERS_RECEIVE) && query.data !== undefined && ['shipped', 'delivered'].includes(query.data.fulfillment_state),
-    canRemind: canUseOperation(context, OP_ORDER_REMINDERS_CREATE) && query.data !== undefined && ['paid', 'fulfilling', 'shipped'].includes(query.data.lifecycle_state) && !['received', 'cancelled', 'returned'].includes(query.data.fulfillment_state),
-    canShip: (target: import('../model/Order').OrderFulfillment) => canUseOperation(context, OP_FULFILLMENT_SHIPMENTS_CREATE) && ['pending', 'submitted', 'accepted', 'processing', 'ready'].includes(target.state),
+    canRemind:
+      canUseOperation(context, OP_ORDER_REMINDERS_CREATE) &&
+      query.data !== undefined &&
+      ['paid', 'fulfilling', 'shipped'].includes(query.data.lifecycle_state) &&
+      !['received', 'cancelled', 'returned'].includes(query.data.fulfillment_state),
+    canShip: (target: OrderFulfillment) => canUseOperation(context, OP_FULFILLMENT_SHIPMENTS_CREATE) && ['pending', 'submitted', 'accepted', 'processing', 'ready'].includes(target.state),
     canRefund: canUseOperation(context, OP_PAYMENT_REFUNDS_REQUEST) && query.data !== undefined && query.data.payment.paymentId !== null && query.data.payment.refundableMinor > 0,
     canResolveRecovery: canUseOperation(context, OP_PAYMENT_RECOVERIES_RESOLVE),
     command: Object.freeze({ busy: command.isPending, receipt: command.data, error: safeQueryError(command.error), validation: commandValidation(editor, context.session.assurance.level, query.data) }),
@@ -122,7 +140,7 @@ export function useOrderDetailViewModel(context: ConsoleContext, dependencies: O
         command.reset();
         setEditor(editorDefaults('remind'));
       },
-      openShip: (fulfillment: import('../model/Order').OrderFulfillment) => {
+      openShip: (fulfillment: OrderFulfillment) => {
         setIdentity(dependencies.createIdentity());
         command.reset();
         setEditor({ ...editorDefaults('ship'), fulfillment });
@@ -132,7 +150,7 @@ export function useOrderDetailViewModel(context: ConsoleContext, dependencies: O
         command.reset();
         setEditor({ ...editorDefaults('refund'), amountMinor: ((query.data?.payment.refundableMinor ?? 0) / 100).toFixed(2) });
       },
-      openRecovery: (recovery: import('../model/Order').OrderRecovery) => {
+      openRecovery: (recovery: OrderRecovery) => {
         setIdentity(dependencies.createIdentity());
         command.reset();
         setEditor({ ...editorDefaults('recovery'), recovery, recoveryAction: suggestedRecoveryAction(recovery.resourceType) });
@@ -155,7 +173,7 @@ export function useOrderDetailViewModel(context: ConsoleContext, dependencies: O
   });
 }
 
-function supportState(allowed: boolean, query: Readonly<{ isPending: boolean; isError: boolean; error: unknown; data: readonly import('../model/Order').OrderSupportCase[] | undefined }>): import('../model/Order').OrderSupportState {
+function supportState(allowed: boolean, query: Readonly<{ isPending: boolean; isError: boolean; error: unknown; data: readonly OrderSupportCase[] | undefined }>): OrderSupportState {
   if (!allowed) return Object.freeze({ state: 'hidden' });
   if (query.isPending) return Object.freeze({ state: 'loading' });
   if (query.isError) {
@@ -165,7 +183,7 @@ function supportState(allowed: boolean, query: Readonly<{ isPending: boolean; is
   return Object.freeze({ state: 'ready', data: Object.freeze([...(query.data ?? [])]) });
 }
 
-function commandValidation(editor: OrderCommandEditor | undefined, assurance: number, order?: import('../model/Order').OrderDetail): string | undefined {
+function commandValidation(editor: OrderCommandEditor | undefined, assurance: number, order?: OrderDetail): string | undefined {
   if (!editor) return undefined;
   if (editor.kind === 'cancel' && editor.reason.trim().length < 2) return '请填写取消订单的原因。';
   if (editor.kind === 'receive' && editor.reason.trim().length < 2) return '请填写确认收货的依据。';
@@ -197,7 +215,16 @@ function suggestedRecoveryAction(resourceType: string): OrderCommandEditor['reco
 }
 
 function confirmationMessage(kind: OrderCommandEditor['kind']): string {
-  return ({ cancel: '请确认订单尚未支付、尚未履约，并了解取消后不可恢复。', receive: '请确认物流事实和收货状态已核对。', remind: '请确认本次催单不会重复打扰履约方。', ship: '请确认物流单号、承运方和履约对象均已核对。', refund: '请确认退款上限、原因和复核凭证均与当前订单一致。', recovery: '请确认恢复方式与错误证据一致，且不会重复执行外部动作。' } as const)[kind];
+  return (
+    {
+      cancel: '请确认订单尚未支付、尚未履约，并了解取消后不可恢复。',
+      receive: '请确认物流事实和收货状态已核对。',
+      remind: '请确认本次催单不会重复打扰履约方。',
+      ship: '请确认物流单号、承运方和履约对象均已核对。',
+      refund: '请确认退款上限、原因和复核凭证均与当前订单一致。',
+      recovery: '请确认恢复方式与错误证据一致，且不会重复执行外部动作。',
+    } as const
+  )[kind];
 }
 
 function refundMinor(value: string): number {

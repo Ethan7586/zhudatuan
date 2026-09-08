@@ -4,9 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@shop/sdk';
 import type { StorefrontSession } from '../../../entity/session';
 import type { Voucher } from '../model/Voucher';
+import type { VoucherPort } from '../public/VoucherPort';
 import { useActivationViewModel } from './ActivationViewModel';
 
-const state = vi.hoisted(() => ({ session: null as StorefrontSession | null, activate: vi.fn(), toast: vi.fn() }));
+const state = vi.hoisted(() => ({ session: null as StorefrontSession | null, activate: vi.fn<VoucherPort['activate']>(), toast: vi.fn() }));
 vi.mock('../../../app/DependencyContext', () => ({ useDependencies: () => ({ voucher: { activate: state.activate } }) }));
 vi.mock('../../../entity/session/viewmodel/SessionContext', () => ({ useSession: () => ({ session: state.session, showToast: state.toast }) }));
 const voucher = { id: 'voucher:one', productName: '节日福利', state: 'active' } as Voucher;
@@ -120,7 +121,7 @@ describe('activation command state', () => {
     act(() => {
       pending = result.current.actions.submit();
     });
-    const signal = state.activate.mock.calls[0]?.[3] as AbortSignal;
+    const signal = state.activate.mock.calls[0]?.[3];
     state.session = { ...state.session!, membership: 'member:other', scope: { kind: 'mall', id: 'mall:other' } };
     rerender();
     expect(signal.aborted).toBe(true);

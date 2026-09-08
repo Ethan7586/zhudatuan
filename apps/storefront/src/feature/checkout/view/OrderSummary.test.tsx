@@ -19,7 +19,7 @@ describe('OrderSummary', () => {
   it('does not expose a stale quote amount after selection changes', () => {
     render(<OrderSummary state={state('stale')} selectedCount={1} onSubmit={vi.fn()} />);
     expect(screen.queryByText(/¥123\.45/)).toBeNull();
-    expect((screen.getByRole('button', { name: /重新报价/ }) as HTMLButtonElement).disabled).toBe(false);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: /重新报价/ }).disabled).toBe(false);
   });
 });
 

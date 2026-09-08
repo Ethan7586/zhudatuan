@@ -1,28 +1,6 @@
-import {
-  OP_ACCESS_OVERRIDES_MANAGE,
-  OP_ACCESS_OWNERSHIP_TRANSFERS_ACCEPT,
-  OP_ACCESS_OWNERSHIP_TRANSFERS_ACCEPT_PREVIEW,
-  OP_ACCESS_OWNERSHIP_TRANSFERS_CANCEL,
-  OP_ACCESS_OWNERSHIP_TRANSFERS_CANCEL_PREVIEW,
-  OP_ACCESS_OWNERSHIP_TRANSFERS_CREATE,
-  OP_ACCESS_OWNERSHIP_TRANSFERS_PREVIEW,
-  OP_ACCESS_ROLES_MANAGE,
-  OP_ACCESS_SCOPES_MANAGE,
-} from '@shop/contract/ids';
 import type { OperationBodyFor, OperationId, OperationOutputFor, OperationTarget } from '@shop/contract';
 import type { OwnerChange } from './OwnershipState';
-export type {
-  FormerOwnerMode,
-  FormerOwnerRole,
-  OwnerCandidate,
-  OwnerChange,
-  OwnerIdentity,
-  Ownership,
-  OwnershipImpact,
-  OwnershipPreview,
-  OwnershipTransfer,
-  OwnershipTransferState,
-} from './OwnershipState';
+export type { FormerOwnerMode, FormerOwnerRole, OwnerCandidate, OwnerChange, OwnerIdentity, Ownership, OwnershipImpact, OwnershipPreview, OwnershipTransfer, OwnershipTransferState } from './OwnershipState';
 
 type AccessCenterDto = OperationOutputFor<'access.center.read'>;
 type AccessScopeDto = AccessCenterDto['items'][number]['scopes'][number];

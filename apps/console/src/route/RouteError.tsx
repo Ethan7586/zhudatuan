@@ -1,7 +1,6 @@
-import { Button, ResourcePanel, type ResourceCondition } from '@shop/design';
-import { failure, presentError } from '@shop/presentation';
+import { Button, ResourcePanel } from '@shop/design';
 import { useEffect } from 'react';
-import { isRouteErrorResponse, useLocation, useNavigate, useRouteError } from 'react-router';
+import { useLocation, useNavigate, useRouteError } from 'react-router';
 import { NAVIGATION_CATALOG_HASH } from '../generated/NavigationBinding';
 import { ROOT_PATH } from '../generated/RouteBinding';
 

@@ -27,13 +27,10 @@ describe('experience document revision', () => {
     expect(revised.navigation).toEqual(source.navigation);
     expect(revised.assets).toEqual(source.assets);
     expect(revised.pages).toHaveLength(2);
-    expect(revised.pages[0]?.blocks).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: 'hero', content: expect.objectContaining({ title: '新标题', image: 'object:hero' }) }),
-        expect.objectContaining({ id: 'collection' }),
-        expect.objectContaining({ component: 'notice', content: { announcement: '新公告' } }),
-      ])
-    );
+    const blocks = revised.pages[0]?.blocks ?? [];
+    expect(blocks.find(({ id }) => id === 'hero')).toMatchObject({ id: 'hero', content: { title: '新标题', image: 'object:hero' } });
+    expect(blocks.some(({ id }) => id === 'collection')).toBe(true);
+    expect(blocks.find(({ component }) => component === 'notice')).toMatchObject({ component: 'notice', content: { announcement: '新公告' } });
     expect(revised.pages[1]).toEqual(source.pages[1]);
   });
 });

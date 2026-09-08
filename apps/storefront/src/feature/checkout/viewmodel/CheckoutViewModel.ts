@@ -36,9 +36,7 @@ export function useCheckoutViewModel() {
   });
   const options = useCheckoutOptions(session.session, session.scope || 'guest', current.data ?? null, session.showToast);
   const selected = cart.cart.filter(({ selected: chosen }) => chosen);
-  const selectedAddress = cart.addresses.find(({ id }) => id === search.get('address'))
-    ?? cart.addresses.find(({ id }) => id === current.data?.selection.addressId)
-    ?? cart.addresses[0];
+  const selectedAddress = cart.addresses.find(({ id }) => id === search.get('address')) ?? cart.addresses.find(({ id }) => id === current.data?.selection.addressId) ?? cart.addresses[0];
   const draft = checkoutDraft({
     cartVersion: Number(rawCart.cart?.version ?? 0),
     lines: selected.map(({ listingId, quantity, lineVersion }) => ({ listingId, quantity, lineVersion })),
@@ -70,15 +68,16 @@ export function useCheckoutViewModel() {
     committing: order.isPending,
     now,
   });
+  const quoteExpiry = current.data?.expiresAt;
 
   useEffect(() => {
-    const expiry = current.data ? Date.parse(current.data.expiresAt) : Number.NaN;
+    const expiry = quoteExpiry === undefined ? Number.NaN : Date.parse(quoteExpiry);
     if (!Number.isFinite(expiry)) return;
     const delay = expiry - Date.now();
     if (delay <= 0) return setNow(Date.now());
     const timer = window.setTimeout(() => setNow(Date.now()), Math.min(delay + 50, 2_147_483_647));
     return () => window.clearTimeout(timer);
-  }, [current.data?.expiresAt]);
+  }, [quoteExpiry]);
 
   const report = (cause: unknown) => {
     if (hasFailureCode(cause, 'STEPUP_REQUIRED')) setVerification(true);
@@ -87,10 +86,18 @@ export function useCheckoutViewModel() {
   const createQuote = async () => {
     if (selected.length === 0) return;
     if (!selectedAddress && selected.some(({ product }) => product.itemType === 'physical')) return session.showToast('实体商品报价前必须选择收货地址', 'error');
-    try { await quote.mutateAsync(); } catch (cause) { report(cause); }
+    try {
+      await quote.mutateAsync();
+    } catch (cause) {
+      report(cause);
+    }
   };
   const commitOrder = async () => {
-    try { await order.mutateAsync(); } catch (cause) { report(cause); }
+    try {
+      await order.mutateAsync();
+    } catch (cause) {
+      report(cause);
+    }
   };
   return Object.freeze({
     ...cart,
@@ -102,7 +109,7 @@ export function useCheckoutViewModel() {
     allSelected: cart.cart.length > 0 && selected.length === cart.cart.length,
     verification,
     actions: Object.freeze({
-      submit: () => state.canCommit ? commitOrder() : state.canQuote ? createQuote() : Promise.resolve(),
+      submit: () => (state.canCommit ? commitOrder() : state.canQuote ? createQuote() : Promise.resolve()),
       chooseAddress: (id: string) => {
         const next = new URLSearchParams(search);
         next.set('address', id);

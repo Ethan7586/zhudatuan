@@ -1,14 +1,12 @@
+import { ClientErrorBuffer } from './ClientErrors';
+import type { TelemetryContext } from './Context';
 import { Logger, type LogSink } from './Logger';
 import type { Metrics } from './Metrics';
-import type { Telemetry } from './Telemetry';
-import type { TelemetryContext } from './Context';
-import type { Tracer, TraceSpan } from './Tracer';
-import { Redactor } from './Redactor';
-import { ClientErrorBuffer } from './ClientErrors';
-import { TELEMETRY_SAMPLING } from './RedactionCatalog';
-import { TELEMETRY_BUFFER } from './RedactionCatalog';
 import { ObservationBuffer } from './Observations';
+import { TELEMETRY_BUFFER, TELEMETRY_SAMPLING } from './RedactionCatalog';
+import { Redactor } from './Redactor';
 import type { ObservableTelemetry } from './Telemetry';
+import type { Tracer, TraceSpan } from './Tracer';
 
 export type TelemetryWriter = (record: Readonly<Record<string, unknown>>) => void | Promise<void>;
 
@@ -26,7 +24,13 @@ export function createTelemetry(writer: TelemetryWriter): ObservableTelemetry {
     }
   };
   const sink: LogSink = { write: safe };
-  return Object.freeze({ logger: new Logger(sink), metrics: new SinkMetrics(safe), tracer: new SinkTracer(safe), clientErrors: new ClientErrorBuffer(safe, 2_000, 7 * 24 * 60 * 60 * 1_000, () => Date.now(), TELEMETRY_SAMPLING.errors), observations });
+  return Object.freeze({
+    logger: new Logger(sink),
+    metrics: new SinkMetrics(safe),
+    tracer: new SinkTracer(safe),
+    clientErrors: new ClientErrorBuffer(safe, 2_000, 7 * 24 * 60 * 60 * 1_000, () => Date.now(), TELEMETRY_SAMPLING.errors),
+    observations,
+  });
 }
 
 function backendFailure(): Readonly<Record<string, unknown>> {

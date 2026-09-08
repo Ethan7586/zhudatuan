@@ -34,14 +34,15 @@ function readLocation(): Readonly<{ pathname: string; entry: string }> {
 }
 
 function historyEntry(): string | undefined {
-  const state = window.history.state;
+  const state: unknown = window.history.state;
   if (typeof state !== 'object' || state === null) return undefined;
-  const value = Reflect.get(state, stateKey);
+  const value: unknown = Reflect.get(state, stateKey);
   return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
 function historyState(entry: string): Readonly<Record<string, unknown>> {
-  const current = typeof window.history.state === 'object' && window.history.state !== null ? window.history.state as Record<string, unknown> : {};
+  const state: unknown = window.history.state;
+  const current = typeof state === 'object' && state !== null ? (state as Record<string, unknown>) : {};
   return Object.freeze({ ...current, [stateKey]: entry });
 }
 

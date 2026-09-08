@@ -1,9 +1,9 @@
 import { array, boolean, discriminatedUnion, literal, maxLength, minLength, null as nullSchema, optional, record, strictObject, string, union } from 'zod/mini';
-import { ContractJsonValueSchema } from './JsonSchema';
-import { currency, decision, expectedVersion, id, integer, isoUtc, pageOutput, pageQuery, unsigned, version } from './Primitives';
+import { FINANCE_RECONCILIATION_STATES, FINANCE_REPAIR_DECISIONS } from '../Vocabulary';
 import { adjustment, backfill, exportResult, financePolicy, hold, period, periodClose, settlement, settlementRead, withdrawal } from './FinanceSettlementSchema';
 import { importCreated, importInput, importRead } from './ImportSchema';
-import { FINANCE_RECONCILIATION_STATES, FINANCE_REPAIR_DECISIONS } from '../Vocabulary';
+import { ContractJsonValueSchema } from './JsonSchema';
+import { currency, expectedVersion, id, integer, isoUtc, pageOutput, pageQuery, unsigned, version } from './Primitives';
 
 const entry = strictObject({ account: string(), debitMinor: unsigned, creditMinor: unsigned, currency, memo: string() });
 const policy = strictObject({
@@ -49,7 +49,15 @@ const repair = strictObject({
   createdAt: isoUtc,
   updatedAt: isoUtc,
 });
-const policyDraft = { policyId: optional(id<'financepolicy'>()), targetStatus: optional(literal(['active', 'retired'])), name: string(), trigger: string(), entries: array(entry), effectiveAt: isoUtc, expiresAt: optional(union([isoUtc, nullSchema()])) } as const;
+const policyDraft = {
+  policyId: optional(id<'financepolicy'>()),
+  targetStatus: optional(literal(['active', 'retired'])),
+  name: string(),
+  trigger: string(),
+  entries: array(entry),
+  effectiveAt: isoUtc,
+  expiresAt: optional(union([isoUtc, nullSchema()])),
+} as const;
 const repairDraft = { statementId: id<'statement'>(), sourceJournalId: id<'journal'>(), sourceHash: repairHash, entries: array(entry), reason: repairReason, expectedVersion } as const;
 const facet = strictObject({ value: string(), label: string(), count: unsigned });
 const providerFacet = strictObject({ ...facet.shape, available: boolean() });

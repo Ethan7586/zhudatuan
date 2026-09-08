@@ -1,7 +1,4 @@
-import { array, boolean, discriminatedUnion, lazy, literal, null as nullSchema, number, optional, strictObject, string, union, undefined as undefinedSchema, type ZodMiniType } from 'zod/mini';
-import { OPERATION_SCOPE_KINDS } from '../Operation';
-import { OPERATION_TARGETS } from '../Surface';
-import { ACCESS_ROLE_TEMPLATE_CODES } from '../Vocabulary';
+import { array, boolean, discriminatedUnion, literal, null as nullSchema, number, optional, strictObject, string, undefined as undefinedSchema, union } from 'zod/mini';
 import { createdInvitation } from './IdentitySchema';
 
 import {

@@ -82,9 +82,9 @@ function VoucherContent({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof u
             state={viewmodel.timelineState}
             hasMore={viewmodel.hasMoreTimeline}
             loadingMore={viewmodel.loadingMoreTimeline}
-            onMore={actions.moreTimeline}
-            onRetry={actions.retryTimeline}
-            onOpenOrder={actions.openOrder}
+            onMore={() => void actions.moreTimeline()}
+            onRetry={() => void actions.retryTimeline()}
+            onOpenOrder={(order) => void actions.openOrder(order)}
           />
         ) : null}
       </div>

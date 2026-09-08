@@ -1,12 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ProductCommand, ProductImportPort } from '../public';
+import type { ProductImport } from '../model/ProductImport';
 import { CreateProductImport } from './CreateProductImport';
 
 describe('CreateProductImport', () => {
   it('delegates the untouched file to the server-backed import port', async () => {
     const file = new File(['title,sku\n礼盒,SKU-1\n'], 'products.csv', { type: 'text/csv' });
     const created = task('queued');
-    const createProductImport = vi.fn<ProductImportPort['createProductImport']>(async () => created);
+    const createProductImport = vi.fn<ProductImportPort['createProductImport']>(() => Promise.resolve(created));
     const command = request();
     await expect(new CreateProductImport({ createProductImport }).execute(command, file)).resolves.toBe(created);
     expect(createProductImport).toHaveBeenCalledWith(command, file, undefined);
@@ -22,7 +23,7 @@ describe('CreateProductImport', () => {
 function request(): ProductCommand {
   return { scope: { kind: 'mall', id: 'mall:one' }, accessVersion: 7, identity: 'command:import', csrf: 'csrf:one' };
 }
-function task(state: import('../model/ProductImport').ProductImport['state']): import('../model/ProductImport').ProductImport {
+function task(state: ProductImport['state']): ProductImport {
   return {
     id: 'import:one',
     type: 'import',

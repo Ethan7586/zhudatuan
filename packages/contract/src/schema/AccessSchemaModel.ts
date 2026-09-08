@@ -1,8 +1,7 @@
-import { array, boolean, discriminatedUnion, lazy, literal, null as nullSchema, number, optional, strictObject, string, union, undefined as undefinedSchema, type ZodMiniType } from 'zod/mini';
+import { array, boolean, lazy, literal, null as nullSchema, number, optional, strictObject, string, union, type ZodMiniType } from 'zod/mini';
 import { OPERATION_SCOPE_KINDS } from '../Operation';
 import { OPERATION_TARGETS } from '../Surface';
 import { ACCESS_ROLE_TEMPLATE_CODES } from '../Vocabulary';
-import { createdInvitation } from './IdentitySchema';
 
 export const text = string();
 export const nullableText = union([text, nullSchema()]);
@@ -88,7 +87,7 @@ export const navigationNode: ZodMiniType<NavigationContractNode> = lazy(() =>
     }),
     children: array(navigationNode),
   })
-) as ZodMiniType<NavigationContractNode>;
+);
 export const ownerIdentity = strictObject({ membership: text, member: text, principal: text, displayName: text });
 export const ownershipTransfer = strictObject({
   id: text,

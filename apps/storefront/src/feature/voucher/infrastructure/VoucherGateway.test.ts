@@ -5,12 +5,22 @@ import type { StorefrontSession } from '../../../entity/session';
 import { VoucherGateway } from './VoucherGateway';
 
 describe('voucher activation gateway', () => {
-  it.each(['numbersecret', 'secret'] as const)('uses the canonical %s operation with write and idempotency context', async mode => {
-    const value = { id: 'voucher:one', product: 'product:one', productName: '节日福利', numberMasked: '****1234',
-      initialMinor: 1000, remainingMinor: 1000, currency: 'CNY', state: 'active', validity: { startsAt: '2026-09-05T00:00:00.000Z', expiresAt: '2026-12-05T00:00:00.000Z' }, version: 2 };
-    const number = vi.fn(async () => value);
-    const secret = vi.fn(async () => value);
-    const context = vi.fn(() => ({ traceId: 'trace:one' } as RequestContext));
+  it.each(['numbersecret', 'secret'] as const)('uses the canonical %s operation with write and idempotency context', async (mode) => {
+    const value = {
+      id: 'voucher:one',
+      product: 'product:one',
+      productName: '节日福利',
+      numberMasked: '****1234',
+      initialMinor: 1000,
+      remainingMinor: 1000,
+      currency: 'CNY',
+      state: 'active',
+      validity: { startsAt: '2026-09-05T00:00:00.000Z', expiresAt: '2026-12-05T00:00:00.000Z' },
+      version: 2,
+    };
+    const number = vi.fn(() => Promise.resolve(value));
+    const secret = vi.fn(() => Promise.resolve(value));
+    const context = vi.fn(() => ({ traceId: 'trace:one' }) as RequestContext);
     const session: StorefrontSession = { membership: 'member:one', scope: { kind: 'mall', id: 'mall:one' }, accessVersion: 1, csrfToken: 'csrf:one' };
     const signal = new AbortController().signal;
     const gateway = new VoucherGateway({ activationsNumbersecret: number, activationsSecret: secret } as unknown as VoucherOperations, context);

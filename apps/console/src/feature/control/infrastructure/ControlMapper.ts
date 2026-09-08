@@ -1,10 +1,10 @@
 import { deepFreeze } from '../../../shared/model/Immutable';
 import type { CapabilityHealth, ControlPage, Distributor, ExtensionHealth, ObservabilityHealth, PlatformLayer, RiskHealth, RuntimeHealth, ServiceLevelHealth } from '../model/Control';
-import { CapabilityPageSchema, DistributionPageSchema, ExtensionPageSchema, ObservabilityHealthSchema, PlatformPageSchema, RiskPageSchema, RuntimeHealthSchema, ServiceLevelSchema, type PlatformPageDto } from './ControlSchema';
+import { CapabilityPageSchema, DistributionPageSchema, ExtensionPageSchema, ObservabilityHealthSchema, PlatformPageSchema, RiskPageSchema, RuntimeHealthSchema, ServiceLevelSchema } from './ControlSchema';
 
 export class ControlMapper {
   platform(value: unknown): ControlPage<PlatformLayer> {
-    const page = PlatformPageSchema.parse(value) as PlatformPageDto;
+    const page = PlatformPageSchema.parse(value);
     return this.page(page, (item) => ({ id: item.id, kind: item.kind, parentId: item.parent_id, parentName: item.parent_name, name: item.name, timezone: item.timezone, status: item.status, version: item.version }));
   }
 

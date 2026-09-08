@@ -55,9 +55,25 @@ describe('storefront catalog mapping', () => {
   });
 
   it('aggregates every listing SKU and switches all authoritative availability fields together', () => {
-    const first = catalog().items[0]!;
-    const blocked = { ...first, id: 'listing:small', sku: 'sku:small', specifications: { 规格: '小份' }, price: null, availability: { sku: 'sku:small', available: 0, state: 'unavailable' as const, version: 'stock:small' }, qualification: { eligible: false, policyVersion: 5 }, saleability: { state: 'blocked' as const, reasons: ['qualification_failed' as const, 'price_unavailable' as const, 'out_of_stock' as const] } };
-    const saleable = { ...first, id: 'listing:large', sku: 'sku:large', specifications: { 规格: '大份' }, price: { sku: 'sku:large', amountMinor: 12800, compareMinor: 15800, currency: 'CNY', version: 'price:large' }, availability: { sku: 'sku:large', available: 9, state: 'available' as const, version: 'stock:large' } };
+    const first = catalog().items[0];
+    const blocked = {
+      ...first,
+      id: 'listing:small',
+      sku: 'sku:small',
+      specifications: { 规格: '小份' },
+      price: null,
+      availability: { sku: 'sku:small', available: 0, state: 'unavailable' as const, version: 'stock:small' },
+      qualification: { eligible: false, policyVersion: 5 },
+      saleability: { state: 'blocked' as const, reasons: ['qualification_failed' as const, 'price_unavailable' as const, 'out_of_stock' as const] },
+    };
+    const saleable = {
+      ...first,
+      id: 'listing:large',
+      sku: 'sku:large',
+      specifications: { 规格: '大份' },
+      price: { sku: 'sku:large', amountMinor: 12800, compareMinor: 15800, currency: 'CNY', version: 'price:large' },
+      availability: { sku: 'sku:large', available: 9, state: 'available' as const, version: 'stock:large' },
+    };
     const product = mapProductDetail([blocked, saleable])!;
 
     expect(product).toMatchObject({ productId: 'product:one', listingId: 'listing:large', skuId: 'sku:large', priceWelfareMinor: 12800, stock: 9, skus: [{ id: 'sku:small' }, { id: 'sku:large' }] });
@@ -72,10 +88,7 @@ describe('storefront catalog gateway', () => {
     const catalogRead = vi.fn(() => Promise.resolve({ items: [], categories: [], nextCursor: null, version: 'catalog:1', asOf: '2026-09-03T00:00:00.000Z' }));
     const gateway = new CatalogGateway({ catalogRead } as never, (() => Object.freeze({ headers: Object.freeze({}) })) as never);
     await gateway.read({ listingIds: ['listing:one', 'listing:one', 'listing:two'], query: '关怀礼盒', limit: 20 });
-    expect(catalogRead).toHaveBeenCalledWith(
-      { query: { listingIds: 'listing:one,listing:two', q: '关怀礼盒', limit: 20 } },
-      expect.objectContaining({ headers: {} })
-    );
+    expect(catalogRead).toHaveBeenCalledWith({ query: { listingIds: 'listing:one,listing:two', q: '关怀礼盒', limit: 20 } }, expect.objectContaining({ headers: {} }));
   });
 
   it('loads all SKU listings for a product detail without a mock fallback', async () => {
@@ -89,7 +102,28 @@ describe('storefront catalog gateway', () => {
 
 function catalog(): OperationOutputFor<'storefront.catalog.read'> {
   return {
-    items: [{ id: 'listing:one', sku: 'sku:one', product: 'product:one', title: '企业福利商品', subtitle: null, coverUrl: null, kind: 'physical', attributes: { detail: { allowedAccounts: ['welfare'] } }, specifications: { 规格: '标准' }, category: { id: 'category:food', code: 'cat_food', name: '食品饮料' }, brandId: 'brand:one', supplierId: 'supplier:one', version: '1', updatedAt: '2026-09-04T00:00:00.000Z', price: { sku: 'sku:one', amountMinor: 8800, compareMinor: 9900, currency: 'CNY', version: 'price:1' }, availability: { sku: 'sku:one', available: 6, state: 'available', version: 'stock:1' }, qualification: { eligible: true, policyVersion: 4 }, saleability: { state: 'saleable', reasons: [] } }],
+    items: [
+      {
+        id: 'listing:one',
+        sku: 'sku:one',
+        product: 'product:one',
+        title: '企业福利商品',
+        subtitle: null,
+        coverUrl: null,
+        kind: 'physical',
+        attributes: { detail: { allowedAccounts: ['welfare'] } },
+        specifications: { 规格: '标准' },
+        category: { id: 'category:food', code: 'cat_food', name: '食品饮料' },
+        brandId: 'brand:one',
+        supplierId: 'supplier:one',
+        version: '1',
+        updatedAt: '2026-09-04T00:00:00.000Z',
+        price: { sku: 'sku:one', amountMinor: 8800, compareMinor: 9900, currency: 'CNY', version: 'price:1' },
+        availability: { sku: 'sku:one', available: 6, state: 'available', version: 'stock:1' },
+        qualification: { eligible: true, policyVersion: 4 },
+        saleability: { state: 'saleable', reasons: [] },
+      },
+    ],
     categories: [{ id: 'category:food', code: 'cat_food', name: '食品饮料', count: 1 }],
     nextCursor: null,
     version: 'catalog:one',

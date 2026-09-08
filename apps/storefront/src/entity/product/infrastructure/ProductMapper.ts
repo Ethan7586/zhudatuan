@@ -71,7 +71,7 @@ export function mapProductDetail(items: readonly ProductDto[]): Product | null {
   const products = items.map(mapProduct);
   if (products.length === 0) return null;
   const skus = Object.freeze(products.flatMap((product) => product.skus));
-  const selected = products.find(({ saleability }) => saleability.state === 'saleable') ?? products[0]!;
+  const selected = products.find(({ saleability }) => saleability.state === 'saleable') ?? products[0];
   return Object.freeze({ ...selected, skus, specs: specificationsFrom(skus) });
 }
 
@@ -130,10 +130,14 @@ export function mapProductKind(value: string, category: string): ProductKind {
 }
 
 function specificationValues(value: Readonly<Record<string, unknown>>): Readonly<Record<string, string>> {
-  return Object.freeze(Object.fromEntries(Object.entries(value).flatMap(([name, raw]) => {
-    const selected = scalar(Array.isArray(raw) ? raw[0] : raw);
-    return selected === null ? [] : [[name, selected]];
-  })));
+  return Object.freeze(
+    Object.fromEntries(
+      Object.entries(value).flatMap(([name, raw]) => {
+        const selected = scalar(Array.isArray(raw) ? raw[0] : raw);
+        return selected === null ? [] : [[name, selected]];
+      })
+    )
+  );
 }
 
 function specificationsFrom(skus: readonly ProductSku[]): readonly Readonly<{ name: string; options: readonly string[] }>[] {
@@ -143,10 +147,12 @@ function specificationsFrom(skus: readonly ProductSku[]): readonly Readonly<{ na
 }
 
 function parameters(value: unknown): readonly Readonly<{ key: string; value: string }>[] {
-  return Object.freeze(Object.entries(object(value)).flatMap(([key, raw]) => {
-    const normalized = scalar(raw);
-    return normalized === null ? [] : [Object.freeze({ key, value: normalized })];
-  }));
+  return Object.freeze(
+    Object.entries(object(value)).flatMap(([key, raw]) => {
+      const normalized = scalar(raw);
+      return normalized === null ? [] : [Object.freeze({ key, value: normalized })];
+    })
+  );
 }
 
 function object(value: unknown): Readonly<Record<string, unknown>> {

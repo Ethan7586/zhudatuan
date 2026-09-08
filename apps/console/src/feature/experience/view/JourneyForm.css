@@ -104,16 +104,20 @@
   color: var(--sw-brand-ink);
   cursor: pointer;
 }
+.malljourneyconfirm label {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+  font-weight: 700;
+  cursor: pointer;
+}
 .malljourneyconfirm input {
   margin-top: 3px;
-}
-.malljourneyconfirm span {
-  display: grid;
-  gap: 4px;
 }
 .malljourneyconfirm small {
   color: var(--sw-muted);
   font-size: 10px;
+  font-weight: 400;
 }
 .malljourneynotice,
 .malljourneyerror {

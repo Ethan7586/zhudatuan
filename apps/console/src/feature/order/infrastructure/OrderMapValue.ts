@@ -1,25 +1,5 @@
-import type { AfterSalePage } from '../model/AfterSale';
-import type { OrderAfterSaleDecision, OrderCommandReceipt, OrderDetail, OrderExportTask, OrderImportTask, OrderOperationReceipt, OrderPage, OrderRecoveryPage, OrderReturn } from '../model/Order';
 import { FULFILLMENT_RETURN_STATES } from '@shop/contract';
-import { deepFreeze } from '../../../shared/model/Immutable';
-import { AfterSalePageSchema } from './AfterSaleSchema';
-import {
-  OrderAftersaleApproveSchema,
-  OrderAftersaleRejectSchema,
-  OrderCancelSchema,
-  OrderDetailSchema,
-  OrderExportSchema,
-  OrderImportSchema,
-  OrderPageSchema,
-  OrderReceiveSchema,
-  OrderReminderSchema,
-  OrderShipmentSchema,
-  OrderReturnReceiveSchema,
-  OrderReturnInspectSchema,
-  OrderRefundSchema,
-  OrderRecoveryPageSchema,
-  OrderRecoveryResolveSchema,
-} from './OrderSchema';
+import type { OrderReturn } from '../model/Order';
 
 export function emptyPayment() {
   return Object.freeze({ paymentId: null, version: 0, capturedMinor: 0, refundedMinor: 0, refundableMinor: 0, updatedAt: null, tenders: Object.freeze([]) });

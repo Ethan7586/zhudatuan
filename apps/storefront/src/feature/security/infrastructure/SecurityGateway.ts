@@ -2,7 +2,7 @@ import type { IdentityOperations } from '@shop/sdk/identity';
 import type { RequestContextFactory } from '../../../shared/api/RequestContext';
 import type { StorefrontSession } from '../../../entity/session';
 import type { Security } from '../model/Security';
-import { mapSecurity, type DeviceView } from './SecurityMapper';
+import { mapSecurity } from './SecurityMapper';
 import type { SecurityPort } from '../public/SecurityPort';
 import { readCursorPages } from '../../../shared/api/CursorPage';
 
@@ -14,7 +14,10 @@ export class SecurityGateway implements SecurityPort {
   async read(session: StorefrontSession, signal?: AbortSignal): Promise<Security> {
     const context = this.context(session, { signal, includeScope: false });
     const [security, pages] = await Promise.all([this.identity.sessionRead({}, context), readCursorPages((cursor) => this.identity.sessionsRead({ query: { limit: 100, ...(cursor ? { cursor } : {}) } }, context), signal)]);
-    return mapSecurity(security, pages.flatMap((page) => page.items) as readonly DeviceView[]);
+    return mapSecurity(
+      security,
+      pages.flatMap((page) => page.items)
+    );
   }
   async password(session: StorefrontSession, currentPassword: string, newPassword: string, key: string): Promise<void> {
     await this.identity.passwordChange({ body: { currentPassword, newPassword } }, this.context(session, { write: true, includeScope: false, expectedVersion: session.accessVersion, idempotencyKey: key }));

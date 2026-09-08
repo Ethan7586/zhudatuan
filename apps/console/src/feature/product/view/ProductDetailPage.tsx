@@ -1,5 +1,5 @@
-import { chineseDomainLabel, chineseReference, chineseSectionLabel, presentProductMediaKind, presentProductStatus, presentProductType, presentResourceCondition } from '@shop/presentation';
 import { Button, DataTable, MetricGrid, ResourcePanel, ResourceState, SectionBoundary, type ResourceCondition } from '@shop/design';
+import { chineseReference, chineseSectionLabel, presentProductMediaKind, presentProductStatus, presentProductType, presentResourceCondition } from '@shop/presentation';
 import { formatDate } from '../../../shared/ui/Format';
 import type { ProductDetail } from '../model/Product';
 import type { ProductDetailSectionViewModel, ProductDetailViewModel } from '../viewmodel/ProductDetailViewModel';

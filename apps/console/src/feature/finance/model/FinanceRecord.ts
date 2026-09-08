@@ -1,8 +1,7 @@
+import type { OperationBodyFor, OperationId, OperationQueryFor } from '@shop/contract';
 import { OP_FINANCE_RECONCILIATIONS_MANAGE } from '@shop/contract/ids';
-import type { OperationBodyFor, OperationId, OperationOutputFor, OperationQueryFor } from '@shop/contract';
 import type { ContractJsonObject, ContractJsonValue } from '@shop/contract/schema';
 
-import type { FinanceSection } from './FinanceAudit';
 export interface FinanceRecord {
   readonly id: string;
   readonly label: string;

@@ -6,8 +6,13 @@ import type { useActivationViewModel } from '../viewmodel/ActivationViewModel';
 
 afterEach(cleanup);
 function model(): ReturnType<typeof useActivationViewModel> {
-  return { draft: { mode: 'numbersecret', number: 'VC001234', secret: 'Secret123', key: 'key:one' }, busy: false, message: null, validation: null,
-    actions: { open: vi.fn(), close: vi.fn(), mode: vi.fn(), number: vi.fn(), secret: vi.fn(), submit: vi.fn(async () => undefined) } };
+  return {
+    draft: { mode: 'numbersecret', number: 'VC001234', secret: 'Secret123', key: 'key:one' },
+    busy: false,
+    message: null,
+    validation: null,
+    actions: { open: vi.fn(), close: vi.fn(), mode: vi.fn(), number: vi.fn(), secret: vi.fn(), submit: vi.fn(() => Promise.resolve()) },
+  };
 }
 describe('activation dialog', () => {
   it('provides two understandable paths, hides the secret and submits through one real action', () => {

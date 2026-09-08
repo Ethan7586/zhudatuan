@@ -49,7 +49,19 @@ export function OrderDetailPage({ title, tab, onTab, onBack, viewmodel }: Readon
       condition={viewmodel.condition}
       {...(viewmodel.error === undefined ? {} : { error: viewmodel.error })}
       retry={viewmodel.refresh}
-      actions={<><Button onPress={onBack}>返回订单列表</Button>{viewmodel.canCancel ? <Button onPress={viewmodel.actions.openCancel}>取消订单</Button> : null}{viewmodel.canRemind ? <Button onPress={viewmodel.actions.openReminder}>提醒履约</Button> : null}{viewmodel.canReceive ? <Button tone="primary" onPress={viewmodel.actions.openReceive}>确认收货</Button> : null}<Button onPress={viewmodel.refresh}>刷新订单</Button></>}
+      actions={
+        <>
+          <Button onPress={onBack}>返回订单列表</Button>
+          {viewmodel.canCancel ? <Button onPress={viewmodel.actions.openCancel}>取消订单</Button> : null}
+          {viewmodel.canRemind ? <Button onPress={viewmodel.actions.openReminder}>提醒履约</Button> : null}
+          {viewmodel.canReceive ? (
+            <Button tone="primary" onPress={viewmodel.actions.openReceive}>
+              确认收货
+            </Button>
+          ) : null}
+          <Button onPress={viewmodel.refresh}>刷新订单</Button>
+        </>
+      }
     >
       {data === undefined ? (
         <span />
@@ -65,9 +77,22 @@ export function OrderDetailPage({ title, tab, onTab, onBack, viewmodel }: Readon
               { label: '版本', value: `第 ${data.version} 版`, detail: formatDate(data.updated_at) },
             ]}
           />
-          <nav className="orderdetailtabs" aria-label="订单详情分区" role="tablist">
-            {visibleTabs.map((item) => <button key={item.key} id={`ordertab-${item.key}`} type="button" role="tab" aria-selected={currentTab === item.key} aria-controls={`orderpanel-${item.key}`} tabIndex={currentTab === item.key ? 0 : -1} onClick={() => onTab(item.key)}>{item.label}</button>)}
-          </nav>
+          <div className="orderdetailtabs" aria-label="订单详情分区" role="tablist">
+            {visibleTabs.map((item) => (
+              <button
+                key={item.key}
+                id={`ordertab-${item.key}`}
+                type="button"
+                role="tab"
+                aria-selected={currentTab === item.key}
+                aria-controls={`orderpanel-${item.key}`}
+                tabIndex={currentTab === item.key ? 0 : -1}
+                onClick={() => onTab(item.key)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
           <section id={`orderpanel-${currentTab}`} role="tabpanel" aria-labelledby={`ordertab-${currentTab}`}>
             <OrderPagePanel data={data} tab={currentTab} viewmodel={viewmodel} />
           </section>
@@ -91,9 +116,20 @@ function sectionVisible(tab: OrderPageTab, order: OrderDetail, support: OrderSup
 
 function OrderPagePanel({ data, tab, viewmodel }: Readonly<{ data: NonNullable<DetailViewModel['data']>; tab: OrderPageTab; viewmodel: DetailViewModel }>) {
   if (tab === 'overview') return <OrderOverviewPanel order={data} onRetry={viewmodel.refresh} />;
-  if (tab === 'products') return <OrderDetailSection title="订单商品快照"><OrderSectionState section={data.sections.products} title="商品快照" onRetry={viewmodel.refresh} />{data.sections.products.state === 'ready' ? <DataTable caption="订单商品明细" columns={columns} rows={data.lines} rowKey={(row) => row.id} /> : null}</OrderDetailSection>;
+  if (tab === 'products')
+    return (
+      <OrderDetailSection title="订单商品快照">
+        <OrderSectionState section={data.sections.products} title="商品快照" onRetry={viewmodel.refresh} />
+        {data.sections.products.state === 'ready' ? <DataTable caption="订单商品明细" columns={columns} rows={data.lines} rowKey={(row) => row.id} /> : null}
+      </OrderDetailSection>
+    );
   if (tab === 'payment') return <OrderPaymentPanel order={data} onRetry={viewmodel.refresh} viewmodel={viewmodel} />;
-  if (tab === 'fulfillment') return <div className="orderdrawerstack"><OrderFulfillmentSnapshot order={data} onRetry={viewmodel.refresh} canShip={viewmodel.canShip} onShip={viewmodel.actions.openShip} /></div>;
+  if (tab === 'fulfillment')
+    return (
+      <div className="orderdrawerstack">
+        <OrderFulfillmentSnapshot order={data} onRetry={viewmodel.refresh} canShip={viewmodel.canShip} onShip={viewmodel.actions.openShip} />
+      </div>
+    );
   if (tab === 'aftersale') return <OrderActivityPanel order={data} mode="aftersale" onRetry={viewmodel.refresh} />;
   if (tab === 'finance') return <OrderFinancePanel order={data} onRetry={viewmodel.refresh} />;
   if (tab === 'support') return <OrderSupportPanel support={viewmodel.support} onRetry={viewmodel.refreshSupport} />;
