@@ -2,12 +2,28 @@ import React, { useState } from 'react';
 import { useMall } from '../../context/MallContext';
 import { AndroidStatusBar } from '../../components/mobile/AndroidStatusBar';
 import { AndroidBottomNav } from '../../components/mobile/AndroidBottomNav';
-import { CreditCard, Utensils, Package, Clock, Truck, CheckCircle, HelpCircle, Ticket, MapPin, FileText, Bell, Fingerprint, ShieldCheck, ChevronRight, Building2, Smartphone, Settings, Lock, Headphones, Info } from 'lucide-react';
+import { CreditCard, Utensils, Package, PackageCheck, Clock, Truck, CheckCircle, HelpCircle, Ticket, MapPin, FileText, Bell, Fingerprint, ShieldCheck, ChevronRight, Building2, Smartphone, Settings, Lock, Headphones, Info } from 'lucide-react';
+import { OrderFlowIcon } from '../../components/mobile/OrderFlowIcon';
+import { matchesMobileOrderFilter, selectMobileOrderFilter, type MobileOrderFilter } from '../../components/mobile/mobileOrderFilters';
+import { summarizeMobileFulfillment } from '../../components/mobile/mobileOrderFulfillment';
 
 export const AndroidProfilePage: React.FC = () => {
-  const { user, currentMall, triggerPendingFeature, setAndroidPage } = useMall();
+  const { user, currentMall, presentationOrders, mobileFulfillmentSimulationStage, triggerPendingFeature, setAndroidPage } = useMall();
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
   const [pushEnabled, setPushEnabled] = useState(false);
+
+  const openOrders = (statusFilter: MobileOrderFilter) => {
+    selectMobileOrderFilter(statusFilter);
+    setAndroidPage('orders');
+  };
+  const orderCount = (statusFilter: MobileOrderFilter) => presentationOrders.filter((order) => (
+    matchesMobileOrderFilter(order.status, statusFilter)
+  )).length;
+  const fulfillment = React.useMemo(
+    () => summarizeMobileFulfillment(presentationOrders, mobileFulfillmentSimulationStage),
+    [mobileFulfillmentSimulationStage, presentationOrders],
+  );
+  const FulfillmentStageIcon = fulfillment.stage === 'processing' ? Package : fulfillment.stage === 'shipped' ? Truck : PackageCheck;
 
   const handleBiometricToggle = () => {
     triggerPendingFeature('Android Biometric Hardware 授权', '开关硬件指纹/FaceID 免密识别，需接入 Android KeyStore 硬件秘钥。');
@@ -78,47 +94,50 @@ export const AndroidProfilePage: React.FC = () => {
 
       <div className="p-3 space-y-3 flex-1 overflow-y-auto">
         {/* Orders Grid Card */}
-        <div className="bg-white rounded-3xl p-3.5 shadow-2xs border border-gray-100 space-y-3">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-2 text-xs">
-            <h3 className="font-bold text-gray-900 flex items-center gap-1.5">
-              <Package className="w-4 h-4 text-[var(--sw-brand)]" />
-              <span>企采订单中心</span>
+        <div className="space-y-3 rounded-[22px] border border-white bg-white p-3.5 shadow-[0_10px_28px_rgba(33,52,78,0.045)]">
+          <div className="flex items-center justify-between text-xs">
+            <h3 className="flex items-center gap-2 font-black text-slate-900">
+              <OrderFlowIcon className="h-6 w-6 text-[#5B7CA4]" />
+              <span>我的订单</span>
             </h3>
-            <button onClick={() => setAndroidPage('orders')} className="text-[10px] text-gray-400 hover:text-[var(--sw-brand)] flex items-center">
-              <span>全部订单</span>
+            <button onClick={() => openOrders('all')} className="flex items-center text-[10px] text-gray-400 transition-transform duration-100 active:scale-95">
+              <span>查看全部</span>
               <ChevronRight className="w-3 h-3" />
             </button>
           </div>
 
-          <div className="grid grid-cols-4 gap-2 text-center text-xs">
-            <div onClick={() => triggerPendingFeature('Android 待付款列表', '查看等待付款或额度补足的订单。')} className="p-1 hover:bg-gray-50 rounded-2xl cursor-pointer">
-              <div className="w-9 h-9 mx-auto rounded-2xl bg-blue-50 text-[var(--sw-brand)] flex items-center justify-center font-bold">
+          <div className="grid grid-cols-4 gap-1 rounded-[18px] bg-[#F8FAFC] px-1 py-2 text-center text-xs">
+            <button type="button" onClick={() => openOrders('pending_payment')} className="relative rounded-[14px] py-1.5 transition-[background-color,transform] duration-150 active:scale-95 active:bg-white">
+              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-[14px] bg-[#EDF4FC] font-bold text-[#52749D]">
                 <Clock className="w-4.5 h-4.5" />
               </div>
-              <div className="text-[10px] text-gray-600 mt-1 font-medium">待付款</div>
-            </div>
+              {orderCount('pending_payment') > 0 && <AndroidOrderCountBadge count={orderCount('pending_payment')} />}
+              <div className="mt-1.5 text-[10px] font-semibold text-slate-600">待付款</div>
+            </button>
 
-            <div onClick={() => triggerPendingFeature('Android 待发货列表', '查看物流状态。')} className="p-1 hover:bg-gray-50 rounded-2xl cursor-pointer relative">
-              <div className="w-9 h-9 mx-auto rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-                <Truck className="w-4.5 h-4.5" />
-                <span className="absolute top-0 right-2 bg-red-500 text-white font-bold text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center">2</span>
+            <button type="button" onClick={() => openOrders('pending_shipment')} className="relative rounded-[14px] py-1.5 transition-[background-color,transform] duration-150 active:scale-95 active:bg-white">
+              <div className={`mx-auto flex h-9 w-9 items-center justify-center rounded-[14px] font-bold ${fulfillment.stage === 'received' ? 'bg-[#EEF7F4] text-[#4F7E72]' : 'bg-[#EDF4FC] text-[#52749D]'}`}>
+                <FulfillmentStageIcon className="w-4.5 h-4.5" />
               </div>
-              <div className="text-[10px] text-gray-600 mt-1 font-medium">待处理</div>
-            </div>
+              {fulfillment.count > 0 && <AndroidOrderCountBadge count={fulfillment.count} />}
+              <div key={fulfillment.label} aria-live="polite" className="mt-1.5 text-[10px] font-semibold text-slate-600">{fulfillment.label}</div>
+            </button>
 
-            <div onClick={() => triggerPendingFeature('Android 待收货列表', '确认收到企采快递。')} className="p-1 hover:bg-gray-50 rounded-2xl cursor-pointer">
-              <div className="w-9 h-9 mx-auto rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <button type="button" onClick={() => openOrders('completed')} className="relative rounded-[14px] py-1.5 transition-[background-color,transform] duration-150 active:scale-95 active:bg-white">
+              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-[14px] bg-[#EEF7F4] font-bold text-[#4F7E72]">
                 <CheckCircle className="w-4.5 h-4.5" />
               </div>
-              <div className="text-[10px] text-gray-600 mt-1 font-medium">已完成</div>
-            </div>
+              {orderCount('completed') > 0 && <AndroidOrderCountBadge count={orderCount('completed')} />}
+              <div className="mt-1.5 text-[10px] font-semibold text-slate-600">已完成</div>
+            </button>
 
-            <div onClick={() => triggerPendingFeature('Android 售后退换记录', '申请退货或补发。')} className="p-1 hover:bg-gray-50 rounded-2xl cursor-pointer">
-              <div className="w-9 h-9 mx-auto rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+            <button type="button" onClick={() => openOrders('after_sale')} className="relative rounded-[14px] py-1.5 transition-[background-color,transform] duration-150 active:scale-95 active:bg-white">
+              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-[14px] bg-[#F2F1F7] font-bold text-[#746C8B]">
                 <HelpCircle className="w-4.5 h-4.5" />
               </div>
-              <div className="text-[10px] text-gray-600 mt-1 font-medium">售后单</div>
-            </div>
+              {orderCount('after_sale') > 0 && <AndroidOrderCountBadge count={orderCount('after_sale')} />}
+              <div className="mt-1.5 text-[10px] font-semibold text-slate-600">售后</div>
+            </button>
           </div>
         </div>
 
@@ -205,3 +224,11 @@ export const AndroidProfilePage: React.FC = () => {
     </div>
   );
 };
+
+function AndroidOrderCountBadge({ count }: Readonly<{ count: number }>) {
+  return (
+    <span className="absolute right-1.5 top-0 flex h-4 min-w-4 items-center justify-center rounded-full border border-white bg-[#E5EFFB] px-1 text-[8px] font-black text-[#426891]">
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}

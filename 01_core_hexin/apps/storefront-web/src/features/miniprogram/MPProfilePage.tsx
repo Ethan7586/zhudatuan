@@ -26,11 +26,9 @@ export const MPProfilePage: React.FC = () => {
     [mobileFulfillmentSimulationStage, presentationOrders],
   );
   const FulfillmentStageIcon = fulfillment.stage === 'processing' ? Package : fulfillment.stage === 'shipped' ? Truck : PackageCheck;
-  const fulfillmentTone = fulfillment.stage === 'processing'
-    ? 'bg-amber-50 text-amber-600'
-    : fulfillment.stage === 'shipped'
-      ? 'bg-blue-50 text-[var(--sw-brand)]'
-      : 'bg-emerald-50 text-emerald-600';
+  const fulfillmentTone = fulfillment.stage === 'received'
+    ? 'bg-[#EEF7F4] text-[#4F7E72]'
+    : 'bg-[#EDF4FC] text-[#52749D]';
 
   return (
     <div className="bg-[#F5F7FA] min-h-full flex flex-col font-sans text-gray-800 pb-16">
@@ -92,49 +90,49 @@ export const MPProfilePage: React.FC = () => {
 
       <div className="p-3 space-y-3 flex-1 overflow-y-auto">
         {/* Orders Status Grid */}
-        <div className="bg-white rounded-2xl p-3 shadow-xs border border-gray-100 space-y-3">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-2 text-xs">
-            <h3 className="font-bold text-gray-900 flex items-center gap-1.5">
-              <OrderFlowIcon className="h-6 w-6 text-[var(--sw-brand)]" />
-              <span>订单管理</span>
+        <div className="space-y-3 rounded-[22px] border border-white bg-white p-3.5 shadow-[0_10px_28px_rgba(33,52,78,0.045)]">
+          <div className="flex items-center justify-between text-xs">
+            <h3 className="flex items-center gap-2 font-black text-slate-900">
+              <OrderFlowIcon className="h-6 w-6 text-[#5B7CA4]" />
+              <span>我的订单</span>
             </h3>
             <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('all')} className="flex touch-manipulation items-center text-[10px] text-gray-400 transition-transform duration-100 hover:text-[var(--sw-brand)] active:scale-95">
-              <span>全部订单</span>
+              <span>查看全部</span>
               <ChevronRight className="w-3 h-3" />
             </button>
           </div>
 
-          <div className="grid grid-cols-4 gap-2 text-center text-xs">
-            <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('pending_payment')} className="relative cursor-pointer touch-manipulation rounded-xl p-1 transition-[color,background-color,transform] duration-100 hover:bg-gray-50 active:scale-95 active:bg-blue-50">
-              <div className="w-8 h-8 mx-auto rounded-full bg-blue-50 text-[var(--sw-brand)] flex items-center justify-center font-bold">
+          <div className="grid grid-cols-4 gap-1 rounded-[18px] bg-[#F8FAFC] px-1 py-2 text-center text-xs">
+            <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('pending_payment')} className="relative cursor-pointer touch-manipulation rounded-[14px] py-1.5 transition-[background-color,transform] duration-150 active:scale-95 active:bg-white">
+              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-[14px] bg-[#EDF4FC] font-bold text-[#52749D]">
                 <Clock className="w-4 h-4" />
               </div>
-              {orderCount('pending_payment') > 0 && <OrderCountBadge count={orderCount('pending_payment')} tone="muted" />}
-              <div className="text-[10px] text-gray-600 mt-1 font-medium">待付款</div>
+              {orderCount('pending_payment') > 0 && <OrderCountBadge count={orderCount('pending_payment')} />}
+              <div className="mt-1.5 text-[10px] font-semibold text-slate-600">待付款</div>
             </button>
 
-            <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('pending_shipment')} className="relative cursor-pointer touch-manipulation rounded-xl p-1 transition-[color,background-color,transform] duration-100 hover:bg-gray-50 active:scale-95 active:bg-blue-50">
-              <div className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full font-bold transition-colors duration-200 ${fulfillmentTone}`}>
+            <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('pending_shipment')} className="relative cursor-pointer touch-manipulation rounded-[14px] py-1.5 transition-[background-color,transform] duration-150 active:scale-95 active:bg-white">
+              <div className={`mx-auto flex h-9 w-9 items-center justify-center rounded-[14px] font-bold transition-colors duration-200 ${fulfillmentTone}`}>
                 <FulfillmentStageIcon className="h-4 w-4" />
               </div>
               {fulfillment.count > 0 && <OrderCountBadge count={fulfillment.count} />}
-              <div key={fulfillment.stage} aria-live="polite" className="mt-1 text-[10px] font-medium text-gray-600">{fulfillment.label}</div>
+              <div key={fulfillment.label} aria-live="polite" className="mt-1.5 text-[10px] font-semibold text-slate-600">{fulfillment.label}</div>
             </button>
 
-            <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('completed')} className="relative cursor-pointer touch-manipulation rounded-xl p-1 transition-[color,background-color,transform] duration-100 hover:bg-gray-50 active:scale-95 active:bg-blue-50">
-              <div className="w-8 h-8 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('completed')} className="relative cursor-pointer touch-manipulation rounded-[14px] py-1.5 transition-[background-color,transform] duration-150 active:scale-95 active:bg-white">
+              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-[14px] bg-[#EEF7F4] font-bold text-[#4F7E72]">
                 <CheckCircle className="w-4 h-4" />
               </div>
-              {orderCount('completed') > 0 && <OrderCountBadge count={orderCount('completed')} tone="muted" />}
-              <div className="text-[10px] text-gray-600 mt-1 font-medium">已完成</div>
+              {orderCount('completed') > 0 && <OrderCountBadge count={orderCount('completed')} />}
+              <div className="mt-1.5 text-[10px] font-semibold text-slate-600">已完成</div>
             </button>
 
-            <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('after_sale')} className="relative cursor-pointer touch-manipulation rounded-xl p-1 transition-[color,background-color,transform] duration-100 hover:bg-gray-50 active:scale-95 active:bg-blue-50">
-              <div className="w-8 h-8 mx-auto rounded-full bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+            <button onPointerDown={() => preloadMiniProgramPage('orders')} onClick={() => openOrders('after_sale')} className="relative cursor-pointer touch-manipulation rounded-[14px] py-1.5 transition-[background-color,transform] duration-150 active:scale-95 active:bg-white">
+              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-[14px] bg-[#F2F1F7] font-bold text-[#746C8B]">
                 <HelpCircle className="w-4 h-4" />
               </div>
-              {orderCount('after_sale') > 0 && <OrderCountBadge count={orderCount('after_sale')} tone="muted" />}
-              <div className="text-[10px] text-gray-600 mt-1 font-medium">售后服务</div>
+              {orderCount('after_sale') > 0 && <OrderCountBadge count={orderCount('after_sale')} />}
+              <div className="mt-1.5 text-[10px] font-semibold text-slate-600">售后</div>
             </button>
           </div>
         </div>
@@ -238,9 +236,9 @@ export const MPProfilePage: React.FC = () => {
   );
 };
 
-function OrderCountBadge({ count, tone = 'active' }: Readonly<{ count: number; tone?: 'active' | 'muted' }>) {
+function OrderCountBadge({ count }: Readonly<{ count: number }>) {
   return (
-    <span className={`absolute right-2 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[8px] font-bold text-white ${tone === 'active' ? 'bg-[#E5484D]' : 'bg-slate-400'}`}>
+    <span className="absolute right-1.5 top-0 flex h-4 min-w-4 items-center justify-center rounded-full border border-white bg-[#E5EFFB] px-1 text-[8px] font-black text-[#426891]">
       {count > 99 ? '99+' : count}
     </span>
   );

@@ -11,6 +11,13 @@ export interface MobileMerchantPackage {
   deliveryHint: string;
 }
 
+export function mobileOrderPayableAmount(order: FrontendOrder): number {
+  if (order.payment.wechatPaid > 0) return order.payment.wechatPaid;
+  const payableTotal = order.payment.totalGoodsAmount + order.payment.shippingFee;
+  const orderTotal = payableTotal > 0 ? payableTotal : order.totalAmount;
+  return Math.max(0, orderTotal - order.payment.welfareDeducted - order.payment.mealDeducted);
+}
+
 export function inventoryStatus(product: FrontendProduct): MobileInventoryStatus {
   if (!product.purchasable && product.stockCount === 0) return 'pending';
   if (product.stockCount <= 0) return 'unavailable';

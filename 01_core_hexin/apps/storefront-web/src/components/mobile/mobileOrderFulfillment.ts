@@ -2,8 +2,8 @@ import type { FrontendOrder } from '../../adapters/frontendData';
 import type { MobileFulfillmentStage } from '../../context/MallContext';
 
 const STAGE_LABELS: Record<MobileFulfillmentStage, string> = {
-  processing: '待处理',
-  shipped: '已发货',
+  processing: '待发货',
+  shipped: '待收货',
   received: '已收货',
 };
 
@@ -33,7 +33,7 @@ export function summarizeMobileFulfillment(
   return {
     count: activeStages.length,
     stage,
-    label: STAGE_LABELS[stage],
+    label: simulatedStage === null && new Set(activeStages).size > 1 ? '履约中' : STAGE_LABELS[stage],
   };
 }
 
