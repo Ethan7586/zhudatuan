@@ -55551,6 +55551,7 @@ records:
     operations:
       - runtime.exports.read
       - runtime.exports.cancel
+      - reporting.dimensions.read
       - reporting.dashboard.read
       - reporting.sales.read
       - reporting.products.read
@@ -55564,6 +55565,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -55629,6 +55631,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -55659,6 +55662,7 @@ records:
     operations:
       - runtime.exports.read
       - runtime.exports.cancel
+      - reporting.dimensions.read
       - reporting.dashboard.read
       - reporting.sales.read
       - reporting.products.read
@@ -55672,6 +55676,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -55737,6 +55742,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -55767,6 +55773,7 @@ records:
     operations:
       - runtime.exports.read
       - runtime.exports.cancel
+      - reporting.dimensions.read
       - reporting.dashboard.read
       - reporting.sales.read
       - reporting.products.read
@@ -55780,6 +55787,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -55845,6 +55853,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -55875,6 +55884,7 @@ records:
     operations:
       - runtime.exports.read
       - runtime.exports.cancel
+      - reporting.dimensions.read
       - reporting.dashboard.read
       - reporting.sales.read
       - reporting.products.read
@@ -55888,6 +55898,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -55953,6 +55964,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -55983,6 +55995,7 @@ records:
     operations:
       - runtime.exports.read
       - runtime.exports.cancel
+      - reporting.dimensions.read
       - reporting.dashboard.read
       - reporting.sales.read
       - reporting.products.read
@@ -55996,6 +56009,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56061,6 +56075,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56091,6 +56106,7 @@ records:
     operations:
       - runtime.exports.read
       - runtime.exports.cancel
+      - reporting.dimensions.read
       - reporting.dashboard.read
       - reporting.sales.read
       - reporting.products.read
@@ -56104,6 +56120,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56169,6 +56186,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56199,6 +56217,7 @@ records:
     operations:
       - runtime.exports.read
       - runtime.exports.cancel
+      - reporting.dimensions.read
       - reporting.dashboard.read
       - reporting.sales.read
       - reporting.products.read
@@ -56212,6 +56231,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56277,6 +56297,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56307,6 +56328,7 @@ records:
     operations:
       - runtime.exports.read
       - runtime.exports.cancel
+      - reporting.dimensions.read
       - reporting.dashboard.read
       - reporting.sales.read
       - reporting.products.read
@@ -56320,6 +56342,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56385,6 +56408,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56415,6 +56439,7 @@ records:
     operations:
       - runtime.exports.read
       - runtime.exports.cancel
+      - reporting.dimensions.read
       - reporting.dashboard.read
       - reporting.sales.read
       - reporting.products.read
@@ -56428,6 +56453,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56493,6 +56519,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56523,6 +56550,7 @@ records:
     operations:
       - runtime.exports.read
       - runtime.exports.cancel
+      - reporting.dimensions.read
       - reporting.dashboard.read
       - reporting.sales.read
       - reporting.products.read
@@ -56536,6 +56564,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56600,6 +56629,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56630,6 +56660,7 @@ records:
     operations:
       - runtime.exports.read
       - runtime.exports.cancel
+      - reporting.dimensions.read
       - reporting.dashboard.read
       - reporting.sales.read
       - reporting.products.read
@@ -56643,6 +56674,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56708,6 +56740,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56738,6 +56771,7 @@ records:
     operations:
       - runtime.exports.read
       - runtime.exports.cancel
+      - reporting.dimensions.read
       - reporting.dashboard.read
       - reporting.sales.read
       - reporting.products.read
@@ -56751,6 +56785,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56815,6 +56850,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56845,6 +56881,7 @@ records:
     operations:
       - runtime.exports.read
       - runtime.exports.cancel
+      - reporting.dimensions.read
       - reporting.dashboard.read
       - reporting.sales.read
       - reporting.products.read
@@ -56858,6 +56895,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts
@@ -56922,6 +56960,7 @@ records:
       - services/commerce/src/modules/reporting/application/handler/CategoriesReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ChannelsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/DashboardReadHandler.ts
+      - services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsCreateHandler.ts
       - services/commerce/src/modules/reporting/application/handler/ExportsReadHandler.ts
       - services/commerce/src/modules/reporting/application/handler/MallsReadHandler.ts

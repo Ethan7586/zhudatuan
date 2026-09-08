@@ -15,8 +15,9 @@ describe('ReportingPage', () => {
           {
             view: 'members',
             period: '30days',
-            applicationDraft: '',
+            application: '',
             availableViews: ['members'],
+            dimensions: { applications: [{ value: 'application:one', label: '总部福利商城' }], pending: false },
             rows: [
               {
                 code: 'member.amount',
@@ -25,6 +26,10 @@ describe('ReportingPage', () => {
                 scope: 'mall:one',
                 period: { from: '2026-09-01T00:00:00.000Z', to: '2026-09-02T00:00:00.000Z', timezone: 'Asia/Shanghai' },
                 dimensions: { customer: 'customer:enterprise:verysecret123456', member: 'member:verysecret654321' },
+                displayedDimensions: [
+                  { code: 'customer', name: '客户范围', value: '示例企业' },
+                  { code: 'member', name: '会员', value: '王小明' },
+                ],
                 value: 3200,
                 unit: 'minor',
                 currency: 'CNY',
@@ -35,7 +40,7 @@ describe('ReportingPage', () => {
             preset: {
               code: 'customermember',
               name: '客户 / 会员分层',
-              description: '在当前授权客户范围内，按购买会员汇总成交金额与支付订单；界面默认脱敏会员标识。',
+              description: '在当前授权客户范围内，按购买会员汇总成交金额与支付订单；只展示授权范围内的会员名称。',
               dimensions: ['customer', 'member'],
               privacy: 'masked',
               version: 1,
@@ -53,7 +58,7 @@ describe('ReportingPage', () => {
               view: vi.fn(),
               period: vi.fn(),
               application: vi.fn(),
-              applyApplication: vi.fn(),
+              refreshDimensions: vi.fn(),
               next: vi.fn(),
               openExport,
               closeExport: vi.fn(),
@@ -70,8 +75,8 @@ describe('ReportingPage', () => {
     expect(screen.getAllByText(/数据截至/)).toHaveLength(2);
     expect(screen.getByRole('table', { name: '报表指标' })).toBeTruthy();
     expect(screen.getByRole('complementary', { name: '当前维度口径' }).textContent).toContain('客户 / 会员分层');
-    expect(screen.getByText(/会员标识已脱敏/)).toBeTruthy();
-    expect(screen.getByText(/•••• 654321/)).toBeTruthy();
+    expect(screen.getAllByText(/会员名称/)).toHaveLength(2);
+    expect(screen.getByText(/会员：王小明/)).toBeTruthy();
     expect(screen.queryByText(/verysecret654321/)).toBeNull();
     await userEvent.setup().click(screen.getByRole('button', { name: '导出当前报表' }));
     expect(openExport).toHaveBeenCalledOnce();
@@ -90,11 +95,21 @@ describe('ReportingPage', () => {
               allowed: true,
               pending: false,
               job: {
-                id: 'export:rejected', scope: 'mall:one', report: 'metrics', filter: { view: 'sales', period: '30days' },
+                id: 'export:rejected',
+                scope: 'mall:one',
+                report: 'metrics',
+                filter: { view: 'sales', period: '30days' },
                 snapshot: { filter: { view: 'sales', period: '30days' }, watermark: { event: 'event:one', occurredAt: '2026-09-07T00:00:00.000Z', version: 1 }, generatedAt: '2026-09-07T00:00:01.000Z', generationVersion: 1 },
-                state: 'completed', cursor: null, recordCount: 18, objectReference: 'reports/rejected.csv',
-                objectHash: 'a'.repeat(64), objectSize: 1024, scanState: 'rejected', expiresAt: null,
-                createdAt: '2026-09-07T00:00:02.000Z', generatedAt: '2026-09-07T00:00:03.000Z',
+                state: 'completed',
+                cursor: null,
+                recordCount: 18,
+                objectReference: 'reports/rejected.csv',
+                objectHash: 'a'.repeat(64),
+                objectSize: 1024,
+                scanState: 'rejected',
+                expiresAt: null,
+                createdAt: '2026-09-07T00:00:02.000Z',
+                generatedAt: '2026-09-07T00:00:03.000Z',
               },
             },
             actions: { closeExport: vi.fn(), retryExport: vi.fn(), restartExport, refreshDownload: vi.fn() },

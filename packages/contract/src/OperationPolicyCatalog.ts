@@ -2242,6 +2242,24 @@ const POLICIES = [
     "actionProof": false
   },
   {
+    "id": "reporting.dimensions.read",
+    "version": 1,
+    "title": "报表 · 维度目录",
+    "method": "GET",
+    "path": "/api/v1/reports/dimensions",
+    "capability": "reporting.dimensions.read",
+    "permission": "reporting.dimension.read",
+    "assuranceLevel": "session",
+    "makerChecker": false,
+    "expectedVersion": "none",
+    "concurrencyPolicy": "none",
+    "executionMode": "sync",
+    "auditLevel": "basic",
+    "sensitiveFields": [],
+    "lifecycle": "active",
+    "actionProof": false
+  },
+  {
     "id": "reporting.dashboard.read",
     "version": 1,
     "title": "报表 · 业务查询",

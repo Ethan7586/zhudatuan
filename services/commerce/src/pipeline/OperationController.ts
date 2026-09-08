@@ -120,6 +120,7 @@ export const CONTROLLER_OPERATIONS = Object.freeze([
   "marketing.campaigns.revise",
   "marketing.campaigns.publish",
   "marketing.campaigns.disable",
+  "reporting.dimensions.read",
   "reporting.dashboard.read",
   "reporting.sales.read",
   "reporting.products.read",

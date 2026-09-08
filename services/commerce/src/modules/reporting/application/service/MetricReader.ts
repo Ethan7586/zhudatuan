@@ -7,9 +7,13 @@ import type { CockpitSummary, Metric, ReportDimension, ReportPeriod } from '../.
 import { ReportSnapshot, type ReportQuery } from '../../domain/model/ReportSnapshot';
 import { timezoneName } from '../../domain/value/Dimension';
 import type { ReportRepository } from '../port/ReportRepository';
+import type { DimensionReader } from './DimensionReader';
 
 export class MetricReader {
-  constructor(private readonly reports: ReportRepository) {}
+  constructor(
+    private readonly reports: ReportRepository,
+    private readonly dimensions: DimensionReader
+  ) {}
 
   async read<TKey extends MetricOperation>(operation: TKey, input: OperationInputFor<TKey>, context: HandlerContext<TKey>, dimension: ReportDimension | null): Promise<OperationReply<OperationOutputFor<TKey>>> {
     if (context.operation !== operation) throw new Error('REPORT_OPERATION_MISMATCH');
@@ -45,7 +49,8 @@ export class MetricReader {
     const more = rows.length > requested;
     const visible = more ? rows.slice(0, requested) : rows;
     const last = visible.at(-1);
-    const items = visible.map(({ cursorTime: _time, cursorId: _id, ...metric }) => present(metric, scope, snapshot.watermark.occurredAt));
+    const governed = visible.map(({ cursorTime: _time, cursorId: _id, ...metric }) => present(metric, scope, snapshot.watermark.occurredAt));
+    const items = await this.dimensions.present(context.transaction, scope, governed);
     const nextCursor = more && last ? snapshot.cursor(last.cursorTime, last.cursorId) : undefined;
     const body = { items, count: items.length, ...(nextCursor ? { nextCursor } : {}), snapshot: snapshot.toJSON(), ...(summary === undefined ? {} : { summary: presentSummary(summary, snapshot.watermark.occurredAt) }) };
     return { status: 200, body: body as OperationOutputFor<TKey> };

@@ -29,6 +29,8 @@ import { RedisEntryCache } from './infrastructure/cache/RedisEntryCache';
 import { Manifest } from './Manifest';
 import { CART_EXPERIENCE_PORT, CHECKOUT_EXPERIENCE_PORT } from './public';
 import { EXPERIENCE_READ_PORT } from './public/ExperienceReadPort';
+import { EXPERIENCE_DIMENSION_PORT } from './public/ExperienceDimensionPort';
+import { PgExperienceDimensionPort } from './infrastructure/persistence/PgExperienceDimensionPort';
 import { createJobs } from './interface/job/JobFactory';
 import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
 import { TELEMETRY } from '../../platform/telemetry/Telemetry';
@@ -82,6 +84,7 @@ export const ExperienceModule = defineModule(Manifest, {
   ports: (context) => [
     { token: CART_EXPERIENCE_PORT, value: new PgCartExperiencePort() },
     { token: CHECKOUT_EXPERIENCE_PORT, value: new PgCheckoutExperiencePort() },
+    { token: EXPERIENCE_DIMENSION_PORT, value: new PgExperienceDimensionPort(new PgTransactionAccess(), context.ports.get(ORGANIZATION_READ_PORT)) },
     {
       token: EXPERIENCE_READ_PORT,
       value: new PgExperienceReadPort(

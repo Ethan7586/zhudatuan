@@ -819,6 +819,11 @@ capabilities:
     owner: reporting
     permission: reporting.dashboard.read
     audience: console
+  - code: reporting.dimensions.read
+    kind: operation
+    owner: reporting
+    permission: reporting.dimension.read
+    audience: console
   - code: reporting.sales.read
     kind: operation
     owner: reporting

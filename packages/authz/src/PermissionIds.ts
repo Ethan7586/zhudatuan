@@ -186,6 +186,7 @@ export const PERM_REFERRAL_WITHDRAWAL_READSELF = "referral.withdrawal.readself" 
 export const PERM_REPORTING_CATEGORY_READ = "reporting.category.read" as const;
 export const PERM_REPORTING_CHANNEL_READ = "reporting.channel.read" as const;
 export const PERM_REPORTING_DASHBOARD_READ = "reporting.dashboard.read" as const;
+export const PERM_REPORTING_DIMENSION_READ = "reporting.dimension.read" as const;
 export const PERM_REPORTING_EXPORT_MANAGE = "reporting.export.manage" as const;
 export const PERM_REPORTING_EXPORT_READ = "reporting.export.read" as const;
 export const PERM_REPORTING_MALL_READ = "reporting.mall.read" as const;

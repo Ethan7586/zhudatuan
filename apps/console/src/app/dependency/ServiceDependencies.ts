@@ -27,6 +27,7 @@ import { ReviewMember } from '../../feature/referral/application/ReviewMember';
 import type { ReferralPort } from '../../feature/referral/public';
 import { ExportReport } from '../../feature/reporting/application/ExportReport';
 import { ReadExport } from '../../feature/reporting/application/ReadExport';
+import { ReadDimensions } from '../../feature/reporting/application/ReadDimensions';
 import { ReadReport } from '../../feature/reporting/application/ReadReport';
 import type { ReportingPort } from '../../feature/reporting/public';
 import { AssignTicket } from '../../feature/support/application/AssignTicket';
@@ -90,6 +91,7 @@ export interface ReferralDependencies {
 }
 export interface ReportingDependencies {
   readonly port: ReportingPort;
+  readonly dimensions: ReadDimensions;
   readonly read: ReadReport;
   readonly export: ExportReport;
   readonly readExport: ReadExport;
@@ -173,7 +175,7 @@ export function createServiceDependencies(approvals: ApprovalRegistryPort, exten
       prepare: new PrepareReferral(),
       createIdentity: createIdempotencyKey,
     }),
-    reporting: Object.freeze({ port: reporting, read: new ReadReport(reporting), export: new ExportReport(reporting), readExport: new ReadExport(reporting), createIdentity: createIdempotencyKey }),
+    reporting: Object.freeze({ port: reporting, dimensions: new ReadDimensions(reporting), read: new ReadReport(reporting), export: new ExportReport(reporting), readExport: new ReadExport(reporting), createIdentity: createIdempotencyKey }),
     support: Object.freeze({
       port: support,
       readQueue: new ReadQueue(support),

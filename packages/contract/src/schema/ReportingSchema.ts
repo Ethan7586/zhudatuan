@@ -6,6 +6,7 @@ import { REPORT_PERIODS, REPORT_VIEWS } from '../Vocabulary';
 const jsonObject = record(string(), ContractJsonValueSchema);
 const reportQuery = strictObject({ ...pageQuery, period: optional(literal(REPORT_PERIODS)), applicationid: optional(string()) });
 const salesQuery = strictObject({ ...reportQuery.shape, dimensionpreset: optional(literal('customermember')) });
+const displayedDimension = strictObject({ code: string(), name: string(), value: string() });
 const metric = strictObject({
   code: string(),
   version,
@@ -19,6 +20,7 @@ const metric = strictObject({
   scope: string(),
   period: strictObject({ from: isoUtc, to: isoUtc, timezone: string() }),
   dimensions: record(string(), string()),
+  displayedDimensions: array(displayedDimension),
   value: number(),
   unit: literal(['minor', 'count', 'ratio']),
   currency: union([string(), nullSchema()]),
@@ -51,6 +53,8 @@ const dimensionPreset = strictObject({
   version,
   owner: literal('reporting'),
 });
+const dimensionDefinition = strictObject({ code: string(), name: string() });
+const applicationOption = strictObject({ value: string(), label: string() });
 const trend = strictObject({ date: string(), salesCents: number(), orderCount: number() });
 const topProduct = strictObject({ productId: string(), name: string(), salesCents: number(), quantity: unsigned, orderCount: unsigned });
 const nullableNumber = union([number(), nullSchema()]);
@@ -93,14 +97,16 @@ const summary = strictObject({
     topProducts: array(topProduct),
     malls: array(strictObject({ id: string(), name: string(), salesCents: number(), paidOrderCount: unsigned, refundRate: number() })),
     events: array(businessEvent),
-    insights: array(strictObject({
-      id: string(),
-      tone: literal(['warning', 'positive']),
-      title: string(),
-      detail: string(),
-      action: string(),
-      target: literal(['orders', 'reports']),
-    })),
+    insights: array(
+      strictObject({
+        id: string(),
+        tone: literal(['warning', 'positive']),
+        title: string(),
+        detail: string(),
+        action: string(),
+        target: literal(['orders', 'reports']),
+      })
+    ),
   }),
 });
 const nullableText = union([string(), nullSchema()]);
@@ -135,6 +141,7 @@ export const REPORTING_BODY_SCHEMAS = {
 } as const;
 
 export const REPORTING_QUERY_SCHEMAS = {
+  ReportingDimensionsReadInput: strictObject({}),
   ReportingDashboardReadInput: reportQuery,
   ReportingSalesReadInput: salesQuery,
   ReportingProductsReadInput: reportQuery,
@@ -146,8 +153,9 @@ export const REPORTING_QUERY_SCHEMAS = {
 } as const;
 
 export const REPORTING_OUTPUT_SCHEMAS = {
+  ReportingDimensionsReadOutput: strictObject({ definitions: array(dimensionDefinition), presets: array(dimensionPreset), applications: array(applicationOption) }),
   ReportingDashboardReadOutput: strictObject({ ...metricPage.shape, summary }),
-  ReportingSalesReadOutput: strictObject({ ...metricPage.shape, preset: union([dimensionPreset, nullSchema()]) }),
+  ReportingSalesReadOutput: metricPage,
   ReportingProductsReadOutput: metricPage,
   ReportingMallsReadOutput: metricPage,
   ReportingCategoriesReadOutput: metricPage,

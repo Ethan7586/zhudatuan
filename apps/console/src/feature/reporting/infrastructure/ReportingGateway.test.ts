@@ -14,6 +14,14 @@ const snapshot: ReportSnapshot = {
 };
 
 const server = setupServer(
+  http.get('*/api/v1/reports/dimensions', ({ request }) => {
+    expect(request.headers.get('x-scope-hint')).toBe('enterprise:one');
+    return HttpResponse.json({
+      definitions: [{ code: 'application', name: '商城应用' }],
+      presets: [{ code: 'customermember', name: '客户 / 会员分层', description: '按授权会员汇总。', dimensions: ['customer', 'member'], privacy: 'masked', version: 1, owner: 'reporting' }],
+      applications: [{ value: 'application:one', label: '总部福利商城' }],
+    });
+  }),
   http.post('*/api/v1/reports/exports', async ({ request }) => {
     expect(request.headers.get('x-scope-hint')).toBe('enterprise:one');
     expect(request.headers.get('x-access-version')).toBe('7');
@@ -25,10 +33,21 @@ const server = setupServer(
       snapshot,
     });
     return HttpResponse.json({
-      id: 'export:one', scope: 'enterprise:one', report: 'metrics', filter: { view: 'members', period: '7days', application: 'application:one' },
+      id: 'export:one',
+      scope: 'enterprise:one',
+      report: 'metrics',
+      filter: { view: 'members', period: '7days', application: 'application:one' },
       snapshot: { filter: { view: 'members', period: '7days', application: 'application:one' }, watermark: snapshot.watermark, generatedAt: snapshot.generatedAt, generationVersion: 1 },
-      state: 'queued', cursor: null, recordCount: 0, objectReference: null, objectHash: null, objectSize: null, scanState: null,
-      expiresAt: null, createdAt: '2026-09-05T00:02:00.000Z', generatedAt: null,
+      state: 'queued',
+      cursor: null,
+      recordCount: 0,
+      objectReference: null,
+      objectHash: null,
+      objectSize: null,
+      scanState: null,
+      expiresAt: null,
+      createdAt: '2026-09-05T00:02:00.000Z',
+      generatedAt: null,
     });
   })
 );
@@ -37,6 +56,12 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterAll(() => server.close());
 
 describe('ReportingGateway', () => {
+  it('reads authoritative dimension names and application options', async () => {
+    const dimensions = await new ReportingGateway('http://localhost').readDimensions(context);
+    expect(dimensions.applications).toEqual([{ value: 'application:one', label: '总部福利商城' }]);
+    expect(Object.isFrozen(dimensions)).toBe(true);
+  });
+
   it('creates an export from the exact displayed filter and frozen snapshot', async () => {
     const gateway = new ReportingGateway('http://localhost');
     const job = await gateway.createExport(context, { view: 'members', period: '7days', application: 'application:one' }, snapshot, 'export:command:one');

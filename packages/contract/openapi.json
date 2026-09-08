@@ -57321,6 +57321,29 @@
                   },
                   "type": "object"
                 },
+                "displayedDimensions": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "name",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "period": {
                   "additionalProperties": false,
                   "properties": {
@@ -57379,6 +57402,7 @@
                 "scope",
                 "period",
                 "dimensions",
+                "displayedDimensions",
                 "value",
                 "unit",
                 "currency",
@@ -57605,6 +57629,29 @@
                   },
                   "type": "object"
                 },
+                "displayedDimensions": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "name",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "period": {
                   "additionalProperties": false,
                   "properties": {
@@ -57663,6 +57710,7 @@
                 "scope",
                 "period",
                 "dimensions",
+                "displayedDimensions",
                 "value",
                 "unit",
                 "currency",
@@ -57889,6 +57937,29 @@
                   },
                   "type": "object"
                 },
+                "displayedDimensions": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "name",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "period": {
                   "additionalProperties": false,
                   "properties": {
@@ -57947,6 +58018,7 @@
                 "scope",
                 "period",
                 "dimensions",
+                "displayedDimensions",
                 "value",
                 "unit",
                 "currency",
@@ -58457,6 +58529,118 @@
           "count",
           "snapshot",
           "summary"
+        ],
+        "type": "object"
+      },
+      "ReportingDimensionsReadInput": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "additionalProperties": false,
+            "properties": {},
+            "type": "object"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "ReportingDimensionsReadOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "applications": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "label"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "definitions": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "name"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "presets": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "code": {
+                  "const": "customermember",
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "dimensions": {
+                  "items": {
+                    "enum": [
+                      "customer",
+                      "member"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "owner": {
+                  "const": "reporting",
+                  "type": "string"
+                },
+                "privacy": {
+                  "const": "masked",
+                  "type": "string"
+                },
+                "version": {
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "code",
+                "name",
+                "description",
+                "dimensions",
+                "privacy",
+                "version",
+                "owner"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "definitions",
+          "presets",
+          "applications"
         ],
         "type": "object"
       },
@@ -59246,6 +59430,29 @@
                   },
                   "type": "object"
                 },
+                "displayedDimensions": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "name",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "period": {
                   "additionalProperties": false,
                   "properties": {
@@ -59304,6 +59511,7 @@
                 "scope",
                 "period",
                 "dimensions",
+                "displayedDimensions",
                 "value",
                 "unit",
                 "currency",
@@ -59530,6 +59738,29 @@
                   },
                   "type": "object"
                 },
+                "displayedDimensions": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "name",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "period": {
                   "additionalProperties": false,
                   "properties": {
@@ -59588,6 +59819,7 @@
                 "scope",
                 "period",
                 "dimensions",
+                "displayedDimensions",
                 "value",
                 "unit",
                 "currency",
@@ -59818,6 +60050,29 @@
                   },
                   "type": "object"
                 },
+                "displayedDimensions": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "name",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "period": {
                   "additionalProperties": false,
                   "properties": {
@@ -59876,6 +60131,7 @@
                 "scope",
                 "period",
                 "dimensions",
+                "displayedDimensions",
                 "value",
                 "unit",
                 "currency",
@@ -59888,61 +60144,6 @@
           },
           "nextCursor": {
             "type": "string"
-          },
-          "preset": {
-            "anyOf": [
-              {
-                "additionalProperties": false,
-                "properties": {
-                  "code": {
-                    "const": "customermember",
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "dimensions": {
-                    "items": {
-                      "enum": [
-                        "customer",
-                        "member"
-                      ],
-                      "type": "string"
-                    },
-                    "type": "array"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "owner": {
-                    "const": "reporting",
-                    "type": "string"
-                  },
-                  "privacy": {
-                    "const": "masked",
-                    "type": "string"
-                  },
-                  "version": {
-                    "maximum": 9007199254740991,
-                    "minimum": 0,
-                    "type": "integer"
-                  }
-                },
-                "required": [
-                  "code",
-                  "name",
-                  "description",
-                  "dimensions",
-                  "privacy",
-                  "version",
-                  "owner"
-                ],
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "snapshot": {
             "additionalProperties": false,
@@ -60045,8 +60246,7 @@
         "required": [
           "items",
           "count",
-          "snapshot",
-          "preset"
+          "snapshot"
         ],
         "type": "object"
       },
@@ -60158,6 +60358,29 @@
                   },
                   "type": "object"
                 },
+                "displayedDimensions": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "name",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "period": {
                   "additionalProperties": false,
                   "properties": {
@@ -60216,6 +60439,7 @@
                 "scope",
                 "period",
                 "dimensions",
+                "displayedDimensions",
                 "value",
                 "unit",
                 "currency",
@@ -139587,6 +139811,157 @@
         "x-requirements": [
           "MVPGROUPDASHBOARD",
           "MVPMALLDASHBOARD"
+        ],
+        "x-resource-parameter": null,
+        "x-resource-resolver": "reporting.resource",
+        "x-response-mode": "json",
+        "x-risk": "low",
+        "x-scope-kinds": [
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department",
+          "store",
+          "supplier"
+        ],
+        "x-sensitive-fields": [],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "console"
+        ],
+        "x-timeout-ms": 500
+      }
+    },
+    "/api/v1/reports/dimensions": {
+      "get": {
+        "operationId": "reporting.dimensions.read",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportingDimensionsReadOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "426": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "报表 · 维度目录",
+        "tags": [
+          "reporting"
+        ],
+        "x-assurance-level": "session",
+        "x-audience": "console",
+        "x-audit-level": "basic",
+        "x-cache-policy": "none",
+        "x-capability": "reporting.dimensions.read",
+        "x-concurrency-policy": "none",
+        "x-csrf-policy": "none",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "CONTRACT_VERSION_UNSUPPORTED",
+          "DEADLINE_EXCEEDED",
+          "INTERNAL_ERROR",
+          "PERMISSION_DENIED",
+          "RATE_LIMITED",
+          "SCOPE_DENIED",
+          "URL_SENSITIVE_DATA_FORBIDDEN",
+          "VALIDATION_FAILED"
+        ],
+        "x-execution-mode": "sync",
+        "x-expected-version": "none",
+        "x-idempotency-policy": "none",
+        "x-idempotency-scope": "none",
+        "x-lifecycle": "active",
+        "x-maker-checker": false,
+        "x-operation-version": 1,
+        "x-origin-policy": "none",
+        "x-permission": "reporting.dimension.read",
+        "x-rate-class": "read",
+        "x-requirements": [
+          "MVPGROUPREPORT",
+          "MVPMALLREPORT"
         ],
         "x-resource-parameter": null,
         "x-resource-resolver": "reporting.resource",

@@ -1194,6 +1194,13 @@ export const CAPABILITY_CATALOG = Object.freeze([
     "audience": "console"
   },
   {
+    "code": "reporting.dimensions.read",
+    "kind": "operation",
+    "owner": "reporting",
+    "permission": "reporting.dimension.read",
+    "audience": "console"
+  },
+  {
     "code": "reporting.sales.read",
     "kind": "operation",
     "owner": "reporting",
@@ -3043,7 +3050,7 @@ export const CAPABILITY_CODES_BY_OWNER = Object.freeze({
   "pricing": Object.freeze(["pricing.rules.create","pricing.rules.publish","pricing.offers.read"] as const),
   "qualification": Object.freeze(["qualification.center.read","qualification.decisions.preview","qualification.policies.manage","qualification.qualifications.publish","qualification.qualifications.revoke","qualification.evidenceuploads.create"] as const),
   "referral": Object.freeze(["referral.settings.read","referral.settings.manage","referral.products.read","referral.products.manage","referral.members.read","referral.members.apply","referral.members.approve","referral.members.disqualify","referral.bindings.read","referral.bindings.create","referral.commissions.read","referral.earnings.read","referral.links.read","referral.withdrawals.read","referral.withdrawals.create"] as const),
-  "reporting": Object.freeze(["reporting.dashboard.read","reporting.sales.read","reporting.products.read","reporting.malls.read","reporting.categories.read","reporting.channels.read","reporting.voucherconsumption.read","reporting.exports.create","reporting.exports.read"] as const),
+  "reporting": Object.freeze(["reporting.dashboard.read","reporting.dimensions.read","reporting.sales.read","reporting.products.read","reporting.malls.read","reporting.categories.read","reporting.channels.read","reporting.voucherconsumption.read","reporting.exports.create","reporting.exports.read"] as const),
   "risk": Object.freeze(["risk.center.read","risk.policies.manage","risk.cases.review"] as const),
   "runtime": Object.freeze(["runtime.importing","runtime.health.live","runtime.health.ready","runtime.health.startup","runtime.health.dependency","runtime.jobs.read","runtime.jobs.cancel","runtime.uploads.create","runtime.imports.create","runtime.imports.read","runtime.imports.confirm","runtime.imports.retry","runtime.exports.read","runtime.exports.cancel"] as const),
   "support": Object.freeze(["support.cases.create","support.cases.read","support.cases.update","support.cases.close","support.cases.reopen","support.messages.send","support.messages.read","support.attachments.create","support.assignments.manage","support.agents.manage","support.agents.read","support.accounts.manage","support.accounts.read","support.rules.read","support.rules.manage","support.slas.read","support.slas.manage","support.history.read","support.events.read","support.readstates.manage"] as const),
@@ -3078,7 +3085,7 @@ export const OPERATION_CAPABILITY_CODES_BY_OWNER = Object.freeze({
   "pricing": Object.freeze(["pricing.rules.create","pricing.rules.publish","pricing.offers.read"] as const),
   "qualification": Object.freeze(["qualification.center.read","qualification.decisions.preview","qualification.policies.manage","qualification.qualifications.publish","qualification.qualifications.revoke","qualification.evidenceuploads.create"] as const),
   "referral": Object.freeze(["referral.settings.read","referral.settings.manage","referral.products.read","referral.products.manage","referral.members.read","referral.members.apply","referral.members.approve","referral.members.disqualify","referral.bindings.read","referral.bindings.create","referral.commissions.read","referral.earnings.read","referral.links.read","referral.withdrawals.read","referral.withdrawals.create"] as const),
-  "reporting": Object.freeze(["reporting.dashboard.read","reporting.sales.read","reporting.products.read","reporting.malls.read","reporting.categories.read","reporting.channels.read","reporting.voucherconsumption.read","reporting.exports.create","reporting.exports.read"] as const),
+  "reporting": Object.freeze(["reporting.dashboard.read","reporting.dimensions.read","reporting.sales.read","reporting.products.read","reporting.malls.read","reporting.categories.read","reporting.channels.read","reporting.voucherconsumption.read","reporting.exports.create","reporting.exports.read"] as const),
   "risk": Object.freeze(["risk.center.read","risk.policies.manage","risk.cases.review"] as const),
   "runtime": Object.freeze(["runtime.health.live","runtime.health.ready","runtime.health.startup","runtime.health.dependency","runtime.jobs.read","runtime.jobs.cancel","runtime.uploads.create","runtime.imports.create","runtime.imports.read","runtime.imports.confirm","runtime.imports.retry","runtime.exports.read","runtime.exports.cancel"] as const),
   "support": Object.freeze(["support.cases.create","support.cases.read","support.cases.update","support.cases.close","support.cases.reopen","support.messages.send","support.messages.read","support.attachments.create","support.assignments.manage","support.agents.manage","support.agents.read","support.accounts.manage","support.accounts.read","support.rules.read","support.rules.manage","support.slas.read","support.slas.manage","support.history.read","support.events.read","support.readstates.manage"] as const),

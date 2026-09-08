@@ -5,6 +5,7 @@ import type { ReadTransactionContext, WriteTransactionContext } from '../../../.
 import type { DatabasePool } from '../../../../platform/database/Pool';
 import type { CartCatalogPort, CartListingSnapshot } from '../../public/CartCatalogPort';
 import type { CatalogPosition, CatalogReadPort, StorefrontCategoryFacet, StorefrontListing } from '../../public/CatalogReadPort';
+import type { CatalogDimensionLabel, CatalogDimensionPort } from '../../public/CatalogDimensionPort';
 import type { CheckoutCatalogItem, CheckoutCatalogPort } from '../../public/CheckoutCatalogPort';
 import type { ExperienceCatalogItem, ExperienceCatalogPort, ExperienceCatalogReferences } from '../../public/ExperienceCatalogPort';
 import type { MemberCatalogPort, MemberCatalogVisibility } from '../../public/MemberCatalogPort';
@@ -12,7 +13,7 @@ import type { ReferralCatalogPort } from '../../public/ReferralCatalogPort';
 
 interface StorefrontRow extends QueryResultRow, StorefrontListing {}
 
-export class PgCatalogFacade implements CartCatalogPort, CatalogReadPort, CheckoutCatalogPort, ExperienceCatalogPort, MemberCatalogPort, ReferralCatalogPort {
+export class PgCatalogFacade implements CartCatalogPort, CatalogDimensionPort, CatalogReadPort, CheckoutCatalogPort, ExperienceCatalogPort, MemberCatalogPort, ReferralCatalogPort {
   constructor(
     private readonly pool: DatabasePool,
     private readonly transactions = new PgTransactionAccess()
@@ -133,6 +134,20 @@ export class PgCatalogFacade implements CartCatalogPort, CatalogReadPort, Checko
     const visible = result.rows.slice(0, input.limit).map((item) => Object.freeze(item));
     const last = visible.at(-1);
     return Object.freeze({ items: Object.freeze(visible), next: result.rows.length > input.limit && last ? Object.freeze({ sort: last.updatedAt, id: last.id }) : null });
+  }
+
+  async labels(context: ReadTransactionContext, input: Readonly<{ products: readonly string[]; categories: readonly string[] }>): Promise<readonly CatalogDimensionLabel[]> {
+    if (input.products.length === 0 && input.categories.length === 0) return Object.freeze([]);
+    const result = await this.transactions.database(context).query<CatalogDimensionLabel & QueryResultRow>(
+      `select 'product'::text kind,product.id,product.title name
+       from catalog.product product where product.id=any($1::text[])
+       union all
+       select 'category'::text kind,category.id,category.name
+       from catalog.category category where category.id=any($2::text[])
+       order by kind,name,id`,
+      [[...new Set(input.products)], [...new Set(input.categories)]]
+    );
+    return Object.freeze(result.rows.map((row) => Object.freeze({ kind: row.kind, id: row.id, name: row.name })));
   }
 
   async published(context: ReadTransactionContext, listing: string, mall: string): Promise<boolean> {

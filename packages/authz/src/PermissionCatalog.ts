@@ -3454,6 +3454,24 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "reporting.dashboard.read"
   },
   {
+    "code": "reporting.dimension.read",
+    "module": "reporting",
+    "category": "reporting",
+    "risk": "low",
+    "minimumAssurance": 1,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department"
+    ],
+    "makerChecker": false,
+    "description": "读取报表维度名称与筛选项"
+  },
+  {
     "code": "reporting.export.manage",
     "module": "reporting",
     "category": "reporting",

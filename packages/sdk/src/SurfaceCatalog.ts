@@ -192,6 +192,7 @@ export const SURFACE_OPERATION_IDS = Object.freeze({
     "marketing.campaigns.revise",
     "marketing.campaigns.publish",
     "marketing.campaigns.disable",
+    "reporting.dimensions.read",
     "reporting.dashboard.read",
     "reporting.sales.read",
     "reporting.products.read",
@@ -1366,6 +1367,10 @@ const SURFACE_METHODS = Object.freeze({
     {
       "domain": "marketing",
       "method": "campaignsDisable"
+    },
+    {
+      "domain": "reporting",
+      "method": "dimensionsRead"
     },
     {
       "domain": "reporting",
@@ -3785,7 +3790,7 @@ export interface ConsoleSurfaceClient {
   readonly pricing: Pick<CommerceClient["pricing"], "rulesCreate" | "rulesPublish" | "offersRead">;
   readonly inventory: Pick<CommerceClient["inventory"], "availabilityRead" | "adjustmentsRead" | "adjustmentsCreate" | "importsCreate" | "importsRead">;
   readonly marketing: Pick<CommerceClient["marketing"], "campaignsRead" | "campaignsCreate" | "campaignsRevise" | "campaignsPublish" | "campaignsDisable">;
-  readonly reporting: Pick<CommerceClient["reporting"], "dashboardRead" | "salesRead" | "productsRead" | "mallsRead" | "categoriesRead" | "channelsRead" | "voucherconsumptionRead" | "exportsCreate" | "exportsRead">;
+  readonly reporting: Pick<CommerceClient["reporting"], "dimensionsRead" | "dashboardRead" | "salesRead" | "productsRead" | "mallsRead" | "categoriesRead" | "channelsRead" | "voucherconsumptionRead" | "exportsCreate" | "exportsRead">;
   readonly experience: Pick<CommerceClient["experience"], "applicationsCreate" | "applicationsCopy" | "applicationsDetailRead" | "applicationsRead" | "applicationsUpdate" | "versionsSave" | "versionsValidate" | "versionsPublish" | "versionsRestore" | "publishedRead">;
   readonly order: Pick<CommerceClient["order"], "ordersCancel" | "ordersRead" | "detailRead" | "remindersCreate" | "ordersExport" | "importsCreate" | "importsRead" | "aftersalesRead" | "aftersalesApprove" | "aftersalesReject" | "ordersReceive">;
   readonly fulfillment: Pick<CommerceClient["fulfillment"], "workitemsRead" | "workitemsTransition" | "returnsRead" | "shipmentsCreate" | "returnsReceive" | "returnsInspect">;

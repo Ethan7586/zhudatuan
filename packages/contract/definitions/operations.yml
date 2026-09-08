@@ -5930,6 +5930,55 @@ operations:
     cachePolicy: none
     targetPolicy: exact
     idempotencyPolicy: required
+  - id: reporting.dimensions.read
+    version: 1
+    title: '报表 · 维度目录'
+    concurrencyPolicy: none
+    executionMode: sync
+    auditLevel: basic
+    sensitiveFields: []
+    lifecycle: active
+    owner: reporting
+    method: GET
+    path: /api/v1/reports/dimensions
+    audience: console
+    targets: [console]
+    permission: reporting.dimension.read
+    capability: reporting.dimensions.read
+    scopeKinds: *a7
+    assuranceLevel: session
+    makerChecker: false
+    requestSchema: ReportingDimensionsReadInput
+    responseSchema: ReportingDimensionsReadOutput
+    errorUnion:
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - CONTRACT_VERSION_UNSUPPORTED
+      - INTERNAL_ERROR
+      - RATE_LIMITED
+      - SCOPE_DENIED
+      - VALIDATION_FAILED
+    idempotencyScope: none
+    expectedVersion: none
+    timeout: 500
+    rateClass: read
+    risk: low
+    resourceResolver: reporting.resource
+    idempotent: true
+    requirements:
+      - MVPGROUPREPORT
+      - MVPMALLREPORT
+    controller: services/commerce/src/pipeline/OperationController.ts
+    handler: services/commerce/src/modules/reporting/application/handler/DimensionsReadHandler.ts
+    sdk: packages/sdk/src/operations/reporting.ts
+    resourceParameter: null
+    originPolicy: none
+    csrfPolicy: none
+    responseMode: json
+    cachePolicy: none
+    targetPolicy: exact
+    idempotencyPolicy: none
   - id: reporting.dashboard.read
     version: 1
     title: '报表 · 业务查询'

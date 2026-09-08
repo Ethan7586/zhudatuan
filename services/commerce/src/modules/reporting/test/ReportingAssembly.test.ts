@@ -22,7 +22,7 @@ describe('reporting module assembly', () => {
   });
 
   it('keeps API and job resources workload-local', () => {
-    expect(Manifest.workloads.api.dependencies).toEqual(['runtime']);
+    expect(Manifest.workloads.api.dependencies).toEqual(['catalog', 'experience', 'member', 'organization', 'partner', 'runtime']);
     expect(Manifest.workloads.api.services).toEqual(['database.pool', 'audit.sink', 'cache', 'object.store']);
     expect(Manifest.workloads.jobs.dependencies).toEqual(['runtime']);
     expect(Manifest.workloads.jobs.services).toEqual(['database.pool', 'cache']);

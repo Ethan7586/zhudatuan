@@ -193,6 +193,7 @@ export const SDK_OPERATION_IDS = Object.freeze([
   "marketing.campaigns.revise",
   "marketing.campaigns.publish",
   "marketing.campaigns.disable",
+  "reporting.dimensions.read",
   "reporting.dashboard.read",
   "reporting.sales.read",
   "reporting.products.read",

@@ -15,10 +15,15 @@ export class ReportingGateway implements ReportingPort {
     this.client = createFetchReporting(baseUrl);
   }
 
+  async readDimensions(context: ConsoleContext, signal?: AbortSignal) {
+    return this.mapper.dimensions(await this.client.dimensionsRead({}, consoleRequest(context.scope, signal, context.session.accessVersion)));
+  }
+
   async read(context: ConsoleContext, filter: ReportFilter, signal?: AbortSignal) {
     const input = { query: { limit: 50, period: filter.period, ...(filter.application ? { applicationid: filter.application } : {}), ...(filter.cursor ? { cursor: filter.cursor } : {}) } };
     const request = consoleRequest(context.scope, signal, context.session.accessVersion);
-    if (filter.view === 'sales' || filter.view === 'members') return this.mapper.page(await this.client.salesRead({ query: { ...input.query, ...(filter.view === 'members' ? { dimensionpreset: 'customermember' as const } : {}) } }, request), true);
+    if (filter.view === 'sales' || filter.view === 'members')
+      return this.mapper.page(await this.client.salesRead({ query: { ...input.query, ...(filter.view === 'members' ? { dimensionpreset: 'customermember' as const } : {}) } }, request));
     if (filter.view === 'products') return this.mapper.page(await this.client.productsRead(input, request));
     if (filter.view === 'malls') return this.mapper.page(await this.client.mallsRead(input, request));
     if (filter.view === 'categories') return this.mapper.page(await this.client.categoriesRead(input, request));
@@ -28,16 +33,23 @@ export class ReportingGateway implements ReportingPort {
 
   async createExport(context: ConsoleContext, filter: ReportFilter, snapshot: ReportSnapshot, identity: string, signal?: AbortSignal) {
     const request = consoleCommand(context.scope, { accessVersion: context.session.accessVersion, idempotencyKey: identity, ...(context.session.csrf ? { csrfToken: context.session.csrf } : {}), ...(signal ? { signal } : {}) });
-    return this.mapper.export(await this.client.exportsCreate({ body: {
-      report: 'metrics',
-      filter: { view: filter.view, period: filter.period, ...(filter.application ? { application: filter.application } : {}) },
-      snapshot: {
-        query: { ...snapshot.query },
-        watermark: { ...snapshot.watermark },
-        generatedAt: snapshot.generatedAt,
-        generationVersion: snapshot.generationVersion,
-      },
-    } }, request));
+    return this.mapper.export(
+      await this.client.exportsCreate(
+        {
+          body: {
+            report: 'metrics',
+            filter: { view: filter.view, period: filter.period, ...(filter.application ? { application: filter.application } : {}) },
+            snapshot: {
+              query: { ...snapshot.query },
+              watermark: { ...snapshot.watermark },
+              generatedAt: snapshot.generatedAt,
+              generationVersion: snapshot.generationVersion,
+            },
+          },
+        },
+        request
+      )
+    );
   }
 
   async readExport(context: ConsoleContext, id: string, signal?: AbortSignal) {

@@ -35,4 +35,5 @@ export { CART_CATALOG_PORT, type CartCatalogPort, type CartListingSnapshot } fro
 export { CHECKOUT_CATALOG_PORT, type CheckoutCatalogItem, type CheckoutCatalogPort } from './CheckoutCatalogPort';
 export { EXPERIENCE_CATALOG_PORT, type ExperienceCatalogEvidence, type ExperienceCatalogItem, type ExperienceCatalogPort, type ExperienceCatalogReferences } from './ExperienceCatalogPort';
 export { CATALOG_READ_PORT, type CatalogPosition, type CatalogReadPort, type StorefrontCategoryFacet, type StorefrontListing } from './CatalogReadPort';
+export { CATALOG_DIMENSION_PORT, type CatalogDimensionKind, type CatalogDimensionLabel, type CatalogDimensionPort } from './CatalogDimensionPort';
 export { MEMBER_CATALOG_PORT, type MemberCatalogPort, type MemberCatalogVisibility } from './MemberCatalogPort';

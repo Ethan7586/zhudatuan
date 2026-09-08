@@ -30,7 +30,7 @@ export function ReportingPage({ title, model }: Readonly<{ title: string; model:
           </>
         }
       />
-      <FilterBar label="报表筛选" actions={<Button onPress={model.actions.applyApplication}>应用筛选</Button>}>
+      <FilterBar label="报表筛选" actions={model.dimensions.error ? <Button onPress={model.actions.refreshDimensions}>重试商城应用</Button> : undefined}>
         <label>
           报表
           <select value={model.view} onChange={(event) => model.actions.view(event.target.value as ReportView)}>
@@ -52,8 +52,20 @@ export function ReportingPage({ title, model }: Readonly<{ title: string; model:
           </select>
         </label>
         <label>
-          应用编号
-          <input value={model.applicationDraft} onChange={(event) => model.actions.application(event.target.value)} placeholder="全部应用" />
+          商城应用
+          <select value={model.application} onChange={(event) => model.actions.application(event.target.value)} aria-busy={model.dimensions.pending}>
+            <option value="">{model.dimensions.pending ? '正在加载商城应用…' : '全部商城应用'}</option>
+            {model.application && !model.dimensions.applications.some(({ value }) => value === model.application) ? (
+              <option value={model.application} disabled>
+                当前选择已停用或无权查看
+              </option>
+            ) : null}
+            {model.dimensions.applications.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
         </label>
       </FilterBar>
       {model.watermark ? <Watermark value={formatDate(model.watermark)} timezone={model.timezone} stale={model.stale} /> : null}
@@ -61,7 +73,7 @@ export function ReportingPage({ title, model }: Readonly<{ title: string; model:
         <aside className="reportpreset" aria-label="当前维度口径">
           <strong>{model.preset.name}</strong>
           <span>{model.preset.description}</span>
-          <small>口径版本 v{model.preset.version} · 会员标识已脱敏</small>
+          <small>口径版本 v{model.preset.version} · 会员名称仅在当前授权范围内展示</small>
         </aside>
       ) : null}
       <ResourceState condition={model.condition} {...(model.error ? { error: model.error } : {})} retry={model.actions.refresh}>
@@ -75,7 +87,10 @@ export function ReportingPage({ title, model }: Readonly<{ title: string; model:
       </ResourceState>
       {model.receipt ? (
         <div className="reportreceipt">
-          <ActionReceipt state={{ kind: 'success', receipt: model.receipt, objectLabel: '导出任务', impact: '仅导出当前报表筛选范围；下载地址按服务端时效自动失效。' }} dismiss={{ label: '关闭回执', onPress: model.actions.dismissReceipt }} />
+          <ActionReceipt
+            state={{ kind: 'success', receipt: model.receipt, objectLabel: '导出任务', impact: '仅导出当前报表筛选范围；下载地址按服务端时效自动失效。' }}
+            dismiss={{ label: '关闭回执', onPress: model.actions.dismissReceipt }}
+          />
         </div>
       ) : null}
       <ReportExportDialog model={model} />

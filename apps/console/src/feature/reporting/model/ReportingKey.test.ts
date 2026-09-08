@@ -11,6 +11,7 @@ describe('reportMetricKey', () => {
       scope: 'mall-zhudatuan',
       period: { from: '2026-08-30T00:00:00Z', to: '2026-08-31T00:00:00Z', timezone: 'Asia/Shanghai' },
       dimensions: { mall: 'mall-zhudatuan' },
+      displayedDimensions: [{ code: 'mall', name: '商城', value: '主打团福利商城' }],
       value: 100,
       unit: 'minor',
       currency: 'CNY',

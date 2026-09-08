@@ -37,6 +37,7 @@ import { PgProductRepository } from './infrastructure/persistence/PgProductRepos
 import { Manifest } from './Manifest';
 import { CART_CATALOG_PORT } from './public/CartCatalogPort';
 import { CATALOG_READ_PORT } from './public/CatalogReadPort';
+import { CATALOG_DIMENSION_PORT } from './public/CatalogDimensionPort';
 import { CHECKOUT_CATALOG_PORT } from './public/CheckoutCatalogPort';
 import { EXPERIENCE_CATALOG_PORT } from './public/ExperienceCatalogPort';
 import { MEMBER_CATALOG_PORT } from './public/MemberCatalogPort';
@@ -95,6 +96,7 @@ function catalogPorts(facade: PgCatalogFacade) {
     { token: CHECKOUT_CATALOG_PORT, value: facade },
     { token: EXPERIENCE_CATALOG_PORT, value: facade },
     { token: CATALOG_READ_PORT, value: facade },
+    { token: CATALOG_DIMENSION_PORT, value: facade },
     { token: MEMBER_CATALOG_PORT, value: facade },
   ] as const;
 }

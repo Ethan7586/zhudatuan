@@ -121,6 +121,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('marketing.campaigns.revise','marketing','PUT','/api/v1/marketing/campaigns/{campaignid}','5.0.0'),
   ('marketing.campaigns.publish','marketing','PUT','/api/v1/marketing/campaigns/{campaignid}/publication','5.0.0'),
   ('marketing.campaigns.disable','marketing','PUT','/api/v1/marketing/campaigns/{campaignid}/disablement','5.0.0'),
+  ('reporting.dimensions.read','reporting','GET','/api/v1/reports/dimensions','5.0.0'),
   ('reporting.dashboard.read','reporting','GET','/api/v1/reports/dashboard','5.0.0'),
   ('reporting.sales.read','reporting','GET','/api/v1/reports/sales','5.0.0'),
   ('reporting.products.read','reporting','GET','/api/v1/reports/products','5.0.0'),
@@ -718,6 +719,7 @@ insert into access.permission(id,code,risk,status) values
   ('permission:e4dc4f27015f928e5f8a6d45','reporting.category.read','low','active'),
   ('permission:5a9254b5c120a7f66928bd20','reporting.channel.read','low','active'),
   ('permission:01dd4eb9f7e7be210fea65a1','reporting.dashboard.read','low','active'),
+  ('permission:5df5e07828e814893c2dcab3','reporting.dimension.read','low','active'),
   ('permission:8bfc2e15e5cbd6b8c000bacc','reporting.export.manage','critical','active'),
   ('permission:7315a948b7aaa952a11db85f','reporting.export.read','high','active'),
   ('permission:b7c0af91baeab4f4d512c8f4','reporting.mall.read','low','active'),
@@ -948,6 +950,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('marketing.campaigns.publish','operation','marketing.campaigns.publish',3,'active'),
   ('marketing.campaigns.disable','operation','marketing.campaigns.disable',3,'active'),
   ('reporting.dashboard.read','operation','reporting.dashboard.read',3,'active'),
+  ('reporting.dimensions.read','operation','reporting.dimensions.read',3,'active'),
   ('reporting.sales.read','operation','reporting.sales.read',3,'active'),
   ('reporting.products.read','operation','reporting.products.read',3,'active'),
   ('reporting.malls.read','operation','reporting.malls.read',3,'active'),
@@ -1406,6 +1409,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('marketing.campaigns.revise','marketing.campaigns.revise','marketing.manage','console','{console}'),
   ('marketing.campaigns.publish','marketing.campaigns.publish','marketing.manage','console','{console}'),
   ('marketing.campaigns.disable','marketing.campaigns.disable','marketing.manage','console','{console}'),
+  ('reporting.dimensions.read','reporting.dimensions.read','reporting.dimension.read','console','{console}'),
   ('reporting.dashboard.read','reporting.dashboard.read','reporting.dashboard.read','console','{console}'),
   ('reporting.sales.read','reporting.sales.read','reporting.sales.read','console','{console}'),
   ('reporting.products.read','reporting.products.read','reporting.product.read','console','{console}'),
@@ -2035,6 +2039,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='supplier' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','f2d917243e3ccc6d184fae9f207a63f8d52abcb6d3003fa6a3ad71905bb86515');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','4cc37c26c8d37dc91fa1c54cc270cb548806af583a5065d9f2cb651653186669');
 
 commit;

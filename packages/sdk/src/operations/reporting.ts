@@ -7,6 +7,7 @@ import { exactOperationInput, exactOperationOutput } from '@shop/contract/schema
 import { defineOperation } from '../CatalogOperationDescriptor';
 
 export const REPORTING_OPERATION_IDS = Object.freeze([
+  "reporting.dimensions.read",
   "reporting.dashboard.read",
   "reporting.sales.read",
   "reporting.products.read",
@@ -19,6 +20,7 @@ export const REPORTING_OPERATION_IDS = Object.freeze([
 ] as const satisfies readonly OperationId[]);
 
 export interface ReportingOperations {
+  readonly dimensionsRead: OperationMethod<"reporting.dimensions.read">;
   readonly dashboardRead: OperationMethod<"reporting.dashboard.read">;
   readonly salesRead: OperationMethod<"reporting.sales.read">;
   readonly productsRead: OperationMethod<"reporting.products.read">;
@@ -31,6 +33,7 @@ export interface ReportingOperations {
 }
 
 export const REPORTING_METHOD_BY_OPERATION = Object.freeze({
+  "reporting.dimensions.read": "dimensionsRead",
   "reporting.dashboard.read": "dashboardRead",
   "reporting.sales.read": "salesRead",
   "reporting.products.read": "productsRead",
@@ -45,6 +48,7 @@ export const REPORTING_METHOD_BY_OPERATION = Object.freeze({
 export function createFetchReporting(baseUrl: string): ReportingOperations { return createReportingOperations(new ApiClient(baseUrl, new FetchTransport())); }
 
 export function createReportingOperations(client: OperationExecutor): ReportingOperations { return Object.freeze({
+    dimensionsRead: bindDimensionsRead(client),
     dashboardRead: bindDashboardRead(client),
     salesRead: bindSalesRead(client),
     productsRead: bindProductsRead(client),
@@ -55,6 +59,10 @@ export function createReportingOperations(client: OperationExecutor): ReportingO
     exportsCreate: bindExportsCreate(client),
     exportsRead: bindExportsRead(client),
   }); }
+
+export function createFetchReportingDimensionsRead(baseUrl: string): OperationMethod<"reporting.dimensions.read"> { return bindDimensionsRead(new ApiClient(baseUrl, new FetchTransport())); }
+
+export function bindDimensionsRead(client: OperationExecutor): OperationMethod<"reporting.dimensions.read"> { return bindOperation(client, defineOperation({ ...{"id":"reporting.dimensions.read","method":"GET","path":"/api/v1/reports/dimensions","audience":"console","targets":["console"],"responseMode":"json","idempotencyPolicy":"none","idempotent":true,"timeout":500,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CAPABILITY_DENIED","CONTRACT_VERSION_UNSUPPORTED","DEADLINE_EXCEEDED","INTERNAL_ERROR","PERMISSION_DENIED","RATE_LIMITED","SCOPE_DENIED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("ReportingDimensionsReadInput", [] as const, false), output: exactOperationOutput("ReportingDimensionsReadOutput") })); }
 
 export function createFetchReportingDashboardRead(baseUrl: string): OperationMethod<"reporting.dashboard.read"> { return bindDashboardRead(new ApiClient(baseUrl, new FetchTransport())); }
 

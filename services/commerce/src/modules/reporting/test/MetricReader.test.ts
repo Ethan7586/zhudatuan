@@ -7,7 +7,7 @@ const watermark = { event: 'event:watermark', occurredAt: '2026-09-05T12:00:00.0
 describe('report metric reader policy', () => {
   it('authorizes before reading and never trusts a caller supplied scope', async () => {
     const reports = { watermark: vi.fn(), metrics: vi.fn(), cockpit: vi.fn() };
-    const reader = new MetricReader(reports as never);
+    const reader = new MetricReader(reports as never, dimensionPresenter());
 
     await expect(
       reader.read(
@@ -31,7 +31,7 @@ describe('report metric reader policy', () => {
       metrics: vi.fn().mockResolvedValue([metric({ value: 100.6 })]),
       cockpit: vi.fn().mockResolvedValue(summary()),
     };
-    const reader = new MetricReader(reports as never);
+    const reader = new MetricReader(reports as never, dimensionPresenter());
     const result = await reader.read('reporting.dashboard.read', { query: { limit: 20, period: '30days' } } as never, session('reporting.dashboard.read'), null);
     const body = result.body as unknown as { items: readonly MetricRow[]; summary: CockpitSummary };
 
@@ -51,7 +51,7 @@ describe('report metric reader policy', () => {
 
   it('fails closed on an invalid source timezone or cross-scope projection row', async () => {
     const reports = { watermark: vi.fn().mockResolvedValue(watermark), metrics: vi.fn(), cockpit: vi.fn() };
-    const reader = new MetricReader(reports as never);
+    const reader = new MetricReader(reports as never, dimensionPresenter());
     reports.metrics.mockResolvedValueOnce([metric({ period: { from: '2026-09-04T16:00:00.000Z', to: '2026-09-05T16:00:00.000Z', timezone: 'Mars/Base' } })]);
     await expect(reader.read('reporting.sales.read', { query: { limit: 20 } } as never, session('reporting.sales.read'), 'sales')).rejects.toThrow('REPORT_TIMEZONE_INVALID');
 
@@ -65,6 +65,12 @@ function session(operation: 'reporting.dashboard.read' | 'reporting.sales.read')
     operation,
     transaction: {},
     security: { kind: 'session', access: { scope: { id: 'mall:one' } } },
+  } as never;
+}
+
+function dimensionPresenter() {
+  return {
+    present: vi.fn(async (_context, _scope, rows: readonly MetricRow[]) => rows.map((row) => ({ ...row, displayedDimensions: [{ code: 'mall', name: '商城', value: '总部商城' }] }))),
   } as never;
 }
 

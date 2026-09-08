@@ -1,6 +1,7 @@
 import {
   OP_REPORTING_CATEGORIES_READ,
   OP_REPORTING_CHANNELS_READ,
+  OP_REPORTING_DIMENSIONS_READ,
   OP_REPORTING_EXPORTS_CREATE,
   OP_REPORTING_EXPORTS_READ,
   OP_REPORTING_MALLS_READ,
@@ -17,7 +18,7 @@ import type { ReportingDependencies } from '../../../app/Dependencies';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
 import { pageCursor } from '../../../shared/query/QueryState';
 import { reportPeriods, reportViews, type ReportFilter, type ReportPeriod, type ReportView } from '../model/Report';
-import { exportKey, reportingKey } from './ReportingQueryKey';
+import { dimensionsKey, exportKey, reportingKey } from './ReportingQueryKey';
 
 const operations: Readonly<Record<ReportView, string>> = Object.freeze({
   sales: OP_REPORTING_SALES_READ,
@@ -35,9 +36,9 @@ export function useReportingViewModel(context: ConsoleContext, dependencies: Rep
   const view = validView(search.get('view'), availableViews);
   const period = validPeriod(search.get('period'));
   const application = search.get('application') ?? '';
-  const [applicationDraft, setApplicationDraft] = useState(application);
   const filter: ReportFilter = Object.freeze({ view, period, ...(application ? { application } : {}), ...(search.get('cursor') ? { cursor: search.get('cursor')! } : {}) });
-  useEffect(() => setApplicationDraft(application), [application]);
+  const canReadDimensions = context.session.capabilities.includes(OP_REPORTING_DIMENSIONS_READ);
+  const dimensions = useQuery({ queryKey: dimensionsKey(context), queryFn: ({ signal }) => dependencies.dimensions.execute(context, signal), enabled: canReadDimensions });
   const query = useQuery({ queryKey: reportingKey(context, filter), queryFn: ({ signal }) => dependencies.read.execute(context, filter, signal) });
   const [exportOpen, setExportOpen] = useState(false);
   const [identity, setIdentity] = useState(dependencies.createIdentity);
@@ -90,10 +91,15 @@ export function useReportingViewModel(context: ConsoleContext, dependencies: Rep
   return Object.freeze({
     view,
     period,
-    applicationDraft,
+    application,
     availableViews,
     rows,
-    preset: data?.preset,
+    preset: view === 'members' ? dimensions.data?.presets.find(({ code }) => code === 'customermember') : undefined,
+    dimensions: Object.freeze({
+      applications: dimensions.data?.applications ?? [],
+      pending: canReadDimensions && dimensions.isPending,
+      error: dimensions.error ? presentError(dimensions.error).message : canReadDimensions ? undefined : '当前账号无权读取商城应用筛选项。',
+    }),
     count: data?.count ?? 0,
     nextCursor: data?.nextCursor,
     watermark,
@@ -114,8 +120,8 @@ export function useReportingViewModel(context: ConsoleContext, dependencies: Rep
       refresh: () => void query.refetch(),
       view: (value: ReportView) => update('view', value),
       period: (value: ReportPeriod) => update('period', value),
-      application: setApplicationDraft,
-      applyApplication: () => update('application', applicationDraft.trim()),
+      application: (value: string) => update('application', value),
+      refreshDimensions: () => void dimensions.refetch(),
       next: () => {
         if (data?.nextCursor) setSearch(pageCursor(search, data.nextCursor));
       },

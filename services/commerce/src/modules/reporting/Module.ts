@@ -15,6 +15,13 @@ import { PgReportRepository } from './infrastructure/persistence/PgReportReposit
 import { MetricReader } from './application/service/MetricReader';
 import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
 import { JOB_PORT, OBJECT_STORE } from '../runtime/public';
+import { CATALOG_DIMENSION_PORT } from '../catalog/public';
+import { EXPERIENCE_DIMENSION_PORT } from '../experience/public';
+import { MEMBER_READ_PORT } from '../member/public';
+import { ORGANIZATION_READ_PORT } from '../organization/public';
+import { CATALOG_PARTNER_PORT } from '../partner/public';
+import { DimensionReader } from './application/service/DimensionReader';
+import { DimensionsReadHandler } from './application/handler/DimensionsReadHandler';
 
 export const ReportingModule = defineModule(Manifest, {
   jobs: createJobs,
@@ -22,8 +29,16 @@ export const ReportingModule = defineModule(Manifest, {
   handlers: (context) => {
     const transactions = new PgTransactionAccess();
     const reports = new PgReportRepository(transactions);
-    const metrics = new MetricReader(reports);
+    const dimensions = new DimensionReader(
+      context.ports.get(ORGANIZATION_READ_PORT),
+      context.ports.get(EXPERIENCE_DIMENSION_PORT),
+      context.ports.get(CATALOG_DIMENSION_PORT),
+      context.ports.get(MEMBER_READ_PORT),
+      context.ports.get(CATALOG_PARTNER_PORT)
+    );
+    const metrics = new MetricReader(reports, dimensions);
     return [
+      new DimensionsReadHandler(dimensions),
       new DashboardReadHandler(metrics),
       new SalesReadHandler(metrics),
       new ProductsReadHandler(metrics),

@@ -122,6 +122,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "marketing.campaigns.revise": Object.freeze({ input: exactOperationInput("MarketingCampaignsReviseInput", ["campaignid"] as const, true), output: exactOperationOutput("MarketingCampaignsReviseOutput") }),
   "marketing.campaigns.publish": Object.freeze({ input: exactOperationInput("MarketingCampaignsPublishInput", ["campaignid"] as const, true), output: exactOperationOutput("MarketingCampaignsPublishOutput") }),
   "marketing.campaigns.disable": Object.freeze({ input: exactOperationInput("MarketingCampaignsDisableInput", ["campaignid"] as const, true), output: exactOperationOutput("MarketingCampaignsDisableOutput") }),
+  "reporting.dimensions.read": Object.freeze({ input: exactOperationInput("ReportingDimensionsReadInput", [] as const, false), output: exactOperationOutput("ReportingDimensionsReadOutput") }),
   "reporting.dashboard.read": Object.freeze({ input: exactOperationInput("ReportingDashboardReadInput", [] as const, false), output: exactOperationOutput("ReportingDashboardReadOutput") }),
   "reporting.sales.read": Object.freeze({ input: exactOperationInput("ReportingSalesReadInput", [] as const, false), output: exactOperationOutput("ReportingSalesReadOutput") }),
   "reporting.products.read": Object.freeze({ input: exactOperationInput("ReportingProductsReadInput", [] as const, false), output: exactOperationOutput("ReportingProductsReadOutput") }),
