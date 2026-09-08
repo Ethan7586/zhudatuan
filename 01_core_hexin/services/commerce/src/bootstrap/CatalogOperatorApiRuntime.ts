@@ -32,6 +32,7 @@ import { RiskCheckAdapter } from '../modules/risk';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import type { Container } from './Container';
 import { ExtensionRegistry } from './ExtensionRegistry';
+import { bindServerNodeManifestRegistry, singleNodeManifestRegistry } from './ApiBootstrap';
 import { NODE_DATABASE_ROLE, NODE_MANIFEST } from './NodeRuntime';
 
 interface CompatibilityRow {
@@ -51,6 +52,10 @@ export interface CatalogOperatorApiRuntime {
   readonly telemetry: Telemetry;
   readonly configure: (container: Container) => void;
   close(): Promise<void>;
+}
+
+export function bindCatalogOperatorNodeManifest(container: Container, manifest: NodeManifest): void {
+  bindServerNodeManifestRegistry(container, singleNodeManifestRegistry(manifest));
 }
 
 export async function createCatalogOperatorApiRuntime(
@@ -106,6 +111,7 @@ export async function createCatalogOperatorApiRuntime(
     extensions,
     telemetry,
     configure(container: Container) {
+      bindCatalogOperatorNodeManifest(container, manifest);
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);

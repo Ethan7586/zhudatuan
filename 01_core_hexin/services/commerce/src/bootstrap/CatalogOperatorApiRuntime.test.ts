@@ -3,7 +3,10 @@ import type { QueryResult } from 'pg';
 import { parseNodeManifest } from '@shop/config/server';
 import { describe, expect, it } from 'vitest';
 import type { DatabasePool } from '../foundation/persistence/Pool';
-import { assertCatalogNodeManifest, catalogOperatorRuntimeCompatibility } from './CatalogOperatorApiRuntime';
+import { assertCatalogNodeManifest, bindCatalogOperatorNodeManifest, catalogOperatorRuntimeCompatibility } from './CatalogOperatorApiRuntime';
+import { createNodeContextResolver } from '@shop/config/sfl-node-kernel';
+import { NODE_MANIFEST_REGISTRY } from './ApiBootstrap';
+import { Container } from './Container';
 
 describe('catalog operator API runtime', () => {
   it('binds the catalog surface to the exact console origin and active production manifest', async () => {
@@ -13,6 +16,17 @@ describe('catalog operator API runtime', () => {
     expect(() => assertCatalogNodeManifest(manifest, ['https://console.zhudatuan.com'], 'test'))
       .toThrow('CATALOG_NODE_ORIGIN_MISMATCH');
     expect(() => assertCatalogNodeManifest(manifest, ['https://console.hbbtzn.com'], 'production')).not.toThrow();
+  });
+
+  it('installs the loaded L1 manifest as the request node-context source', async () => {
+    const path = new URL('../../../../../02_platform_pingtai/config/node-manifests/hbbtzn-l1.json', import.meta.url);
+    const manifest = await parseNodeManifest(JSON.parse(await readFile(path, 'utf8')));
+    const container = new Container();
+    bindCatalogOperatorNodeManifest(container, manifest);
+
+    const context = createNodeContextResolver(container.get(NODE_MANIFEST_REGISTRY)).resolve('api.hbbtzn.com');
+    expect(context.node_id).toBe('node:hbbtzn:l1');
+    expect(context.manifest_digest).toBe(manifest.manifest_digest);
   });
 
   it('requires the database role named by the node resource binding', async () => {
