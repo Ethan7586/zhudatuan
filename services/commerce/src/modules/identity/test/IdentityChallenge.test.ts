@@ -8,6 +8,49 @@ import { withReadTransaction, withWriteTransaction } from '../../../test/Transac
 const digest = (challenge: string, code: string) => `digest:${challenge}:${code}`;
 
 describe('identity login challenge', () => {
+  it('schedules public challenge delivery with explicit least-privilege system evidence', async () => {
+    const queries: Array<Readonly<{ text: string; values: readonly unknown[] }>> = [];
+    const query = async (text: string, values: readonly unknown[] = []) => {
+      queries.push({ text, values });
+      if (text.startsWith('with challenge as(')) return result([{ id: 'challenge:login', purpose: 'login', expires_at: new Date('2026-09-08T03:10:00Z') }]);
+      if (text.startsWith('select exists(select 1 from runtime.jobs')) return result([{ existing: false, depth: 0 }]);
+      return result([]);
+    };
+
+    await expect(
+      withWriteTransaction(
+        query,
+        (context) =>
+          new PgChallenge().issue(context, {
+            id: 'challenge:login',
+            principal: 'principal:one',
+            purpose: 'login',
+            destinationHash: 'destination:hash',
+            codeHash: 'code:hash',
+            codeCiphertext: 'code:ciphertext',
+            codeKeyVersion: 'current',
+            destinationCiphertext: 'destination:ciphertext',
+            destinationKeyVersion: 'current',
+            scope: 'identity',
+            ttlMinutes: 10,
+            queueDelivery: true,
+          }),
+        'identity.challenges.create'
+      )
+    ).resolves.toMatchObject({ id: 'challenge:login', purpose: 'login' });
+
+    const scheduled = queries.find(({ text }) => text.startsWith('insert into runtime.jobs'));
+    expect(scheduled).toBeDefined();
+    expect(scheduled?.values[3]).toBe('scope:test');
+    expect(JSON.parse(String(scheduled?.values[8]))).toMatchObject({
+      kind: 'system',
+      actor: 'actor:test',
+      scope: 'scope:test',
+      operation: 'identity.challenges.create',
+      source: 'scheduler',
+    });
+  });
+
   it('locks a valid OTP without consuming it, then consumes it exactly once', async () => {
     let consumed = false;
     const queries: Array<Readonly<{ text: string; values: readonly unknown[] }>> = [];

@@ -5,6 +5,7 @@ import type { ChallengeIssue, ChallengePort, IssuedChallenge, LoginGuardPort } f
 import { reject } from '../../../../pipeline/OperationRejection';
 
 import { PgRuntimeWriter } from '../../../../platform/database/PgRuntimeWriter';
+import { systemAuthorizationEvidence } from '../../../../platform/security/AuthorizationEvidence';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
 const MAXIMUM_ATTEMPTS = RUNTIME_LIMITS.authentication.otp.maximumAttempts;
@@ -28,7 +29,16 @@ export class PgChallenge implements ChallengePort {
     );
     const row = result.rows[0];
     if (!row) throw new Error('CHALLENGE_CREATE_FAILED');
-    if (value.queueDelivery) await new PgRuntimeWriter(database).schedule({ id: `job:notify:${value.id}`, kind: 'identitynotification', owner: 'identity', scope: value.scope, payload: { challenge: value.id }, priority: 1 });
+    if (value.queueDelivery)
+      await new PgRuntimeWriter(database).schedule({
+        id: `job:notify:${value.id}`,
+        kind: 'identitynotification',
+        owner: 'identity',
+        scope: context.scope,
+        payload: { challenge: value.id },
+        priority: 1,
+        authorization: systemAuthorizationEvidence(context, 'scheduler', new Date()),
+      });
     return Object.freeze({ id: row.id, purpose: row.purpose, expiresAt: row.expires_at });
   }
   async throttle(context: WriteTransactionContext, keys: readonly (readonly [string, string])[]): Promise<void> {
