@@ -352,7 +352,7 @@ describe('Finance MVVM workspace', () => {
     renderRoute('/finance/statements', StatementRoute, statementContext);
 
     expect(await screen.findByRole('table', { name: '账单' })).toBeTruthy();
-    expect(screen.getByText('2026-08-01 – 2026-08-31')).toBeTruthy();
+    expect(screen.getByText('2026年8月1–31日')).toBeTruthy();
     await waitFor(() => expect(sectionReads).toEqual(['/api/v1/finance/statements', '/api/v1/finance/reconciliations']));
     expect(screen.queryByRole('alert')).toBeNull();
     expect(overviewReads).toHaveLength(0);

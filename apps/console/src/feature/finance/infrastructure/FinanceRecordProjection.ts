@@ -1,4 +1,5 @@
 import { deepFreeze } from '../../../shared/model/Immutable';
+import { calendarRange } from '../../../shared/format/Date';
 import type { FinanceRecord, FinanceRecordPage, FinanceSection } from '../model/Finance';
 import { EntryPageSchema, ReconciliationPageSchema, SettlementPageSchema, StatementPageSchema } from './SectionSchema';
 
@@ -24,14 +25,17 @@ export class FinanceRecordProjection {
             { label: '业务说明', kind: 'text', value: row.description },
             { label: '入账时间', kind: 'time', value: row.posted_at },
           ],
-          technicalFacts: [{ label: '分录编号', kind: 'reference', value: row.id }, { label: '账户科目代码', kind: 'text', value: row.code }],
+          technicalFacts: [
+            { label: '分录编号', kind: 'reference', value: row.id },
+            { label: '账户科目代码', kind: 'text', value: row.code },
+          ],
         }));
       }
       case 'statements': {
         const page = StatementPageSchema.parse(value);
         return financePage(page, (row) => ({
           id: row.id,
-          label: `${row.period_start} – ${row.period_end}`,
+          label: calendarRange(row.period_start, row.period_end),
           reference: row.id,
           amountMinor: row.closing_minor,
           currency: row.currency,
@@ -57,7 +61,14 @@ export class FinanceRecordProjection {
       case 'reconciliations': {
         const page = ReconciliationPageSchema.parse(value);
         return financePage(page, (row) => ({
-          id: row.id, label: `${row.provider} · ${row.period}`, reference: row.partner_id, amountMinor: row.difference_minor, currency: 'CNY', state: row.state, occurredAt: row.updated_at, version: row.version,
+          id: row.id,
+          label: `${row.provider} · ${row.period}`,
+          reference: row.partner_id,
+          amountMinor: row.difference_minor,
+          currency: 'CNY',
+          state: row.state,
+          occurredAt: row.updated_at,
+          version: row.version,
           facts: [
             { label: '渠道', kind: 'text', value: row.provider },
             { label: '账期', kind: 'text', value: row.period },
