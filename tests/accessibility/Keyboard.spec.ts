@@ -16,6 +16,10 @@ test('登录表单具有可预测焦点顺序且 Enter 可提交', async ({ page
   await page.keyboard.press('Tab');
   await expect(password).toBeFocused();
   await password.fill(await localSecret(localSeedEnvironment().ethanPasswordRef));
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: '显示密码' })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: '忘记密码？' })).toBeFocused();
   await page.getByRole('checkbox', { name: /我已阅读并同意/ }).check();
   await password.focus();
   await password.press('Enter');

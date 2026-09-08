@@ -54,16 +54,11 @@ export function PasswordForm({
           </span>
         ) : null}
       </div>
-      <div className="authfield">
-        <span className="authfieldhead">
-          <label className="authlabel" htmlFor={passwordId}>
-            <Lock aria-hidden="true" />
-            密码
-          </label>
-          <Button type="button" tone="quiet" className="authfieldaction" onPress={onReset}>
-            忘记密码？
-          </Button>
-        </span>
+      <div className="authfield authpasswordfield">
+        <label className="authlabel" htmlFor={passwordId}>
+          <Lock aria-hidden="true" />
+          密码
+        </label>
         <span className="authpassword">
           <input
             id={passwordId}
@@ -81,6 +76,9 @@ export function PasswordForm({
             {vm.visible ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
           </Button>
         </span>
+        <Button type="button" tone="quiet" className="authfieldaction" onPress={onReset}>
+          忘记密码？
+        </Button>
         {error.password ? (
           <span id={passwordErrorId} className="authfieldissue" role="alert">
             {error.password}

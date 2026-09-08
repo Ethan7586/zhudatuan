@@ -137,6 +137,25 @@
     gap: var(--sw-space-1);
   }
 
+  .authpasswordfield {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .authpasswordfield > .authlabel {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .authpasswordfield > .authfieldaction {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .authpasswordfield > .authpassword,
+  .authpasswordfield > .authfieldissue {
+    grid-column: 1 / -1;
+  }
+
   .authfieldaction {
     flex: 0 0 auto;
     --shop-button-padding: var(--sw-control-gap) var(--sw-space-1);
