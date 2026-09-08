@@ -88,6 +88,7 @@ export const AccessModule = defineModule(Manifest, {
     const access = new AccessPort(repository, new AccessVersionPublisher(repository));
     return [
       { token: IDENTITY_ACCESS_PORT, value: access },
+      { token: MEMBER_ACCESS_PORT, value: access },
       { token: MEMBER_IMPORT_ACCESS_PORT, value: access },
       { token: TASK_AUTHORIZATION_PORT, value: new TaskAuthorization(new PgAuthorizationRepository()) },
     ];

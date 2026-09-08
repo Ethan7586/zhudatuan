@@ -5,5 +5,5 @@ export const Manifest = defineModuleManifest({
   id: 'audit',
   services: ['database.pool', 'audit.sink', 'audit.port'],
   ports: [AUDIT_PORT, AUDIT_READ_PORT],
-  workloads: { jobs: { dependencies: ['runtime'], bindings: ['runtime'], services: ['database.pool', 'object.store', 'kms.client'] } },
+  workloads: { jobs: { dependencies: ['runtime'], bindings: ['runtime'], services: ['database.pool', 'object.store', 'kms.client', 'audit.sink'], ports: [AUDIT_PORT] } },
 });

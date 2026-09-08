@@ -83,6 +83,7 @@ export const OrderModule = defineModule(Manifest, {
     return [
       { token: ORDER_EXPIRY_PORT, value: order },
       { token: ORDER_PAYMENT_JOB_PORT, value: order },
+      { token: ORDER_FULFILLMENT_PORT, value: order },
       { token: FINANCE_ORDER_PORT, value: new PgFinanceOrderPort() },
     ];
   },

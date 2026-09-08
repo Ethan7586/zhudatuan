@@ -7,7 +7,7 @@ export const Manifest = defineModuleManifest({
   services: ['database.pool', 'audit.sink', 'object.store'],
   ports: [ORDER_INTENT_PORT, ORDER_PAYMENT_PORT, ORDER_FULFILLMENT_PORT, SUPPORT_ORDER_PORT, ORDER_RECEIPT_PORT, ORDER_READ_PORT, FINANCE_ORDER_PORT],
   workloads: {
-    jobs: { dependencies: ['access', 'runtime', 'organization', 'member', 'payment', 'finance'], services: ['database.pool', 'object.store'], ports: [ORDER_EXPIRY_PORT, ORDER_PAYMENT_JOB_PORT, FINANCE_ORDER_PORT] },
+    jobs: { dependencies: ['access', 'runtime', 'organization', 'member', 'payment', 'finance'], services: ['database.pool', 'object.store'], ports: [ORDER_EXPIRY_PORT, ORDER_PAYMENT_JOB_PORT, ORDER_FULFILLMENT_PORT, FINANCE_ORDER_PORT] },
     provider: { ports: [ORDER_FULFILLMENT_PORT] },
   },
 });

@@ -64,5 +64,8 @@ export const MemberModule = defineModule(Manifest, {
       { token: MEMBER_ADDRESS_PORT, value: new PgAddressRepository(new PgTransactionAccess()) },
     ];
   },
-  jobPorts: [{ token: BENEFIT_MEMBER_PORT, value: new PgBenefitMemberPort() }],
+  jobPorts: [
+    { token: BENEFIT_MEMBER_PORT, value: new PgBenefitMemberPort() },
+    { token: MEMBER_READ_PORT, value: new PgMemberReadPort() },
+  ],
 });

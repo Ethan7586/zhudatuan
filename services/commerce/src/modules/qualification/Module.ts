@@ -40,4 +40,5 @@ export const QualificationModule = defineModule(Manifest, {
     { token: AFTERSALE_POLICY_PORT, value: new PgAfterSalePolicyPort() },
     { token: CATALOG_QUALIFICATION_PORT, value: new PgCatalogQualificationPort() },
   ],
+  jobPorts: [{ token: CATALOG_QUALIFICATION_PORT, value: new PgCatalogQualificationPort() }],
 });

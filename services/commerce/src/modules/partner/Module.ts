@@ -50,4 +50,5 @@ export const PartnerModule = defineModule(Manifest, {
     { token: CATALOG_PARTNER_PORT, value: new PgCatalogPartnerPort() },
     { token: VOUCHER_CUSTOMER_PORT, value: new PgCustomerRepository() },
   ],
+  jobPorts: [{ token: CATALOG_PARTNER_PORT, value: new PgCatalogPartnerPort() }],
 });

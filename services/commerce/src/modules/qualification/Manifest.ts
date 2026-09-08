@@ -8,6 +8,6 @@ export const Manifest = defineModuleManifest({
   dependencies: ['runtime'],
   services: ['database.pool', 'audit.sink', 'object.store'],
   ports: [CHECKOUT_QUALIFICATION_PORT, AFTERSALE_POLICY_PORT, CATALOG_QUALIFICATION_PORT],
-  workloads: { jobs: { services: ['database.pool'] } },
+  workloads: { jobs: { services: ['database.pool'], ports: [CATALOG_QUALIFICATION_PORT] } },
   capabilities: QualificationCapabilities,
 });

@@ -15,4 +15,5 @@ export const AuditModule = defineModule(Manifest, {
     { token: AUDIT_PORT, value: context.service(AUDIT_SINK) },
     { token: AUDIT_READ_PORT, value: new PgAuditReadPort() },
   ],
+  jobPorts: (context) => [{ token: AUDIT_PORT, value: context.service(AUDIT_SINK) }],
 });
