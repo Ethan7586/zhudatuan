@@ -53,6 +53,8 @@ const ProductListingPreviewSchema = z.object({
   changes: z.array(ProductPreviewChangeSchema),
 });
 
+export const ProductManagementStatusSchema = z.enum(['needs_attention', 'pending_review', 'published', 'unpublished']);
+
 export const ListingSchema = z.object({
   id: z.string().check(z.minLength(1)),
   sku_id: z.string().check(z.minLength(1)),
@@ -68,6 +70,8 @@ export const ListingSchema = z.object({
   effective_at: z.optional(z.nullable(z.string())),
   expires_at: z.optional(z.nullable(z.string())),
   cursor_sort: z.optional(z.string()),
+  sku_count: z.optional(DatabaseIntegerSchema),
+  management_status: z.optional(ProductManagementStatusSchema),
   preview: z.optional(ProductListingPreviewSchema),
 });
 
@@ -128,6 +132,13 @@ const ProductPagePreviewSchema = z.object({
 export const ListingPageSchema = z.object({
   items: z.array(ListingSchema),
   count: z.int().check(z.nonnegative()),
+  total_count: z.optional(DatabaseIntegerSchema),
+  status_counts: z.optional(z.object({
+    needs_attention: DatabaseIntegerSchema,
+    pending_review: DatabaseIntegerSchema,
+    published: DatabaseIntegerSchema,
+    unpublished: DatabaseIntegerSchema,
+  })),
   nextCursor: z.optional(z.string().check(z.minLength(1))),
   preview: z.optional(ProductPagePreviewSchema),
 });

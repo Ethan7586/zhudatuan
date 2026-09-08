@@ -11,8 +11,17 @@ for (let attempt = 0; attempt < 60; attempt += 1) {
     });
     const body: unknown = await response.json();
     if (response.status === 200 && body !== null && typeof body === 'object'
-      && !Array.isArray(body) && Reflect.get(body, 'status') === 'ready') {
-      process.stdout.write('ZHUDATUAN_WEB_BUSINESS_API_READY\n');
+      && !Array.isArray(body) && Reflect.get(body, 'status') === 'ready'
+      && Reflect.get(body, 'manifestId') === environment.NODE_MANIFEST_ID
+      && Reflect.get(body, 'manifestDigest') === environment.NODE_MANIFEST_DIGEST
+      && Reflect.get(body, 'runtimeInstanceId') === environment.NODE_RUNTIME_INSTANCE_ID
+      && Reflect.get(body, 'resourceBindingVersion') === environment.NODE_RESOURCE_BINDING_VERSION) {
+      process.stdout.write(`WEB_BUSINESS_API_READY ${JSON.stringify({
+        manifestId: environment.NODE_MANIFEST_ID,
+        manifestDigest: environment.NODE_MANIFEST_DIGEST,
+        runtimeInstanceId: environment.NODE_RUNTIME_INSTANCE_ID,
+        resourceBindingVersion: environment.NODE_RESOURCE_BINDING_VERSION,
+      })}\n`);
       process.exit(0);
     }
     last = `status-${response.status}`;
@@ -21,4 +30,4 @@ for (let attempt = 0; attempt < 60; attempt += 1) {
   }
   await new Promise((resolve) => setTimeout(resolve, 500));
 }
-throw new Error(`ZHUDATUAN_WEB_BUSINESS_API_NOT_READY:${last}`);
+throw new Error(`WEB_BUSINESS_API_NOT_READY:${last}`);

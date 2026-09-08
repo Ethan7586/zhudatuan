@@ -1,4 +1,6 @@
 export { RuntimeModule } from '../RuntimeModule';
+export { CatalogOperatorRuntimeModule } from './CatalogOperatorRuntimeModule';
+export { CATALOG_OPERATOR_RUNTIME_OPERATION_IDS } from './CatalogOperatorRuntimeOperations';
 export { IdentityRegistrationRuntimeModule } from './IdentityRegistrationRuntimeModule';
 export {
   IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS,

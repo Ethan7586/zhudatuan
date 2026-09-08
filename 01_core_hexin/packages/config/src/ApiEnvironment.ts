@@ -1,5 +1,4 @@
 import { bearerToken, distinctValues, enumValue, integerValue, pickEnvironment, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
-import type { AuthTarget } from './ClientEnvironment';
 
 export const API_ENVIRONMENT_KEYS = [
   'API_PORT',
@@ -54,19 +53,6 @@ export function apiAllowedOrigins(environment: ApiEnvironment): readonly string[
   return Object.freeze([...new Set(values)]);
 }
 
-export type AuthReturnTargets = Readonly<Record<AuthTarget, string>>;
-
-export function apiReturnTargets(environment: ApiEnvironment): AuthReturnTargets {
-  const raw = requiredValue(environment.AUTH_RETURN_TARGETS, 'AUTH_RETURN_TARGETS_MISSING');
-  let parsed: unknown;
-  try { parsed = JSON.parse(raw); } catch { throw new Error('AUTH_RETURN_TARGETS_INVALID'); }
-  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('AUTH_RETURN_TARGETS_INVALID');
-  const record = parsed as Readonly<Record<string, unknown>>;
-  const keys: readonly AuthTarget[] = ['console', 'console-hbbtzn', 'storefront', 'storefront-hbbtzn', 'store', 'supplier'];
-  if (Object.keys(record).sort().join(',') !== [...keys].sort().join(',')) throw new Error('AUTH_RETURN_TARGETS_INVALID');
-  return Object.freeze(Object.fromEntries(keys.map((key) => [key, webUrl(record[key])])) as Record<AuthTarget, string>);
-}
-
 export function validateApiEnvironment(source: ApiEnvironment | EnvironmentSource): void {
   const app = enumValue(source.APP_ENV, ['development', 'test', 'production'], 'APP_ENV_INVALID');
   const auth = enumValue(source.AUTH_MODE, ['test', 'membership'], 'AUTH_MODE_INVALID');
@@ -93,12 +79,4 @@ export function validateApiEnvironment(source: ApiEnvironment | EnvironmentSourc
   const kmsBearer = bearerToken(source.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_INVALID');
   const secretStoreBearer = bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
   distinctValues(kmsBearer, secretStoreBearer, 'WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
-}
-
-function webUrl(value: unknown): string {
-  if (typeof value !== 'string' || (!/^https:\/\/[a-z0-9.-]+(?::\d+)?(?:\/.*)?$/i.test(value)
-    && !/^http:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(?:\/.*)?$/.test(value))) throw new Error('AUTH_RETURN_TARGETS_INVALID');
-  const url = new URL(value);
-  if (url.username || url.password || url.hash) throw new Error('AUTH_RETURN_TARGETS_INVALID');
-  return url.toString().replace(/\/$/, '');
 }

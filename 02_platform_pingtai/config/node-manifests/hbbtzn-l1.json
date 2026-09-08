@@ -1,0 +1,189 @@
+{
+  "schema_version": "sfl.node-manifest.v1",
+  "manifest_id": "manifest:hbbtzn:l1:v1",
+  "manifest_version": "1.0.1",
+  "manifest_digest": "sha256:b46f95da5f7b4e1085e5189af2d57e10cf432500aa50c390096eda034076c24f",
+  "generated_at": "2026-09-08T00:00:00.000Z",
+  "lifecycle_status": "active",
+  "line_id": "line:zhudatuan:commerce:v1",
+  "node_id": "node:hbbtzn:l1",
+  "parent_node_id": "node:zhudatuan:l0",
+  "signed_level": "L1",
+  "node_profile": "operating_mall",
+  "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+  "host_node_id": null,
+  "domain_bindings": [
+    {
+      "host": "accounts.hbbtzn.com",
+      "binding_ref": {
+        "ref": "domain:hbbtzn:l1:identity",
+        "version": "1"
+      },
+      "application_ref": "application:identity",
+      "surface_ref": "surface:identity"
+    },
+    {
+      "host": "api.hbbtzn.com",
+      "binding_ref": {
+        "ref": "domain:hbbtzn:l1:api",
+        "version": "1"
+      },
+      "application_ref": "application:commerce-api",
+      "surface_ref": "surface:api"
+    },
+    {
+      "host": "console.hbbtzn.com",
+      "binding_ref": {
+        "ref": "domain:hbbtzn:l1:console",
+        "version": "1"
+      },
+      "application_ref": "application:console",
+      "surface_ref": "surface:console"
+    },
+    {
+      "host": "h5.hbbtzn.com",
+      "binding_ref": {
+        "ref": "domain:hbbtzn:l1:storefront:h5",
+        "version": "1"
+      },
+      "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
+      "surface_ref": "surface:storefront"
+    },
+    {
+      "host": "hbbtzn.com",
+      "binding_ref": {
+        "ref": "domain:hbbtzn:l1:storefront",
+        "version": "1"
+      },
+      "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
+      "surface_ref": "surface:storefront"
+    },
+    {
+      "host": "mall.hbbtzn.com",
+      "binding_ref": {
+        "ref": "domain:hbbtzn:l1:storefront:mall",
+        "version": "1"
+      },
+      "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
+      "surface_ref": "surface:storefront"
+    },
+    {
+      "host": "www.hbbtzn.com",
+      "binding_ref": {
+        "ref": "domain:hbbtzn:l1:storefront:www",
+        "version": "1"
+      },
+      "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
+      "surface_ref": "surface:storefront"
+    }
+  ],
+  "brand_ref": {
+    "ref": "brand:hbbtzn",
+    "version": "1"
+  },
+  "applications": [
+    {
+      "ref": "application:commerce-api",
+      "version": "1"
+    },
+    {
+      "ref": "application:console",
+      "version": "1"
+    },
+    {
+      "ref": "application:efea797b2469a1280086d3d9f1fe1355",
+      "version": "1"
+    },
+    {
+      "ref": "application:identity",
+      "version": "1"
+    }
+  ],
+  "surfaces": [
+    {
+      "ref": "surface:api",
+      "version": "1"
+    },
+    {
+      "ref": "surface:console",
+      "version": "1"
+    },
+    {
+      "ref": "surface:identity",
+      "version": "1"
+    },
+    {
+      "ref": "surface:storefront",
+      "version": "1"
+    }
+  ],
+  "enabled_features": [
+    {
+      "ref": "feature:catalog",
+      "version": "1"
+    },
+    {
+      "ref": "feature:checkout",
+      "version": "1"
+    },
+    {
+      "ref": "feature:console",
+      "version": "1"
+    },
+    {
+      "ref": "feature:identity",
+      "version": "1"
+    },
+    {
+      "ref": "feature:orders",
+      "version": "1"
+    }
+  ],
+  "api_contract_refs": [
+    {
+      "ref": "contract:commerce-api",
+      "version": "1.0.0"
+    }
+  ],
+  "realm_ref": {
+    "ref": "realm:l1",
+    "version": "1"
+  },
+  "data_scope_ref": {
+    "ref": "mall:d1708f04df2dd8a61736852c4900fb43",
+    "version": "1"
+  },
+  "resource_binding_set_ref": {
+    "ref": "resource-binding:hbbtzn:l1",
+    "version": "1"
+  },
+  "secret_binding_set_ref": {
+    "ref": "hbbtzn/nodes/l1/secrets",
+    "version": "1"
+  },
+  "payment_binding_refs": [
+    {
+      "ref": "hbbtzn/nodes/l1/payment",
+      "version": "1"
+    }
+  ],
+  "callback_binding_refs": [
+    {
+      "ref": "hbbtzn/nodes/l1/callbacks",
+      "version": "1"
+    }
+  ],
+  "runtime_instance_id": "runtime:hbbtzn:l1:commerce",
+  "runtime_config_ref": {
+    "ref": "sfl/nodes/hbbtzn-l1/runtime/v1",
+    "version": "1"
+  },
+  "release_pointer_ref": {
+    "ref": "/opt/sfl/nodes/hbbtzn-l1/current",
+    "version": "1",
+    "source_sha": "a7a8448907904766cd10bf35daf58cb6e284e34b988f0f32ecc2eb86b8102554",
+    "build_id": "node-manifest-declaration:a7a8448907904766cd10bf35daf58cb6e284e34b988f0f32ecc2eb86b8102554",
+    "build_count": 1,
+    "immutable_artifact_digest": "sha256:a7a8448907904766cd10bf35daf58cb6e284e34b988f0f32ecc2eb86b8102554"
+  }
+}

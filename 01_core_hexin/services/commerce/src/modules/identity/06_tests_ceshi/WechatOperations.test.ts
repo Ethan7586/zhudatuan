@@ -15,16 +15,23 @@ describe('wechat identity session', () => {
     const client = {
       query: async (text: string, values?: readonly unknown[]) => {
         queries.push(text);
+        if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l0', node_id: 'l0' }]);
+        if (text.includes('from identity.realmtarget where realm_id=$1')) return result([{
+          surface: 'consumer', membership_client: 'storefront', membership_organization_id: 'mall-zhudatuan',
+          application_slug: 'zhudatuan-storefront',
+        }]);
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values?.[3]);
         if (text.includes('select request_hash,state,response from runtime.idempotency')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
         }
-        if (text.includes("from identity.federatedidentity where provider='wechat'")) {
-          return result([{ id: 'wechat:one', principal_id: 'principal:one', membership_id: 'membership:one', status: 'active' }]);
+        if (text.includes("from identity.federatedidentity where realm_id=$1")) {
+          return result([{ id: 'wechat:one', principal_id: 'principal:one', membership_id: 'membership:one',
+            account_id: 'account:one', realm_id: 'realm:l0', status: 'active' }]);
         }
-        if (text.includes('from access.membership membership join member.profile profile')) {
-          if (!text.includes('for update of profile,principal')) throw new Error('permission denied for table membership');
-          return result([{ access_version: 1, client: 'storefront', credential_version: 1 }]);
+        if (text.includes('from access.membership membership join identity.account account')) {
+          if (!text.includes('for update of account')) throw new Error('identity account was not locked');
+          if (text.includes('for update of membership')) throw new Error('permission denied for table membership');
+          return result([{ access_version: 1, client: 'storefront', credential_version: 1, auth_target: 'storefront' }]);
         }
         return result([]);
       },
@@ -54,8 +61,8 @@ describe('wechat identity session', () => {
     const response = await operation.invoke(request());
 
     expect(response).toMatchObject({ status: 201, body: { membership: 'membership:one' } });
-    const membershipQuery = queries.find((text) => text.includes('from access.membership membership join member.profile profile'));
-    expect(membershipQuery).toContain('for update of profile,principal');
+    const membershipQuery = queries.find((text) => text.includes('from access.membership membership join identity.account account'));
+    expect(membershipQuery).toContain('for update of account');
     expect(membershipQuery).not.toContain('for update of membership');
   });
 
@@ -66,14 +73,23 @@ describe('wechat identity session', () => {
     const client = {
       query: async (text: string, values?: readonly unknown[]) => {
         queries.push(text);
+        if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l0', node_id: 'l0' }]);
+        if (text.includes('from identity.realmtarget where realm_id=$1')) return result([{
+          surface: 'consumer', membership_client: 'storefront', membership_organization_id: 'mall-zhudatuan',
+          application_slug: 'zhudatuan-storefront',
+        }]);
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values?.[3]);
         if (text.includes('select request_hash,state,response from runtime.idempotency')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
         }
-        if (text.includes("from identity.federatedidentity where provider='wechat'")) {
-          return result([{ id: 'wechat:one', principal_id: 'principal:previous', membership_id: 'membership:previous', status: 'active' }]);
+        if (text.includes("from identity.federatedidentity where realm_id=$1")) {
+          return result([{ id: 'wechat:one', principal_id: 'principal:previous', membership_id: 'membership:previous',
+            account_id: 'account:previous', realm_id: 'realm:l0', status: 'active' }]);
         }
-        if (text.includes('from access.membership membership join member.profile profile')) {
+        if (text.includes('account.legacy_principal_id=$2')) {
+          return result([{ account_id: 'account:current', realm_id: 'realm:l0', principal_id: 'principal:current', credential_version: 1 }]);
+        }
+        if (text.includes('from access.membership membership join identity.account account')) {
           throw new Error('must not create a session for the previous account');
         }
         return result([]);
@@ -112,14 +128,71 @@ describe('wechat identity session', () => {
     expect(queries.some((text) => text.includes('insert into identity.session'))).toBe(false);
   });
 
+  it('rolls back the WeChat identity and idempotency when the binding session is rejected', async () => {
+    const queries: string[] = [];
+    let requestHash = '';
+    const client = {
+      query: async (text: string, values?: readonly unknown[]) => {
+        queries.push(text);
+        if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l0', node_id: 'l0' }]);
+        if (text.includes('from identity.realmtarget where realm_id=$1')) return result([{
+          surface: 'consumer', membership_client: 'storefront', membership_organization_id: 'mall-zhudatuan',
+          application_slug: 'zhudatuan-storefront',
+        }]);
+        if (text.includes('insert into runtime.idempotency')) requestHash = String(values?.[3]);
+        if (text.includes('select request_hash,state,response from runtime.idempotency')) {
+          return result([{ request_hash: requestHash, state: 'started', response: null }]);
+        }
+        if (text.includes("from identity.federatedidentity where realm_id=$1")) {
+          return result([{ id: 'wechat:revoked', principal_id: null, membership_id: null,
+            account_id: null, realm_id: 'realm:l0', status: 'revoked' }]);
+        }
+        return result([]);
+      },
+      release: () => undefined,
+    } as unknown as PoolClient;
+    const pool: DatabasePool = {
+      connect: async () => client,
+      query: async () => result([]),
+      workload: () => pool,
+      end: async () => undefined,
+    };
+    const operation = new WechatOperations({ invoke: async () => ({ status: 404, body: {} }) }, pool, {
+      application: () => ({ applicationHash: 'application-hash' }),
+      authorize: () => 'https://example.test',
+      exchange: async () => ({ subject: 'openid-revoked' }),
+    }, {
+      encrypt: async () => ({ ciphertext: 'ciphertext', keyVersion: 'key:v1', fingerprint: 'fingerprint' }),
+    } as unknown as KmsClient, { record: async () => undefined, access: async () => undefined },
+    'identity-key', 'session-key', {} as PgAuthTicket);
+
+    await expect(operation.invoke(request())).rejects.toMatchObject({
+      result: { status: 403, body: { code: 'WECHAT_IDENTITY_REVOKED' } },
+    });
+    const identityInsert = queries.findIndex((text) => text.includes('insert into identity.federatedidentity'));
+    const rollback = queries.indexOf('rollback');
+    expect(identityInsert).toBeGreaterThanOrEqual(0);
+    expect(rollback).toBeGreaterThan(identityInsert);
+    expect(queries).not.toContain('commit');
+  });
+
   it('rejects an L0 return target when the WeChat login belongs to the L1 storefront', async () => {
-    const operation = new WechatOperations({ invoke: async () => ({ status: 404, body: {} }) }, {} as DatabasePool, {
+    const client = { query: async (text: string) => {
+      if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l0', node_id: 'l0' }]);
+      if (text.includes('from identity.realmtarget where realm_id=$1')) return result([{
+        surface: 'consumer', membership_client: 'storefront', membership_organization_id: 'mall-zhudatuan',
+        application_slug: 'zhudatuan-storefront',
+      }]);
+      return result([]);
+    }, release: () => undefined } as unknown as PoolClient;
+    const pool: DatabasePool = { connect: async () => client, query: async () => result([]), workload: () => pool, end: async () => undefined };
+    const operation = new WechatOperations({ invoke: async () => ({ status: 404, body: {} }) }, pool, {
       application: () => ({ applicationHash: 'application-hash' }), authorize: () => 'https://example.test',
       exchange: async () => { throw new Error('must reject before WeChat code exchange'); },
     }, {} as KmsClient, {} as AuditSink, 'identity-key', 'session-key', {} as PgAuthTicket);
 
     await expect(operation.invoke(request(null, { application: 'zdt-l1-verify', target: 'storefront' })))
-      .rejects.toThrow('AUTH_RETURN_TARGET_INVALID');
+      .rejects.toThrow('AUTH_REALM_MISMATCH');
   });
 });
 
@@ -131,7 +204,7 @@ function request(access: OperationRequest['access'] = null,
     type: 'identity.wechat.session',
     access,
     input: {
-      path: {}, query: {}, headers: { 'x-device-id': 'device:one', 'user-agent': 'wechat', 'x-peer-address': '127.0.0.1' },
+      path: {}, query: {}, headers: { host: 'api.zhudatuan.com', 'x-device-id': 'device:one', 'user-agent': 'wechat', 'x-peer-address': '127.0.0.1' },
       body: { scene: 'jsapi', action: 'exchange', code: 'wechat-code', ...identity,
         authorization: { state: 's'.repeat(32), nonce: 'n'.repeat(32), challenge: 'c'.repeat(43) } },
       rawBody: '', deadline: Date.now() + 1_000, signal: new AbortController().signal, idempotency: 'wechat-session:one',

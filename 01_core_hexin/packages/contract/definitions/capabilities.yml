@@ -10,6 +10,11 @@ capabilities:
     owner: identity
     permission: null
     audience: public
+  - code: identity.loginintents.create
+    kind: operation
+    owner: identity
+    permission: identity.session.read
+    audience: member
   - code: identity.tickets.exchange
     kind: operation
     owner: identity

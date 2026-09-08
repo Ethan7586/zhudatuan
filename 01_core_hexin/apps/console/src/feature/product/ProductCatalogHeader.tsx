@@ -14,16 +14,17 @@ interface ProductCatalogHeaderProps {
 }
 
 const tabs = Object.freeze([
-  { key: '', label: '核心商品' },
+  { key: '', label: '全部商品' },
   { key: 'needs_attention', label: '待完善' },
   { key: 'pending_review', label: '待审核' },
+  { key: 'published', label: '已上架' },
   { key: 'unpublished', label: '已下架' },
 ] as const);
 
 export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, exportReady, writeEnabled, onImport, onCreate, onExport }: ProductCatalogHeaderProps) {
   const preview = previewEnabled && page?.preview?.kind === 'console-product-v1' ? page.preview : undefined;
-  const coreTotal = preview === undefined ? undefined : preview.facets.statuses.reduce((total, facet) => total + facet.count, 0) || preview.totalCount;
-  const description = preview === undefined ? '当前范围商品按服务端过滤与游标分页读取；总量尚未由列表合同返回。' : `当前范围内共 ${formatCount(coreTotal ?? preview.totalCount)} 件核心商品`;
+  const coreTotal = preview === undefined ? page?.total_count : preview.facets.statuses.reduce((total, facet) => total + facet.count, 0) || preview.totalCount;
+  const description = coreTotal === undefined ? '正在读取当前范围商品总量与管理状态。' : `当前范围内共 ${formatCount(coreTotal)} 件商品`;
 
   return (
     <>
@@ -53,10 +54,11 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
       </header>
       <nav className="producttabs" aria-label="商品状态">
         {tabs.map((tab) => {
-          const count = tab.key === '' ? coreTotal : preview?.facets.statuses.find((facet) => facet.value === tab.key)?.count;
-          const disabled = tab.key !== '' && !previewEnabled;
+          const count = tab.key === '' ? coreTotal : preview?.facets.statuses.find((facet) => facet.value === tab.key)?.count
+            ?? page?.status_counts?.[tab.key];
+          const disabled = tab.key !== '' && !previewEnabled && page?.status_counts === undefined;
           return (
-            <button key={tab.key || 'core'} type="button" aria-current={status === tab.key ? 'page' : undefined} disabled={disabled} title={disabled ? '状态聚合与过滤合同尚未提供' : undefined} onClick={() => onStatus(tab.key)}>
+            <button key={tab.key || 'all'} type="button" aria-current={status === tab.key ? 'page' : undefined} disabled={disabled} title={disabled ? '正在读取状态统计' : undefined} onClick={() => onStatus(tab.key)}>
               {tab.label}
               {count === undefined ? null : <strong>{formatCount(count)}</strong>}
             </button>

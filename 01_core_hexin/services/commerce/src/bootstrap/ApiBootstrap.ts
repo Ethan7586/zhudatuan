@@ -1,9 +1,18 @@
 import { CommandBus } from '../foundation/application/CommandBus';
 import { QueryBus } from '../foundation/application/QueryBus';
 import type { Telemetry } from '@shop/telemetry';
+import {
+  createNodeContextResolver,
+  materializeNodeManifestRegistryDeclaration,
+  SFL_NODE_MANIFEST_REGISTRY_SCHEMA_VERSION,
+  type NodeContextResolver,
+  type NodeManifest,
+  type NodeManifestRegistry,
+} from '@shop/config/sfl-node-kernel';
+import { SFL_NODE_MANIFEST_REGISTRY_DECLARATION } from '@shop/config/sfl-node-registry';
 import { HttpApp } from '../foundation/interface/HttpApp';
 import { OperationMetrics } from '../foundation/telemetry/OperationMetrics';
-import { Container } from './Container';
+import { Container, token } from './Container';
 import type { ExtensionRegistry } from './ExtensionRegistry';
 import { JobRegistry } from './JobRegistry';
 import type { CommerceModule } from './ModuleRegistry';
@@ -11,6 +20,27 @@ import { ModuleRegistry } from './ModuleRegistry';
 import { RouteRegistry } from './RouteRegistry';
 import type { OperationId } from '@shop/contract';
 import type { GateEngine } from '../foundation/security/gate_menjin';
+
+export const NODE_MANIFEST_REGISTRY = token<NodeManifestRegistry>('foundation.node-manifest-registry');
+export const SERVER_NODE_MANIFEST_REGISTRY = await materializeNodeManifestRegistryDeclaration(
+  SFL_NODE_MANIFEST_REGISTRY_DECLARATION,
+);
+
+export function bindServerNodeManifestRegistry(
+  container: Container,
+  registry: NodeManifestRegistry = SERVER_NODE_MANIFEST_REGISTRY,
+): void {
+  container.bind(NODE_MANIFEST_REGISTRY, registry);
+}
+
+export function singleNodeManifestRegistry(manifest: NodeManifest): NodeManifestRegistry {
+  return Object.freeze({
+    schema_version: SFL_NODE_MANIFEST_REGISTRY_SCHEMA_VERSION,
+    registry_version: `runtime:${manifest.manifest_id}:${manifest.manifest_version}`,
+    generated_at: manifest.generated_at,
+    manifests: Object.freeze([manifest]),
+  });
+}
 
 export interface ApiBootstrapOptions {
   readonly modules: readonly CommerceModule[];
@@ -20,9 +50,15 @@ export interface ApiBootstrapOptions {
   readonly telemetry: Telemetry;
   readonly operationIds?: readonly OperationId[];
   readonly gateEngine?: GateEngine;
+  readonly nodeManifestRegistry?: NodeManifestRegistry;
 }
 
-export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readonly<{ app: HttpApp; modules: readonly string[]; routes: RouteRegistry }>> {
+export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readonly<{
+  app: HttpApp;
+  modules: readonly string[];
+  routes: RouteRegistry;
+  nodeContextResolver: NodeContextResolver | undefined;
+}>> {
   const container = new Container();
   await options.configure?.(container);
   const commands = new CommandBus();
@@ -37,7 +73,11 @@ export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readon
   routes.freeze();
   jobs.freeze();
   options.extensions.freeze();
+  const nodeManifestRegistry = options.nodeManifestRegistry
+    ?? (container.has(NODE_MANIFEST_REGISTRY) ? container.get(NODE_MANIFEST_REGISTRY) : undefined);
   container.freeze();
-  return Object.freeze({ app: new HttpApp(routes, options.allowedOrigins, undefined, undefined, new OperationMetrics(options.telemetry), options.gateEngine),
-    modules: modules.catalog(), routes });
+  const nodeContextResolver = nodeManifestRegistry === undefined ? undefined : createNodeContextResolver(nodeManifestRegistry);
+  return Object.freeze({ app: new HttpApp(routes, options.allowedOrigins, undefined, undefined, new OperationMetrics(options.telemetry),
+    options.gateEngine, nodeContextResolver),
+    modules: modules.catalog(), routes, nodeContextResolver });
 }

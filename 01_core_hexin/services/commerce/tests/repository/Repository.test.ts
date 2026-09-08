@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { DatabaseHarness } from '@shop/testing';
 import { Client } from 'pg';
 import { describe, expect, it } from 'vitest';
-import type { Actor } from '../../src/foundation/security/AccessContext';
+import type { AuthenticatedActor } from '../../src/foundation/security/AccessContext';
 import { AccessPipeline } from '../../src/foundation/security/AccessPipeline';
 import {
   PgAccessVersionResolver,
@@ -61,16 +61,18 @@ describe.runIf(endpointAvailable)('PostgreSQL repository contract', () => {
     const client = new Client({ ...(connection === undefined ? {} : { connectionString: connection }), connectionTimeoutMillis: 5_000, statement_timeout: 15_000 });
     await client.connect();
     try {
-      const owner = await client.query<{ membership_id: string; member_id: string; access_version: number }>(`
-        select platformowner.membership_id,membership.member_id,membership.access_version
+      const owner = await client.query<{ membership_id: string; member_id: string; access_version: number; account_id: string; realm_id: string }>(`
+        select platformowner.membership_id,membership.member_id,membership.access_version,membership.account_id,membership.realm_id
         from access.platformowner platformowner
         join access.membership membership on membership.id=platformowner.membership_id and membership.status='active'
         where platformowner.singleton=true and platformowner.state='active'`);
       expect(owner.rows).toHaveLength(1);
       const row = owner.rows[0]!;
       const database = { query: client.query.bind(client) } as unknown as DatabasePool;
-      const actor: Actor = Object.freeze({
+      const actor: AuthenticatedActor = Object.freeze({
         id: 'actor:platform-owner:repository-contract',
+        account: row.account_id,
+        realm: row.realm_id,
         session: 'session:platform-owner:repository-contract',
         membership: row.membership_id,
         credentialVersion: 1,

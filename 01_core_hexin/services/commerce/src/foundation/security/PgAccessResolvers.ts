@@ -2,12 +2,19 @@ import { createHash } from 'node:crypto';
 import type { MembershipAccess, Scope, ScopeGrant } from '@shop/authz';
 import type { DatabasePool } from '../persistence/Pool';
 import type { AccessVersionResolver, CapabilityResolver, MembershipResolver, MembershipSnapshot } from './AccessPipeline';
-import type { Actor } from './AccessContext';
+import {
+  bindScopeNodeContext,
+  requireActorNodeContext,
+  type Actor,
+  type NodeContextActor,
+} from './AccessContext';
 import type { ScopeResolver } from './ScopeResolver';
-import type { SessionResolver } from './SessionResolver';
+import { sessionNodeContext, type RuntimeSessionResolver } from './SessionResolver';
 
 interface SessionRow {
   readonly actor_id: string;
+  readonly account_id: string;
+  readonly realm_id: string;
   readonly session_id: string;
   readonly membership_id: string;
   readonly credential_version: number;
@@ -26,17 +33,24 @@ interface MembershipRow {
 }
 interface ScopeRow { readonly scope: Scope }
 
-export class PgSessionResolver implements SessionResolver {
+export class PgSessionResolver implements RuntimeSessionResolver {
   constructor(private readonly pool: DatabasePool) {}
 
-  async resolve(headers: Readonly<Record<string, string>>): Promise<Actor> {
+  async resolve(headers: Readonly<Record<string, string>>): Promise<NodeContextActor> {
     const token = bearer(headers.authorization) ?? cookie(headers.cookie, 'shop_session');
     if (!token) throw new Error('AUTHENTICATION_REQUIRED');
-    const result = await this.pool.query<SessionRow>('select actor_id,session_id,membership_id,credential_version,access_version,target,assurance_level,assurance_verified_at from identity.resolve_session($1)', [createHash('sha256').update(token).digest('hex')]);
+    const nodeContext = sessionNodeContext(headers);
+    const result = await this.pool.query<SessionRow>('select actor_id,account_id,realm_id,session_id,membership_id,credential_version,access_version,target,assurance_level,assurance_verified_at from identity.resolve_session($1,$2)',
+      [createHash('sha256').update(token).digest('hex'), nodeContext.host]);
     const row = result.rows[0];
     if (!row) throw new Error('AUTHENTICATION_REQUIRED');
+    if (!row.account_id || !row.realm_id) throw new Error('AUTH_REALM_CONTEXT_MISSING');
+    if (row.realm_id !== nodeContext.realm.ref) throw new Error('AUTH_REALM_MISMATCH');
     return {
       id: row.actor_id,
+      account: row.account_id,
+      realm: row.realm_id,
+      nodeContext,
       session: row.session_id,
       membership: row.membership_id,
       credentialVersion: row.credential_version,
@@ -88,7 +102,7 @@ export class PgScopeResolver implements ScopeResolver {
       [actor.membership, operation, resource ?? null, scopeHint ?? null]);
     const row = result.rows[0];
     if (!row?.scope) throw new Error('SCOPE_DENIED');
-    return row.scope;
+    return actor.nodeContext === undefined ? row.scope : bindScopeNodeContext(row.scope, requireActorNodeContext(actor));
   }
 }
 

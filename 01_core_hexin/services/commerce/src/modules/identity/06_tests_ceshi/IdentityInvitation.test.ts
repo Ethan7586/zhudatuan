@@ -10,7 +10,6 @@ import { DATABASE_POOL, type DatabasePool } from '../../../foundation/persistenc
 import type { AccessContext } from '../../../foundation/security/AccessContext';
 import { RISK_GATE } from '../../../foundation/security/RiskGate';
 import { identityOperations, identityRegistrationOperations } from '../05_interface_jieru/http/IdentityOperations';
-import { RETURN_TARGETS } from '../04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
 
 describe('operator invitation security boundary', () => {
   it('creates only a phone-bound, single-use pending operator invitation in the actor tenant', async () => {
@@ -42,7 +41,7 @@ describe('operator invitation security boundary', () => {
     expect(inserted?.values[7]).toBe('role-senior-administrator-v1:tenant-zhudatuan');
     const roleLookup = harness.queries.find(({ text }) => text.includes('select role.id'));
     expect(roleLookup?.values).toEqual([
-      'role-senior-administrator-v1:tenant-zhudatuan', 'tenant-zhudatuan', 'senior_administrator',
+      'role-senior-administrator-v1:tenant-zhudatuan', 'tenant-zhudatuan', 'senior_administrator', 'operator',
     ]);
   });
 
@@ -157,9 +156,10 @@ describe('operator invitation security boundary', () => {
     expect(response).toMatchObject({ status: 201, body: { target: 'storefront' } });
     const lookup = harness.queries.find(({ text }) => text.includes('select role.id'));
     expect(lookup?.values).toEqual([
-      `role-zhudatuan-storefront-member:${provisionedMall}`,
+      null,
       provisionedMall,
       null,
+      'storefront',
     ]);
     const inserted = harness.queries.find(({ text }) => text.includes('insert into member.invite'));
     expect(inserted?.values[1]).toBe(provisionedMall);
@@ -202,15 +202,16 @@ describe('operator invitation security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes('insert into member.invite'))).toBe(false);
   });
 
-  it('rejects a non-canonical or wrong-scope storefront role without returning an invitation code', async () => {
-    const harness = invitationHarness({ roleRows: [{ id: 'role-mall-admin' }] });
+  it('rejects a missing or ambiguous storefront member role without returning an invitation code', async () => {
+    const harness = invitationHarness({ roleRows: [] });
 
     await expect(identityOperations(context(harness.pool)).invoke(createRequest(managerAccess({ scope: mallScope() }))))
       .rejects.toThrow('EMPLOYEE_ROLE_NOT_FOUND');
     const lookup = harness.queries.find(({ text }) => text.includes('select role.id'));
     expect(lookup?.text).toContain('role.scope_id=$2');
     expect(lookup?.text).toContain("$3::text is distinct from 'administrator'");
-    expect(lookup?.values).toEqual(['role-zhudatuan-storefront-member', 'mall-zhudatuan', null]);
+    expect(lookup?.text).toContain("role.name='商城会员'");
+    expect(lookup?.values).toEqual([null, 'mall-zhudatuan', null, 'storefront']);
     expect(harness.queries.some(({ text }) => text.includes('insert into member.invite'))).toBe(false);
   });
 
@@ -387,7 +388,14 @@ function invitationHarness(options: Readonly<{
       }
       if (text.includes("organization.kind='tenant'")) return result([{ id: String(values[0]) }]);
       if (text.includes('select storefront.id')) return result([{ id: 'mall-zhudatuan' }]);
-      if (text.includes('select role.id')) return result(options.roleRows ?? [{ id: String(values[0]) }]);
+      if (text.includes('select role.id')) {
+        const roleId = values[3] === 'storefront'
+          ? String(values[1]) === 'mall-zhudatuan'
+            ? 'role-zhudatuan-storefront-member'
+            : `role-zhudatuan-storefront-member:${String(values[1])}`
+          : String(values[0]);
+        return result(options.roleRows ?? [{ id: roleId }]);
+      }
       if (text.includes('select id,terms_hash from identity.registrationpolicy')) {
         return result([{ id: 'registration:zhudatuan:2026-08-28-v1', terms_hash: 'f'.repeat(64) }]);
       }
@@ -417,11 +425,6 @@ function context(pool: DatabasePool): ModuleContext {
   container.bind(IDENTITY_SECURITY_KEYS, { identity: 'identity-key', session: 'session-key' });
   container.bind(KMS_CLIENT, { encrypt: async () => ({ ciphertext: 'ciphertext', fingerprint: 'f'.repeat(64), keyVersion: 'v1' }) } as unknown as KmsClient);
   container.bind(RISK_GATE, { evaluate: async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) });
-  container.bind(RETURN_TARGETS, {
-    console: 'https://console.example.test', 'console-hbbtzn': 'https://console-hbbtzn.example.test', storefront: 'https://storefront.example.test',
-    'storefront-hbbtzn': 'https://storefront-hbbtzn.example.test',
-    store: 'https://store.example.test', supplier: 'https://supplier.example.test',
-  });
   return { container } as unknown as ModuleContext;
 }
 

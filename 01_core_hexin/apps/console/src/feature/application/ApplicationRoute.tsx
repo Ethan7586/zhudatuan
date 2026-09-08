@@ -450,7 +450,7 @@ export function Component() {
         available={mallCreateAvailable} challengeExpiresAt={mallCreateChallenge?.expires_at}
         error={mallCreateError} result={mallCreateResult} context={context} mobileEnrollment={mallMobileEnrollment}
         onSubmit={(draft) => { void beginMallCreate(draft); }} onVerify={(code) => { void verifyAndCreateMall(code); }}
-        onRelogin={() => window.location.assign(`${appConfig.authBaseUrl}/login?client=console`)}
+        onRelogin={() => window.location.assign(appConfig.identityEntryUrl)}
         onClose={closeMallCreate} /> : null}
       <CommerceFlowPreview open={flowOpen} presentation={presentation} onClose={() => setFlowOpen(false)} />
       <CommerceSolutionCenter

@@ -15,6 +15,7 @@
     "./commerce": "./src/ClientFactory.ts",
     "./context": "./src/RequestContextFactory.ts",
     "./browser-authorization": "./src/BrowserAuthorization.ts",
+    "./identity-node": "./src/IdentityNodeRegistry.ts",
     "./error": "./src/error/index.ts",
     "./url": "./src/url/index.ts",
     "./*": "./src/operations/*.ts",

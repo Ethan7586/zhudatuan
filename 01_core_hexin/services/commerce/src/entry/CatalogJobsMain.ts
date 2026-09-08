@@ -19,7 +19,15 @@ export async function runCatalogJobs(
     attempt: 1,
     signal: controller.signal,
   }));
-  process.stdout.write('ZHUDATUAN_CATALOG_JOBS_READY\n');
+  process.stdout.write(`CATALOG_JOBS_READY ${JSON.stringify({
+    manifestId: runtime.manifest.manifest_id,
+    manifestVersion: runtime.manifest.manifest_version,
+    manifestDigest: runtime.manifest.manifest_digest,
+    runtimeInstanceId: runtime.manifest.runtime_instance_id,
+    resourceBindingVersion: runtime.manifest.resource_binding_set_ref.version,
+    nodeId: runtime.manifest.node_id,
+    scopeId: runtime.manifest.data_scope_ref.ref,
+  })}\n`);
   try {
     await Promise.all(tasks);
   } finally {

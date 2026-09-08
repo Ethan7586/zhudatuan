@@ -1,6 +1,6 @@
 import type { ProviderCallContext } from './Ports';
 
-export type PurchasableMallLevel = 'L0' | 'L1';
+export type PurchasableMallLevel = 'L0' | 'L1' | 'L2' | 'L3' | 'L4' | 'L5';
 
 /** The organization owns the domain. A membership may authorize purchase but never becomes the owner. */
 export interface DomainPurchaseOwner {

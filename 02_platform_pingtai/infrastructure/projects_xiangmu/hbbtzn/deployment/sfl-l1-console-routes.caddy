@@ -1,0 +1,11 @@
+	# Insert at the start of the console.zhudatuan.com site after response headers.
+	# The alias Worker marks every console.hbbtzn.com document and asset request.
+	@hbbtznL1Console {
+		header X-SFL-Node-ID node:hbbtzn:l1
+		header X-SFL-Node-Surface catalog-operator
+	}
+	handle @hbbtznL1Console {
+		root * /opt/sfl/nodes/hbbtzn-l1/console/current
+		try_files {path} /index.html
+		file_server
+	}

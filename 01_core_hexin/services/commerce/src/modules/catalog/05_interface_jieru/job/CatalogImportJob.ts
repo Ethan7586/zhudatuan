@@ -17,10 +17,12 @@ export class CatalogImportProcessor implements JobProcessor {
 
   async process(job: ClaimedJob, signal: AbortSignal): Promise<void> {
     if (job.kind !== 'catalogimport') throw new Error('JOB_KIND_MISMATCH');
+    if (!job.scope_id) throw new Error('CATALOGIMPORT_SCOPE_REQUIRED');
     if (signal.aborted) throw signal.reason;
     const id = importId(job.payload, 'CATALOGIMPORT_REQUIRED');
-    const target = await this.imports.find(id);
+    const target = await this.imports.find(id, job.scope_id);
     if (!target || ['completed', 'failed', 'cancelled'].includes(target.state)) return;
+    if (target.scope !== job.scope_id) throw new Error('CATALOGIMPORT_SCOPE_MISMATCH');
     try {
       let state = target.state;
       if (state === 'uploaded' || state === 'validating') {

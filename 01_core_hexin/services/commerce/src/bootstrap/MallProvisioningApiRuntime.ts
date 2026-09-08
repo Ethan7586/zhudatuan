@@ -30,6 +30,7 @@ import { RecordAudit } from '../modules/audit/03_application_yingyong/command/Re
 import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persistence/PgAuditRepository';
 import { RiskCheckAdapter } from '../modules/risk';
 import type { Container } from './Container';
+import { bindServerNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
 
 export const MALL_PROVISIONING_SCHEMA_VERSION = '20260903105000' as const;
@@ -98,6 +99,7 @@ export async function createMallProvisioningApiRuntime(
     extensions,
     telemetry,
     configure(container: Container) {
+      bindServerNodeManifestRegistry(container);
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);
@@ -136,13 +138,13 @@ export async function mallProvisioningRuntimeCompatibility(
       to_regclass('experience.version'),to_regclass('experience.binding')
     ],null) is null relations,
     array_position(array[
-      to_regprocedure('identity.resolve_session(text)'),to_regprocedure('access.resolve_membership(text)'),
+      to_regprocedure('identity.resolve_session(text,text)'),to_regprocedure('access.resolve_membership(text)'),
       to_regprocedure('access.membership_version(text)'),to_regprocedure('access.resolve_scope(text,text,text,text)'),
       to_regprocedure('capability.membership_operations(text)'),
       to_regprocedure('access.provision_mall_owner(text,text,text,text,text,text)'),
       to_regprocedure('access.read_provisioned_mall(text)')
     ],null) is null
-      and has_function_privilege(current_user,'identity.resolve_session(text)','EXECUTE')
+      and has_function_privilege(current_user,'identity.resolve_session(text,text)','EXECUTE')
       and has_function_privilege(current_user,'access.resolve_membership(text)','EXECUTE')
       and has_function_privilege(current_user,'access.membership_version(text)','EXECUTE')
       and has_function_privilege(current_user,'access.resolve_scope(text,text,text,text)','EXECUTE')

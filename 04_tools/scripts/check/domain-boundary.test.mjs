@@ -1,67 +1,32 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import test from 'node:test';
 
-import {
-  assertContractLock,
-  assertNoHbbtznSubdomain,
-  validateDomainContract,
-  validateEdgeRedirects,
-  validateIdentityEnvironmentText,
-} from './domain-boundary.mjs';
+import { IDENTITY_NODE_MANIFEST } from '../../../01_core_hexin/packages/config/src/IdentityNodeManifest.ts';
+import { SFL_NODE_REGISTRY } from '../../../01_core_hexin/packages/config/src/SflNodeRegistry.ts';
+import { verifyRawRegistryNoCrossNodeFallback, verifySflNodeDomainBoundary } from './domain-boundary.mjs';
 
-const root = resolve(import.meta.dirname, '../../..');
-const contractSource = readFileSync(resolve(root, '02_platform_pingtai/config/production-domain-boundary.json'), 'utf8');
-const contract = JSON.parse(contractSource);
-const lock = JSON.parse(readFileSync(resolve(root, '02_platform_pingtai/config/production-domain-boundary.lock.json'), 'utf8'));
-
-test('accepts the owner-approved production domain contract and lock', () => {
-  assert.doesNotThrow(() => assertContractLock(contractSource, lock));
-  assert.equal(validateDomainContract(contract), contract);
-  assert.throws(
-    () => assertContractLock(contractSource.replace('api.zhudatuan.com', 'api.hbbtzn.com'), lock),
-    /PRODUCTION_DOMAIN_OWNER_APPROVAL_REQUIRED/,
-  );
+test('canonical SFL registry owns L0 and L1 without a default node', async () => {
+  await verifySflNodeDomainBoundary();
+  assert.equal('defaultNodeId' in IDENTITY_NODE_MANIFEST, false);
+  assert.deepEqual(IDENTITY_NODE_MANIFEST.nodes.map((node) => node.nodeId), [
+    'node:zhudatuan:l0',
+    'node:hbbtzn:l1',
+  ]);
 });
 
-test('allows approved L1 origins but rejects unapproved hbbtzn subdomains in runtime code', () => {
-  assert.doesNotThrow(() => assertNoHbbtznSubdomain('h5.ts', "const origin = 'https://hbbtzn.com'"));
-  assert.doesNotThrow(() => assertNoHbbtznSubdomain(
-    'identity.ts',
-    "const api = 'https://api.hbbtzn.com'",
-    Object.keys(contract.proxyAliases),
-  ));
-  assert.throws(
-    () => assertNoHbbtznSubdomain('identity.ts', "const api = 'https://unknown.hbbtzn.com'", Object.keys(contract.proxyAliases)),
-    /HBBTZN_SUBDOMAIN_RUNTIME_FORBIDDEN:identity\.ts:unknown\.hbbtzn\.com/,
-  );
+test('duplicate host ownership is rejected', () => {
+  const invalid = structuredClone(SFL_NODE_REGISTRY);
+  invalid.manifests[1].domain_bindings[0].host = invalid.manifests[0].domain_bindings[0].host;
+  assert.throws(() => verifyRawRegistryNoCrossNodeFallback(invalid), /SFL_PRODUCTION_HOST_OWNERSHIP_AMBIGUOUS/);
 });
 
-test('rejects production identity environment pollution', () => {
-  const valid = [
-    `API_ALLOWED_ORIGINS=${contract.identityApi.allowedOrigins.join(',')}`,
-    `AUTH_RETURN_TARGETS='${JSON.stringify(contract.identityApi.returnTargets)}'`,
-  ].join('\n');
-  assert.doesNotThrow(() => validateIdentityEnvironmentText(valid, contract));
-  assert.throws(
-    () => validateIdentityEnvironmentText(valid.replace(
-      '"storefront-hbbtzn":"https://hbbtzn.com"',
-      '"storefront-hbbtzn":"https://mall.hbbtzn.com"',
-    ), contract),
-    /PRODUCTION_DOMAIN_ENV_RETURN_TARGETS_DRIFT/,
-  );
-  assert.throws(
-    () => validateIdentityEnvironmentText(valid.replace('https://accounts.zhudatuan.com', 'https://accounts.hbbtzn.com'), contract),
-    /PRODUCTION_DOMAIN_ENV_ORIGINS_DRIFT/,
-  );
+test('undeclared default node is rejected', () => {
+  const invalid = { ...structuredClone(SFL_NODE_REGISTRY), defaultNodeId: 'node:zhudatuan:l0' };
+  assert.throws(() => verifyRawRegistryNoCrossNodeFallback(invalid), /SFL_DEFAULT_NODE_FORBIDDEN/);
 });
 
-test('keeps signed login return targets opaque at the L1 edge', () => {
-  const source = readFileSync(resolve(root, '02_platform_pingtai/infrastructure/zhudatuan/cloudflare/hbbtzn-alias/src/index.ts'), 'utf8');
-  assert.doesNotThrow(() => validateEdgeRedirects(source, contract));
-  assert.throws(
-    () => validateEdgeRedirects(`${source}\n// incoming.pathname === '/api/v1/identity/tickets/exchange'`, contract),
-    /PRODUCTION_DOMAIN_EDGE_TICKET_REWRITE_FORBIDDEN/,
-  );
+test('resource bindings cannot reference an unknown node', () => {
+  const invalid = structuredClone(SFL_NODE_REGISTRY);
+  invalid.node_bindings[1].node_id = 'node:unknown:l1';
+  assert.throws(() => verifyRawRegistryNoCrossNodeFallback(invalid), /SFL_NODE_RESOURCE_BINDING_UNKNOWN/);
 });

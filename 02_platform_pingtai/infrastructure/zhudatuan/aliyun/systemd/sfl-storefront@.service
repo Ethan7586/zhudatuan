@@ -1,0 +1,43 @@
+[Unit]
+Description=SFL node-bound storefront (%i)
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/apps/storefront-web/dist/server/index.js
+ConditionPathExists=/opt/sfl/nodes/%i/current/node_modules/vinext/dist/cli.js
+ConditionPathExists=/opt/sfl/nodes/%i/runtime/storefront.env
+
+[Service]
+Type=simple
+DynamicUser=yes
+WorkingDirectory=/opt/sfl/nodes/%i/current/01_core_hexin/apps/storefront-web
+Environment=NODE_ENV=production
+Environment=APP_ENV=production
+Environment=AUTH_MODE=membership
+EnvironmentFile=/opt/sfl/nodes/%i/runtime/storefront.env
+ExecStart=/usr/bin/node /opt/sfl/nodes/%i/current/node_modules/vinext/dist/cli.js start --hostname 127.0.0.1 --port ${STOREFRONT_PORT}
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=30
+TimeoutStopSec=30
+UMask=0027
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+PrivateDevices=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadOnlyPaths=/opt/sfl/nodes/%i
+
+[Install]
+WantedBy=multi-user.target

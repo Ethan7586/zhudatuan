@@ -79,10 +79,14 @@ describe('DomainPurchasePolicy', () => {
     expect(() => policy.quoteRequest({ ...intent, requestedDomain })).toThrow(code);
   });
 
-  it('rejects non-L0/L1 ownership and raw registrant data before calling a provider', () => {
+  it('accepts every operating-mall level and rejects consumer ownership and raw registrant data', () => {
+    expect(policy.quoteRequest({
+      ...intent,
+      owner: { ...owner, resolvedLevel: 'L5' },
+    }).owner.resolvedLevel).toBe('L5');
     expect(() => policy.quoteRequest({
       ...intent,
-      owner: { ...owner, resolvedLevel: 'L2' as DomainPurchaseOwner['resolvedLevel'] },
+      owner: { ...owner, resolvedLevel: 'L6' as DomainPurchaseOwner['resolvedLevel'] },
     })).toThrow('DOMAIN_PURCHASE_LEVEL_NOT_ELIGIBLE');
     expect(() => policy.quoteRequest({ ...intent, registrantContactRef: 'Ethan 13800138000' }))
       .toThrow('DOMAIN_PURCHASE_REGISTRANT_REFERENCE_INVALID');

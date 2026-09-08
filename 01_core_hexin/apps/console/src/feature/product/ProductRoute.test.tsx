@@ -3,7 +3,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useLocation } from 'react-router';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
@@ -57,7 +57,7 @@ describe('Product governance workspace', () => {
 
     const access = await screen.findByRole('region', { name: '没有权限' });
     await waitFor(() => expect(document.activeElement).toBe(access));
-    expect(within(access).getByText('「商品治理台」不可访问')).toBeTruthy();
+    expect(within(access).getByText('「商品管理」不可访问')).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByRole('table', { name: '商品列表' })).toBeNull();
     expect(screen.queryByRole('heading', { level: 1, name: '商品管理' })).toBeNull();
@@ -87,6 +87,21 @@ describe('Product governance workspace', () => {
     expect(requests).toHaveLength(1);
   });
 
+  it('shows real SKU quantity and filters the complete management statuses', async () => {
+    const user = userEvent.setup();
+    renderProductRoute(mallContext);
+    const table = await screen.findByRole('table', { name: '商品列表' });
+
+    expect(screen.getByText('当前范围内共 4 件商品')).toBeTruthy();
+    expect(within(table).getByRole('cell', { name: '3' })).toBeTruthy();
+    for (const label of ['待完善', '待审核', '已上架', '已下架']) {
+      expect(screen.getByRole<HTMLButtonElement>('button', { name: new RegExp(`^${label}`) }).disabled).toBe(false);
+    }
+
+    await user.click(screen.getByRole('button', { name: /^待审核/ }));
+    await waitFor(() => expect(requests.some((url) => url.searchParams.get('status') === 'pending_review')).toBe(true));
+  });
+
   it('enables manual creation, standard-package import and publication in an authorized mall', async () => {
     const user = userEvent.setup();
     server.use(http.delete('*/api/v1/catalog/listings/listing%3A1/publication', () => {
@@ -110,6 +125,23 @@ describe('Product governance workspace', () => {
     await waitFor(() => expect(writes).toContain('DELETE'));
   });
 
+  it('opens an uploaded import inside the exact mall scope', async () => {
+    const user = userEvent.setup();
+    server.use(http.post('*/api/v1/catalog/imports', () => HttpResponse.json({
+      id: 'catalogimport:1', state: 'uploaded', total_count: 0, cursor_value: 0, success_count: 0, failure_count: 0,
+    })));
+    renderProductRoute(mallContext);
+    await screen.findByRole('table', { name: '商品列表' });
+    await user.click(screen.getByRole('button', { name: '批量导入' }));
+    await user.upload(screen.getByLabelText('选择标准货盘包'),
+      new File([standardPackage], 'hongtai-products.json', { type: 'application/json' }));
+    await screen.findByText('package:test:route');
+    await user.click(screen.getByRole('button', { name: '上传并校验' }));
+
+    await waitFor(() => expect(screen.getByTestId('route-location').textContent)
+      .toBe('/scopes/mall/mall%3Ahongtai/imports/catalog/catalogimport%3A1'));
+  });
+
   it('downloads an empty loaded page with only the fixed header', async () => {
     server.use(http.get('*/api/v1/catalog/listings', () => HttpResponse.json({ items: [], count: 0 })));
     const user = userEvent.setup();
@@ -131,12 +163,18 @@ function renderProductRoute(value: ConsoleContext = context) {
   return render(
     <MemoryRouter initialEntries={['/products']}>
       <QueryClientProvider client={client}>
-        <ConsoleContextProvider value={value}>
-          <Component />
-        </ConsoleContextProvider>
+          <ConsoleContextProvider value={value}>
+            <Component />
+            <RouteLocation />
+          </ConsoleContextProvider>
       </QueryClientProvider>
     </MemoryRouter>,
   );
+}
+
+function RouteLocation() {
+  const location = useLocation();
+  return <output hidden data-testid="route-location">{location.pathname}</output>;
 }
 
 function captureDownload() {
@@ -177,10 +215,25 @@ const productPage = {
     product_id: 'product:1',
     title: '核心商品',
     status: 'published',
+    management_status: 'published',
+    sku_count: 3,
     version: 3,
   }],
   count: 1,
+  total_count: 4,
+  status_counts: { needs_attention: 1, pending_review: 1, published: 1, unpublished: 1 },
 };
+
+const standardPackage = JSON.stringify({
+  schema: 'catalog-package/v1', packageId: 'package:test:route', compiledAt: '2026-09-07T00:00:00.000Z',
+  source: { name: '测试货盘', file: 'test.json' }, validation: { status: 'passed', errors: [] },
+  items: [{ source: { row: 1, productRef: 'P-1', skuRef: 'S-1' },
+    product: { title: '测试商品', description: '测试商品描述', category: 'personal', type: 'physical',
+      attributes: {}, media: [{ kind: 'image', reference: 'fixture:test-product' }] },
+    sku: { code: 'TEST-SKU-ROUTE', specifications: { 规格: '标准' } },
+    offer: { currency: 'CNY', amountMinor: 9900 }, inventory: { available: 10 }, publication: { state: 'draft' },
+    validation: { status: 'valid', errors: [] } }],
+});
 
 const scope = { kind: 'enterprise' as const, id: 'enterprise:1', name: '鸿泰集团' };
 const context: ConsoleContext = {

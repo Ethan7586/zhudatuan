@@ -5,8 +5,9 @@ import { defineConfig, loadEnv } from 'vite';
 import { validateAuthBuildEnvironment } from './src/buildEnvironment';
 
 export default defineConfig(({ command, mode }) => {
+  let identityNodeRegistrySource: string | undefined;
   if (command === 'build') {
-    validateAuthBuildEnvironment(loadEnv(mode, __dirname, ''));
+    identityNodeRegistrySource = validateAuthBuildEnvironment(loadEnv(mode, __dirname, '')).identityNodeRegistrySource;
   }
 
   return {
@@ -14,6 +15,11 @@ export default defineConfig(({ command, mode }) => {
     // accounts.zhudatuan.com/ and at the storefront's optional /login/ mount.
     base: command === 'build' ? './' : '/',
     plugins: [react(), tailwindcss()],
+    ...(identityNodeRegistrySource === undefined ? {} : {
+      define: {
+        'import.meta.env.VITE_IDENTITY_NODE_REGISTRY': JSON.stringify(identityNodeRegistrySource),
+      },
+    }),
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

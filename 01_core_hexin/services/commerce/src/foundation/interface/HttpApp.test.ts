@@ -1,19 +1,82 @@
 import { CONTRACT_VERSION } from '@shop/contract';
+import { resolveNodeContextByHost, type NodeContextResolver, type ResolvedNodeContext } from '@shop/config/sfl-node-kernel';
+import { createTelemetry } from '@shop/telemetry';
 import { describe, expect, it } from 'vitest';
-import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
+import { SERVER_NODE_MANIFEST_REGISTRY } from '../../bootstrap/ApiBootstrap';
+import type { RouteHandler, RouteRegistry } from '../../bootstrap/RouteRegistry';
+import { requireRequestNodeContext } from '../security/AccessContext';
+import { OperationMetrics } from '../telemetry/OperationMetrics';
 import { HttpApp } from './HttpApp';
 
-function routes(): RouteRegistry {
+function routes(handler: RouteHandler = async () => ({ status: 200, body: { accepted: true } })): RouteRegistry {
   return {
     match: () => ({
       operation: 'identity.sessions.create',
       parameters: {},
-      handler: async () => ({ status: 200, body: { accepted: true } }),
+      handler,
     }),
   } as unknown as RouteRegistry;
 }
 
 describe('HttpApp contract handshake', () => {
+  it('resolves one authoritative NodeContext and passes the same object to the operation', async () => {
+    let resolveCount = 0;
+    let resolved: ResolvedNodeContext | undefined;
+    let observed: ResolvedNodeContext | undefined;
+    const resolver: NodeContextResolver = {
+      registry: SERVER_NODE_MANIFEST_REGISTRY,
+      resolve(host) {
+        resolveCount += 1;
+        resolved = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, host);
+        return resolved;
+      },
+    };
+    const app = new HttpApp(routes(async (request) => {
+      observed = requireRequestNodeContext(request.headers);
+      return { status: 200, body: { node: observed.node_id } };
+    }), [], undefined, undefined, undefined, undefined, resolver);
+
+    const response = await app.handle(new Request('https://api.hbbtzn.com/api/v1/identity/sessions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
+      body: '{}',
+    }));
+
+    expect(response.status).toBe(200);
+    expect(resolveCount).toBe(1);
+    expect(observed).toBe(resolved);
+    expect(observed).toMatchObject({
+      node_id: 'node:hbbtzn:l1',
+      signed_level: 'L1',
+      surface: 'surface:api',
+      scope: { ref: 'mall:d1708f04df2dd8a61736852c4900fb43' },
+    });
+  });
+
+  it('keeps runtime health requests node-neutral and preserves their status', async () => {
+    let resolveCount = 0;
+    const healthRoutes = {
+      match: () => ({
+        operation: 'runtime.health.ready',
+        parameters: {},
+        handler: async () => ({ status: 200, body: { status: 'ready' } }),
+      }),
+    } as unknown as RouteRegistry;
+    const resolver: NodeContextResolver = {
+      registry: SERVER_NODE_MANIFEST_REGISTRY,
+      resolve() {
+        resolveCount += 1;
+        throw new Error('NODE_CONTEXT_NOT_EXPECTED');
+      },
+    };
+
+    const response = await new HttpApp(healthRoutes, [], undefined, undefined, undefined, undefined, resolver)
+      .handle(new Request('http://127.0.0.1/health/ready'));
+
+    expect(response.status).toBe(200);
+    expect(resolveCount).toBe(0);
+  });
+
   it('returns upgrade required before invoking a route with a missing contract version', async () => {
     const response = await new HttpApp(routes(), []).handle(new Request('https://api.example/api/v1/identity/sessions', {
       method: 'POST',
@@ -22,7 +85,75 @@ describe('HttpApp contract handshake', () => {
     }));
     expect(response.status).toBe(426);
     expect(response.headers.get('x-contract-version')).toBe(CONTRACT_VERSION);
-    expect(await response.json()).toMatchObject({ code: 'CONTRACT_VERSION_UNSUPPORTED', required: CONTRACT_VERSION });
+    expect(response.headers.get('location')).toBeNull();
+    expect(await response.json()).toMatchObject({
+      code: 'CONTRACT_VERSION_UNSUPPORTED',
+      message: '客户端版本不兼容，请刷新页面后重试',
+      required: CONTRACT_VERSION,
+    });
+  });
+
+  it('clears stale identity cookies without redirecting or retrying server-side', async () => {
+    const response = await new HttpApp(routes(), ['https://accounts.zhudatuan.com']).handle(new Request('https://api.zhudatuan.com/api/v1/identity/sessions', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        cookie: 'shop_session=old-session; shop_csrf=old-csrf',
+        origin: 'https://accounts.zhudatuan.com',
+        'x-contract-version': CONTRACT_VERSION,
+      },
+      body: '{}',
+    }));
+
+    expect(response.status).toBe(403);
+    expect(response.headers.get('location')).toBeNull();
+    expect(response.headers.get('set-cookie')).toContain('shop_session=;');
+    expect(response.headers.get('set-cookie')).toContain('Max-Age=0');
+    expect(response.headers.get('set-cookie')).toContain('shop_csrf=;');
+    expect(await response.json()).toMatchObject({ code: 'CSRF_TOKEN_INVALID' });
+  });
+
+  it('records the identity node, realm, operation, version and failing phase without request secrets', async () => {
+    const records: Readonly<Record<string, unknown>>[] = [];
+    const metrics = new OperationMetrics(createTelemetry((record) => { records.push(record); }));
+    const response = await new HttpApp(routes(), ['https://accounts.hbbtzn.com'], undefined, undefined, metrics)
+      .handle(new Request('https://api.hbbtzn.com/api/v1/identity/sessions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          cookie: 'shop_session=private-session; shop_csrf=private-csrf',
+          origin: 'https://accounts.hbbtzn.com',
+          authorization: 'Bearer private-bearer-token',
+          'x-contract-version': CONTRACT_VERSION,
+        },
+        body: JSON.stringify({ mobile: '13800138000', password: 'Private-Password-1!', otp: '483921', ticket: 'private-ticket' }),
+      }));
+
+    expect(response.status).toBe(403);
+    const log = records.find((record) => record.event === 'commerce.operation.completed');
+    expect(log).toMatchObject({
+      level: 'warn', event: 'commerce.operation.completed', nodeId: 'node:hbbtzn:l1', realmId: 'realm:l1',
+      operation: 'identity.sessions.create', version: CONTRACT_VERSION, phase: 'csrf',
+      result: 'failure', errorCode: 'CSRF_TOKEN_INVALID', data: { status: 403 },
+    });
+    const serialized = JSON.stringify(log);
+    for (const secret of ['private-session', 'private-csrf', 'private-bearer-token', '13800138000',
+      'Private-Password-1!', '483921', 'private-ticket']) expect(serialized).not.toContain(secret);
+  });
+
+  it('records a contract mismatch as HTTP 426 in the contract phase', async () => {
+    const records: Readonly<Record<string, unknown>>[] = [];
+    const metrics = new OperationMetrics(createTelemetry((record) => { records.push(record); }));
+    const response = await new HttpApp(routes(), [], undefined, undefined, metrics)
+      .handle(new Request('https://api.zhudatuan.com/api/v1/identity/sessions', {
+        method: 'POST', headers: { 'content-type': 'application/json', 'x-contract-version': '0.0.0' }, body: '{}',
+      }));
+
+    expect(response.status).toBe(426);
+    expect(records.find((record) => record.event === 'commerce.operation.completed')).toMatchObject({
+      nodeId: 'node:zhudatuan:l0', realmId: 'realm:l0', operation: 'identity.sessions.create', phase: 'contract',
+      result: 'failure', errorCode: 'CONTRACT_VERSION_UNSUPPORTED', data: { status: 426 },
+    });
   });
 
   it('allows the exact generated contract version', async () => {

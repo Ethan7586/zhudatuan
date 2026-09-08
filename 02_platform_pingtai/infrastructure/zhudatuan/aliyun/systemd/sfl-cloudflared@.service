@@ -1,0 +1,39 @@
+[Unit]
+Description=SFL node-owned Cloudflare Tunnel (%i)
+Requires=sfl-api-gateway@%i.service
+After=network-online.target sfl-api-gateway@%i.service
+Wants=network-online.target
+ConditionPathExists=/opt/sfl/nodes/%i/runtime/cloudflared.yml
+ConditionPathExists=/opt/sfl/nodes/%i/tunnel/credentials.json
+
+[Service]
+Type=simple
+User=zhudatuan
+Group=zhudatuan
+ExecStart=/usr/local/bin/cloudflared --config /opt/sfl/nodes/%i/runtime/cloudflared.yml tunnel run
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=30
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+PrivateDevices=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadOnlyPaths=/opt/sfl/nodes/%i/runtime /opt/sfl/nodes/%i/tunnel
+
+[Install]
+WantedBy=multi-user.target

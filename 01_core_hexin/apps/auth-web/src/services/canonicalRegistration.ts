@@ -4,10 +4,9 @@ import { PASSWORD_POLICY_MESSAGE } from '@shop/contract/password-policy';
 import { createSecureId } from '@shop/sdk/context';
 import { z } from 'zod';
 import { beginCanonicalAuthorization, canonicalStorefrontAuthTarget, exchangeCanonicalStorefrontSession } from './canonicalIdentity';
+import { configuredIdentityNode, configuredIdentityNodeRegistry, currentIdentityNode, currentLoginIntent } from './identityNodeEnvironment';
+import type { IdentityNodeRegistry } from '@shop/sdk/identity-node';
 
-const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
-const L1_STOREFRONT_API_ORIGIN = 'https://hbbtzn.com';
-const LEGACY_API_ORIGIN = 'https://api.zhudatuan.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
 
 const InvitationSchema = z.strictObject({
@@ -187,6 +186,7 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
   if (input.termsAccepted !== true) throw new Error('请先阅读并同意当前注册条款与隐私政策');
   const authorization = input.directLogin === true ? await beginCanonicalAuthorization() : undefined;
   const returnTarget = authorization === undefined ? undefined : canonicalStorefrontAuthTarget(input.applicationSlug);
+  const loginIntent = authorization === undefined ? undefined : currentLoginIntent();
   const origin = input.directLogin === true ? storefrontApiOrigin() : apiOrigin();
   const verification = input.deferPhoneVerification === true
     ? { phoneVerification: 'checkout' }
@@ -207,6 +207,7 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
         termsHash: requiredText(input.termsHash, '注册条款版本无效'),
         ...(authorization === undefined ? {} : { authorization: authorization.request }),
         ...(returnTarget === undefined ? {} : { target: returnTarget }),
+        ...(loginIntent === undefined ? {} : { loginIntent }),
         ...(input.wechatToken === undefined ? {} : { wechatToken: requiredText(input.wechatToken, '微信授权无效') }),
       },
       signal,
@@ -268,36 +269,20 @@ async function identityRequest(
 }
 
 function apiOrigin(): string {
-  return resolveCanonicalRegistrationApiOrigin(
-    import.meta.env.VITE_API_BASE_URL,
-    import.meta.env.DEV,
-    typeof window === 'undefined' ? undefined : window.location.hostname,
-  );
+  return currentIdentityNode().apiOrigin;
 }
 
 function storefrontApiOrigin(): string {
-  if (typeof window !== 'undefined' && window.location.hostname === 'accounts.hbbtzn.com') {
-    return L1_STOREFRONT_API_ORIGIN;
-  }
-  return apiOrigin();
+  return currentIdentityNode().consumerApiOrigin;
 }
 
 export function resolveCanonicalRegistrationApiOrigin(
-  configured: string | undefined,
-  development: boolean,
   hostname?: string,
+  registry: IdentityNodeRegistry = configuredIdentityNodeRegistry(),
 ): string {
-  let candidate = configured?.trim() || (development ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
-  if (hostname?.startsWith('accounts.') && hostname !== 'accounts.zhudatuan.com') {
-    candidate = `https://api.${hostname.slice('accounts.'.length)}`;
-  }
-  const parsed = new URL(candidate);
-  const local = development && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
-  if ((!local && parsed.origin !== CANONICAL_API_ORIGIN && parsed.origin !== LEGACY_API_ORIGIN)
-    || parsed.username || parsed.password || parsed.hash) {
-    throw new Error('统一身份 API 不在允许清单');
-  }
-  return parsed.origin;
+  const node = configuredIdentityNode(hostname, registry);
+  if (node === null) throw new Error('AUTH_REALM_ENTRY_INVALID');
+  return node.apiOrigin;
 }
 
 function clientVersion(): string {
@@ -379,9 +364,10 @@ function registrationError(value: unknown, status: number): string {
       RISK_REVIEW_REQUIRED: '本次注册需要人工安全复核',
       RISK_DENIED: '本次注册未通过安全检查',
       IDENTITY_SUBJECT_EXISTS: '该手机号已注册，请直接登录或找回密码',
+      LOGIN_INTENT_INVALID: '跨节点登录凭证无效、已过期或已经使用，请从原节点重新发起',
       PASSWORD_POLICY_REJECTED: PASSWORD_POLICY_MESSAGE,
       TERMS_ACCEPTANCE_REQUIRED: '注册条款已更新，请重新阅读并同意',
-    }[code] ?? `统一身份服务暂时无法完成注册（${code}）`
+    }[code] ?? '统一身份服务暂时无法完成注册，请稍后重试'
   );
 }
 

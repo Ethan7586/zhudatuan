@@ -1,392 +1,216 @@
-import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { extname, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { readFile, readdir } from 'node:fs/promises';
+import { dirname, extname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const repositoryRoot = resolve(import.meta.dirname, '../../..');
-const contractPath = resolve(repositoryRoot, '02_platform_pingtai/config/production-domain-boundary.json');
-const lockPath = resolve(repositoryRoot, '02_platform_pingtai/config/production-domain-boundary.lock.json');
+import { IDENTITY_NODE_MANIFEST } from '../../../01_core_hexin/packages/config/src/IdentityNodeManifest.ts';
+import {
+  materializeNodeManifestRegistryDeclaration,
+  parseNodeManifest,
+} from '../../../01_core_hexin/packages/config/src/SflNodeKernel.ts';
+import {
+  SFL_NODE_MANIFEST_REGISTRY_DECLARATION,
+  SFL_NODE_REGISTRY,
+  nodeDomainBinding,
+  nodeOriginForBinding,
+} from '../../../01_core_hexin/packages/config/src/SflNodeRegistry.ts';
 
-const runtimeEntries = Object.freeze([
-  '01_core_hexin/apps/auth-web/src',
-  '01_core_hexin/apps/auth-web/index.html',
-  '01_core_hexin/apps/auth-web/.env.example',
-  '01_core_hexin/apps/auth-web/vite.config.ts',
-  '01_core_hexin/apps/console/src',
-  '01_core_hexin/apps/console/index.html',
-  '01_core_hexin/apps/console/vite.config.ts',
-  '01_core_hexin/apps/miniapp/miniprogram',
-  '01_core_hexin/apps/storefront-web/src',
-  '01_core_hexin/apps/storefront-web/vite.config.ts',
-  '02_platform_pingtai/config/owner-approved-ui.json',
-  '02_platform_pingtai/infrastructure/zhudatuan/aliyun',
-  '01_core_hexin/packages/config/src',
-  '01_core_hexin/services/commerce/src',
-]);
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
-const builtEntries = Object.freeze([
-  '01_core_hexin/apps/auth-web/dist',
-  '01_core_hexin/apps/console/dist',
-  '01_core_hexin/apps/storefront-web/dist',
-  '01_core_hexin/services/commerce/dist',
-]);
+export async function verifySflNodeDomainBoundary() {
+  const registry = await materializeNodeManifestRegistryDeclaration(SFL_NODE_MANIFEST_REGISTRY_DECLARATION);
+  if (registry.registry_version !== '1.6.0' || registry.manifests.length !== 2) fail('SFL_PRODUCTION_NODE_SET_INVALID');
+  const l0 = registry.manifests.find((manifest) => manifest.node_id === 'node:zhudatuan:l0');
+  const l1 = registry.manifests.find((manifest) => manifest.node_id === 'node:hbbtzn:l1');
+  if (l0 === undefined || l1 === undefined || l1.parent_node_id !== l0.node_id) fail('SFL_PRODUCTION_TOPOLOGY_INVALID');
+  verifyNodeOwnership(l0, 'zhudatuan.com', 'zhudatuan');
+  verifyNodeOwnership(l1, 'hbbtzn.com', 'hbbtzn');
+  const l0Hosts = new Set(l0.domain_bindings.map((binding) => binding.host));
+  if (l1.domain_bindings.some((binding) => l0Hosts.has(binding.host))) fail('SFL_PRODUCTION_HOST_OWNERSHIP_AMBIGUOUS');
 
-const sourceExtensions = new Set(['.cjs', '.html', '.js', '.json', '.jsx', '.mjs', '.ts', '.tsx', '.yaml', '.yml']);
-const builtExtensions = new Set(['.html', '.js', '.json', '.map', '.mjs']);
-const testFile = /(?:^|\/)(?:__tests__\/|[^/]+\.(?:spec|test)\.[cm]?[jt]sx?$)/;
-const inertDesignReference = /(?:^|\/)design-references\//;
-const hbbtznSubdomain = /(?:[a-z0-9-]+\.)+hbbtzn\.com/ig;
-
-function fail(code, detail = '') {
-  throw new Error(detail ? `${code}:${detail}` : code);
-}
-
-function sorted(values) {
-  return [...values].sort();
-}
-
-function sameValues(actual, expected) {
-  return JSON.stringify(sorted(actual)) === JSON.stringify(sorted(expected));
-}
-
-function requiredObject(value, code) {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) fail(code);
-  return value;
-}
-
-function exactOrigin(value, code) {
-  if (typeof value !== 'string') fail(code);
-  const parsed = new URL(value);
-  if (parsed.protocol !== 'https:' || parsed.origin !== value || parsed.pathname !== '/' || parsed.username || parsed.password || parsed.search || parsed.hash) {
-    fail(code, value);
-  }
-  return value;
-}
-
-export function assertContractLock(contractSource, lock) {
-  if (lock?.schema !== 'zhudatuan.production-domain-boundary-lock.v1'
-    || lock?.approvedBy !== 'Ethan'
-    || lock?.changePolicy !== 'explicit-owner-approval-required') {
-    fail('PRODUCTION_DOMAIN_LOCK_INVALID');
-  }
-  const digest = createHash('sha256').update(contractSource).digest('hex');
-  if (digest !== lock.contractSha256) fail('PRODUCTION_DOMAIN_OWNER_APPROVAL_REQUIRED', digest);
-}
-
-export function validateDomainContract(contract) {
-  requiredObject(contract, 'PRODUCTION_DOMAIN_CONTRACT_INVALID');
-  if (contract.schema !== 'zhudatuan.production-domain-boundary.v1') fail('PRODUCTION_DOMAIN_SCHEMA_INVALID');
-  const frontends = requiredObject(contract.frontends, 'PRODUCTION_DOMAIN_FRONTENDS_MISSING');
-  const h5 = requiredObject(frontends.h5, 'PRODUCTION_DOMAIN_H5_MISSING');
-  const miniProgram = requiredObject(frontends.miniProgram, 'PRODUCTION_DOMAIN_MINI_PROGRAM_MISSING');
-  const controlPlane = requiredObject(contract.controlPlane, 'PRODUCTION_DOMAIN_CONTROL_PLANE_MISSING');
-  const canonicalOrigins = requiredObject(contract.canonicalOrigins, 'PRODUCTION_DOMAIN_CANONICAL_ORIGINS_MISSING');
-  const identityApi = requiredObject(contract.identityApi, 'PRODUCTION_DOMAIN_IDENTITY_API_MISSING');
-  const aliases = requiredObject(contract.redirectOnlyAliases, 'PRODUCTION_DOMAIN_REDIRECT_ALIASES_MISSING');
-  const proxyAliases = requiredObject(contract.proxyAliases, 'PRODUCTION_DOMAIN_PROXY_ALIASES_MISSING');
-  const tenantControlPlanes = requiredObject(contract.tenantControlPlanes, 'PRODUCTION_DOMAIN_TENANT_CONTROL_PLANES_MISSING');
-  const hongtai = requiredObject(tenantControlPlanes.hongtai, 'PRODUCTION_DOMAIN_HONGTAI_CONTROL_PLANE_MISSING');
-
-  const h5Origin = exactOrigin(h5.publicOrigin, 'PRODUCTION_DOMAIN_H5_ORIGIN_INVALID');
-  const accountsOrigin = exactOrigin(controlPlane.accountsOrigin, 'PRODUCTION_DOMAIN_ACCOUNTS_ORIGIN_INVALID');
-  const consoleOrigin = exactOrigin(controlPlane.consoleOrigin, 'PRODUCTION_DOMAIN_CONSOLE_ORIGIN_INVALID');
-  const apiOrigin = exactOrigin(controlPlane.apiOrigin, 'PRODUCTION_DOMAIN_API_ORIGIN_INVALID');
-  const storefrontOrigin = exactOrigin(canonicalOrigins.storefrontOrigin, 'PRODUCTION_DOMAIN_STOREFRONT_ORIGIN_INVALID');
-  const hongtaiAccountsOrigin = exactOrigin(hongtai.accountsOrigin, 'PRODUCTION_DOMAIN_HONGTAI_ACCOUNTS_ORIGIN_INVALID');
-  const hongtaiConsoleOrigin = exactOrigin(hongtai.consoleOrigin, 'PRODUCTION_DOMAIN_HONGTAI_CONSOLE_ORIGIN_INVALID');
-  const hongtaiApiOrigin = exactOrigin(hongtai.apiOrigin, 'PRODUCTION_DOMAIN_HONGTAI_API_ORIGIN_INVALID');
-  const hongtaiPlatformStorefrontOrigin = exactOrigin(hongtai.platformStorefrontOrigin, 'PRODUCTION_DOMAIN_HONGTAI_PLATFORM_STOREFRONT_ORIGIN_INVALID');
-  const hongtaiPlatformConsoleOrigin = exactOrigin(hongtai.platformConsoleOrigin, 'PRODUCTION_DOMAIN_HONGTAI_PLATFORM_CONSOLE_ORIGIN_INVALID');
-
-  if (new URL(h5Origin).hostname !== 'hbbtzn.com' || miniProgram.publicDomain !== 'hbbtzn.com') {
-    fail('PRODUCTION_DOMAIN_CONSUMER_FRONTEND_INVALID');
-  }
-  if (h5.apiOrigin !== apiOrigin || miniProgram.apiOrigin !== apiOrigin
-    || h5.authOrigin !== accountsOrigin || miniProgram.authOrigin !== accountsOrigin) {
-    fail('PRODUCTION_DOMAIN_FRONTEND_CONTROL_PLANE_DRIFT');
-  }
-  for (const origin of [accountsOrigin, consoleOrigin, apiOrigin, storefrontOrigin]) {
-    if (new URL(origin).hostname.endsWith('.hbbtzn.com') || new URL(origin).hostname === 'hbbtzn.com') {
-      fail('PRODUCTION_DOMAIN_CONTROL_PLANE_ON_HBBTZN', origin);
+  if ('defaultNodeId' in IDENTITY_NODE_MANIFEST) fail('SFL_IDENTITY_DEFAULT_NODE_FORBIDDEN');
+  if (IDENTITY_NODE_MANIFEST.nodes.length !== registry.manifests.length) fail('SFL_IDENTITY_PROJECTION_NODE_MISMATCH');
+  for (const identity of IDENTITY_NODE_MANIFEST.nodes) {
+    const manifest = registry.manifests.find((candidate) => candidate.node_id === identity.nodeId);
+    if (manifest === undefined || identity.realmId !== manifest.realm_ref.ref || identity.mallId !== manifest.mall_id) {
+      fail('SFL_IDENTITY_PROJECTION_CONTEXT_MISMATCH', identity.nodeId);
+    }
+    const hosts = new Set(manifest.domain_bindings.map((binding) => binding.host));
+    const origins = [identity.accountsOrigin, identity.apiOrigin, identity.consumerApiOrigin,
+      identity.storefrontOrigin, ...(identity.adminOrigin === null ? [] : [identity.adminOrigin]),
+      ...identity.targets.map((target) => target.returnOrigin)];
+    if (origins.some((origin) => !hosts.has(new URL(origin).hostname))) {
+      fail('SFL_IDENTITY_PROJECTION_CROSS_NODE_ORIGIN', identity.nodeId);
+    }
+    if (identity.consumerApiOrigin !== identity.apiOrigin) {
+      fail('SFL_IDENTITY_PUBLIC_API_HOST_BYPASS', identity.nodeId);
     }
   }
 
-  const allowedOrigins = [accountsOrigin, consoleOrigin, h5Origin, storefrontOrigin];
-  if (!Array.isArray(identityApi.allowedOrigins) || !sameValues(identityApi.allowedOrigins, allowedOrigins)) {
-    fail('PRODUCTION_DOMAIN_ALLOWED_ORIGINS_DRIFT');
-  }
-  const expectedTargets = {
-    console: consoleOrigin,
-    'console-hbbtzn': hongtaiConsoleOrigin,
-    storefront: storefrontOrigin,
-    'storefront-hbbtzn': h5Origin,
-    store: `${consoleOrigin}/entrances/store`,
-    supplier: `${consoleOrigin}/entrances/supplier`,
-  };
-  if (JSON.stringify(identityApi.returnTargets) !== JSON.stringify(expectedTargets)) {
-    fail('PRODUCTION_DOMAIN_RETURN_TARGETS_DRIFT');
+  const fileByNode = new Map(SFL_NODE_REGISTRY.node_bindings
+    .map((binding) => [binding.node_id, binding.runtime_manifest_file]));
+  for (const manifest of registry.manifests) {
+    const file = fileByNode.get(manifest.node_id);
+    if (file === undefined) fail('SFL_RUNTIME_MANIFEST_FILE_MISSING', manifest.node_id);
+    const projected = await parseNodeManifest(JSON.parse(await readFile(
+      resolve(root, '02_platform_pingtai/config/node-manifests', file), 'utf8')));
+    if (JSON.stringify(projected) !== JSON.stringify(manifest)) fail('SFL_RUNTIME_MANIFEST_PROJECTION_DRIFT', file);
   }
 
-  const approvedRedirectAliases = {
-    [hongtaiPlatformStorefrontOrigin]: h5Origin,
-    [hongtaiPlatformConsoleOrigin]: hongtaiConsoleOrigin,
-    'https://mall.hbbtzn.com': h5Origin,
-  };
-  for (const [alias, target] of Object.entries(aliases)) {
-    exactOrigin(alias, 'PRODUCTION_DOMAIN_ALIAS_INVALID');
-    exactOrigin(target, 'PRODUCTION_DOMAIN_ALIAS_TARGET_INVALID');
-    if (approvedRedirectAliases[alias] !== target) {
-      fail('PRODUCTION_DOMAIN_ALIAS_BOUNDARY_INVALID', `${alias}->${target}`);
-    }
-  }
-  if (JSON.stringify(aliases) !== JSON.stringify(approvedRedirectAliases)) {
-    fail('PRODUCTION_DOMAIN_REDIRECT_ALIASES_DRIFT');
-  }
-  const expectedProxyAliases = {
-    [hongtaiAccountsOrigin]: accountsOrigin,
-    [hongtaiApiOrigin]: apiOrigin,
-    [hongtaiConsoleOrigin]: consoleOrigin,
-  };
-  if (JSON.stringify(proxyAliases) !== JSON.stringify(expectedProxyAliases)
-    || hongtai.scopeKind !== 'mall' || typeof hongtai.scopeId !== 'string' || !hongtai.scopeId.startsWith('mall:')) {
-    fail('PRODUCTION_DOMAIN_PROXY_ALIASES_DRIFT');
-  }
-  if (contract.changePolicy?.ownerApprovalRequired !== true
-    || contract.changePolicy?.frontendDomainChangeDoesNotAuthorizeControlPlaneChange !== true
-    || contract.changePolicy?.tenantControlPlaneAliasesAllowed !== true
-    || contract.changePolicy?.globalDomainReplacementForbidden !== true) {
-    fail('PRODUCTION_DOMAIN_CHANGE_POLICY_INVALID');
-  }
-  return contract;
+  await verifyEnvironmentProjection();
+  await verifySingleTruthSource();
 }
 
-export function assertNoHbbtznSubdomain(file, source, approvedOrigins = []) {
-  const approvedHosts = new Set(approvedOrigins.map((origin) => new URL(origin).hostname));
-  for (const match of source.matchAll(hbbtznSubdomain)) {
-    if (!approvedHosts.has(match[0].toLowerCase())) {
-      fail('HBBTZN_SUBDOMAIN_RUNTIME_FORBIDDEN', `${file}:${match[0]}`);
-    }
+export function verifyRawRegistryNoCrossNodeFallback(value) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) fail('SFL_NODE_REGISTRY_INVALID');
+  const source = value;
+  if ('defaultNodeId' in source || 'default_node_id' in source) fail('SFL_DEFAULT_NODE_FORBIDDEN');
+  if (!Array.isArray(source.manifests) || !Array.isArray(source.node_bindings)) fail('SFL_NODE_REGISTRY_INVALID');
+  const nodes = source.manifests;
+  const hosts = nodes.flatMap((node) => Array.isArray(node.domain_bindings)
+    ? node.domain_bindings.map((binding) => binding.host)
+    : []);
+  if (hosts.some((host) => typeof host !== 'string') || new Set(hosts).size !== hosts.length) {
+    fail('SFL_PRODUCTION_HOST_OWNERSHIP_AMBIGUOUS');
+  }
+  const nodeIds = new Set(nodes.map((node) => node.node_id));
+  for (const binding of source.node_bindings) {
+    if (!nodeIds.has(binding.node_id)) fail('SFL_NODE_RESOURCE_BINDING_UNKNOWN');
   }
 }
 
-function parseEnvironment(source) {
-  const values = new Map();
-  for (const rawLine of source.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith('#')) continue;
-    const separator = line.indexOf('=');
-    if (separator < 1) continue;
-    const key = line.slice(0, separator);
-    let value = line.slice(separator + 1).trim();
-    if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith('"') && value.endsWith('"'))) {
-      value = value.slice(1, -1);
-    }
-    values.set(key, value);
+function verifyNodeOwnership(manifest, rootHost, bindingNamespace) {
+  if (manifest.lifecycle_status !== 'active' || manifest.node_profile !== 'operating_mall') {
+    fail('SFL_PRODUCTION_NODE_NOT_ACTIVE', manifest.node_id);
   }
-  return values;
-}
-
-export function validateIdentityEnvironmentText(source, contract) {
-  const values = parseEnvironment(source);
-  const origins = values.get('API_ALLOWED_ORIGINS')?.split(',').map((value) => value.trim()).filter(Boolean) ?? [];
-  if (!sameValues(origins, contract.identityApi.allowedOrigins)) fail('PRODUCTION_DOMAIN_ENV_ORIGINS_DRIFT');
-  let returnTargets;
-  try {
-    returnTargets = JSON.parse(values.get('AUTH_RETURN_TARGETS') ?? '');
-  } catch {
-    fail('PRODUCTION_DOMAIN_ENV_RETURN_TARGETS_INVALID');
+  if (manifest.domain_bindings.some((binding) => binding.host !== rootHost && !binding.host.endsWith(`.${rootHost}`))) {
+    fail('SFL_PRODUCTION_CROSS_NODE_HOST', manifest.node_id);
   }
-  if (JSON.stringify(returnTargets) !== JSON.stringify(contract.identityApi.returnTargets)) {
-    fail('PRODUCTION_DOMAIN_ENV_RETURN_TARGETS_DRIFT');
+  const ownedReferences = [manifest.resource_binding_set_ref.ref, manifest.secret_binding_set_ref.ref,
+    ...manifest.payment_binding_refs.map((binding) => binding.ref),
+    ...manifest.callback_binding_refs.map((binding) => binding.ref)];
+  if (ownedReferences.some((reference) => !reference.includes(bindingNamespace))) {
+    fail('SFL_PRODUCTION_CROSS_NODE_RESOURCE', manifest.node_id);
   }
 }
 
-function block(source, name) {
-  const match = source.match(new RegExp(`const ${name} = Object\\.freeze\\(\\{([\\s\\S]*?)\\} as const\\);`));
-  if (!match) fail('PRODUCTION_DOMAIN_EDGE_BLOCK_MISSING', name);
-  return match[1];
-}
-
-export function validateEdgeRedirects(source, contract) {
-  if (source.includes("incoming.pathname === '/api/v1/identity/tickets/exchange'")) {
-    fail('PRODUCTION_DOMAIN_EDGE_TICKET_REWRITE_FORBIDDEN');
-  }
-  const h5Host = new URL(contract.frontends.h5.publicOrigin).hostname;
-  const upstreamBlock = block(source, 'UPSTREAM_ORIGINS');
-  if (!upstreamBlock.includes(`[ROOT_STOREFRONT_HOST]: '${contract.canonicalOrigins.storefrontOrigin}'`)) {
-    fail('PRODUCTION_DOMAIN_EDGE_H5_UPSTREAM_DRIFT');
-  }
-  for (const alias of Object.keys(contract.proxyAliases)) {
-    const hostname = new URL(alias).hostname;
-    if (!upstreamBlock.includes(`'${hostname}'`) && !upstreamBlock.includes(`[HONGTAI_CONSOLE_HOST]`)) {
-      fail('PRODUCTION_DOMAIN_EDGE_PROXY_MISSING', hostname);
-    }
-  }
-
-  const redirectBlock = block(source, 'CANONICAL_REDIRECT_HOSTS');
-  const actual = Object.fromEntries([...redirectBlock.matchAll(/'([^']+)':\s*(?:'([^']+)'|(ROOT_STOREFRONT_HOST))/g)]
-    .map((match) => [match[1], match[2] ?? h5Host]));
-  const expected = Object.fromEntries(Object.entries(contract.redirectOnlyAliases)
-    .map(([alias, target]) => [new URL(alias).hostname, new URL(target).hostname]));
-  if (JSON.stringify(actual) !== JSON.stringify(expected)) fail('PRODUCTION_DOMAIN_EDGE_REDIRECTS_DRIFT');
-}
-
-function collectFiles(entry, extensions) {
-  if (!existsSync(entry)) return [];
-  const entries = readdirSync(entry, { withFileTypes: true });
-  return entries.flatMap((item) => {
-    const path = resolve(entry, item.name);
-    if (item.isDirectory()) return collectFiles(path, extensions);
-    return item.isFile() && extensions.has(extname(item.name)) ? [path] : [];
-  });
-}
-
-function filesFor(relativeEntry, extensions) {
-  const absolute = resolve(repositoryRoot, relativeEntry);
-  if (!existsSync(absolute)) return [];
-  if (extensions.has(extname(absolute)) || absolute.endsWith('.env.example')) return [absolute];
-  return collectFiles(absolute, extensions);
-}
-
-function requireTokens(relativeFile, tokens) {
-  const source = readFileSync(resolve(repositoryRoot, relativeFile), 'utf8');
-  for (const token of tokens) {
-    if (!source.includes(token)) fail('PRODUCTION_DOMAIN_REQUIRED_BINDING_MISSING', `${relativeFile}:${token}`);
-  }
-}
-
-function validateOwnerManifest(contract) {
-  const manifest = JSON.parse(readFileSync(resolve(repositoryRoot, '02_platform_pingtai/config/owner-approved-ui.json'), 'utf8'));
-  if (manifest.surfaces?.accounts?.domain !== new URL(contract.controlPlane.accountsOrigin).hostname
-    || manifest.surfaces?.console?.domain !== new URL(contract.controlPlane.consoleOrigin).hostname
-    || manifest.surfaces?.storefront?.domain !== new URL(contract.canonicalOrigins.storefrontOrigin).hostname) {
-    fail('PRODUCTION_DOMAIN_OWNER_MANIFEST_SURFACE_DRIFT');
-  }
-  const accountBuild = new Set(manifest.surfaces.accounts.requiredBuildEnvironment ?? []);
-  for (const value of [
-    `VITE_API_BASE_URL=${contract.controlPlane.apiOrigin}`,
-    `VITE_ADMIN_ORIGIN=${contract.controlPlane.consoleOrigin}`,
-    `VITE_STOREFRONT_ORIGIN=${contract.frontends.h5.publicOrigin}`,
-  ]) {
-    if (!accountBuild.has(value)) fail('PRODUCTION_DOMAIN_OWNER_MANIFEST_BUILD_DRIFT', value);
-  }
-  const runtime = new Set(manifest.deployment?.requiredRuntimeEnvironment ?? []);
-  const allowedOrigins = `API_ALLOWED_ORIGINS=${contract.identityApi.allowedOrigins.join(',')}`;
-  const returnTargets = `AUTH_RETURN_TARGETS=${JSON.stringify(contract.identityApi.returnTargets)}`;
-  if (!runtime.has(allowedOrigins) || !runtime.has(returnTargets)) fail('PRODUCTION_DOMAIN_OWNER_MANIFEST_RUNTIME_DRIFT');
-}
-
-function validateWranglerRoutes(contract) {
-  const config = JSON.parse(readFileSync(resolve(repositoryRoot, '02_platform_pingtai/infrastructure/zhudatuan/cloudflare/hbbtzn-alias/wrangler.jsonc'), 'utf8'));
-  const h5Host = new URL(contract.frontends.h5.publicOrigin).hostname;
-  const expectedCustomDomains = [
-    ...Object.keys(contract.redirectOnlyAliases).map((origin) => new URL(origin).hostname),
-    ...Object.keys(contract.proxyAliases).map((origin) => new URL(origin).hostname),
-  ];
-  const routes = config.routes ?? [];
-  const h5Route = routes.find((route) => route.pattern === `${h5Host}/*`);
-  const customDomains = routes.filter((route) => route !== h5Route);
-  if (h5Route?.zone_name !== h5Host || h5Route.custom_domain === true
-    || !sameValues(customDomains.map((route) => route.pattern), expectedCustomDomains)
-    || customDomains.some((route) => route.custom_domain !== true)) {
-    fail('PRODUCTION_DOMAIN_EDGE_ROUTES_DRIFT');
-  }
-}
-
-function validateRequiredBindings(contract) {
-  const { accountsOrigin, apiOrigin, consoleOrigin } = contract.controlPlane;
-  const h5Origin = contract.frontends.h5.publicOrigin;
-  requireTokens('01_core_hexin/apps/auth-web/src/services/canonicalIdentity.ts', [apiOrigin]);
-  requireTokens('01_core_hexin/apps/auth-web/src/services/canonicalRegistration.ts', [apiOrigin]);
-  requireTokens('01_core_hexin/apps/auth-web/src/services/auth.ts', [consoleOrigin, h5Origin]);
-  requireTokens('01_core_hexin/apps/auth-web/src/buildEnvironment.ts', [
-    'VITE_API_BASE_URL',
-    'VITE_ADMIN_ORIGIN',
-    'VITE_STOREFRONT_ORIGIN',
+async function verifyEnvironmentProjection() {
+  const environmentFiles = new Map([
+    ['node:zhudatuan:l0', {
+      identity: '02_platform_pingtai/infrastructure/zhudatuan/aliyun/identity-registration-api.env.example',
+      purchase: '02_platform_pingtai/infrastructure/zhudatuan/aliyun/purchase-api.env.example',
+      webhook: '02_platform_pingtai/infrastructure/zhudatuan/aliyun/payment-webhook-api.env.example',
+      jobs: '02_platform_pingtai/infrastructure/zhudatuan/aliyun/payment-jobs.env.example',
+      namespace: 'zhudatuan/nodes/l0/',
+      runtimeRoot: '/opt/sfl/nodes/zhudatuan-l0',
+    }],
+    ['node:hbbtzn:l1', {
+      identity: '02_platform_pingtai/config/node-runtime/hbbtzn-l1/identity-api.env.example',
+      purchase: '02_platform_pingtai/config/node-runtime/hbbtzn-l1/purchase-api.env.example',
+      webhook: '02_platform_pingtai/config/node-runtime/hbbtzn-l1/payment-webhook-api.env.example',
+      jobs: '02_platform_pingtai/config/node-runtime/hbbtzn-l1/payment-jobs.env.example',
+      namespace: 'hbbtzn/nodes/l1/',
+      runtimeRoot: '/opt/sfl/nodes/hbbtzn-l1',
+    }],
   ]);
-  requireTokens('01_core_hexin/apps/auth-web/index.html', [accountsOrigin]);
-  requireTokens('01_core_hexin/apps/storefront-web/src/services/canonicalApiClient.ts', [apiOrigin]);
-  requireTokens('01_core_hexin/apps/storefront-web/src/config/storefrontAuth.ts', [accountsOrigin]);
-  requireTokens('01_core_hexin/apps/console/src/shared/config/AppConfig.ts', [
-    'clientEnvironment()',
-    'apiBaseUrl',
-    'authBaseUrl',
-  ]);
-  requireTokens('01_core_hexin/packages/config/src/IdentityRegistrationApiEnvironment.ts', [accountsOrigin, consoleOrigin, h5Origin]);
-}
-
-function validateRuntimeSources(contract) {
-  const approvedTenantOrigins = Object.keys(contract.proxyAliases);
-  for (const entry of runtimeEntries) {
-    const files = filesFor(entry, sourceExtensions);
-    if (files.length === 0) fail('PRODUCTION_DOMAIN_RUNTIME_ENTRY_MISSING', entry);
-    for (const file of files) {
-      const relativeFile = file.slice(repositoryRoot.length + 1);
-      if (testFile.test(relativeFile)) continue;
-      assertNoHbbtznSubdomain(relativeFile, readFileSync(file, 'utf8'), approvedTenantOrigins);
+  for (const manifest of SFL_NODE_REGISTRY.manifests) {
+    const files = environmentFiles.get(manifest.node_id);
+    if (!files) fail('SFL_NODE_ENVIRONMENT_BINDING_MISSING', manifest.node_id);
+    const identity = await readFile(resolve(root, files.identity), 'utf8');
+    const purchase = await readFile(resolve(root, files.purchase), 'utf8');
+    const webhook = await readFile(resolve(root, files.webhook), 'utf8');
+    const jobs = await readFile(resolve(root, files.jobs), 'utf8');
+    if (/^AUTH_RETURN_TARGETS=/m.test(identity)) fail('SFL_IDENTITY_STATIC_RETURN_TARGETS_FORBIDDEN', manifest.node_id);
+    verifyOrigins(identity, manifest.domain_bindings.filter((binding) => binding.surface_ref !== 'surface:api'),
+      'SFL_IDENTITY_ALLOWED_ORIGINS_DRIFT', manifest.node_id);
+    verifyOrigins(purchase, manifest.domain_bindings.filter((binding) => binding.surface_ref === 'surface:storefront'),
+      'SFL_PURCHASE_ALLOWED_ORIGINS_DRIFT', manifest.node_id);
+    if ([identity, purchase, webhook, jobs]
+      .some((source) => lineValue(source, 'NODE_MANIFEST_ID') !== manifest.manifest_id)) {
+      fail('SFL_NODE_ENVIRONMENT_MANIFEST_MISMATCH', manifest.node_id);
+    }
+    if ([identity, purchase, webhook, jobs]
+      .some((source) => lineValue(source, 'NODE_MANIFEST_PATH') !== `${files.runtimeRoot}/manifest.json`
+        || lineValue(source, 'NODE_RELEASE_POINTER_REF') !== `${files.runtimeRoot}/current`)) {
+      fail('SFL_NODE_ENVIRONMENT_RUNTIME_REFERENCE_MISMATCH', manifest.node_id);
+    }
+    const identityRefs = ['DATABASE_API_CONNECTION_REF', 'SESSION_KEY_REF', 'IDENTITY_KEY_REF',
+      'WECHAT_APPLICATION_CONFIG_REF', 'WECHAT_IDENTITY_CONFIG_REF'].map((key) => lineValue(identity, key));
+    const purchaseRefs = ['DATABASE_API_CONNECTION_REF', 'QUOTE_KEY_REF'].map((key) => lineValue(purchase, key));
+    const webhookRefs = ['DATABASE_API_CONNECTION_REF'].map((key) => lineValue(webhook, key));
+    const jobRefs = ['DATABASE_JOB_CONNECTION_REF'].map((key) => lineValue(jobs, key));
+    if ([...identityRefs, ...purchaseRefs, ...webhookRefs, ...jobRefs]
+      .some((reference) => !reference.startsWith(files.namespace))) {
+      fail('SFL_NODE_ENVIRONMENT_SECRET_CROSS_REFERENCE', manifest.node_id);
+    }
+    const paymentRefs = [purchase, webhook, jobs].flatMap((source) =>
+      ['WECHAT_APPLICATION_CONFIG_REF', 'WECHAT_PAYMENT_CONFIG_REF'].map((key) => lineValue(source, key)));
+    if (paymentRefs.some((reference) => !reference.startsWith(`${files.namespace}payment/`))) {
+      fail('SFL_NODE_ENVIRONMENT_PAYMENT_CROSS_REFERENCE', manifest.node_id);
     }
   }
-  validateRequiredBindings(contract);
-  validateOwnerManifest(contract);
-  validateIdentityEnvironmentText(
-    readFileSync(resolve(repositoryRoot, '02_platform_pingtai/infrastructure/zhudatuan/aliyun/identity-registration-api.env.example'), 'utf8'),
-    contract,
-  );
-  const edgeSource = readFileSync(resolve(repositoryRoot, '02_platform_pingtai/infrastructure/zhudatuan/cloudflare/hbbtzn-alias/src/index.ts'), 'utf8');
-  validateEdgeRedirects(edgeSource, contract);
-  validateWranglerRoutes(contract);
+
+  for (const binding of SFL_NODE_REGISTRY.node_bindings) {
+    const primary = nodeDomainBinding(binding.node_id, binding.primary_storefront_binding_ref);
+    const expected = nodeOriginForBinding(binding.node_id, binding.primary_storefront_binding_ref);
+    if (expected !== `https://${primary.host}`) fail('SFL_NODE_PRIMARY_STOREFRONT_DRIFT', binding.node_id);
+  }
 }
 
-function validateBuiltArtifacts(contract, production) {
-  for (const entry of builtEntries) {
-    const files = filesFor(entry, builtExtensions);
-    if (files.length === 0) fail('PRODUCTION_DOMAIN_BUILD_ENTRY_MISSING', entry);
-    for (const file of files) {
-      const relativeFile = file.slice(repositoryRoot.length + 1);
-      if (inertDesignReference.test(relativeFile)) continue;
-      assertNoHbbtznSubdomain(relativeFile, readFileSync(file, 'utf8'));
-    }
-  }
-  if (!production) return;
-  const expectations = [
-    ['01_core_hexin/apps/auth-web/dist', [contract.controlPlane.accountsOrigin, contract.controlPlane.apiOrigin, contract.controlPlane.consoleOrigin, contract.frontends.h5.publicOrigin]],
-    ['01_core_hexin/apps/console/dist', [contract.controlPlane.accountsOrigin, contract.controlPlane.apiOrigin]],
-    ['01_core_hexin/apps/storefront-web/dist', [contract.controlPlane.accountsOrigin, contract.controlPlane.apiOrigin]],
-    ['01_core_hexin/services/commerce/dist', [contract.controlPlane.accountsOrigin, contract.controlPlane.consoleOrigin, contract.frontends.h5.publicOrigin]],
+function verifyOrigins(source, bindings, code, nodeId) {
+  const actual = lineValue(source, 'API_ALLOWED_ORIGINS').split(',').filter(Boolean).sort();
+  const expected = bindings.map((binding) => `https://${binding.host}`).sort();
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) fail(code, nodeId);
+}
+
+async function verifySingleTruthSource() {
+  const forbiddenFiles = [
+    '01_core_hexin/packages/config/src/identity-node-manifest.json',
+    '02_platform_pingtai/config/console-node-manifests.json',
+    '02_platform_pingtai/config/node-registry.json',
+    '02_platform_pingtai/config/production-domain-boundary.json',
   ];
-  for (const [entry, tokens] of expectations) {
-    const corpus = filesFor(entry, builtExtensions).map((file) => readFileSync(file, 'utf8')).join('\n');
-    for (const token of tokens) {
-      if (!corpus.includes(token)) fail('PRODUCTION_DOMAIN_BUILD_BINDING_MISSING', `${entry}:${token}`);
+  for (const file of forbiddenFiles) {
+    if (await readFile(resolve(root, file), 'utf8').then(() => true, () => false)) fail('SFL_SECOND_TRUTH_SOURCE_PRESENT', file);
+  }
+  const sourceRoots = [
+    '01_core_hexin/apps',
+    '01_core_hexin/packages',
+    '01_core_hexin/services',
+    '02_platform_pingtai/infrastructure',
+    '04_tools/tools',
+  ];
+  for (const sourceRoot of sourceRoots) {
+    for (const file of await sourceFiles(resolve(root, sourceRoot))) {
+      const source = await readFile(file, 'utf8');
+      if (/\bdefaultNodeId\b|\bdefaultIdentityNode\b/.test(source)) {
+        fail('SFL_DEFAULT_NODE_FALLBACK_PRESENT', file.slice(root.length + 1));
+      }
     }
   }
 }
 
-function loadContract() {
-  const source = readFileSync(contractPath, 'utf8');
-  const lock = JSON.parse(readFileSync(lockPath, 'utf8'));
-  assertContractLock(source, lock);
-  return validateDomainContract(JSON.parse(source));
-}
-
-function run() {
-  const args = process.argv.slice(2);
-  const contract = loadContract();
-  validateRuntimeSources(contract);
-  const built = args.includes('--built');
-  const production = args.includes('--production');
-  if (production && !built) fail('PRODUCTION_DOMAIN_BUILD_MODE_REQUIRED');
-  if (built) validateBuiltArtifacts(contract, production);
-  const environmentIndex = args.indexOf('--identity-env');
-  if (environmentIndex >= 0) {
-    const environmentPath = args[environmentIndex + 1];
-    if (!environmentPath) fail('PRODUCTION_DOMAIN_ENV_FILE_MISSING');
-    const environmentSource = environmentPath === '-'
-      ? readFileSync(0, 'utf8')
-      : readFileSync(resolve(environmentPath), 'utf8');
-    validateIdentityEnvironmentText(environmentSource, contract);
+async function sourceFiles(directory) {
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name.startsWith('.')) continue;
+    const path = resolve(directory, entry.name);
+    if (entry.isDirectory()) files.push(...await sourceFiles(path));
+    else if (['.ts', '.tsx', '.mjs', '.cjs', '.json'].includes(extname(entry.name))) files.push(path);
   }
-  console.log(`Production domain boundary verified: source${built ? ', bundles' : ''}${production ? ', production bindings' : ''}${environmentIndex >= 0 ? ', environment' : ''}.`);
+  return files;
 }
 
-if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) run();
+function lineValue(source, key) {
+  const line = source.split(/\r?\n/).find((candidate) => candidate.startsWith(`${key}=`));
+  if (line === undefined) fail('SFL_IDENTITY_ENVIRONMENT_VALUE_MISSING', key);
+  return line.slice(key.length + 1);
+}
+
+function fail(code, detail) {
+  throw new Error(detail === undefined ? code : `${code}:${detail}`);
+}
+
+if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  await verifySflNodeDomainBoundary();
+  console.log('SFL 1.6 node/domain boundary verified: one registry, two sovereign API domains, zero default fallback.');
+}

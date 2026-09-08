@@ -4,19 +4,15 @@ import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
 import { createSecureId } from '@shop/sdk/context';
 import { z } from 'zod';
 import type { Membership, PreAuthContext } from '../types';
-import { resolveAdminLoginOrigin, resolveStorefrontLoginOrigin } from './originPolicy';
+import { currentIdentityNode, currentLoginIntent } from './identityNodeEnvironment';
 
-const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
-const L1_STOREFRONT_API_ORIGIN = 'https://hbbtzn.com';
-const L0_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
-const LEGACY_API_ORIGIN = 'https://api.zhudatuan.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
 
 const MembershipSelectionSchema = z.strictObject({
   principal: z.string().min(1),
   memberships: z.array(z.strictObject({
     id: z.string().min(1),
-    client: z.enum(['console', 'console-hbbtzn', 'storefront', 'store', 'supplier']),
+    client: z.enum(['console', 'storefront', 'store', 'supplier']),
   })),
 });
 
@@ -25,7 +21,7 @@ const SessionCreatedSchema = z.strictObject({
   csrf: z.string().min(16),
   expiresIn: z.number().int().positive(),
   membership: z.string().min(1),
-  target: z.enum(['console', 'console-hbbtzn', 'storefront', 'store', 'supplier']),
+  target: z.enum(['console', 'storefront', 'store', 'supplier']),
   callback: z.strictObject({
     ticket: z.string().min(64).max(128),
     state: z.string().min(32).max(128),
@@ -133,7 +129,7 @@ export async function loginCanonicalConsole(
 }
 
 export interface CanonicalConsoleLoginOptions {
-  readonly target?: 'console' | 'console-hbbtzn';
+  readonly target?: string;
   readonly expectedOrigin?: string;
 }
 
@@ -269,7 +265,7 @@ async function loginCanonicalConsoleWithCredential(
 }
 
 type CanonicalTarget = z.infer<typeof SessionCreatedSchema>['target'];
-type CanonicalAuthTarget = CanonicalTarget | 'storefront-hbbtzn';
+type CanonicalAuthTarget = string;
 
 type AuthorizedCredential =
   | Readonly<{ kind: 'selection'; selection: z.infer<typeof MembershipSelectionSchema> }>
@@ -287,12 +283,14 @@ async function authorizeCanonicalCredential(
   context: Readonly<{ application?: string; expectedSessionTarget?: CanonicalTarget }> = {},
 ): Promise<AuthorizedCredential> {
   const authorization = await beginCanonicalAuthorization();
-  const origin = target === 'storefront' || target === 'storefront-hbbtzn' ? storefrontApiOrigin() : apiOrigin();
+  const loginIntent = currentLoginIntent();
+  const origin = context.expectedSessionTarget === 'storefront' ? storefrontApiOrigin() : apiOrigin();
   const output = LoginResultSchema.parse(await identityRequest('/api/v1/identity/sessions', {
     ...credential,
     target,
     ...(membership === undefined ? {} : { membership }),
     ...(context.application === undefined ? {} : { application: context.application }),
+    ...(loginIntent === undefined ? {} : { loginIntent }),
     authorization: authorization.request,
   }, signal, { origin }));
   if ('memberships' in output) return Object.freeze({ kind: 'selection', selection: output });
@@ -400,12 +398,21 @@ function approvedConsoleDestination(value: z.infer<typeof TicketExchangeSchema>[
   } catch {
     throw new Error('登录回跳地址无效');
   }
-  const configured = expectedOrigin ?? (import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined));
-  const approvedOrigin = resolveAdminLoginOrigin(configured, import.meta.env.DEV);
+  const approvedOrigin = adminOriginForIdentityHost(expectedOrigin);
   if (destination.origin !== approvedOrigin || destination.username || destination.password || destination.hash) {
     throw new Error('登录回跳地址不在后台允许清单');
   }
   return destination.toString();
+}
+
+function adminOriginForIdentityHost(expectedOrigin?: string): string {
+  const node = currentIdentityNode();
+  if (node.nodeProfile !== 'operating_mall') throw new Error('消费者节点不提供运营后台');
+  const approved = node.adminOrigin;
+  if (expectedOrigin !== undefined && exactOrigin(expectedOrigin) !== approved) {
+    throw new Error('后台登录目标与当前身份节点不匹配');
+  }
+  return approved;
 }
 
 function approvedStorefrontDestination(value: z.infer<typeof TicketExchangeSchema>['returnTarget']): string {
@@ -417,53 +424,36 @@ function approvedStorefrontDestination(value: z.infer<typeof TicketExchangeSchem
   } catch {
     throw new Error('登录回跳地址无效');
   }
-  const configured = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
-  const configuredOrigin = resolveStorefrontLoginOrigin(configured, import.meta.env.DEV);
-  const approvedOrigin = storefrontOriginForIdentityHost(configuredOrigin);
+  const approvedOrigin = currentIdentityNode().storefrontOrigin;
   if (destination.origin !== approvedOrigin || destination.username || destination.password || destination.hash) {
     throw new Error('登录回跳地址不在商城允许清单');
   }
   return destination.toString();
 }
 
-export function canonicalStorefrontAuthTarget(application?: string): Extract<CanonicalAuthTarget, 'storefront' | 'storefront-hbbtzn'> {
-  if (typeof window !== 'undefined') {
-    if (window.location.hostname === 'accounts.hbbtzn.com') return 'storefront-hbbtzn';
-    if (window.location.hostname === 'accounts.zhudatuan.com') return 'storefront';
-  }
-  if (application === 'zdt-l1-verify') return 'storefront-hbbtzn';
-  if (application === undefined || application === 'zhudatuan-storefront') return 'storefront';
-  throw new Error('商城身份节点无效');
-}
-
-function storefrontOriginForIdentityHost(configuredOrigin: string): string {
-  if (typeof window !== 'undefined') {
-    if (window.location.hostname === 'accounts.hbbtzn.com') return L1_STOREFRONT_API_ORIGIN;
-    if (window.location.hostname === 'accounts.zhudatuan.com') return L0_STOREFRONT_ORIGIN;
-  }
-  return configuredOrigin;
+export function canonicalStorefrontAuthTarget(application?: string): string {
+  const node = currentIdentityNode();
+  if (application !== undefined && application !== node.consumerApplication) throw new Error('商城身份节点无效');
+  return node.consumerTarget;
 }
 
 function apiOrigin(): string {
-  let configured = import.meta.env.VITE_API_BASE_URL?.trim() || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
-  if (typeof window !== 'undefined' && window.location.hostname.startsWith('accounts.')
-    && window.location.hostname !== 'accounts.zhudatuan.com') {
-    configured = `https://api.${window.location.hostname.slice('accounts.'.length)}`;
-  }
-  const parsed = new URL(configured);
-  const local = import.meta.env.DEV && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
-  if ((!local && parsed.origin !== CANONICAL_API_ORIGIN && parsed.origin !== LEGACY_API_ORIGIN)
-    || parsed.username || parsed.password || parsed.hash) {
-    throw new Error('统一身份 API 不在允许清单');
-  }
-  return parsed.origin;
+  return currentIdentityNode().apiOrigin;
 }
 
 function storefrontApiOrigin(): string {
-  if (typeof window !== 'undefined' && window.location.hostname === 'accounts.hbbtzn.com') {
-    return L1_STOREFRONT_API_ORIGIN;
+  return currentIdentityNode().consumerApiOrigin;
+}
+
+function exactOrigin(value: string): string {
+  try {
+    const parsed = new URL(value);
+    if (parsed.username || parsed.password || parsed.search || parsed.hash
+      || (parsed.pathname !== '/' && parsed.pathname !== '')) throw new Error('invalid');
+    return parsed.origin;
+  } catch {
+    throw new Error('后台登录目标配置无效，已停止提交账号凭证');
   }
-  return apiOrigin();
 }
 
 function clientVersion(): string {
@@ -501,10 +491,12 @@ function identityError(value: unknown, status: number, action: string): string {
     RISK_REVIEW_REQUIRED: '本次登录需要人工安全复核',
     AUTHENTICATION_REQUIRED: '登录会话未能建立，请重新登录',
     AUTH_TICKET_EXCHANGE_REJECTED: '一次性登录授权无效或已经使用',
+    LOGIN_INTENT_INVALID: '跨节点登录凭证无效、已过期或已经使用，请从原节点重新发起',
+    LOGIN_INTENT_TARGET_INVALID: '目标节点当前不接受该登录申请，请返回原节点',
     CHALLENGE_INVALID: '验证码错误或已经失效',
     CHALLENGE_PRINCIPAL_MISSING: '该手机号没有可重置的账号',
     PASSWORD_POLICY_REJECTED: PASSWORD_POLICY_MESSAGE,
-  }[code] ?? `统一身份服务暂时无法完成${action}（${code}）`;
+  }[code] ?? `统一身份服务暂时无法完成${action}，请稍后重试`;
 }
 
 function responseCode(value: unknown, status: number): string {

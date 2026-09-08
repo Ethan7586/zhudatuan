@@ -1,6 +1,7 @@
 import type { OperationId } from '@shop/contract';
 import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import { webBusinessRuntimeCompatibility } from '../../bootstrap/WebBusinessApiRuntime';
+import { NODE_DATABASE_ROLE, NODE_MANIFEST } from '../../bootstrap/NodeRuntime';
 import type { OperationRequest, OperationResult, OperationUsecase } from '../../foundation/application/OperationHandler';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 
@@ -14,20 +15,33 @@ class WebBusinessRuntimeOperations implements OperationUsecase {
   constructor(private readonly context: ModuleContext) {}
 
   async invoke(request: OperationRequest): Promise<OperationResult> {
+    const manifest = this.context.container.get(NODE_MANIFEST);
+    const evidence = {
+      profile: 'web-business-only',
+      manifestId: manifest.manifest_id,
+      manifestVersion: manifest.manifest_version,
+      manifestDigest: manifest.manifest_digest,
+      runtimeInstanceId: manifest.runtime_instance_id,
+      resourceBindingVersion: manifest.resource_binding_set_ref.version,
+      nodeId: manifest.node_id,
+      scopeId: manifest.data_scope_ref.ref,
+    };
     if (request.type === 'runtime.health.live') {
-      return { status: 200, body: { status: 'live', profile: 'web-business-only' } };
+      return { status: 200, body: { status: 'live', ...evidence } };
     }
     if (request.type !== 'runtime.health.ready' && request.type !== 'runtime.health.startup') throw new Error('OPERATION_ACTION_MISSING');
     try {
-      const state = await webBusinessRuntimeCompatibility(this.context.container.get(DATABASE_POOL));
+      const state = await webBusinessRuntimeCompatibility(
+        this.context.container.get(DATABASE_POOL), this.context.container.get(NODE_DATABASE_ROLE),
+      );
       return {
         status: 200,
-        body: { status: request.type === 'runtime.health.ready' ? 'ready' : 'started', profile: 'web-business-only', ...state },
+        body: { status: request.type === 'runtime.health.ready' ? 'ready' : 'started', ...evidence, ...state },
       };
     } catch {
       return {
         status: 503,
-        body: { status: request.type === 'runtime.health.ready' ? 'unready' : 'blocked', profile: 'web-business-only' },
+        body: { status: request.type === 'runtime.health.ready' ? 'unready' : 'blocked', ...evidence },
       };
     }
   }

@@ -1,1 +1,1 @@
-export { IdentityOperatorCatalogModule } from './05_interface_jieru/IdentityOperatorCatalogModule';
+export { CatalogOperatorModule, IdentityOperatorCatalogModule } from './05_interface_jieru/IdentityOperatorCatalogModule';

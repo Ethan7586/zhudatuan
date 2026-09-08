@@ -1,0 +1,26 @@
+tunnel: REPLACE_WITH_HBBTZN_L1_TUNNEL_UUID
+credentials-file: /opt/sfl/nodes/hbbtzn-l1/tunnel/credentials.json
+metrics: 127.0.0.1:49301
+no-autoupdate: true
+
+originRequest:
+  matchSNItoHost: true
+  caPool: /opt/sfl/nodes/hbbtzn-l1/runtime/tls/origin-ca.crt
+  connectTimeout: 5s
+
+ingress:
+  - hostname: api.hbbtzn.com
+    service: https://127.0.0.1:4430
+  - hostname: accounts.hbbtzn.com
+    service: https://127.0.0.1:4430
+  - hostname: console.hbbtzn.com
+    service: https://127.0.0.1:4430
+  - hostname: hbbtzn.com
+    service: https://127.0.0.1:4430
+  - hostname: www.hbbtzn.com
+    service: https://127.0.0.1:4430
+  - hostname: h5.hbbtzn.com
+    service: https://127.0.0.1:4430
+  - hostname: mall.hbbtzn.com
+    service: https://127.0.0.1:4430
+  - service: http_status:404

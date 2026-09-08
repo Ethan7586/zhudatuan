@@ -1,0 +1,45 @@
+[Unit]
+Description=SFL node-bound payment webhook API (%i)
+Requires=zhudatuan-internal-runtime.service
+After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service
+ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/services/commerce/dist/PaymentWebhookApiMain.js
+ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/services/commerce/dist/PaymentWebhookApiReadyMain.js
+ConditionPathExists=/opt/sfl/nodes/%i/runtime/payment-webhook-api.env
+
+[Service]
+Type=simple
+User=zhudatuan
+Group=zhudatuan
+WorkingDirectory=/opt/sfl/nodes/%i/current
+Environment=NODE_ENV=production
+Environment=PAYMENT_WEBHOOK_API_PROFILE=payment-webhook-only
+Environment=API_BIND_HOST=127.0.0.1
+EnvironmentFile=/opt/sfl/nodes/%i/runtime/payment-webhook-api.env
+ExecStart=/usr/bin/node 01_core_hexin/services/commerce/dist/PaymentWebhookApiMain.js
+ExecStartPost=/usr/bin/node 01_core_hexin/services/commerce/dist/PaymentWebhookApiReadyMain.js
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=30
+TimeoutStopSec=45
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+PrivateDevices=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadOnlyPaths=/opt/sfl/nodes/%i /opt/zhudatuan/shared
+
+[Install]
+WantedBy=multi-user.target

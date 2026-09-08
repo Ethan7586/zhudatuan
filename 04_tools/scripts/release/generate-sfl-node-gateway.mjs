@@ -1,0 +1,91 @@
+import { readFile } from 'node:fs/promises';
+import { parseArgs } from 'node:util';
+
+const { values } = parseArgs({
+  options: {
+    manifest: { type: 'string' },
+    check: { type: 'string' },
+    instance: { type: 'string' },
+    'gateway-port': { type: 'string', default: '4430' },
+    'storefront-port': { type: 'string', default: '4410' },
+    'catalog-port': { type: 'string', default: '4431' },
+    'web-port': { type: 'string', default: '4432' },
+    'identity-port': { type: 'string', default: '4433' },
+    'purchase-port': { type: 'string', default: '4434' },
+    'webhook-port': { type: 'string', default: '4436' },
+  },
+  strict: true,
+});
+
+if (!values.manifest) throw new Error('SFL_GATEWAY_MANIFEST_REQUIRED');
+const manifest = JSON.parse(await readFile(values.manifest, 'utf8'));
+const instance = values.instance ?? nodeInstance(manifest.node_id);
+const expected = gatewayConfiguration(manifest, instance, Object.fromEntries(
+  ['gateway', 'storefront', 'catalog', 'web', 'identity', 'purchase', 'webhook'].map((name) => {
+    const raw = values[`${name}-port`];
+    const port = Number(raw);
+    if (!Number.isSafeInteger(port) || port < 1 || port > 65_535) throw new Error(`SFL_GATEWAY_${name.toUpperCase()}_PORT_INVALID`);
+    return [name, port];
+  }),
+));
+
+if (values.check) {
+  const actual = await readFile(values.check, 'utf8');
+  if (actual !== expected) throw new Error(`SFL_GATEWAY_CONFIGURATION_STALE:${values.check}`);
+} else {
+  process.stdout.write(expected);
+}
+
+function nodeInstance(nodeId) {
+  if (typeof nodeId !== 'string' || !/^node:[a-z0-9][a-z0-9-]*:l[0-9]+$/.test(nodeId)) {
+    throw new Error('SFL_GATEWAY_NODE_ID_INVALID');
+  }
+  const [, name, level] = nodeId.split(':');
+  return `${name}-${level}`;
+}
+
+function gatewayConfiguration(manifest, instance, ports) {
+  if (manifest?.schema_version !== 'sfl.node-manifest.v1' || manifest.lifecycle_status !== 'active') {
+    throw new Error('SFL_GATEWAY_NODE_MANIFEST_INVALID');
+  }
+  const domains = manifest.domain_bindings ?? [];
+  const hosts = (surface) => domains.filter((binding) => binding.surface_ref === `surface:${surface}`).map((binding) => binding.host);
+  const apiHosts = hosts('api');
+  const identityHosts = hosts('identity');
+  const consoleHosts = hosts('console');
+  const storefrontHosts = hosts('storefront');
+  if (apiHosts.length !== 1 || identityHosts.length !== 1 || consoleHosts.length !== 1 || storefrontHosts.length === 0) {
+    throw new Error('SFL_GATEWAY_DOMAIN_BINDINGS_INVALID');
+  }
+  const apiHost = apiHosts[0];
+  const allHosts = [...apiHosts, ...identityHosts, ...consoleHosts, ...storefrontHosts];
+  if (new Set(allHosts).size !== allHosts.length) throw new Error('SFL_GATEWAY_DOMAIN_BINDINGS_AMBIGUOUS');
+  const nodeRoot = `/opt/sfl/nodes/${instance}`;
+  const proxy = (port) => `\t\treverse_proxy 127.0.0.1:${port} {\n\t\t\theader_up Host {http.request.host}\n\t\t\theader_up X-Real-IP {http.request.header.CF-Connecting-IP}\n\t\t\theader_up -X-Sfl-Node-Id\n\t\t\theader_up -X-Sfl-Node-Manifest-Id\n\t\t\theader_up -X-Sfl-Node-Surface\n\t\t\theader_up -X-Zdt-Identity-Entry-Host\n\t\t}`;
+  return `# Generated from ${manifest.manifest_id} (${manifest.manifest_digest}). Do not hand edit.\n` +
+`{\n\tadmin off\n\tauto_https off\n}\n\n` +
+`https://:${ports.gateway} {\n` +
+`\ttls ${nodeRoot}/runtime/tls/origin.crt ${nodeRoot}/runtime/tls/origin.key\n\tencode gzip\n\n` +
+`\t@purchaseWrite {\n\t\thost ${apiHost}\n\t\tmethod POST OPTIONS\n\t\tpath /api/v1/checkouts/quotes /api/v1/orders /api/v1/payments/intents\n\t}\n` +
+`\thandle @purchaseWrite {\n${proxy(ports.purchase)}\n\t}\n\n` +
+`\t@paymentRead {\n\t\thost ${apiHost}\n\t\tmethod GET HEAD OPTIONS\n\t\tpath /api/v1/payments/intents/*\n\t}\n` +
+`\thandle @paymentRead {\n${proxy(ports.purchase)}\n\t}\n\n` +
+`\t@ordersRead {\n\t\thost ${apiHost}\n\t\tmethod GET HEAD\n\t\tpath /api/v1/orders /api/v1/orders/*\n\t}\n` +
+`\thandle @ordersRead {\n${proxy(ports.web)}\n\t}\n\n` +
+`\t@webBusiness {\n\t\thost ${apiHost}\n\t\tpath /api/v1/members/me* /api/v1/organizations/layers* /api/v1/reports/dashboard* /api/v1/catalog/listings /api/v1/catalog/public/products* /api/v1/pricing/offers* /api/v1/inventory/availability* /api/v1/carts/current* /api/v1/benefits/accounts* /api/v1/benefits/ledgers*\n\t}\n` +
+`\thandle @webBusiness {\n${proxy(ports.web)}\n\t}\n\n` +
+`\t@catalogImports {\n\t\thost ${apiHost}\n\t\tpath /api/v1/catalog/imports*\n\t}\n` +
+`\thandle @catalogImports {\n${proxy(ports.catalog)}\n\t}\n\n` +
+`\t@catalogPublication {\n\t\thost ${apiHost}\n\t\tmethod PUT DELETE OPTIONS\n\t\tpath_regexp publication ^/api/v1/catalog/listings/[^/]+/publication$\n\t}\n` +
+`\thandle @catalogPublication {\n${proxy(ports.catalog)}\n\t}\n\n` +
+`\t@paymentWebhook {\n\t\thost ${apiHost}\n\t\tmethod POST\n\t\tpath /api/v1/webhooks/wechat/payment\n\t}\n` +
+`\thandle @paymentWebhook {\n${proxy(ports.webhook)}\n\t}\n\n` +
+`\t@identityApi {\n\t\thost ${apiHost}\n\t\tpath /api/v1/*\n\t}\n` +
+`\thandle @identityApi {\n${proxy(ports.identity)}\n\t}\n\n` +
+`\t@gatewayHealth {\n\t\thost ${apiHost}\n\t\tpath /health/gateway\n\t}\n` +
+`\thandle @gatewayHealth {\n\t\theader Content-Type application/json\n\t\trespond \`${JSON.stringify({ status: 'ready', nodeId: manifest.node_id, manifestId: manifest.manifest_id })}\` 200\n\t}\n\n` +
+`\t@accounts host ${identityHosts.join(' ')}\n\thandle @accounts {\n\t\troot * ${nodeRoot}/current/01_core_hexin/apps/auth-web/dist\n\t\ttry_files {path} /index.html\n\t\tfile_server\n\t}\n\n` +
+`\t@console host ${consoleHosts.join(' ')}\n\thandle @console {\n\t\troot * ${nodeRoot}/current/01_core_hexin/apps/console/dist\n\t\ttry_files {path} /index.html\n\t\tfile_server\n\t}\n\n` +
+`\t@storefront host ${storefrontHosts.join(' ')}\n\thandle @storefront {\n${proxy(ports.storefront)}\n\t}\n\n` +
+`\thandle {\n\t\theader Content-Type application/json\n\t\trespond \`{"code":"NODE_BOUNDARY_HOST_MISMATCH"}\` 421\n\t}\n}\n`;
+}

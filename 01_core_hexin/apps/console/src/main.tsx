@@ -5,11 +5,16 @@ import '@shop/design/base.css';
 import '@shop/design/components.css';
 import '@shop/design/workspace.css';
 import './style.css';
+import { loadConsoleRuntimeConfig } from './shared/config/RuntimeConfig';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('APP_ROOT_MISSING');
 const renderer = createRoot(root);
-void import('./app/providers').then(
+void loadConsoleRuntimeConfig().then(async () => {
+  const { startDocumentPrefetch } = await import('./shared/api/DocumentPrefetch');
+  startDocumentPrefetch();
+  return await import('./app/providers');
+}).then(
   ({ Providers }) => {
     window.setTimeout(() => renderer.render(<StrictMode><Providers /></StrictMode>));
   },

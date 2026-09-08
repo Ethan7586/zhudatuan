@@ -38,6 +38,8 @@ describe('catalog import persistence phases', () => {
     expect(calls.some(({ text }) => text.includes('insert into catalog.listing'))).toBe(true);
     expect(calls.some(({ text }) => text.includes('insert into pricing.pricebook'))).toBe(true);
     expect(calls.some(({ text }) => text.includes('insert into inventory.stockitem'))).toBe(true);
+    expect(calls.find(({ text }) => text.includes('success_count=success_count'))?.text)
+      .toContain("jsonb_build_object('processed',$3::integer");
   });
 
   it('keeps an invalid row as an actionable error and never writes facts for it', async () => {

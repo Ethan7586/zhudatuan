@@ -12,16 +12,20 @@ import { DATABASE_POOL, type DatabasePool } from '../../../foundation/persistenc
 import { RISK_GATE } from '../../../foundation/security/RiskGate';
 import { WECHAT_IDENTITY } from '../01_public_gongkai/ports_jiekou/WechatIdentity';
 import { identityOperations } from '../05_interface_jieru/http/IdentityOperations';
-import { RETURN_TARGETS } from '../04_adapters_shixian/providers_waibu/ReturnTargetCatalog';
 
 describe('identity session projection', () => {
   it('returns the active member name without requiring a separate profile permission', async () => {
     const client = {
       query: async (text: string) => {
+        if (text.includes('from access.membership membership join identity.account account')) {
+          return { rows: [{ account_id: 'account:one', realm_id: 'realm:l0', principal_id: 'actor:one', credential_version: 1 }],
+            rowCount: 1 } as unknown as QueryResult;
+        }
         if (text.includes('select rotated_at from identity.credential')) return result([{ rotated_at: null }]);
         if (text.includes('select display_name,mobile_ciphertext from member.profile')) {
           return result([{ display_name: '张三', mobile_ciphertext: 'ciphertext:mobile' }]);
         }
+        if (text.includes('select mobile_masked from identity.account')) return result([{ mobile_masked: '+86****8000' }]);
         return result([]);
       },
       release: () => undefined,
@@ -54,6 +58,40 @@ describe('identity session projection', () => {
         governance: { level: 'senior_administrator', exactOwner: false, organization: 'organization:one' },
       },
     });
+  });
+
+  it('lists and revokes sessions only inside the authenticated realm account', async () => {
+    let requestHash = '';
+    const queries: Array<Readonly<{ text: string; values: readonly unknown[] }>> = [];
+    const client = {
+      query: async (text: string, values: readonly unknown[] = []) => {
+        queries.push({ text, values });
+        if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
+        if (text.startsWith('select request_hash,state,response')) {
+          return result([{ request_hash: requestHash, state: 'started', response: null }]);
+        }
+        if (text.includes('account.legacy_principal_id=$2')) {
+          return result([{ account_id: 'account:l11', realm_id: 'realm:l11', principal_id: 'actor:one', credential_version: 1 }]);
+        }
+        if (text.includes("revoked_reason='security_center'")) return result([{ id: 'session:l11:other' }]);
+        return result([]);
+      },
+      release: () => undefined,
+    } as unknown as PoolClient;
+    const pool: DatabasePool = { connect: async () => client, query: async () => result([]), workload: () => pool, end: async () => undefined };
+    const baseAccess = access();
+    const response = await identityOperations(context(pool)).invoke({
+      type: 'identity.sessions.revoke',
+      access: { ...baseAccess, capabilities: ['identity.sessions.revoke'] },
+      input: { path: { sessionid: 'others' }, query: {}, headers: {}, body: {}, rawBody: '',
+        deadline: Date.now() + 1_000, signal: new AbortController().signal, idempotency: 'sessions:realm:l11' },
+    });
+
+    expect(response).toMatchObject({ status: 200, body: { revoked: 1, sessions: ['session:l11:other'] } });
+    const revocation = queries.find(({ text }) => text.includes("revoked_reason='security_center'"));
+    expect(revocation?.text).toContain('account_id=$1 and realm_id=$2');
+    expect(revocation?.text).not.toContain('principal_id');
+    expect(revocation?.values).toEqual(['account:l11', 'realm:l11', 'session:one']);
   });
 });
 
@@ -104,14 +142,18 @@ describe('identity financial action proof issuance', () => {
     let persisted = '';
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
+        if (text.includes('from access.membership membership join identity.account account')) {
+          return { rows: [{ account_id: 'account:one', realm_id: 'realm:l0', principal_id: 'actor:one', credential_version: 1 }],
+            rowCount: 1 } as unknown as QueryResult;
+        }
         if (text.includes('insert into runtime.idempotency')) storedHash = String(values[3]);
         if (text.startsWith('select request_hash,state,response')) {
           return { rows: [{ request_hash: storedHash, state: 'started', response: null }], rowCount: 1 } as unknown as QueryResult;
         }
         if (text.includes('update identity.challenge set consumed_at')) {
-          return { rows: [{ principal_id: 'actor:one' }], rowCount: 1 } as unknown as QueryResult;
+          return { rows: [{ principal_id: 'actor:one', account_id: 'account:one', realm_id: 'realm:l0' }], rowCount: 1 } as unknown as QueryResult;
         }
-        if (text.includes('select mobile_ciphertext from member.profile')) {
+        if (text.includes('select mobile_ciphertext from identity.account')) {
           return { rows: [{ mobile_ciphertext: 'ciphertext:verified-mobile' }], rowCount: 1 } as unknown as QueryResult;
         }
         if (text.includes("'phone_otp',2")) phoneEvidence = String(values[2]);
@@ -192,6 +234,7 @@ describe('administrator invitation issuance', () => {
     let invitationValues: readonly unknown[] = [];
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
+        if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l0', node_id: 'l0' }]);
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
         if (text.startsWith('select request_hash,state,response')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
@@ -243,7 +286,7 @@ describe('administrator invitation issuance', () => {
       input: {
         path: {},
         query: {},
-        headers: {},
+        headers: { host: 'api.zhudatuan.com' },
         body: { label: '普通管理员邀请', targetClient: 'operator', destination: '+8613800138000',
           storefrontOrganization: 'mall:one', maxUses: 1, expiresAt: new Date(Date.now() + 86_400_000).toISOString() },
         rawBody: '',
@@ -268,6 +311,7 @@ describe('identity challenge notification queue', () => {
     let notificationSql = '';
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
+        if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l0', node_id: 'l0' }]);
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
         if (text.startsWith('select request_hash,state,response')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
@@ -295,7 +339,7 @@ describe('identity challenge notification queue', () => {
       input: {
         path: {},
         query: {},
-        headers: {},
+        headers: { host: 'api.zhudatuan.com' },
         body: { destination: '+8613800138000', invite: 'invitation-secret', purpose: 'registration' },
         rawBody: '',
         deadline: Date.now() + 1_000,
@@ -324,14 +368,6 @@ function context(pool: DatabasePool): ModuleContext {
     application: () => ({ applicationHash: 'application' }),
     authorize: () => 'https://example.test',
     exchange: async () => ({ subject: 'subject' }),
-  });
-  container.bind(RETURN_TARGETS, {
-    console: 'https://console.example.test',
-    'console-hbbtzn': 'https://console-hbbtzn.example.test',
-    storefront: 'https://storefront.example.test',
-    'storefront-hbbtzn': 'https://storefront-hbbtzn.example.test',
-    store: 'https://store.example.test',
-    supplier: 'https://supplier.example.test',
   });
   return { container } as unknown as ModuleContext;
 }

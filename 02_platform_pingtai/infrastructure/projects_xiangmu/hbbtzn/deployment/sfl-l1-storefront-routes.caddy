@@ -1,0 +1,12 @@
+	# Insert inside the zhudatuan.com route block before its display-only fallback.
+	# The Worker supplies these node headers only for hbbtzn.com catalog media.
+	@hbbtznL1CatalogMedia {
+		method GET HEAD
+		header X-SFL-Node-ID node:hbbtzn:l1
+		header X-SFL-Node-Surface web-business
+		path /catalog-media/*
+	}
+	handle @hbbtznL1CatalogMedia {
+		root * /opt/sfl/nodes/hbbtzn-l1
+		file_server
+	}

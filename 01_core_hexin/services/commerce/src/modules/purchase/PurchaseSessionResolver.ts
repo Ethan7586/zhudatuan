@@ -1,4 +1,4 @@
-import type { Actor } from '../../foundation/security/AccessContext';
+import type { AuthenticatedActor } from '../../foundation/security/AccessContext';
 import type { SessionResolver } from '../../foundation/security/SessionResolver';
 import { assertPurchaseTarget } from './PurchasePolicy';
 
@@ -6,7 +6,7 @@ import { assertPurchaseTarget } from './PurchasePolicy';
 export class PurchaseSessionResolver implements SessionResolver {
   constructor(private readonly delegate: SessionResolver) {}
 
-  async resolve(headers: Readonly<Record<string, string>>): Promise<Actor> {
+  async resolve(headers: Readonly<Record<string, string>>): Promise<AuthenticatedActor> {
     const actor = await this.delegate.resolve(headers);
     assertPurchaseTarget(actor.target);
     return actor;

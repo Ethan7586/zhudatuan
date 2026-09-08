@@ -43,7 +43,7 @@ export async function readProducts(context: ConsoleContext, filter: ProductQuery
         ...(filter.category === '' ? {} : { category: filter.category }),
         ...(filter.preview && filter.supplier !== undefined && filter.supplier !== '' ? { supplier: filter.supplier } : {}),
         ...(filter.preview && filter.mall !== undefined && filter.mall !== '' ? { mall: filter.mall } : {}),
-        ...(filter.preview && filter.status !== undefined && filter.status !== '' ? { status: filter.status } : {}),
+        ...(filter.status !== undefined && filter.status !== '' ? { status: filter.status } : {}),
         ...(filter.cursor === undefined ? {} : { cursor: filter.cursor }),
       },
     },

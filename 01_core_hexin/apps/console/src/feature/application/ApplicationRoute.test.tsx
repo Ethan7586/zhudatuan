@@ -183,7 +183,9 @@ describe('Commerce application workspace', () => {
 
     const studio = await screen.findByRole('dialog', { name: '築店 · 东方策展' });
     const frame = within(studio).getByTitle('築店东方策展原版方案');
-    expect(frame.getAttribute('src')).toBe('http://localhost:4174/design-references/admin/kaidian/dist/index.html');
+    expect(frame.getAttribute('src')).toBe(
+      `${process.env.VITE_ZHUDIAN_SOLUTION_ORIGIN ?? 'http://localhost:4174'}/design-references/admin/kaidian/dist/index.html`,
+    );
     expect(frame.getAttribute('sandbox')).toBe('allow-scripts allow-same-origin');
     expect(frame.getAttribute('referrerpolicy')).toBe('no-referrer');
     expect(frame.getAttribute('allow')).toBe('clipboard-write');

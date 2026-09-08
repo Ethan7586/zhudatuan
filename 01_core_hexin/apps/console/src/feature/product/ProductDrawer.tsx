@@ -60,7 +60,7 @@ function ProductDrawerContent({
             <Heading slot="title">{listing.title}</Heading>
             <p>{preview?.spu ?? listing.product_id}</p>
             <span className="productdrawermeta">
-              <StatusBadge status={listing.status} />
+              <StatusBadge status={listing.management_status ?? listing.status} />
               <small>v{listing.version}</small>
               {preview === undefined ? <small>列表快照</small> : <small>本地预览</small>}
             </span>

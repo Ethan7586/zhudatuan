@@ -6,6 +6,9 @@ export interface RegistrationMembership {
   readonly member: string;
   readonly principal: string;
   readonly organization: string;
+  readonly realm: string;
+  readonly account: string;
+  readonly employee?: string | null;
   readonly role: string;
   readonly scopeKind: string;
   readonly scopes: readonly [string, string, string];
@@ -25,6 +28,8 @@ export interface OperatorRegistrationMembership {
   readonly storefrontMembership: string;
   readonly member: string;
   readonly principal: string;
+  readonly realm: string;
+  readonly account: string;
   readonly operatorOrganization: string;
   readonly storefrontOrganization: string;
   readonly operatorRole: string;
@@ -61,12 +66,15 @@ export interface OwnershipProofSnapshot extends OwnershipTransferInput {
 
 export class AccessPort {
   async createRegistration(database: OperationDatabase, input: RegistrationMembership): Promise<Readonly<Record<string, unknown>>> {
-    const membership = await database.query(`insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
-      values($1,$2,$3,'storefront','active',1,clock_timestamp()) returning *`, [input.membership, input.member, input.organization]);
+    const membership = await database.query(`insert into access.membership(
+      id,member_id,organization_id,client,status,access_version,joined_at,employee_no,realm_id,account_id,node_profile)
+      select $1,$2,$3,'storefront','active',1,transaction_timestamp(),$4,realm.id,$6,realm.node_profile
+      from identity.realm realm where realm.id=$5 and realm.status='active' returning *`,
+    [input.membership, input.member, input.organization, input.employee ?? null, input.realm, input.account]);
     await database.query(`insert into access.membershiprole(membership_id,role_id,effective_at) values
-      ($1,$2,clock_timestamp()),($1,'role:self',clock_timestamp())`, [input.membership, input.role]);
+      ($1,$2,transaction_timestamp()),($1,'role:self',transaction_timestamp())`, [input.membership, input.role]);
     await database.query(`insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values
-      ($1,$2,$3,$4,$4,'allow',clock_timestamp(),1),($5,$2,'owner',$6,$6,'allow',clock_timestamp(),1),($7,$2,'self',$8,$8,'allow',clock_timestamp(),1)`,
+      ($1,$2,$3,$4,$4,'allow',transaction_timestamp(),1),($5,$2,'owner',$6,$6,'allow',transaction_timestamp(),1),($7,$2,'self',$8,$8,'allow',transaction_timestamp(),1)`,
     [input.scopes[0], input.membership, input.scopeKind, input.organization, input.scopes[1], input.member, input.scopes[2], `self:${input.principal}`]);
     const row = membership.rows[0];
     if (!row) throw new Error('MEMBERSHIP_CREATE_FAILED');
@@ -79,18 +87,23 @@ export class AccessPort {
       member: input.member,
       principal: input.principal,
       organization: input.storefrontOrganization,
+      realm: input.realm,
+      account: input.account,
       role: input.storefrontRole,
       scopeKind: 'mall',
       scopes: input.storefrontScopes,
     });
     const membership = await database.query(`insert into access.membership(
-      id,member_id,organization_id,client,status,access_version,joined_at,governance_parent_membership_id)
-      values($1,$2,$3,'operator','active',1,clock_timestamp(),$4) returning *`,
-    [input.operatorMembership, input.member, input.operatorOrganization, input.governanceParentMembership]);
+      id,member_id,organization_id,client,status,access_version,joined_at,governance_parent_membership_id,
+      realm_id,account_id,node_profile)
+      select $1,$2,$3,'operator','active',1,transaction_timestamp(),$4,realm.id,$6,realm.node_profile
+      from identity.realm realm where realm.id=$5 and realm.status='active' returning *`,
+    [input.operatorMembership, input.member, input.operatorOrganization, input.governanceParentMembership,
+      input.realm, input.account]);
     await database.query(`insert into access.membershiprole(membership_id,role_id,effective_at) values
-      ($1,$2,clock_timestamp()),($1,'role:self',clock_timestamp())`, [input.operatorMembership, input.operatorRole]);
+      ($1,$2,transaction_timestamp()),($1,'role:self',transaction_timestamp())`, [input.operatorMembership, input.operatorRole]);
     await database.query(`insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values
-      ($1,$2,'tenant',$3,$3,'allow',clock_timestamp(),1),($4,$2,'self',$5,$5,'allow',clock_timestamp(),1)`,
+      ($1,$2,'tenant',$3,$3,'allow',transaction_timestamp(),1),($4,$2,'self',$5,$5,'allow',transaction_timestamp(),1)`,
     [input.operatorScopes[0], input.operatorMembership, input.operatorOrganization, input.operatorScopes[1], `self:${input.principal}`]);
     const row = membership.rows[0];
     if (!row) throw new Error('MEMBERSHIP_CREATE_FAILED');
@@ -99,20 +112,20 @@ export class AccessPort {
 
   async createInvitedRegistration(database: OperationDatabase, input: InvitedRegistrationMembership): Promise<Readonly<Record<string, unknown>>> {
     const storefront = await database.query(`insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
-      values($1,$2,$3,'storefront','active',1,clock_timestamp()) returning *`,
+      values($1,$2,$3,'storefront','active',1,transaction_timestamp()) returning *`,
     [input.storefrontMembership, input.member, input.organization]);
     await database.query(`insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
-      values($1,$2,$3,'operator','active',1,clock_timestamp())`,
+      values($1,$2,$3,'operator','active',1,transaction_timestamp())`,
     [input.operatorMembership, input.member, input.organization]);
     await database.query(`insert into access.membershiprole(membership_id,role_id,effective_at) values
-      ($1,$2,clock_timestamp()),($1,'role:self',clock_timestamp()),
-      ($3,$4,clock_timestamp()),($3,'role:self',clock_timestamp()) on conflict do nothing`,
+      ($1,$2,transaction_timestamp()),($1,'role:self',transaction_timestamp()),
+      ($3,$4,transaction_timestamp()),($3,'role:self',transaction_timestamp()) on conflict do nothing`,
     [input.storefrontMembership, input.storefrontRole, input.operatorMembership, input.operatorRole]);
     const selfScope = `self:${input.principal}`;
     await database.query(`insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values
-      ($1,$7,$8,$9,$9,'allow',clock_timestamp(),1),($2,$7,'owner',$10,$10,'allow',clock_timestamp(),1),
-      ($3,$7,'self',$11,$11,'allow',clock_timestamp(),1),($4,$12,$8,$9,$9,'allow',clock_timestamp(),1),
-      ($5,$12,'owner',$10,$10,'allow',clock_timestamp(),1),($6,$12,'self',$11,$11,'allow',clock_timestamp(),1)`,
+      ($1,$7,$8,$9,$9,'allow',transaction_timestamp(),1),($2,$7,'owner',$10,$10,'allow',transaction_timestamp(),1),
+      ($3,$7,'self',$11,$11,'allow',transaction_timestamp(),1),($4,$12,$8,$9,$9,'allow',transaction_timestamp(),1),
+      ($5,$12,'owner',$10,$10,'allow',transaction_timestamp(),1),($6,$12,'self',$11,$11,'allow',transaction_timestamp(),1)`,
     [...input.scopes, input.storefrontMembership, input.scopeKind, input.organization, input.member, selfScope, input.operatorMembership]);
     const row = storefront.rows[0];
     if (!row) throw new Error('MEMBERSHIP_CREATE_FAILED');

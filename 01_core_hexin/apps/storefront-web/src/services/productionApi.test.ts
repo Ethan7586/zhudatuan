@@ -64,7 +64,10 @@ describe('canonical storefront production API', () => {
     expect(snapshot.accounts.items.map((item) => item.balanceCents)).toEqual([20_000, 5_000]);
     expect(fetcher).toHaveBeenCalledWith('https://api.hbbtzn.com/api/v1/identity/session', expect.objectContaining({ credentials: 'include', redirect: 'error' }));
     const headers = requestHeaders(fetcher, '/api/v1/identity/session');
-    expect(headers).toMatchObject({ 'x-client-version': '0.0.0', 'x-contract-version': '1.0.0' });
+    expect(headers).toMatchObject({
+      'x-client-version': process.env.NEXT_PUBLIC_CLIENT_VERSION ?? '0.0.0',
+      'x-contract-version': '1.0.0',
+    });
     expect(requestPaths(fetcher)).toEqual(expect.arrayContaining([
       '/api/v1/identity/session',
       '/api/v1/members/me',
@@ -102,7 +105,7 @@ describe('canonical storefront production API', () => {
 
     const request = requestInit(fetcher, '/api/v1/identity/sessions', 'POST');
     expect(JSON.parse(String(request.body))).toMatchObject({
-      provider: 'password', target: 'storefront-hbbtzn', application: 'zdt-l1-verify', subject: '13800138000',
+      provider: 'password', target: 'storefront', application: 'zdt-l1-verify', subject: '13800138000',
     });
   });
 
@@ -217,7 +220,7 @@ describe('canonical storefront production API', () => {
       expect(JSON.parse(String(init?.body))).toMatchObject({ mode: 'authenticated' });
     }
     expect(JSON.parse(String(sessions[1]?.[1]?.body))).toMatchObject({
-      application: 'zdt-l1-verify', target: 'storefront-hbbtzn',
+      application: 'zdt-l1-verify', target: 'storefront',
     });
   });
 

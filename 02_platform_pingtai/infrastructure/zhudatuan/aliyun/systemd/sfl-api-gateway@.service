@@ -1,0 +1,43 @@
+[Unit]
+Description=SFL node-local TLS API gateway (%i)
+Requires=sfl-storefront@%i.service sfl-catalog-api@%i.service sfl-web-api@%i.service sfl-identity-api@%i.service sfl-purchase-api@%i.service sfl-payment-webhook-api@%i.service
+After=network-online.target sfl-storefront@%i.service sfl-catalog-api@%i.service sfl-web-api@%i.service sfl-identity-api@%i.service sfl-purchase-api@%i.service sfl-payment-webhook-api@%i.service
+ConditionPathExists=/opt/sfl/nodes/%i/runtime/api-gateway.Caddyfile
+ConditionPathExists=/opt/sfl/nodes/%i/runtime/tls/origin.crt
+ConditionPathExists=/opt/sfl/nodes/%i/runtime/tls/origin.key
+
+[Service]
+Type=simple
+User=zhudatuan
+Group=zhudatuan
+Environment=XDG_DATA_HOME=/opt/sfl/nodes/%i/runtime/caddy-data
+Environment=XDG_CONFIG_HOME=/opt/sfl/nodes/%i/runtime/caddy-config
+ExecStartPre=/usr/bin/caddy validate --config /opt/sfl/nodes/%i/runtime/api-gateway.Caddyfile --adapter caddyfile
+ExecStart=/usr/bin/caddy run --config /opt/sfl/nodes/%i/runtime/api-gateway.Caddyfile --adapter caddyfile
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=30
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+PrivateDevices=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadOnlyPaths=/opt/sfl/nodes/%i/current
+ReadWritePaths=/opt/sfl/nodes/%i/runtime/caddy-data /opt/sfl/nodes/%i/runtime/caddy-config
+
+[Install]
+WantedBy=multi-user.target

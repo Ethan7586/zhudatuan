@@ -1,7 +1,7 @@
 ---
-title: "zhudatuan 主打团｜战略全景图"
+title: 'zhudatuan 主打团｜战略全景图'
 type: strategy-map
-status: "整体观摩版"
+status: '整体观摩版'
 date: 2026-09-02
 ---
 
@@ -9,17 +9,19 @@ date: 2026-09-02
 
 > 一张可缩放的整体图。请在支持 Mermaid 的 Markdown 阅读器中全屏打开；文字与线条均为矢量渲染，放大后不会模糊。
 
+> **永久裁定（2026-09-07）：**原“十二级独立商城”与“L1—L11 完整独立商城”定义已经永久删除。唯一有效定义是：L0—L5 为商城经营节点，L6—L11 为消费者节点；两段可以共用代码架构，但消费者只启用购物等少量功能。
+
 ```mermaid
 %%{init: {"theme":"base","flowchart":{"htmlLabels":true,"curve":"linear","nodeSpacing":44,"rankSpacing":68,"useMaxWidth":false},"themeVariables":{"fontFamily":"Noto Sans SC, PingFang SC, Microsoft YaHei, sans-serif","fontSize":"21px","primaryColor":"#F4F7FF","primaryTextColor":"#07182F","primaryBorderColor":"#143A8F","lineColor":"#8493A8","secondaryColor":"#FFFFFF","tertiaryColor":"#F5F7FA","clusterBkg":"#FFFFFF","clusterBorder":"#CBD5E1","edgeLabelBackground":"#FFFFFF"}}}%%
 flowchart TB
 
-    NORTH["北极星<br/>完整、独立、可复制、低耦合运行的标准商城"]
-    FORMULA["战略公式<br/>一个品牌根 × 两个系统边界 × 一套标准内核 × 十二级独立商城 × 四条业务主线"]
+    NORTH["北极星<br/>完整、独立、可生成、低耦合运行的 L0—L5 标准商城"]
+    FORMULA["战略公式<br/>一个品牌根 × 两个系统边界 × 一套标准内核 × 两类节点 × 四条业务主线"]
     BRAND["zhudatuan 主打团<br/>品牌与平台根"]
 
     NORTH --> FORMULA --> BRAND
 
-    subgraph SYSTEM_MAP["一｜两大系统边界与复制模型"]
+    subgraph SYSTEM_MAP["一｜两大系统边界与节点生成模型"]
         direction LR
 
         subgraph CONTROL_PLANE["系统边界一｜平台控制面"]
@@ -44,14 +46,14 @@ flowchart TB
             MP1 --> MP2 --> MP3 --> MP4 --> MP5 --> MP6
         end
 
-        subgraph REPLICATION["复制模型｜一套标准内核，十二级独立商城"]
+        subgraph REPLICATION["节点生成模型｜一套标准内核，两类节点"]
             direction TB
             RP1["标准商城内核 Mall Core<br/>同一套代码与构建产物"]
-            RP2["L0 甄选商城<br/>平台自营"]
-            RP3["L1—L11 完整独立商城<br/>由同一标准内核生成"]
-            RP4["每个实例独立拥有<br/>mall_id · 业务数据 · 经营状态<br/>配置 · 品牌 · 生命周期"]
-            RP5["运行独立性<br/>不查询父商城或祖先链<br/>层级服务不可用仍可浏览、下单、支付、履约、退款与记账"]
-            RP6["名词边界<br/>Mall Product＝完整产品所有权边界<br/>Mall Scope＝mall_id 身份与数据范围<br/>MallContext ≠ 商城系统 Mall"]
+            RP2["L0—L5 商城经营节点<br/>完整商城能力 · 独立 mall_id"]
+            RP3["L6—L11 消费者节点<br/>只启用购物等少量功能 · 不是商城"]
+            RP4["每个节点独立拥有<br/>node_id · 身份 · 权限 · 参与事实 · 生命周期<br/>只有 L0—L5 拥有商城经营范围"]
+            RP5["运行边界<br/>商城经营事实按 mall_id 分舱<br/>消费者事实按节点身份和本人范围分舱"]
+            RP6["永久边界<br/>共享代码架构 ≠ 十二级全商城<br/>L0—L5＝商城 · L6—L11＝消费者"]
             RP1 --> RP2
             RP1 --> RP3
             RP2 --> RP4
@@ -62,9 +64,9 @@ flowchart TB
 
     BRAND -->|创建与治理| CONTROL_PLANE
     BRAND -->|完整产品| MALL_PRODUCT
-    BRAND -->|标准化复制| REPLICATION
+    BRAND -->|标准化生成| REPLICATION
 
-    CONTROL_PLANE --> SYSTEM_BASE["战略运行基座<br/>平台负责创建与治理 · Mall 负责完整交易 · 实例保持独立运行"]
+    CONTROL_PLANE --> SYSTEM_BASE["战略运行基座<br/>平台负责创建与治理 · L0—L5 商城负责完整交易<br/>L6—L11 消费者只运行已开放功能"]
     MALL_PRODUCT --> SYSTEM_BASE
     REPLICATION --> SYSTEM_BASE
 
@@ -103,7 +105,7 @@ flowchart TB
 
     subgraph FLYWHEEL["四｜战略飞轮｜从标准化能力到规模化经营"]
         direction LR
-        FW1["1 · 标准化<br/>锁定内核、合同与数据边界"] --> FW2["2 · 快速复制<br/>生成完整商城"] --> FW3["3 · 独立经营<br/>各自配置、品牌与生命周期"] --> FW4["4 · 稳定交易<br/>四线闭环与故障隔离"] --> FW5["5 · 沉淀事实<br/>订单 · 商品 · 现金 · 财务"] --> FW6["6 · 统一治理并反哺内核<br/>配置 · 运营 · 发布 · 观测"]
+        FW1["1 · 标准化<br/>锁定内核、合同与数据边界"] --> FW2["2 · 快速生成<br/>生成 L0—L5 完整商城"] --> FW3["3 · 独立经营<br/>各自配置、品牌与生命周期"] --> FW4["4 · 稳定交易<br/>四线闭环与故障隔离"] --> FW5["5 · 沉淀事实<br/>订单 · 商品 · 现金 · 财务"] --> FW6["6 · 统一治理并反哺内核<br/>配置 · 运营 · 发布 · 观测"]
     end
 
     CORE_BOUNDARIES --> FLYWHEEL
@@ -131,7 +133,7 @@ flowchart TB
 
     subgraph EXECUTION["六｜实施主线｜非排期，以当前已确认边界推导"]
         direction LR
-        E1["1 · 收束真值<br/>zdt-next 是唯一新系统主轴<br/>旧系统只作取证与能力来源"] --> E2["2 · 统一合同与数据<br/>Generated SDK<br/>Canonical PostgreSQL"] --> E3["3 · 闭合单商城四线<br/>订单 · 商品 · 现金 · 财务"] --> E4["4 · 打通体验入口<br/>Storefront · Console<br/>Auth · Miniapp"] --> E5["5 · 复制十二级实例<br/>L0 + L1—L11"] --> E6["6 · 平台治理与生态扩展<br/>Hierarchy · Referral<br/>Membership · Providers"] --> E7["7 · 生产状态可证明<br/>不可变制品<br/>Production State Manifest"]
+        E1["1 · 收束真值<br/>zdt-next 是唯一新系统主轴<br/>旧系统只作取证与能力来源"] --> E2["2 · 统一合同与数据<br/>Generated SDK<br/>Canonical PostgreSQL"] --> E3["3 · 闭合单商城四线<br/>订单 · 商品 · 现金 · 财务"] --> E4["4 · 打通体验入口<br/>Storefront · Console<br/>Auth · Miniapp"] --> E5["5 · 生成十二级节点<br/>L0—L5 商城 · L6—L11 消费者"] --> E6["6 · 平台治理与生态扩展<br/>Hierarchy · Referral<br/>Membership · Providers"] --> E7["7 · 生产状态可证明<br/>不可变制品<br/>Production State Manifest"]
     end
 
     MOAT --> EXECUTION
@@ -192,12 +194,13 @@ flowchart TB
 - 绿色：商品、库存与履约。
 - 橙色：支付与现金事实。
 - 紫色：财务与账务事实。
-- 红色：复制模型、战略飞轮与待定项。
+- 红色：节点生成模型、战略飞轮与待定项。
 - 实线箭头：主要战略或运行顺序；无箭头连接：同级并列能力。
 
 ## 图的事实边界
 
-- 已锁定：正式产品名称、平台控制面与商城系统 Mall 的边界、Mall Product 与 Mall Scope 的区别、L0 与 L1—L11 的复制模型、四条业务线、唯一合同和数据事实原则。
+- 已锁定：正式产品名称、平台控制面与商城系统 Mall 的边界、Mall Product 与 Mall Scope 的区别、L0—L5 商城经营节点与 L6—L11 消费者节点的永久分段、四条业务线、唯一合同和数据事实原则。
+- 已永久删除：“十二级独立商城”“L1—L11 完整独立商城”及其同义表达；不得恢复为产品或实现依据。
 - 战略表达：战略飞轮与实施主线是依据当前已确认边界整理的整体视图，不代表日期承诺。
 - 待定内容：图中“待 Ethan 定稿”区域只列实现选择，不替 Ethan 定案。
 

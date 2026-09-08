@@ -16,7 +16,7 @@ const productsModule = defineConsoleModuleManifest({
     placement: 'main',
     group: 'commerce',
     order: 40,
-    label: '商品治理台',
+    label: '商品管理',
     icon: 'products',
     labelByScopeKind: { mall: '商品管理' },
     preferredScopeKind: 'mall',
@@ -82,7 +82,7 @@ describe('ConsoleModuleManifest', () => {
   it('publishes the approved module id set and narrows known ids', () => {
     expect(consoleModuleIds).toEqual([
       'cockpit', 'control', 'applications', 'products', 'orders', 'referral', 'channels',
-      'vouchers', 'finance', 'access', 'qualification', 'reports', 'support',
+      'vouchers', 'finance', 'storefront-members', 'access', 'qualification', 'reports', 'support',
     ]);
     expect(isConsoleModuleId('products')).toBe(true);
     expect(isConsoleModuleId('unknown')).toBe(false);

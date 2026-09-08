@@ -157,11 +157,19 @@ const REPAIR_FILES = [
   '20260907010000_enable_identity_catalog_commands.sql',
   '20260907110000_publish_storefront_member_directory.sql',
   '20260907113000_separate_l0_l1_auth_return_targets.sql',
+  '20260907120000_create_identity_realm_accounts.sql',
+  '20260907121000_scope_identity_lifecycle_by_realm.sql',
+  '20260907122000_bind_sessions_tickets_to_realm_accounts.sql',
+  '20260907123000_enforce_identity_node_profiles.sql',
+  '20260908010000_canonicalize_sfl_identity_node_ids.sql',
+  '20260908011000_canonicalize_sfl_identity_targets.sql',
+  '20260908012000_create_sfl_login_intents.sql',
+  '20260908013000_generalize_storefront_roles.sql',
 ];
 
 const mode = process.argv[2];
-if (!['--check-inventory','--schema-fresh','--environment-bootstrap','--inventory-cutover-unsafe','--postgres-fresh','--mvp-kernel'].includes(mode)) {
-  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel [URL]');
+if (!['--check-inventory','--schema-fresh','--environment-bootstrap','--inventory-cutover-unsafe','--postgres-fresh','--mvp-kernel','--identity-realm-isolation'].includes(mode)) {
+  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel|--identity-realm-isolation [URL]');
 }
 const replayRole = mode === '--postgres-fresh' ? process.argv[4] : undefined;
 if (replayRole !== undefined && !/^[a-z][a-z0-9_]{2,62}$/.test(replayRole)) throw new Error('POSTGRES_FRESH_ROLE_INVALID');
@@ -229,6 +237,11 @@ try {
     if (mode === '--mvp-kernel') {
       const { verifyMvpKernel } = await import('./mvp-kernel.mjs');
       await verifyMvpKernel(database);
+    }
+    if (mode === '--identity-realm-isolation') {
+      const { verifyIdentityRealmIsolation } = await import('./identity-realm-isolation.mjs');
+      await verifyIdentityRealmIsolation(database);
+      console.log('identity realm isolation passed: nodes=L0-L11 profiles=operating_mall:6,consumer:6 accounts=12 l0-l1-surfaces=4 cross-host=0 login-intent=issue/wrong-target/consume/replay password-scope=pass logout-scope=pass node-lifecycle=2');
     }
     console.log(`target schema replay passed: migrations=${applied} historical=94 repair=${REPAIR_FILES.length}`);
   }

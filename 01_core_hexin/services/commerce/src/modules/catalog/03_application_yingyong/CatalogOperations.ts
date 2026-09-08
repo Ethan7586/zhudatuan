@@ -5,6 +5,11 @@ import { ModuleOperations, requireAccess, rowResult, type OperationActions } fro
 import { bodyRecord, keysetResult, queryPage, textField } from '../../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
 import { catalogImportOperations } from './CatalogImportOperations';
+import {
+  CATALOG_LISTING_MANAGEMENT_STATUS_SQL,
+  catalogListingPageResult,
+  type CatalogListingStatusSummary,
+} from './CatalogListingManagement';
 import { setListingPublication } from './CatalogListingPublication';
 
 export { setListingPublication } from './CatalogListingPublication';
@@ -96,6 +101,7 @@ export function catalogActions(context: ModuleContext): OperationActions {
       const category = queryValue(request.input.query.category);
       const product = queryValue(request.input.query.product);
       const pool = queryValue(request.input.query.pool);
+      const status = queryValue(request.input.query.status);
       const storefront = access.actor.target === 'storefront';
       const page = queryPage(request);
       if (access.scope.kind === 'supplier') {
@@ -114,16 +120,31 @@ export function catalogActions(context: ModuleContext): OperationActions {
       const result = await database.query(
         `select listing.id,listing.pool_id,listing.sku_id,listing.title,listing.status,listing.effective_at,listing.expires_at,listing.version,listing.updated_at cursor_sort,
         sku.code,product.id product_id,product.product_type,product.attributes->>'coverUrl' cover_url,
-        product.attributes->>'subtitle' subtitle from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id
+        product.attributes->>'subtitle' subtitle,
+        (select count(*)::integer from catalog.sku productsku where productsku.product_id=product.id) sku_count,
+        ${CATALOG_LISTING_MANAGEMENT_STATUS_SQL} management_status
+        from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id
         join catalog.product product on product.id=sku.product_id where listing.scope_id=$1
         and ($2='' or listing.title ilike '%'||$2||'%' or sku.code ilike '%'||$2||'%') and ($3='' or product.category_id=$3) and ($4='' or product.id=$4)
         and ($5='' or listing.pool_id=$5) and (not $6 or (listing.status='published' and (listing.effective_at is null or listing.effective_at<=clock_timestamp())
           and (listing.expires_at is null or listing.expires_at>clock_timestamp())))
-        and ($7::timestamptz is null or (listing.updated_at,listing.id)<($7::timestamptz,$8))
-        order by listing.updated_at desc,listing.id desc limit $9`,
-        [access.scope.id, query, category, product, pool, storefront, page.sort, page.id, page.fetch]
+        and ($7='' or (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})=$7)
+        and ($8::timestamptz is null or (listing.updated_at,listing.id)<($8::timestamptz,$9))
+        order by listing.updated_at desc,listing.id desc limit $10`,
+        [access.scope.id, query, category, product, pool, storefront, status, page.sort, page.id, page.fetch]
       );
-      return keysetResult(result, page, 'cursor_sort');
+      if (storefront) return keysetResult(result, page, 'cursor_sort');
+      const summary = await database.query<CatalogListingStatusSummary>(`select count(*)::integer total_count,
+        count(*) filter(where (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='needs_attention')::integer needs_attention,
+        count(*) filter(where (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='pending_review')::integer pending_review,
+        count(*) filter(where (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='published')::integer published,
+        count(*) filter(where (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='unpublished')::integer unpublished
+        from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id
+        join catalog.product product on product.id=sku.product_id where listing.scope_id=$1
+        and ($2='' or listing.title ilike '%'||$2||'%' or sku.code ilike '%'||$2||'%') and ($3='' or product.category_id=$3)
+        and ($4='' or product.id=$4) and ($5='' or listing.pool_id=$5)`,
+      [access.scope.id, query, category, product, pool]);
+      return catalogListingPageResult(result, page, summary.rows[0]);
     },
     'catalog.listings.publish': async (request, database) => setListingPublication(request, database, 'published'),
     'catalog.listings.unpublish': async (request, database) => setListingPublication(request, database, 'unpublished'),

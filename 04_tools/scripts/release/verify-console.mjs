@@ -1,8 +1,8 @@
-import { createServer } from 'node:http';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, relative, resolve, sep } from 'node:path';
 
 import { chromium } from '@playwright/test';
+import { resolveConsoleAppConfig } from '@shop/config/sfl-console-runtime';
 import { readConsoleArtifact, validateConsoleArtifactManifest } from './console-artifact.mjs';
 
 const args = process.argv.slice(2);
@@ -12,28 +12,58 @@ const expectedCommit = option('--expected-commit');
 const requireClean = args.includes('--require-clean');
 if ((dist === undefined) === (publicUrl === undefined)) throw new Error('CONSOLE_VERIFICATION_TARGET_REQUIRED');
 
-let server;
 let browser;
 try {
   const local = dist !== undefined;
-  const artifact = local ? readConsoleArtifact(dist, { expectedCommit, requireClean }) : { manifest: await fetchManifest(publicUrl, { expectedCommit, requireClean }) };
-  const baseUrl = local ? await serve(resolve(dist)) : normalizePublicUrl(publicUrl);
+  const artifact = local
+    ? await readConsoleArtifact(dist, { expectedCommit, requireClean })
+    : { manifest: await fetchManifest(publicUrl, { expectedCommit, requireClean }) };
   const manifest = artifact.manifest;
-  const expectedApiUrl = `${manifest.apiBaseUrl}/api/v1/identity/session`;
-  const expectedAuthUrl = `${manifest.authBaseUrl}/login?client=console`;
-  const pageErrors = [];
-  let apiReached = false;
+  const publicBaseUrl = local ? undefined : normalizePublicUrl(publicUrl);
+  const runtimes = local
+    ? consoleRuntimes(manifest)
+    : [runtimeForHost(manifest, new URL(publicBaseUrl).hostname)];
+  const localRoot = local ? resolve(dist) : undefined;
 
   browser = await chromium.launch({ headless: true });
+  for (const runtime of runtimes) {
+    const baseUrl = local ? runtime.consoleOrigin : publicBaseUrl;
+    await verifyUnauthenticatedNode(browser, baseUrl, manifest, runtime, localRoot);
+    await verifyOwnerWorkspaceResilience(browser, baseUrl, manifest, runtime, localRoot);
+    console.log(`console node evidence: ${JSON.stringify({
+      host: runtime.domainBinding.host,
+      manifest_digest: runtime.nodeManifest.manifest_digest,
+      node_context: runtime.nodeContext,
+      api: runtime.apiBaseUrl,
+      identity: runtime.identityEntryUrl,
+      scope: runtime.scope,
+      source_sha: runtime.sourceSha,
+      build_count: runtime.buildCount,
+      immutable_artifact_digest: runtime.immutableArtifactDigest,
+    })}`);
+  }
+  console.log(`console browser verified: ${local ? resolve(dist) : publicBaseUrl} source_sha=${manifest.source_sha} artifact=${artifact.sha256 ?? 'remote'} nodes=${runtimes.map((runtime) => runtime.domainBinding.host).join(',')} ownerWorkspace=passed`);
+} finally {
+  if (browser) await browser.close();
+}
+
+async function verifyUnauthenticatedNode(browser, baseUrl, artifactManifest, runtime, localRoot) {
+  const expectedApiUrl = `${runtime.apiBaseUrl}/api/v1/identity/session`;
+  const expectedAuthUrl = runtime.identityEntryUrl;
+  const pageErrors = [];
+  const apiOrigins = new Set();
+  let apiReached = false;
   const page = await browser.newPage();
   page.on('pageerror', (error) => pageErrors.push(error.message));
   page.on('request', (request) => {
+    const requestUrl = new URL(request.url());
+    if (requestUrl.hostname.startsWith('api.')) apiOrigins.add(requestUrl.origin);
     if (request.url() === expectedApiUrl) apiReached = true;
   });
-
-  if (local) {
+  if (localRoot !== undefined) {
+    await installLocalArtifactRoute(page, runtime.consoleOrigin, localRoot);
     const localOrigin = new URL(baseUrl).origin;
-    await page.route(`${manifest.apiBaseUrl}/**`, async (route) => {
+    await page.route(`${runtime.apiBaseUrl}/**`, async (route) => {
       const request = route.request();
       const headers = {
         'access-control-allow-credentials': 'true',
@@ -47,45 +77,34 @@ try {
       }
       await route.fulfill({ status: request.url() === expectedApiUrl ? 401 : 404, headers, contentType: 'application/json', body: JSON.stringify({ code: 'UNAUTHENTICATED' }) });
     });
-    await page.route(`${manifest.authBaseUrl}/**`, (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'text/html; charset=utf-8',
-        body: '<!doctype html><title>Auth target reached</title><main>AUTH_TARGET_REACHED</main>',
-      })
-    );
+    await page.route(`${runtime.identityOrigin}/**`, (route) => route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: '<!doctype html><title>Auth target reached</title><main>AUTH_TARGET_REACHED</main>',
+    }));
   }
-
-  await page.goto(`${baseUrl}/?release_verify=${manifest.commit}`, { waitUntil: 'domcontentloaded', timeout: 20_000 });
-  await page.waitForURL((url) => url.href === expectedAuthUrl, { timeout: 15_000 });
-  if (!apiReached) throw new Error('CONSOLE_BROWSER_API_ORIGIN_NOT_REACHED');
-  if (pageErrors.length > 0) throw new Error(`CONSOLE_BROWSER_PAGE_ERROR:${pageErrors.join('|')}`);
-  if ((await page.locator('body').innerText()).includes('CLIENT_')) throw new Error('CONSOLE_BROWSER_CONFIG_ERROR_RENDERED');
-  await verifyOwnerWorkspaceResilience(browser, baseUrl, manifest);
-  console.log(`console browser verified: ${local ? resolve(dist) : baseUrl} commit=${manifest.commit} ownerWorkspace=passed`);
-
-  async function serve(root) {
-    server = createServer((request, response) => serveStatic(root, request, response));
-    await new Promise((accept, reject) => {
-      server.once('error', reject);
-      server.listen(0, '127.0.0.1', accept);
-    });
-    const address = server.address();
-    if (address === null || typeof address === 'string') throw new Error('CONSOLE_STATIC_SERVER_ADDRESS_INVALID');
-    return `http://127.0.0.1:${address.port}`;
+  try {
+    await page.goto(`${baseUrl}/?release_verify=${artifactManifest.source_sha}`, { waitUntil: 'domcontentloaded', timeout: 20_000 });
+    await page.waitForURL((url) => url.href === expectedAuthUrl, { timeout: 15_000 });
+    if (!apiReached) throw new Error(`CONSOLE_BROWSER_API_ORIGIN_NOT_REACHED:${runtime.domainBinding.host}`);
+    if ([...apiOrigins].some((origin) => origin !== runtime.apiBaseUrl)) {
+      throw new Error(`CONSOLE_BROWSER_CROSS_NODE_API:${runtime.domainBinding.host}:${[...apiOrigins].join(',')}`);
+    }
+    if (pageErrors.length > 0) throw new Error(`CONSOLE_BROWSER_PAGE_ERROR:${runtime.domainBinding.host}:${pageErrors.join('|')}`);
+    if ((await page.locator('body').innerText()).includes('CLIENT_')) throw new Error(`CONSOLE_BROWSER_CONFIG_ERROR_RENDERED:${runtime.domainBinding.host}`);
+  } finally {
+    await page.close();
   }
-} finally {
-  if (browser) await browser.close();
-  if (server) await new Promise((accept) => server.close(accept));
 }
 
-async function verifyOwnerWorkspaceResilience(browser, baseUrl, manifest) {
-  const ownerScope = Object.freeze({ kind: 'platform', id: 'platform:release-owner', name: '主打团平台' });
+async function verifyOwnerWorkspaceResilience(browser, baseUrl, manifest, runtime, localRoot) {
+  const ownerScope = Object.freeze({ ...runtime.scope, name: runtime.nodeContext.signed_level === 'L0' ? '主打团平台' : '宏泰甄选商城' });
   const expectedPaths = new Set(['/api/v1/identity/session', '/api/v1/members/me', '/api/v1/access/center']);
   const reachedPaths = new Set();
   const browserErrors = [];
   let expectedProfileFailures = 0;
   const page = await browser.newPage();
+  if (localRoot !== undefined) await installLocalArtifactRoute(page, runtime.consoleOrigin, localRoot);
   page.on('pageerror', (error) => browserErrors.push(error.message));
   page.on('console', (message) => {
     const expectedNetworkNoise = message.type() === 'error'
@@ -103,7 +122,7 @@ async function verifyOwnerWorkspaceResilience(browser, baseUrl, manifest) {
   });
 
   const consoleOrigin = new URL(baseUrl).origin;
-  await page.route(`${manifest.apiBaseUrl}/**`, async (route) => {
+  await page.route(`${runtime.apiBaseUrl}/**`, async (route) => {
     const request = route.request();
     const url = new URL(request.url());
     const headers = apiHeaders(consoleOrigin);
@@ -168,7 +187,7 @@ async function verifyOwnerWorkspaceResilience(browser, baseUrl, manifest) {
 
   try {
     const scope = encodeURIComponent(ownerScope.id);
-    await page.goto(`${baseUrl}/scopes/platform/${scope}/settings/access?release_verify=${manifest.commit}`, {
+    await page.goto(`${baseUrl}/scopes/${ownerScope.kind}/${scope}/settings/access?release_verify=${manifest.source_sha}`, {
       waitUntil: 'domcontentloaded',
       timeout: 20_000,
     });
@@ -210,12 +229,24 @@ function option(name) {
   return value;
 }
 
+function runtimeForHost(manifest, hostname) {
+  return resolveConsoleAppConfig(manifest, hostname);
+}
+
+function consoleRuntimes(manifest) {
+  return manifest.node_manifest_registry.manifests.map((nodeManifest) => {
+    const bindings = nodeManifest.domain_bindings.filter(({ surface_ref: surface }) => surface === 'surface:console');
+    if (bindings.length !== 1) throw new Error(`CONSOLE_NODE_DOMAIN_BINDING_INVALID:${nodeManifest.node_id}`);
+    return resolveConsoleAppConfig(manifest, bindings[0].host);
+  });
+}
+
 async function fetchManifest(baseUrl, options) {
   const target = new URL('console-build.json', `${normalizePublicUrl(baseUrl)}/`);
   target.searchParams.set('release_verify', Date.now().toString());
   const response = await fetch(target, { cache: 'no-store' });
   if (!response.ok) throw new Error(`CONSOLE_PUBLIC_MANIFEST_HTTP_${response.status}`);
-  return validateConsoleArtifactManifest(await response.json(), options);
+  return await validateConsoleArtifactManifest(await response.json(), options);
 }
 
 function normalizePublicUrl(value) {
@@ -226,18 +257,24 @@ function normalizePublicUrl(value) {
   return url.href.replace(/\/$/, '');
 }
 
-function serveStatic(root, request, response) {
-  if (!['GET', 'HEAD'].includes(request.method ?? '')) {
-    response.writeHead(405).end();
-    return;
-  }
-  const pathname = decodeURIComponent(new URL(request.url ?? '/', 'http://localhost').pathname);
-  const candidate = resolve(root, `.${pathname}`);
-  let file = candidate.startsWith(`${root}${sep}`) && existsSync(candidate) && statSync(candidate).isFile() ? candidate : join(root, 'index.html');
-  if (relative(root, file).startsWith('..')) file = join(root, 'index.html');
-  const content = readFileSync(file);
-  response.writeHead(200, { 'content-type': contentType(file), 'cache-control': 'no-store' });
-  response.end(request.method === 'HEAD' ? undefined : content);
+async function installLocalArtifactRoute(page, origin, root) {
+  await page.route(`${origin}/**`, async (route) => {
+    const request = route.request();
+    if (!['GET', 'HEAD'].includes(request.method())) {
+      await route.fulfill({ status: 405 });
+      return;
+    }
+    const pathname = decodeURIComponent(new URL(request.url()).pathname);
+    const candidate = resolve(root, `.${pathname}`);
+    let file = candidate.startsWith(`${root}${sep}`) && existsSync(candidate) && statSync(candidate).isFile() ? candidate : join(root, 'index.html');
+    if (relative(root, file).startsWith('..')) file = join(root, 'index.html');
+    const content = readFileSync(file);
+    await route.fulfill({
+      status: 200,
+      headers: { 'cache-control': 'no-store', 'content-type': contentType(file) },
+      body: request.method() === 'HEAD' ? undefined : content,
+    });
+  });
 }
 
 function contentType(file) {

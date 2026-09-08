@@ -17,7 +17,7 @@ const bootstrapped = await bootstrapApi({
   allowedOrigins: [],
   telemetry: runtime.telemetry,
 });
-const server = listen(bootstrapped.app, paymentWebhookApiPort(environment), '127.0.0.1');
+const server = listen(bootstrapped.app, paymentWebhookApiPort(environment), '127.0.0.1', bootstrapped.nodeContextResolver);
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, async () => {
   await server.close();

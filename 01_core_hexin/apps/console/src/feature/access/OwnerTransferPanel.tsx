@@ -228,7 +228,7 @@ function initialEnrollment(): MobileEnrollmentFlow {
 }
 
 function loginUrl(): string {
-  return `${appConfig.authBaseUrl}/login?client=console`;
+  return appConfig.identityEntryUrl;
 }
 
 async function createPreview(

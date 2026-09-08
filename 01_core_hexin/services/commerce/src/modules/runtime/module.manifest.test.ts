@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CatalogOperatorRuntimeModule,
   IdentityRegistrationRuntimeModule,
   MallProvisioningRuntimeModule,
   PurchaseRuntimeModule,
@@ -24,10 +25,11 @@ describe('runtime module manifest', () => {
     });
     expect([
       RuntimeModule,
+      CatalogOperatorRuntimeModule,
       IdentityRegistrationRuntimeModule,
       MallProvisioningRuntimeModule,
       PurchaseRuntimeModule,
       WebBusinessRuntimeModule,
-    ].map(({ id }) => id)).toEqual(Array(5).fill(runtimeManifest.id));
+    ].map(({ id }) => id)).toEqual(Array(6).fill(runtimeManifest.id));
   });
 });

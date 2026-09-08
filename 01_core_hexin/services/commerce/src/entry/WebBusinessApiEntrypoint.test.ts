@@ -78,6 +78,7 @@ describe('web business API entrypoint', () => {
     expect(source).toContain('new PublicCatalogHttpHandler(');
     expect(source).toContain('webBusinessApiPublicMallSlug(environment)');
     expect(source).toContain('listen(app,');
+    expect(source).toContain('bootstrapped.nodeContextResolver');
   });
 
   it('has no static dependency path to full Commerce, checkout orchestration, payment, finance, providers, storage, or Redis', () => {

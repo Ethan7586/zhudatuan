@@ -1,43 +1,44 @@
-import {
-  HONGTAI_STOREFRONT_APPLICATION,
-  resolveStorefrontApplication,
-  resolveStorefrontAuthTarget,
-  ZHUDATUAN_STOREFRONT_APPLICATION,
-} from './storefrontIdentity';
+import type { IdentityNodeDefinition, IdentityNodeRegistry } from '@shop/sdk/identity-node';
+import { resolveStorefrontNode, storefrontIdentityNodeRegistry } from './storefrontIdentity';
 
-export const CANONICAL_STOREFRONT_AUTH_ORIGIN = 'https://accounts.hbbtzn.com';
-export const ZHUDATUAN_STOREFRONT_AUTH_ORIGIN = 'https://accounts.zhudatuan.com';
-export const LOCAL_STOREFRONT_AUTH_ORIGIN = 'http://127.0.0.1:3002';
-
-const LOCAL_AUTH_ORIGINS = new Set([LOCAL_STOREFRONT_AUTH_ORIGIN, 'http://localhost:3002']);
-const PRODUCTION_AUTH_ORIGINS = new Set([CANONICAL_STOREFRONT_AUTH_ORIGIN, ZHUDATUAN_STOREFRONT_AUTH_ORIGIN]);
-
-/**
- * Resolve the consumer sign-in origin without allowing an environment value
- * to turn the production storefront into an open redirect.
- */
-export function resolveStorefrontAuthOrigin(candidate: string | undefined, environment: string | undefined): string {
-  if (environment === 'production') {
-    const selected = candidate?.trim() || CANONICAL_STOREFRONT_AUTH_ORIGIN;
-    return PRODUCTION_AUTH_ORIGINS.has(selected) ? selected : CANONICAL_STOREFRONT_AUTH_ORIGIN;
+export function resolveStorefrontAuthOrigin(
+  candidate: string | undefined,
+  environment: string | undefined,
+  node: IdentityNodeDefinition = resolveStorefrontNode(),
+): string {
+  const selected = candidate?.trim();
+  if (selected !== undefined && exactOrigin(selected) === node.accountsOrigin) return node.accountsOrigin;
+  if (environment !== 'production' && selected !== undefined) {
+    const origin = exactOrigin(selected);
+    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) return origin;
   }
-  if (candidate === CANONICAL_STOREFRONT_AUTH_ORIGIN || (candidate && LOCAL_AUTH_ORIGINS.has(candidate))) return candidate;
-  return LOCAL_STOREFRONT_AUTH_ORIGIN;
+  return node.accountsOrigin;
 }
 
-export function storefrontAuthHref(hostname?: string): string {
-  const application = resolveStorefrontApplication(hostname);
-  const configuredOrigin = resolveStorefrontAuthOrigin(process.env.NEXT_PUBLIC_AUTH_ORIGIN, process.env.NODE_ENV);
-  const authOrigin = process.env.NODE_ENV === 'production'
-    ? application === HONGTAI_STOREFRONT_APPLICATION
-      ? CANONICAL_STOREFRONT_AUTH_ORIGIN
-      : application === ZHUDATUAN_STOREFRONT_APPLICATION
-        ? ZHUDATUAN_STOREFRONT_AUTH_ORIGIN
-        : configuredOrigin
-    : configuredOrigin;
+export function storefrontAuthHref(
+  hostname?: string,
+  registry: IdentityNodeRegistry = storefrontIdentityNodeRegistry(),
+): string {
+  const node = resolveStorefrontNode(hostname, registry);
+  const authOrigin = resolveStorefrontAuthOrigin(
+    process.env.NEXT_PUBLIC_AUTH_ORIGIN,
+    process.env.NODE_ENV,
+    node,
+  );
   const target = new URL('/', authOrigin);
-  target.searchParams.set('target', resolveStorefrontAuthTarget(application));
+  target.searchParams.set('target', node.consumerTarget);
   target.searchParams.set('surface', 'web');
-  target.searchParams.set('application', application);
+  target.searchParams.set('application', node.consumerApplication);
   return target.toString();
+}
+
+function exactOrigin(value: string): string {
+  try {
+    const parsed = new URL(value);
+    if (parsed.username || parsed.password || parsed.search || parsed.hash
+      || (parsed.pathname !== '/' && parsed.pathname !== '')) throw new Error('invalid');
+    return parsed.origin;
+  } catch {
+    throw new Error('商城身份入口配置无效');
+  }
 }

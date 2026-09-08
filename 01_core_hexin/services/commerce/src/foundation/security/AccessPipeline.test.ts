@@ -120,7 +120,7 @@ describe('AccessPipeline audience boundary', () => {
 });
 
 function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope) {
-  const actor: Actor = Object.freeze({ id: 'actor:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: { level: 1 } });
+  const actor = Object.freeze({ id: 'actor:one', account: 'account:one', realm: 'realm:l0', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: { level: 1 } });
   const membershipAccess: MembershipAccess = Object.freeze({
     id: actor.membership,
     active: true,

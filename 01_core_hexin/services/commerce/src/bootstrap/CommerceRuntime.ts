@@ -1,7 +1,7 @@
 import { SystemClock } from '@shop/kernel';
 import type { Telemetry } from '@shop/telemetry';
 import type { OperationId } from '@shop/contract';
-import { apiReturnTargets, WechatApplicationCatalog, type ApiEnvironment, type JobsEnvironment } from '@shop/config/server';
+import { WechatApplicationCatalog, type ApiEnvironment, type JobsEnvironment } from '@shop/config/server';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
 import { PgActionProofVerifier } from '../foundation/security/ActionProof';
 import { PgAccessVersionResolver, PgCapabilityResolver, PgMembershipResolver, PgScopeResolver, PgSessionResolver } from '../foundation/security/PgAccessResolvers';
@@ -19,6 +19,7 @@ import { ExtensionRegistry } from './ExtensionRegistry';
 import { MANIFEST_VERIFIER, SignatureVerifier } from './SignatureVerifier';
 import { loadProviders } from './ProviderLoader';
 import type { Container } from './Container';
+import { bindServerNodeManifestRegistry } from './ApiBootstrap';
 import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
 import { RiskCheckAdapter } from '../modules/risk';
 import { RISK_GATE } from '../foundation/security/RiskGate';
@@ -39,7 +40,6 @@ import { PAYOUT_GATEWAY } from '../modules/finance/03_application_yingyong/port/
 import { PayoutGateway, type PayoutConfiguration } from '../modules/finance/04_adapters_shixian/adapter/PayoutGateway';
 import { CACHE } from '../foundation/cache/Cache';
 import { RedisCache } from '../foundation/cache/RedisCache';
-import { RETURN_TARGETS } from '../modules/identity';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { AUDIT_PORT } from '../modules/audit';
 import { RecordAudit } from '../modules/audit/03_application_yingyong/command/RecordAudit';
@@ -83,7 +83,6 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
     ? { session: await secrets.read(environment.SESSION_KEY_REF), identity: await secrets.read(environment.IDENTITY_KEY_REF),
       quote: await secrets.read(environment.QUOTE_KEY_REF) }
     : null;
-  const returnTargets = workload === 'api' ? apiReturnTargets(environment as ApiEnvironment) : null;
   const kms = environment.KMS_ENDPOINT
     ? new KmsClient(environment.KMS_ENDPOINT, required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'))
     : null;
@@ -133,6 +132,7 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
     extensions,
     telemetry,
     configure(container) {
+      bindServerNodeManifestRegistry(container);
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);
@@ -149,7 +149,6 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
         container.bind(SECURITY_KEYS, security);
         container.bind(IDENTITY_SECURITY_KEYS, Object.freeze({ identity: security.identity, session: security.session }));
       }
-      if (returnTargets !== null) container.bind(RETURN_TARGETS, returnTargets);
       if (kms !== null) container.bind(KMS_CLIENT, kms);
       container.bind(PAYMENT_GATEWAY, payment);
       if (invoices !== null) container.bind(INVOICE_ISSUER, invoices);

@@ -1,60 +1,104 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 
+import {
+  materializeSflConsoleArtifact,
+  resolveConsoleAppConfig,
+} from '@shop/config/sfl-console-runtime';
+import consoleReleaseDeclaration from '../../../02_platform_pingtai/config/console-node-manifests.json' with { type: 'json' };
 import { readConsoleArtifact, validateConsoleArtifactManifest } from '../../../04_tools/scripts/release/console-artifact.mjs';
+import { consoleImmutableArtifactDigest } from '../../../04_tools/scripts/release/console-digest.mjs';
 
 const root = resolve(import.meta.dirname, '../../..');
-const commit = 'a'.repeat(40);
+const sourceSha = 'a'.repeat(40);
 
-function manifest(sourceTree = 'clean') {
-  return {
-    schema: 'shop.console-artifact.v1',
-    commit,
-    sourceTree,
-    apiBaseUrl: 'https://api.zhudatuan.com',
-    authBaseUrl: 'https://accounts.zhudatuan.com',
-    clientVersion: '1.0.0',
-  };
+async function manifest(sourceTree = 'clean', immutableArtifactDigest = `sha256:${'b'.repeat(64)}`) {
+  return await materializeSflConsoleArtifact(consoleReleaseDeclaration, {
+    source_sha: sourceSha,
+    build_id: 'console:test:single-build',
+    source_tree: sourceTree,
+    client_version: '1.0.0',
+    immutable_artifact_digest: immutableArtifactDigest,
+  });
 }
 
-test('raw Console production build fails before bundling when client configuration is absent', () => {
+test('one raw Console production build works without node-specific API or identity build variables', async () => {
   const vite = resolve(root, 'node_modules/vite/bin/vite.js');
   const result = spawnSync(process.execPath, [vite, 'build', '--mode', 'release-missing-config'], {
     cwd: resolve(root, '01_core_hexin/apps/console'),
     encoding: 'utf8',
     env: {
       ...process.env,
-      GITHUB_SHA: commit,
-      SHOP_SOURCE_TREE: 'clean',
+      SHOP_BUILD_COMMIT: sourceSha,
+      SHOP_BUILD_DIRTY: 'false',
       VITE_API_BASE_URL: '',
       VITE_AUTH_BASE_URL: '',
-      VITE_CLIENT_VERSION: '',
+      VITE_CLIENT_VERSION: '1.0.0',
     },
   });
-  assert.notEqual(result.status, 0);
-  assert.match(`${result.stdout}\n${result.stderr}`, /CLIENT_API_BASE_URL_MISSING/);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  const dist = resolve(root, '01_core_hexin/apps/console/dist');
+  const artifact = await readConsoleArtifact(dist, { expectedCommit: sourceSha, requireClean: true });
+  const l0 = resolveConsoleAppConfig(artifact.manifest, 'console.zhudatuan.com');
+  const l1 = resolveConsoleAppConfig(artifact.manifest, 'console.hbbtzn.com');
+  assert.equal(l0.apiBaseUrl, 'https://api.zhudatuan.com');
+  assert.equal(l1.apiBaseUrl, 'https://api.hbbtzn.com');
+  assert.equal(l0.sourceSha, l1.sourceSha);
+  assert.equal(l0.immutableArtifactDigest, l1.immutableArtifactDigest);
+  const builtText = [
+    readFileSync(join(dist, 'index.html'), 'utf8'),
+    ...readdirSync(join(dist, 'assets')).filter((name) => name.endsWith('.js'))
+      .map((name) => readFileSync(join(dist, 'assets', name), 'utf8')),
+  ].join('\n');
+  assert.doesNotMatch(builtText, /%VITE_API_BASE_URL%/);
+  assert.doesNotMatch(builtText, /CLIENT_API_BASE_URL_MISSING/);
 });
 
-test('Console artifact binds the final files to one clean source commit', () => {
+test('Console artifact binds the final immutable payload to two full generic NodeManifests', async () => {
   const directory = mkdtempSync(join(tmpdir(), 'shop-console-artifact-'));
   try {
     mkdirSync(join(directory, '.vite'));
     writeFileSync(join(directory, 'index.html'), '<main>console</main>');
     writeFileSync(join(directory, '.vite/manifest.json'), '{}');
-    writeFileSync(join(directory, 'console-build.json'), JSON.stringify(manifest()));
-    const artifact = readConsoleArtifact(directory, { expectedCommit: commit, requireClean: true });
-    assert.equal(artifact.manifest.apiBaseUrl, 'https://api.zhudatuan.com');
+    const immutableArtifactDigest = consoleImmutableArtifactDigest(directory);
+    writeFileSync(join(directory, 'console-build.json'), JSON.stringify(await manifest('clean', immutableArtifactDigest)));
+    const artifact = await readConsoleArtifact(directory, { expectedCommit: sourceSha, requireClean: true });
+    const l0 = resolveConsoleAppConfig(artifact.manifest, 'console.zhudatuan.com');
+    const l1 = resolveConsoleAppConfig(artifact.manifest, 'console.hbbtzn.com');
+    assert.equal(l0.nodeContext.signed_level, 'L0');
+    assert.equal(l1.nodeContext.signed_level, 'L1');
+    assert.equal(l0.nodeManifest.release_pointer_ref.immutable_artifact_digest, immutableArtifactDigest);
+    assert.equal(l1.nodeManifest.release_pointer_ref.immutable_artifact_digest, immutableArtifactDigest);
     assert.match(artifact.sha256, /^[0-9a-f]{64}$/);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
 });
 
-test('release acceptance rejects dirty or mismatched Console artifacts', () => {
-  assert.throws(() => validateConsoleArtifactManifest(manifest('dirty'), { requireClean: true }), /CONSOLE_ARTIFACT_SOURCE_TREE_DIRTY/);
-  assert.throws(() => validateConsoleArtifactManifest(manifest(), { expectedCommit: 'b'.repeat(40) }), /CONSOLE_ARTIFACT_COMMIT_MISMATCH/);
+test('release acceptance rejects dirty, mismatched, or tampered Console artifacts', async () => {
+  await assert.rejects(
+    validateConsoleArtifactManifest(await manifest('dirty'), { requireClean: true }),
+    /CONSOLE_ARTIFACT_SOURCE_TREE_DIRTY/,
+  );
+  await assert.rejects(
+    validateConsoleArtifactManifest(await manifest(), { expectedCommit: 'b'.repeat(40) }),
+    /CONSOLE_ARTIFACT_COMMIT_MISMATCH/,
+  );
+
+  const directory = mkdtempSync(join(tmpdir(), 'shop-console-tampered-'));
+  try {
+    mkdirSync(join(directory, '.vite'));
+    writeFileSync(join(directory, 'index.html'), '<main>console</main>');
+    writeFileSync(join(directory, '.vite/manifest.json'), '{}');
+    const immutableArtifactDigest = consoleImmutableArtifactDigest(directory);
+    writeFileSync(join(directory, 'console-build.json'), JSON.stringify(await manifest('clean', immutableArtifactDigest)));
+    writeFileSync(join(directory, 'index.html'), '<main>tampered</main>');
+    await assert.rejects(readConsoleArtifact(directory), /CONSOLE_IMMUTABLE_ARTIFACT_DIGEST_MISMATCH/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });

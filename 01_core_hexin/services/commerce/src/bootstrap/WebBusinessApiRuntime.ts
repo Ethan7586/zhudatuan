@@ -1,7 +1,18 @@
 import { SystemClock } from '@shop/kernel';
 import type { Telemetry } from '@shop/telemetry';
 import type { OperationId } from '@shop/contract';
-import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD, type WebBusinessApiEnvironment } from '@shop/config/server';
+import {
+  CONTRACT_SCHEMA_HEAD,
+  RUNTIME_CONTRACT_CHECKSUM,
+  TARGET_SCHEMA_HEAD,
+  loadNodeManifest,
+  nodeManifestHasFeature,
+  nodeManifestHasSurface,
+  nodeManifestOrigins,
+  webBusinessApiAllowedOrigins,
+  type NodeManifest,
+  type WebBusinessApiEnvironment,
+} from '@shop/config/server';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
@@ -9,6 +20,7 @@ import { WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { createPool, DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
+import { NodeBoundScopeResolver } from '../foundation/security/NodeBoundScopeResolver';
 import {
   PgAccessVersionResolver,
   PgCapabilityResolver,
@@ -26,7 +38,9 @@ import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persiste
 import { WebRiskCheckAdapter } from '../modules/webbusiness/WebRiskCheckAdapter';
 import { WebBusinessScopeResolver } from '../modules/webbusiness/WebBusinessScopeResolver';
 import type { Container } from './Container';
+import { bindServerNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
+import { NODE_DATABASE_ROLE, NODE_MANIFEST } from './NodeRuntime';
 
 export const WEB_BUSINESS_SCHEMA_VERSION = '20260828180000' as const;
 export const WEB_BUSINESS_SCHEMA_CHECKSUM = '0d3eb3e766c32ea0dada6a982bb07a1e797f0b3a08d8104235f2894f3721d81c' as const;
@@ -47,6 +61,7 @@ interface CompatibilityRow {
 
 export interface WebBusinessApiRuntime {
   readonly pool: DatabasePool;
+  readonly manifest: NodeManifest;
   readonly extensions: ExtensionRegistry;
   readonly telemetry: Telemetry;
   readonly gateEngine: GateEngine;
@@ -57,6 +72,15 @@ export interface WebBusinessApiRuntime {
 export async function createWebBusinessApiRuntime(
   environment: WebBusinessApiEnvironment,
 ): Promise<WebBusinessApiRuntime> {
+  const manifest = await loadNodeManifest(required(environment.NODE_MANIFEST_PATH, 'NODE_MANIFEST_PATH_MISSING'), {
+    manifestId: required(environment.NODE_MANIFEST_ID, 'NODE_MANIFEST_ID_MISSING'),
+    manifestDigest: required(environment.NODE_MANIFEST_DIGEST, 'NODE_MANIFEST_DIGEST_MISSING'),
+    runtimeInstanceId: required(environment.NODE_RUNTIME_INSTANCE_ID, 'NODE_RUNTIME_INSTANCE_ID_MISSING'),
+    runtimeConfigRef: required(environment.NODE_RUNTIME_CONFIG_REF, 'NODE_RUNTIME_CONFIG_REF_MISSING'),
+    resourceBindingVersion: required(environment.NODE_RESOURCE_BINDING_VERSION, 'NODE_RESOURCE_BINDING_VERSION_MISSING'),
+    releasePointerRef: required(environment.NODE_RELEASE_POINTER_REF, 'NODE_RELEASE_POINTER_REF_MISSING'),
+  });
+  assertWebBusinessNodeManifest(manifest, webBusinessApiAllowedOrigins(environment), environment.APP_ENV);
   const secrets = new WorkloadSecretStore(
     required(environment.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING'),
     required(environment.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_MISSING'),
@@ -64,7 +88,7 @@ export async function createWebBusinessApiRuntime(
   const connection = await secrets.read(required(environment.DATABASE_API_CONNECTION_REF, 'DATABASE_API_CONNECTION_REF_MISSING'));
   const pool = createPool(connection, 'api');
   try {
-    await assertWebBusinessRuntimeCompatibility(pool)
+    await assertWebBusinessRuntimeCompatibility(pool, required(environment.DATABASE_API_ROLE, 'DATABASE_API_ROLE_MISSING'))
       .catch((cause: unknown) => console.warn('WEB_BUSINESS_RUNTIME_COMPATIBILITY_WARNING', cause));
   } catch (cause) {
     await pool.end();
@@ -72,11 +96,16 @@ export async function createWebBusinessApiRuntime(
   }
   const risk = new WebRiskCheckAdapter(pool);
   const audit = new RecordAudit(new PgAuditRepository());
+  const scopeResolver = new WebBusinessScopeResolver(pool);
   const access = new AccessPipeline(
     new PgSessionResolver(pool),
     new PgMembershipResolver(pool),
     new PgAccessVersionResolver(pool),
-    new WebBusinessScopeResolver(pool),
+    new NodeBoundScopeResolver(
+      scopeResolver,
+      manifest.data_scope_ref.ref,
+      (actor) => scopeResolver.resolveStorefrontScope(actor),
+    ),
     new PgCapabilityResolver(pool),
     new SystemClock(),
     risk,
@@ -98,10 +127,12 @@ export async function createWebBusinessApiRuntime(
   }));
   return Object.freeze({
     pool,
+    manifest,
     extensions,
     telemetry,
     gateEngine,
     configure(container: Container) {
+      bindServerNodeManifestRegistry(container);
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);
@@ -111,6 +142,8 @@ export async function createWebBusinessApiRuntime(
         required(environment.KMS_ENDPOINT, 'KMS_ENDPOINT_MISSING'),
         required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'),
       ));
+      container.bind(NODE_MANIFEST, manifest);
+      container.bind(NODE_DATABASE_ROLE, required(environment.DATABASE_API_ROLE, 'DATABASE_API_ROLE_MISSING'));
     },
     async close() {
       await extensions.stop();
@@ -119,7 +152,10 @@ export async function createWebBusinessApiRuntime(
   });
 }
 
-export async function webBusinessRuntimeCompatibility(pool: DatabasePool): Promise<Readonly<CompatibilityRow>> {
+export async function webBusinessRuntimeCompatibility(
+  pool: DatabasePool,
+  expectedRole = 'zhudatuanwebapi',
+): Promise<Readonly<CompatibilityRow>> {
   const result = await pool.query<CompatibilityRow>(`select current_user,session_user,
     not exists(select 1 from pg_roles role where role.rolname=current_user
       and (role.rolsuper or role.rolcreatedb or role.rolcreaterole or role.rolinherit or role.rolreplication or role.rolbypassrls))
@@ -145,7 +181,7 @@ export async function webBusinessRuntimeCompatibility(pool: DatabasePool): Promi
       to_regclass('fulfillment.fulfillmentorder')
     ],null) is null relations,
     array_position(array[
-      to_regprocedure('identity.resolve_session(text)'),to_regprocedure('access.resolve_membership(text)'),
+      to_regprocedure('identity.resolve_session(text,text)'),to_regprocedure('access.resolve_membership(text)'),
       to_regprocedure('access.membership_version(text)'),to_regprocedure('access.resolve_scope(text,text,text)'),
       to_regprocedure('access.resolve_scope(text,text,text,text)'),
       to_regprocedure('access.resource_scope(text,text,text)'),to_regprocedure('access.scope_object(text)'),
@@ -183,7 +219,7 @@ export async function webBusinessRuntimeCompatibility(pool: DatabasePool): Promi
       and has_function_privilege(current_user,'benefit.web_ledger(text,text)','EXECUTE') forbidden_writes`,
   [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, WEB_BUSINESS_SCHEMA_VERSION, WEB_BUSINESS_SCHEMA_CHECKSUM]);
   const state = result.rows[0];
-  if (!state || state.current_user !== 'zhudatuanwebapi' || state.session_user !== 'zhudatuanwebapi' || !state.role_safe
+  if (!state || state.current_user !== expectedRole || state.session_user !== expectedRole || !state.role_safe
     || !state.writable || !state.schema || !state.contract
     || !state.web_business || !state.relations || !state.functions || !state.selected_writes || !state.forbidden_writes) {
     throw new Error(`WEB_BUSINESS_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
@@ -191,8 +227,30 @@ export async function webBusinessRuntimeCompatibility(pool: DatabasePool): Promi
   return Object.freeze(state);
 }
 
-export async function assertWebBusinessRuntimeCompatibility(pool: DatabasePool): Promise<void> {
-  await webBusinessRuntimeCompatibility(pool);
+export async function assertWebBusinessRuntimeCompatibility(pool: DatabasePool, expectedRole = 'zhudatuanwebapi'): Promise<void> {
+  await webBusinessRuntimeCompatibility(pool, expectedRole);
+}
+
+export function assertWebBusinessNodeManifest(
+  manifest: NodeManifest,
+  allowedOrigins: readonly string[],
+  appEnvironment: string | undefined,
+): void {
+  if (manifest.node_profile !== 'operating_mall') throw new Error('WEB_BUSINESS_NODE_PROFILE_INVALID');
+  if (!nodeManifestHasFeature(manifest, 'catalog') || !nodeManifestHasSurface(manifest, 'storefront')
+    || !nodeManifestHasSurface(manifest, 'api')) throw new Error('WEB_BUSINESS_NODE_FEATURE_INVALID');
+  const storefrontApplications = new Set(manifest.domain_bindings
+    .filter((binding) => binding.surface_ref === 'surface:storefront')
+    .map((binding) => binding.application_ref));
+  if (storefrontApplications.size !== 1
+    || !manifest.applications.some((application) => storefrontApplications.has(application.ref))) {
+    throw new Error('WEB_BUSINESS_NODE_APPLICATION_INVALID');
+  }
+  const boundOrigins = new Set(nodeManifestOrigins(manifest));
+  if (allowedOrigins.length === 0 || allowedOrigins.some((origin) => !boundOrigins.has(origin))) {
+    throw new Error('WEB_BUSINESS_NODE_ORIGIN_MISMATCH');
+  }
+  if (appEnvironment === 'production' && manifest.lifecycle_status !== 'active') throw new Error('WEB_BUSINESS_NODE_NOT_ACTIVE');
 }
 
 function required(value: string | undefined, code: string): string {

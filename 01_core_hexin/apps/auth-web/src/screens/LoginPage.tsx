@@ -11,6 +11,7 @@ import { useMallContext } from '../context/MallContext';
 import { Membership, PreAuthContext } from '../types';
 import { defaultTermsAccepted } from '../services/termsAcceptance';
 import { loginCanonicalConsole } from '../services/canonicalIdentity';
+import { currentIdentityNode } from '../services/identityNodeEnvironment';
 import {
   loginWithPassword,
   getLockoutState,
@@ -18,18 +19,18 @@ import {
   registerUsernameMember,
   buildCredentialLoginAction,
   requiresAuthoritativeMembershipSelection,
-  resolveAdminLoginOrigin,
-  resolveStorefrontLoginOrigin,
 } from '../services/auth';
 
 type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
 
 export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
+  const identityNode = currentIdentityNode();
+  const operatorNode = identityNode.nodeProfile === 'operating_mall' ? identityNode : null;
   const searchParams = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search);
   const isStorefrontEmbed = searchParams?.get('embed') === 'storefront';
-  const isTenantConsoleLogin = searchParams?.get('client') === 'console-hbbtzn';
-  const tenantConsoleOrigin = searchParams?.get('admin_origin')?.trim() || undefined;
+  const isTenantConsoleLogin = operatorNode !== null && searchParams?.get('client') === operatorNode.adminTarget;
+  const tenantConsoleOrigin = searchParams?.get('admin_origin')?.trim() || operatorNode?.adminOrigin;
   const registrationDeepLink = searchParams?.get('invite')?.trim() ?? '';
 
   // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
@@ -219,9 +220,9 @@ export const LoginPage: React.FC = () => {
     setFormError('');
 
     try {
-      if (isTenantConsoleLogin) {
+      if (isTenantConsoleLogin && operatorNode !== null) {
         const result = await loginCanonicalConsole(identifier, password, undefined, undefined, {
-          target: 'console-hbbtzn',
+          target: operatorNode.adminTarget,
           ...(tenantConsoleOrigin === undefined ? {} : { expectedOrigin: tenantConsoleOrigin }),
         });
         if (result.kind === 'selection') {
@@ -285,14 +286,13 @@ export const LoginPage: React.FC = () => {
     // place that establishes the tracked, revocable HttpOnly device session.
     let storefrontOrigin: string;
     try {
-      const configuredOrigin = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
-      storefrontOrigin = resolveStorefrontLoginOrigin(configuredOrigin, import.meta.env.DEV);
+      storefrontOrigin = identityNode.storefrontOrigin;
     } catch (error: any) {
       setFormError(error.message || '商城登录目标配置无效');
       return;
     }
 
-    // When accounts.zhudatuan.com is the standalone shell, a relative fetch
+    // When the configured accounts host is the standalone shell, a relative fetch
     // would set a host-only cookie on the wrong host and then loop back here.
     // Transfer the browser to the storefront host before the final login.
     if (isStorefrontEmbed && window.location.origin !== storefrontOrigin) {
@@ -331,16 +331,11 @@ export const LoginPage: React.FC = () => {
     // The browser performs a top-level POST on the target host, allowing the
     // admin domain to create its own __Host- cookie before loading the app.
     // Credentials are deliberately submitted in the request body, never URL.
-    let adminOrigin: string;
-    try {
-      const configuredOrigin = import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined);
-      adminOrigin = resolveAdminLoginOrigin(configuredOrigin, import.meta.env.DEV);
-    } catch (error: any) {
-      setFormError(error.message || '后台登录目标配置无效');
+    if (operatorNode === null) {
+      setFormError('消费者节点不提供运营后台');
       return;
     }
-
-    submitCredentialForm(adminOrigin);
+    submitCredentialForm(operatorNode.adminOrigin);
   };
 
   const processPreAuthContext = async (context: PreAuthContext) => {
@@ -384,12 +379,12 @@ export const LoginPage: React.FC = () => {
 
   // 2. 选中并确认某条会员关系
   const handleSelectMembership = async (mem: Membership) => {
-    if (isTenantConsoleLogin && mem.target === 'admin') {
+    if (isTenantConsoleLogin && operatorNode !== null && mem.target === 'admin') {
       setLoading(true);
       setFormError('');
       try {
         const result = await loginCanonicalConsole(identifier, password, mem.id, undefined, {
-          target: 'console-hbbtzn',
+          target: operatorNode.adminTarget,
           ...(tenantConsoleOrigin === undefined ? {} : { expectedOrigin: tenantConsoleOrigin }),
         });
         if (result.kind !== 'authenticated') throw new Error('后台身份选择未完成');

@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import type { ReactNode } from 'react';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
@@ -61,6 +61,26 @@ describe('product import flow', () => {
     await waitFor(() => expect(bodies).toContainEqual({ confirmImportId: 'catalogimport:1' }));
   });
 
+  it('returns a completed import to the exact mall product path', async () => {
+    const user = userEvent.setup();
+    server.use(http.get('*/api/v1/catalog/imports/:id', () => HttpResponse.json({
+      ...importReady, state: 'completed', success_count: 1, failure_count: 0,
+    })));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <MemoryRouter initialEntries={['/scopes/mall/mall%3Ahongtai/imports/catalog/catalogimport%3A1']}>
+        <QueryClientProvider client={client}><ConsoleContextProvider value={context}>
+          <Routes><Route path="/scopes/mall/:scopeId/imports/catalog/:jobId" element={<ProductImportRoute />} /></Routes>
+          <RouteLocation />
+        </ConsoleContextProvider></QueryClientProvider>
+      </MemoryRouter>,
+    );
+
+    await screen.findByText('商品草稿已保存');
+    await user.click(screen.getByRole('button', { name: '去上架商品' }));
+    expect(screen.getByTestId('route-location').textContent).toBe('/scopes/mall/mall%3Ahongtai/products');
+  });
+
   it('compiles a manual product into the same standard-package validation path', async () => {
     const user = userEvent.setup();
     const created = vi.fn();
@@ -86,6 +106,11 @@ describe('product import flow', () => {
 function renderWithContext(node: ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(<QueryClientProvider client={client}><ConsoleContextProvider value={context}>{node}</ConsoleContextProvider></QueryClientProvider>);
+}
+
+function RouteLocation() {
+  const location = useLocation();
+  return <output hidden data-testid="route-location">{location.pathname}</output>;
 }
 
 const scope = { kind: 'mall' as const, id: 'mall:hongtai', name: '宏泰甄选' };
