@@ -1,4 +1,4 @@
-import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 import { createHmac } from 'node:crypto';
 import { isOperationTarget, type OperationTarget } from '@shop/contract';
@@ -13,12 +13,12 @@ import type { LoginGuardPort } from '../port/ChallengePort';
 import type { AuthTicketPort } from '../port/AuthTicketPort';
 import { PasswordPolicy } from '../../domain/policy/PasswordPolicy';
 import { identitySubjectVariants } from '../../domain/value/IdentitySubject';
-import type { AuthenticationBody, AuthenticationReply, AuthenticationStrategy } from './AuthenticationStrategy';
+import type { AuthenticationBody, AuthenticationReply, AuthenticationStrategy, LoadedAuthentication, PreparedAuthentication } from './AuthenticationStrategy';
 import { AuthTransaction } from '../../domain/model/AuthTransaction';
 import type { IdentityAccessPort } from '../../../access/public';
 import type { IdentityMemberPort } from '../../../member/public';
 import type { MembershipSelector } from '../service/MembershipSelector';
-import type { CredentialRepository } from '../port/CredentialRepository';
+import type { CredentialRepository, PasswordCredential } from '../port/CredentialRepository';
 import { returnDestination } from './ReturnDestination';
 import { membershipCandidate, membershipView } from '../model/MembershipCandidate';
 
@@ -36,7 +36,7 @@ export class PasswordAuthenticator implements AuthenticationStrategy {
     private readonly credentials: CredentialRepository,
     private readonly passwords = new PasswordPolicy()
   ) {}
-  async authenticate(request: OperationRequest, database: WriteTransactionContext, body: AuthenticationBody): Promise<AuthenticationReply> {
+  async load(request: OperationRequest, database: ReadTransactionContext, body: AuthenticationBody): Promise<LoadedAuthentication> {
     if (body.method !== this.method) throw new Error('AUTHENTICATION_METHOD_MISMATCH');
     const target = targetOf(body.target);
     const destination = returnDestination(this.returns, target, body.returnTarget);
@@ -48,25 +48,35 @@ export class PasswordAuthenticator implements AuthenticationStrategy {
       [subject, client],
       [subject, 'account'],
     ] as const;
-    await this.guard.assertAllowed(requireWriteTransaction(database), keys);
     const credential = await this.credentials.matchPassword(database, hashes);
-    if (!(await this.passwords.verify(textField(body, 'password', 128), credential?.secretHash ?? null))) {
+    const authorization = AuthTransaction.start(body.authorization);
+    return new LoadedPasswordAuthentication(
+      Object.freeze({ target, returnTarget: destination.proof, hashes: Object.freeze(hashes), client, keys, credential, authorization }),
+      this.passwords,
+      (current, transaction, prepared) => this.complete(current, transaction, prepared)
+    );
+  }
+
+  private async complete(request: OperationRequest, database: WriteTransactionContext, prepared: PreparedPassword): Promise<AuthenticationReply> {
+    const { target, returnTarget, hashes, client, keys, credential, authorization, verified } = prepared;
+    await this.guard.assertAllowed(requireWriteTransaction(database), keys);
+    if (!verified || credential === null) {
       await this.guard.recordFailure(requireWriteTransaction(database), keys);
       reject('CREDENTIAL_INVALID');
     }
-    const member = await this.members.memberForPrincipal(database, credential!.principal);
+    if (!(await this.credentials.confirmPassword(requireWriteTransaction(database), credential))) reject('CREDENTIAL_INVALID');
+    const member = await this.members.memberForPrincipal(database, credential.principal);
     const memberships = await this.access.memberships(database, member, target);
-    const authorization = AuthTransaction.start(body.authorization);
     await this.guard.clear(requireWriteTransaction(database), hashes, client);
     if (memberships.length !== 1) {
       const candidates = memberships.map(membershipCandidate);
-      const selection = await this.selector.begin(database, { principal: credential!.principal, target, memberships: candidates, assurance: 1, authorization, returnTarget: destination.proof }, this.context(request));
+      const selection = await this.selector.begin(database, { principal: credential.principal, target, memberships: candidates, assurance: 1, authorization, returnTarget }, this.context(request));
       return { status: 200, headers: selection.headers, result: { kind: 'selection', transaction: selection.id, memberships: candidates.map(membershipView) } };
     }
     const membership = memberships[0]!;
     const trace = request.input.headers['x-trace-id'] ?? request.input.idempotency!;
     const session = await this.issuer.issue(requireWriteTransaction(database), {
-      principal: credential!.principal,
+      principal: credential.principal,
       membership: membership.id,
       assurance: 1,
       target,
@@ -76,7 +86,7 @@ export class PasswordAuthenticator implements AuthenticationStrategy {
       trace,
     });
     const ticket = await this.tickets.issue(requireWriteTransaction(database), session.session, target, authorization);
-    return { status: 201, headers: session.headers, result: { kind: 'session', ticket: ticket.ticket, returnTarget: destination.proof } };
+    return { status: 201, headers: session.headers, result: { kind: 'session', ticket: ticket.ticket, returnTarget } };
   }
   private digest(value: string): string {
     return createHmac('sha256', this.key).update(value.trim().toLowerCase()).digest('hex');
@@ -86,6 +96,46 @@ export class PasswordAuthenticator implements AuthenticationStrategy {
   }
   private context(request: OperationRequest) {
     return Object.freeze({ peer: request.input.headers['x-peer-address'] ?? 'unknown', agent: request.input.headers['user-agent'] ?? 'unknown', device: request.input.headers['x-device-id'] ?? 'browser' });
+  }
+}
+
+type CredentialReference = Pick<PasswordCredential, 'id' | 'principal' | 'version'>;
+type PasswordAttempt = Readonly<{
+  target: OperationTarget;
+  returnTarget: string;
+  hashes: readonly string[];
+  client: string;
+  keys: readonly (readonly [string, string])[];
+  credential: PasswordCredential | null;
+  authorization: ReturnType<typeof AuthTransaction.start>;
+}>;
+type PreparedPassword = Omit<PasswordAttempt, 'credential'> & Readonly<{ credential: CredentialReference | null; verified: boolean }>;
+type CompletePassword = (request: OperationRequest, database: WriteTransactionContext, prepared: PreparedPassword) => Promise<AuthenticationReply>;
+
+class LoadedPasswordAuthentication implements LoadedAuthentication {
+  constructor(
+    private readonly attempt: PasswordAttempt,
+    private readonly passwords: PasswordPolicy,
+    private readonly complete: CompletePassword
+  ) {}
+
+  async prepare(_request: OperationRequest, body: AuthenticationBody): Promise<PreparedAuthentication> {
+    if (body.method !== 'password') throw new Error('AUTHENTICATION_METHOD_MISMATCH');
+    const verified = await this.passwords.verify(textField(body, 'password', 128), this.attempt.credential?.secretHash ?? null);
+    const credential = this.attempt.credential === null ? null : Object.freeze({ id: this.attempt.credential.id, principal: this.attempt.credential.principal, version: this.attempt.credential.version });
+    const prepared = Object.freeze({ ...this.attempt, credential, verified });
+    return new PreparedPasswordAuthentication(prepared, this.complete);
+  }
+}
+
+class PreparedPasswordAuthentication implements PreparedAuthentication {
+  constructor(
+    private readonly prepared: PreparedPassword,
+    private readonly complete: CompletePassword
+  ) {}
+
+  authenticate(request: OperationRequest, database: WriteTransactionContext): Promise<AuthenticationReply> {
+    return this.complete(request, database, this.prepared);
   }
 }
 

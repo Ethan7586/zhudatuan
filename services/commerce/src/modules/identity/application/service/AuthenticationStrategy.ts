@@ -1,4 +1,4 @@
-import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 import type { OperationRequest } from '../../../../pipeline/OperationRequest';
 import type { OperationResult } from '../../../../pipeline/OperationRequest';
@@ -29,9 +29,17 @@ export interface AuthenticationReply {
   readonly headers?: Readonly<Record<string, string>>;
 }
 
+export interface PreparedAuthentication {
+  authenticate(request: OperationRequest, database: WriteTransactionContext): Promise<AuthenticationReply>;
+}
+
+export interface LoadedAuthentication {
+  prepare(request: OperationRequest, body: AuthenticationBody): Promise<PreparedAuthentication>;
+}
+
 export interface AuthenticationStrategy {
   readonly method: 'password' | 'otp' | 'federation';
-  authenticate(request: OperationRequest, database: WriteTransactionContext, body: AuthenticationBody): Promise<AuthenticationReply>;
+  load(request: OperationRequest, database: ReadTransactionContext, body: AuthenticationBody): Promise<LoadedAuthentication>;
 }
 
 export interface AuthenticationResolver {

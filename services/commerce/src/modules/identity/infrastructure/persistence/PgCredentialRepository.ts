@@ -8,19 +8,30 @@ interface CredentialRow {
   readonly id: string;
   readonly principal_id: string;
   readonly secret_hash: string | null;
+  readonly credential_version: number;
 }
 export class PgCredentialRepository implements CredentialRepository {
   private readonly transactions = new PgTransactionAccess();
-  async matchPassword(context: WriteTransactionContext, subjectHashes: readonly string[]): Promise<PasswordCredential | null> {
+  async matchPassword(context: ReadTransactionContext, subjectHashes: readonly string[]): Promise<PasswordCredential | null> {
     const database = this.transactions.database(context);
     const result = await database.query<CredentialRow>(
-      `select credential.id,credential.principal_id,credential.secret_hash
+      `select credential.id,credential.principal_id,credential.secret_hash,principal.credential_version
       from identity.credential credential join identity.principal principal on principal.id=credential.principal_id
       where credential.provider='password' and credential.subject_hash=any($1::text[]) and credential.status='active'
-      and principal.status='active' order by array_position($1::text[],credential.subject_hash) for update`,
+      and principal.status='active' order by array_position($1::text[],credential.subject_hash)`,
       [subjectHashes]
     );
     return result.rows.length === 1 ? credentialOf(result.rows[0]!) : null;
+  }
+  async confirmPassword(context: WriteTransactionContext, credential: Pick<PasswordCredential, 'id' | 'principal' | 'version'>): Promise<boolean> {
+    const database = this.transactions.database(context);
+    const result = await database.query(
+      `select 1 from identity.credential credential join identity.principal principal on principal.id=credential.principal_id
+      where credential.id=$1 and credential.principal_id=$2 and credential.provider='password' and credential.status='active'
+      and principal.status='active' and principal.credential_version=$3 for update of credential,principal`,
+      [credential.id, credential.principal, credential.version]
+    );
+    return result.rows.length === 1;
   }
   async password(context: WriteTransactionContext, principal: string): Promise<PasswordCredential | null> {
     const database = this.transactions.database(context);
@@ -110,5 +121,5 @@ async function bump(database: SqlExecutor, principal: string): Promise<Credentia
   return Object.freeze({ credentialVersion: Number(row.credentialVersion), version: Number(row.version) });
 }
 function credentialOf(row: CredentialRow): PasswordCredential {
-  return Object.freeze({ id: row.id, principal: row.principal_id, secretHash: row.secret_hash });
+  return Object.freeze({ id: row.id, principal: row.principal_id, secretHash: row.secret_hash, version: Number(row.credential_version) });
 }

@@ -4,6 +4,7 @@ export interface PasswordCredential {
   readonly id: string;
   readonly principal: string;
   readonly secretHash: string | null;
+  readonly version: number;
 }
 
 export interface CredentialVersion {
@@ -17,7 +18,8 @@ export interface CredentialSecurity {
 }
 
 export interface CredentialRepository {
-  matchPassword(context: WriteTransactionContext, subjectHashes: readonly string[]): Promise<PasswordCredential | null>;
+  matchPassword(context: ReadTransactionContext, subjectHashes: readonly string[]): Promise<PasswordCredential | null>;
+  confirmPassword(context: WriteTransactionContext, credential: Pick<PasswordCredential, 'id' | 'principal' | 'version'>): Promise<boolean>;
   password(context: WriteTransactionContext, principal: string): Promise<PasswordCredential | null>;
   principalForSubject(context: ReadTransactionContext, subjectHash: string): Promise<string | null>;
   changePassword(context: WriteTransactionContext, principal: string, credential: string, secretHash: string, currentSession: string): Promise<CredentialVersion>;

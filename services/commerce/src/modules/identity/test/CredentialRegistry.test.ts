@@ -22,5 +22,5 @@ describe('CredentialRegistry', () => {
 });
 
 function strategy(method: 'password' | 'otp'): AuthenticationStrategy & Readonly<{ method: 'password' | 'otp' }> {
-  return { method, authenticate: vi.fn() };
+  return { method, load: vi.fn() };
 }

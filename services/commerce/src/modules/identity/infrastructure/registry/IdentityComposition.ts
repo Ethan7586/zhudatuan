@@ -166,7 +166,7 @@ export function composeIdentity(context: ModuleContext) {
   const handovers = new PgHandoverRepository();
   const linker = new IdentityLinker(linkRepository);
   return assembleOperations({
-    sessionsCreate: [authentication.action(), new StartFederation(federation).lifecycle()],
+    sessionsCreate: [authentication.lifecycle(), new StartFederation(federation).lifecycle()],
     sessionsComplete: [new CompleteSession(repository, redeemer, sessions, returns, keys.session, tickets, challenges, cookies, assurances, invitationFailures).lifecycle()],
     ticketsExchange: [new ExchangeTicket(tickets, returns, csrf, cookies, sessionPolicy).action()],
     sessionRead: [new ReadSession(members, kms, cookies, credentials).lifecycle()],
