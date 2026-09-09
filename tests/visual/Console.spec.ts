@@ -165,6 +165,15 @@ test('Console 平板和手机壳层控件保持完整触控目标', async ({ pag
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
 });
 
+test('Console 平板业务控件遵守统一触控尺寸', async ({ page }) => {
+  await prepareVisual(page, { width: 768, height: 1024 });
+  await signInConsole(page);
+  await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consolevouchers, 'mall')}`);
+  await expectUsable(page);
+  await expect.poll(() => minimumHeight(page, '.voucherfilterbar input, .voucherfilterbar select')).toBeGreaterThanOrEqual(44);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+});
+
 test('Console 商品治理台在桌面、平板和手机保持清晰布局与触控尺寸', async ({ page }) => {
   test.slow();
   await prepareVisual(page, { width: 1366, height: 768 });

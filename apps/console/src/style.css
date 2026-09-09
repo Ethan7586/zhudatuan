@@ -2,3 +2,10 @@
 @import './shell/style/Layout.css';
 @import './shell/style/Profile.css';
 @import './shell/style/Scope.css';
+
+@media (max-width: 48rem) {
+  .consolelayout[data-visual-theme='console-v1'] :where(button, input:not([type='hidden']):not([type='checkbox']):not([type='radio']), select, textarea, summary, [role='button'], [role='tab'], [role='radio'], [role='checkbox']) {
+    min-width: var(--sw-control-touch-target);
+    min-height: var(--sw-control-touch-target);
+  }
+}
