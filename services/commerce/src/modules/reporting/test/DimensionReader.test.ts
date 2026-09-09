@@ -56,6 +56,32 @@ describe('report dimension reader', () => {
     expect(JSON.stringify(presented?.displayedDimensions)).not.toContain('商品编号:未授权:1001');
   });
 
+  it('resolves cockpit category names in the same catalog batch as metric dimensions', async () => {
+    const labels = vi.fn().mockResolvedValue([
+      { kind: 'category', id: 'category:one', name: '食品饮料' },
+      { kind: 'category', id: 'category:two', name: '办公用品' },
+    ]);
+    const reader = new DimensionReader(
+      { summaries: vi.fn().mockResolvedValue([]) } as never,
+      { applications: vi.fn().mockResolvedValue([]) } as never,
+      { labels } as never,
+      { profiles: vi.fn().mockResolvedValue([]) } as never,
+      { names: vi.fn().mockResolvedValue(new Map()) } as never
+    );
+
+    const presentation = await reader.resolve({} as never, 'enterprise:one', [metric()], ['category:two', 'category:missing']);
+
+    expect(presentation.categoryNames).toEqual(
+      new Map([
+        ['category:two', '办公用品'],
+        ['category:missing', '已停用或无权查看的分类'],
+        ['category:one', '食品饮料'],
+      ])
+    );
+    expect(labels).toHaveBeenCalledTimes(1);
+    expect(labels).toHaveBeenCalledWith(expect.anything(), { products: ['product:one'], categories: ['category:two', 'category:missing', 'category:one'] });
+  });
+
   it('returns concise application options and disambiguates duplicate names with the mall name', async () => {
     const reader = new DimensionReader(
       {} as never,

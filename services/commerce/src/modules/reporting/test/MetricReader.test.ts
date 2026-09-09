@@ -46,6 +46,7 @@ describe('report metric reader policy', () => {
     });
     expect(body.items[0]?.value).toBe(101);
     expect(body.summary).toMatchObject({ availableStock: -1, sales: { asOf: watermark.occurredAt, averageOrderValueCents: 51 } });
+    expect(body.summary.sales.categories).toEqual([{ name: '办公用品', salesCents: 100, share: 1 }]);
     expect(body.summary.sales.deltas).toMatchObject({ netSalesRatio: null, refundRateDeltaPoints: null });
   });
 
@@ -70,7 +71,10 @@ function session(operation: 'reporting.dashboard.read' | 'reporting.sales.read')
 
 function dimensionPresenter() {
   return {
-    present: vi.fn(async (_context, _scope, rows: readonly MetricRow[]) => rows.map((row) => ({ ...row, displayedDimensions: [{ code: 'mall', name: '商城', value: '总部商城' }] }))),
+    resolve: vi.fn(async (_context, _scope, rows: readonly MetricRow[]) => ({
+      metrics: rows.map((row) => ({ ...row, displayedDimensions: [{ code: 'mall', name: '商城', value: '总部商城' }] })),
+      categoryNames: new Map([['category:one', '办公用品']]),
+    })),
   } as never;
 }
 
@@ -115,7 +119,7 @@ function summary(): CockpitSummary {
       deltas: { netSalesRatio: null, paidOrdersRatio: 0.1, averageOrderRatio: -0.2, refundRate: 0, refundRateDeltaPoints: null },
       trend: [{ date: '2026-09-05', salesCents: 100.4, orderCount: 2.2 }],
       weeklyTrend: [],
-      categories: [{ name: '办公', salesCents: 100.4, share: 1 }],
+      categories: [{ name: 'category:one', salesCents: 100.4, share: 1 }],
       topProducts: [{ productId: 'product:one', name: '办公套装', salesCents: 100.4, quantity: 2.2, orderCount: 1.2 }],
       malls: [{ id: 'mall:one', name: '总部商城', salesCents: 100.4, paidOrderCount: 2.2, refundRate: 0 }],
       events: [],

@@ -50,9 +50,16 @@ export class MetricReader {
     const visible = more ? rows.slice(0, requested) : rows;
     const last = visible.at(-1);
     const governed = visible.map(({ cursorTime: _time, cursorId: _id, ...metric }) => present(metric, scope, snapshot.watermark.occurredAt));
-    const items = await this.dimensions.present(context.transaction, scope, governed);
+    const presentation = await this.dimensions.resolve(context.transaction, scope, governed, summary?.sales.categories.map(({ name }) => name) ?? []);
+    const items = presentation.metrics;
     const nextCursor = more && last ? snapshot.cursor(last.cursorTime, last.cursorId) : undefined;
-    const body = { items, count: items.length, ...(nextCursor ? { nextCursor } : {}), snapshot: snapshot.toJSON(), ...(summary === undefined ? {} : { summary: presentSummary(summary, snapshot.watermark.occurredAt) }) };
+    const body = {
+      items,
+      count: items.length,
+      ...(nextCursor ? { nextCursor } : {}),
+      snapshot: snapshot.toJSON(),
+      ...(summary === undefined ? {} : { summary: presentSummary(summary, snapshot.watermark.occurredAt, presentation.categoryNames) }),
+    };
     return { status: 200, body: body as OperationOutputFor<TKey> };
   }
 }
@@ -76,7 +83,7 @@ function present<T extends Metric>(metric: T, scope: string, watermark: string):
   return Object.freeze({ ...metric, value });
 }
 
-function presentSummary(summary: CockpitSummary, watermark: string): CockpitSummary {
+function presentSummary(summary: CockpitSummary, watermark: string, categoryNames: ReadonlyMap<string, string>): CockpitSummary {
   const sales = summary.sales;
   const integerKeys = ['cumulativeSalesCents', 'paidOrderCount', 'averageOrderValueCents', 'periodSalesCents', 'periodPaidOrderCount', 'refundedCents', 'activeProductCount', 'soldProductCount', 'unsoldActiveProductCount'] as const;
   const normalized: Record<string, unknown> = { ...sales, asOf: watermark };
@@ -94,7 +101,7 @@ function presentSummary(summary: CockpitSummary, watermark: string): CockpitSumm
   });
   normalized.trend = normalizeTrend(sales.trend);
   normalized.weeklyTrend = normalizeTrend(sales.weeklyTrend);
-  normalized.categories = Object.freeze(sales.categories.map((row) => Object.freeze({ ...row, salesCents: whole(row.salesCents), share: ratio(row.share) })));
+  normalized.categories = Object.freeze(sales.categories.map((row) => Object.freeze({ ...row, name: categoryNames.get(row.name) ?? '已停用或无权查看的分类', salesCents: whole(row.salesCents), share: ratio(row.share) })));
   normalized.topProducts = Object.freeze(sales.topProducts.map((row) => Object.freeze({ ...row, salesCents: whole(row.salesCents), quantity: whole(row.quantity), orderCount: whole(row.orderCount) })));
   normalized.malls = Object.freeze(sales.malls.map((row) => Object.freeze({ ...row, salesCents: whole(row.salesCents), paidOrderCount: whole(row.paidOrderCount), refundRate: ratio(row.refundRate) })));
   return Object.freeze({

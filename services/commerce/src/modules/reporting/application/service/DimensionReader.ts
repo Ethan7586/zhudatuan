@@ -7,6 +7,11 @@ import type { CatalogPartnerPort } from '../../../partner/public';
 import type { Metric } from '../../domain/model/Metric';
 import { DIMENSION_DEFINITIONS, DIMENSION_PRESETS, dimensionName, hiddenDimensionValue, semanticDimensionValue, type DimensionOption, type DisplayedDimension, type DisplayedMetric } from '../../domain/value/DimensionCatalog';
 
+export interface DimensionPresentation<T extends Metric> {
+  readonly metrics: readonly DisplayedMetric<T>[];
+  readonly categoryNames: ReadonlyMap<string, string>;
+}
+
 export class DimensionReader {
   constructor(
     private readonly organizations: OrganizationReadPort,
@@ -26,8 +31,12 @@ export class DimensionReader {
   }
 
   async present<T extends Metric>(context: ReadTransactionContext, scope: string, rows: readonly T[]): Promise<readonly DisplayedMetric<T>[]> {
-    if (rows.length === 0) return Object.freeze([]);
-    const values = collect(rows);
+    return (await this.resolve(context, scope, rows)).metrics;
+  }
+
+  async resolve<T extends Metric>(context: ReadTransactionContext, scope: string, rows: readonly T[], requestedCategories: readonly string[] = []): Promise<DimensionPresentation<T>> {
+    if (rows.length === 0 && requestedCategories.length === 0) return Object.freeze({ metrics: Object.freeze([]), categoryNames: new Map() });
+    const values = collect(rows, requestedCategories);
     // Every port shares the transaction's single PostgreSQL client. Keep reads
     // sequential so the driver does not build an unbounded query queue.
     const organizations = await this.organizations.summaries(context, values.organizations);
@@ -43,7 +52,10 @@ export class DimensionReader {
       member: new Map(members.map(({ member, displayName }) => [member, displayName])),
       store: stores,
     };
-    return Object.freeze(rows.map((row) => Object.freeze({ ...row, displayedDimensions: displayed(row, labels) })));
+    return Object.freeze({
+      metrics: Object.freeze(rows.map((row) => Object.freeze({ ...row, displayedDimensions: displayed(row, labels) }))),
+      categoryNames: resolvedCategoryNames(values.categories, labels.category),
+    });
   }
 }
 
@@ -56,7 +68,10 @@ interface LabelMaps {
   readonly store: ReadonlyMap<string, string>;
 }
 
-function collect(rows: readonly Metric[]): Readonly<{
+function collect(
+  rows: readonly Metric[],
+  requestedCategories: readonly string[] = []
+): Readonly<{
   organizations: readonly string[];
   applications: readonly string[];
   products: readonly string[];
@@ -67,7 +82,7 @@ function collect(rows: readonly Metric[]): Readonly<{
   const organizations = new Set<string>();
   const applications = new Set<string>();
   const products = new Set<string>();
-  const categories = new Set<string>();
+  const categories = new Set<string>(requestedCategories);
   const members = new Set<string>();
   const stores = new Set<string>();
   for (const { dimensions } of rows) {
@@ -88,6 +103,10 @@ function collect(rows: readonly Metric[]): Readonly<{
     members: Object.freeze([...members]),
     stores: Object.freeze([...stores]),
   });
+}
+
+function resolvedCategoryNames(categories: readonly string[], labels: ReadonlyMap<string, string>): ReadonlyMap<string, string> {
+  return new Map(categories.map((category) => [category, labels.get(category) ?? hiddenDimensionValue('category')]));
 }
 
 function displayed(metric: Metric, labels: LabelMaps): readonly DisplayedDimension[] {
