@@ -15,7 +15,7 @@ import type { MembershipLifecycle } from '../application/service/MembershipLifec
 
 const connection = new DirectoryConnection({
   id: '11111111-1111-4111-8111-111111111111',
-  tenantid: '22222222-2222-4222-8222-222222222222',
+  tenantid: 'tenant:test',
   organizationid: 'enterprise:root',
   providerid: '33333333-3333-4333-8333-333333333333',
   providertype: 'wecomcorp',

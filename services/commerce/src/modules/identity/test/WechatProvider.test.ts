@@ -48,7 +48,7 @@ function instance(scopes: readonly string[]): ProviderInstance {
   return new ProviderInstance({
     id: '00000000-0000-0000-0000-000000000001',
     type: 'wechat',
-    tenantid: '00000000-0000-0000-0000-000000000002',
+    tenantid: 'tenant:test',
     issuer: null,
     clientid: 'wx1234567890abcdef',
     secretref: 'secret/identity/wechat',

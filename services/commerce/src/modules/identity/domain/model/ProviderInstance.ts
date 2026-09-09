@@ -1,4 +1,5 @@
 import { DomainError } from '../../../../platform/error/DomainError';
+import { isOrganizationReference } from '../../../../platform/security/OrganizationReference';
 import type { IdentityProviderType } from '@shop/config/server';
 
 export type ProviderStatus = 'draft' | 'enabled' | 'disabled' | 'revoked';
@@ -32,7 +33,7 @@ export class ProviderInstance implements ProviderInstanceValue {
   readonly createdat: string;
   readonly updatedat: string;
   constructor(value: ProviderInstanceValue) {
-    if (!/^[0-9a-f-]{36}$/.test(value.id) || !/^[0-9a-f-]{36}$/.test(value.tenantid)) invalid();
+    if (!/^[0-9a-f-]{36}$/.test(value.id) || !isOrganizationReference(value.tenantid)) invalid();
     if (!['wechat', 'wecomcorp', 'wecomsuite', 'oidc'].includes(value.type)) invalid();
     if (!/^[a-z][a-z0-9./]{2,127}$/.test(value.secretref) || value.clientid.length < 1 || value.clientid.length > 255) invalid();
     const redirect = new URL(value.redirecturi);

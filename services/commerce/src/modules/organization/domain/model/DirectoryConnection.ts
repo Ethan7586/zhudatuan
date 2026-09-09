@@ -1,3 +1,5 @@
+import { isOrganizationReference } from '../../../../platform/security/OrganizationReference';
+
 export type DirectoryConnectionStatus = 'draft' | 'enabled' | 'paused' | 'disabled' | 'revoked';
 
 export interface DirectoryConnectionValue {
@@ -27,7 +29,7 @@ export class DirectoryConnection implements DirectoryConnectionValue {
   constructor(value: DirectoryConnectionValue) {
     if (
       !uuid(value.id) ||
-      !uuid(value.tenantid) ||
+      !isOrganizationReference(value.tenantid) ||
       !uuid(value.providerid) ||
       !/^[a-z][a-z0-9:.-]{2,127}$/.test(value.organizationid) ||
       !['wecomcorp', 'wecomsuite'].includes(value.providertype) ||

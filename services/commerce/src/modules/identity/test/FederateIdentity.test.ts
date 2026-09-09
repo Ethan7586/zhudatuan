@@ -11,7 +11,7 @@ import { result, withReadTransaction, withWriteTransaction } from '../../../test
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
 const PROVIDER = '11111111-1111-4111-8111-111111111111';
-const TENANT = '22222222-2222-4222-8222-222222222222';
+const TENANT = 'tenant:test';
 const TRANSACTION = '33333333-3333-4333-8333-333333333333';
 const protector = new FederationProtector('federation-test-key-that-is-at-least-32-characters');
 const nonces = new Nonce();

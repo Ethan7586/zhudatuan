@@ -30,7 +30,7 @@ export class PgProviderRepository implements ProviderRepository {
     const database = this.transactions.database(context);
     const result = await database.query<ProviderRow>(
       `select id,tenant_id,type,secret_ref,redirect_uri,scopes,status,version,created_at,updated_at
-      from identity.provider where status='enabled' and ($1::uuid is null or tenant_id=$1) order by type,id limit 64`,
+      from identity.provider where status='enabled' and ($1::text is null or tenant_id=$1) order by type,id limit 64`,
       [tenant ?? null]
     );
     return Object.freeze(result.rows.map((row) => Object.freeze({ id: row.id, type: row.type, status: 'enabled' as const })));
