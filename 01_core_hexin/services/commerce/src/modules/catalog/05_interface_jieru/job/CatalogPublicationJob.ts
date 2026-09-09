@@ -2,11 +2,50 @@ import type { ClaimedJob, JobProcessor } from '../../../../foundation/applicatio
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { CATALOG_LISTING_MANAGEMENT_STATUS_SQL } from '../../03_application_yingyong/CatalogListingManagement';
 
-interface CountRow extends Record<string, unknown> {
-  readonly count: number;
+interface ListingIdRow extends Record<string, unknown> {
+  readonly id: string;
 }
 
-const PUBLICATION_BATCH_SIZE = 20;
+interface PublicationOutcomeRow extends Record<string, unknown> {
+  readonly id: string;
+  readonly sku_id: string | null;
+  readonly title: string | null;
+  readonly outcome: 'published' | 'skipped' | 'failed';
+  readonly code: string | null;
+}
+
+interface PublicationFailure {
+  readonly id: string;
+  readonly sku_id: string | null;
+  readonly title: string | null;
+  readonly code: string;
+  readonly message: string;
+  readonly retryable: boolean;
+}
+
+interface PublicationProgress {
+  readonly total: number;
+  readonly processed: number;
+  readonly succeeded: number;
+  readonly published: number;
+  readonly failed: number;
+  readonly skipped: number;
+  readonly phase: 'publishing' | 'completed';
+  readonly failures: readonly PublicationFailure[];
+  readonly started_at: string;
+  readonly completed_at?: string;
+}
+
+interface PublicationCheckpoint {
+  readonly processed: number;
+  readonly published: number;
+  readonly failed: number;
+  readonly skipped: number;
+  readonly failures: readonly PublicationFailure[];
+  readonly startedAt: string;
+}
+
+const PUBLICATION_PROGRESS_INTERVAL = 20;
 
 export class CatalogPublicationProcessor implements JobProcessor {
   constructor(private readonly pool: DatabasePool) {}
@@ -16,59 +55,172 @@ export class CatalogPublicationProcessor implements JobProcessor {
     if (!job.scope_id) throw new Error('CATALOGPUBLICATION_SCOPE_REQUIRED');
     if (signal.aborted) throw signal.reason;
 
-    const total = await this.pool.query<CountRow>(`select count(*)::integer count
-      from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id
-      join catalog.product product on product.id=sku.product_id
-      where listing.scope_id=$1 and listing.status='draft'
-        and (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='pending_review'`, [job.scope_id]);
-    const expected = total.rows[0]?.count ?? 0;
-    await this.progress(job.id, expected, 0, 'publishing');
+    const targetIds = await this.targetIds(job);
+    const checkpoint = publicationCheckpoint(job.payload, targetIds.length);
+    const startedAt = checkpoint.startedAt;
+    let published = checkpoint.published;
+    let skipped = checkpoint.skipped;
+    const failures: PublicationFailure[] = [...checkpoint.failures];
+    await this.progress(job.id, {
+      total: targetIds.length, processed: checkpoint.processed, succeeded: published, published,
+      failed: failures.length, skipped,
+      phase: 'publishing', failures, started_at: startedAt,
+    });
 
-    let published = 0;
-    while (!signal.aborted) {
-      const result = await this.pool.query(`with selected_pool as(
-        select binding.pool_id from experience.binding binding
-        join experience.application application on application.id=binding.application_id
-          and application.status='active' and binding.domain=application.public_slug
-        where binding.mall_id=$1 and exists(
-          select 1 from experience.release release where release.application_id=application.id
-            and release.state='active' and release.effective_at<=clock_timestamp()
-            and (release.retired_at is null or release.retired_at>clock_timestamp())
-        ) order by application.updated_at desc,application.id,binding.pool_id limit 1
-      ),eligible as(
-        select listing.id,coalesce(listing.pool_id,(select pool_id from selected_pool)) pool_id
-        from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id
-        join catalog.product product on product.id=sku.product_id
-        where listing.scope_id=$1 and listing.status='draft'
-          and coalesce(listing.pool_id,(select pool_id from selected_pool)) is not null
-          and (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='pending_review'
-        order by listing.id limit $2 for update of listing skip locked
-      ),published as(
-        update catalog.listing listing set pool_id=eligible.pool_id,status='published',
-          effective_at=clock_timestamp(),expires_at=null,version=listing.version+1,updated_at=clock_timestamp()
-        from eligible where listing.id=eligible.id
-        returning listing.id,listing.pool_id,listing.sku_id,listing.version
-      ),pooled as(
-        insert into catalog.poolitem(pool_id,sku_id,state,source_version,added_at)
-        select published.pool_id,published.sku_id,'included',
-          'listing:'||published.id||':v'||published.version::text,clock_timestamp()
-        from published
-        on conflict(pool_id,sku_id) do update set state='included',source_version=excluded.source_version
-        returning pool_id,sku_id
-      )
-      select published.id from published join pooled using(pool_id,sku_id)`, [job.scope_id, PUBLICATION_BATCH_SIZE]);
-      const changed = result.rowCount ?? 0;
-      if (changed === 0) break;
-      published += changed;
-      await this.progress(job.id, expected, published, 'publishing');
+    for (let index = checkpoint.processed; index < targetIds.length; index += 1) {
+      const id = targetIds[index]!;
+      if (signal.aborted) throw signal.reason;
+      const outcome = await this.publishOne(job.scope_id, id);
+      if (outcome.outcome === 'published') published += 1;
+      else if (outcome.outcome === 'skipped') skipped += 1;
+      else failures.push(publicationFailure(outcome));
+
+      const processed = index + 1;
+      if (processed % PUBLICATION_PROGRESS_INTERVAL === 0 && processed < targetIds.length) {
+        await this.progress(job.id, {
+          total: targetIds.length, processed, succeeded: published, published, failed: failures.length, skipped,
+          phase: 'publishing', failures, started_at: startedAt,
+        });
+      }
     }
     if (signal.aborted) throw signal.reason;
-    await this.progress(job.id, expected, published, 'completed');
+    await this.progress(job.id, {
+      total: targetIds.length, processed: targetIds.length, succeeded: published, published,
+      failed: failures.length, skipped, phase: 'completed', failures, started_at: startedAt,
+      completed_at: new Date().toISOString(),
+    });
   }
 
-  private async progress(id: string, total: number, published: number, phase: string): Promise<void> {
-    await this.pool.query(`update runtime.job set payload=coalesce(payload,'{}'::jsonb)||jsonb_build_object(
-      'total',$2::integer,'processed',$3::integer,'published',$3::integer,'skipped',greatest($2::integer-$3::integer,0),'phase',$4::text),
-      updated_at=clock_timestamp() where id=$1`, [id, total, published, phase]);
+  private async targetIds(job: ClaimedJob): Promise<readonly string[]> {
+    const payload = record(job.payload);
+    if (Array.isArray(payload.target_ids)) {
+      if (payload.target_ids.length > 1_000
+        || payload.target_ids.some((id) => typeof id !== 'string' || id.length === 0 || id.length > 300)) {
+        throw new Error('CATALOGPUBLICATION_TARGETS_INVALID');
+      }
+      return [...new Set(payload.target_ids as string[])];
+    }
+    const legacy = await this.pool.query<ListingIdRow>(`select listing.id from catalog.listing listing
+      join catalog.sku sku on sku.id=listing.sku_id join catalog.product product on product.id=sku.product_id
+      where listing.scope_id=$1 and listing.status='draft'
+        and (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='pending_review'
+      order by listing.id`, [job.scope_id]);
+    return legacy.rows.map(({ id }) => id);
   }
+
+  private async publishOne(scope: string, id: string): Promise<PublicationOutcomeRow> {
+    const result = await this.pool.query<PublicationOutcomeRow>(`with selected_pool as(
+      select binding.pool_id from experience.binding binding
+      join experience.application application on application.id=binding.application_id
+        and application.status='active' and binding.domain=application.public_slug
+      where binding.mall_id=$2 and exists(
+        select 1 from experience.release release where release.application_id=application.id
+          and release.state='active' and release.effective_at<=clock_timestamp()
+          and (release.retired_at is null or release.retired_at>clock_timestamp())
+      ) order by application.updated_at desc,application.id,binding.pool_id limit 1
+    ),candidate as(
+      select listing.id,listing.sku_id,coalesce(nullif(btrim(listing.title),''),nullif(btrim(product.title),'')) title,
+        listing.status,(${CATALOG_LISTING_MANAGEMENT_STATUS_SQL}) management_status,
+        coalesce(listing.pool_id,(select pool_id from selected_pool)) pool_id
+      from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id
+      join catalog.product product on product.id=sku.product_id
+      where listing.id=$1 and listing.scope_id=$2 for update of listing
+    ),published as(
+      update catalog.listing listing set pool_id=candidate.pool_id,status='published',
+        effective_at=clock_timestamp(),expires_at=null,version=listing.version+1,updated_at=clock_timestamp()
+      from candidate where listing.id=candidate.id and candidate.status='draft'
+        and candidate.management_status='pending_review' and candidate.pool_id is not null
+      returning listing.id,listing.pool_id,listing.sku_id,listing.version
+    ),pooled as(
+      insert into catalog.poolitem(pool_id,sku_id,state,source_version,added_at)
+      select published.pool_id,published.sku_id,'included',
+        'listing:'||published.id||':v'||published.version::text,clock_timestamp()
+      from published on conflict(pool_id,sku_id) do update
+        set state='included',source_version=excluded.source_version
+      returning pool_id,sku_id
+    )
+    select $1::text id,candidate.sku_id,candidate.title,
+      case when published.id is not null and pooled.sku_id is not null then 'published'
+        when candidate.status='published' then 'skipped' else 'failed' end outcome,
+      case when candidate.id is null then 'LISTING_NOT_FOUND'
+        when candidate.status='published' then null
+        when candidate.status<>'draft' then 'LISTING_STATE_INVALID'
+        when candidate.management_status='needs_attention' then 'LISTING_NOT_READY'
+        when candidate.pool_id is null then 'STOREFRONT_POOL_MISSING'
+        when published.id is null or pooled.sku_id is null then 'LISTING_CHANGED'
+        else null end code
+    from (select 1) seed left join candidate on true left join published on true left join pooled on true`, [id, scope]);
+    const row = result.rows[0];
+    if (!row) throw new Error('CATALOGPUBLICATION_OUTCOME_MISSING');
+    return row;
+  }
+
+  private async progress(id: string, progress: PublicationProgress): Promise<void> {
+    const result = await this.pool.query(`update runtime.job
+      set payload=coalesce(payload,'{}'::jsonb)||$2::jsonb,updated_at=clock_timestamp() where id=$1`,
+    [id, JSON.stringify(progress)]);
+    if (result.rowCount !== 1) throw new Error('CATALOGPUBLICATION_JOB_MISSING');
+  }
+}
+
+function publicationFailure(row: PublicationOutcomeRow): PublicationFailure {
+  const code = row.code ?? 'CATALOG_PUBLICATION_FAILED';
+  const messages: Readonly<Record<string, string>> = {
+    LISTING_NOT_FOUND: '未找到商品，请确认商品已导入后重试',
+    LISTING_STATE_INVALID: '商品当前状态不允许审核上架',
+    LISTING_NOT_READY: '商品资料、价格或库存尚未完善',
+    STOREFRONT_POOL_MISSING: '商城尚未绑定可用的公开商品池',
+    LISTING_CHANGED: '商品在执行期间发生变化，请重试',
+  };
+  return {
+    id: row.id,
+    sku_id: row.sku_id,
+    title: row.title,
+    code,
+    message: messages[code] ?? '商品审核上架失败',
+    retryable: code === 'LISTING_NOT_FOUND' || code === 'STOREFRONT_POOL_MISSING' || code === 'LISTING_CHANGED',
+  };
+}
+
+function publicationCheckpoint(value: unknown, total: number): PublicationCheckpoint {
+  const payload = record(value);
+  const processed = integer(payload.processed);
+  const published = integer(payload.succeeded ?? payload.published);
+  const failed = integer(payload.failed);
+  const skipped = integer(payload.skipped);
+  const failures = publicationFailures(payload.failures);
+  if (processed !== published + failed + skipped || processed > total || failures.length !== failed) {
+    throw new Error('CATALOGPUBLICATION_PROGRESS_INVALID');
+  }
+  return {
+    processed, published, failed, skipped, failures,
+    startedAt: typeof payload.started_at === 'string' && payload.started_at.length > 0
+      ? payload.started_at : new Date().toISOString(),
+  };
+}
+
+function publicationFailures(value: unknown): readonly PublicationFailure[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    const failure = record(item);
+    if (typeof failure.id !== 'string' || typeof failure.code !== 'string' || typeof failure.message !== 'string') return [];
+    return [{
+      id: failure.id,
+      sku_id: typeof failure.sku_id === 'string' ? failure.sku_id : null,
+      title: typeof failure.title === 'string' ? failure.title : null,
+      code: failure.code,
+      message: failure.message,
+      retryable: failure.retryable === true,
+    }];
+  });
+}
+
+function integer(value: unknown): number {
+  const parsed = typeof value === 'number' ? value : Number(value ?? 0);
+  if (!Number.isSafeInteger(parsed) || parsed < 0) throw new Error('CATALOGPUBLICATION_PROGRESS_INVALID');
+  return parsed;
+}
+
+function record(value: unknown): Readonly<Record<string, unknown>> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }

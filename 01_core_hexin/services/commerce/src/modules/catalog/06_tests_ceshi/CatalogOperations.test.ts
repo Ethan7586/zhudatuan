@@ -6,7 +6,7 @@ import type { OperationRequest } from '../../../foundation/application/Operation
 import type { AccessContext } from '../../../foundation/security/AccessContext';
 import { confirmCatalogImport, createOrReuseCatalogImport } from '../03_application_yingyong/CatalogImportOperations';
 import { catalogActions, setListingPublication } from '../03_application_yingyong/CatalogOperations';
-import { setListingBatchPublication } from '../03_application_yingyong/CatalogListingPublication';
+import { readListingPublicationStatus, setListingBatchPublication } from '../03_application_yingyong/CatalogListingPublication';
 
 describe('catalog mall command boundaries', () => {
   it('reuses a standard package by mall and sha without scheduling duplicate work', async () => {
@@ -90,18 +90,68 @@ describe('catalog mall command boundaries', () => {
 
   it('queues ready draft publication for the current mall worker', async () => {
     const calls: QueryCall[] = [];
-    const database = recordingDatabase(calls, () => []);
+    const database = recordingDatabase(calls, (text) => text.startsWith('select listing.id')
+      ? [{ id: 'listing:1' }, { id: 'listing:2' }] : []);
 
     const result = await setListingBatchPublication(
       request('catalog.listings.batch', {}, undefined, {}, { action: 'publish_ready' }),
       database,
     );
 
-    expect(result).toMatchObject({ status: 202, body: { action: 'publish_ready', state: 'queued', count: 0 } });
-    expect(calls).toHaveLength(1);
-    expect(calls[0]?.values[1]).toBe('mall:hongtai');
-    expect(calls[0]?.text).toContain("'catalogpublication'");
-    expect(calls[0]?.text).toContain('insert into runtime.job');
+    expect(result).toMatchObject({ status: 202, body: { action: 'publish_ready', state: 'queued', count: 2 } });
+    expect(calls).toHaveLength(2);
+    expect(calls[0]?.values).toEqual(['mall:hongtai']);
+    expect(calls[1]?.values[1]).toBe('mall:hongtai');
+    expect(calls[1]?.text).toContain("'catalogpublication'");
+    expect(calls[1]?.text).toContain('insert into runtime.job');
+    expect(JSON.parse(String(calls[1]?.values[2]))).toMatchObject({
+      total: 2, processed: 0, target_ids: ['listing:1', 'listing:2'], failures: [],
+    });
+  });
+
+  it('reads durable publication status only from the current mall scope', async () => {
+    const calls: QueryCall[] = [];
+    const database = recordingDatabase(calls, () => [{
+      id: 'catalogpublication:1', kind: 'catalogpublication', scope_id: 'mall:hongtai', state: 'running',
+      payload: { action: 'publish_ready', total: 3, processed: 2, published: 1, failed: 1, skipped: 0,
+        failures: [{ id: 'listing:2', sku_id: 'sku:2', title: '商品二', code: 'STOREFRONT_POOL_MISSING',
+          message: '商城缺少前台商品池', retryable: true }] },
+      created_at: '2026-09-09T00:00:00.000Z', updated_at: '2026-09-09T00:00:01.000Z',
+    }]);
+
+    const result = await readListingPublicationStatus(
+      request('catalog.imports.read', { importid: 'catalogpublication:1' }), database,
+    );
+
+    expect(calls[0]?.values).toEqual(['mall:hongtai', 'catalogpublication:1']);
+    expect(result).toMatchObject({ status: 200, body: {
+      id: 'catalogpublication:1', kind: 'catalogpublication', scope_id: 'mall:hongtai',
+      state: 'running', total: 3, processed: 2, published: 1,
+      failed: 1, retryable_count: 1,
+    } });
+  });
+
+  it('queues a child task containing only retryable failed listings', async () => {
+    const calls: QueryCall[] = [];
+    const database = recordingDatabase(calls, (text) => text.startsWith('select id,kind,scope_id,state,payload') ? [{
+      id: 'catalogpublication:old', kind: 'catalogpublication', scope_id: 'mall:hongtai',
+      state: 'completed', created_at: '2026-09-09', updated_at: '2026-09-09',
+      payload: { failures: [
+        { id: 'listing:1', sku_id: 'sku:1', title: '一', code: 'LISTING_NOT_READY', message: '资料缺失', retryable: false },
+        { id: 'listing:2', sku_id: 'sku:2', title: '二', code: 'LISTING_CHANGED', message: '状态变化', retryable: true },
+      ] },
+    }] : []);
+
+    const result = await setListingBatchPublication(
+      request('catalog.listings.batch', {}, undefined, {}, { action: 'retry_failed', id: 'catalogpublication:old' }), database,
+    );
+
+    expect(calls[0]?.values).toEqual(['catalogpublication:old', 'mall:hongtai']);
+    expect(JSON.parse(String(calls[1]?.values[2]))).toMatchObject({
+      action: 'retry_failed', target_ids: ['listing:2'], parent_id: 'catalogpublication:old', total: 1,
+    });
+    expect(result).toMatchObject({ status: 202, body: { action: 'retry_failed', count: 1,
+      parent_id: 'catalogpublication:old' } });
   });
 
   it('assigns the active storefront pool during an explicit batch publication', async () => {

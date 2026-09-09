@@ -5,6 +5,7 @@ import { operationLifecycle, requireAccess, rowResult, type OperationActions, ty
 import type { OperationRequest, OperationResult } from '../../../foundation/application/OperationHandler';
 import { bodyRecord } from '../../../foundation/interface/Validation';
 import { OBJECT_STORE, type ObjectStore } from '../../../foundation/infrastructure/ObjectStore';
+import { isCatalogPublicationReference, readListingPublicationStatus } from './CatalogListingPublication';
 
 interface CatalogImportUploadPreparation {
   readonly kind: 'upload';
@@ -40,6 +41,9 @@ export function catalogImportOperations(context: ModuleContext): OperationAction
     'catalog.imports.read': operationLifecycle({
       execute: async (request, database) => {
         const access = requireAccess(request);
+        if (isCatalogPublicationReference(request.input.path.importid)) {
+          return readListingPublicationStatus(request, database);
+        }
         return rowResult(await database.query(`select job.id,job.state,job.total_count,job.cursor_value,job.success_count,job.failure_count,
           job.validation_summary,job.last_error,job.report_object_ref,job.report_sha256,job.report_size,job.created_at,job.updated_at,
           coalesce((select jsonb_agg(row_to_json(errorrow) order by errorrow.row_number,errorrow.reason_code) from
@@ -50,7 +54,8 @@ export function catalogImportOperations(context: ModuleContext): OperationAction
             (select row_number,payload from catalog.importrow where job_id=job.id order by row_number limit 20) previewrow),'[]'::jsonb) preview
           from catalog.importjob job where job.id=$1 and job.scope_id=$2`, [request.input.path.importid!, access.scope.id]));
       },
-      finalize: async (_request, result) => projectImport(result, objects),
+      finalize: async (request, result) => isCatalogPublicationReference(request.input.path.importid)
+        ? result : projectImport(result, objects),
     }),
   };
 }

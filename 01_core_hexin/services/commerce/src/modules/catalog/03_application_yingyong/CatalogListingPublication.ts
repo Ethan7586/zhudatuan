@@ -2,6 +2,30 @@ import { randomUUID } from 'node:crypto';
 import { rowResult, requireAccess, type OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import type { OperationRequest } from '../../../foundation/application/OperationHandler';
 import { bodyRecord } from '../../../foundation/interface/Validation';
+import { CATALOG_LISTING_MANAGEMENT_STATUS_SQL } from './CatalogListingManagement';
+
+interface ListingIdRow extends Record<string, unknown> {
+  readonly id: string;
+}
+
+interface PublicationJobRow extends Record<string, unknown> {
+  readonly id: string;
+  readonly kind: string;
+  readonly scope_id: string;
+  readonly state: string;
+  readonly payload: unknown;
+  readonly created_at: unknown;
+  readonly updated_at: unknown;
+}
+
+interface PublicationFailure {
+  readonly id: string;
+  readonly sku_id: string | null;
+  readonly title: string | null;
+  readonly code: string;
+  readonly message: string;
+  readonly retryable: boolean;
+}
 
 const SELECTED_STOREFRONT_POOL_CTE = `selected_pool as(
   select binding.pool_id from experience.binding binding
@@ -43,12 +67,29 @@ export async function setListingBatchPublication(request: OperationRequest, data
   const access = requireAccess(request);
   const body = bodyRecord(request);
   if (body.action === 'publish_ready') {
-    const id = `catalogpublication:${randomUUID()}`;
-    await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-      values($1,'catalogpublication','catalog',$2,
-        jsonb_build_object('action','publish_ready','total',0,'processed',0,'published',0,'phase','queued'),
-        'queued',90,clock_timestamp(),clock_timestamp(),clock_timestamp())`, [id, access.scope.id]);
-    return { status: 202, body: { id, action: 'publish_ready', state: 'queued', items: [], count: 0 } };
+    const ids = body.ids === undefined
+      ? (await database.query<ListingIdRow>(`select listing.id from catalog.listing listing
+          join catalog.sku sku on sku.id=listing.sku_id join catalog.product product on product.id=sku.product_id
+          where listing.scope_id=$1 and listing.status='draft'
+            and (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='pending_review'
+          order by listing.id`, [access.scope.id])).rows.map(({ id }) => id)
+      : publicationIds(body.ids);
+    return queuePublication(database, access.scope.id, 'publish_ready', ids);
+  }
+  if (body.action === 'retry_failed') {
+    if (typeof body.id !== 'string' || !body.id.startsWith('catalogpublication:')) {
+      throw new Error('VALIDATION_FAILED:id');
+    }
+    const original = await database.query<PublicationJobRow>(`select id,kind,scope_id,state,payload,created_at,updated_at from runtime.job
+      where id=$1 and kind='catalogpublication' and owner='catalog' and scope_id=$2`, [body.id, access.scope.id]);
+    const row = original.rows[0];
+    if (!row) return { status: 404, body: { code: 'RESOURCE_NOT_FOUND' } };
+    if (!['completed', 'failed', 'cancelled'].includes(row.state)) {
+      return { status: 409, body: { code: 'CATALOG_PUBLICATION_RETRY_NOT_READY' } };
+    }
+    const ids = publicationFailures(row.payload).filter(({ retryable }) => retryable).map(({ id }) => id);
+    if (ids.length === 0) return { status: 409, body: { code: 'CATALOG_PUBLICATION_RETRY_EMPTY' } };
+    return queuePublication(database, access.scope.id, 'retry_failed', [...new Set(ids)], row.id);
   }
   if (body.action !== 'publish' && body.action !== 'unpublish') throw new Error('VALIDATION_FAILED:action');
   if (!Array.isArray(body.ids) || body.ids.some((id) => typeof id !== 'string')) throw new Error('VALIDATION_FAILED:ids');
@@ -63,4 +104,148 @@ export async function setListingBatchPublication(request: OperationRequest, data
     [body.ids, access.scope.id, state],
   );
   return { status: 200, body: { action: body.action, items: result.rows, count: result.rowCount } };
+}
+
+export function isCatalogPublicationReference(id: string | undefined): boolean {
+  return id?.startsWith('catalogpublication:') ?? false;
+}
+
+export async function readListingPublicationStatus(request: OperationRequest, database: OperationDatabase) {
+  const access = requireAccess(request);
+  const reference = request.input.path.importid;
+  if (!isCatalogPublicationReference(reference)) throw new Error('CATALOG_PUBLICATION_REFERENCE_INVALID');
+  const latest = reference === 'catalogpublication:latest';
+  const result = await database.query<PublicationJobRow>(`select id,kind,scope_id,state,payload,created_at,updated_at from runtime.job
+    where kind='catalogpublication' and owner='catalog' and scope_id=$1 and ($2::text is null or id=$2)
+    order by case when state in('queued','running') then 0 else 1 end,created_at desc,id desc limit 1`,
+  [access.scope.id, latest ? null : reference]);
+  const row = result.rows[0];
+  if (!row) {
+    return latest
+      ? { status: 200, body: idlePublicationStatus() }
+      : { status: 404, body: { code: 'RESOURCE_NOT_FOUND' } };
+  }
+  return { status: 200, body: publicationStatus(row) };
+}
+
+async function queuePublication(
+  database: OperationDatabase,
+  scope: string,
+  action: 'publish_ready' | 'retry_failed',
+  ids: readonly string[],
+  parentId?: string,
+) {
+  const id = `catalogpublication:${randomUUID()}`;
+  const payload = {
+    action,
+    total: ids.length,
+    processed: 0,
+    succeeded: 0,
+    published: 0,
+    failed: 0,
+    skipped: 0,
+    phase: 'queued',
+    target_ids: ids,
+    failures: [],
+    ...(parentId === undefined ? {} : { parent_id: parentId }),
+  };
+  await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
+    values($1,'catalogpublication','catalog',$2,$3::jsonb,'queued',90,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+  [id, scope, JSON.stringify(payload)]);
+  return { status: 202, body: { id, action, state: 'queued', items: [], count: ids.length,
+    ...(parentId === undefined ? {} : { parent_id: parentId }) } };
+}
+
+function publicationIds(value: unknown): readonly string[] {
+  if (!Array.isArray(value) || value.length > 1_000
+    || value.some((id) => typeof id !== 'string' || id.trim().length === 0 || id.length > 300)) {
+    throw new Error('VALIDATION_FAILED:ids');
+  }
+  return [...new Set(value as string[])];
+}
+
+function publicationStatus(row: PublicationJobRow) {
+  const payload = record(row.payload);
+  const failures = publicationFailures(payload);
+  const published = integer(payload.published ?? payload.succeeded);
+  const failed = integer(payload.failed ?? failures.length);
+  const persistedProcessed = integer(payload.processed ?? published + failed);
+  const skipped = payload.succeeded === undefined
+    ? Math.max(0, persistedProcessed - published - failed)
+    : integer(payload.skipped);
+  const processed = published + failed + skipped;
+  const total = payload.total === undefined || payload.total === null ? null : integer(payload.total);
+  if ((payload.succeeded !== undefined && persistedProcessed !== processed)
+    || (total !== null && processed > total) || failures.length !== failed) {
+    throw new Error('CATALOGPUBLICATION_PROGRESS_INVALID');
+  }
+  return {
+    id: row.id,
+    kind: row.kind,
+    scope_id: row.scope_id,
+    state: publicationState(row.state),
+    action: text(payload.action, 'publish_ready'),
+    phase: text(payload.phase, row.state),
+    total,
+    processed,
+    succeeded: published,
+    published,
+    failed,
+    skipped,
+    failures,
+    retryable_count: failures.filter(({ retryable }) => retryable).length,
+    parent_id: nullableText(payload.parent_id),
+    started_at: nullableText(payload.started_at),
+    completed_at: nullableText(payload.completed_at),
+    created_at: timestamp(row.created_at),
+    updated_at: timestamp(row.updated_at),
+  };
+}
+
+function idlePublicationStatus() {
+  return { id: null, kind: 'catalogpublication', scope_id: null, state: 'idle', action: 'publish_ready', phase: 'idle', total: null, processed: 0,
+    succeeded: 0, published: 0, failed: 0, skipped: 0, failures: [], retryable_count: 0,
+    parent_id: null, started_at: null, completed_at: null, created_at: null, updated_at: null };
+}
+
+function publicationFailures(value: unknown): readonly PublicationFailure[] {
+  const failures = record(value).failures;
+  if (!Array.isArray(failures)) return [];
+  return failures.flatMap((item) => {
+    const failure = record(item);
+    const id = nullableText(failure.id);
+    const code = nullableText(failure.code);
+    const message = nullableText(failure.message);
+    if (id === null || code === null || message === null) return [];
+    return [{ id, sku_id: nullableText(failure.sku_id), title: nullableText(failure.title), code, message,
+      retryable: failure.retryable === true }];
+  });
+}
+
+function record(value: unknown): Readonly<Record<string, unknown>> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function text(value: unknown, fallback: string): string {
+  return typeof value === 'string' && value.length > 0 ? value : fallback;
+}
+
+function nullableText(value: unknown): string | null {
+  return typeof value === 'string' && value.length > 0 ? value : null;
+}
+
+function integer(value: unknown): number {
+  const parsed = typeof value === 'number' ? value : Number(value ?? 0);
+  return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : 0;
+}
+
+function publicationState(value: string): 'queued' | 'running' | 'completed' | 'failed' | 'cancelled' {
+  return ['queued', 'running', 'completed', 'failed', 'cancelled'].includes(value)
+    ? value as 'queued' | 'running' | 'completed' | 'failed' | 'cancelled'
+    : 'failed';
+}
+
+function timestamp(value: unknown): string | null {
+  if (value instanceof Date) return value.toISOString();
+  return nullableText(value);
 }

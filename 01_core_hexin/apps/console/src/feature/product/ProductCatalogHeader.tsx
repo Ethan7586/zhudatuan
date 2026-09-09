@@ -1,4 +1,4 @@
-import type { ListingPage } from './ProductSchema';
+import type { CatalogPublicationFailure, CatalogPublicationTask, ListingPage } from './ProductSchema';
 import { ProductIcon } from './ProductIcon';
 
 interface ProductCatalogHeaderProps {
@@ -10,12 +10,13 @@ interface ProductCatalogHeaderProps {
   readonly writeEnabled: boolean;
   readonly releaseDisabledReason?: string;
   readonly releasePending: boolean;
-  readonly releaseProgress?: Readonly<{ current: number; total: number }>;
+  readonly publicationTask?: CatalogPublicationTask;
   readonly releaseFeedback?: Readonly<{ tone: 'success' | 'error'; message: string }>;
   readonly onImport: () => void;
   readonly onCreate: () => void;
   readonly onExport: () => void;
   readonly onRelease: () => void;
+  readonly onRetry: () => void;
 }
 
 const tabs = Object.freeze([
@@ -27,7 +28,7 @@ const tabs = Object.freeze([
 ] as const);
 
 export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, exportReady, writeEnabled, releaseDisabledReason,
-  releasePending, releaseProgress, releaseFeedback, onImport, onCreate, onExport, onRelease }: ProductCatalogHeaderProps) {
+  releasePending, publicationTask, releaseFeedback, onImport, onCreate, onExport, onRelease, onRetry }: ProductCatalogHeaderProps) {
   const preview = previewEnabled && page?.preview?.kind === 'console-product-v1' ? page.preview : undefined;
   const coreTotal = preview === undefined ? page?.total_count : preview.facets.statuses.reduce((total, facet) => total + facet.count, 0) || preview.totalCount;
   const description = coreTotal === undefined ? '正在读取当前范围商品总量与管理状态。' : `当前范围内共 ${formatCount(coreTotal)} 件商品`;
@@ -48,21 +49,26 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
               onClick={onRelease}
               title={releaseDisabledReason === undefined ? '一次审核并上架当前商城全部合格商品' : `暂不可用：${releaseDisabledReason}`}>
               <ProductIcon name="store" />
-              {releaseProgress === undefined
-                ? releasePending ? '正在创建上架任务…' : `一键审核上架${page?.status_counts === undefined ? '' : ` ${formatCount(page.status_counts.pending_review)}`}`
-                : '正在审核上架…'}
+              {publicationTask?.state === 'queued' || publicationTask?.state === 'running'
+                ? '正在审核上架…'
+                : releasePending ? '正在创建上架任务…'
+                  : `一键审核上架${page?.status_counts === undefined ? '' : ` ${formatCount(page.status_counts.pending_review)}`}`}
             </button>
-            {releaseProgress === undefined ? null : (
-              <div id="productreleasestate" className="productreleaseprogress" role="status" aria-live="polite">
-                <progress max={releaseProgress.total} value={releaseProgress.current} />
-                <span>商品正在发布到前台：{formatCount(releaseProgress.current)}/{formatCount(releaseProgress.total)}</span>
+            {publicationTask === undefined && releaseFeedback === undefined && releaseDisabledReason === undefined ? null : (
+              <div id="productreleasestate" className="productreleasestate">
+                {publicationTask === undefined ? null : (
+                  <PublicationTaskStatus task={publicationTask} retryPending={releasePending} onRetry={onRetry} />
+                )}
+                {releaseFeedback === undefined ? null : (
+                  <p className={`productreleasefeedback productreleasefeedback${releaseFeedback.tone}`}
+                    role={releaseFeedback.tone === 'error' ? 'alert' : 'status'}>{releaseFeedback.message}</p>
+                )}
+                {releaseDisabledReason === undefined ? null : (
+                  <p className="productreleasefeedback productreleasefeedbackdisabled">
+                    暂不可用：{releaseDisabledReason}
+                  </p>
+                )}
               </div>
-            )}
-            {releaseProgress !== undefined || (releaseFeedback === undefined && releaseDisabledReason === undefined) ? null : (
-              <p id="productreleasestate" className={`productreleasefeedback productreleasefeedback${releaseFeedback?.tone ?? 'disabled'}`}
-                {...(releaseFeedback === undefined ? {} : { role: releaseFeedback.tone === 'error' ? 'alert' : 'status' })}>
-                {releaseFeedback?.message ?? `暂不可用：${releaseDisabledReason}`}
-              </p>
             )}
           </div>
           <button className="productaction" type="button" disabled={!writeEnabled} onClick={onImport}
@@ -101,4 +107,66 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
 
 function formatCount(value: number): string {
   return new Intl.NumberFormat('zh-CN').format(value);
+}
+
+function PublicationTaskStatus({ task, retryPending, onRetry }: Readonly<{
+  task: CatalogPublicationTask;
+  retryPending: boolean;
+  onRetry: () => void;
+}>) {
+  const active = task.state === 'queued' || task.state === 'running';
+  const knownTotal = task.total !== null;
+  return (
+    <section className="productpublicationtask" aria-label="商品发布任务" aria-live="polite">
+      <p className="productpublicationmeta"><strong>{task.state === 'completed' && task.failed > 0
+        ? '任务已完成（部分失败）' : publicationStateLabel(task.state)}</strong><span>任务 ID：{task.id}</span></p>
+      {knownTotal && task.total! > 0 ? (
+        <div className="productreleaseprogress" role={active ? 'status' : undefined}>
+          <progress aria-label="商品发布进度" max={task.total!} value={Math.min(task.processed, task.total!)} />
+          <span>已处理 {formatCount(task.processed)}/{formatCount(task.total!)}</span>
+        </div>
+      ) : <p className="productpublicationphase">{phaseLabel(task.phase, active)}</p>}
+      <p className="productpublicationcounts">
+        成功 {formatCount(task.succeeded)} · 失败 {formatCount(task.failed)} · 跳过 {formatCount(task.skipped)}
+      </p>
+      {task.failures.length === 0 ? null : (
+        <details className="productpublicationfailures">
+          <summary>查看失败明细 {formatCount(task.failures.length)} 件</summary>
+          <ul>{task.failures.map((failure) => <PublicationFailure key={`${failure.id}:${failure.code}`} failure={failure} />)}</ul>
+        </details>
+      )}
+      {!active && task.retryable_count > 0 ? (
+        <button className="productretrypublication" type="button" disabled={retryPending} onClick={onRetry}
+          title={retryPending ? '重试任务正在创建' : `仅重试 ${formatCount(task.retryable_count)} 个可重试失败项`}>
+          {retryPending ? '正在创建重试任务…' : `重试 ${formatCount(task.retryable_count)} 个失败项`}
+        </button>
+      ) : null}
+    </section>
+  );
+}
+
+function PublicationFailure({ failure }: Readonly<{ failure: CatalogPublicationFailure }>) {
+  return <li>
+    <strong>{failure.title ?? '未找到商品'}</strong>
+    <span>Listing：{failure.id} · SKU：{failure.sku_id ?? '—'}</span>
+    <span>{failure.code}：{failure.message}</span>
+    <span>{failure.retryable ? '可重试：系统只会重试此失败项。' : `不可重试。下一步：${failureNextStep(failure.code)}`}</span>
+  </li>;
+}
+
+function publicationStateLabel(state: CatalogPublicationTask['state']): string {
+  return ({ queued: '等待执行', running: '正在执行', completed: '任务已完成', failed: '任务执行失败',
+    cancelled: '任务已取消', idle: '暂无任务' } as const)[state];
+}
+
+function phaseLabel(phase: string, active: boolean): string {
+  if (!active) return phase === 'completed' ? '处理完成' : `阶段：${phase}`;
+  return phase === 'queued' ? '任务已进入队列，正在等待处理。' : '正在处理商品，服务端尚未提供总数。';
+}
+
+function failureNextStep(code: string): string {
+  if (code === 'LISTING_NOT_READY') return '补全商品资料、价格和库存后重新审核。';
+  if (code === 'LISTING_STATE_INVALID') return '将商品恢复到待审核草稿状态后重新审核。';
+  if (code === 'LISTING_NOT_FOUND') return '确认商品是否已删除；需要时重新导入商品。';
+  return '按错误原因处理该商品后重新发起审核。';
 }

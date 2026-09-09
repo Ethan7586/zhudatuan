@@ -52,7 +52,7 @@
 }
 .productreleasecontrol {
   display: grid;
-  max-width: 250px;
+  width: min(360px, 32vw);
   gap: 5px;
 }
 .productreleasecontrol .productaction {
@@ -67,6 +67,36 @@
 .productreleasefeedbackdisabled { color: #9a3412; }
 .productreleasefeedbackerror { color: #b91c1c; }
 .productreleasefeedbacksuccess { color: #15803d; }
+.productreleasestate,
+.productpublicationtask {
+  display: grid;
+  gap: 5px;
+}
+.productpublicationtask {
+  color: #334155;
+  font-size: 11px;
+  line-height: 16px;
+}
+.productpublicationmeta,
+.productpublicationphase,
+.productpublicationcounts {
+  margin: 0;
+}
+.productpublicationmeta {
+  display: grid;
+  color: #475569;
+  text-align: left;
+}
+.productpublicationmeta strong { color: #1d4ed8; }
+.productpublicationmeta span {
+  overflow-wrap: anywhere;
+  color: #64748b;
+}
+.productpublicationcounts {
+  color: #334155;
+  font-weight: 600;
+  text-align: center;
+}
 .productreleaseprogress {
   display: grid;
   gap: 3px;
@@ -79,6 +109,47 @@
   width: 100%;
   height: 5px;
   accent-color: #1f5eff;
+}
+.productpublicationfailures {
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fff7f7;
+  color: #991b1b;
+  text-align: left;
+}
+.productpublicationfailures summary {
+  padding: 6px 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.productpublicationfailures ul {
+  display: grid;
+  max-height: 220px;
+  margin: 0;
+  padding: 0 8px 8px;
+  gap: 7px;
+  overflow: auto;
+  list-style: none;
+}
+.productpublicationfailures li {
+  display: grid;
+  padding-top: 6px;
+  border-top: 1px solid #fecaca;
+  gap: 2px;
+}
+.productpublicationfailures li span { overflow-wrap: anywhere; }
+.productretrypublication {
+  min-height: 30px;
+  border: 1px solid #dc2626;
+  border-radius: 6px;
+  background: #fff;
+  color: #b91c1c;
+  cursor: pointer;
+  font-weight: 600;
+}
+.productretrypublication:disabled {
+  cursor: not-allowed;
+  opacity: .58;
 }
 .productaction,
 .productheroactions button,

@@ -82,12 +82,53 @@ export const ListingPublicationReceiptSchema = z.object({
 });
 
 export const ListingBatchPublicationReceiptSchema = z.object({
-  id: z.optional(z.string().check(z.minLength(1))),
-  action: z.literal('publish_ready'),
+  id: z.string().check(z.minLength(1)),
+  action: z.enum(['publish_ready', 'retry_failed']),
   state: z.optional(z.literal('queued')),
   items: z.array(ListingPublicationReceiptSchema),
   count: DatabaseIntegerSchema,
+  parent_id: z.optional(z.string().check(z.minLength(1))),
 });
+
+export const CatalogPublicationFailureSchema = z.object({
+  id: z.string().check(z.minLength(1)),
+  sku_id: z.nullable(z.string()),
+  title: z.nullable(z.string()),
+  code: z.string().check(z.minLength(1)),
+  message: z.string().check(z.minLength(1)),
+  retryable: z.boolean(),
+});
+
+export const CatalogPublicationTaskSchema = z.object({
+  id: z.nullable(z.string().check(z.minLength(1))),
+  kind: z.literal('catalogpublication'),
+  scope_id: z.nullable(z.string().check(z.minLength(1))),
+  state: z.enum(['idle', 'queued', 'running', 'completed', 'failed', 'cancelled']),
+  action: z.enum(['publish_ready', 'retry_failed']),
+  phase: z.string().check(z.minLength(1)),
+  total: z.nullable(DatabaseIntegerSchema),
+  processed: DatabaseIntegerSchema,
+  succeeded: DatabaseIntegerSchema,
+  published: DatabaseIntegerSchema,
+  failed: DatabaseIntegerSchema,
+  skipped: DatabaseIntegerSchema,
+  failures: z.array(CatalogPublicationFailureSchema),
+  retryable_count: DatabaseIntegerSchema,
+  parent_id: z.nullable(z.string()),
+  started_at: z.nullable(z.string()),
+  created_at: z.nullable(z.string()),
+  updated_at: z.nullable(z.string()),
+  completed_at: z.nullable(z.string()),
+}).check(
+  z.refine((task) => task.processed === task.succeeded + task.failed + task.skipped,
+    { message: 'CATALOG_PUBLICATION_PROGRESS_MISMATCH' }),
+  z.refine((task) => task.total === null || task.processed <= task.total,
+    { message: 'CATALOG_PUBLICATION_TOTAL_MISMATCH' }),
+  z.refine((task) => task.failures.length === task.failed,
+    { message: 'CATALOG_PUBLICATION_FAILURE_COUNT_MISMATCH' }),
+  z.refine((task) => task.retryable_count === task.failures.filter(({ retryable }) => retryable).length,
+    { message: 'CATALOG_PUBLICATION_RETRY_COUNT_MISMATCH' }),
+);
 
 export const CatalogImportCreateSchema = z.object({
   id: z.string().check(z.minLength(1)),
@@ -154,6 +195,8 @@ export const ListingPageSchema = z.object({
 export type ProductFilter = z.infer<typeof ProductFilterSchema>;
 export type Listing = z.infer<typeof ListingSchema>;
 export type ListingBatchPublicationReceipt = z.infer<typeof ListingBatchPublicationReceiptSchema>;
+export type CatalogPublicationFailure = z.infer<typeof CatalogPublicationFailureSchema>;
+export type CatalogPublicationTask = z.infer<typeof CatalogPublicationTaskSchema>;
 export type ListingPage = z.infer<typeof ListingPageSchema>;
 export type ProductListingPreview = z.infer<typeof ProductListingPreviewSchema>;
 export type ProductPagePreview = z.infer<typeof ProductPagePreviewSchema>;

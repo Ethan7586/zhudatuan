@@ -1,12 +1,15 @@
-import { createFetchCatalogListingsBatch, createFetchCatalogListingsPublish, createFetchCatalogListingsUnpublish } from '@shop/sdk/catalog';
+import { createFetchCatalogImportsRead, createFetchCatalogListingsBatch, createFetchCatalogListingsPublish,
+  createFetchCatalogListingsUnpublish } from '@shop/sdk/catalog';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
-import { consoleCommand } from '../../shared/api/Client';
+import { consoleCommand, consoleRequest } from '../../shared/api/Client';
 import { appConfig } from '../../shared/config/AppConfig';
-import { ListingBatchPublicationReceiptSchema, ListingPublicationReceiptSchema, type Listing } from './ProductSchema';
+import { CatalogPublicationTaskSchema, ListingBatchPublicationReceiptSchema, ListingPublicationReceiptSchema,
+  type CatalogPublicationTask, type Listing } from './ProductSchema';
 
 const publishListing = createFetchCatalogListingsPublish(appConfig.apiBaseUrl);
 const unpublishListing = createFetchCatalogListingsUnpublish(appConfig.apiBaseUrl);
 const publishListingBatch = createFetchCatalogListingsBatch(appConfig.apiBaseUrl);
+const readCatalogImport = createFetchCatalogImportsRead(appConfig.apiBaseUrl);
 
 export type ListingPublicationAction = 'publish' | 'unpublish';
 
@@ -27,7 +30,15 @@ export function readyPublicationUnavailableReason(context: ConsoleContext): stri
   if (context.session.csrf === undefined) return '登录状态缺少操作凭证，请重新登录';
   if (!context.session.permissions.includes('catalog.listing.manage')) return '当前账号缺少商品上架权限';
   if (!context.session.capabilities.includes('catalog.listings.batch')) return '当前角色未开通批量审核上架能力';
+  if (!context.session.permissions.includes('catalog.import.read')
+    || !context.session.capabilities.includes('catalog.imports.read')) return '当前角色未开通发布任务状态读取能力';
   return undefined;
+}
+
+export function canReadPublicationTask(context: ConsoleContext): boolean {
+  return context.scope.kind === 'mall'
+    && context.session.permissions.includes('catalog.import.read')
+    && context.session.capabilities.includes('catalog.imports.read');
 }
 
 export async function setListingPublication(
@@ -58,5 +69,38 @@ export async function publishReadyListings(context: ConsoleContext, signal?: Abo
     ...(signal === undefined ? {} : { signal }),
   });
   const value = await publishListingBatch({ body: { action: 'publish_ready' } }, request);
+  return ListingBatchPublicationReceiptSchema.parse(value);
+}
+
+export async function readPublicationTask(
+  context: ConsoleContext,
+  id: string = 'catalogpublication:latest',
+  signal?: AbortSignal,
+): Promise<CatalogPublicationTask> {
+  if (!canReadPublicationTask(context)) throw new Error('CATALOG_PUBLICATION_STATUS_NOT_AVAILABLE');
+  const value = await readCatalogImport(
+    { path: { importid: id } },
+    consoleRequest(context.scope, signal, context.session.accessVersion),
+  );
+  return CatalogPublicationTaskSchema.parse(value);
+}
+
+export async function retryPublicationFailures(
+  context: ConsoleContext,
+  task: CatalogPublicationTask,
+  signal?: AbortSignal,
+) {
+  if (!canPublishReadyListings(context) || task.id === null || task.retryable_count === 0) {
+    throw new Error('CATALOG_PUBLICATION_RETRY_NOT_AVAILABLE');
+  }
+  const value = await publishListingBatch(
+    { body: { action: 'retry_failed', id: task.id } },
+    consoleCommand(context.scope, {
+      accessVersion: context.session.accessVersion,
+      csrfToken: context.session.csrf!,
+      idempotencyKey: `catalog-listing:retry-failed:${task.id}`,
+      ...(signal === undefined ? {} : { signal }),
+    }),
+  );
   return ListingBatchPublicationReceiptSchema.parse(value);
 }

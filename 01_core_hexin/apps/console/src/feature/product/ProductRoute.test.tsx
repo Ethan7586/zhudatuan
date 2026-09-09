@@ -10,12 +10,17 @@ import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { Component } from './ProductRoute';
 
 const requests: URL[] = [];
+const publicationRequests: string[] = [];
 const writes: string[] = [];
 const batchActions: string[] = [];
 const server = setupServer(
   http.get('*/api/v1/catalog/listings', ({ request }) => {
     requests.push(new URL(request.url));
     return HttpResponse.json(productPage);
+  }),
+  http.get('*/api/v1/catalog/imports/:id', ({ params }) => {
+    publicationRequests.push(String(params.id));
+    return HttpResponse.json(publicationTask());
   }),
   http.all('*/api/v1/catalog/**', ({ request }) => {
     writes.push(request.method);
@@ -29,8 +34,10 @@ afterEach(() => {
   vi.restoreAllMocks();
   server.resetHandlers();
   requests.length = 0;
+  publicationRequests.length = 0;
   writes.length = 0;
   batchActions.length = 0;
+  window.localStorage.clear();
 });
 afterAll(() => server.close());
 
@@ -135,17 +142,25 @@ describe('Product governance workspace', () => {
     let completed = false;
     let activeReads = 0;
     let maximumConcurrentReads = 0;
-    server.use(http.get('*/api/v1/catalog/listings', async ({ request }) => {
+    server.use(http.get('*/api/v1/catalog/listings', ({ request }) => {
       requests.push(new URL(request.url));
-      if (!queued) return HttpResponse.json(productPage);
+      return HttpResponse.json(completed ? { ...productPage, status_counts: {
+        ...productPage.status_counts, pending_review: 0, published: 2,
+      } } : productPage);
+    }));
+    server.use(http.get('*/api/v1/catalog/imports/:id', async ({ params }) => {
+      publicationRequests.push(String(params.id));
+      if (!queued) return HttpResponse.json(publicationTask());
       activeReads += 1;
       maximumConcurrentReads = Math.max(maximumConcurrentReads, activeReads);
       await new Promise((resolve) => setTimeout(resolve, 900));
       activeReads -= 1;
-      if (!completed) return HttpResponse.json(productPage);
-      return HttpResponse.json({ ...productPage, status_counts: {
-        ...productPage.status_counts, pending_review: 0, published: 2,
-      } });
+      return HttpResponse.json(completed
+        ? publicationTask({ id: 'catalogpublication:test', scope_id: 'mall:hongtai', state: 'completed',
+          phase: 'completed', total: 1, processed: 1, succeeded: 1, published: 1,
+          completed_at: '2026-09-09T08:00:02.000Z' })
+        : publicationTask({ id: 'catalogpublication:test', scope_id: 'mall:hongtai', state: 'running',
+          phase: 'publishing', total: 1 }));
     }));
     server.use(http.post('*/api/v1/catalog/listings/batches', async ({ request }) => {
       const body = await request.json() as { action?: string };
@@ -157,14 +172,14 @@ describe('Product governance workspace', () => {
         action: 'publish_ready',
         state: 'queued',
         items: [],
-        count: 0,
+        count: 1,
       }, { status: 202 });
     }));
     renderProductRoute(mallContext);
     await screen.findByRole('table', { name: '商品列表' });
 
     const release = screen.getByRole<HTMLButtonElement>('button', { name: '一键审核上架 1' });
-    expect(release.disabled).toBe(false);
+    await waitFor(() => expect(release.disabled).toBe(false));
     expect(release.title).toBe('一次审核并上架当前商城全部合格商品');
     expect(screen.queryByText(/^暂不可用：/)).toBeNull();
     await user.click(release);
@@ -173,12 +188,111 @@ describe('Product governance workspace', () => {
     expect(writes).toContain('POST');
     expect(await screen.findByRole('progressbar')).toBeTruthy();
     expect(screen.getByRole('button', { name: '正在审核上架…' })).toBeTruthy();
-    expect(screen.getByText('商品正在发布到前台：0/1')).toBeTruthy();
+    expect(screen.getByText('已处理 0/1')).toBeTruthy();
+    expect(screen.getByText('成功 0 · 失败 0 · 跳过 0')).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
     completed = true;
-    expect(await screen.findByText('已审核并上架 1 件商品，商品管理状态已更新。', {}, { timeout: 2_500 })).toBeTruthy();
+    expect(await screen.findByText('任务已完成', {}, { timeout: 5_000 })).toBeTruthy();
+    expect(screen.getByText('成功 1 · 失败 0 · 跳过 0')).toBeTruthy();
     expect(maximumConcurrentReads).toBe(1);
     expect(requests).toHaveLength(2);
+  });
+
+  it('recovers the same server task after remount and pauses polling while the page is hidden', async () => {
+    const user = userEvent.setup();
+    let started = false;
+    let completed = false;
+    const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    server.use(http.get('*/api/v1/catalog/imports/:id', ({ params }) => {
+      publicationRequests.push(String(params.id));
+      if (!started) return HttpResponse.json(publicationTask());
+      return HttpResponse.json(completed
+        ? publicationTask({ id: 'catalogpublication:resume', scope_id: 'mall:hongtai', state: 'completed',
+          phase: 'completed', total: 2, processed: 2, succeeded: 2, published: 2,
+          completed_at: '2026-09-09T08:10:02.000Z' })
+        : publicationTask({ id: 'catalogpublication:resume', scope_id: 'mall:hongtai', state: 'running',
+          phase: 'publishing', total: 2, processed: 1, succeeded: 1, published: 1 }));
+    }));
+    server.use(http.post('*/api/v1/catalog/listings/batches', () => {
+      started = true;
+      return HttpResponse.json({ id: 'catalogpublication:resume', action: 'publish_ready', state: 'queued', items: [], count: 2 },
+        { status: 202 });
+    }));
+
+    const first = renderProductRoute(mallContext);
+    await screen.findByRole('table', { name: '商品列表' });
+    const release = screen.getByRole<HTMLButtonElement>('button', { name: '一键审核上架 1' });
+    await waitFor(() => expect(release.disabled).toBe(false));
+    await user.click(release);
+    expect(await screen.findByText('已处理 1/2')).toBeTruthy();
+    expect(screen.getByText('任务 ID：catalogpublication:resume')).toBeTruthy();
+    expect(window.localStorage.getItem('console:catalogpublication:mall:mall:hongtai')).toBe('catalogpublication:resume');
+
+    first.unmount();
+    const second = renderProductRoute(mallContext);
+    expect(await screen.findByText('任务 ID：catalogpublication:resume')).toBeTruthy();
+    expect(screen.getByText('已处理 1/2')).toBeTruthy();
+    expect(publicationRequests.at(-1)).toBe('catalogpublication:resume');
+
+    visibility.mockReturnValue('hidden');
+    document.dispatchEvent(new Event('visibilitychange'));
+    const hiddenRequestCount = publicationRequests.length;
+    await new Promise((resolve) => setTimeout(resolve, 1_150));
+    expect(publicationRequests).toHaveLength(hiddenRequestCount);
+
+    visibility.mockReturnValue('visible');
+    document.dispatchEvent(new Event('visibilitychange'));
+    await waitFor(() => expect(publicationRequests.length).toBeGreaterThan(hiddenRequestCount));
+    completed = true;
+    expect(await screen.findByText('任务已完成', {}, { timeout: 3_000 })).toBeTruthy();
+    expect(screen.getByText('成功 2 · 失败 0 · 跳过 0')).toBeTruthy();
+    second.unmount();
+    renderProductRoute(mallContext);
+    expect(await screen.findByText('任务 ID：catalogpublication:resume')).toBeTruthy();
+    expect(screen.getByText('任务已完成')).toBeTruthy();
+    expect(screen.getByText('成功 2 · 失败 0 · 跳过 0')).toBeTruthy();
+  });
+
+  it('shows item failures and retries through the parent task without sending successful IDs', async () => {
+    const user = userEvent.setup();
+    const retryBodies: unknown[] = [];
+    const retryKeys: string[] = [];
+    server.use(http.get('*/api/v1/catalog/imports/:id', ({ params }) => {
+      publicationRequests.push(String(params.id));
+      if (String(params.id) === 'catalogpublication:retry-child') {
+        return HttpResponse.json(publicationTask({ id: 'catalogpublication:retry-child', scope_id: 'mall:hongtai',
+          state: 'queued', action: 'retry_failed', total: 1, parent_id: 'catalogpublication:failed' }));
+      }
+      return HttpResponse.json(publicationTask({
+        id: 'catalogpublication:failed', scope_id: 'mall:hongtai', state: 'completed', phase: 'completed',
+        total: 3, processed: 3, succeeded: 1, published: 1, failed: 2, retryable_count: 1,
+        completed_at: '2026-09-09T08:20:02.000Z',
+        failures: [
+          { id: 'listing:missing', sku_id: null, title: null, code: 'LISTING_NOT_FOUND',
+            message: '未找到商品，请确认导入完成后重试', retryable: true },
+          { id: 'listing:not-ready', sku_id: 'sku:not-ready', title: '资料不全商品', code: 'LISTING_NOT_READY',
+            message: '商品资料、价格或库存尚未完善', retryable: false },
+        ],
+      }));
+    }));
+    server.use(http.post('*/api/v1/catalog/listings/batches', async ({ request }) => {
+      retryBodies.push(await request.json());
+      retryKeys.push(request.headers.get('idempotency-key') ?? '');
+      return HttpResponse.json({ id: 'catalogpublication:retry-child', action: 'retry_failed', state: 'queued',
+        items: [], count: 1, parent_id: 'catalogpublication:failed' }, { status: 202 });
+    }));
+
+    renderProductRoute(mallContext);
+    await screen.findByText('成功 1 · 失败 2 · 跳过 0');
+    await user.click(screen.getByText('查看失败明细 2 件'));
+    expect(screen.getByText(/LISTING_NOT_FOUND/)).toBeTruthy();
+    expect(screen.getByText(/不可重试。下一步：补全商品资料、价格和库存后重新审核/)).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '重试 1 个失败项' }));
+
+    await waitFor(() => expect(retryBodies).toEqual([{ action: 'retry_failed', id: 'catalogpublication:failed' }]));
+    expect(retryKeys).toEqual(['catalog-listing:retry-failed:catalogpublication:failed']);
+    expect(JSON.stringify(retryBodies[0])).not.toContain('listing:1');
+    expect(await screen.findByText('任务 ID：catalogpublication:retry-child')).toBeTruthy();
   });
 
   it('enables manual creation, standard-package import and publication in an authorized mall', async () => {
@@ -302,6 +416,31 @@ const productPage = {
   total_count: 4,
   status_counts: { needs_attention: 1, pending_review: 1, published: 1, unpublished: 1 },
 };
+
+function publicationTask(overrides: Readonly<Record<string, unknown>> = {}) {
+  return {
+    id: null,
+    kind: 'catalogpublication',
+    scope_id: null,
+    state: 'idle',
+    action: 'publish_ready',
+    phase: 'idle',
+    total: null,
+    processed: 0,
+    succeeded: 0,
+    published: 0,
+    failed: 0,
+    skipped: 0,
+    failures: [],
+    retryable_count: 0,
+    parent_id: null,
+    started_at: null,
+    created_at: null,
+    updated_at: null,
+    completed_at: null,
+    ...overrides,
+  };
+}
 
 const standardPackage = JSON.stringify({
   schema: 'catalog-package/v1', packageId: 'package:test:route', compiledAt: '2026-09-07T00:00:00.000Z',
