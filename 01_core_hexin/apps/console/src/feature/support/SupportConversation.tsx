@@ -58,10 +58,10 @@ export function SupportConversation(props: SupportConversationProps) {
     <section className="supportconversation" aria-labelledby="supportconversationtitle">
       <header className="supportconversationheader">
         <div>
-          <Link className="supportmobileback" to={props.backPath} aria-label="返回客服工单队列">‹</Link>
-          <span className="supportconversationavatar" aria-hidden="true">客</span>
+          <Link className="supportmobileback" to={props.backPath} aria-label="返回服务工单队列">‹</Link>
+          <span className="supportconversationidentity">发起人</span>
           <div><h2 id="supportconversationtitle">{title}</h2>
-            <p>{props.selectedCase === undefined ? '正在显示此工单的会话记录' : `${supportChannelLabel(props.selectedCase.channel)} · ${shortIdentifier(props.caseId)}`}</p>
+            <p>{props.selectedCase === undefined ? '正在显示此工单的会话记录' : `#${shortIdentifier(props.caseId)} · ${supportChannelLabel(props.selectedCase.channel)}`}</p>
           </div>
         </div>
         <div className="supportconversationtools">
@@ -94,7 +94,7 @@ function MessageBubble({ message, showDate }: Readonly<{ message: SupportMessage
       <article className="supportmessage" data-author={agent ? 'agent' : 'customer'}>
         <span className="supportmessageavatar" aria-hidden="true">{supportAuthorInitial(message.authorType)}</span>
         <div>
-          <header><strong>{supportAuthorLabel(message.authorType, message.author)}</strong>
+          <header><strong>{supportAuthorLabel(message.authorType)}</strong>
             <time dateTime={message.createdAt}>{supportTime(message.createdAt)}</time></header>
           <p>{message.body}</p>
         </div>
@@ -132,17 +132,24 @@ function SupportComposer({ canSend, sending, sendError, unavailableReason, onSen
   };
   return (
     <form className="supportcomposer" onSubmit={(event) => { void submit(event); }}>
-      <div className="supportcomposerbar">
-        <button type="button" disabled title="附件上传尚未接入" aria-label="添加附件（尚未接入）">＋</button>
-        <span>Enter 发送 · Shift + Enter 换行</span>
-        <small>{draft.length}/4000</small>
+      <div className="supportcomposermodes" role="tablist" aria-label="消息类型">
+        <button type="button" role="tab" aria-selected="true">回复消费者</button>
+        <button type="button" role="tab" aria-selected="false" disabled title="下一批接入">内部备注</button>
+        <button type="button" role="tab" aria-selected="false" disabled title="下一批接入">协同供应商</button>
       </div>
-      <textarea value={draft} maxLength={4000} rows={3} disabled={!canSend || sending}
-        onChange={(event) => setDraft(event.target.value)} onKeyDown={keyDown}
-        placeholder={canSend ? '输入回复内容…' : unavailableReason} aria-label="回复内容" />
-      <div className="supportcomposeractions">
-        <span role="status" aria-live="polite">{sending ? '正在安全发送…' : sendError ?? (!canSend ? unavailableReason : '')}</span>
-        <button type="submit" disabled={!canSend || sending || draft.trim().length === 0}>{sending ? '发送中' : '发送回复'}</button>
+      <div className="supportcomposerbox">
+        <textarea value={draft} maxLength={4000} rows={4} disabled={!canSend || sending}
+          onChange={(event) => setDraft(event.target.value)} onKeyDown={keyDown}
+          placeholder={canSend ? '请输入回复内容…' : unavailableReason} aria-label="回复内容" />
+        <div className="supportcomposeractions">
+          <div className="supportcomposerattachments" aria-label="尚未接入的消息附件">
+            <button type="button" disabled title="下一批接入" aria-label="添加附件（下一批接入）">⌕</button>
+            <button type="button" disabled title="下一批接入" aria-label="添加图片（下一批接入）">▧</button>
+            <button type="button" disabled title="下一批接入" aria-label="添加文件（下一批接入）">▤</button>
+          </div>
+          <span role="status" aria-live="polite">{sending ? '发送中…' : sendError ?? (!canSend ? unavailableReason : `${draft.length}/4000`)}</span>
+          <button type="submit" disabled={!canSend || sending || draft.trim().length === 0}>{sending ? '发送中' : '发送回复'}</button>
+        </div>
       </div>
     </form>
   );
@@ -151,10 +158,31 @@ function SupportComposer({ canSend, sending, sendError, unavailableReason, onSen
 function ConversationWelcome() {
   return (
     <section className="supportconversation supportconversationwelcome" aria-labelledby="supportconversationtitle">
-      <span className="supportwelcomeicon" aria-hidden="true">主</span>
-      <p>ZHUDATUAN SUPPORT</p>
+      <span className="supportwelcomeicon" aria-hidden="true"><SupportMark /></span>
+      <p>服务中心</p>
       <h2 id="supportconversationtitle">选择一条工单开始处理</h2>
       <span>从左侧会话队列打开工单，这里会展示经服务端解密的真实消息记录。</span>
     </section>
   );
+}
+
+function SupportMark() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-7l-4.5 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+    <path d="m8 11 2.2 2.2L16 8" />
+  </svg>;
+}
+
+export function SupportApprovalCard({ title, amount, description, state = '待审批' }: Readonly<{
+  title: string;
+  amount: string;
+  description: string;
+  state?: string;
+}>) {
+  return <article className="supportapprovalcard" aria-label={title}>
+    <header><strong>{title}</strong><span>{state}</span></header>
+    <dl><div><dt>金额</dt><dd>{amount}</dd></div><div><dt>申请说明</dt><dd>{description}</dd></div></dl>
+    <div><button type="button" disabled title="下一批接入">批准</button><button type="button" disabled title="下一批接入">驳回</button>
+      <button type="button" disabled title="下一批接入">要求补充</button></div>
+  </article>;
 }

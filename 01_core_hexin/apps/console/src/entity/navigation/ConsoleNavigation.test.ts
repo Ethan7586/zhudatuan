@@ -22,7 +22,7 @@ describe('Console navigation selector', () => {
       { moduleId: 'qualification', label: '系统治理台', icon: 'system', order: 110 },
     ]);
     expect(items.filter(({ placement }) => placement === 'bottom')).toEqual([
-      expect.objectContaining({ moduleId: 'support', suffix: 'support', label: '客服系统', icon: 'support', order: 130 }),
+      expect.objectContaining({ moduleId: 'support', suffix: 'support', label: '服务中心', icon: 'support', order: 130 }),
     ]);
     expect(items.find(({ moduleId }) => moduleId === 'control')).toBeUndefined();
     expect(items.find(({ moduleId }) => moduleId === 'referral')).toMatchObject({

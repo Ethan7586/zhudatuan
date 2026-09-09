@@ -64,7 +64,7 @@ describe('Sidebar commerce navigation', () => {
     const primaryNavigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
     const labels = within(primaryNavigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
     const profile = container.querySelector('.sidebarprofile');
-    const supportNavigation = screen.getByRole('navigation', { name: '客服系统' });
+    const supportNavigation = screen.getByRole('navigation', { name: '服务中心' });
 
     expect(labels).toEqual([
       '经营驾驶舱', '数据报表', '商城管理', '商品管理', '订单管理系统', '分销返佣系统',
@@ -103,8 +103,8 @@ describe('Sidebar commerce navigation', () => {
     const onNavigate = vi.fn();
     const { container } = renderSidebar('mall', collapsed, onNavigate);
     const primaryNavigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
-    const supportNavigation = screen.getByRole('navigation', { name: '客服系统' });
-    const supportButton = within(supportNavigation).getByRole('button', { name: '客服系统' });
+    const supportNavigation = screen.getByRole('navigation', { name: '服务中心' });
+    const supportButton = within(supportNavigation).getByRole('button', { name: '服务中心' });
     const profile = container.querySelector('.sidebarprofile');
 
     expect(profile).toBeInstanceOf(HTMLElement);
@@ -113,7 +113,7 @@ describe('Sidebar commerce navigation', () => {
     expect(navigationCss).toMatch(/\.sidebarnavigation\s*\{[^}]*flex:\s*0 1 auto;/);
     expect(navigationCss).toMatch(/\.sidebarsupport\s*\{[^}]*margin-top:\s*auto;/);
     expect(navigationCss).toMatch(/\.consolesidebar > \.sidebarprofile\s*\{[^}]*margin-top:\s*0;/);
-    expect(supportButton.getAttribute('title')).toBe(collapsed ? '客服系统' : null);
+    expect(supportButton.getAttribute('title')).toBe(collapsed ? '服务中心' : null);
     await user.click(supportButton);
     expect(onNavigate).toHaveBeenCalledWith('support');
   });
