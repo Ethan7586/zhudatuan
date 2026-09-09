@@ -328,6 +328,8 @@ function operationResource(operation: string, request: HttpRequest): string | un
   // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.
   if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;
   const pathResource = Object.values(request.parameters)[0];
+  // Publication jobs live in runtime.job rather than catalog.importjob. Authorize the selected mall Scope, then let the catalog handler bind the task id to that same scope_id.
+  if (operation === 'catalog.imports.read' && pathResource?.startsWith('catalogpublication:')) return undefined;
   if (pathResource !== undefined) return pathResource;
   if (!['finance.withdrawals.create', 'invoice.requests.create'].includes(operation) || request.body === null || typeof request.body !== 'object' || Array.isArray(request.body)) return undefined;
   const settlement = Reflect.get(request.body, 'settlement');
