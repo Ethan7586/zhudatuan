@@ -1,4 +1,4 @@
-import type { TicketFilter } from '../model/TicketFilter';
+import { advancedTicketFilterKeys, type TicketFilter } from '../model/TicketFilter';
 
 export function readSupportFilter(search: URLSearchParams, keyword: string): TicketFilter {
   const ownership = search.get('ownership');
@@ -16,4 +16,11 @@ export function readSupportFilter(search: URLSearchParams, keyword: string): Tic
     ...(search.get('updatedBefore') ? { updatedBefore: search.get('updatedBefore')! } : {}),
     ...(keyword.trim() ? { keyword: keyword.trim() } : {}),
   };
+}
+
+export function clearAdvancedSupportFilter(search: URLSearchParams): URLSearchParams {
+  const next = new URLSearchParams(search);
+  for (const key of advancedTicketFilterKeys) next.delete(key);
+  next.delete('cursor');
+  return next;
 }

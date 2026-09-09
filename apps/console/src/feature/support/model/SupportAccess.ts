@@ -32,6 +32,7 @@ export function supportAccess(context: ConsoleContext) {
   const settings = Object.values(supportSettingOperations).some(({ read }) => can(read));
   return Object.freeze({
     settings,
+    agentNames: ready(OP_SUPPORT_AGENTS_READ),
     upload: can(OP_SUPPORT_ATTACHMENTS_CREATE),
     assign: can(OP_SUPPORT_ASSIGNMENTS_MANAGE) && can(OP_SUPPORT_AGENTS_READ),
     assignmentReady: ready(OP_SUPPORT_ASSIGNMENTS_MANAGE) && ready(OP_SUPPORT_AGENTS_READ),

@@ -18,6 +18,7 @@ export function SupportPage({ model }: Readonly<{ model: SupportViewModel }>) {
           <div className="supportdesk" data-selected={model.ticket ? 'true' : 'false'} data-connected={model.connected}>
             <SupportQueue
               tickets={model.tickets}
+              agents={model.agents}
               filter={model.filter}
               {...(model.selected ? { selected: model.selected } : {})}
               condition={model.queueCondition}
@@ -26,6 +27,7 @@ export function SupportPage({ model }: Readonly<{ model: SupportViewModel }>) {
               onFilter={model.actions.filter}
               onNext={model.actions.next}
               onRetry={model.actions.retryQueue}
+              onReset={model.actions.resetAdvanced}
               onSelect={model.actions.select}
             />
             <SupportConversation

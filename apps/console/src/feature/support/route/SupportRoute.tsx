@@ -4,6 +4,7 @@ import { useStepup } from '../../../entity/session/StepupContext';
 import { SupportPage } from '../view/SupportPage';
 import { useSupportViewModel } from '../viewmodel/SupportViewModel';
 import '../view/SupportLayout.css';
+import '../view/SupportQueue.css';
 import '../view/SupportConversation.css';
 
 export function Component() {

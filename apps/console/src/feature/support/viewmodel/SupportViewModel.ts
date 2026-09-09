@@ -15,10 +15,9 @@ import { useConversationViewModel } from './ConversationViewModel';
 import { acceptSupportEvent, emptyEventLedger, reconcileQueue } from './SupportEventReducer';
 import { agentsKey, directTicketKey, historyKey, queueKey, queuePrefix } from './SupportQueryKey';
 import { useSettingsViewModel } from './SettingsViewModel';
-import { readSupportFilter } from './SupportFilter';
+import { clearAdvancedSupportFilter, readSupportFilter } from './SupportFilter';
 import { supportActionError } from './SupportError';
 import { executeTicketAction, type TicketAction } from './SupportAction';
-
 export function useSupportViewModel(context: ConsoleContext, dependencies: SupportDependencies, requestStepup: () => void) {
   const { caseId } = useParams();
   const navigate = useNavigate();
@@ -55,7 +54,7 @@ export function useSupportViewModel(context: ConsoleContext, dependencies: Suppo
   const conversation = useConversationViewModel(context, caseId, ticket, dependencies, refreshQueue, access.upload);
   const conversationEvent = conversation.onEvent;
   const activeQueuePrefix = useMemo(() => queuePrefix(context), [context]);
-  const agents = useQuery({ queryKey: agentsKey(context), queryFn: ({ signal }) => dependencies.port.agents(context, undefined, signal), enabled: !settingsOpen && access.assignmentReady });
+  const agents = useQuery({ queryKey: agentsKey(context), queryFn: ({ signal }) => dependencies.port.agents(context, undefined, signal), enabled: !settingsOpen && access.agentNames });
   const history = useInfiniteQuery({
     queryKey: historyKey(context, caseId ?? 'unselected'),
     initialPageParam: undefined as string | undefined,
@@ -132,6 +131,7 @@ export function useSupportViewModel(context: ConsoleContext, dependencies: Suppo
     },
     [search, setSearch]
   );
+  const resetAdvanced = useCallback(() => setSearch(clearAdvancedSupportFilter(search)), [search, setSearch]);
   const actions = useMemo(
     () =>
       Object.freeze({
@@ -148,6 +148,7 @@ export function useSupportViewModel(context: ConsoleContext, dependencies: Suppo
           }
         },
         filter: updateFilter,
+        resetAdvanced,
         next: () => void queue.fetchNextPage(),
         retryQueue: () => void queue.refetch(),
         select: (id: string) => void navigate(scopeRoutePath(context.scope, 'consolesupportcase', { caseId: id })),
@@ -182,7 +183,7 @@ export function useSupportViewModel(context: ConsoleContext, dependencies: Suppo
         nextHistory: () => void history.fetchNextPage(),
         retryHistory: () => void history.refetch(),
       }),
-    [access, action, caseId, context.scope, conversation.actions, history, navigate, path, queue, requestStepup, settingsOpen, updateFilter]
+    [access, action, caseId, context.scope, conversation.actions, history, navigate, path, queue, requestStepup, resetAdvanced, settingsOpen, updateFilter]
   );
   return Object.freeze({
     scope: context.scope.name ?? chineseReference('组织范围', context.scope.id),

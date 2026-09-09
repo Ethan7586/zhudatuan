@@ -18,6 +18,12 @@ export interface TicketFilter {
   readonly updatedBefore?: string;
 }
 
+export const advancedTicketFilterKeys = ['skill', 'agentId', 'updatedAfter', 'updatedBefore', 'unread'] as const;
+
+export function advancedTicketFilterCount(filter: TicketFilter): number {
+  return advancedTicketFilterKeys.filter((key) => filter[key] !== undefined && filter[key] !== false && filter[key] !== '').length;
+}
+
 export function filterSignature(filter: TicketFilter): string {
   return JSON.stringify(Object.entries(filter).sort(([left], [right]) => left.localeCompare(right)));
 }
