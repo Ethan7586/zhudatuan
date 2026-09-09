@@ -7,6 +7,7 @@ import type { InvitationDependencies } from '../../../app/Dependencies';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
 import { canUseOperation } from '../../../shared/security/OperationAccess';
 import type { Invitation, InvitationReceipt } from '../model/Invitation';
+import { invitationCandidates } from '../model/InvitationCandidate';
 import type { InvitationDraft } from '../model/InvitationDraft';
 import { invitationTargets } from '../model/InvitationTarget';
 import { identityFor, invitationMembershipKey, invitationQueryKey, readFilter, type CommandIdentity } from './InvitationState';
@@ -74,8 +75,8 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
   const organization =
     receipt === undefined ? (context.scope.name ?? chineseReference('组织范围', context.scope.id)) : (storefronts.find(({ id }) => id === receipt.organizationId)?.name ?? chineseReference('组织范围', receipt.organizationId));
   const invitationMemberships = useMemo(
-    () => (memberships.data?.items ?? []).filter((membership) => membership.id !== context.session.membership),
-    [context.session.membership, memberships.data?.items]
+    () => invitationCandidates(memberships.data?.items ?? [], context.session.membership, context.session.permissions),
+    [context.session.membership, context.session.permissions, memberships.data?.items]
   );
   const updateFilter = useCallback(
     (name: 'target' | 'kind' | 'status', value: string) =>

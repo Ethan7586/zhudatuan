@@ -20,6 +20,7 @@ export class InvitationMapper {
         mobileMasked: item.mobile_masked,
         client: item.client,
         status: item.status,
+        roles: item.roles.map((role) => ({ id: role.role, kind: role.kind, allows: role.allows, denies: role.denies })),
       })),
       count: page.count,
       ...(page.nextCursor === undefined ? {} : { nextCursor: page.nextCursor }),

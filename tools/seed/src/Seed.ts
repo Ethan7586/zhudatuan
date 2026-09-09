@@ -7,6 +7,7 @@ import { localSecret } from './LocalSecrets';
 import { assertLocalOwnership, ensureLocalOwner, LOCAL_OWNER } from './LocalOwner';
 import { assertLocalSurfaceAccess, ensureLocalSurfaceAccess } from './LocalSurface';
 import { ensureLocalChecker } from './LocalChecker';
+import { ensureLocalOperator } from './LocalOperator';
 import { assertLocalBenefitLedger, ensureLocalBenefits } from './LocalBenefits';
 import { ensureLocalPricebook, LOCAL_PRICEBOOK } from './LocalPricing';
 import { syncMemberProjection } from './MemberProjection';
@@ -30,6 +31,7 @@ try {
   await ensureLocalOwner(client);
   await ensureLocalDistributor(client);
   await ensureLocalChecker(client, { passwordHash, identityKey, kms });
+  await ensureLocalOperator(client, { passwordHash, identityKey, kms });
   const principalId = LOCAL_OWNER.principal;
   await client.query(
     `update member.profile set mobile_ciphertext=$2,mobile_token=$3,mobile_masked='138****8000',updated_at=clock_timestamp(),version=version+1
@@ -119,7 +121,7 @@ try {
   await assertLocalOwnership(client);
   await assertLocalSurfaceAccess(client);
   await client.query('commit');
-  process.stdout.write('LOCAL_BASELINE_SEEDED tenant=1 enterprise=1 mall=1 store=1 supplier=1 ethan=1 checker=1\n');
+  process.stdout.write('LOCAL_BASELINE_SEEDED tenant=1 enterprise=1 mall=1 store=1 supplier=1 ethan=1 checker=1 operator=1\n');
 } catch (cause) {
   await client.query('rollback');
   throw cause;

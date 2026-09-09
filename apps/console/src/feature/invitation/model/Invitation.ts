@@ -75,6 +75,12 @@ export interface InvitationMembership {
   readonly mobileMasked: string | null;
   readonly client: InvitationTargetKind;
   readonly status: InvitationMembershipDto['status'];
+  readonly roles: readonly Readonly<{
+    id: string;
+    kind: InvitationMembershipDto['roles'][number]['kind'];
+    allows: readonly string[];
+    denies: readonly string[];
+  }>[];
 }
 export interface InvitationMembershipPage {
   readonly items: readonly InvitationMembership[];
