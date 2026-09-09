@@ -215,6 +215,14 @@
   .orderdrawerbody {
     padding-inline: var(--sw-space-1-5);
   }
+  .orderdrawertitleline h2 {
+    overflow: visible;
+    overflow-wrap: anywhere;
+    font-size: var(--sw-font-size-body);
+    line-height: var(--sw-line-height-body);
+    text-overflow: clip;
+    white-space: normal;
+  }
   .orderdrawer button,
   .orderdrawer input,
   .orderdrawer select,
