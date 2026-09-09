@@ -12,12 +12,21 @@ export interface ShellLink {
 }
 
 export type ShellQuickAction = ShellLink & Readonly<{ kind: 'support' | 'notification' | 'cart' | 'account' }>;
+export type ShellMobileAction = ShellLink & Readonly<{ kind: 'home' | 'catalog' | 'benefit' | 'orders' | 'account' }>;
 
 const QUICK_ACTIONS = Object.freeze([
   Object.freeze({ kind: 'support' as const, path: ROUTES.storesupport }),
   Object.freeze({ kind: 'notification' as const, path: ROUTES.storenotifications }),
   Object.freeze({ kind: 'cart' as const, path: ROUTES.storecart }),
   Object.freeze({ kind: 'account' as const, path: ROUTES.storeprofile }),
+]);
+
+const MOBILE_ACTIONS = Object.freeze([
+  Object.freeze({ kind: 'home' as const, path: ROUTES.storehome, label: '首页' }),
+  Object.freeze({ kind: 'catalog' as const, path: ROUTES.storecatalog, label: '分类' }),
+  Object.freeze({ kind: 'benefit' as const, path: ROUTES.storebenefits, label: '福利' }),
+  Object.freeze({ kind: 'orders' as const, path: ROUTES.storeorders, label: '订单' }),
+  Object.freeze({ kind: 'account' as const, path: ROUTES.storeprofile, label: '我的' }),
 ]);
 
 export function shellNavigation(nodes: SessionState['navigation'], experience: ExperienceDocument | null) {
@@ -39,10 +48,15 @@ export function shellNavigation(nodes: SessionState['navigation'], experience: E
     const node = available.find(({ experience: item }) => item.route === spec.path);
     return node ? [Object.freeze({ id: node.key, label: node.title, path: spec.path, kind: spec.kind })] : [];
   });
+  const mobile = MOBILE_ACTIONS.flatMap((spec): readonly ShellMobileAction[] => {
+    const node = available.find(({ experience: item }) => item.route === spec.path);
+    return node ? [Object.freeze({ id: node.key, label: spec.label, path: spec.path, kind: spec.kind })] : [];
+  });
   return Object.freeze({
     primary: Object.freeze(primary),
     published: Object.freeze(published),
     quick: Object.freeze(quick),
+    mobile: Object.freeze(mobile),
     search: available.some(({ experience: item }) => item.route === ROUTES.storecatalog),
     quickView: available.some(({ experience: item }) => item.route === ROUTES.storeproduct),
   });

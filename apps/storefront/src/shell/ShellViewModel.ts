@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { useSession } from '../entity/session/viewmodel/SessionContext';
 import { useAccountIdentity } from '../feature/account';
 import { useCartCommand } from '../feature/cart';
@@ -7,6 +7,7 @@ import { shellNavigation } from './ShellNavigation';
 
 export function useShellViewModel() {
   const navigate = useNavigate();
+  const location = useLocation();
   const session = useSession();
   const identity = useAccountIdentity();
   const cart = useCartCommand();
@@ -18,6 +19,7 @@ export function useShellViewModel() {
       badge: identity.currentMall.badge,
     }),
     navigation: composition,
+    pathname: location.pathname,
     cartCount: (cart.cart?.items ?? []).reduce((total, item) => total + Number(item.quantity), 0),
     account: Object.freeze({
       authenticated: session.status === 'authenticated',

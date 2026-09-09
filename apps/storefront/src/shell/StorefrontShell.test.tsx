@@ -18,14 +18,16 @@ describe('StorefrontShell', () => {
       </StorefrontShell>
     );
 
-    expect(screen.getByText('员工关怀')).toBeTruthy();
+    expect(screen.getAllByText('员工关怀')).toHaveLength(2);
     expect(screen.getByLabelText('搜索商城商品')).toBeTruthy();
+    expect(screen.getByLabelText('移动端搜索商城商品')).toBeTruthy();
     expect(screen.getByLabelText('客服中心')).toBeTruthy();
-    expect(screen.getByLabelText('消息通知')).toBeTruthy();
-    expect(screen.getByLabelText('购物车，共 108 件')).toBeTruthy();
+    expect(screen.getAllByLabelText('消息通知')).toHaveLength(2);
+    expect(screen.getAllByLabelText('购物车，共 108 件')).toHaveLength(2);
     expect(screen.getByLabelText('王小明的账户菜单')).toBeTruthy();
     expect(screen.getByText('第二福利商城')).toBeTruthy();
     expect(screen.getByText('安全退出')).toBeTruthy();
+    expect(screen.getByRole('navigation', { name: '移动端主要导航' })).toBeTruthy();
     expect(screen.getByTestId('quickview-state').textContent).toBe('true');
 
     fireEvent.click(screen.getByLabelText('客服中心'));
@@ -39,7 +41,7 @@ describe('StorefrontShell', () => {
   });
 
   it('does not render capabilities missing from navigation configuration', () => {
-    const viewmodel = model({ navigation: { primary: [], published: [], quick: [], search: false, quickView: false } });
+    const viewmodel = model({ navigation: { primary: [], published: [], quick: [], mobile: [], search: false, quickView: false } });
     render(
       <StorefrontShell viewmodel={viewmodel}>
         <p>只读首页</p>
@@ -66,10 +68,18 @@ function model(overrides: Record<string, unknown> = {}) {
         { id: 'cart', label: '购物车', path: '/cart', kind: 'cart' },
         { id: 'account', label: '我的', path: '/profile', kind: 'account' },
       ],
+      mobile: [
+        { id: 'home', label: '首页', path: '/', kind: 'home' },
+        { id: 'catalog', label: '分类', path: '/products', kind: 'catalog' },
+        { id: 'benefit', label: '福利', path: '/benefits', kind: 'benefit' },
+        { id: 'orders', label: '订单', path: '/orders', kind: 'orders' },
+        { id: 'account', label: '我的', path: '/profile', kind: 'account' },
+      ],
       search: true,
       quickView: true,
     },
     cartCount: 108,
+    pathname: '/',
     account: { authenticated: true, name: '王小明', currentMall: mall, malls: [mall, { ...mall, id: 'mall:two', membershipId: 'membership:two', mallName: '第二福利商城', badge: '可切换' }] },
     toasts: [],
     removeToast: vi.fn(),
