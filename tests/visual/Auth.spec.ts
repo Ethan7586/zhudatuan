@@ -2,14 +2,11 @@ import { expect, test } from '@playwright/test';
 import { LOCAL_AUTH_ORIGIN } from '@shop/config/client';
 import { ROUTES } from '../../apps/auth/src/generated/RouteBinding';
 import { expectWcagAA } from '../browser/Accessibility';
-import { elementCopyFits } from '../../scripts/check/VisualIntegrity';
+import { elementCopyFits, VISUAL_VIEWPORTS } from '../../scripts/check/VisualIntegrity';
 import { expectUsable, prepareVisual, resetVisual } from './Runtime';
 
-for (const viewport of [
-  { width: 1440, height: 900 },
-  { width: 390, height: 844 },
-]) {
-  test(`Auth 登录、邀请、身份选择与恢复在 ${viewport.width}px 可理解`, async ({ page }) => {
+for (const viewport of VISUAL_VIEWPORTS) {
+  test(`Auth 登录、邀请、身份选择与恢复在 ${viewport.name} 可理解`, async ({ page }) => {
     await prepareVisual(page, viewport);
     for (const [routeid, path] of Object.entries(ROUTES)) {
       await test.step(routeid, async () => {

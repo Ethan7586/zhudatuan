@@ -5,7 +5,7 @@ import { LOCAL_CONSOLE_ORIGIN } from '@shop/config/client';
 import { ROUTES } from '../../apps/console/src/generated/RouteBinding';
 import { signInConsole } from '../browser/Environment';
 import { expectWcagAA } from '../browser/Accessibility';
-import { elementCopyFits } from '../../scripts/check/VisualIntegrity';
+import { elementCopyFits, VISUAL_VIEWPORTS } from '../../scripts/check/VisualIntegrity';
 import { expectUsable, fillRoute, prepareVisual, resetVisual } from './Runtime';
 
 type ScopeKind = 'platform' | 'distributor' | 'enterprise' | 'mall';
@@ -20,13 +20,6 @@ const scopes = Object.freeze({
   enterprise: 'enterprise-zhudatuan',
   mall: 'mall-zhudatuan',
 });
-const viewports = Object.freeze([
-  { width: 1440, height: 900 },
-  { width: 1280, height: 800 },
-  { width: 1024, height: 768 },
-  { width: 768, height: 1024 },
-  { width: 390, height: 844 },
-]);
 const core = Object.freeze([
   ['platform', 'consoleproducts'],
   ['distributor', 'consolecontrol'],
@@ -45,25 +38,27 @@ test('Console 路由由导航权威分配到四类 Scope 而非硬编码平台�
 
 const routeShards = Object.freeze(Array.from({ length: 4 }, (_, shard) => Object.entries(ROUTES).filter((_, index) => index % 4 === shard)));
 
-for (const [shard, routes] of routeShards.entries()) {
-  test(`Console 所有正式路由可达（分片 ${shard + 1}/${routeShards.length}）`, async ({ page }) => {
-    test.slow();
-    await prepareVisual(page, { width: 1280, height: 800 });
-    await signInConsole(page);
-    expect(routes.length).toBeGreaterThan(0);
-    for (const [routeid, template] of routes) {
-      await test.step(routeid, async () => {
-        resetVisual(page);
-        const scope = canonicalScope(routeid);
-        await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(template, scope)}`);
-        await expectUsable(page);
-      });
-    }
-  });
+for (const viewport of VISUAL_VIEWPORTS) {
+  for (const [shard, routes] of routeShards.entries()) {
+    test(`Console 所有正式路由在 ${viewport.name} 接受视觉检查（分片 ${shard + 1}/${routeShards.length}）`, async ({ page }) => {
+      test.slow();
+      await prepareVisual(page, viewport);
+      await signInConsole(page);
+      expect(routes.length).toBeGreaterThan(0);
+      for (const [routeid, template] of routes) {
+        await test.step(routeid, async () => {
+          resetVisual(page);
+          const scope = canonicalScope(routeid);
+          await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(template, scope)}`);
+          await expectUsable(page);
+        });
+      }
+    });
+  }
 }
 
-for (const viewport of viewports) {
-  test(`Console 核心工作台在 ${viewport.width}px、四 Scope 和真实数据下可操作`, async ({ page }) => {
+for (const viewport of VISUAL_VIEWPORTS) {
+  test(`Console 核心工作台在 ${viewport.name}、四 Scope 和真实数据下可操作`, async ({ page }) => {
     test.slow();
     await prepareVisual(page, viewport);
     await signInConsole(page);

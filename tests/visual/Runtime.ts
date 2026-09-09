@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import { expectResponsivePage } from '../browser/Environment';
-import { expectVisualIntegrity } from '../../scripts/check/VisualIntegrity';
+import { expectVisualIntegrity, expectVisualReady } from '../../scripts/check/VisualIntegrity';
 
 const faults = new WeakMap<Page, string[]>();
 
@@ -17,8 +17,8 @@ export function resetVisual(page: Page): void {
 }
 
 export async function expectUsable(page: Page): Promise<void> {
+  await expectVisualReady(page);
   await expectResponsivePage(page);
-  await expect(page.locator('main:visible').first()).toBeVisible();
   await expectVisualIntegrity(page);
   expect(faults.get(page) ?? []).toEqual([]);
 }

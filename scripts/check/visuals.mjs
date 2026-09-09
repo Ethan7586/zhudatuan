@@ -13,11 +13,19 @@ const visualRuntimePath = join(repositoryRoot, 'tests/visual/Runtime.ts');
 assert(existsSync(integrityPath), 'VISUAL_INTEGRITY_GATE_MISSING');
 const integritySource = readFileSync(integrityPath, 'utf8');
 assert(integritySource.includes("'controlcopyoverflow'") && integritySource.includes("'controlcopymultiline'"), 'VISUAL_CONTROL_COPY_GATE_INCOMPLETE');
+assert(integritySource.includes("'controlcopyboundary'") && integritySource.includes('textNodeRects(element)'), 'VISUAL_CONTROL_BOUNDARY_GATE_INCOMPLETE');
+assert(integritySource.includes("'controloccluded'") && integritySource.includes('elementFromPoint'), 'VISUAL_CONTROL_OCCLUSION_GATE_INCOMPLETE');
+assert(integritySource.includes("'imagefailure'") && integritySource.includes('naturalWidth === 0'), 'VISUAL_IMAGE_FAILURE_GATE_INCOMPLETE');
 assert(integritySource.includes("'technicalidentity'") && integritySource.includes('data-visual-identity="required"'), 'VISUAL_IDENTITY_PRESENTATION_GATE_INCOMPLETE');
 assert(integritySource.includes('maximumTextNodeLines(element)') && integritySource.includes("dataset.visualCopy !== 'multiline'"), 'VISUAL_CONTROL_LINE_GATE_INCOMPLETE');
 assert(integritySource.includes('[data-visual-copy="truncate"]') && integritySource.includes("style.textOverflow !== 'ellipsis'"), 'VISUAL_TRUNCATION_CONTRACT_MISSING');
 assert(readFileSync(visualRuntimePath, 'utf8').includes('../../scripts/check/VisualIntegrity'), 'VISUAL_RUNTIME_GATE_NOT_SHARED');
+assert(readFileSync(visualRuntimePath, 'utf8').includes('expectVisualReady(page)'), 'VISUAL_SETTLED_CONTENT_GATE_MISSING');
 assert(!existsSync(join(repositoryRoot, 'tests/visual/Integrity.ts')), 'VISUAL_INTEGRITY_GATE_DUPLICATED');
+for (const path of ['tests/visual/Auth.spec.ts', 'tests/visual/Console.spec.ts', 'tests/visual/Storefront.spec.ts', 'tests/visual/Store.spec.ts', 'tests/visual/Supplier.spec.ts']) {
+  const source = readFileSync(join(repositoryRoot, path), 'utf8');
+  assert(source.includes("from '../../scripts/check/VisualIntegrity'") && source.includes('for (const viewport of VISUAL_VIEWPORTS)'), `VISUAL_SHARED_VIEWPORT_MATRIX_MISSING:${path}`);
+}
 
 assert(visuals.version === 2, 'VISUAL_AUTHORITY_VERSION_INVALID');
 assert(visuals.authority?.policy?.preserveLayout === true, 'VISUAL_LAYOUT_NOT_LOCKED');

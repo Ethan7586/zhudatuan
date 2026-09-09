@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { expectVisualIntegrity, inspectVisualIntegrity } from '../../scripts/check/VisualIntegrity';
+import { expectVisualIntegrity, expectVisualReady, inspectVisualIntegrity, inspectVisualReadiness } from '../../scripts/check/VisualIntegrity';
 
 test('visual integrity accepts semantic card tables and explicit scroll regions', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -62,4 +62,33 @@ test('visual integrity rejects internal identities unless the business explicitl
 
   const issues = await inspectVisualIntegrity(page);
   expect(issues.filter(({ kind }) => kind === 'technicalidentity').map(({ text }) => text)).toEqual(['mall-zhudatuan', 'SW_LOCAL_ETHAN']);
+});
+
+test('visual readiness waits until route and resource placeholders are replaced with business content', async ({ page }) => {
+  await page.setContent('<main><div class="statemain"><p role="status">正在加载业务页面…</p></div></main>');
+  expect(await inspectVisualReadiness(page)).not.toEqual([]);
+  await page.evaluate(() => {
+    setTimeout(() => {
+      const main = document.querySelector('main');
+      if (main) main.innerHTML = '<h1>商品治理台</h1><button style="width:120px;height:44px">新建商品</button>';
+    }, 100);
+  });
+  await expectVisualReady(page);
+  expect(await inspectVisualReadiness(page)).toEqual([]);
+});
+
+test('visual integrity reports text outside control boundaries, occluded controls and failed images', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setContent(`
+    <main>
+      <button id="outside" style="position:relative;width:88px;height:44px"><span style="position:absolute;left:72px;white-space:nowrap">保存并发布</span></button>
+      <button id="covered" style="position:fixed;left:20px;top:100px;width:120px;height:44px">提交订单</button>
+      <div style="position:fixed;z-index:2;left:20px;top:100px;width:120px;height:44px;background:white">错误遮挡</div>
+      <img id="broken" src="data:image/png;base64,broken" alt="商品主图" style="display:block;width:80px;height:80px" />
+    </main>
+  `);
+  await page.locator('#broken').evaluate((image: HTMLImageElement) => image.complete || new Promise((resolve) => image.addEventListener('error', resolve, { once: true })));
+
+  const issues = await inspectVisualIntegrity(page);
+  expect(issues.map(({ kind }) => kind)).toEqual(expect.arrayContaining(['controlcopyboundary', 'controloccluded', 'imagefailure']));
 });

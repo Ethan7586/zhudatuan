@@ -21,26 +21,62 @@ for (const file of uiRoots.flatMap((directory) => allFiles(directory)).filter((n
   if (/\bpage\.route\s*\(/.test(readFileSync(file, 'utf8'))) failures.push(`BROWSER_HTTP_MOCK_PRESENT:${short(file)}`);
 }
 const targetTests = [
-  'tests/contract/OperationContract.test.ts', 'tests/contract/EventContract.test.ts', 'tests/contract/ErrorContract.test.ts', 'tests/contract/ExtensionContract.test.ts',
-  'tests/architecture/ModuleBoundary.test.ts', 'tests/architecture/ClientBoundary.test.ts', 'tests/architecture/DependencyCycle.test.ts', 'tests/architecture/DuplicateTruth.test.ts',
-  'tests/database/MigrationReplay.test.ts', 'tests/database/Ownership.test.ts', 'tests/database/Rls.test.ts', 'tests/database/Invariant.test.ts',
-  'tests/integration/OutboxInbox.test.ts', 'tests/integration/ImportRuntime.test.ts', 'tests/integration/ExtensionRuntime.test.ts', 'tests/integration/Recovery.test.ts',
-  'tests/performance/Checkout.test.ts', 'tests/performance/VoucherBatch.test.ts', 'tests/performance/OrderQuery.test.ts', 'tests/performance/FinanceQuery.test.ts', 'tests/performance/ImportMillion.test.ts',
-  'tests/security/ScopeIsolation.test.ts', 'tests/security/Authorization.test.ts', 'tests/security/Stepup.test.ts', 'tests/security/SecretLeak.test.ts', 'tests/security/ContentSafety.test.ts',
-  'tests/visual/Console.spec.ts', 'tests/visual/Storefront.spec.ts', 'tests/visual/Auth.spec.ts', 'tests/visual/Store.spec.ts', 'tests/visual/Supplier.spec.ts', 'tests/visual/Miniapp.spec.ts',
-  'tests/accessibility/Keyboard.spec.ts', 'tests/accessibility/ScreenReader.spec.ts', 'tests/accessibility/Contrast.spec.ts',
-  'tests/e2e/identity.spec.ts', 'tests/e2e/governance.spec.ts', 'tests/e2e/experience.spec.ts', 'tests/e2e/salechain.spec.ts', 'tests/e2e/transaction.spec.ts',
-  'tests/e2e/voucher.spec.ts', 'tests/e2e/finance.spec.ts', 'tests/e2e/channel.spec.ts', 'tests/e2e/support.spec.ts', 'tests/e2e/reporting.spec.ts', 'tests/e2e/no-placeholder.spec.ts',
+  'tests/contract/OperationContract.test.ts',
+  'tests/contract/EventContract.test.ts',
+  'tests/contract/ErrorContract.test.ts',
+  'tests/contract/ExtensionContract.test.ts',
+  'tests/architecture/ModuleBoundary.test.ts',
+  'tests/architecture/ClientBoundary.test.ts',
+  'tests/architecture/DependencyCycle.test.ts',
+  'tests/architecture/DuplicateTruth.test.ts',
+  'tests/database/MigrationReplay.test.ts',
+  'tests/database/Ownership.test.ts',
+  'tests/database/Rls.test.ts',
+  'tests/database/Invariant.test.ts',
+  'tests/integration/OutboxInbox.test.ts',
+  'tests/integration/ImportRuntime.test.ts',
+  'tests/integration/ExtensionRuntime.test.ts',
+  'tests/integration/Recovery.test.ts',
+  'tests/performance/Checkout.test.ts',
+  'tests/performance/VoucherBatch.test.ts',
+  'tests/performance/OrderQuery.test.ts',
+  'tests/performance/FinanceQuery.test.ts',
+  'tests/performance/ImportMillion.test.ts',
+  'tests/security/ScopeIsolation.test.ts',
+  'tests/security/Authorization.test.ts',
+  'tests/security/Stepup.test.ts',
+  'tests/security/SecretLeak.test.ts',
+  'tests/security/ContentSafety.test.ts',
+  'tests/visual/Console.spec.ts',
+  'tests/visual/Storefront.spec.ts',
+  'tests/visual/Auth.spec.ts',
+  'tests/visual/Store.spec.ts',
+  'tests/visual/Supplier.spec.ts',
+  'tests/visual/Miniapp.spec.ts',
+  'tests/accessibility/Keyboard.spec.ts',
+  'tests/accessibility/ScreenReader.spec.ts',
+  'tests/accessibility/Contrast.spec.ts',
+  'tests/e2e/identity.spec.ts',
+  'tests/e2e/governance.spec.ts',
+  'tests/e2e/experience.spec.ts',
+  'tests/e2e/salechain.spec.ts',
+  'tests/e2e/transaction.spec.ts',
+  'tests/e2e/voucher.spec.ts',
+  'tests/e2e/finance.spec.ts',
+  'tests/e2e/channel.spec.ts',
+  'tests/e2e/support.spec.ts',
+  'tests/e2e/reporting.spec.ts',
+  'tests/e2e/no-placeholder.spec.ts',
 ];
 for (const required of ['tests/browser/GlobalSetup.ts', 'tests/browser/Environment.ts', 'tests/browser/RealJourneys.spec.ts', 'tools/seed/src/Visual.ts', 'tools/seed/src/Journey.ts', ...targetTests]) {
   if (!existsSync(join(root, required))) failures.push(`REAL_BROWSER_ASSET_MISSING:${required}`);
 }
 const visualProofs = {
-  'tests/visual/Console.spec.ts': ['Object.entries(ROUTES)', 'platform', 'distributor', 'enterprise', 'mall', 'expectWcagAA'],
-  'tests/visual/Storefront.spec.ts': ['Object.entries(ROUTES)', '1920', '360', '200%', 'expectWcagAA'],
-  'tests/visual/Auth.spec.ts': ['Object.entries(ROUTES)', '登录', '邀请', 'expectWcagAA'],
-  'tests/visual/Store.spec.ts': ['Object.entries(ROUTES)', '1024', '390', 'expectWcagAA'],
-  'tests/visual/Supplier.spec.ts': ['Object.entries(ROUTES)', '1440', '768', 'expectWcagAA'],
+  'tests/visual/Console.spec.ts': ['Object.entries(ROUTES)', 'VISUAL_VIEWPORTS', 'platform', 'distributor', 'enterprise', 'mall', 'expectWcagAA'],
+  'tests/visual/Storefront.spec.ts': ['Object.entries(ROUTES)', 'VISUAL_VIEWPORTS', '200%', 'expectWcagAA'],
+  'tests/visual/Auth.spec.ts': ['Object.entries(ROUTES)', 'VISUAL_VIEWPORTS', '登录', '邀请', 'expectWcagAA'],
+  'tests/visual/Store.spec.ts': ['Object.entries(ROUTES)', 'VISUAL_VIEWPORTS', 'expectWcagAA'],
+  'tests/visual/Supplier.spec.ts': ['Object.entries(ROUTES)', 'VISUAL_VIEWPORTS', 'expectWcagAA'],
   'tests/visual/Miniapp.spec.ts': ['MINIAPP_DEVICE_SCENARIOS', 'MINIAPP_DEVICE_EVIDENCE_REQUIRED'],
   'tests/accessibility/Keyboard.spec.ts': ['Tab', 'Escape', 'toBeFocused'],
   'tests/accessibility/ScreenReader.spec.ts': ['heading', 'aria-live', 'expectWcagAA'],
@@ -88,15 +124,15 @@ if (repositoryImplementations.length === 0) failures.push('REPOSITORY_TEST_MATRI
 const moduleQualityPath = join(root, 'services/commerce/tests/architecture/ModuleQuality.test.ts');
 const moduleQuality = existsSync(moduleQualityPath) ? readFileSync(moduleQualityPath, 'utf8') : '';
 for (const proof of [
-  "toHaveLength(33)",
-  "describe.each(modules)",
-  "Domain-backed rejection or invariant",
-  "Application use case",
-  "Persistence contract",
-  "every Operation",
-  "Scope and permission",
-  "idempotency and optimistic concurrency",
-  "closed failure union",
+  'toHaveLength(33)',
+  'describe.each(modules)',
+  'Domain-backed rejection or invariant',
+  'Application use case',
+  'Persistence contract',
+  'every Operation',
+  'Scope and permission',
+  'idempotency and optimistic concurrency',
+  'closed failure union',
 ]) {
   if (!moduleQuality.includes(proof)) failures.push(`MODULE_QUALITY_TEST_PROOF_MISSING:${proof}`);
 }
@@ -171,7 +207,9 @@ if (failures.length > 0) {
   for (const failure of failures) console.error(failure);
   process.exit(1);
 }
-console.log(`test topology accepted: commerce=6 modules=33 categories=7 handlers=${operations.length} repositories=${repositoryImplementations.length} mvp=22 providers=11 clients=6 browserMocks=0 targetTests=${targetTests.length} productionTestingImports=0`);
+console.log(
+  `test topology accepted: commerce=6 modules=33 categories=7 handlers=${operations.length} repositories=${repositoryImplementations.length} mvp=22 providers=11 clients=6 browserMocks=0 targetTests=${targetTests.length} productionTestingImports=0`
+);
 
 function manifests(directory, result = []) {
   if (!existsSync(directory)) return result;

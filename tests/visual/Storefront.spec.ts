@@ -5,19 +5,11 @@ import { LOCAL_STOREFRONT_ORIGIN } from '@shop/config/client';
 import { ROUTES } from '../../apps/storefront/src/generated/RouteBinding';
 import { signInStorefront } from '../browser/Environment';
 import { expectWcagAA } from '../browser/Accessibility';
+import { VISUAL_VIEWPORTS } from '../../scripts/check/VisualIntegrity';
 import { expectUsable, fillRoute, prepareVisual, resetVisual } from './Runtime';
 
-const viewports = Object.freeze([
-  { width: 1920, height: 1080 },
-  { width: 1440, height: 900 },
-  { width: 1024, height: 768 },
-  { width: 768, height: 1024 },
-  { width: 390, height: 844 },
-  { width: 360, height: 800 },
-]);
-
-for (const viewport of viewports) {
-  test(`Storefront 首页、目录与购物车在 ${viewport.width}px 可完成核心浏览`, async ({ page }) => {
+for (const viewport of VISUAL_VIEWPORTS) {
+  test(`Storefront 首页、目录与购物车在 ${viewport.name} 可完成核心浏览`, async ({ page }) => {
     await prepareVisual(page, viewport);
     await signInStorefront(page, '/');
     for (const routeid of ['storehome', 'storecatalog', 'storecart'] as const) {
@@ -34,20 +26,20 @@ for (const viewport of viewports) {
       if (routeid === 'storecatalog' && viewport.width < 1024) await expectMobileCatalogPattern(page);
     }
   });
-}
 
-test('Storefront 所有正式路由以真实 Commerce 数据可达', async ({ page }) => {
-  test.slow();
-  await prepareVisual(page, { width: 1440, height: 900 });
-  await signInStorefront(page);
-  for (const [routeid, template] of Object.entries(ROUTES)) {
-    await test.step(routeid, async () => {
-      resetVisual(page);
-      await page.goto(url(template));
-      await expectUsable(page);
-    });
-  }
-});
+  test(`Storefront 所有正式路由在 ${viewport.name} 均以稳定真实数据接受视觉检查`, async ({ page }) => {
+    test.slow();
+    await prepareVisual(page, viewport);
+    await signInStorefront(page);
+    for (const [routeid, template] of Object.entries(ROUTES)) {
+      await test.step(routeid, async () => {
+        resetVisual(page);
+        await page.goto(url(template));
+        await expectUsable(page);
+      });
+    }
+  });
+}
 
 test('三主题权威、中文长文案和 200% 字号不会造成水平裁切', async ({ page }) => {
   await prepareVisual(page, { width: 390, height: 844 });
