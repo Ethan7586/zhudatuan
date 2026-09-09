@@ -40,12 +40,12 @@ export function AccountSummary({ viewmodel }: Readonly<{ viewmodel: ViewModel }>
             <div className="mt-3 grid grid-cols-2 gap-2 lg:mt-4 lg:grid-cols-1">
               <button type="button" onClick={() => viewmodel.openFeature('账户流水')} className="min-w-0 rounded-2xl bg-brand-light p-3 text-left">
                 <CreditCard size={18} className="text-brand" />
-                <span className="mt-2 block truncate text-[11px] text-muted lg:text-xs">福利卡可用</span>
+                <span className="mt-2 block truncate text-[11px] font-medium text-secondary lg:text-xs">福利卡可用</span>
                 <b className="block truncate text-base lg:text-lg">¥{formatMinor(viewmodel.user.welfareBalanceMinor)}</b>
               </button>
               <button type="button" onClick={() => viewmodel.openFeature('账户流水')} className="min-w-0 rounded-2xl bg-success-surface p-3 text-left">
                 <Gift size={18} className="text-success-strong" />
-                <span className="mt-2 block truncate text-[11px] text-muted lg:text-xs">餐卡可用</span>
+                <span className="mt-2 block truncate text-[11px] font-medium text-secondary lg:text-xs">餐卡可用</span>
                 <b className="block truncate text-base lg:text-lg">¥{formatMinor(viewmodel.user.mealBalanceMinor)}</b>
               </button>
             </div>
