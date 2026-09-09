@@ -142,7 +142,8 @@ export function clearPaymentRecovery(scope: string, storage: StorageLike | null 
 }
 
 export function isPaymentRecoveryPending(record: PaymentRecoveryRecord | null): record is PaymentRecoveryRecord {
-  return record !== null && record.stage !== 'captured';
+  if (record === null || record.stage === 'captured') return false;
+  return record.orderId !== null || !['failed', 'expired', 'cancelled'].includes(record.stage);
 }
 
 export function tryBeginPaymentSubmission(lock: PaymentSubmissionLock): boolean {

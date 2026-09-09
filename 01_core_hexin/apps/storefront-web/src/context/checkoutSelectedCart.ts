@@ -51,6 +51,17 @@ export function prepareCheckoutSelection(cart: CartItem[], addresses: DeliveryAd
   return Object.freeze({ selectedItems, address, items: Object.freeze(items), amountMinor });
 }
 
+export async function refreshRejectedCheckoutCart(
+  selectedItems: readonly CartItem[],
+  upsert: (input: Readonly<{ listingId: string; quantity: number }>) => Promise<unknown>,
+): Promise<boolean> {
+  const refreshed = await Promise.allSettled(selectedItems.map((item) => upsert({
+    listingId: item.product.id,
+    quantity: item.quantity,
+  })));
+  return refreshed.every((result) => result.status === 'fulfilled');
+}
+
 export async function checkoutSelectedCartRequest(
   cart: CartItem[],
   addresses: DeliveryAddress[],

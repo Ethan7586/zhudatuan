@@ -28,6 +28,16 @@ const COPY: Readonly<Record<PaymentDisplayStage, Readonly<{ eyebrow: string; tit
   preparing: { eyebrow: '订单已为你保留', title: '正在准备支付结果', detail: '正在恢复本次支付，请勿重复付款。' },
 });
 
+const PRE_ORDER_COPY: Readonly<Partial<Record<PaymentDisplayStage, Readonly<{ eyebrow: string; title: string; detail: string }>>>> = Object.freeze({
+  preparing: { eyebrow: '正在准备结算', title: '正在恢复订单状态', detail: '正在确认订单是否创建，请勿重复提交。' },
+  validating: { eyebrow: '正在准备结算', title: '正在确认订单', detail: '正在核对商品、金额与收货信息。' },
+  'creating-order': { eyebrow: '正在准备结算', title: '正在创建订单', detail: '订单创建完成后将打开微信支付。' },
+  recovery: { eyebrow: '订单状态待确认', title: '正在恢复订单状态', detail: '正在确认订单是否创建，请勿重复提交。' },
+  failed: { eyebrow: '订单状态待确认', title: '本次结算未完成', detail: '尚未确认是否已创建订单，请返回购物车后继续原操作。' },
+  expired: { eyebrow: '订单状态待确认', title: '本次结算已失效', detail: '尚未确认是否已创建订单，请返回购物车后继续原操作。' },
+  cancelled: { eyebrow: '订单状态待确认', title: '本次结算已取消', detail: '尚未确认是否已创建订单，请返回购物车检查。' },
+});
+
 const PAYMENT_PROGRESS: Readonly<Record<ApiPaymentResultState, number>> = Object.freeze({
   preparing: 0,
   pending: 1,
@@ -64,6 +74,15 @@ export function paymentDisplayStage(session: PaymentRecoveryRecord | undefined, 
   if (result?.state === 'recovery') return 'recovery';
   if (result?.state === 'pending') return 'verifying';
   return session?.stage ?? 'preparing';
+}
+
+export function paymentDisplayCopy(stage: PaymentDisplayStage, orderId: string | null) {
+  return orderId === null ? PRE_ORDER_COPY[stage] ?? COPY[stage] : COPY[stage];
+}
+
+export function paymentOrderStatusLabel(stage: PaymentDisplayStage, orderId: string | null): string {
+  if (orderId !== null) return '订单已安全保留';
+  return ['failed', 'expired', 'cancelled'].includes(stage) ? '尚未确认订单' : '正在建立订单';
 }
 
 export function PaymentResultPage({ paymentId, session }: PaymentResultPageProps) {
@@ -131,11 +150,11 @@ export function PaymentResultPage({ paymentId, session }: PaymentResultPageProps
   }, [resolvedPaymentId]);
 
   const stage = paymentDisplayStage(session, result);
-  const copy = COPY[stage];
   const amountMinor = result?.amountMinor ?? session?.amountMinor ?? 0;
   const currency = result?.currency ?? session?.currency ?? 'CNY';
   const amount = useMemo(() => formatPaymentAmount(amountMinor, currency), [amountMinor, currency]);
   const orderId = result?.orderId ?? session?.orderId ?? null;
+  const copy = paymentDisplayCopy(stage, orderId);
   const retryPayment = stage === 'cancelled' || stage === 'failed' || stage === 'expired';
   const captured = stage === 'captured';
   const pending = !retryPayment && !captured;
@@ -156,6 +175,14 @@ export function PaymentResultPage({ paymentId, session }: PaymentResultPageProps
     navigateTo('home');
     closePaymentResult();
   };
+  const goToCart = () => {
+    setMpPage('cart');
+    setAndroidPage('checkout');
+    setTabletPage('cart');
+    setLaptopPage('cart');
+    navigateTo('cart');
+    closePaymentResult();
+  };
 
   return (
     <section className="min-h-[72vh] bg-[radial-gradient(circle_at_50%_-8%,rgba(210,232,255,0.95)_0%,rgba(244,248,252,0.98)_36%,#f5f7fa_72%)] px-4 py-8 motion-safe:animate-[paymentCarrierIn_160ms_ease-out] md:py-14">
@@ -165,7 +192,7 @@ export function PaymentResultPage({ paymentId, session }: PaymentResultPageProps
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[#1769e8]"><ShieldCheck className="h-[18px] w-[18px]" strokeWidth={2} /></span>
             <span className="truncate text-sm font-semibold text-slate-700">{session?.mallName ?? '安心支付'}</span>
           </div>
-          <span className="shrink-0 rounded-full bg-[#f4f8ff] px-3 py-1 text-[11px] font-medium text-[#5175a4]">微信支付</span>
+          <span className="shrink-0 rounded-full bg-[#f4f8ff] px-3 py-1 text-[11px] font-medium text-[#5175a4]">{orderId ? '微信支付' : '安全结算'}</span>
         </div>
 
         <div className="px-5 pb-7 pt-8 text-center md:px-10 md:pb-10 md:pt-10" aria-live="polite">
@@ -175,15 +202,15 @@ export function PaymentResultPage({ paymentId, session }: PaymentResultPageProps
           <p className="mx-auto mt-2 max-w-[480px] text-sm leading-6 text-slate-500">{error ?? copy.detail}</p>
 
           <div className="mt-7 rounded-[22px] border border-[#e9f1fb] bg-[linear-gradient(145deg,#f9fcff_0%,#f2f7fd_100%)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-            <p className="text-[11px] font-medium tracking-[0.08em] text-slate-400">本次支付</p>
+            <p className="text-[11px] font-medium tracking-[0.08em] text-slate-400">{orderId ? '本次支付' : '本次结算'}</p>
             <p className="mt-1 text-[38px] font-bold tabular-nums tracking-[-0.04em] text-[#14243b]">{amount}</p>
             <div className="mx-auto mt-3 flex w-fit items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 text-xs text-slate-500 shadow-[0_1px_5px_rgba(35,75,120,0.06)]">
-              <ReceiptText className="h-3.5 w-3.5 text-[#2a75df]" /><span>{orderId ? '订单已安全保留' : '正在建立订单'}</span>
+              <ReceiptText className="h-3.5 w-3.5 text-[#2a75df]" /><span>{paymentOrderStatusLabel(stage, orderId)}</span>
             </div>
           </div>
 
           {stage === 'recovery' || error ? (
-            <div className="mt-4 rounded-2xl border border-[#e7eef7] bg-[#f8fafc] px-4 py-3 text-left text-xs leading-5 text-[#5e6f84]">无需重复付款。连接恢复后，页面会继续确认本次支付结果。</div>
+            <div className="mt-4 rounded-2xl border border-[#e7eef7] bg-[#f8fafc] px-4 py-3 text-left text-xs leading-5 text-[#5e6f84]">{orderId ? '无需重复付款。连接恢复后，页面会继续确认本次支付结果。' : '订单尚未确认创建。请勿重复提交，可返回购物车检查商品信息。'}</div>
           ) : null}
 
           {(orderId || resolvedPaymentId) ? (
@@ -202,9 +229,10 @@ export function PaymentResultPage({ paymentId, session }: PaymentResultPageProps
             {captured ? (
               <><PrimaryButton onClick={goToOrders}>查看订单<ArrowRight className="h-4 w-4" /></PrimaryButton><SecondaryButton onClick={goHome}><Home className="h-4 w-4" />返回首页</SecondaryButton></>
             ) : null}
-            {retryPayment ? (
+            {retryPayment && orderId ? (
               <><PrimaryButton onClick={() => void continueActivePayment()} disabled={isSubmittingOrder}>{isSubmittingOrder ? <LoaderCircle className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : <RefreshCw className="h-4 w-4" />}{stage === 'cancelled' ? '继续付款' : '重新支付'}</PrimaryButton><SecondaryButton onClick={goToOrders}>查看订单</SecondaryButton></>
             ) : null}
+            {retryPayment && !orderId ? <PrimaryButton onClick={goToCart}>返回购物车确认</PrimaryButton> : null}
             {pending && (showStatusAction || error) ? (
               <button type="button" onClick={goToOrders} className="mx-auto inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full px-4 text-xs font-semibold text-[#426b9b] transition-colors duration-150 hover:bg-blue-50 active:bg-blue-100 motion-reduce:transition-none">查看订单状态<ArrowRight className="h-3.5 w-3.5" /></button>
             ) : null}

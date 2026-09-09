@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ProductionApiError, type ApiPaymentResult, type ApiPaymentResultState } from '../../services/productionApi';
-import { paymentDisplayStage, paymentResultReadFailure, selectPaymentResult } from './PaymentResultPage';
+import { paymentDisplayCopy, paymentDisplayStage, paymentOrderStatusLabel, paymentResultReadFailure, selectPaymentResult } from './PaymentResultPage';
 import type { PaymentRecoveryRecord } from '../../services/paymentRecovery';
 
 describe('payment result polling', () => {
@@ -28,6 +28,16 @@ describe('payment result polling', () => {
   it('keeps a user cancellation visible until the server returns a final state', () => {
     expect(paymentDisplayStage(paymentSession('cancelled'), paymentResult('pending'))).toBe('cancelled');
     expect(paymentDisplayStage(paymentSession('cancelled'), paymentResult('captured'))).toBe('captured');
+  });
+
+  it('never claims an order exists when checkout failed before order creation', () => {
+    expect(paymentDisplayCopy('failed', null)).toEqual({
+      eyebrow: '订单状态待确认',
+      title: '本次结算未完成',
+      detail: '尚未确认是否已创建订单，请返回购物车后继续原操作。',
+    });
+    expect(paymentOrderStatusLabel('failed', null)).toBe('尚未确认订单');
+    expect(paymentDisplayCopy('failed', 'order:one').eyebrow).toBe('订单已为你保留');
   });
 });
 

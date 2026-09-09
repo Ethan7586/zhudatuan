@@ -5,7 +5,7 @@ import { loadProductionApi } from '../services/productionApiLoader';
 import { toFrontendCategories, toFrontendOrders, toFrontendProducts } from '../adapters/frontendData';
 import type { AndroidAppPage, AppMode, LaptopPage, LoginCredentials, MallContextType, MiniProgramPage, MobileFulfillmentStage, PageRoute, PendingFeatureInfo, RouteParams, SessionStatus, TabletOrientation, TabletPage, ViewportMode } from './MallContext.types';
 import { useDeviceNavigation } from './useDeviceNavigation';
-import { checkoutSelectedCartRequest, PaymentPhoneVerificationRequired, prepareCheckoutSelection } from './checkoutSelectedCart';
+import { checkoutSelectedCartRequest, PaymentPhoneVerificationRequired, prepareCheckoutSelection, refreshRejectedCheckoutCart } from './checkoutSelectedCart';
 import { useProductionSync } from './useProductionSync';
 import { useToasts } from './useToasts';
 import { guestStorefrontProfile } from './guestStorefrontProfile';
@@ -639,6 +639,22 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
         return false;
       }
       const current = activePaymentSessionRef.current;
+      if (error instanceof ProductionApiError && error.code === 'CHECKOUT_REJECTED' && current?.orderId === null) {
+        const selectedItems = cart.filter((item) => current.cartItemIds.includes(item.id));
+        activatePaymentSession(null);
+        clearPaymentRecovery(currentPaymentScope);
+        showToast(error.message, 'warning');
+        let refreshed = false;
+        try {
+          const productionApi = await loadProductionApi();
+          refreshed = await refreshRejectedCheckoutCart(selectedItems, (input) => productionApi.upsertCartItem(input));
+        } catch {
+          refreshed = false;
+        }
+        await Promise.allSettled([refreshServerCartRef.current(), refreshProductionData()]);
+        if (!refreshed) showToast('刷新失败，请重新加购', 'error');
+        return false;
+      }
       if (current) patchActivePaymentSession({ stage: current.orderId ? 'recovery' : 'failed' });
       const message = error instanceof Error ? error.message : '订单服务暂时不可用';
       showToast(current?.orderId ? `支付状态需要确认：${message}` : `订单暂未创建：${message}`, current?.orderId ? 'warning' : 'error');

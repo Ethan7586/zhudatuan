@@ -3,6 +3,7 @@ import {
   beginPaymentRecovery,
   clearPaymentRecovery,
   finishPaymentSubmission,
+  isPaymentRecoveryPending,
   loadPaymentRecovery,
   paymentCartFingerprint,
   paymentRetryIdempotencyKey,
@@ -77,6 +78,12 @@ describe('payment recovery record', () => {
     expect(paymentRetryIdempotencyKey({ ...record, paymentId: 'intent:old' })).toBe('checkout-one:retry-after:intent:old');
     expect(paymentRetryIdempotencyKey(repeated)).toBe('checkout-one:retry-after:intent:old');
     expect(paymentRetryIdempotencyKey({ ...record, paymentId: 'intent:new' })).toBe('checkout-one:retry-after:intent:new');
+  });
+
+  it('does not restore a terminal failure when no order was created', () => {
+    const started = beginPaymentRecovery(input(), { storage: new MemoryStorage(), now, createId: () => 'one' });
+    expect(isPaymentRecoveryPending(updatePaymentRecovery(started, { stage: 'failed' }, { storage: null, now }))).toBe(false);
+    expect(isPaymentRecoveryPending(updatePaymentRecovery(started, { stage: 'failed', orderId: 'order:one' }, { storage: null, now }))).toBe(true);
   });
 });
 

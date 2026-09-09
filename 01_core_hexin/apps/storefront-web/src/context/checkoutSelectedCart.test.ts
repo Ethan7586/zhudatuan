@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MOCK_ADDRESSES, MOCK_USER } from '../mock/base';
 import type { CartItem, DeliveryAddress } from '../types';
-import { checkoutDeliveryAddress, checkoutSelectedCartRequest, PaymentPhoneVerificationRequired } from './checkoutSelectedCart';
+import { checkoutDeliveryAddress, checkoutSelectedCartRequest, PaymentPhoneVerificationRequired, refreshRejectedCheckoutCart } from './checkoutSelectedCart';
 
 const contextRoot = dirname(fileURLToPath(import.meta.url));
 
@@ -88,5 +88,19 @@ describe('checkout identity assurance', () => {
     expect(addressPage).toContain('const saved = await addAddress');
     expect(addressPage).toContain('if (saved) setMpPage(mpAddressReturnPage)');
     expect(profilePage).toContain("onClick={() => setMpPage('address')}");
+  });
+
+  it('refreshes every rejected cart item with its current quantity before checkout is retried', async () => {
+    const items = [
+      { id: 'cart:one', quantity: 2, product: { id: 'listing:one' } },
+      { id: 'cart:two', quantity: 1, product: { id: 'listing:two' } },
+    ] as CartItem[];
+    const upsert = vi.fn().mockResolvedValue(undefined);
+
+    await expect(refreshRejectedCheckoutCart(items, upsert)).resolves.toBe(true);
+    expect(upsert.mock.calls).toEqual([
+      [{ listingId: 'listing:one', quantity: 2 }],
+      [{ listingId: 'listing:two', quantity: 1 }],
+    ]);
   });
 });

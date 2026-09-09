@@ -6,6 +6,8 @@ const ERROR_MESSAGES: Readonly<Record<string, string>> = Object.freeze({
   MOBILE_ASSURANCE_REQUIRED: '手机尚未验证，暂不能提交订单',
   CSRF_TOKEN_INVALID: '安全会话已更新，请刷新页面后重试',
   LISTING_NOT_PURCHASABLE: '该商品当前不可购买',
+  LISTING_VERSION_CHANGED: '商品信息已更新，请确认购物车后重新结算',
+  CHECKOUT_REJECTED: '商品状态已变化，请确认购物车后重新结算',
   CHECKOUT_VERSION_CONFLICT: '购物车已发生变化，请刷新后重试',
   PRICE_QUOTE_EXPIRED: '结算报价已过期，请重新提交',
   QUOTE_EXPIRED_OR_CONFLICT: '结算信息已变化，请重新提交',

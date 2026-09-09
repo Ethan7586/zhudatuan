@@ -13,6 +13,8 @@ describe('production API error', () => {
     expect(productionError(new ApiError('NOT_FOUND', 404, 'request:one')).message).toBe('请求的内容仍在同步，请稍后重试');
     expect(productionError(new ApiError('CONTRACT_VERSION_UNSUPPORTED', 426, 'request:version')).message)
       .toBe('商城服务已升级，请刷新页面后重试');
+    expect(productionError(new ApiError('CHECKOUT_REJECTED', 422, 'request:checkout')).message)
+      .toBe('商品状态已变化，请确认购物车后重新结算');
     expect(productionError(new ApiError('UPSTREAM_BROKEN', 502, 'request:two', false, undefined, 'Bad Gateway')).message).toBe('商城服务暂时繁忙，请稍后重试');
     expect(productionError(new Error('Unexpected token')).message).toBe('商城服务暂时不可用，请稍后重试');
   });
