@@ -26,9 +26,12 @@ export interface SessionRow {
   readonly attempts: number;
   readonly maximum_attempts: number;
   readonly issued_by: string;
+  readonly issued_access_version: number;
   readonly created_at: Date;
   readonly expires_at: Date;
   readonly verified_at: Date | null;
+  readonly revoked_at: Date | null;
+  readonly revoke_reason: VerificationSessionValue['revokeReason'];
   readonly version: number;
 }
 
@@ -45,9 +48,12 @@ export function restore(row: SessionRow): VerificationSession {
     attempts: row.attempts,
     maximumAttempts: row.maximum_attempts,
     issuedBy: row.issued_by,
+    issuedAccessVersion: row.issued_access_version,
     createdAt: row.created_at,
     expiresAt: row.expires_at,
     verifiedAt: row.verified_at,
+    revokedAt: row.revoked_at,
+    revokeReason: row.revoke_reason,
     version: row.version,
   });
 }

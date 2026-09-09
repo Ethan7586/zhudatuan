@@ -13,7 +13,7 @@ import { bindQuoteCreate as bindCheckoutQuoteCreate, bindQuotesCurrentRead as bi
 import { bindOrdersCreate as bindOrderOrdersCreate, bindOrdersCancel as bindOrderOrdersCancel, bindOrdersRead as bindOrderOrdersRead, bindDetailRead as bindOrderDetailRead, bindRemindersCreate as bindOrderRemindersCreate, bindAftersalesRead as bindOrderAftersalesRead, bindAftersaleattachmentsCreate as bindOrderAftersaleattachmentsCreate, bindAftersalesApply as bindOrderAftersalesApply, bindOrdersReceive as bindOrderOrdersReceive } from './operations/order';
 import { bindTrackingRead as bindFulfillmentTrackingRead } from './operations/fulfillment';
 import { bindIntentsCreate as bindPaymentIntentsCreate, bindIntentsRead as bindPaymentIntentsRead } from './operations/payment';
-import { bindSessionsRead as bindVerificationSessionsRead } from './operations/verification';
+import { bindMembercodesIssue as bindVerificationMembercodesIssue, bindMembercodesRevoke as bindVerificationMembercodesRevoke, bindSessionsRead as bindVerificationSessionsRead } from './operations/verification';
 import { bindSearchRead as bindVoucherSearchRead, bindActivationsSecret as bindVoucherActivationsSecret, bindActivationsNumbersecret as bindVoucherActivationsNumbersecret, bindVouchersGet as bindVoucherVouchersGet, bindVouchersTimeline as bindVoucherVouchersTimeline, bindRedemptionsGet as bindVoucherRedemptionsGet } from './operations/voucher';
 import { bindAccountsRead as bindBenefitAccountsRead, bindLedgersRead as bindBenefitLedgersRead } from './operations/benefit';
 import { bindInvoicesRead as bindFinanceInvoicesRead, bindInvoicesDownload as bindFinanceInvoicesDownload } from './operations/finance';
@@ -36,7 +36,7 @@ export function createStorefrontClient(executor: OperationExecutor): StorefrontS
     order: Object.freeze({ ordersCreate: bindOrderOrdersCreate(executor), ordersCancel: bindOrderOrdersCancel(executor), ordersRead: bindOrderOrdersRead(executor), detailRead: bindOrderDetailRead(executor), remindersCreate: bindOrderRemindersCreate(executor), aftersalesRead: bindOrderAftersalesRead(executor), aftersaleattachmentsCreate: bindOrderAftersaleattachmentsCreate(executor), aftersalesApply: bindOrderAftersalesApply(executor), ordersReceive: bindOrderOrdersReceive(executor) }),
     fulfillment: Object.freeze({ trackingRead: bindFulfillmentTrackingRead(executor) }),
     payment: Object.freeze({ intentsCreate: bindPaymentIntentsCreate(executor), intentsRead: bindPaymentIntentsRead(executor) }),
-    verification: Object.freeze({ sessionsRead: bindVerificationSessionsRead(executor) }),
+    verification: Object.freeze({ membercodesIssue: bindVerificationMembercodesIssue(executor), membercodesRevoke: bindVerificationMembercodesRevoke(executor), sessionsRead: bindVerificationSessionsRead(executor) }),
     voucher: Object.freeze({ searchRead: bindVoucherSearchRead(executor), activationsSecret: bindVoucherActivationsSecret(executor), activationsNumbersecret: bindVoucherActivationsNumbersecret(executor), vouchersGet: bindVoucherVouchersGet(executor), vouchersTimeline: bindVoucherVouchersTimeline(executor), redemptionsGet: bindVoucherRedemptionsGet(executor) }),
     benefit: Object.freeze({ accountsRead: bindBenefitAccountsRead(executor), ledgersRead: bindBenefitLedgersRead(executor) }),
     finance: Object.freeze({ invoicesRead: bindFinanceInvoicesRead(executor), invoicesDownload: bindFinanceInvoicesDownload(executor) }),

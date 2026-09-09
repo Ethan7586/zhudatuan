@@ -3,7 +3,7 @@ artifact: commerce
 
 schemaHead:
   contractVersion: 5.0.0
-  migrationHead: '20260910011000'
+  migrationHead: '20260910012000'
   migrationCount: 435
   historyHead: '20260903116000'
   historyCount: 316

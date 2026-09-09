@@ -32,6 +32,7 @@ describe('verification domain', () => {
       channel: 'qrcode',
       maximumAttempts: 3,
       issuedBy: 'membership:one',
+      issuedAccessVersion: 4,
       createdAt: NOW,
       expiresAt: new Date(NOW.getTime() + 60_000),
     });
@@ -42,8 +43,27 @@ describe('verification domain', () => {
     expect(() => session.verify(new Date(NOW.getTime() + 4_000))).toThrow('VERIFICATION_TOKEN_INVALID');
   });
 
+  it('revokes an active member code and records the member action', () => {
+    const session = VerificationSession.issue({
+      id: 'verification:revoke',
+      scope: 'mall:one',
+      subjectType: 'member',
+      subject: 'member:one',
+      purpose: 'member_code',
+      operation: 'verification.member.inspect',
+      channel: 'qrcode',
+      maximumAttempts: 5,
+      issuedBy: 'membership:one',
+      issuedAccessVersion: 4,
+      createdAt: NOW,
+      expiresAt: new Date(NOW.getTime() + 45_000),
+    }).revoke(new Date(NOW.getTime() + 1_000), 'member_action');
+    expect(session.snapshot()).toMatchObject({ state: 'revoked', revokeReason: 'member_action', version: 1 });
+  });
+
   it('binds every proof policy to one purpose and operation', () => {
     const policy = new VerificationPolicy();
+    expect(policy.resolve('member_code')).toMatchObject({ ttlSeconds: 45, proofSeconds: 45 });
     expect(policy.resolve('financial_approval')).toMatchObject({ operation: 'finance.approvals.decide', channel: 'app', minimumAssurance: 3 });
     expect(() => policy.resolve('financial_approval', 'voucher.redemptions.create')).toThrow('CHALLENGE_PURPOSE_INVALID');
   });

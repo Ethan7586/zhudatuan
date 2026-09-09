@@ -68914,6 +68914,126 @@
         ],
         "type": "object"
       },
+      "VerificationMemberCodesIssueInput": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "additionalProperties": false,
+            "properties": {},
+            "type": "object"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "type": "object"
+      },
+      "VerificationMemberCodesIssueOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "expires_at": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "issued_at": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "issued",
+              "expired",
+              "revoked"
+            ],
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "version": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "issued_at",
+          "expires_at",
+          "version",
+          "token"
+        ],
+        "type": "object"
+      },
+      "VerificationMemberCodesRevokeInput": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "additionalProperties": false,
+            "properties": {},
+            "type": "object"
+          },
+          "path": {
+            "additionalProperties": false,
+            "properties": {
+              "challengeid": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "challengeid"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "path",
+          "body"
+        ],
+        "type": "object"
+      },
+      "VerificationMemberCodesRevokeOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "expires_at": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "issued_at": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "issued",
+              "expired",
+              "revoked"
+            ],
+            "type": "string"
+          },
+          "version": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "issued_at",
+          "expires_at",
+          "version"
+        ],
+        "type": "object"
+      },
       "VerificationSessionsReadInput": {
         "additionalProperties": false,
         "properties": {
@@ -152143,6 +152263,466 @@
         "x-timeout-ms": 500
       }
     },
+    "/api/v1/verifications/member-codes": {
+      "post": {
+        "operationId": "verification.membercodes.issue",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {},
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationMemberCodesIssueOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "426": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "核验 · 会员码签发",
+        "tags": [
+          "verification"
+        ],
+        "x-assurance-level": "mfa",
+        "x-audience": "storefront",
+        "x-audit-level": "detailed",
+        "x-cache-policy": "none",
+        "x-capability": "verification.membercodes.issue",
+        "x-concurrency-policy": "serialized",
+        "x-csrf-policy": "required",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "CONTENT_TYPE_UNSUPPORTED",
+          "CONTRACT_VERSION_UNSUPPORTED",
+          "CSRF_TOKEN_INVALID",
+          "DEADLINE_EXCEEDED",
+          "IDEMPOTENCY_CONFLICT",
+          "IDEMPOTENCY_KEY_REQUIRED",
+          "INTERNAL_ERROR",
+          "MEMBERSHIP_SELECTION_REQUIRED",
+          "ORIGIN_REQUIRED",
+          "PERMISSION_DENIED",
+          "RATE_LIMITED",
+          "REQUEST_BODY_TOO_LARGE",
+          "REQUEST_JSON_INVALID",
+          "SCOPE_DENIED",
+          "STEPUP_REQUIRED",
+          "URL_SENSITIVE_DATA_FORBIDDEN",
+          "VALIDATION_FAILED"
+        ],
+        "x-execution-mode": "sync",
+        "x-expected-version": "none",
+        "x-idempotency-policy": "required",
+        "x-idempotency-scope": "actor-operation-scope",
+        "x-lifecycle": "active",
+        "x-maker-checker": false,
+        "x-operation-version": 1,
+        "x-origin-policy": "sameorigin",
+        "x-permission": "verification.issue",
+        "x-rate-class": "write",
+        "x-requirements": [
+          "MVPPLATFORM",
+          "MVPDISTRIBUTION",
+          "MVPGROUPDASHBOARD",
+          "MVPGROUPAPPLICATION",
+          "MVPGROUPPOOL",
+          "MVPGROUPORDER",
+          "MVPGROUPVOUCHER",
+          "MVPGROUPFINANCE",
+          "MVPGROUPREPORT",
+          "MVPGROUPSUPPORT",
+          "MVPGROUPSETTING",
+          "MVPMALLDASHBOARD",
+          "MVPMALLDESIGN",
+          "MVPMALLPOOL",
+          "MVPMALLORDER",
+          "MVPMALLVOUCHER",
+          "MVPMALLFINANCE",
+          "MVPMALLREPORT",
+          "MVPMALLSUPPORT",
+          "MVPMALLSETTING",
+          "MVPIDENTITY",
+          "MVPPROVIDER"
+        ],
+        "x-resource-parameter": null,
+        "x-resource-resolver": "verification.resource",
+        "x-response-mode": "json",
+        "x-risk": "high",
+        "x-scope-kinds": [
+          "mall",
+          "owner"
+        ],
+        "x-sensitive-fields": [
+          "response.token"
+        ],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "storefront",
+          "miniapp"
+        ],
+        "x-timeout-ms": 800
+      }
+    },
+    "/api/v1/verifications/member-codes/{challengeid}": {
+      "delete": {
+        "operationId": "verification.membercodes.revoke",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "challengeid",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {},
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationMemberCodesRevokeOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "426": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "核验 · 会员码撤销",
+        "tags": [
+          "verification"
+        ],
+        "x-assurance-level": "mfa",
+        "x-audience": "storefront",
+        "x-audit-level": "detailed",
+        "x-cache-policy": "none",
+        "x-capability": "verification.membercodes.revoke",
+        "x-concurrency-policy": "optimistic",
+        "x-csrf-policy": "required",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "CONTENT_TYPE_UNSUPPORTED",
+          "CONTRACT_VERSION_UNSUPPORTED",
+          "CSRF_TOKEN_INVALID",
+          "DEADLINE_EXCEEDED",
+          "EXPECTED_VERSION_INVALID",
+          "EXPECTED_VERSION_REQUIRED",
+          "IDEMPOTENCY_CONFLICT",
+          "IDEMPOTENCY_KEY_REQUIRED",
+          "INTERNAL_ERROR",
+          "ORIGIN_REQUIRED",
+          "PERMISSION_DENIED",
+          "RATE_LIMITED",
+          "REQUEST_BODY_TOO_LARGE",
+          "REQUEST_JSON_INVALID",
+          "RESOURCE_NOT_FOUND",
+          "SCOPE_DENIED",
+          "STEPUP_REQUIRED",
+          "URL_SENSITIVE_DATA_FORBIDDEN",
+          "VALIDATION_FAILED",
+          "VERIFICATION_TOKEN_INVALID",
+          "VERSION_CONFLICT"
+        ],
+        "x-execution-mode": "sync",
+        "x-expected-version": "required",
+        "x-idempotency-policy": "required",
+        "x-idempotency-scope": "actor-operation-scope",
+        "x-lifecycle": "active",
+        "x-maker-checker": false,
+        "x-operation-version": 1,
+        "x-origin-policy": "sameorigin",
+        "x-permission": "verification.issue",
+        "x-rate-class": "write",
+        "x-requirements": [
+          "MVPPLATFORM",
+          "MVPDISTRIBUTION",
+          "MVPGROUPDASHBOARD",
+          "MVPGROUPAPPLICATION",
+          "MVPGROUPPOOL",
+          "MVPGROUPORDER",
+          "MVPGROUPVOUCHER",
+          "MVPGROUPFINANCE",
+          "MVPGROUPREPORT",
+          "MVPGROUPSUPPORT",
+          "MVPGROUPSETTING",
+          "MVPMALLDASHBOARD",
+          "MVPMALLDESIGN",
+          "MVPMALLPOOL",
+          "MVPMALLORDER",
+          "MVPMALLVOUCHER",
+          "MVPMALLFINANCE",
+          "MVPMALLREPORT",
+          "MVPMALLSUPPORT",
+          "MVPMALLSETTING",
+          "MVPIDENTITY",
+          "MVPPROVIDER"
+        ],
+        "x-resource-parameter": "challengeid",
+        "x-resource-resolver": "verification.resource",
+        "x-response-mode": "json",
+        "x-risk": "high",
+        "x-scope-kinds": [
+          "mall",
+          "owner"
+        ],
+        "x-sensitive-fields": [],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "storefront",
+          "miniapp"
+        ],
+        "x-timeout-ms": 800
+      }
+    },
     "/api/v1/verifications/sessions": {
       "get": {
         "operationId": "verification.sessions.read",
@@ -152325,7 +152905,7 @@
         "x-response-mode": "json",
         "x-risk": "high",
         "x-scope-kinds": [
-          "store",
+          "mall",
           "owner"
         ],
         "x-sensitive-fields": [],

@@ -172,6 +172,8 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('payment.intents.create','payment','POST','/api/v1/payments/intents','5.0.0'),
   ('payment.intents.read','payment','GET','/api/v1/payments/intents/{paymentid}','5.0.0'),
   ('verification.challenges.issue','verification','POST','/api/v1/verifications/challenges','5.0.0'),
+  ('verification.membercodes.issue','verification','POST','/api/v1/verifications/member-codes','5.0.0'),
+  ('verification.membercodes.revoke','verification','DELETE','/api/v1/verifications/member-codes/{challengeid}','5.0.0'),
   ('verification.sessions.read','verification','GET','/api/v1/verifications/sessions','5.0.0'),
   ('verification.challenges.verify','verification','POST','/api/v1/verifications/challenges/{challengeid}/verification','5.0.0'),
   ('verification.history.read','verification','GET','/api/v1/verifications/history','5.0.0'),
@@ -1004,6 +1006,8 @@ insert into capability.capability(id,kind,name,version,status) values
   ('payment.intents.create','operation','payment.intents.create',3,'active'),
   ('payment.intents.read','operation','payment.intents.read',3,'active'),
   ('verification.challenges.issue','operation','verification.challenges.issue',3,'active'),
+  ('verification.membercodes.issue','operation','verification.membercodes.issue',3,'active'),
+  ('verification.membercodes.revoke','operation','verification.membercodes.revoke',3,'active'),
   ('verification.sessions.read','operation','verification.sessions.read',3,'active'),
   ('verification.challenges.verify','operation','verification.challenges.verify',3,'active'),
   ('verification.history.read','operation','verification.history.read',3,'active'),
@@ -1467,6 +1471,8 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('payment.intents.create','payment.intents.create','payment.create','storefront','{storefront,miniapp}'),
   ('payment.intents.read','payment.intents.read','payment.read','storefront','{storefront,miniapp}'),
   ('verification.challenges.issue','verification.challenges.issue','verification.issue','console','{console,store}'),
+  ('verification.membercodes.issue','verification.membercodes.issue','verification.issue','storefront','{storefront,miniapp}'),
+  ('verification.membercodes.revoke','verification.membercodes.revoke','verification.issue','storefront','{storefront,miniapp}'),
   ('verification.sessions.read','verification.sessions.read','verification.issue','storefront','{storefront,miniapp}'),
   ('verification.challenges.verify','verification.challenges.verify','verification.verify','console','{console,store}'),
   ('verification.history.read','verification.history.read','verification.verify','console','{console,store}'),
@@ -2049,6 +2055,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='supplier' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','93826327e7f4f9b579b426eb712ab593f959c017d9af41364305051a79b42e9a');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','acff725490377b605d995085e104c3fc7b021380be689a5d1b9426f110952ec8');
 
 commit;

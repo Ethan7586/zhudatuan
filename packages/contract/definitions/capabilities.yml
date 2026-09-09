@@ -1071,6 +1071,16 @@ capabilities:
     owner: verification
     permission: verification.issue
     audience: console
+  - code: verification.membercodes.issue
+    kind: operation
+    owner: verification
+    permission: verification.issue
+    audience: storefront
+  - code: verification.membercodes.revoke
+    kind: operation
+    owner: verification
+    permission: verification.issue
+    audience: storefront
   - code: verification.sessions.read
     kind: operation
     owner: verification

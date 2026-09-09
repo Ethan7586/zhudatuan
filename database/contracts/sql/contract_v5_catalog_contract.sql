@@ -2,8 +2,8 @@ begin;
 
 do $contract$
 begin
-  if (select count(*) from runtime.operation)<>385 then raise exception 'CONTRACT_V5_OPERATION_CATALOG_MISMATCH'; end if;
-  if (select count(*) from capability.operation)<>385 then raise exception 'CONTRACT_V5_CAPABILITY_BINDING_MISMATCH'; end if;
+  if (select count(*) from runtime.operation)<>387 then raise exception 'CONTRACT_V5_OPERATION_CATALOG_MISMATCH'; end if;
+  if (select count(*) from capability.operation)<>387 then raise exception 'CONTRACT_V5_CAPABILITY_BINDING_MISMATCH'; end if;
   if (select count(*) from runtime.event where retired_at is null)<>145 then raise exception 'CONTRACT_V5_EVENT_CATALOG_MISMATCH'; end if;
   if not exists(select 1 from runtime.event where type='voucher.redeemed' and version=2 and owner='voucher' and retired_at is null)
     or exists(select 1 from runtime.event where type='voucher.redeemed' and version<>2 and retired_at is null) then
@@ -17,8 +17,8 @@ begin
   if not exists(select 1 from reporting.metric where id='category.amount') then raise exception 'CONTRACT_V5_CATEGORY_METRIC_MISSING'; end if;
   if not exists(
     select 1 from runtime.contractcatalog
-    where artifact='commerce' and version='5.0.0' and checksum='427b53b7b330dab7b6b6625586b8c3e31a82bbc7acbe4ecc15998f7ba75376a2'
-      and operation_count=385 and event_count=145 and status='active'
+    where artifact='commerce' and version='5.0.0' and checksum='09382eecbd42d2a2d1172a9a0b5cf3dcaced3e84d04fb60af62d02c662c0b7a9'
+      and operation_count=387 and event_count=145 and status='active'
   ) then raise exception 'CONTRACT_V5_IDENTITY_MISMATCH'; end if;
 end
 $contract$;

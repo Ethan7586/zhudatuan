@@ -171,6 +171,8 @@ export const CONTROLLER_OPERATIONS = Object.freeze([
   "payment.intents.create",
   "payment.intents.read",
   "verification.challenges.issue",
+  "verification.membercodes.issue",
+  "verification.membercodes.revoke",
   "verification.sessions.read",
   "verification.challenges.verify",
   "verification.history.read",

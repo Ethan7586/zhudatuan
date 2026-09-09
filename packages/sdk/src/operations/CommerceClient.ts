@@ -244,6 +244,8 @@ export const SDK_OPERATION_IDS = Object.freeze([
   "payment.intents.create",
   "payment.intents.read",
   "verification.challenges.issue",
+  "verification.membercodes.issue",
+  "verification.membercodes.revoke",
   "verification.sessions.read",
   "verification.challenges.verify",
   "verification.history.read",

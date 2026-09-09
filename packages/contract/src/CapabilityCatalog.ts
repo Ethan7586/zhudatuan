@@ -1550,6 +1550,20 @@ export const CAPABILITY_CATALOG = Object.freeze([
     "audience": "console"
   },
   {
+    "code": "verification.membercodes.issue",
+    "kind": "operation",
+    "owner": "verification",
+    "permission": "verification.issue",
+    "audience": "storefront"
+  },
+  {
+    "code": "verification.membercodes.revoke",
+    "kind": "operation",
+    "owner": "verification",
+    "permission": "verification.issue",
+    "audience": "storefront"
+  },
+  {
     "code": "verification.sessions.read",
     "kind": "operation",
     "owner": "verification",
@@ -3075,7 +3089,7 @@ export const CAPABILITY_CODES_BY_OWNER = Object.freeze({
   "risk": Object.freeze(["risk.center.read","risk.policies.manage","risk.cases.review"] as const),
   "runtime": Object.freeze(["runtime.importing","runtime.health.live","runtime.health.ready","runtime.health.startup","runtime.health.dependency","runtime.jobs.read","runtime.jobs.cancel","runtime.uploads.create","runtime.imports.create","runtime.imports.read","runtime.imports.confirm","runtime.imports.retry","runtime.exports.read","runtime.exports.cancel"] as const),
   "support": Object.freeze(["support.cases.create","support.cases.read","support.cases.update","support.cases.close","support.cases.reopen","support.messages.send","support.messages.read","support.attachments.create","support.assignments.manage","support.agents.manage","support.agents.read","support.accounts.manage","support.accounts.read","support.rules.read","support.rules.manage","support.slas.read","support.slas.manage","support.history.read","support.events.read","support.readstates.manage"] as const),
-  "verification": Object.freeze(["verification.challenges.issue","verification.sessions.read","verification.challenges.verify","verification.history.read","verification.devices.read","verification.devices.manage"] as const),
+  "verification": Object.freeze(["verification.challenges.issue","verification.membercodes.issue","verification.membercodes.revoke","verification.sessions.read","verification.challenges.verify","verification.history.read","verification.devices.read","verification.devices.manage"] as const),
   "voucher": Object.freeze(["voucher.lifecycle","voucher.products.create","voucher.products.revise","voucher.products.enable","voucher.products.disable","voucher.products.get","voucher.products.list","voucher.productoptions.list","voucher.credentialpools.create","voucher.credentials.generate","voucher.credentials.import","voucher.credentialpools.close","voucher.credentialpools.get","voucher.credentialpools.list","voucher.credentials.list","voucher.credentials.get","voucher.credentialexports.create","voucher.jobs.get","voucher.stockrequests.create","voucher.stockrequests.update","voucher.stockrequests.submit","voucher.stockrequests.cancel","voucher.stockrequests.get","voucher.stockrequests.list","voucher.stockrequestoptions.list","voucher.issueorders.create","voucher.issueorders.update","voucher.issueorders.submit","voucher.issueorders.cancel","voucher.issueorders.get","voucher.issueorders.list","voucher.issuebatches.retry","voucher.issuebatches.get","voucher.issueorderexports.create","voucher.actionbatches.create","voucher.actionbatches.get","voucher.actionbatches.list","voucher.actionbatches.retry","voucher.actionexports.create","voucher.search.read","voucher.activations.secret","voucher.activations.numbersecret","voucher.vouchers.bind","voucher.vouchers.unbind","voucher.vouchers.get","voucher.vouchers.getbynumber","voucher.vouchers.timeline","voucher.redemptions.quote","voucher.tenderholds.create","voucher.tenderholds.consume","voucher.tenderholds.release","voucher.redemptions.create","voucher.refunds.create","voucher.redemptions.get","voucher.searchfacets.read","voucher.searchsnapshots.create","voucher.searchexports.create","voucher.exports.get"] as const),
 });
 export const OPERATION_CAPABILITY_CODES_BY_OWNER = Object.freeze({
@@ -3110,6 +3124,6 @@ export const OPERATION_CAPABILITY_CODES_BY_OWNER = Object.freeze({
   "risk": Object.freeze(["risk.center.read","risk.policies.manage","risk.cases.review"] as const),
   "runtime": Object.freeze(["runtime.health.live","runtime.health.ready","runtime.health.startup","runtime.health.dependency","runtime.jobs.read","runtime.jobs.cancel","runtime.uploads.create","runtime.imports.create","runtime.imports.read","runtime.imports.confirm","runtime.imports.retry","runtime.exports.read","runtime.exports.cancel"] as const),
   "support": Object.freeze(["support.cases.create","support.cases.read","support.cases.update","support.cases.close","support.cases.reopen","support.messages.send","support.messages.read","support.attachments.create","support.assignments.manage","support.agents.manage","support.agents.read","support.accounts.manage","support.accounts.read","support.rules.read","support.rules.manage","support.slas.read","support.slas.manage","support.history.read","support.events.read","support.readstates.manage"] as const),
-  "verification": Object.freeze(["verification.challenges.issue","verification.sessions.read","verification.challenges.verify","verification.history.read","verification.devices.read","verification.devices.manage"] as const),
+  "verification": Object.freeze(["verification.challenges.issue","verification.membercodes.issue","verification.membercodes.revoke","verification.sessions.read","verification.challenges.verify","verification.history.read","verification.devices.read","verification.devices.manage"] as const),
   "voucher": Object.freeze(["voucher.products.create","voucher.products.revise","voucher.products.enable","voucher.products.disable","voucher.products.get","voucher.products.list","voucher.productoptions.list","voucher.credentialpools.create","voucher.credentials.generate","voucher.credentials.import","voucher.credentialpools.close","voucher.credentialpools.get","voucher.credentialpools.list","voucher.credentials.list","voucher.credentials.get","voucher.credentialexports.create","voucher.jobs.get","voucher.stockrequests.create","voucher.stockrequests.update","voucher.stockrequests.submit","voucher.stockrequests.cancel","voucher.stockrequests.get","voucher.stockrequests.list","voucher.stockrequestoptions.list","voucher.issueorders.create","voucher.issueorders.update","voucher.issueorders.submit","voucher.issueorders.cancel","voucher.issueorders.get","voucher.issueorders.list","voucher.issuebatches.retry","voucher.issuebatches.get","voucher.issueorderexports.create","voucher.actionbatches.create","voucher.actionbatches.get","voucher.actionbatches.list","voucher.actionbatches.retry","voucher.actionexports.create","voucher.search.read","voucher.activations.secret","voucher.activations.numbersecret","voucher.vouchers.bind","voucher.vouchers.unbind","voucher.vouchers.get","voucher.vouchers.getbynumber","voucher.vouchers.timeline","voucher.redemptions.quote","voucher.tenderholds.create","voucher.tenderholds.consume","voucher.tenderholds.release","voucher.redemptions.create","voucher.refunds.create","voucher.redemptions.get","voucher.searchfacets.read","voucher.searchsnapshots.create","voucher.searchexports.create","voucher.exports.get"] as const),
 });

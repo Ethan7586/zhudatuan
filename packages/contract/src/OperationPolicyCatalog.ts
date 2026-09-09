@@ -3168,6 +3168,44 @@ const POLICIES = [
     "actionProof": false
   },
   {
+    "id": "verification.membercodes.issue",
+    "version": 1,
+    "title": "核验 · 会员码签发",
+    "method": "POST",
+    "path": "/api/v1/verifications/member-codes",
+    "capability": "verification.membercodes.issue",
+    "permission": "verification.issue",
+    "assuranceLevel": "mfa",
+    "makerChecker": false,
+    "expectedVersion": "none",
+    "concurrencyPolicy": "serialized",
+    "executionMode": "sync",
+    "auditLevel": "detailed",
+    "sensitiveFields": [
+      "response.token"
+    ],
+    "lifecycle": "active",
+    "actionProof": false
+  },
+  {
+    "id": "verification.membercodes.revoke",
+    "version": 1,
+    "title": "核验 · 会员码撤销",
+    "method": "DELETE",
+    "path": "/api/v1/verifications/member-codes/{challengeid}",
+    "capability": "verification.membercodes.revoke",
+    "permission": "verification.issue",
+    "assuranceLevel": "mfa",
+    "makerChecker": false,
+    "expectedVersion": "required",
+    "concurrencyPolicy": "optimistic",
+    "executionMode": "sync",
+    "auditLevel": "detailed",
+    "sensitiveFields": [],
+    "lifecycle": "active",
+    "actionProof": false
+  },
+  {
     "id": "verification.sessions.read",
     "version": 1,
     "title": "核验 · 会话查询",

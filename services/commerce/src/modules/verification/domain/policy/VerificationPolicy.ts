@@ -12,7 +12,7 @@ export interface VerificationRule {
 }
 
 const rules: Readonly<Record<VerificationPurpose, VerificationRule>> = Object.freeze({
-  member_code: Object.freeze({ purpose: 'member_code', operation: 'verification.member.inspect', channel: 'qrcode', ttlSeconds: 60, proofSeconds: 60, maximumAttempts: 5, minimumAssurance: 2 }),
+  member_code: Object.freeze({ purpose: 'member_code', operation: 'verification.member.inspect', channel: 'qrcode', ttlSeconds: 45, proofSeconds: 45, maximumAttempts: 5, minimumAssurance: 2 }),
   voucher_redeem: Object.freeze({ purpose: 'voucher_redeem', operation: 'voucher.redemptions.create', channel: 'qrcode', ttlSeconds: 60, proofSeconds: 60, maximumAttempts: 5, minimumAssurance: 2 }),
   login: Object.freeze({ purpose: 'login', operation: 'identity.sessions.create', channel: 'sms', ttlSeconds: 300, proofSeconds: 300, maximumAttempts: 5, minimumAssurance: 2 }),
   sensitive_action: Object.freeze({ purpose: 'sensitive_action', operation: 'access.actions.execute', channel: 'sms', ttlSeconds: 300, proofSeconds: 300, maximumAttempts: 5, minimumAssurance: 3 }),

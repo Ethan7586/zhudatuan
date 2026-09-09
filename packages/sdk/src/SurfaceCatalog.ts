@@ -474,6 +474,8 @@ export const SURFACE_OPERATION_IDS = Object.freeze({
     "fulfillment.tracking.read",
     "payment.intents.create",
     "payment.intents.read",
+    "verification.membercodes.issue",
+    "verification.membercodes.revoke",
     "verification.sessions.read",
     "voucher.search.read",
     "voucher.activations.secret",
@@ -567,6 +569,8 @@ export const SURFACE_OPERATION_IDS = Object.freeze({
     "fulfillment.tracking.read",
     "payment.intents.create",
     "payment.intents.read",
+    "verification.membercodes.issue",
+    "verification.membercodes.revoke",
     "verification.sessions.read",
     "voucher.search.read",
     "voucher.activations.secret",
@@ -2497,6 +2501,14 @@ const SURFACE_METHODS = Object.freeze({
     },
     {
       "domain": "verification",
+      "method": "membercodesIssue"
+    },
+    {
+      "domain": "verification",
+      "method": "membercodesRevoke"
+    },
+    {
+      "domain": "verification",
       "method": "sessionsRead"
     },
     {
@@ -2860,6 +2872,14 @@ const SURFACE_METHODS = Object.freeze({
     {
       "domain": "payment",
       "method": "intentsRead"
+    },
+    {
+      "domain": "verification",
+      "method": "membercodesIssue"
+    },
+    {
+      "domain": "verification",
+      "method": "membercodesRevoke"
     },
     {
       "domain": "verification",
@@ -3847,7 +3867,7 @@ export interface StorefrontSurfaceClient {
   readonly order: Pick<CommerceClient["order"], "ordersCreate" | "ordersCancel" | "ordersRead" | "detailRead" | "remindersCreate" | "aftersalesRead" | "aftersaleattachmentsCreate" | "aftersalesApply" | "ordersReceive">;
   readonly fulfillment: Pick<CommerceClient["fulfillment"], "trackingRead">;
   readonly payment: Pick<CommerceClient["payment"], "intentsCreate" | "intentsRead">;
-  readonly verification: Pick<CommerceClient["verification"], "sessionsRead">;
+  readonly verification: Pick<CommerceClient["verification"], "membercodesIssue" | "membercodesRevoke" | "sessionsRead">;
   readonly voucher: Pick<CommerceClient["voucher"], "searchRead" | "activationsSecret" | "activationsNumbersecret" | "vouchersGet" | "vouchersTimeline" | "redemptionsGet">;
   readonly benefit: Pick<CommerceClient["benefit"], "accountsRead" | "ledgersRead">;
   readonly finance: Pick<CommerceClient["finance"], "invoicesRead" | "invoicesDownload">;
@@ -3870,7 +3890,7 @@ export interface MiniappSurfaceClient {
   readonly order: Pick<CommerceClient["order"], "ordersCreate" | "ordersCancel" | "ordersRead" | "detailRead" | "remindersCreate" | "aftersalesRead" | "aftersaleattachmentsCreate" | "aftersalesApply" | "ordersReceive">;
   readonly fulfillment: Pick<CommerceClient["fulfillment"], "trackingRead">;
   readonly payment: Pick<CommerceClient["payment"], "intentsCreate" | "intentsRead">;
-  readonly verification: Pick<CommerceClient["verification"], "sessionsRead">;
+  readonly verification: Pick<CommerceClient["verification"], "membercodesIssue" | "membercodesRevoke" | "sessionsRead">;
   readonly voucher: Pick<CommerceClient["voucher"], "searchRead" | "activationsSecret" | "activationsNumbersecret" | "vouchersGet" | "vouchersTimeline" | "redemptionsGet">;
   readonly benefit: Pick<CommerceClient["benefit"], "accountsRead" | "ledgersRead">;
   readonly finance: Pick<CommerceClient["finance"], "invoicesRead" | "invoicesDownload">;

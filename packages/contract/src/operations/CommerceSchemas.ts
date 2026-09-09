@@ -173,6 +173,8 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "payment.intents.create": Object.freeze({ input: exactOperationInput("PaymentIntentsCreateInput", [] as const, true), output: exactOperationOutput("PaymentIntentsCreateOutput") }),
   "payment.intents.read": Object.freeze({ input: exactOperationInput("PaymentIntentsReadInput", ["paymentid"] as const, false), output: exactOperationOutput("PaymentIntentsReadOutput") }),
   "verification.challenges.issue": Object.freeze({ input: exactOperationInput("VerificationChallengesIssueInput", [] as const, true), output: exactOperationOutput("VerificationChallengesIssueOutput") }),
+  "verification.membercodes.issue": Object.freeze({ input: exactOperationInput("VerificationMemberCodesIssueInput", [] as const, true), output: exactOperationOutput("VerificationMemberCodesIssueOutput") }),
+  "verification.membercodes.revoke": Object.freeze({ input: exactOperationInput("VerificationMemberCodesRevokeInput", ["challengeid"] as const, true), output: exactOperationOutput("VerificationMemberCodesRevokeOutput") }),
   "verification.sessions.read": Object.freeze({ input: exactOperationInput("VerificationSessionsReadInput", [] as const, false), output: exactOperationOutput("VerificationSessionsReadOutput") }),
   "verification.challenges.verify": Object.freeze({ input: exactOperationInput("VerificationChallengesVerifyInput", ["challengeid"] as const, true), output: exactOperationOutput("VerificationChallengesVerifyOutput") }),
   "verification.history.read": Object.freeze({ input: exactOperationInput("VerificationHistoryReadInput", [] as const, false), output: exactOperationOutput("VerificationHistoryReadOutput") }),

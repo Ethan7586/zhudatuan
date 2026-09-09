@@ -50,6 +50,13 @@ export class PgChallengeRepository implements ChallengeRepository {
       [input.membership, input.purpose, input.now]
     );
     this.rates.issue({ count: frequency.rows[0]?.count ?? 0, lastIssuedAt: frequency.rows[0]?.last_issued_at ?? null, now: input.now });
+    if (input.purpose === 'member_code') {
+      await database.query(
+        `update verification.session set state='revoked',revoked_at=$2,revoke_reason='refreshed',version=version+1
+        where issued_by=$1 and purpose='member_code' and state='issued'`,
+        [input.membership, input.now]
+      );
+    }
     const expiresAt = new Date(input.now.getTime() + rule.ttlSeconds * 1000);
     const session = VerificationSession.issue({
       id: input.id,
@@ -61,6 +68,7 @@ export class PgChallengeRepository implements ChallengeRepository {
       channel: rule.channel,
       maximumAttempts: rule.maximumAttempts,
       issuedBy: input.membership,
+      issuedAccessVersion: profile.accessversion,
       createdAt: input.now,
       expiresAt,
     });
@@ -68,11 +76,11 @@ export class PgChallengeRepository implements ChallengeRepository {
     const value = session.snapshot();
     await database.query(
       `with session as (insert into verification.session(id,scope_id,subject_type,subject_id,purpose,operation_id,channel,state,attempts,
-      maximum_attempts,issued_by,created_at,expires_at,verified_at,version)
-      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,null,$14)
+      maximum_attempts,issued_by,issued_access_version,created_at,expires_at,verified_at,revoked_at,revoke_reason,version)
+      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,null,null,null,$15)
       returning id,subject_type,subject_id,purpose,operation_id,channel,state,attempts,maximum_attempts,expires_at,verified_at,version),
       token as (insert into verification.token(session_id,token_hash,issued_at,expires_at,consumed_at,consumed_by_device_id,consumed_by_actor_id)
-      values($1,$15,$12,$13,null,null,null)) select session.id from session`,
+      values($1,$16,$13,$14,null,null,null)) select session.id from session`,
       [
         value.id,
         value.scope,
@@ -85,6 +93,7 @@ export class PgChallengeRepository implements ChallengeRepository {
         value.attempts,
         value.maximumAttempts,
         value.issuedBy,
+        value.issuedAccessVersion,
         value.createdAt,
         value.expiresAt,
         value.version,
@@ -101,10 +110,34 @@ export class PgChallengeRepository implements ChallengeRepository {
       state: value.state,
       attempts: value.attempts,
       maximum_attempts: value.maximumAttempts,
+      issued_at: value.createdAt,
       expires_at: value.expiresAt,
       verified_at: null,
       version: value.version,
     });
+  }
+
+  async revoke(context: WriteTransactionContext, input: Parameters<ChallengeRepository['revoke']>[1]) {
+    const database = this.transactions.database(context);
+    const selected = await database.query<SessionRow>(
+      `select id,scope_id,subject_type,subject_id,purpose,operation_id,channel,state,attempts::integer,maximum_attempts::integer,
+      issued_by,issued_access_version::integer,created_at,expires_at,verified_at,revoked_at,revoke_reason,version::integer
+      from verification.session where id=$1 and scope_id=$2 and issued_by=$3 and purpose='member_code' for update`,
+      [input.challenge, input.scope, input.membership]
+    );
+    const row = selected.rows[0];
+    if (!row) throw new DomainError('RESOURCE_NOT_FOUND');
+    if (row.version !== input.expectedVersion) throw new DomainError('VERSION_CONFLICT');
+    const revoked = restore(row).revoke(input.now, 'member_action').snapshot();
+    if (revoked.version !== row.version) {
+      const changed = await database.query(
+        `update verification.session set state=$2,revoked_at=$3,revoke_reason=$4,version=$5
+        where id=$1 and version=$6 returning id`,
+        [row.id, revoked.state, revoked.revokedAt, revoked.revokeReason, revoked.version, row.version]
+      );
+      if (!changed.rows[0]) throw new DomainError('VERSION_CONFLICT');
+    }
+    return sessionView(revoked);
   }
 
   async verify(context: WriteTransactionContext, input: Parameters<ChallengeRepository['verify']>[1]) {
@@ -112,7 +145,7 @@ export class PgChallengeRepository implements ChallengeRepository {
     const visibleScopes = [input.scope, ...(await this.organizations.scope(context, input.scope)).ancestors];
     const selected = await database.query<SessionRow>(
       `select id,scope_id,subject_type,subject_id,purpose,operation_id,channel,state,attempts::integer,maximum_attempts::integer,
-      issued_by,created_at,expires_at,verified_at,version::integer from verification.session
+      issued_by,issued_access_version::integer,created_at,expires_at,verified_at,revoked_at,revoke_reason,version::integer from verification.session
       where id=$1 and scope_id=any($2::text[]) for update`,
       [input.challenge, visibleScopes]
     );
@@ -131,6 +164,15 @@ export class PgChallengeRepository implements ChallengeRepository {
     if (row.state !== 'issued' || row.expires_at <= input.now) {
       if (row.state === 'issued') await database.query(`update verification.session set state='expired',version=version+1 where id=$1 and version=$2`, [row.id, row.version]);
       await this.attempt(database, row, input, device.rows[0].id, row.expires_at <= input.now ? 'expired' : 'replayed', 'token_unavailable');
+      return Object.freeze({ accepted: false as const, status: 409 as const, code: 'VERIFICATION_TOKEN_INVALID' as const });
+    }
+    if (row.purpose === 'member_code' && !(await this.issuerIsCurrent(context, row))) {
+      await database.query(
+        `update verification.session set state='revoked',revoked_at=$2,revoke_reason='authorization_changed',version=version+1
+        where id=$1 and state='issued' and version=$3`,
+        [row.id, input.now, row.version]
+      );
+      await this.attempt(database, row, input, device.rows[0].id, 'rejected', 'authorization_changed');
       return Object.freeze({ accepted: false as const, status: 409 as const, code: 'VERIFICATION_TOKEN_INVALID' as const });
     }
     this.rates.verify(row.attempts, row.maximum_attempts);
@@ -184,6 +226,16 @@ export class PgChallengeRepository implements ChallengeRepository {
     return Object.freeze({ accepted: true as const, value: Object.freeze({ record, verified: true, subjectType: row.subject_type, subject: row.subject_id, purpose: row.purpose, operation: row.operation_id, proofExpiresAt }) });
   }
 
+  private async issuerIsCurrent(context: WriteTransactionContext, row: SessionRow): Promise<boolean> {
+    try {
+      const profile = await this.members.profile(context, row.issued_by);
+      return profile.member === row.subject_id && profile.organization === row.scope_id && profile.accessversion === row.issued_access_version;
+    } catch (cause) {
+      if (cause instanceof DomainError && cause.code === 'MEMBERSHIP_SELECTION_REQUIRED') return false;
+      throw cause;
+    }
+  }
+
   private async attempt(database: SqlExecutor, session: SessionRow, input: Parameters<ChallengeRepository['verify']>[1], device: string | null, result: VerificationAttemptResult, reason: string): Promise<void> {
     const sequence = await database.query<{ value: number }>(`select coalesce(max(sequence),0)::integer+1 value from verification.attempt where session_id=$1`, [session.id]);
     const attempt = new VerificationAttempt({
@@ -212,4 +264,22 @@ export class PgChallengeRepository implements ChallengeRepository {
     if (!accepted) throw new DomainError('VOUCHER_REDEMPTION_CONFLICT');
     return accepted.id;
   }
+}
+
+function sessionView(value: VerificationSessionValue) {
+  return Object.freeze({
+    id: value.id,
+    subject_type: value.subjectType,
+    subject_id: value.subject,
+    purpose: value.purpose,
+    operation_id: value.operation,
+    channel: value.channel,
+    state: value.state,
+    attempts: value.attempts,
+    maximum_attempts: value.maximumAttempts,
+    issued_at: value.createdAt,
+    expires_at: value.expiresAt,
+    verified_at: value.verifiedAt,
+    version: value.version,
+  });
 }

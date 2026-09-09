@@ -8593,6 +8593,109 @@ operations:
     cachePolicy: none
     targetPolicy: exact
     idempotencyPolicy: required
+  - id: verification.membercodes.issue
+    version: 1
+    title: '核验 · 会员码签发'
+    concurrencyPolicy: serialized
+    executionMode: sync
+    auditLevel: detailed
+    sensitiveFields: [response.token]
+    lifecycle: active
+    owner: verification
+    method: POST
+    path: /api/v1/verifications/member-codes
+    audience: storefront
+    targets: [storefront, miniapp]
+    permission: verification.issue
+    capability: verification.membercodes.issue
+    scopeKinds: [mall, owner]
+    assuranceLevel: mfa
+    makerChecker: false
+    requestSchema: VerificationMemberCodesIssueInput
+    responseSchema: VerificationMemberCodesIssueOutput
+    errorUnion:
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - CONTRACT_VERSION_UNSUPPORTED
+      - IDEMPOTENCY_CONFLICT
+      - INTERNAL_ERROR
+      - MEMBERSHIP_SELECTION_REQUIRED
+      - RATE_LIMITED
+      - SCOPE_DENIED
+      - STEPUP_REQUIRED
+      - VALIDATION_FAILED
+    idempotencyScope: actor-operation-scope
+    expectedVersion: none
+    timeout: 800
+    rateClass: write
+    risk: high
+    resourceResolver: verification.resource
+    idempotent: false
+    requirements: *a1
+    controller: services/commerce/src/pipeline/OperationController.ts
+    handler: services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+    sdk: packages/sdk/src/operations/verification.ts
+    resourceParameter: null
+    originPolicy: sameorigin
+    csrfPolicy: required
+    responseMode: json
+    cachePolicy: none
+    targetPolicy: exact
+    idempotencyPolicy: required
+  - id: verification.membercodes.revoke
+    version: 1
+    title: '核验 · 会员码撤销'
+    concurrencyPolicy: optimistic
+    executionMode: sync
+    auditLevel: detailed
+    sensitiveFields: []
+    lifecycle: active
+    owner: verification
+    method: DELETE
+    path: /api/v1/verifications/member-codes/{challengeid}
+    audience: storefront
+    targets: [storefront, miniapp]
+    permission: verification.issue
+    capability: verification.membercodes.revoke
+    scopeKinds: [mall, owner]
+    assuranceLevel: mfa
+    makerChecker: false
+    requestSchema: VerificationMemberCodesRevokeInput
+    responseSchema: VerificationMemberCodesRevokeOutput
+    errorUnion:
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - CONTRACT_VERSION_UNSUPPORTED
+      - EXPECTED_VERSION_REQUIRED
+      - IDEMPOTENCY_CONFLICT
+      - INTERNAL_ERROR
+      - RATE_LIMITED
+      - RESOURCE_NOT_FOUND
+      - SCOPE_DENIED
+      - STEPUP_REQUIRED
+      - VALIDATION_FAILED
+      - VERIFICATION_TOKEN_INVALID
+      - VERSION_CONFLICT
+    idempotencyScope: actor-operation-scope
+    expectedVersion: required
+    timeout: 800
+    rateClass: write
+    risk: high
+    resourceResolver: verification.resource
+    idempotent: true
+    requirements: *a1
+    controller: services/commerce/src/pipeline/OperationController.ts
+    handler: services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
+    sdk: packages/sdk/src/operations/verification.ts
+    resourceParameter: challengeid
+    originPolicy: sameorigin
+    csrfPolicy: required
+    responseMode: json
+    cachePolicy: none
+    targetPolicy: exact
+    idempotencyPolicy: required
   - id: verification.sessions.read
     version: 1
     title: '核验 · 会话查询'
@@ -8608,7 +8711,7 @@ operations:
     targets: [storefront, miniapp]
     permission: verification.issue
     capability: verification.sessions.read
-    scopeKinds: *a11
+    scopeKinds: [mall, owner]
     assuranceLevel: mfa
     makerChecker: false
     requestSchema: VerificationSessionsReadInput

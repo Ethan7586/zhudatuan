@@ -9,6 +9,8 @@ import { ChallengesVerifyHandler } from './application/handler/ChallengesVerifyH
 import { DevicesManageHandler } from './application/handler/DevicesManageHandler';
 import { DevicesReadHandler } from './application/handler/DevicesReadHandler';
 import { HistoryReadHandler } from './application/handler/HistoryReadHandler';
+import { MemberCodesIssueHandler } from './application/handler/MemberCodesIssueHandler';
+import { MemberCodesRevokeHandler } from './application/handler/MemberCodesRevokeHandler';
 import { SessionsReadHandler } from './application/handler/SessionsReadHandler';
 import { PgAttemptRepository } from './infrastructure/persistence/PgAttemptRepository';
 import { PgChallengeRepository } from './infrastructure/persistence/PgChallengeRepository';
@@ -29,7 +31,16 @@ export const VerificationModule = defineModule(Manifest, {
     const sessions = new PgSessionRepository(transactions, members);
     const attempts = new PgAttemptRepository(transactions, organizations);
     const devices = new PgDeviceRepository(transactions);
-    return [new SessionsReadHandler(sessions), new ChallengesIssueHandler(challenges), new ChallengesVerifyHandler(challenges), new HistoryReadHandler(attempts), new DevicesReadHandler(devices), new DevicesManageHandler(devices)];
+    return [
+      new SessionsReadHandler(sessions),
+      new ChallengesIssueHandler(challenges),
+      new MemberCodesIssueHandler(challenges),
+      new MemberCodesRevokeHandler(challenges),
+      new ChallengesVerifyHandler(challenges),
+      new HistoryReadHandler(attempts),
+      new DevicesReadHandler(devices),
+      new DevicesManageHandler(devices),
+    ];
   },
   ports: [{ token: VERIFICATION_PORT, value: new PgVerificationPort() }],
   jobPorts: [{ token: RUNTIME_VERIFICATION_PORT, value: new PgVerificationRetentionPort() }],
