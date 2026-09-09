@@ -5,20 +5,37 @@ policy="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/release-policy.sh"
 fixture="$(mktemp -d)"
 trap 'rm -rf -- "$fixture"' EXIT
 
+set_mtime_seconds_ago() {
+  local age_seconds="$1"
+  shift
+  if touch -d "$age_seconds seconds ago" "$@" 2>/dev/null; then
+    return
+  fi
+  node - "$age_seconds" "$@" <<'NODE'
+const fs = require('node:fs');
+
+const ageSeconds = Number(process.argv[2]);
+const timestamp = new Date(Date.now() - ageSeconds * 1000);
+for (const path of process.argv.slice(3)) {
+  fs.utimesSync(path, timestamp, timestamp);
+}
+NODE
+}
+
 mkdir -p "$fixture/releases" "$fixture/pointers" "$fixture/incoming" "$fixture/candidates" "$fixture/proc/100" "$fixture/audit" "$fixture/lock"
 for name in oldest pinned active dependency disposable recent-a recent-b; do mkdir -p "$fixture/releases/$name"; done
 
-touch -d '7 days ago' "$fixture/releases/oldest" "$fixture/releases/pinned" "$fixture/releases/active" "$fixture/releases/dependency" "$fixture/releases/disposable"
-touch -d '2 hours ago' "$fixture/releases/recent-a"
-touch -d '1 hour ago' "$fixture/releases/recent-b"
+set_mtime_seconds_ago 604800 "$fixture/releases/oldest" "$fixture/releases/pinned" "$fixture/releases/active" "$fixture/releases/dependency" "$fixture/releases/disposable"
+set_mtime_seconds_ago 7200 "$fixture/releases/recent-a"
+set_mtime_seconds_ago 3600 "$fixture/releases/recent-b"
 ln -s "$fixture/releases/oldest" "$fixture/pointers/current"
 ln -s "$fixture/releases/active" "$fixture/proc/100/cwd"
 ln -s "$fixture/releases/dependency" "$fixture/releases/recent-b/node_modules"
 printf '%s\n' "$fixture/releases/pinned" > "$fixture/pins"
 mkdir -p "$fixture/incoming/expired" "$fixture/incoming/fresh" "$fixture/candidates/expired"
-touch -d '3 hours ago' "$fixture/incoming/expired"
-touch -d '10 minutes ago' "$fixture/incoming/fresh"
-touch -d '25 hours ago' "$fixture/candidates/expired"
+set_mtime_seconds_ago 10800 "$fixture/incoming/expired"
+set_mtime_seconds_ago 600 "$fixture/incoming/fresh"
+set_mtime_seconds_ago 90000 "$fixture/candidates/expired"
 
 common_env=(
   ZHUDATUAN_RELEASE_POLICY_CONFIG=/dev/null
