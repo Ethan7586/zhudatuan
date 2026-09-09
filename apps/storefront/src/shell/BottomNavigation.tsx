@@ -1,5 +1,6 @@
 import { Gift, Home, LayoutGrid, ReceiptText, UserRound } from 'lucide-react';
 import type { ShellMobileAction } from './ShellNavigation';
+import { shellPathActive } from './ShellNavigation';
 
 const ICONS = Object.freeze({
   home: Home,
@@ -9,14 +10,14 @@ const ICONS = Object.freeze({
   account: UserRound,
 });
 
-export function MobileNav({ actions, pathname, navigate }: Readonly<{ actions: readonly ShellMobileAction[]; pathname: string; navigate: (path: string) => void }>) {
+export function BottomNavigation({ actions, pathname, navigate }: Readonly<{ actions: readonly ShellMobileAction[]; pathname: string; navigate: (path: string) => void }>) {
   if (actions.length === 0) return null;
   return (
     <nav aria-label="移动端主要导航" className="fixed inset-x-0 bottom-0 z-50 border-t border-edge bg-surface/98 px-1 pb-[max(.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-8px_28px_rgba(15,35,70,.08)] backdrop-blur md:hidden">
       <div className="mx-auto flex max-w-lg items-end justify-around">
         {actions.map((action) => {
           const Icon = ICONS[action.kind];
-          const active = isActive(pathname, action.path);
+          const active = shellPathActive(pathname, action.path);
           const featured = action.kind === 'benefit';
           return (
             <button
@@ -39,9 +40,4 @@ export function MobileNav({ actions, pathname, navigate }: Readonly<{ actions: r
       </div>
     </nav>
   );
-}
-
-function isActive(pathname: string, path: string): boolean {
-  if (path === '/') return pathname === '/';
-  return pathname === path || pathname.startsWith(`${path}/`);
 }

@@ -62,6 +62,11 @@ export function shellNavigation(nodes: SessionState['navigation'], experience: E
   });
 }
 
+export function shellPathActive(pathname: string, path: string): boolean {
+  if (path === ROUTES.storehome) return pathname === path;
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
+
 function flatten(nodes: readonly NavigationNode[]): readonly NavigationNode[] {
   return nodes.flatMap((node) => [node, ...flatten(node.children)]);
 }

@@ -25,6 +25,9 @@ describe('StorefrontShell', () => {
     expect(screen.getAllByLabelText('消息通知')).toHaveLength(2);
     expect(screen.getAllByLabelText('购物车，共 108 件')).toHaveLength(2);
     expect(screen.getByLabelText('王小明的账户菜单')).toBeTruthy();
+    expect(screen.getByLabelText('账户余额概览')).toBeTruthy();
+    expect(screen.getByText('¥50.00')).toBeTruthy();
+    expect(screen.getByText('¥9.11')).toBeTruthy();
     expect(screen.getByText('第二福利商城')).toBeTruthy();
     expect(screen.getByText('安全退出')).toBeTruthy();
     expect(screen.getByRole('navigation', { name: '移动端主要导航' })).toBeTruthy();
@@ -80,7 +83,7 @@ function model(overrides: Record<string, unknown> = {}) {
     },
     cartCount: 108,
     pathname: '/',
-    account: { authenticated: true, name: '王小明', currentMall: mall, malls: [mall, { ...mall, id: 'mall:two', membershipId: 'membership:two', mallName: '第二福利商城', badge: '可切换' }] },
+    account: { authenticated: true, name: '王小明', profileState: 'ready', welfareBalanceMinor: 5000, mealBalanceMinor: 911, currentMall: mall, malls: [mall, { ...mall, id: 'mall:two', membershipId: 'membership:two', mallName: '第二福利商城', badge: '可切换' }] },
     toasts: [],
     removeToast: vi.fn(),
     actions: { navigate: vi.fn(), home: vi.fn(), catalog: vi.fn(), search: vi.fn(), switchMall: vi.fn(), logout: vi.fn(() => Promise.resolve()) },

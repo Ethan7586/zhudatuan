@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ExperienceDocument } from '@shop/contract';
 import type { SessionState } from '../entity/session/viewmodel/SessionContext';
-import { shellNavigation } from './ShellNavigation';
+import { shellNavigation, shellPathActive } from './ShellNavigation';
 
 type Node = SessionState['navigation'][number];
 
@@ -45,6 +45,12 @@ describe('shellNavigation', () => {
     expect(result.mobile).toEqual([]);
     expect(result.search).toBe(false);
     expect(result.quickView).toBe(false);
+  });
+
+  it('keeps the owning destination selected on nested routes without selecting home globally', () => {
+    expect(shellPathActive('/orders/order-one', '/orders')).toBe(true);
+    expect(shellPathActive('/products/product-one', '/products')).toBe(true);
+    expect(shellPathActive('/products', '/')).toBe(false);
   });
 });
 

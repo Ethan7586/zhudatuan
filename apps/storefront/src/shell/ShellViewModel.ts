@@ -5,6 +5,8 @@ import { useCartCommand } from '../feature/cart';
 import { ROUTES } from '../generated/RouteBinding';
 import { shellNavigation } from './ShellNavigation';
 
+export type ShellViewModel = ReturnType<typeof useShellViewModel>;
+
 export function useShellViewModel() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,6 +26,9 @@ export function useShellViewModel() {
     account: Object.freeze({
       authenticated: session.status === 'authenticated',
       name: identity.profileState === 'ready' ? identity.user.name : identity.profileState === 'failed' ? '账户暂不可用' : '账户加载中',
+      profileState: identity.profileState,
+      welfareBalanceMinor: identity.user.welfareBalanceMinor,
+      mealBalanceMinor: identity.user.mealBalanceMinor,
       currentMall: identity.currentMall,
       malls: identity.malls,
     }),
